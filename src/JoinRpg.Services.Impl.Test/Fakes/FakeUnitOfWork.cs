@@ -14,16 +14,26 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
 {
     public int SaveChangesCallCount { get; private set; }
 
+    /// <summary>
+    /// Вызывается на каждом сохранении с его номером (1-based). Нужен там, где важен не только
+    /// счётчик, но и что именно сервис успел сделать к этому моменту: создание заявки обязано
+    /// сохранить её раньше, чем создаст комментарий, — иначе комментарий уедет в дискуссию с
+    /// <c>CommentDiscussionId == -1</c>.
+    /// </summary>
+    public Action<int>? OnSaveChanges { get; set; }
+
     public Task SaveChangesAsync()
     {
         SaveChangesCallCount++;
+        OnSaveChanges?.Invoke(SaveChangesCallCount);
         return Task.CompletedTask;
     }
 
     public IProjectMetadataWriteRepository GetProjectMetadataWriteRepository()
         => new FakeProjectMetadataWriteRepository(mock);
 
-    public ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository() => throw new NotSupportedException();
+    public ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository()
+        => new FakeCharacterAggregateWriteRepository(mock);
 
     /// <summary>
     /// НЕ ЗАГЛУШКА, НЕ «ЧИНИТЬ». Намеренный детектор: если сервис лезет в <see cref="DbSet{TEntity}"/>
@@ -32,7 +42,7 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
     /// </summary>
     public DbSet<T> GetDbSet<T>() where T : class => throw new NotSupportedException();
 
-    public IUserRepository GetUsersRepository() => throw new NotSupportedException();
+    public IUserRepository GetUsersRepository() => new FakeUserRepository(mock);
     public IProjectRepository GetProjectRepository() => throw new NotSupportedException();
     public IClaimsRepository GetClaimsRepository() => throw new NotSupportedException();
     public IPlotRepository GetPlotRepository() => throw new NotSupportedException();

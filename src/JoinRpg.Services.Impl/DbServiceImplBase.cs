@@ -9,6 +9,7 @@ using JoinRpg.DomainTypes.Interfaces;
 namespace JoinRpg.Services.Impl;
 
 //TODO: Split on specific and not specific to domain helpers
+[Obsolete("Наследуйся от props-сервисов, см. ADR014")]
 public class DbServiceImplBase
 {
     protected readonly IUnitOfWork UnitOfWork;

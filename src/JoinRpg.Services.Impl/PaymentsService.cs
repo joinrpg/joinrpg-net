@@ -45,6 +45,47 @@ public static class FinanceOperationExtensions
 }
 
 /// <inheritdoc cref="IPaymentsService" />
+/// <remarks>
+/// <para>
+/// <b>Сервис намеренно НЕ переведён на <c>ICharacterPropsService.ChangeClaim</c> (ADR014).</b>
+/// Разбор велся метод за методом; итог — ни одна операция онлайн-оплаты не укладывается в контракт
+/// «одна операция — одно сохранение» без изменения поведения в денежном контуре. Причины делятся на
+/// два класса, и обе фундаментальны, а не «пока не дошли руки».
+/// </para>
+/// <para>
+/// <b>1. Идентификатор заказа в банке — это первичный ключ из нашей БД.</b>
+/// <c>FinanceOperationExtensions.GetOrderId</c> строится из <c>CommentId</c>, который появляется
+/// только после <c>SaveChanges</c>. Поэтому всякая операция, создающая платёж
+/// (<see cref="InitiateClaimPaymentAsync"/>, <see cref="InitiateFastPaymentsSystemMobilePaymentAsync"/>,
+/// <see cref="PerformRecurrentPaymentAsync(RecurrentPayment, int?, bool)"/>, <see cref="RefundAsync"/>),
+/// обязана сохраниться <b>до</b> обращения к банку, а потом сохраниться ещё раз, чтобы записать
+/// ответ банка. Лямбда <c>ChangeClaim</c> исполняется <b>до</b> единственного сохранения — выразить
+/// в ней эту последовательность нельзя. Это ровно тот же запрет, по которому не мигрирован
+/// <c>FinanceOperationsImpl.TransferPaymentAsync</c>.
+/// </para>
+/// <para>
+/// <b>2. У входящего платёжного колбэка нет пользователя.</b> <c>ClaimPaymentSuccess</c> и
+/// <c>ClaimPaymentFail</c> объявлены без <c>[Authorize]</c> и с <c>[IgnoreAntiforgeryToken]</c> —
+/// банк возвращает плательщика без нашей сессии. Ночная сверка (<c>UpdatePaymentStatusJob</c>,
+/// <c>PerformRecurrentPaymentMidnightJob</c>) идёт под роботом-админом, у которого нет ACL в
+/// проекте. <c>ChangeClaim</c> же начинается с <c>currentUserAccessor.UserIdentification</c>
+/// (бросает для анонима), грузит инициатора как сущность и разворачивает
+/// <c>ClaimAccessRequirement</c>, в котором admin-bypass запрещён намеренно (ADR014 §5). Сегодня
+/// эти пути не проверяют доступ вовсе и работать обязаны — отказать банку нельзя. Нужен отдельный
+/// системный/анонимный вход в <c>ICharacterPropsService</c>; это поправка к ADR014, а не часть
+/// миграции. См. отчёт по PR.
+/// </para>
+/// <para>
+/// <b>Решения по <c>ProjectActiveRequirement</c> зафиксированы в документации каждого метода</b> —
+/// это «карта на будущее». Сами проверки активности не вводятся: ADR014 требует вводить запрет
+/// вместе с миграцией метода, а не отдельно от неё.
+/// </para>
+/// <para>
+/// От <c>[Obsolete] DbServiceImplBase</c> сервис при этом отвязан: всё, что он оттуда брал
+/// (<c>UnitOfWork</c>, <c>CurrentUserId</c>, <c>Now</c>, <c>GetCurrentUser</c>), выражается через
+/// собственные зависимости.
+/// </para>
+/// </remarks>
 internal class PaymentsService(
     IUnitOfWork unitOfWork,
     IUriService uriService,
@@ -54,8 +95,24 @@ internal class PaymentsService(
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
     CommentHelper commentHelper,
-    IHttpClientFactory clientFactory) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPaymentsService
+    IHttpClientFactory clientFactory) : IPaymentsService
 {
+    /// <summary>
+    /// Время операции. Зафиксировано на экземпляр сервиса — ровно как это делал
+    /// <c>DbServiceImplBase</c>, чтобы отвязка от базового класса не меняла отметок времени.
+    /// Сервис транзиентный, поэтому на практике это время запроса.
+    /// </summary>
+    private DateTime Now { get; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Текущий пользователь. У входящих платёжных путей его может не быть вовсе, поэтому обращаться
+    /// к нему можно только там, где вызов заведомо пришёл из <c>[Authorize]</c>-действия.
+    /// </summary>
+    private int CurrentUserId => currentUserAccessor.UserId;
+
+    private async Task<User> GetCurrentUser()
+        => await unitOfWork.GetUsersRepository().GetById(CurrentUserId);
+
     private readonly Lazy<FastPaymentsSystemApi> _lazyFpsApi = new(() => new FastPaymentsSystemApi(clientFactory));
 
     private readonly Lazy<string?> _lazyExternalPaymentsSystemPaymentUrlTemplate
@@ -83,7 +140,7 @@ internal class PaymentsService(
 
     private async Task<Claim> GetClaimAsync(int projectId, int claimId)
     {
-        var claim = await UnitOfWork.GetClaimsRepository().GetClaim(new(projectId, claimId));
+        var claim = await unitOfWork.GetClaimsRepository().GetClaim(new(projectId, claimId));
         return claim ?? throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
     }
 
@@ -99,6 +156,15 @@ internal class PaymentsService(
         return (goodName, details);
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// <b>Не мигрирован</b>: по сути это чтение — страница продолжения оплаты. Собственных мутаций
+    /// нет; единственное изменение делает <see cref="UpdateFinanceOperationAsync(FinanceOperation, PaymentInfo?)"/>,
+    /// когда банк сообщил, что счёт уже оплачен или истёк. Права — «только игрок»
+    /// (<c>ClaimAccessRequirement.PlayerOnly</c>).
+    /// Активность проекта: <b>AllowInactive</b> — метод по дороге фиксирует ответ банка по уже
+    /// начатому платежу, то есть относится к входящему платёжному контуру.
+    /// </remarks>
     public async Task<FastPaymentsSystemMobilePaymentContext> GetFastPaymentsSystemMobilePaymentContextAsync(int projectId, int claimId, int operationId, FpsPlatform platform)
     {
         var fo = await LoadFinanceOperationAsync(projectId, claimId, operationId);
@@ -183,6 +249,17 @@ internal class PaymentsService(
         return result;
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// <b>Не мигрирован</b>: три сохранения, и они не схлопываются. Комментарий с финоперацией
+    /// сохраняется первым, потому что идентификатор заказа в банке — это её <c>CommentId</c>;
+    /// подписка (<see cref="RecurrentPayment"/>) сохраняется вторым, потому что ей нужен уже
+    /// полученный идентификатор заказа; реквизиты QR-кода приходят от банка и сохраняются третьим.
+    /// Лямбда <c>ChangeClaim</c> исполняется до единственного сохранения, поэтому выразить это в ней
+    /// нельзя.
+    /// Права — «только игрок» (<c>ClaimAccessRequirement.PlayerOnly</c>).
+    /// Активность проекта: <b>MustBeActive</b> — это создание нового платежа, а не приём входящего.
+    /// </remarks>
     public async Task<FastPaymentsSystemMobilePaymentContext> InitiateFastPaymentsSystemMobilePaymentAsync(ClaimPaymentRequest request, FpsPlatform platform)
     {
         // Loading claim
@@ -282,7 +359,7 @@ internal class PaymentsService(
         fo.BankDetails.BankOperationKey = invoice.Payment.Id;
         fo.BankDetails.QrCodeLink = invoice.Payment.QrCodeImageUrl;
         fo.BankDetails.QrCodeMeta = invoice.Payment.QrCodeUrl;
-        await UnitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         ICollection<FpsBank>? banks = null;
         if (platform != FpsPlatform.Desktop)
@@ -309,6 +386,17 @@ internal class PaymentsService(
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Не мигрирован</b>: дескриптор запроса к банку строится вокруг идентификатора заказа,
+    /// которым служит <c>CommentId</c> созданной финоперации, — то есть сохранение обязано
+    /// произойти <b>внутри</b> построения запроса (колбэк <c>getOrderId</c>). При
+    /// <c>Recurrent: true</c> добавляется второе сохранение — подписке нужен уже известный
+    /// идентификатор родительского платежа. Разделять ветки «обычный платёж — через
+    /// <c>ChangeClaim</c>, подписка — по-старому» значило бы завести два пути создания платежа;
+    /// это хуже, чем не мигрировать.
+    /// Права — «только игрок» (<c>ClaimAccessRequirement.PlayerOnly</c>).
+    /// Активность проекта: <b>MustBeActive</b>.
+    /// </remarks>
     public async Task<ClaimPaymentContext> InitiateClaimPaymentAsync(ClaimPaymentRequest request)
     {
         // Loading claim
@@ -406,6 +494,15 @@ internal class PaymentsService(
         };
     }
 
+    /// <summary>
+    /// Создаёт комментарий с финоперацией и <b>сразу сохраняет его</b>: идентификатор заказа в банке
+    /// — это <c>CommentId</c>, и до сохранения его не существует.
+    /// </summary>
+    /// <remarks>
+    /// Именно это сохранение и делает весь контур онлайн-оплат непереводимым на <c>ChangeClaim</c>
+    /// (одна операция — одно сохранение, и оно идёт <b>после</b> лямбды). Ср. <c>ClaimFinanceOperations.AcceptFee</c>:
+    /// у ручного приёма взноса идентификатора заказа нет, поэтому он мигрирован.
+    /// </remarks>
     private async Task<Comment> AddPaymentCommentAsync(
         Claim claim,
         PaymentType paymentType,
@@ -444,8 +541,8 @@ internal class PaymentsService(
             ReccurrentPaymentInstanceToken = request.Recurrent ? FinanceOperation.MakeInstanceToken(DateTime.UtcNow) : null,
             BankDetails = new FinanceOperationBankDetails(),
         };
-        _ = UnitOfWork.GetDbSet<Comment>().Add(comment);
-        await UnitOfWork.SaveChangesAsync();
+        _ = unitOfWork.GetDbSet<Comment>().Add(comment);
+        await unitOfWork.SaveChangesAsync();
 
         if (request.Recurrent)
         {
@@ -459,8 +556,8 @@ internal class PaymentsService(
                 PaymentTypeId = paymentType.PaymentTypeId,
                 BankParentPayment = comment.Finance.GetOrderId(),
             };
-            UnitOfWork.GetDbSet<RecurrentPayment>().Add(comment.Finance.RecurrentPayment);
-            await UnitOfWork.SaveChangesAsync();
+            unitOfWork.GetDbSet<RecurrentPayment>().Add(comment.Finance.RecurrentPayment);
+            await unitOfWork.SaveChangesAsync();
         }
 
         return comment;
@@ -469,7 +566,7 @@ internal class PaymentsService(
     private async Task<FinanceOperation> LoadFinanceOperationAsync(int projectId, int claimId, int operationId)
     {
         // Loading finance operation
-        FinanceOperation fo = await UnitOfWork.GetDbSet<FinanceOperation>()
+        FinanceOperation fo = await unitOfWork.GetDbSet<FinanceOperation>()
             .Include(e => e.Claim)
             .Include(e => e.RecurrentPayment)
             .Include(e => e.PaymentType)
@@ -508,7 +605,7 @@ internal class PaymentsService(
         while (true)
         {
             // Берем по пять штук
-            var operations = await UnitOfWork.GetDbSet<FinanceOperation>()
+            var operations = await unitOfWork.GetDbSet<FinanceOperation>()
                 .Include(e => e.RecurrentPayment)
                 .Include(e => e.PaymentType)
                 .Where(e => e.ProjectId == projectId
@@ -597,6 +694,31 @@ internal class PaymentsService(
         }
     }
 
+    /// <summary>
+    /// Ядро входящего платёжного контура: спрашивает банк о судьбе операции и записывает ответ.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Единственный метод сервиса, который по форме подошёл бы <c>ChangeClaimAsync</c></b>:
+    /// внешний вызов идёт до мутаций, мутации идут подряд, сохранение ровно одно, уведомление
+    /// уходит после него. Активность проекта здесь — <b>AllowInactive</b> (ADR014: деньги приходят
+    /// после закрытия игры, отказать платёжной системе нельзя).
+    /// </para>
+    /// <para>
+    /// <b>И всё равно не мигрирован — из-за прав, а не из-за активности.</b> Вызывают его три входа,
+    /// и ни у одного нет пользователя, которого <c>ChangeClaim</c> потребует:
+    /// <list type="bullet">
+    /// <item>возврат плательщика от банка (<c>ClaimPaymentSuccess</c>/<c>ClaimPaymentFail</c>) — без
+    /// <c>[Authorize]</c>, то есть аноним;</item>
+    /// <item>ночная сверка <c>UpdatePaymentStatusJob</c> — под роботом-админом, у которого нет ACL
+    /// в проекте, а admin-bypass в claim-путях запрещён намеренно (ADR014 §5);</item>
+    /// <item><c>PerformRecurrentPaymentMidnightJob</c> — то же самое.</item>
+    /// </list>
+    /// Сегодня проверок доступа на этом пути нет вовсе, и это осознанно: иначе банк получит отказ.
+    /// Чтобы метод переехал, <c>ICharacterPropsService</c> нужен системный вход без пользователя —
+    /// это поправка к ADR014, а не часть миграции.
+    /// </para>
+    /// </remarks>
     private async Task<FinanceOperationState> UpdateFinanceOperationAsync(FinanceOperation fo, PaymentInfo? paymentInfo)
     {
         if (fo.State != FinanceOperationState.Proposed)
@@ -614,7 +736,7 @@ internal class PaymentsService(
         RecurrentPayment? recurrentPayment = fo.RecurrentPayment;
         if (recurrentPayment is null && fo.RecurrentPaymentId.HasValue)
         {
-            recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>().FindAsync(fo.RecurrentPaymentId.Value);
+            recurrentPayment = await unitOfWork.GetDbSet<RecurrentPayment>().FindAsync(fo.RecurrentPaymentId.Value);
         }
 
         // If recurrent payment is not in created state or this finance operation is not parent finance operation,
@@ -722,7 +844,7 @@ internal class PaymentsService(
         // Saving if status was updated
         if (fo.State != FinanceOperationState.Proposed)
         {
-            await UnitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
         }
 
         // Sending payment notification when needed
@@ -797,10 +919,19 @@ internal class PaymentsService(
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Входящий платёжный колбэк. Не мигрирован</b> — см.
+    /// <see cref="UpdateFinanceOperationAsync(FinanceOperation, PaymentInfo?)"/>: у вызывающего нет
+    /// пользователя. Активность проекта: <b>AllowInactive</b>.
+    /// </remarks>
     public async Task<FinanceOperationState> UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
         => await UpdateFinanceOperationAsync(await LoadFinanceOperationAsync(projectId, claimId, orderId), null);
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Входящий платёжный колбэк</b> (банк вернул плательщика без разбираемого номера заказа).
+    /// <b>Не мигрирован</b> по той же причине. Активность проекта: <b>AllowInactive</b>.
+    /// </remarks>
     public async Task UpdateLastClaimPaymentAsync(int projectId, int claimId)
     {
         var fo = await LoadLastUnapprovedFinanceOperationAsync(projectId, claimId);
@@ -810,15 +941,32 @@ internal class PaymentsService(
         }
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// <b>Ночная сверка по расписанию. Не мигрирован</b>: идёт под роботом-админом без ACL в
+    /// проекте. Активность проекта: <b>AllowInactive</b>.
+    /// </remarks>
     public async Task<FinanceOperationState> UpdateFinanceOperationAsync(FinanceOperation fo)
-        => await UpdateFinanceOperationAsync(UnitOfWork.GetDbSet<FinanceOperation>().Attach(fo), paymentInfo: null);
+        => await UpdateFinanceOperationAsync(unitOfWork.GetDbSet<FinanceOperation>().Attach(fo), paymentInfo: null);
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Не мигрирован</b>: два сохранения, между ними обращение к банку, и промежуточное состояние
+    /// <see cref="RecurrentPaymentStatus.Cancelling"/> — <b>durable по замыслу</b>. Оно
+    /// фиксируется до вызова банка, и если вызов не удался, подписка остаётся в «отменяется», а в UI
+    /// (<c>RecurrentPaymentFunctionsViewModel</c>) остаётся кнопка повторить. Схлопывание в одно
+    /// сохранение это состояние уничтожит: неудачная отмена не оставит следа.
+    /// Права — игрок заявки либо мастер с <c>CanManageMoney</c>; точного
+    /// <c>ClaimAccessRequirement</c> под такую пару сегодня нет
+    /// (<c>MasterOrPlayer</c> шире, <c>ManageMoney</c> у́же), так что перенос 1:1 потребует нового
+    /// требования.
+    /// Активность проекта: <b>MustBeActive</b> — отмену подписки инициирует человек из UI.
+    /// </remarks>
     public async Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId)
     {
         logger.LogInformation("Trying to cancel recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
 
-        var recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>()
+        var recurrentPayment = await unitOfWork.GetDbSet<RecurrentPayment>()
             .Where(rp => rp.ClaimId == claimId && rp.ProjectId == projectId && rp.RecurrentPaymentId == recurrentPaymentId)
             .FirstOrDefaultAsync();
 
@@ -849,7 +997,7 @@ internal class PaymentsService(
         {
             recurrentPayment.Status = RecurrentPaymentStatus.Cancelling;
         }
-        await UnitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         if (recurrentPayment.Status == RecurrentPaymentStatus.Cancelled)
         {
@@ -863,7 +1011,7 @@ internal class PaymentsService(
         {
             recurrentPayment.Status = RecurrentPaymentStatus.Cancelled;
             recurrentPayment.CloseDate = Now;
-            await UnitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} has been successfully cancelled", recurrentPaymentId, claimId, projectId);
             return true;
@@ -875,6 +1023,15 @@ internal class PaymentsService(
 
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Повторяющийся платёж по расписанию. Не мигрирован</b>: при <c>internalCall: true</c>
+    /// вызывается из <c>PerformRecurrentPaymentMidnightJob</c> под роботом-админом без ACL в
+    /// проекте, а сама операция делает три-четыре сохранения вокруг двух обращений к банку
+    /// (см. <see cref="InternalPerformRecurrentPaymentAsync"/>).
+    /// Активность проекта: <b>AllowInactive</b> для пути джобы — это списание, инициированное
+    /// внешним расписанием, а не человеком; отбор в <see cref="FindRecurrentPaymentsAsync"/> и так
+    /// фильтрует по <c>Project.Active</c>.
+    /// </remarks>
     public Task<FinanceOperation?> PerformRecurrentPaymentAsync(RecurrentPayment recurrentPayment, int? amount, bool internalCall = false)
     {
         if (recurrentPayment.Claim is null)
@@ -894,9 +1051,15 @@ internal class PaymentsService(
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Не мигрирован</b> — та же причина, что у перегрузки по сущности. Этот вход зовёт мастер
+    /// из UI (<c>ForceRecurrentPayment</c>), права — <c>CanManageMoney</c>
+    /// (<c>ClaimAccessRequirement.ManageMoney</c>).
+    /// Активность проекта: <b>MustBeActive</b> — принудительное списание инициирует человек.
+    /// </remarks>
     public async Task<FinanceOperation?> PerformRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId, int? amount, bool internalCall = false)
     {
-        var recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>()
+        var recurrentPayment = await unitOfWork.GetDbSet<RecurrentPayment>()
             .Include(rp => rp.Claim)
             .Include(rp => rp.Project)
             .Include(rp => rp.PaymentType)
@@ -918,7 +1081,12 @@ internal class PaymentsService(
 
         if (!internalCall)
         {
-            if (!recurrentPayment.Claim.HasAccess(CurrentUserId, Permission.CanManageMoney))
+            // Типизированная перегрузка HasAccess вместо [Obsolete]-перегрузки по int: правила те же
+            // (ACL проекта плюс право распоряжаться деньгами), но у анонима теперь получается
+            // «доступа нет», а не исключение «требуется авторизация».
+            if (!recurrentPayment.Claim.HasAccess(
+                    currentUserAccessor.UserIdentificationOrDefault,
+                    Permission.CanManageMoney))
             {
                 throw new JoinRpgInvalidUserException();
             }
@@ -966,7 +1134,7 @@ internal class PaymentsService(
             });
         var fo = comment.Finance;
 
-        await UnitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         logger.LogInformation("Acquiring payment code for payment {financeOperationId} of recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", fo.CommentId, recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId);
 
@@ -988,7 +1156,7 @@ internal class PaymentsService(
             logger.LogError("Payment {financeOperationId} of recurrent payment {recurrentPaymentId} setup for claim {claimId} to project {projectId} has failed because {bankError}", fo.CommentId, recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId, initResult.ErrorDescription);
             fo.State = FinanceOperationState.Declined;
             fo.Changed = Now;
-            await UnitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
             return fo;
         }
 
@@ -1018,12 +1186,31 @@ internal class PaymentsService(
             fo.Changed = Now;
         }
 
-        await UnitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return comment.Finance;
     }
 
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// <para>
+    /// <b>Не мигрирован</b>: два сохранения вокруг обращения к банку. Первое создаёт финоперацию
+    /// возврата в состоянии <c>Proposed</c> <b>до</b> вызова банка — и это не случайность. Если
+    /// вызов упадёт по таймауту, банк мог возврат и принять; сохранённая <c>Proposed</c>-операция
+    /// позволяет ночной сверке (<c>UpdatePaymentStatusJob</c>) выяснить исход у банка. Единственное
+    /// сохранение <c>ChangeClaim</c> (оно идёт после лямбды, то есть после вызова банка) этот след
+    /// потеряет: исключение уйдёт до сохранения, и незавершённого возврата в базе не останется
+    /// вовсе. Для денежного контура это строго хуже сегодняшнего поведения.
+    /// </para>
+    /// <para>
+    /// Права: <b>сегодня их тут нет вовсе</b> — <see cref="LoadFinanceOperationAsync"/> доступ не
+    /// проверяет, а действие контроллера <c>RefundPayment</c> ограничено только <c>[Authorize]</c>.
+    /// При переводе требование должно стать <c>ClaimAccessRequirement.ManageMoney</c>, но это
+    /// изменение поведения в денежном контуре, и ему нужен отдельный PR — см. отчёт.
+    /// Активность проекта: <b>MustBeActive</b> — возврат оформляет мастер из UI.
+    /// </para>
+    /// </remarks>
     Task<FinanceOperation> IPaymentsService.RefundAsync(int projectId, int claimId, int operationId)
         => RefundAsync(projectId, claimId, operationId);
 
@@ -1049,7 +1236,7 @@ internal class PaymentsService(
         }
 
         // We have to check was operation already completely refunded or not
-        var refundedFo = await UnitOfWork.GetDbSet<FinanceOperation>()
+        var refundedFo = await unitOfWork.GetDbSet<FinanceOperation>()
             .Where(fo => fo.RefundedOperationId == sourceFo.CommentId && fo.State == FinanceOperationState.Approved)
             .ToArrayAsync();
         var refundedSum = refundedFo.Sum(fo => fo.MoneyAmount);
@@ -1098,7 +1285,7 @@ internal class PaymentsService(
             fo.State = FinanceOperationState.Declined;
             fo.Changed = Now;
         }
-        await UnitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         if (comment.Finance.Approved)
         {
@@ -1109,12 +1296,20 @@ internal class PaymentsService(
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Ни заявка, ни проект</b>: чистое форматирование строки по настройкам банка, без БД и без
+    /// прав. Ни одному props-сервису не принадлежит.
+    /// </remarks>
     public string? GetExternalPaymentUrl(string? externalPaymentKey)
         => string.IsNullOrWhiteSpace(externalPaymentKey) || string.IsNullOrWhiteSpace(_lazyExternalPaymentsSystemPaymentUrlTemplate.Value)
             ? null
             : string.Format(_lazyExternalPaymentsSystemPaymentUrlTemplate.Value, externalPaymentKey);
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Чтение, а не мутация</b>: постраничный отбор по всем проектам сразу, заявки у операции нет.
+    /// Кандидат на переезд в репозиторий, но не в props-сервис.
+    /// </remarks>
     public async Task<IReadOnlyList<RecurrentPayment>> FindRecurrentPaymentsAsync(
         int? afterId = null,
         bool? activityStatus = true,
@@ -1127,7 +1322,7 @@ internal class PaymentsService(
 
         afterId ??= 0;
 
-        var query = UnitOfWork.GetDbSet<RecurrentPayment>()
+        var query = unitOfWork.GetDbSet<RecurrentPayment>()
             .OrderBy(rp => rp.RecurrentPaymentId)
             .Take(pageSize)
             .Where(rp => rp.RecurrentPaymentId > afterId);
@@ -1154,6 +1349,9 @@ internal class PaymentsService(
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Чтение, а не мутация</b> — то же, что у <see cref="FindRecurrentPaymentsAsync"/>.
+    /// </remarks>
     public async Task<IReadOnlyList<FinanceOperation>> FindOperationsOfRecurrentPaymentAsync(
         int recurrentPaymentId,
         DateTime? forPeriod = null,
@@ -1173,7 +1371,7 @@ internal class PaymentsService(
             ofStates = null;
         }
 
-        var query = UnitOfWork.GetDbSet<FinanceOperation>()
+        var query = unitOfWork.GetDbSet<FinanceOperation>()
             .OrderBy(fo => fo.CommentId)
             .Take(pageSize)
             .Where(fo => fo.CommentId > afterId)
