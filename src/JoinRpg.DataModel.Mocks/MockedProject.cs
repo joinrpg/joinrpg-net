@@ -6,6 +6,7 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.DomainTypes.Users;
@@ -222,6 +223,8 @@ public class MockedProject
             CharacterGroupId = id,
             CharacterGroupName = "test_" + id,
             IsActive = true,
+            // В бою коллекция всегда материализована (EF); без неё обход подписок падает NRE.
+            Subscriptions = [],
         };
         Project.CharacterGroups.Add(characterGroup);
 
@@ -239,6 +242,8 @@ public class MockedProject
             Claims = [],
             Project = Project,
             CharacterName = name,
+            // В бою коллекция всегда материализована (EF); без неё обход подписок падает NRE.
+            Subscriptions = [],
         };
 
         Project.Characters.Add(character);
@@ -434,6 +439,104 @@ public class MockedProject
         Project.PaymentTypes.Add(paymentType);
         ReInitProjectInfo();
         return paymentType;
+    }
+
+    /// <summary>
+    /// Типы поселения проекта. Отдельная коллекция, а не навигация <see cref="DataModel.Project"/>:
+    /// её у проекта нет, а write-хэндл грузит тип поселения отдельным запросом.
+    /// </summary>
+    public List<ProjectAccommodationType> AccommodationTypes { get; } = [];
+
+    /// <summary>Тип поселения проекта (палатка, домик, номер…).</summary>
+    public ProjectAccommodationType CreateAccommodationType(string name = "Палатка", int capacity = 4)
+    {
+        var accommodationType = new ProjectAccommodationType
+        {
+            Id = AccommodationTypes.Count + 1,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            Name = name,
+            Capacity = capacity,
+            Cost = 0,
+            ProjectAccommodations = [],
+            Desirous = [],
+        };
+        AccommodationTypes.Add(accommodationType);
+        return accommodationType;
+    }
+
+    /// <summary>Заявки на поселение проекта — как их видел бы <c>DbSet</c>.</summary>
+    public List<AccommodationRequest> AccommodationRequests { get; } = [];
+
+    /// <summary>
+    /// Заявка на поселение выбранного типа, в которой живут перечисленные заявки игроков.
+    /// </summary>
+    public AccommodationRequest CreateAccommodationRequest(
+        ProjectAccommodationType accommodationType,
+        params Claim[] subjects)
+    {
+        var request = new AccommodationRequest
+        {
+            Id = AccommodationRequests.Count + 1,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            AccommodationType = accommodationType,
+            AccommodationTypeId = accommodationType.Id,
+            IsAccepted = InviteState.Accepted,
+            Subjects = [.. subjects],
+        };
+        accommodationType.Desirous.Add(request);
+
+        foreach (var claim in subjects)
+        {
+            claim.AccommodationRequest = request;
+            claim.AccommodationRequest_Id = request.Id;
+        }
+
+        AccommodationRequests.Add(request);
+        return request;
+    }
+
+    /// <summary>Комната, в которую расселена заявка на поселение.</summary>
+    public ProjectAccommodation CreateRoom(AccommodationRequest request, string name = "Комната")
+    {
+        var room = new ProjectAccommodation
+        {
+            Id = request.Id,
+            Name = name,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            ProjectAccommodationType = request.AccommodationType,
+            AccommodationTypeId = request.AccommodationTypeId,
+            Inhabitants = [request],
+        };
+        request.Accommodation = room;
+        request.AccommodationId = room.Id;
+        return room;
+    }
+
+    /// <summary>
+    /// Приглашения к совместному проживанию. Отдельная коллекция по той же причине, что и
+    /// <see cref="AccommodationTypes"/>: write-хэндл грузит их отдельным запросом.
+    /// </summary>
+    public List<AccommodationInvite> AccommodationInvites { get; } = [];
+
+    /// <summary>Неотвеченное приглашение одной заявки другой.</summary>
+    public AccommodationInvite CreateAccommodationInvite(Claim from, Claim to)
+    {
+        var invite = new AccommodationInvite
+        {
+            Id = AccommodationInvites.Count + 1,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            From = from,
+            FromClaimId = from.ClaimId,
+            To = to,
+            ToClaimId = to.ClaimId,
+            IsAccepted = InviteState.Unanswered,
+        };
+        AccommodationInvites.Add(invite);
+        return invite;
     }
 
     public Claim CreateApprovedClaim(Character character, User player)

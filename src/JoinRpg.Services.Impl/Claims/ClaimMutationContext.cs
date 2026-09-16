@@ -30,6 +30,8 @@ internal abstract record ClaimMutationContext(
     Action<object> RemoveEntity,
     Func<CharacterIdentification, Task<(Character Entity, CharacterInfo Info)>> LoadOtherCharacterCore,
     Func<CharacterIdentification, Task<IReadOnlyCollection<PlotElement>>> LoadDirectPlotsCore,
+    Func<AccommodationTypeIdentification, Task<ProjectAccommodationType>> LoadAccommodationTypeCore,
+    Func<ClaimIdentification, Task<IReadOnlyCollection<AccommodationInvite>>> LoadInvitesCore,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper)
     : CharacterMutationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, AddEntity, RemoveEntity, FieldSaveHelper)
@@ -40,6 +42,21 @@ internal abstract record ClaimMutationContext(
     /// </summary>
     public Task<IReadOnlyCollection<PlotElement>> LoadDirectPlotsForCharacter(CharacterIdentification characterId)
         => LoadDirectPlotsCore(characterId);
+
+    /// <summary>
+    /// Тип поселения проекта. Именованный загрузчик, а не <c>ProjectInfo</c>: типы поселения в снимок
+    /// метаданных не входят.
+    /// </summary>
+    /// <exception cref="JoinRpgEntityNotFoundException">Тип поселения не найден в этом проекте.</exception>
+    public Task<ProjectAccommodationType> LoadAccommodationType(AccommodationTypeIdentification accommodationTypeId)
+        => LoadAccommodationTypeCore(accommodationTypeId);
+
+    /// <summary>
+    /// Приглашения к совместному проживанию, в которых участвует эта заявка, — трекаемые тем же
+    /// <c>DbContext</c>, поэтому их изменение уедет в то же единственное сохранение.
+    /// </summary>
+    public Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim()
+        => LoadInvitesCore(ClaimInfo.ClaimId);
 
     /// <summary>
     /// Сохраняет поля <b>через заявку</b>, а не через персонажа хэндла. Разница не косметическая:
@@ -151,8 +168,11 @@ internal sealed record ClaimMutationContext<TArgs>(
     Action<object> RemoveEntity,
     Func<CharacterIdentification, Task<(Character Entity, CharacterInfo Info)>> LoadOtherCharacterCore,
     Func<CharacterIdentification, Task<IReadOnlyCollection<PlotElement>>> LoadDirectPlotsCore,
+    Func<AccommodationTypeIdentification, Task<ProjectAccommodationType>> LoadAccommodationTypeCore,
+    Func<ClaimIdentification, Task<IReadOnlyCollection<AccommodationInvite>>> LoadInvitesCore,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper,
     TArgs Request)
     : ClaimMutationContext(Claim, ClaimInfo, Character, CharacterInfo, ProjectInfo, Now, CurrentUser,
-        Initiator, AddEntity, RemoveEntity, LoadOtherCharacterCore, LoadDirectPlotsCore, FieldSaveHelper, CommentHelper);
+        Initiator, AddEntity, RemoveEntity, LoadOtherCharacterCore, LoadDirectPlotsCore,
+        LoadAccommodationTypeCore, LoadInvitesCore, FieldSaveHelper, CommentHelper);

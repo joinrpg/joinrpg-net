@@ -16,7 +16,6 @@ internal class ClaimServiceImpl(
     IUnitOfWork unitOfWork,
     IEmailService emailService,
     FieldSaveHelper fieldSaveHelper,
-    IAccommodationInviteService accommodationInviteService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
@@ -325,7 +324,7 @@ internal class ClaimServiceImpl(
                     DeleteCharacter(ctx);
                 }
 
-                await accommodationInviteService.DeclineAllClaimInvites(claimId);
+                await DeclineAllClaimInvites(ctx);
 
                 _ = ctx.AddComment(
                     ctx.Request.CommentText,
@@ -411,167 +410,154 @@ internal class ClaimServiceImpl(
         return email;
     }
 
-    private async Task<LeaveRoomEmail?> CommonClaimDecline(Claim claim)
+    /// <summary>
+    /// Отклоняет все приглашения к совместному проживанию, в которых участвует заявка, и ставит
+    /// письмо остальным участникам в легаси-очередь.
+    /// </summary>
+    /// <remarks>
+    /// Раньше это делал <c>AccommodationInviteServiceImpl.DeclineAllClaimInvites</c> на собственном
+    /// <c>DbContext</c> и собственным <c>SaveChanges</c> — приглашения коммитились независимо от
+    /// внешней операции. Теперь и запрос, и мутация идут через контекст, значит уезжают в то же
+    /// единственное сохранение (ADR014).
+    /// </remarks>
+    private static async Task DeclineAllClaimInvites(ClaimMutationContext ctx)
     {
-        MarkCharacterChangedIfApproved(claim);
-
-
-        if (claim.Character?.ApprovedClaim == claim)
+        var invites = await ctx.LoadInvitesForClaim();
+        if (invites.Count == 0)
         {
-            claim.Character.ApprovedClaimId = null;
+            return;
         }
 
-        return await ConsiderLeavingRoom(claim);
-    }
-
-    private async Task<LeaveRoomEmail?> ConsiderLeavingRoom(Claim claim)
-    {
-        LeaveRoomEmail? email = null;
-
-        if (claim.AccommodationRequest != null)
+        var recipients = new List<Claim>();
+        foreach (var invite in invites)
         {
-            if (claim.AccommodationRequest.Accommodation != null)
+            invite.IsAccepted = InviteState.Declined;
+            invite.ResolveDescription = ResolveDescription.ClaimCanceled;
+
+            foreach (var participant in new[] { invite.From, invite.To })
             {
-                email = new LeaveRoomEmail()
+                // Сама отклоняемая заявка письма о себе не получает.
+                if (participant is not null
+                    && participant.ClaimId != ctx.Claim.ClaimId
+                    && !recipients.Contains(participant))
                 {
-                    Changed = new[] { claim },
-                    Initiator = await GetCurrentUser(),
-                    ProjectName = claim.Project.ProjectName,
-                    Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
-                    Room = claim.AccommodationRequest.Accommodation,
-                    Text = new MarkdownDbValue(),
-                };
-            }
-
-            _ = claim.AccommodationRequest.Subjects.Remove(claim);
-            if (!claim.AccommodationRequest.Subjects.Any())
-            {
-                _ = UnitOfWork.GetDbSet<AccommodationRequest>().Remove(claim.AccommodationRequest);
+                    recipients.Add(participant);
+                }
             }
         }
 
-        return email;
+        if (recipients.Count == 0)
+        {
+            return;
+        }
+
+        var email = new DeclineInviteEmail
+        {
+            Initiator = ctx.Initiator,
+            ProjectName = ctx.Claim.Project.ProjectName,
+            Recipients = [.. recipients.ToArray().GetInviteSubscriptions()],
+            RecipientClaims = recipients,
+            Text = new MarkdownDbValue(),
+        };
+
+        ctx.AddLegacyEmail(emailService => emailService.Email(email));
     }
 
     /// <inheritdoc />
-    public async Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId)
-    {
-        var claim = await ClaimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
+    public Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId)
+        => characterPropsService.ChangeClaim<int, AccommodationRequest?>(
+            new ClaimIdentification(projectId, claimId),
+            ClaimAccessRequirement.AccommodationChange,
+            ProjectActiveRequirement.MustBeActive,
+            claimId,
+            ctx =>
+            {
+                var acr = ctx.Claim.AccommodationRequest;
 
-        claim = claim.RequestAccess(currentUserAccessor.UserIdentification,
-            Permission.CanSetPlayersAccommodations,
-            claim.ClaimStatus == ClaimStatus.Approved
-                ? ExtraAccessReason.PlayerOrResponsible
-                : ExtraAccessReason.None);
+                // Оба ранних выхода обязаны остаться холостыми: до миграции они возвращали ответ,
+                // ничего не сохраняя.
+                if (acr is null)
+                {
+                    ctx.NothingChanged();
+                    return null;
+                }
 
-        var acr = claim.AccommodationRequest;
-        if (acr is null)
-        {
-            return null;
-        }
-        if (acr.Subjects.Count == 1)
-        {
-            return acr;
-        }
+                if (acr.Subjects.Count == 1)
+                {
+                    ctx.NothingChanged();
+                    return acr;
+                }
 
-        var email = EmailHelpers.CreateFieldsEmailWithExtraData(
-            claim,
-            s => s.AccommodationChange,
-            await GetCurrentUser(),
-            [],
-            "Тип поселения", //TODO[Localize]
-            new PreviousAndNewValue("без поселения", acr.AccommodationType.Name)
-            );
-        var leaveEmail = await ConsiderLeavingRoom(claim);
+                // TODO: восстановить отправку изменений полей, см. ADR014
 
-        acr.Subjects.Remove(claim);
-        claim.AccommodationRequest_Id = null;
-        claim.AccommodationRequest = null;
-        UnitOfWork.GetDbSet<AccommodationRequest>()
-            .Add(
-                new AccommodationRequest
+                var leaveEmail = ConsiderLeavingRoom(ctx);
+
+                ctx.Claim.AccommodationRequest_Id = null;
+                ctx.Claim.AccommodationRequest = null;
+
+                ctx.AddEntity(new AccommodationRequest
                 {
                     ProjectId = projectId,
                     AccommodationTypeId = acr.AccommodationTypeId,
                     IsAccepted = InviteState.Accepted,
-                    Subjects = [claim]
+                    Subjects = [ctx.Claim],
                 });
 
-        await UnitOfWork.SaveChangesAsync();
+                if (leaveEmail is not null)
+                {
+                    ctx.AddLegacyEmail(emailService => emailService.Email(leaveEmail));
+                }
 
-        // Исправить потом отправку изменений
-        //await EmailService.Email(email);
-        if (leaveEmail is not null)
-        {
-            await EmailService.Email(leaveEmail);
-        }
+                return acr;
+            });
 
-        return acr;
-    }
-
-    public async Task<AccommodationRequest> SetAccommodationType(int projectId,
+    public Task<AccommodationRequest> SetAccommodationType(int projectId,
         int claimId,
         int roomTypeId)
-    {
         //todo set first state to Unanswered
-        var claim = await ClaimsRepository.GetClaim(new ClaimIdentification(projectId, claimId)).ConfigureAwait(false);
+        => characterPropsService.ChangeClaimAsync<int, AccommodationRequest>(
+            new ClaimIdentification(projectId, claimId),
+            ClaimAccessRequirement.AccommodationChange,
+            ProjectActiveRequirement.MustBeActive,
+            roomTypeId,
+            async ctx =>
+            {
+                // Player cannot change accommodation type if already checked in
 
-        claim = claim.RequestAccess(currentUserAccessor.UserIdentification,
-            Permission.CanSetPlayersAccommodations,
-            claim?.ClaimStatus == ClaimStatus.Approved
-                ? ExtraAccessReason.PlayerOrResponsible
-                : ExtraAccessReason.None);
+                if (ctx.Claim.AccommodationRequest?.AccommodationTypeId == roomTypeId)
+                {
+                    // Тип уже такой — операции нет, как и до миграции.
+                    ctx.NothingChanged();
+                    return ctx.Claim.AccommodationRequest;
+                }
 
-        // Player cannot change accommodation type if already checked in
+                // Типа поселения нет в ProjectInfo, поэтому он приезжает именованным загрузчиком —
+                // через тот же DbContext, что и мутация. Нужен ради проверки существования.
+                _ = await ctx.LoadAccommodationType(
+                    new AccommodationTypeIdentification(ctx.ProjectInfo.ProjectId, roomTypeId));
 
-        if (claim.AccommodationRequest?.AccommodationTypeId == roomTypeId)
-        {
-            return claim.AccommodationRequest;
-        }
+                // TODO: восстановить отправку изменений полей, см. ADR014
 
-        var newType = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(roomTypeId)
-            .ConfigureAwait(false);
+                var leaveEmail = ConsiderLeavingRoom(ctx);
 
-        if (newType == null)
-        {
-            throw new JoinRpgEntityNotFoundException(roomTypeId,
-                nameof(ProjectAccommodationType));
-        }
+                // TODO: Just change accommodation type if this claim is the only occupant of previous room
+                var accommodationRequest = new AccommodationRequest
+                {
+                    ProjectId = projectId,
+                    Subjects = [ctx.Claim],
+                    AccommodationTypeId = roomTypeId,
+                    IsAccepted = InviteState.Accepted,
+                };
 
-        var email = EmailHelpers.CreateFieldsEmailWithExtraData(claim,
-            s => s.AccommodationChange,
-            await GetCurrentUser(),
-            [],
-            "Тип поселения", //TODO[Localize]
-            new PreviousAndNewValue(newType.Name, claim.AccommodationRequest?.AccommodationType.Name)
-            );
+                ctx.AddEntity(accommodationRequest);
 
+                if (leaveEmail is not null)
+                {
+                    ctx.AddLegacyEmail(emailService => emailService.Email(leaveEmail));
+                }
 
-        var leaveEmail = await ConsiderLeavingRoom(claim);
-
-        // TODO: Just change accommodation type if this claim is the only occupant of previous room
-        var accommodationRequest = new AccommodationRequest
-        {
-            ProjectId = projectId,
-            Subjects = [claim],
-            AccommodationTypeId = roomTypeId,
-            IsAccepted = InviteState.Accepted,
-        };
-
-        _ = UnitOfWork
-            .GetDbSet<AccommodationRequest>()
-            .Add(accommodationRequest);
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
-        // Исправить потом отправку изменений
-        // await EmailService.Email(email);
-        if (leaveEmail != null)
-        {
-            await EmailService.Email(leaveEmail);
-        }
-
-        return accommodationRequest;
-    }
+                return accommodationRequest;
+            });
 
 
     public Task DeclineByPlayer(ClaimIdentification claimId, string commentText)
@@ -587,9 +573,9 @@ internal class ClaimServiceImpl(
                 // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
                 ctx.Claim.PlayerAllowedSenstiveData = false;
 
-                await accommodationInviteService.DeclineAllClaimInvites(claimId);
+                await DeclineAllClaimInvites(ctx);
 
-                var roomEmail = await CommonClaimDecline(ctx.Claim);
+                var roomEmail = CommonClaimDecline(ctx);
 
                 _ = ctx.AddComment(
                     ctx.Request,

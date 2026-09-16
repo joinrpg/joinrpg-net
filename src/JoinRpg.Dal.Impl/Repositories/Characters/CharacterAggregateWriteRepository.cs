@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Dal.Impl.Repositories.Characters;
 
@@ -178,6 +179,32 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                 .Include(e => e.TargetCharacters)
                 .Include(e => e.TargetGroups)
                 .Where(e => e.TargetCharacters.Any(ch => ch.CharacterId == characterIntId))
+                .ToListAsync();
+        }
+
+        public async Task<ProjectAccommodationType> LoadAccommodationType(AccommodationTypeIdentification accommodationTypeId)
+        {
+            var typeIntId = accommodationTypeId.AccommodationTypeId;
+            var projectIntId = accommodationTypeId.ProjectId.Value;
+            return await ctx.Set<ProjectAccommodationType>()
+                    .SingleOrDefaultAsync(t => t.Id == typeIntId && t.ProjectId == projectIntId)
+                ?? throw new JoinRpgEntityNotFoundException(typeIntId, nameof(ProjectAccommodationType));
+        }
+
+        /// <summary>
+        /// Повторяет запрос <c>AccommodationInviteServiceImpl.DeclineAllClaimInvites</c>, но на
+        /// <c>DbContext</c> этого хэндла. Заявки-участницы приезжают вместе с игроками: по ним
+        /// строится письмо, и второго запроса за получателями больше нет.
+        /// </summary>
+        public async Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim(ClaimIdentification claimId)
+        {
+            var claimIntId = claimId.ClaimId;
+            var projectIntId = claimId.ProjectId.Value;
+            return await ctx.Set<AccommodationInvite>()
+                .Include(i => i.From.Player)
+                .Include(i => i.To.Player)
+                .Where(i => i.ProjectId == projectIntId)
+                .Where(i => i.ToClaimId == claimIntId || i.FromClaimId == claimIntId)
                 .ToListAsync();
         }
     }
