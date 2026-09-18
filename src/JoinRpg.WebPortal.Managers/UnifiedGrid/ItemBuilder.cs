@@ -1,8 +1,8 @@
 using JoinRpg.Common.WebComponents;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Models.Characters;
@@ -15,49 +15,59 @@ namespace JoinRpg.WebPortal.Managers.UnifiedGrid;
 
 public static class ItemBuilder
 {
-    public static UgItemForCaptainViewModel? BuildItemForCaptain(UgDto ugItem, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo)
+    /// <param name="claims">
+    /// Заявки, которые надо показать: агрегат несёт их все, а грид показывает отобранные фильтром.
+    /// </param>
+    public static UgItemForCaptainViewModel? BuildItemForCaptain(
+        CharacterInfo character,
+        IReadOnlyCollection<CharacterClaimInfo> claims,
+        ICurrentUserAccessor currentUserId,
+        ProjectInfo projectInfo)
     {
-        var accessArguments = AccessArgumentsFactory.Create(ugItem, currentUserId, projectInfo) with { IsCapitan = true };
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUserId) with { IsCapitan = true };
 
         if (!accessArguments.CanViewCharacterName)
         {
             return null;
         }
 
-        var character = new UgCharacterForCaptainViewModel(
+        var characterViewModel = new UgCharacterForCaptainViewModel(
            new CharacterLinkSlimViewModel(
-               ugItem.CharacterId, ugItem.CharacterName, ugItem.IsActive, ViewModeSelector.Create(ugItem.CharacterTypeInfo.IsPublic, accessArguments.CanViewCharacterName)),
+               character.Id, character.CharacterName, character.IsActive, ViewModeSelector.Create(character.IsPublic, accessArguments.CanViewCharacterName)),
            new CharacterApplyViewModel(
-               ugItem.CharacterId,
-               ugItem.GetBusyStatus(),
-               ugItem.CharacterTypeInfo.SlotLimit,
-               ugItem.CharacterTypeInfo.IsHot),
+               character.Id,
+               character.GetBusyStatus(),
+               character.CharacterTypeInfo.SlotLimit,
+               character.CharacterTypeInfo.IsHot),
            [] // TODO
            );
 
         return new UgItemForCaptainViewModel(
-            character,
-            [.. ugItem.Claims.Select(x => BuildClaimItem(x, projectInfo, accessArguments))]
+            characterViewModel,
+            [.. claims.Select(claim => BuildClaimItem(character, claim, projectInfo, accessArguments))]
             );
     }
 
-    private static UgClaimForCaptainViewModel BuildClaimItem(UgClaim ugClaim, ProjectInfo projectInfo, AccessArguments accessArguments)
+    private static UgClaimForCaptainViewModel BuildClaimItem(
+        CharacterInfo character,
+        CharacterClaimInfo claim,
+        ProjectInfo projectInfo,
+        AccessArguments accessArguments)
     {
-        var claim = ugClaim.Claim;
         var lastModifiedAt = ClaimListBuilder.GetLastCommentTime(claim, accessArguments);
 
-        var respMaster = projectInfo.Masters.Single(x => x.UserId == claim.ResponsibleMasterUserId).UserInfo;
+        var respMaster = projectInfo.GetMasterById(claim.ResponsibleMasterId).UserInfo;
 
         return new UgClaimForCaptainViewModel(
-            UserLinks.Create(claim.Player.ToUserInfoHeader(), ViewMode.Show),
+            UserLinks.Create(claim.Player, ViewMode.Show),
             ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,
             claim.CreateDate,
             claim.CheckInDate,
             UserLinks.Create(respMaster, ViewMode.Show),
-            ugClaim.CalculateClaimBalance(projectInfo),
-            claim.GetId(),
-            claim.Player.FullName
+            character.CalculateClaimBalance(claim, projectInfo),
+            claim.ClaimId,
+            claim.Player.DisplayName.FullName
             );
     }
 }

@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
@@ -103,6 +104,31 @@ public static class ClaimListBuilder
         }
 
         return (lastComment.At, lastComment.By.ToUserInfoHeader());
+    }
+
+    /// <summary>
+    /// То же, что для EF-сущности, но поверх доменного агрегата (ADR013).
+    /// </summary>
+    public static DateTime GetLastCommentTime(CharacterClaimInfo claim, AccessArguments accessArguments)
+    {
+        var lastCommentDate = claim.CreateDate;
+
+        if (claim.LastPlayerCommentAt is not null && claim.LastPlayerCommentAt > lastCommentDate)
+        {
+            lastCommentDate = claim.LastPlayerCommentAt.Value.DateTime;
+        }
+
+        if (claim.LastVisibleMasterCommentAt is not null && claim.LastVisibleMasterCommentAt > lastCommentDate)
+        {
+            lastCommentDate = claim.LastVisibleMasterCommentAt.Value.DateTime;
+        }
+
+        if (accessArguments.MasterAccess && claim.LastMasterCommentAt is not null && claim.LastMasterCommentAt > lastCommentDate)
+        {
+            lastCommentDate = claim.LastMasterCommentAt.Value.DateTime;
+        }
+
+        return lastCommentDate;
     }
 
     public static DateTime GetLastCommentTime(Claim claim, AccessArguments accessArguments)
