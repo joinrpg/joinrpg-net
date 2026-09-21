@@ -65,11 +65,11 @@
         <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.7.1" />
         <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="7.7.1" />
         <PackageVersion Include="OpenIddict.Validation.SystemNetHttp" Version="7.7.1" />
-        <PackageVersion Include="OpenTelemetry.Api" Version="1.18.0" />
+        <PackageVersion Include="OpenTelemetry.Api" Version="1.19.1" />
         <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.11.0-beta.1" />
-        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.18.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.18.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.18.0" />
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.19.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
         <PackageVersion Include="Serilog" Version="4.4.0" />
         <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
         <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
