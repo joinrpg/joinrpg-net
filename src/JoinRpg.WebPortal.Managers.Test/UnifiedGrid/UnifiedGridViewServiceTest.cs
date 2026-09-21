@@ -24,7 +24,7 @@ public class UnifiedGridViewServiceTest
         IUnifiedGridClient service = new UnifiedGridViewService(
             new FakeCurrentUserAccessor { UserIdentification = new UserIdentification(Mock.Master.UserId) },
             new FakeCaptainRulesRepository(Mock),
-            new FakeProjectMetadataRepository(Mock.ProjectInfo),
+            new FakeProjectMetadataRepository(Mock),
             new FakeCharacterInfoRepository(Mock));
 
         return await service.GetForCaptain(Mock.ProjectInfo.ProjectId, filter);
@@ -146,7 +146,7 @@ public class UnifiedGridViewServiceTest
         IUnifiedGridClient service = new UnifiedGridViewService(
             new FakeCurrentUserAccessor { UserIdentification = new UserIdentification(Mock.Player.UserId) },
             new FakeCaptainRulesRepository(Mock, hasRules: false),
-            new FakeProjectMetadataRepository(Mock.ProjectInfo),
+            new FakeProjectMetadataRepository(Mock),
             new FakeCharacterInfoRepository(Mock));
 
         (await service.GetForCaptain(Mock.ProjectInfo.ProjectId, UgStatusFilterView.Active)).ShouldBeEmpty();
@@ -181,17 +181,6 @@ public class UnifiedGridViewServiceTest
         public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfos(IReadOnlyCollection<CharacterIdentification> characterIds) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId) => throw new NotImplementedException();
-    }
-
-    private sealed class FakeProjectMetadataRepository(ProjectInfo projectInfo) : IProjectMetadataRepository
-    {
-        public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
-            => Task.FromResult(projectInfo);
-
-        public Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-            => Task.FromResult(new DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), [], false));
-
-        public void PrimeCache(ProjectInfo projectInfo) { }
     }
 
     private sealed class FakeCurrentUserAccessor : ICurrentUserAccessor

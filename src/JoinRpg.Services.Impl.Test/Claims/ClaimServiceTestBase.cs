@@ -4,7 +4,6 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
-using JoinRpg.Services.Impl.Test.Projects;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging.Abstractions;
 

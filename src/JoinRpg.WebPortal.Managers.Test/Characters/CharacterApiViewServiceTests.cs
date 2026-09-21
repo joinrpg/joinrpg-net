@@ -138,17 +138,6 @@ public class CharacterApiViewServiceTests
         public Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet) => throw new NotImplementedException();
     }
 
-    private sealed class FakeProjectMetadataRepository(ProjectInfo projectInfo) : IProjectMetadataRepository
-    {
-        public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
-            => Task.FromResult(projectInfo);
-
-        public Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-            => Task.FromResult(new DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), [], false));
-
-        public void PrimeCache(ProjectInfo projectInfo) { }
-    }
-
     private sealed class FakeCurrentUserAccessor : ICurrentUserAccessor
     {
         public UserIdentification UserIdentification { get; set; } = new UserIdentification(0);
