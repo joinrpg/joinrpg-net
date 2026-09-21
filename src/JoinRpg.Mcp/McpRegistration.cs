@@ -1,6 +1,8 @@
 using JoinRpg.Common.WebInfrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.AspNetCore.Authentication;
 using OpenIddict.Validation.AspNetCore;
 
@@ -10,6 +12,9 @@ public static class McpRegistration
 {
     /// <summary>Именованная политика авторизации для /mcp — не трогает DefaultPolicy сайта.</summary>
     public const string AuthorizationPolicy = "Mcp";
+
+    /// <summary>Имя health check, по которому видно, включён ли MCP в этом окружении.</summary>
+    public const string McpHealthCheckName = "mcp";
 
     /// <summary>
     /// Portal как resource server (ADR012 §5): интроспекция токенов через IdPortal, никакой
@@ -22,7 +27,22 @@ public static class McpRegistration
         McpResourceOptions? mcpOptions,
         JoinRpgHostNamesOptions hostNames)
     {
-        if (string.IsNullOrEmpty(mcpOptions?.ClientId) || string.IsNullOrEmpty(mcpOptions.ClientSecret))
+        var enabled = !string.IsNullOrEmpty(mcpOptions?.ClientId) && !string.IsNullOrEmpty(mcpOptions.ClientSecret);
+
+        // Регистрируется всегда, в том числе когда MCP выключен: иначе «выключен» и «сломан»
+        // снаружи неотличимы — оба дают 404 на /mcp.
+        //
+        // Выключенный MCP — Degraded, а не Healthy: это не нормальное состояние, а
+        // недонастроенное окружение. При этом Degraded не отдаёт 503 (по умолчанию 200) и
+        // тегом ready не помечен, так что ни liveness, ни readiness не ломает — инстанс
+        // продолжает обслуживать сайт, у которого просто нет MCP.
+        services.AddHealthChecks().AddCheck(
+            McpHealthCheckName,
+            () => enabled
+                ? HealthCheckResult.Healthy("MCP включён, /mcp зарегистрирован")
+                : HealthCheckResult.Degraded("MCP выключен: не заданы Mcp:ClientId/Mcp:ClientSecret"));
+
+        if (!enabled)
         {
             return services;
         }
@@ -80,6 +100,15 @@ public static class McpRegistration
         if (app.Services.GetService<McpEnabledMarker>() is not null)
         {
             app.MapMcp("/mcp").RequireAuthorization(AuthorizationPolicy);
+            app.Logger.LogInformation("MCP включён: эндпоинт /mcp зарегистрирован (ADR012)");
+        }
+        else
+        {
+            // Без этой строчки выключенный MCP выглядит снаружи ровно как сломанный — 404 и
+            // тишина в логах. Именно так он и уехал на dev незамеченным.
+            app.Logger.LogWarning(
+                "MCP выключен: не заданы Mcp:ClientId/Mcp:ClientSecret, эндпоинт /mcp не зарегистрирован. "
+                + "Resource-клиента заводят через админку IdPortal («Создать resource server»).");
         }
 
         return app;
