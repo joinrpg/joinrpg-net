@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Services.Impl.Test.Claims;
 
@@ -9,11 +10,6 @@ namespace JoinRpg.Services.Impl.Test.Claims;
 /// </summary>
 public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
 {
-    private ClaimIdentification ClaimId(DataModel.Claim claim) => new(ProjectId, claim.ClaimId);
-
-    private CharacterIdentification CharacterId(DataModel.Character character)
-        => new(ProjectId, character.CharacterId);
-
     private UserIdentification InitiatorId => new(mock.Master.UserId);
 
     [Fact]
@@ -21,7 +17,7 @@ public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
     {
         var claim = mock.CreateClaim(mock.Character, mock.Player);
 
-        var handle = await WriteRepository.LoadClaimForUpdate(ClaimId(claim), InitiatorId);
+        var handle = await WriteRepository.LoadClaimForUpdate(claim.GetId(), InitiatorId);
 
         // Конструктор CharacterInfo требует ровно тот же экземпляр ProjectInfo (ADR013).
         ReferenceEquals(handle.CharacterInfo.ProjectInfo, handle.ProjectInfo).ShouldBeTrue();
@@ -32,9 +28,9 @@ public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
     {
         var claim = mock.CreateClaim(mock.Character, mock.Player);
 
-        var handle = await WriteRepository.LoadClaimForUpdate(ClaimId(claim), InitiatorId);
+        var handle = await WriteRepository.LoadClaimForUpdate(claim.GetId(), InitiatorId);
 
-        var fromAggregate = handle.CharacterInfo.Claims.Single(c => c.ClaimId == ClaimId(claim));
+        var fromAggregate = handle.CharacterInfo.Claims.Single(c => c.ClaimId == claim.GetId());
         ReferenceEquals(handle.ClaimInfo, fromAggregate).ShouldBeTrue();
     }
 
@@ -42,7 +38,7 @@ public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
     public async Task LoadOtherCharacterThrowsWhenCharacterMissing()
     {
         var claim = mock.CreateClaim(mock.Character, mock.Player);
-        var handle = await WriteRepository.LoadClaimForUpdate(ClaimId(claim), InitiatorId);
+        var handle = await WriteRepository.LoadClaimForUpdate(claim.GetId(), InitiatorId);
 
         _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
             () => handle.LoadOtherCharacter(new CharacterIdentification(ProjectId, 100500)));
@@ -53,12 +49,12 @@ public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
     {
         var claim = mock.CreateClaim(mock.Character, mock.Player);
         var other = mock.CreateCharacter("Other character");
-        var handle = await WriteRepository.LoadClaimForUpdate(ClaimId(claim), InitiatorId);
+        var handle = await WriteRepository.LoadClaimForUpdate(claim.GetId(), InitiatorId);
 
-        var (entity, info) = await handle.LoadOtherCharacter(CharacterId(other));
+        var (entity, info) = await handle.LoadOtherCharacter(other.GetId());
 
         entity.ShouldBeSameAs(other);
-        info.Id.ShouldBe(CharacterId(other));
+        info.Id.ShouldBe(other.GetId());
         ReferenceEquals(info.ProjectInfo, handle.ProjectInfo).ShouldBeTrue();
     }
 
@@ -66,7 +62,7 @@ public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
     public async Task RefreshProjectInfoReturnsNewInstance()
     {
         var claim = mock.CreateClaim(mock.Character, mock.Player);
-        var handle = await WriteRepository.LoadClaimForUpdate(ClaimId(claim), InitiatorId);
+        var handle = await WriteRepository.LoadClaimForUpdate(claim.GetId(), InitiatorId);
         var before = handle.ProjectInfo;
 
         var after = await handle.RefreshProjectInfo();

@@ -15,7 +15,7 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 internal sealed class FakeClaimNotificationService : IClaimNotificationService
 {
     /// <summary>Все отправленные уведомления в порядке отправки.</summary>
-    public List<object> Sent { get; } = [];
+    public List<IClaimNotification> Sent { get; } = [];
 
     public List<ClaimSimpleChangedNotification> SimpleChanged { get; } = [];
 
