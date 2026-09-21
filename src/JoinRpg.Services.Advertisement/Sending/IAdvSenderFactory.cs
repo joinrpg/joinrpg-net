@@ -7,4 +7,11 @@ internal interface IAdvSenderFactory
     /// Возвращает null, если вид канала не поддерживается или его настройки некорректны.
     /// </summary>
     ISingleHotRoleSender? Create(AdvertisementChannelInfo channel);
+
+    /// <summary>
+    /// Определяет вид канала по <paramref name="channel"/>.Settings и строит отправителя дайджеста
+    /// недавно открывшихся проектов. Возвращает null, если вид канала не поддерживается или его
+    /// настройки некорректны.
+    /// </summary>
+    INewlyOpenedProjectsDigestSender? CreateNewlyOpenedProjectsDigestSender(AdvertisementChannelInfo channel);
 }

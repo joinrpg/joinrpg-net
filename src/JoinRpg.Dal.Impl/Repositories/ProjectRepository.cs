@@ -178,18 +178,25 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return [.. result.Select(BuildProjectShortInfo)];
     }
 
+    private IQueryable<Project> PublicOpenProjects =>
+        AllProjects
+            .Where(ProjectPredicates.Status(ProjectLifecycleStatus.ActiveClaimsOpen))
+            .Where(ProjectPredicates.Public());
+
+    private static ProjectAdvertisementCandidate ToAdvertisementCandidate(int projectId, string projectName, int activeClaimsCount, int advertisementCount) =>
+        new(new ProjectIdentification(projectId), new ProjectName(projectName), activeClaimsCount, advertisementCount);
+
     async Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> IProjectRepository.GetPublicProjectsOpenForHotRoleAdvertisement()
     {
         var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
 
-        var query = AllProjects
-            .Where(ProjectPredicates.Status(ProjectLifecycleStatus.ActiveClaimsOpen))
-            .Where(ProjectPredicates.Public())
+        var query = PublicOpenProjects
             .Where(ProjectPredicates.HasFutureKogdaIgraGame())
             .Where(p => p.Characters.AsQueryable().Any(CharacterPredicates.Hot()))
             .Select(p => new
             {
                 p.ProjectId,
+                p.ProjectName,
                 ActiveClaimsCount = p.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
                 AdvertisementCount = Ctx.AdvertisementLogEntriesSet.Count(e =>
                     e.ProjectId == p.ProjectId && e.Status == (int)AdvertisementLogStatus.Sent),
@@ -197,10 +204,31 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         var result = await query.ToListAsync();
 
-        return [.. result.Select(x => new ProjectAdvertisementCandidate(
-            new ProjectIdentification(x.ProjectId),
-            x.ActiveClaimsCount,
-            x.AdvertisementCount))];
+        return [.. result.Select(x => ToAdvertisementCandidate(x.ProjectId, x.ProjectName, x.ActiveClaimsCount, x.AdvertisementCount))];
+    }
+
+    async Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> IProjectRepository.GetPublicProjectsOpenedForClaimsInLastWeek()
+    {
+        var weekAgo = DateTime.UtcNow.AddDays(-7);
+        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+
+        // Ранжирование между собой — вне репозитория, той же формулой, что и для горячих ролей
+        // (AdvertisementGameRanking), поэтому здесь порядок не важен.
+        var query = PublicOpenProjects
+            .Select(p => new
+            {
+                p.ProjectId,
+                p.ProjectName,
+                EarliestClaimDate = p.Claims.Select(c => (DateTime?)c.CreateDate).Min(),
+                ActiveClaimsCount = p.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+                AdvertisementCount = Ctx.AdvertisementLogEntriesSet.Count(e =>
+                    e.ProjectId == p.ProjectId && e.Status == (int)AdvertisementLogStatus.Sent),
+            })
+            .Where(x => x.EarliestClaimDate == null || x.EarliestClaimDate >= weekAgo);
+
+        var result = await query.ToListAsync();
+
+        return [.. result.Select(x => ToAdvertisementCandidate(x.ProjectId, x.ProjectName, x.ActiveClaimsCount, x.AdvertisementCount))];
     }
 
     Task<ProjectPersonalizedInfo[]> IProjectRepository.GetProjectsByIds(UserIdentification? userId, ProjectIdentification[] ids)

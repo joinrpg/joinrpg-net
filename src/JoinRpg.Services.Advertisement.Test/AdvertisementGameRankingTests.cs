@@ -25,5 +25,5 @@ public class AdvertisementGameRankingTests
     }
 
     private static ProjectAdvertisementCandidate MakeCandidate(int projectId, int activeClaimsCount, int advertisementCount) =>
-        new(new ProjectIdentification(projectId), activeClaimsCount, advertisementCount);
+        new(new ProjectIdentification(projectId), new ProjectName("Тест"), activeClaimsCount, advertisementCount);
 }

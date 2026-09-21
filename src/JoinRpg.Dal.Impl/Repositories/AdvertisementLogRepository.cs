@@ -60,10 +60,32 @@ internal class AdvertisementLogRepository(MyDbContext ctx) : IAdvertisementLogRe
             ScheduleId = entry.ScheduleId.Value,
             Method = (int)entry.Method,
             ProjectId = entry.ProjectId.Value,
-            CharacterId = entry.CharacterId.CharacterId,
+            CharacterId = entry.CharacterId?.CharacterId,
             Status = (int)entry.Status,
             SentAt = entry.SentAt,
         });
+        await ctx.SaveChangesAsync();
+    }
+
+    public async Task RecordAdvertisementBatch(
+        AdvertisementScheduleIdentification scheduleId,
+        AdvertisementMethod method,
+        AdvertisementLogStatus status,
+        DateTimeOffset sentAt,
+        IReadOnlyCollection<ProjectIdentification> projectIds)
+    {
+        foreach (var projectId in projectIds)
+        {
+            _ = ctx.AdvertisementLogEntriesSet.Add(new AdvertisementLogEntryEntity
+            {
+                ScheduleId = scheduleId.Value,
+                Method = (int)method,
+                ProjectId = projectId.Value,
+                CharacterId = null,
+                Status = (int)status,
+                SentAt = sentAt,
+            });
+        }
         await ctx.SaveChangesAsync();
     }
 }

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DomainTypes.Advertisement;
 
@@ -20,6 +21,7 @@ public partial record AdvertisementScheduleIdentification(int Value);
 public enum AdvertisementMethod
 {
     SingleHotRole = 1,
+    NewlyOpenedProjectsDigest = 2,
 }
 
 public record AdvertisementScheduleInfo(
@@ -45,11 +47,12 @@ public record AdvertisementLogEntryInfo(
     AdvertisementScheduleIdentification ScheduleId,
     AdvertisementMethod Method,
     ProjectIdentification ProjectId,
-    CharacterIdentification CharacterId,
+    CharacterIdentification? CharacterId,
     AdvertisementLogStatus Status,
     DateTimeOffset SentAt);
 
 public record ProjectAdvertisementCandidate(
     ProjectIdentification ProjectId,
+    ProjectName ProjectName,
     int ActiveClaimsCount,
     int AdvertisementCount);

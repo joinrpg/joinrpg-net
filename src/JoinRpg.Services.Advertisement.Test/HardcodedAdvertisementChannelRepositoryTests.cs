@@ -9,7 +9,7 @@ public class HardcodedAdvertisementChannelRepositoryTests
     {
         var repository = new HardcodedAdvertisementChannelRepository();
 
-        var channel = await repository.GetChannel(HardcodedAdvertisementChannelRepository.HotRoleChannelId);
+        var channel = await repository.GetChannel(HardcodedAdvertisementChannelRepository.TestChannelId);
 
         channel.ShouldNotBeNull();
         channel.BoundProjectId.ShouldBeNull();

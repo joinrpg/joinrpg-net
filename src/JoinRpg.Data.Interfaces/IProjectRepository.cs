@@ -48,6 +48,13 @@ public interface IProjectRepository : IDisposable
     /// по ADR010 §4.
     /// </summary>
     Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement();
+
+    /// <summary>
+    /// Публичные проекты, принимающие заявки, у которых самая ранняя заявка подана не позднее недели
+    /// назад, либо заявок ещё не было вовсе (эвристика для "недавно открывшихся" проектов —
+    /// настоящей даты открытия приёма заявок пока нигде не хранится).
+    /// </summary>
+    Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek();
 }
 
 public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived)
