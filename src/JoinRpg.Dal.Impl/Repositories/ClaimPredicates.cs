@@ -58,16 +58,4 @@ internal static class ClaimPredicates
             .And(GetInGroupPredicate(ids));
         return builder;
     }
-
-    internal static Expression<Func<Claim, bool>> ByUgStatus(UgStatusSpec spec)
-    {
-        return spec switch
-        {
-            UgStatusSpec.Active => GetClaimStatusPredicate(ClaimStatusSpec.Active),
-            UgStatusSpec.Vacant => GetClaimStatusPredicate(ClaimStatusSpec.Active),
-            UgStatusSpec.Discussion => GetClaimStatusPredicate(ClaimStatusSpec.Active),
-            UgStatusSpec.Archive => GetClaimStatusPredicate(ClaimStatusSpec.InActive),
-            _ => throw new NotImplementedException(),
-        };
-    }
 }
