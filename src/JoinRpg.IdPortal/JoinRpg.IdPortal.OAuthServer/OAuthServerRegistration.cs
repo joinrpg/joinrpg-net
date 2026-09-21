@@ -65,6 +65,10 @@ public static class OAuthServerRegistration
                     .SetAuthorizationEndpointUris("connect/authorize")
                     .SetTokenEndpointUris("connect/token") // Внутри фреймворка
                     .SetUserInfoEndpointUris("connect/user_info")
+                    // Portal проверяет MCP-токены интроспекцией, а не локально по JWKS
+                    // (ADR012 §5 — ради мгновенного отзыва). Вызывать эндпоинт может только
+                    // клиент с Permissions.Endpoints.Introspection, см. OAuthClientService.
+                    .SetIntrospectionEndpointUris("connect/introspect")
                     ;
 
 
