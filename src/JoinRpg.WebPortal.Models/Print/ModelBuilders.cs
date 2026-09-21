@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.ProjectCommon;
@@ -19,7 +20,7 @@ public static class ModelBuilders
             CharacterId: character.GetId(),
             PlayerDisplayName: approvedClaim?.Player?.ExtractDisplayName(),
             CharacterName: character.CharacterName,
-            ResponsibleMaster: projectInfo.Masters.First(m => m.UserId == respMasterId).ToUserLinkViewModel(),
+            ResponsibleMaster: new UserLinkViewModel(projectInfo.Masters.First(m => m.UserId == respMasterId).UserInfo),
             Groups: [.. character.GetIntrestingGroupsForDisplayToTop(projectInfo)
             .Where(g => g.IsPublic)
             .Select(g => new CharacterGroupLinkSlimViewModel(g))],

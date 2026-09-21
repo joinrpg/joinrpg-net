@@ -1,8 +1,8 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ResponsibleMasterRules;
@@ -23,7 +23,7 @@ internal class ResponsibleMasterRuleViewService(
         var defaultMaster = projectInfo.GetDefaultResponsibleMaster();
         sortedGroups.Add(
             ResponsibleMasterRuleViewModel.CreateSpecial(
-                UserLinks.Create(defaultMaster.UserInfo)
+                new UserLinkViewModel(defaultMaster.UserInfo)
             ));
 
         return new ResponsibleMasterRuleListViewModel(

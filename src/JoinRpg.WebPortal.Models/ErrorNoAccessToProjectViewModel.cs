@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Masters;
 
@@ -15,6 +16,6 @@ public static class NoAccessToProjectViewModelBuilder
             permission == Permission.None ? null : new PermissionBadgeViewModel(permission, Value: false),
             [.. project.Masters
                 .Where(master => master.Permissions.Contains(Permission.CanGrantRights))
-                .Select(master => master.ToUserLinkViewModel())]);
+                .Select(master => new UserLinkViewModel(master.UserInfo))]);
     }
 }

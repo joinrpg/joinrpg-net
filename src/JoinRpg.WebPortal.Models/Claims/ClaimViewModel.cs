@@ -11,7 +11,6 @@ using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Claims;
 using JoinRpg.Web.Models.Plot;
-using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models;
 
@@ -114,7 +113,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             ExtraAccessReason.PlayerOrResponsible);
         IsMyClaim = claim.PlayerUserId == currentUser.UserId;
         Player = claim.Player;
-        PlayerLink = UserLinks.Create(playerInfo, ViewMode.Show);
+        PlayerLink = new UserLinkViewModel(playerInfo.ToUserInfoHeader());
         ProjectName = claim.Project.ProjectName;
         Status = ClaimStatusBuilders.CreateFullStatus(claim, AccessArgumentsFactory.Create(claim, currentUser, projectInfo));
         CharacterId = claim.CharacterId;

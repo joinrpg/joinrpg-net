@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Helpers;
 
@@ -22,6 +23,8 @@ public record class UserInfo(
     string? RegistrationAddress = null)
 {
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
+
+    public UserInfoHeader ToUserInfoHeader() => new(UserId, DisplayName);
 
     // Не реализовано
     public bool PhoneNumberConfirmed { get; } = false;

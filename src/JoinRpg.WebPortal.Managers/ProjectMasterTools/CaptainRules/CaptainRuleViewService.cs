@@ -1,8 +1,8 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.CaptainRules;
@@ -25,7 +25,7 @@ internal class CaptainRuleViewService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var ruleViewModels = rules.Select(rule =>
-                new CaptainRuleViewModel(rule, projectInfo.Groups[rule.CharacterGroup].Name, UserLinks.Create(users[rule.Player])))
+                new CaptainRuleViewModel(rule, projectInfo.Groups[rule.CharacterGroup].Name, new UserLinkViewModel(users[rule.Player])))
             .ToList();
 
         return new CaptainRuleListViewModel(

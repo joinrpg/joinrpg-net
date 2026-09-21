@@ -10,7 +10,6 @@ using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Models.Claims;
-using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
@@ -25,17 +24,17 @@ public static class ClaimListBuilder
 
         return new ClaimListItemViewModel(
             claim.Character.CharacterName,
-            UserLinks.Create(claim.Player.ToUserInfoHeader(), ViewMode.Show),
+            new UserLinkViewModel(claim.Player.ToUserInfoHeader()),
             projectInfo.ProjectName,
             ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,
             claim.CreateDate,
             claim.CheckInDate,
-            UserLinks.Create(projectInfo.GetMasterById(new UserIdentification(claim.ResponsibleMasterUserId)).UserInfo, ViewMode.Show),
+            new UserLinkViewModel(projectInfo.GetMasterById(new UserIdentification(claim.ResponsibleMasterUserId)).UserInfo),
             FeePaid: balance.FeePaid,
             FeeDue: balance.FeeDue,
             TotalFee: balance.TotalFee,
-            UserLinks.Create(lastModifiedBy, ViewMode.Show),
+            new UserLinkViewModel(lastModifiedBy),
             claim.GetId(),
             claimValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList(),
             unreadComments.GetValueOrDefault(claim.CommentDiscussionId),
@@ -62,17 +61,17 @@ public static class ClaimListBuilder
 
         return new ClaimListItemForExportViewModel(
             claim.Character.CharacterName,
-            UserLinks.Create(claim.Player.GetUserInfo(), ViewMode.Show),
+            new UserLinkViewModel(claim.Player.GetUserInfo().ToUserInfoHeader()),
             projectInfo.ProjectName,
             ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,
             claim.CreateDate,
             claim.CheckInDate,
-            UserLinks.Create(projectInfo.GetMasterById(new UserIdentification(claim.ResponsibleMasterUserId)).UserInfo, ViewMode.Show),
+            new UserLinkViewModel(projectInfo.GetMasterById(new UserIdentification(claim.ResponsibleMasterUserId)).UserInfo),
             FeePaid: balance.FeePaid,
             FeeDue: balance.FeeDue,
             TotalFee: balance.TotalFee,
-            UserLinks.Create(lastModifiedBy, ViewMode.Show),
+            new UserLinkViewModel(lastModifiedBy),
             claim.GetId(),
             claim.AccommodationRequest?.AccommodationType.Name,
             claim.AccommodationRequest?.Accommodation?.Name,
