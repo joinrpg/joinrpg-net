@@ -653,9 +653,3 @@ public class FieldSaveHelperTest
         mock.Character.Description.Contents.ShouldBe("Написано руками");
     }
 }
-
-public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator
-{
-    public string? CreateDefaultValue(Claim? claim, FieldWithValue feld) => null;
-    public string? CreateDefaultValue(Character? character, FieldWithValue field) => null;
-}

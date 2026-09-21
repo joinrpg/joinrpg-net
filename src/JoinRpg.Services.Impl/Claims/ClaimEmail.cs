@@ -12,6 +12,18 @@ public enum ClaimOperationType
     MasterSecretChange,
 }
 
+/// <summary>
+/// Общее у всех уведомлений по заявке: к какой заявке относится и текст события. Нужен, чтобы
+/// разнотипные уведомления одной операции можно было сложить в одну очередь и разослать в порядке
+/// добавления (ADR014).
+/// </summary>
+public interface IClaimNotification
+{
+    ClaimIdentification ClaimId { get; }
+
+    NotificationEventTemplate Text { get; }
+}
+
 public record class ClaimSimpleChangedNotification(
     ClaimIdentification ClaimId,
     CommentExtraAction? CommentExtraAction,                                 // Не нравится, что тут nullable
@@ -24,7 +36,7 @@ public record class ClaimSimpleChangedNotification(
     UserInfoHeader? PaymentOwner = null,
     UserInfoHeader? ParentCommentAuthor = null,
     IReadOnlyCollection<FieldWithPreviousAndNewValue>? UpdatedFields = null
-    )
+    ) : IClaimNotification
 {
     /// <summary>
     /// Идентификатор комментария становится известен только после сохранения в базу,
@@ -41,5 +53,5 @@ public record class ClaimOnlinePaymentNotification(
     UserInfoHeader Player,
     NotificationEventTemplate Text,
     FinanceOperationIdentification FinanceOperationId
-    );
+    ) : IClaimNotification;
 
