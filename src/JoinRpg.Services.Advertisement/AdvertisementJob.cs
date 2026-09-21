@@ -16,6 +16,7 @@ internal class AdvertisementJob(
     ILogger<AdvertisementJob> logger) : IDailyJob
 {
     private const int MinOtherAdvertisementsBetweenRepeats = 3;
+    private const int MaxProjectsInDigest = 10;
 
     public async Task RunOnce(CancellationToken cancellationToken)
     {
@@ -57,6 +58,18 @@ internal class AdvertisementJob(
                     {
                         await ProcessCommonSingleHotRole(schedule, sender);
                     }
+                    break;
+                case AdvertisementMethod.NewlyOpenedProjectsDigest:
+                    var digestSender = advSenderFactory.CreateNewlyOpenedProjectsDigestSender(schedule.Channel);
+                    if (digestSender is null)
+                    {
+                        logger.LogWarning(
+                            "Расписание {scheduleId}: канал {channelId} не поддерживается (неизвестный вид или некорректные настройки), пропускаем",
+                            schedule.ScheduleId, schedule.Channel.ChannelId);
+                        break;
+                    }
+
+                    await ProcessNewlyOpenedProjectsDigest(schedule, digestSender);
                     break;
                 default:
                     logger.LogWarning(
@@ -106,29 +119,8 @@ internal class AdvertisementJob(
     /// <returns>true, если для проекта была выбрана и отправлена роль; false — если проект не подошёл (не открыт для рекламы, нет карточки КогдаИгры в будущем или горячих ролей).</returns>
     private async Task<bool> TryAdvertiseProject(ProjectIdentification projectId, AdvertisementScheduleInfo schedule, ISingleHotRoleSender sender)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        if (projectInfo.ProjectStatus != ProjectLifecycleStatus.ActiveClaimsOpen || !projectInfo.ClaimSettings.IsPublicProject)
+        if (await ValidateForAdvertisement(projectId, schedule) is not { } details)
         {
-            logger.LogInformation(
-                "Расписание {scheduleId}: проект {projectId} сейчас не открыт для рекламы (не публичный или не принимает заявки), пропускаем",
-                schedule.ScheduleId, projectId);
-            return false;
-        }
-
-        if (await logRepository.WasProjectAdvertisedAmongLastN(schedule.ScheduleId, projectId, MinOtherAdvertisementsBetweenRepeats))
-        {
-            logger.LogInformation(
-                "Расписание {scheduleId}: проект {projectId} на кулдауне (рекламировался среди последних {n} реклам в канале), пропускаем",
-                schedule.ScheduleId, projectId, MinOtherAdvertisementsBetweenRepeats);
-            return false;
-        }
-
-        var details = await projectMetadataRepository.GetProjectDetails(projectId);
-        if (details.NearestFutureKogdaIgraCard is null)
-        {
-            logger.LogInformation(
-                "Расписание {scheduleId}: у проекта {projectId} нет карточки КогдаИгры в будущем (привязано карточек: {cardCount}), пропускаем",
-                schedule.ScheduleId, projectId, details.KogdaIgraCards.Count);
             return false;
         }
 
@@ -145,8 +137,83 @@ internal class AdvertisementJob(
             "Расписание {scheduleId}: выбрана роль {characterId} в проекте {projectId} для отправки",
             schedule.ScheduleId, characterId, projectId);
 
-        await SendSingleHotRole(characterId, projectInfo, details, sender, schedule);
+        await SendSingleHotRole(characterId, details.ProjectInfo, details, sender, schedule);
         return true;
+    }
+
+    /// <summary>
+    /// Общие проверки перед рекламой проекта — используются и для одиночной горячей роли, и для
+    /// дайджеста: проект сейчас публичный и открыт для заявок, не на кулдауне в этом расписании,
+    /// есть карточка КогдаИгры в будущем.
+    /// </summary>
+    private async Task<DomainTypes.ProjectMetadata.ProjectDetails?> ValidateForAdvertisement(
+        ProjectIdentification projectId, AdvertisementScheduleInfo schedule)
+    {
+        var details = await projectMetadataRepository.GetProjectDetails(projectId);
+        var projectInfo = details.ProjectInfo;
+        if (projectInfo.ProjectStatus != ProjectLifecycleStatus.ActiveClaimsOpen || !projectInfo.ClaimSettings.IsPublicProject)
+        {
+            logger.LogInformation(
+                "Расписание {scheduleId}: проект {projectId} сейчас не открыт для рекламы (не публичный или не принимает заявки), пропускаем",
+                schedule.ScheduleId, projectId);
+            return null;
+        }
+
+        if (await logRepository.WasProjectAdvertisedAmongLastN(schedule.ScheduleId, projectId, MinOtherAdvertisementsBetweenRepeats))
+        {
+            logger.LogInformation(
+                "Расписание {scheduleId}: проект {projectId} на кулдауне (рекламировался среди последних {n} реклам в канале), пропускаем",
+                schedule.ScheduleId, projectId, MinOtherAdvertisementsBetweenRepeats);
+            return null;
+        }
+
+        if (details.NearestFutureKogdaIgraCard is null)
+        {
+            logger.LogInformation(
+                "Расписание {scheduleId}: у проекта {projectId} нет карточки КогдаИгры в будущем (привязано карточек: {cardCount}), пропускаем",
+                schedule.ScheduleId, projectId, details.KogdaIgraCards.Count);
+            return null;
+        }
+
+        return details;
+    }
+
+    private async Task ProcessNewlyOpenedProjectsDigest(AdvertisementScheduleInfo schedule, INewlyOpenedProjectsDigestSender sender)
+    {
+        var candidates = await projectRepository.GetPublicProjectsOpenedForClaimsInLastWeek();
+
+        var digest = new List<(ProjectAdvertisementCandidate Project, KogdaIgraGameData Game)>();
+        foreach (var candidate in AdvertisementGameRanking.OrderByPriority(candidates))
+        {
+            if (digest.Count >= MaxProjectsInDigest)
+            {
+                break;
+            }
+
+            if (await ValidateForAdvertisement(candidate.ProjectId, schedule) is not { } details)
+            {
+                continue;
+            }
+
+            digest.Add((candidate, details.NearestFutureKogdaIgraCard!));
+        }
+
+        if (digest.Count == 0)
+        {
+            logger.LogInformation("Расписание {scheduleId}: нет недавно открывшихся проектов для дайджеста", schedule.ScheduleId);
+            return;
+        }
+
+        logger.LogInformation(
+            "Расписание {scheduleId} (канал {channelId}): отправка дайджеста из {count} проектов",
+            schedule.ScheduleId, schedule.Channel.ChannelId, digest.Count);
+
+        var result = await sender.Send(digest);
+        var status = result.Succeeded ? AdvertisementLogStatus.Sent : AdvertisementLogStatus.Failed;
+
+        await logRepository.RecordAdvertisementBatch(
+            schedule.ScheduleId, schedule.Method, status, DateTimeOffset.UtcNow,
+            [.. digest.Select(d => d.Project.ProjectId)]);
     }
 
     private async Task<CharacterIdentification?> TrySelectSingleHotRoleForProject(ProjectIdentification projectId, AdvertisementScheduleInfo schedule)

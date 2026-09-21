@@ -6,5 +6,5 @@ internal static class AdvertisementGameRanking
     // естественно получали максимальный вес без отдельной ветки для деления на ноль.
     public static IEnumerable<ProjectAdvertisementCandidate> OrderByPriority(
         IEnumerable<ProjectAdvertisementCandidate> candidates) =>
-        candidates.OrderByDescending(p => (p.ActiveClaimsCount + 1.0) / (p.AdvertisementCount + 1));
+        candidates.OrderByDescending(c => (c.ActiveClaimsCount + 1.0) / (c.AdvertisementCount + 1));
 }

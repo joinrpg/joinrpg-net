@@ -16,6 +16,17 @@ public interface IAdvertisementLogRepository
         AdvertisementScheduleIdentification scheduleId, ProjectIdentification projectId, int n);
 
     Task RecordAdvertisement(AdvertisementLogEntryInfo entry);
+
+    /// <summary>
+    /// Записать одинаковый результат отправки (без привязки к конкретному персонажу) сразу для
+    /// нескольких проектов одним запросом — например, для дайджеста.
+    /// </summary>
+    Task RecordAdvertisementBatch(
+        AdvertisementScheduleIdentification scheduleId,
+        AdvertisementMethod method,
+        AdvertisementLogStatus status,
+        DateTimeOffset sentAt,
+        IReadOnlyCollection<ProjectIdentification> projectIds);
 }
 
 public record CharacterAdvertisementInfo(

@@ -3,11 +3,11 @@ namespace JoinRpg.Services.Advertisement.Channels;
 // TODO: заменить на БД-backed реализацию, когда появится таблица AdvertisementChannels (ADR010 §3)
 internal class HardcodedAdvertisementChannelRepository : IAdvertisementChannelRepository
 {
-    public static readonly AdvertisementChannelIdentification HotRoleChannelId = new(1);
+    public static readonly AdvertisementChannelIdentification TestChannelId = new(1);
     public static readonly AdvertisementChannelIdentification ZovemChannelId = new(2);
 
-    private static readonly AdvertisementChannelInfo HotRoleChannel = new(
-        HotRoleChannelId,
+    private static readonly AdvertisementChannelInfo TestChannel = new(
+        TestChannelId,
         Name: "test_zovem_na_igru",
         BoundProjectId: null,
         new TelegramChannelSettings(new TelegramChatId(-1004315256401)));
@@ -18,7 +18,7 @@ internal class HardcodedAdvertisementChannelRepository : IAdvertisementChannelRe
         BoundProjectId: null,
         new TelegramChannelSettings(new TelegramChatId(-1002544815071)));
 
-    private static readonly IReadOnlyList<AdvertisementChannelInfo> AllChannels = [HotRoleChannel, ZovemChannel];
+    private static readonly IReadOnlyList<AdvertisementChannelInfo> AllChannels = [TestChannel, ZovemChannel];
 
     public Task<AdvertisementChannelInfo?> GetChannel(AdvertisementChannelIdentification channelId) =>
         Task.FromResult(AllChannels.FirstOrDefault(c => c.ChannelId == channelId));

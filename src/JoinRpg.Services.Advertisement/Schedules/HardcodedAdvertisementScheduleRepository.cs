@@ -5,6 +5,7 @@ internal class HardcodedAdvertisementScheduleRepository(IAdvertisementChannelRep
 {
     private static readonly IReadOnlySet<DayOfWeek> EveryDay = Enum.GetValues<DayOfWeek>().ToHashSet();
     private static readonly IReadOnlySet<DayOfWeek> Wednesdays = new HashSet<DayOfWeek> { DayOfWeek.Wednesday };
+    private static readonly IReadOnlySet<DayOfWeek> Mondays = new HashSet<DayOfWeek> { DayOfWeek.Monday };
 
     public async Task<IReadOnlyCollection<AdvertisementScheduleInfo>> GetActiveSchedules() =>
         [.. (await GetAllSchedules()).Where(s => s.IsEffectivelyActive)];
@@ -13,9 +14,12 @@ internal class HardcodedAdvertisementScheduleRepository(IAdvertisementChannelRep
     {
         var schedules = new List<AdvertisementScheduleInfo>();
 
-        if (await channelRepository.GetChannel(HardcodedAdvertisementChannelRepository.HotRoleChannelId) is { } hotRoleChannel)
+        if (await channelRepository.GetChannel(HardcodedAdvertisementChannelRepository.TestChannelId) is { } testChannel)
         {
-            schedules.Add(new(new AdvertisementScheduleIdentification(1), hotRoleChannel, AdvertisementMethod.SingleHotRole, EveryDay));
+            schedules.Add(new(new AdvertisementScheduleIdentification(1), testChannel, AdvertisementMethod.SingleHotRole, EveryDay));
+
+            // Новый способ рекламы пока обкатываем только в тестовом канале, в боевой ZovemChannel не включаем.
+            schedules.Add(new(new AdvertisementScheduleIdentification(3), testChannel, AdvertisementMethod.NewlyOpenedProjectsDigest, Mondays));
         }
 
         if (await channelRepository.GetChannel(HardcodedAdvertisementChannelRepository.ZovemChannelId) is { } zovemChannel)
