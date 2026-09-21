@@ -20,22 +20,36 @@ public class McpHealthCheckTests
     };
 
     [Fact]
-    public async Task NotConfigured_HealthCheckReportsDisabled()
+    public async Task NotConfigured_HealthCheckReportsDegraded()
     {
         var report = await RunHealthCheckAsync(mcpOptions: null);
 
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
-        entry.Status.ShouldBe(HealthStatus.Healthy);
+        entry.Status.ShouldBe(HealthStatus.Degraded);
         entry.Description.ShouldContain("выключен");
     }
 
     [Fact]
-    public async Task SecretMissing_HealthCheckReportsDisabled()
+    public async Task SecretMissing_HealthCheckReportsDegraded()
     {
         // Половинчатая конфигурация — самый коварный случай: ClientId задан, секрет забыли.
         var report = await RunHealthCheckAsync(new McpResourceOptions { ClientId = "portal-mcp", ClientSecret = "" });
 
-        report.Entries[McpRegistration.McpHealthCheckName].Description.ShouldContain("выключен");
+        var entry = report.Entries[McpRegistration.McpHealthCheckName];
+        entry.Status.ShouldBe(HealthStatus.Degraded);
+        entry.Description.ShouldContain("выключен");
+    }
+
+    /// <summary>
+    /// Degraded не должен превращаться в 503 и ронять readiness: сайт без MCP продолжает
+    /// работать. Проверка не помечена тегом ready именно поэтому.
+    /// </summary>
+    [Fact]
+    public async Task Disabled_DoesNotAffectReadiness()
+    {
+        var report = await RunHealthCheckAsync(mcpOptions: null);
+
+        report.Entries[McpRegistration.McpHealthCheckName].Tags.ShouldNotContain("ready");
     }
 
     [Fact]
