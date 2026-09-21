@@ -55,6 +55,21 @@ public interface IOAuthClientService
         CancellationToken ct = default);
 
     /// <summary>
+    /// Creates (or re-creates) a resource-server client — сервер, который не получает токены, а
+    /// наоборот проверяет чужие через <c>connect/introspect</c> (ADR012 §5). Это другая сущность,
+    /// чем обычный клиент: у неё нет ни redirect URI, ни authorization code, ни запрашиваемых
+    /// scope — только право на интроспекцию. Такой клиент всегда конфиденциальный.
+    /// </summary>
+    /// <param name="clientId">Unique client identifier.</param>
+    /// <param name="displayName">Human-readable name. Can be <c>null</c>.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The generated client secret. Shown only once — it is stored hashed and cannot be retrieved later.</returns>
+    Task<string> CreateResourceServerAsync(
+        string clientId,
+        string? displayName,
+        CancellationToken ct = default);
+
+    /// <summary>
     /// Deletes an OAuth client by its unique client identifier.
     /// </summary>
     /// <param name="clientId">Unique client identifier.</param>

@@ -50,6 +50,39 @@ internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAut
         }
     }
 
+    public async Task<string> CreateResourceServerAsync(
+        string clientId,
+        string? displayName,
+        CancellationToken ct = default)
+    {
+        var secretBytes = new byte[32];
+        RandomNumberGenerator.Fill(secretBytes);
+        var secret = Convert.ToBase64String(secretBytes);
+
+        // Ровно одно право — вызывать connect/introspect. Ни authorization code, ни redirect
+        // URI, ни scope: resource server сам токенов не получает.
+        var descriptor = new OpenIddictApplicationDescriptor
+        {
+            ClientId = clientId,
+            ClientSecret = secret,
+            DisplayName = displayName,
+            ClientType = ClientTypes.Confidential,
+            Permissions = { Permissions.Endpoints.Introspection },
+        };
+
+        var existing = await manager.FindByClientIdAsync(clientId, ct);
+        if (existing is null)
+        {
+            await manager.CreateAsync(descriptor, ct);
+        }
+        else
+        {
+            await manager.UpdateAsync(existing, descriptor, ct);
+        }
+
+        return secret;
+    }
+
     public async Task DeleteClientAsync(string clientId, CancellationToken ct = default)
     {
         var application = await manager.FindByClientIdAsync(clientId, ct)
