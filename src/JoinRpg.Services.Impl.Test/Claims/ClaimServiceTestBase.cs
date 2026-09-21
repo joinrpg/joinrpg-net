@@ -1,9 +1,12 @@
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.Domain.CharacterFields;
+using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Test.Projects;
 using JoinRpg.Services.Interfaces.Notification;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Services.Impl.Test.Claims;
 
@@ -28,6 +31,18 @@ public abstract class ClaimServiceTestBase
         unitOfWork = new FakeUnitOfWork(mock);
         metadataRepository = new FakeProjectMetadataRepository(mock);
     }
+
+    /// <summary>
+    /// Собирает боевой <see cref="CharacterPropsService"/> поверх фейков — подделываются только
+    /// доступ к данным и каналы уведомлений, сама проверяемая логика настоящая.
+    /// </summary>
+    private protected CharacterPropsService CreatePropsService(int? currentUserId = null)
+        => new(
+            unitOfWork,
+            CreateCurrentUser(currentUserId),
+            metadataRepository,
+            new FieldSaveHelper(new MockedFieldDefaultValueGenerator(), NullLogger<FieldSaveHelper>.Instance),
+            NullLogger<CharacterPropsService>.Instance);
 
     protected ProjectIdentification ProjectId => mock.ProjectInfo.ProjectId;
 

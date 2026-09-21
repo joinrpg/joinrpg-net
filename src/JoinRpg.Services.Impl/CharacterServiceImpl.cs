@@ -1,184 +1,92 @@
 using System.Data.Entity.Validation;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.Characters;
+using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Characters;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-internal class CharacterServiceImpl(
-    IUnitOfWork unitOfWork,
-    FieldSaveHelper fieldSaveHelper,
-    ICurrentUserAccessor currentUserAccessor,
-    IProjectMetadataRepository projectMetadataRepository) : DbServiceImplBase(unitOfWork, currentUserAccessor), ICharacterService
+internal class CharacterServiceImpl(ICharacterPropsService characterPropsService) : ICharacterService
 {
     public async Task<CharacterIdentification> AddCharacter(AddCharacterRequest addCharacterRequest)
     {
-        var project = await ProjectRepository.GetProjectWithFieldsAsync(addCharacterRequest.ProjectId);
+        var character = await characterPropsService.CreateCharacter(
+            addCharacterRequest.ProjectId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
+            addCharacterRequest,
+            ctx =>
+            {
+                var character = new Character
+                {
+                    ParentCharacterGroupIds = ctx.ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds),
+                    ProjectId = ctx.Request.ProjectId,
+                    Project = ctx.Project,
+                };
 
-        if (project is null)
-        {
-            throw new JoinRpgEntityNotFoundException(addCharacterRequest.ProjectId, "Project");
-        }
+                ctx.SetCharacterSettings(character, ctx.Request.CharacterTypeInfo);
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(addCharacterRequest.ProjectId));
+                //TODO we do not send message for creating character
+                _ = ctx.SaveFields(character, ctx.Request.FieldValues);
 
-        _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanEditRoles);
-        _ = projectInfo.EnsureProjectActive();
+                return character;
+            });
 
-        var character = new Character
-        {
-            ParentCharacterGroupIds = ValidateGroupListForCharacter(projectInfo, addCharacterRequest.ParentCharacterGroupIds),
-            ProjectId = addCharacterRequest.ProjectId,
-            Project = project,
-        };
-
-        SetCharacterSettings(character, addCharacterRequest.CharacterTypeInfo, projectInfo);
-
-        Create(character);
-
-        //TODO we do not send message for creating character
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
-            character,
-            addCharacterRequest.FieldValues,
-            projectInfo);
-
-        await UnitOfWork.SaveChangesAsync();
-
+        // CharacterId генерируется БД при сохранении — читаем уже после возврата из сервиса.
         return new CharacterIdentification(character.ProjectId, character.CharacterId);
     }
 
-    private static void SetCharacterSettings(Character character, CharacterTypeInfo characterTypeInfo, ProjectInfo projectInfo)
-    {
-        if (character.Claims.Any(claim => claim.ClaimStatus.IsActive())
-            && characterTypeInfo.CharacterType != character.CharacterType)
-        {
-            throw new Exception("Can't change type of character with active claims");
-        }
+    public Task EditCharacter(EditCharacterRequest editCharacterRequest)
+        => characterPropsService.ChangeCharacter(
+            editCharacterRequest.Id,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
+            editCharacterRequest,
+            ctx =>
+            {
+                ctx.SetCharacterSettings(ctx.Request.CharacterTypeInfo);
 
-        (character.CharacterType,
-            character.IsHot,
-            character.CharacterSlotLimit,
-            character.IsAcceptingClaims,
-            _,
-            character.IsPublic,
-            character.HidePlayerForCharacter) = characterTypeInfo;
+                ctx.Character.ParentCharacterGroupIds =
+                    ctx.ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds);
 
-        if (characterTypeInfo.CharacterType == CharacterType.Slot
-            && projectInfo.CharacterNameField is null)
-        {
-            character.CharacterName = Required(characterTypeInfo.SlotName);
-        }
+                _ = ctx.SaveFields(ctx.Request.FieldValues);
 
-        character.IsActive = true;
-    }
+                // TODO: восстановить отправку письма об изменении полей, см. ADR014.
+            });
 
-    public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
-    {
-        var character = await LoadCharacter(editCharacterRequest.Id);
+    public Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest)
+        => characterPropsService.ChangeCharacter(
+            deleteCharacterRequest.Id,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
+            deleteCharacterRequest,
+            ctx =>
+            {
+                if (ctx.CharacterInfo.HasActiveClaims
+                    || ctx.Character.Project.Details.DefaultTemplateCharacter == ctx.Character)
+                {
+                    throw new DbEntityValidationException();
+                }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(editCharacterRequest.Id.ProjectId);
+                if (ctx.Character.CanBePermanentlyDeleted)
+                {
+                    ctx.Character.DirectlyRelatedPlotElements.CleanLinksList();
+                }
 
-        SetCharacterSettings(character, editCharacterRequest.CharacterTypeInfo, projectInfo);
+                ctx.Character.IsActive = false;
+            });
 
-        character.ParentCharacterGroupIds = ValidateGroupListForCharacter(projectInfo, editCharacterRequest.ParentCharacterGroupIds);
-
-        var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
-            character,
-            editCharacterRequest.FieldValues,
-            projectInfo);
-
-        MarkChanged(character);
-
-        FieldsChangedEmail? email = null;
-
-        if (changedFields.Any())
-        {
-            var user = await GetCurrentUser();
-            email = EmailHelpers.CreateFieldsEmail(
-                character,
-                s => s.FieldChange,
-                user,
-                changedFields);
-        }
-
-        await UnitOfWork.SaveChangesAsync();
-
-        if (email != null)
-        {
-            // Исправить потом отправку изменений
-            // await emailService.Email(email);
-        }
-    }
-
-    public async Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest)
-    {
-        Character character = await LoadCharacter(deleteCharacterRequest.Id);
-
-        if (character.HasActiveClaims() || character.Project.Details.DefaultTemplateCharacter == character)
-        {
-            throw new DbEntityValidationException();
-        }
-
-        if (character.CanBePermanentlyDeleted)
-        {
-            character.DirectlyRelatedPlotElements.CleanLinksList();
-        }
-
-        character.IsActive = false;
-        MarkChanged(character);
-        await UnitOfWork.SaveChangesAsync();
-    }
-
-    private async Task<Character> LoadCharacter(CharacterIdentification moniker)
-    {
-        var character = await CharactersRepository.GetCharacterAsync(moniker.ProjectId, moniker.CharacterId);
-
-        return character.RequestMasterAccess(CurrentUserId, Permission.CanEditRoles).EnsureProjectActive();
-    }
-
-    public async Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet)
-    {
-        var character = await LoadCharacter(characterId);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
-
-        var changedFields = fieldSaveHelper.SaveCharacterFields(CurrentUserId,
-            character,
+    public Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet)
+        => characterPropsService.ChangeCharacter(
+            characterId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.MustBeActive,
             fieldsToSet,
-            projectInfo);
+            ctx =>
+            {
+                _ = ctx.SaveFields(ctx.Request);
 
-        MarkChanged(character);
-
-        FieldsChangedEmail? email = null;
-
-        if (changedFields.Count != 0)
-        {
-            var user = await UserRepository.GetById(CurrentUserId);
-            email = EmailHelpers.CreateFieldsEmail(
-                character,
-                s => s.FieldChange,
-                user,
-                changedFields);
-        }
-
-        await UnitOfWork.SaveChangesAsync();
-
-
-
-        //if (email != null)
-        //{
-        //    await emailService.Email(email);
-        //}
-    }
-
-    private int[] ValidateGroupListForCharacter(ProjectInfo projectInfo, IReadOnlyCollection<CharacterGroupIdentification> groupIds)
-    {
-        return projectInfo.AllowToSetGroups ?
-                        ValidateCharacterGroupList(projectInfo, Required(groupIds), ensureNotSpecial: true)
-                        : [projectInfo.RootCharacterGroupId.CharacterGroupId];
-    }
+                // TODO: восстановить отправку письма об изменении полей, см. ADR014.
+            });
 }
