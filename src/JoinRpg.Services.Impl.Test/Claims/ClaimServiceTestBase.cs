@@ -41,6 +41,9 @@ public abstract class ClaimServiceTestBase
             CreateCurrentUser(currentUserId),
             metadataRepository,
             new FieldSaveHelper(new MockedFieldDefaultValueGenerator(), NullLogger<FieldSaveHelper>.Instance),
+            new CommentHelper(CreateCurrentUser(currentUserId)),
+            claimNotifications,
+            emailService,
             NullLogger<CharacterPropsService>.Instance);
 
     protected ProjectIdentification ProjectId => mock.ProjectInfo.ProjectId;
