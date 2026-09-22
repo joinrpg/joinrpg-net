@@ -37,4 +37,17 @@ public static class ClaimAcceptOrMoveValidationExtensions
             new LegacyClaimTarget(claimSource), userInfo, movedClaim: null, projectInfo, operation);
 #pragma warning restore CS0618
     }
+
+    /// <summary>
+    /// Можно ли игроку подать заявку на этого персонажа — см.
+    /// <see cref="ClaimValidator.IsAvailableForPlayer"/>.
+    /// </summary>
+    public static bool IsAvailableForPlayer(this Character claimSource, ProjectInfo projectInfo)
+    {
+        ArgumentNullException.ThrowIfNull(claimSource);
+
+#pragma warning disable CS0618 // Пока эти вызывающие живут на EF-сущности, см. LegacyClaimTarget
+        return ClaimValidator.IsAvailableForPlayer(new LegacyClaimTarget(claimSource), projectInfo);
+#pragma warning restore CS0618
+    }
 }
