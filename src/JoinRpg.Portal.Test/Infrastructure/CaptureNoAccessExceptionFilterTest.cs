@@ -1,8 +1,6 @@
-using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
@@ -80,16 +78,5 @@ public class CaptureNoAccessExceptionFilterTest
         }
 
         public object? GetService(Type serviceType) => services.TryGetValue(serviceType, out var service) ? service : null;
-    }
-
-    private class FakeProjectMetadataRepository(ProjectInfo projectInfo) : IProjectMetadataRepository
-    {
-        public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
-            => Task.FromResult(projectInfo);
-
-        public Task<JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-            => Task.FromResult(new JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), [], false));
-
-        public void PrimeCache(ProjectInfo projectInfo) { }
     }
 }

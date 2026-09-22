@@ -52,17 +52,6 @@ public class ProjectApiViewServiceTests
         projects.ShouldNotContain(p => p.ProjectName == "Без доступа");
     }
 
-    private sealed class FakeProjectMetadataRepository(ProjectInfo projectInfo) : IProjectMetadataRepository
-    {
-        public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
-            => Task.FromResult(projectInfo);
-
-        public Task<JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-            => Task.FromResult(new JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), [], false));
-
-        public void PrimeCache(ProjectInfo projectInfo) { }
-    }
-
     private sealed class FakeProjectRepository(MockedProject mock) : IProjectRepository
     {
         public Task<ProjectPersonalizedInfo[]> GetPersonalizedProjectsBySpecification(PersonalizedProjectListSpecification projectListSpecification)

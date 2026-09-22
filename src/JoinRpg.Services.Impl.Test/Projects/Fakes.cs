@@ -64,23 +64,6 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
     }
 }
 
-/// <summary>
-/// Read-репозиторий поверх <see cref="MockedProject"/>: запоминает последний примированный
-/// <see cref="ProjectInfo"/> и отдаёт текущий снимок мока.
-/// </summary>
-internal sealed class FakeProjectMetadataRepository(MockedProject mock) : IProjectMetadataRepository
-{
-    public ProjectInfo? LastPrimed { get; private set; }
-
-    public void PrimeCache(ProjectInfo projectInfo) => LastPrimed = projectInfo;
-
-    public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
-        => Task.FromResult(mock.ProjectInfo);
-
-    public Task<JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-        => throw new NotSupportedException();
-}
-
 /// <summary>Отдаёт заранее заготовленные заявки по (ProjectId, UserId) отв. мастера.</summary>
 internal sealed class FakeClaimsRepository : IClaimsRepository
 {

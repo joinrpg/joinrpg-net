@@ -3,7 +3,6 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Projects.Metadata;
-using JoinRpg.Services.Impl.Test.Projects;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Services.Impl.Test;
