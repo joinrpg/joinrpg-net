@@ -69,21 +69,29 @@ public static class McpRegistration
                 options.UseAspNetCore();
             });
 
-        // Отдельная именованная схема только для WWW-Authenticate/Protected Resource Metadata
-        // (RFC 9728) — сам токен по-прежнему проверяет OpenIddictValidationAspNetCoreDefaults.
+        // Схема MCP отвечает за WWW-Authenticate и Protected Resource Metadata (RFC 9728), а
+        // саму проверку токена переадресует в OpenIddict. Раньше в политике стояли обе схемы,
+        // и на 401 приходило два заголовка WWW-Authenticate: голый Bearer от OpenIddict и
+        // Bearer resource_metadata=... от MCP. Клиент, читающий только первый, не находил
+        // указателя на метаданные. Forward оставляет ровно один challenge — от MCP.
         services.AddAuthentication()
             .AddMcp(options =>
             {
+                options.ForwardAuthenticate = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
                 options.ResourceMetadata = new()
                 {
                     Resource = resourceUri.ToString(),
                     AuthorizationServers = { idPortalIssuer.ToString() },
+                    // Без этого список уезжает пустым, и клиент не знает, какие scope просить
+                    // (RFC 9728 §2: ровно отсюда он их и узнаёт).
+                    ScopesSupported = [.. McpScopes.All],
                 };
             });
 
+        // Только схема MCP: аутентификацию она форвардит в OpenIddict (см. ForwardAuthenticate
+        // выше), а challenge выдаёт сама — одним заголовком с resource_metadata.
         services.AddAuthorization(o => o.AddPolicy(AuthorizationPolicy, policy => policy
             .AddAuthenticationSchemes(
-                OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
                 McpAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser()));
 
