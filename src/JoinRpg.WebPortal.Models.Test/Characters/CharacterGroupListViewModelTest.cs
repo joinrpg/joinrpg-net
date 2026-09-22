@@ -15,7 +15,9 @@ public class CharacterGroupListViewModelTest
 {
     private MockedProject Mock { get; } = new MockedProject();
 
-    private CharacterGroup Root => Mock.Project.CharacterGroups.Single(group => group.IsRoot);
+    private CharacterGroup RootGroup => Mock.Project.CharacterGroups.Single(group => group.IsRoot);
+
+    private CharacterGroupInfo Root => Mock.ProjectInfo.GetGroupById(RootGroup.CharacterGroupId);
 
     private UserIdentification MasterId => new(Mock.Master.UserId);
 
@@ -26,13 +28,18 @@ public class CharacterGroupListViewModelTest
     /// Открывает корневую группу: иначе постороннему не видно всё дерево целиком, и проверять
     /// видимость самого персонажа не на чем.
     /// </summary>
-    private void MakeRootGroupPublic() => Root.IsPublic = true;
+    private void MakeRootGroupPublic()
+    {
+        RootGroup.IsPublic = true;
+        Mock.ReInitProjectInfo();
+    }
 
     private IReadOnlyCollection<CharacterViewModel> GetCharacters(UserIdentification? currentUserId)
         => [.. CharacterGroupListViewModel
             .GetGroups(
                 Root,
                 [.. Mock.Project.Characters.Select(Mock.GetCharacterInfo)],
+                new Dictionary<DomainTypes.CharacterGroupIdentification, CharacterGroupFullInfo>(),
                 currentUserId,
                 Mock.ProjectInfo)
             .SelectMany(group => group.ActiveCharacters)];
@@ -136,6 +143,44 @@ public class CharacterGroupListViewModelTest
         Mock.Character.IsPublic = true;
 
         GetCharacters(StrangerId).ShouldNotBeEmpty();
+    }
+
+    /// <summary>
+    /// Горячие роли отдаются плоским списком, без построения дерева групп.
+    /// </summary>
+    [Fact]
+    public void HotCharactersAreListedFlat()
+    {
+        MakeRootGroupPublic();
+        Mock.Character.IsPublic = true;
+        var hot = Mock.CreateCharacter("горячая");
+        hot.IsPublic = true;
+        hot.IsHot = true;
+
+        var hotCharacters = CharacterGroupListViewModel.GetHotCharacters(
+            Root,
+            [.. Mock.Project.Characters.Select(Mock.GetCharacterInfo)],
+            StrangerId,
+            Mock.ProjectInfo);
+
+        hotCharacters.Select(character => character.CharacterId).ShouldBe([hot.CharacterId]);
+    }
+
+    [Fact]
+    public void HotCharacterOfInvisibleGroupIsNotListed()
+    {
+        // Корневая группа непубличная, значит постороннему не видно и всё, что в ней.
+        var hot = Mock.CreateCharacter("горячая");
+        hot.IsPublic = true;
+        hot.IsHot = true;
+
+        var hotCharacters = CharacterGroupListViewModel.GetHotCharacters(
+            Root,
+            [.. Mock.Project.Characters.Select(Mock.GetCharacterInfo)],
+            StrangerId,
+            Mock.ProjectInfo);
+
+        hotCharacters.ShouldBeEmpty();
     }
 
     [Fact]
