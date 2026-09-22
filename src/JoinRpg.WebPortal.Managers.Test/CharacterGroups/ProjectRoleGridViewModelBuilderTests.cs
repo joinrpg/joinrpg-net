@@ -401,7 +401,7 @@ public class ProjectRoleGridViewModelBuilderTests
         // Роль «занята», но игрок скрыт: sentinel-ссылка без реальных данных игрока.
         var link = player.Link.ShouldNotBeNull();
         link.ViewMode.ShouldBe(ViewMode.Hide);
-        link.UserId.ShouldBe(-1);
+        link.UserId.ShouldBe(new UserIdentification(-1));
         link.DisplayName.ShouldNotBe("Player");
         player.Contacts.ShouldBeNull();
     }

@@ -24,7 +24,7 @@ public static class UriLocatorExtensions
             {
                 throw new InvalidOperationException("Should not have url of hidden");
             }
-            return new($"/user/{target.UserId}", UriKind.Relative);
+            return new($"/user/{target.UserId.Value}", UriKind.Relative);
         }
 
         Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target) => GetUri(target.CharacterId);

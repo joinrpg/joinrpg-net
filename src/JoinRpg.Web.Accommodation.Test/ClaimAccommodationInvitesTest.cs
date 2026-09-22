@@ -28,7 +28,7 @@ public class ClaimAccommodationInvitesTest : BunitContext
     private static AccommodationInviteViewModel Invite(int inviteId, InviteState state)
         => new(
             new AccommodationInviteIdentification(ProjectId, inviteId),
-            new UserLinkViewModel(42, "Сосед", ViewMode.Show),
+            new UserLinkViewModel(new UserIdentification(42), "Сосед", ViewMode.Show),
             state);
 
     private IRenderedComponent<ClaimAccommodationInvites> RenderInvites(InviteDirection direction)
@@ -86,6 +86,6 @@ public class ClaimAccommodationInvitesTest : BunitContext
 
     private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
     {
-        public Uri GetUri(UserLinkViewModel target) => new($"https://example.com/user/{target.UserId}");
+        public Uri GetUri(UserLinkViewModel target) => new($"https://example.com/user/{target.UserId.Value}");
     }
 }

@@ -157,7 +157,7 @@ internal class AccommodationInviteViewService(
         => direction == InviteDirection.Incoming ? invite.From : invite.To;
 
     private static UserLinkViewModel ToUserLink(User user)
-        => new(user.UserId, user.GetDisplayName(), ViewMode.Show);
+        => new(user.ToUserInfoHeader());
 
     private static string GetPlayerName(Claim claim) => claim.Player.GetDisplayName();
 

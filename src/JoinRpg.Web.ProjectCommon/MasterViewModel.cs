@@ -1,3 +1,5 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
+
 namespace JoinRpg.Web.ProjectCommon;
 
 public record MasterViewModel(UserIdentification MasterId, UserDisplayName DisplayName)
@@ -5,5 +7,5 @@ public record MasterViewModel(UserIdentification MasterId, UserDisplayName Displ
     public static MasterViewModel Empty(string label)
         => new(new UserIdentification(-1), new UserDisplayName(DisplayName: label, FullName: null));
 
-    public UserLinkViewModel ToUserLinkViewModel() => new UserLinkViewModel(MasterId.Value, DisplayName.DisplayName, ViewMode.Show);
+    public UserLinkViewModel ToUserLinkViewModel() => new UserLinkViewModel(new UserInfoHeader(MasterId, DisplayName));
 }
