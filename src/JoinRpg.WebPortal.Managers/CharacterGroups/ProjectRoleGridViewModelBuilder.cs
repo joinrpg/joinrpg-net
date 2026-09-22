@@ -179,7 +179,7 @@ internal static class ProjectRoleGridViewModelBuilder
             character.Id,
             character.CharacterName,
             character.IsActive,
-            ViewModeSelector.Create(IsPublic(character), canViewPrivate));
+            ViewModeSelector.Create(character.CharacterTypeInfo.IsNamePublic, canViewPrivate));
 
         // Ссылку на принятую заявку показываем только мастеру (canViewPrivate).
         var approvedClaimId = canViewPrivate ? character.ApprovedClaimId : null;
@@ -203,16 +203,6 @@ internal static class ProjectRoleGridViewModelBuilder
         return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValuesHtml, groupId, activeClaimsCount, firstCopy);
     }
 
-    /// <summary>
-    /// Публичность в смысле колонки <c>Character.IsPublic</c>.
-    /// </summary>
-    /// <remarks>
-    /// Именно так, а не через <c>CharacterInfo.IsPublic</c>: тот означает
-    /// <c>CharacterVisibility.Public</c>, а у публичного персонажа со скрытым игроком видимость —
-    /// <c>PlayerHidden</c>. Он публичный, просто игрок не показывается.
-    /// </remarks>
-    internal static bool IsPublic(CharacterInfo character)
-        => character.CharacterTypeInfo.CharacterVisibility != CharacterVisibility.Private;
 
     // Как и DisplayString в FieldValueViewModel: markdown-поля рендерим в HTML,
     // остальные — экранируем как обычный текст (renderer не передаём, как и для Description группы).

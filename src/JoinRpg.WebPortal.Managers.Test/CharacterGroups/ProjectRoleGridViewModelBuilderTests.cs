@@ -49,7 +49,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var characterInfos = characters.Select(_mock.GetCharacterInfo).ToList();
         var visibleCharacters = canViewPrivate
             ? characterInfos
-            : characterInfos.Where(ProjectRoleGridViewModelBuilder.IsPublic).ToList();
+            : characterInfos.Where(c => c.CharacterTypeInfo.IsNamePublic).ToList();
         var charactersByGroup = visibleCharacters
             .SelectMany(c => c.DirectGroupIds.Select(g => (group: g, character: c)))
             .ToLookup(x => x.group, x => x.character);

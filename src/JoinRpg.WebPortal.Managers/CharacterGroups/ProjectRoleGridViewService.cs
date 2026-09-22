@@ -66,7 +66,7 @@ internal class ProjectRoleGridViewService(
         var canViewPrivate = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
         var visibleCharacters = canViewPrivate
             ? characters
-            : characters.Where(ProjectRoleGridViewModelBuilder.IsPublic).ToList();
+            : characters.Where(c => c.CharacterTypeInfo.IsNamePublic).ToList();
 
         var shownCharacters = ApplyRolesFilter(visibleCharacters, config.ShowRolesFilter);
 
@@ -107,7 +107,7 @@ internal class ProjectRoleGridViewService(
             return new Dictionary<UserIdentification, UserInfo>();
         }
 
-        return (await userRepository.GetUserInfos(playerIds)).ToDictionary(user => user.UserId);
+        return (await userRepository.GetRequiredUserInfos(playerIds)).ToDictionary(user => user.UserId);
     }
 
     private static List<CharacterInfo> ApplyRolesFilter(List<CharacterInfo> characters, ShowRolesFilter filter)
