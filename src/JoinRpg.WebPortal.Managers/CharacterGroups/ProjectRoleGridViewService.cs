@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.Models;
@@ -11,7 +12,8 @@ using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
 namespace JoinRpg.WebPortal.Managers.CharacterGroups;
 
 internal class ProjectRoleGridViewService(
-    IProjectRepository projectRepository,
+    ICharacterInfoRepository characterInfoRepository,
+    IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository characterGroupRepository,
     ICurrentUserAccessor currentUserAccessor)
@@ -56,17 +58,25 @@ internal class ProjectRoleGridViewService(
             .ToList();
         var groupIds = orderedGroups.Select(g => g.Id).ToList();
 
-        var characters = (await projectRepository.GetCharacterByGroups(groupIds))
+        var characters = (await characterInfoRepository.GetCharacterInfosByGroups(projectInfo.ProjectId, groupIds))
             .Where(c => c.IsActive)
             .ToList();
 
         // Скрытое (приватные персонажи и скрытые игроки) видит только мастер.
         var canViewPrivate = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
-        var visibleCharacters = canViewPrivate ? characters : characters.Where(c => c.IsPublic).ToList();
+        var visibleCharacters = canViewPrivate
+            ? characters
+            : characters.Where(ProjectRoleGridViewModelBuilder.IsPublic).ToList();
 
-        var charactersByGroup = ApplyRolesFilter(visibleCharacters, config.ShowRolesFilter)
-            .SelectMany(c => c.GetDirectGroupIds().Select(g => (group: g, character: c)))
+        var shownCharacters = ApplyRolesFilter(visibleCharacters, config.ShowRolesFilter);
+
+        var charactersByGroup = shownCharacters
+            .SelectMany(c => c.DirectGroupIds.Select(g => (group: g, character: c)))
             .ToLookup(x => x.group, x => x.character);
+
+        // Профиль игрока в агрегат персонажа не входит (ADR013), а колонке контактов он нужен —
+        // грузим одним запросом на всю сетку, а не по игроку на строку.
+        var players = await LoadPlayers(shownCharacters);
 
         var groupFullInfos =
             config.GroupsViewMode != RolesGridGroupsViewMode.None
@@ -82,11 +92,25 @@ internal class ProjectRoleGridViewService(
             HasAccess: true,
             Grid: ProjectRoleGridViewModelBuilder.Build(
                 config, canEditSettings, canViewPrivate, excludeSpecialGroups,
-                orderedGroups, charactersByGroup, groupFullInfos, projectInfo),
+                orderedGroups, charactersByGroup, groupFullInfos, players, projectInfo),
             NoAccess: null);
     }
 
-    private static List<Character> ApplyRolesFilter(List<Character> characters, ShowRolesFilter filter)
+    private async Task<IReadOnlyDictionary<UserIdentification, UserInfo>> LoadPlayers(
+        IReadOnlyCollection<CharacterInfo> characters)
+    {
+        IReadOnlyCollection<UserIdentification> playerIds =
+            [.. characters.Select(c => c.ApprovedClaim?.PlayerId).WhereNotNull().Distinct()];
+
+        if (playerIds.Count == 0)
+        {
+            return new Dictionary<UserIdentification, UserInfo>();
+        }
+
+        return (await userRepository.GetUserInfos(playerIds)).ToDictionary(user => user.UserId);
+    }
+
+    private static List<CharacterInfo> ApplyRolesFilter(List<CharacterInfo> characters, ShowRolesFilter filter)
         => filter switch
         {
             ShowRolesFilter.VacantOnly => characters
@@ -95,7 +119,7 @@ internal class ProjectRoleGridViewService(
                     CharacterBusyStatusView.Slot or CharacterBusyStatusView.HotSlot or
                     CharacterBusyStatusView.Discussed)
                 .ToList(),
-            ShowRolesFilter.HotOnly => characters.Where(c => c.IsHot).ToList(),
+            ShowRolesFilter.HotOnly => characters.Where(c => c.CharacterTypeInfo.IsHot).ToList(),
             _ => characters,
         };
 }
