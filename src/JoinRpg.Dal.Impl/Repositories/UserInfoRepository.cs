@@ -145,7 +145,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             FatherName.FromOptional(result.FatherName));
         return new UserInfo(
             new UserIdentification(result.UserId),
-            new UserSocialNetworks(telegram, result.Livejournal, result.AllRpgInfoId, vk, result.SocialNetworksAccess),
+            new UserSocialNetworks(telegram, LiveJournalId.FromOptional(result.Livejournal), result.AllRpgInfoId, vk, result.SocialNetworksAccess),
             result.Claims.Select(c => new UserClaimInfo(new ClaimIdentification(c.ProjectId, c.ClaimId), c.ClaimStatus)).ToList(),
             result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
