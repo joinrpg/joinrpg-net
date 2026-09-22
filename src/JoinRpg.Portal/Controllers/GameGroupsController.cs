@@ -1,6 +1,5 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -21,8 +20,7 @@ public class GameGroupsController(
     IUriLocator<UserLinkViewModel> userLinkLocator,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
-    ICharacterGroupRepository charGroupRepository,
-    ICharacterInfoRepository characterInfoRepository
+    ICharacterGroupRepository charGroupRepository
     ) : JoinControllerGameBase
 {
     [HttpGet("~/{projectId}/roles/{characterGroupId?}")]

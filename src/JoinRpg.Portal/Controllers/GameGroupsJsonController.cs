@@ -30,20 +30,19 @@ public class GameGroupsJsonController(
 {
     [HttpGet]
     [HttpGet("~/{projectId}/roles/hotjson")]
-    public async Task<ActionResult> HotJson(ProjectIdentification projectId, int characterGroupId, int? maxCount = null)
+    public async Task<ActionResult> HotJson(CharacterGroupIdentification characterGroupId, int? maxCount = null)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var rootGroupId = new CharacterGroupIdentification(projectId, characterGroupId);
-        if (await charGroupRepository.GetCharacterGroupFullInfo(rootGroupId) is null)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId);
+        if (projectInfo.GetGroupByIdOrDefault(characterGroupId) is not { } rootGroup)
         {
             return NotFound();
         }
 
-        var characters = await LoadCharactersOfSubtree(rootGroupId, projectInfo);
+        var characters = await LoadCharactersOfSubtree(characterGroupId, projectInfo);
 
         var hotRoles = CharacterGroupListViewModel
             .GetHotCharacters(
-                projectInfo.GetGroupById(characterGroupId),
+                rootGroup,
                 characters,
                 currentUserAccessor.UserIdentificationOrDefault,
                 projectInfo)
@@ -55,28 +54,27 @@ public class GameGroupsJsonController(
 
     [HttpGet("~/{projectId}/roles/{characterGroupId}/indexjson")]
     [AllowAnonymous]
-    public async Task<ActionResult> IndexJson(ProjectIdentification projectId, int characterGroupId)
+    public async Task<ActionResult> IndexJson(CharacterGroupIdentification characterGroupId)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var rootGroupId = new CharacterGroupIdentification(projectId, characterGroupId);
-        if (await charGroupRepository.GetCharacterGroupFullInfo(rootGroupId) is null)
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId);
+        if (projectInfo.GetGroupByIdOrDefault(characterGroupId) is not { } rootGroup)
         {
             return NotFound();
         }
 
-        var groupIds = projectInfo.GetChildGroupIdsIncludingThis([rootGroupId]).ToList();
-        var characters = await LoadCharactersOfSubtree(rootGroupId, projectInfo);
+        var groupIds = projectInfo.GetChildGroupIdsIncludingThis([characterGroupId]).ToList();
+        var characters = await LoadCharactersOfSubtree(characterGroupId, projectInfo);
         // Описания групп в ProjectInfo не входят — грузим их одним запросом на всё поддерево.
         var groupFullInfos = (await charGroupRepository.GetCharacterGroupsFullInfo(groupIds)).ToDictionary(g => g.Id);
 
         var hasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor);
         return ReturnJson(new
         {
-            ProjectId = projectId.Value,
+            ProjectId = characterGroupId.ProjectId.Value,
             projectInfo.ProjectName,
             ShowEditControls = hasMasterAccess,
             Groups = CharacterGroupListViewModel.GetGroups(
-                projectInfo.GetGroupById(characterGroupId),
+                rootGroup,
                 characters,
                 groupFullInfos,
                 currentUserAccessor.UserIdentificationOrDefault,

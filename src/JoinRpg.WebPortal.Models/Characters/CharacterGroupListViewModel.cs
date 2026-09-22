@@ -83,8 +83,10 @@ public static class CharacterGroupListViewModel
         => group.IsPublic || projectInfo.PublishPlot || projectInfo.HasMasterAccess(currentUserId);
 
     /// <summary>Зеркало <c>WorldObjectExtensions.IsVisible</c> для персонажа поверх агрегата.</summary>
-    private static bool IsVisible(CharacterInfo character, UserIdentification? currentUserId, ProjectInfo projectInfo)
-        => IsPublic(character) || projectInfo.PublishPlot || projectInfo.HasMasterAccess(currentUserId);
+    private static bool IsVisible(CharacterInfo character, UserIdentification? currentUserId)
+        => IsPublic(character)
+            || character.ProjectInfo.PublishPlot
+            || character.ProjectInfo.HasMasterAccess(currentUserId);
 
     /// <summary>
     /// Публичность в смысле колонки <c>Character.IsPublic</c>.
@@ -221,7 +223,7 @@ public static class CharacterGroupListViewModel
             // идентификаторов персонажей.
             var characters = charactersByGroup[group.Id]
                 .OrderByStoredOrder(character => character.Id.CharacterId, group.ChildCharactersOrdering)
-                .Where(character => character.IsActive && IsVisible(character, currentUserId, projectInfo));
+                .Where(character => character.IsActive && IsVisible(character, currentUserId));
 
             return characters.Select(GenerateCharacter);
         }
