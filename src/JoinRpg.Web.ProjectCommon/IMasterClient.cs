@@ -1,6 +1,8 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
+
 namespace JoinRpg.Web.ProjectCommon;
 
 public interface IMasterClient
 {
-    Task<List<MasterViewModel>> GetMasters(int projectId);
+    Task<List<UserInfoHeader>> GetMasters(int projectId);
 }
