@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
@@ -9,12 +10,28 @@ namespace JoinRpg.Web.Models.Characters;
 
 public static class CharacterGroupListViewModel
 {
-    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, UserIdentification? currentUserId, ProjectInfo projectInfo)
-        => new CharacterGroupHierarchyBuilder(field, currentUserId, projectInfo).Generate().WhereNotNull();
+    /// <param name="characters">
+    /// Персонажи поддерева <paramref name="field"/> доменными агрегатами (ADR013). Дерево групп
+    /// пока берётся из EF: порядок дочерних групп (<c>ChildGroupsOrdering</c>) в <c>ProjectInfo</c>
+    /// не переехал, а менять порядок в этом JSON нельзя — им пользуются внешние сайты игр.
+    /// </param>
+    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(
+        CharacterGroup field,
+        IReadOnlyCollection<CharacterInfo> characters,
+        UserIdentification? currentUserId,
+        ProjectInfo projectInfo)
+        => new CharacterGroupHierarchyBuilder(field, characters, currentUserId, projectInfo).Generate().WhereNotNull();
 
-    //TODO: unit tests
-    private class CharacterGroupHierarchyBuilder(CharacterGroup root, UserIdentification? currentUserId, ProjectInfo projectInfo)
+    private class CharacterGroupHierarchyBuilder(
+        CharacterGroup root,
+        IReadOnlyCollection<CharacterInfo> characters,
+        UserIdentification? currentUserId,
+        ProjectInfo projectInfo)
     {
+        private readonly ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup = characters
+            .SelectMany(character => character.DirectGroupIds.Select(groupId => (groupId, character)))
+            .ToLookup(x => x.groupId, x => x.character);
+
         private IList<int> AlreadyOutputedChars { get; } = [];
 
         private IList<CharacterGroupListItemViewModel> Results { get; } = [];
@@ -92,31 +109,55 @@ public static class CharacterGroupListViewModel
 
         private IEnumerable<CharacterViewModel> GenerateCharacters(CharacterGroup characterGroup)
         {
-            var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(currentUserId));
+            var groupInfo = ProjectInfo.GetGroupById(characterGroup.GetId());
+
+            // Порядок тот же, что давал GetOrderedCharacters: сохранённый порядок группы поверх
+            // идентификаторов персонажей.
+            var characters = charactersByGroup[groupInfo.Id]
+                .OrderByStoredOrder(character => character.Id.CharacterId, groupInfo.ChildCharactersOrdering)
+                .Where(character => character.IsActive && IsVisible(character));
 
             return characters.Select(GenerateCharacter);
         }
 
-        private CharacterViewModel GenerateCharacter(Character arg)
+        /// <summary>
+        /// Зеркало <c>WorldObjectExtensions.IsVisible</c> для персонажа поверх агрегата.
+        /// </summary>
+        private bool IsVisible(CharacterInfo character)
+            => IsPublic(character) || projectInfo.PublishPlot || projectInfo.HasMasterAccess(currentUserId);
+
+        /// <summary>
+        /// Публичность в смысле колонки <c>Character.IsPublic</c>.
+        /// </summary>
+        /// <remarks>
+        /// Именно так, а не через <c>CharacterInfo.IsPublic</c>: тот означает
+        /// <c>CharacterVisibility.Public</c>, а у публичного персонажа со скрытым игроком
+        /// видимость — <c>PlayerHidden</c>. Он публичный, просто игрок не показывается; иначе
+        /// такие персонажи исчезли бы из публичного JSON.
+        /// </remarks>
+        private static bool IsPublic(CharacterInfo character)
+            => character.CharacterTypeInfo.CharacterVisibility != CharacterVisibility.Private;
+
+        private CharacterViewModel GenerateCharacter(CharacterInfo arg)
         {
             var vm = new CharacterViewModel
             {
-                CharacterId = arg.CharacterId,
+                CharacterId = arg.Id.CharacterId,
                 CharacterName = arg.CharacterName,
-                IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
+                IsFirstCopy = !AlreadyOutputedChars.Contains(arg.Id.CharacterId),
                 ApplyStatus = new CharacterApplyViewModel(
-                    arg.GetId(),
+                    arg.Id,
                     arg.GetBusyStatus(),
-                    arg.CharacterSlotLimit,
-                    arg.IsHot,
-                    arg.IsAvailableForPlayer(projectInfo)),
-                Description = ((MarkdownString?)arg.Description).ToHtmlString(),
-                IsPublic = arg.IsPublic,
+                    arg.CharacterTypeInfo.SlotLimit,
+                    arg.CharacterTypeInfo.IsHot,
+                    ClaimValidator.IsAvailableForPlayer(arg, projectInfo)),
+                Description = arg.Description.ToHtmlString(),
+                IsPublic = IsPublic(arg),
                 IsActive = arg.IsActive,
-                ActiveClaimsCount = arg.Claims.Count(claim => claim.ClaimStatus.IsActive()),
+                ActiveClaimsCount = arg.ActiveClaimsCount,
                 PlayerLink = arg.GetCharacterPlayerLinkViewModel(currentUserId),
                 HasEditRolesAccess = HasEditRolesAccess,
-                ProjectId = arg.ProjectId,
+                ProjectId = arg.Id.ProjectId.Value,
             };
             if (vm.IsFirstCopy)
             {

@@ -1,8 +1,10 @@
 using System.Text.Json;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -26,7 +28,8 @@ public class GameGroupsController(
     IUriLocator<UserLinkViewModel> userLinkLocator,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
-    ICharacterGroupRepository charGroupRepository
+    ICharacterGroupRepository charGroupRepository,
+    ICharacterInfoRepository characterInfoRepository
     ) : JoinControllerGameBase
 {
     [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
@@ -110,10 +113,20 @@ public class GameGroupsController(
     private async Task<IEnumerable<CharacterViewModel>> GetHotCharacters(CharacterGroup field)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(field.GetId().ProjectId);
-        return CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdentificationOrDefault, projectInfo)
+        var characters = await LoadCharactersOfSubtree(field, projectInfo);
+        return CharacterGroupListViewModel.GetGroups(field, characters, currentUserAccessor.UserIdentificationOrDefault, projectInfo)
           .SelectMany(
             g => g.PublicCharacters.Where(ch => ch.ApplyStatus.IsHot && ch.IsFirstCopy)).Distinct();
     }
+
+    /// <summary>
+    /// Персонажи всего поддерева группы доменными агрегатами (ADR013) — по ним считается доступность
+    /// заявки и занятость роли.
+    /// </summary>
+    private async Task<IReadOnlyCollection<CharacterInfo>> LoadCharactersOfSubtree(CharacterGroup field, ProjectInfo projectInfo)
+        => await characterInfoRepository.GetCharacterInfosByGroups(
+            field.GetId().ProjectId,
+            [.. projectInfo.GetChildGroupIdsIncludingThis([field.GetId()])]);
 
     [HttpGet("~/{projectId}/roles/{characterGroupId}/indexjson")]
     [AllowAnonymous]
@@ -127,6 +140,7 @@ public class GameGroupsController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var characters = await LoadCharactersOfSubtree(field, projectInfo);
 
         var hasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor);
         return ReturnJson(new
@@ -134,7 +148,7 @@ public class GameGroupsController(
             field.Project.ProjectId,
             field.Project.ProjectName,
             ShowEditControls = hasMasterAccess,
-            Groups = CharacterGroupListViewModel.GetGroups(field, currentUserAccessor.UserIdentificationOrDefault, projectInfo).Select(
+            Groups = CharacterGroupListViewModel.GetGroups(field, characters, currentUserAccessor.UserIdentificationOrDefault, projectInfo).Select(
                 g =>
                   new
                   {
