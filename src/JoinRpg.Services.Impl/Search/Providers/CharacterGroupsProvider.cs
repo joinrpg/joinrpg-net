@@ -20,16 +20,19 @@ internal class CharacterGroupsProvider : WorldObjectProviderBase, IProjectScoped
     {
         int? characterGroupIdToFind = int.TryParse(searchString.Trim(), out var parsedValue) ? parsedValue : null;
 
-        var queryResults =
-          await
+        var query =
             unitOfWork.GetDbSet<CharacterGroup>()
               .Where(cg =>
                 (cg.CharacterGroupId == characterGroupIdToFind
                 || cg.CharacterGroupName.Contains(searchString)
                 || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString)))
                 && cg.IsActive && !cg.IsRoot
-                && (projectId == null || cg.ProjectId == projectId.Value)
-              )
+              );
+
+        query = query.FilterByProject(projectId, cg => cg.ProjectId);
+
+        var queryResults =
+          await query
               .OrderByDescending(cg => cg.CharacterGroupName.Contains(searchString))
               .ToListAsync();
 

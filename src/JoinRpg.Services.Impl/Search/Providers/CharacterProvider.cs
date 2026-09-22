@@ -17,15 +17,18 @@ internal class CharacterProvider(IUnitOfWork unitOfWork) : WorldObjectProviderBa
         (var characterIdToFind, var matchByIdIsPerfect) = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath);
 
         //TODO we don't search anymore by description
-        var results =
-          await
+        var query =
             unitOfWork.GetDbSet<Character>()
               .Where(c =>
                 (c.CharacterId == characterIdToFind
                 || c.CharacterName.Contains(searchString))
                 && c.IsActive
-                && (projectId == null || c.ProjectId == projectId.Value)
-              )
+              );
+
+        query = query.FilterByProject(projectId, c => c.ProjectId);
+
+        var results =
+          await query
               .OrderByDescending(cg => cg.CharacterName.Contains(searchString))
               .ToListAsync();
 
