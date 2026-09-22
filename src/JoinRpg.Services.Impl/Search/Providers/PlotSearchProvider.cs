@@ -16,14 +16,15 @@ internal class PlotSearchProvider(IUnitOfWork unitOfWork) : IProjectScopedSearch
             return [];
         }
 
-        var results =
-         await
+        var query =
             unitOfWork.GetDbSet<PlotFolder>()
              .Where(p =>
                p.IsActive && p.Project.ProjectAcls.Any(acl => acl.UserId == currentUserId) && p.MasterTitle.Contains(searchString)
-               && (projectId == null || p.ProjectId == projectId.Value)
-             )
-             .ToListAsync();
+             );
+
+        query = query.FilterByProject(projectId, p => p.ProjectId);
+
+        var results = await query.ToListAsync();
 
         return results.Select(plot => new SearchResult
         {

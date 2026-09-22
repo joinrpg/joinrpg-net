@@ -24,11 +24,13 @@ internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : IProjectScopedSearch
             return [];
         }
 
-        var results =
-          await
+        var query =
             unitOfWork.GetDbSet<Claim>()
-              .Where(claim => claim.ClaimId == idToFind && (projectId == null || claim.ProjectId == projectId.Value))
-              .ToListAsync();
+              .Where(claim => claim.ClaimId == idToFind);
+
+        query = query.FilterByProject(projectId, claim => claim.ProjectId);
+
+        var results = await query.ToListAsync();
 
         return results
           .Where(claim => claim.HasMasterAccess(UserIdentification.FromOptional(currentUserId)))
