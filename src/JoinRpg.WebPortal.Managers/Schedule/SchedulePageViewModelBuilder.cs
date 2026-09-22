@@ -2,7 +2,6 @@ using JoinRpg.Common.WebComponents;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
-using JoinRpg.Web.Models.UserProfile;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.WebPortal.Managers.Schedule;
@@ -41,7 +40,7 @@ internal static class SchedulePageViewModelBuilder
         {
             return [UserLinkViewModel.Hidden];
         }
-        return [.. item.Authors.Select(x => UserLinks.Create(x, ViewMode.Show))];
+        return [.. item.Authors.Select(x => new UserLinkViewModel(x))];
     }
 
     public static TableHeaderViewModel ToViewModel(this ScheduleItemAttribute scheduleItem)

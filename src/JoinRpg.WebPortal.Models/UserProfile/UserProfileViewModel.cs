@@ -3,7 +3,6 @@ using JoinRpg.Common.WebComponents;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models.ClaimList;
-using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.Web.Models;
@@ -92,13 +91,13 @@ public class UserProfileDetailsViewModel
 
     public UserProfileDetailsViewModel(UserInfoHeader user)
     {
-        User = UserLinks.Create(user);
+        User = new UserLinkViewModel(user);
         Reason = AccessReasonView.CoMaster;
     }
 
     private UserProfileDetailsViewModel(UserInfo user, UserProfileAccessReason accessReason, bool viewAsAdmin)
     {
-        User = UserLinks.Create(user, ViewMode.Show);
+        User = new UserLinkViewModel(user.ToUserInfoHeader());
         Reason = (AccessReasonView)accessReason;
         SocialNetworkAccess = (ContactsAccessTypeView)user.Social.SocialNetworksAccess;
         Avatar = user.SelectedAvatarId;

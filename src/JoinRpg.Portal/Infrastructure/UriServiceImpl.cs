@@ -117,7 +117,7 @@ internal class UriServiceImpl(
     public string Get(ILinkable link) => GetUri(link).AbsoluteUri;
 
     Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target) =>
-        GetUri(new Linkable(LinkType.ResultUser, ProjectId: null, Identification: target.UserId.ToString()));
+        GetUri(new Linkable(LinkType.ResultUser, ProjectId: null, Identification: target.UserId.Value.ToString()));
     Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
         => GetUri(new Linkable(target.CharacterId));
     public Uri GetUri(ProjectIdentification target) => GetUri(new Linkable(target));

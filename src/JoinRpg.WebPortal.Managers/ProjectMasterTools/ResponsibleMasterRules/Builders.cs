@@ -1,5 +1,4 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.Web.Models.UserProfile;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
 
 namespace JoinRpg.WebPortal.Managers.ProjectMasterTools.ResponsibleMasterRules;
@@ -12,5 +11,5 @@ internal static class Builders
         => new(
             Id: group.Id.CharacterGroupId,
             GroupName: group.Name,
-            MasterLink: UserLinks.Create(new UserInfoHeader(master.UserId, master.Name)));
+            MasterLink: new UserLinkViewModel(master.UserInfo));
 }

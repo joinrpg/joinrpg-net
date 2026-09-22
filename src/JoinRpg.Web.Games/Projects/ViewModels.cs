@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Claims;
 using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using Microsoft.AspNetCore.Components;
@@ -30,7 +29,7 @@ public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDe
 
     [Display(Name = "Дата создания")]
     public DateOnly CreatedDate { get; } = project.CreateDate;
-    public IEnumerable<UserLinkViewModel> Masters { get; } = project.Masters.Select(acl => acl.ToUserLinkViewModel());
+    public IEnumerable<UserLinkViewModel> Masters { get; } = project.Masters.Select(acl => new UserLinkViewModel(acl.UserInfo));
 
     [DisplayName("Анонс проекта")]
     public MarkupString ProjectAnnounce { get; } = projectDescription;

@@ -8,7 +8,6 @@ using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.Claims;
-using JoinRpg.Web.Models.UserProfile;
 using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.WebPortal.Managers.UnifiedGrid;
@@ -60,12 +59,12 @@ public static class ItemBuilder
         var respMaster = projectInfo.GetMasterById(claim.ResponsibleMasterId).UserInfo;
 
         return new UgClaimForCaptainViewModel(
-            UserLinks.Create(claim.Player, ViewMode.Show),
+            new UserLinkViewModel(claim.Player),
             ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,
             claim.CreateDate,
             claim.CheckInDate,
-            UserLinks.Create(respMaster, ViewMode.Show),
+            new UserLinkViewModel(respMaster),
             character.CalculateClaimBalance(claim, projectInfo),
             claim.ClaimId,
             claim.Player.DisplayName.FullName

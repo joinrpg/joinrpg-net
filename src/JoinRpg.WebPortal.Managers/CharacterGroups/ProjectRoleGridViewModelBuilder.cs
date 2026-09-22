@@ -238,7 +238,7 @@ internal static class ProjectRoleGridViewModelBuilder
         }
 
         var contacts = BuildContacts(player, contactsColumn, projectInfo);
-        var link = new UserLinkViewModel(player.UserId, player.GetDisplayName(), playerViewMode);
+        var link = new UserLinkViewModel(player.ToUserInfoHeader(), playerViewMode);
         return new PlayerCellViewModel(applyStatus, contacts, link);
     }
 

@@ -1,8 +1,8 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Web.Models.ClaimList;
-using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -124,6 +124,6 @@ public class CharacterNavigationViewModel
         UserIdentification? currentUserId)
         => character.ProjectInfo.HasMasterAccess(currentUserId)
             ? [.. character.Claims.Where(predicate).Select(claim =>
-                new ClaimShortListItemViewModel(character.CharacterName, claim.ClaimId, UserLinks.Create(claim.Player)))]
+                new ClaimShortListItemViewModel(character.CharacterName, claim.ClaimId, new UserLinkViewModel(claim.Player)))]
             : [];
 }
