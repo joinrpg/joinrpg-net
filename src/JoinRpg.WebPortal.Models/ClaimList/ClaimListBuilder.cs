@@ -61,7 +61,7 @@ public static class ClaimListBuilder
 
         return new ClaimListItemForExportViewModel(
             claim.Character.CharacterName,
-            new UserLinkViewModel(claim.Player.GetUserInfo().ToUserInfoHeader()),
+            new UserLinkViewModel(claim.Player.ToUserInfoHeader()),
             projectInfo.ProjectName,
             ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,
