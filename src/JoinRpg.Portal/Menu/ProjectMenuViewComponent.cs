@@ -21,9 +21,10 @@ public class ProjectMenuViewComponent(
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
+        var projectId = currentProjectAccessor.ProjectId;
         try
         {
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProjectAccessor.ProjectId);
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
             if (currentUserAccessor.UserIdentificationOrDefault is not UserIdentification userId)
             {
@@ -40,6 +41,14 @@ public class ProjectMenuViewComponent(
             {
                 return await GeneratePlayerMenu(projectInfo, userId);
             }
+        }
+        catch (JoinRpgEntityNotFoundException ex)
+        {
+            // Штатная ситуация: запрос к несуществующему проекту (например, бот пришёл на /2024).
+            // Мы отдаём 404, но projectId остаётся в HttpContext.Items, и меню проекта всё равно
+            // рисуется на странице ошибки. Меню тут показывать нечего, но это не ошибка.
+            logger.LogDebug(ex, "Проект {projectId} не найден, меню проекта не показываем", projectId);
+            return Content("");
         }
         catch (Exception ex)
         {

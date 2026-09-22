@@ -21,12 +21,9 @@ public class MainMenuViewComponent(
             string? currentProjectName = null;
             if (HttpContext.TryGetProjectIdFromItems() is ProjectIdentification currentProjectId)
             {
-                // Кажется, будто это лишнее хождение в базу, но оно всегда будет в кеше
-                var info = await projectMetadataRepository.GetProjectMetadata(currentProjectId);
+                currentProjectName = await TryGetProjectName(currentProjectId);
 
-                currentProjectName = info.ProjectName;
-
-                if (currentProjectName.Length > 30)
+                if (currentProjectName?.Length > 30)
                 {
                     currentProjectName = currentProjectName.Take(30).AsString() + "...";
                 }
@@ -40,6 +37,29 @@ public class MainMenuViewComponent(
         {
             logger.LogError(ex, "Ошибка при загрузке данных главного меню");
             return View("MainMenu", new MainMenuViewModel([], null));
+        }
+    }
+
+    /// <summary>
+    /// Название текущего проекта, если он существует.
+    /// </summary>
+    /// <remarks>
+    /// Кажется, будто это лишнее хождение в базу, но оно всегда будет в кеше.
+    /// Проекта может не быть вовсе — например, бот пришёл на /2024, получил 404 и мы рисуем
+    /// страницу ошибки, а projectId всё ещё лежит в HttpContext.Items. Это штатная ситуация,
+    /// ошибкой её логировать не нужно.
+    /// </remarks>
+    private async Task<string?> TryGetProjectName(ProjectIdentification currentProjectId)
+    {
+        try
+        {
+            var info = await projectMetadataRepository.GetProjectMetadata(currentProjectId);
+            return info.ProjectName;
+        }
+        catch (JoinRpgEntityNotFoundException ex)
+        {
+            logger.LogDebug(ex, "Проект {projectId} не найден, не показываем его название в меню", currentProjectId);
+            return null;
         }
     }
 
