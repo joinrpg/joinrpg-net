@@ -75,6 +75,13 @@ public static class OAuthServerRegistration
                 options.AllowAuthorizationCodeFlow()
                        .RequireProofKeyForCodeExchange();
 
+                // RequireProofKeyForCodeExchange требует PKCE, но не ограничивает метод, и
+                // сервер рекламировал ещё и plain. При plain code_verifier едет в
+                // authorize-запросе открытым текстом — защита от перехвата кода почти нулевая.
+                // OAuth 2.1 и ADR012 §3 требуют S256.
+                options.Configure(serverOptions =>
+                    serverOptions.CodeChallengeMethods.Remove(OpenIddictConstants.CodeChallengeMethods.Plain));
+
                 options.AllowRefreshTokenFlow();
                 options.SetRefreshTokenLifetime(TimeSpan.FromDays(90));
 
