@@ -32,15 +32,25 @@ public static class McpRegistration
         // Регистрируется всегда, в том числе когда MCP выключен: иначе «выключен» и «сломан»
         // снаружи неотличимы — оба дают 404 на /mcp.
         //
-        // Выключенный MCP — Degraded, а не Healthy: это не нормальное состояние, а
-        // недонастроенное окружение. При этом Degraded не отдаёт 503 (по умолчанию 200) и
-        // тегом ready не помечен, так что ни liveness, ни readiness не ломает — инстанс
-        // продолжает обслуживать сайт, у которого просто нет MCP.
+        // Выключенный MCP — Healthy с описанием, а не Degraded. Сначала он был Degraded, но
+        // инфраструктура health check'ов логирует WARN на каждый не-Healthy результат, а k8s
+        // опрашивает /health по таймеру: на проде это дало ~26 предупреждений за 8 минут об
+        // одном и том же статичном состоянии. Механизм наблюдаемости стал шумом и маскировал
+        // настоящие сигналы. Состояние при этом никуда не делось — оно по-прежнему видно в
+        // /health в описании и в поле enabled, а при старте о нём пишется одна строчка лога
+        // (см. MapJoinMcp).
+        //
+        // Degraded/Unhealthy остаются за случаем «MCP сконфигурирован, но не работает» —
+        // это действительно аномалия, о которой стоит предупреждать в каждой пробе.
         services.AddHealthChecks().AddCheck(
             McpHealthCheckName,
             () => enabled
-                ? HealthCheckResult.Healthy("MCP включён, /mcp зарегистрирован")
-                : HealthCheckResult.Degraded("MCP выключен: не заданы Mcp:ClientId/Mcp:ClientSecret"));
+                ? HealthCheckResult.Healthy(
+                    "MCP включён, /mcp зарегистрирован",
+                    new Dictionary<string, object> { ["enabled"] = true })
+                : HealthCheckResult.Healthy(
+                    "MCP выключен: не заданы Mcp:ClientId/Mcp:ClientSecret. Для окружения без MCP это штатно.",
+                    new Dictionary<string, object> { ["enabled"] = false }));
 
         if (!enabled)
         {

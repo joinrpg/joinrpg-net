@@ -19,30 +19,38 @@ public class McpHealthCheckTests
         RatingHost = "rating.bastilia.ru",
     };
 
+    /// <summary>
+    /// Выключенный MCP — не деградация, а штатное состояние окружения, где resource-клиент не
+    /// заводили. Пока он отдавал Degraded, инфраструктура health check'ов писала WARN на каждую
+    /// пробу k8s (~26 предупреждений за 8 минут на проде) — шум, маскирующий настоящие сигналы.
+    /// Наблюдаемость обеспечивается описанием и полем enabled, а не уровнем логирования.
+    /// </summary>
     [Fact]
-    public async Task NotConfigured_HealthCheckReportsDegraded()
+    public async Task NotConfigured_HealthCheckReportsHealthyAndDisabled()
     {
         var report = await RunHealthCheckAsync(mcpOptions: null);
 
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
-        entry.Status.ShouldBe(HealthStatus.Degraded);
+        entry.Status.ShouldBe(HealthStatus.Healthy);
         entry.Description.ShouldContain("выключен");
+        entry.Data["enabled"].ShouldBe(false);
     }
 
     [Fact]
-    public async Task SecretMissing_HealthCheckReportsDegraded()
+    public async Task SecretMissing_HealthCheckReportsHealthyAndDisabled()
     {
         // Половинчатая конфигурация — самый коварный случай: ClientId задан, секрет забыли.
         var report = await RunHealthCheckAsync(new McpResourceOptions { ClientId = "portal-mcp", ClientSecret = "" });
 
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
-        entry.Status.ShouldBe(HealthStatus.Degraded);
+        entry.Status.ShouldBe(HealthStatus.Healthy);
         entry.Description.ShouldContain("выключен");
+        entry.Data["enabled"].ShouldBe(false);
     }
 
     /// <summary>
-    /// Degraded не должен превращаться в 503 и ронять readiness: сайт без MCP продолжает
-    /// работать. Проверка не помечена тегом ready именно поэтому.
+    /// Сайт без MCP продолжает работать, так что проверка не должна ронять readiness — тегом
+    /// ready она не помечена.
     /// </summary>
     [Fact]
     public async Task Disabled_DoesNotAffectReadiness()
@@ -61,6 +69,7 @@ public class McpHealthCheckTests
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
         entry.Status.ShouldBe(HealthStatus.Healthy);
         entry.Description.ShouldContain("включён");
+        entry.Data["enabled"].ShouldBe(true);
     }
 
     private static async Task<HealthReport> RunHealthCheckAsync(McpResourceOptions? mcpOptions)
