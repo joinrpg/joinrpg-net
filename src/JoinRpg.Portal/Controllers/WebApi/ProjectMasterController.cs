@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,6 @@ public class ProjectMasterController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<List<MasterViewModel>> GetList(int projectId)
+    public async Task<List<UserInfoHeader>> GetList(int projectId)
         => await client.GetMasters(new ProjectIdentification(projectId));
 }

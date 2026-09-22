@@ -96,7 +96,7 @@
         try
         {
 
-            _model = await Client.AddResponsibleMasterRule(ProjectIdentification, model.Group.CharacterGroupId.CharacterGroupId, model.Master.MasterId.Value);
+            _model = await Client.AddResponsibleMasterRule(ProjectIdentification, model.Group.CharacterGroupId.CharacterGroupId, model.Master.UserId.Value);
         }
         catch (Exception exc)
         {

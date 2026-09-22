@@ -1,12 +1,13 @@
 @using JoinRpg.Common.PrimitiveTypes
+@using JoinRpg.Common.PrimitiveTypes.Users
 @inject IMasterClient client
 
-<TypedSelector TKey="UserIdentification" TItem="MasterViewModel"
+<TypedSelector TKey="UserIdentification" TItem="UserInfoHeader"
     Name="@Name"
     Items="items"
-    KeySelector="@(m => m.MasterId)"
+    KeySelector="@(m => m.UserId)"
     ToListItem="@(m => TypedSelectList.CreateItem(
-        Value: m.MasterId,
+        Value: m.UserId,
         Text: m.DisplayName.DisplayName,
         Subtext: m.DisplayName.FullName ?? "",
         ExtraSearch: m.DisplayName.FullName ?? ""))"
@@ -23,16 +24,16 @@
     [Parameter] public EventCallback<UserIdentification?> MasterIdChanged { get; set; }
     [Parameter] public UserIdentification[] IdsToRemove { get; set; } = [];
 
-    [Parameter] public MasterViewModel? Master { get; set; }
-    [Parameter] public EventCallback<MasterViewModel?> MasterChanged { get; set; }
+    [Parameter] public UserInfoHeader? Master { get; set; }
+    [Parameter] public EventCallback<UserInfoHeader?> MasterChanged { get; set; }
 
     private UserIdentification[] Selected { get; set; } = [];
-    private MasterViewModel[]? items;
+    private UserInfoHeader[]? items;
 
     protected override async Task OnInitializedAsync()
     {
         var masters = await client.GetMasters(ProjectId);
-        items = [.. masters.Where(master => !IdsToRemove.Contains(master.MasterId))];
+        items = [.. masters.Where(master => !IdsToRemove.Contains(master.UserId))];
     }
 
     protected override void OnParametersSet()
@@ -44,14 +45,14 @@
         }
         else if (Master is not null)
         {
-            Selected = [Master.MasterId];
+            Selected = [Master.UserId];
         }
     }
 
-    private async Task HandleSelectedChanged(MasterViewModel[] values)
+    private async Task HandleSelectedChanged(UserInfoHeader[] values)
     {
         var master = values.Length == 0 ? null : values.Single();
-        await MasterIdChanged.InvokeAsync(master?.MasterId);
+        await MasterIdChanged.InvokeAsync(master?.UserId);
         await MasterChanged.InvokeAsync(master);
     }
 }
