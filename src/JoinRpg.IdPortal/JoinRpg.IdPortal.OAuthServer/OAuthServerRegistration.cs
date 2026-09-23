@@ -6,6 +6,7 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.IdPortal.OAuthServer.Cimd;
 using JoinRpg.Interfaces;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
@@ -20,6 +21,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
+using OpenIddict.EntityFrameworkCore.Models;
+using OpenIddict.Server;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -52,9 +55,16 @@ public static class OAuthServerRegistration
                 // Configure OpenIddict to use the Entity Framework Core stores and models.
                 options.UseEntityFrameworkCore()
                        .UseDbContext<IdPortalDbContext>();
+
+                // Клиенты с client_id в виде HTTPS-URL (CIMD, ADR012 §3) резолвятся из
+                // скачанного документа, а не только из таблицы приложений. Подмена менеджера
+                // покрывает и authorize, и token разом — см. CimdApplicationManager.
+                options.ReplaceApplicationManager<OpenIddictEntityFrameworkCoreApplication, CimdApplicationManager>();
             }
 
             );
+
+        builder.Services.AddCimdSupport();
 
         builder.Services.AddOpenIddict()
 
@@ -87,6 +97,16 @@ public static class OAuthServerRegistration
 
                 options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Phone, Scopes.Profile, Scopes.OfflineAccess,
                     JoinRpgScopes.Read, JoinRpgScopes.CharactersWrite);
+
+                // §5 драфта: клиент обязан узнать о поддержке CIMD из метаданных, иначе он
+                // не станет и пробовать. Декларативного способа добавить своё поле в discovery
+                // в OpenIddict нет — только обработчик события.
+                options.AddEventHandler<OpenIddictServerEvents.HandleConfigurationRequestContext>(
+                    configuration => configuration.UseInlineHandler(eventContext =>
+                    {
+                        eventContext.Metadata[CimdRegistration.SupportedMetadataParameter] = true;
+                        return default;
+                    }));
 
                 if (certOptions?.Signing?.Base64 is { } signingBase64)
                 {
@@ -219,6 +239,16 @@ public static class OAuthServerRegistration
         if (request?.IsAuthorizationCodeFlow() != true || request.ClientId is null)
         {
             throw new NotImplementedException("The specified grant is not implemented.");
+        }
+
+        // CIMD-клиент живёт как документ по URL, строки в БД у него изначально нет. Заводим её
+        // здесь — то есть уже после аутентификации, чтобы анонимный запрос на authorize не мог
+        // засорять таблицу приложений произвольными URL. Строка обязательна: у Authorizations
+        // и Tokens внешний ключ на приложение, без неё токены не связались бы с клиентом и не
+        // работали бы ни отзыв, ни список подключённых приложений.
+        if (applicationManager is CimdApplicationManager cimdManager)
+        {
+            _ = await cimdManager.EnsurePersistedAsync(request.ClientId, context.RequestAborted);
         }
 
         // Note: the client credentials are automatically validated by OpenIddict:
