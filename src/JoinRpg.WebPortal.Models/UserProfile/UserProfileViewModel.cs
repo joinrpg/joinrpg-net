@@ -117,7 +117,7 @@ public class UserProfileDetailsViewModel
             Vk = user.Social.Vk;
             AllrpgId = user.Social.AllrpgInfoId;
             Telegram = user.Social.Telegram;
-            Livejournal = LiveJournalId.FromOptional(user.Social.LiveJournal);
+            Livejournal = user.Social.LiveJournal;
             HasSocialAccess = true;
         }
 

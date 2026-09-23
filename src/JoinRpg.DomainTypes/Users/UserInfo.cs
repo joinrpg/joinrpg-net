@@ -117,7 +117,7 @@ public record class UserInfo(
 
 public record class UserSocialNetworks(
     TelegramSocialLink? Telegram,
-    string? LiveJournal,
+    LiveJournalId? LiveJournal,
     int? AllrpgInfoId,
     VkSocialLink? Vk,
     ContactsAccessType SocialNetworksAccess)
