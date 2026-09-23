@@ -28,10 +28,19 @@ internal abstract record ClaimMutationContext(
     User Initiator,
     Action<object> AddEntity,
     Action<object> RemoveEntity,
+    Func<CharacterIdentification, Task<(Character Entity, CharacterInfo Info)>> LoadOtherCharacterCore,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper)
     : CharacterMutationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, AddEntity, RemoveEntity, FieldSaveHelper)
 {
+    /// <summary>
+    /// Явный выход за границу агрегата: другой персонаж того же проекта — трекаемая сущность вместе
+    /// со своим доменным снимком. Операции над двумя персонажами (перенос, восстановление, вторая
+    /// роль) пересекают границу только так, а не скрытой ленивой навигацией (ADR014).
+    /// </summary>
+    public Task<(Character Entity, CharacterInfo Info)> LoadOtherCharacter(CharacterIdentification characterId)
+        => LoadOtherCharacterCore(characterId);
+
     /// <summary>
     /// Комментарии, созданные операцией, в порядке создания. Уведомления по ним сервис отправит
     /// после сохранения — см. <see cref="PendingComment"/>.
@@ -105,8 +114,9 @@ internal sealed record ClaimMutationContext<TArgs>(
     User Initiator,
     Action<object> AddEntity,
     Action<object> RemoveEntity,
+    Func<CharacterIdentification, Task<(Character Entity, CharacterInfo Info)>> LoadOtherCharacterCore,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper,
     TArgs Request)
     : ClaimMutationContext(Claim, ClaimInfo, Character, CharacterInfo, ProjectInfo, Now, CurrentUser,
-        Initiator, AddEntity, RemoveEntity, FieldSaveHelper, CommentHelper);
+        Initiator, AddEntity, RemoveEntity, LoadOtherCharacterCore, FieldSaveHelper, CommentHelper);

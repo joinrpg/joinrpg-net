@@ -14,6 +14,7 @@ public enum ExtraAccessReason
 
 public static class ClaimAcccessExtensions
 {
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     public static Claim RequestAccess(
         [NotNull]
         this Claim? claim,

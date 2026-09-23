@@ -7,6 +7,8 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.Characters;
+using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;
@@ -23,7 +25,8 @@ internal class ClaimServiceImpl(
     ILogger<CharacterServiceImpl> logger,
     IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
-    IImpersonateAccessor impersonateAccessor
+    IImpersonateAccessor impersonateAccessor,
+    ICharacterPropsService characterPropsService
     )
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService
 {
@@ -620,68 +623,71 @@ internal class ClaimServiceImpl(
     }
 
 
-    public async Task DeclineByPlayer(ClaimIdentification claimId, string commentText)
-    {
-        var (claim, projectInfo) = await LoadClaimAsPlayer(claimId);
+    public Task DeclineByPlayer(ClaimIdentification claimId, string commentText)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.PlayerOnly,
+            ProjectActiveRequirement.MustBeActive,
+            commentText,
+            async ctx =>
+            {
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.DeclinedByUser);
 
-        claim.EnsureCanChangeStatus(ClaimStatus.DeclinedByUser);
+                // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
+                ctx.Claim.PlayerAllowedSenstiveData = false;
 
-        claim.PlayerDeclinedDate = Now;
-        claim.ClaimStatus = ClaimStatus.DeclinedByUser;
-        claim.PlayerAllowedSenstiveData = false; // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
+                await accommodationInviteService.DeclineAllClaimInvites(claimId);
 
+                var roomEmail = await CommonClaimDecline(ctx.Claim);
 
-        await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+                _ = ctx.AddComment(
+                    ctx.Request,
+                    CommentExtraAction.DeclineByPlayer,
+                    ClaimOperationType.PlayerChange);
 
-        var roomEmail = await CommonClaimDecline(claim);
+                if (roomEmail is not null)
+                {
+                    // Порядок «сначала уведомления, потом письма легаси-канала» обеспечивает сервис.
+                    ctx.AddLegacyEmail(emailService => emailService.Email(roomEmail));
+                }
+            });
 
+    public Task RestoreByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            (CommentText: commentText, CharacterId: characterId),
+            async ctx =>
+            {
+                var oldCharacterId = ctx.Claim.GetCharacterId(); // Сохраняем на случай если он изменится
+                var (character, _) = await ctx.LoadOtherCharacter(ctx.Request.CharacterId);
 
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.AddedByMaster);
+                ctx.Claim.ClaimDenialStatus = null;
+                // Мастер не может дать разрешение на чувствительные данные от имени игрока
+                ctx.Claim.PlayerAllowedSenstiveData = false;
+                ctx.MarkDiscussed(isVisibleToPlayer: true);
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.DeclineByPlayer, ClaimOperationType.PlayerChange, Now);
+                if (character.ApprovedClaim is not null)
+                {
+                    // Персонаж, куда мы пытаемся восстановить заявку, уже занят.
+                    throw new ClaimTargetIsNotAcceptingClaims();
+                }
 
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-        if (roomEmail != null)
-        {
-            await EmailService.Email(roomEmail);
-        }
-    }
+                ctx.Claim.Character = character;
+                ctx.Claim.CharacterId = ctx.Request.CharacterId.Id;
 
+                //Ensure that character is active
+                character.IsActive = true;
+                ctx.MarkChanged(character);
 
-    public async Task RestoreByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
-    {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-
-        var oldCharacterId = claim.GetCharacterId(); // Сохраняем на случай если он изменится
-        var character = await CharactersRepository.GetCharacterAsync(characterId)
-            ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, nameof(Character));
-
-        claim.EnsureCanChangeStatus(ClaimStatus.AddedByMaster);
-        claim.ClaimStatus = ClaimStatus.AddedByMaster;
-        claim.ClaimDenialStatus = null;
-        claim.PlayerAllowedSenstiveData = false; // Мастер не может дать разрешение на чувствительные данные от имени игрока
-        SetDiscussed(claim, true);
-
-        if (character.ApprovedClaim is not null)
-        {
-            // Персонаж, куда мы пытаемся восстановить заявку, уже занят.
-            throw new ClaimTargetIsNotAcceptingClaims();
-        }
-
-        claim.Character = character;
-        claim.CharacterId = characterId.Id;
-
-        //Ensure that character is active
-        claim.Character.IsActive = true;
-        MarkChanged(claim.Character);
-
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.RestoreByMaster, ClaimOperationType.MasterVisibleChange, Now);
-
-        email = email with { AnotherCharacterId = oldCharacterId };
-
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+                _ = ctx.AddComment(
+                        ctx.Request.CommentText,
+                        CommentExtraAction.RestoreByMaster,
+                        ClaimOperationType.MasterVisibleChange)
+                    .Decorate(notification => notification with { AnotherCharacterId = oldCharacterId });
+            });
 
     public async Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId)
     {
@@ -809,21 +815,22 @@ internal class ClaimServiceImpl(
         // await EmailService.Email(email);
     }
 
-    public async Task OnHoldByMaster(ClaimIdentification claimId, string commentText)
-    {
+    public Task OnHoldByMaster(ClaimIdentification claimId, string commentText)
+        => characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            commentText,
+            ctx =>
+            {
+                ctx.MarkCharacterChangedIfApproved();
+                ctx.ChangeStatus(ctx.Claim, ClaimStatus.OnHold);
 
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
-
-        MarkCharacterChangedIfApproved(claim);
-        claim.ChangeStatusWithCheck(ClaimStatus.OnHold);
-
-
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(commentText, claim, projectInfo, CommentExtraAction.OnHoldByMaster, ClaimOperationType.MasterVisibleChange, Now);
-
-
-        await UnitOfWork.SaveChangesAsync();
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+                _ = ctx.AddComment(
+                    ctx.Request,
+                    CommentExtraAction.OnHoldByMaster,
+                    ClaimOperationType.MasterVisibleChange);
+            });
 
     private void MarkCharacterChangedIfApproved(Claim claim)
     {

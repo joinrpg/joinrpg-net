@@ -101,6 +101,40 @@ internal interface ICharacterPropsService
         [CallerMemberName] string operationName = "");
 
     /// <summary>
+    /// Изменяет заявку асинхронной мутацией.
+    /// </summary>
+    /// <remarks>
+    /// Асинхронная лямбда разрешена намеренно — в отличие от ADR009: единого снимка, из которого
+    /// можно было бы всё поднять заранее, у заявки нет. Произвольный ввод-вывод при этом ограничен
+    /// тем, что репозитории в контекст не пробрасываются — доступны только именованные
+    /// <c>ctx.LoadOtherCharacter</c> / <c>ctx.LoadOtherClaim</c>, идущие через тот же
+    /// <c>DbContext</c>.
+    /// </remarks>
+    /// <inheritdoc cref="ChangeClaim{TArgs}" path="/param"/>
+    /// <typeparam name="TArgs">Тип аргументов операции; логируется вместе с именем операции.</typeparam>
+    Task ChangeClaimAsync<TArgs>(
+        ClaimIdentification claimId,
+        ClaimAccessRequirement accessRequirement,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimMutationContext<TArgs>, Task> action,
+        [CallerMemberName] string operationName = "");
+
+    /// <summary>
+    /// Изменяет заявку асинхронной мутацией и возвращает её результат.
+    /// </summary>
+    /// <inheritdoc cref="ChangeClaimAsync{TArgs}" path="/param"/>
+    /// <typeparam name="TArgs">Тип аргументов операции; логируется вместе с именем операции.</typeparam>
+    /// <typeparam name="TResult">Тип результата, возвращаемого <paramref name="action"/>.</typeparam>
+    Task<TResult> ChangeClaimAsync<TArgs, TResult>(
+        ClaimIdentification claimId,
+        ClaimAccessRequirement accessRequirement,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimMutationContext<TArgs>, Task<TResult>> action,
+        [CallerMemberName] string operationName = "");
+
+    /// <summary>
     /// Создаёт персонажа: <paramref name="factory"/> строит EF-сущность, сервис добавляет её в
     /// проект и сохраняет. Единственная точка создания <see cref="Character"/>.
     /// </summary>

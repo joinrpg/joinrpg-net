@@ -121,10 +121,12 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
         }
     }
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected Task<(Claim, ProjectInfo)> LoadClaimAsMaster(IClaimOperationRequest request, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
         => LoadClaimAsMaster(new ClaimIdentification(request.ProjectIdentification, request.ClaimId), permission, reason);
 
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected async Task<(Claim, ProjectInfo)> LoadClaimAsMaster(ClaimIdentification claimId, Permission permission = Permission.None, ExtraAccessReason reason = ExtraAccessReason.None)
     {
         var claim = await ClaimsRepository.GetClaim(claimId);
@@ -133,6 +135,7 @@ internal abstract class ClaimImplBase(IUnitOfWork unitOfWork,
         return (claim.RequestAccess(CurrentUserId, permission, reason), projectInfo);
     }
 
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
     protected async Task<(Claim, ProjectInfo)> LoadClaimAsPlayer(ClaimIdentification claimId)
     {
         var claim = await ClaimsRepository.GetClaim(claimId);
