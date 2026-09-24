@@ -20,6 +20,12 @@ internal class CharacterPropsService(
     ILogger<CharacterPropsService> logger)
     : ICharacterPropsService
 {
+    /// <summary>
+    /// Вложенная мутация запрещена: автоприём заявки раньше входил в утверждение из середины
+    /// подачи, на том же экземпляре сервиса (ADR014, §7).
+    /// </summary>
+    private readonly NonReentrantOperation guard = new(nameof(CharacterPropsService));
+
     public Task ChangeCharacter<TArgs>(
         CharacterIdentification characterId,
         Permission requiredPermission,
@@ -49,6 +55,7 @@ internal class CharacterPropsService(
         string operationName)
     {
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
+        using var mutation = guard.Enter(operationName);
         // Время фиксируем на операцию, а не на сервис: DbServiceImplBase брал его в конструкторе,
         // из-за чего вложенные операции штамповали время создания сервиса (см. ADR014).
         var now = DateTime.UtcNow;
@@ -148,6 +155,7 @@ internal class CharacterPropsService(
         string operationName)
     {
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
+        using var mutation = guard.Enter(operationName);
         var now = DateTime.UtcNow;
         try
         {
@@ -214,6 +222,7 @@ internal class CharacterPropsService(
         [CallerMemberName] string operationName = "")
     {
         using var activity = CharacterPropsServiceActivity.ActivitySource.StartActivity(operationName);
+        using var mutation = guard.Enter(operationName);
         var now = DateTime.UtcNow;
         try
         {
