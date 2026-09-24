@@ -11,7 +11,8 @@ public interface ICimdMetadataLoader
 }
 
 /// <summary>
-/// Скачивает и валидирует Client ID Metadata Document. Все ограничения — из §6 драфта:
+/// Скачивает и валидирует Client ID Metadata Document. Все ограничения — из §6
+/// <see href="https://drafts.oauth.net/draft-ietf-oauth-client-id-metadata-document/draft-ietf-oauth-client-id-metadata-document.html">CIMD</see>:
 /// только https, никаких приватных адресов, без редиректов, с таймаутом и лимитом размера.
 /// </summary>
 public sealed class CimdMetadataLoader(

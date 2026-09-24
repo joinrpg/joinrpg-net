@@ -4,7 +4,9 @@ namespace JoinRpg.IdPortal.OAuthServer.Cimd;
 
 /// <summary>
 /// client_id в виде HTTPS-URL (Client ID Metadata Document, ADR012 §3).
-/// Разбор и проверка по draft-ietf-oauth-client-id-metadata-document-00 §3 — без сети.
+/// Разбор и проверка по §3
+/// <see href="https://drafts.oauth.net/draft-ietf-oauth-client-id-metadata-document/draft-ietf-oauth-client-id-metadata-document.html">CIMD</see>
+/// — без сети.
 /// </summary>
 public sealed class CimdClientId
 {

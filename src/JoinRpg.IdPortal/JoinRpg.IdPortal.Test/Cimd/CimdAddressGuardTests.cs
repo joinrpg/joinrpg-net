@@ -25,6 +25,16 @@ public class CimdAddressGuardTests
     [InlineData("fe80::1", "IPv6 link-local")]
     [InlineData("fc00::1", "IPv6 unique local")]
     [InlineData("::ffff:10.0.0.1", "IPv4 в обёртке IPv6 — обошёл бы проверку по октетам")]
+    // Записи RFC 6890, которые появились вместе с переходом на таблицу реестра
+    [InlineData("192.0.2.1", "TEST-NET-1, документация")]
+    [InlineData("198.51.100.1", "TEST-NET-2")]
+    [InlineData("203.0.113.1", "TEST-NET-3")]
+    [InlineData("198.18.0.1", "benchmarking")]
+    [InlineData("192.88.99.1", "6to4 relay anycast")]
+    [InlineData("240.0.0.1", "reserved")]
+    [InlineData("255.255.255.255", "limited broadcast")]
+    [InlineData("2001:db8::1", "IPv6 documentation")]
+    [InlineData("::", "IPv6 unspecified")]
     public void Forbids(string address, string why) =>
         CimdAddressGuard.IsForbidden(IPAddress.Parse(address)).ShouldBeTrue(why);
 

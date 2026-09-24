@@ -3,7 +3,8 @@ using JoinRpg.IdPortal.OAuthServer.Cimd;
 namespace JoinRpg.IdPortal.Test.Cimd;
 
 /// <summary>
-/// Правила к client_id-URL из draft-ietf-oauth-client-id-metadata-document-00 §3.
+/// Правила к client_id-URL из §3
+/// <see href="https://drafts.oauth.net/draft-ietf-oauth-client-id-metadata-document/draft-ietf-oauth-client-id-metadata-document.html">CIMD</see>.
 /// Проверки чистые, без сети и без поднятия хоста.
 /// </summary>
 public class CimdClientIdTests
