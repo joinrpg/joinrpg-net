@@ -21,14 +21,20 @@ public abstract class ClaimServiceTestBase
 {
     protected readonly MockedProject mock = new();
     private protected readonly FakeUnitOfWork unitOfWork;
-    private protected readonly FakeClaimNotificationService claimNotifications = new();
-    private protected readonly FakeEmailService emailService = new();
+    /// <summary>Общий журнал обоих каналов рассылки — нужен, чтобы проверять их взаимный порядок.</summary>
+    private readonly List<object> notificationJournal = [];
+
+    private protected readonly FakeClaimNotificationService claimNotifications;
+    private protected readonly FakeEmailService emailService;
+
     private protected readonly FakeProjectMetadataRepository metadataRepository;
 
     protected ClaimServiceTestBase()
     {
         unitOfWork = new FakeUnitOfWork(mock);
         metadataRepository = new FakeProjectMetadataRepository(mock);
+        claimNotifications = new FakeClaimNotificationService(notificationJournal);
+        emailService = new FakeEmailService(notificationJournal);
     }
 
     /// <summary>
@@ -59,6 +65,12 @@ public abstract class ClaimServiceTestBase
 
     /// <summary>Письма легаси-канала в порядке отправки.</summary>
     protected IReadOnlyList<EmailModelBase> SentEmails => emailService.Sent;
+
+    /// <summary>
+    /// Отправленное обоими каналами в общем порядке: уведомления и письма легаси-канала вперемешку.
+    /// Нужно, чтобы проверять не только факт отправки, но и то, что письма ушли после уведомлений.
+    /// </summary>
+    protected IReadOnlyList<object> SentInOrder => notificationJournal;
 
     private protected FakeCurrentUserAccessor CreateCurrentUser(int? currentUserId = null, bool isAdmin = false)
         => new(currentUserId ?? mock.Master.UserId, isAdmin);

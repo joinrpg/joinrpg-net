@@ -182,6 +182,30 @@ public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
         SaveChangesCallCount.ShouldBe(1);
     }
 
+    /// <summary>
+    /// Удаление мягкое (<c>IsActive = false</c>), поэтому связи с сюжетами сохраняются. Раньше
+    /// здесь стояла очистка под <c>CanBePermanentlyDeleted</c>, но эта ветка была мертва.
+    /// </summary>
+    [Fact]
+    public async Task DeleteCharacter_KeepsPlotLinks()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var plot = new PlotElement
+        {
+            PlotElementId = 1,
+            ProjectId = mock.Project.ProjectId,
+            Project = mock.Project,
+            TargetCharacters = [character],
+        };
+        character.DirectlyRelatedPlotElements = [plot];
+        mock.ReInitProjectInfo();
+
+        await CreateService().DeleteCharacter(new DeleteCharacterRequest(character.GetId()));
+
+        character.IsActive.ShouldBeFalse();
+        character.DirectlyRelatedPlotElements.ShouldContain(plot);
+    }
+
     [Fact]
     public async Task DeleteCharacter_WithActiveClaims_Throws()
     {

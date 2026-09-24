@@ -12,7 +12,11 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 /// ADR014 требует рассылать накопленные уведомления в порядке добавления комментариев, уже после
 /// <c>SaveChanges</c> — только тогда у уведомления заполнен <c>CommentId</c>.
 /// </remarks>
-internal sealed class FakeClaimNotificationService : IClaimNotificationService
+/// <param name="journal">
+/// Общий журнал обоих каналов рассылки, если тесту важен их взаимный порядок: ADR014 требует, чтобы
+/// письма легаси-канала уходили строго после уведомлений.
+/// </param>
+internal sealed class FakeClaimNotificationService(List<object>? journal = null) : IClaimNotificationService
 {
     /// <summary>Все отправленные уведомления в порядке отправки.</summary>
     public List<IClaimNotification> Sent { get; } = [];
@@ -25,6 +29,7 @@ internal sealed class FakeClaimNotificationService : IClaimNotificationService
     {
         SimpleChanged.Add(model);
         Sent.Add(model);
+        journal?.Add(model);
         return Task.CompletedTask;
     }
 
@@ -32,6 +37,7 @@ internal sealed class FakeClaimNotificationService : IClaimNotificationService
     {
         OnlinePayments.Add(model);
         Sent.Add(model);
+        journal?.Add(model);
         return Task.CompletedTask;
     }
 }
