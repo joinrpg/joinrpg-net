@@ -1,11 +1,9 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.WebPortal.Managers.UnifiedGrid;
 
@@ -22,7 +20,7 @@ public class UnifiedGridViewServiceTest
     private async Task<IReadOnlyCollection<UgItemForCaptainViewModel>> GetItems(UgStatusFilterView filter)
     {
         IUnifiedGridClient service = new UnifiedGridViewService(
-            new FakeCurrentUserAccessor { UserIdentification = new UserIdentification(Mock.Master.UserId) },
+            new FakeCurrentUserAccessor(Mock.Master.UserId),
             new FakeCaptainRulesRepository(Mock),
             new FakeProjectMetadataRepository(Mock),
             new FakeCharacterInfoRepository(Mock));
@@ -170,7 +168,7 @@ public class UnifiedGridViewServiceTest
     public async Task NoCaptainRulesMeansEmptyGrid()
     {
         IUnifiedGridClient service = new UnifiedGridViewService(
-            new FakeCurrentUserAccessor { UserIdentification = new UserIdentification(Mock.Player.UserId) },
+            new FakeCurrentUserAccessor(Mock.Player.UserId),
             new FakeCaptainRulesRepository(Mock, hasRules: false),
             new FakeProjectMetadataRepository(Mock),
             new FakeCharacterInfoRepository(Mock));
@@ -191,30 +189,5 @@ public class UnifiedGridViewServiceTest
                         userId,
                         CanApprove: true)]
                     : []);
-    }
-
-    /// <summary>
-    /// Отдаёт агрегаты по всем персонажам мока: в моке они все лежат в корневой группе, а отбор
-    /// по фильтру — задача самого сервиса.
-    /// </summary>
-    private sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacterInfoRepository
-    {
-        public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> groupIds)
-            => Task.FromResult<IReadOnlyCollection<CharacterInfo>>([.. mock.Project.Characters.Select(mock.GetCharacterInfo)]);
-
-        public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId) => throw new NotImplementedException();
-        public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId, ProjectInfo projectInfo) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfos(IReadOnlyCollection<CharacterIdentification> characterIds) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId) => throw new NotImplementedException();
-    }
-
-    private sealed class FakeCurrentUserAccessor : ICurrentUserAccessor
-    {
-        public UserIdentification UserIdentification { get; set; } = new UserIdentification(0);
-        public int? UserIdOrDefault => UserIdentification.Value;
-        public UserDisplayName DisplayName => new UserDisplayName("Test Master", null);
-        public bool IsAdmin => false;
-        public AvatarIdentification? Avatar => null;
     }
 }

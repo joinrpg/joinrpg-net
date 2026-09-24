@@ -4,7 +4,6 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Advertisement;
-using JoinRpg.Interfaces;
 using JoinRpg.WebPortal.Managers.Projects;
 
 namespace JoinRpg.WebPortal.Managers.Test.Projects;
@@ -20,7 +19,7 @@ public class ProjectApiViewServiceTests
         new(
             new FakeProjectMetadataRepository(Mock.ProjectInfo),
             new FakeProjectRepository(Mock),
-            new FakeCurrentUserAccessor { UserIdentification = new UserIdentification(userId) });
+            new FakeCurrentUserAccessor(userId));
 
     [Fact]
     public async Task GetOverview_NonMaster_ThrowsNoAccessToProjectException()
@@ -75,14 +74,5 @@ public class ProjectApiViewServiceTests
         public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement() => throw new NotImplementedException();
         public Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek() => throw new NotImplementedException();
         public void Dispose() { }
-    }
-
-    private sealed class FakeCurrentUserAccessor : ICurrentUserAccessor
-    {
-        public UserIdentification UserIdentification { get; set; } = new UserIdentification(0);
-        public int? UserIdOrDefault => UserIdentification.Value;
-        public UserDisplayName DisplayName => new UserDisplayName("Test", null);
-        public bool IsAdmin => false;
-        public AvatarIdentification? Avatar => null;
     }
 }
