@@ -34,18 +34,57 @@ public class CharacterGroupListViewModelTest
         Mock.ReInitProjectInfo();
     }
 
-    private IReadOnlyCollection<CharacterViewModel> GetCharacters(UserIdentification? currentUserId)
+    private IReadOnlyCollection<CharacterGroupListItemViewModel> GetGroups(UserIdentification? currentUserId)
         => [.. CharacterGroupListViewModel
             .GetGroups(
                 Root,
                 [.. Mock.Project.Characters.Select(Mock.GetCharacterInfo)],
                 new Dictionary<DomainTypes.CharacterGroupIdentification, CharacterGroupFullInfo>(),
                 currentUserId,
-                Mock.ProjectInfo)
-            .SelectMany(group => group.ActiveCharacters)];
+                Mock.ProjectInfo)];
+
+    private IReadOnlyCollection<CharacterViewModel> GetCharacters(UserIdentification? currentUserId)
+        => [.. GetGroups(currentUserId).SelectMany(group => group.ActiveCharacters)];
 
     private CharacterViewModel GetSingleCharacter(UserIdentification? currentUserId)
         => GetCharacters(currentUserId).Single(character => character.CharacterId == Mock.Character.CharacterId);
+
+    /// <summary>
+    /// Эндпоинт встраивания списка ролей помечен AllowAnonymous, поэтому currentUserId здесь
+    /// штатно равен null — на этом виджет уже падал с 500 (см. #4869).
+    /// </summary>
+    [Fact]
+    public void AnonymousUserGetsPublicGroups()
+    {
+        MakeRootGroupPublic();
+
+        GetGroups(currentUserId: null).ShouldHaveSingleItem().CharacterGroupId.ShouldBe(RootGroup.CharacterGroupId);
+    }
+
+    [Fact]
+    public void AnonymousUserDoesNotGetPrivateGroups()
+    {
+        RootGroup.IsPublic = false;
+
+        GetGroups(currentUserId: null).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void MasterGetsPrivateGroups()
+    {
+        RootGroup.IsPublic = false;
+
+        GetGroups(MasterId).ShouldHaveSingleItem().CharacterGroupId.ShouldBe(RootGroup.CharacterGroupId);
+    }
+
+    [Fact]
+    public void AnonymousUserGetsPublicCharacters()
+    {
+        MakeRootGroupPublic();
+        Mock.Character.IsPublic = true;
+
+        GetCharacters(currentUserId: null).ShouldHaveSingleItem().CharacterId.ShouldBe(Mock.Character.CharacterId);
+    }
 
     [Fact]
     public void CharacterOfRootGroupIsListed()

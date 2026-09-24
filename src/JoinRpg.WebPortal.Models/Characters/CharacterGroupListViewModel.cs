@@ -47,36 +47,14 @@ public static class CharacterGroupListViewModel
             .Select(character => BuildCharacter(character, isFirstCopy: true, currentUserId, projectInfo));
     }
 
-    /// <summary>
-    /// Группы поддерева, доступные этому пользователю: невидимая группа отсекает и всё, что под ней,
-    /// ровно как при построении дерева.
-    /// </summary>
+    /// <summary>Группы поддерева, доступные этому пользователю.</summary>
     private static HashSet<CharacterGroupIdentification> CollectVisibleGroups(
         CharacterGroupInfo root,
         UserIdentification? currentUserId,
         ProjectInfo projectInfo)
-    {
-        var result = new HashSet<CharacterGroupIdentification>();
-        Add(root);
-        return result;
-
-        void Add(CharacterGroupInfo group)
-        {
-            if (!IsVisible(group, currentUserId, projectInfo) || !result.Add(group.Id))
-            {
-                return;
-            }
-
-            foreach (var childId in group.DirectChildGroupIds)
-            {
-                var child = projectInfo.GetGroupById(childId.CharacterGroupId);
-                if (child.IsActive)
-                {
-                    Add(child);
-                }
-            }
-        }
-    }
+        => [.. projectInfo.GetChildGroupsIncludingThis(root.Id)
+            .Where(group => group.IsActive && IsVisible(group, currentUserId, projectInfo))
+            .Select(group => group.Id)];
 
     /// <summary>Зеркало <c>WorldObjectExtensions.IsVisible</c> для группы поверх метаданных.</summary>
     private static bool IsVisible(CharacterGroupInfo group, UserIdentification? currentUserId, ProjectInfo projectInfo)
