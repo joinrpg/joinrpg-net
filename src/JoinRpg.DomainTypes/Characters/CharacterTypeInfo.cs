@@ -10,6 +10,16 @@ public record CharacterTypeInfo
 
     public bool IsPublic => CharacterVisibility == CharacterVisibility.Public;
 
+    /// <summary>
+    /// Имя персонажа видно всем — то есть выставлена колонка <c>Character.IsPublic</c>.
+    /// </summary>
+    /// <remarks>
+    /// Отличается от <see cref="IsPublic"/>: у публичного персонажа со скрытым игроком видимость
+    /// равна <see cref="CharacterVisibility.PlayerHidden"/>, и сам он при этом публичен —
+    /// не показывается только игрок. Публичные списки ролей фильтруются именно по этому признаку.
+    /// </remarks>
+    public bool IsNamePublic => CharacterVisibility != CharacterVisibility.Private;
+
     public int? SlotLimit { get; }
 
     public string? SlotName { get; }
