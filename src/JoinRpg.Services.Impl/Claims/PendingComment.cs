@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Services.Impl.Claims;
 
@@ -14,6 +15,25 @@ namespace JoinRpg.Services.Impl.Claims;
 /// Класс, а не record: <see cref="Notification"/> декорируется по месту, а в пути создания заявки
 /// сам комментарий появляется позже.
 /// </remarks>
+/// <summary>
+/// Заказ на комментарий: операция создания заявки его попросила, но самого
+/// <see cref="Comment"/> ещё нет. Предыдущая стадия того же пути, что и
+/// <see cref="PendingComment"/>, а не его дубль.
+/// </summary>
+/// <remarks>
+/// <see cref="PendingComment"/> держит уже созданный комментарий и ждёт только его
+/// <c>CommentId</c>. Здесь ждать приходится раньше: <c>CommentHelper</c> копирует в комментарий
+/// <c>CommentDiscussionId</c> значением, а у дискуссии новой заявки до первого сохранения он
+/// равен <c>-1</c>. Поэтому в <c>CharacterPropsService.CreateClaim</c> заказ превращается в
+/// <see cref="PendingComment"/> между двумя сохранениями. До миграции ровно та же пара сохранений
+/// стояла в <c>AddClaimFromUser</c> с комментарием «CreateClaimCommentWithNotification ожидает,
+/// что заявка уже существует».
+/// </remarks>
+internal sealed record DeferredComment(
+    string CommentText,
+    CommentExtraAction? ExtraAction,
+    ClaimOperationType OperationType);
+
 internal sealed class PendingComment(Comment comment, ClaimSimpleChangedNotification notification)
 {
     /// <summary>Созданный комментарий. Его <c>CommentId</c> известен только после сохранения.</summary>

@@ -34,6 +34,30 @@ public class MockedProject
     };
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>() };
 
+    private UserInfo MasterInfoTemplate { get; } = new UserInfo(new UserIdentification(2), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("master@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Master"), null, null, null), false, null, HasPassword: false);
+
+    /// <summary>
+    /// <see cref="UserInfo"/> мастера, согласованный с заявками мока.
+    /// </summary>
+    /// <inheritdoc cref="PlayerInfo" path="/remarks"/>
+    public UserInfo MasterInfo => MasterInfoTemplate with
+    {
+        ActiveClaims = [.. Master.Claims
+            .Where(claim => claim.ClaimStatus.IsActive())
+            .Select(claim => new UserClaimInfo(claim.GetId(), claim.ClaimStatus))],
+    };
+
+    /// <summary>
+    /// <see cref="UserInfo"/> известного моку пользователя; <c>null</c> для всех остальных.
+    /// </summary>
+    public UserInfo? TryGetUserInfo(UserIdentification userId)
+        => userId.Value switch
+        {
+            1 => PlayerInfo,
+            2 => MasterInfo,
+            _ => null,
+        };
+
     public ProjectFieldInfo MasterOnlyFieldInfo { get; set; }
     public ProjectFieldInfo HideForUnApprovedClaimInfo { get; set; }
 

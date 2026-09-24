@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
 
@@ -148,5 +149,48 @@ internal interface ICharacterPropsService
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<CharacterCreationContext<TArgs>, Character> factory,
+        [CallerMemberName] string operationName = "");
+
+    /// <summary>
+    /// Создаёт заявку на персонажа: проверяет права и правила подачи, отдаёт построение заявки
+    /// <paramref name="factory"/>, сохраняет <b>дважды</b> и рассылает уведомления.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Два сохранения — не небрежность, а зависимость по идентификатору:
+    /// <c>CommentHelper.CreateClaimCommentWithNotification</c> кладёт комментарий в
+    /// <c>claim.CommentDiscussion</c>, а до первого сохранения у дискуссии
+    /// <c>CommentDiscussionId == -1</c>. Поэтому фабрика комментарий не создаёт, а
+    /// <b>заказывает</b> через <c>ctx.AddComment(...)</c>; сервис материализует заказы между двумя
+    /// сохранениями. До ADR014 эта связка была скопирована в оба метода создания заявки.
+    /// </para>
+    /// <para>
+    /// Атомарности здесь нет — её нет и сегодня (см. «что сознательно не чиним» в ADR014).
+    /// </para>
+    /// </remarks>
+    /// <param name="characterId">Персонаж, на которого подаётся заявка.</param>
+    /// <param name="playerId">
+    /// Игрок, на которого оформляется заявка. При <see cref="ClaimOperation.AddByMaster"/> это
+    /// <b>не</b> текущий пользователь.
+    /// </param>
+    /// <param name="operation">
+    /// <see cref="ClaimOperation.AddByPlayer"/> или <see cref="ClaimOperation.AddByMaster"/>: от
+    /// этого зависят и проверка прав, и то, какие причины запрета мастер вправе обойти.
+    /// </param>
+    /// <param name="activeRequirement">Допустима ли операция над неактивным (архивным) проектом.</param>
+    /// <param name="arguments">Аргументы операции; передаются в <paramref name="factory"/> и логируются.</param>
+    /// <param name="factory">Строит заявку. Добавляет её в <c>DbContext</c> сам сервис.</param>
+    /// <param name="operationName">Имя операции для лога; по умолчанию — имя вызывающего метода.</param>
+    /// <returns>
+    /// Созданная заявка. Идентификатор генерируется базой, поэтому читать его надо уже после
+    /// <c>await</c>.
+    /// </returns>
+    Task<Claim> CreateClaim<TArgs>(
+        CharacterIdentification characterId,
+        UserIdentification playerId,
+        ClaimOperation operation,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimCreationContext<TArgs>, Claim> factory,
         [CallerMemberName] string operationName = "");
 }

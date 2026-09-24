@@ -96,6 +96,8 @@ internal class ClaimServiceImpl(
         //source.EnsureCanMoveClaim(oldClaim);
 
         var responsibleMaster = source.GetResponsibleMaster();
+        // TODO последняя ручная сборка Claim: остальные создают заявку через ctx.NewClaim.
+        // Уйдёт, когда MoveToSecondRole переедет на ICharacterPropsService.CreateClaim (ADR014).
         var claim = new Claim()
         {
             CharacterId = characterId.CharacterId,
@@ -154,53 +156,38 @@ internal class ClaimServiceImpl(
 
         logger.LogDebug("About to add claim to character {characterId}", characterId);
 
-        var source = await CharactersRepository.GetCharacterAsync(characterId);
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
-        var user = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
+        var claim = await characterPropsService.CreateClaim(
+            characterId,
+            currentUserAccessor.UserIdentification,
+            ClaimOperation.AddByPlayer,
+            ProjectActiveRequirement.MustBeActive,
+            (claimText, fields, sensitiveDataAllowed),
+            ctx =>
+            {
+                var claim = ctx.NewClaim(ClaimStatus.AddedByUser, ctx.ResponsibleMasterByProjectRules());
 
-        ClaimValidator.EnsureCanAddClaim(
-            await characterInfoRepository.GetCharacterInfo(characterId), user, projectInfo, ClaimOperation.AddByPlayer);
+                // Разрешение даёт игрок, и только если проект его вообще спрашивает.
+                claim.PlayerAllowedSenstiveData = ctx.Request.sensitiveDataAllowed
+                    && ctx.ProjectInfo.ProfileRequirementSettings.SensitiveDataRequired;
 
-        User responsibleMaster = source.GetResponsibleMaster();
+                _ = ctx.SaveFields(claim, ctx.Request.fields);
 
-        var claim = new Claim()
-        {
-            CharacterId = characterId.CharacterId,
-            Character = source,
-            ProjectId = characterId.ProjectId,
-            Project = source.Project, // это нужно при операциях с полями, к сожалению
-            PlayerUserId = CurrentUserId,
-            PlayerAcceptedDate = Now,
-            CreateDate = Now,
-            ClaimStatus = ClaimStatus.AddedByUser,
-            ResponsibleMasterUserId = responsibleMaster.UserId,
-            ResponsibleMasterUser = responsibleMaster,
-            LastUpdateDateTime = Now,
-            PlayerAllowedSenstiveData = sensitiveDataAllowed && projectInfo.ProfileRequirementSettings.SensitiveDataRequired,
-            CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
-        };
+                //TODO добавить сюда измененные поля
+                ctx.AddComment(
+                    ctx.Request.claimText,
+                    CommentExtraAction.NewClaim,
+                    ClaimOperationType.PlayerChange);
 
-        // Т.к. CreateClaimCommentWithNotification ожидает, что комментарий уже существует
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
-        _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
-        await UnitOfWork.SaveChangesAsync();
-
-        //TODO добавить сюда измененные поля
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(claimText,
-               claim,
-               projectInfo,
-               CommentExtraAction.NewClaim,
-               ClaimOperationType.PlayerChange,
-               Now
-               );
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
+                return claim;
+            });
 
         var claimId = claim.GetId();
 
-        await AutoApproveClaimIfNeeded(claim, projectInfo);
+        // Автоприём — отдельная операция, идущая строго ПОСЛЕ создания: реентерабельность
+        // запрещена (ADR014, §7). Переезд самого автоприёма — отдельным шагом миграции.
+        await AutoApproveClaimIfNeeded(
+            claim,
+            await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId));
 
         logger.LogInformation("Claim ({claimId}) was successfully send to character {characterId}", claimId, characterId);
         return claimId;
@@ -1088,55 +1075,29 @@ internal class ClaimServiceImpl(
 
         logger.LogDebug("About to add claim from master to character {characterId} for user {userId}", characterId, userId);
 
-        var source = await CharactersRepository.GetCharacterAsync(characterId);
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
-        var playerUser = await UserRepository.GetRequiredUserInfo(userId);
+        // Права мастера и правила подачи проверяет сам props-сервис: ClaimOperation.AddByMaster
+        // требует CanManageClaims и пропускает причины с MasterCanOverride — закрытый приём заявок
+        // и незаполненные контакты игрока мастера не останавливают.
+        var claim = await characterPropsService.CreateClaim(
+            characterId,
+            userId,
+            ClaimOperation.AddByMaster,
+            ProjectActiveRequirement.MustBeActive,
+            (commentText, fields),
+            ctx =>
+            {
+                var claim = ctx.NewClaim(ClaimStatus.AddedByMaster, ctx.ResponsibleMasterByProjectRules());
 
-        // Проверяем, что текущий пользователь (мастер) имеет право управлять заявками
-        projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+                _ = ctx.SaveFields(claim, ctx.Request.fields);
 
-        // Проверяем, что персонаж может принимать заявки. Приглашение от мастера проходит мимо
-        // причин с MasterCanOverride: закрытый приём заявок и незаполненные контакты игрока
-        // мастера не останавливают — контакты игрок дозаполнит позже.
-        ClaimValidator.EnsureCanAddClaim(
-            await characterInfoRepository.GetCharacterInfo(characterId), playerUser, projectInfo, ClaimOperation.AddByMaster);
+                // Комментарий о приглашении
+                ctx.AddComment(
+                    ctx.Request.commentText,
+                    CommentExtraAction.NewClaim,
+                    ClaimOperationType.MasterVisibleChange);
 
-        User responsibleMaster = source.GetResponsibleMaster();
-
-        var claim = new Claim()
-        {
-            CharacterId = characterId.CharacterId,
-            Character = source,
-            ProjectId = characterId.ProjectId,
-            Project = source.Project, // это нужно при операциях с полями, к сожалению
-            PlayerUserId = userId.Value,
-            PlayerAcceptedDate = Now,
-            CreateDate = Now,
-            ClaimStatus = ClaimStatus.AddedByMaster,
-            ResponsibleMasterUserId = responsibleMaster.UserId,
-            ResponsibleMasterUser = responsibleMaster,
-            LastUpdateDateTime = Now,
-            PlayerAllowedSenstiveData = false, // Мастер не может дать разрешение на чувствительные данные от имени игрока
-            CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = characterId.ProjectId },
-        };
-
-        _ = fieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, projectInfo);
-        _ = UnitOfWork.GetDbSet<Claim>().Add(claim);
-        await UnitOfWork.SaveChangesAsync();
-
-        // Создаём комментарий о приглашении
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(
-            commentText,
-            claim,
-            projectInfo,
-            CommentExtraAction.NewClaim,
-            ClaimOperationType.MasterVisibleChange,
-            Now
-        );
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
+                return claim;
+            });
 
         var claimId = claim.GetId();
         logger.LogInformation("Claim ({claimId}) was successfully created by master for character {characterId} for user {userId}", claimId, characterId, userId);
