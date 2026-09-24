@@ -374,7 +374,10 @@ public class ClaimController(
 
         var claimId = claims.TrySelectSingleClaim()?.ClaimId;
 
-        return claimId != null ? ReturnToClaim(projectId, (int)claimId) : RedirectToAction("My", "ClaimList");
+        // Если однозначно выбрать заявку нельзя (например, их две), отправляем игрока в список своих заявок
+        return claimId != null
+            ? ReturnToClaim(projectId, (int)claimId)
+            : RedirectToAction(nameof(MyClaimListController.My), "MyClaimList");
     }
 
     [Authorize, HttpPost, ValidateAntiForgeryToken]

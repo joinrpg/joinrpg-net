@@ -32,6 +32,7 @@ public class CanonicalRoutingTests(IntegrationTestPortalFactory factory)
     [InlineData("{projectId}/checkin/setup", typeof(CheckInController), nameof(CheckInController.Setup))]
     [InlineData("{ProjectId}/claim/{ClaimId}/edit", typeof(ClaimController), nameof(ClaimController.Edit))]
     [InlineData("my/claims", typeof(MyClaimListController), nameof(MyClaimListController.My))]
+    [InlineData("claimlist/my", typeof(MyClaimListController), nameof(MyClaimListController.LegacyMy))]
     [InlineData("{projectId}/money/setup", typeof(FinancesController), nameof(FinancesController.Setup))]
     [InlineData("{projectId}/forums/{forumThreadId}/viewthread", typeof(ForumController), nameof(ForumController.ViewThread))]
     [InlineData("{ProjectId}/fields/create", typeof(GameFieldController), nameof(GameFieldController.Create))]
