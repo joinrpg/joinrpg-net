@@ -75,7 +75,12 @@ public static class McpRegistration
         // Bearer resource_metadata=... от MCP. Клиент, читающий только первый, не находил
         // указателя на метаданные. Forward оставляет ровно один challenge — от MCP.
         services.AddAuthentication()
-            .AddMcp(options =>
+            // displayName: null — схема MCP не интерактивный провайдер логина. С непустым
+            // DisplayName (по умолчанию он есть) она попадала в выдачу
+            // SignInManager.GetExternalAuthenticationSchemesAsync, и на /Account/Login рядом с
+            // Google и ВК рисовалась кнопка «Войти через MCP Authentication», которая ничего не логинит.
+            // null! — параметр в библиотеке не помечен как nullable, хотя AddScheme его таким принимает.
+            .AddMcp(McpAuthenticationDefaults.AuthenticationScheme, displayName: null!, options =>
             {
                 options.ForwardAuthenticate = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
                 options.ResourceMetadata = new()
