@@ -4,6 +4,25 @@ namespace JoinRpg.DomainTypes.Characters;
 
 public record class CharacterFieldLayers(FieldLayerContainer? ClaimLayer, FieldLayerContainer CharacterLayer, AccessArguments AccessArguments)
 {
+    /// <summary>
+    /// Слои глазами ещё не утверждённой заявки: из персонажа видны только публичные поля.
+    /// </summary>
+    /// <remarks>
+    /// Пока заявка не утверждена, её игрок не имеет доступа к персонажу. Непубличные значения
+    /// персонажа не должны ни показываться в такой заявке, ни участвовать в сохранении её полей:
+    /// иначе они попадут в слой заявки и при переносе заявки на другого персонажа с последующим
+    /// принятием перезапишут его поля.
+    ///
+    /// Правило живёт здесь одно на всех: <see cref="CharacterInfo.GetFieldLayers"/> слой персонажа
+    /// намеренно не фильтрует, потому что поверх него считаются взносы, где фильтрация была бы
+    /// неверна. Значит каждый, кто строит слои для неутверждённой заявки, обязан звать это.
+    /// </remarks>
+    public static CharacterFieldLayers ForUnapprovedClaim(
+        FieldLayerContainer claimLayer,
+        FieldLayerContainer characterLayer,
+        AccessArguments accessArguments)
+        => new(claimLayer, characterLayer.PublicOnly(), accessArguments);
+
     public FieldWithValue? GetFieldValue(ProjectFieldIdentification projectFieldId)
     {
         var field = CharacterLayer.ProjectInfo.GetFieldById(projectFieldId);

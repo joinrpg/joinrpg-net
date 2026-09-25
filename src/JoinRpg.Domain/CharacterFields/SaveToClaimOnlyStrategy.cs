@@ -12,9 +12,9 @@ internal class SaveToClaimOnlyStrategy(Claim claim,
     currentUserId,
     generator,
     projectInfo,
-    new CharacterFieldLayers(
-        ClaimLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.JsonData),
-        CharacterLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.Character.JsonData).PublicOnly(),
+    CharacterFieldLayers.ForUnapprovedClaim(
+        claimLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.JsonData),
+        characterLayer: FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.Character.JsonData),
         AccessArgumentsFactory.Create(claim, currentUserId, projectInfo)))
 {
     protected new Claim Claim => base.Claim!; //Claim should always exists
