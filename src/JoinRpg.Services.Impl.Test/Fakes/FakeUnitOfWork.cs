@@ -44,7 +44,7 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
 
     public IUserRepository GetUsersRepository() => new FakeUserRepository(mock);
     public IProjectRepository GetProjectRepository() => throw new NotSupportedException();
-    public IClaimsRepository GetClaimsRepository() => throw new NotSupportedException();
+    public IClaimsRepository GetClaimsRepository() => new FakeClaimsRepository(mock);
     public IPlotRepository GetPlotRepository() => throw new NotSupportedException();
     public IForumRepository GetForumRepository() => throw new NotSupportedException();
     public ICharacterRepository GetCharactersRepository() => throw new NotSupportedException();

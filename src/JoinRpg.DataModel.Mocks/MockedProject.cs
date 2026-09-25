@@ -47,6 +47,34 @@ public class MockedProject
             .Select(claim => new UserClaimInfo(claim.GetId(), claim.ClaimStatus))],
     };
 
+    /// <summary>Дополнительные мастера, заведённые тестом через <see cref="CreateMaster"/>.</summary>
+    private readonly Dictionary<int, User> extraMasters = [];
+
+    /// <summary>
+    /// Ещё один мастер проекта с полным набором прав. Нужен там, где операция различает двух
+    /// мастеров, — например при смене ответственного за заявку.
+    /// </summary>
+    public User CreateMaster(string name = "Master2")
+    {
+        var userId = 100 + extraMasters.Count;
+        var user = new User
+        {
+            UserId = userId,
+            PrefferedName = name,
+            Email = $"master{userId}@example.com",
+            Claims = new HashSet<Claim>(),
+        };
+
+        var acl = ProjectAcl.CreateRootAcl(userId);
+        acl.User = user;
+        acl.Project = Project;
+        acl.ProjectId = Project.ProjectId;
+        Project.ProjectAcls.Add(acl);
+
+        extraMasters.Add(userId, user);
+        return user;
+    }
+
     /// <summary>
     /// <see cref="UserInfo"/> известного моку пользователя; <c>null</c> для всех остальных.
     /// </summary>
@@ -55,8 +83,31 @@ public class MockedProject
         {
             1 => PlayerInfo,
             2 => MasterInfo,
-            _ => null,
+            _ => extraMasters.TryGetValue(userId.Value, out var user) ? CreateUserInfo(user) : null,
         };
+
+    /// <summary>EF-сущность известного моку пользователя; <c>null</c> для всех остальных.</summary>
+    public User? TryGetUser(int userId)
+        => userId switch
+        {
+            1 => Player,
+            2 => Master,
+            _ => extraMasters.GetValueOrDefault(userId),
+        };
+
+    private static UserInfo CreateUserInfo(User user)
+        => new(
+            new UserIdentification(user.UserId),
+            Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public),
+            [], [], [],
+            IsAdmin: false,
+            SelectedAvatarId: null,
+            new Email(user.Email),
+            EmailConfirmed: true,
+            new UserFullName(new PrefferedName(user.PrefferedName), null, null, null),
+            false,
+            null,
+            HasPassword: false);
 
     public ProjectFieldInfo MasterOnlyFieldInfo { get; set; }
     public ProjectFieldInfo HideForUnApprovedClaimInfo { get; set; }

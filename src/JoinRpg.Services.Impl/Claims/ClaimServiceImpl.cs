@@ -25,8 +25,8 @@ internal class ClaimServiceImpl(
     ILogger<CharacterServiceImpl> logger,
     IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
-    IImpersonateAccessor impersonateAccessor,
-    ICharacterPropsService characterPropsService
+    ICharacterPropsService characterPropsService,
+    IImpersonateAccessor impersonateAccessor
     )
     : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IClaimService
 {
@@ -184,10 +184,8 @@ internal class ClaimServiceImpl(
         var claimId = claim.GetId();
 
         // Автоприём — отдельная операция, идущая строго ПОСЛЕ создания: реентерабельность
-        // запрещена (ADR014, §7). Переезд самого автоприёма — отдельным шагом миграции.
-        await AutoApproveClaimIfNeeded(
-            claim,
-            await ProjectMetadataRepository.GetProjectMetadata(characterId.ProjectId));
+        // запрещена (ADR014, §7). Условия он перечитывает сам.
+        await AutoApproveIfRequired(claimId);
 
         logger.LogInformation("Claim ({claimId}) was successfully send to character {characterId}", claimId, characterId);
         return claimId;
@@ -271,70 +269,134 @@ internal class ClaimServiceImpl(
         }
     }
 
+    /// <summary>
+    /// Утверждение заявки мастером. Тело вынесено в <see cref="ApproveCore"/>: его же использует
+    /// автоприём (<see cref="AutoApproveIfRequired"/>), который открывает собственную мутацию —
+    /// вкладывать одну мутацию в другую запрещено (ADR014, §7).
+    /// </summary>
     public Task ApproveByMaster(ClaimIdentification claimId, string commentText)
         => characterPropsService.ChangeClaimAsync(
             claimId,
             ClaimAccessRequirement.ApprovalDecline,
             ProjectActiveRequirement.MustBeActive,
             commentText,
-            async ctx =>
+            ApproveCore);
+
+    /// <summary>Само утверждение. Аргумент операции — текст комментария мастера.</summary>
+    private static async Task ApproveCore(ClaimMutationContext<string> ctx)
+    {
+        // Отдельная проверка, а не общая ctx.ChangeStatus: таблица переходов разрешает
+        // CheckedIn -> Approved, и это не ошибка — так возвращается заявка при выходе
+        // игрока на вторую роль (MoveToSecondRole). Утверждать же заявку, по которой игрок
+        // уже зарегистрирован на игре, нельзя, поэтому здесь правило строже общего.
+        if (ctx.Claim.ClaimStatus == ClaimStatus.CheckedIn)
+        {
+            throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+        }
+
+        if (ctx.Claim.Character.CharacterType == CharacterType.Slot)
+        {
+            // Единственная асинхронная загрузка метода, и она условная: сюжеты нужны только
+            // слоту. Поднимать её наверх нельзя — грузились бы на каждое утверждение.
+            var character = await CreateCharacterFromSlot(ctx, ctx.Claim.Character, ctx.Claim.Player);
+            ctx.Claim.Character = character;
+            ctx.Claim.CharacterId = character.CharacterId;
+        }
+
+        ctx.ChangeStatus(ctx.Claim, ClaimStatus.Approved);
+
+        _ = ctx.AddComment(
+            ctx.Request,
+            CommentExtraAction.ApproveByMaster,
+            ClaimOperationType.MasterVisibleChange);
+
+        if (ctx.ProjectInfo.ClaimSettings.StrictlyOneCharacter)
+        {
+            // Читает claim.Player.Claims — навигацию, которую write-хэндл грузит явно
+            // (Include(c => c.Player.Claims)). Без неё список молча оказался бы пуст.
+            foreach (var otherClaim in ctx.Claim.OtherPendingClaimsForThisPlayer())
             {
-                // Отдельная проверка, а не общая ctx.ChangeStatus: таблица переходов разрешает
-                // CheckedIn -> Approved, и это не ошибка — так возвращается заявка при выходе
-                // игрока на вторую роль (MoveToSecondRole). Утверждать же заявку, по которой игрок
-                // уже зарегистрирован на игре, нельзя, поэтому здесь правило строже общего.
-                if (ctx.Claim.ClaimStatus == ClaimStatus.CheckedIn)
-                {
-                    throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
-                }
-
-                if (ctx.Claim.Character.CharacterType == CharacterType.Slot)
-                {
-                    // Единственная асинхронная загрузка метода, и она условная: сюжеты нужны только
-                    // слоту. Поднимать её наверх нельзя — грузились бы на каждое утверждение.
-                    var character = await CreateCharacterFromSlot(ctx, ctx.Claim.Character, ctx.Claim.Player);
-                    ctx.Claim.Character = character;
-                    ctx.Claim.CharacterId = character.CharacterId;
-                }
-
-                ctx.ChangeStatus(ctx.Claim, ClaimStatus.Approved);
+                ctx.ChangeStatus(otherClaim, ClaimStatus.DeclinedByMaster);
 
                 _ = ctx.AddComment(
-                    ctx.Request,
-                    CommentExtraAction.ApproveByMaster,
+                    otherClaim,
+                    //TODO[Localize]
+                    "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
+                    CommentExtraAction.DeclineByMaster,
                     ClaimOperationType.MasterVisibleChange);
+            }
+        }
 
-                if (ctx.ProjectInfo.ClaimSettings.StrictlyOneCharacter)
-                {
-                    // Читает claim.Player.Claims — навигацию, которую write-хэндл грузит явно
-                    // (Include(c => c.Player.Claims)). Без неё список молча оказался бы пуст.
-                    foreach (var otherClaim in ctx.Claim.OtherPendingClaimsForThisPlayer())
-                    {
-                        ctx.ChangeStatus(otherClaim, ClaimStatus.DeclinedByMaster);
+        ctx.MarkCharacterChangedIfApproved();
+        ctx.Claim.Character.ApprovedClaimId = ctx.Claim.ClaimId;
+        // Порядок критичен: ApprovedClaim обязан быть проставлен ДО SaveFields — от него
+        // зависит выбор стратегии в FieldSaveHelper (IsApproved => SaveToCharacterAndClaim).
+        ctx.Claim.Character.ApprovedClaim = ctx.Claim;
+        ctx.Claim.Character.IsHot = false;
 
-                        _ = ctx.AddComment(
-                            otherClaim,
-                            //TODO[Localize]
-                            "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
-                            CommentExtraAction.DeclineByMaster,
-                            ClaimOperationType.MasterVisibleChange);
-                    }
-                }
+        // Пересохранение пустым слоем — не мёртвый код, оно нужно ради побочных эффектов:
+        // 1. если персонаж создан из слота при утверждении, ему надо проставить имя;
+        // 2. часть значений полей переезжает из заявки в персонажа;
+        // 3. (2) может пересчитать спецгруппы.
+        // Показывать изменённые поля в письме не надо, поэтому результат игнорируем.
+        _ = ctx.SaveFields(FieldLayerContainer.Empty(ctx.ProjectInfo));
+    }
 
-                ctx.MarkCharacterChangedIfApproved();
-                ctx.Claim.Character.ApprovedClaimId = ctx.Claim.ClaimId;
-                // Порядок критичен: ApprovedClaim обязан быть проставлен ДО SaveFields — от него
-                // зависит выбор стратегии в FieldSaveHelper (IsApproved => SaveToCharacterAndClaim).
-                ctx.Claim.Character.ApprovedClaim = ctx.Claim;
-                ctx.Claim.Character.IsHot = false;
+    /// <summary>
+    /// Автоприём заявки в проекте, где включён <c>AutoAcceptClaims</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Вызывается строго ПОСЛЕ завершения операции, создавшей или принявшей заявку: вкладывать
+    /// одну мутацию в другую запрещено (ADR014, §7). Порядок побочных эффектов при этом сохранён —
+    /// и до миграции автоприём шёл после рассылки уведомлений.
+    /// </para>
+    /// <para>
+    /// Условия перечитываются из базы, а не берутся из мутированного EF-графа предыдущей операции.
+    /// Читать их приходится до входа в мутацию: утверждает ответственный мастер, узнать его можно
+    /// только из заявки, а подмена пользователя обязана случиться раньше проверки прав.
+    /// </para>
+    /// </remarks>
+    private async Task AutoApproveIfRequired(ClaimIdentification claimId)
+    {
+        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
 
-                // Пересохранение пустым слоем — не мёртвый код, оно нужно ради побочных эффектов:
-                // 1. если персонаж создан из слота при утверждении, ему надо проставить имя;
-                // 2. часть значений полей переезжает из заявки в персонажа;
-                // 3. (2) может пересчитать спецгруппы.
-                // Показывать изменённые поля в письме не надо, поэтому результат игнорируем.
-                _ = ctx.SaveFields(FieldLayerContainer.Empty(ctx.ProjectInfo));
-            });
+        if (!projectInfo.ClaimSettings.AutoAcceptClaims)
+        {
+            return;
+        }
+
+        var claim = await ClaimsRepository.GetClaim(claimId)
+            ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(Claim));
+
+        // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
+        if (!claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
+        {
+            logger.LogInformation(
+                "Claim ({claimId}) was not auto-approved: sensitive data access is required but not granted by player",
+                claimId);
+            return;
+        }
+
+        var responsibleMaster = await UserRepository.GetRequiredUserInfo(
+            new UserIdentification(claim.ResponsibleMasterUserId));
+
+        impersonateAccessor.StartImpersonate(responsibleMaster.UserId, responsibleMaster.DisplayName, responsibleMaster.IsAdmin);
+        try
+        {
+            //TODO[Localize]
+            await ApproveByMaster(claimId, "Ваша заявка была принята автоматически");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Claim ({claimId}) auto-approve failed", claimId);
+            throw;
+        }
+        finally
+        {
+            impersonateAccessor.StopImpersonate();
+        }
+    }
 
     /// <summary>
     /// Создаёт персонажа из слота при утверждении заявки: уменьшает остаток слота, копирует
@@ -347,7 +409,6 @@ internal class ClaimServiceImpl(
     /// </remarks>
     private static async Task<Character> CreateCharacterFromSlot(ClaimMutationContext ctx, Character slot, User player)
     {
-
         switch (slot.CharacterSlotLimit)
         {
             case null:  // Unlimited slot
@@ -358,7 +419,6 @@ internal class ClaimServiceImpl(
             default:
                 throw new JoinRpgSlotLimitedException(slot);
         }
-
 
         if (slot.CharacterType != CharacterType.Slot)
         {
@@ -840,36 +900,38 @@ internal class ClaimServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task SetResponsible(ClaimIdentification claimId, UserIdentification responsibleMasterId)
-    {
-        var (claim, projectInfo) = await LoadClaimForApprovalDecline(claimId);
+    public Task SetResponsible(ClaimIdentification claimId, UserIdentification responsibleMasterId)
+        => characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.ApprovalDecline,
+            ProjectActiveRequirement.MustBeActive,
+            responsibleMasterId,
+            async ctx =>
+            {
+                // Новый ответственный обязан быть мастером проекта.
+                _ = ctx.ProjectInfo.RequestMasterAccess(ctx.Request);
 
-        _ = projectInfo.RequestMasterAccess(responsibleMasterId);
+                var oldResponsibleMaster = ctx.ClaimInfo.ResponsibleMasterId;
+                var oldMasterDisplayName = ctx.Claim.ResponsibleMasterUser.GetDisplayName();
 
-        var oldResponsibleMaster = new UserIdentification(claim.ResponsibleMasterUserId);
-        var oldMasterDisplayName = claim.ResponsibleMasterUser.GetDisplayName();
+                if (ctx.Request == oldResponsibleMaster)
+                {
+                    // Ровно как до миграции: молча выходим ДО мутации. Сохранения и уведомления
+                    // быть не должно — иначе назначение «того же самого» начнёт шуметь.
+                    ctx.NothingChanged();
+                    return;
+                }
 
-        if (responsibleMasterId == oldResponsibleMaster)
-        {
-            return; // Just do nothing
-        }
-        claim.ResponsibleMasterUserId = responsibleMasterId;
+                ctx.Claim.ResponsibleMasterUserId = ctx.Request;
 
-        var newMaster = await UserRepository.GetById(responsibleMasterId);
+                var newMaster = await UserRepository.GetById(ctx.Request);
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(
-            $"{oldMasterDisplayName} → {newMaster.GetDisplayName()}",
-            claim,
-            projectInfo,
-            CommentExtraAction.ChangeResponsible,
-            ClaimOperationType.MasterVisibleChange, Now);
-
-        email = email with { OldResponsibleMaster = oldResponsibleMaster };
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+                _ = ctx.AddComment(
+                        $"{oldMasterDisplayName} → {newMaster.GetDisplayName()}",
+                        CommentExtraAction.ChangeResponsible,
+                        ClaimOperationType.MasterVisibleChange)
+                    .Decorate(notification => notification with { OldResponsibleMaster = oldResponsibleMaster });
+            });
 
     public async Task SaveFieldsFromClaim(
         ClaimIdentification claimId,
@@ -955,78 +1017,53 @@ internal class ClaimServiceImpl(
         }
     }
 
-    public async Task AllowSensitiveData(ClaimIdentification claimId)
-    {
-        var (claim, _) = await LoadClaimAsPlayer(claimId);
-
-        claim.PlayerAllowedSenstiveData = true;
-        SetDiscussed(claim, isVisibleToPlayer: true);
-        await UnitOfWork.SaveChangesAsync();
-    }
+    /// <summary>
+    /// Игрок разрешает доступ к чувствительным данным. Ни комментария, ни уведомления здесь нет —
+    /// так было и до миграции.
+    /// </summary>
+    public Task AllowSensitiveData(ClaimIdentification claimId)
+        => characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.PlayerOnly,
+            ProjectActiveRequirement.MustBeActive,
+            claimId,
+            ctx =>
+            {
+                ctx.Claim.PlayerAllowedSenstiveData = true;
+                ctx.MarkDiscussed(isVisibleToPlayer: true);
+            });
 
     public async Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed)
     {
-        var (claim, projectInfo) = await LoadClaimAsPlayer(claimId);
+        await characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.PlayerOnly,
+            ProjectActiveRequirement.MustBeActive,
+            (CommentText: commentText, SensitiveDataAllowed: sensitiveDataAllowed),
+            ctx =>
+            {
+                // Принять можно только приглашение от мастера. Проверка именно такая, а не через
+                // EnsureStatus/таблицу переходов: она была написана руками и переносится как есть.
+                if (ctx.Claim.ClaimStatus != ClaimStatus.AddedByMaster)
+                {
+                    throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+                }
 
-        // Принять можно только приглашение от мастера
-        if (claim.ClaimStatus != ClaimStatus.AddedByMaster)
-        {
-            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
-        }
+                // Разрешение даёт игрок, и только если проект его вообще спрашивает.
+                ctx.Claim.PlayerAllowedSenstiveData = ctx.Request.SensitiveDataAllowed
+                    && ctx.ProjectInfo.ProfileRequirementSettings.SensitiveDataRequired;
 
-        claim.PlayerAllowedSenstiveData = sensitiveDataAllowed && projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
+                ctx.MarkDiscussed(isVisibleToPlayer: true);
 
-        SetDiscussed(claim, isVisibleToPlayer: true);
+                _ = ctx.AddComment(
+                    ctx.Request.CommentText,
+                    CommentExtraAction.InvitationAcceptedByPlayer,
+                    ClaimOperationType.PlayerChange);
+            });
 
-        var (comment, email) = CommentHelper.CreateClaimCommentWithNotification(
-            commentText,
-            claim,
-            projectInfo,
-            CommentExtraAction.InvitationAcceptedByPlayer,
-            ClaimOperationType.PlayerChange,
-            Now);
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-
-        await AutoApproveClaimIfNeeded(claim, projectInfo);
-    }
-
-    private async Task AutoApproveClaimIfNeeded(Claim claim, ProjectInfo projectInfo)
-    {
-        if (!claim.Project.Details.AutoAcceptClaims)
-        {
-            return;
-        }
-
-        var claimId = claim.GetId();
-
-        // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
-        if (!claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
-        {
-            logger.LogInformation(
-                "Claim ({claimId}) was not auto-approved: sensitive data access is required but not granted by player",
-                claimId);
-            return;
-        }
-
-        var responsibleMaster = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.ResponsibleMasterUserId));
-        impersonateAccessor.StartImpersonate(responsibleMaster.UserId, responsibleMaster.DisplayName, responsibleMaster.IsAdmin);
-        try
-        {
-            //TODO[Localize]
-            await ApproveByMaster(claimId, "Ваша заявка была принята автоматически");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Claim ({claimId}) auto-approve failed", claimId);
-            throw;
-        }
-        finally
-        {
-            impersonateAccessor.StopImpersonate();
-        }
+        // Автоприём — отдельная операция, идущая строго ПОСЛЕ принятия приглашения: реентерабельность
+        // запрещена (ADR014, §7). Порядок сохранён — и раньше он шёл после рассылки уведомления.
+        await AutoApproveIfRequired(claimId);
     }
 
     public async Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId)

@@ -29,6 +29,21 @@ internal abstract record CharacterOperationContext(
     internal bool ProjectMetadataChanged { get; set; }
 
     /// <summary>
+    /// Операция решила, что менять нечего: сервис не будет ни сохранять, ни рассылать.
+    /// </summary>
+    internal bool IsNoOp { get; private set; }
+
+    /// <summary>
+    /// Объявляет операцию холостой: сервис пропустит <c>SaveChanges</c>. Нужно там, где так вело
+    /// себя и до миграции — например, назначение ответственным того же мастера, который и так
+    /// ответственный: лишнее сохранение породило бы лишний комментарий и уведомление.
+    /// </summary>
+    /// <remarks>
+    /// Вызывать <b>до</b> любой мутации: изменения, сделанные до вызова, молча не сохранятся.
+    /// </remarks>
+    public void NothingChanged() => IsNoOp = true;
+
+    /// <summary>
     /// Сохраняет значения полей персонажа и поднимает <see cref="ProjectMetadataChanged"/>, если
     /// операция впервые отметила поле или вариант как использованные.
     /// </summary>
