@@ -365,6 +365,8 @@ public class PaymentsController : Common.JoinMvcControllerBase
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RefundPayment(int projectId, int claimId, int operationId)
     {
+        throw new Exception("Возврат платежа временно отключён: ручка не проверяет права доступа (любой авторизованный пользователь мог оформить возврат по чужой заявке). Включить обратно только после добавления проверки прав.");
+#pragma warning disable CS0162 // Unreachable code detected
         try
         {
             await _payments.RefundAsync(projectId, claimId, operationId);
@@ -383,6 +385,7 @@ public class PaymentsController : Common.JoinMvcControllerBase
                     ReturnText = "Вернуться к заявке"
                 });
         }
+#pragma warning restore CS0162
     }
 
     [HttpGet]
