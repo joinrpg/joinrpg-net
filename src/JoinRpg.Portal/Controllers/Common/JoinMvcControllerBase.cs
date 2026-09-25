@@ -66,6 +66,8 @@ public abstract class JoinMvcControllerBase : Controller
             case ClaimTargetIsNotAcceptingClaims _:
             case InsufficientContactsException _:
             case MasterHasResponsibleException _:
+            // Сообщение собирается в самом исключении: оно перечисляет конкретные группы.
+            case PublicGroupWithoutPublicPathException _:
                 ModelState.AddModelError("", exception.Message);
                 return;
             case JoinRpgNameFieldDeleteException _:

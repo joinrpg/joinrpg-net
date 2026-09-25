@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Projects.Metadata;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -226,6 +227,111 @@ public class CharacterGroupServiceTest
             RootGroupId, GroupId(special), GroupId(regular)));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Правило #4878: у публичной группы должен остаться хотя бы один публичный путь наверх.
+    /// </summary>
+    private CharacterGroup CreateGroup(bool isPublic, params CharacterGroup[] parents)
+    {
+        var group = mock.CreateCharacterGroup();
+        group.IsPublic = isPublic;
+        group.ParentCharacterGroupIds = [.. parents.Select(p => p.CharacterGroupId)];
+        mock.ReInitProjectInfo();
+        return group;
+    }
+
+    private CharacterGroup RootGroup => mock.Project.CharacterGroups.Single(g => g.IsRoot);
+
+    [Fact]
+    public async Task EditCharacterGroup_PublicGroupUnderPrivateParent_Throws_AndDoesNotSave()
+    {
+        var privateParent = CreateGroup(isPublic: false, RootGroup);
+        var group = CreateGroup(isPublic: false, RootGroup);
+
+        var service = CreateService(mock.Master.UserId);
+
+        var exception = await Should.ThrowAsync<PublicGroupWithoutPublicPathException>(
+            () => service.EditCharacterGroup(
+                GroupId(group), "Группа", isPublic: true, [GroupId(privateParent)], "Описание"));
+
+        exception.GroupNames.ShouldBe(["test_" + group.CharacterGroupId]);
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Группы — граф, а не дерево: достаточно одного публичного пути наверх.
+    /// </summary>
+    [Fact]
+    public async Task EditCharacterGroup_PublicGroupWithSecondPublicParent_Saves()
+    {
+        var privateParent = CreateGroup(isPublic: false, RootGroup);
+        var publicParent = CreateGroup(isPublic: true, RootGroup);
+        var group = CreateGroup(isPublic: false, RootGroup);
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.EditCharacterGroup(
+            GroupId(group), "Группа", isPublic: true, [GroupId(privateParent), GroupId(publicParent)], "Описание");
+
+        group.IsPublic.ShouldBeTrue();
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Путь рвётся и у потомков: скрывая группу, мастер скрывает и публичную ветку под ней.
+    /// </summary>
+    [Fact]
+    public async Task EditCharacterGroup_HidingGroupWithPublicChild_Throws_AndDoesNotSave()
+    {
+        var group = CreateGroup(isPublic: true, RootGroup);
+        var child = CreateGroup(isPublic: true, group);
+
+        var service = CreateService(mock.Master.UserId);
+
+        var exception = await Should.ThrowAsync<PublicGroupWithoutPublicPathException>(
+            () => service.EditCharacterGroup(
+                GroupId(group), "Группа", isPublic: false, [RootGroupId], "Описание"));
+
+        exception.GroupNames.ShouldBe(["test_" + child.CharacterGroupId]);
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Непубличная ветка целиком — обычная конфигурация, правило её не трогает.
+    /// </summary>
+    [Fact]
+    public async Task EditCharacterGroup_HidingGroupWithPrivateChild_Saves()
+    {
+        var group = CreateGroup(isPublic: true, RootGroup);
+        _ = CreateGroup(isPublic: false, group);
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.EditCharacterGroup(
+            GroupId(group), "Группа", isPublic: false, [RootGroupId], "Описание");
+
+        group.IsPublic.ShouldBeFalse();
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Нарушения в чужих ветках чинить при редактировании этой группы не заставляем: в старых
+    /// данных они есть, и иначе мастер не смог бы сохранить вообще ничего.
+    /// </summary>
+    [Fact]
+    public async Task EditCharacterGroup_ExistingViolationInAnotherBranch_DoesNotBlockSave()
+    {
+        var privateParent = CreateGroup(isPublic: false, RootGroup);
+        _ = CreateGroup(isPublic: true, privateParent);
+        var group = CreateGroup(isPublic: true, RootGroup);
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.EditCharacterGroup(
+            GroupId(group), "Переименованная", isPublic: true, [RootGroupId], "Описание");
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
 
     [Fact]

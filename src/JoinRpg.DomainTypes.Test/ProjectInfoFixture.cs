@@ -97,14 +97,16 @@ internal static class ProjectInfoFixture
         IReadOnlyDictionary<int, int[]> directParentsByGroup,
         IReadOnlyDictionary<int, CharacterGroupType>? types = null,
         IReadOnlyDictionary<int, bool>? isActiveByGroup = null,
-        IReadOnlyDictionary<int, UserIdentification>? responsibleMasterByGroup = null)
-        => new(RootGroupId, MakeGroups(directParentsByGroup, types, isActiveByGroup, responsibleMasterByGroup));
+        IReadOnlyDictionary<int, UserIdentification>? responsibleMasterByGroup = null,
+        IReadOnlyDictionary<int, bool>? isPublicByGroup = null)
+        => new(RootGroupId, MakeGroups(directParentsByGroup, types, isActiveByGroup, responsibleMasterByGroup, isPublicByGroup));
 
     private static Dictionary<CharacterGroupIdentification, CharacterGroupInfo> MakeGroups(
         IReadOnlyDictionary<int, int[]> directParentsByGroup,
         IReadOnlyDictionary<int, CharacterGroupType>? types,
         IReadOnlyDictionary<int, bool>? isActiveByGroup,
-        IReadOnlyDictionary<int, UserIdentification>? responsibleMasterByGroup)
+        IReadOnlyDictionary<int, UserIdentification>? responsibleMasterByGroup,
+        IReadOnlyDictionary<int, bool>? isPublicByGroup = null)
     {
         var directParents = new Dictionary<int, int[]>(directParentsByGroup);
         directParents.TryAdd(RootGroupId.CharacterGroupId, []);
@@ -128,7 +130,7 @@ internal static class ProjectInfoFixture
                     GroupId(id),
                     $"Group{id}",
                     isActiveByGroup?.GetValueOrDefault(id, true) ?? true,
-                    IsPublic: true,
+                    IsPublic: isPublicByGroup?.GetValueOrDefault(id, true) ?? true,
                     [.. directChildren[id].Select(GroupId)],
                     ChildCharactersOrdering: "",
                     [.. directParents[id].Select(GroupId)],

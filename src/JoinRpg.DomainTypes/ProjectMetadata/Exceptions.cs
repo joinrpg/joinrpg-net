@@ -27,6 +27,27 @@ public class LastMasterWithGrantRightsException(ProjectIdentification projectId,
     public UserIdentification UserId { get; } = userId;
 }
 
+/// <summary>
+/// Публичная группа осталась бы без единого публичного пути наверх — см.
+/// <see cref="PublicGroupPathRule"/>.
+/// </summary>
+/// <remarks>
+/// Сообщение готово к показу пользователю и перечисляет конкретные группы: чинить их всё равно
+/// мастеру, а найти их в сетке ролей иначе тяжело.
+/// </remarks>
+public class PublicGroupWithoutPublicPathException(
+    ProjectIdentification projectId,
+    IReadOnlyCollection<string> groupNames)
+    : JoinRpgProjectException(projectId, BuildMessage(groupNames))
+{
+    public IReadOnlyCollection<string> GroupNames { get; } = groupNames;
+
+    private static string BuildMessage(IReadOnlyCollection<string> groupNames)
+        => "Публичная группа должна лежать хотя бы в одной публичной — иначе снаружи её не видно, "
+            + "а персонажи в ней выглядят доступными для заявки. "
+            + $"После сохранения публичного пути наверх не останется у групп: {string.Join(", ", groupNames)}.";
+}
+
 public class PaymentTypeInfoDeactivatedException(PaymentTypeIdentification paymentTypeIdentification)
     : JoinRpgProjectException(paymentTypeIdentification.ProjectId, $"{paymentTypeIdentification} деактивирован");
 

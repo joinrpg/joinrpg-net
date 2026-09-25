@@ -64,12 +64,18 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
                     throw new ArgumentException($"Группа {cycleViolation.CharacterGroupId} является потомком редактируемой группы и не может быть её родителем.");
                 }
 
+                var parentIds = ServiceValidation.Required(ctx.Request.parentCharacterGroupIds);
+
+                // Сначала обычная проверка списка (группы существуют, не спецгруппы), потом
+                // правила дерева — им нужен заведомо корректный список родителей.
+                var parentIdsToSave = ctx.ProjectInfo.ValidateCharacterGroupList(parentIds, ensureNotSpecial: true);
+
+                ctx.ProjectInfo.GroupTree.ValidateGroupChange(
+                    ctx.Request.characterGroupId, ctx.Request.isPublic, parentIds);
+
                 characterGroup.CharacterGroupName = ServiceValidation.Required(ctx.Request.name);
                 characterGroup.IsPublic = ctx.Request.isPublic;
-                characterGroup.ParentCharacterGroupIds =
-                    ctx.ProjectInfo.ValidateCharacterGroupList(
-                        ServiceValidation.Required(ctx.Request.parentCharacterGroupIds),
-                        ensureNotSpecial: true);
+                characterGroup.ParentCharacterGroupIds = parentIdsToSave;
                 characterGroup.Description = new MarkdownDbValue(ctx.Request.description);
             });
     }
