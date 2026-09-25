@@ -1,10 +1,14 @@
 using System.Security.Cryptography;
+using JoinRpg.Common.WebInfrastructure;
+using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace JoinRpg.IdPortal.OAuthServer;
 
-internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAuthClientService
+internal class OAuthClientService(
+    IOpenIddictApplicationManager manager,
+    IOptions<JoinRpgHostNamesOptions> hostNames) : IOAuthClientService
 {
     public async Task<string?> CreateClientAsync(
         string clientId,
@@ -148,7 +152,7 @@ internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAut
         return secret;
     }
 
-    private static OpenIddictApplicationDescriptor BuildDescriptor(
+    private OpenIddictApplicationDescriptor BuildDescriptor(
         string clientId,
         string? clientSecret,
         string? displayName,
@@ -158,7 +162,8 @@ internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAut
         bool allowRefreshToken)
     {
         // Defense in depth: a joinrpg.* client never gets OIDC scopes, even if the caller made a mistake.
-        var effectiveScopes = scopes.Any(JoinRpgScopes.IsJoinRpgScope)
+        var isJoinRpgClient = scopes.Any(JoinRpgScopes.IsJoinRpgScope);
+        var effectiveScopes = isJoinRpgClient
             ? scopes.Where(JoinRpgScopes.IsJoinRpgScope)
             : scopes;
 
@@ -186,6 +191,15 @@ internal class OAuthClientService(IOpenIddictApplicationManager manager) : IOAut
         foreach (var scope in effectiveScopes)
         {
             descriptor.Permissions.Add(Permissions.Prefixes.Scope + scope);
+        }
+
+        if (isJoinRpgClient)
+        {
+            // MCP-клиент обязан присылать resource (RFC 8707) — спека MCP требует этого
+            // безусловно. Без права rsrc: OpenIddict отвечает invalid_target, и флоу
+            // обрывается на authorize, не доходя до токена.
+            descriptor.Permissions.Add(
+                Permissions.Prefixes.Resource + JoinRpgResources.Mcp(hostNames.Value));
         }
 
         foreach (var uri in redirectUris)
