@@ -222,7 +222,7 @@ internal static class ProjectRoleGridViewModelBuilder
             character.GetBusyStatus(),
             character.CharacterTypeInfo.SlotLimit,
             character.CharacterTypeInfo.IsHot,
-            ClaimValidator.IsAvailableForPlayer(character, character.ProjectInfo));
+            ClaimValidator.IsAvailableForPlayer(character));
 
         // Профиль игрока в агрегат персонажа не входит (ADR013) — он приходит отдельной загрузкой.
         var player = character.ApprovedClaim is { } approvedClaim
@@ -279,7 +279,7 @@ internal static class ProjectRoleGridViewModelBuilder
             contactsColumn == ProjectRolesListVisibilityMode.All ? player.Email : null,
             player.Social.Vk,
             player.Social.Telegram,
-            LiveJournalId.FromOptional(player.Social.LiveJournal));
+            player.Social.LiveJournal);
     }
 
     private static GroupsCellViewModel BuildGroupsCell(
