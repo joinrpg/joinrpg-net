@@ -2,8 +2,6 @@ namespace JoinRpg.Web.Models.Characters;
 
 public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>
 {
-    public int RootGroupId
-    { get; set; }
     public int CharacterGroupId { get; set; }
 
     [DisplayName("Название группы ролей")]
@@ -17,21 +15,9 @@ public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItem
 
     public IEnumerable<CharacterViewModel> PublicCharacters => ActiveCharacters.Where(c => c.IsPublic);
 
-    public IEnumerable<CharacterGroupListItemViewModel> ChildGroups { get; set; }
-
     public JoinHtmlString Description { get; set; }
 
     public IEnumerable<CharacterGroupListItemViewModel> Path { get; set; }
-
-    public bool IsRoot => DeepLevel == 0;
-
-    public CharacterGroupType GroupType { get; set; }
-
-    public bool IsPublic { get; set; }
-
-    public bool IsSpecial => GroupType is CharacterGroupType.SpecialToField or CharacterGroupType.SpecialToValue;
-
-    public string BoundExpression { get; set; } = "";
 
     public bool Equals(CharacterGroupListItemViewModel? other) => other != null && other.CharacterGroupId == CharacterGroupId;
 
