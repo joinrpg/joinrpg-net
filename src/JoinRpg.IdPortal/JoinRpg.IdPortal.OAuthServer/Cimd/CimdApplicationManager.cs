@@ -34,6 +34,50 @@ public class CimdApplicationManager(
     /// </summary>
     private const string OriginPropertyName = "ru.joinrpg.cimd.origin";
 
+    /// <summary>
+    /// Сверка <c>redirect_uri</c>. Поверх точного совпадения разрешаем расхождение **только в
+    /// порте** и **только для loopback**.
+    /// </summary>
+    /// <remarks>
+    /// RFC 8252 §7.3 требует этого от сервера: нативное приложение получает свободный порт от
+    /// операционной системы в момент запроса и заранее его не знает, поэтому в своих метаданных
+    /// объявляет адрес без порта. Claude Code так и делает — объявляет
+    /// <c>http://localhost/callback</c>, а приходит с <c>http://localhost:43575/callback</c>.
+    /// При точной сверке такой клиент не подключится вовсе.
+    ///
+    /// Схема, хост и путь по-прежнему обязаны совпадать: <c>localhost</c> и <c>127.0.0.1</c>
+    /// остаются разными адресами, а к не-loopback адресам послабление не применяется.
+    /// </remarks>
+    public override async ValueTask<bool> ValidateRedirectUriAsync(
+        OpenIddictEntityFrameworkCoreApplication application,
+        string address,
+        CancellationToken cancellationToken = default)
+    {
+        if (await base.ValidateRedirectUriAsync(application, address, cancellationToken))
+        {
+            return true;
+        }
+
+        if (!Uri.TryCreate(address, UriKind.Absolute, out var requested) || !requested.IsLoopback)
+        {
+            return false;
+        }
+
+        foreach (var registered in await GetRedirectUrisAsync(application, cancellationToken))
+        {
+            if (Uri.TryCreate(registered, UriKind.Absolute, out var candidate)
+                && candidate.IsLoopback
+                && string.Equals(candidate.Scheme, requested.Scheme, StringComparison.Ordinal)
+                && string.Equals(candidate.Host, requested.Host, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(candidate.AbsolutePath, requested.AbsolutePath, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public override async ValueTask<OpenIddictEntityFrameworkCoreApplication?> FindByClientIdAsync(
         string identifier, CancellationToken cancellationToken = default)
     {

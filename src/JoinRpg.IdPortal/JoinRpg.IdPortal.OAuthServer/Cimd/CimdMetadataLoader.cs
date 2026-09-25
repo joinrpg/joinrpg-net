@@ -170,12 +170,37 @@ public sealed class CimdMetadataLoader(
         : value;
 
     /// <summary>Настройка HttpClient: без редиректов и с коротким таймаутом.</summary>
-    public static void ConfigureHttpClient(HttpClient client) => client.Timeout = TimeSpan.FromSeconds(5);
+    /// <summary>
+    /// Общий бюджет на запрос. Держим заведомо больше времени установки соединения
+    /// (<see cref="ConnectTimeout"/>), иначе таймаут срабатывал бы до того, как соединение
+    /// вообще установится.
+    /// </summary>
+    public static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(15);
+
+    /// <summary>
+    /// Время на установку соединения. В .NET это включает и TLS-рукопожатие, а не только TCP,
+    /// и у CDN оно бывает неожиданно долгим: у документа Claude Code измерено ~0,08 с на TCP
+    /// и ~4,6 с на TLS. Прежние 3 с не дожидались рукопожатия, документ не скачивался, и
+    /// клиент получал invalid_client — без намёка на настоящую причину.
+    /// </summary>
+    public static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// Чем сервер представляется, когда идёт за документом клиента. Владелец домена должен
+    /// видеть в своих логах, кто его дёргает, а пустой User-Agent вдобавок режут многие WAF.
+    /// </summary>
+    private const string UserAgent = "JoinRpg-IdPortal-CIMD/1.0 (+https://joinrpg.ru)";
+
+    public static void ConfigureHttpClient(HttpClient client)
+    {
+        client.Timeout = RequestTimeout;
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+    }
 
     public static HttpMessageHandler CreateHandler() => new SocketsHttpHandler
     {
         AllowAutoRedirect = false,
         AutomaticDecompression = DecompressionMethods.All,
-        ConnectTimeout = TimeSpan.FromSeconds(3),
+        ConnectTimeout = ConnectTimeout,
     };
 }
