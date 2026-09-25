@@ -39,19 +39,18 @@ public class ClaimController(
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
     [Authorize]
-    public async Task<ActionResult> AddForCharacter(ProjectIdentification projectId, int characterid)
+    public async Task<ActionResult> AddForCharacter(CharacterIdentification characterId)
     {
-        var character = await characterInfoRepository.GetCharacterInfoOrDefault(
-            new CharacterIdentification(projectId, characterid));
+        var character = await characterInfoRepository.GetCharacterInfoOrDefault(characterId);
         if (character == null)
         {
             return NotFound();
         }
 
         var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
-        var projectDetails = await projectMetadataRepository.GetProjectDetails(projectId);
+        var projectDetails = await projectMetadataRepository.GetProjectDetails(characterId.ProjectId);
 
-        return View("Add", AddClaimViewModel.Create(character, userInfo, projectDetails, await GetLinkRenderer(projectId)));
+        return View("Add", AddClaimViewModel.Create(character, userInfo, projectDetails, await GetLinkRenderer(characterId.ProjectId)));
     }
 
     /// <summary>
