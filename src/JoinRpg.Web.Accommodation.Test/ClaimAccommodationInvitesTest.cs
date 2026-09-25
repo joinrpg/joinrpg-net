@@ -86,6 +86,6 @@ public class ClaimAccommodationInvitesTest : BunitContext
 
     private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
     {
-        public Uri GetUri(UserLinkViewModel target) => new($"https://example.com/user/{target.UserId.Value}");
+        public Uri GetUri(UserLinkViewModel target) => new($"https://example.com/user/{target.UserId!.Value}");
     }
 }

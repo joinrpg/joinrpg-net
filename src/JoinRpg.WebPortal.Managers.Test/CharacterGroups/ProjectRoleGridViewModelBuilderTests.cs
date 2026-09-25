@@ -1,3 +1,4 @@
+using System.Text.Json;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
@@ -437,9 +438,33 @@ public class ProjectRoleGridViewModelBuilderTests
         // Роль «занята», но игрок скрыт: sentinel-ссылка без реальных данных игрока.
         var link = player.Link.ShouldNotBeNull();
         link.ViewMode.ShouldBe(ViewMode.Hide);
-        link.UserId.ShouldBe(new UserIdentification(-1));
+        link.UserId.ShouldBeNull();
         link.DisplayName.ShouldNotBe("Player");
         player.Contacts.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Сетка едет на клиент по JSON, поэтому она обязана пережить round-trip. Раньше скрытый
+    /// игрок получал sentinel UserId(-1), а парсер типизированных id не принимает
+    /// неположительные значения — остров падал на десериализации и вис на «Идет загрузка...».
+    /// </summary>
+    [Fact]
+    public void Build_PlayerHidden_SurvivesJsonRoundTrip()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        character.IsPublic = true;
+        character.HidePlayerForCharacter = true;
+        _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = BuildGrid(Config(), [character], canViewPrivate: false);
+
+        var json = JsonSerializer.Serialize(result);
+        var restored = JsonSerializer.Deserialize<ProjectRoleGridViewModel>(json).ShouldNotBeNull();
+
+        var link = restored.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player.ShouldNotBeNull().Link.ShouldNotBeNull();
+        link.ViewMode.ShouldBe(ViewMode.Hide);
+        link.UserId.ShouldBeNull();
     }
 
     [Fact]
