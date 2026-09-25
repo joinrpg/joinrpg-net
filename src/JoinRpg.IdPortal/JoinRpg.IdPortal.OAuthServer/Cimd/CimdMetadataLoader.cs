@@ -75,7 +75,25 @@ public sealed class CimdMetadataLoader(
             // Следовать за ними нельзя — это обход проверки адреса.
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning("CIMD: {Url} ответил {Status}", clientId.Url, (int)response.StatusCode);
+                // Для редиректа обязательно пишем, куда он ведёт: без этого причина неотличима
+                // от любого другого отказа. На dev по этому логу выяснилось, что claude.ai
+                // отдаёт кластеру 302 на /app-unavailable-in-region, то есть блокирует регион, —
+                // а по одному «ответил 302» это выглядело как наша поломка и стоило часа поисков.
+                if (response.StatusCode is >= HttpStatusCode.MovedPermanently and < HttpStatusCode.BadRequest)
+                {
+                    logger.LogWarning(
+                        "CIMD: {Url} ответил {Status} с редиректом на {Location}. За редиректами мы "
+                        + "не ходим намеренно (это обход проверки адреса). Если домен клиента "
+                        + "недоступен из нашей сети — например, блокирует регион, — CIMD для него "
+                        + "работать не будет, клиенту нужна обычная регистрация.",
+                        clientId.Url, (int)response.StatusCode,
+                        response.Headers.Location?.ToString() ?? "(заголовок Location отсутствует)");
+                }
+                else
+                {
+                    logger.LogWarning("CIMD: {Url} ответил {Status}", clientId.Url, (int)response.StatusCode);
+                }
+
                 return (null, default);
             }
 
