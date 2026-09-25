@@ -41,6 +41,15 @@ internal static class ClaimPredicates
         return claim => claim.PlayerUserId == id;
     }
 
+    /// <summary>
+    /// Активные заявки пользователя в активных (неархивных) проектах
+    /// </summary>
+    public static Expression<Func<Claim, bool>> GetMyActiveClaimsInActiveProjects(UserIdentification userId)
+        => PredicateBuilder.New<Claim>()
+            .And(GetForUser(userId))
+            .And(GetClaimStatusPredicate(ClaimStatusSpec.Active))
+            .And(claim => claim.Project.Active);
+
     public static Expression<Func<Claim, bool>> GetForProject(ProjectIdentification projectid)
     {
         var id = projectid.Value;

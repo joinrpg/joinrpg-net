@@ -12,6 +12,8 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
+                @if (Model.IsAuthenticated)
+                {
                 <li class="dropdown">
 
                     @if (Model.CurrentProjectName is not null)
@@ -25,36 +27,40 @@
                     }
 
                     <ul class="dropdown-menu">
-                        @foreach (var project in Model.ProjectLinks.OrderBy(p => p.ProjectName).Take(20))
+                        @if (Model.MasterProjects.Length > 0)
                         {
-                            <li>
-                                @if (!project.HasMyMasterAccess)
-                                {
-                                    <a asp-action="MyClaim" asp-controller="Claim" asp-route-ProjectId="@project.ProjectId.Value"><join-icon icon="Claim" /> @project.ProjectName</a>
-                                }
-                                else
-                                {
-                                    <a asp-action="Details" asp-controller="Game" asp-route-ProjectId="@project.ProjectId.Value" asp-area=""><join-icon icon="Edit" /> @project.ProjectName</a>
-                                }
-                            </li>
-                        }
-
-                        @if (Model.ProjectLinks.Length > 20)
-                        {
-                            <li><a asp-action="BrowseGames" asp-controller="Home">...Еще игры</a></li>
-                        }
-
-                            @if (Model.ProjectLinks.Length > 0)
+                            <li class="dropdown-header">Мои проекты</li>
+                            @foreach (var project in Model.MasterProjects)
                             {
-                                <li><hr class="list-divider" /></li>
+                                <li>
+                                    <a asp-action="Details" asp-controller="Game" asp-route-ProjectId="@project.ProjectId.Value" asp-area=""><join-icon icon="Edit" /> @project.ProjectName</a>
+                                </li>
                             }
 
+                            @if (Model.HasMoreProjects)
+                            {
+                                <li><a asp-action="BrowseGames" asp-controller="Home">...Еще игры</a></li>
+                            }
+                        }
+
+                        @if (Model.MyClaims.Length > 0)
+                        {
+                            <li class="dropdown-header">Мои заявки</li>
+                            @foreach (var claim in Model.MyClaims)
+                            {
+                                <li>
+                                    <a asp-action="Edit" asp-controller="Claim" asp-route-ProjectId="@claim.ClaimId.ProjectId.Value" asp-route-ClaimId="@claim.ClaimId.ClaimId"><join-icon icon="Claim" /> @claim.CharacterName - @claim.ProjectName.Value</a>
+                                </li>
+                            }
+                        }
+
                             <li>
-                              @*TODO здесь нужен МОЙ архив игр, а не общий*@
-                                <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
+                                @*В профиле лежат и архивные проекты, и все заявки — это и есть «мой архив»*@
+                                <a asp-action="Me" asp-controller="User">Архив</a>
                             </li>
                         </ul>
                     </li>
+                }
 
                     @if (ViewBag.IsProduction != true)
                     {

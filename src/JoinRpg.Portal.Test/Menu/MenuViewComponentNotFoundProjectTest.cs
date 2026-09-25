@@ -49,6 +49,7 @@ public class MenuViewComponentNotFoundProjectTest
         var component = new MainMenuViewComponent(
             new AnonymousCurrentUserAccessor(),
             projectRepository: null!,
+            claimsRepository: null!,
             new NotFoundProjectMetadataRepository(),
             logger)
         {

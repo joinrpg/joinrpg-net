@@ -227,6 +227,26 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
           .ToListAsync();
     }
 
+    public async Task<IReadOnlyCollection<MyClaimShortInfo>> GetMyActiveClaimsInActiveProjects(UserIdentification userId)
+    {
+        var result = await Ctx.ClaimSet
+            .AsExpandable()
+            .Where(ClaimPredicates.GetMyActiveClaimsInActiveProjects(userId))
+            .Select(claim => new
+            {
+                claim.ProjectId,
+                claim.ClaimId,
+                claim.Project.ProjectName,
+                claim.Character.CharacterName,
+            })
+            .ToListAsync();
+
+        return [.. result.Select(c => new MyClaimShortInfo(
+            new ClaimIdentification(c.ProjectId, c.ClaimId),
+            new ProjectName(c.ProjectName),
+            c.CharacterName))];
+    }
+
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(ProjectIdentification projectId, UserIdentification userId, ClaimStatusSpec status)
     {
         var predicateBuilder = PredicateBuilder.New<Claim>()
