@@ -1,8 +1,8 @@
-using System.Data.Entity.Validation;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Services.Impl;
 
@@ -45,7 +45,9 @@ internal static class ServiceValidation
     {
         if (items.Count == 0)
         {
-            throw new DbEntityValidationException();
+            // Здесь это действительно «данные невалидны»: обязательный список пуст, и парная
+            // перегрузка Required(string) точно так же сигналит об отсутствии обязательного значения.
+            throw new JoinValidationException($"Required collection of {typeof(T).Name} is empty");
         }
 
         return items;
@@ -102,9 +104,9 @@ internal static class ProjectInfoValidationExtensions
             throw new Exception($"Groups {missingIds} doesn't belong to project");
         }
 
-        if (ensureNotSpecial && groupIds.Any(id => projectInfo.GroupTree.GetGroupById(id).IsSpecial))
+        if (ensureNotSpecial && groupIds.FirstOrDefault(id => projectInfo.GroupTree.GetGroupById(id).IsSpecial) is { } specialGroupId)
         {
-            throw new DbEntityValidationException();
+            throw new SpecialCharacterGroupNotAllowedException(specialGroupId);
         }
 
         return [.. groupIds.Select(g => g.CharacterGroupId)];

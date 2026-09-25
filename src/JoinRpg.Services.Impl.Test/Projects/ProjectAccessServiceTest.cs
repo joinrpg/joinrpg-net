@@ -1,4 +1,3 @@
-using System.Data.Entity.Validation;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
@@ -219,7 +218,7 @@ public class ProjectAccessServiceTest
         // mock.Master — единственный с CanGrantRights
         var service = CreateService(mock.Master.UserId);
 
-        await Should.ThrowAsync<DbEntityValidationException>(
+        await Should.ThrowAsync<LastMasterWithGrantRightsException>(
             () => service.RemoveAccess(ProjectId, new UserIdentification(mock.Master.UserId), null));
 
         mock.Project.ProjectAcls.ShouldContain(a => a.UserId == mock.Master.UserId);

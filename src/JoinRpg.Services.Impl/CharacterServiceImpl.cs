@@ -1,4 +1,3 @@
-using System.Data.Entity.Validation;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Services.Impl.Characters;
@@ -63,10 +62,14 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
             deleteCharacterRequest,
             ctx =>
             {
-                if (ctx.CharacterInfo.HasActiveClaims
-                    || ctx.Character.Project.Details.DefaultTemplateCharacter == ctx.Character)
+                if (ctx.CharacterInfo.HasActiveClaims)
                 {
-                    throw new DbEntityValidationException();
+                    throw new CharacterHasActiveClaimsException(ctx.Request.Id);
+                }
+
+                if (ctx.Character.Project.Details.DefaultTemplateCharacter == ctx.Character)
+                {
+                    throw new DefaultTemplateCharacterCannotBeDeletedException(ctx.Request.Id);
                 }
 
                 // Связи с сюжетами не рвём: удаление мягкое (IsActive = false), персонажа можно

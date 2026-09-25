@@ -1,4 +1,3 @@
-using System.Data.Entity.Validation;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using JoinRpg.Data.Interfaces.Claims;
@@ -78,7 +77,9 @@ public class DbServiceImplBase
             return field;
         }
 
-        throw new DbEntityValidationException();
+        // Сущности нет либо она из другого проекта — снаружи это одно и то же «не найдено»,
+        // подробности не раскрываем, чтобы не подтверждать существование чужих сущностей.
+        throw new JoinRpgEntityNotFoundException(subentityId, typeof(T).Name);
     }
 
     protected async Task<T> LoadProjectSubEntityAsync<T>(IProjectEntityId id)
@@ -90,7 +91,9 @@ public class DbServiceImplBase
             return field;
         }
 
-        throw new DbEntityValidationException();
+        // Сущности нет либо она из другого проекта — снаружи это одно и то же «не найдено»,
+        // подробности не раскрываем, чтобы не подтверждать существование чужих сущностей.
+        throw new JoinRpgEntityNotFoundException(id.Id, typeof(T).Name);
     }
 
     protected static string Required([NotNull] string? stringValue,
@@ -124,7 +127,10 @@ public class DbServiceImplBase
 
         if (characters.Count != characterIds.Distinct().Count())
         {
-            throw new DbEntityValidationException();
+            var missing = characterIds.Distinct()
+                .Where(id => characters.All(c => c.CharacterId != id.CharacterId))
+                .Select(id => id.CharacterId);
+            throw new JoinRpgEntityNotFoundException(missing, nameof(Character));
         }
 
         return characters.ToArray();
