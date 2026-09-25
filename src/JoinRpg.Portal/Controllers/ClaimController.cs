@@ -9,11 +9,13 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +28,6 @@ public class ClaimController(
     IClaimService claimService,
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
-    ICharacterRepository characterRepository,
     ICharacterInfoRepository characterInfoRepository,
     IUserRepository UserRepository,
     IPaymentsService paymentsService,
@@ -40,17 +41,29 @@ public class ClaimController(
     [Authorize]
     public async Task<ActionResult> AddForCharacter(ProjectIdentification projectId, int characterid)
     {
-        var field = await characterRepository.GetCharacterAsync(projectId, characterid);
-
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-
-        var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
-        if (field == null)
+        var character = await characterInfoRepository.GetCharacterInfoOrDefault(
+            new CharacterIdentification(projectId, characterid));
+        if (character == null)
         {
             return NotFound();
         }
 
-        return View("Add", AddClaimViewModel.Create(field, userInfo, projectInfo));
+        var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
+        var projectDetails = await projectMetadataRepository.GetProjectDetails(projectId);
+
+        return View("Add", AddClaimViewModel.Create(character, userInfo, projectDetails, await GetLinkRenderer(projectId)));
+    }
+
+    /// <summary>
+    /// Рендерер ссылок в markdown: он всё ещё живёт на EF-проекте — ему нужны персонажи и группы
+    /// проекта целиком. Это единственное, ради чего странице заявки остаётся нужен EF.
+    /// </summary>
+    private async Task<ILinkRenderer> GetLinkRenderer(ProjectIdentification projectId)
+    {
+        var project = await ProjectRepository.GetProjectAsync(projectId.Value)
+            ?? throw new JoinRpgEntityNotFoundException(projectId.Value, "project");
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return new JoinrpgMarkdownLinkRenderer(project, projectInfo);
     }
 
     [HttpGet("/{projectid}/apply")]
@@ -85,10 +98,17 @@ public class ClaimController(
         catch (Exception exception)
         {
             AddModelException(exception);
+            var projectId = new ProjectIdentification(viewModel.ProjectId);
             var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
-            var source = await characterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
-            viewModel.Fill(source, userInfo, projectInfo, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
+            var source = await characterInfoRepository.GetCharacterInfo(
+                new CharacterIdentification(projectId, viewModel.CharacterId));
+            var projectDetails = await projectMetadataRepository.GetProjectDetails(projectId);
+            viewModel.Fill(
+                source,
+                userInfo,
+                projectDetails,
+                await GetLinkRenderer(projectId),
+                Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
             return base.View(viewModel);
         }
     }

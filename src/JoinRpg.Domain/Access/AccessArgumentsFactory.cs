@@ -144,6 +144,20 @@ public static class AccessArgumentsFactory
           CharacterPublic: character.IsPublic, IsCapitan: false);
     }
 
+    /// <inheritdoc cref="CreateForAdd(Character, UserIdentification)" />
+    public static AccessArguments CreateForAdd(CharacterInfo character, UserIdentification userId)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        return new AccessArguments(
+          character.ProjectInfo.HasMasterAccess(userId),
+          PlayerAccessToCharacter: false,
+          PlayerAccesToClaim: true,
+          EditAllowed: true,
+          Published: false,
+          CharacterPublic: character.IsPublic, IsCapitan: false);
+    }
+
     public static AccessArguments Create(Claim claim, int? userId, ProjectInfo projectInfo)
     {
         ArgumentNullException.ThrowIfNull(claim);

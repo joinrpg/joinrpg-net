@@ -242,6 +242,22 @@ public class CustomFieldsViewModel
     }
 
     /// <summary>
+    /// Поля персонажа поверх доменного агрегата (ADR013) — страница подачи заявки.
+    /// </summary>
+    /// <param name="renderer">
+    /// Рендерер ссылок в markdown. Передаётся снаружи, потому что до сих пор живёт на EF-проекте:
+    /// ему нужны все персонажи и группы проекта.
+    /// </param>
+    public CustomFieldsViewModel(
+        CharacterInfo character,
+        AccessArguments accessArguments,
+        ILinkRenderer renderer,
+        Dictionary<int, string?>? overrideValues = null)
+        : this(accessArguments, character, character.GetAllFields(), overrideValues, character.ProjectInfo, renderer)
+    {
+    }
+
+    /// <summary>
     ///  Called from
     /// - Character details
     /// - character list item
