@@ -84,12 +84,6 @@ public static class ClaimExtensions
 
     public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
 
-    public static void ChangeStatusWithCheck(this Claim claim, ClaimStatus targetStatus)
-    {
-        claim.EnsureCanChangeStatus(targetStatus);
-        claim.ClaimStatus = targetStatus;
-    }
-
     [Pure]
     public static Claim? TrySelectSingleClaim(this IReadOnlyCollection<Claim> claims)
     {

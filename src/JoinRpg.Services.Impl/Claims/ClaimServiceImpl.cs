@@ -48,7 +48,7 @@ internal class ClaimServiceImpl(
             ctx =>
             {
                 // Проверяем заранее, а пишем статус после приёма денег — как и до миграции.
-                ctx.EnsureCanChangeStatus(ctx.Claim, ClaimStatus.CheckedIn);
+                ctx.Claim.EnsureCanChangeStatus(ClaimStatus.CheckedIn);
 
                 // TODO(#4892) переписать ClaimCheckInValidator на доменную сущность: сейчас он
                 // считает правила по EF-графу, хотя рядом лежат ProjectInfo и CharacterClaimInfo.
