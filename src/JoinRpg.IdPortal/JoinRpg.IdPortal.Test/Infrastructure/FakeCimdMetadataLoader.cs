@@ -16,6 +16,9 @@ public sealed class FakeCimdMetadataLoader : ICimdMetadataLoader
     /// <summary>Объявить документ, который «лежит» по этому URL.</summary>
     public void Publish(string clientId, string json) => documents[clientId] = json;
 
+    /// <summary>Документ по этому URL больше не отдаётся — клиент «пропал».</summary>
+    public void Unpublish(string clientId) => documents.Remove(clientId);
+
     public Task<CimdDocument?> LoadAsync(CimdClientId clientId, CancellationToken ct = default)
     {
         LoadCount++;
