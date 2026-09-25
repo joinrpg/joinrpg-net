@@ -1,8 +1,9 @@
-# ADR009: Переход основной БД с Entity Framework 6 на EF Core
+# ADR015: Переход основной БД с Entity Framework 6 на EF Core
 
 ## Статус
 
 Предложен, ожидает утверждения.
+Черновик от 16.06.2026, сверен с кодом и обновлён 25.09.2026.
 
 ## Контекст
 
@@ -15,11 +16,19 @@
 (Entity Framework 6, Code-First). Он работает поверх **SQL Server**:
 строка подключения `DefaultConnection` (`Data Source=...;Initial Catalog=joinrpg`),
 а миграции применяются через `System.Data.SqlClient` (см.
-`Joinrpg.Dal.Migrate/Ef6/JoinMigrationsConfig.cs`). Это сотни таблиц, ~130
-навигационных свойств с `virtual` (ленивая загрузка), множество EF6-специфичных
+`Joinrpg.Dal.Migrate/Ef6/JoinMigrationsConfig.cs`). Это сотни таблиц, 132
+навигационных свойства с `virtual` (ленивая загрузка), множество EF6-специфичных
 вещей в `OnModelCreating` (`HasRequired`/`WithRequiredPrincipal`/
 `WillCascadeOnDelete`/`IndexAnnotation`), кастомный логгер `EF6LoggerToMSExtLogging`,
 `DbConfiguration`, `NullDatabaseInitializer`.
+
+**Поверхность EF6 шире, чем `JoinRpg.Dal.Impl`.** Пакет `EntityFramework`
+подключён в трёх проектах (`JoinRpg.Dal.Impl`, `JoinRpg.Data.Write.Interfaces`,
+`JoinRpg.Services.Impl`), а `using System.Data.Entity` встречается ещё и в
+`Joinrpg.Web.Identity` (`MyUserStore`), `JoinRpg.Portal`
+(`JoinMvcControllerBase`), `JoinRpg.Integrations.KogdaIgra`
+(`KogdaIgraSyncService`) и `Joinrpg.Dal.Migrate/Ef6`. Это надо учитывать при
+оценке объёма шага переключения.
 
 **Новое (EF Core, PostgreSQL).** Все DbContext-ы, добавленные за последние годы,
 уже на EF Core поверх **PostgreSQL** (`UseNpgsql`):
@@ -42,8 +51,9 @@
   нагрузка, разные API запросов (`System.Data.Entity.QueryableExtensions`
   против `Microsoft.EntityFrameworkCore`), разные правила маппинга, разные баги.
 - **Нет современных возможностей** EF Core: `IAsyncEnumerable`-стриминг,
-  compiled queries, `AsNoTracking` по умолчанию, `ExecuteUpdate`/`ExecuteDelete`,
-  split queries, лучшая диагностика и трассировка.
+  `ExecuteUpdate`/`ExecuteDelete`, split queries, глобальные query filters,
+  настраиваемый `QueryTrackingBehavior` (в т.ч. no-tracking по умолчанию для
+  всего контекста), лучшая диагностика и трассировка.
 - **Привязка к SQL Server.** Весь новый код на PostgreSQL, а самые большие данные —
   на отдельном SQL Server. Это два сервера БД в проде, две резервные копии,
   две точки отказа. Стратегическое направление — PostgreSQL.
@@ -102,10 +112,15 @@ PostgreSQL — это фаза 2); **(б)** можно сделать, отте�
 
 ### P0. Характеризационные тесты на реальной БД («golden master»)
 
-**Что.** Достроить `JoinRpg.IntegrationTests`. Инфраструктура уже сильная:
-`JoinApplicationFactory` поднимает **реальный SQL Server в Testcontainers**,
-прогоняет настоящие EF6-миграции и строит полный веб-хост. Значит сравнение
-«EF6 против EF Core» будет на одной и той же схеме, без моков.
+**Что.** Достроить `JoinRpg.IntegrationTest` (папка `src/JoinRpg.IntegrationTests`).
+Инфраструктура уже сильная: `JoinApplicationFactory` поднимает **реальный SQL Server
+в Testcontainers**, прогоняет настоящие EF6-миграции и строит веб-хост. Значит
+сравнение «EF6 против EF Core» будет на одной и той же схеме, без моков.
+
+Оговорка: тест-хост передаёт пустые строки подключения для `DataProtection`,
+`DailyJob` и `Notifications`, то есть EF Core/PostgreSQL-контексты в тестах не
+поднимаются. Для наших целей это ровно то, что нужно — покрывается именно
+EF6-поверхность, — но иллюзии «полного хоста» быть не должно.
 
 Два уровня покрытия:
 1. **HTTP-сценарии** (паттерн уже есть: `CreateEmptyProjectScenario`, XApi-тесты) —
@@ -136,7 +151,7 @@ PostgreSQL — это фаза 2); **(б)** можно сделать, отте�
 
 ### P1. Убрать зависимость от ленивой загрузки (lazy loading)
 
-**Что.** В `JoinRpg.DataModel` ~130 `virtual` навигационных свойств — EF6
+**Что.** В `JoinRpg.DataModel` 132 `virtual` навигационных свойства — EF6
 лениво подгружает их прокси. Сделать все загрузки явными (`Include`/`ThenInclude`
 или отдельные запросы в репозиториях). Сюда же логично собрать вынос оставшихся
 операций чтения из сервисного слоя внутрь репозиториев (правило проекта
@@ -183,10 +198,18 @@ PostgreSQL — это фаза 2); **(б)** можно сделать, отте�
 ### P2. Вынести маппинг в data annotations, где есть эквивалент
 
 **Что.** Перенести из `OnModelCreating` на сами классы сущностей всё, что
-выражается **атрибутами**: `[Required]`, `[Key]`, `[Column]`, `[ForeignKey]`,
-`[InverseProperty]`, `[Index]`. Аннотации трактуются EF6 и EF Core **одинаково**,
-поэтому такая конфигурация после переключения просто работает без переписывания
-fluent-кода.
+выражается **общими** атрибутами из `System.ComponentModel.DataAnnotations`
+и `.Schema`: `[Required]`, `[Key]`, `[Column]`, `[MaxLength]`, `[ForeignKey]`,
+`[InverseProperty]`, `[NotMapped]`. Эти аннотации трактуются EF6 и EF Core
+**одинаково**, поэтому такая конфигурация после переключения просто работает
+без переписывания fluent-кода.
+
+> **`[Index]` в этот список не входит.** В EF6 это
+> `System.ComponentModel.DataAnnotations.Schema.IndexAttribute`, применяемый
+> к *свойству*; в EF Core — `Microsoft.EntityFrameworkCore.IndexAttribute`,
+> применяемый к *классу* и перечисляющий свойства по имени. Разные тип,
+> неймспейс и цель применения — общей формы записи нет, индексы остаются
+> в fluent и переписываются в момент переключения (M2).
 
 **Зачем.** Уменьшает объём самой рискованной части переключения — ручного
 переписывания `OnModelCreating` с EF6-fluent (`HasRequired`/`WithMany`/…) на
@@ -194,11 +217,20 @@ EF Core-fluent. Каждая связь, ушедшая в аннотации, �
 переписывать вручную.
 
 **Граница.** То, у чего нет аннотационного эквивалента, остаётся fluent и
-переписывается уже в момент переключения (см. P4b в разделе про саму миграцию):
+переписывается уже в момент переключения (см. M2 в разделе про саму миграцию):
 `WillCascadeOnDelete(false)`, 1:1 по общему первичному ключу
 (`WithRequiredPrincipal`: `ProjectDetails`, `UserAuthDetails`, `CommentText`,
 `FinanceOperation` и т.п.), составные ключи, `IndexAnnotation` для уникальных
-составных индексов.
+составных индексов, а также индексы вообще (см. врезку про `[Index]` выше).
+
+**Отдельно: `[ComplexType]`.** В `JoinRpg.DataModel` два комплексных типа —
+`IntList` и `MarkdownDbValue`. В EF Core атрибута `[ComplexType]` с семантикой
+EF6 нет: нужно либо owned type (`OwnsOne` с table splitting), либо complex type
+EF Core 8+. Конвенции именования колонок при этом могут не совпасть с тем, что
+EF6 уже создал в боевой схеме (`Свойство_Поле`), поэтому имена колонок
+проставляются явно. Это не «перенос в аннотации», а часть M2, и —
+что важнее — прямой риск для контракта пустой миграции (P3): проверять в первую
+очередь.
 
 **Релиз.** Чистый рефакторинг на EF6, поведение схемы не меняется
 (проверяется P0 + сравнением сгенерированной схемы). Релизится по группам сущностей.
@@ -208,15 +240,51 @@ EF Core-fluent. Каждая связь, ушедшая в аннотации, �
 **Что.** В прототипе (отдельная ветка, без вывода в прод) собрать EF Core-модель
 `MyDbContext` и инструмент сверки: первая EF Core-миграция должна быть **пустой**
 (no-op `Up()/Down()`), а сверка модели с реальной схемой — зелёной. Зафиксировать
-это автотестом «нет pending model changes».
+это автотестом поверх `dotnet ef migrations has-pending-model-changes` (или
+`IMigrationsModelDiffer` в коде теста).
 
 **Зачем.** Гарантия, что EF Core не попытается пересоздать/переальтерить таблицы
 боевой БД. Это «контракт перехода»: пока миграция не пустая — модель ещё не
 соответствует схеме, переключаться нельзя.
 
+**Где ожидаются расхождения в первую очередь** (список для прототипа):
+- **`[ComplexType]`** (`IntList`, `MarkdownDbValue`) — см. P2.
+- **Настоящая many-to-many.** `modelBuilder.Entity<PlotFolder>().HasMany(t => t.PlotTags).WithMany()`
+  — единственная связь без явной таблицы связи. Конвенции именования join-таблицы
+  и её колонок у EF6 и EF Core разные, маппинг придётся задать явно
+  (`UsingEntity(...)`) под уже существующую таблицу.
+- **Конвенции каскадов и nullability** по умолчанию.
+- **Таблица истории миграций.** EF6 ведёт `__MigrationHistory`, EF Core —
+  `__EFMigrationsHistory`. На боевой БД нужно засеять baseline-строку для пустой
+  initial-миграции, иначе EF Core попытается применить её как новую. Старую
+  `__MigrationHistory` не удалять до окончания периода отката.
+
 **Релиз.** Прототип в прод не выводится; результат — план и тест, применяемые в
 момент переключения. Ведётся параллельно с P2 (аннотации напрямую влияют на
 совпадение модели и схемы).
+
+### P4. Избавиться от `DbEntityValidationException`
+
+**Что.** `System.Data.Entity.Validation.DbEntityValidationException` используется
+в проекте **не по назначению** — как универсальное «валидация не прошла»:
+13 мест `throw` в `DbServiceImplBase`, `CharacterServiceImpl`,
+`FinanceOperationsImpl`, `ProjectAccessService`, `CloneProjectHelper`,
+`ProjectService`, плюс обработка в `JoinMvcControllerBase` (маппинг в HTTP-ответ).
+Завести собственное исключение (например, `JoinValidationException` в
+`JoinRpg.Domain`) и заменить все использования.
+
+**Зачем.** Это EF6-тип, в EF Core его нет вообще. Более того, EF Core
+**не валидирует сущности при `SaveChanges`** — в отличие от EF6, который проверял
+`[Required]`/`[MaxLength]` и бросал это исключение сам. То есть после
+переключения меняются две вещи сразу: пропадает тип и пропадает неявная
+валидация. Первую можно и нужно развязать заранее.
+
+**Замечание про неявную валидацию.** Golden-master-тесты (P0) идут по happy path
+и её потерю не поймают. Отдельно проверить, нет ли кода, полагающегося на то, что
+EF6 не даст сохранить сущность с пустым `[Required]`-полем; такие места закрыть
+явной проверкой в домене. Это делается на EF6 и наблюдаемого поведения не меняет.
+
+**Релиз.** Чистая замена типа исключения, отдельным PR, на EF6.
 
 ## Что осознанно не делаем заранее
 
@@ -259,10 +327,18 @@ EF Core-fluent. Каждая связь, ушедшая в аннотации, �
 После подготовки переключение должно стать небольшим и обозримым:
 
 1. Заменить пакет `EntityFramework` на `Microsoft.EntityFrameworkCore` +
-   `Microsoft.EntityFrameworkCore.SqlServer` в `JoinRpg.Dal.Impl`.
-2. Переписать `MyDbContext` на EF Core (`DbContextOptions`), включая **P4b** —
+   `Microsoft.EntityFrameworkCore.SqlServer` во всех трёх проектах, где он
+   подключён (`JoinRpg.Dal.Impl`, `JoinRpg.Data.Write.Interfaces`,
+   `JoinRpg.Services.Impl`), и заменить `LinqKit.EntityFramework` на
+   `LinqKit.Microsoft.EntityFrameworkCore` (13 репозиториев в `JoinRpg.Dal.Impl`
+   + search-провайдеры в `JoinRpg.Services.Impl`; `AsExpandable` есть в обоих,
+   но пакет и неймспейс разные). Заодно поправить `global using System.Data.Entity`
+   в `JoinRpg.Dal.Impl/GlobalUsings.cs` и точечные `using` в `Joinrpg.Web.Identity`,
+   `JoinRpg.Portal`, `JoinRpg.Integrations.KogdaIgra`.
+2. Переписать `MyDbContext` на EF Core (`DbContextOptions`), включая **M2** —
    остаток fluent-конфигурации без аннотационного эквивалента (каскады,
-   1:1 по общему PK, составные ключи, уникальные составные индексы); зарегистрировать
+   1:1 по общему PK, составные ключи, все индексы, комплексные типы как owned,
+   явный маппинг many-to-many `PlotFolder.PlotTags`); зарегистрировать
    через общий хелпер.
 3. Сменить тип возврата `IUnitOfWork.GetDbSet<T>()` на EF Core-`DbSet<T>` и
    реализовать `IUnitOfWork` поверх EF Core; места вызова в сервисах в основном
@@ -270,11 +346,15 @@ EF Core-fluent. Каждая связь, ушедшая в аннотации, �
 4. Заменить EF6-инфраструктуру: `MyDbConfiguration`/`[DbConfigurationType]`,
    `EF6LoggerToMSExtLogging`, `Database.Log`, `NullDatabaseInitializer` — на
    логирование/конфигурацию EF Core.
-5. Сгенерировать **пустую** initial EF Core-миграцию (контракт из P3) и
+5. Сгенерировать **пустую** initial EF Core-миграцию (контракт из P3), засеять
+   для неё baseline-строку в `__EFMigrationsHistory` на всех окружениях и
    переключить применение миграций `MyDbContext` на `MigrationsLauncher`
-   (EF6-ветку `MigrateMyDbContextService` удалить).
+   (EF6-ветку `MigrateMyDbContextService` удалить). Таблицу `__MigrationHistory`
+   оставить до окончания периода отката.
 6. Отключить ленивую загрузку (после P1 это безопасно).
-7. Прогнать всю сетку тестов (P0) — снапшоты должны совпасть.
+7. Перевести `JoinApplicationFactory` с прямого вызова EF6 `DbMigrator` на
+   EF Core-миграции (контейнер SQL Server остаётся тем же).
+8. Прогнать всю сетку тестов (P0) — снапшоты должны совпасть.
 
 ## Фаза 2 (отдельный ADR): SQL Server → PostgreSQL
 
@@ -319,7 +399,12 @@ EF Core-fluent. Каждая связь, ушедшая в аннотации, �
   тестами P0 на реальной БД (не «исправляется» переписыванием на Expression —
   см. «Что осознанно не делаем заранее»).
 - **Объём переписывания `OnModelCreating`** → заранее уменьшен выносом в
-  аннотации (P2), остаток (P4b) — по документированной таблице соответствий.
+  аннотации (P2), остаток (M2) — по документированной таблице соответствий.
+- **Потеря неявной валидации на `SaveChanges`** (EF Core её не делает вовсе) →
+  P4: развязка с `DbEntityValidationException` и явные проверки в домене.
+  Golden master этот риск не ловит, потому что идёт по happy path.
+- **`[ComplexType]` и many-to-many без явной таблицы** → главные кандидаты на
+  непустую первую миграцию, проверяются прототипом P3 в первую очередь.
 - **Боль PostgreSQL (даты, MARS, диалект)** → вынесена в фазу 2.
 
 ## Связанные документы
@@ -330,5 +415,5 @@ EF Core-fluent. Каждая связь, ушедшая в аннотации, �
 - [structure.md](structure.md) — слои DAL и правило инкапсуляции чтения (база для P1).
 
 ---
-*Создано: 16.06.2026*
+*Создано: 16.06.2026, обновлено: 25.09.2026*
 *Автор: Claude (по запросу @leotsarev)*
