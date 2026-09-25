@@ -15,9 +15,8 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 /// <see cref="NotSupportedException"/> намеренно — чтобы поход за незапланированными данными был
 /// виден в тесте, а не подменялся пустышкой.
 /// </remarks>
-internal sealed class FakeClaimsRepository(MockedProject? mock = null) : IClaimsRepository
+internal sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
 {
-    private MockedProject Mock => mock ?? throw new NotSupportedException("Фейк создан без MockedProject");
 
     /// <summary>Заранее заготовленные заявки по (ProjectId, UserId) ответственного мастера.</summary>
     public Dictionary<(int ProjectId, int UserId), List<Claim>> ClaimsByResponsibleMaster { get; } = [];
@@ -27,7 +26,7 @@ internal sealed class FakeClaimsRepository(MockedProject? mock = null) : IClaims
             ClaimsByResponsibleMaster.TryGetValue((projectId, userId), out var claims) ? claims : []);
 
     public Task<Claim?> GetClaim(ClaimIdentification claimId)
-        => Task.FromResult(Mock.Project.Claims.SingleOrDefault(
+        => Task.FromResult(mock.Project.Claims.SingleOrDefault(
             claim => claim.ProjectId == claimId.ProjectId.Value && claim.ClaimId == claimId.ClaimId));
 
     public void Dispose() { }

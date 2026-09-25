@@ -15,7 +15,7 @@ public class ProjectAccessServiceTest
     private readonly MockedProject mock = new();
     private readonly FakeUnitOfWork unitOfWork;
     private readonly FakeProjectMetadataRepository metadataRepository;
-    private readonly FakeClaimsRepository claimsRepository = new();
+    private readonly FakeClaimsRepository claimsRepository;
     private readonly FakeClaimService claimService = new();
     private readonly FakeGameSubscribeService gameSubscribeService = new();
 
@@ -23,6 +23,7 @@ public class ProjectAccessServiceTest
     {
         unitOfWork = new FakeUnitOfWork(mock);
         metadataRepository = new FakeProjectMetadataRepository(mock);
+        claimsRepository = new FakeClaimsRepository(mock);
     }
 
     private ProjectIdentification ProjectId => mock.ProjectInfo.ProjectId;

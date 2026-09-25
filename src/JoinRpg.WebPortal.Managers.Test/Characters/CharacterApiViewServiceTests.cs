@@ -27,9 +27,9 @@ public class CharacterApiViewServiceTests
     private CharacterApiViewService CreateService(int userId) =>
         new(
             new FakeCharacterRepository(Mock),
-            new FakeCharacterInfoRepository(),
-            new FakeUserRepository(),
-            new FakeCharacterService(),
+            new ThrowingCharacterInfoRepository(),
+            new ThrowingUserRepository(),
+            new ThrowingCharacterService(),
             new FakeProjectMetadataRepository(Mock.ProjectInfo),
             new FakeCurrentUserAccessor(userId));
 
@@ -55,8 +55,8 @@ public class CharacterApiViewServiceTests
     [Fact]
     public async Task GetCharacterInfo_NonMaster_ThrowsBeforeLoadingCharacter()
     {
-        // FakeCharacterInfoRepository throws NotImplementedException if actually called —
-        // seeing NoAccessToProjectException instead proves the rights check runs first.
+        // ThrowingCharacterInfoRepository бросает, если до него дойдёт вызов, —
+        // значит NoAccessToProjectException вместо него доказывает, что проверка прав идёт раньше.
         var service = CreateService(userId: 12345);
         var characterId = new CharacterIdentification(Mock.ProjectInfo.ProjectId, Mock.Character.CharacterId);
 
@@ -103,7 +103,12 @@ public class CharacterApiViewServiceTests
         public void Dispose() { }
     }
 
-    private sealed class FakeCharacterInfoRepository : ICharacterInfoRepository
+    /// <summary>
+    /// Не фейк, а утверждение: если сервис всё-таки полезет за персонажем, тест упадёт. Общий
+    /// <c>JoinRpg.DataModel.Mocks.Fakes.FakeCharacterInfoRepository</c> здесь не годится именно
+    /// потому, что он честно отдал бы данные и проверка порядка стала бы бессмысленной.
+    /// </summary>
+    private sealed class ThrowingCharacterInfoRepository : ICharacterInfoRepository
     {
         public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId) => throw new NotImplementedException();
         public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId, ProjectInfo projectInfo) => throw new NotSupportedException();
@@ -113,7 +118,7 @@ public class CharacterApiViewServiceTests
         public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
     }
 
-    private sealed class FakeUserRepository : IUserRepository
+    private sealed class ThrowingUserRepository : IUserRepository
     {
         public Task<User> GetById(int id) => throw new NotImplementedException();
         public Task<User> WithProfile(int userId) => throw new NotImplementedException();
@@ -128,7 +133,7 @@ public class CharacterApiViewServiceTests
         public Task<UserIdentification?> FindByEmail(string email) => throw new NotImplementedException();
     }
 
-    private sealed class FakeCharacterService : ICharacterService
+    private sealed class ThrowingCharacterService : ICharacterService
     {
         public Task<CharacterIdentification> AddCharacter(AddCharacterRequest addCharacterRequest) => throw new NotImplementedException();
         public Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest) => throw new NotImplementedException();
