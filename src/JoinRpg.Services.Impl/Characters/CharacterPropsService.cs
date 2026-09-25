@@ -287,28 +287,31 @@ internal class CharacterPropsService(
         CharacterIdentification characterId,
         UserIdentification playerId,
         ClaimOperation operation,
+        ClaimAccessRequirement accessRequirement,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ClaimCreationContext<TArgs>, Claim> factory,
         [CallerMemberName] string operationName = "")
-        => CreateClaimCore(characterId, playerId, operation, activeRequirement, arguments,
+        => CreateClaimCore(characterId, playerId, operation, accessRequirement, activeRequirement, arguments,
             ctx => Task.FromResult(factory(ctx)), operationName);
 
     public Task<Claim> CreateClaimAsync<TArgs>(
         CharacterIdentification characterId,
         UserIdentification playerId,
         ClaimOperation operation,
+        ClaimAccessRequirement accessRequirement,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ClaimCreationContext<TArgs>, Task<Claim>> factory,
         [CallerMemberName] string operationName = "")
-        => CreateClaimCore(characterId, playerId, operation, activeRequirement, arguments,
+        => CreateClaimCore(characterId, playerId, operation, accessRequirement, activeRequirement, arguments,
             factory, operationName);
 
     private Task<Claim> CreateClaimCore<TArgs>(
         CharacterIdentification characterId,
         UserIdentification playerId,
         ClaimOperation operation,
+        ClaimAccessRequirement accessRequirement,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ClaimCreationContext<TArgs>, Task<Claim>> factory,
@@ -320,20 +323,8 @@ internal class CharacterPropsService(
                 var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
                     .LoadCharacterForUpdate(characterId, currentUserAccessor.UserIdentification);
 
-                // Подача игроком отдельной проверки прав не имеет — её заменяют правила ClaimValidator.
-                switch (operation)
-                {
-                    case ClaimOperation.AddByMaster:
-                        _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
-                        break;
-                    case ClaimOperation.MoveToSecondRole:
-                        //TODO Specific right. Право перенесено как есть: до миграции это был
-                        // LoadClaimAsMaster(claimId) без дополнительных требований.
-                        _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor);
-                        break;
-                    default:
-                        break;
-                }
+                // Какие права нужны — решает вызывающая операция, сервис только проверяет.
+                ClaimAccess.RequestForCreation(handle.ProjectInfo, currentUserAccessor, accessRequirement);
 
                 EnsureActiveIfRequired(handle.ProjectInfo, activeRequirement);
 

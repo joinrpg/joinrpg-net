@@ -124,6 +124,9 @@ internal class ClaimServiceImpl(
             characterId,
             playerId,
             ClaimOperation.MoveToSecondRole,
+            //TODO Specific right. Право перенесено как есть: до миграции это был
+            // LoadClaimAsMaster(claimId) без дополнительных требований.
+            ClaimAccessRequirement.AnyMaster,
             ProjectActiveRequirement.MustBeActive,
             (ClaimId: claimId, CommentText: secondRoleCommentText),
             async ctx =>
@@ -197,6 +200,8 @@ internal class ClaimServiceImpl(
             characterId,
             currentUserAccessor.UserIdentification,
             ClaimOperation.AddByPlayer,
+            // Проверки мастерских прав нет — её заменяют правила ClaimValidator.
+            ClaimAccessRequirement.NoCheck,
             ProjectActiveRequirement.MustBeActive,
             (claimText, fields, sensitiveDataAllowed),
             ctx =>
@@ -1185,13 +1190,15 @@ internal class ClaimServiceImpl(
 
         logger.LogDebug("About to add claim from master to character {characterId} for user {userId}", characterId, userId);
 
-        // Права мастера и правила подачи проверяет сам props-сервис: ClaimOperation.AddByMaster
-        // требует CanManageClaims и пропускает причины с MasterCanOverride — закрытый приём заявок
-        // и незаполненные контакты игрока мастера не останавливают.
+        // Правила подачи проверяет сам props-сервис: ClaimOperation.AddByMaster пропускает причины
+        // с MasterCanOverride — закрытый приём заявок и незаполненные контакты игрока мастера не
+        // останавливают.
         var claim = await characterPropsService.CreateClaim(
             characterId,
             userId,
             ClaimOperation.AddByMaster,
+            // Мастер оформляет заявку на чужое имя, поэтому нужно право управления заявками.
+            ClaimAccessRequirement.ManageClaims,
             ProjectActiveRequirement.MustBeActive,
             (commentText, fields),
             ctx =>

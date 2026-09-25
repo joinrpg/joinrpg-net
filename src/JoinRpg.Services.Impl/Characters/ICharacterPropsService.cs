@@ -175,7 +175,10 @@ internal interface ICharacterPropsService
     /// </param>
     /// <param name="operation">
     /// <see cref="ClaimOperation.AddByPlayer"/> или <see cref="ClaimOperation.AddByMaster"/>: от
-    /// этого зависят и проверка прав, и то, какие причины запрета мастер вправе обойти.
+    /// этого зависит, какие причины запрета мастер вправе обойти.
+    /// </param>
+    /// <param name="accessRequirement">
+    /// Требование прав: его задаёт вызывающая операция, сервис только проверяет.
     /// </param>
     /// <param name="activeRequirement">Допустима ли операция над неактивным (архивным) проектом.</param>
     /// <param name="arguments">Аргументы операции; передаются в <paramref name="factory"/> и логируются.</param>
@@ -189,6 +192,7 @@ internal interface ICharacterPropsService
         CharacterIdentification characterId,
         UserIdentification playerId,
         ClaimOperation operation,
+        ClaimAccessRequirement accessRequirement,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ClaimCreationContext<TArgs>, Claim> factory,
@@ -203,7 +207,10 @@ internal interface ICharacterPropsService
     /// </remarks>
     /// <param name="characterId">Персонаж, на которого подаётся заявка.</param>
     /// <param name="playerId">Игрок, на которого оформляется заявка.</param>
-    /// <param name="operation">Операция: от неё зависят и проверка прав, и набор правил.</param>
+    /// <param name="operation">Операция: от неё зависит набор правил подачи.</param>
+    /// <param name="accessRequirement">
+    /// Требование прав: его задаёт вызывающая операция, сервис только проверяет.
+    /// </param>
     /// <param name="activeRequirement">Допустима ли операция над неактивным (архивным) проектом.</param>
     /// <param name="arguments">Аргументы операции; передаются в <paramref name="factory"/> и логируются.</param>
     /// <param name="factory">Строит заявку. Добавляет её в <c>DbContext</c> сам сервис.</param>
@@ -213,6 +220,7 @@ internal interface ICharacterPropsService
         CharacterIdentification characterId,
         UserIdentification playerId,
         ClaimOperation operation,
+        ClaimAccessRequirement accessRequirement,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ClaimCreationContext<TArgs>, Task<Claim>> factory,
