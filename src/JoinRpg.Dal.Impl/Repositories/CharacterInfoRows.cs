@@ -54,6 +54,9 @@ internal sealed class CharacterInfoClaimRow
     public required int ResponsibleMasterUserId { get; init; }
     public required DateTime CreateDate { get; init; }
     public required DateTime LastUpdateDateTime { get; init; }
+    public required DateTime? MasterAcceptedDate { get; init; }
+    public required DateTime? MasterDeclinedDate { get; init; }
+    public required DateTime? PlayerDeclinedDate { get; init; }
     public required DateTime? CheckInDate { get; init; }
     public required DateTimeOffset? LastPlayerCommentAt { get; init; }
     public required DateTimeOffset? LastMasterCommentAt { get; init; }

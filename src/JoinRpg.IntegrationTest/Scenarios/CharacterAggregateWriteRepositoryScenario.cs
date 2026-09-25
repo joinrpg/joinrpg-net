@@ -58,6 +58,11 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
                 characterId, "Хочу эту роль", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
         });
 
+        // 3а. Мастер утверждает заявку — так в БД появляется непустая MasterAcceptedDate,
+        // на которой видно, что статусные даты действительно доезжают до снимка.
+        await factory.Services.RunAsAsync(masterId, async sp =>
+            await sp.GetRequiredService<IClaimService>().ApproveByMaster(claimId, "Принято"));
+
         // 4. Грузим write-хэндл и проверяем инварианты
         using var checkScope = factory.Services.CreateScope();
         var unitOfWork = checkScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -78,5 +83,12 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
         handle.CharacterInfo.Id.ShouldBe(characterId);
         handle.Project.ProjectId.ShouldBe(projectId.Value);
         handle.Initiator.UserId.ShouldBe(masterId.Value);
+
+        // Статусные даты заявки доезжают из БД в снимок ровно те же, что лежат в сущности.
+        handle.Claim.MasterAcceptedDate.ShouldNotBeNull();
+        handle.ClaimInfo.MasterAcceptedDate.ShouldBe(handle.Claim.MasterAcceptedDate);
+        handle.ClaimInfo.MasterDeclinedDate.ShouldBe(handle.Claim.MasterDeclinedDate);
+        handle.ClaimInfo.PlayerDeclinedDate.ShouldBe(handle.Claim.PlayerDeclinedDate);
+        handle.ClaimInfo.CheckInDate.ShouldBe(handle.Claim.CheckInDate);
     }
 }
