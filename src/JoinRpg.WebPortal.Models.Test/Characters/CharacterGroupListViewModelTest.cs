@@ -25,12 +25,12 @@ public class CharacterGroupListViewModelTest
     private static UserIdentification StrangerId => new(12345);
 
     /// <summary>
-    /// Открывает корневую группу: иначе постороннему не видно всё дерево целиком, и проверять
-    /// видимость самого персонажа не на чем.
+    /// Закрывает корневую группу: в обычном проекте она публична (её такой создаёт
+    /// ProjectService.AddProject), поэтому скрытое дерево надо строить специально.
     /// </summary>
-    private void MakeRootGroupPublic()
+    private void MakeRootGroupPrivate()
     {
-        RootGroup.IsPublic = true;
+        RootGroup.IsPublic = false;
         Mock.ReInitProjectInfo();
     }
 
@@ -56,7 +56,6 @@ public class CharacterGroupListViewModelTest
     [Fact]
     public void AnonymousUserGetsPublicGroups()
     {
-        MakeRootGroupPublic();
 
         GetGroups(currentUserId: null).ShouldHaveSingleItem().CharacterGroupId.ShouldBe(RootGroup.CharacterGroupId);
     }
@@ -64,7 +63,7 @@ public class CharacterGroupListViewModelTest
     [Fact]
     public void AnonymousUserDoesNotGetPrivateGroups()
     {
-        RootGroup.IsPublic = false;
+        MakeRootGroupPrivate();
 
         GetGroups(currentUserId: null).ShouldBeEmpty();
     }
@@ -72,7 +71,7 @@ public class CharacterGroupListViewModelTest
     [Fact]
     public void MasterGetsPrivateGroups()
     {
-        RootGroup.IsPublic = false;
+        MakeRootGroupPrivate();
 
         GetGroups(MasterId).ShouldHaveSingleItem().CharacterGroupId.ShouldBe(RootGroup.CharacterGroupId);
     }
@@ -80,7 +79,6 @@ public class CharacterGroupListViewModelTest
     [Fact]
     public void AnonymousUserGetsPublicCharacters()
     {
-        MakeRootGroupPublic();
         Mock.Character.IsPublic = true;
 
         GetCharacters(currentUserId: null).ShouldHaveSingleItem().CharacterId.ShouldBe(Mock.Character.CharacterId);
@@ -134,7 +132,6 @@ public class CharacterGroupListViewModelTest
     [Fact]
     public void HiddenPlayerIsNotShownToStranger()
     {
-        MakeRootGroupPublic();
         Mock.Character.IsPublic = true;
         Mock.Character.HidePlayerForCharacter = true;
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
@@ -168,7 +165,6 @@ public class CharacterGroupListViewModelTest
     [Fact]
     public void PrivateCharacterIsVisibleToMasterOnly()
     {
-        MakeRootGroupPublic();
         Mock.Character.IsPublic = false;
 
         GetCharacters(MasterId).ShouldNotBeEmpty();
@@ -178,7 +174,6 @@ public class CharacterGroupListViewModelTest
     [Fact]
     public void PublicCharacterIsVisibleToStranger()
     {
-        MakeRootGroupPublic();
         Mock.Character.IsPublic = true;
 
         GetCharacters(StrangerId).ShouldNotBeEmpty();
