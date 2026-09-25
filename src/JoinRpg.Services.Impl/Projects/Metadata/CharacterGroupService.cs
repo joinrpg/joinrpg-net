@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.Services.Impl.Projects.Metadata;
@@ -22,9 +23,10 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
                 var group = new CharacterGroup()
                 {
                     CharacterGroupName = ServiceValidation.Required(ctx.Request.name),
-                    ParentCharacterGroupIds =
-                        ctx.ProjectInfo.ValidateCharacterGroupList(
-                            ServiceValidation.Required(ctx.Request.parentCharacterGroupIds)),
+                    ParentCharacterGroupIds = ctx.ProjectInfo.GroupTree
+                        .ValidateCharacterGroupList(
+                            ServiceValidation.Required(ctx.Request.parentCharacterGroupIds))
+                        .ToIntArray(),
                     ProjectId = projectId,
                     IsRoot = false,
                     IsSpecial = false,
@@ -68,14 +70,15 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
 
                 // Сначала обычная проверка списка (группы существуют, не спецгруппы), потом
                 // правила дерева — им нужен заведомо корректный список родителей.
-                var parentIdsToSave = ctx.ProjectInfo.ValidateCharacterGroupList(parentIds, ensureNotSpecial: true);
+                var parentIdsToSave = ctx.ProjectInfo.GroupTree
+                    .ValidateCharacterGroupList(parentIds, ensureNotSpecial: true);
 
                 ctx.ProjectInfo.GroupTree.ValidateGroupChange(
                     ctx.Request.characterGroupId, ctx.Request.isPublic, parentIds);
 
                 characterGroup.CharacterGroupName = ServiceValidation.Required(ctx.Request.name);
                 characterGroup.IsPublic = ctx.Request.isPublic;
-                characterGroup.ParentCharacterGroupIds = parentIdsToSave;
+                characterGroup.ParentCharacterGroupIds = parentIdsToSave.ToIntArray();
                 characterGroup.Description = new MarkdownDbValue(ctx.Request.description);
             });
     }

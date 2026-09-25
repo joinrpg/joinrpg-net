@@ -513,6 +513,56 @@ public class CharacterInfoTest
 
     #endregion
 
+    #region EnsureCanChangeTypeTo
+
+    [Fact]
+    public void ShouldNotAllowToChangeTypeWithActiveClaims()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var character = MakeCharacter(
+            projectInfo,
+            characterTypeInfo: MakeTypeInfo(CharacterType.Player),
+            claims: [MakeClaim(projectInfo, 1, ClaimStatus.Discussed)]);
+
+        var ex = Should.Throw<Exception>(
+            () => character.EnsureCanChangeTypeTo(MakeTypeInfo(CharacterType.NonPlayer)));
+
+        ex.Message.ShouldBe("Can't change type of character with active claims");
+    }
+
+    [Fact]
+    public void ShouldAllowToKeepSameTypeWithActiveClaims()
+    {
+        // Меняются прочие настройки типа, сам тип тот же — активные заявки этому не мешают.
+        var projectInfo = MakeProject(MakeField(1));
+        var character = MakeCharacter(
+            projectInfo,
+            characterTypeInfo: MakeTypeInfo(CharacterType.Player),
+            claims: [MakeClaim(projectInfo, 1, ClaimStatus.Discussed)]);
+
+        character.HasActiveClaims.ShouldBeTrue();
+        Should.NotThrow(() => character.EnsureCanChangeTypeTo(
+            new CharacterTypeInfo(CharacterType.Player, IsHot: true, SlotLimit: null, SlotName: null, CharacterVisibility.Private)));
+    }
+
+    [Fact]
+    public void ShouldAllowToChangeTypeWithoutActiveClaims()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var character = MakeCharacter(
+            projectInfo,
+            characterTypeInfo: MakeTypeInfo(CharacterType.Player),
+            claims: [MakeClaim(projectInfo, 1, ClaimStatus.DeclinedByUser)]);
+
+        character.HasActiveClaims.ShouldBeFalse();
+        Should.NotThrow(() => character.EnsureCanChangeTypeTo(MakeTypeInfo(CharacterType.NonPlayer)));
+    }
+
+    private static CharacterTypeInfo MakeTypeInfo(CharacterType type)
+        => new(type, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public);
+
+    #endregion
+
     #region GetFieldLayers по объекту заявки
 
     [Fact]

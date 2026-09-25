@@ -106,12 +106,6 @@ public class DbServiceImplBase
     protected bool SmartDelete<T>(T? field) where T : class, IDeletableSubEntity
         => EntityDeletion.SmartDelete(field, f => UnitOfWork.GetDbSet<T>().Remove(f));
 
-    protected static int[] ValidateCharacterGroupList(
-        ProjectInfo projectInfo,
-        IReadOnlyCollection<CharacterGroupIdentification> groupIds,
-        bool ensureNotSpecial = false)
-        => projectInfo.ValidateCharacterGroupList(groupIds, ensureNotSpecial);
-
     protected async Task<ICollection<Character>> ValidateCharactersList(IReadOnlyCollection<CharacterIdentification> characterIds)
     {
         if (characterIds.Count == 0)

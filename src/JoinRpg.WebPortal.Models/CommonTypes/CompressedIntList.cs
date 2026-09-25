@@ -9,7 +9,7 @@ namespace JoinRpg.Web.Models.CommonTypes;
 /// <param name="List"></param>
 public record class CompressedIntList(IReadOnlyCollection<int> List) : ISpanParsable<CompressedIntList>
 {
-    public CompressedIntList(IEnumerable<IProjectEntityId> list) : this([.. list.Select(c => c.Id)]) { }
+    public CompressedIntList(IEnumerable<IProjectEntityId> list) : this(list.ToIntArray()) { }
 
     public static CompressedIntList Parse(string s, IFormatProvider? provider = null) => Parse(s.AsSpan(), provider);
     public static CompressedIntList Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => TryParse(s, provider, out var result) ? result : throw new ArgumentException("Could not parse supplied value.", nameof(s));

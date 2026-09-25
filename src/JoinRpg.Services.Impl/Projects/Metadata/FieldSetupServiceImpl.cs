@@ -2,6 +2,7 @@ using System.Text.Json;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Impl;
 
 namespace JoinRpg.Services.Impl.Projects.Metadata;
@@ -350,7 +351,7 @@ internal class FieldSetupServiceImpl(
         field.IsPublic = request.IsPublic;
         field.MandatoryStatus = request.MandatoryStatus;
         field.AvailableForCharacterGroupIds =
-            ctx.ProjectInfo.ValidateCharacterGroupList(request.ShowForGroups);
+            ctx.ProjectInfo.GroupTree.ValidateCharacterGroupList(request.ShowForGroups).ToIntArray();
         field.IncludeInPrint = request.IncludeInPrint;
         field.ShowOnUnApprovedClaims = request.ShowForUnapprovedClaims;
         field.Price = request.Price;
