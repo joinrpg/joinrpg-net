@@ -55,12 +55,29 @@ public class McpHealthCheckTests
     [Fact]
     public async Task Configured_HealthCheckReportsEnabled()
     {
+        // client_id обязан совпадать с ресурсом, иначе интроспекция отвергнет любой токен.
         var report = await RunHealthCheckAsync(
-            new McpResourceOptions { ClientId = "portal-mcp", ClientSecret = "s3cret" });
+            new McpResourceOptions { ClientId = "https://dev.joinrpg.ru/mcp", ClientSecret = "s3cret" });
 
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
         entry.Status.ShouldBe(HealthStatus.Healthy);
         entry.Description.ShouldContain("включён");
+    }
+
+    [Fact]
+    public async Task ClientIdNotEqualToResource_IsReportedAsDegraded()
+    {
+        // Самая коварная поломка из всех: конфигурация выглядит заполненной, /mcp
+        // зарегистрирован, health был Healthy — а IdPortal отвечает 200 {"active": false} на
+        // нормальный токен, и наружу это выходит как 401 без объяснений. Ровно так и было на
+        // dev: Mcp:ClientId 'dev-joinrpg-ru' при аудитории 'https://dev.joinrpg.ru/mcp'.
+        var report = await RunHealthCheckAsync(
+            new McpResourceOptions { ClientId = "dev-joinrpg-ru", ClientSecret = "s3cret" });
+
+        var entry = report.Entries[McpRegistration.McpHealthCheckName];
+        entry.Status.ShouldBe(HealthStatus.Degraded);
+        entry.Description.ShouldContain("dev-joinrpg-ru");
+        entry.Description.ShouldContain("https://dev.joinrpg.ru/mcp");
     }
 
     private static async Task<HealthReport> RunHealthCheckAsync(McpResourceOptions? mcpOptions)
