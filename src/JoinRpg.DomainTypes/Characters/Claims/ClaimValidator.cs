@@ -55,6 +55,13 @@ public static class ClaimValidator
     public static bool IsAvailableForPlayer(IClaimTarget target, ProjectInfo projectInfo)
         => Validate(target, userInfo: null, movedClaim: null, projectInfo, ClaimOperation.DisplayForPlayer).Count == 0;
 
+    /// <summary>
+    /// То же для доменного агрегата (ADR013): <c>ProjectInfo</c> отдельным параметром не нужен —
+    /// агрегат несёт его в себе.
+    /// </summary>
+    public static bool IsAvailableForPlayer(CharacterInfo character)
+        => IsAvailableForPlayer(character, character.ProjectInfo);
+
     private static IEnumerable<AddClaimForbideReason> ValidateImpl(
         IClaimTarget target,
         UserInfo? userInfo,

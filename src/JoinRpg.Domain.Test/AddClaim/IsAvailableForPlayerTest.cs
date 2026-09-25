@@ -91,6 +91,27 @@ public class IsAvailableForPlayerTest
         Mock.Character.IsAvailableForPlayer(projectInfo).ShouldBeFalse();
     }
 
+    /// <summary>
+    /// Перегрузка поверх агрегата отвечает то же самое: ProjectInfo она берёт из самого персонажа.
+    /// </summary>
+    [Fact]
+    public void OverloadOverAggregateAnswersTheSame()
+    {
+        var character = Mock.GetCharacterInfo(Mock.Character);
+
+        ClaimValidator.IsAvailableForPlayer(character).ShouldBe(Mock.Character.IsAvailableForPlayer(Mock.ProjectInfo));
+        ClaimValidator.IsAvailableForPlayer(character).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void OverloadOverAggregateSeesClosedProject()
+    {
+        Mock.Project.IsAcceptingClaims = false;
+        Mock.ReInitProjectInfo();
+
+        ClaimValidator.IsAvailableForPlayer(Mock.GetCharacterInfo(Mock.Character)).ShouldBeFalse();
+    }
+
     private Character CreateSlot(int? slotLimit)
     {
         var slot = Mock.CreateCharacter("slot");
