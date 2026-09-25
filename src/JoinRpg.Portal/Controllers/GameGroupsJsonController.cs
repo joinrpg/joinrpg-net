@@ -115,25 +115,11 @@ public class GameGroupsJsonController(
     }
 
     private object ConvertCharacterToJson(CharacterViewModel ch)
-    {
-        return new
-        {
-            ch.CharacterId, //TODO Remove
-            CharacterLink = uriService.Get(ch),
-            ch.IsAvailable,
-            ch.IsFirstCopy,
-            ch.CharacterName,
-            Description = ch.Description?.ToHtmlString(),
-            PlayerName = ch.PlayerLink?.DisplayName,
-            PlayerId = ch.PlayerLink?.UserId,
-            PlayerLink = (ch.PlayerLink is null || ch.PlayerLink.ViewMode == ViewMode.Hide) ? null : userLinkLocator.GetUri(ch.PlayerLink).AbsoluteUri,
-            ch.ActiveClaimsCount,
-            ClaimLink =
-            ch.IsAvailable
-              ? GetFullyQualifiedUri("AddForCharacter", "Claim", new { ch.ProjectId, ch.CharacterId })
-              : null,
-        };
-    }
+        => new PublicCharacterJsonBuilder(
+                uriService,
+                userLinkLocator,
+                c => GetFullyQualifiedUri("AddForCharacter", "Claim", new { c.ProjectId, c.CharacterId }))
+            .Build(ch);
 
     private string GetFullyQualifiedUri(
         string actionName,
