@@ -2,6 +2,7 @@ using JoinRpg.Common.WebComponents.ElementMoving;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
@@ -269,9 +270,13 @@ public class PlotController(
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
-          currentUserAccessor.UserId,
-            itemIdsToParticipateInSort: null, renderer: new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo), currentVersion: version, printMode: printMode));
+        var element = folder.Elements.Single(e => e.PlotElementId == plotElementId);
+        return View(new PlotElementListItemViewModel(
+            element.GetDetails(version),
+            AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor),
+            itemIdsToParticipateInSort: null,
+            renderer: new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo),
+            printMode: printMode));
     }
 
     [HttpPost(), MasterAuthorize(Permission.CanManagePlots)]
