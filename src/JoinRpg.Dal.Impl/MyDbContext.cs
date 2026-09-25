@@ -99,10 +99,17 @@ public class MyDbContext : DbContext, IUnitOfWork
             .HasForeignKey(ft => ft.CommentDiscussionId)
             .WillCascadeOnDelete(false);
 
-        _ = modelBuilder.Entity<Claim>()
+        // Каскад выключен явно, как и у остальных связей Claim (Player, Project, Character).
+        // Ответственный мастер — это «кто ведёт заявку», а не владелец: удаление пользователя
+        // не должно уносить заявки игроков. Бизнес-правило уже реализовано в
+        // ProjectAccessService.RemoveAccess — мастера нельзя убрать, пока его заявки не переданы.
+        // В БД этот FK и так NO_ACTION; каскад здесь включился побочным эффектом конвенции EF6
+        // для HasRequired, когда связь перевели с HasOptional на HasRequired.
+        modelBuilder.Entity<Claim>()
             .HasRequired(c => c.ResponsibleMasterUser)
             .WithMany()
-            .HasForeignKey(c => c.ResponsibleMasterUserId);
+            .HasForeignKey(c => c.ResponsibleMasterUserId)
+            .WillCascadeOnDelete(false);
 
         _ = modelBuilder.Entity<Claim>()
             .HasMany(c => c.FinanceOperations)
