@@ -51,10 +51,16 @@ public static class CustomFieldsExtensions
         return fields.AsReadOnly();
     }
 
+    /// <remarks>
+    /// Порядок слоёв важен: побеждает последний, то есть слой утверждённой заявки. Так же считает
+    /// агрегат (<c>CharacterFieldLayers.GetAllFieldsForEdit</c>), а значит и путь записи — раньше
+    /// показ и запись расходились бы, если бы одно и то же character-bound поле было записано
+    /// в обоих слоях.
+    /// </remarks>
     public static IReadOnlyCollection<FieldWithValue> GetFields(this Character character, ProjectInfo projectInfo)
         => GetFieldsForContainers(projectInfo,
-            character.ApprovedClaim is { } claim ? claim.DeserializeFieldValues(projectInfo) : null,
-            character.DeserializeFieldValues(projectInfo));
+            character.DeserializeFieldValues(projectInfo),
+            character.ApprovedClaim is { } claim ? claim.DeserializeFieldValues(projectInfo) : null);
 
     public static Dictionary<ProjectFieldIdentification, FieldWithValue> GetFieldsDict(this Character character, ProjectInfo projectInfo)
         => character.GetFields(projectInfo).ToDictionary(f => f.Field.Id);

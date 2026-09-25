@@ -52,17 +52,18 @@ public class CharacterFieldsOverCharacterInfoTest
     public void EmptyCharacterShouldMatch() => ShouldMatchEntityPath();
 
     /// <summary>
-    /// Единственное известное расхождение: character-bound поле записано и в персонажа, и в JSON
-    /// утверждённой заявки. EF-путь отдаёт значение персонажа, агрегат — значение заявки.
+    /// Самый тонкий случай: character-bound поле записано и в персонажа, и в JSON утверждённой
+    /// заявки. Побеждает слой заявки — в обоих путях.
     /// </summary>
     /// <remarks>
-    /// Побеждать должен агрегат: путь записи (<c>FieldSaveStrategyBase</c>) давно считает слои
-    /// именно так, и при следующем сохранении значение заявки всё равно затрёт персонажа. То есть
-    /// сегодня показ и запись расходятся между собой, а переезд на агрегат их мирит.
+    /// Так считает путь записи (<c>FieldSaveStrategyBase</c>), и при следующем сохранении значение
+    /// заявки всё равно затрёт персонажа, — поэтому показ обязан считать так же. До выравнивания
+    /// порядка слоёв в <c>Character.GetFields</c> EF-путь показывал здесь значение персонажа,
+    /// то есть показ расходился с записью.
     ///
-    /// Данных с таким перекрытием быть не должно: при принятии заявки поля пересохраняются
-    /// (<c>SaveToCharacterAndClaimStrategy</c>), и в заявке остаются только claim-bound значения.
-    /// Уцелеть оно может лишь в старых строках, записанных до появления этого правила.
+    /// Данных с таким перекрытием нет: при принятии заявки поля пересохраняются
+    /// (<c>SaveToCharacterAndClaimStrategy</c>), и в заявке остаются только claim-bound значения;
+    /// проверено запросом по боевой базе — ни одного случая. Тест сторожит правило, а не данные.
     /// </remarks>
     [Fact]
     public void OverlappingCharacterBoundValueIsTakenFromClaimLayer()
@@ -70,8 +71,9 @@ public class CharacterFieldsOverCharacterInfoTest
         SetCharacterFields(characterBound: "персонаж");
         SetApprovedClaimFields(characterBound: "заявка");
 
-        EntityValue(CharacterField).ShouldBe("персонаж");
+        EntityValue(CharacterField).ShouldBe("заявка");
         AggregateValue(CharacterField).ShouldBe("заявка");
+        ShouldMatchEntityPath();
     }
 
     private void SetCharacterFields(string? characterBound = null, string? claimBound = null)
