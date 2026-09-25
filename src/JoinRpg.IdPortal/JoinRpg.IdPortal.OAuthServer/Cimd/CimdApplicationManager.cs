@@ -1,3 +1,4 @@
+using System.Text.Json;
 using JoinRpg.Common.WebInfrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -27,6 +28,12 @@ public class CimdApplicationManager(
     IOptions<JoinRpgHostNamesOptions> hostNames)
     : OpenIddictApplicationManager<OpenIddictEntityFrameworkCoreApplication>(cache, logger, options, store)
 {
+    /// <summary>
+    /// Метка в <c>Properties</c>: строку завёл CIMD, а не администратор. Ключ с namespace —
+    /// Properties общие для всех, кто трогает приложение.
+    /// </summary>
+    private const string OriginPropertyName = "ru.joinrpg.cimd.origin";
+
     public override async ValueTask<OpenIddictEntityFrameworkCoreApplication?> FindByClientIdAsync(
         string identifier, CancellationToken cancellationToken = default)
     {
@@ -35,21 +42,38 @@ public class CimdApplicationManager(
             return await base.FindByClientIdAsync(identifier, cancellationToken);
         }
 
+        var existing = await base.FindByClientIdAsync(identifier, cancellationToken);
+        if (existing is not null && !await IsCimdOriginAsync(existing, cancellationToken))
+        {
+            // Регистрация администратора главнее: HTTPS-URL в client_id бывает и у обычного
+            // клиента (так у resource server идентификатором становится URI ресурса). Иначе
+            // владелец этого URL диктовал бы администратору redirect_uri, тип клиента и права.
+            return existing;
+        }
+
         var document = await loader.LoadAsync(clientId, cancellationToken);
         if (document is null)
         {
             // §4.3: не смогли получить и проверить документ — клиента считаем неизвестным.
+            // Откатываться на свою же строку нельзя: она может быть устаревшей.
             return null;
         }
 
-        // Строка в БД может уже существовать (её заводит EnsurePersistedAsync после согласия),
-        // но содержимое всё равно берём из свежего документа: иначе redirect_uri, удалённый
-        // клиентом из документа, продолжал бы приниматься по устаревшей строке.
-        var application = await base.FindByClientIdAsync(identifier, cancellationToken)
-            ?? await Store.InstantiateAsync(cancellationToken);
+        // Своя строка в БД может уже существовать (её заводит EnsurePersistedAsync после
+        // согласия), но содержимое всё равно берём из свежего документа: иначе redirect_uri,
+        // удалённый клиентом из документа, продолжал бы приниматься по устаревшей строке.
+        var application = existing ?? await Store.InstantiateAsync(cancellationToken);
 
         await PopulateAsync(application, BuildDescriptor(clientId, document), cancellationToken);
         return application;
+    }
+
+    private async ValueTask<bool> IsCimdOriginAsync(
+        OpenIddictEntityFrameworkCoreApplication application, CancellationToken cancellationToken)
+    {
+        var properties = await GetPropertiesAsync(application, cancellationToken);
+        return properties.TryGetValue(OriginPropertyName, out var marker)
+            && marker.ValueKind is JsonValueKind.True;
     }
 
     /// <summary>
@@ -71,6 +95,14 @@ public class CimdApplicationManager(
             return null;
         }
 
+        var existing = await base.FindByClientIdAsync(identifier, cancellationToken);
+        if (existing is not null && !await IsCimdOriginAsync(existing, cancellationToken))
+        {
+            // Строку администратора не трогаем — она главнее, см. FindByClientIdAsync. Иначе
+            // документ по этому URL переписывал бы её прямо в БД, а не только в памяти.
+            return await GetIdAsync(existing, cancellationToken);
+        }
+
         var document = await loader.LoadAsync(clientId, cancellationToken);
         if (document is null)
         {
@@ -78,7 +110,6 @@ public class CimdApplicationManager(
         }
 
         var descriptor = BuildDescriptor(clientId, document);
-        var existing = await base.FindByClientIdAsync(identifier, cancellationToken);
 
         if (existing is null)
         {
@@ -128,6 +159,10 @@ public class CimdApplicationManager(
         {
             descriptor.RedirectUris.Add(uri);
         }
+
+        // По этой метке FindByClientIdAsync отличает свою строку от регистрации администратора,
+        // которую переопределять нельзя.
+        descriptor.Properties[OriginPropertyName] = JsonSerializer.SerializeToElement(true);
 
         return descriptor;
     }

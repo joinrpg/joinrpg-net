@@ -130,6 +130,83 @@ public class CimdScenario(IdPortalApplicationFactory factory)
     }
 
     [Fact]
+    public async Task AdminRegisteredClient_WithHttpsUrlClientId_IsNotOverriddenByDocument()
+    {
+        // HTTPS-URL в client_id бывает и у обычного клиента: именно так регистрируется resource
+        // server, у которого идентификатор равен URI ресурса. Если CIMD перехватит такую строку,
+        // конфигурацию администратора начнёт диктовать владелец этого URL.
+        var clientId = $"https://admin-{Guid.NewGuid():N}.example.com/mcp";
+        const string ownRedirectUri = "http://localhost/admin-callback";
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<IOAuthClientService>()
+                .CreateClientAsync(
+                    clientId,
+                    "Клиент, зарегистрированный администратором",
+                    [new Uri(ownRedirectUri)],
+                    OAuthClientType.Public,
+                    [JoinRpgScopes.Read],
+                    allowRefreshToken: false);
+        }
+
+        // А теперь по тому же URL появляется документ с совершенно другим redirect_uri.
+        PublishDocument(clientId, RedirectUri);
+
+        var client = await LoginAsync();
+
+        // Пара: отличается только redirect_uri. Действовать должен тот, что внёс администратор.
+        var fromRegistration = await client.GetAsync(BuildAuthorizeUrl(clientId, ownRedirectUri));
+        var fromDocument = await client.GetAsync(BuildAuthorizeUrl(clientId, RedirectUri));
+
+        fromRegistration.StatusCode.ShouldBe(HttpStatusCode.Found);
+        fromDocument.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CimdCreatedRow_IsStillRefreshedFromDocument()
+    {
+        var clientId = PublishDocument();
+        var client = await LoginAsync();
+
+        // Своя строка в БД появляется после согласия — и она не должна «замораживать» документ.
+        var consent = await client.GetAsync(BuildAuthorizeUrl(clientId)
+            + $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=42");
+        consent.StatusCode.ShouldBe(HttpStatusCode.Found);
+        (await CountApplicationRowsAsync(clientId)).ShouldBe(1);
+
+        // Клиент переехал: старый redirect_uri из документа убран, объявлен новый.
+        const string movedRedirectUri = "http://localhost/cimd-callback-moved";
+        PublishDocument(clientId, movedRedirectUri);
+
+        var moved = await client.GetAsync(BuildAuthorizeUrl(clientId, movedRedirectUri));
+        var stale = await client.GetAsync(BuildAuthorizeUrl(clientId, RedirectUri));
+
+        moved.StatusCode.ShouldBe(HttpStatusCode.Found);
+        stale.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CimdCreatedRow_DocumentDisappeared_IsRejected()
+    {
+        var clientId = PublishDocument();
+        var client = await LoginAsync();
+
+        var consent = await client.GetAsync(BuildAuthorizeUrl(clientId)
+            + $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=42");
+        consent.StatusCode.ShouldBe(HttpStatusCode.Found);
+        (await CountApplicationRowsAsync(clientId)).ShouldBe(1);
+
+        factory.Cimd.Unpublish(clientId);
+
+        // §4.3: документ недоступен — клиент неизвестен. Откат на сохранённую строку означал бы,
+        // что права CIMD-клиента живут в БД дольше, чем его документ.
+        var afterDocumentGone = await client.GetAsync(BuildAuthorizeUrl(clientId, RedirectUri));
+
+        afterDocumentGone.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task OrdinaryClientIds_StillResolveFromDatabase()
     {
         // Подмена менеджера не должна ломать обычных клиентов.
@@ -149,21 +226,20 @@ public class CimdScenario(IdPortalApplicationFactory factory)
     private string PublishDocument(bool loopbackOnly = false)
     {
         var clientId = $"https://app-{Guid.NewGuid():N}.example.com/client.json";
-        var redirects = loopbackOnly
-            ? "\"http://127.0.0.1:3000/callback\""
-            : $"\"{RedirectUri}\"";
+        PublishDocument(clientId, loopbackOnly ? "http://127.0.0.1:3000/callback" : RedirectUri);
+        return clientId;
+    }
 
+    /// <summary>Выложить (или переложить) документ по заданному URL — с заданным redirect_uri.</summary>
+    private void PublishDocument(string clientId, string redirectUri) =>
         factory.Cimd.Publish(clientId, $$"""
             {
               "client_id": "{{clientId}}",
               "client_name": "Тестовый CIMD-клиент",
-              "redirect_uris": [{{redirects}}],
+              "redirect_uris": ["{{redirectUri}}"],
               "token_endpoint_auth_method": "none"
             }
             """);
-
-        return clientId;
-    }
 
     private async Task<int> CountApplicationRowsAsync(string clientId)
     {
