@@ -305,7 +305,7 @@ internal class CharacterPropsService(
             var player = await unitOfWork.GetUsersRepository().GetRequiredUserInfo(playerId);
 
             // CharacterInfo уже в хэндле — отдельного запроса за агрегатом больше нет.
-            ClaimValidator.EnsureCanAddClaim(handle.CharacterInfo, player, handle.ProjectInfo, operation);
+            ClaimValidator.EnsureCanAddClaim(handle.CharacterInfo, player, operation);
 
             var ctx = new ClaimCreationContext<TArgs>(
                 handle.Character, handle.CharacterInfo, handle.ProjectInfo, now, currentUserAccessor,

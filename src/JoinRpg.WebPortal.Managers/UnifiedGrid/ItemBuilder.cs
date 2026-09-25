@@ -38,7 +38,7 @@ public static class ItemBuilder
                character.GetBusyStatus(),
                character.CharacterTypeInfo.SlotLimit,
                character.CharacterTypeInfo.IsHot,
-               ClaimValidator.IsAvailableForPlayer(character, projectInfo)),
+               ClaimValidator.IsAvailableForPlayer(character)),
            [] // TODO
            );
 
