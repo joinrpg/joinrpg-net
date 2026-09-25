@@ -58,8 +58,10 @@ internal class ProjectRoleGridViewService(
             .ToList();
         var groupIds = orderedGroups.Select(g => g.Id).ToList();
 
-        var characters = (await characterInfoRepository.GetCharacterInfosByGroups(projectInfo.ProjectId, groupIds))
-            .Where(c => c.IsActive)
+        // Удалённые персонажи сетке не нужны — просим только живых, чтобы не собирать агрегат
+        // (поля, заявки) на тех, кто всё равно не попадёт в ответ.
+        var characters = (await characterInfoRepository.GetCharacterInfosByGroups(
+                projectInfo.ProjectId, groupIds, CharacterStatusSpec.Active))
             .ToList();
 
         // Скрытое (приватные персонажи и скрытые игроки) видит только мастер.
