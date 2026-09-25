@@ -40,6 +40,11 @@ public static class OAuthServerRegistration
         var oauthOptions = builder.Configuration.GetSection("OAuthServer").Get<OAuthServerOptions>();
         var certOptions = oauthOptions?.Certificates;
 
+        // Нужны здесь же, а не через IOptions: RegisterResources выполняется на этапе
+        // регистрации, когда провайдера ещё нет.
+        var hostNames = builder.Configuration.GetSection("JoinRpgHostNames").Get<JoinRpgHostNamesOptions>()
+            ?? throw new InvalidOperationException("Секция JoinRpgHostNames обязательна");
+
         builder.Services.AddJoinEfCoreDbContext<IdPortalDbContext>(builder.Configuration, builder.Environment, "IdPortal",
             options =>
         {
@@ -97,6 +102,12 @@ public static class OAuthServerRegistration
 
                 options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Phone, Scopes.Profile, Scopes.OfflineAccess,
                     JoinRpgScopes.Read, JoinRpgScopes.CharactersWrite);
+
+                // RFC 8707. Ресурс надо объявить, иначе ValidateResources отвечает
+                // invalid_target (ID2190) — это отдельная проверка от прав rsrc: у клиента,
+                // и нужны обе. MCP-клиент присылает resource безусловно, так что без этого
+                // флоу обрывается на authorize, не доходя до токена.
+                options.RegisterResources(JoinRpgResources.Mcp(hostNames));
 
                 // §5 драфта: клиент обязан узнать о поддержке CIMD из метаданных, иначе он
                 // не станет и пробовать. Декларативного способа добавить своё поле в discovery
@@ -221,7 +232,8 @@ public static class OAuthServerRegistration
         HttpContext context,
         IOpenIddictApplicationManager applicationManager,
         IOpenIddictAuthorizationManager authorizationManager,
-        ICurrentUserAccessor currentUserAccessor)
+        ICurrentUserAccessor currentUserAccessor,
+        IOptions<JoinRpgHostNamesOptions> hostNameOptions)
     {
 
         var principal = (await context.AuthenticateAsync())?.Principal;
@@ -315,6 +327,15 @@ public static class OAuthServerRegistration
 
         identity.SetClaim(Claims.Subject, subject);
         identity.SetScopes(requestedScopes);
+
+        if (requiresConsent)
+        {
+            // Аудитория токена (RFC 8707). Portal требует её в AddAudiences, и спека MCP
+            // обязывает ресурс проверять, что токен выписан именно ему. Значение прибито к
+            // нашему /mcp, а не взято из запроса: joinrpg.*-токен больше нигде не применим, а
+            // клиент, попросивший чужой resource, и так отлетит на ValidateResourcePermissions.
+            identity.SetResources(JoinRpgResources.Mcp(hostNameOptions.Value));
+        }
 
         if (grantedProjectIds.Count > 0)
         {

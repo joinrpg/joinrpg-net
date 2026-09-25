@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebInfrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
@@ -22,7 +23,8 @@ public class CimdApplicationManager(
     ILogger<OpenIddictApplicationManager<OpenIddictEntityFrameworkCoreApplication>> logger,
     IOptionsMonitor<OpenIddictCoreOptions> options,
     IOpenIddictApplicationStore<OpenIddictEntityFrameworkCoreApplication> store,
-    ICimdMetadataLoader loader)
+    ICimdMetadataLoader loader,
+    IOptions<JoinRpgHostNamesOptions> hostNames)
     : OpenIddictApplicationManager<OpenIddictEntityFrameworkCoreApplication>(cache, logger, options, store)
 {
     public override async ValueTask<OpenIddictEntityFrameworkCoreApplication?> FindByClientIdAsync(
@@ -93,7 +95,7 @@ public class CimdApplicationManager(
     /// ровно те же права, что и обычный MCP-клиент, — кроме redirect_uri, которые берутся
     /// из документа.
     /// </summary>
-    private static OpenIddictApplicationDescriptor BuildDescriptor(CimdClientId clientId, CimdDocument document)
+    private OpenIddictApplicationDescriptor BuildDescriptor(CimdClientId clientId, CimdDocument document)
     {
         var descriptor = new OpenIddictApplicationDescriptor
         {
@@ -116,6 +118,11 @@ public class CimdApplicationManager(
         {
             descriptor.Permissions.Add(Permissions.Prefixes.Scope + scope);
         }
+
+        // MCP-клиент присылает resource (RFC 8707) безусловно — так требует спека MCP.
+        // Без права rsrc: OpenIddict обрывает authorize с invalid_target.
+        descriptor.Permissions.Add(
+            Permissions.Prefixes.Resource + JoinRpgResources.Mcp(hostNames.Value));
 
         foreach (var uri in document.ValidRedirectUris)
         {
