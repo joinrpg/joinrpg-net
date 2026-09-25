@@ -17,6 +17,12 @@ internal sealed class FakeEmailService(List<object>? journal = null) : IEmailSer
 {
     public List<EmailModelBase> Sent { get; } = [];
 
+    /// <summary>
+    /// Вызывается на каждом письме. Нужен там, где важен не факт отправки, а момент: письма
+    /// легаси-канала обязаны уходить уже после сохранения.
+    /// </summary>
+    public Action? OnEmail { get; set; }
+
     public Task Email(OccupyRoomEmail createClaimEmail) => Record(createClaimEmail);
     public Task Email(UnOccupyRoomEmail email) => Record(email);
     public Task Email(LeaveRoomEmail email) => Record(email);
@@ -28,6 +34,7 @@ internal sealed class FakeEmailService(List<object>? journal = null) : IEmailSer
     {
         Sent.Add(email);
         journal?.Add(email);
+        OnEmail?.Invoke();
         return Task.CompletedTask;
     }
 }
