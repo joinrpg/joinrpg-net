@@ -193,4 +193,34 @@ internal interface ICharacterPropsService
         TArgs arguments,
         Func<ClaimCreationContext<TArgs>, Claim> factory,
         [CallerMemberName] string operationName = "");
+
+    /// <summary>
+    /// То же, но фабрика асинхронная и игрок может быть неизвестен заранее.
+    /// </summary>
+    /// <remarks>
+    /// Обе поблажки нужны одной операции — выходу на вторую роль. Она не только создаёт заявку, но
+    /// и мутирует исходную: та приезжает через <c>ctx.LoadOtherClaim</c> (это ввод-вывод, отсюда
+    /// асинхронность), и только из неё известен игрок, на которого оформляется вторая роль.
+    /// </remarks>
+    /// <param name="characterId">Персонаж, на которого подаётся заявка.</param>
+    /// <param name="playerId">
+    /// Игрок, на которого оформляется заявка, либо <c>null</c>, если операция узнаёт его только
+    /// внутри фабрики. <c>null</c> допустим <b>только</b> для операций без add-claim-валидации
+    /// (<see cref="ClaimOperationExtensions.ValidatesClaimTarget"/>): правила подачи считаются для
+    /// игрока, и без него считать их нечем.
+    /// </param>
+    /// <param name="operation">Операция: от неё зависят и проверка прав, и набор правил.</param>
+    /// <param name="activeRequirement">Допустима ли операция над неактивным (архивным) проектом.</param>
+    /// <param name="arguments">Аргументы операции; передаются в <paramref name="factory"/> и логируются.</param>
+    /// <param name="factory">Строит заявку. Добавляет её в <c>DbContext</c> сам сервис.</param>
+    /// <param name="operationName">Имя операции для лога; по умолчанию — имя вызывающего метода.</param>
+    /// <typeparam name="TArgs">Тип аргументов операции; логируется вместе с именем операции.</typeparam>
+    Task<Claim> CreateClaimAsync<TArgs>(
+        CharacterIdentification characterId,
+        UserIdentification? playerId,
+        ClaimOperation operation,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ClaimCreationContext<TArgs>, Task<Claim>> factory,
+        [CallerMemberName] string operationName = "");
 }

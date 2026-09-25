@@ -26,6 +26,7 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
         public Handle(MockedProject mock)
         {
             this.mock = mock;
+            Accommodation = new FakeProjectAccommodationWriteAccess(mock);
             // Снимок ДО, согласованный с текущим Project (как делает боевой репозиторий при загрузке).
             mock.ReInitProjectInfo();
         }
@@ -41,6 +42,31 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
         }
 
         public List<object> Removed { get; } = [];
+
+        /// <summary>Всё, что сервис добавил в контекст, в порядке добавления.</summary>
+        public List<object> Added { get; } = [];
+
+        public IProjectAccommodationWriteAccess Accommodation { get; }
+
+        public void Add(object entity)
+        {
+            Added.Add(entity);
+            // Имитация relationship fixup EF6: реальный DbContext синхронно связывает добавленную
+            // сущность с уже загруженными navigation-коллекциями того же контекста.
+            switch (entity)
+            {
+                case ProjectAccommodationType roomType:
+                    mock.AccommodationTypes.Add(roomType);
+                    break;
+                case ProjectAccommodation room:
+                    mock.Rooms.Add(room);
+                    room.Inhabitants ??= [];
+                    room.ProjectAccommodationType?.ProjectAccommodations.Add(room);
+                    break;
+                default:
+                    break;
+            }
+        }
 
         public void Remove(object entity)
         {
@@ -59,8 +85,40 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
             {
                 _ = mock.Project.ProjectFeeSettings.Remove(feeSetting);
             }
+            if (entity is ProjectAccommodationType roomType)
+            {
+                _ = mock.AccommodationTypes.Remove(roomType);
+            }
+            if (entity is ProjectAccommodation room)
+            {
+                _ = mock.Rooms.Remove(room);
+                _ = room.ProjectAccommodationType?.ProjectAccommodations.Remove(room);
+            }
         }
     }
+}
+
+/// <summary>
+/// Загрузчики поселения поверх <see cref="MockedProject"/>: отдают ровно те сущности, которые
+/// боевой репозиторий взял бы из <c>DbContext</c> хэндла, и так же ограничены проектом мока.
+/// </summary>
+internal sealed class FakeProjectAccommodationWriteAccess(MockedProject mock) : IProjectAccommodationWriteAccess
+{
+    public Task<ProjectAccommodationType?> LoadRoomType(int roomTypeId)
+        => Task.FromResult(mock.AccommodationTypes.SingleOrDefault(t => t.Id == roomTypeId));
+
+    public Task<ProjectAccommodation?> LoadRoom(int roomId)
+        => Task.FromResult(mock.Rooms.SingleOrDefault(r => r.Id == roomId));
+
+    public Task<IReadOnlyCollection<ProjectAccommodation>> LoadOccupiedRooms(int? roomTypeId)
+        => Task.FromResult<IReadOnlyCollection<ProjectAccommodation>>(
+            [.. mock.Rooms
+                .Where(r => r.Inhabitants.Any())
+                .Where(r => roomTypeId is null || r.AccommodationTypeId == roomTypeId)]);
+
+    public Task<IReadOnlyCollection<AccommodationRequest>> LoadAccommodationRequests(IReadOnlyCollection<int> requestIds)
+        => Task.FromResult<IReadOnlyCollection<AccommodationRequest>>(
+            [.. mock.AccommodationRequests.Where(r => requestIds.Contains(r.Id))]);
 }
 
 /// <summary>Записывает вызовы <see cref="IClaimService.SetResponsible"/> вместо реального изменения заявки.</summary>

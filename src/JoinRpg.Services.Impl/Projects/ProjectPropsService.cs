@@ -38,21 +38,49 @@ internal class ProjectPropsService(
         Func<ProjectMutationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "")
         => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
+            AsFunc(action), operationName);
+
+    public Task ChangeProjectPropertiesAsync<TArgs>(
+        ProjectIdentification projectId,
+        Permission requiredPermission,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ProjectMutationContext<TArgs>, Task> action,
+        [CallerMemberName] string operationName = "")
+        => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
+            async ctx =>
+            {
+                await action(ctx);
+                return true;
+            },
+            operationName);
+
+    public Task<TResult> ChangeProjectPropertiesAsync<TArgs, TResult>(
+        ProjectIdentification projectId,
+        Permission requiredPermission,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ProjectMutationContext<TArgs>, Task<TResult>> action,
+        [CallerMemberName] string operationName = "")
+        => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
             action, operationName);
 
-    private static Func<ProjectMutationContext<TArgs>, bool> AsFunc<TArgs>(Action<ProjectMutationContext<TArgs>> action)
+    private static Func<ProjectMutationContext<TArgs>, Task<bool>> AsFunc<TArgs>(Action<ProjectMutationContext<TArgs>> action)
         => ctx =>
         {
             action(ctx);
-            return true;
+            return Task.FromResult(true);
         };
+
+    private static Func<ProjectMutationContext<TArgs>, Task<TResult>> AsFunc<TArgs, TResult>(Func<ProjectMutationContext<TArgs>, TResult> action)
+        => ctx => Task.FromResult(action(ctx));
 
     private async Task<TResult> ChangeProjectPropertiesCore<TArgs, TResult>(
         ProjectIdentification projectId,
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Func<ProjectMutationContext<TArgs>, TResult> action,
+        Func<ProjectMutationContext<TArgs>, Task<TResult>> action,
         string operationName)
     {
         using var activity = ProjectPropsServiceActivity.ActivitySource.StartActivity(operationName);
@@ -75,8 +103,16 @@ internal class ProjectPropsService(
                 _ = handle.ProjectInfo.EnsureProjectActive();
             }
 
-            var ctx = new ProjectMutationContext<TArgs>(handle.Project, handle.ProjectInfo, now, currentUserAccessor, arguments, handle.Remove);
-            var result = action(ctx);
+            var ctx = new ProjectMutationContext<TArgs>(
+                handle.Project,
+                handle.ProjectInfo,
+                now,
+                currentUserAccessor,
+                arguments,
+                handle.Remove,
+                handle.Add,
+                handle.Accommodation);
+            var result = await action(ctx);
 
             await unitOfWork.SaveChangesAsync();
 

@@ -8,36 +8,28 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
 internal class FinanceOperationsImpl(
     IUnitOfWork unitOfWork,
-    IEmailService emailService,
     ICurrentUserAccessor currentUserAccessor,
     IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
     IProjectMetadataRepository projectMetadataRepository,
-    ICharacterPropsService characterPropsService) : ClaimImplBase(unitOfWork, emailService, currentUserAccessor, projectMetadataRepository, commentHelper), IFinanceService
+    ICharacterPropsService characterPropsService) : DbServiceImplBase(unitOfWork, currentUserAccessor), IFinanceService
 {
-    public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
-    {
-        var (claim, projectInfo) = await LoadClaimAsMaster(request, Permission.None, ExtraAccessReason.Player);
-
-
-        var (comment, email) = AcceptFeeImpl(request.Contents,
-            request.OperationDate,
-            request.Money,
-            projectInfo.ProjectFinanceSettings.GetRequiredPayment(request.PaymentTypeId),
-            claim,
-            projectInfo
-            );
-
-        await UnitOfWork.SaveChangesAsync();
-
-        await claimNotificationService.SendNotification(email.WithCommentId(comment.CommentId));
-    }
+    public Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
+        => characterPropsService.ChangeClaim(
+            new ClaimIdentification(request.PaymentTypeId.ProjectId, request.ClaimId),
+            ClaimAccessRequirement.MasterOrPlayer,
+            ProjectActiveRequirement.MustBeActive,
+            request,
+            ctx => ctx.AcceptFee(
+                ctx.Request.Contents,
+                ctx.Request.OperationDate,
+                ctx.Request.Money,
+                ctx.ProjectInfo.ProjectFinanceSettings.GetRequiredPayment(ctx.Request.PaymentTypeId)));
 
     #region Fee
 
@@ -78,7 +70,7 @@ internal class FinanceOperationsImpl(
             request,
             ctx =>
             {
-                CheckOperationDate(ctx.Request.OperationDate, ctx.Now);
+                ctx.CheckOperationDate(ctx.Request.OperationDate);
 
                 var pending = ctx.AddComment(
                     ctx.Request.Contents,
@@ -107,10 +99,22 @@ internal class FinanceOperationsImpl(
             });
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <b>Намеренно не мигрирован на <c>ICharacterPropsService</c></b> (ADR014, список рисков):
+    /// метод делает <b>два</b> <c>SaveChangesAsync</c>, и это не небрежность. Финоперация заявки-получателя
+    /// создаётся с проставленным <c>ClaimId</c>, но не добавляется в <c>claimTo.FinanceOperations</c> —
+    /// навигацию связывает relationship fixup при сохранении. Поэтому
+    /// <see cref="FinanceExtensions.UpdateClaimFeeIfRequired"/> обязан считаться <b>после</b> первого
+    /// сохранения, иначе новый платёж в баланс не попадёт и взнос зафиксируется неверно.
+    /// <c>ChangeClaim</c> же даёт ровно одно сохранение, а мутируются здесь две заявки сразу.
+    /// Перевод требует отдельного решения — см. отчёт по PR.
+    /// </remarks>
     public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
     {
         // Loading source claim
-        var (claimFrom, projectInfo) = await LoadClaimAsMaster(request, Permission.CanManageMoney);
+        var (claimFrom, projectInfo) = await LoadClaimAsMaster(
+            new ClaimIdentification(request.ProjectId, request.ClaimId),
+            Permission.CanManageMoney);
 
         // Loading destination claim
         var (claimTo, _) = await LoadClaimAsMaster(new ClaimIdentification(request.ProjectId, request.ToClaimId));
@@ -123,7 +127,7 @@ internal class FinanceOperationsImpl(
         }
 
         // Comment to source claim
-        var (commentFrom, emailFrom) = CommentHelper.CreateClaimCommentWithNotification(
+        var (commentFrom, emailFrom) = commentHelper.CreateClaimCommentWithNotification(
             request.CommentText ?? "",
             claimFrom,
             projectInfo,
@@ -146,7 +150,7 @@ internal class FinanceOperationsImpl(
         };
 
         // Comment to destination claim
-        var (commentTo, emailTo) = CommentHelper.CreateClaimCommentWithNotification(
+        var (commentTo, emailTo) = commentHelper.CreateClaimCommentWithNotification(
             request.CommentText ?? "",
             claimTo,
             projectInfo,
@@ -178,9 +182,32 @@ internal class FinanceOperationsImpl(
         await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId));
     }
 
+    /// <summary>
+    /// Последний остаток легаси-загрузки заявки: он же — последний потребитель
+    /// <see cref="ClaimAcccessExtensions.RequestAccess"/> в этом сервисе. Приехал сюда из удалённого
+    /// <c>ClaimImplBase</c> и жив ровно до тех пор, пока не мигрирован
+    /// <see cref="TransferPaymentAsync"/>. Помечен <c>[Obsolete]</c> намеренно: предупреждение —
+    /// burndown-метрика миграции (ADR014), гасить его надо переводом метода, а не pragma.
+    /// </summary>
+    [Obsolete("Используй ICharacterPropsService.ChangeClaim, см. ADR014")]
+    private async Task<(Claim, ProjectInfo)> LoadClaimAsMaster(
+        ClaimIdentification claimId,
+        Permission permission = Permission.None)
+    {
+        var claim = await ClaimsRepository.GetClaim(claimId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
+
+        return (claim.RequestAccess(CurrentUserId, permission), projectInfo);
+    }
+
     #endregion
 
     #region Master money management
+
+    // Обе операции этого региона работают с MoneyTransfer — переводом денег между мастерами. Ни
+    // заявки, ни персонажа у них нет вовсе, поэтому ICharacterPropsService (ADR014) им не подходит
+    // по определению: их агрегат — проект. Кандидат на IProjectPropsService (ADR009), но это
+    // отдельное решение, а не часть миграции claim-контура.
 
     public async Task CreateTransfer(CreateTransferRequest request)
     {
@@ -200,7 +227,7 @@ internal class FinanceOperationsImpl(
             _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
         }
 
-        CheckOperationDate(request.OperationDate);
+        OperationDateValidation.CheckOperationDate(request.OperationDate, Now);
 
         if (request.Amount <= 0)
         {
