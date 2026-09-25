@@ -875,6 +875,69 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SaveChangesCallCount.ShouldBe(0);
     }
 
+    /// <summary>
+    /// Доступ к паспорту мог быть единственным, что удерживало автоприём. Как только игрок его дал,
+    /// заявка принимается — отдельной операцией ПОСЛЕ сохранения самого разрешения.
+    /// </summary>
+    [Fact]
+    public async Task AllowSensitiveData_WithAutoAccept_ApprovesAfterFlagSaved()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        mock.Project.Details.RequirePassport = MandatoryStatus.Required;
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
+
+        claim.PlayerAllowedSenstiveData.ShouldBeTrue();
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        claim.Character.ApprovedClaim.ShouldBe(claim);
+
+        // Разрешение — одно сохранение и ноль уведомлений; автоприём добавляет свои строго после.
+        SaveChangesCallCount.ShouldBe(2);
+        SentNotifications.Count.ShouldBe(1);
+
+        // Утверждает ответственный мастер, а не игрок, и подмена снимается.
+        impersonateAccessor.Impersonated.ShouldBe([mock.Master.GetId()]);
+        impersonateAccessor.StopCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Уже принятую заявку принимать нечего. Без проверки статуса автоприём бросил бы
+    /// <see cref="ClaimWrongStatusException"/> и разрешение доступа упало бы на ровном месте.
+    /// </summary>
+    [Theory]
+    [InlineData(ClaimStatus.Approved)]
+    [InlineData(ClaimStatus.CheckedIn)]
+    [InlineData(ClaimStatus.DeclinedByMaster)]
+    [InlineData(ClaimStatus.OnHold)]
+    public async Task AllowSensitiveData_WithAutoAccept_DoesNotApproveClaimInWrongStatus(ClaimStatus status)
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        mock.Project.Details.RequirePassport = MandatoryStatus.Required;
+        var claim = CreateClaim(status);
+
+        await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
+
+        claim.PlayerAllowedSenstiveData.ShouldBeTrue();
+        claim.ClaimStatus.ShouldBe(status);
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.ShouldBeEmpty();
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AllowSensitiveData_WithoutAutoAccept_DoesNotApprove()
+    {
+        mock.Project.Details.RequirePassport = MandatoryStatus.Required;
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(1);
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
+    }
+
     #endregion
 
     #region SetResponsible
