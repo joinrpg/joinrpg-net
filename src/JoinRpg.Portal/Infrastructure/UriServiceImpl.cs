@@ -116,8 +116,12 @@ internal class UriServiceImpl(
 
     public string Get(ILinkable link) => GetUri(link).AbsoluteUri;
 
+    // У скрытого пользователя (ViewMode.Hide) UserId == null — профиля у такой ссылки нет,
+    // и компонент UserLink в этом режиме url не запрашивает.
     Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target) =>
-        GetUri(new Linkable(LinkType.ResultUser, ProjectId: null, Identification: target.UserId.Value.ToString()));
+        target.UserId is { } userId
+            ? GetUri(new Linkable(LinkType.ResultUser, ProjectId: null, Identification: userId.Value.ToString()))
+            : throw new InvalidOperationException("Should not have url of hidden");
     Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
         => GetUri(new Linkable(target.CharacterId));
     public Uri GetUri(ProjectIdentification target) => GetUri(new Linkable(target));

@@ -20,11 +20,11 @@ public static class UriLocatorExtensions
 
         Uri IUriLocator<UserLinkViewModel>.GetUri(UserLinkViewModel target)
         {
-            if (target.ViewMode == ViewMode.Hide)
+            if (target.ViewMode == ViewMode.Hide || target.UserId is not { } userId)
             {
                 throw new InvalidOperationException("Should not have url of hidden");
             }
-            return new($"/user/{target.UserId.Value}", UriKind.Relative);
+            return new($"/user/{userId.Value}", UriKind.Relative);
         }
 
         Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target) => GetUri(target.CharacterId);

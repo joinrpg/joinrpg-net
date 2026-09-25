@@ -4,11 +4,14 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 
 namespace JoinRpg.Common.WebComponents;
 
+/// <param name="UserId">null в режиме <see cref="ViewMode.Hide"/> — ссылки на профиль там нет.
+/// Фиктивного id тут быть не должно: модель ездит по JSON, а парсер типизированных id
+/// не принимает неположительные значения (был баг: сетка ролей падала на UserId(-1)).</param>
 // JsonConstructor нужен, потому что конструкторов стало два, и System.Text.Json не умеет выбирать сам.
 [method: JsonConstructor]
-public record UserLinkViewModel(UserIdentification UserId, string DisplayName, ViewMode ViewMode)
+public record UserLinkViewModel(UserIdentification? UserId, string DisplayName, ViewMode ViewMode)
 {
-    public static UserLinkViewModel Hidden = new(new UserIdentification(-1), "скрыто", ViewMode.Hide);
+    public static UserLinkViewModel Hidden = new((UserIdentification?)null, "скрыто", ViewMode.Hide);
 
     /// <summary>
     /// В режиме <see cref="ViewMode.Hide"/> данные пользователя не попадают в модель вообще.
