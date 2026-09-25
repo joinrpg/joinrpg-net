@@ -15,19 +15,19 @@ public class IsAvailableForPlayerTest
 
     [Fact]
     public void OrdinaryCharacterIsAvailable()
-        => Mock.Character.IsAvailableForPlayer(Mock.ProjectInfo).ShouldBeTrue();
+        => Mock.Character.IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeTrue();
 
     [Fact]
     public void UnlimitedSlotIsAvailable()
-        => CreateSlot(slotLimit: null).IsAvailableForPlayer(Mock.ProjectInfo).ShouldBeTrue();
+        => CreateSlot(slotLimit: null).IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeTrue();
 
     [Fact]
     public void SlotWithFreePlacesIsAvailable()
-        => CreateSlot(slotLimit: 3).IsAvailableForPlayer(Mock.ProjectInfo).ShouldBeTrue();
+        => CreateSlot(slotLimit: 3).IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeTrue();
 
     [Fact]
     public void ExhaustedSlotIsNotAvailable()
-        => CreateSlot(slotLimit: 0).IsAvailableForPlayer(Mock.ProjectInfo).ShouldBeFalse();
+        => CreateSlot(slotLimit: 0).IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeFalse();
 
     /// <summary>
     /// Есть поданные, но не одобренные заявки — мастер ещё не выбрал игрока, заявиться можно.
@@ -37,7 +37,7 @@ public class IsAvailableForPlayerTest
     {
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
 
-        Mock.Character.IsAvailableForPlayer(Mock.ProjectInfo).ShouldBeTrue();
+        Mock.Character.IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeTrue();
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class IsAvailableForPlayerTest
     {
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
 
-        Mock.Character.IsAvailableForPlayer(Mock.ProjectInfo).ShouldBeFalse();
+        Mock.Character.IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeFalse();
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class IsAvailableForPlayerTest
     {
         Mock.Character.CharacterType = CharacterType.NonPlayer;
 
-        Mock.Character.IsAvailableForPlayer(Mock.ProjectInfo).ShouldBeFalse();
+        Mock.Character.IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeFalse();
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class IsAvailableForPlayerTest
     {
         Mock.Character.IsActive = false;
 
-        Mock.Character.IsAvailableForPlayer(Mock.ProjectInfo).ShouldBeFalse();
+        Mock.Character.IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeFalse();
     }
 
     // Главное, ради чего это переехало на правила: раньше кнопка показывалась и вела на форму,
@@ -69,13 +69,13 @@ public class IsAvailableForPlayerTest
     [Fact]
     public void ClaimsClosedMakesCharacterUnavailable()
         => Mock.Character
-            .IsAvailableForPlayer(Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.ActiveClaimsClosed))
+            .IsAvailableForPlayer(Mock, Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.ActiveClaimsClosed))
             .ShouldBeFalse();
 
     [Fact]
     public void ArchivedProjectMakesCharacterUnavailable()
         => Mock.Character
-            .IsAvailableForPlayer(Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.Archived))
+            .IsAvailableForPlayer(Mock, Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.Archived))
             .ShouldBeFalse();
 
     /// <summary>
@@ -88,7 +88,7 @@ public class IsAvailableForPlayerTest
         var projectInfo = Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.ActiveClaimsClosed);
 
         ClaimForbiddenReason.For(AddClaimForbideReason.ProjectClaimsClosed).MasterCanOverride.ShouldBeTrue();
-        Mock.Character.IsAvailableForPlayer(projectInfo).ShouldBeFalse();
+        Mock.Character.IsAvailableForPlayer(Mock, projectInfo).ShouldBeFalse();
     }
 
     private Character CreateSlot(int? slotLimit)
