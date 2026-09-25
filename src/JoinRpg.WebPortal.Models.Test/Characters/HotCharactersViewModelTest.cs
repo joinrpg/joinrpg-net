@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.WebPortal.Models.Test.Characters;
@@ -12,25 +11,13 @@ public class HotCharactersViewModelTest
 {
     private MockedProject Mock { get; } = new MockedProject();
 
-    private CharacterGroup RootGroup => Mock.Project.CharacterGroups.Single(group => group.IsRoot);
-
-    private CharacterGroupInfo Root => Mock.ProjectInfo.GetGroupById(RootGroup.CharacterGroupId);
-
     /// <summary>Посторонний: не мастер проекта и не игрок ни одной заявки.</summary>
     private static UserIdentification StrangerId => new(12345);
 
-    private void MakeRootGroupPublic()
-    {
-        RootGroup.IsPublic = true;
-        Mock.ReInitProjectInfo();
-    }
-
     private IReadOnlyCollection<CharacterViewModel> GetHotCharacters()
         => [.. HotCharactersViewModel.GetHotCharacters(
-            Root,
             [.. Mock.Project.Characters.Select(Mock.GetCharacterInfo)],
-            StrangerId,
-            Mock.ProjectInfo)];
+            StrangerId)];
 
     private Character CreateHotCharacter()
     {
@@ -43,28 +30,45 @@ public class HotCharactersViewModelTest
     [Fact]
     public void HotCharacterIsListed()
     {
-        MakeRootGroupPublic();
-        Mock.Character.IsPublic = true;
         var hot = CreateHotCharacter();
 
         GetHotCharacters().Select(character => character.CharacterId).ShouldBe([hot.CharacterId]);
     }
 
     [Fact]
-    public void HotCharacterOfInvisibleGroupIsNotListed()
+    public void NonPublicHotCharacterIsNotListed()
     {
-        // Корневая группа непубличная, значит постороннему не видно и всё, что в ней.
-        _ = CreateHotCharacter();
+        var hot = CreateHotCharacter();
+        hot.IsPublic = false;
 
         GetHotCharacters().ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Публичный персонаж со скрытым игроком остаётся в списке — прячется только игрок.
+    /// </summary>
+    [Fact]
+    public void HotCharacterWithHiddenPlayerIsListed()
+    {
+        var hot = CreateHotCharacter();
+        hot.HidePlayerForCharacter = true;
+
+        GetHotCharacters().Select(character => character.CharacterId).ShouldBe([hot.CharacterId]);
     }
 
     [Fact]
     public void DeletedHotCharacterIsNotListed()
     {
-        MakeRootGroupPublic();
         var hot = CreateHotCharacter();
         hot.IsActive = false;
+
+        GetHotCharacters().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void NotHotCharacterIsNotListed()
+    {
+        Mock.Character.IsPublic = true;
 
         GetHotCharacters().ShouldBeEmpty();
     }

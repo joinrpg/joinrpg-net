@@ -132,7 +132,6 @@ public static class CharacterGroupListViewModel
             => CharacterViewModelBuilder.Build(
                 character,
                 isFirstCopy: AlreadyOutputedChars.Add(character.Id),
-                currentUserId,
-                projectInfo);
+                currentUserId);
     }
 }

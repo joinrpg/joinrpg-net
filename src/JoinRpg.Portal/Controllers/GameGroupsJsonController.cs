@@ -33,7 +33,7 @@ public class GameGroupsJsonController(
     public async Task<ActionResult> HotJson(CharacterGroupIdentification characterGroupId, int? maxCount = null)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId);
-        if (projectInfo.GetGroupByIdOrDefault(characterGroupId) is not { } rootGroup)
+        if (projectInfo.GetGroupByIdOrDefault(characterGroupId) is null)
         {
             return NotFound();
         }
@@ -41,11 +41,7 @@ public class GameGroupsJsonController(
         var characters = await LoadCharactersOfSubtree(characterGroupId, projectInfo);
 
         var hotRoles = HotCharactersViewModel
-            .GetHotCharacters(
-                rootGroup,
-                characters,
-                currentUserAccessor.UserIdentificationOrDefault,
-                projectInfo)
+            .GetHotCharacters(characters, currentUserAccessor.UserIdentificationOrDefault)
             .Shuffle()
             .Take(maxCount ?? int.MaxValue);
 

@@ -17,8 +17,7 @@ internal static class CharacterViewModelBuilder
     public static CharacterViewModel Build(
         CharacterInfo character,
         bool isFirstCopy,
-        UserIdentification? currentUserId,
-        ProjectInfo projectInfo)
+        UserIdentification? currentUserId)
         => new()
         {
             CharacterId = character.Id.CharacterId,
@@ -35,7 +34,7 @@ internal static class CharacterViewModelBuilder
             IsActive = character.IsActive,
             ActiveClaimsCount = character.ActiveClaimsCount,
             PlayerLink = character.GetCharacterPlayerLinkViewModel(currentUserId),
-            HasEditRolesAccess = projectInfo.HasEditRolesAccess(currentUserId),
+            HasEditRolesAccess = character.ProjectInfo.HasEditRolesAccess(currentUserId),
             ProjectId = character.Id.ProjectId.Value,
         };
 
