@@ -14,6 +14,12 @@ internal class ProjectPropsService(
 {
     private readonly DateTimeOffset now = DateTimeOffset.UtcNow;
 
+    /// <summary>
+    /// Вложенная мутация метаданных запрещена: внешняя операция уже зафиксировала время и держит
+    /// собственный снимок <c>ProjectInfo</c>, который вложенная обесценила бы незаметно.
+    /// </summary>
+    private readonly NonReentrantOperation guard = new(nameof(ProjectPropsService));
+
     public Task ChangeProjectProperties<TArgs>(
         ProjectIdentification projectId,
         Permission requiredPermission,
@@ -50,6 +56,7 @@ internal class ProjectPropsService(
         string operationName)
     {
         using var activity = ProjectPropsServiceActivity.ActivitySource.StartActivity(operationName);
+        using var mutation = guard.Enter(operationName);
         try
         {
             // Write-репозиторий берём из UnitOfWork: он обязан использовать тот же DbContext, через
@@ -106,6 +113,7 @@ internal class ProjectPropsService(
         [CallerMemberName] string operationName = "")
     {
         using var activity = ProjectPropsServiceActivity.ActivitySource.StartActivity(operationName);
+        using var mutation = guard.Enter(operationName);
         try
         {
             var ctx = new ProjectCreationContext<TArgs>(now, currentUserAccessor, arguments);

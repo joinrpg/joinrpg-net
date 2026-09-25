@@ -197,4 +197,32 @@ public class ChangeClaimTest : ClaimServiceTestBase
 
         SaveChangesCallCount.ShouldBe(1);
     }
+
+    /// <summary>
+    /// Вложенная мутация на том же экземпляре сервиса запрещена (ADR014, §7): у внешней операции
+    /// уже зафиксировано время, а у вложенной может оказаться другой текущий пользователь.
+    /// </summary>
+    [Fact]
+    public async Task NestedMutation_OnSameInstance_Throws()
+    {
+        var claimId = CreateClaim();
+        var service = CreatePropsService();
+
+        Task nested = null!;
+
+        await service.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.AnyMaster,
+            ProjectActiveRequirement.MustBeActive,
+            0,
+            // Сторож опускается до первого await, поэтому задача уже сломана — достаточно её забрать.
+            ctx => nested = service.ChangeClaim(
+                claimId,
+                ClaimAccessRequirement.AnyMaster,
+                ProjectActiveRequirement.MustBeActive,
+                0,
+                _ => { }));
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(() => nested);
+    }
 }
