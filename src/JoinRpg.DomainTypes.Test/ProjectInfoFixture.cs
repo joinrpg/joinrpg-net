@@ -24,9 +24,8 @@ internal static class ProjectInfoFixture
     public static ProjectInfo Build(
         string ordering = "",
         IReadOnlyCollection<ProjectFieldInfo>? fields = null,
-        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo>? groups = null,
+        ProjectGroupTree? groupTree = null,
         IReadOnlyCollection<ProjectMasterInfo>? masters = null,
-        IReadOnlyList<CharacterGroupInfo>? responsibleMasterRules = null,
         ProjectLifecycleStatus projectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
         IReadOnlyCollection<ProjectFeeSettingInfo>? feeSchedule = null)
         => new(
@@ -37,8 +36,7 @@ internal static class ProjectInfoFixture
             new ProjectFieldSettings(null, null),
             new ProjectFinanceSettings(false, [], feeSchedule ?? []),
             false,
-            false,
-            RootGroupId,
+            groupTree ?? new ProjectGroupTree(RootGroupId, new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()),
             masters ?? [MakeMaster(DefaultMasterId, isOwner: true)],
             false,
             new ProjectCheckInSettings(false, false, false),
@@ -49,9 +47,7 @@ internal static class ProjectInfoFixture
             ProjectProfileRequirementSettings.AllNotRequired,
             new ProjectClaimSettings(null, false, false, false, false),
             [],
-            null,
-            groups ?? new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>(),
-            responsibleMasterRules ?? []);
+            null);
 
     public static ProjectMasterInfo MakeMaster(UserIdentification userId, bool isOwner = false)
         => new(
@@ -93,15 +89,22 @@ internal static class ProjectInfoFixture
     public static CharacterGroupIdentification GroupId(int id) => new(ProjectId, id);
 
     /// <summary>
-    /// Строит словарь групп по описанию «группа → её прямые родители», досчитывая транзитивные
+    /// Строит дерево групп по описанию «группа → её прямые родители», досчитывая транзитивные
     /// замыкания <c>AllParentGroups</c> / <c>AllChildGroups</c> и обратные связи. Корневая группа
     /// (<see cref="RootGroupId"/>) добавляется всегда и родителей не имеет.
     /// </summary>
-    public static IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> MakeGroupTree(
+    public static ProjectGroupTree MakeGroupTree(
         IReadOnlyDictionary<int, int[]> directParentsByGroup,
         IReadOnlyDictionary<int, CharacterGroupType>? types = null,
         IReadOnlyDictionary<int, bool>? isActiveByGroup = null,
         IReadOnlyDictionary<int, UserIdentification>? responsibleMasterByGroup = null)
+        => new(RootGroupId, MakeGroups(directParentsByGroup, types, isActiveByGroup, responsibleMasterByGroup));
+
+    private static Dictionary<CharacterGroupIdentification, CharacterGroupInfo> MakeGroups(
+        IReadOnlyDictionary<int, int[]> directParentsByGroup,
+        IReadOnlyDictionary<int, CharacterGroupType>? types,
+        IReadOnlyDictionary<int, bool>? isActiveByGroup,
+        IReadOnlyDictionary<int, UserIdentification>? responsibleMasterByGroup)
     {
         var directParents = new Dictionary<int, int[]>(directParentsByGroup);
         directParents.TryAdd(RootGroupId.CharacterGroupId, []);
