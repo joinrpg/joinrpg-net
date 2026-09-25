@@ -303,4 +303,25 @@ public class ChangeClaimTest : ClaimServiceTestBase
 
         _ = await Should.ThrowAsync<InvalidOperationException>(() => nested);
     }
+
+    /// <summary>
+    /// Одно перечисление на два места накладывает обязанность: требование, осмысленное только при
+    /// создании заявки, не должно молча проходить в операции над существующей.
+    /// </summary>
+    [Fact]
+    public async Task NoCheckRequirement_OnExistingClaim_Throws()
+    {
+        var claimId = CreateClaim();
+
+        var exception = await Should.ThrowAsync<ArgumentOutOfRangeException>(
+            () => CreatePropsService().ChangeClaim(
+                claimId,
+                ClaimAccessRequirement.NoCheck,
+                ProjectActiveRequirement.MustBeActive,
+                0,
+                ctx => { }));
+
+        exception.Message.ShouldContain("требование доступа");
+        SaveChangesCallCount.ShouldBe(0);
+    }
 }
