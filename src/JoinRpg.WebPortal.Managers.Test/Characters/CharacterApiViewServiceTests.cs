@@ -8,7 +8,6 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Users;
-using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.WebPortal.Managers.Characters;
 using CharacterInfo = JoinRpg.DomainTypes.Characters.CharacterInfo;
@@ -32,7 +31,7 @@ public class CharacterApiViewServiceTests
             new FakeUserRepository(),
             new FakeCharacterService(),
             new FakeProjectMetadataRepository(Mock.ProjectInfo),
-            new FakeCurrentUserAccessor { UserIdentification = new UserIdentification(userId) });
+            new FakeCurrentUserAccessor(userId));
 
     [Fact]
     public async Task GetCharacterHeaders_Master_ReturnsHeaders()
@@ -136,14 +135,5 @@ public class CharacterApiViewServiceTests
         public Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest) => throw new NotImplementedException();
         public Task EditCharacter(EditCharacterRequest editCharacterRequest) => throw new NotImplementedException();
         public Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet) => throw new NotImplementedException();
-    }
-
-    private sealed class FakeCurrentUserAccessor : ICurrentUserAccessor
-    {
-        public UserIdentification UserIdentification { get; set; } = new UserIdentification(0);
-        public int? UserIdOrDefault => UserIdentification.Value;
-        public UserDisplayName DisplayName => new UserDisplayName("Test", null);
-        public bool IsAdmin => false;
-        public AvatarIdentification? Avatar => null;
     }
 }

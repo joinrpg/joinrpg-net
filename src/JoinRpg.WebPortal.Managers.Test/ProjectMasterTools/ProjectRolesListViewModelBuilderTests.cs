@@ -1,6 +1,5 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
-using JoinRpg.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.ProjectMasterTools.ProjectRolesLists;
 
@@ -154,14 +153,5 @@ public class ProjectRolesListViewModelBuilderTests
 
         var item = result.Items.ShouldHaveSingleItem();
         item.CharacterGroup.ShouldBeNull();
-    }
-
-    private class FakeCurrentUserAccessor : ICurrentUserAccessor
-    {
-        public UserIdentification UserIdentification { get; set; } = new UserIdentification(0);
-        public int? UserIdOrDefault => UserIdentification.Value;
-        public UserDisplayName DisplayName => new UserDisplayName("Test User", null);
-        public bool IsAdmin => false;
-        public AvatarIdentification? Avatar => null;
     }
 }

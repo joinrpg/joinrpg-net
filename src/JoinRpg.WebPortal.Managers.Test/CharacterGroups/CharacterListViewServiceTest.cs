@@ -1,12 +1,6 @@
-using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.Domain;
-using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.CharacterGroupList;
 
@@ -25,7 +19,7 @@ public class CharacterListViewServiceTest
         var service = new CharacterListViewService(
             new FakeCharacterInfoRepository(Mock),
             new FakeProjectMetadataRepository(projectInfo ?? Mock.ProjectInfo),
-            new FakeCurrentUserAccessor { UserIdentification = new UserIdentification(Mock.Master.UserId) });
+            new FakeCurrentUserAccessor(Mock.Master.UserId));
 
         return await service.GetCharacters(Mock.ProjectInfo.ProjectId, listType);
     }
@@ -170,39 +164,5 @@ public class CharacterListViewServiceTest
         slot.CharacterType = CharacterType.Slot;
         slot.CharacterSlotLimit = slotLimit;
         return slot;
-    }
-
-    /// <summary>
-    /// Отдаёт лёгкую проекцию по персонажам мока — ровно то, что делает настоящий репозиторий.
-    /// Фильтрации по доступности тут нет: её считает сам сервис доменными правилами.
-    /// </summary>
-    private sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacterInfoRepository
-    {
-        public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId)
-            => Task.FromResult<IReadOnlyCollection<CharacterListEntry>>(
-                [.. mock.Project.Characters.Select(character => new CharacterListEntry(
-                    character.GetId(),
-                    character.CharacterName,
-                    character.Description?.Contents ?? "",
-                    character.IsPublic,
-                    character.IsActive,
-                    character.ToCharacterTypeInfo(),
-                    character.GetApprovedClaimIdOrDefault(),
-                    [.. character.Claims.Where(claim => claim.ClaimStatus.IsActive()).Select(claim => claim.GetPlayerId())]))]);
-
-        public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId) => throw new NotImplementedException();
-        public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId, ProjectInfo projectInfo) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfos(IReadOnlyCollection<CharacterIdentification> characterIds) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> groupIds) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId) => throw new NotImplementedException();
-    }
-
-    private sealed class FakeCurrentUserAccessor : ICurrentUserAccessor
-    {
-        public UserIdentification UserIdentification { get; set; } = new UserIdentification(0);
-        public int? UserIdOrDefault => UserIdentification.Value;
-        public UserDisplayName DisplayName => new UserDisplayName("Test Master", null);
-        public bool IsAdmin => false;
-        public AvatarIdentification? Avatar => null;
     }
 }
