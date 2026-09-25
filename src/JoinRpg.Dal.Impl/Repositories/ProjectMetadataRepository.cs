@@ -43,25 +43,9 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 
-        var groups = CharacterGroupDictionaryBuilder.Build(project, projectId);
-
-        var responsibleMasterRules = groups.Values
-            .Where(g => g.ResponsibleMasterId != null)
-            .OrderByDescending(g => g, Comparer<CharacterGroupInfo>.Create((x, y) =>
-            {
-                if (x.AllParentGroups.Contains(y.Id))
-                {
-                    return 1;
-                }
-
-                if (y.AllParentGroups.Contains(x.Id))
-                {
-                    return -1;
-                }
-
-                return x.Id.CharacterGroupId.CompareTo(y.Id.CharacterGroupId);
-            }))
-            .ToList();
+        var groupTree = new ProjectGroupTree(
+            project.RootGroup.GetId(),
+            CharacterGroupDictionaryBuilder.Build(project, projectId));
 
         return new ProjectInfo(
             projectId,
@@ -71,8 +55,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             fieldSettings,
             financeSettings,
             project.Details.EnableAccommodation,
-            allowToSetGroups: project.CharacterGroups.Any(x => x.IsActive && !x.IsRoot && !x.IsSpecial),
-            rootCharacterGroupId: project.RootGroup.GetId(),
+            groupTree: groupTree,
             masters: CreateMasterList(project),
             publishPlot: project.Details.PublishPlot,
             projectCheckInSettings: new ProjectCheckInSettings(project.Details.EnableCheckInModule, project.Details.CheckInProgress, project.Details.AllowSecondRoles),
@@ -91,9 +74,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 IsPublicProject: project.Details.IsPublicProject
                 ),
             projectRolesLists: CreateRolesLists(project),
-            defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId),
-            groups: groups,
-            responsibleMasterRules: responsibleMasterRules);
+            defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId));
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {

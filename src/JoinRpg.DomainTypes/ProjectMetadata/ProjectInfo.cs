@@ -26,9 +26,15 @@ public record class ProjectInfo
     public ProjectFinanceSettings ProjectFinanceSettings { get; }
     public bool AccomodationEnabled { get; }
 
-    public bool AllowToSetGroups { get; }
+    /// <summary>Дерево групп персонажей проекта.</summary>
+    public ProjectGroupTree GroupTree { get; }
 
-    public CharacterGroupIdentification RootCharacterGroupId { get; }
+    [Obsolete("Используйте GroupTree.AllowToSetGroups")]
+    public bool AllowToSetGroups => GroupTree.AllowToSetGroups;
+
+    [Obsolete("Используйте GroupTree.RootGroupId")]
+    public CharacterGroupIdentification RootCharacterGroupId => GroupTree.RootGroupId;
+
     public IReadOnlyCollection<ProjectMasterInfo> Masters { get; }
     public string FieldsOrdering { get; }
 
@@ -49,9 +55,11 @@ public record class ProjectInfo
 
     public ProjectRolesListIdentification? DefaultRolesListId { get; }
 
-    public IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> Groups { get; }
+    [Obsolete("Используйте GroupTree: AllGroups, GetGroupById, GetGroupByIdOrDefault, Contains")]
+    public IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> Groups => GroupTree.GroupsDictionary;
 
-    public IReadOnlyList<CharacterGroupInfo> ResponsibleMasterRules { get; }
+    [Obsolete("Используйте GroupTree.ResponsibleMasterRules")]
+    public IReadOnlyList<CharacterGroupInfo> ResponsibleMasterRules => GroupTree.ResponsibleMasterRules;
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -61,8 +69,7 @@ public record class ProjectInfo
         ProjectFieldSettings projectFieldSettings,
         ProjectFinanceSettings projectFinanceSettings,
         bool accomodationEnabled,
-        bool allowToSetGroups,
-        CharacterGroupIdentification rootCharacterGroupId,
+        ProjectGroupTree groupTree,
         IReadOnlyCollection<ProjectMasterInfo> masters,
         bool publishPlot,
         ProjectCheckInSettings projectCheckInSettings,
@@ -73,9 +80,7 @@ public record class ProjectInfo
         ProjectProfileRequirementSettings profileRequirementSettings,
         ProjectClaimSettings projectClaimSettings,
         IReadOnlyCollection<ProjectRolesList> projectRolesLists,
-        ProjectRolesListIdentification? defaultRolesListId,
-        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> groups,
-        IReadOnlyList<CharacterGroupInfo> responsibleMasterRules)
+        ProjectRolesListIdentification? defaultRolesListId)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -93,8 +98,7 @@ public record class ProjectInfo
         TimeSlotField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleTimeSlotField && f.IsActive);
         RoomField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleRoomField && f.IsActive);
 
-        AllowToSetGroups = allowToSetGroups;
-        RootCharacterGroupId = rootCharacterGroupId;
+        GroupTree = groupTree;
         Masters = masters;
         PublishPlot = publishPlot;
         ProjectCheckInSettings = projectCheckInSettings;
@@ -106,8 +110,6 @@ public record class ProjectInfo
         ClaimSettings = projectClaimSettings;
         ProjectRolesLists = projectRolesLists;
         DefaultRolesListId = defaultRolesListId;
-        Groups = groups;
-        ResponsibleMasterRules = responsibleMasterRules;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -148,55 +150,59 @@ public record class ProjectInfo
         ProjectFieldInfo[] fields = [field, .. UnsortedFields];
 
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
-            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, AllowToSetGroups,
-            RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
+            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, GroupTree,
+            Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, DefaultRolesListId, Groups, ResponsibleMasterRules);
+            ProjectRolesLists, DefaultRolesListId);
     }
 
     internal ProjectInfo WithChangedStatus(ProjectLifecycleStatus projectLifecycleStatus)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
-            AllowToSetGroups,
-            RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
+            GroupTree,
+            Masters, PublishPlot, ProjectCheckInSettings,
             projectLifecycleStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, DefaultRolesListId, Groups, ResponsibleMasterRules);
+            ProjectRolesLists, DefaultRolesListId);
     }
 
     internal ProjectInfo WithAllowManyClaims(bool strictlyOneCharacter)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
-            AllowToSetGroups,
-            RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
+            GroupTree,
+            Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter },
-            ProjectRolesLists, DefaultRolesListId, Groups, ResponsibleMasterRules);
+            ProjectRolesLists, DefaultRolesListId);
     }
 
     internal ProjectInfo WithProfileRequirementSettings(ProjectProfileRequirementSettings profileRequirementSettings)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
-            AllowToSetGroups,
-            RootCharacterGroupId, Masters, PublishPlot, ProjectCheckInSettings,
+            GroupTree,
+            Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, profileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, DefaultRolesListId, Groups, ResponsibleMasterRules);
+            ProjectRolesLists, DefaultRolesListId);
     }
 
+    /// <summary>
+    /// Группа проекта по «сырому» идентификатору. Единственный метод про группы, который остаётся
+    /// на <see cref="ProjectInfo"/>: только здесь известен <see cref="ProjectId"/>, чтобы собрать
+    /// <see cref="CharacterGroupIdentification"/>.
+    /// </summary>
     public CharacterGroupInfo GetGroupById(int id)
-    {
-        var groupId = new CharacterGroupIdentification(ProjectId, id);
-        return Groups[groupId];
-    }
+        => GroupTree.GetGroupById(new CharacterGroupIdentification(ProjectId, id));
 
-    public CharacterGroupInfo GetGroupById(CharacterGroupIdentification id) => Groups[id];
+    [Obsolete("Используйте GroupTree.GetGroupById")]
+    public CharacterGroupInfo GetGroupById(CharacterGroupIdentification id) => GroupTree.GetGroupById(id);
 
     /// <summary>Группа проекта или <c>null</c>, если такой группы нет.</summary>
-    public CharacterGroupInfo? GetGroupByIdOrDefault(CharacterGroupIdentification id) => Groups.GetValueOrDefault(id);
+    [Obsolete("Используйте GroupTree.GetGroupByIdOrDefault")]
+    public CharacterGroupInfo? GetGroupByIdOrDefault(CharacterGroupIdentification id) => GroupTree.GetGroupByIdOrDefault(id);
 
     public ProjectRolesList GetRolesListById(ProjectRolesListIdentification id)
     {
@@ -204,68 +210,44 @@ public record class ProjectInfo
             ?? throw new KeyNotFoundException("Не найдена сетка ролей с ID=" + id);
     }
 
+    [Obsolete("Используйте GroupTree.GetGroupsById")]
     public IEnumerable<CharacterGroupInfo> GetGroupsById(IReadOnlyCollection<CharacterGroupIdentification> ids)
-    {
-        return Groups.Where(g => ids.Contains(g.Key)).Select(g => g.Value);
-    }
+        => GroupTree.GetGroupsById(ids);
 
+    [Obsolete("Используйте GroupTree.GetChildGroupIdsIncludingThis")]
     public IReadOnlyList<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(CharacterGroupIdentification groupId)
-    {
-        return Groups[groupId].AllChildGroupsIncludingThis;
-    }
+        => GroupTree.GetChildGroupIdsIncludingThis(groupId);
 
+    [Obsolete("Используйте GroupTree.GetChildGroupIdsIncludingThis")]
     public IReadOnlyList<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
-    {
-        return [.. groupIds.SelectMany(x => GetChildGroupIdsIncludingThis(x)).Distinct()];
-    }
+        => GroupTree.GetChildGroupIdsIncludingThis(groupIds);
 
+    [Obsolete("Используйте GroupTree.GetParentGroupIdsIncludingThis")]
     public IEnumerable<CharacterGroupIdentification> GetParentGroupIdsIncludingThis(CharacterGroupIdentification groupId)
-    {
-        if (!Groups.TryGetValue(groupId, out var groupInfo))
-        {
-            return [];
-        }
+        => GroupTree.GetParentGroupIdsIncludingThis(groupId);
 
-        return [groupId, .. groupInfo.AllParentGroups];
-    }
-
+    [Obsolete("Используйте GroupTree.GetParentGroupIdsIncludingThis")]
     public IEnumerable<CharacterGroupIdentification> GetParentGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
-    {
-        return [.. groupIds.SelectMany(x => GetParentGroupIdsIncludingThis(x)).Distinct()];
-    }
+        => GroupTree.GetParentGroupIdsIncludingThis(groupIds);
 
+    [Obsolete("Используйте GroupTree.GetParentGroupsIncludingThis")]
     public IEnumerable<CharacterGroupInfo> GetParentGroupsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
-    {
-        var ids = GetParentGroupIdsIncludingThis(groupIds);
-        return ids.Select(id => Groups[id]);
-    }
+        => GroupTree.GetParentGroupsIncludingThis(groupIds);
 
+    [Obsolete("Используйте GroupTree.GetDirectChildGroups")]
     public IEnumerable<CharacterGroupInfo> GetDirectChildGroups(CharacterGroupIdentification groupId)
-    {
-        return Groups[groupId].DirectChildGroupIds.Select(id => Groups[id]);
-    }
+        => GroupTree.GetDirectChildGroups(groupId);
 
-    /// <summary>
-    /// Группы поддерева <paramref name="groupId"/> (включая саму группу) в порядке упорядоченного DFS.
-    /// Порядок уже зашит в <see cref="CharacterGroupInfo.AllChildGroupsIncludingThis"/>: дочерние группы
-    /// идут в порядке <c>ChildGroupsOrdering</c>, каждая группа — по первому вхождению. Персонажей здесь нет:
-    /// чтобы получить детерминированный порядок персонажей, пройдите по этим группам и отсортируйте прямых
-    /// персонажей каждой группы по её <see cref="CharacterGroupInfo.ChildCharactersOrdering"/>.
-    /// </summary>
+    /// <inheritdoc cref="ProjectGroupTree.GetChildGroupsIncludingThis"/>
+    [Obsolete("Используйте GroupTree.GetChildGroupsIncludingThis")]
     public IReadOnlyList<CharacterGroupInfo> GetChildGroupsIncludingThis(CharacterGroupIdentification groupId)
-    {
-        if (!Groups.TryGetValue(groupId, out var group))
-        {
-            return [];
-        }
-        return [.. group.AllChildGroupsIncludingThis.Select(id => Groups[id])];
-    }
+        => GroupTree.GetChildGroupsIncludingThis(groupId);
 
     public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
 
     public ProjectMasterInfo SelectResponsibleMaster(IEnumerable<CharacterGroupIdentification> allCharacterGroups)
     {
-        foreach (var rule in ResponsibleMasterRules)
+        foreach (var rule in GroupTree.ResponsibleMasterRules)
         {
             if (allCharacterGroups.Contains(rule.Id))
             {

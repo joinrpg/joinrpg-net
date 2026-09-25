@@ -169,7 +169,7 @@ public class CharacterInfoTest
     public void ParentGroupIdsToTopShouldClimbToRoot()
     {
         // 1 (корень) <- 2 <- 3, персонаж лежит в 3
-        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]>
+        var projectInfo = Build(groupTree: MakeGroupTree(new Dictionary<int, int[]>
         {
             [2] = [1],
             [3] = [2],
@@ -184,7 +184,7 @@ public class CharacterInfoTest
     public void ParentGroupIdsToTopShouldDeduplicateDiamond()
     {
         // 1 (корень) <- 2, 1 <- 3, обе -> 4; персонаж в 4
-        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]>
+        var projectInfo = Build(groupTree: MakeGroupTree(new Dictionary<int, int[]>
         {
             [2] = [1],
             [3] = [1],
@@ -200,7 +200,7 @@ public class CharacterInfoTest
     [Fact]
     public void ParentGroupIdsToTopShouldBeEmptyForCharacterWithoutGroups()
     {
-        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]>()));
+        var projectInfo = Build(groupTree: MakeGroupTree(new Dictionary<int, int[]>()));
 
         var character = MakeCharacter(projectInfo, directGroupIds: []);
 
@@ -210,7 +210,7 @@ public class CharacterInfoTest
     [Fact]
     public void IntrestingGroupsForDisplayShouldSkipRootSpecialAndInactive()
     {
-        var projectInfo = Build(groups: MakeGroupTree(
+        var projectInfo = Build(groupTree: MakeGroupTree(
             new Dictionary<int, int[]>
             {
                 [2] = [1],
@@ -251,14 +251,13 @@ public class CharacterInfoTest
     public void ResponsibleMasterShouldComeFromGroupRuleWhenNoApprovedClaim()
     {
         var groupMaster = new UserIdentification(777);
-        var groups = MakeGroupTree(
+        var groupTree = MakeGroupTree(
             new Dictionary<int, int[]> { [2] = [1] },
             responsibleMasterByGroup: new Dictionary<int, UserIdentification> { [2] = groupMaster });
 
         var projectInfo = Build(
-            groups: groups,
-            masters: [MakeMaster(DefaultMasterId, isOwner: true), MakeMaster(groupMaster)],
-            responsibleMasterRules: [groups[GroupId(2)]]);
+            groupTree: groupTree,
+            masters: [MakeMaster(DefaultMasterId, isOwner: true), MakeMaster(groupMaster)]);
 
         var character = MakeCharacter(projectInfo, directGroupIds: [GroupId(2)]);
 
@@ -268,7 +267,7 @@ public class CharacterInfoTest
     [Fact]
     public void ResponsibleMasterShouldFallBackToProjectOwner()
     {
-        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]> { [2] = [1] }));
+        var projectInfo = Build(groupTree: MakeGroupTree(new Dictionary<int, int[]> { [2] = [1] }));
 
         var character = MakeCharacter(projectInfo, directGroupIds: [GroupId(2)]);
 
@@ -419,7 +418,7 @@ public class CharacterInfoTest
     [Fact]
     public void WithDirectGroupsShouldReplaceGroupsAndKeepEverythingElse()
     {
-        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]> { [2] = [1] }));
+        var projectInfo = Build(groupTree: MakeGroupTree(new Dictionary<int, int[]> { [2] = [1] }));
         var claim = MakeClaim(projectInfo, 1, ClaimStatus.Approved);
         var character = MakeCharacter(
             projectInfo, directGroupIds: [], claims: [claim], approvedClaimId: claim.ClaimId);
@@ -453,7 +452,7 @@ public class CharacterInfoTest
     public void WithersShouldKeepConstructorInvariants()
     {
         // Витер прогоняет основной конструктор, поэтому проверки остаются в одном месте.
-        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]>()));
+        var projectInfo = Build(groupTree: MakeGroupTree(new Dictionary<int, int[]>()));
         var character = MakeCharacter(projectInfo);
 
         _ = Should.Throw<ArgumentException>(
@@ -466,7 +465,7 @@ public class CharacterInfoTest
     {
         var projectInfo = Build(
             fields: [MakeField(1)],
-            groups: MakeGroupTree(new Dictionary<int, int[]> { [2] = [1] }));
+            groupTree: MakeGroupTree(new Dictionary<int, int[]> { [2] = [1] }));
         var createdAt = new DateTime(2026, 8, 30);
 
         // Персонажа ещё нет в БД, поэтому id отрицательный — ровно то, что видит сохранение полей.
@@ -496,7 +495,7 @@ public class CharacterInfoTest
     public void ForNewCharacterResponsibleMasterShouldComeFromGroups()
     {
         // Утверждённой заявки нет, поэтому ответственный выбирается по правилам групп.
-        var projectInfo = Build(groups: MakeGroupTree(new Dictionary<int, int[]>()));
+        var projectInfo = Build(groupTree: MakeGroupTree(new Dictionary<int, int[]>()));
 
         var character = CharacterInfo.ForNewCharacter(
             new CharacterIdentification(ProjectId, -1),
