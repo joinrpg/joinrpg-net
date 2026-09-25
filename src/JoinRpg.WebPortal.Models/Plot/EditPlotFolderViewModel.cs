@@ -1,6 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using JoinRpg.Common.WebComponents;
+using JoinRpg.Data.Interfaces.Plots;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
@@ -59,10 +62,8 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
         PlotFolderMasterTitle = folder.MasterTitle;
         Status = folder.GetStatus();
 
-        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
-
         var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo);
-        Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, linkRenderer);
+        Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
 
         HasEditAccess = projectInfo.HasMasterAccess(currentUser) && projectInfo.IsActive;
@@ -79,59 +80,55 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
 
 public class PlotElementListItemViewModel : IProjectIdAware
 {
-    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolder folder, ICurrentUserAccessor currentUserAccessor, JoinrpgMarkdownLinkRenderer linkRenderer)
+    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolder folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
     {
         var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
+        var itemIds = orderedElements.Select(x => x.GetId().ToString()).ToArray();
+        var accessArguments = AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor);
 
         return [.. orderedElements.Select(e => new PlotElementListItemViewModel(
-            e, currentUserAccessor.UserIdOrDefault, [.. orderedElements.Select(x => x.GetId().ToString())], linkRenderer))];
+            e.GetDetails(), accessArguments, itemIds, linkRenderer))];
     }
 
     public PlotElementListItemViewModel(
-        PlotElement e,
-        int? currentUserId,
+        PlotElementDetailsDto element,
+        PlotAccessArguments accessArguments,
         string[]? itemIdsToParticipateInSort,
         JoinrpgMarkdownLinkRenderer renderer,
-        int? currentVersion = null,
         bool printMode = false)
     {
-        CurrentVersion = currentVersion ?? e.LastVersion().Version;
-        CurrentVersion2 = e.GetVersionId(CurrentVersion);
+        var currentVersionText = element.CurrentVersion;
 
-        var prevVersionText = e.SpecificVersion(CurrentVersion - 1);
-        var currentVersionText = e.SpecificVersion(CurrentVersion);
-        var nextVersionText = e.SpecificVersion(CurrentVersion + 1);
+        CurrentVersion = currentVersionText.Version;
+        CurrentVersion2 = new PlotVersionIdentification(element.Id, CurrentVersion);
 
-        if (currentVersionText == null)
-        {
-            throw new ArgumentOutOfRangeException(nameof(currentVersion));
-        }
-
-        PlotElementId = e.PlotElementId;
-        PlotElementIdentification = e.GetId();
-        Target = e.ToTarget();
+        PlotElementId = element.Id.PlotElementId;
+        PlotElementIdentification = element.Id;
+        Target = element.Target;
         Content = ((MarkdownString?)currentVersionText.Content).ToHtmlString(renderer);
         TodoField = currentVersionText.TodoField;
-        ProjectId = e.PlotFolder.ProjectId;
-        PlotFolderId = e.PlotFolderId;
-        Status = e.GetStatus();
-        ElementType = (PlotElementTypeView)e.ElementType;
-        IsMasterOnly = e.IsMasterOnly;
+        ProjectId = element.Id.ProjectId.Value;
+        PlotFolderId = element.Id.PlotFolderId.PlotFolderId;
+        Status = element.GetStatus();
+        ElementType = (PlotElementTypeView)element.ElementType;
+        IsMasterOnly = element.IsMasterOnly;
         ShortContent = ((MarkdownString?)currentVersionText.Content).TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
 
-        HasPlotEditorAccess = e.PlotFolder.HasMasterAccess(UserIdentification.FromOptional(currentUserId), Permission.CanManagePlots) && e.Project.Active;
-        HasMasterAccess = e.PlotFolder.HasMasterAccess(UserIdentification.FromOptional(currentUserId));
-        HasEditAccess = HasMasterAccess && e.Project.Active;
+        HasPlotEditorAccess = accessArguments.HasPlotEditorAccess;
+        HasMasterAccess = accessArguments.HasMasterAccess;
+        HasEditAccess = accessArguments.HasEditAccess;
 
-        ModifiedDateTime = currentVersionText.ModifiedDateTime;
-        Author = currentVersionText.AuthorUser;
-        PrevModifiedDateTime = prevVersionText?.ModifiedDateTime;
-        NextModifiedDateTime = nextVersionText?.ModifiedDateTime;
+        ModifiedDateTime = currentVersionText.ModifiedAt;
+        Author = currentVersionText.Author is null ? null : new UserLinkViewModel(currentVersionText.Author);
+        PrevModifiedDateTime = element.PrevVersionModifiedAt;
+        NextModifiedDateTime = element.NextVersionModifiedAt;
 
-        PlotFolderMasterTitle = e.PlotFolder.MasterTitle;
+        PlotFolderMasterTitle = element.PlotFolderMasterTitle;
 
-        PublishedVersion = e.Published;
-        PubishedVersion2 = e.GetVersionId(e.Published);
+        PublishedVersion = element.PublishedVersion;
+        PubishedVersion2 = element.PublishedVersion is null
+            ? null
+            : new PlotVersionIdentification(element.Id, element.PublishedVersion.Value);
         PrintMode = printMode;
         ItemsIds = itemIdsToParticipateInSort;
     }
@@ -154,7 +151,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
     [UIHint("EventTime")]
     public DateTime ModifiedDateTime { get; }
 
-    public User Author { get; }
+    public UserLinkViewModel? Author { get; }
 
     [UIHint("EventTime")]
     public DateTime? PrevModifiedDateTime { get; }

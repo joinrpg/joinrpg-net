@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Plots;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Plots;
@@ -41,6 +42,21 @@ public static class PlotStatusExts
             return PlotStatus.Completed;
         }
         return PlotStatus.HasNewVersion;
+    }
+
+    public static PlotStatus GetStatus(this PlotElementDetailsDto e)
+    {
+        if (!e.IsActive)
+        {
+            return PlotStatus.Deleted;
+        }
+
+        if (e.PublishedVersion is null)
+        {
+            return PlotStatus.InWork;
+        }
+
+        return e.IsLastVersionPublished ? PlotStatus.Completed : PlotStatus.HasNewVersion;
     }
 
     public static PlotStatus GetStatus(this PlotTextDto e)
