@@ -16,8 +16,8 @@
 (Entity Framework 6, Code-First). Он работает поверх **SQL Server**:
 строка подключения `DefaultConnection` (`Data Source=...;Initial Catalog=joinrpg`),
 а миграции применяются через `System.Data.SqlClient` (см.
-`Joinrpg.Dal.Migrate/Ef6/JoinMigrationsConfig.cs`). Это сотни таблиц, 132
-навигационных свойства с `virtual` (ленивая загрузка), множество EF6-специфичных
+`Joinrpg.Dal.Migrate/Ef6/JoinMigrationsConfig.cs`). Это сотни таблиц, 135
+навигационных свойств с `virtual` (ленивая загрузка), множество EF6-специфичных
 вещей в `OnModelCreating` (`HasRequired`/`WithRequiredPrincipal`/
 `WillCascadeOnDelete`/`IndexAnnotation`), кастомный логгер `EF6LoggerToMSExtLogging`,
 `DbConfiguration`, `NullDatabaseInitializer`.
@@ -112,10 +112,11 @@ PostgreSQL — это фаза 2); **(б)** можно сделать, отте�
 
 ### P0. Характеризационные тесты на реальной БД («golden master»)
 
-**Что.** Достроить `JoinRpg.IntegrationTest` (папка `src/JoinRpg.IntegrationTests`).
-Инфраструктура уже сильная: `JoinApplicationFactory` поднимает **реальный SQL Server
-в Testcontainers**, прогоняет настоящие EF6-миграции и строит веб-хост. Значит
-сравнение «EF6 против EF Core» будет на одной и той же схеме, без моков.
+**Что.** Достроить `JoinRpg.IntegrationTest`. Инфраструктура уже сильная:
+`JoinApplicationFactory` заводит отдельную базу на общем SQL Server в
+Testcontainers (`SharedSqlServerContainer`), прогоняет настоящие EF6-миграции
+и строит веб-хост. Значит сравнение «EF6 против EF Core» будет на одной и той же
+схеме, без моков.
 
 Оговорка: тест-хост передаёт пустые строки подключения для `DataProtection`,
 `DailyJob` и `Notifications`, то есть EF Core/PostgreSQL-контексты в тестах не
@@ -151,7 +152,7 @@ EF6-поверхность, — но иллюзии «полного хоста�
 
 ### P1. Убрать зависимость от ленивой загрузки (lazy loading)
 
-**Что.** В `JoinRpg.DataModel` 132 `virtual` навигационных свойства — EF6
+**Что.** В `JoinRpg.DataModel` 135 `virtual` навигационных свойств — EF6
 лениво подгружает их прокси. Сделать все загрузки явными (`Include`/`ThenInclude`
 или отдельные запросы в репозиториях). Сюда же логично собрать вынос оставшихся
 операций чтения из сервисного слоя внутрь репозиториев (правило проекта
@@ -267,9 +268,10 @@ EF6 уже создал в боевой схеме (`Свойство_Поле`)
 
 **Что.** `System.Data.Entity.Validation.DbEntityValidationException` используется
 в проекте **не по назначению** — как универсальное «валидация не прошла»:
-13 мест `throw` в `DbServiceImplBase`, `CharacterServiceImpl`,
-`FinanceOperationsImpl`, `ProjectAccessService`, `CloneProjectHelper`,
-`ProjectService`, плюс обработка в `JoinMvcControllerBase` (маппинг в HTTP-ответ).
+9 мест `throw` (`DbServiceImplBase`, `CharacterServiceImpl`,
+`DomainServiceHelpers`, `FinanceOperationsImpl`, `ProjectAccessService`),
+3 `catch` в `CloneProjectHelper`, обработка в `JoinMvcControllerBase`
+(маппинг в HTTP-ответ) и проверка в `ProjectAccessServiceTest`.
 Завести собственное исключение (например, `JoinValidationException` в
 `JoinRpg.Domain`) и заменить все использования.
 
@@ -330,7 +332,7 @@ EF6 не даст сохранить сущность с пустым `[Required
    `Microsoft.EntityFrameworkCore.SqlServer` во всех трёх проектах, где он
    подключён (`JoinRpg.Dal.Impl`, `JoinRpg.Data.Write.Interfaces`,
    `JoinRpg.Services.Impl`), и заменить `LinqKit.EntityFramework` на
-   `LinqKit.Microsoft.EntityFrameworkCore` (13 репозиториев в `JoinRpg.Dal.Impl`
+   `LinqKit.Microsoft.EntityFrameworkCore` (14 файлов в `JoinRpg.Dal.Impl`
    + search-провайдеры в `JoinRpg.Services.Impl`; `AsExpandable` есть в обоих,
    но пакет и неймспейс разные). Заодно поправить `global using System.Data.Entity`
    в `JoinRpg.Dal.Impl/GlobalUsings.cs` и точечные `using` в `Joinrpg.Web.Identity`,
