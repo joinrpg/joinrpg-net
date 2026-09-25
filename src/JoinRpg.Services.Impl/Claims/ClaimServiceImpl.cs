@@ -850,8 +850,7 @@ internal class ClaimServiceImpl(
         ClaimValidator.EnsureCanMoveClaim(
             await characterInfoRepository.GetCharacterInfo(characterId),
             new UserClaimInfo(claim.GetId(), claim.ClaimStatus),
-            userInfo,
-            projectInfo);
+            userInfo);
 
         MarkCharacterChangedIfApproved(claim); // before move
 
