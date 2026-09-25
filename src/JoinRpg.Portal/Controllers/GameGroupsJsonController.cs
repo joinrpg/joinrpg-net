@@ -63,7 +63,9 @@ public class GameGroupsJsonController(
         return ReturnJson(new
         {
             ProjectId = characterGroupId.ProjectId.Value,
-            projectInfo.ProjectName,
+            // Именно .Value: типизированное значение System.Text.Json отдаёт объектом
+            // {"Value": "..."}, а внешние сайты игр ждут тут строку.
+            ProjectName = projectInfo.ProjectName.Value,
             ShowEditControls = hasMasterAccess,
             Groups = CharacterGroupListViewModel.GetGroups(
                 rootGroup,
