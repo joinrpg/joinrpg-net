@@ -166,7 +166,7 @@ public class ClaimListController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
+        var groupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
         var claims = await claimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, groupIds);
 
         return await ShowMasterClaimListForGroup(characterGroup, export, "Заявки в группу (все)", claims,
@@ -185,7 +185,7 @@ public class ClaimListController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
+        var groupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
         var claims = await claimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion, groupIds);
 
         return await ShowMasterClaimListForGroup(characterGroup, export, "Обсуждаемые заявки в группу (все)",

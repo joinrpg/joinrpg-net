@@ -93,7 +93,7 @@ internal static class ProjectInfoValidationExtensions
         }
 
         var missing = groupIds
-            .Where(id => !projectInfo.Groups.ContainsKey(id))
+            .Where(id => !projectInfo.GroupTree.Contains(id))
             .ToArray();
 
         if (missing.Length != 0)
@@ -102,7 +102,7 @@ internal static class ProjectInfoValidationExtensions
             throw new Exception($"Groups {missingIds} doesn't belong to project");
         }
 
-        if (ensureNotSpecial && groupIds.Any(id => projectInfo.Groups[id].IsSpecial))
+        if (ensureNotSpecial && groupIds.Any(id => projectInfo.GroupTree.GetGroupById(id).IsSpecial))
         {
             throw new DbEntityValidationException();
         }

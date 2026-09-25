@@ -174,8 +174,8 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
             {
                 var (parentCharacterGroup, _) = ctx.GetCharacterGroupForChange(ctx.Request.parentCharacterGroupId, allowRoot: true);
 
-                if (ctx.ProjectInfo.Groups[ctx.Request.characterGroupId].IsSpecial
-                    || (ctx.Request.afterCharacterGroupId is { } afterId && ctx.ProjectInfo.Groups[afterId].IsSpecial))
+                if (ctx.ProjectInfo.GroupTree.GetGroupById(ctx.Request.characterGroupId).IsSpecial
+                    || (ctx.Request.afterCharacterGroupId is { } afterId && ctx.ProjectInfo.GroupTree.GetGroupById(afterId).IsSpecial))
                 {
                     // Специальные группы (привязанные к полям/вариантам) сортируются автоматически
                     // сервисом FieldSetupServiceImpl вслед за полем/вариантом — вручную их порядок

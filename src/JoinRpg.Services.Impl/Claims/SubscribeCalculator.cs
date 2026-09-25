@@ -55,7 +55,7 @@ internal class SubscribeCalculator(
 
         AddUserInfoHeaderIfNotPresent(list, args.RespondingTo, SubscriptionReason.AnswerToYourComment);
 
-        var claims = await claimsRepository.GetClaimHeadersWithPlayer([.. projectInfo.GetChildGroupIdsIncludingThis(args.Groups)], ClaimStatusSpec.Approved);
+        var claims = await claimsRepository.GetClaimHeadersWithPlayer([.. projectInfo.GroupTree.GetChildGroupIdsIncludingThis(args.Groups)], ClaimStatusSpec.Approved);
 
         AddUserInfoHeaderIfNotPresent(list, claims.Select(c => c.Player), SubscriptionReason.Forum);
 

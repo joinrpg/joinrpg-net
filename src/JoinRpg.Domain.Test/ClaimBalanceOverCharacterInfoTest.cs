@@ -143,7 +143,7 @@ public class ClaimBalanceOverCharacterInfoTest
             autoCreated: false,
             new MarkdownString(""),
             originalCharacterSlotId: null,
-            [projectInfo.RootCharacterGroupId],
+            [projectInfo.GroupTree.RootGroupId],
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, null),
             [claim],
             claimId,

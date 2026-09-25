@@ -159,7 +159,7 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
         UpdatedAt = updatedAt;
         UpdatedById = updatedById;
 
-        parentGroupIdsToTop = new(() => [.. projectInfo.GetParentGroupIdsIncludingThis(directGroupIds)]);
+        parentGroupIdsToTop = new(() => [.. projectInfo.GroupTree.GetParentGroupIdsIncludingThis(directGroupIds)]);
         activeClaimsCount = new(() => claims.Count(c => c.IsActive));
         responsibleMasterId = new(
             () => ApprovedClaim?.ResponsibleMasterId
@@ -231,9 +231,9 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
     public IReadOnlyCollection<CharacterGroupIdentification> ParentGroupIdsToTop => parentGroupIdsToTop.Value;
 
     public IEnumerable<CharacterGroupInfo> ParentGroupsToTop
-        => ParentGroupIdsToTop.Select(ProjectInfo.GetGroupById);
+        => ParentGroupIdsToTop.Select(ProjectInfo.GroupTree.GetGroupById);
 
-    public IEnumerable<CharacterGroupInfo> DirectGroups => ProjectInfo.GetGroupsById(DirectGroupIds);
+    public IEnumerable<CharacterGroupInfo> DirectGroups => ProjectInfo.GroupTree.GetGroupsById(DirectGroupIds);
 
     /// <summary>Группы, которые имеет смысл показывать пользователю рядом с персонажем.</summary>
     public IEnumerable<CharacterGroupInfo> IntrestingGroupsForDisplay

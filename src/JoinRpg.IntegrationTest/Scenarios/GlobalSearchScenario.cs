@@ -76,7 +76,7 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
 
             await characterService.AddCharacter(new AddCharacterRequest(
                 projectId,
-                ParentCharacterGroupIds: [projectInfo.RootCharacterGroupId],
+                ParentCharacterGroupIds: [projectInfo.GroupTree.RootGroupId],
                 new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
                 FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = CharacterName })));
         });

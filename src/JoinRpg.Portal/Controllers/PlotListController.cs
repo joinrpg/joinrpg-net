@@ -55,7 +55,7 @@ public class PlotListController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var characterGroupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
+        var characterGroupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(characterGroupId2).ToArray();
 
         //TODO slow 
         var characters = await projectRepository.GetCharacterByGroups(characterGroupIds);

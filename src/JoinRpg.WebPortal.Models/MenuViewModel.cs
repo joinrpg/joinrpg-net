@@ -35,7 +35,7 @@ public class MasterMenuViewModel(ProjectInfo projectInfo, ICurrentUserAccessor c
 
     private static IEnumerable<CharacterGroupLinkSlimViewModel> LoadBigGroups(ProjectInfo projectInfo)
     {
-        return projectInfo.GetDirectChildGroups(projectInfo.RootCharacterGroupId).Select(dto => new CharacterGroupLinkSlimViewModel(dto));
+        return projectInfo.GroupTree.GetDirectChildGroups(projectInfo.GroupTree.RootGroupId).Select(dto => new CharacterGroupLinkSlimViewModel(dto));
     }
 
 }

@@ -101,7 +101,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       UserInfo playerInfo)
     {
         ClaimIdentification = claim.GetId();
-        AllowToSetGroups = projectInfo.AllowToSetGroups;
+        AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
         CommentDiscussionId = claim.CommentDiscussionId;
         RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
         HasMasterAccess = projectInfo.HasMasterAccess(currentUser);

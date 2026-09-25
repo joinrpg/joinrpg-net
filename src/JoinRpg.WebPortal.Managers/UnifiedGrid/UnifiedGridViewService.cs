@@ -21,7 +21,7 @@ internal class UnifiedGridViewService(
             return [];
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var allGroups = projectInfo.GetChildGroupIdsIncludingThis([.. access.Select(x => x.CharacterGroup)]);
+        var allGroups = projectInfo.GroupTree.GetChildGroupIdsIncludingThis([.. access.Select(x => x.CharacterGroup)]);
 
         var characters = await characterInfoRepository.GetCharacterInfosByGroups(
             projectId, [.. allGroups], StatusSpecFor(filter));

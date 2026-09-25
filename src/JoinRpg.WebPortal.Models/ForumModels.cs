@@ -60,7 +60,7 @@ public class ForumThreadListViewModel(ProjectInfo project, IEnumerable<IForumThr
     public IEnumerable<ForumThreadListItemViewModel> Items { get; } = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId)).ToList();
     public string ProjectName { get; } = project.ProjectName;
     public int ProjectId { get; } = project.ProjectId;
-    public int RootGroupId { get; } = project.RootCharacterGroupId.CharacterGroupId;
+    public int RootGroupId { get; } = project.GroupTree.RootGroupId.CharacterGroupId;
     public bool HasMasterAccess { get; } = project.HasMasterAccess(currentUserId);
 }
 

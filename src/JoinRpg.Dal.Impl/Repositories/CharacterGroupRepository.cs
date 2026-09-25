@@ -62,7 +62,7 @@ internal class CharacterGroupRepository(
         foreach (var row in rows)
         {
             var id = new CharacterGroupIdentification(projectId, row.CharacterGroupId);
-            if (!projectInfo.Groups.TryGetValue(id, out var groupInfo))
+            if (projectInfo.GroupTree.GetGroupByIdOrDefault(id) is not { } groupInfo)
             {
                 continue;
             }

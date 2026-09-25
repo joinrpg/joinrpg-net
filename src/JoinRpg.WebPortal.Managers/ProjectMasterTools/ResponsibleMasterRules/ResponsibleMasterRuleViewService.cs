@@ -16,7 +16,7 @@ internal class ResponsibleMasterRuleViewService(
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var sortedGroups = projectInfo.ResponsibleMasterRules
+        var sortedGroups = projectInfo.GroupTree.ResponsibleMasterRules
             .Select(g => g.ToRespRuleViewModel(projectInfo.GetMasterById(g.ResponsibleMasterId!)))
             .ToList();
 

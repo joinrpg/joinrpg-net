@@ -24,7 +24,7 @@ internal class CharacteGroupListViewService(IProjectMetadataRepository projectMe
     async Task<List<CharacterGroupDto>> ICharacterGroupsClient.GetValidParentGroups(CharacterGroupIdentification groupId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(groupId.ProjectId);
-        var groupInfo = projectInfo.Groups[groupId];
+        var groupInfo = projectInfo.GroupTree.GetGroupById(groupId);
         var excludedIds = groupInfo.AllChildGroupsIncludingThis.ToHashSet();
         return GenerateGroups(projectInfo, x => !x.IsSpecial && !excludedIds.Contains(x.CharacterGroupId));
     }

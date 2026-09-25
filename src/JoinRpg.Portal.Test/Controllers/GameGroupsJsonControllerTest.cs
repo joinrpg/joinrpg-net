@@ -147,7 +147,7 @@ public class GameGroupsJsonControllerTest
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() },
         };
 
-        var result = (await controller.IndexJson(mock.ProjectInfo.RootCharacterGroupId)).ShouldBeOfType<JsonResult>();
+        var result = (await controller.IndexJson(mock.ProjectInfo.GroupTree.RootGroupId)).ShouldBeOfType<JsonResult>();
 
         var json = JsonSerializer.Serialize(
             result.Value,
@@ -161,12 +161,12 @@ public class GameGroupsJsonControllerTest
     private sealed class FakeCharacterGroupRepository(MockedProject mock) : ICharacterGroupRepository
     {
         public Task<CharacterGroupFullInfo?> GetCharacterGroupFullInfo(CharacterGroupIdentification id)
-            => Task.FromResult<CharacterGroupFullInfo?>(Build(mock.ProjectInfo.Groups.Values.Single(g => g.Id == id)));
+            => Task.FromResult<CharacterGroupFullInfo?>(Build(mock.ProjectInfo.GroupTree.AllGroups.Single(g => g.Id == id)));
 
         public Task<IReadOnlyList<CharacterGroupFullInfo>> GetCharacterGroupsFullInfo(
             IReadOnlyCollection<CharacterGroupIdentification> groupIds)
             => Task.FromResult<IReadOnlyList<CharacterGroupFullInfo>>(
-                [.. mock.ProjectInfo.Groups.Values.Where(g => groupIds.Contains(g.Id)).Select(Build)]);
+                [.. mock.ProjectInfo.GroupTree.AllGroups.Where(g => groupIds.Contains(g.Id)).Select(Build)]);
 
         private static CharacterGroupFullInfo Build(CharacterGroupInfo group)
             => new(
