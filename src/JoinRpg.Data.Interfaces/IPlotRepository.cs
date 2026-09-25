@@ -9,21 +9,6 @@ public interface IPlotRepository : IDisposable
 
     Task<IReadOnlyList<PlotFolder>> GetPlots(ProjectIdentification projectId);
     Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId);
-
-    /// <summary>
-    /// Отдаёт EF-граф проекта, который нужен <c>JoinrpgMarkdownLinkRenderer</c>: персонажи, группы,
-    /// заявки и мастера. Без него рендеринг текста вводной грузит их лениво, по одному.
-    /// </summary>
-    /// <remarks>
-    /// Метод существует только потому, что рендерер markdown завязан на EF-сущность <c>Project</c>,
-    /// и уйдёт вместе с этой завязкой — см. #4923. Звать его нужно там и только там, где текст
-    /// вводной действительно рендерится: страницам, которым нужны лишь таргеты или заголовки,
-    /// граф проекта не нужен.
-    ///
-    /// Раньше эту загрузку молча делал <see cref="GetPlotFolderAsync"/> — из-за чего её платили
-    /// и те страницы, которым она не нужна.
-    /// </remarks>
-    Task<Project> GetProjectForPlotRendering(ProjectIdentification projectId);
     Task<IReadOnlyCollection<PlotElement>> GetDirectPlotsForCharacter(CharacterIdentification characterId);
     Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid);
 
