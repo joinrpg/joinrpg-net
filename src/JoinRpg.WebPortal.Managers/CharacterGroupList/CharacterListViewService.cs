@@ -16,7 +16,7 @@ public class CharacterListViewService(
     public async Task<List<CharacterDto>> GetCharacters(ProjectIdentification projectId, CharacterListType listType)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var characters = await characterInfoRepository.GetCharactersForList(projectId);
+        var characters = await characterInfoRepository.GetCharactersForList(projectId, StatusSpecFor(listType));
 
         var masterAccess = project.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
 
@@ -26,6 +26,13 @@ public class CharacterListViewService(
             .Select(CreateDto)
             .OrderBy(x => x.Name)];
     }
+
+    /// <summary>
+    /// Что просить у репозитория: удалённые персонажи нужны только виду
+    /// <see cref="CharacterListType.All"/> — он отдаёт вообще всё, что есть в проекте.
+    /// </summary>
+    private static CharacterStatusSpec StatusSpecFor(CharacterListType listType)
+        => listType == CharacterListType.All ? CharacterStatusSpec.Any : CharacterStatusSpec.Active;
 
     /// <summary>
     /// Подходит ли персонаж под запрошенный вид списка.

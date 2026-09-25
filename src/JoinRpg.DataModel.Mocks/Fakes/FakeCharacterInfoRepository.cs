@@ -17,6 +17,12 @@ namespace JoinRpg.DataModel.Mocks.Fakes;
 /// </remarks>
 public sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacterInfoRepository
 {
+    /// <summary>
+    /// С какой спецификацией был последний запрос — по ней тесты проверяют, что сервис не тащит
+    /// лишних персонажей.
+    /// </summary>
+    public CharacterStatusSpec? RequestedSpec { get; private set; }
+
     public Task<CharacterInfo?> GetCharacterInfoOrDefault(CharacterIdentification characterId)
         => Task.FromResult(Find(characterId));
 
@@ -29,16 +35,29 @@ public sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacter
 
     public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(
         ProjectIdentification projectId,
-        IReadOnlyCollection<CharacterGroupIdentification> groupIds)
-        => Task.FromResult<IReadOnlyCollection<CharacterInfo>>(
-            [.. All().Where(character => character.DirectGroupIds.Any(groupIds.Contains))]);
+        IReadOnlyCollection<CharacterGroupIdentification> groupIds,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any)
+    {
+        RequestedSpec = spec;
+        return Task.FromResult<IReadOnlyCollection<CharacterInfo>>(
+            [.. All(spec).Where(character => character.DirectGroupIds.Any(groupIds.Contains))]);
+    }
 
-    public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId)
-        => Task.FromResult<IReadOnlyCollection<CharacterInfo>>([.. All()]);
+    public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(
+        ProjectIdentification projectId,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any)
+    {
+        RequestedSpec = spec;
+        return Task.FromResult<IReadOnlyCollection<CharacterInfo>>([.. All(spec)]);
+    }
 
-    public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId)
-        => Task.FromResult<IReadOnlyCollection<CharacterListEntry>>(
-            [.. mock.Project.Characters.Select(character => new CharacterListEntry(
+    public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(
+        ProjectIdentification projectId,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any)
+    {
+        RequestedSpec = spec;
+        return Task.FromResult<IReadOnlyCollection<CharacterListEntry>>(
+            [.. mock.Project.Characters.Where(character => spec.Matches(character.IsActive)).Select(character => new CharacterListEntry(
                 character.GetId(),
                 character.CharacterName,
                 character.Description?.Contents ?? "",
@@ -47,8 +66,10 @@ public sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacter
                 character.ToCharacterTypeInfo(),
                 character.GetApprovedClaimIdOrDefault(),
                 [.. character.Claims.Where(claim => claim.ClaimStatus.IsActive()).Select(claim => claim.GetPlayerId())]))]);
+    }
 
-    private IEnumerable<CharacterInfo> All() => mock.Project.Characters.Select(mock.GetCharacterInfo);
+    private IEnumerable<CharacterInfo> All(CharacterStatusSpec spec = CharacterStatusSpec.Any)
+        => mock.Project.Characters.Select(mock.GetCharacterInfo).Where(character => spec.Matches(character.IsActive));
 
     private CharacterInfo? Find(CharacterIdentification characterId)
         => All().SingleOrDefault(character => character.Id == characterId);

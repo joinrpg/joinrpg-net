@@ -17,15 +17,35 @@ public class UnifiedGridViewServiceTest
 {
     private MockedProject Mock { get; } = new MockedProject();
 
+    /// <summary>Последний фейк репозитория — по нему видно, о чём сервис его попросил.</summary>
+    private FakeCharacterInfoRepository characterInfoRepository = null!;
+
     private async Task<IReadOnlyCollection<UgItemForCaptainViewModel>> GetItems(UgStatusFilterView filter)
     {
+        characterInfoRepository = new FakeCharacterInfoRepository(Mock);
         IUnifiedGridClient service = new UnifiedGridViewService(
             new FakeCurrentUserAccessor(Mock.Master.UserId),
             new FakeCaptainRulesRepository(Mock),
             new FakeProjectMetadataRepository(Mock),
-            new FakeCharacterInfoRepository(Mock));
+            characterInfoRepository);
 
         return await service.GetForCaptain(Mock.ProjectInfo.ProjectId, filter);
+    }
+
+    /// <summary>
+    /// Архив — единственный вид, которому нужны удалённые персонажи; остальным их не надо даже
+    /// загружать.
+    /// </summary>
+    [Theory]
+    [InlineData(UgStatusFilterView.Active, CharacterStatusSpec.Active)]
+    [InlineData(UgStatusFilterView.Vacant, CharacterStatusSpec.Active)]
+    [InlineData(UgStatusFilterView.Discussion, CharacterStatusSpec.Active)]
+    [InlineData(UgStatusFilterView.Archive, CharacterStatusSpec.Deleted)]
+    public async Task RepositoryIsAskedForRightCharacters(UgStatusFilterView filter, CharacterStatusSpec expected)
+    {
+        _ = await GetItems(filter);
+
+        characterInfoRepository.RequestedSpec.ShouldBe(expected);
     }
 
     private async Task<IReadOnlyCollection<string>> GetNames(UgStatusFilterView filter)

@@ -28,19 +28,27 @@ public interface ICharacterInfoRepository
     /// Персонажи, лежащие непосредственно в любой из указанных групп. Раскрытие дерева групп —
     /// на стороне вызывающего (<c>ProjectInfo.GetChildGroupIdsIncludingThis</c>).
     /// </summary>
+    /// <param name="spec">
+    /// Какие персонажи нужны. По умолчанию все: собирать агрегат (поля, заявки) на удалённых,
+    /// которые вызывающему не нужны, — лишняя работа, поэтому спискам стоит просить
+    /// <see cref="CharacterStatusSpec.Active"/> явно.
+    /// </param>
     Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(
         ProjectIdentification projectId,
-        IReadOnlyCollection<CharacterGroupIdentification> groupIds);
+        IReadOnlyCollection<CharacterGroupIdentification> groupIds,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any);
 
-    /// <summary>Все персонажи проекта, включая удалённых (<c>IsActive == false</c>).</summary>
-    Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId);
+    /// <summary>Все персонажи проекта — по умолчанию включая удалённых.</summary>
+    Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(
+        ProjectIdentification projectId,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any);
 
     async Task<CharacterInfo> GetCharacterInfo(CharacterIdentification characterId)
         => await GetCharacterInfoOrDefault(characterId)
             ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, "character");
 
     /// <summary>
-    /// Все персонажи проекта в виде лёгкой проекции для списков выбора, включая удалённых.
+    /// Персонажи проекта в виде лёгкой проекции для списков выбора.
     /// </summary>
     /// <remarks>
     /// Отдельно от <see cref="GetAllCharacterInfos"/>: спискам не нужны ни поля, ни финансы, ни
@@ -48,5 +56,7 @@ public interface ICharacterInfoRepository
     /// доменными правилами: отдельного SQL-предиката «доступен для заявки» тут сознательно нет,
     /// иначе он разъедется с правилами (так уже было, см. issue #4766).
     /// </remarks>
-    Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId);
+    Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(
+        ProjectIdentification projectId,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any);
 }
