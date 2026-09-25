@@ -29,10 +29,45 @@ namespace JoinRpg.Services.Impl.Claims;
 /// стояла в <c>AddClaimFromUser</c> с комментарием «CreateClaimCommentWithNotification ожидает,
 /// что заявка уже существует».
 /// </remarks>
-internal sealed record DeferredComment(
+internal sealed class DeferredComment(
     string CommentText,
     CommentExtraAction? ExtraAction,
-    ClaimOperationType OperationType);
+    ClaimOperationType OperationType,
+    Claim? TargetClaim = null)
+{
+    public string CommentText { get; } = CommentText;
+    public CommentExtraAction? ExtraAction { get; } = ExtraAction;
+    public ClaimOperationType OperationType { get; } = OperationType;
+
+    /// <summary>
+    /// Заявка, к которой относится комментарий. <c>null</c> — создаваемая заявка; иначе это соседняя
+    /// заявка, которую мутирует та же операция: выход на вторую роль комментирует и старую заявку.
+    /// </summary>
+    public Claim? TargetClaim { get; } = TargetClaim;
+
+    /// <summary>Уведомление создаётся, но не отправляется — см. <see cref="PendingComment.Silent"/>.</summary>
+    public bool IsSilent { get; private set; }
+
+    /// <inheritdoc cref="PendingComment.Silent"/>
+    public DeferredComment Silent()
+    {
+        IsSilent = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Дополнения уведомления, накопленные до его создания: само уведомление появится только между
+    /// двумя сохранениями, а операция знает, чем его дополнить, уже сейчас.
+    /// </summary>
+    internal List<Func<ClaimSimpleChangedNotification, ClaimSimpleChangedNotification>> Decorators { get; } = [];
+
+    /// <inheritdoc cref="PendingComment.Decorate"/>
+    public DeferredComment Decorate(Func<ClaimSimpleChangedNotification, ClaimSimpleChangedNotification> decorator)
+    {
+        Decorators.Add(decorator);
+        return this;
+    }
+}
 
 internal sealed class PendingComment(Comment comment, ClaimSimpleChangedNotification notification)
 {
