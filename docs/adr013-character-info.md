@@ -385,11 +385,12 @@ public interface ICharacterInfoRepository
 claim-исключений, `ClaimWrongStatusException`, перестало принимать EF-сущность и теперь строится из
 `ClaimIdentification` + `ClaimStatus`.
 
-В `JoinRpg.Domain` остались `EnsureCanAddClaim`/`EnsureCanMoveClaim` — extension-методы на EF
-`Character` — и `LegacyClaimTarget`, `[Obsolete]`-адаптер над той же сущностью. Он нужен, пока на
-EF сидят `AddClaimViewModel`, `CharacterLinkViewModel` и `CharacterNavigationViewModel`: они тянут
-`CustomFieldsViewModel` и `CharacterTreeBuilder`, у которых перегрузок под `CharacterInfo` нет.
-Это одно место на удаление, когда мигрирует сетка ролей.
+Какое-то время в `JoinRpg.Domain` жил `LegacyClaimTarget` — `[Obsolete]`-адаптер EF-сущности под
+`IClaimTarget` — потому что на EF сидели вьюмодели, тянувшие `CustomFieldsViewModel` и
+`CharacterTreeBuilder` без перегрузок под `CharacterInfo`. После переезда сетки ролей,
+капитанского кабинета, дерева ролей и страницы подачи заявки боевых вызывающих у него не
+осталось, и адаптер удалён: правила заявки везде принимают агрегат. `EnsureCanAddClaim`/
+`EnsureCanMoveClaim` живут в `ClaimValidator` и тоже работают поверх `CharacterInfo`.
 
 Что вскрыла эта проверка:
 
