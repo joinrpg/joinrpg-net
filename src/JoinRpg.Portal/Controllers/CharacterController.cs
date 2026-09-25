@@ -119,7 +119,7 @@ public class CharacterController(
 
         if (charactergroupid is null || charactergroupid == 0)
         {
-            targetGroupId = projectInfo.RootCharacterGroupId;
+            targetGroupId = projectInfo.GroupTree.RootGroupId;
         }
         else
         {

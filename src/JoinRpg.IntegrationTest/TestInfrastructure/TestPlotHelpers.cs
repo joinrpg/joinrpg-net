@@ -39,7 +39,7 @@ public static class TestPlotHelpers
         var plotService = serviceProvider.GetRequiredService<IPlotService>();
 
         var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
-        var rootGroupId = projectInfo.RootCharacterGroupId;
+        var rootGroupId = projectInfo.GroupTree.RootGroupId;
         var nameFieldId = (projectInfo.CharacterNameField
                 ?? throw new InvalidOperationException("В проекте нет поля имени персонажа"))
             .Id.ProjectFieldId;

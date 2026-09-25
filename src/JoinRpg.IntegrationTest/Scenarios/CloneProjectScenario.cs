@@ -37,7 +37,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             var rolesListService = sp.GetRequiredService<IProjectRolesListService>();
 
             var projectInfo = await metadataRepository.GetProjectMetadata(originalProjectId);
-            var rootGroupId = projectInfo.RootCharacterGroupId;
+            var rootGroupId = projectInfo.GroupTree.RootGroupId;
             var nameFieldId = (projectInfo.CharacterNameField
                 ?? throw new InvalidOperationException("В проекте нет поля имени"))
                 .Id.ProjectFieldId;

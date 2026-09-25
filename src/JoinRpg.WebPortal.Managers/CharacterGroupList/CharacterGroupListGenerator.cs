@@ -10,7 +10,7 @@ internal class CharacterGroupListGenerator(ProjectInfo projectInfo, UserIdentifi
 
     public List<CharacterGroupDto> Generate()
     {
-        GenerateFrom(projectInfo.RootCharacterGroupId, []);
+        GenerateFrom(projectInfo.GroupTree.RootGroupId, []);
         return Results;
     }
 
@@ -21,14 +21,14 @@ internal class CharacterGroupListGenerator(ProjectInfo projectInfo, UserIdentifi
             return;
         }
 
-        var group = projectInfo.Groups[groupId];
+        var group = projectInfo.GroupTree.GetGroupById(groupId);
         var vm = new CharacterGroupDto(groupId, group.Name, pathToTop.Skip(1).ToArray(), group.IsPublic, group.IsSpecial);
 
         Results.Add(vm);
 
         foreach (var childId in group.DirectChildGroupIds)
         {
-            var child = projectInfo.Groups[childId];
+            var child = projectInfo.GroupTree.GetGroupById(childId);
             if (child.IsActive && (child.IsPublic || projectInfo.PublishPlot || projectInfo.HasMasterAccess(currentUserId)))
             {
                 GenerateFrom(childId, pathToTop.Append(group.Name).ToList());

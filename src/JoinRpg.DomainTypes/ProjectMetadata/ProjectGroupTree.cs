@@ -54,7 +54,7 @@ public sealed class ProjectGroupTree
     /// <summary>Есть ли в проекте хоть одна живая обычная группа, в которую можно положить персонажа.</summary>
     public bool AllowToSetGroups { get; }
 
-    internal IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> GroupsDictionary { get; }
+    private IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> GroupsDictionary { get; }
 
     public bool Contains(CharacterGroupIdentification id) => GroupsDictionary.ContainsKey(id);
 

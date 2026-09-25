@@ -82,7 +82,7 @@ public class CharacterListController(
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(characterGroupIdentification).ToList();
+        var groupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(characterGroupIdentification).ToList();
         var characters = (await projectRepository.GetCharacterByGroups(groupIds)).Where(ch => ch.IsActive).ToList();
 
         var list = new CharacterListByGroupViewModel(currentUserAccessor.UserIdentification,

@@ -67,7 +67,7 @@ internal class CharacterApiViewService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(groupId.ProjectId);
         _ = projectInfo.RequestMasterAccess(currentUserAccessor);
 
-        var groupIds = projectInfo.GetChildGroupIdsIncludingThis(groupId);
+        var groupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(groupId);
         var characters = await characterInfoRepository.GetCharacterInfosByGroups(groupId.ProjectId, groupIds);
         return await MapAllToDto(characters);
     }

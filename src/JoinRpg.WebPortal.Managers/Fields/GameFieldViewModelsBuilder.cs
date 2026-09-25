@@ -28,7 +28,7 @@ internal static class GameFieldViewModelsBuilder
             IsPublic = field.IsPublic,
             CanPlayerView = field.CanPlayerView,
             CanPlayerEdit = field.CanPlayerEdit,
-            GroupNames = [.. projectInfo.GetGroupsById(field.GroupsAvailableForIds).Select(g => g.Name)],
+            GroupNames = [.. projectInfo.GroupTree.GetGroupsById(field.GroupsAvailableForIds).Select(g => g.Name)],
             MandatoryStatus = (MandatoryStatusViewType)field.MandatoryStatus,
             FieldViewType = (ProjectFieldViewType)field.Type,
             FieldBoundTo = (FieldBoundToViewModel)field.BoundTo,

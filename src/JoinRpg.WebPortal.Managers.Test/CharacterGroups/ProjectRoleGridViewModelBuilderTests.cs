@@ -41,8 +41,8 @@ public class ProjectRoleGridViewModelBuilderTests
         bool canViewPrivate = true,
         bool excludeSpecialGroups = false)
     {
-        var rootId = _mock.ProjectInfo.RootCharacterGroupId;
-        var orderedGroups = _mock.ProjectInfo.GetChildGroupsIncludingThis(rootId)
+        var rootId = _mock.ProjectInfo.GroupTree.RootGroupId;
+        var orderedGroups = _mock.ProjectInfo.GroupTree.GetChildGroupsIncludingThis(rootId)
             .Where(g => !excludeSpecialGroups || !g.IsSpecial)
             .ToList();
         // Как в сервисе: непубличных отсекаем по тому же признаку, что и он.
@@ -923,7 +923,7 @@ public class ProjectRoleGridViewModelBuilderTests
     [Fact]
     public void ClassicRolesGridDefaults_Build_ProducesTransientPublicTreeConfig()
     {
-        var groupId = _mock.ProjectInfo.RootCharacterGroupId;
+        var groupId = _mock.ProjectInfo.GroupTree.RootGroupId;
         var descriptionField = new ProjectFieldIdentification(_mock.ProjectInfo.ProjectId, 42);
 
         var config = ClassicRolesGridDefaults.Build(groupId, "Все роли", descriptionField);
@@ -943,7 +943,7 @@ public class ProjectRoleGridViewModelBuilderTests
     public void ClassicRolesGridDefaults_Build_WithoutDescriptionField_HasNoColumns()
     {
         var config = ClassicRolesGridDefaults.Build(
-            _mock.ProjectInfo.RootCharacterGroupId, "Все роли", descriptionField: null);
+            _mock.ProjectInfo.GroupTree.RootGroupId, "Все роли", descriptionField: null);
 
         config.Fields.ShouldBeEmpty();
     }
@@ -965,7 +965,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var config = new ProjectRolesList(
             ProjectRolesListId: null,
             "Все роли",
-            CharacterGroupId: _mock.ProjectInfo.RootCharacterGroupId,
+            CharacterGroupId: _mock.ProjectInfo.GroupTree.RootGroupId,
             PublicMode: true,
             Fields: [],
             ContactsColumn: ProjectRolesListVisibilityMode.None,

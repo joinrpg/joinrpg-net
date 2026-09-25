@@ -35,7 +35,7 @@ internal class ProjectApiViewService(
             ProjectId = project.ProjectId,
             ProjectName = project.ProjectName,
             Fields = MapFields(project),
-            Groups = project.Groups.Values
+            Groups = project.GroupTree.AllGroups
                 .Where(group => group.IsActive)
                 .Select(group => new ProjectOverviewGroup
                 {

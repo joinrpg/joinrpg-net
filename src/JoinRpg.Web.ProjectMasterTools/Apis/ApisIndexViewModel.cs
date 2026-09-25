@@ -8,6 +8,6 @@ public class ApisIndexViewModel
     public ApisIndexViewModel(ProjectInfo project)
     {
         ProjectId = project.ProjectId.Value;
-        RootGroupId = project.RootCharacterGroupId.CharacterGroupId;
+        RootGroupId = project.GroupTree.RootGroupId.CharacterGroupId;
     }
 }

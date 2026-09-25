@@ -45,7 +45,7 @@ public class AclViewModel
         ProjectName = projectInfo.ProjectName;
         Badges = projectInfo.GetPermissionViewModels(master.UserId);
         ClaimsCount = claimsCount;
-        ResponsibleFor = [.. projectInfo.ResponsibleMasterRules
+        ResponsibleFor = [.. projectInfo.GroupTree.ResponsibleMasterRules
             .Where(g => g.ResponsibleMasterId == master.UserId && g.IsActive)
             .Select(g => new CharacterGroupLinkSlimViewModel(g))];
     }

@@ -29,7 +29,7 @@ public class GameGroupsJsonController(
     public async Task<ActionResult> HotJson(CharacterGroupIdentification characterGroupId, int? maxCount = null)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId);
-        if (projectInfo.GetGroupByIdOrDefault(characterGroupId) is null)
+        if (projectInfo.GroupTree.GetGroupByIdOrDefault(characterGroupId) is null)
         {
             return NotFound();
         }
@@ -49,12 +49,12 @@ public class GameGroupsJsonController(
     public async Task<ActionResult> IndexJson(CharacterGroupIdentification characterGroupId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId);
-        if (projectInfo.GetGroupByIdOrDefault(characterGroupId) is not { } rootGroup)
+        if (projectInfo.GroupTree.GetGroupByIdOrDefault(characterGroupId) is not { } rootGroup)
         {
             return NotFound();
         }
 
-        var groupIds = projectInfo.GetChildGroupIdsIncludingThis([characterGroupId]).ToList();
+        var groupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis([characterGroupId]).ToList();
         var characters = await LoadCharactersOfSubtree(characterGroupId, projectInfo);
         // Описания групп в ProjectInfo не входят — грузим их одним запросом на всё поддерево.
         var groupFullInfos = (await charGroupRepository.GetCharacterGroupsFullInfo(groupIds)).ToDictionary(g => g.Id);
@@ -100,7 +100,7 @@ public class GameGroupsJsonController(
         ProjectInfo projectInfo)
         => await characterInfoRepository.GetCharacterInfosByGroups(
             rootGroupId.ProjectId,
-            [.. projectInfo.GetChildGroupIdsIncludingThis([rootGroupId])]);
+            [.. projectInfo.GroupTree.GetChildGroupIdsIncludingThis([rootGroupId])]);
 
     private JsonResult ReturnJson(object data)
     {

@@ -79,7 +79,7 @@ public static class CharacterGroupListViewModel
             // сортирует DirectChildGroupIds по ChildGroupsOrdering. Спецгруппы показываем
             // последними, как это делала старая сетка.
             // Видимость тут не проверяем: невидимую группу отсечёт сам GenerateFrom.
-            var childGroups = projectInfo.GetDirectChildGroups(group.Id)
+            var childGroups = projectInfo.GroupTree.GetDirectChildGroups(group.Id)
                 .Where(g => g.IsActive)
                 .OrderBy(g => g.IsSpecial)
                 .ToList();

@@ -62,7 +62,7 @@ internal class ProjectAccessService(
         }
 
         var claims = await claimsRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
-        var hasResponsibleGroups = projectInfo.ResponsibleMasterRules.Any(g => g.ResponsibleMasterId == userId);
+        var hasResponsibleGroups = projectInfo.GroupTree.ResponsibleMasterRules.Any(g => g.ResponsibleMasterId == userId);
 
         if (claims.Count > 0 || hasResponsibleGroups)
         {

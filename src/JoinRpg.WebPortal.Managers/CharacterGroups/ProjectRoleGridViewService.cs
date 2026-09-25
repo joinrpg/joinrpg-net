@@ -35,7 +35,7 @@ internal class ProjectRoleGridViewService(
             ? ClassicRolesGridDefaults.BuildHot(groupId, projectInfo.CharacterDescriptionField?.Id)
             : ClassicRolesGridDefaults.Build(
                 groupId,
-                projectInfo.GetGroupById((groupId ?? projectInfo.RootCharacterGroupId).CharacterGroupId).Name,
+                projectInfo.GetGroupById((groupId ?? projectInfo.GroupTree.RootGroupId).CharacterGroupId).Name,
                 projectInfo.CharacterDescriptionField?.Id);
         return await BuildResult(projectInfo, config);
     }
@@ -49,11 +49,11 @@ internal class ProjectRoleGridViewService(
             return new ProjectRoleGridViewResult(HasAccess: false, Grid: null, NoAccess: NoAccessToProjectViewModelBuilder.Build(projectInfo));
         }
 
-        var groupId = config.CharacterGroupId ?? projectInfo.RootCharacterGroupId;
+        var groupId = config.CharacterGroupId ?? projectInfo.GroupTree.RootGroupId;
         // Если корень не задан явно, строим сетку от верха, не используя спецгруппы (см. doc-комментарий CharacterGroupId).
         var excludeSpecialGroups = config.CharacterGroupId is null;
 
-        var orderedGroups = projectInfo.GetChildGroupsIncludingThis(groupId)
+        var orderedGroups = projectInfo.GroupTree.GetChildGroupsIncludingThis(groupId)
             .Where(g => !excludeSpecialGroups || !g.IsSpecial)
             .ToList();
         var groupIds = orderedGroups.Select(g => g.Id).ToList();

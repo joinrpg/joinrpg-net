@@ -28,7 +28,7 @@ public class GroupReportPageModel(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(ProjectId);
 
         // Страница "/roles/all/report" не передаёт characterGroupId — в этом случае берём корневую группу проекта.
-        GroupId = CharacterGroupId ?? projectInfo.RootCharacterGroupId;
+        GroupId = CharacterGroupId ?? projectInfo.GroupTree.RootGroupId;
 
         var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(GroupId);
         if (charGroupFullInfo is null)

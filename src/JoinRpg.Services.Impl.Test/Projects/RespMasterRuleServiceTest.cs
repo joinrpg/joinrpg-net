@@ -16,8 +16,8 @@ public class RespMasterRuleServiceTest : ProjectMetadataServiceTestBase
     {
         await CreateService().AddRule(ProjectId, mock.Group.CharacterGroupId, mock.Master.UserId);
 
-        Result.Groups[GroupId].ResponsibleMasterId.ShouldBe(new UserIdentification(mock.Master.UserId));
-        Result.ResponsibleMasterRules.ShouldHaveSingleItem().Id.ShouldBe(GroupId);
+        Result.GroupTree.GetGroupById(GroupId).ResponsibleMasterId.ShouldBe(new UserIdentification(mock.Master.UserId));
+        Result.GroupTree.ResponsibleMasterRules.ShouldHaveSingleItem().Id.ShouldBe(GroupId);
     }
 
     [Fact]
@@ -28,8 +28,8 @@ public class RespMasterRuleServiceTest : ProjectMetadataServiceTestBase
 
         await service.RemoveRule(ProjectId, mock.Group.CharacterGroupId);
 
-        Result.Groups[GroupId].ResponsibleMasterId.ShouldBeNull();
-        Result.ResponsibleMasterRules.ShouldBeEmpty();
+        Result.GroupTree.GetGroupById(GroupId).ResponsibleMasterId.ShouldBeNull();
+        Result.GroupTree.ResponsibleMasterRules.ShouldBeEmpty();
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class RespMasterRuleServiceTest : ProjectMetadataServiceTestBase
 
         await CreateService().AddRule(ProjectId, specialGroup.CharacterGroupId, mock.Master.UserId);
 
-        Result.Groups[specialGroupId].ResponsibleMasterId.ShouldBe(new UserIdentification(mock.Master.UserId));
+        Result.GroupTree.GetGroupById(specialGroupId).ResponsibleMasterId.ShouldBe(new UserIdentification(mock.Master.UserId));
     }
 
     [Fact]

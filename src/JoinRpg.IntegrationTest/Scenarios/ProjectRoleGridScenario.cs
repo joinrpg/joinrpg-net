@@ -38,7 +38,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
             var rolesListService = sp.GetRequiredService<IProjectRolesListService>();
 
             var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
-            var rootGroupId = projectInfo.RootCharacterGroupId;
+            var rootGroupId = projectInfo.GroupTree.RootGroupId;
             var nameFieldId = (projectInfo.CharacterNameField
                 ?? throw new InvalidOperationException("В проекте нет поля имени персонажа"))
                 .Id.ProjectFieldId;
@@ -158,7 +158,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
             var characterService = sp.GetRequiredService<ICharacterService>();
 
             var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
-            var rootGroupId = projectInfo.RootCharacterGroupId;
+            var rootGroupId = projectInfo.GroupTree.RootGroupId;
             var nameFieldId = (projectInfo.CharacterNameField
                 ?? throw new InvalidOperationException("В проекте нет поля имени персонажа"))
                 .Id.ProjectFieldId;

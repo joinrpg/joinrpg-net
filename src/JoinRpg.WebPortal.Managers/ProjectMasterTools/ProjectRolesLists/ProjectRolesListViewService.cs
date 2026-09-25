@@ -28,7 +28,7 @@ internal class ProjectRolesListViewService(
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupLinkSlimViewModel>? characterGroups = null;
         if (groupIdentifications.Count > 0)
         {
-            characterGroups = projectInfo.GetGroupsById(groupIdentifications)
+            characterGroups = projectInfo.GroupTree.GetGroupsById(groupIdentifications)
                 .ToDictionary(g => g.Id, g => new CharacterGroupLinkSlimViewModel(g));
         }
 

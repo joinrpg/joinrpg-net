@@ -25,7 +25,7 @@ internal class CaptainRuleViewService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var ruleViewModels = rules.Select(rule =>
-                new CaptainRuleViewModel(rule, projectInfo.Groups[rule.CharacterGroup].Name, new UserLinkViewModel(users[rule.Player])))
+                new CaptainRuleViewModel(rule, projectInfo.GroupTree.GetGroupById(rule.CharacterGroup).Name, new UserLinkViewModel(users[rule.Player])))
             .ToList();
 
         return new CaptainRuleListViewModel(

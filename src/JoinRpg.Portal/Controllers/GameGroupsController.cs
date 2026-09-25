@@ -36,7 +36,7 @@ public class GameGroupsController(
             return Redirect($"/{projectId.Value}/roleslist/{defaultRolesListId.ProjectRolesListId}");
         }
 
-        var characterGroupId2 = explicitGroupId ?? projectInfo.RootCharacterGroupId;
+        var characterGroupId2 = explicitGroupId ?? projectInfo.GroupTree.RootGroupId;
         var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(characterGroupId2);
         if (charGroupFullInfo is null)
         {
@@ -196,7 +196,7 @@ public class GameGroupsController(
     public async Task<ActionResult> AddGroup(ProjectIdentification projectid, int charactergroupid)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
-        if (!projectInfo.Groups.ContainsKey(new(projectid, charactergroupid)))
+        if (!projectInfo.GroupTree.Contains(new(projectid, charactergroupid)))
         {
             return NotFound();
         }
@@ -217,7 +217,7 @@ public class GameGroupsController(
     {
         ProjectIdentification projectId = new(viewModel.ProjectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        if (!projectInfo.Groups.ContainsKey(new(projectId, charactergroupid)))
+        if (!projectInfo.GroupTree.Contains(new(projectId, charactergroupid)))
         {
             return NotFound();
         }

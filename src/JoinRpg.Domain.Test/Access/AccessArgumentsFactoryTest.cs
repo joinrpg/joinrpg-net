@@ -142,7 +142,7 @@ public class AccessArgumentsFactoryTest
             Mock.Character.CharacterName,
             CharacterTypeInfo.Default(),
             hidePlayerForCharacter: false,
-            [Mock.ProjectInfo.RootCharacterGroupId],
+            [Mock.ProjectInfo.GroupTree.RootGroupId],
             FieldLayerContainer.Empty(Mock.ProjectInfo),
             new UserIdentification(Mock.Master.UserId),
             DateTime.UtcNow);

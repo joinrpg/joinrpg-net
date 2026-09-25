@@ -97,7 +97,7 @@ internal static class ProjectOperationContextExtensions
     {
         var group = ctx.Project.CharacterGroups.SingleOrDefault(g => g.CharacterGroupId == id.CharacterGroupId)
             ?? throw new JoinRpgEntityNotFoundException(id.CharacterGroupId, nameof(CharacterGroup));
-        var groupInfo = ctx.ProjectInfo.Groups[id];
+        var groupInfo = ctx.ProjectInfo.GroupTree.GetGroupById(id);
         ctx.MarkChanged(group);
         return (group, groupInfo);
     }

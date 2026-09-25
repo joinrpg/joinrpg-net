@@ -24,9 +24,9 @@ internal static class CharacterOperationContextExtensions
     public static int[] ValidateGroupListForCharacter(
         this CharacterOperationContext ctx,
         IReadOnlyCollection<CharacterGroupIdentification> groupIds)
-        => ctx.ProjectInfo.AllowToSetGroups
+        => ctx.ProjectInfo.GroupTree.AllowToSetGroups
             ? ctx.ProjectInfo.ValidateCharacterGroupList(ServiceValidation.Required(groupIds), ensureNotSpecial: true)
-            : [ctx.ProjectInfo.RootCharacterGroupId.CharacterGroupId];
+            : [ctx.ProjectInfo.GroupTree.RootGroupId.CharacterGroupId];
 
     /// <summary>
     /// Применяет к персонажу настройки типа. Инвариант: тип нельзя менять, пока есть активные

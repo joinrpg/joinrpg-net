@@ -29,12 +29,6 @@ public record class ProjectInfo
     /// <summary>Дерево групп персонажей проекта.</summary>
     public ProjectGroupTree GroupTree { get; }
 
-    [Obsolete("Используйте GroupTree.AllowToSetGroups")]
-    public bool AllowToSetGroups => GroupTree.AllowToSetGroups;
-
-    [Obsolete("Используйте GroupTree.RootGroupId")]
-    public CharacterGroupIdentification RootCharacterGroupId => GroupTree.RootGroupId;
-
     public IReadOnlyCollection<ProjectMasterInfo> Masters { get; }
     public string FieldsOrdering { get; }
 
@@ -54,12 +48,6 @@ public record class ProjectInfo
     public IReadOnlyCollection<ProjectRolesList> ProjectRolesLists { get; }
 
     public ProjectRolesListIdentification? DefaultRolesListId { get; }
-
-    [Obsolete("Используйте GroupTree: AllGroups, GetGroupById, GetGroupByIdOrDefault, Contains")]
-    public IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupInfo> Groups => GroupTree.GroupsDictionary;
-
-    [Obsolete("Используйте GroupTree.ResponsibleMasterRules")]
-    public IReadOnlyList<CharacterGroupInfo> ResponsibleMasterRules => GroupTree.ResponsibleMasterRules;
 
     public ProjectInfo(
         ProjectIdentification projectId,
@@ -197,51 +185,11 @@ public record class ProjectInfo
     public CharacterGroupInfo GetGroupById(int id)
         => GroupTree.GetGroupById(new CharacterGroupIdentification(ProjectId, id));
 
-    [Obsolete("Используйте GroupTree.GetGroupById")]
-    public CharacterGroupInfo GetGroupById(CharacterGroupIdentification id) => GroupTree.GetGroupById(id);
-
-    /// <summary>Группа проекта или <c>null</c>, если такой группы нет.</summary>
-    [Obsolete("Используйте GroupTree.GetGroupByIdOrDefault")]
-    public CharacterGroupInfo? GetGroupByIdOrDefault(CharacterGroupIdentification id) => GroupTree.GetGroupByIdOrDefault(id);
-
     public ProjectRolesList GetRolesListById(ProjectRolesListIdentification id)
     {
         return ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id)
             ?? throw new KeyNotFoundException("Не найдена сетка ролей с ID=" + id);
     }
-
-    [Obsolete("Используйте GroupTree.GetGroupsById")]
-    public IEnumerable<CharacterGroupInfo> GetGroupsById(IReadOnlyCollection<CharacterGroupIdentification> ids)
-        => GroupTree.GetGroupsById(ids);
-
-    [Obsolete("Используйте GroupTree.GetChildGroupIdsIncludingThis")]
-    public IReadOnlyList<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(CharacterGroupIdentification groupId)
-        => GroupTree.GetChildGroupIdsIncludingThis(groupId);
-
-    [Obsolete("Используйте GroupTree.GetChildGroupIdsIncludingThis")]
-    public IReadOnlyList<CharacterGroupIdentification> GetChildGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
-        => GroupTree.GetChildGroupIdsIncludingThis(groupIds);
-
-    [Obsolete("Используйте GroupTree.GetParentGroupIdsIncludingThis")]
-    public IEnumerable<CharacterGroupIdentification> GetParentGroupIdsIncludingThis(CharacterGroupIdentification groupId)
-        => GroupTree.GetParentGroupIdsIncludingThis(groupId);
-
-    [Obsolete("Используйте GroupTree.GetParentGroupIdsIncludingThis")]
-    public IEnumerable<CharacterGroupIdentification> GetParentGroupIdsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
-        => GroupTree.GetParentGroupIdsIncludingThis(groupIds);
-
-    [Obsolete("Используйте GroupTree.GetParentGroupsIncludingThis")]
-    public IEnumerable<CharacterGroupInfo> GetParentGroupsIncludingThis(IEnumerable<CharacterGroupIdentification> groupIds)
-        => GroupTree.GetParentGroupsIncludingThis(groupIds);
-
-    [Obsolete("Используйте GroupTree.GetDirectChildGroups")]
-    public IEnumerable<CharacterGroupInfo> GetDirectChildGroups(CharacterGroupIdentification groupId)
-        => GroupTree.GetDirectChildGroups(groupId);
-
-    /// <inheritdoc cref="ProjectGroupTree.GetChildGroupsIncludingThis"/>
-    [Obsolete("Используйте GroupTree.GetChildGroupsIncludingThis")]
-    public IReadOnlyList<CharacterGroupInfo> GetChildGroupsIncludingThis(CharacterGroupIdentification groupId)
-        => GroupTree.GetChildGroupsIncludingThis(groupId);
 
     public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
 
