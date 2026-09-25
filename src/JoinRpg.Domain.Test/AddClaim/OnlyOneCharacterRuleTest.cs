@@ -26,7 +26,7 @@ public class OnlyOneCharacterRuleTest
             new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 100), ClaimStatus.Approved));
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanAddClaim(userInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
+            .ValidateIfCanAddClaim(Mock, userInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.OnlyOneCharacter);
     }
 
@@ -37,7 +37,7 @@ public class OnlyOneCharacterRuleTest
             new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 100), ClaimStatus.CheckedIn));
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanAddClaim(userInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
+            .ValidateIfCanAddClaim(Mock, userInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.OnlyOneCharacter);
     }
 
@@ -48,7 +48,7 @@ public class OnlyOneCharacterRuleTest
             new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 100), ClaimStatus.AddedByUser));
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanAddClaim(userInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
+            .ValidateIfCanAddClaim(Mock, userInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldNotContain(AddClaimForbideReason.OnlyOneCharacter);
     }
 
@@ -62,7 +62,7 @@ public class OnlyOneCharacterRuleTest
         var userInfo = WithClaims(new UserClaimInfo(ClaimIn(anotherProject, 100), ClaimStatus.Approved));
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanAddClaim(userInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
+            .ValidateIfCanAddClaim(Mock, userInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldNotContain(AddClaimForbideReason.OnlyOneCharacter);
     }
 
@@ -102,7 +102,7 @@ public class OnlyOneCharacterRuleTest
             new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 100), ClaimStatus.Approved));
 
         Mock.CreateCharacter("another")
-            .ValidateIfCanAddClaim(userInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds()
+            .ValidateIfCanAddClaim(Mock, userInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldNotContain(AddClaimForbideReason.OnlyOneCharacter);
     }
 }

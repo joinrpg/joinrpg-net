@@ -3,7 +3,11 @@ using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain.Test.AddClaim;
 
-public class ClaimAcceptOrMoveValidationExtensionsTest
+/// <summary>
+/// Каждому пункту профиля должна соответствовать причина запрета — иначе правило про контакты
+/// упадёт на новом типе пункта.
+/// </summary>
+public class ToAddClaimForbideReasonTest
 {
     [Fact]
     public void ToAddClaimForbideReasonIsDefinedForEveryUserProfileItemType()

@@ -21,7 +21,7 @@ public class AddClaimValidationRulesTest
     }
 
     [Fact]
-    public void AddClaimAllowedCharacterWithoutUser() => Mock.Character.ValidateIfCanAddClaim(userInfo: null, Mock.ProjectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+    public void AddClaimAllowedCharacterWithoutUser() => Mock.Character.ValidateIfCanAddClaim(Mock, userInfo: null, Mock.ProjectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
 
     [Fact]
     public void CantSendClaimIfProjectClaimsClosed()
@@ -84,6 +84,52 @@ public class AddClaimValidationRulesTest
         ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.AlreadySent, Mock.ProjectInfo);
     }
 
+    /// <summary>
+    /// Отклонённая заявка не мешает подать новую на того же персонажа.
+    /// </summary>
+    [Fact]
+    public void DeclinedClaimIsNotAlreadySent()
+    {
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.ClaimStatus = ClaimStatus.DeclinedByMaster;
+
+        Kinds(Mock.Character).ShouldNotContain(AddClaimForbideReason.AlreadySent);
+    }
+
+    /// <summary>
+    /// Правило «уже подана» — про заявки этого игрока, а не любые заявки персонажа.
+    /// </summary>
+    [Fact]
+    public void ClaimOfAnotherPlayerIsNotAlreadySent()
+    {
+        _ = Mock.CreateClaim(Mock.Character, Mock.Master);
+
+        Kinds(Mock.Character).ShouldNotContain(AddClaimForbideReason.AlreadySent);
+    }
+
+    [Fact]
+    public void CanSendClaimToSlotWithFreePlaces()
+    {
+        var slot = Mock.CreateSlot("slot", slotLimit: 2);
+
+        ShouldBeAllowed(slot, Mock.ProjectInfo);
+    }
+
+    /// <summary>
+    /// Причины не вытесняют друг друга: игрок должен видеть их все сразу.
+    /// </summary>
+    [Fact]
+    public void SeveralReasonsAtOnce()
+    {
+        var character = Mock.CreateCharacter("bad");
+        character.CharacterType = CharacterType.NonPlayer;
+        character.IsActive = false;
+
+        Kinds(character).ShouldBe(
+            [AddClaimForbideReason.CharacterInactive, AddClaimForbideReason.Npc],
+            ignoreOrder: true);
+    }
+
     [Fact]
     public void CantSendClaimIfHasApproved()
     {
@@ -119,7 +165,7 @@ public class AddClaimValidationRulesTest
         {
             Social = Mock.PlayerInfo.Social with { Vk = new VkSocialLink(1, isVerified: false) },
         };
-        Mock.Character.ValidateIfCanAddClaim(playerWithUnverifiedVk, projectInfo, ClaimOperation.AddByPlayer).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock, playerWithUnverifiedVk, projectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.VkontakteMissing);
     }
 
@@ -132,7 +178,7 @@ public class AddClaimValidationRulesTest
         {
             Social = Mock.PlayerInfo.Social with { Vk = new VkSocialLink(1, isVerified: true) },
         };
-        Mock.Character.ValidateIfCanAddClaim(playerWithVerifiedVk, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+        Mock.Character.ValidateIfCanAddClaim(Mock, playerWithVerifiedVk, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
     [Fact]
@@ -140,7 +186,7 @@ public class AddClaimValidationRulesTest
     {
         var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
             ProjectProfileRequirementSettings.AllNotRequired with { RequirePhone = MandatoryStatus.Required });
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.PhoneMissing);
     }
 
@@ -150,7 +196,7 @@ public class AddClaimValidationRulesTest
         var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
             ProjectProfileRequirementSettings.AllNotRequired with { RequirePhone = MandatoryStatus.Required });
         var playerWithPhone = Mock.PlayerInfo with { PhoneNumber = "+79991234567" };
-        Mock.Character.ValidateIfCanAddClaim(playerWithPhone, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+        Mock.Character.ValidateIfCanAddClaim(Mock, playerWithPhone, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
     [Fact]
@@ -158,7 +204,7 @@ public class AddClaimValidationRulesTest
     {
         var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
             ProjectProfileRequirementSettings.AllNotRequired with { RequireRealName = MandatoryStatus.Required });
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldContain(AddClaimForbideReason.RealNameMissing);
     }
 
@@ -171,7 +217,7 @@ public class AddClaimValidationRulesTest
         {
             UserFullName = new UserFullName(new PrefferedName("Player"), new BornName("Иван"), new SurName("Иванов"), null),
         };
-        Mock.Character.ValidateIfCanAddClaim(playerWithRealName, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+        Mock.Character.ValidateIfCanAddClaim(Mock, playerWithRealName, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
     /// <summary>
@@ -185,14 +231,17 @@ public class AddClaimValidationRulesTest
     {
         var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
             ProjectProfileRequirementSettings.AllNotRequired with { RequirePassport = MandatoryStatus.Required });
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
+    private IReadOnlyCollection<AddClaimForbideReason> Kinds(Character claimSource)
+        => claimSource.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds();
+
     private void ShouldBeAllowed(Character mockCharacter, ProjectInfo projectInfo)
-        => mockCharacter.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+        => mockCharacter.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
 
     private void ShouldBeNotAllowed(Character claimSource, AddClaimForbideReason reason, ProjectInfo projectInfo)
     {
-        claimSource.ValidateIfCanAddClaim(Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds().ShouldContain(reason);
+        claimSource.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).Kinds().ShouldContain(reason);
     }
 }

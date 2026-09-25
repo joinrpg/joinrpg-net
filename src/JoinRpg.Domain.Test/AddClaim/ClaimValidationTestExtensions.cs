@@ -16,6 +16,28 @@ internal static class ClaimValidationTestExtensions
         => [.. reasons.Select(r => r.Kind)];
 
     /// <summary>
+    /// Правила подачи заявки поверх доменного агрегата.
+    /// </summary>
+    /// <remarks>
+    /// Как и <see cref="ValidateIfCanMoveClaim"/>, раньше жил в продакшн-коде extension-методом
+    /// на EF-сущности (поверх <c>LegacyClaimTarget</c>). После переезда страницы подачи заявки на
+    /// <c>CharacterInfo</c> вызывающих, кроме тестов, не осталось.
+    /// </remarks>
+    /// <param name="projectInfo">
+    /// Может отличаться от того, к которому привязан агрегат: тесты подменяют статус проекта
+    /// через <c>WithChangedStatus</c>, а правила берут проект отдельным параметром.
+    /// </param>
+    public static IReadOnlyCollection<ClaimForbiddenReason> ValidateIfCanAddClaim(
+        this Character claimSource, MockedProject mock, UserInfo? userInfo, ProjectInfo projectInfo, ClaimOperation operation)
+        => ClaimValidator.Validate(
+            mock.GetCharacterInfo(claimSource), userInfo, movedClaim: null, projectInfo, operation);
+
+    /// <inheritdoc cref="ValidateIfCanAddClaim" />
+    public static bool IsAvailableForPlayer(
+        this Character claimSource, MockedProject mock, ProjectInfo projectInfo)
+        => ClaimValidator.IsAvailableForPlayer(mock.GetCharacterInfo(claimSource), projectInfo);
+
+    /// <summary>
     /// Правила переноса заявки поверх доменного агрегата.
     /// </summary>
     /// <remarks>

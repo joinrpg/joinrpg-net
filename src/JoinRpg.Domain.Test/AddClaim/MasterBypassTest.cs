@@ -22,22 +22,22 @@ public class MasterBypassTest
 
     [Fact]
     public void MasterCanInviteWhenClaimsClosed()
-        => Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, ClaimsClosed, ClaimOperation.AddByMaster)
+        => Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, ClaimsClosed, ClaimOperation.AddByMaster)
             .ShouldBeEmpty();
 
     [Fact]
     public void PlayerStillCantSendClaimWhenClaimsClosed()
-        => Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, ClaimsClosed, ClaimOperation.AddByPlayer).Kinds()
+        => Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, ClaimsClosed, ClaimOperation.AddByPlayer).Kinds()
             .ShouldBe([AddClaimForbideReason.ProjectClaimsClosed]);
 
     [Fact]
     public void MasterCanInvitePlayerWithoutRequiredContacts()
-        => Mock.Character.ValidateIfCanAddClaim(PlayerWithoutPhone, RequiringPhone, ClaimOperation.AddByMaster)
+        => Mock.Character.ValidateIfCanAddClaim(Mock, PlayerWithoutPhone, RequiringPhone, ClaimOperation.AddByMaster)
             .ShouldBeEmpty();
 
     [Fact]
     public void PlayerStillCantSendClaimWithoutRequiredContacts()
-        => Mock.Character.ValidateIfCanAddClaim(PlayerWithoutPhone, RequiringPhone, ClaimOperation.AddByPlayer).Kinds()
+        => Mock.Character.ValidateIfCanAddClaim(Mock, PlayerWithoutPhone, RequiringPhone, ClaimOperation.AddByPlayer).Kinds()
             .ShouldBe([AddClaimForbideReason.PhoneMissing]);
 
     /// <summary>
@@ -52,7 +52,7 @@ public class MasterBypassTest
     {
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Master);
 
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, ClaimsClosed, ClaimOperation.AddByMaster).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, ClaimsClosed, ClaimOperation.AddByMaster).Kinds()
             .ShouldBe([AddClaimForbideReason.Busy]);
     }
 
@@ -61,7 +61,7 @@ public class MasterBypassTest
     {
         var archived = Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.Archived);
 
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, archived, ClaimOperation.AddByMaster).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, archived, ClaimOperation.AddByMaster).Kinds()
             .ShouldBe([AddClaimForbideReason.ProjectNotActive]);
     }
 
@@ -71,7 +71,7 @@ public class MasterBypassTest
     {
         Mock.Character.CharacterType = CharacterType.NonPlayer;
 
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster).Kinds()
             .ShouldBe([AddClaimForbideReason.Npc]);
     }
 
@@ -80,7 +80,7 @@ public class MasterBypassTest
     {
         _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Master);
 
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster).Kinds()
             .ShouldBe([AddClaimForbideReason.Busy]);
     }
 
@@ -89,7 +89,7 @@ public class MasterBypassTest
     {
         _ = Mock.CreateClaim(Mock.Character, Mock.Player);
 
-        Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster).Kinds()
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster).Kinds()
             .ShouldBe([AddClaimForbideReason.AlreadySent]);
     }
 
@@ -99,12 +99,12 @@ public class MasterBypassTest
     /// </summary>
     [Fact]
     public void DisplayNeverBypasses()
-        => Mock.Character.ValidateIfCanAddClaim(Mock.PlayerInfo, ClaimsClosed, ClaimOperation.DisplayForPlayer).Kinds()
+        => Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, ClaimsClosed, ClaimOperation.DisplayForPlayer).Kinds()
             .ShouldBe([AddClaimForbideReason.ProjectClaimsClosed]);
 
     // Тот же показ, но без известного игрока — как при построении списков доступных персонажей.
     [Fact]
     public void DisplayWithoutUserNeverBypasses()
-        => Mock.Character.ValidateIfCanAddClaim(userInfo: null, ClaimsClosed, ClaimOperation.DisplayForPlayer).Kinds()
+        => Mock.Character.ValidateIfCanAddClaim(Mock, userInfo: null, ClaimsClosed, ClaimOperation.DisplayForPlayer).Kinds()
             .ShouldBe([AddClaimForbideReason.ProjectClaimsClosed]);
 }

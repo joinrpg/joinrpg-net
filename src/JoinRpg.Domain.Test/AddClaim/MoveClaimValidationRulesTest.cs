@@ -100,7 +100,7 @@ public class MoveClaimValidationRulesTest
         slot.CharacterType = CharacterType.Slot;
         slot.CharacterSlotLimit = null;
 
-        slot.ValidateIfCanAddClaim(Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
+        slot.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldNotContain(AddClaimForbideReason.ApprovedClaimMovedToSlot);
     }
 
