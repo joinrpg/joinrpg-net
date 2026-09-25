@@ -32,6 +32,7 @@
 - [ADR012: Доступ к данным проекта из LLM — MCP-сервер и OAuth 2.1](adr012-llm-mcp-access.md)
 - [ADR013: CharacterInfo — доменный агрегат персонажа](adr013-character-info.md)
 - [ADR014: CharacterPropsService — единая точка изменения персонажей и заявок](adr014-claim-props-service.md)
+- [ADR015: Переход основной БД с EF6 на EF Core](adr015-efcore-migration.md)
 
 ## Быстрые ссылки
 
