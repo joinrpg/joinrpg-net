@@ -151,6 +151,9 @@ public class MockedProject
 
         var rootGroup = CreateCharacterGroup();
         rootGroup.IsRoot = true;
+        // Корневая группа публична в любом проекте — её такой создаёт ProjectService.AddProject,
+        // и на этом стоит правило «у публичной группы есть публичный путь наверх».
+        rootGroup.IsPublic = true;
         Group = CreateCharacterGroup();
 
         ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, new(Project.ProjectId));
