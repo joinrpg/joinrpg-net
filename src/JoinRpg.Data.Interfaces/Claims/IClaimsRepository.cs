@@ -9,6 +9,11 @@ public interface IClaimsRepository : IDisposable
 
     Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status);
 
+    /// <summary>
+    /// Активные заявки пользователя в активных проектах, без лишних данных (для меню и подобных списков)
+    /// </summary>
+    Task<IReadOnlyCollection<MyClaimShortInfo>> GetMyActiveClaimsInActiveProjects(UserIdentification userId);
+
     Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(ProjectIdentification projectId, UserIdentification userId, ClaimStatusSpec status);
 
     Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds);
