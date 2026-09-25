@@ -112,11 +112,11 @@ public class FieldValueViewModel
 
         CanView = ch.HasViewableValue
                   && ch.Field.HasViewAccess(model.AccessArguments)
-                  && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target, model.ProjectInfo));
+                  && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
         CanEdit = model.AccessArguments.EditAllowed
                   && ch.Field.HasEditAccess(model.AccessArguments)
-                  && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target, model.ProjectInfo));
+                  && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
 
         // Detecting if field (or its values) has a price or not
@@ -189,8 +189,13 @@ public class FieldValueViewModel
 public class CustomFieldsViewModel
 {
     public AccessArguments AccessArguments { get; }
+
+    /// <summary>
+    /// Персонаж, по которому считается доступность полей. Интерфейс, а не EF-сущность: та же
+    /// вьюмодель обслуживает и доменный агрегат <see cref="CharacterInfo"/> (ADR013).
+    /// </summary>
     [Editable(false)]
-    public Character Target { get; }
+    public IFieldAvailabilityTarget Target { get; }
 
     /// <summary>
     /// Нужен, чтобы доступность поля считалась по метаданным проекта, а не обходом ленивых
@@ -232,7 +237,7 @@ public class CustomFieldsViewModel
     /// Called from AddClaimViewModel
     /// </summary>
     public CustomFieldsViewModel(Character target, ProjectInfo projectInfo, AccessArguments accessArguments, Dictionary<int, string?>? overrideValues)
-        : this(accessArguments, target, target.GetFields(projectInfo), overrideValues, projectInfo)
+        : this(accessArguments, AvailabilityTarget(target, projectInfo), target.GetFields(projectInfo), overrideValues, projectInfo, Renderer(target, projectInfo))
     {
     }
 
@@ -256,10 +261,11 @@ public class CustomFieldsViewModel
       Dictionary<int, string?>? overrideValues = null)
         : this(
               accessArguments,
-              character,
+              AvailabilityTarget(character, projectInfo),
               character.GetFields(projectInfo).Where(f => f.Field.BoundTo == FieldBoundTo.Character).Where(f => !wherePrintEnabled || f.Field.IncludeInPrint),
               overrideValues,
-              projectInfo)
+              projectInfo,
+              Renderer(character, projectInfo))
     {
     }
 
@@ -267,19 +273,32 @@ public class CustomFieldsViewModel
     /// Called from Claim and Claim list
     /// </summary>
     public CustomFieldsViewModel(int? currentUserId, Claim claim, ProjectInfo projectInfo)
-      : this(AccessArgumentsFactory.Create(claim, currentUserId, projectInfo), claim.Character, claim.GetFields(projectInfo), overrideValues: null, projectInfo)
+      : this(
+            AccessArgumentsFactory.Create(claim, currentUserId, projectInfo),
+            AvailabilityTarget(claim.Character, projectInfo),
+            claim.GetFields(projectInfo),
+            overrideValues: null,
+            projectInfo,
+            Renderer(claim.Character, projectInfo))
     {
     }
+
+    private static CharacterItem AvailabilityTarget(Character character, ProjectInfo projectInfo)
+        => new(character, [.. character.GetParentGroupIdsToTop(projectInfo)]);
+
+    private static JoinrpgMarkdownLinkRenderer Renderer(Character character, ProjectInfo projectInfo)
+        => new(character.Project, projectInfo);
 
     /// <summary>
     /// Common constructor
     /// </summary>
     private CustomFieldsViewModel(
         AccessArguments accessArguments,
-        Character target,
+        IFieldAvailabilityTarget target,
         IEnumerable<FieldWithValue> fields,
         Dictionary<int, string?>? overrideValues,
-        ProjectInfo projectInfo
+        ProjectInfo projectInfo,
+        ILinkRenderer renderer
         )
     {
         foreach (var key in Enum.GetValues<FieldBoundToViewModel>())
@@ -290,7 +309,6 @@ public class CustomFieldsViewModel
         AccessArguments = accessArguments;
         Target = target;
         ProjectInfo = projectInfo;
-        var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project, projectInfo);
         Fields = fields.Select(ch => CreateFieldValueView(ch, renderer, overrideValues)).ToList();
     }
 
