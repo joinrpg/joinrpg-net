@@ -23,13 +23,17 @@ internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataReposito
 {
     private readonly CharacterInfoLoader loader = new(ctx);
 
-    public async Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId)
+    public async Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(
+        ProjectIdentification projectId,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any)
     {
         var activeClaims = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+        var statusPredicate = CharacterPredicates.ByStatus(spec);
 
         var query =
             from character in ctx.Set<Character>().AsNoTracking().AsExpandable()
             where character.ProjectId == projectId.Value
+            where statusPredicate.Invoke(character)
             select new
             {
                 character.CharacterId,
@@ -99,18 +103,23 @@ internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataReposito
 
     public async Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(
         ProjectIdentification projectId,
-        IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+        IReadOnlyCollection<CharacterGroupIdentification> groupIds,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any)
     {
         if (groupIds.Count == 0)
         {
             return [];
         }
 
-        return await GetCoreAsync(projectId, CharacterPredicates.ByGroup(groupIds));
+        return await GetCoreAsync(
+            projectId,
+            PredicateBuilder.New(CharacterPredicates.ByGroup(groupIds)).And(CharacterPredicates.ByStatus(spec)));
     }
 
-    public async Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId)
-        => await GetCoreAsync(projectId, character => true);
+    public async Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(
+        ProjectIdentification projectId,
+        CharacterStatusSpec spec = CharacterStatusSpec.Any)
+        => await GetCoreAsync(projectId, CharacterPredicates.ByStatus(spec));
 
     private async Task<IReadOnlyCollection<CharacterInfo>> GetCoreAsync(
         ProjectIdentification projectId,

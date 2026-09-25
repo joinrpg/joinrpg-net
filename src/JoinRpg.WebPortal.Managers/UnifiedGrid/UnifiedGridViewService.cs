@@ -23,7 +23,8 @@ internal class UnifiedGridViewService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var allGroups = projectInfo.GetChildGroupIdsIncludingThis([.. access.Select(x => x.CharacterGroup)]);
 
-        var characters = await characterInfoRepository.GetCharacterInfosByGroups(projectId, [.. allGroups]);
+        var characters = await characterInfoRepository.GetCharacterInfosByGroups(
+            projectId, [.. allGroups], StatusSpecFor(filter));
 
         return
         [
@@ -33,6 +34,14 @@ internal class UnifiedGridViewService(
                 .WhereNotNull()
         ];
     }
+
+    /// <summary>
+    /// Что просить у репозитория: архив — это удалённые персонажи, все остальные виды — живые.
+    /// Отбор внутри этого набора всё равно делается в памяти (см. <see cref="MatchesFilter"/>),
+    /// но тащить агрегат на заведомо ненужных персонажей незачем.
+    /// </summary>
+    private static CharacterStatusSpec StatusSpecFor(UgStatusFilterView filter)
+        => filter == UgStatusFilterView.Archive ? CharacterStatusSpec.Deleted : CharacterStatusSpec.Active;
 
     /// <summary>
     /// Отбор персонажей под выбранный фильтр.

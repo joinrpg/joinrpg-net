@@ -14,10 +14,14 @@ public class CharacterListViewServiceTest
 {
     private MockedProject Mock { get; } = new MockedProject();
 
+    /// <summary>Последний фейк репозитория — по нему видно, о чём сервис его попросил.</summary>
+    private FakeCharacterInfoRepository characterInfoRepository = null!;
+
     private async Task<List<CharacterDto>> GetList(CharacterListType listType, ProjectInfo? projectInfo = null)
     {
+        characterInfoRepository = new FakeCharacterInfoRepository(Mock);
         var service = new CharacterListViewService(
-            new FakeCharacterInfoRepository(Mock),
+            characterInfoRepository,
             new FakeProjectMetadataRepository(projectInfo ?? Mock.ProjectInfo),
             new FakeCurrentUserAccessor(Mock.Master.UserId));
 
@@ -26,6 +30,22 @@ public class CharacterListViewServiceTest
 
     private async Task<IReadOnlyCollection<string>> GetNames(CharacterListType listType, ProjectInfo? projectInfo = null)
         => [.. (await GetList(listType, projectInfo)).Select(x => x.Name)];
+
+    /// <summary>
+    /// Удалённые персонажи нужны только виду All — остальным их не надо даже загружать.
+    /// </summary>
+    [Theory]
+    [InlineData(CharacterListType.All, CharacterStatusSpec.Any)]
+    [InlineData(CharacterListType.AllTemplates, CharacterStatusSpec.Active)]
+    [InlineData(CharacterListType.AvailableForMaster, CharacterStatusSpec.Active)]
+    [InlineData(CharacterListType.AvailableNonSlotsForMaster, CharacterStatusSpec.Active)]
+    [InlineData(CharacterListType.AvailableTemplatesForMaster, CharacterStatusSpec.Active)]
+    public async Task RepositoryIsAskedForRightCharacters(CharacterListType listType, CharacterStatusSpec expected)
+    {
+        _ = await GetList(listType);
+
+        characterInfoRepository.RequestedSpec.ShouldBe(expected);
+    }
 
     [Fact]
     public async Task OrdinaryCharacterIsAvailable()
