@@ -55,6 +55,18 @@ public static class ClaimValidator
     public static bool IsAvailableForPlayer(IClaimTarget target, ProjectInfo projectInfo)
         => Validate(target, userInfo: null, movedClaim: null, projectInfo, ClaimOperation.DisplayForPlayer).Count == 0;
 
+    /// <inheritdoc cref="Validate(IClaimTarget, UserInfo?, UserClaimInfo?, ProjectInfo, ClaimOperation)" />
+    public static IReadOnlyCollection<ClaimForbiddenReason> Validate(
+        CharacterInfo character,
+        UserInfo? userInfo,
+        UserClaimInfo? movedClaim,
+        ClaimOperation operation)
+        => Validate(character, userInfo, movedClaim, character.ProjectInfo, operation);
+
+    /// <inheritdoc cref="IsAvailableForPlayer(IClaimTarget, ProjectInfo)" />
+    public static bool IsAvailableForPlayer(CharacterInfo character)
+        => IsAvailableForPlayer(character, character.ProjectInfo);
+
     private static IEnumerable<AddClaimForbideReason> ValidateImpl(
         IClaimTarget target,
         UserInfo? userInfo,
@@ -203,6 +215,16 @@ public static class ClaimValidator
             movedClaim,
             projectInfo);
 
+    /// <inheritdoc cref="EnsureCanAddClaim(IClaimTarget, UserInfo, ProjectInfo, ClaimOperation)" />
+    public static void EnsureCanAddClaim(
+        CharacterInfo character, UserInfo userInfo, ClaimOperation operation)
+        => EnsureCanAddClaim(character, userInfo, character.ProjectInfo, operation);
+
+    /// <inheritdoc cref="EnsureCanMoveClaim(IClaimTarget, UserClaimInfo, UserInfo, ProjectInfo)" />
+    public static void EnsureCanMoveClaim(
+        CharacterInfo character, UserClaimInfo movedClaim, UserInfo userInfo)
+        => EnsureCanMoveClaim(character, movedClaim, userInfo, character.ProjectInfo);
+
     private static void ThrowIfForbidden(
         IReadOnlyCollection<ClaimForbiddenReason> reasons, UserClaimInfo? movedClaim, ProjectInfo projectInfo)
     {
@@ -218,7 +240,7 @@ public static class ClaimValidator
     /// <param name="claim">
     /// Переносимая заявка — нужна только для <see cref="ClaimWrongStatusException"/>.
     /// </param>
-    public static void ThrowForReason(ClaimForbiddenReason reason, UserClaimInfo? claim, ProjectInfo projectInfo)
+    internal static void ThrowForReason(ClaimForbiddenReason reason, UserClaimInfo? claim, ProjectInfo projectInfo)
     {
         throw reason.Kind switch
         {
