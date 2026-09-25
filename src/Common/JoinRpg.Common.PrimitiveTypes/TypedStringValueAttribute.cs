@@ -7,7 +7,11 @@ public sealed class TypedStringValueAttribute : Attribute
     /// <summary>Минимальная длина строки (по умолчанию 1).</summary>
     public int MinLength { get; set; } = 1;
 
-    /// <summary>Максимальная длина строки (по умолчанию 999).</summary>
+    /// <summary>
+    /// Максимальная длина строки (по умолчанию 999).
+    /// Значение <see cref="int.MaxValue"/> означает «ограничения нет» — генератор
+    /// не создаёт проверку длины вовсе (нужно для длинных текстов, например markdown).
+    /// </summary>
     public int MaxLength { get; set; } = 999;
 
     /// <summary>Нужно ли обрезать пробелы по краям (по умолчанию true).</summary>

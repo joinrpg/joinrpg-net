@@ -217,10 +217,14 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         sb.AppendLine("        {");
         sb.AppendLine($"            throw new ArgumentException($\"Значение должно быть не короче {info.MinLength} символов\", nameof(value));");
         sb.AppendLine("        }");
-        sb.AppendLine($"        if (value.Length > {info.MaxLength})");
-        sb.AppendLine("        {");
-        sb.AppendLine($"            throw new ArgumentException($\"Значение должно быть не длиннее {info.MaxLength} символов\", nameof(value));");
-        sb.AppendLine("        }");
+        // MaxLength = int.MaxValue означает «ограничения нет» — проверку не генерируем вовсе
+        if (info.MaxLength != int.MaxValue)
+        {
+            sb.AppendLine($"        if (value.Length > {info.MaxLength})");
+            sb.AppendLine("        {");
+            sb.AppendLine($"            throw new ArgumentException($\"Значение должно быть не длиннее {info.MaxLength} символов\", nameof(value));");
+            sb.AppendLine("        }");
+        }
         if (info.HasCustomValidateMethod)
         {
             sb.AppendLine("        // Вызов пользовательского метода");
