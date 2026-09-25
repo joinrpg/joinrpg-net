@@ -29,7 +29,7 @@ internal static class CharacterViewModelBuilder
                 character.GetBusyStatus(),
                 character.CharacterTypeInfo.SlotLimit,
                 character.CharacterTypeInfo.IsHot,
-                ClaimValidator.IsAvailableForPlayer(character, projectInfo)),
+                ClaimValidator.IsAvailableForPlayer(character)),
             Description = character.Description.ToHtmlString(),
             IsPublic = character.CharacterTypeInfo.IsNamePublic,
             IsActive = character.IsActive,
