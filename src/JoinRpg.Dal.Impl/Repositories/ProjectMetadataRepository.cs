@@ -222,6 +222,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
         return new DomainTypes.ProjectMetadata.ProjectDetails(
             CreateInfoFromProject(project, projectId),
             project.Details.ProjectAnnounce,
+            project.Details.ClaimApplyRules,
             [.. project.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
             project.Details.DisableKogdaIgraMapping);
     }
