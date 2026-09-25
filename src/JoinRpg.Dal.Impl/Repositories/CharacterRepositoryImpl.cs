@@ -1,7 +1,4 @@
-using JoinRpg.DataModel.Extensions;
-using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
-using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -49,65 +46,6 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
             .Include(ch => ch.ApprovedClaim)
             .Include(ch => ch.Claims)
             .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-
-    public async Task<CharacterView> GetCharacterViewAsync(int projectId, int characterId)
-    {
-        Expression<Func<CharacterGroup, GroupHeader>> groupHeaderSelector = group =>
-            new GroupHeader()
-            {
-                IsActive = group.IsActive,
-                CharacterGroupId = group.CharacterGroupId,
-                CharacterGroupName = group.CharacterGroupName,
-                IsSpecial = group.IsSpecial,
-                ParentGroupIds = group.ParentGroupsImpl,
-            };
-
-        var character = await Ctx
-            .Set<Character>()
-            .AsNoTracking()
-            .Include(c => c.Project.Details)
-            .Where(e => e.CharacterId == characterId && e.ProjectId == projectId)
-            .SingleOrDefaultAsync();
-
-        var allGroups = await Ctx.Set<CharacterGroup>().AsNoTracking()
-            .Where(cg => cg.ProjectId == projectId) // need to load inactive groups here
-            .Select(groupHeaderSelector)
-            .ToDictionaryAsync(d => d.CharacterGroupId);
-
-        var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-
-        List<GroupHeader> directGroups = await Ctx.Set<CharacterGroup>()
-                    .Where(group => character.ParentCharacterGroupIds.Contains(group.CharacterGroupId))
-                    .Select(groupHeaderSelector)
-                    .ToListAsync();
-
-        var view = new CharacterView()
-        {
-            CharacterId = character.CharacterId,
-            Name = character.CharacterName,
-            Description = character.Description.Contents ?? "",
-            UpdatedAt = character.UpdatedAt,
-            IsActive = character.IsActive,
-            IsPublic = character.IsPublic,
-            InGame = character.InGame,
-            CharacterTypeInfo = character.ToCharacterTypeInfo(),
-            JsonData = character.JsonData,
-            ApprovedClaim = await Ctx.Set<Claim>()
-                .Where(claim => claim.CharacterId == characterId &&
-                            claim.ClaimStatus == ClaimStatus.Approved)
-                .Include(c => c.Player.Extra)
-                .SingleOrDefaultAsync(),
-            Claims = await Ctx.Set<Claim>().AsExpandable()
-            .Where(claim => claim.CharacterId == characterId &&
-                            claim.ClaimStatus == ClaimStatus.Approved).Select(
-              claim => new ClaimHeader()
-              {
-                  IsActive = activeClaimPredicate.Invoke(claim),
-              }).ToListAsync(),
-            DirectGroups = directGroups
-        };
-        return view;
     }
 
 

@@ -12,19 +12,6 @@ namespace JoinRpg.WebPortal.Managers.Characters;
 public class ApiInfoBuilder
 {
     public static GroupHeader[] ToGroupHeaders(
-    IReadOnlyCollection<Data.Interfaces.GroupHeader> characterDirectGroups)
-    {
-        return [.. characterDirectGroups.Where(group => group.IsActive && !group.IsSpecial)
-            .Select(
-                group => new GroupHeader
-                {
-                    CharacterGroupId = group.CharacterGroupId,
-                    CharacterGroupName = group.CharacterGroupName,
-                })
-            .OrderBy(group => group.CharacterGroupId)];
-    }
-
-    public static GroupHeader[] ToGroupHeaders(
     IReadOnlyCollection<CharacterGroupInfo> characterDirectGroups)
     {
         return [.. characterDirectGroups.Where(group => group.IsActive && !group.IsSpecial)

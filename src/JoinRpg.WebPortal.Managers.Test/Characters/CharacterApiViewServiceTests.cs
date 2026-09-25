@@ -93,7 +93,6 @@ public class CharacterApiViewServiceTests
         public Task<Character> GetCharacterAsync(CharacterIdentification characterId) => throw new NotImplementedException();
         public Task<Character> GetCharacterWithGroups(int projectId, int characterId) => throw new NotImplementedException();
         public Task<Character> GetCharacterWithDetails(int projectId, int characterId) => throw new NotImplementedException();
-        public Task<CharacterView> GetCharacterViewAsync(int projectId, int characterId) => throw new NotImplementedException();
         public Task<IEnumerable<Character>> GetAvailableCharacters(ProjectIdentification projectId) => throw new NotImplementedException();
         public Task<IEnumerable<Character>> GetAvailableNonSlotCharacters(ProjectIdentification projectId) => throw new NotImplementedException();
         public Task<IEnumerable<Character>> GetAvailableTemplateCharacters(ProjectIdentification projectId) => throw new NotImplementedException();
