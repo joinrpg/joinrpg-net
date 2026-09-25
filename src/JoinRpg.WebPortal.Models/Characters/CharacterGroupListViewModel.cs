@@ -1,21 +1,41 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
-using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Characters;
 
+/// <summary>
+/// Дерево ролей для публичного JSON (<c>GameGroupsJson/IndexJson</c>). Работает поверх доменных
+/// типов (ADR013): группы приходят из <see cref="ProjectInfo"/>, персонажи — агрегатами.
+/// </summary>
 public static class CharacterGroupListViewModel
 {
-    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, UserIdentification? currentUserId, ProjectInfo projectInfo)
-        => new CharacterGroupHierarchyBuilder(field, currentUserId, projectInfo).Generate().WhereNotNull();
+    /// <param name="groupFullInfos">
+    /// Описания групп: в <see cref="ProjectInfo"/> их нет, поэтому они грузятся отдельно.
+    /// Группа без записи тут просто останется без описания.
+    /// </param>
+    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(
+        CharacterGroupInfo root,
+        IReadOnlyCollection<CharacterInfo> characters,
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
+        UserIdentification? currentUserId,
+        ProjectInfo projectInfo)
+        => new CharacterGroupHierarchyBuilder(root, characters, groupFullInfos, currentUserId, projectInfo)
+            .Generate()
+            .WhereNotNull();
 
-    //TODO: unit tests
-    private class CharacterGroupHierarchyBuilder(CharacterGroup root, UserIdentification? currentUserId, ProjectInfo projectInfo)
+    private class CharacterGroupHierarchyBuilder(
+        CharacterGroupInfo root,
+        IReadOnlyCollection<CharacterInfo> characters,
+        IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
+        UserIdentification? currentUserId,
+        ProjectInfo projectInfo)
     {
-        private IList<int> AlreadyOutputedChars { get; } = [];
+        private readonly ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup = characters
+            .SelectMany(character => character.DirectGroupIds.Select(groupId => (groupId, character)))
+            .ToLookup(x => x.groupId, x => x.character);
+
+        private HashSet<CharacterIdentification> AlreadyOutputedChars { get; } = [];
 
         private IList<CharacterGroupListItemViewModel> Results { get; } = [];
 
@@ -25,33 +45,33 @@ public static class CharacterGroupListViewModel
             return Results;
         }
 
-        private CharacterGroupListItemViewModel? GenerateFrom(CharacterGroup characterGroup, int deepLevel, List<CharacterGroup> pathToTop)
+        private CharacterGroupListItemViewModel? GenerateFrom(CharacterGroupInfo group, int deepLevel, List<CharacterGroupInfo> pathToTop)
         {
-            if (!characterGroup.IsVisible(currentUserId))
+            if (!CharacterViewModelBuilder.IsVisible(group, currentUserId, projectInfo))
             {
                 return null;
             }
-            var prevCopy = Results.FirstOrDefault(cg => cg.FirstCopy && cg.CharacterGroupId == characterGroup.CharacterGroupId);
+            var prevCopy = Results.FirstOrDefault(cg => cg.FirstCopy && cg.CharacterGroupId == group.Id.CharacterGroupId);
 
             var vm = new CharacterGroupListItemViewModel
             {
-                CharacterGroupId = characterGroup.CharacterGroupId,
+                CharacterGroupId = group.Id.CharacterGroupId,
                 DeepLevel = deepLevel,
-                Name = characterGroup.CharacterGroupName,
+                Name = group.Name,
                 FirstCopy = prevCopy == null,
                 ActiveCharacters =
                 prevCopy?.ActiveCharacters ??
-                GenerateCharacters(characterGroup)
+                GenerateCharacters(group)
                   .ToList(),
-                Description = ((MarkdownString?)characterGroup.Description).ToHtmlString(),
-                Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
-                IsPublic = characterGroup.IsPublic,
-                GroupType = ProjectInfo.GetGroupById(characterGroup.GetId()).GroupType,
-                ProjectId = characterGroup.ProjectId,
-                RootGroupId = root.CharacterGroupId,
+                Description = (groupFullInfos.GetValueOrDefault(group.Id)?.Description).ToHtmlString(),
+                Path = pathToTop.Select(g => Results.First(item => item.CharacterGroupId == g.Id.CharacterGroupId)),
+                IsPublic = group.IsPublic,
+                GroupType = group.GroupType,
+                ProjectId = group.Id.ProjectId.Value,
+                RootGroupId = root.Id.CharacterGroupId,
             };
 
-            if (root == characterGroup)
+            if (root.Id == group.Id)
             {
                 vm.First = true;
                 vm.Last = true;
@@ -59,7 +79,7 @@ public static class CharacterGroupListViewModel
 
             if (vm.IsSpecial)
             {
-                var variant = ProjectInfo.GetVariantByGroupIdOrDefault(characterGroup.GetId());
+                var variant = projectInfo.GetVariantByGroupIdOrDefault(group.Id);
 
                 if (variant != null)
                 {
@@ -75,8 +95,15 @@ public static class CharacterGroupListViewModel
                 return vm;
             }
 
-            var childGroups = characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(g => g.IsActive && g.IsVisible(currentUserId)).ToList();
-            var pathForChildren = pathToTop.Union([characterGroup]).ToList();
+            // Порядок дочерних групп уже учтён в метаданных: CharacterGroupDictionaryBuilder
+            // сортирует DirectChildGroupIds по ChildGroupsOrdering. Спецгруппы показываем
+            // последними, как это делала старая сетка.
+            // Видимость тут не проверяем: невидимую группу отсечёт сам GenerateFrom, вернув null.
+            var childGroups = projectInfo.GetDirectChildGroups(group.Id)
+                .Where(g => g.IsActive)
+                .OrderBy(g => g.IsSpecial)
+                .ToList();
+            var pathForChildren = pathToTop.Union([group]).ToList();
 
             vm.ChildGroups = childGroups
                 .Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren))
@@ -90,42 +117,21 @@ public static class CharacterGroupListViewModel
             return vm;
         }
 
-        private IEnumerable<CharacterViewModel> GenerateCharacters(CharacterGroup characterGroup)
+        private IEnumerable<CharacterViewModel> GenerateCharacters(CharacterGroupInfo group)
         {
-            var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(currentUserId));
+            // Порядок тот же, что давал GetOrderedCharacters: сохранённый порядок группы поверх
+            // идентификаторов персонажей.
+            var characters = charactersByGroup[group.Id]
+                .OrderByStoredOrder(character => character.Id.CharacterId, group.ChildCharactersOrdering)
+                .Where(character => character.IsActive && CharacterViewModelBuilder.IsVisible(character, currentUserId));
 
             return characters.Select(GenerateCharacter);
         }
 
-        private CharacterViewModel GenerateCharacter(Character arg)
-        {
-            var vm = new CharacterViewModel
-            {
-                CharacterId = arg.CharacterId,
-                CharacterName = arg.CharacterName,
-                IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
-                ApplyStatus = new CharacterApplyViewModel(
-                    arg.GetId(),
-                    arg.GetBusyStatus(),
-                    arg.CharacterSlotLimit,
-                    arg.IsHot,
-                    arg.IsAvailableForPlayer(projectInfo)),
-                Description = ((MarkdownString?)arg.Description).ToHtmlString(),
-                IsPublic = arg.IsPublic,
-                IsActive = arg.IsActive,
-                ActiveClaimsCount = arg.Claims.Count(claim => claim.ClaimStatus.IsActive()),
-                PlayerLink = arg.GetCharacterPlayerLinkViewModel(currentUserId),
-                HasEditRolesAccess = HasEditRolesAccess,
-                ProjectId = arg.ProjectId,
-            };
-            if (vm.IsFirstCopy)
-            {
-                AlreadyOutputedChars.Add(vm.CharacterId);
-            }
-            return vm;
-        }
-
-        private bool HasEditRolesAccess { get; } = projectInfo.HasEditRolesAccess(currentUserId);
-        public ProjectInfo ProjectInfo { get; } = projectInfo;
+        private CharacterViewModel GenerateCharacter(CharacterInfo character)
+            => CharacterViewModelBuilder.Build(
+                character,
+                isFirstCopy: AlreadyOutputedChars.Add(character.Id),
+                currentUserId);
     }
 }

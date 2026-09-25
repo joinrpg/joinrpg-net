@@ -195,6 +195,9 @@ public record class ProjectInfo
 
     public CharacterGroupInfo GetGroupById(CharacterGroupIdentification id) => Groups[id];
 
+    /// <summary>Группа проекта или <c>null</c>, если такой группы нет.</summary>
+    public CharacterGroupInfo? GetGroupByIdOrDefault(CharacterGroupIdentification id) => Groups.GetValueOrDefault(id);
+
     public ProjectRolesList GetRolesListById(ProjectRolesListIdentification id)
     {
         return ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id)
