@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters;
@@ -51,6 +52,31 @@ internal abstract record CharacterOperationContext(
 
         return changed;
     }
+
+    /// <summary>
+    /// То же, но через заявку: персонаж берётся из неё, а выбор стратегии в
+    /// <see cref="CharacterFields.FieldSaveHelper"/> зависит от того, утверждена ли заявка.
+    /// </summary>
+    /// <param name="claim">Заявка, через которую сохраняются поля.</param>
+    /// <param name="fieldsToSet">
+    /// Дельта, а не полный слой. Пустой слой не означает «ничего не делать»: пересохранение пустым
+    /// слоем нужно ради побочных эффектов — генерации значений по умолчанию, переноса значений
+    /// заявка→персонаж и пересчёта спецгрупп.
+    /// </param>
+    /// <returns>Изменившиеся поля.</returns>
+    protected IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFieldsCore(
+        Claim claim,
+        FieldLayerContainer fieldsToSet)
+    {
+        var changed = FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, claim, fieldsToSet, ProjectInfo);
+
+        if (changed.Any(field => field.MarksNewFieldUsage))
+        {
+            ProjectMetadataChanged = true;
+        }
+
+        return changed;
+    }
 }
 
 /// <summary>
@@ -59,19 +85,23 @@ internal abstract record CharacterOperationContext(
 /// </summary>
 /// <param name="Character">Трекаемая EF-сущность персонажа; её и нужно мутировать.</param>
 /// <param name="CharacterInfo">Доменный снимок персонажа строго ДО изменения.</param>
-/// <param name="AddEntity">Добавление сущности в тот же <c>DbContext</c>.</param>
-/// <param name="RemoveEntity">Окончательное удаление сущности из того же <c>DbContext</c>.</param>
+/// <param name="Scope">Что операции разрешено делать с БД: добавить, удалить, догрузить соседей.</param>
 internal abstract record CharacterMutationContext(
     Character Character,
     CharacterInfo CharacterInfo,
     ProjectInfo ProjectInfo,
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
-    Action<object> AddEntity,
-    Action<object> RemoveEntity,
+    IAggregateMutationScope Scope,
     FieldSaveHelper FieldSaveHelper)
     : CharacterOperationContext(ProjectInfo, Now, CurrentUser, FieldSaveHelper)
 {
+    /// <summary>Добавляет сущность в тот же <c>DbContext</c>, через который идёт сохранение.</summary>
+    public void AddEntity(object entity) => Scope.Add(entity);
+
+    /// <summary>Окончательно удаляет сущность из того же <c>DbContext</c>.</summary>
+    public void RemoveEntity(object entity) => Scope.Remove(entity);
+
     /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore"/>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(FieldLayerContainer fieldsToSet)
         => SaveFieldsCore(Character, fieldsToSet);
@@ -86,11 +116,10 @@ internal sealed record CharacterMutationContext<TArgs>(
     ProjectInfo ProjectInfo,
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
-    Action<object> AddEntity,
-    Action<object> RemoveEntity,
+    IAggregateMutationScope Scope,
     FieldSaveHelper FieldSaveHelper,
     TArgs Request)
-    : CharacterMutationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, AddEntity, RemoveEntity, FieldSaveHelper);
+    : CharacterMutationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, Scope, FieldSaveHelper);
 
 /// <summary>
 /// Контекст создания персонажа: самого персонажа ещё нет, фабрика строит сущность с нуля.

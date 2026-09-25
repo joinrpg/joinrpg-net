@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Services.Impl.Claims;
@@ -352,6 +353,146 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
                 .RestoreByMaster(claim.GetId(), "вернём", claim.Character.GetId()));
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.DeclinedByMaster);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    #endregion
+
+    #region ApproveByMaster
+
+    [Fact]
+    public async Task ApproveByMaster_ApprovesClaim_SavesOnce_AndNotifiesOnce()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        claim.Character.IsHot = true;
+
+        await CreateService().ApproveByMaster(claim.GetId(), "принято");
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        claim.MasterAcceptedDate.ShouldNotBeNull();
+        claim.Character.ApprovedClaimId.ShouldBe(claim.ClaimId);
+        claim.Character.ApprovedClaim.ShouldBe(claim);
+        claim.Character.IsHot.ShouldBeFalse();
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ApproveByMaster_OfCheckedInClaim_Throws_AndDoesNotSave()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var claim = mock.CreateCheckedInClaim(character, mock.Player);
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ClaimWrongStatusException>(
+            () => CreateService().ApproveByMaster(claim.GetId(), "принято"));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task ApproveByMaster_ByPlayer_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).ApproveByMaster(claim.GetId(), "принято"));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Автоотклонение прочих заявок того же игрока читает навигацию <c>claim.Player.Claims</c>.
+    /// Если её не загрузить (в бою — <c>Include(c =&gt; c.Player.Claims)</c>), список окажется пуст
+    /// и автоотклонение тихо исчезнет — без единой ошибки. Поэтому тест обязателен.
+    /// </summary>
+    [Fact]
+    public async Task ApproveByMaster_WithStrictlyOneCharacter_DeclinesOtherPendingClaimsOfSamePlayer()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var otherClaim = CreateClaim(ClaimStatus.AddedByUser, "Петя");
+
+        // По умолчанию у мока EnableManyCharacters == false, то есть StrictlyOneCharacter == true.
+        mock.ProjectInfo.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
+
+        await CreateService().ApproveByMaster(claim.GetId(), "принято");
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        otherClaim.ClaimStatus.ShouldBe(ClaimStatus.DeclinedByMaster);
+        otherClaim.MasterDeclinedDate.ShouldNotBeNull();
+
+        SaveChangesCallCount.ShouldBe(1);
+
+        // Порядок значим: сначала уведомление по утверждённой заявке, потом по автоотклонённой.
+        SentNotifications.Count.ShouldBe(2);
+        SentNotifications[0].ShouldBeOfType<ClaimSimpleChangedNotification>().ClaimId.ShouldBe(claim.GetId());
+        SentNotifications[1].ShouldBeOfType<ClaimSimpleChangedNotification>().ClaimId.ShouldBe(otherClaim.GetId());
+    }
+
+    [Fact]
+    public async Task ApproveByMaster_WithManyCharactersAllowed_KeepsOtherPendingClaims()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var otherClaim = CreateClaim(ClaimStatus.AddedByUser, "Петя");
+        mock.Project.Details.EnableManyCharacters = true;
+        mock.ReInitProjectInfo();
+
+        await CreateService().ApproveByMaster(claim.GetId(), "принято");
+
+        otherClaim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ApproveByMaster_OfClaimToSlot_CreatesCharacterFromSlot()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 3);
+        var claim = mock.CreateClaim(slot, mock.Player);
+        claim.ClaimStatus = ClaimStatus.AddedByUser;
+        var plot = mock.CreatePlotElement(slot);
+        mock.ReInitProjectInfo();
+
+        await CreateService().ApproveByMaster(claim.GetId(), "принято");
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+
+        var created = claim.Character;
+        created.ShouldNotBe(slot);
+        created.AutoCreated.ShouldBeTrue();
+        created.OriginalCharacterSlot.ShouldBe(slot);
+        created.CharacterType.ShouldBe(CharacterType.Player);
+        created.CharacterSlotLimit.ShouldBeNull();
+        created.ApprovedClaim.ShouldBe(claim);
+        created.IsHot.ShouldBeFalse();
+
+        slot.CharacterSlotLimit.ShouldBe(2);
+        mock.Project.Characters.ShouldContain(created);
+
+        // Новый персонаж наследует прямые привязки слота к сюжетам.
+        plot.TargetCharacters.ShouldContain(created);
+
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ApproveByMaster_OfClaimToExhaustedSlot_Throws_AndDoesNotSave()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 0);
+        var claim = mock.CreateClaim(slot, mock.Player);
+        claim.ClaimStatus = ClaimStatus.AddedByUser;
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<JoinRpgSlotLimitedException>(
+            () => CreateService().ApproveByMaster(claim.GetId(), "принято"));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        claim.Character.ShouldBe(slot);
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
     }

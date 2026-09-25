@@ -88,7 +88,10 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
             CommentText = new CommentText()
             {
                 CommentId = -1,
-                Text = new MarkdownDbValue(commentCommand.CommentText),
+                // Пустой текст вместо null: контроллеры не проверяют ModelState, поэтому [Required]
+                // на поле формы не защищает, и незаполненный комментарий доезжает сюда как null.
+                // Нормализуем в одном месте, а не guard'ом в каждой операции.
+                Text = new MarkdownDbValue(commentCommand.CommentText ?? ""),
             },
             IsCommentByPlayer = !commentCommand.ProjectInfo.HasMasterAccess(currentUserAccessor),
             IsVisibleToPlayer = commentCommand.IsVisibleToPlayer,

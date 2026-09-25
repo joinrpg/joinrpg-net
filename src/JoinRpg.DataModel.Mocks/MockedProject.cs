@@ -170,6 +170,41 @@ public class MockedProject
         return character;
     }
 
+    /// <summary>
+    /// Слот — шаблон роли, из которого при утверждении заявки создаётся настоящий персонаж.
+    /// </summary>
+    /// <param name="slotLimit">Сколько персонажей ещё можно создать; <c>null</c> — без ограничения.</param>
+    public Character CreateSlot(string name, int? slotLimit = null)
+    {
+        var slot = CreateCharacter(name);
+        slot.CharacterType = CharacterType.Slot;
+        slot.CharacterSlotLimit = slotLimit;
+        return slot;
+    }
+
+    /// <summary>
+    /// Сюжеты проекта. Отдельная коллекция, а не навигация <see cref="DataModel.Project"/>: её у
+    /// проекта нет, а write-хэндл грузит сюжеты отдельным запросом.
+    /// </summary>
+    public List<PlotElement> PlotElements { get; } = [];
+
+    /// <summary>
+    /// Сюжет, привязанный напрямую к перечисленным персонажам.
+    /// </summary>
+    public PlotElement CreatePlotElement(params Character[] targetCharacters)
+    {
+        var plotElement = new PlotElement
+        {
+            PlotElementId = PlotElements.GetNextId(),
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            TargetCharacters = [.. targetCharacters],
+            TargetGroups = [],
+        };
+        PlotElements.Add(plotElement);
+        return plotElement;
+    }
+
     public ProjectFieldInfo CreateConditionalField(CharacterGroup conditionGroup)
     {
         return CreateField("CondField", availForIds: [new(ProjectInfo.ProjectId, conditionGroup.CharacterGroupId)]);
