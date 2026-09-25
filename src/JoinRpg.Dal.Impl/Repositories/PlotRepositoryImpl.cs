@@ -11,12 +11,46 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
         await LoadProjectCharactersAndGroups(plotFolderId.ProjectId);
         await LoadMasters(plotFolderId.ProjectId);
 
-        return
+        var folder =
           await Ctx.Set<PlotFolder>()
             .Include(pf => pf.Elements)
             .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
+            .Include(pf => pf.PlotTags)
             .Include(pf => pf.Project.Claims)
             .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId.PlotFolderId && pf.ProjectId == plotFolderId.ProjectId);
+
+        if (folder is not null)
+        {
+            await LoadPlotElementTargets(plotFolderId);
+        }
+
+        return folder;
+    }
+
+    /// <summary>
+    /// Подгружает таргеты вводных папки — по одному запросу на связь, вместо ленивой загрузки на каждую вводную.
+    /// </summary>
+    /// <remarks>
+    /// Не <c>Include</c> в основном запросе: EF6 разворачивает несколько коллекций-сиблингов в LEFT JOIN'ы,
+    /// и <c>Elements × Texts × TargetCharacters × TargetGroups</c> дало бы декартово произведение — на папке
+    /// с тысячей вводных и историей версий это хуже, чем N+1, который мы чиним. Отдельные запросы связываются
+    /// с уже загруженными вводными через relationship fixup EF6, как это делают <see cref="LoadMasters"/>
+    /// и соседние методы <c>GameRepositoryImplBase</c>.
+    ///
+    /// Сами персонажи и группы к этому моменту уже в контексте (<see cref="LoadProjectCharactersAndGroups"/>),
+    /// так что эти запросы тянут по сути только строки таблиц связи.
+    /// </remarks>
+    private async Task LoadPlotElementTargets(PlotFolderIdentification plotFolderId)
+    {
+        await Ctx.Set<PlotElement>()
+          .Include(e => e.TargetCharacters)
+          .Where(e => e.PlotFolderId == plotFolderId.PlotFolderId && e.ProjectId == plotFolderId.ProjectId)
+          .LoadAsync();
+
+        await Ctx.Set<PlotElement>()
+          .Include(e => e.TargetGroups)
+          .Where(e => e.PlotFolderId == plotFolderId.PlotFolderId && e.ProjectId == plotFolderId.ProjectId)
+          .LoadAsync();
     }
 
     public async Task<IReadOnlyCollection<PlotElement>> GetDirectPlotsForCharacter(CharacterIdentification character)
