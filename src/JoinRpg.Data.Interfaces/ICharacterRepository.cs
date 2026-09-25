@@ -1,6 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
-using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Data.Interfaces;
 
@@ -22,47 +21,10 @@ public interface ICharacterRepository : IDisposable
     Task<Character> GetCharacterAsync(CharacterIdentification characterId);
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
     Task<Character> GetCharacterWithDetails(int projectId, int characterId);
-    Task<CharacterView> GetCharacterViewAsync(int projectId, int characterId);
     Task<IEnumerable<Character>> GetAllCharacters(int projectId);
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds);
 
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(ProjectIdentification projectId);
-}
-
-public class CharacterView : IFieldContainter
-{
-    public required int CharacterId { get; set; }
-    public required DateTime UpdatedAt { get; set; }
-    public required bool IsActive { get; set; }
-
-    public required bool IsPublic { get; set; }
-    public required bool InGame { get; set; }
-    public required CharacterTypeInfo CharacterTypeInfo { get; set; }
-    public Claim? ApprovedClaim { get; set; }
-    public required IReadOnlyCollection<ClaimHeader> Claims { get; set; }
-    public required IReadOnlyCollection<GroupHeader> DirectGroups { get; set; }
-    public required string JsonData { get; set; }
-    public required string Name { get; set; }
-    public required string Description { get; set; }
-}
-
-public class GroupHeader : IEquatable<GroupHeader>
-{
-    public bool IsActive { get; set; }
-    public bool IsSpecial { get; set; }
-    public int CharacterGroupId { get; set; }
-    public required string CharacterGroupName { get; set; }
-
-    public required IntList ParentGroupIds { get; set; }
-
-    /// <inheritdoc />
-    public bool Equals(GroupHeader? other) => other != null && CharacterGroupId == other.CharacterGroupId;
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj) => Equals(obj as GroupHeader);
-
-    /// <inheritdoc />
-    public override int GetHashCode() => CharacterGroupId;
 }
 
 public class ClaimView : IFieldContainter
@@ -71,11 +33,6 @@ public class ClaimView : IFieldContainter
     public required string JsonData { get; set; }
 
     public bool PaidInFull { get; set; }
-}
-
-public class ClaimHeader
-{
-    public bool IsActive { get; set; }
 }
 
 public class ClaimWithPlayer

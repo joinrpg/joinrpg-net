@@ -64,17 +64,17 @@ public class CharacterController(
     public async Task<ActionResult> Edit(ProjectIdentification projectId, int characterId)
     {
         var field = await characterRepository.GetCharacterWithDetails(projectId, characterId);
-        var view = await characterRepository.GetCharacterViewAsync(projectId, characterId);
+        var characterInfo = await characterInfoRepository.GetCharacterInfo(new CharacterIdentification(projectId, characterId));
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         return View(new EditCharacterViewModel()
         {
             ProjectId = field.ProjectId,
             CharacterId = field.CharacterId,
             ProjectName = projectInfo.ProjectName,
-            CharacterTypeInfo = view.CharacterTypeInfo,
+            CharacterTypeInfo = characterInfo.CharacterTypeInfo,
             Name = field.CharacterName,
             ParentCharacterGroupIds = [.. field.GetDirectNonSpecialGroupIds(projectInfo)],
-        }.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo));
+        }.Fill(field, characterInfo, currentUser.UserIdentification, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
