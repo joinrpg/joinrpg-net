@@ -21,8 +21,7 @@ public static class CharacterGroupListViewModel
         UserIdentification? currentUserId,
         ProjectInfo projectInfo)
         => new CharacterGroupHierarchyBuilder(root, characters, groupFullInfos, currentUserId, projectInfo)
-            .Generate()
-            .WhereNotNull();
+            .Generate();
 
     private class CharacterGroupHierarchyBuilder(
         CharacterGroupInfo root,
@@ -41,15 +40,15 @@ public static class CharacterGroupListViewModel
 
         public IList<CharacterGroupListItemViewModel> Generate()
         {
-            _ = GenerateFrom(root, 0, []);
+            GenerateFrom(root, 0, []);
             return Results;
         }
 
-        private CharacterGroupListItemViewModel? GenerateFrom(CharacterGroupInfo group, int deepLevel, List<CharacterGroupInfo> pathToTop)
+        private void GenerateFrom(CharacterGroupInfo group, int deepLevel, List<CharacterGroupInfo> pathToTop)
         {
             if (!CharacterViewModelBuilder.IsVisible(group, currentUserId, projectInfo))
             {
-                return null;
+                return;
             }
             var prevCopy = Results.FirstOrDefault(cg => cg.FirstCopy && cg.CharacterGroupId == group.Id.CharacterGroupId);
 
@@ -65,56 +64,31 @@ public static class CharacterGroupListViewModel
                   .ToList(),
                 Description = (groupFullInfos.GetValueOrDefault(group.Id)?.Description).ToHtmlString(),
                 Path = pathToTop.Select(g => Results.First(item => item.CharacterGroupId == g.Id.CharacterGroupId)),
-                IsPublic = group.IsPublic,
-                GroupType = group.GroupType,
-                ProjectId = group.Id.ProjectId.Value,
-                RootGroupId = root.Id.CharacterGroupId,
             };
-
-            if (root.Id == group.Id)
-            {
-                vm.First = true;
-                vm.Last = true;
-            }
-
-            if (vm.IsSpecial)
-            {
-                var variant = projectInfo.GetVariantByGroupIdOrDefault(group.Id);
-
-                if (variant != null)
-                {
-                    vm.BoundExpression = $"{variant.ParentFieldName} = {variant.Label}";
-                }
-            }
 
             Results.Add(vm);
 
+            // Повторную копию группы дальше не раскрываем: её поддерево уже выведено
+            // в Results при первом появлении.
             if (prevCopy != null)
             {
-                vm.ChildGroups = prevCopy.ChildGroups;
-                return vm;
+                return;
             }
 
             // Порядок дочерних групп уже учтён в метаданных: CharacterGroupDictionaryBuilder
             // сортирует DirectChildGroupIds по ChildGroupsOrdering. Спецгруппы показываем
             // последними, как это делала старая сетка.
-            // Видимость тут не проверяем: невидимую группу отсечёт сам GenerateFrom, вернув null.
+            // Видимость тут не проверяем: невидимую группу отсечёт сам GenerateFrom.
             var childGroups = projectInfo.GetDirectChildGroups(group.Id)
                 .Where(g => g.IsActive)
                 .OrderBy(g => g.IsSpecial)
                 .ToList();
             var pathForChildren = pathToTop.Union([group]).ToList();
 
-            vm.ChildGroups = childGroups
-                .Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren))
-                .WhereNotNull()
-                .ToList();
-
-            _ = vm.ChildGroups
-                .Where(x => !x.IsSpecial)
-                .MarkFirstAndLast();
-
-            return vm;
+            foreach (var childGroup in childGroups)
+            {
+                GenerateFrom(childGroup, deepLevel + 1, pathForChildren);
+            }
         }
 
         private IEnumerable<CharacterViewModel> GenerateCharacters(CharacterGroupInfo group)
