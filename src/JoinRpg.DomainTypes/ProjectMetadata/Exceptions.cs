@@ -17,6 +17,16 @@ public class MasterHasResponsibleException(ProjectIdentification projectId, User
     public UserIdentification UserId { get; } = userId;
 }
 
+/// <summary>
+/// Нельзя снять доступ с последнего мастера, который умеет выдавать права:
+/// иначе права в проекте больше никто не сможет выдать.
+/// </summary>
+public class LastMasterWithGrantRightsException(ProjectIdentification projectId, UserIdentification userId)
+    : JoinRpgProjectException(projectId, "Cannot remove the last master that can grant rights.")
+{
+    public UserIdentification UserId { get; } = userId;
+}
+
 public class PaymentTypeInfoDeactivatedException(PaymentTypeIdentification paymentTypeIdentification)
     : JoinRpgProjectException(paymentTypeIdentification.ProjectId, $"{paymentTypeIdentification} деактивирован");
 

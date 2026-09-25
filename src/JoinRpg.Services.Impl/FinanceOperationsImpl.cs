@@ -1,5 +1,4 @@
 using System.Data.Entity;
-using System.Data.Entity.Validation;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
@@ -219,7 +218,7 @@ internal class FinanceOperationsImpl(
 
         if (request.Sender == request.Receiver)
         {
-            throw new DbEntityValidationException();
+            throw new JoinValidationException("Cannot transfer money to yourself"); //TODO[Localize]
         }
 
         if (request.Sender != CurrentUserId && request.Receiver != CurrentUserId)
@@ -231,7 +230,7 @@ internal class FinanceOperationsImpl(
 
         if (request.Amount <= 0)
         {
-            throw new DbEntityValidationException();
+            throw new JoinValidationException("Transfer amount should be positive"); //TODO[Localize]
         }
 
         var transfer = new MoneyTransfer()

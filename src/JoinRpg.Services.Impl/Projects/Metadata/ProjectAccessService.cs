@@ -1,4 +1,3 @@
-using System.Data.Entity.Validation;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
@@ -88,7 +87,7 @@ internal class ProjectAccessService(
             {
                 if (!ctx.Project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != ctx.Request.UserId.Value))
                 {
-                    throw new DbEntityValidationException();
+                    throw new LastMasterWithGrantRightsException(ctx.ProjectInfo.ProjectId, ctx.Request.UserId);
                 }
 
                 var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId.Value);
