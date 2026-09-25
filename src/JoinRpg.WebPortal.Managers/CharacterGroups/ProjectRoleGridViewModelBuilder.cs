@@ -1,7 +1,6 @@
 using System.Text.Encodings.Web;
 using JoinRpg.Common.WebComponents;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Markdown;
@@ -20,8 +19,9 @@ internal static class ProjectRoleGridViewModelBuilder
         bool canViewPrivate,
         bool excludeSpecialGroups,
         IReadOnlyList<CharacterGroupInfo> orderedGroups,
-        ILookup<CharacterGroupIdentification, Character> charactersByGroup,
+        ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players,
         ProjectInfo projectInfo)
     {
         var hasGroupsColumn = config.GroupsColumn != ProjectRolesListVisibilityMode.None;
@@ -32,8 +32,8 @@ internal static class ProjectRoleGridViewModelBuilder
         var rootGroup = orderedGroups[0];
 
         var rows = config.GroupsViewMode == RolesGridGroupsViewMode.Tree
-            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, excludeSpecialGroups, fields, projectInfo)
-            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
+            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, players, hasGroupsColumn, canViewPrivate, canEditSettings, excludeSpecialGroups, fields, projectInfo)
+            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, players, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
 
         return new ProjectRoleGridViewModel(
             RolesListId: config.ProjectRolesListId,
@@ -52,8 +52,9 @@ internal static class ProjectRoleGridViewModelBuilder
     private static List<ProjectRoleGridRowViewModel> BuildRows(
         ProjectRolesList config,
         IReadOnlyList<CharacterGroupInfo> orderedGroups,
-        ILookup<CharacterGroupIdentification, Character> charactersByGroup,
+        ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditSettings,
@@ -67,7 +68,7 @@ internal static class ProjectRoleGridViewModelBuilder
         foreach (var group in orderedGroups)
         {
             var ordered = charactersByGroup[group.Id]
-                .OrderByStoredOrder(c => c.CharacterId, group.ChildCharactersOrdering)
+                .OrderByStoredOrder(c => c.Id.CharacterId, group.ChildCharactersOrdering)
                 .ToList();
 
             if (config.GroupsViewMode != RolesGridGroupsViewMode.None && (group.Id == topGroupId || ordered.Count > 0))
@@ -79,9 +80,9 @@ internal static class ProjectRoleGridViewModelBuilder
 
             foreach (var character in ordered)
             {
-                if (config.GroupsViewMode != RolesGridGroupsViewMode.None || seen.Add(character.CharacterId))
+                if (config.GroupsViewMode != RolesGridGroupsViewMode.None || seen.Add(character.Id.CharacterId))
                 {
-                    result.Add(BuildCharacterRow(character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
+                    result.Add(BuildCharacterRow(character, config, players, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
                 }
             }
         }
@@ -97,8 +98,9 @@ internal static class ProjectRoleGridViewModelBuilder
     private static List<ProjectRoleGridRowViewModel> BuildTreeRows(
         ProjectRolesList config,
         CharacterGroupIdentification rootGroupId,
-        ILookup<CharacterGroupIdentification, Character> charactersByGroup,
+        ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditSettings,
@@ -140,12 +142,12 @@ internal static class ProjectRoleGridViewModelBuilder
             }
 
             var ordered = charactersByGroup[group.Id]
-                .OrderByStoredOrder(c => c.CharacterId, group.ChildCharactersOrdering);
+                .OrderByStoredOrder(c => c.Id.CharacterId, group.ChildCharactersOrdering);
             foreach (var character in ordered)
             {
                 result.Add(BuildCharacterRow(
-                    character, config, projectInfo, hasGroupsColumn, canViewPrivate, canEditSettings,
-                    fields, group.Id, firstCopy: seenCharacters.Add(character.CharacterId)));
+                    character, config, players, hasGroupsColumn, canViewPrivate, canEditSettings,
+                    fields, group.Id, firstCopy: seenCharacters.Add(character.Id.CharacterId)));
             }
 
             // Как в старой сетке: скрытые ветки не показываем не-мастерам; если корень задан явно —
@@ -163,9 +165,9 @@ internal static class ProjectRoleGridViewModelBuilder
     }
 
     private static ProjectRoleGridCharacterRowViewModel BuildCharacterRow(
-        Character character,
+        CharacterInfo character,
         ProjectRolesList config,
-        ProjectInfo projectInfo,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditRoles,
@@ -174,32 +176,33 @@ internal static class ProjectRoleGridViewModelBuilder
         bool firstCopy = true)
     {
         var characterSlim = new CharacterLinkSlimViewModel(
-            character.GetId(),
+            character.Id,
             character.CharacterName,
             character.IsActive,
-            ViewModeSelector.Create(character.IsPublic, canViewPrivate));
+            ViewModeSelector.Create(character.CharacterTypeInfo.IsNamePublic, canViewPrivate));
 
         // Ссылку на принятую заявку показываем только мастеру (canViewPrivate).
-        var approvedClaimId = canViewPrivate ? character.GetApprovedClaimIdOrDefault() : null;
+        var approvedClaimId = canViewPrivate ? character.ApprovedClaimId : null;
 
         var characterLink = new CharacterLinkWithEditViewModel(characterSlim, canEditRoles, approvedClaimId);
 
-        var player = BuildPlayerCell(character, config.ContactsColumn, canViewPrivate, projectInfo);
+        var player = BuildPlayerCell(character, players, config.ContactsColumn, canViewPrivate);
 
         GroupsCellViewModel? groups = hasGroupsColumn
-            ? BuildGroupsCell(character, config.GroupsColumn, projectInfo)
+            ? BuildGroupsCell(character, config.GroupsColumn)
             : null;
 
-        var fieldsDict = character.GetFieldsDict(projectInfo);
+        var fieldsDict = character.GetAllFields().ToDictionary(field => field.Field.Id);
         var fieldValuesHtml = firstCopy
             ? fields.Select(f => RenderFieldValue(f, fieldsDict[f.Id].DisplayString)).ToList()
             : [];
 
         // Количество активных заявок видно всем, как в классической сетке ролей.
-        var activeClaimsCount = character.Claims.Count(claim => claim.ClaimStatus.IsActive());
+        var activeClaimsCount = character.ActiveClaimsCount;
 
         return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValuesHtml, groupId, activeClaimsCount, firstCopy);
     }
+
 
     // Как и DisplayString в FieldValueViewModel: markdown-поля рендерим в HTML,
     // остальные — экранируем как обычный текст (renderer не передаём, как и для Description группы).
@@ -209,19 +212,22 @@ internal static class ProjectRoleGridViewModelBuilder
             : HtmlEncoder.Default.Encode(value);
 
     private static PlayerCellViewModel BuildPlayerCell(
-        Character character,
+        CharacterInfo character,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players,
         ProjectRolesListVisibilityMode contactsColumn,
-        bool canViewPrivate,
-        ProjectInfo projectInfo)
+        bool canViewPrivate)
     {
         var applyStatus = new CharacterApplyViewModel(
-            character.GetId(),
+            character.Id,
             character.GetBusyStatus(),
-            character.CharacterSlotLimit,
-            character.IsHot,
-            character.IsAvailableForPlayer(projectInfo));
+            character.CharacterTypeInfo.SlotLimit,
+            character.CharacterTypeInfo.IsHot,
+            ClaimValidator.IsAvailableForPlayer(character));
 
-        var player = character.ApprovedClaim?.Player;
+        // Профиль игрока в агрегат персонажа не входит (ADR013) — он приходит отдельной загрузкой.
+        var player = character.ApprovedClaim is { } approvedClaim
+            ? players.GetValueOrDefault(approvedClaim.PlayerId)
+            : null;
         if (player is null)
         {
             // Нет одобренной заявки — «нет игрока» (Link == null).
@@ -237,13 +243,13 @@ internal static class ProjectRoleGridViewModelBuilder
             return new PlayerCellViewModel(applyStatus, Contacts: null, UserLinkViewModel.Hidden);
         }
 
-        var contacts = BuildContacts(player, contactsColumn, projectInfo);
+        var contacts = BuildContacts(player, contactsColumn, character.ProjectInfo);
         var link = new UserLinkViewModel(player.ToUserInfoHeader(), playerViewMode);
         return new PlayerCellViewModel(applyStatus, contacts, link);
     }
 
     private static UserContacts? BuildContacts(
-        User player,
+        UserInfo player,
         ProjectRolesListVisibilityMode contactsColumn,
         ProjectInfo projectInfo)
     {
@@ -257,7 +263,7 @@ internal static class ProjectRoleGridViewModelBuilder
         {
             ProjectRolesListVisibilityMode.All => true,
             // Контакты показываем, только если игрок открыл их в профиле.
-            ProjectRolesListVisibilityMode.PublicOnly => player.Extra?.SocialNetworksAccess == ContactsAccessType.Public,
+            ProjectRolesListVisibilityMode.PublicOnly => player.Social.SocialNetworksAccess == ContactsAccessType.Public,
             _ => false,
         };
 
@@ -266,31 +272,21 @@ internal static class ProjectRoleGridViewModelBuilder
             return null;
         }
 
-        // Telegram строим как канонический TelegramSocialLink (числовой Id из привязанного логина +
-        // @username), как в UserExtensions.GetUserInfo. Это переиспользует компонент TelegramLink.
-        var telegram = TelegramSocialLink.FromUserData(
-            player.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.TelegramProvider)?.Key,
-            PrefferedName.FromOptional(player.Extra?.Telegram));
-
-        var vk = VkSocialLink.FromUserData(
-            player.ExternalLogins.SingleOrDefault(x => x.Provider == UserExternalLogin.VkProvider)?.Key,
-            player.Extra?.Vk,
-            player.Extra?.VkVerified ?? false);
-
+        // Ссылки на соцсети уже собраны в UserInfo (там же, где их строит UserExtensions.GetUserInfo),
+        // поэтому здесь ничего разбирать не надо.
         // Email — непубличный контакт, показывается только в режиме All.
         return new UserContacts(
-            contactsColumn == ProjectRolesListVisibilityMode.All ? Email.FromOptional(player.Email) : null,
-            vk,
-            telegram,
-            LiveJournalId.FromOptional(player.Extra?.Livejournal));
+            contactsColumn == ProjectRolesListVisibilityMode.All ? player.Email : null,
+            player.Social.Vk,
+            player.Social.Telegram,
+            player.Social.LiveJournal);
     }
 
     private static GroupsCellViewModel BuildGroupsCell(
-        Character character,
-        ProjectRolesListVisibilityMode groupsColumn,
-        ProjectInfo projectInfo)
+        CharacterInfo character,
+        ProjectRolesListVisibilityMode groupsColumn)
     {
-        var groups = character.GetIntrestingGroupsForDisplayToTop(projectInfo);
+        var groups = character.IntrestingGroupsForDisplay;
         if (groupsColumn == ProjectRolesListVisibilityMode.PublicOnly)
         {
             groups = groups.Where(g => g.IsPublic);

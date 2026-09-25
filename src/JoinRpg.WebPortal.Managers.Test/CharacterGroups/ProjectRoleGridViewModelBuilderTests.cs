@@ -45,14 +45,28 @@ public class ProjectRoleGridViewModelBuilderTests
         var orderedGroups = _mock.ProjectInfo.GetChildGroupsIncludingThis(rootId)
             .Where(g => !excludeSpecialGroups || !g.IsSpecial)
             .ToList();
-        var visibleCharacters = canViewPrivate ? characters : characters.Where(c => c.IsPublic).ToList();
+        // Как в сервисе: непубличных отсекаем по тому же признаку, что и он.
+        var characterInfos = characters.Select(_mock.GetCharacterInfo).ToList();
+        var visibleCharacters = canViewPrivate
+            ? characterInfos
+            : characterInfos.Where(c => c.CharacterTypeInfo.IsNamePublic).ToList();
         var charactersByGroup = visibleCharacters
-            .SelectMany(c => c.GetDirectGroupIds().Select(g => (group: g, character: c)))
+            .SelectMany(c => c.DirectGroupIds.Select(g => (group: g, character: c)))
             .ToLookup(x => x.group, x => x.character);
+
+        // Профиль игрока агрегат персонажа не несёт (ADR013) — сервис грузит его отдельно,
+        // поэтому тут собираем его из тех же данных мока.
+        var players = _mock.Project.Claims
+            .Select(claim => claim.Player)
+            .Distinct()
+            .Select(player => player.GetUserInfo())
+            .ToDictionary(player => player.UserId);
+
         return ProjectRoleGridViewModelBuilder.Build(
             config, canEditSettings, canViewPrivate, excludeSpecialGroups,
             orderedGroups, charactersByGroup,
             new Dictionary<CharacterGroupIdentification, CharacterGroupFullInfo>(),
+            players,
             _mock.ProjectInfo);
     }
 
@@ -347,6 +361,28 @@ public class ProjectRoleGridViewModelBuilderTests
         var row = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>();
         row.Player!.ApplyStatus.SlotCount.ShouldBe(5);
         row.Player.ApplyStatus.IsSlot.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Публичный персонаж со скрытым игроком остаётся в сетке и для не-мастера — прячется только
+    /// игрок. В <c>CharacterVisibility</c> это <c>PlayerHidden</c>, а не <c>Public</c>, поэтому
+    /// такую роль легко случайно вычеркнуть из публичной сетки целиком.
+    /// </summary>
+    [Fact]
+    public void Build_HiddenPlayer_NonMaster_RoleStaysInGrid()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        character.IsPublic = true;
+        character.HidePlayerForCharacter = true;
+        _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = BuildGrid(Config(), [character], canViewPrivate: false);
+
+        var row = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>();
+        row.Character.Character.Name.ShouldBe("Вася");
+        // Sentinel «скрыто»: роль занята, но кто её играет — не показываем.
+        row.Player!.Link.ShouldBe(UserLinkViewModel.Hidden);
+        row.Player.Contacts.ShouldBeNull();
     }
 
     [Fact]
@@ -937,3 +973,4 @@ public class ProjectRoleGridViewModelBuilderTests
         result.RolesListId.ShouldBeNull();
     }
 }
+

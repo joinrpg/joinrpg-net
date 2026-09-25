@@ -15,7 +15,9 @@ public class MockedProject
 {
     public Project Project { get; }
     public CharacterGroup Group { get; }
-    public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>() };
+    // Auth проставлен, потому что без него падает UserExtensions.GetUserInfo — а он нужен всем,
+    // кто строит UserInfo из мока (например колонка контактов в сетке ролей).
+    public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>(), Auth = new UserAuthDetails() { UserId = 1, EmailConfirmed = true } };
     private UserInfo PlayerInfoTemplate { get; } = new UserInfo(new UserIdentification(1), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("player@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Player"), null, null, null), false, null, HasPassword: false);
 
     /// <summary>
@@ -32,7 +34,7 @@ public class MockedProject
             .Where(claim => claim.ClaimStatus.IsActive())
             .Select(claim => new UserClaimInfo(claim.GetId(), claim.ClaimStatus))],
     };
-    public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>() };
+    public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>(), Auth = new UserAuthDetails() { UserId = 2, EmailConfirmed = true } };
 
     private UserInfo MasterInfoTemplate { get; } = new UserInfo(new UserIdentification(2), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("master@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Master"), null, null, null), false, null, HasPassword: false);
 
@@ -123,6 +125,7 @@ public class MockedProject
     {
         var acl = ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true);
         acl.User = Master;
+        Master.ProjectAcls.Add(acl);
         Project = new Project()
         {
             Active = true,
@@ -139,6 +142,10 @@ public class MockedProject
             KogdaIgraGames = [],
             ProjectRolesLists = [],
         };
+
+        // Навигационные свойства ACL заполняем, как это сделал бы реальный запрос с Include:
+        // по ним считается, в каких проектах пользователь мастерит (UserExtensions.GetUserInfo).
+        acl.Project = Project;
 
         var rootGroup = CreateCharacterGroup();
         rootGroup.IsRoot = true;
@@ -190,7 +197,8 @@ public class MockedProject
         // User) — lazy loading для них не сработал бы, а реальный реload сработает.
         foreach (var acl in Project.ProjectAcls)
         {
-            acl.User ??= new User { UserId = acl.UserId, PrefferedName = $"User{acl.UserId}", Email = $"user{acl.UserId}@example.com", Claims = [] };
+            acl.User ??= new User { UserId = acl.UserId, PrefferedName = $"User{acl.UserId}", Email = $"user{acl.UserId}@example.com", Claims = [], Auth = new UserAuthDetails() { UserId = acl.UserId } };
+            acl.Project ??= Project;
         }
 
         foreach (var paymentType in Project.PaymentTypes)
