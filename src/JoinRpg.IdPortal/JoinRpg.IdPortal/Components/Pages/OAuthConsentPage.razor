@@ -3,6 +3,7 @@
 @attribute [Authorize]
 @using JoinRpg.Data.Interfaces
 @using JoinRpg.IdPortal.OAuthServer
+@using JoinRpg.IdPortal.OAuthServer.Cimd
 @using JoinRpg.Interfaces
 @using Microsoft.AspNetCore.WebUtilities
 @using OpenIddict.Abstractions
@@ -20,6 +21,30 @@
 else
 {
     <h3>«@clientDisplayName» запрашивает доступ</h3>
+
+    @if (cimdHost is not null)
+    {
+        @* Имя приложение задаёт себе само, а домен — единственное, что проверил joinrpg.
+           Спека требует показывать его явно. *@
+        <p>
+            Приложение опознано по адресу <strong>@cimdHost</strong>: описание опубликовано
+            на этом домене. За само приложение JoinRpg.ru не ручается.
+        </p>
+    }
+
+    @if (redirectHosts.Count > 0)
+    {
+        <p>После подтверждения вас вернёт на: <strong>@string.Join(", ", redirectHosts)</strong></p>
+    }
+
+    @if (loopbackOnly)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            Это приложение работает на вашем компьютере. JoinRpg.ru не может проверить,
+            какая именно программа запросила доступ, — разрешайте, только если вы сами
+            сейчас её запустили.
+        </JoinAlert>
+    }
 
     <p>Запрошенные права:</p>
     <ul>
@@ -62,6 +87,9 @@ else
 @code {
     private bool notFound;
     private string clientDisplayName = "";
+    private string? cimdHost;
+    private bool loopbackOnly;
+    private readonly List<string> redirectHosts = [];
     private bool requestsRead;
     private bool requestsCharactersWrite;
     private readonly List<ProjectChoice> projects = [];
@@ -82,6 +110,20 @@ else
         }
 
         clientDisplayName = await ApplicationManager.GetDisplayNameAsync(application) ?? clientId!;
+
+        if (CimdClientId.TryParse(clientId, out var cimdClientId))
+        {
+            cimdHost = cimdClientId.Host;
+        }
+
+        // Куда уйдёт пользователь после подтверждения — спека требует показать явно.
+        var redirectUris = await ApplicationManager.GetRedirectUrisAsync(application);
+        redirectHosts.AddRange(redirectUris
+            .Select(uri => Uri.TryCreate(uri, UriKind.Absolute, out var parsed) ? parsed.Host : uri)
+            .Distinct(StringComparer.OrdinalIgnoreCase));
+
+        loopbackOnly = redirectUris.Length > 0 && redirectUris.All(
+            uri => Uri.TryCreate(uri, UriKind.Absolute, out var parsed) && parsed.IsLoopback);
 
         var scopeValue = query.TryGetValue("scope", out var scopeValues) ? scopeValues.ToString() : "";
         var scopes = scopeValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);

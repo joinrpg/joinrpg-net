@@ -6,6 +6,7 @@ using JoinRpg.Dal.Impl.Migrations;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.IdPortal.OAuthServer;
+using JoinRpg.IdPortal.OAuthServer.Cimd;
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
@@ -30,6 +31,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
     private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
 
     public CaptureEmailService CaptureEmail { get; } = new();
+
+    /// <summary>Документы CIMD для тестов — настоящая загрузка по сети отсюда невозможна.</summary>
+    public FakeCimdMetadataLoader Cimd { get; } = new();
 
     public const string TestClientId = "integration-test-client";
     public const string TestClientSecret = "integration-test-secret";
@@ -162,6 +166,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
             services.AddTransient<INotificationService, NullNotificationService>();
 
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
+
+            services.RemoveAll<ICimdMetadataLoader>();
+            services.AddSingleton<ICimdMetadataLoader>(Cimd);
 
             services.Configure<OpenIddictServerAspNetCoreOptions>(options =>
                 options.DisableTransportSecurityRequirement = true);
