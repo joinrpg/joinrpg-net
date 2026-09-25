@@ -8,15 +8,11 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
 {
     public async Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId)
     {
-        await LoadProjectCharactersAndGroups(plotFolderId.ProjectId);
-        await LoadMasters(plotFolderId.ProjectId);
-
         var folder =
           await Ctx.Set<PlotFolder>()
             .Include(pf => pf.Elements)
             .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
             .Include(pf => pf.PlotTags)
-            .Include(pf => pf.Project.Claims)
             .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId.PlotFolderId && pf.ProjectId == plotFolderId.ProjectId);
 
         if (folder is not null)
@@ -25,6 +21,16 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
         }
 
         return folder;
+    }
+
+    public async Task<Project> GetProjectForPlotRendering(ProjectIdentification projectId)
+    {
+        await LoadProjectCharactersAndGroups(projectId);
+        await LoadMasters(projectId);
+
+        return await Ctx.ProjectsSet
+          .Include(p => p.Claims)
+          .SingleAsync(p => p.ProjectId == projectId.Value);
     }
 
     /// <summary>
