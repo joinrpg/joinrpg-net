@@ -5,6 +5,7 @@ namespace JoinRpg.DomainTypes.ProjectMetadata;
 public record ProjectDetails(
     ProjectInfo ProjectInfo,
     MarkdownString ProjectDescription,
+    MarkdownString ClaimApplyRules,
     IReadOnlyCollection<KogdaIgraGameData> KogdaIgraCards,
     bool DisableKogdaIgraMapping)
 {
