@@ -88,8 +88,9 @@ public static class McpRegistration
                     Resource = resourceUri.ToString(),
                     AuthorizationServers = { idPortalIssuer.ToString() },
                     // Без этого список уезжает пустым, и клиент не знает, какие scope просить
-                    // (RFC 9728 §2: ровно отсюда он их и узнаёт).
-                    ScopesSupported = [.. McpScopes.All],
+                    // (RFC 9728 §2: ровно отсюда он их и узнаёт). Публикуем только те, что
+                    // сервер умеет, — см. McpScopes.Advertised.
+                    ScopesSupported = [.. McpScopes.Advertised],
                 };
             });
 

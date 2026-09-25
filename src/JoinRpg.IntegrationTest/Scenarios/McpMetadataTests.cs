@@ -33,7 +33,12 @@ public class McpMetadataTests : IAsyncLifetime
 
         // Пустой список означал бы, что клиент не знает, какие scope просить у IdPortal.
         scopes.ShouldContain("joinrpg.read");
-        scopes.ShouldContain("joinrpg.characters.write");
+
+        // А лишнего тут быть не должно. Клиент запрашивает всё, что мы объявили, и если его
+        // регистрация такого права не даёт, падает весь вход целиком (ID2051) — так и вышло
+        // при подключении Claude Code к dev. Пишущих инструментов у /mcp нет, значит и scope
+        // на запись объявлять нечего.
+        scopes.ShouldNotContain("joinrpg.characters.write");
     }
 
     [Fact]
