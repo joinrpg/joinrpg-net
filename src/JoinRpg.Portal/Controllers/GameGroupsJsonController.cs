@@ -1,15 +1,12 @@
 using System.Text.Json;
-using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
@@ -20,8 +17,7 @@ namespace JoinRpg.Portal.Controllers;
 /// </summary>
 [Route("{projectId}/roles/{characterGroupId}/[action]")]
 public class GameGroupsJsonController(
-    IUriService uriService,
-    IUriLocator<UserLinkViewModel> userLinkLocator,
+    PublicCharacterJsonBuilder characterJsonBuilder,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository charGroupRepository,
     ICharacterInfoRepository characterInfoRepository,
@@ -114,36 +110,5 @@ public class GameGroupsJsonController(
         });
     }
 
-    private object ConvertCharacterToJson(CharacterViewModel ch)
-    {
-        return new
-        {
-            ch.CharacterId, //TODO Remove
-            CharacterLink = uriService.Get(ch),
-            ch.IsAvailable,
-            ch.IsFirstCopy,
-            ch.CharacterName,
-            Description = ch.Description?.ToHtmlString(),
-            PlayerName = ch.PlayerLink?.DisplayName,
-            PlayerId = ch.PlayerLink?.UserId,
-            PlayerLink = (ch.PlayerLink is null || ch.PlayerLink.ViewMode == ViewMode.Hide) ? null : userLinkLocator.GetUri(ch.PlayerLink).AbsoluteUri,
-            ch.ActiveClaimsCount,
-            ClaimLink =
-            ch.IsAvailable
-              ? GetFullyQualifiedUri("AddForCharacter", "Claim", new { ch.ProjectId, ch.CharacterId })
-              : null,
-        };
-    }
-
-    private string GetFullyQualifiedUri(
-        string actionName,
-        string controllerName,
-        object routeValues)
-    {
-        var url = new Uri(Request.GetDisplayUrl());
-
-        return url.Scheme + "://" + url.Host +
-               (url.IsDefaultPort ? "" : $":{url.Port}") +
-               Url.Action(actionName, controllerName, routeValues);
-    }
+    private object ConvertCharacterToJson(CharacterViewModel ch) => characterJsonBuilder.Build(ch);
 }

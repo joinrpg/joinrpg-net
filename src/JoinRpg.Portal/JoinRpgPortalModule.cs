@@ -1,6 +1,7 @@
 using Autofac;
 using BitArmory.ReCaptcha;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Portal.Controllers;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.WebPortal.Managers.Projects;
@@ -17,6 +18,7 @@ internal class JoinRpgPortalModule : Module
         _ = builder.RegisterTypes(Services.Impl.Services.GetTypes().ToArray()).AsImplementedInterfaces().AsSelf();
 
         _ = builder.RegisterType<UriServiceImpl>().AsImplementedInterfaces();
+        _ = builder.RegisterType<PublicCharacterJsonBuilder>().AsSelf();
         _ = builder.RegisterType<ConfigurationAdapter>().AsImplementedInterfaces();
 
         _ = builder.RegisterType<CurrentProjectAccessor>().AsImplementedInterfaces();
