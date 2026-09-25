@@ -378,6 +378,19 @@ internal class ClaimServiceImpl(
             return;
         }
 
+        // Автоприём применим не к любой заявке. Подача и принятие приглашения всегда приводят
+        // сюда с заявкой «в обсуждении», а вот разрешение доступа к паспорту игрок может дать
+        // по заявке в любом статусе — уже принятой, отклонённой, зарегистрированной. Принимать
+        // там нечего, и без этой проверки ApproveCore просто бросил бы ClaimWrongStatusException.
+        if (claim.ClaimStatus is not (ClaimStatus.AddedByUser or ClaimStatus.Discussed))
+        {
+            logger.LogInformation(
+                "Claim ({claimId}) was not auto-approved: claim status is {claimStatus}",
+                claimId,
+                claim.ClaimStatus);
+            return;
+        }
+
         var responsibleMaster = await UserRepository.GetRequiredUserInfo(
             new UserIdentification(claim.ResponsibleMasterUserId));
 
@@ -1021,8 +1034,9 @@ internal class ClaimServiceImpl(
     /// Игрок разрешает доступ к чувствительным данным. Ни комментария, ни уведомления здесь нет —
     /// так было и до миграции.
     /// </summary>
-    public Task AllowSensitiveData(ClaimIdentification claimId)
-        => characterPropsService.ChangeClaim(
+    public async Task AllowSensitiveData(ClaimIdentification claimId)
+    {
+        await characterPropsService.ChangeClaim(
             claimId,
             ClaimAccessRequirement.PlayerOnly,
             ProjectActiveRequirement.MustBeActive,
@@ -1032,6 +1046,12 @@ internal class ClaimServiceImpl(
                 ctx.Claim.PlayerAllowedSenstiveData = true;
                 ctx.MarkDiscussed(isVisibleToPlayer: true);
             });
+
+        // Отсутствие доступа к паспорту — единственное, что могло удерживать автоприём
+        // (см. AutoApproveIfRequired). Теперь условие выполнено, поэтому пробуем принять:
+        // это отдельная операция ПОСЛЕ основной, вкладывать мутации запрещено (ADR014, §7).
+        await AutoApproveIfRequired(claimId);
+    }
 
     public async Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed)
     {
