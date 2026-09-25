@@ -10,7 +10,6 @@ public enum CharacterAccessMode
 {
     Usual,
     Print,
-    SendClaim
 }
 
 public static class AccessArgumentsFactory
@@ -108,7 +107,6 @@ public static class AccessArgumentsFactory
         {
             CharacterAccessMode.Usual => Create(character, user, projectInfo),
             CharacterAccessMode.Print => CreateForPrint(character, user.UserIdentificationOrDefault),
-            CharacterAccessMode.SendClaim => CreateForAdd(character, user.UserIdentification),
             _ => throw new NotImplementedException(),
         };
     }
@@ -133,10 +131,12 @@ public static class AccessArgumentsFactory
     /// <summary>
     /// Для добавления заявки нужен особый режим, где у пользователя нет доступа к персонажу (точно), а вот доступ к заявке есть, несмотря на то что заявки нет
     /// </summary>
-    public static AccessArguments CreateForAdd(Character character, UserIdentification userId)
+    public static AccessArguments CreateForAdd(CharacterInfo character, UserIdentification userId)
     {
+        ArgumentNullException.ThrowIfNull(character);
+
         return new AccessArguments(
-          character.HasMasterAccess(userId),
+          character.ProjectInfo.HasMasterAccess(userId),
           PlayerAccessToCharacter: false,
           PlayerAccesToClaim: true,
           EditAllowed: true,

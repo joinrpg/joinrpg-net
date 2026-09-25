@@ -11,14 +11,14 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void HideMasterOnlyFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.Character, new(Mock.Player.UserId)), []);
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), []);
         vm.Field(Mock.MasterOnlyFieldInfo)!.CanView.ShouldBeFalse();
     }
 
     [Fact]
     public void HideUnApprovedFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.Character, new(Mock.Player.UserId)), []);
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), []);
         vm.Field(Mock.HideForUnApprovedClaimInfo)!.CanView.ShouldBeFalse();
     }
 
@@ -56,7 +56,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.Character, new(Mock.Player.UserId)), []);
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), []);
         var characterField = vm.Field(Mock.CharacterFieldInfo);
 
         _ = characterField.ShouldNotBeNull();
@@ -106,7 +106,8 @@ public class CustomFieldsViewModelTest
     {
         var mock = new MockedProject();
 
-        var vm = new CustomFieldsViewModel(mock.Character, mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.Character, new(Mock.Player.UserId)), []);
+        // Права считаем по тому же моку, что и вьюмодель: раньше тут стоял мок из поля класса.
+        var vm = new CustomFieldsViewModel(mock.Character, mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(mock.GetCharacterInfo(mock.Character), new(mock.Player.UserId)), []);
 
         var characterField = vm.Field(mock.CharacterFieldInfo);
 
@@ -121,7 +122,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimForCharacterTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.Character, new(Mock.Player.UserId)));
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)));
         var characterField = vm.Field(Mock.CharacterFieldInfo);
         _ = characterField.ShouldNotBeNull();
 
@@ -168,7 +169,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimForGroupTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.Character, new(Mock.Player.UserId)));
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)));
         var characterField = vm.Field(Mock.CharacterFieldInfo);
         _ = characterField.ShouldNotBeNull();
         characterField.ShouldBeHidden();
