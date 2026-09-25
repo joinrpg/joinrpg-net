@@ -9,7 +9,7 @@ namespace JoinRpg.Services.Impl.Claims;
 
 /// <summary>
 /// Контекст создания заявки (ADR014). Персонаж уже существует и трекается, а заявки ещё нет —
-/// её строит фабрика операции через <see cref="NewClaim"/>.
+/// её строит фабрика операции через <see cref="NewClaim(ClaimStatus, User)"/>.
 /// </summary>
 /// <param name="Character">Трекаемая EF-сущность персонажа, на которого подаётся заявка.</param>
 /// <param name="CharacterInfo">Доменный снимок персонажа; по нему считаются правила подачи.</param>
@@ -18,9 +18,11 @@ namespace JoinRpg.Services.Impl.Claims;
 /// </param>
 /// <param name="Player">
 /// Игрок, на которого оформляется заявка. При <see cref="ClaimOperation.AddByMaster"/> это
-/// <b>не</b> тот, кто выполняет операцию.
+/// <b>не</b> тот, кто выполняет операцию. <c>null</c> — если операция игрока заранее не знает:
+/// при выходе на вторую роль он берётся из исходной заявки уже внутри фабрики.
 /// </param>
 /// <param name="AddEntity">Добавление сущности в тот же <c>DbContext</c>.</param>
+/// <param name="LoadOtherClaimCore">Загрузка соседней заявки тем же <c>DbContext</c>.</param>
 internal abstract record ClaimCreationContext(
     Character Character,
     CharacterInfo CharacterInfo,
@@ -28,11 +30,18 @@ internal abstract record ClaimCreationContext(
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
     User Initiator,
-    UserInfo Player,
+    UserInfo? Player,
     Action<object> AddEntity,
+    Func<ClaimIdentification, Task<Claim>> LoadOtherClaimCore,
     FieldSaveHelper FieldSaveHelper)
     : CharacterOperationContext(ProjectInfo, Now, CurrentUser, FieldSaveHelper)
 {
+    /// <summary>
+    /// Явный выход за границу агрегата: трекаемая заявка того же проекта. Нужен выходу на вторую
+    /// роль — он не только создаёт новую заявку, но и мутирует старую, причём в том же сохранении.
+    /// </summary>
+    public Task<Claim> LoadOtherClaim(ClaimIdentification claimId) => LoadOtherClaimCore(claimId);
+
     /// <summary>
     /// Единственная точка построения <see cref="Claim"/>: до ADR014 эта конструкция была скопирована
     /// в <c>AddClaimFromUser</c>, <c>AddClaimFromMaster</c> и <c>MoveToSecondRole</c>.
@@ -50,7 +59,35 @@ internal abstract record ClaimCreationContext(
     /// <see cref="ResponsibleMasterByProjectRules"/>.
     /// </param>
     public Claim NewClaim(ClaimStatus claimStatus, User responsibleMaster)
-        => new Claim
+        => NewClaimCore(
+            claimStatus,
+            responsibleMaster,
+            (Player ?? throw new InvalidOperationException(
+                "Операция не назвала игрока заранее — тогда его надо передать в NewClaim явно"))
+                .UserId.Value,
+            player: null);
+
+    /// <summary>
+    /// То же, но игрок назван явно. Нужно операциям, которые узнают его только внутри фабрики:
+    /// вторая роль оформляется на игрока исходной заявки, а не на того, кто выполняет операцию.
+    /// </summary>
+    /// <param name="claimStatus">Стартовый статус заявки.</param>
+    /// <param name="responsibleMaster">Мастер, ответственный за новую заявку.</param>
+    /// <param name="player">
+    /// Игрок, на которого оформляется заявка, — именно сущностью. Навигацию <c>Claim.Player</c>
+    /// читает <c>FieldSaveHelper</c> у утверждённой заявки (имя персонажа по имени игрока), поэтому
+    /// одного только идентификатора здесь недостаточно.
+    /// </param>
+    public Claim NewClaim(ClaimStatus claimStatus, User responsibleMaster, User player)
+        => NewClaimCore(claimStatus, responsibleMaster, player.UserId, player);
+
+    private Claim NewClaimCore(
+        ClaimStatus claimStatus,
+        User responsibleMaster,
+        int playerUserId,
+        User? player)
+    {
+        var claim = new Claim
         {
             CharacterId = Character.CharacterId,
             Character = Character,
@@ -58,7 +95,7 @@ internal abstract record ClaimCreationContext(
             // Не украшение: FieldSaveHelper.MarkUsed читает project.ProjectFields, и без этой
             // связки сохранение полей падает с NullReferenceException.
             Project = Character.Project,
-            PlayerUserId = Player.UserId.Value,
+            PlayerUserId = playerUserId,
             PlayerAcceptedDate = Now,
             CreateDate = Now,
             ClaimStatus = claimStatus,
@@ -72,9 +109,19 @@ internal abstract record ClaimCreationContext(
             },
         };
 
+        if (player is not null)
+        {
+            // Навигация ставится, только когда игрок известен сущностью: у утверждённой заявки её
+            // читает FieldSaveHelper, а полагаться на relationship fixup EF было бы ненадёжно.
+            claim.Player = player;
+        }
+
+        return claim;
+    }
+
     /// <summary>
     /// Ответственный мастер по обычному правилу проекта: мастер роли, а если его нет — мастер
-    /// ближайшей группы. Отдельный метод, а не значение по умолчанию у <see cref="NewClaim"/>:
+    /// ближайшей группы. Отдельный метод, а не значение по умолчанию у <see cref="NewClaim(ClaimStatus, User)"/>:
     /// выбор остаётся за операцией.
     /// </summary>
     /// <remarks>
@@ -101,11 +148,27 @@ internal abstract record ClaimCreationContext(
     /// Заказывает комментарий к создаваемой заявке. Сам комментарий появится <b>после</b> первого
     /// сохранения — до него у дискуссии ещё нет настоящего идентификатора.
     /// </summary>
-    public void AddComment(
+    public DeferredComment AddComment(
         string commentText,
         CommentExtraAction? extraAction,
         ClaimOperationType operationType)
-        => DeferredComments.Add(new DeferredComment(commentText, extraAction, operationType));
+        => AddComment(claim: null, commentText, extraAction, operationType);
+
+    /// <summary>
+    /// То же для соседней заявки, которую мутирует та же операция (старая заявка при выходе на
+    /// вторую роль). Её дискуссия уже существует, но комментарий всё равно заказывается, а не
+    /// создаётся на месте: порядок рассылки — часть контракта, и держит его одна очередь.
+    /// </summary>
+    public DeferredComment AddComment(
+        Claim? claim,
+        string commentText,
+        CommentExtraAction? extraAction,
+        ClaimOperationType operationType)
+    {
+        var deferred = new DeferredComment(commentText, extraAction, operationType, claim);
+        DeferredComments.Add(deferred);
+        return deferred;
+    }
 }
 
 /// <summary>
@@ -118,9 +181,10 @@ internal sealed record ClaimCreationContext<TArgs>(
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
     User Initiator,
-    UserInfo Player,
+    UserInfo? Player,
     Action<object> AddEntity,
+    Func<ClaimIdentification, Task<Claim>> LoadOtherClaimCore,
     FieldSaveHelper FieldSaveHelper,
     TArgs Request)
     : ClaimCreationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, Initiator, Player,
-        AddEntity, FieldSaveHelper);
+        AddEntity, LoadOtherClaimCore, FieldSaveHelper);

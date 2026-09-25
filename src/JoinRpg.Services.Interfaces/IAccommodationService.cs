@@ -9,7 +9,7 @@ public interface IAccommodationService
     /// </summary>
     Task<ProjectAccommodationType?> SaveRoomTypeAsync(ProjectAccommodationType roomType);
 
-    Task RemoveRoomType(int roomTypeId);
+    Task RemoveRoomType(int projectId, int roomTypeId);
 
     /// <summary>
     /// Adds rooms to specified room type of specified project
@@ -19,12 +19,12 @@ public interface IAccommodationService
     /// <summary>
     /// Changes room name
     /// </summary>
-    Task EditRoom(int roomId, string name, int? projectId = null, int? roomTypeId = null);
+    Task EditRoom(int projectId, int roomTypeId, int roomId, string name);
 
     /// <summary>
     /// Deletes specified room
     /// </summary>
-    Task DeleteRoom(int roomId, int? projectId = null, int? roomTypeId = null);
+    Task DeleteRoom(int projectId, int roomTypeId, int roomId);
 
     /// <summary>
     /// Returns all room types for specified project Id
@@ -34,7 +34,7 @@ public interface IAccommodationService
     /// <summary>
     /// Returns room type by id
     /// </summary>
-    Task<ProjectAccommodationType> GetRoomTypeAsync(int roomTypeId);
+    Task<ProjectAccommodationType?> GetRoomTypeAsync(int roomTypeId);
 
     /// <summary>
     /// Move inhabitants to room

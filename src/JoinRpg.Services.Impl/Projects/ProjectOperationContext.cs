@@ -20,12 +20,16 @@ internal abstract record ProjectOperationContext(DateTimeOffset Now, ICurrentUse
 /// <param name="Now">Время выполнения операции</param>
 /// <param name="CurrentUser">Текущий пользователь</param>
 /// <param name="RemovePermanently">Окончательное удаление под-сущности из того же DbContext (см. <see cref="ProjectOperationContextExtensions.SmartDelete"/>).</param>
+/// <param name="AddEntity">Добавление новой под-сущности в тот же DbContext. Нужно там, где сущность не достаётся навигацией <see cref="Project"/>.</param>
+/// <param name="Accommodation">Загрузчики поселения проекта (типы, комнаты, заявки на поселение) на том же DbContext.</param>
 internal abstract record ProjectMutationContext(
     Project Project,
     ProjectInfo ProjectInfo,
     DateTimeOffset Now,
     ICurrentUserAccessor CurrentUser,
-    Action<object> RemovePermanently) : ProjectOperationContext(Now, CurrentUser);
+    Action<object> RemovePermanently,
+    Action<object> AddEntity,
+    IProjectAccommodationWriteAccess Accommodation) : ProjectOperationContext(Now, CurrentUser);
 
 /// <summary>
 /// Контекст изменения метаданных проекта с типизированными аргументами операции (<see cref="Request"/>).
@@ -36,8 +40,10 @@ internal sealed record ProjectMutationContext<TArgs>(
     DateTimeOffset Now,
     ICurrentUserAccessor CurrentUser,
     TArgs Request,
-    Action<object> RemovePermanently)
-    : ProjectMutationContext(Project, ProjectInfo, Now, CurrentUser, RemovePermanently);
+    Action<object> RemovePermanently,
+    Action<object> AddEntity,
+    IProjectAccommodationWriteAccess Accommodation)
+    : ProjectMutationContext(Project, ProjectInfo, Now, CurrentUser, RemovePermanently, AddEntity, Accommodation);
 
 /// <summary>
 /// Контекст создания нового проекта: существующего <see cref="Project"/>/<see cref="ProjectInfo"/>

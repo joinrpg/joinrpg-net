@@ -107,24 +107,15 @@ internal abstract record ClaimMutationContext(
 
         var pending = new PendingComment(comment, notification);
         PendingComments.Add(pending);
+
         return pending;
     }
 
     /// <summary>
-    /// Ставит в очередь комментарий, созданный <b>вне</b> контекста, — вместе с его уведомлением.
+    /// Запрещает операции, датированные будущим.
     /// </summary>
-    /// <remarks>
-    /// Нужен ровно там, где комментарий делает ещё не мигрированный помощник
-    /// (<c>ClaimImplBase.AcceptFeeImpl</c>, общий с <c>FeeAcceptedOperation</c>), а очередь
-    /// уведомлений обязана сохранить порядок, который был до миграции. Отдельный метод, а не
-    /// доступ к списку: порядок отправки — часть контракта, и менять его надо явно.
-    /// </remarks>
-    public PendingComment EnqueueComment(Comment comment, ClaimSimpleChangedNotification notification)
-    {
-        var pending = new PendingComment(comment, notification);
-        PendingComments.Add(pending);
-        return pending;
-    }
+    public void CheckOperationDate(DateTime operationDate)
+        => OperationDateValidation.CheckOperationDate(operationDate, Now);
 
     /// <summary>
     /// Ставит письмо легаси-канала в очередь. Отправится после сохранения и после уведомлений.
