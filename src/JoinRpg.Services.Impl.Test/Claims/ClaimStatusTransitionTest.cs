@@ -209,7 +209,7 @@ public class ClaimStatusTransitionTest : ClaimServiceTestBase
             ClaimAccessRequirement.AnyMaster,
             ProjectActiveRequirement.MustBeActive,
             0,
-            ctx => ctx.EnsureCanChangeStatus(ctx.Claim, ClaimStatus.Approved));
+            ctx => ctx.Claim.EnsureCanChangeStatus(ClaimStatus.Approved));
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
         claim.MasterAcceptedDate.ShouldBeNull();

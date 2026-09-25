@@ -6,9 +6,9 @@ using JoinRpg.Services.Impl.Characters;
 namespace JoinRpg.Services.Impl.Claims;
 
 /// <summary>
-/// Единый переход статуса заявки (ADR014, §4). До миграции статус менялся тремя способами —
-/// <c>ChangeStatusWithCheck</c>, <c>EnsureCanChangeStatus</c> с ручным присваиванием и сырым
-/// присваиванием без охраны, — а отметки дат проставлялись руками рядом с каждой записью.
+/// Единый переход статуса заявки (ADR014, §4). Исторически статус менялся тремя способами —
+/// расширением «проверить и записать», отдельной проверкой допустимости с ручным присваиванием и
+/// сырым присваиванием без охраны, — а отметки дат проставлялись руками рядом с каждой записью.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -33,7 +33,7 @@ internal static class ClaimStatusTransition
     /// <exception cref="ArgumentOutOfRangeException">Неизвестный целевой статус.</exception>
     public static void ChangeStatus(this CharacterOperationContext ctx, Claim claim, ClaimStatus target)
     {
-        ctx.EnsureCanChangeStatus(claim, target);
+        claim.EnsureCanChangeStatus(target);
 
         claim.ClaimStatus = target;
         StampDate(claim, target, ctx.Now);
@@ -48,24 +48,9 @@ internal static class ClaimStatusTransition
     /// <inheritdoc cref="ChangeStatus" path="/exception"/>
     public static void ChangeStatusKeepingTimestamps(this CharacterOperationContext ctx, Claim claim, ClaimStatus target)
     {
-        ctx.EnsureCanChangeStatus(claim, target);
+        claim.EnsureCanChangeStatus(target);
 
         claim.ClaimStatus = target;
-    }
-
-    /// <summary>
-    /// Только проверка допустимости перехода, без записи. Нужна операциям, которые проверяют заранее,
-    /// а пишут позже (регистрация — после приёма денег).
-    /// </summary>
-    /// <inheritdoc cref="ChangeStatus" path="/exception"/>
-    public static void EnsureCanChangeStatus(this CharacterOperationContext ctx, Claim claim, ClaimStatus target)
-    {
-        ArgumentNullException.ThrowIfNull(ctx);
-
-        if (!claim.ClaimStatus.CanChangeTo(target))
-        {
-            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
-        }
     }
 
     /// <summary>
