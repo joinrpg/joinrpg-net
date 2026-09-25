@@ -3,9 +3,7 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
-using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Portal.Controllers;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.ProjectCommon;
@@ -31,6 +29,29 @@ public class PublicCharacterJsonBuilderTest
         // Формат типизированного id менять нельзя — его читают внешние сайты игр.
         json.GetProperty("PlayerId").GetString().ShouldBe(Player.UserId.ToString());
         json.GetProperty("PlayerLink").GetString().ShouldBe("https://example.com/user/42");
+    }
+
+    /// <summary>
+    /// Ссылки строятся локаторами и всегда абсолютные — по ним ходят внешние сайты игр.
+    /// </summary>
+    [Fact]
+    public void LinksAreAbsoluteAndBuiltByLocators()
+    {
+        var json = BuildJson(new UserLinkViewModel(Player), isAvailable: true);
+
+        json.GetProperty("CharacterLink").GetString().ShouldBe("https://example.com/7/character/13");
+        json.GetProperty("ClaimLink").GetString().ShouldBe("https://example.com/7/claim/add/13");
+    }
+
+    /// <summary>
+    /// На занятую роль заявиться нельзя — ссылки «заявиться» в ответе быть не должно.
+    /// </summary>
+    [Fact]
+    public void UnavailableCharacterHasNoClaimLink()
+    {
+        var json = BuildJson(new UserLinkViewModel(Player));
+
+        json.GetProperty("ClaimLink").ValueKind.ShouldBe(JsonValueKind.Null);
     }
 
     /// <summary>
@@ -66,7 +87,7 @@ public class PublicCharacterJsonBuilderTest
         json.GetRawText().ShouldNotContain("42");
     }
 
-    private static JsonElement BuildJson(UserLinkViewModel playerLink)
+    private static JsonElement BuildJson(UserLinkViewModel playerLink, bool isAvailable = false)
     {
         var characterId = new CharacterIdentification(7, 13);
         var character = new CharacterViewModel
@@ -80,32 +101,38 @@ public class PublicCharacterJsonBuilderTest
                 CharacterBusyStatusView.HasPlayer,
                 SlotCount: null,
                 IsHot: false,
-                IsAvailable: false),
+                isAvailable),
             Description = (JoinHtmlString)new MarkupString("Описание роли"),
             PlayerLink = playerLink,
             ActiveClaimsCount = 1,
         };
 
-        var result = new PublicCharacterJsonBuilder(
-            new FakeUriService(),
-            new FakeUserLinkLocator(),
-            _ => "https://example.com/claim")
-            .Build(character);
+        var locator = new FakeUriLocator();
+        var result = new PublicCharacterJsonBuilder(locator, locator, locator).Build(character);
 
         // Те же опции, что и в контроллере: имена свойств в PascalCase.
         var json = JsonSerializer.Serialize(result, new JsonSerializerOptions { PropertyNamingPolicy = null });
         return JsonDocument.Parse(json).RootElement;
     }
 
-    private sealed class FakeUriService : IUriService
+    /// <summary>
+    /// Все локаторы в портале реализует один <c>UriServiceImpl</c>, поэтому и фейк общий.
+    /// </summary>
+    private sealed class FakeUriLocator :
+        IUriLocator<CharacterIdentification>,
+        ICharacterUriLocator,
+        IUriLocator<UserLinkViewModel>
     {
-        public string Get(ILinkable link) => GetUri(link).AbsoluteUri;
+        public Uri GetUri(CharacterIdentification target) => GetDetailsUri(target);
 
-        public Uri GetUri(ILinkable link) => new($"https://example.com/{link.ProjectId}/{link.Identification}");
-    }
+        public Uri GetDetailsUri(CharacterIdentification characterId) =>
+            new($"https://example.com/{characterId.ProjectId.Value}/character/{characterId.CharacterId}");
 
-    private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
-    {
+        public Uri GetAddClaimUri(CharacterIdentification characterId) =>
+            new($"https://example.com/{characterId.ProjectId.Value}/claim/add/{characterId.CharacterId}");
+
+        public Uri GetEditUri(CharacterIdentification characterId) => throw new NotSupportedException();
+
         public Uri GetUri(UserLinkViewModel target) => new($"https://example.com/user/{target.UserId?.Value}");
     }
 }

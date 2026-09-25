@@ -1,6 +1,6 @@
 using JoinRpg.Common.WebComponents;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Portal.Controllers;
 
@@ -12,12 +12,14 @@ namespace JoinRpg.Portal.Controllers;
 /// анонимы через виджет встраивания ролей, и ошибка тут утекает наружу (issue #4895).
 /// </remarks>
 public class PublicCharacterJsonBuilder(
-    IUriService uriService,
-    IUriLocator<UserLinkViewModel> userLinkLocator,
-    Func<CharacterViewModel, string?> claimLinkBuilder)
+    IUriLocator<CharacterIdentification> characterLocator,
+    ICharacterUriLocator characterUriLocator,
+    IUriLocator<UserLinkViewModel> userLinkLocator)
 {
     public object Build(CharacterViewModel ch)
     {
+        var characterId = new CharacterIdentification(ch.ProjectId, ch.CharacterId);
+
         // Все поля игрока берём из одной ссылки: пока имя, id и ссылка вычислялись по отдельности,
         // скрытие игрока учитывалось только в ссылке, а имя и id уходили наружу (issue #4895).
         var visiblePlayer = ch.PlayerLink is { ViewMode: not ViewMode.Hide } player ? player : null;
@@ -25,7 +27,7 @@ public class PublicCharacterJsonBuilder(
         return new
         {
             ch.CharacterId, //TODO Remove
-            CharacterLink = uriService.Get(ch),
+            CharacterLink = characterLocator.GetUri(characterId).AbsoluteUri,
             ch.IsAvailable,
             ch.IsFirstCopy,
             ch.CharacterName,
@@ -34,7 +36,7 @@ public class PublicCharacterJsonBuilder(
             PlayerId = visiblePlayer?.UserId,
             PlayerLink = visiblePlayer is null ? null : userLinkLocator.GetUri(visiblePlayer).AbsoluteUri,
             ch.ActiveClaimsCount,
-            ClaimLink = ch.IsAvailable ? claimLinkBuilder(ch) : null,
+            ClaimLink = ch.IsAvailable ? characterUriLocator.GetAddClaimUri(characterId).AbsoluteUri : null,
         };
     }
 }
