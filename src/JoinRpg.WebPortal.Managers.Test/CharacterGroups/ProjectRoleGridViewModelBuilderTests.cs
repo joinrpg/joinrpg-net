@@ -62,12 +62,17 @@ public class ProjectRoleGridViewModelBuilderTests
             .Select(player => player.GetUserInfo())
             .ToDictionary(player => player.UserId);
 
-        return ProjectRoleGridViewModelBuilder.Build(
+        var grid = ProjectRoleGridViewModelBuilder.Build(
             config, canEditSettings, canViewPrivate, excludeSpecialGroups,
             orderedGroups, charactersByGroup,
             new Dictionary<CharacterGroupIdentification, CharacterGroupFullInfo>(),
             players,
             _mock.ProjectInfo);
+
+        // Сетка едет в остров по JSON, поэтому все тесты ниже проверяют утверждения на модели,
+        // вернувшейся с «того конца провода», а не на результате билдера. Именно этой проверки
+        // не хватало, когда на прод уехал sentinel UserIdentification(-1) — см. JsonRoundTrip.
+        return JsonRoundTrip.Ensure(grid);
     }
 
     [Fact]
