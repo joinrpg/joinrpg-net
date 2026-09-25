@@ -40,7 +40,7 @@ public class GameGroupsJsonController(
 
         var characters = await LoadCharactersOfSubtree(characterGroupId, projectInfo);
 
-        var hotRoles = CharacterGroupListViewModel
+        var hotRoles = HotCharactersViewModel
             .GetHotCharacters(
                 rootGroup,
                 characters,
