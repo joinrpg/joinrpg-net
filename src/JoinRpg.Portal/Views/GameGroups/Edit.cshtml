@@ -21,6 +21,11 @@
     @Html.AntiForgeryToken()
 
     <div class="form-horizontal">
+        @* Ошибки уровня формы: сюда попадает, например, запрет назначить родителем собственного
+           потомка. Без этого блока такие ошибки молча терялись — форма просто открывалась заново,
+           и выглядело это как «кнопка не работает». *@
+        @Html.ValidationSummary(true, "", new {@class = "text-danger"})
+
         @Html.HiddenFor(model => model.ProjectId)
         @Html.HiddenFor(model => model.CharacterGroupId)
 
