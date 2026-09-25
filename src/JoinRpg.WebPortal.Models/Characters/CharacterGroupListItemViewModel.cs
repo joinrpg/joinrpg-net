@@ -1,6 +1,6 @@
 namespace JoinRpg.Web.Models.Characters;
 
-public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>, IMoveableNonInteractiveListItem
+public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>
 {
     public int RootGroupId
     { get; set; }
@@ -33,11 +33,6 @@ public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItem
 
     public string BoundExpression { get; set; } = "";
 
-    public bool First { get; set; }
-    public bool Last { get; set; }
-
-    public int ProjectId { get; set; }
-
     public bool Equals(CharacterGroupListItemViewModel? other) => other != null && other.CharacterGroupId == CharacterGroupId;
 
     public override bool Equals(object? obj) => Equals(obj as CharacterGroupListItemViewModel);
@@ -45,7 +40,5 @@ public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItem
     public override int GetHashCode() => CharacterGroupId;
 
     public override string ToString() => $"ChGroup(Name={Name})";
-
-    int IMoveableNonInteractiveListItem.ItemId => CharacterGroupId;
 }
 

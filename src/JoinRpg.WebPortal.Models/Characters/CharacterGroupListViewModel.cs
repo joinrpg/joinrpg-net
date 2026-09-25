@@ -67,15 +67,8 @@ public static class CharacterGroupListViewModel
                 Path = pathToTop.Select(g => Results.First(item => item.CharacterGroupId == g.Id.CharacterGroupId)),
                 IsPublic = group.IsPublic,
                 GroupType = group.GroupType,
-                ProjectId = group.Id.ProjectId.Value,
                 RootGroupId = root.Id.CharacterGroupId,
             };
-
-            if (root.Id == group.Id)
-            {
-                vm.First = true;
-                vm.Last = true;
-            }
 
             if (vm.IsSpecial)
             {
@@ -109,10 +102,6 @@ public static class CharacterGroupListViewModel
                 .Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren))
                 .WhereNotNull()
                 .ToList();
-
-            _ = vm.ChildGroups
-                .Where(x => !x.IsSpecial)
-                .MarkFirstAndLast();
 
             return vm;
         }
