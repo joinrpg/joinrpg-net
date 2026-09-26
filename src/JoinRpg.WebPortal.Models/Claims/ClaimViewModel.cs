@@ -165,6 +165,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         Plot = new PlotDisplayViewModel(plotElements,
             currentUser,
             claim.Character,
+            claim.Project,
             projectInfo);
         AccommodationModel = accommodationModel;
 

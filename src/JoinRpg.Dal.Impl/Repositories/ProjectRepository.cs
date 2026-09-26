@@ -17,7 +17,16 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     public async Task<Project> GetProjectForMarkdownRendering(ProjectIdentification projectId)
     {
-        await LoadProjectCharactersAndGroups(projectId);
+        // Директивы %список/%контакты печатают игрока персонажа, то есть ходят по
+        // ApprovedClaim.Player (а для контактов — и по Extra). Без этих Include EF6 тянул их
+        // по одному на персонажа: на публичной странице персонажа это давало до 28 запросов
+        // в Claims за анонимный заход (#4992).
+        await Ctx.ProjectsSet
+            .Include(p => p.CharacterGroups)
+            .Include(p => p.Characters.Select(c => c.Claims))
+            .Include(p => p.Characters.Select(c => c.ApprovedClaim!.Player.Extra))
+            .Where(p => p.ProjectId == projectId.Value)
+            .LoadAsync();
 
         return await Ctx.ProjectsSet.SingleAsync(p => p.ProjectId == projectId.Value);
     }
