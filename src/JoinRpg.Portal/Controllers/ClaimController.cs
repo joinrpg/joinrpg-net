@@ -115,6 +115,10 @@ public class ClaimController(
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
         var claim = await claimsRepository.GetClaimWithDetails(new ClaimIdentification(projectId, claimId));
+        if (claim is null)
+        {
+            return NotFound();
+        }
         return await ShowClaim(claim);
     }
 
@@ -162,6 +166,10 @@ public class ClaimController(
     {
         var claimIdentification = new ClaimIdentification(projectId, claimId);
         var claim = await claimsRepository.GetClaim(claimIdentification);
+        if (claim is null)
+        {
+            return NotFound();
+        }
         var error = WithClaim(claim);
         if (error != null)
         {
@@ -500,10 +508,6 @@ public class ClaimController(
 
     private ActionResult? WithClaim(Claim claim)
     {
-        if (claim == null)
-        {
-            return NotFound();
-        }
         if (!claim.HasAccess(currentUserAccessor.UserId, Permission.None, ExtraAccessReason.Player))
         {
             return NoAccesToProjectView(claim.Project);

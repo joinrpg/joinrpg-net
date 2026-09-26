@@ -114,7 +114,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
 
         _ = services.AddJoinAuth(
-            Configuration.GetSection("Jwt").Get<JwtSecretOptions>(),
+            Configuration.GetSection("Jwt").Get<JwtSecretOptions>()
+                ?? throw new InvalidOperationException("Jwt section is required"),
             environment,
             Configuration.GetSection("Authentication"))
             .AddJoinXApiSwagger();
@@ -126,7 +127,8 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
         var healthChecks = services.AddHealthChecks()
             .AddSqlServer(
-                Configuration["ConnectionStrings:DefaultConnection"],
+                Configuration["ConnectionStrings:DefaultConnection"]
+                    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required"),
                 name: "main-sqldb",
                 tags: ["ready"],
                 timeout: TimeSpan.FromSeconds(5))
