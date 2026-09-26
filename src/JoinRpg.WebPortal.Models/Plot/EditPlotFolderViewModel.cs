@@ -90,17 +90,6 @@ public class PlotElementListItemViewModel : IProjectIdAware
             e, accessArguments, itemIds, linkRenderer))];
     }
 
-    /// <summary>Перегрузка для страниц, которые пока держат EF-сущность папки: список сюжетов (FlatList).</summary>
-    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolder folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
-    {
-        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
-        var itemIds = orderedElements.Select(x => x.GetId().ToString()).ToArray();
-        var accessArguments = AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor);
-
-        return [.. orderedElements.Select(e => new PlotElementListItemViewModel(
-            e.GetDetails(), accessArguments, itemIds, linkRenderer))];
-    }
-
     public PlotElementListItemViewModel(
         PlotElementDetailsDto element,
         PlotAccessArguments accessArguments,

@@ -7,6 +7,20 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IPlotRepository
 {
+    private static PlotFolderDetailsDto ToDetails(PlotFolder folder)
+    {
+        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering);
+
+        return new PlotFolderDetailsDto(
+            folder.GetId(),
+            folder.MasterTitle,
+            folder.TodoField,
+            folder.MasterSummary,
+            folder.IsActive,
+            [.. folder.PlotTags.Select(tag => tag.TagName).Order()],
+            [.. orderedElements.Select(e => e.GetDetails())]);
+    }
+
     public async Task<PlotElementDetailsDto?> GetPlotElementDetails(PlotElementIdentification elementId, int? version = null)
     {
         var element = await Ctx.Set<PlotElement>()
@@ -27,15 +41,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
             return null;
         }
 
-        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering);
-
-        return new PlotFolderDetailsDto(
-            folder.GetId(),
-            folder.MasterTitle,
-            folder.TodoField,
-            folder.IsActive,
-            [.. folder.PlotTags.Select(tag => tag.TagName).Order()],
-            [.. orderedElements.Select(e => e.GetDetails())]);
+        return ToDetails(folder);
     }
 
     private async Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId)
@@ -93,16 +99,19 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid)
-      =>
-        await Ctx.Set<PlotFolder>()
+    public async Task<IReadOnlyList<PlotFolderDetailsDto>> GetPlotsDetails(ProjectIdentification projectId)
+    {
+        var folders = await Ctx.Set<PlotFolder>()
           .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
           .Include(pf => pf.Elements.Select(e => e.TargetGroups))
           .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
           .Include(pf => pf.PlotTags)
           .Where(pf => pf.IsActive)
-          .Where(pf => pf.ProjectId == projectid)
+          .Where(pf => pf.ProjectId == projectId.Value)
           .ToListAsync();
+
+        return [.. folders.Select(ToDetails)];
+    }
 
     public async Task<IReadOnlyList<PlotFolder>> GetPlots(ProjectIdentification projectId)
     {

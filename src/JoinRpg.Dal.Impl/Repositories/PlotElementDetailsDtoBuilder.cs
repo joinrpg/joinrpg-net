@@ -1,22 +1,17 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.DataModel;
-using JoinRpg.DataModel.Extensions;
+using JoinRpg.Data.Interfaces.Plots;
 
-namespace JoinRpg.Data.Interfaces.Plots;
+namespace JoinRpg.Dal.Impl.Repositories;
 
 /// <summary>
 /// Мост из EF-сущностей сюжета в DTO.
 /// </summary>
 /// <remarks>
-/// Лежит в <c>Data.Interfaces</c>, а не в <c>JoinRpg.Domain</c>, потому что нужен и репозиторию:
-/// <c>Dal.Impl</c> на <c>Domain</c> не ссылается. По той же причине выбор версий и таргеты собраны
-/// здесь вручную, а не через <c>PlotExtensions</c>.
-///
-/// Публичным он остаётся временно: последний вызов извне — перегрузка
-/// <c>PlotElementListItemViewModel.FromFolder(PlotFolder …)</c> для списка сюжетов. Когда и её
-/// переведут на DTO, класс уедет внутрь <c>Dal.Impl</c> и станет <c>internal</c>.
+/// Внутренняя деталь слоя доступа к данным: единственный, кто его зовёт, — <see cref="PlotRepositoryImpl"/>.
+/// Выбор версий и таргеты собраны здесь вручную, а не через <c>PlotExtensions</c>: тот живёт
+/// в <c>JoinRpg.Domain</c>, на который <c>Dal.Impl</c> не ссылается и ссылаться не должен (ADR014).
 /// </remarks>
-public static class PlotElementDetailsDtoBuilder
+internal static class PlotElementDetailsDtoBuilder
 {
     /// <summary>
     /// Собирает DTO по вводной для указанной версии.

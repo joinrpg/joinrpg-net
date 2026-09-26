@@ -31,7 +31,14 @@ public interface IPlotRepository : IDisposable
     /// <exception cref="ArgumentOutOfRangeException">Такой версии у вводной нет.</exception>
     Task<PlotElementDetailsDto?> GetPlotElementDetails(PlotElementIdentification elementId, int? version = null);
     Task<IReadOnlyCollection<PlotElement>> GetDirectPlotsForCharacter(CharacterIdentification characterId);
-    Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid);
+    /// <summary>
+    /// Все живые папки сюжета проекта со вводными — для плоского списка сюжетов.
+    /// </summary>
+    /// <remarks>
+    /// Вводные внутри каждой папки приходят упорядоченными, как и в
+    /// <see cref="GetPlotFolderDetails"/>. Порядок самих папок вызывающий задаёт сам.
+    /// </remarks>
+    Task<IReadOnlyList<PlotFolderDetailsDto>> GetPlotsDetails(ProjectIdentification projectId);
 
     [Obsolete]
     Task<List<PlotFolder>> GetPlotsForTargets(int projectId, List<int> characterIds, List<int> characterGroupIds);

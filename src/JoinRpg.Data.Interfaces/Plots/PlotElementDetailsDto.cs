@@ -75,6 +75,7 @@ public record PlotElementVersionDto(
 /// <param name="Id">Идентификатор папки.</param>
 /// <param name="MasterTitle">Мастерское название сюжета.</param>
 /// <param name="TodoField">Мастерское TODO по папке.</param>
+/// <param name="MasterSummary">Мастерское описание сюжета (markdown) — его показывает плоский список.</param>
 /// <param name="IsActive">Папка не удалена.</param>
 /// <param name="Tags">Теги сюжета, упорядоченные по алфавиту.</param>
 /// <param name="Elements">Вводные папки в порядке, заданном мастерами.</param>
@@ -82,6 +83,7 @@ public record PlotFolderDetailsDto(
     PlotFolderIdentification Id,
     string MasterTitle,
     string TodoField,
+    MarkdownDbValue MasterSummary,
     bool IsActive,
     IReadOnlyList<string> Tags,
     IReadOnlyList<PlotElementDetailsDto> Elements)

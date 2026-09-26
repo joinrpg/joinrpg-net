@@ -80,11 +80,13 @@ public class PlotListController(
     [HttpGet]
     public async Task<ActionResult> FlatList(int projectId)
     {
-        var folders = (await plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
+        var folders = await plotRepository.GetPlotsDetails(new(projectId));
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(projectId));
         return View(
             new PlotFolderFullListViewModel(
                 folders,
+                projectForRendering,
                 currentUser,
                 projectInfo));
     }
@@ -93,10 +95,11 @@ public class PlotListController(
     [HttpGet]
     public async Task<ActionResult> FlatListUnready(int projectId)
     {
-        var folders = (await plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
+        var folders = await plotRepository.GetPlotsDetails(new(projectId));
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(projectId));
         return View("FlatList",
-            new PlotFolderFullListViewModel(folders, currentUser, projectInfo, true));
+            new PlotFolderFullListViewModel(folders, projectForRendering, currentUser, projectInfo, true));
     }
 
     private async Task<ActionResult> PlotList(ProjectIdentification projectId, Func<PlotFolder, bool> predicate)

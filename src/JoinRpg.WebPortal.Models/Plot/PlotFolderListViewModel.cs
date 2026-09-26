@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces.Plots;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Plots;
@@ -18,7 +19,7 @@ public class PlotFolderFullListViewModel
 
     public string ProjectName { get; }
 
-    public PlotFolderFullListViewModel(IReadOnlyCollection<PlotFolder> folders, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false)
+    public PlotFolderFullListViewModel(IReadOnlyCollection<PlotFolderDetailsDto> folders, Project projectForRendering, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false)
     {
         ProjectName = projectInfo.ProjectName;
         InWorkOnly = inWorkOnly;
@@ -29,7 +30,7 @@ public class PlotFolderFullListViewModel
         }
         else
         {
-            var linkRenderer = new JoinrpgMarkdownLinkRenderer(folders.First().Project, projectInfo);
+            var linkRenderer = new JoinrpgMarkdownLinkRenderer(projectForRendering, projectInfo);
 
             //TODO правильная сортировка
             Folders =
@@ -56,12 +57,12 @@ public class PlotFolderListFullItemViewModel : PlotFolderViewModelBase, IPlotFol
 
     public IEnumerable<string> TagNames { get; }
 
-    public PlotFolderListFullItemViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
+    public PlotFolderListFullItemViewModel(PlotFolderDetailsDto folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
     {
-        PlotFolderId = new(folder.ProjectId, folder.PlotFolderId);
+        PlotFolderId = folder.Id;
         PlotFolderMasterTitle = folder.MasterTitle;
-        TagNames = [.. folder.PlotTags.Select(tag => tag.TagName).Order()];
-        ProjectId = folder.ProjectId;
+        TagNames = folder.Tags;
+        ProjectId = folder.Id.ProjectId.Value;
         Status = folder.GetStatus();
         ElementsCount = folder.Elements.Count(x => x.IsActive);
         TodoField = folder.TodoField;
