@@ -23,6 +23,32 @@
         -->
         <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
 
+        <!--
+        CS8604 (возможно, null-аргумент) — error: именно он был единственным сигналом про
+        баг #4869, но утонул среди сотен предупреждений (issue #4889, пункт 2).
+
+        Ниже — burndown-список проектов, где CS8604 ещё не разгребён. Каждый PR с починкой
+        убирает из него одну строку; когда список опустеет — CS8604 переезжает в общий
+        WarningsAsErrors выше, а вся эта конструкция удаляется.
+
+        WarningsNotAsErrors здесь не подошёл: он не действует на предупреждения, явно
+        перечисленные в WarningsAsErrors, — поэтому фильтруем сам список.
+        -->
+        <Cs8604NotFixedProjects>
+            JoinRpg.Common.WebInfrastructure;
+            JoinRpg.Dal.Impl;
+            JoinRpg.DataModel.Mocks;
+            JoinRpg.IdPortal.OAuthServer;
+            JoinRpg.IdPortal.Test;
+            JoinRpg.Mcp.Test;
+            JoinRpg.Portal;
+            JoinRpg.Services.Impl;
+            JoinRpg.Services.Notifications.Test;
+            Joinrpg.Web.Identity;
+        </Cs8604NotFixedProjects>
+        <Cs8604NotFixedList>;$(Cs8604NotFixedProjects.Replace(' ', '').Replace('%0A', '').Replace('%0D', ''))</Cs8604NotFixedList>
+        <WarningsAsErrors Condition="!$(Cs8604NotFixedList.Contains(';$(MSBuildProjectName);'))">$(WarningsAsErrors);CS8604</WarningsAsErrors>
+
         <ImplicitUsings>enable</ImplicitUsings>
 
         <!-- Внедряет commit sha в AssemblyInformationalVersion через Microsoft.SourceLink.GitHub -->
