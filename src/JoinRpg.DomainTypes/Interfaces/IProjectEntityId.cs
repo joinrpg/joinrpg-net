@@ -10,6 +10,16 @@ public interface IProjectEntityId
 
 public static class IProjectEntityIdExtensions
 {
+    /// <summary>
+    /// Числовые Id — для тех мест, где на другой стороне лежат «сырые» int: EF-сущности
+    /// (<c>Character.ParentCharacterGroupIds</c> и т.п.) и сжатые списки для веба.
+    /// Проект не проверяется: для этого есть <see cref="EnsureProject"/> и
+    /// <see cref="EnsureSameProject"/>.
+    /// </summary>
+    public static int[] ToIntArray<TId>(this IEnumerable<TId> entityIds)
+        where TId : IProjectEntityId
+        => [.. entityIds.Select(id => id.Id)];
+
     public static IReadOnlyCollection<TId> EnsureSameProject<TId>(
         this IReadOnlyCollection<TId> entityIds,
         [CallerArgumentExpression(nameof(entityIds))] string name = "entityId")

@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Characters;
@@ -19,7 +20,10 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
             {
                 var character = new Character
                 {
-                    ParentCharacterGroupIds = ctx.ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds),
+                    // Здесь — только обычные группы, выбранные мастером; спецгруппы допишет
+                    // SaveFields ниже (см. подробный комментарий в EditCharacter).
+                    ParentCharacterGroupIds = ctx.ProjectInfo.GroupTree
+                        .ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds).ToIntArray(),
                     ProjectId = ctx.Request.ProjectId,
                     Project = ctx.Project,
                 };
@@ -46,8 +50,17 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
             {
                 ctx.SetCharacterSettings(ctx.Request.CharacterTypeInfo);
 
-                ctx.Character.ParentCharacterGroupIds =
-                    ctx.ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds);
+                // Присваивание записывает ТОЛЬКО обычные группы, выбранные мастером: спецгруппы,
+                // которые были у персонажа, из сущности при этом исчезают. Возвращает их обратно
+                // SaveFields: CharacterExistsStrategyBase.ComputeParentGroupIds объединяет
+                // спецгруппы, выведенные из значений полей, с обычными группами, которые он
+                // вычитывает с персонажа, а FieldSaveHelper.Apply пишет результат в
+                // ParentCharacterGroupIds. То есть это не полная перезапись списка групп, а
+                // сознательно «половина» двухшагового рукопожатия — половина обычных групп.
+                // Между двумя шагами спецгрупп у персонажа нет, и доступность полей считается
+                // именно в этот момент (поведение унаследованное, вынесено в отдельную задачу).
+                ctx.Character.ParentCharacterGroupIds = ctx.ProjectInfo.GroupTree
+                    .ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds).ToIntArray();
 
                 _ = ctx.SaveFields(ctx.Request.FieldValues);
 

@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.DomainTypes.ProjectMetadata;
 
 /// <summary>
@@ -232,5 +234,66 @@ public sealed class ProjectGroupTree
             return [];
         }
         return [.. group.AllChildGroupsIncludingThis.Select(id => GroupsDictionary[id])];
+    }
+
+    /// <summary>
+    /// Список групп для персонажа: проверенный, либо — если проект запрещает мастерам выбирать
+    /// группы (<see cref="AllowToSetGroups"/>) — корневая группа.
+    /// </summary>
+    /// <remarks>
+    /// Когда <see cref="AllowToSetGroups"/> равно <c>false</c>, переданный список игнорируется
+    /// целиком и даже не проверяется. Когда <c>true</c> — список обязателен (пустой считается
+    /// ошибкой валидации) и не должен содержать спецгрупп.
+    /// </remarks>
+    public IReadOnlyCollection<CharacterGroupIdentification> ValidateGroupListForCharacter(
+        IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+    {
+        if (!AllowToSetGroups)
+        {
+            return [RootGroupId];
+        }
+
+        if (groupIds.Count == 0)
+        {
+            // Обязательный список пуст — это именно «данные невалидны». Раньше здесь работал
+            // ServiceValidation.Required из сервисного слоя, сообщение сохранено дословно.
+            throw new JoinValidationException($"Required collection of {nameof(CharacterGroupIdentification)} is empty");
+        }
+
+        return ValidateCharacterGroupList(groupIds, ensureNotSpecial: true);
+    }
+
+    /// <summary>
+    /// Проверяет, что все группы принадлежат этому проекту и существуют в дереве (а при
+    /// <paramref name="ensureNotSpecial"/> — что среди них нет спецгрупп).
+    /// </summary>
+    public IReadOnlyCollection<CharacterGroupIdentification> ValidateCharacterGroupList(
+        IReadOnlyCollection<CharacterGroupIdentification> groupIds,
+        bool ensureNotSpecial = false)
+    {
+        foreach (var g in groupIds)
+        {
+            if (g.ProjectId != RootGroupId.ProjectId)
+            {
+                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
+            }
+        }
+
+        var missing = groupIds
+            .Where(id => !Contains(id))
+            .ToArray();
+
+        if (missing.Length != 0)
+        {
+            var missingIds = string.Join(", ", missing.Select(m => m.CharacterGroupId));
+            throw new Exception($"Groups {missingIds} doesn't belong to project");
+        }
+
+        if (ensureNotSpecial && groupIds.FirstOrDefault(id => GetGroupById(id).IsSpecial) is { } specialGroupId)
+        {
+            throw new SpecialCharacterGroupNotAllowedException(specialGroupId);
+        }
+
+        return groupIds;
     }
 }

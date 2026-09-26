@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Services.Impl;
 
@@ -76,39 +75,5 @@ internal static class EntityDeletion
 
         field.IsActive = false;
         return false;
-    }
-}
-
-internal static class ProjectInfoValidationExtensions
-{
-    public static int[] ValidateCharacterGroupList(
-        this ProjectInfo projectInfo,
-        IReadOnlyCollection<CharacterGroupIdentification> groupIds,
-        bool ensureNotSpecial = false)
-    {
-        foreach (var g in groupIds)
-        {
-            if (g.ProjectId != projectInfo.ProjectId)
-            {
-                throw new ArgumentException("Нельзя смешивать разные проекты в запросе!", nameof(groupIds));
-            }
-        }
-
-        var missing = groupIds
-            .Where(id => !projectInfo.GroupTree.Contains(id))
-            .ToArray();
-
-        if (missing.Length != 0)
-        {
-            var missingIds = string.Join(", ", missing.Select(m => m.CharacterGroupId));
-            throw new Exception($"Groups {missingIds} doesn't belong to project");
-        }
-
-        if (ensureNotSpecial && groupIds.FirstOrDefault(id => projectInfo.GroupTree.GetGroupById(id).IsSpecial) is { } specialGroupId)
-        {
-            throw new SpecialCharacterGroupNotAllowedException(specialGroupId);
-        }
-
-        return [.. groupIds.Select(g => g.CharacterGroupId)];
     }
 }

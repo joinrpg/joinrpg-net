@@ -186,6 +186,21 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
             Claims, ApprovedClaimId, CreatedAt, CreatedById, UpdatedAt, UpdatedById);
 
     /// <summary>
+    /// Инвариант: тип персонажа нельзя менять, пока у него есть активные заявки. Проверяется по
+    /// доменному снимку, а не по EF-графу, поэтому живёт здесь, а не в сервисном слое.
+    /// </summary>
+    /// <param name="target">Настройки типа, которые собираются применить к персонажу.</param>
+    public void EnsureCanChangeTypeTo(CharacterTypeInfo target)
+    {
+        if (HasActiveClaims && target.CharacterType != CharacterTypeInfo.CharacterType)
+        {
+            // TODO: заменить на типизированное исключение. Сейчас сохраняем ровно то, что бросал
+            // CharacterServiceImpl до миграции, — см. раздел «что сознательно не чиним» в ADR014.
+            throw new Exception("Can't change type of character with active claims");
+        }
+    }
+
+    /// <summary>
     /// Агрегат персонажа, которого ещё нет в БД: создание персонажа и создание из слота.
     /// Заявок у него нет по построению.
     /// </summary>
