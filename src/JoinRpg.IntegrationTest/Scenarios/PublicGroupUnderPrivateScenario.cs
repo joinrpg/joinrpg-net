@@ -10,6 +10,10 @@ using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 
+// Весь сценарий — про разовую починку данных и уедет вместе с ней (#4974), поэтому Obsolete
+// глушится на весь файл, а не в каждом вызове.
+#pragma warning disable CS0618
+
 /// <summary>
 /// Запрос-кандидат для разовой починки #4878: проекты, где есть публичная группа с непубличным
 /// прямым родителем. Смысл интеграционного теста — сам SQL: родители лежат строкой с запятыми,
@@ -125,3 +129,5 @@ public class PublicGroupUnderPrivateScenario(JoinApplicationFactory factory) : I
         _ = await myDb.SaveChangesAsync();
     }
 }
+
+#pragma warning restore CS0618

@@ -9,6 +9,7 @@ namespace JoinRpg.Services.Interfaces.Projects;
 /// а не методом <see cref="ICharacterGroupService"/>: это не операция мастера над группой, а
 /// обслуживание данных, и вызывать её из UI незачем.
 /// </remarks>
+[Obsolete("Разовая починка данных под #4878, удалить вместе с ней — см. #4974")]
 public interface IPublicGroupVisibilityFixer
 {
     /// <summary>

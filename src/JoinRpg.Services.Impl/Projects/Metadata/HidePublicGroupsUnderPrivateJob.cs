@@ -11,6 +11,7 @@ namespace JoinRpg.Services.Impl.Projects.Metadata;
 /// первого прохода находить нечего, а если что-то найдётся снова — значит правило где-то обходится
 /// (валидация стоит только на создании и редактировании группы), и в логах будет предупреждение.
 /// </remarks>
+[Obsolete("Разовая починка данных под #4878, удалить вместе с ней — см. #4974")]
 internal class HidePublicGroupsUnderPrivateJob(
     ICharacterGroupRepository characterGroupRepository,
     IPublicGroupVisibilityFixer fixer,

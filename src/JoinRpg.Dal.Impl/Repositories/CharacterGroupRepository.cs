@@ -79,6 +79,7 @@ internal class CharacterGroupRepository(
         return result;
     }
 
+    [Obsolete("Разовая починка данных под #4878, удалить вместе с ней — см. #4974")]
     public async Task<IReadOnlyCollection<ProjectIdentification>> GetProjectsWithPublicGroupUnderPrivateParent()
     {
         // Родители лежат строкой с запятыми (CharacterGroup.ParentGroupsImpl), поэтому ребро

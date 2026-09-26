@@ -34,12 +34,14 @@ public class PublicGroupVisibilityFixerTest
         return group;
     }
 
+#pragma warning disable CS0618 // Тест разовой починки, уедет вместе с ней (#4974)
     private PublicGroupVisibilityFixer CreateFixer()
         => new(new ProjectPropsService(
             unitOfWork,
             new FakeCurrentUserAccessor(mock.Master.UserId),
             metadataRepository,
             NullLogger<ProjectPropsService>.Instance));
+#pragma warning restore CS0618
 
     private async Task<IReadOnlyCollection<string>> Fix()
         => await CreateFixer().HideGroupsWithoutPublicPath(mock.ProjectInfo.ProjectId);

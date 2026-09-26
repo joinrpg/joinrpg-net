@@ -17,5 +17,6 @@ public interface ICharacterGroupRepository
     /// с нарушением сюда попадёт. Проверять дерево целиком дешевле уже по этому короткому списку,
     /// а не по всем 1700 проектам.
     /// </remarks>
+    [Obsolete("Разовая починка данных под #4878, удалить вместе с ней — см. #4974")]
     Task<IReadOnlyCollection<ProjectIdentification>> GetProjectsWithPublicGroupUnderPrivateParent();
 }

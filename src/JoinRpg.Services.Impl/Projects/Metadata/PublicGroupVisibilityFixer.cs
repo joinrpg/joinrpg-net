@@ -11,6 +11,7 @@ namespace JoinRpg.Services.Impl.Projects.Metadata;
 /// потомок снаружи всё равно не виден — то есть фактическое поведение уже «скрыто», и мы приводим
 /// данные к нему, ничего не раскрывая наружу.
 /// </remarks>
+[Obsolete("Разовая починка данных под #4878, удалить вместе с ней — см. #4974")]
 internal class PublicGroupVisibilityFixer(IProjectPropsService projectPropsService) : IPublicGroupVisibilityFixer
 {
     /// <summary>
