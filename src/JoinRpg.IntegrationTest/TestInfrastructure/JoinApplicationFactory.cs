@@ -13,19 +13,20 @@ namespace JoinRpg.IntegrationTest.TestInfrastructure;
 public class JoinApplicationFactory : WebApplicationFactory<Startup>, IAsyncLifetime
 {
     /// <summary>
-    /// Своя база на общем SQL Server — см. <see cref="SharedSqlServerContainer"/>.
+    /// Строка подключения к тестовой базе этой фабрики — для тестов, которым нужен прямой SQL
+    /// (например проверка, что база выровнена по проду).
     /// </summary>
-    private string connectionString = null!;
+    internal string ConnectionString { get; private set; } = null!;
 
     async Task IAsyncLifetime.InitializeAsync()
     {
         Log("Creating test database...");
-        connectionString = await SharedSqlServerContainer.CreateDatabaseAsync();
+        ConnectionString = await SharedSqlServerContainer.CreateDatabaseAsync();
         Log("Test database created.");
 
         Log("Running EF6 migrations...");
         var migConfig = new Configuration();
-        migConfig.TargetDatabase = new DbConnectionInfo(connectionString, "System.Data.SqlClient");
+        migConfig.TargetDatabase = new DbConnectionInfo(ConnectionString, "System.Data.SqlClient");
         new DbMigrator(migConfig).Update();
         Log("EF6 migrations done.");
 
@@ -44,7 +45,7 @@ public class JoinApplicationFactory : WebApplicationFactory<Startup>, IAsyncLife
     {
         base.ConfigureWebHost(builder);
 
-        builder.UseSetting("ConnectionStrings:DefaultConnection", connectionString);
+        builder.UseSetting("ConnectionStrings:DefaultConnection", ConnectionString);
         builder.UseSetting("ConnectionStrings:DataProtection", "");
         builder.UseSetting("ConnectionStrings:DailyJob", "");
         builder.UseSetting("ConnectionStrings:Notifications", "");
