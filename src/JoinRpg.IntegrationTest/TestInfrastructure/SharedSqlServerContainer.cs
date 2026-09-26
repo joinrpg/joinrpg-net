@@ -23,7 +23,8 @@ internal static class SharedSqlServerContainer
     private static int databaseCounter;
 
     /// <summary>
-    /// Поднимает (при первом обращении) общий SQL Server и заводит на нём пустую базу.
+    /// Поднимает (при первом обращении) общий SQL Server и заводит на нём пустую базу,
+    /// выровненную по проду — см. <see cref="ProductionDatabaseParity"/>.
     /// </summary>
     /// <returns>Строка подключения к свежесозданной базе.</returns>
     public static async Task<string> CreateDatabaseAsync()
@@ -31,17 +32,36 @@ internal static class SharedSqlServerContainer
         var sqlServer = await GetContainerAsync();
 
         var databaseName = $"joinrpg_test_{Interlocked.Increment(ref databaseCounter)}";
-        var result = await sqlServer.ExecScriptAsync($"CREATE DATABASE [{databaseName}]");
-        if (result.ExitCode != 0)
-        {
-            throw new InvalidOperationException(
-                $"Не удалось создать тестовую базу {databaseName}: {result.Stderr}");
-        }
+        await ExecuteAsync(
+            sqlServer,
+            $"CREATE DATABASE [{databaseName}]",
+            $"Не удалось создать тестовую базу {databaseName}");
+
+        // Выравниваем по проду до наката миграций, чтобы их DDL выполнялся на том же
+        // уровне совместимости, что на боевой базе.
+        await ExecuteAsync(
+            sqlServer,
+            ProductionDatabaseParity.BuildAlignScript(databaseName),
+            $"Не удалось выровнять тестовую базу {databaseName} по проду");
 
         return new SqlConnectionStringBuilder(sqlServer.GetConnectionString())
         {
             InitialCatalog = databaseName,
         }.ConnectionString;
+    }
+
+    /// <summary>
+    /// Выполняет скрипт в контексте <c>master</c> (<c>ExecScriptAsync</c> запускает sqlcmd без
+    /// <c>-d</c>), поэтому годится и для <c>ALTER DATABASE</c>, который нельзя выполнять внутри
+    /// изменяемой базы.
+    /// </summary>
+    private static async Task ExecuteAsync(MsSqlContainer sqlServer, string script, string errorMessage)
+    {
+        var result = await sqlServer.ExecScriptAsync(script);
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"{errorMessage}: {result.Stderr}{result.Stdout}");
+        }
     }
 
     private static async Task<MsSqlContainer> GetContainerAsync()
