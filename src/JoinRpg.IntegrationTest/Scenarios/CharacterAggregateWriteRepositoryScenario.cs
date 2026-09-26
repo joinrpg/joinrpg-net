@@ -1,4 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DomainTypes;
@@ -66,6 +67,13 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
         // 4. Грузим write-хэндл и проверяем инварианты
         using var checkScope = factory.Services.CreateScope();
         var unitOfWork = checkScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        // Хэндл обязан привезти весь граф агрегата сразу: дальше операции ходят по снимкам и
+        // трекаемым сущностям, и каждая недогруженная связь обернулась бы ленивой загрузкой
+        // посреди мутации. Счётчик тот же, что сторожит страницы (#4914), только блок здесь
+        // задаётся руками — HTTP-запроса нет.
+        using var lazyLoads = LazyLoadCounter.BeginScope();
+
         var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
             .LoadClaimForUpdate(claimId, masterId);
 
@@ -90,5 +98,11 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
         handle.ClaimInfo.MasterDeclinedDate.ShouldBe(handle.Claim.MasterDeclinedDate);
         handle.ClaimInfo.PlayerDeclinedDate.ShouldBe(handle.Claim.PlayerDeclinedDate);
         handle.ClaimInfo.CheckInDate.ShouldBe(handle.Claim.CheckInDate);
+
+        // Ни одно обращение выше не полезло в базу за недостающей связью.
+        lazyLoads.Count.ShouldBe(
+            0,
+            $"Загрузка хэндла и обход его снимков дали {lazyLoads.Count} ленивых загрузок — "
+            + "граф агрегата недогружен, см. #4670");
     }
 }
