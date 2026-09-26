@@ -352,7 +352,7 @@ public static class OAuthServerRegistration
         {
             Claims.Subject
                 => [Destinations.AccessToken, Destinations.IdentityToken],
-            Claims.Name when claim.Subject.HasScope(Scopes.Profile)
+            Claims.Name when claim.Subject?.HasScope(Scopes.Profile) == true
                 => [Destinations.AccessToken, Destinations.IdentityToken],
             OAuthConsent.ProjectsClaimType
                 => [Destinations.AccessToken],
