@@ -1,4 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <!-- TODO #4889: в проекте ещё остались CS8604, поэтому он тут заглушён.
+         Убрать эту строчку вместе с последним исправленным CS8604. -->
+    <NoWarn>$(NoWarn);CS8604</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
