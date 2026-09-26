@@ -1,5 +1,6 @@
 using JoinRpg.Common.WebComponents.ElementMoving;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Plots;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
@@ -63,7 +64,7 @@ public class PlotController(
     [HttpGet, RequireMasterOrPublish]
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(new PlotFolderIdentification(projectId, plotFolderId));
+        var folder = await plotRepository.GetPlotFolderDetails(new PlotFolderIdentification(projectId, plotFolderId));
         if (folder == null)
         {
             return NotFound();
@@ -85,7 +86,7 @@ public class PlotController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            var folder = await plotRepository.GetPlotFolderAsync(new(viewModel.ProjectId, viewModel.PlotFolderId));
+            var folder = await plotRepository.GetPlotFolderDetails(new(viewModel.ProjectId, viewModel.PlotFolderId));
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
             var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(viewModel.ProjectId));
             viewModel.Fill(folder, projectForRendering, currentUserAccessor, uriService, projectInfo);
@@ -173,7 +174,7 @@ public class PlotController(
     [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
     public async Task<ActionResult> Delete(int projectId, int plotFolderId)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
+        var folder = await plotRepository.GetPlotFolderDetails(new(projectId, plotFolderId));
         if (folder == null)
         {
             return NotFound();

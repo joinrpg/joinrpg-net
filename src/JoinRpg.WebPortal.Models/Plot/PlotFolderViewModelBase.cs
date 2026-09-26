@@ -26,6 +26,8 @@ public static class PlotStatusExts
 {
     public static PlotStatus GetStatus(this PlotFolder folder) => folder.IsActive ? (folder.InWork ? PlotStatus.InWork : PlotStatus.Completed) : PlotStatus.Deleted;
 
+    public static PlotStatus GetStatus(this PlotFolderDetailsDto folder) => folder.IsActive ? (folder.InWork ? PlotStatus.InWork : PlotStatus.Completed) : PlotStatus.Deleted;
+
     public static PlotStatus GetStatus(this PlotElement e)
     {
         if (!e.IsActive)

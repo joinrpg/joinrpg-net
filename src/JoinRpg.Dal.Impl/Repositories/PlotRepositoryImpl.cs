@@ -1,3 +1,5 @@
+using JoinRpg.Data.Interfaces.Plots;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Helpers;
 using LinqKit;
@@ -6,6 +8,25 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IPlotRepository
 {
+    public async Task<PlotFolderDetailsDto?> GetPlotFolderDetails(PlotFolderIdentification plotFolderId)
+    {
+        var folder = await GetPlotFolderAsync(plotFolderId);
+        if (folder is null)
+        {
+            return null;
+        }
+
+        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering);
+
+        return new PlotFolderDetailsDto(
+            folder.GetId(),
+            folder.MasterTitle,
+            folder.TodoField,
+            folder.IsActive,
+            [.. folder.PlotTags.Select(tag => tag.TagName).Order()],
+            [.. orderedElements.Select(e => e.GetDetails())]);
+    }
+
     public async Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId)
     {
         var folder =
