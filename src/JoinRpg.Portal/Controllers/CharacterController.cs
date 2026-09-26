@@ -52,11 +52,21 @@ public class CharacterController(
         }
 
         var plots = await characterPlotViewService.GetPlotsForCharacter(character.GetId());
+
+        // Директивы вида %персонаж/%список рендерер разворачивает поверх EF-графа проекта.
+        // Тянем граф одним запросом — иначе EF6 грузит персонажей, их заявки и игроков по одному
+        // (#4992). И только когда вводные реально показываются: пустой список — значит доступа
+        // к сюжету нет и граф никому не нужен.
+        var projectForRendering = plots.Count > 0
+            ? await projectRepository.GetProjectForMarkdownRendering(new ProjectIdentification(character.ProjectId))
+            : character.Project;
+
         return View("Details",
             new CharacterDetailsViewModel(currentUser,
                 character,
                 await characterInfoRepository.GetCharacterInfo(character.GetId()),
                 plots,
+                projectForRendering,
                 projectInfo));
     }
 
