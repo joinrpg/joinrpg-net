@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.Interfaces;
 
 namespace JoinRpg.Domain;

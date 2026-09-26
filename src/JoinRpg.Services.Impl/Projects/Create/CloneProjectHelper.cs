@@ -1,7 +1,6 @@
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Data.Entity.Validation;
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Plots;

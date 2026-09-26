@@ -1,6 +1,5 @@
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Interfaces.ProjectAccess;

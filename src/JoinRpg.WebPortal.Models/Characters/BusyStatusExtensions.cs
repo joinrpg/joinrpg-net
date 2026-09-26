@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Web.ProjectCommon;
