@@ -25,6 +25,7 @@ internal class PostboxSenderJobService(
 
     async Task<SendingResult> ISenderJob.SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)
     {
+        var recipient = message.NotificationAddress.AsEmail();
         var client = postboxClientFactory.Get();
         var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
         var entityLink = linkRenderer.RenderEntityLink(message.Message.EntityReference);
@@ -34,7 +35,7 @@ internal class PostboxSenderJobService(
         {
             Destination = new Destination
             {
-                ToAddresses = [message.NotificationAddress.AsEmail().Value]
+                ToAddresses = [recipient.Value]
             },
             Content = new EmailContent
             {
@@ -52,7 +53,7 @@ internal class PostboxSenderJobService(
         {
             var response = await client.SendEmailAsync(request, stoppingToken);
 
-            logger.LogInformation("Отправка сообщения {notificationMessage} на адрес {recipientEmail} успешна {sesMessageId}", message.MessageId, message.NotificationAddress.AsEmail(), response.MessageId);
+            logger.LogInformation("Отправка сообщения {notificationMessage} на адрес {recipientEmail} успешна {sesMessageId}", message.MessageId, recipient, response.MessageId);
 
             return SendingResult.Success();
         }
@@ -60,6 +61,16 @@ internal class PostboxSenderJobService(
         {
             logger.LogError(limitException, "Превышен лимит для отправки писем, измените настройки Postbox");
             return SendingResult.CommonFailure();
+        }
+        catch (BadRequestException badRequestException) when (IsInvalidRecipientError(badRequestException.Message))
+        {
+            // Postbox не понравился адрес получателя — ретраи не помогут, у адреса ничего не изменится.
+            logger.LogError(
+                badRequestException,
+                "Postbox отверг адрес получателя, повторять бессмысленно. Сообщение {notificationMessage}, To={to}",
+                message.MessageId,
+                string.Join(", ", request.Destination.ToAddresses));
+            return SendingResult.PermanentUserFailure();
         }
         catch (Exception ex)
         {
@@ -73,6 +84,19 @@ internal class PostboxSenderJobService(
             throw;
         }
     }
+
+    /// <summary>
+    /// Отличает «Postbox не принял адрес получателя» от остальных BadRequest (их причина неизвестна, их всё ещё ретраим).
+    /// </summary>
+    /// <remarks>
+    /// Postbox (SES) сообщает об этом текстом вида <c>validation failed: invalid “to” addresses</c>,
+    /// кода ошибки для такого случая в API нет. Кавычки вокруг <c>to</c> встречаются и типографские, и обычные.
+    /// </remarks>
+    internal static bool IsInvalidRecipientError(string message)
+        => message.Contains("invalid", StringComparison.OrdinalIgnoreCase)
+            && (message.Contains("“to”", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("\"to\"", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("'to'", StringComparison.OrdinalIgnoreCase));
 
     internal static Body FormatBody(MarkdownString bodyString, UserDisplayName displayName, RenderedEntityLink? entityLink)
     {

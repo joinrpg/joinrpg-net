@@ -17,4 +17,10 @@ public record struct SendingResult(bool Succeeded, bool Repeatable, bool Common)
     public static SendingResult RepeatableFailure() => new(false, true, false);
     public static SendingResult UserRelatedFailure() => new(false, true, false);
     public static SendingResult CommonFailure() => new(false, true, true);
+
+    /// <summary>
+    /// Ошибка на стороне получателя, которую бессмысленно повторять — например, у него невалидный адрес.
+    /// Сообщение сразу помечается как неотправленное, без ретраев.
+    /// </summary>
+    public static SendingResult PermanentUserFailure() => new(false, false, false);
 }

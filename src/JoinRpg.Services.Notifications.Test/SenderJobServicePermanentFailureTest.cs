@@ -6,17 +6,17 @@ using Microsoft.Extensions.Hosting;
 
 namespace JoinRpg.Services.Notifications.Test;
 
-public class SenderJobServiceCommonFailureTest
+public class SenderJobServicePermanentFailureTest
 {
     [Fact]
-    public async Task CommonFailure_ReturnsMessageToQueue_WithoutConsumingAttempt()
+    public async Task PermanentFailure_MarksMessageFailedWithoutRetries()
     {
         var repository = new FakeNotificationRepository();
-        var messageId = new NotificationId(42);
+        var messageId = new NotificationId(84168);
         var message = new TargetedNotificationMessageForRecipient(
             new NotificationMessageForRecipient(new MarkdownString("body"), new UserIdentification(1), "header", new UserIdentification(2), null, DateTimeOffset.UtcNow),
             NotificationAddress.Ui(),
-            Attempts: 3,
+            Attempts: 1, // первая же попытка: ретраев ещё полно, но повторять всё равно бессмысленно
             messageId);
         repository.Enqueue(message);
 
@@ -24,13 +24,11 @@ public class SenderJobServiceCommonFailureTest
         builder.Services.AddSingleton<INotificationRepository>(repository);
         builder.Services.Configure<NotificationWorkerOptions>(o =>
         {
-            // Один сбой сразу переводит джобу в кулдаун, а нулевой MaxCooldownPause сразу его останавливает —
-            // так итерация обработки одного сообщения завершается предсказуемо, без реальных задержек.
             o.MaxSubsequentFailures = 1;
             o.MaxCooldownPause = TimeSpan.Zero;
             o.EmptyPause = TimeSpan.FromMilliseconds(10);
         });
-        builder.Services.AddSenderJob<CommonFailureSenderJob>();
+        builder.Services.AddSenderJob<PermanentFailureSenderJob>();
 
         using var host = builder.Build();
         await host.StartAsync();
@@ -38,15 +36,12 @@ public class SenderJobServiceCommonFailureTest
         await host.StopAsync();
 
         repository.ProcessedSignal.Task.IsCompletedSuccessfully.ShouldBeTrue();
-        repository.MarkSendingFailedCalls.ShouldBeEmpty();
+        repository.MarkEnqueuedCalls.ShouldBeEmpty(); // никаких ретраев
         repository.MarkSendingSucceededCalls.ShouldBeEmpty();
-        var call = repository.MarkEnqueuedCalls.ShouldHaveSingleItem();
-        call.Id.ShouldBe(messageId);
-        call.Channel.ShouldBe(NotificationChannel.ShowInUi);
-        call.Attempts.ShouldBe(3); // общая ошибка не должна тратить попытку сообщения
+        repository.MarkSendingFailedCalls.ShouldHaveSingleItem().Id.ShouldBe(messageId);
     }
 
-    private sealed class CommonFailureSenderJob : ISenderJob
+    private sealed class PermanentFailureSenderJob : ISenderJob
     {
         public static NotificationChannel Channel => NotificationChannel.ShowInUi;
 
@@ -55,6 +50,6 @@ public class SenderJobServiceCommonFailureTest
         public bool Enabled => true;
 
         public Task<SendingResult> SendAsync(TargetedNotificationMessageForRecipient message, CancellationToken stoppingToken)
-            => Task.FromResult(SendingResult.CommonFailure());
+            => Task.FromResult(SendingResult.PermanentUserFailure());
     }
 }

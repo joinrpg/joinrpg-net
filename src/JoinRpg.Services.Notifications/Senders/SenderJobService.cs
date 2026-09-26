@@ -209,7 +209,15 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                 {
                     mumberOfIndividualTerminalFailuresCounter.Add(1);
                     numberOfIndividualFailuresCounter.Add(1);
-                    logger.LogError("Сообщение {messageId} не получилось отправить, это уже {attemptCount} ошибка, помечаем как неуспешное", nextMessage.MessageId, nextMessage.Attempts);
+                    if (sendingResult.Repeatable)
+                    {
+                        logger.LogError("Сообщение {messageId} не получилось отправить, это уже {attemptCount} ошибка, помечаем как неуспешное", nextMessage.MessageId, nextMessage.Attempts);
+                    }
+                    else
+                    {
+                        logger.LogError("Сообщение {messageId} не получилось отправить, ошибка неповторяемая, помечаем как неуспешное без ретраев (попытка {attemptCount})", nextMessage.MessageId, nextMessage.Attempts);
+                    }
+
                     await notificationRepository.MarkSendingFailed(nextMessage.MessageId, channel);
                 }
 
