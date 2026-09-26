@@ -6,7 +6,15 @@
       "version": "10.0.12",
       "commands": [
         "dotnet-ef"
-      ]
+      ],
+      "rollForward": false
+    },
+    "cwm.roslynnavigator": {
+      "version": "0.8.0",
+      "commands": [
+        "cwm-roslyn-navigator"
+      ],
+      "rollForward": false
     }
   }
 }

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cwm-roslyn-navigator": {
+      "command": "dotnet",
+      "args": ["tool", "run", "cwm-roslyn-navigator"]
+    }
+  }
+}
