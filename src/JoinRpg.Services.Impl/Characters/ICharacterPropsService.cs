@@ -51,20 +51,6 @@ internal interface ICharacterPropsService
         [CallerMemberName] string operationName = "");
 
     /// <summary>
-    /// Изменяет персонажа и возвращает результат мутации.
-    /// </summary>
-    /// <inheritdoc cref="ChangeCharacter{TArgs}" path="/param"/>
-    /// <typeparam name="TArgs">Тип аргументов операции; логируется вместе с именем операции.</typeparam>
-    /// <typeparam name="TResult">Тип результата, возвращаемого <paramref name="action"/>.</typeparam>
-    Task<TResult> ChangeCharacter<TArgs, TResult>(
-        CharacterIdentification characterId,
-        Permission requiredPermission,
-        ProjectActiveRequirement activeRequirement,
-        TArgs arguments,
-        Func<CharacterMutationContext<TArgs>, TResult> action,
-        [CallerMemberName] string operationName = "");
-
-    /// <summary>
     /// Изменяет заявку. Мутация заявки — это мутация агрегата персонажа, дополнительно называющая
     /// конкретную заявку, поэтому контекст даёт доступ и к персонажу, и к его снимку.
     /// </summary>
