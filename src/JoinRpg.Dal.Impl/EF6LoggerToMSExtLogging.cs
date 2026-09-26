@@ -23,6 +23,8 @@ public class EF6LoggerToMSExtLogging(DbContext context, Action<string> writeActi
                 var tableName = TryGetTableNameFromSql(sql) ?? "!unknown_table";
                 var operation = Activity.Current?.OperationName ?? "<unknown>";
                 lazyLoadCounter.Add(1, new KeyValuePair<string, object?>("operation", operation));
+                // Обычно null; заводится только в интеграционных тестах, см. LazyLoadCounter (#4914).
+                LazyLoadCounter.Current?.Increment();
                 logger.LogWarning(
                     "SQL: Probably lazy load from '{lazyLoadTableName}' during operation '{operation}': {sql}",
                     tableName,
