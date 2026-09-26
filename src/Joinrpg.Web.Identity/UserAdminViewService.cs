@@ -29,7 +29,7 @@ public class UserAdminViewService(
             throw new InvalidOperationException("Невозможно удалить единственный способ входа");
         }
 
-        var user = await userManager.FindByIdAsync(userId.Value.ToString());
+        var user = await userManager.FindRequiredByIdAsync(userId);
         var logins = await userManager.GetLoginsAsync(user);
         var vkLogin = logins.FirstOrDefault(l =>
             string.Equals(l.LoginProvider, UserExternalLogin.VkProvider, StringComparison.OrdinalIgnoreCase));
@@ -50,7 +50,7 @@ public class UserAdminViewService(
     public async Task SetAdminFlag(UserIdentification userId, bool value)
     {
         await userService.SetAdminFlag(userId.Value, value);
-        var user = await userManager.FindByIdAsync(userId.Value.ToString());
+        var user = await userManager.FindRequiredByIdAsync(userId);
         _ = await userManager.UpdateSecurityStampAsync(user);
     }
 
@@ -59,7 +59,7 @@ public class UserAdminViewService(
 
     public async Task ChangeEmail(UserIdentification userId, string newEmail)
     {
-        var user = await userManager.FindByIdAsync(userId.Value.ToString());
+        var user = await userManager.FindRequiredByIdAsync(userId);
         var token = await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
         var result = await userManager.ChangeEmailAsync(user, newEmail, token);
         if (!result.Succeeded)
