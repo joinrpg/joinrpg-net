@@ -86,6 +86,9 @@ public class CharacterInfoMapperTest
         int responsibleMasterUserId = 2,
         DateTime? createDate = null,
         DateTime? lastUpdateDateTime = null,
+        DateTime? masterAcceptedDate = null,
+        DateTime? masterDeclinedDate = null,
+        DateTime? playerDeclinedDate = null,
         DateTime? checkInDate = null,
         DateTimeOffset? lastPlayerCommentAt = null,
         DateTimeOffset? lastMasterCommentAt = null,
@@ -109,6 +112,9 @@ public class CharacterInfoMapperTest
             ResponsibleMasterUserId = responsibleMasterUserId,
             CreateDate = createDate ?? SomeDate,
             LastUpdateDateTime = lastUpdateDateTime ?? SomeDate,
+            MasterAcceptedDate = masterAcceptedDate,
+            MasterDeclinedDate = masterDeclinedDate,
+            PlayerDeclinedDate = playerDeclinedDate,
             CheckInDate = checkInDate,
             LastPlayerCommentAt = lastPlayerCommentAt,
             LastMasterCommentAt = lastMasterCommentAt,
@@ -371,6 +377,9 @@ public class CharacterInfoMapperTest
         var createDate = new DateTime(2024, 3, 1, 10, 0, 0, DateTimeKind.Utc);
         var lastUpdate = new DateTime(2024, 3, 2, 11, 0, 0, DateTimeKind.Utc);
         var checkIn = new DateTime(2024, 3, 3, 12, 0, 0, DateTimeKind.Utc);
+        var masterAccepted = new DateTime(2024, 3, 4, 13, 0, 0, DateTimeKind.Utc);
+        var masterDeclined = new DateTime(2024, 3, 5, 14, 0, 0, DateTimeKind.Utc);
+        var playerDeclined = new DateTime(2024, 3, 6, 15, 0, 0, DateTimeKind.Utc);
 
         var row = MakeRow(claims:
         [
@@ -382,6 +391,9 @@ public class CharacterInfoMapperTest
                 responsibleMasterUserId: 2,
                 createDate: createDate,
                 lastUpdateDateTime: lastUpdate,
+                masterAcceptedDate: masterAccepted,
+                masterDeclinedDate: masterDeclined,
+                playerDeclinedDate: playerDeclined,
                 checkInDate: checkIn),
         ]);
 
@@ -396,6 +408,9 @@ public class CharacterInfoMapperTest
         claim.CreateDate.ShouldBe(createDate);
         claim.LastUpdateDateTime.ShouldBe(lastUpdate);
         claim.CheckInDate.ShouldBe(checkIn);
+        claim.MasterAcceptedDate.ShouldBe(masterAccepted);
+        claim.MasterDeclinedDate.ShouldBe(masterDeclined);
+        claim.PlayerDeclinedDate.ShouldBe(playerDeclined);
     }
 
     // 9в. Игрок заявки: отображаемое имя собирается из тех же частей, что и везде в проекте.

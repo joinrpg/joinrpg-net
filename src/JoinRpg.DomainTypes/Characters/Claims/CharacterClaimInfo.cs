@@ -17,6 +17,10 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// Причина отказа. Показывать её можно не всем — фильтруется снаружи по
 /// <see cref="AccessArguments.CanViewDenialStatus"/>.
 /// </param>
+/// <param name="MasterAcceptedDate">Когда мастер утвердил заявку; <c>null</c>, если не утверждал.</param>
+/// <param name="MasterDeclinedDate">Когда мастер отклонил заявку; <c>null</c>, если не отклонял.</param>
+/// <param name="PlayerDeclinedDate">Когда игрок отозвал заявку; <c>null</c>, если не отзывал.</param>
+/// <param name="CheckInDate">Когда игрока зарегистрировали на игре; <c>null</c>, если не регистрировали.</param>
 /// <param name="LastMasterCommentAt">Последний мастерский комментарий, включая невидимые игроку.</param>
 /// <param name="LastVisibleMasterCommentAt">Последний мастерский комментарий, видимый игроку.</param>
 /// <param name="FeePaid">Сумма подтверждённых финансовых операций по заявке.</param>
@@ -33,6 +37,9 @@ public record class CharacterClaimInfo(
     UserIdentification ResponsibleMasterId,
     DateTime CreateDate,
     DateTime LastUpdateDateTime,
+    DateTime? MasterAcceptedDate,
+    DateTime? MasterDeclinedDate,
+    DateTime? PlayerDeclinedDate,
     DateTime? CheckInDate,
     DateTimeOffset? LastPlayerCommentAt,
     DateTimeOffset? LastMasterCommentAt,
