@@ -112,7 +112,7 @@
         isLoading = true;
         try
         {
-            Projects = (await ProjectListClient.GetProjectsForAdmin(Criteria)).OrderByDescending(x => x.ProjectId).ToList();
+            Projects = await LoadProjectsAsync();
             
             if (Projects.Count > 0)
             {
@@ -130,6 +130,9 @@
         await base.OnParametersSetAsync();
     }
 
+    private async Task<IReadOnlyList<ProjectAdminListItemViewModel>> LoadProjectsAsync()
+        => [.. (await ProjectListClient.GetProjectsForAdmin(Criteria)).OrderByDescending(x => x.ProjectId)];
+
     private async Task OpenBindDialogAsync(ButtonClickEventArgs args, ProjectAdminListItemViewModel project)
     {
         try
@@ -139,7 +142,7 @@
             if (result is not null)
             {
                 await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(project.ProjectId, result.KogdaIgraIds, result.DisableKogdaIgraMapping));
-                Projects = await ProjectListClient.GetProjectsForAdmin(Criteria);
+                Projects = await LoadProjectsAsync();
             }
         }
         finally
