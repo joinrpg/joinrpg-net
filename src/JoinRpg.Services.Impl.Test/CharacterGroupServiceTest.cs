@@ -244,6 +244,34 @@ public class CharacterGroupServiceTest
     private CharacterGroup RootGroup => mock.Project.CharacterGroups.Single(g => g.IsRoot);
 
     [Fact]
+    public async Task AddCharacterGroup_PublicGroupUnderPrivateParent_Throws_AndDoesNotSave()
+    {
+        var privateParent = CreateGroup(isPublic: false, RootGroup);
+
+        var service = CreateService(mock.Master.UserId);
+
+        var exception = await Should.ThrowAsync<PublicGroupWithoutPublicPathException>(
+            () => service.AddCharacterGroup(
+                ProjectId, "Новая группа", isPublic: true, [GroupId(privateParent)], "Описание"));
+
+        exception.GroupNames.ShouldBe(["Новая группа"]);
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task AddCharacterGroup_PrivateGroupUnderPrivateParent_Saves()
+    {
+        var privateParent = CreateGroup(isPublic: false, RootGroup);
+
+        var service = CreateService(mock.Master.UserId);
+
+        _ = await service.AddCharacterGroup(
+            ProjectId, "Новая группа", isPublic: false, [GroupId(privateParent)], "Описание");
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task EditCharacterGroup_PublicGroupUnderPrivateParent_Throws_AndDoesNotSave()
     {
         var privateParent = CreateGroup(isPublic: false, RootGroup);

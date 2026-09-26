@@ -44,6 +44,23 @@ public static class PublicGroupPathRule
     }
 
     /// <summary>
+    /// Есть ли публичный путь от корня хотя бы до одной из перечисленных групп.
+    /// </summary>
+    /// <remarks>
+    /// Нужно для ещё не созданной группы: её саму в дереве не найти, а вот родителей — можно.
+    /// </remarks>
+    public static bool AnyHasPublicPath(
+        ProjectGroupTree tree,
+        IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+    {
+        ArgumentNullException.ThrowIfNull(tree);
+        ArgumentNullException.ThrowIfNull(groupIds);
+
+        var reachable = FindPubliclyReachable(tree);
+        return groupIds.Any(reachable.Contains);
+    }
+
+    /// <summary>
     /// Группы, до которых есть публичный путь от корня: обход вниз от корня по публичным активным
     /// группам. Сверху вниз, а не снизу вверх, — так цикл в графе не мешает, он просто не добавит
     /// новых достижимых групп.
