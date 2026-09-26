@@ -22,6 +22,12 @@
   `{Property}_Contents` и `{Property}_ListIds` — так они и показаны.
 * Почти все FK на `Projects`/`Users` — с `NO ACTION` (каскад выключен явно, см. `ConfigureCascadeDeleteOff`).
   На диаграммах каскадность не отражена, чтобы не удваивать число линий.
+* **Связи с `Projects` на доменных диаграммах не рисуются.** Договорённость: всё, у чего есть
+  колонка `ProjectId`, принадлежит проекту — иначе в каждую диаграмму приходило бы по 3–7 линий
+  в одну точку. Сами связи видны на обзорной карте и в домене 1, где проект — предмет диаграммы.
+* **Связи с `Users` оставлены только смысловые** — игрок заявки, автор комментария.
+  Ответственный мастер, создатель, изменивший — это те же колонки `*UserId` в блоке таблицы,
+  линию на `Users` они не получают. Полная картина по пользователю — в домене 8.
 * Показаны все колонки, которые реально есть в базе, — включая осиротевшие: колонка осталась
   от старой миграции, а модель её уже не отображает. Такие помечены `legacy` в комментарии.
 * Сверка документа с реальной схемой автоматическая — тест `DbSchemaDocumentationScenario`
@@ -269,8 +275,6 @@ erDiagram
     }
 
     ProjectFields ||--o{ ProjectFieldDropdownValues : "варианты"
-    Projects ||--o{ ProjectFields : ""
-    Projects ||--o{ ProjectFieldDropdownValues : ""
     ProjectFields }o--o| CharacterGroups : "спецгруппа"
     ProjectFieldDropdownValues }o--o| CharacterGroups : "спецгруппа"
 ```
@@ -357,15 +361,10 @@ erDiagram
         int AccommodationRequest_Id FK
     }
 
-    Projects ||--o{ CharacterGroups : ""
-    Projects ||--o{ Characters : ""
-    Projects ||--o{ Claims : ""
     Characters ||--o{ Claims : "CharacterId"
     Characters |o--o| Claims : "ApprovedClaimId"
     Characters |o--o| Characters : "OriginalCharacterSlot"
     Users ||--o{ Claims : "PlayerUserId"
-    Users ||--o{ Claims : "ResponsibleMasterUserId"
-    Users ||--o{ CharacterGroups : "ResponsibleMasterUserId"
     CommentDiscussions ||--|| Claims : ""
 ```
 
@@ -373,6 +372,10 @@ erDiagram
 (`ParentGroupsImpl_ListIds`). Ссылочной целостности на уровне БД тут нет,
 за консистентностью следит домен; актуальное дерево читается через
 `IProjectMetadataRepository` (кешируется на запрос).
+
+Ссылок на `Users`, кроме игрока заявки, тут четыре, и линиями они не нарисованы:
+`Claims.ResponsibleMasterUserId` и `CharacterGroups.ResponsibleMasterUserId` —
+ответственный мастер, `CreatedById` / `UpdatedById` — аудит.
 
 ---
 
@@ -434,8 +437,6 @@ erDiagram
         int ProjectItemTag_ProjectItemTagId PK "FK"
     }
 
-    Projects ||--o{ PlotFolders : ""
-    Projects ||--o{ PlotElements : ""
     PlotFolders ||--o{ PlotElements : ""
     PlotElements ||--o{ PlotElementTexts : "версии текста"
     PlotElements ||--o{ PlotElementCharacters : ""
@@ -444,12 +445,12 @@ erDiagram
     CharacterGroups ||--o{ PlotElementCharacterGroups : ""
     PlotFolders ||--o{ PlotFolderProjectItemTags : ""
     ProjectItemTags ||--o{ PlotFolderProjectItemTags : ""
-    Users ||--o{ PlotElementTexts : "AuthorUser"
 ```
 
 Текст элемента сюжета вынесен в отдельную таблицу с версионированием
 (`PlotElementTexts`, ключ `PlotElementId + Version`) — чтобы грузить пачку элементов
-без текстов. `PlotElements.Published` указывает на опубликованную версию.
+без текстов. `PlotElements.Published` указывает на опубликованную версию, автор версии —
+`PlotElementTexts.AuthorUserId` (линией на `Users` не нарисован).
 
 ---
 
@@ -506,18 +507,15 @@ erDiagram
         int CommentId FK "до какого комментария дочитано"
     }
 
-    Projects ||--o{ CommentDiscussions : ""
     CommentDiscussions ||--o{ Comments : ""
     Comments ||--|| CommentTexts : ""
     Comments |o--o{ Comments : "ParentComment"
     CommentDiscussions ||--|| ForumThreads : ""
     CharacterGroups ||--o{ ForumThreads : ""
     ForumThreads ||--o{ UserForumSubscriptions : ""
-    Users ||--o{ UserForumSubscriptions : ""
     CommentDiscussions ||--o{ ReadCommentWatermarks : ""
     Comments ||--o{ ReadCommentWatermarks : ""
-    Users ||--o{ ReadCommentWatermarks : ""
-    Users ||--o{ Comments : "Author"
+    Users ||--o{ Comments : "AuthorUserId"
 ```
 
 `CommentDiscussions` — общая сущность обсуждения: ровно одно у каждой заявки
@@ -617,12 +615,7 @@ erDiagram
     RecurrentPayments |o--o{ FinanceOperations : ""
     Claims ||--o{ RecurrentPayments : ""
     PaymentTypes ||--o{ RecurrentPayments : ""
-    Projects ||--o{ PaymentTypes : ""
-    Projects ||--o{ ProjectFeeSettings : ""
-    Projects ||--o{ MoneyTransfers : ""
     MoneyTransfers ||--|| TransferTexts : ""
-    Users ||--o{ MoneyTransfers : "Sender, Receiver, CreatedBy, ChangedBy"
-    Users ||--o{ PaymentTypes : "ответственный"
 ```
 
 Главная неочевидность: **у `FinanceOperations` первичный ключ — `CommentId`**.
@@ -633,6 +626,10 @@ erDiagram
 Взнос игрока считается так: `Claims.CurrentFee`, если он задан вручную; иначе
 подходящая по дате запись `ProjectFeeSettings`; плюс сумма цен заполненных полей
 (`ProjectFields.Price`, `ProjectFieldDropdownValues.Price`).
+
+`MoneyTransfers` — перевод денег между мастерами, к заявкам не привязан: четыре ссылки
+на `Users` (`SenderId`, `ReceiverId`, `CreatedById`, `ChangedById`) видны в блоке таблицы,
+линиями не нарисованы. Там же ответственный мастер типа оплаты — `PaymentTypes.UserId`.
 
 ---
 
@@ -677,10 +674,6 @@ erDiagram
         bool IsGroupInvite "legacy: колонка есть в базе с 2018 года, модель её не отображает"
     }
 
-    Projects ||--o{ ProjectAccommodationTypes : ""
-    Projects ||--o{ ProjectAccommodations : ""
-    Projects ||--o{ AccommodationRequests : ""
-    Projects ||--o{ AccommodationInvites : ""
     ProjectAccommodationTypes ||--o{ ProjectAccommodations : "комнаты"
     ProjectAccommodationTypes ||--o{ AccommodationRequests : "желающие"
     ProjectAccommodations |o--o{ AccommodationRequests : "жильцы"
@@ -783,7 +776,6 @@ erDiagram
     Users ||--o{ UserAvatars : ""
     Users |o--o| UserAvatars : "SelectedAvatar"
     Users ||--o{ UserSubscriptions : ""
-    Projects ||--o{ UserSubscriptions : ""
     CharacterGroups |o--o{ UserSubscriptions : ""
     Characters |o--o{ UserSubscriptions : ""
     Claims |o--o{ UserSubscriptions : ""
@@ -849,24 +841,24 @@ erDiagram
 
 ## Если диаграммы всё равно перегружены
 
-Что можно убрать, по убыванию выигрыша:
+Два сокращения уже применены, они описаны выше в «Как читать»: на доменных диаграммах
+не рисуются связи с `Projects` (их заменяет договорённость про колонку `ProjectId`)
+и оставлены только смысловые связи с `Users`. Это убрало 23 линии из 8 диаграмм.
+
+Что можно убрать дальше, по убыванию выигрыша:
 
 1. **Аудиторские поля** — `CreatedAt` / `CreatedById` / `UpdatedAt` / `UpdatedById`
-   есть у `Characters`, `CharacterGroups`, `GameReport2DTemplate`, и вместе с ними
-   приходят 6 линий на `Users`. Их можно свернуть в одну фразу «у этих таблиц есть
-   стандартный аудит» и не рисовать.
-2. **Связи с `Projects`** — почти каждая таблица имеет `ProjectId`. Если договориться,
-   что «всё, у чего есть `ProjectId`, принадлежит проекту», из доменных диаграмм уходит
-   по 3–7 линий каждая.
-3. **Связи с `Users`** — то же самое: ответственный мастер, автор, создатель.
-   Оставить только смысловые (`Claims.PlayerUserId`, `Comments.AuthorUserId`).
-4. **Флаги** — `ProjectAcls` это 11 булевых прав, `ProjectDetails` — два десятка
+   есть у `Characters`, `CharacterGroups`, `GameReport2DTemplate`. Их можно свернуть
+   в одну фразу «у этих таблиц есть стандартный аудит» и не показывать колонками.
+2. **Флаги** — `ProjectAcls` это 11 булевых прав, `ProjectDetails` — два десятка
    переключателей. Их можно свернуть в одну строку `bool Can* "11 флагов прав"`.
-5. **Таблицы связей m2m** — `PlotElementCharacters`, `KogdaIgraGameProjects` и прочие
+3. **Таблицы связей m2m** — `PlotElementCharacters`, `KogdaIgraGameProjects` и прочие
    можно нарисовать как прямое `}o--o{` без промежуточной сущности.
-6. **Служебные домены** — `AdvertisementLogEntries`, `GameReport2DTemplate`,
+4. **Служебные домены** — `AdvertisementLogEntries`, `GameReport2DTemplate`,
    `AllrpgUserDetails`, `ProjectItemTags` можно вообще не показывать: они почти
    не связаны с остальной схемой.
 
+Учтите, что 1, 3 и 4 убирают из документа таблицы или колонки, а их состав сверяется
+тестом `DbSchemaDocumentationScenario` — его придётся учить исключениям.
 Минимальная полезная версия — обзорная карта плюс домены 2, 3 и 6
 (поля, персонажи-заявки, финансы): в них живёт почти вся неочевидная логика.
