@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
@@ -49,7 +50,7 @@ internal class CharacterApiViewService(
         _ = projectInfo.RequestMasterAccess(currentUserAccessor);
 
         var character = await characterInfoRepository.GetCharacterInfo(characterId);
-        return await MapToDto(character);
+        return MapToDto(character, await LoadPlayersAsync([character]));
     }
 
     public async Task<IReadOnlyCollection<CharacterInfo>> GetCharactersByIds(ProjectIdentification projectId, IReadOnlyCollection<int> characterIds)
@@ -72,10 +73,43 @@ internal class CharacterApiViewService(
         return await MapAllToDto(characters);
     }
 
+    /// <summary>
+    /// Игроки забираются одним запросом на всех персонажей сразу.
+    /// </summary>
+    /// <remarks>
+    /// Здесь был <c>Task.WhenAll(characters.Select(MapToDto))</c>, а внутри каждого маппинга —
+    /// свой поход в БД за игроком. DAL у нас на EF6, где контекст не потокобезопасен и
+    /// перекрывающихся асинхронных операций не допускает: на группе с несколькими сыгранными
+    /// ролями это падало с «A second operation started on this context» и уводило соединение в
+    /// закрытое состояние. Заодно N персонажей давали N запросов.
+    /// </remarks>
     private async Task<IReadOnlyCollection<CharacterInfo>> MapAllToDto(IReadOnlyCollection<DomainCharacterInfo> characters)
-        => await Task.WhenAll(characters.Select(MapToDto));
+    {
+        var players = await LoadPlayersAsync(characters);
+        return [.. characters.Select(character => MapToDto(character, players))];
+    }
 
-    private async Task<CharacterInfo> MapToDto(DomainCharacterInfo character)
+    private async Task<IReadOnlyDictionary<UserIdentification, UserInfo>> LoadPlayersAsync(
+        IReadOnlyCollection<DomainCharacterInfo> characters)
+    {
+        UserIdentification[] playerIds = [..
+            characters
+                .Select(character => character.ApprovedClaim?.PlayerId)
+                .OfType<UserIdentification>()
+                .Distinct()];
+
+        if (playerIds.Length == 0)
+        {
+            return new Dictionary<UserIdentification, UserInfo>();
+        }
+
+        var players = await userRepository.GetRequiredUserInfos(playerIds);
+        return players.ToDictionary(player => player.UserId);
+    }
+
+    private CharacterInfo MapToDto(
+        DomainCharacterInfo character,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players)
     {
         // ProjectInfo несёт сам агрегат — отдельный запрос метаданных не нужен.
         var access = AccessArgumentsFactory.Create(character, currentUserAccessor);
@@ -97,19 +131,20 @@ internal class CharacterApiViewService(
 #pragma warning restore CS0612 // Type or member is obsolete
                 CharacterDescription = character.Description.Value,
                 CharacterName = character.CharacterName,
-                PlayerInfo = await CreatePlayerInfo(character),
+                PlayerInfo = CreatePlayerInfo(character, players),
             };
     }
 
-    private async Task<CharacterPlayerInfo?> CreatePlayerInfo(
-        DomainCharacterInfo character)
+    private static CharacterPlayerInfo? CreatePlayerInfo(
+        DomainCharacterInfo character,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players)
     {
         if (character.ApprovedClaim is not { } approvedClaim)
         {
             return null;
         }
 
-        var player = await userRepository.GetRequiredUserInfo(approvedClaim.PlayerId);
+        var player = players[approvedClaim.PlayerId];
         return ApiInfoBuilder.CreatePlayerInfo(character, approvedClaim, player);
     }
 
