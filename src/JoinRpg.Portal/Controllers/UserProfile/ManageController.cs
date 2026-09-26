@@ -34,16 +34,12 @@ public class ManageController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RemoveLogin(string loginProvider, string? providerKey)
     {
-        var userId = currentUserAccessor.UserId;
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindRequiredByIdAsync(currentUserAccessor.UserIdentification);
         ManageMessageId? message;
         var result = await externalLoginProfileExtractor.RemoveLogin(user, loginProvider, providerKey);
         if (result.Succeeded)
         {
-            if (user != null)
-            {
-                await signInManager.SignInAsync(user, isPersistent: true);
-            }
+            await signInManager.SignInAsync(user, isPersistent: true);
             message = ManageMessageId.RemoveLoginSuccess;
         }
         else
@@ -70,8 +66,7 @@ public class ManageController(
         {
             return View(model);
         }
-        var userId = currentUserAccessor.UserId;
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindRequiredByIdAsync(currentUserAccessor.UserIdentification);
         var result = await userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
         if (result.Succeeded)
         {
@@ -94,8 +89,7 @@ public class ManageController(
     {
         if (ModelState.IsValid)
         {
-            var userId = currentUserAccessor.UserId;
-            var user = await userManager.FindByIdAsync(userId.ToString());
+            var user = await userManager.FindRequiredByIdAsync(currentUserAccessor.UserIdentification);
             var result = await userManager.AddPasswordAsync(user, model.NewPassword);
             if (result.Succeeded)
             {
@@ -132,8 +126,8 @@ public class ManageController(
             return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
         }
 
-        var userId = currentUserAccessor.UserId;
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var userId = currentUserAccessor.UserIdentification;
+        var user = await userManager.FindRequiredByIdAsync(userId);
 
         var result = await userManager.AddLoginAsync(user, loginInfo);
         if (!result.Succeeded)
@@ -178,8 +172,7 @@ public class ManageController(
             logger.LogWarning("Ошибка при проверке логина через телеграмм {telegramValidateResult}", value);
             return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
         }
-        var userId = currentUserAccessor.UserId;
-        var user = (await userManager.FindByIdAsync(userId.ToString()))!;
+        var user = await userManager.FindRequiredByIdAsync(currentUserAccessor.UserIdentification);
 
 
         var telegramUserId = dictionary["id"];
@@ -262,8 +255,7 @@ public class ManageController(
                 viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
                 viewModel.GroupNames, viewModel.Livejournal, (ContactsAccessType)viewModel.SocialNetworkAccess,
                 viewModel.PassportData, viewModel.RegistrationAddress, viewModel.BirthDate);
-            var userId = currentUserAccessor.UserId;
-            var user = await userManager.FindByIdAsync(userId.ToString());
+            var user = await userManager.FindRequiredByIdAsync(currentUserAccessor.UserIdentification);
             await signInManager.RefreshSignInAsync(user);
             if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
             {
