@@ -857,8 +857,18 @@ internal class PaymentsService(
             return true;
         }
 
+        // Реквизиты в банке проставляются вместе с переходом подписки в Active, так что
+        // здесь они обязаны быть. Если их нет — запись несогласована, и лучше об этом
+        // узнать из лога, чем отправить в банк запрос с пустым токеном.
+        if (recurrentPayment.BankParentPayment is not { } bankParentPayment
+            || recurrentPayment.BankRecurrencyToken is not { } bankRecurrencyToken)
+        {
+            logger.LogError("Recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId} is in state {recurrentPaymentState}, but has no bank payment id or recurrency token", recurrentPaymentId, claimId, projectId, recurrentPayment.Status);
+            throw new InvalidOperationException($"Recurrent payment {recurrentPaymentId} has no bank payment id or recurrency token");
+        }
+
         var api = GetApi(projectId, claimId);
-        var result = await api.CancelFastPaymentSystemRecurrentPayments(recurrentPayment.BankParentPayment, recurrentPayment.BankRecurrencyToken);
+        var result = await api.CancelFastPaymentSystemRecurrentPayments(bankParentPayment, bankRecurrencyToken);
         if (result.Status == PaymentInfoQueryStatus.Success)
         {
             recurrentPayment.Status = RecurrentPaymentStatus.Cancelled;
