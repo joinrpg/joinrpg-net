@@ -3,7 +3,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
