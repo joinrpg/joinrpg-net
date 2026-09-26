@@ -3,11 +3,15 @@
 @model UserProfileDetailsViewModel
 <table>
     <tr>
-      <td style="vertical-align: top;padding-right:5px">
-        <vc:avatar user-avatar-id-or-null="@Model.Avatar"
-                   user-id="@Model.User.UserId"
-                   recommended-size="64" />
-      </td>
+      @* У скрытого пользователя UserId нет, аватарку грузить не по кому. *@
+      @if (Model.User.UserId is { } avatarUserId)
+      {
+        <td style="vertical-align: top;padding-right:5px">
+          <vc:avatar user-avatar-id-or-null="@Model.Avatar"
+                     user-id="@avatarUserId"
+                     recommended-size="64" />
+        </td>
+      }
         <td>
             @Html.DisplayFor(model => model.User)
             @if (!string.IsNullOrWhiteSpace(Model.FullName))
