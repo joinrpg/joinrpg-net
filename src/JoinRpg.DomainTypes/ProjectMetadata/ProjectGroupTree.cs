@@ -58,6 +58,120 @@ public sealed class ProjectGroupTree
 
     public bool Contains(CharacterGroupIdentification id) => GroupsDictionary.ContainsKey(id);
 
+    /// <summary>
+    /// Проверяет изменение группы: строит дерево, каким оно станет, и требует, чтобы изменение
+    /// не добавляло новых нарушений правил.
+    /// </summary>
+    /// <remarks>
+    /// Сравнение с нарушениями ДО изменения, а не просто «после изменения нарушений нет»: в старых
+    /// данных нарушения есть (issue #4878 — 244 группы в 18 проектах), и чинить чужие ветки мастер
+    /// при редактировании этой группы не обязан. Заодно это правильно ловит потомков: снимая
+    /// публичность, мастер рвёт путь и публичной ветке под собой — такие нарушения новые.
+    /// </remarks>
+    /// <param name="isPublic">Публичность ПОСЛЕ изменения.</param>
+    /// <param name="directParentIds">Прямые родители ПОСЛЕ изменения.</param>
+    /// <exception cref="PublicGroupWithoutPublicPathException" />
+    public void ValidateGroupChange(
+        CharacterGroupIdentification groupId,
+        bool isPublic,
+        IReadOnlyCollection<CharacterGroupIdentification> directParentIds)
+    {
+        var before = PublicGroupPathRule.FindViolations(this).Select(group => group.Id).ToHashSet();
+
+        var newViolations = PublicGroupPathRule
+            .FindViolations(WithGroupChange(groupId, isPublic, directParentIds))
+            .Where(group => !before.Contains(group.Id))
+            .ToList();
+
+        if (newViolations.Count > 0)
+        {
+            throw new PublicGroupWithoutPublicPathException(
+                RootGroupId.ProjectId, [.. newViolations.Select(group => group.Name)]);
+        }
+    }
+
+    /// <summary>
+    /// Дерево, каким оно станет после изменения группы: топология (прямые дети, все предки, все
+    /// потомки) пересчитывается заново.
+    /// </summary>
+    /// <remarks>
+    /// Копия нужна для проверок ДО сохранения, а не для показа. Поэтому порядок дочерних групп
+    /// сохраняется как получится — прежний порядок, новые дети в конце, — а тип группы
+    /// (обычная/спец) берётся прежний: спецгруппы этим путём не редактируются.
+    /// </remarks>
+    public ProjectGroupTree WithGroupChange(
+        CharacterGroupIdentification groupId,
+        bool isPublic,
+        IReadOnlyCollection<CharacterGroupIdentification> directParentIds)
+    {
+        ArgumentNullException.ThrowIfNull(directParentIds);
+
+        if (!GroupsDictionary.ContainsKey(groupId))
+        {
+            throw new ArgumentException($"Группы {groupId} нет в проекте", nameof(groupId));
+        }
+
+        // Родителей берём только существующих: список приходит из формы.
+        var changedParents = directParentIds.Where(GroupsDictionary.ContainsKey).ToArray();
+
+        IReadOnlyCollection<CharacterGroupIdentification> ParentsOf(CharacterGroupIdentification id)
+            => id == groupId ? changedParents : GroupsDictionary[id].DirectParentGroupIds;
+
+        var childrenOf = AllGroups.ToDictionary(
+            group => group.Id,
+            group => (IReadOnlyCollection<CharacterGroupIdentification>)
+                [
+                    // Прежний порядок дочерних групп, затем появившиеся.
+                    .. group.DirectChildGroupIds.Where(child => ParentsOf(child).Contains(group.Id)),
+                    .. AllGroups
+                        .Where(other => ParentsOf(other.Id).Contains(group.Id))
+                        .Select(other => other.Id)
+                        .Where(other => !group.DirectChildGroupIds.Contains(other)),
+                ]);
+
+        var groups = AllGroups.ToDictionary(
+            group => group.Id,
+            group => group with
+            {
+                IsPublic = group.Id == groupId ? isPublic : group.IsPublic,
+                DirectParentGroupIds = ParentsOf(group.Id),
+                DirectChildGroupIds = childrenOf[group.Id],
+                AllChildGroups = Closure(group.Id, id => childrenOf[id]),
+                AllParentGroups = Closure(group.Id, ParentsOf),
+            });
+
+        return new ProjectGroupTree(RootGroupId, groups);
+    }
+
+    /// <summary>
+    /// Транзитивное замыкание в порядке обхода в глубину, устойчивое к циклам в графе групп.
+    /// </summary>
+    private static List<CharacterGroupIdentification> Closure(
+        CharacterGroupIdentification start,
+        Func<CharacterGroupIdentification, IReadOnlyCollection<CharacterGroupIdentification>> next)
+    {
+        var result = new List<CharacterGroupIdentification>();
+        var seen = new HashSet<CharacterGroupIdentification>();
+        var stack = new Stack<CharacterGroupIdentification>(next(start).Reverse());
+
+        while (stack.Count > 0)
+        {
+            var id = stack.Pop();
+            if (!seen.Add(id))
+            {
+                continue;
+            }
+
+            result.Add(id);
+            foreach (var nextId in next(id).Reverse())
+            {
+                stack.Push(nextId);
+            }
+        }
+
+        return result;
+    }
+
     public CharacterGroupInfo GetGroupById(CharacterGroupIdentification id) => GroupsDictionary[id];
 
     /// <summary>Группа проекта или <c>null</c>, если такой группы нет.</summary>
