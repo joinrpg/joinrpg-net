@@ -15,6 +15,14 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     public Task<Project?> GetProjectWithFieldsAsync(int project) => ProjectLoaderCommon.GetProjectWithFieldsAsync(Ctx, project, skipCache: false);
 
+    public async Task<Project> GetProjectForMarkdownRendering(ProjectIdentification projectId)
+    {
+        await LoadProjectCharactersAndGroups(projectId);
+
+        return await Ctx.ProjectsSet.SingleAsync(p => p.ProjectId == projectId.Value);
+    }
+
+
     public async Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId)
     {
         return

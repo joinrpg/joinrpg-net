@@ -34,7 +34,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: «Интриги Гэндальфа #мордор #гондор #костромская_область»")]
     public string PlotFolderTitleAndTags { get; set; }
 
-    public EditPlotFolderViewModel(PlotFolder folder, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
+    public EditPlotFolderViewModel(PlotFolder folder, Project projectForRendering, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
         if (folder == null)
         {
@@ -44,7 +44,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
         PlotFolderId = folder.PlotFolderId;
         TodoField = folder.TodoField;
         ProjectId = folder.ProjectId;
-        Fill(folder, currentUser, uriService, projectInfo);
+        Fill(folder, projectForRendering, currentUser, uriService, projectInfo);
         if (TagNames.Any())
         {
             PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.PlotTags.GetTagString();
@@ -57,12 +57,12 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
 
     [MemberNotNull(nameof(TagNames))]
     [MemberNotNull(nameof(Elements))]
-    public void Fill(PlotFolder folder, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
+    public void Fill(PlotFolder folder, Project projectForRendering, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
         PlotFolderMasterTitle = folder.MasterTitle;
         Status = folder.GetStatus();
 
-        var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo);
+        var linkRenderer = new JoinrpgMarkdownLinkRenderer(projectForRendering, projectInfo);
         Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
         TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
 

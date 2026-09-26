@@ -8,15 +8,11 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
 {
     public async Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId)
     {
-        await LoadProjectCharactersAndGroups(plotFolderId.ProjectId);
-        await LoadMasters(plotFolderId.ProjectId);
-
         var folder =
           await Ctx.Set<PlotFolder>()
             .Include(pf => pf.Elements)
             .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
             .Include(pf => pf.PlotTags)
-            .Include(pf => pf.Project.Claims)
             .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId.PlotFolderId && pf.ProjectId == plotFolderId.ProjectId);
 
         if (folder is not null)
@@ -37,8 +33,9 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
     /// с уже загруженными вводными через relationship fixup EF6, как это делают <see cref="LoadMasters"/>
     /// и соседние методы <c>GameRepositoryImplBase</c>.
     ///
-    /// Сами персонажи и группы к этому моменту уже в контексте (<see cref="LoadProjectCharactersAndGroups"/>),
-    /// так что эти запросы тянут по сути только строки таблиц связи.
+    /// Сами персонажи и группы в контекст при этом не тянутся: таргету вводной нужны только имя и id,
+    /// а полный граф проекта грузится отдельно и лишь там, где рендерится markdown
+    /// (<c>IProjectRepository.GetProjectForMarkdownRendering</c>).
     /// </remarks>
     private async Task LoadPlotElementTargets(PlotFolderIdentification plotFolderId)
     {

@@ -20,6 +20,7 @@ namespace JoinRpg.Portal.Controllers;
 public class PlotController(
     IPlotService plotService,
     IPlotRepository plotRepository,
+    IProjectRepository projectRepository,
     IUriService uriService,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
@@ -68,7 +69,8 @@ public class PlotController(
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        return View(new EditPlotFolderViewModel(folder, currentUserAccessor, uriService, projectInfo));
+        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(projectId));
+        return View(new EditPlotFolderViewModel(folder, projectForRendering, currentUserAccessor, uriService, projectInfo));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanManagePlots)]
@@ -85,7 +87,8 @@ public class PlotController(
             AddModelException(exception);
             var folder = await plotRepository.GetPlotFolderAsync(new(viewModel.ProjectId, viewModel.PlotFolderId));
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
-            viewModel.Fill(folder, currentUserAccessor, uriService, projectInfo);
+            var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(viewModel.ProjectId));
+            viewModel.Fill(folder, projectForRendering, currentUserAccessor, uriService, projectInfo);
             return View(viewModel);
         }
     }
@@ -176,7 +179,8 @@ public class PlotController(
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        return View(new EditPlotFolderViewModel(folder, currentUserAccessor, uriService, projectInfo));
+        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(projectId));
+        return View(new EditPlotFolderViewModel(folder, projectForRendering, currentUserAccessor, uriService, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
@@ -275,7 +279,7 @@ public class PlotController(
             element.GetDetails(version),
             AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor),
             itemIdsToParticipateInSort: null,
-            renderer: new JoinrpgMarkdownLinkRenderer(folder.Project, projectInfo),
+            renderer: new JoinrpgMarkdownLinkRenderer(await projectRepository.GetProjectForMarkdownRendering(projectId), projectInfo),
             printMode: printMode));
     }
 

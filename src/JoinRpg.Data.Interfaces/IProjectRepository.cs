@@ -8,6 +8,21 @@ public interface IProjectRepository : IDisposable
     Task<Project> GetProjectAsync(int project);
     Task<Project?> GetProjectWithFieldsAsync(int project);
 
+    /// <summary>
+    /// Отдаёт EF-граф проекта, который нужен <c>JoinrpgMarkdownLinkRenderer</c> для директив
+    /// вида <c>%персонаж</c>, <c>%группа</c>, <c>%список</c>: персонажей проекта с их заявками
+    /// и группы. Без него рендеринг грузит их лениво, по одному на директиву.
+    /// </summary>
+    /// <remarks>
+    /// Метод существует только потому, что рендерер markdown завязан на EF-сущность <c>Project</c>,
+    /// и уйдёт вместе с этой завязкой — см. #4923. Звать его нужно там и только там, где текст
+    /// действительно рендерится: страницам, которым нужны лишь таргеты или заголовки, граф не нужен.
+    ///
+    /// Раньше эту загрузку молча делал <c>IPlotRepository.GetPlotFolderAsync</c> — из-за чего её
+    /// платили и те страницы сюжетов, которым она не нужна.
+    /// </remarks>
+    Task<Project> GetProjectForMarkdownRendering(ProjectIdentification projectId);
+
     Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId);
 
     Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null);
