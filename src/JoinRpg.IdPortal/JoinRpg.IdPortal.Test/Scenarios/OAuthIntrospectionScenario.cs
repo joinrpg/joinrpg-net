@@ -39,7 +39,7 @@ public class OAuthIntrospectionScenario(IdPortalApplicationFactory factory)
         var payload = await IntrospectAsync(McpResource, secret, token);
 
         payload.GetProperty("active").GetBoolean().ShouldBeTrue();
-        payload.GetProperty("scope").GetString().ShouldContain(JoinRpgScopes.Read);
+        payload.GetProperty("scope").GetString().ShouldNotBeNull().ShouldContain(JoinRpgScopes.Read);
     }
 
     [Fact]

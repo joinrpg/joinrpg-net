@@ -44,7 +44,7 @@ public class CimdDocumentTests
             """), ClientId);
 
         result.IsValid.ShouldBeFalse();
-        result.Error.ShouldContain("не совпадает");
+        result.Error.ShouldNotBeNull().ShouldContain("не совпадает");
     }
 
     [Theory]
@@ -55,7 +55,7 @@ public class CimdDocumentTests
         var result = CimdDocument.Validate(Doc(body.Replace("URL", Url)), ClientId);
 
         result.IsValid.ShouldBeFalse();
-        result.Error.ShouldContain(expected);
+        result.Error.ShouldNotBeNull().ShouldContain(expected);
     }
 
     [Theory]
@@ -69,7 +69,7 @@ public class CimdDocumentTests
             """), ClientId);
 
         result.IsValid.ShouldBeFalse();
-        result.Error.ShouldContain("client_secret");
+        result.Error.ShouldNotBeNull().ShouldContain("client_secret");
     }
 
     [Theory]
@@ -84,7 +84,7 @@ public class CimdDocumentTests
             """), ClientId);
 
         result.IsValid.ShouldBeFalse();
-        result.Error.ShouldContain("общем секрете");
+        result.Error.ShouldNotBeNull().ShouldContain("общем секрете");
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class CimdDocumentTests
             """), ClientId);
 
         result.IsValid.ShouldBeFalse();
-        result.Error.ShouldContain("https");
+        result.Error.ShouldNotBeNull().ShouldContain("https");
     }
 
     [Fact]
