@@ -6,7 +6,7 @@ namespace JoinRpg.Services.Notifications.Test;
 public class VerifyTelegramBody
 {
     private static RenderedEntityLink SampleLink => new(
-        Markdown: new MarkdownDbValue("Подробнее: [комментарий](https://joinrpg.ru/1/claim/1/edit#comment42)"),
+        Markdown: new MarkdownString("Подробнее: [комментарий](https://joinrpg.ru/1/claim/1/edit#comment42)"),
         PlainText: "Подробнее: комментарий: https://joinrpg.ru/1/claim/1/edit#comment42");
 
     [Theory]
@@ -16,7 +16,7 @@ public class VerifyTelegramBody
     {
         var result = TelegramSenderJobService.FormatMessage(
             header,
-            new MarkdownDbValue(body),
+            new MarkdownString(body),
             withLink ? SampleLink : null,
             new UserDisplayName("Master", null));
 
@@ -30,7 +30,7 @@ public class VerifyTelegramBody
     {
         var result = TelegramSenderJobService.FormatMessage(
             header,
-            new MarkdownDbValue(body),
+            new MarkdownString(body),
             withLink ? SampleLink : null);
 
         return Verify(result.Contents).UseParameters(num);

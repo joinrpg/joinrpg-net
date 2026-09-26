@@ -26,7 +26,7 @@ public class McpHealthCheckTests
 
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
         entry.Status.ShouldBe(HealthStatus.Degraded);
-        entry.Description.ShouldContain("выключен");
+        entry.Description.ShouldNotBeNull().ShouldContain("выключен");
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class McpHealthCheckTests
 
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
         entry.Status.ShouldBe(HealthStatus.Degraded);
-        entry.Description.ShouldContain("выключен");
+        entry.Description.ShouldNotBeNull().ShouldContain("выключен");
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public class McpHealthCheckTests
 
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
         entry.Status.ShouldBe(HealthStatus.Healthy);
-        entry.Description.ShouldContain("включён");
+        entry.Description.ShouldNotBeNull().ShouldContain("включён");
     }
 
     [Fact]
@@ -76,8 +76,8 @@ public class McpHealthCheckTests
 
         var entry = report.Entries[McpRegistration.McpHealthCheckName];
         entry.Status.ShouldBe(HealthStatus.Degraded);
-        entry.Description.ShouldContain("dev-joinrpg-ru");
-        entry.Description.ShouldContain("https://dev.joinrpg.ru/mcp");
+        entry.Description.ShouldNotBeNull().ShouldContain("dev-joinrpg-ru");
+        entry.Description.ShouldNotBeNull().ShouldContain("https://dev.joinrpg.ru/mcp");
     }
 
     private static async Task<HealthReport> RunHealthCheckAsync(McpResourceOptions? mcpOptions)
