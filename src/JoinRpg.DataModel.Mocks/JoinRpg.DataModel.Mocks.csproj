@@ -1,9 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <!-- TODO #4889: в проекте ещё остались CS8604, поэтому он тут заглушён.
-         Убрать эту строчку вместе с последним исправленным CS8604. -->
-    <NoWarn>$(NoWarn);CS8604</NoWarn>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />

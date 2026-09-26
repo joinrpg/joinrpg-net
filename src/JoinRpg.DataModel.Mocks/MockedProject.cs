@@ -108,7 +108,7 @@ public class MockedProject
             SelectedAvatarId: null,
             new Email(user.Email),
             EmailConfirmed: true,
-            new UserFullName(new PrefferedName(user.PrefferedName), null, null, null),
+            new UserFullName(PrefferedName.FromOptional(user.PrefferedName), null, null, null),
             false,
             null,
             HasPassword: false);
@@ -356,7 +356,7 @@ public class MockedProject
             claim.GetId(),
             new UserInfoHeader(
                 new UserIdentification(claim.PlayerUserId),
-                new UserDisplayName(new PrefferedName(claim.Player.PrefferedName), new Email(claim.Player.Email))),
+                new UserDisplayName(new UserFullName(PrefferedName.FromOptional(claim.Player.PrefferedName), null, null, null), new Email(claim.Player.Email))),
             claim.ClaimStatus,
             claim.ClaimDenialStatus,
             new UserIdentification(claim.ResponsibleMasterUserId),
