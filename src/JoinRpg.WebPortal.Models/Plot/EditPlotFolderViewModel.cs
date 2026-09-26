@@ -90,17 +90,6 @@ public class PlotElementListItemViewModel : IProjectIdAware
             e, accessArguments, itemIds, linkRenderer))];
     }
 
-    /// <summary>Перегрузка для страниц, которые пока держат EF-сущность папки: список сюжетов (FlatList).</summary>
-    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolder folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
-    {
-        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();
-        var itemIds = orderedElements.Select(x => x.GetId().ToString()).ToArray();
-        var accessArguments = AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor);
-
-        return [.. orderedElements.Select(e => new PlotElementListItemViewModel(
-            e.GetDetails(), accessArguments, itemIds, linkRenderer))];
-    }
-
     public PlotElementListItemViewModel(
         PlotElementDetailsDto element,
         PlotAccessArguments accessArguments,
@@ -116,14 +105,14 @@ public class PlotElementListItemViewModel : IProjectIdAware
         PlotElementId = element.Id.PlotElementId;
         PlotElementIdentification = element.Id;
         Target = element.Target;
-        Content = ((MarkdownString?)currentVersionText.Content).ToHtmlString(renderer);
+        Content = currentVersionText.Content.ToHtmlString(renderer);
         TodoField = currentVersionText.TodoField;
         ProjectId = element.Id.ProjectId.Value;
         PlotFolderId = element.Id.PlotFolderId.PlotFolderId;
         Status = element.GetStatus();
         ElementType = (PlotElementTypeView)element.ElementType;
         IsMasterOnly = element.IsMasterOnly;
-        ShortContent = ((MarkdownString?)currentVersionText.Content).TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
+        ShortContent = currentVersionText.Content.TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
 
         HasPlotEditorAccess = accessArguments.HasPlotEditorAccess;
         HasMasterAccess = accessArguments.HasMasterAccess;
