@@ -208,11 +208,8 @@ internal class CharacterPropsService(
                     // Уведомления уходят строго после сохранения: до него CommentId ещё не существует.
                     foreach (var pending in ctx.PendingComments)
                     {
-                        if (!pending.IsSilent)
-                        {
-                            await claimNotificationService.SendNotification(
-                                pending.Notification.WithCommentId(pending.Comment.CommentId));
-                        }
+                        await claimNotificationService.SendNotification(
+                            pending.Notification.WithCommentId(pending.Comment.CommentId));
                     }
 
                     // Легаси-канал — после уведомлений, как это было до миграции.
@@ -369,10 +366,6 @@ internal class CharacterPropsService(
                         {
                             _ = pending.Decorate(decorator);
                         }
-                        if (deferred.IsSilent)
-                        {
-                            _ = pending.Silent();
-                        }
                         return pending;
                     })
                     .ToList();
@@ -384,11 +377,8 @@ internal class CharacterPropsService(
 
                 foreach (var pending in pendingComments)
                 {
-                    if (!pending.IsSilent)
-                    {
-                        await claimNotificationService.SendNotification(
-                            pending.Notification.WithCommentId(pending.Comment.CommentId));
-                    }
+                    await claimNotificationService.SendNotification(
+                        pending.Notification.WithCommentId(pending.Comment.CommentId));
                 }
 
                 return claim;

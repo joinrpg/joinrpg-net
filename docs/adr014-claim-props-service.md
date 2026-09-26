@@ -160,9 +160,9 @@ ADR009 про отсутствие навигационных свойств у 
 `SendNotification(email.WithCommentId(comment.CommentId))`.
 
 `ctx.AddComment(...)` возвращает `PendingComment`, который умеет `Decorate(...)` (сегодняшние
-`email with { AnotherCharacterId / OldResponsibleMaster / Money / PaymentOwner }`), `SetParent(...)`
+`email with { AnotherCharacterId / OldResponsibleMaster / Money / PaymentOwner }`) и `SetParent(...)`
 (перенос `SetParentCommentAndCheck` вместе с проверкой «нельзя ответить на скрытый комментарий
-видимо игроку») и `Silent()` (комментарий создаётся, уведомление не уходит). После `SaveChanges`
+видимо игроку»). По каждому добавленному комментарию уведомление уходит. После `SaveChanges`
 сервис рассылает уведомления в порядке добавления, затем — письма легаси-канала
 (`EmailService.Email(LeaveRoomEmail)`), как это происходит сегодня.
 
