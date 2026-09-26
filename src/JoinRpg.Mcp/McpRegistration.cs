@@ -28,6 +28,16 @@ public static class McpRegistration
         JoinRpgHostNamesOptions hostNames)
     {
         var enabled = !string.IsNullOrEmpty(mcpOptions?.ClientId) && !string.IsNullOrEmpty(mcpOptions.ClientSecret);
+        var idPortalIssuer = new Uri($"https://{hostNames.IdHost}/");
+        var resourceUri = new Uri($"https://{hostNames.MainHost}/mcp");
+
+        // IdPortal пускает в интроспекцию только сторону, указанную в аудитории токена, а
+        // аудитория у нас — идентификатор ресурса. Значит client_id, которым мы представляемся
+        // при интроспекции, обязан быть равен ему же. Иначе IdPortal отвечает
+        // 200 {"active": false} на совершенно нормальный токен, и наружу это выходит как 401
+        // на /mcp без единого намёка на причину — так и случилось на dev.
+        var clientIdMatchesResource =
+            string.Equals(mcpOptions?.ClientId, resourceUri.ToString(), StringComparison.Ordinal);
 
         // Регистрируется всегда, в том числе когда MCP выключен: иначе «выключен» и «сломан»
         // снаружи неотличимы — оба дают 404 на /mcp.
@@ -38,17 +48,20 @@ public static class McpRegistration
         // продолжает обслуживать сайт, у которого просто нет MCP.
         services.AddHealthChecks().AddCheck(
             McpHealthCheckName,
-            () => enabled
-                ? HealthCheckResult.Healthy("MCP включён, /mcp зарегистрирован")
-                : HealthCheckResult.Degraded("MCP выключен: не заданы Mcp:ClientId/Mcp:ClientSecret"));
+            () => !enabled
+                ? HealthCheckResult.Degraded("MCP выключен: не заданы Mcp:ClientId/Mcp:ClientSecret")
+                : clientIdMatchesResource
+                    ? HealthCheckResult.Healthy("MCP включён, /mcp зарегистрирован")
+                    : HealthCheckResult.Degraded(
+                        $"MCP включён, но Mcp:ClientId ('{mcpOptions!.ClientId}') не равен ресурсу "
+                        + $"('{resourceUri}'). IdPortal пускает в интроспекцию только сторону из "
+                        + "аудитории токена, поэтому все токены будут отвергаться как неактивные, "
+                        + "а /mcp отвечать 401."));
 
         if (!enabled)
         {
             return services;
         }
-
-        var idPortalIssuer = new Uri($"https://{hostNames.IdHost}/");
-        var resourceUri = new Uri($"https://{hostNames.MainHost}/mcp");
 
         services.AddHttpContextAccessor();
         services.AddScoped<McpAuthContext>();
