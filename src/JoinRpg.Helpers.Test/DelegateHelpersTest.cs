@@ -3,18 +3,6 @@ namespace JoinRpg.Helpers.Test;
 public class DelegateHelpersTest
 {
     [Fact]
-    public void AsAlwaysTrueFunc_RunsActionAndReturnsTrue()
-    {
-        var seen = 0;
-        Action<int> action = value => seen = value;
-
-        var result = action.AsAlwaysTrueFunc()(42);
-
-        result.ShouldBeTrue();
-        seen.ShouldBe(42);
-    }
-
-    [Fact]
     public async Task AsAlwaysTrueAsyncFunc_FromAction_RunsActionAndReturnsTrue()
     {
         var seen = 0;
@@ -47,12 +35,12 @@ public class DelegateHelpersTest
     /// Иначе ядро операции получило бы уже случившийся побочный эффект.
     /// </summary>
     [Fact]
-    public void AsAlwaysTrueFunc_DoesNotRunActionUntilInvoked()
+    public void AsAlwaysTrueAsyncFunc_DoesNotRunActionUntilInvoked()
     {
         var called = false;
         Action<int> action = _ => called = true;
 
-        _ = action.AsAlwaysTrueFunc();
+        _ = action.AsAlwaysTrueAsyncFunc();
 
         called.ShouldBeFalse();
     }
