@@ -10,14 +10,6 @@ namespace JoinRpg.Helpers;
 /// </remarks>
 public static class DelegateHelpers
 {
-    /// <summary>Выполняет действие и возвращает <c>true</c>.</summary>
-    public static Func<TArg, bool> AsAlwaysTrueFunc<TArg>(this Action<TArg> action)
-        => arg =>
-        {
-            action(arg);
-            return true;
-        };
-
     /// <summary>Выполняет действие и возвращает уже завершённый <c>true</c>.</summary>
     public static Func<TArg, Task<bool>> AsAlwaysTrueAsyncFunc<TArg>(this Action<TArg> action)
         => arg =>
