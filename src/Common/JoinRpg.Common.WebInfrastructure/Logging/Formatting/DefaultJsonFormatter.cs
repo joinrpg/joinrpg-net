@@ -284,7 +284,7 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
     /// <summary>
     /// Writes out a structure property
     /// </summary>
-    protected virtual void WriteStructure(string typeTag, IEnumerable<LogEventProperty> properties, TextWriter output)
+    protected virtual void WriteStructure(string? typeTag, IEnumerable<LogEventProperty> properties, TextWriter output)
     {
         output.Write("{");
 
@@ -339,7 +339,7 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
     /// <summary>
     /// Writes out a json property with the specified value on output writer
     /// </summary>
-    protected virtual void WriteJsonProperty(string name, object value, ref string precedingDelimiter, TextWriter output)
+    protected virtual void WriteJsonProperty(string name, object? value, ref string precedingDelimiter, TextWriter output)
     {
         output.Write(precedingDelimiter);
         output.Write("\"");
@@ -372,7 +372,7 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
         WriteString(value.ToString(), output);
     }
 
-    private void WriteLiteral(object value, TextWriter output, bool forceQuotation = false)
+    private void WriteLiteral(object? value, TextWriter output, bool forceQuotation = false)
     {
         if (value == null)
         {
@@ -442,8 +442,16 @@ internal abstract class DefaultJsonFormatter : ITextFormatter
         output.Write("\"");
     }
 
-    private static void WriteString(string value, TextWriter output)
+    private static void WriteString(string? value, TextWriter output)
     {
+        // ToString() произвольного объекта (см. WriteLiteralValue) вполне может вернуть null —
+        // в JSON это null, а не пустая строка.
+        if (value is null)
+        {
+            output.Write("null");
+            return;
+        }
+
         JsonValueFormatter.WriteQuotedJsonString(value, output);
     }
 }
