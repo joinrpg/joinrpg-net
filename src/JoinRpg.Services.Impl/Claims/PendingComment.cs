@@ -45,16 +45,6 @@ internal sealed class DeferredComment(
     /// </summary>
     public Claim? TargetClaim { get; } = TargetClaim;
 
-    /// <summary>Уведомление создаётся, но не отправляется — см. <see cref="PendingComment.Silent"/>.</summary>
-    public bool IsSilent { get; private set; }
-
-    /// <inheritdoc cref="PendingComment.Silent"/>
-    public DeferredComment Silent()
-    {
-        IsSilent = true;
-        return this;
-    }
-
     /// <summary>
     /// Дополнения уведомления, накопленные до его создания: само уведомление появится только между
     /// двумя сохранениями, а операция знает, чем его дополнить, уже сейчас.
@@ -76,9 +66,6 @@ internal sealed class PendingComment(Comment comment, ClaimSimpleChangedNotifica
 
     /// <summary>Уведомление, которое уйдёт после сохранения.</summary>
     public ClaimSimpleChangedNotification Notification { get; private set; } = notification;
-
-    /// <summary>Уведомление создаётся, но не отправляется.</summary>
-    public bool IsSilent { get; private set; }
 
     /// <summary>
     /// Дополняет уведомление данными, известными операции: другим персонажем при переносе,
@@ -108,15 +95,5 @@ internal sealed class PendingComment(Comment comment, ClaimSimpleChangedNotifica
             ParentCommentAuthor = parentComment.Author.ToUserInfoHeader(),
             PaymentOwner = parentComment.Finance?.PaymentType?.User?.ToUserInfoHeader(),
         });
-    }
-
-    /// <summary>
-    /// Комментарий создаётся, но уведомление по нему не отправляется. Нужен там, где так было и до
-    /// миграции, — иначе игроки начнут получать письма, которых раньше не было.
-    /// </summary>
-    public PendingComment Silent()
-    {
-        IsSilent = true;
-        return this;
     }
 }

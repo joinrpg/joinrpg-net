@@ -37,22 +37,6 @@ public class ChangeClaimTest : ClaimServiceTestBase
         claimNotifications.Sent.Count.ShouldBe(1);
     }
 
-    [Fact]
-    public async Task SilentComment_CreatesComment_ButSendsNothing()
-    {
-        var claimId = CreateClaim();
-
-        await CreatePropsService().ChangeClaim(
-            claimId,
-            ClaimAccessRequirement.AnyMaster,
-            ProjectActiveRequirement.MustBeActive,
-            "текст",
-            ctx => ctx.AddComment(ctx.Request, CommentExtraAction.FeeChanged, ClaimOperationType.MasterVisibleChange).Silent());
-
-        SaveChangesCallCount.ShouldBe(1);
-        claimNotifications.Sent.ShouldBeEmpty();
-    }
-
     /// <summary>
     /// Если мутация упала, уведомления не уходят и ничего не сохраняется. До миграции это
     /// приходилось соблюдать вручную в каждом методе.
