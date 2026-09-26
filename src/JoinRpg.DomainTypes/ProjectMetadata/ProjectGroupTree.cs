@@ -93,6 +93,29 @@ public sealed class ProjectGroupTree
     }
 
     /// <summary>
+    /// Проверяет создание группы: публичной новой группе нужен хотя бы один родитель, до которого
+    /// есть публичный путь от корня.
+    /// </summary>
+    /// <remarks>
+    /// Копия дерева здесь, в отличие от <see cref="ValidateGroupChange"/>, не нужна: у новой группы
+    /// нет потомков, поэтому единственное, что может нарушиться, — её собственный путь наверх.
+    /// </remarks>
+    /// <param name="name">Название создаваемой группы — только для текста ошибки.</param>
+    /// <exception cref="PublicGroupWithoutPublicPathException" />
+    public void ValidateGroupCreation(
+        string name,
+        bool isPublic,
+        IReadOnlyCollection<CharacterGroupIdentification> directParentIds)
+    {
+        if (!isPublic || PublicGroupPathRule.AnyHasPublicPath(this, directParentIds))
+        {
+            return;
+        }
+
+        throw new PublicGroupWithoutPublicPathException(RootGroupId.ProjectId, [name]);
+    }
+
+    /// <summary>
     /// Дерево, каким оно станет после изменения группы: топология (прямые дети, все предки, все
     /// потомки) пересчитывается заново.
     /// </summary>

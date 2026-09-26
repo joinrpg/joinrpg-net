@@ -20,13 +20,16 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
             (name, isPublic, parentCharacterGroupIds, description),
             ctx =>
             {
+                var name = ServiceValidation.Required(ctx.Request.name);
+                var parentIds = ctx.ProjectInfo.GroupTree
+                    .ValidateCharacterGroupList(ServiceValidation.Required(ctx.Request.parentCharacterGroupIds));
+
+                ctx.ProjectInfo.GroupTree.ValidateGroupCreation(name, ctx.Request.isPublic, parentIds);
+
                 var group = new CharacterGroup()
                 {
-                    CharacterGroupName = ServiceValidation.Required(ctx.Request.name),
-                    ParentCharacterGroupIds = ctx.ProjectInfo.GroupTree
-                        .ValidateCharacterGroupList(
-                            ServiceValidation.Required(ctx.Request.parentCharacterGroupIds))
-                        .ToIntArray(),
+                    CharacterGroupName = name,
+                    ParentCharacterGroupIds = parentIds.ToIntArray(),
                     ProjectId = projectId,
                     IsRoot = false,
                     IsSpecial = false,

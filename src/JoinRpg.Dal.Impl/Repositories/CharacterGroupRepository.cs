@@ -79,6 +79,26 @@ internal class CharacterGroupRepository(
         return result;
     }
 
+    public async Task<IReadOnlyCollection<ProjectIdentification>> GetProjectsWithPublicGroupUnderPrivateParent()
+    {
+        // Родители лежат строкой с запятыми (CharacterGroup.ParentGroupsImpl), поэтому ребро
+        // дерева ищем через CharIndex — так же, как подсчёт персонажей группы выше.
+        var projectIds = await ctx.Set<CharacterGroup>()
+            .Where(child => child.IsActive && child.IsPublic && !child.IsSpecial && !child.IsRoot)
+            .Where(child => ctx.Set<CharacterGroup>().Any(parent =>
+                parent.ProjectId == child.ProjectId
+                && parent.IsActive
+                && !parent.IsPublic
+                && SqlFunctions.CharIndex(
+                    "," + SqlFunctions.StringConvert((double?)parent.CharacterGroupId).Trim() + ",",
+                    "," + child.ParentGroupsImpl.ListIds + ",") > 0))
+            .Select(child => child.ProjectId)
+            .Distinct()
+            .ToListAsync();
+
+        return [.. projectIds.Select(id => new ProjectIdentification(id))];
+    }
+
     private static UserInfoHeader? BuildUserInfo(int? userId, string? preffered, string? born, string? sur, string? father, string? email)
     {
         if (userId is null || email is null)
