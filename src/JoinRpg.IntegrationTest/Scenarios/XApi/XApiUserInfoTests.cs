@@ -1,7 +1,6 @@
 using System.Net;
 using JoinRpg.Dal.Impl;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 
 namespace JoinRpg.IntegrationTest.Scenarios.XApi;
 

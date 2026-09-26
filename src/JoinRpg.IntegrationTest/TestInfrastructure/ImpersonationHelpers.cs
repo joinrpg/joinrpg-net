@@ -1,7 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Interfaces;
 
-namespace JoinRpg.IntegrationTests.TestInfrastructure;
+namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
 /// <summary>
 /// Помощники для выполнения кода от имени конкретного пользователя (impersonation) в интеграционных тестах.

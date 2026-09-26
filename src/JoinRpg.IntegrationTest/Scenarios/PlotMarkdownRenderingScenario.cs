@@ -3,7 +3,6 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
