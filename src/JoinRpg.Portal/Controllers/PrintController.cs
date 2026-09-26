@@ -47,6 +47,18 @@ public class PrintController(
     [MasterAuthorize()]
     [HttpGet]
     public async Task<ActionResult> CharacterList(ProjectIdentification projectId, CompressedIntList characterIds)
+        => View(await LoadCharactersToPrint(projectId, characterIds));
+
+    /// <summary>
+    /// Печатает для каждого персонажа только заглавную страницу конверта (надпись и чек-лист раздатки),
+    /// без полей персонажа и загрузов.
+    /// </summary>
+    [MasterAuthorize()]
+    [HttpGet]
+    public async Task<ActionResult> HandoutOnly(ProjectIdentification projectId, CompressedIntList characterIds)
+        => View(await LoadCharactersToPrint(projectId, characterIds));
+
+    private async Task<PrintCharacterViewModel[]> LoadCharactersToPrint(ProjectIdentification projectId, CompressedIntList characterIds)
     {
         IReadOnlyCollection<CharacterIdentification> characterIdsList = characterIds.ToCharacterIds(projectId);
         var characters = await characterRepository.LoadCharactersWithGroups(characterIdsList);
@@ -56,15 +68,13 @@ public class PrintController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
-        var viewModel =
-          characters.Select(
+        return
+          [.. characters.Select(
             c =>
             {
                 var characterId = new CharacterIdentification(c.ProjectId, c.CharacterId);
                 return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], projectInfo, handouts[characterId]);
-            }).ToArray();
-
-        return View(viewModel);
+            })];
     }
 
     [MasterAuthorize()]
