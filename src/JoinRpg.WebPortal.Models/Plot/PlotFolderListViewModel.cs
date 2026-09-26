@@ -68,6 +68,6 @@ public class PlotFolderListFullItemViewModel : PlotFolderViewModelBase, IPlotFol
         TodoField = folder.TodoField;
         HasEditAccess = projectInfo.HasMasterAccess(currentUser, Permission.CanManagePlots) && projectInfo.IsActive;
         Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
-        Summary = ((MarkdownString?)folder.MasterSummary).ToHtmlString();
+        Summary = folder.MasterSummary.ToHtmlString();
     }
 }

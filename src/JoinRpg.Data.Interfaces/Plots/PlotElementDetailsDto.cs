@@ -1,5 +1,4 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Plots;
 
 namespace JoinRpg.Data.Interfaces.Plots;
@@ -64,7 +63,7 @@ public record PlotElementDetailsDto(
 /// <param name="Author">Кто сохранил версию, <c>null</c> для старых записей без автора.</param>
 public record PlotElementVersionDto(
     int Version,
-    MarkdownDbValue Content,
+    MarkdownString? Content,
     string TodoField,
     DateTime ModifiedAt,
     UserInfoHeader? Author);
@@ -83,7 +82,7 @@ public record PlotFolderDetailsDto(
     PlotFolderIdentification Id,
     string MasterTitle,
     string TodoField,
-    MarkdownDbValue MasterSummary,
+    MarkdownString? MasterSummary,
     bool IsActive,
     IReadOnlyList<string> Tags,
     IReadOnlyList<PlotElementDetailsDto> Elements)

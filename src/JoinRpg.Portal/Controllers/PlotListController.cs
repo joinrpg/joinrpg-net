@@ -78,11 +78,11 @@ public class PlotListController(
 
     [RequireMasterOrPublish]
     [HttpGet]
-    public async Task<ActionResult> FlatList(int projectId)
+    public async Task<ActionResult> FlatList(ProjectIdentification projectId)
     {
-        var folders = await plotRepository.GetPlotsDetails(new(projectId));
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(projectId));
+        var folders = await plotRepository.GetActivePlotFolders(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(projectId);
         return View(
             new PlotFolderFullListViewModel(
                 folders,
@@ -93,11 +93,11 @@ public class PlotListController(
 
     [RequireMasterOrPublish]
     [HttpGet]
-    public async Task<ActionResult> FlatListUnready(int projectId)
+    public async Task<ActionResult> FlatListUnready(ProjectIdentification projectId)
     {
-        var folders = await plotRepository.GetPlotsDetails(new(projectId));
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(projectId));
+        var folders = await plotRepository.GetActivePlotFolders(projectId);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(projectId);
         return View("FlatList",
             new PlotFolderFullListViewModel(folders, projectForRendering, currentUser, projectInfo, true));
     }

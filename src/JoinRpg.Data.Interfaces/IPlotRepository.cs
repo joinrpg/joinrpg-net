@@ -32,13 +32,16 @@ public interface IPlotRepository : IDisposable
     Task<PlotElementDetailsDto?> GetPlotElementDetails(PlotElementIdentification elementId, int? version = null);
     Task<IReadOnlyCollection<PlotElement>> GetDirectPlotsForCharacter(CharacterIdentification characterId);
     /// <summary>
-    /// Все живые папки сюжета проекта со вводными — для плоского списка сюжетов.
+    /// Все неудалённые папки сюжета проекта со вводными — для плоского списка сюжетов.
     /// </summary>
     /// <remarks>
+    /// Удалённые папки (<c>IsActive == false</c>) не возвращаются вовсе; удалённые вводные внутри
+    /// живой папки — возвращаются, их отфильтровывает уже вызывающий.
+    ///
     /// Вводные внутри каждой папки приходят упорядоченными, как и в
     /// <see cref="GetPlotFolderDetails"/>. Порядок самих папок вызывающий задаёт сам.
     /// </remarks>
-    Task<IReadOnlyList<PlotFolderDetailsDto>> GetPlotsDetails(ProjectIdentification projectId);
+    Task<IReadOnlyList<PlotFolderDetailsDto>> GetActivePlotFolders(ProjectIdentification projectId);
 
     [Obsolete]
     Task<List<PlotFolder>> GetPlotsForTargets(int projectId, List<int> characterIds, List<int> characterGroupIds);

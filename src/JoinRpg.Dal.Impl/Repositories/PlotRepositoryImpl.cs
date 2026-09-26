@@ -99,7 +99,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyList<PlotFolderDetailsDto>> GetPlotsDetails(ProjectIdentification projectId)
+    public async Task<IReadOnlyList<PlotFolderDetailsDto>> GetActivePlotFolders(ProjectIdentification projectId)
     {
         var folders = await Ctx.Set<PlotFolder>()
           .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
