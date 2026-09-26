@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces.Plots;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Helpers;
 using LinqKit;

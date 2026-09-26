@@ -1,5 +1,3 @@
-using JoinRpg.DataModel.Extensions;
-
 namespace JoinRpg.Domain.Test;
 
 public class PermissionTests

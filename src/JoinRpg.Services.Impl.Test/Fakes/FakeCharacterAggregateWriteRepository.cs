@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;

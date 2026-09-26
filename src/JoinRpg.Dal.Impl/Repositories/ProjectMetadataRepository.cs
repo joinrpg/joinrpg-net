@@ -1,5 +1,4 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 
