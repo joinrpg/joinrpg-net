@@ -26,8 +26,8 @@ public static class PlotElementDetailsDtoBuilder
     /// <exception cref="ArgumentOutOfRangeException">Такой версии у вводной нет.</exception>
     public static PlotElementDetailsDto GetDetails(this PlotElement element, int? version = null)
     {
-        var lastVersionNumber = LastVersion(element).Version;
-        var currentVersionNumber = version ?? lastVersionNumber;
+        var lastVersion = LastVersion(element);
+        var currentVersionNumber = version ?? lastVersion.Version;
         var currentVersion = SpecificVersion(element, currentVersionNumber)
             ?? throw new ArgumentOutOfRangeException(
                 nameof(version),
@@ -44,7 +44,8 @@ public static class PlotElementDetailsDtoBuilder
             ToTarget(element),
             element.PlotFolder.MasterTitle,
             ToVersionDto(currentVersion),
-            lastVersionNumber,
+            lastVersion.Version,
+            lastVersion.TodoField,
             SpecificVersion(element, currentVersionNumber - 1)?.ModifiedDateTime,
             SpecificVersion(element, currentVersionNumber + 1)?.ModifiedDateTime);
     }

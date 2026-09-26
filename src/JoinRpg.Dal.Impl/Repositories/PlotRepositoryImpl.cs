@@ -7,6 +7,18 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IPlotRepository
 {
+    public async Task<PlotElementDetailsDto?> GetPlotElementDetails(PlotElementIdentification elementId, int? version = null)
+    {
+        var element = await Ctx.Set<PlotElement>()
+          .Include(e => e.Texts.Select(t => t.AuthorUser))
+          .Include(e => e.TargetCharacters)
+          .Include(e => e.TargetGroups)
+          .Include(e => e.PlotFolder)
+          .SingleOrDefaultAsync(e => e.PlotElementId == elementId.PlotElementId && e.ProjectId == elementId.ProjectId.Value);
+
+        return element?.GetDetails(version);
+    }
+
     public async Task<PlotFolderDetailsDto?> GetPlotFolderDetails(PlotFolderIdentification plotFolderId)
     {
         var folder = await GetPlotFolderAsync(plotFolderId);
@@ -26,7 +38,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
             [.. orderedElements.Select(e => e.GetDetails())]);
     }
 
-    public async Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId)
+    private async Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId)
     {
         var folder =
           await Ctx.Set<PlotFolder>()
