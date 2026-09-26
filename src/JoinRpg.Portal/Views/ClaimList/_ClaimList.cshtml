@@ -51,7 +51,7 @@
                 @Html.DisplayFor(modelItem => item.UpdateDate)
                 @if (item.LastModifiedBy != null)
                 {
-                    if (item.LastModifiedBy.UserId == User.GetUserIdOrDefault())
+                    if (item.LastModifiedBy.UserId is { } lastModifiedById && lastModifiedById.Value == User.GetUserIdOrDefault())
                     {
                         <text>мной</text>
                     }
