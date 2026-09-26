@@ -17,6 +17,10 @@
     <PackageReference Include="Shouldly" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Снапшот ленивых загрузок (#4914) читается рядом с собранным тестовым проектом -->
+    <Content Update="TestInfrastructure\lazy-loads-baseline.json" CopyToOutputDirectory="PreserveNewest" TargetPath="lazy-loads-baseline.json" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Portal\JoinRpg.Portal.csproj" />
     <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />

@@ -24,8 +24,7 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// Существующий <c>RendererIntegratedTest</c> проверяет сам рендерер на моках; здесь проверяется, что
 /// на реальной странице ему достаются нужные данные.
 /// </remarks>
-[Collection(PlotScenarioCollection.Name)]
-public class PlotMarkdownRenderingScenario(JoinApplicationFactory factory)
+public class PlotMarkdownRenderingScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
     [Fact]
     public async Task PlotEditPage_RendersCharacterAndGroupDirectives()

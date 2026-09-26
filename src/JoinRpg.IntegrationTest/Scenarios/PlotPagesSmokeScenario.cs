@@ -16,8 +16,7 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// легче всего ломает именно их: страница при этом продолжает отдавать 200, но становится пустой.
 /// POST-эндпоинты и их error-path сознательно не покрываются.
 /// </remarks>
-[Collection(PlotScenarioCollection.Name)]
-public class PlotPagesSmokeScenario(JoinApplicationFactory factory)
+public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
     /// <summary>Страницы сюжетов, которые проверяет смоук.</summary>
     public enum PlotPage
