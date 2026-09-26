@@ -68,26 +68,6 @@ internal class CharacterPropsService(
         TArgs arguments,
         Action<CharacterMutationContext<TArgs>> action,
         [CallerMemberName] string operationName = "")
-        => ChangeCharacterCore(characterId, requiredPermission, activeRequirement, arguments,
-            action.AsAlwaysTrueFunc(), operationName);
-
-    public Task<TResult> ChangeCharacter<TArgs, TResult>(
-        CharacterIdentification characterId,
-        Permission requiredPermission,
-        ProjectActiveRequirement activeRequirement,
-        TArgs arguments,
-        Func<CharacterMutationContext<TArgs>, TResult> action,
-        [CallerMemberName] string operationName = "")
-        => ChangeCharacterCore(characterId, requiredPermission, activeRequirement, arguments,
-            action, operationName);
-
-    private Task<TResult> ChangeCharacterCore<TArgs, TResult>(
-        CharacterIdentification characterId,
-        Permission requiredPermission,
-        ProjectActiveRequirement activeRequirement,
-        TArgs arguments,
-        Func<CharacterMutationContext<TArgs>, TResult> action,
-        string operationName)
         => RunOperation(
             operationName,
             async now =>
@@ -106,7 +86,7 @@ internal class CharacterPropsService(
                     handle.Character, handle.CharacterInfo, handle.ProjectInfo, now, currentUserAccessor,
                     handle, fieldSaveHelper, arguments);
 
-                var result = action(ctx);
+                action(ctx);
 
                 if (!ctx.IsNoOp)
                 {
@@ -120,7 +100,9 @@ internal class CharacterPropsService(
                     await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
                 }
 
-                return result;
+                // Результата у операции над персонажем нет, но общий каркас RunOperation
+                // параметризован им — возвращаем заглушку.
+                return true;
             },
             _ => logger.LogInformation(
                 "Изменён персонаж {characterId}: операция {operation}, аргументы {@arguments}",
