@@ -201,8 +201,11 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         return new DomainTypes.ProjectMetadata.ProjectDetails(
             CreateInfoFromProject(project, projectId),
-            project.Details.ProjectAnnounce,
-            project.Details.ClaimApplyRules,
+            // Анонса и правил подачи в БД может не быть. Неявная конверсия MarkdownDbValue
+            // в MarkdownString в этом случае даёт null, а домен ждёт значение — отдаём
+            // пустой markdown, как CharacterInfoMapper делает для описания персонажа.
+            new MarkdownString(project.Details.ProjectAnnounce?.Contents ?? ""),
+            new MarkdownString(project.Details.ClaimApplyRules?.Contents ?? ""),
             [.. project.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
             project.Details.DisableKogdaIgraMapping);
     }
