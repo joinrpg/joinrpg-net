@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces.Plots;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Helpers;
 using LinqKit;
@@ -18,7 +19,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
         var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering);
 
         return new PlotFolderDetailsDto(
-            new PlotFolderIdentification(folder.ProjectId, folder.PlotFolderId),
+            folder.GetId(),
             folder.MasterTitle,
             folder.TodoField,
             folder.IsActive,

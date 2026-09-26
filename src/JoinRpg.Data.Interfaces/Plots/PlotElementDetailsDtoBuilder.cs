@@ -1,6 +1,6 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
-using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DataModel.Extensions;
 
 namespace JoinRpg.Data.Interfaces.Plots;
 
@@ -11,6 +11,10 @@ namespace JoinRpg.Data.Interfaces.Plots;
 /// Лежит в <c>Data.Interfaces</c>, а не в <c>JoinRpg.Domain</c>, потому что нужен и репозиторию:
 /// <c>Dal.Impl</c> на <c>Domain</c> не ссылается. По той же причине выбор версий и таргеты собраны
 /// здесь вручную, а не через <c>PlotExtensions</c>.
+///
+/// Публичным он остаётся временно: последний вызов извне — перегрузка
+/// <c>PlotElementListItemViewModel.FromFolder(PlotFolder …)</c> для списка сюжетов. Когда и её
+/// переведут на DTO, класс уедет внутрь <c>Dal.Impl</c> и станет <c>internal</c>.
 /// </remarks>
 public static class PlotElementDetailsDtoBuilder
 {
@@ -28,10 +32,10 @@ public static class PlotElementDetailsDtoBuilder
             ?? throw new ArgumentOutOfRangeException(
                 nameof(version),
                 version,
-                $"У вводной {element.PlotElementId} нет версии {currentVersionNumber}");
+                $"У вводной {element.GetId()} нет версии {currentVersionNumber}");
 
         return new PlotElementDetailsDto(
-            new PlotElementIdentification(element.ProjectId, element.PlotFolderId, element.PlotElementId),
+            element.GetId(),
             element.ElementType,
             element.IsMasterOnly,
             element.IsActive,
