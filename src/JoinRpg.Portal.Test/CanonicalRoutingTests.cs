@@ -41,6 +41,8 @@ public class CanonicalRoutingTests(IntegrationTestPortalFactory factory)
     [InlineData("{projectId}/tools/apis", typeof(GameToolsController), nameof(GameToolsController.Apis))]
     [InlineData("{projectId}/massmail/forclaims", typeof(MassMailController), nameof(MassMailController.ForClaims))]
     [InlineData("{projectId}/print/character", typeof(PrintController), nameof(PrintController.Character))]
+    [InlineData("{projectId}/print/characterlist", typeof(PrintController), nameof(PrintController.CharacterList))]
+    [InlineData("{projectId}/print/handoutonly", typeof(PrintController), nameof(PrintController.HandoutOnly))]
     [InlineData("{projectId}/money/transfer/create", typeof(TransferController), nameof(TransferController.Create))]
     [InlineData("{ProjectId}/goto/finance-operation/{FinanceOperationId:int}", typeof(DiscussionRedirectController), nameof(DiscussionRedirectController.ToFinanceOperation))]
     public void CanonicalRouteResolvesToAction(

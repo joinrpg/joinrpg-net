@@ -111,6 +111,38 @@ public static class TestPlotHelpers
             targetGroupId,
             elementContents);
     }
+
+    /// <summary>
+    /// Добавляет в папку сюжета одну опубликованную вводную типа «раздатка», привязанную к указанному персонажу.
+    /// Возвращает её текст — он же должен отрисоваться в чек-листе раздатки на печати.
+    /// </summary>
+    /// <remarks>
+    /// Вызывать в скоупе с включённой impersonation мастера проекта, как и <see cref="SeedPlotFolderAsync"/>.
+    /// Раздатка попадает на печать только опубликованной (<see cref="PlotVersionFilter.PublishedVersion"/>),
+    /// поэтому сразу публикуем нулевую версию.
+    /// </remarks>
+    public static async Task<string> SeedHandoutAsync(
+        IServiceProvider serviceProvider,
+        PlotFolderIdentification plotFolderId,
+        CharacterIdentification targetCharacterId)
+    {
+        var plotService = serviceProvider.GetRequiredService<IPlotService>();
+
+        var content = $"Уникальная раздатка {Guid.NewGuid().ToString("N")[..8]}";
+
+        var versionId = await plotService.CreatePlotElement(
+            plotFolderId,
+            content: content,
+            todoField: "",
+            targetGroups: [],
+            targetChars: [targetCharacterId],
+            elementType: PlotElementType.Handout,
+            isMasterOnly: false);
+
+        await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
+
+        return content;
+    }
 }
 
 /// <summary>

@@ -61,6 +61,23 @@
 
 <div class="panel panel-default">
     <div class="panel-heading">
+        Только раздатка <br />
+        @foreach (var chunk in @SplitByChunks())
+        {
+            @Html.ActionLink(chunk.Name, "HandoutOnly",
+            new { Model.ProjectId, chunk.CharacterIds })
+        <text>&nbsp;</text>
+                }
+    </div>
+    <div class="panel-body">
+
+        Распечатать для каждого активного персонажа только заглавную страницу — надпись на конверте
+        и чек-лист раздатки, без полей персонажа и загрузов.
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
         Наклейки на конверты <br />
         @foreach (var chunk in @SplitByChunks())
         {

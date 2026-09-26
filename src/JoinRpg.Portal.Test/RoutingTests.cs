@@ -42,6 +42,7 @@ public class RoutingTests
     [InlineData(typeof(PlotController), nameof(PlotController.CreateElement), "{projectId}/plots/CreateElement")]
     [InlineData(typeof(PlotController), nameof(PlotController.Edit), "{projectId}/plots/Edit")]
     [InlineData(typeof(PrintController), nameof(PrintController.Character), "{projectId}/print/Character")]
+    [InlineData(typeof(PrintController), nameof(PrintController.HandoutOnly), "{projectId}/print/HandoutOnly")]
     [InlineData(typeof(ReportsController), nameof(ReportsController.Report2D), "{projectId}/reports")]
     [InlineData(typeof(ShowScheduleController), nameof(ShowScheduleController.Ical), "{projectId}/schedule")]
     [InlineData(typeof(TransferController), nameof(TransferController.Create), "{projectId}/money/transfer/Create")]
