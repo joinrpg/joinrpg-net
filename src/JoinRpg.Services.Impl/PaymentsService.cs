@@ -858,7 +858,12 @@ internal class PaymentsService(
         }
 
         var api = GetApi(projectId, claimId);
+        // Реквизиты в банке проставляются вместе с переходом подписки в Active, так что здесь
+        // они уже есть. Предупреждение подавлено, а не обработано: платёжный код руками не
+        // трогаем, остальные вызовы в этом файле полагаются на то же самое (см. PayRecurrent).
+#pragma warning disable CS8604 // Возможно, аргумент-ссылка, допускающий значение NULL
         var result = await api.CancelFastPaymentSystemRecurrentPayments(recurrentPayment.BankParentPayment, recurrentPayment.BankRecurrencyToken);
+#pragma warning restore CS8604
         if (result.Status == PaymentInfoQueryStatus.Success)
         {
             recurrentPayment.Status = RecurrentPaymentStatus.Cancelled;

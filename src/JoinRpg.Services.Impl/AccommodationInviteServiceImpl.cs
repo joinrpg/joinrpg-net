@@ -215,8 +215,10 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             await GetAccommodationRequestByClaim(inviteRequest.FromClaimId)
                 .ConfigureAwait(false);
 
-        var roomFreeSpace = (senderAccommodationRequest.AccommodationId != null)
-            ? senderAccommodationRequest.Accommodation.GetRoomFreeSpace()
+        // Проверяем саму навигацию, а не FK: с непроставленной Accommodation в комнату
+        // всё равно не посчитать свободные места.
+        var roomFreeSpace = senderAccommodationRequest.Accommodation is { } senderRoom
+            ? senderRoom.GetRoomFreeSpace()
             : senderAccommodationRequest.GetAbstractRoomFreeSpace();
 
 
