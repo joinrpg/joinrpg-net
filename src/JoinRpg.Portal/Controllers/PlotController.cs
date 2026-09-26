@@ -1,7 +1,6 @@
 using JoinRpg.Common.WebComponents.ElementMoving;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Plots;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Interfaces;
@@ -104,14 +103,10 @@ public class PlotController(
             return RedirectToAction("Create", "Plot", new { projectId = projectId.Value });
         }
 
-        PlotElement? originalElement = null;
-        if (copyFrom is not null)
+        PlotElementDetailsDto? originalElement = null;
+        if (copyFrom is not null && copyFrom.ProjectId == projectId)
         {
-            var originalElementFolder = await plotRepository.GetPlotFolderAsync(copyFrom.PlotFolderId);
-            if (originalElementFolder is not null && originalElementFolder.ProjectId == projectId)
-            {
-                originalElement = originalElementFolder.Elements.Single(e => e.PlotElementId == copyFrom.PlotElementId);
-            }
+            originalElement = await plotRepository.GetPlotElementDetails(copyFrom);
         }
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
@@ -123,10 +118,10 @@ public class PlotController(
             PlotFolderId = selectedPlotFolderId,
             ElementType = PlotElementTypeView.RegularPlot,
             HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
-            Content = originalElement?.LastVersion().Content.Contents ?? PlotElementCreateViewModel.GetDefaultContent(),
-            TodoField = originalElement?.LastVersion().TodoField ?? "",
-            TargetCharacters = [.. originalElement?.TargetCharacters?.Select(c => c.GetId()) ?? []],
-            TargetGroups = [.. originalElement?.TargetGroups?.Select(g => g.GetId()) ?? []],
+            Content = originalElement?.CurrentVersion.Content.Contents ?? PlotElementCreateViewModel.GetDefaultContent(),
+            TodoField = originalElement?.LastVersionTodoField ?? "",
+            TargetCharacters = [.. originalElement?.Target.CharacterTargets.Select(c => c.CharacterId) ?? []],
+            TargetGroups = [.. originalElement?.Target.GroupTargets.Select(g => g.CharacterGroupId) ?? []],
         });
     }
 
@@ -150,11 +145,14 @@ public class PlotController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            var folder = await plotRepository.GetPlotFolderAsync(plotFolderId);
+            // Папка запрашивается только чтобы отличить «нет такой папки» от ошибки создания:
+            // так было и раньше, до перехода на DTO.
+            var folder = await plotRepository.GetPlotFolderDetails(plotFolderId);
             if (folder == null)
             {
                 return NotFound();
             }
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
             return View(new PlotElementCreateViewModel()
             {
                 ProjectId = projectId,
@@ -164,7 +162,7 @@ public class PlotController(
                 TodoField = todoField,
                 TargetCharacters = [.. targetCharIds],
                 TargetGroups = [.. targetGroupIds],
-                HasPlotEditAccess = folder.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
+                HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
                 PublishNow = publishNow,
             });
         }
@@ -208,31 +206,30 @@ public class PlotController(
         {
             return NotFound();
         }
-        var folder = await plotRepository.GetPlotFolderAsync(elementId.PlotFolderId);
-        if (folder == null)
+        var element = await plotRepository.GetPlotElementDetails(elementId, version);
+        if (element == null)
         {
             return NotFound();
         }
-        var element = folder.Elements.Single(e => e.PlotElementId == elementId.PlotElementId);
-        var hasManageAccess = folder.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots);
-        var specificVersion = version is null ? element.LastVersion() : element.SpecificVersion(version.Value);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var viewModel = new PlotElementEditViewModel()
         {
-            ProjectId = element.PlotFolder.ProjectId,
-            PlotFolderId = new PlotFolderIdentification(projectId, element.PlotFolderId),
-            PlotElementId = element.PlotElementId,
-            PlotFolderName = folder.MasterTitle,
+            ProjectId = elementId.ProjectId.Value,
+            PlotFolderId = elementId.PlotFolderId,
+            PlotElementId = elementId.PlotElementId,
+            PlotFolderName = element.PlotFolderMasterTitle,
             ElementType = (PlotElementTypeView)element.ElementType,
             IsMasterOnly = element.IsMasterOnly,
             Status = element.GetStatus(),
-            HasManageAccess = hasManageAccess,
-            HasPublishedVersion = element.Published != null,
-            Target = element.ToTarget(),
-            Content = specificVersion?.Content.Contents ?? "",
-            TodoField = element.LastVersion().TodoField,
-            TargetCharacters = [.. element.TargetCharacters.Select(c => new CharacterIdentification(new(element.ProjectId), c.CharacterId))],
-            TargetGroups = [.. element.TargetGroups.Select(g => new CharacterGroupIdentification(new(element.ProjectId), g.CharacterGroupId))],
+            HasManageAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
+            HasPublishedVersion = element.PublishedVersion != null,
+            Target = element.Target,
+            Content = element.CurrentVersion.Content.Contents ?? "",
+            // TODO показывается от последней версии, даже когда открыта старая — так было и раньше.
+            TodoField = element.LastVersionTodoField,
+            TargetCharacters = [.. element.Target.CharacterTargets.Select(c => c.CharacterId)],
+            TargetGroups = [.. element.Target.GroupTargets.Select(g => g.CharacterGroupId)],
         };
         return View(viewModel);
     }
@@ -269,15 +266,15 @@ public class PlotController(
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ShowElementVersion(ProjectIdentification projectId, int plotFolderId, int plotElementId, int version, bool printMode)
     {
-        var folder = await plotRepository.GetPlotFolderAsync(new(projectId, plotFolderId));
-        if (folder == null)
+        var element = await plotRepository.GetPlotElementDetails(
+            new PlotElementIdentification(projectId, plotFolderId, plotElementId), version);
+        if (element == null)
         {
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var element = folder.Elements.Single(e => e.PlotElementId == plotElementId);
         return View(new PlotElementListItemViewModel(
-            element.GetDetails(version),
+            element,
             AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor),
             itemIdsToParticipateInSort: null,
             renderer: new JoinrpgMarkdownLinkRenderer(await projectRepository.GetProjectForMarkdownRendering(projectId), projectInfo),

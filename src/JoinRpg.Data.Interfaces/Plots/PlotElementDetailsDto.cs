@@ -26,6 +26,10 @@ namespace JoinRpg.Data.Interfaces.Plots;
 /// Номер последней версии вводной. Нужен отдельно от <paramref name="CurrentVersion"/>:
 /// статус вводной считается по последней версии, а показывать можно любую.
 /// </param>
+/// <param name="LastVersionTodoField">
+/// Мастерское TODO последней версии. Отдельно от <paramref name="CurrentVersion"/>, потому что
+/// страница редактирования вводной показывает текст запрошенной версии, но TODO — всегда последней.
+/// </param>
 /// <param name="PrevVersionModifiedAt">Дата правки предыдущей версии, <c>null</c> если отображается первая.</param>
 /// <param name="NextVersionModifiedAt">Дата правки следующей версии, <c>null</c> если отображается последняя.</param>
 public record PlotElementDetailsDto(
@@ -39,6 +43,7 @@ public record PlotElementDetailsDto(
     string PlotFolderMasterTitle,
     PlotElementVersionDto CurrentVersion,
     int LastVersionNumber,
+    string LastVersionTodoField,
     DateTime? PrevVersionModifiedAt,
     DateTime? NextVersionModifiedAt)
 {
