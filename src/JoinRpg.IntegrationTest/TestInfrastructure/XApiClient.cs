@@ -55,6 +55,23 @@ public class XApiClient(HttpClient httpClient)
         return (await response.Content.ReadFromJsonAsync<CharacterInfo>())!;
     }
 
+    /// <summary>GET /x-game-api/{projectId}/characters/by-ids?ids=... — details for several characters at once</summary>
+    public async Task<IReadOnlyList<CharacterInfo>> GetCharactersByIdsAsync(int projectId, params int[] characterIds)
+    {
+        var query = string.Join("&", characterIds.Select(id => $"ids={id}"));
+        var response = await httpClient.GetAsync($"/x-game-api/{projectId}/characters/by-ids?{query}");
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<List<CharacterInfo>>())!;
+    }
+
+    /// <summary>GET /x-game-api/{projectId}/groups/{groupId}/characters — details for all characters of a group</summary>
+    public async Task<IReadOnlyList<CharacterInfo>> GetGroupCharactersAsync(int projectId, int groupId)
+    {
+        var response = await httpClient.GetAsync($"/x-game-api/{projectId}/groups/{groupId}/characters");
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<List<CharacterInfo>>())!;
+    }
+
     /// <summary>GET /x-game-api/{projectId}/checkin/allclaims — claims ready for check-in</summary>
     public async Task<IEnumerable<ClaimHeaderInfo>> GetCheckInClaimsAsync(int projectId)
     {

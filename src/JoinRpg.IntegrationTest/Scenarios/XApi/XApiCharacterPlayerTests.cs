@@ -1,11 +1,5 @@
-using JoinRpg.Common.PrimitiveTypes;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.XGameApi.Contract;
 
 namespace JoinRpg.IntegrationTest.Scenarios.XApi;
@@ -40,9 +34,9 @@ public class XApiCharacterPlayerTests(XApiMasterFixture fixture)
         var projectId = await fixture.CreateNewProject(fixture.MasterUserId);
         var character = await fixture.MasterClient.CreateCharacterAsync(projectId, new CreateCharacterRequest());
         var characterId = new CharacterIdentification(projectId, character.CharacterId);
-        await OpenClaims(projectId);
+        await fixture.OpenClaims(projectId);
 
-        _ = await AddClaim(characterId, await CreatePlayer());
+        _ = await fixture.AddClaim(characterId, await fixture.CreatePlayer());
 
         var result = await fixture.MasterClient.GetCharacterAsync(projectId, character.CharacterId);
 
@@ -56,11 +50,11 @@ public class XApiCharacterPlayerTests(XApiMasterFixture fixture)
         var projectId = await fixture.CreateNewProject(fixture.MasterUserId);
         var character = await fixture.MasterClient.CreateCharacterAsync(projectId, new CreateCharacterRequest());
         var characterId = new CharacterIdentification(projectId, character.CharacterId);
-        await OpenClaims(projectId);
+        await fixture.OpenClaims(projectId);
 
-        var (playerId, playerEmail) = await CreatePlayerWithEmail();
-        var claimId = await AddClaim(characterId, playerId);
-        await ApproveClaim(claimId);
+        var (playerId, playerEmail) = await fixture.CreatePlayerWithEmail();
+        var claimId = await fixture.AddClaim(characterId, playerId);
+        await fixture.ApproveClaim(claimId);
 
         var result = await fixture.MasterClient.GetCharacterAsync(projectId, character.CharacterId);
 
@@ -82,10 +76,10 @@ public class XApiCharacterPlayerTests(XApiMasterFixture fixture)
         var projectId = await fixture.CreateNewProject(fixture.MasterUserId);
         var character = await fixture.MasterClient.CreateCharacterAsync(projectId, new CreateCharacterRequest());
         var characterId = new CharacterIdentification(projectId, character.CharacterId);
-        await OpenClaims(projectId);
+        await fixture.OpenClaims(projectId);
 
-        var playerId = await CreatePlayer();
-        await ApproveClaim(await AddClaim(characterId, playerId));
+        var playerId = await fixture.CreatePlayer();
+        await fixture.ApproveClaim(await fixture.AddClaim(characterId, playerId));
 
         var result = await fixture.MasterClient.GetCharacterAsync(projectId, character.CharacterId);
 
@@ -106,44 +100,4 @@ public class XApiCharacterPlayerTests(XApiMasterFixture fixture)
         result.AllGroups.Select(g => g.CharacterGroupId)
             .ShouldBe(result.Groups.Select(g => g.CharacterGroupId), ignoreOrder: true);
     }
-
-    private Task<UserIdentification> CreatePlayer()
-        => TestUserProjectHelpers.CreateTestUserAsync(fixture.Factory.Services);
-
-    private Task<(UserIdentification userId, string email)> CreatePlayerWithEmail()
-        => TestUserProjectHelpers.CreateTestUserWithEmailAsync(fixture.Factory.Services);
-
-    /// <summary>Новый проект создаётся с закрытым приёмом заявок — открываем.</summary>
-    private Task OpenClaims(ProjectIdentification projectId)
-        => fixture.Factory.Services.RunAsAsync(
-            fixture.MasterUserId,
-            sp => sp.GetRequiredService<IProjectService>().SetClaimSettings(
-                projectId,
-                new ProjectClaimSettings(
-                    DefaultTemplate: null,
-                    StrictlyOneCharacter: false,
-                    AutoAcceptClaims: false,
-                    IsAcceptingClaims: true,
-                    IsPublicProject: true)));
-
-    /// <summary>
-    /// Заявку подаёт сам игрок: заявку, добавленную мастером, мастер же утвердить не может —
-    /// её сначала должен принять игрок.
-    /// </summary>
-    private Task<ClaimIdentification> AddClaim(CharacterIdentification characterId, UserIdentification playerId)
-        => fixture.Factory.Services.RunAsAsync(
-            playerId,
-            async sp =>
-            {
-                var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
-                    .GetProjectMetadata(characterId.ProjectId);
-                return await sp.GetRequiredService<IClaimService>()
-                    .AddClaimFromUser(
-                        characterId, "Заявка от игрока", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: true);
-            });
-
-    private Task ApproveClaim(ClaimIdentification claimId)
-        => fixture.Factory.Services.RunAsAsync(
-            fixture.MasterUserId,
-            sp => sp.GetRequiredService<IClaimService>().ApproveByMaster(claimId, "Принято"));
 }
