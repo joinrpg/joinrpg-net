@@ -1,7 +1,7 @@
 using System.Net;
 using HtmlAgilityPack;
 
-namespace JoinRpg.IntegrationTests.TestInfrastructure;
+namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
 public static class HtmlDocumentHelpers
 {

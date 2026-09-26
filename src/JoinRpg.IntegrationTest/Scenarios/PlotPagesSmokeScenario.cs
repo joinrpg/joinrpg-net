@@ -2,7 +2,6 @@ using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 

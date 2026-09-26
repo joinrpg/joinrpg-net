@@ -4,7 +4,6 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Advertisement;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 
