@@ -46,9 +46,13 @@ public class CurrentUserAccessor : ICurrentUserAccessor, IImpersonateAccessor
             {
                 return id;
             }
-            if (int.TryParse(user.FindFirstValue("sub"), out var sub))  // OAuth/OIDC tokens (MCP, ADR012)
+            // OAuth/OIDC-токены (MCP, ADR012). Разбираем через UserIdentification, а не
+            // int.TryParse: IdPortal пишет в sub ToString() типизированного идентификатора,
+            // то есть «UserId(3)», и числом это не разбирается. Формат там менять нельзя —
+            // то же значение лежит в Subject авторизации, по которому ищется согласие.
+            if (UserIdentification.TryParse(user.FindFirstValue("sub"), provider: null, out var sub))
             {
-                return sub;
+                return sub.Value;
             }
             return null;
         }

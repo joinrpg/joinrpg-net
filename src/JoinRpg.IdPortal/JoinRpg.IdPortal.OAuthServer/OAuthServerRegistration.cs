@@ -270,6 +270,12 @@ public static class OAuthServerRegistration
         var applicationId = await applicationManager.GetIdAsync(application) ??
             throw new InvalidOperationException("The application has no id.");
 
+        // ToString() типизированного идентификатора даёт «UserId(3)», и это значение уезжает
+        // не только в claim sub, но и в поле Subject авторизации в БД, по которому потом
+        // ищется выданное согласие (см. FindMatchingAuthorizationAsync ниже). Менять формат
+        // нельзя, не потеряв все существующие согласия, а по OIDC sub и так строка
+        // произвольного вида. Читатели обязаны разбирать его через UserIdentification.TryParse,
+        // который принимает и «UserId(3)», и «3».
         var subject = currentUserAccessor.UserIdentification.ToString();
         var requestedScopes = request.GetScopes();
 
