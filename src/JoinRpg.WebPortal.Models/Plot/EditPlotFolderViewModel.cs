@@ -34,20 +34,20 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: «Интриги Гэндальфа #мордор #гондор #костромская_область»")]
     public string PlotFolderTitleAndTags { get; set; }
 
-    public EditPlotFolderViewModel(PlotFolder folder, Project projectForRendering, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
+    public EditPlotFolderViewModel(PlotFolderDetailsDto folder, Project projectForRendering, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
         if (folder == null)
         {
             throw new ArgumentNullException(nameof(folder));
         }
 
-        PlotFolderId = folder.PlotFolderId;
+        PlotFolderId = folder.Id.PlotFolderId;
         TodoField = folder.TodoField;
-        ProjectId = folder.ProjectId;
+        ProjectId = folder.Id.ProjectId.Value;
         Fill(folder, projectForRendering, currentUser, uriService, projectInfo);
         if (TagNames.Any())
         {
-            PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.PlotTags.GetTagString();
+            PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.Tags.Select(t => "#" + t).JoinStrings(" ");
         }
         else
         {
@@ -57,14 +57,14 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
 
     [MemberNotNull(nameof(TagNames))]
     [MemberNotNull(nameof(Elements))]
-    public void Fill(PlotFolder folder, Project projectForRendering, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
+    public void Fill(PlotFolderDetailsDto folder, Project projectForRendering, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
         PlotFolderMasterTitle = folder.MasterTitle;
         Status = folder.GetStatus();
 
         var linkRenderer = new JoinrpgMarkdownLinkRenderer(projectForRendering, projectInfo);
         Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
-        TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
+        TagNames = folder.Tags;
 
         HasEditAccess = projectInfo.HasMasterAccess(currentUser) && projectInfo.IsActive;
         HasPlotEditorAccess = projectInfo.HasMasterAccess(currentUser, Permission.CanManagePlots) && projectInfo.IsActive;
@@ -80,6 +80,17 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
 
 public class PlotElementListItemViewModel : IProjectIdAware
 {
+    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolderDetailsDto folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
+    {
+        // Порядок задаёт репозиторий; здесь он только превращается в список id для контрола перетаскивания.
+        var itemIds = folder.Elements.Select(x => x.Id.ToString()).ToArray();
+        var accessArguments = AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor);
+
+        return [.. folder.Elements.Select(e => new PlotElementListItemViewModel(
+            e, accessArguments, itemIds, linkRenderer))];
+    }
+
+    /// <summary>Перегрузка для страниц, которые пока держат EF-сущность папки: список сюжетов (FlatList).</summary>
     public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolder folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
     {
         var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering).ToArray();

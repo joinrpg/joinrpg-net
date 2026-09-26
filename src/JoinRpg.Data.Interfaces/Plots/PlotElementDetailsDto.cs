@@ -16,6 +16,8 @@ namespace JoinRpg.Data.Interfaces.Plots;
 /// <param name="ElementType">Тип вводной (обычная, входящая в группу и т.п.).</param>
 /// <param name="IsMasterOnly">Вводная видна только мастерам.</param>
 /// <param name="IsActive">Вводная не удалена.</param>
+/// <param name="IsCompleted">Мастера отметили вводную как доделанную. Отдельный флаг в БД,
+/// не то же самое, что «опубликована последняя версия»: от него зависит статус всей папки.</param>
 /// <param name="PublishedVersion">Номер опубликованной версии, <c>null</c> если не опубликована ни одна.</param>
 /// <param name="Target">Персонажи и группы, которым адресована вводная.</param>
 /// <param name="PlotFolderMasterTitle">Название папки сюжета — страницы показывают его в заголовке.</param>
@@ -31,6 +33,7 @@ public record PlotElementDetailsDto(
     PlotElementType ElementType,
     bool IsMasterOnly,
     bool IsActive,
+    bool IsCompleted,
     int? PublishedVersion,
     TargetsInfo Target,
     string PlotFolderMasterTitle,
@@ -60,3 +63,32 @@ public record PlotElementVersionDto(
     string TodoField,
     DateTime ModifiedAt,
     UserInfoHeader? Author);
+
+/// <summary>
+/// Папка сюжета в том виде, в котором её показывают страницы редактирования и удаления.
+/// </summary>
+/// <param name="Id">Идентификатор папки.</param>
+/// <param name="MasterTitle">Мастерское название сюжета.</param>
+/// <param name="TodoField">Мастерское TODO по папке.</param>
+/// <param name="IsActive">Папка не удалена.</param>
+/// <param name="Tags">Теги сюжета, упорядоченные по алфавиту.</param>
+/// <param name="Elements">Вводные папки в порядке, заданном мастерами.</param>
+public record PlotFolderDetailsDto(
+    PlotFolderIdentification Id,
+    string MasterTitle,
+    string TodoField,
+    bool IsActive,
+    IReadOnlyList<string> Tags,
+    IReadOnlyList<PlotElementDetailsDto> Elements)
+{
+    /// <summary>По папке нечего доделывать: нет TODO и все живые вводные завершены.</summary>
+    /// <remarks>Повторяет <c>PlotFolder.Completed</c>, включая требование хотя бы одной живой вводной.</remarks>
+    public bool Completed
+        => IsActive
+        && string.IsNullOrWhiteSpace(TodoField)
+        && Elements.All(e => e.IsCompleted || !e.IsActive)
+        && Elements.Any(e => e.IsActive);
+
+    /// <summary>Папка в работе.</summary>
+    public bool InWork => IsActive && !Completed;
+}
