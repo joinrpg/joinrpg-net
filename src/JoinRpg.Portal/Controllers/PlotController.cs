@@ -86,6 +86,10 @@ public class PlotController(
         {
             AddModelException(exception);
             var folder = await plotRepository.GetPlotFolderDetails(new(viewModel.ProjectId, viewModel.PlotFolderId));
+            if (folder is null)
+            {
+                return NotFound();
+            }
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
             var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(viewModel.ProjectId));
             viewModel.Fill(folder, projectForRendering, currentUserAccessor, uriService, projectInfo);
