@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
-using JoinRpg.Interfaces;
 using Microsoft.AspNetCore.Http;
 
 namespace JoinRpg.Portal.Test.Identity;
@@ -47,7 +46,7 @@ public class CurrentUserAccessorSubClaimTest
         accessor.UserIdOrDefault.ShouldBe(7);
     }
 
-    private static ICurrentUserAccessor CreateAccessor(params Claim[] claims)
+    private static CurrentUserAccessor CreateAccessor(params Claim[] claims)
     {
         var identity = new ClaimsIdentity(claims, authenticationType: "Test");
         var context = new DefaultHttpContext { User = new ClaimsPrincipal(identity) };
