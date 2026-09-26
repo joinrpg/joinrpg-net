@@ -62,6 +62,7 @@ public class MyDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
         ConfigureProjectDetails(modelBuilder);
+        ConfigureCascadeDeleteOff(modelBuilder);
 
         _ = modelBuilder.Entity<ProjectAcl>().HasKey(c => new { c.UserId, c.ProjectId });
         _ = modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
@@ -85,8 +86,8 @@ public class MyDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<Character>().HasOptional(c => c.ApprovedClaim).WithMany()
             .HasForeignKey(c => c.ApprovedClaimId).WillCascadeOnDelete(false);
 
-        _ = modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments)
-            .WithRequired(c => c.Discussion);
+        modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments)
+            .WithRequired(c => c.Discussion).WillCascadeOnDelete(false);
 
         modelBuilder.Entity<Claim>()
             .HasRequired(c => c.CommentDiscussion)
@@ -344,6 +345,70 @@ public class MyDbContext : DbContext, IUnitOfWork
             .HasOptional(c => c.SelectedAvatar)
             .WithMany()
             .WillCascadeOnDelete(false);
+    }
+
+    /// <summary>
+    /// Связи, которым каскадное удаление досталось от конвенции EF6 для обязательных связей,
+    /// хотя в схеме БД у соответствующих внешних ключей стоит NO ACTION.
+    /// </summary>
+    /// <remarks>
+    /// Сверка схемы с моделью (ADR015, задача P5) нашла 20 таких расхождений. Приводим модель
+    /// к схеме, а не наоборот: схема при этом не меняется вообще, а обратный вариант включил бы
+    /// каскадное удаление пользователя вместе со всеми его персонажами, заявками и комментариями.
+    /// Конвенцию целиком снимать нельзя — 32 внешних ключа получают от неё каскад законно
+    /// (например дочерние сущности проекта и таблицы связей many-to-many).
+    /// Связь Claim.ResponsibleMasterUser выключена отдельно, там же, где настраивается.
+    /// </remarks>
+    private static void ConfigureCascadeDeleteOff(DbModelBuilder modelBuilder)
+    {
+        // Аудит: кто создал и кто изменил. Удаление пользователя не должно уносить
+        // созданные им сущности.
+        modelBuilder.Entity<Character>().HasRequired(c => c.CreatedBy)
+            .WithMany().HasForeignKey(c => c.CreatedById).WillCascadeOnDelete(false);
+        modelBuilder.Entity<Character>().HasRequired(c => c.UpdatedBy)
+            .WithMany().HasForeignKey(c => c.UpdatedById).WillCascadeOnDelete(false);
+        modelBuilder.Entity<CharacterGroup>().HasRequired(g => g.CreatedBy)
+            .WithMany().HasForeignKey(g => g.CreatedById).WillCascadeOnDelete(false);
+        modelBuilder.Entity<CharacterGroup>().HasRequired(g => g.UpdatedBy)
+            .WithMany().HasForeignKey(g => g.UpdatedById).WillCascadeOnDelete(false);
+        modelBuilder.Entity<GameReport2DTemplate>().HasRequired(t => t.CreatedBy)
+            .WithMany().HasForeignKey(t => t.CreatedById).WillCascadeOnDelete(false);
+        modelBuilder.Entity<GameReport2DTemplate>().HasRequired(t => t.UpdatedBy)
+            .WithMany().HasForeignKey(t => t.UpdatedById).WillCascadeOnDelete(false);
+
+        // Поселение.
+        modelBuilder.Entity<AccommodationInvite>().HasRequired(i => i.Project)
+            .WithMany().HasForeignKey(i => i.ProjectId).WillCascadeOnDelete(false);
+        // Только To: у From в схеме каскад есть, и модель с ней согласна.
+        modelBuilder.Entity<AccommodationInvite>().HasRequired(i => i.To)
+            .WithMany().HasForeignKey(i => i.ToClaimId).WillCascadeOnDelete(false);
+        modelBuilder.Entity<AccommodationRequest>().HasRequired(r => r.Project)
+            .WithMany().HasForeignKey(r => r.ProjectId).WillCascadeOnDelete(false);
+        modelBuilder.Entity<ProjectAccommodation>().HasRequired(a => a.Project)
+            .WithMany().HasForeignKey(a => a.ProjectId).WillCascadeOnDelete(false);
+
+        // Форум и отметки о прочтении.
+        modelBuilder.Entity<ForumThread>().HasRequired(t => t.Project)
+            .WithMany(p => p.ForumThreads).HasForeignKey(t => t.ProjectId)
+            .WillCascadeOnDelete(false);
+        modelBuilder.Entity<ReadCommentWatermark>().HasRequired(w => w.CommentDiscussion)
+            .WithMany(d => d.Watermarks).HasForeignKey(w => w.CommentDiscussionId)
+            .WillCascadeOnDelete(false);
+        modelBuilder.Entity<ReadCommentWatermark>().HasRequired(w => w.Comment)
+            .WithMany().HasForeignKey(w => w.CommentId).WillCascadeOnDelete(false);
+        modelBuilder.Entity<ReadCommentWatermark>().HasRequired(w => w.User)
+            .WithMany().HasForeignKey(w => w.UserId).WillCascadeOnDelete(false);
+
+        // Прочее.
+        modelBuilder.Entity<ProjectFieldDropdownValue>().HasRequired(v => v.Project)
+            .WithMany().HasForeignKey(v => v.ProjectId).WillCascadeOnDelete(false);
+        modelBuilder.Entity<GameReport2DTemplate>().HasRequired(t => t.Project)
+            .WithMany(p => p.GameReport2DTemplates).HasForeignKey(t => t.ProjectId)
+            .WillCascadeOnDelete(false);
+        modelBuilder.Entity<GameReport2DTemplate>().HasRequired(t => t.FirstCharacterGroup)
+            .WithMany().HasForeignKey(t => t.FirstCharacterGroupId).WillCascadeOnDelete(false);
+        modelBuilder.Entity<GameReport2DTemplate>().HasRequired(t => t.SecondCharacterGroup)
+            .WithMany().HasForeignKey(t => t.SecondCharacterGroupId).WillCascadeOnDelete(false);
     }
 
     private static void ConfigureProjectDetails(DbModelBuilder modelBuilder)
