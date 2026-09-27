@@ -34,6 +34,7 @@
 - [ADR012: Доступ к данным проекта из LLM — MCP-сервер и OAuth 2.1](adr012-llm-mcp-access.md)
 - [ADR013: CharacterInfo — доменный агрегат персонажа](adr013-character-info.md)
 - [ADR014: CharacterPropsService — единая точка изменения персонажей и заявок](adr014-claim-props-service.md)
+- [ADR015: типы проживания — настройка проекта внутри ProjectInfo](adr015-accommodation-types-in-project-info.md)
 
 ## Быстрые ссылки
 
