@@ -16,7 +16,7 @@ namespace JoinRpg.WebPortal.Managers.Accommodation;
 /// </summary>
 internal class AccommodationTypeViewService(
     IClaimsRepository claimsRepository,
-    IAccommodationRepository accommodationRepository,
+    IProjectMetadataRepository projectMetadataRepository,
     IClaimService claimService,
     ICurrentUserAccessor currentUserAccessor)
     : IAccommodationTypeClient
@@ -31,22 +31,22 @@ internal class AccommodationTypeViewService(
         var request = claim.AccommodationRequest;
         var hasMasterAccess = claim.HasMasterAccess(currentUserAccessor);
 
-        // Мастеру показываем всё, игроку — только помеченное как выбираемое, плюс то, что у него уже стоит
-        var types = (await accommodationRepository.GetAccommodationForProject(claimId.ProjectId.Value))
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
+        var selectedTypeId = claim.GetAccommodationTypeIdOrDefault();
+
+        // Мастеру показываем всё, игроку — только помеченное как выбираемое, плюс то, что у него уже стоит.
+        // Готовый ProjectAccommodationSettings.PlayerSelectableTypes здесь не подходит: к нему всё равно
+        // пришлось бы приклеивать уже выбранный тип, и порядок типов поехал бы.
+        var types = projectInfo.AccommodationSettings.Types
             .Where(type => type.IsPlayerSelectable
-                || type.Id == request?.AccommodationTypeId
+                || type.Id == selectedTypeId
                 || hasMasterAccess)
-            .Select(type => new AccommodationTypeViewModel(
-                new AccommodationTypeIdentification(claimId.ProjectId, type.Id),
-                type.Name,
-                type.Capacity,
-                type.Cost,
-                ((MarkdownString?)type.Description).ToHtmlString().Value))
+            .Select(type => new AccommodationTypeViewModel(type, type.Description.ToHtmlString().Value))
             .ToArray();
 
         return new AccommodationTypeChoiceViewModel(
             types,
-            request is null ? null : new AccommodationTypeIdentification(claimId.ProjectId, request.AccommodationTypeId),
+            selectedTypeId,
             RoomAssigned: request?.Accommodation != null,
             HasNeighbours: request?.Subjects.Count > 1);
     }

@@ -21,7 +21,6 @@ public class ClaimListController(
     IExportDataService exportDataService,
     IClaimsRepository claimsRepository,
     IUriService uriService,
-    IAccommodationRepository accommodationRepository,
     IProblemValidator<Claim> claimValidator,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository charGroupRepository,
@@ -139,8 +138,17 @@ public class ClaimListController(
         }
         else
         {
-            title = "Заявки с поселением:" +
-                    (await accommodationRepository.GetRoomTypeById(roomTypeId.Value)).Name;
+            var projectMetadata = await projectMetadataRepository.GetProjectMetadata(projectId);
+            // OrDefault, а не GetTypeById: id приходит параметром фильтра, и промах — это 404,
+            // а не исключение. Раньше запрос за типом вообще не учитывал проект и падал 500-й.
+            var roomType = projectMetadata.AccommodationSettings.GetTypeByIdOrDefault(
+                new AccommodationTypeIdentification(projectId, roomTypeId.Value));
+            if (roomType is null)
+            {
+                return NotFound();
+            }
+
+            title = "Заявки с поселением:" + roomType.Name;
         }
 
         return await ShowMasterClaimList(projectId, export, title, claims, ClaimStatusSpec.Active);

@@ -164,7 +164,7 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
 | `AccommodationTypeController` | `accommodationService.GetRoomTypeAsync/SaveRoomTypeAsync/RemoveRoomType` | `ProjectInfo` + новые операции props-сервиса |
 | `ClaimListController` (`GetRoomTypeById(...).Name` ради заголовка) | поход в БД за одним именем | `projectInfo.AccommodationSettings.GetTypeById` |
 | `CreateProjectService.Setup` (создание типа по умолчанию) | `SaveRoomTypeAsync(new ProjectAccommodationType {...})` | `CreateAccommodationType` |
-| `CloneProjectHelper` | копирование EF-сущностей | по возможности через доменную операцию |
+| `CloneProjectHelper` | — | типы проживания при клонировании не копируются вообще, переносится только флаг «поселение включено»; клон получает дефолтный тип из `CreateProjectService.Setup`. Менять это — отдельная фича |
 
 `IAccommodationRepository.GetAccommodationForProject` и `GetRoomTypeById` после миграции всех
 вызывающих удаляются. `GetRoomTypesForProject` (строки отчёта со счётчиками занятости) остаётся:
@@ -192,8 +192,10 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
    - `GetRoomTypeAsync` в `IAccommodationService` остаётся: у него есть вызывающий
      `EditRoomTypeRooms` (страница комнат), которому нужны `ProjectAccommodations`/`Desirous` —
      оперативные данные, которых в метаданных нет и не будет.
-3. **PR 3** — перевод читающих потребителей (`AccommodationTypeViewService`, `ClaimListController`,
-   клонирование), удаление `GetAccommodationForProject`/`GetRoomTypeById`.
+3. **PR 3** — ✅ сделано. Читающие потребители (`AccommodationTypeViewService`,
+   `ClaimListController`) переведены на `ProjectInfo`; удалены `GetAccommodationForProject`,
+   `GetRoomTypeById` и `IAccommodationService.GetRoomTypesAsync` (вызывающих не осталось).
+   Клонирование трогать не пришлось — оно типы не копирует.
 4. **PR 4** — вычистить `[Obsolete] AccomodationEnabled`.
 
 Последствия

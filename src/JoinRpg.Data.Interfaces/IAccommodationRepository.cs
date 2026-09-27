@@ -10,13 +10,9 @@ public interface IAccommodationRepository
     /// </summary>
     Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId);
 
-    Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId);
-
     Task<IReadOnlyCollection<ClaimAccommodationInfoRow>> GetClaimAccommodationReport(int project);
 
     Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project);
-
-    Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId);
 }
 
 public class RoomTypeInfoRow

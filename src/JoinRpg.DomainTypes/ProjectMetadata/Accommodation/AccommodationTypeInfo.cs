@@ -37,9 +37,16 @@ public record ProjectAccommodationSettings(
     /// <exception cref="KeyNotFoundException">Типа проживания с таким идентификатором нет</exception>
     public AccommodationTypeInfo GetTypeById(AccommodationTypeIdentification id)
     {
-        return Types.SingleOrDefault(t => t.Id == id)
+        return GetTypeByIdOrDefault(id)
             ?? throw new KeyNotFoundException("Не найден тип проживания с ID=" + id);
     }
+
+    /// <summary>
+    /// Тип проживания по идентификатору или <c>null</c>, если такого нет. Для мест, где
+    /// идентификатор приходит параметром фильтра и промах — это 404, а не ошибка.
+    /// </summary>
+    public AccommodationTypeInfo? GetTypeByIdOrDefault(AccommodationTypeIdentification id)
+        => Types.SingleOrDefault(t => t.Id == id);
 
     /// <summary>Типы, доступные игроку для самостоятельного выбора</summary>
     public IReadOnlyCollection<AccommodationTypeInfo> PlayerSelectableTypes
