@@ -14,6 +14,12 @@ public record UserLinkViewModel(UserIdentification? UserId, string DisplayName, 
     public static UserLinkViewModel Hidden = new((UserIdentification?)null, "скрыто", ViewMode.Hide);
 
     /// <summary>
+    /// Пользователь, на которого ссылались, больше не существует. Ссылки нет (см. UserId), но,
+    /// в отличие от <see cref="Hidden"/>, скрывать нечего — так и пишем.
+    /// </summary>
+    public static UserLinkViewModel Deleted = new((UserIdentification?)null, "пользователь удалён", ViewMode.Deleted);
+
+    /// <summary>
     /// В режиме <see cref="ViewMode.Hide"/> данные пользователя не попадают в модель вообще.
     /// </summary>
     public UserLinkViewModel(UserInfoHeader user, ViewMode viewMode = ViewMode.Show)
