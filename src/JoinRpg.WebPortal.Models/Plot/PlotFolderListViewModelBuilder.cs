@@ -3,7 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
-using JoinRpg.Web.Plots;
+using JoinRpg.Web.Plots.Folders;
 
 namespace JoinRpg.Web.Models.Plot;
 

@@ -2,7 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
-using JoinRpg.Web.Plots;
+using JoinRpg.Web.Plots.Elements;
 
 namespace JoinRpg.Web.Models.Plot;
 

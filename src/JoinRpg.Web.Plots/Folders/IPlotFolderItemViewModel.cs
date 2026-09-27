@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.Plots;
+namespace JoinRpg.Web.Plots.Folders;
 
 public interface IPlotFolderListItemViewModel
 {

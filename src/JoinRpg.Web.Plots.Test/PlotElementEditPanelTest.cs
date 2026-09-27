@@ -1,3 +1,5 @@
+using JoinRpg.Web.Plots.Elements;
+using JoinRpg.Web.Plots.Folders;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.Extensions.DependencyInjection;
 

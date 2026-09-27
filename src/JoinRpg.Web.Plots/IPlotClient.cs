@@ -1,4 +1,7 @@
 
+using JoinRpg.Web.Plots.Elements;
+using JoinRpg.Web.Plots.Folders;
+
 namespace JoinRpg.Web.Plots;
 
 public interface IPlotClient

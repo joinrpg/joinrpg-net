@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace JoinRpg.Web.Plots;
+namespace JoinRpg.Web.Plots.Elements;
 
 [JsonPolymorphic]
 [JsonDerivedType(typeof(PlotElementCreateViewModel), "create")]

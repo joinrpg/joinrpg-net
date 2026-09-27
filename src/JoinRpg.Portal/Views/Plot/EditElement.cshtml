@@ -1,5 +1,6 @@
 @using JoinRpg.Web.Models.Plot
 @using JoinRpg.Web.Plots
+@using JoinRpg.Web.Plots.Elements
 @model PlotElementEditViewModel
 
 @{
@@ -24,7 +25,7 @@
     @Html.AntiForgeryToken()
     
     <div class="form-horizontal">
-        <component type="typeof(JoinRpg.Web.Plots.PlotElementEditPanel)"
+        <component type="typeof(JoinRpg.Web.Plots.Elements.PlotElementEditPanel)"
                    param-Model="@Model"
                    render-mode="WebAssemblyPrerendered" />
 

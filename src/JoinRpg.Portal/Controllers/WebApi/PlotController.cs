@@ -1,6 +1,8 @@
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.Plots;
+using JoinRpg.Web.Plots.Elements;
+using JoinRpg.Web.Plots.Folders;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;

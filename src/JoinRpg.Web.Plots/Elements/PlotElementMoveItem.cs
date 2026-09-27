@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.Plots;
+namespace JoinRpg.Web.Plots.Elements;
 
 internal sealed class PlotElementMoveItem(PlotRenderedTextViewModel plot, CharacterIdentification characterId) : IMoveableListItem
 {

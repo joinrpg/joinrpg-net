@@ -39,6 +39,4 @@ public static class TagExtensions
           .RemoveFromString(extractTagNames.Select(tag => "#" + tag), StringComparison.InvariantCultureIgnoreCase)
           .Trim();
     }
-
-    public static string GetTagString(this IEnumerable<ProjectItemTag> tags) => tags.Select(tag => "#" + tag.TagName).JoinStrings(" ");
 }

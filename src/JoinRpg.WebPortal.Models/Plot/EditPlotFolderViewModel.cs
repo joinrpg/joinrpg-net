@@ -11,6 +11,8 @@ using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Plots;
+using JoinRpg.Web.Plots.Elements;
+using JoinRpg.Web.Plots.Folders;
 
 namespace JoinRpg.Web.Models.Plot;
 
