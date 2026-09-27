@@ -59,4 +59,10 @@ public class Project : IProjectEntity
     public virtual HashSet<KogdaIgraGame> KogdaIgraGames { get; set; } = null!;
 
     public virtual ICollection<ProjectRolesList> ProjectRolesLists { get; set; }
+
+    /// <summary>
+    /// Типы проживания проекта (палатка, домик, номер…). Только навигация поверх уже существующего
+    /// FK <c>ProjectAccommodationTypes.ProjectId</c> — новых колонок нет (ADR015).
+    /// </summary>
+    public virtual ICollection<ProjectAccommodationType> ProjectAccommodationTypes { get; set; }
 }

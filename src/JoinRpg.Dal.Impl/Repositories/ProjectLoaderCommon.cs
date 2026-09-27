@@ -20,6 +20,9 @@ internal static class ProjectLoaderCommon
          .Include(p => p.KogdaIgraGames)
          .Include(p => p.ProjectRolesLists)
          .Include(p => p.CharacterGroups)
+         // Типы проживания — настройка проекта и часть ProjectInfo (ADR015). Строки узкие,
+         // типов на проект единицы-десятки, связанных коллекций не тянем.
+         .Include(p => p.ProjectAccommodationTypes)
          .SingleOrDefaultAsync(p => p.ProjectId == project);
     }
 

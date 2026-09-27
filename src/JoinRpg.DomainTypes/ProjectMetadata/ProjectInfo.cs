@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 
@@ -24,7 +25,12 @@ public record class ProjectInfo
 
     public ProjectFieldSettings ProjectFieldSettings { get; }
     public ProjectFinanceSettings ProjectFinanceSettings { get; }
-    public bool AccomodationEnabled { get; }
+
+    /// <summary>Настройки проживания проекта: включён ли модуль и какие типы заведены (ADR015)</summary>
+    public ProjectAccommodationSettings AccommodationSettings { get; }
+
+    [Obsolete("Использовать AccommodationSettings.Enabled")]
+    public bool AccomodationEnabled => AccommodationSettings.Enabled;
 
     /// <summary>Дерево групп персонажей проекта.</summary>
     public ProjectGroupTree GroupTree { get; }
@@ -56,7 +62,7 @@ public record class ProjectInfo
         IReadOnlyCollection<ProjectFieldInfo> unsortedFields,
         ProjectFieldSettings projectFieldSettings,
         ProjectFinanceSettings projectFinanceSettings,
-        bool accomodationEnabled,
+        ProjectAccommodationSettings accommodationSettings,
         ProjectGroupTree groupTree,
         IReadOnlyCollection<ProjectMasterInfo> masters,
         bool publishPlot,
@@ -78,7 +84,7 @@ public record class ProjectInfo
         sortedActiveFieldsContainer = VirtualOrderContainerFacade.CreateLazy(unsortedFields.Where(f => f.IsActive), ordering);
         ProjectFieldSettings = projectFieldSettings;
         ProjectFinanceSettings = projectFinanceSettings;
-        AccomodationEnabled = accomodationEnabled;
+        AccommodationSettings = accommodationSettings;
         CharacterNameField = projectFieldSettings.NameField is ProjectFieldIdentification nameField ? GetFieldById(nameField) : null;
 
         CharacterDescriptionField = projectFieldSettings.DescriptionField is ProjectFieldIdentification descriptionField ? GetFieldById(descriptionField) : null;
@@ -138,7 +144,7 @@ public record class ProjectInfo
         ProjectFieldInfo[] fields = [field, .. UnsortedFields];
 
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
-            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled, GroupTree,
+            ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings, GroupTree,
             Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId);
@@ -147,7 +153,7 @@ public record class ProjectInfo
     internal ProjectInfo WithChangedStatus(ProjectLifecycleStatus projectLifecycleStatus)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
-            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
+            ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
             Masters, PublishPlot, ProjectCheckInSettings,
             projectLifecycleStatus,
@@ -158,7 +164,7 @@ public record class ProjectInfo
     internal ProjectInfo WithAllowManyClaims(bool strictlyOneCharacter)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
-            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
+            ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
             Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
@@ -169,7 +175,7 @@ public record class ProjectInfo
     internal ProjectInfo WithProfileRequirementSettings(ProjectProfileRequirementSettings profileRequirementSettings)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
-            ProjectFieldSettings, ProjectFinanceSettings, AccomodationEnabled,
+            ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
             Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,

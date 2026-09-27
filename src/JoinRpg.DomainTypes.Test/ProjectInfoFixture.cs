@@ -1,5 +1,6 @@
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.DomainTypes.Test;
@@ -27,7 +28,8 @@ internal static class ProjectInfoFixture
         ProjectGroupTree? groupTree = null,
         IReadOnlyCollection<ProjectMasterInfo>? masters = null,
         ProjectLifecycleStatus projectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
-        IReadOnlyCollection<ProjectFeeSettingInfo>? feeSchedule = null)
+        IReadOnlyCollection<ProjectFeeSettingInfo>? feeSchedule = null,
+        ProjectAccommodationSettings? accommodationSettings = null)
         => new(
             ProjectId,
             new ProjectName("Test"),
@@ -35,7 +37,7 @@ internal static class ProjectInfoFixture
             fields ?? [],
             new ProjectFieldSettings(null, null),
             new ProjectFinanceSettings(false, [], feeSchedule ?? []),
-            false,
+            accommodationSettings ?? new ProjectAccommodationSettings(false, []),
             groupTree ?? new ProjectGroupTree(RootGroupId, new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()),
             masters ?? [MakeMaster(DefaultMasterId, isOwner: true)],
             false,

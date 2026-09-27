@@ -173,9 +173,9 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
 
 ### 5. План миграции
 
-1. **PR 1** — `AccommodationTypeInfo`, `ProjectAccommodationSettings`, навигация, `Include`, маппинг,
-   поле в `ProjectInfo`, `[Obsolete]`-прокси `AccomodationEnabled`, юнит-тесты на маппинг
-   (поверх `MockedProject`) и замер горячего пути. Потребители пока не трогаются.
+1. **PR 1** — ✅ сделано. `AccommodationTypeInfo`, `ProjectAccommodationSettings`, навигация,
+   `Include`, маппинг, поле в `ProjectInfo`, `[Obsolete]`-прокси `AccomodationEnabled`, юнит-тесты
+   на маппинг поверх `MockedProject`. Потребители не трогались.
 2. **PR 2** — операции создания/изменения/удаления типа на `IProjectPropsService`, перевод
    `AccommodationTypeController` и `CreateProjectService.Setup`, удаление `SaveRoomTypeAsync`/
    `RemoveRoomType` из `IAccommodationService`.
@@ -201,6 +201,9 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
 
 - Цифры по проду (сколько типов и комнат на проект, у скольких проектов включено поселение) в этот
   ADR не попали: запрос к прод-БД в сессии написания был заблокирован. Оценка «типов единицы-десятки»
-  сделана по смыслу сущности, и её проверяет замер из PR 1.
+  сделана по смыслу сущности. **Замер горячего пути в PR 1 тоже не сделан** — он требует боевого
+  проекта с включённым поселением, из рабочего окружения такого нет. Косвенно: интеграционные тесты
+  после добавления `Include` не замедлились. Если на проде обнаружится проект с сотнями типов
+  проживания, решение пересматривается.
 - Навигационное свойство в `Project` — изменение `JoinRpg.DataModel` без новых колонок; по правилу
   CLAUDE.md изменения в `DataModel` согласуются с @leotsarev.
