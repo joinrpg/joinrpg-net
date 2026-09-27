@@ -6,11 +6,13 @@ internal class SaveToCharacterOnlyStrategy(
     Character character,
     UserIdentification currentUserId,
     IFieldDefaultValueGenerator generator,
-    ProjectInfo projectInfo) : CharacterExistsStrategyBase(claim: null,
+    ProjectInfo projectInfo,
+    IReadOnlyCollection<CharacterGroupIdentification> regularGroupIds) : CharacterExistsStrategyBase(claim: null,
     character,
     currentUserId,
     generator,
-    projectInfo)
+    projectInfo,
+    regularGroupIds)
 {
     protected override string CharacterNameFromPlayer()
     {
@@ -25,5 +27,5 @@ internal class SaveToCharacterOnlyStrategy(
     protected override bool FieldIsMandatory(FieldWithValue field) =>
         field.Field.MandatoryStatus == MandatoryStatus.Required
         && field.Field.BoundTo == FieldBoundTo.Character // Игнорируем пустые поля заявок в данном случае
-        && field.Field.IsAvailableForTarget(Character, ProjectInfo);
+        && field.Field.IsAvailableForTarget(AvailabilityTarget);
 }

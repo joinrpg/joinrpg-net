@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
@@ -31,12 +32,44 @@ public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
             CharacterTypeInfo.Default(),
             FieldLayerContainer.Empty(mock.ProjectInfo));
 
-    private EditCharacterRequest EditRequest(Character character, CharacterTypeInfo? typeInfo = null)
+    private EditCharacterRequest EditRequest(
+        Character character,
+        CharacterTypeInfo? typeInfo = null,
+        Dictionary<int, string?>? fieldValues = null)
         => new(
             character.GetId(),
             ParentCharacterGroupIds: [mock.Group.GetId()],
             typeInfo ?? CharacterTypeInfo.Default(),
-            FieldLayerContainer.Empty(mock.ProjectInfo));
+            fieldValues is null
+                ? FieldLayerContainer.Empty(mock.ProjectInfo)
+                : new FieldLayerContainer(mock.ProjectInfo, fieldValues));
+
+    /// <summary>
+    /// Конфигурация «поле B доступно тем, кто выбрал вариант X поля A»: персонаж выбрал вариант и
+    /// потому лежит в его спецгруппе, а поле B ограничено этой спецгруппой и обязательно.
+    /// </summary>
+    private (Character Character, CharacterGroup SpecialGroup, ProjectFieldInfo RestrictedField) SetupCharacterInVariantSpecialGroup()
+    {
+        var specialGroup = mock.CreateSpecialGroup();
+        var character = mock.CreateCharacter("Вася");
+        MockedProject.AddCharToGroup(character, specialGroup);
+
+        var (partyField, partyVariant) = mock.AddDropdownFieldWithSpecialGroup("Партия", specialGroup);
+        var restrictedField = mock.AddField(f =>
+        {
+            f.FieldName = "Только для партии";
+            f.MandatoryStatus = MandatoryStatus.Required;
+            f.CanPlayerView = true;
+            f.ValidForNpc = true;
+            f.AvailableForCharacterGroupIds = [specialGroup.CharacterGroupId];
+        });
+
+        MockedProject.AssignFieldValues(
+            character,
+            new FieldWithValue(partyField, partyVariant.Id.ProjectFieldVariantId.ToString()));
+
+        return (character, specialGroup, restrictedField);
+    }
 
     [Fact]
     public async Task AddCharacter_SavesOnce_AndReturnsId()
@@ -80,6 +113,42 @@ public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
 
         SaveChangesCallCount.ShouldBe(1);
         character.UpdatedById.ShouldBe(mock.Master.UserId);
+    }
+
+    /// <summary>
+    /// Регрессия #4937: правка персонажа переписывала группы выбранными мастером — то есть только
+    /// обычными, — и на время сохранения персонаж лишался спецгрупп. По ним считается доступность
+    /// полей, поэтому обязательное поле, ограниченное спецгруппой варианта, в этом сохранении можно
+    /// было молча очистить.
+    /// </summary>
+    [Fact]
+    public async Task EditCharacter_ClearingMandatoryFieldRestrictedToSpecialGroup_Throws()
+    {
+        var (character, _, restrictedField) = SetupCharacterInVariantSpecialGroup();
+
+        await Should.ThrowAsync<CharacterFieldRequiredException>(
+            () => CreateService().EditCharacter(EditRequest(
+                character,
+                fieldValues: new() { { restrictedField.Id.ProjectFieldId, null } })));
+
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Итоговый список групп собирает и пишет само сохранение полей: обычные — выбранные мастером,
+    /// спецгруппы — по значениям полей. Сущность до сохранения не трогается, поэтому тест заодно
+    /// держит то, что группы вообще доезжают до персонажа.
+    /// </summary>
+    [Fact]
+    public async Task EditCharacter_WritesSelectedGroupsAndKeepsVariantSpecialGroup()
+    {
+        var (character, specialGroup, _) = SetupCharacterInVariantSpecialGroup();
+
+        await CreateService().EditCharacter(EditRequest(character));
+
+        character.ParentCharacterGroupIds.ShouldBe(
+            [mock.Group.CharacterGroupId, specialGroup.CharacterGroupId],
+            ignoreOrder: true);
     }
 
     [Fact]
@@ -146,6 +215,18 @@ public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
             ctx => { });
 
         character.UpdatedById.ShouldBe(mock.Master.UserId);
+    }
+
+    /// <summary>
+    /// Группы новому персонажу проставляет сохранение полей, а не инициализатор сущности.
+    /// </summary>
+    [Fact]
+    public async Task AddCharacter_WritesSelectedGroups()
+    {
+        var id = await CreateService().AddCharacter(AddRequest());
+
+        var created = mock.Project.Characters.Single(c => c.CharacterId == id.CharacterId);
+        created.ParentCharacterGroupIds.ShouldBe([mock.Group.CharacterGroupId]);
     }
 
     [Fact]

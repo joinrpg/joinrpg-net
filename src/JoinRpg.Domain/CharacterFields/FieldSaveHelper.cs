@@ -26,11 +26,13 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         ArgumentNullException.ThrowIfNull(fieldsToSet);
         ArgumentNullException.ThrowIfNull(projectInfo);
 
+        // Обычные группы через заявку не меняются, поэтому остаются те, что у персонажа сейчас.
         return SaveCharacterFieldsImpl(new UserIdentification(currentUserId),
             claim.Character,
             claim,
             fieldsToSet,
-            projectInfo);
+            projectInfo,
+            regularGroupIds: null);
     }
 
     /// <summary>
@@ -40,11 +42,18 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     /// <param name="fieldsToSet">
     /// Поля, которые надо изменить, — дельта, а не полный слой. Пустой слой — не менять ничего.
     /// </param>
+    /// <param name="regularGroupIds">
+    /// Обычные группы, в которых персонаж должен оказаться по итогам операции — уже проверенные
+    /// (<c>ProjectGroupTree.ValidateGroupListForCharacter</c>). <c>null</c> — операция группы не
+    /// меняет, берутся текущие. Спецгруппы сюда не передаются никогда: их вычисляет само сохранение
+    /// по значениям полей.
+    /// </param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
         Character character,
         FieldLayerContainer fieldsToSet,
-        ProjectInfo projectInfo)
+        ProjectInfo projectInfo,
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
     {
         ArgumentNullException.ThrowIfNull(character);
         ArgumentNullException.ThrowIfNull(fieldsToSet);
@@ -54,7 +63,8 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
             character,
             character.ApprovedClaim,
             fieldsToSet,
-            projectInfo);
+            projectInfo,
+            regularGroupIds);
     }
 
     private IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFieldsImpl(
@@ -62,9 +72,15 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         Character character,
         Claim? claim,
         FieldLayerContainer fieldsToSet,
-        ProjectInfo projectInfo)
+        ProjectInfo projectInfo,
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds)
     {
-        var strategy = CreateStrategy(currentUserId, character, claim, projectInfo);
+        var strategy = CreateStrategy(
+            currentUserId,
+            character,
+            claim,
+            projectInfo,
+            regularGroupIds ?? [.. character.GetDirectNonSpecialGroupIds(projectInfo)]);
 
         logger.LogDebug("Selected saving strategy as {strategyName}", strategy.GetType().Name);
 
@@ -128,12 +144,17 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         }
     }
 
-    private FieldSaveStrategyBase CreateStrategy(UserIdentification currentUserId, Character character, Claim? claim, ProjectInfo projectInfo)
+    private FieldSaveStrategyBase CreateStrategy(
+        UserIdentification currentUserId,
+        Character character,
+        Claim? claim,
+        ProjectInfo projectInfo,
+        IReadOnlyCollection<CharacterGroupIdentification> regularGroupIds)
     {
         return claim switch
         {
-            null => new SaveToCharacterOnlyStrategy(character, currentUserId, generator, projectInfo),
-            { IsApproved: true } => new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator, projectInfo),
+            null => new SaveToCharacterOnlyStrategy(character, currentUserId, generator, projectInfo, regularGroupIds),
+            { IsApproved: true } => new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator, projectInfo, regularGroupIds),
             { IsApproved: false } => new SaveToClaimOnlyStrategy(claim, currentUserId, generator, projectInfo),
         };
     }

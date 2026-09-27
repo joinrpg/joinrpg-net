@@ -53,12 +53,18 @@ internal abstract record CharacterOperationContext(
     /// слоем нужно ради побочных эффектов — генерации значений по умолчанию, переноса значений
     /// заявка→персонаж и пересчёта спецгрупп.
     /// </param>
+    /// <param name="regularGroupIds">
+    /// Обычные группы, в которых персонаж должен оказаться по итогам операции — уже проверенные
+    /// (<see cref="ProjectGroupTree.ValidateGroupListForCharacter"/>). <c>null</c> — операция группы
+    /// не меняет. Спецгруппы сюда не передаются: их пересчитывает само сохранение по значениям полей.
+    /// </param>
     /// <returns>Изменившиеся поля.</returns>
     protected IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFieldsCore(
         Character character,
-        FieldLayerContainer fieldsToSet)
+        FieldLayerContainer fieldsToSet,
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
     {
-        var changed = FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, character, fieldsToSet, ProjectInfo);
+        var changed = FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, character, fieldsToSet, ProjectInfo, regularGroupIds);
 
         if (changed.Any(field => field.MarksNewFieldUsage))
         {
@@ -118,8 +124,10 @@ internal abstract record CharacterMutationContext(
     public void RemoveEntity(object entity) => Scope.Remove(entity);
 
     /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore"/>
-    public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(FieldLayerContainer fieldsToSet)
-        => SaveFieldsCore(Character, fieldsToSet);
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(
+        FieldLayerContainer fieldsToSet,
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
+        => SaveFieldsCore(Character, fieldsToSet, regularGroupIds);
 }
 
 /// <summary>
@@ -151,8 +159,9 @@ internal abstract record CharacterCreationContext(
     /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore"/>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(
         Character character,
-        FieldLayerContainer fieldsToSet)
-        => SaveFieldsCore(character, fieldsToSet);
+        FieldLayerContainer fieldsToSet,
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
+        => SaveFieldsCore(character, fieldsToSet, regularGroupIds);
 }
 
 /// <summary>

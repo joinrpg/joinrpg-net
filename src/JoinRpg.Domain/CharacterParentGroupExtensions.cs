@@ -19,5 +19,14 @@ public static class CharacterParentGroupExtensions
 
     public static IEnumerable<CharacterGroupIdentification> GetDirectNonSpecialGroupIds(this Character character, ProjectInfo projectInfo)
         => GetDirectGroups(character, projectInfo).Where(g => !g.IsSpecial).Select(g => g.Id);
+
+    /// <summary>
+    /// Спецгруппы персонажа — те, в которые он попал автоматически по значениям полей. Руками их
+    /// выбрать нельзя, поэтому в запросах на изменение групп их не бывает, и при сохранении они
+    /// берутся с персонажа.
+    /// </summary>
+    public static IEnumerable<CharacterGroupIdentification> GetDirectSpecialGroupIds(this Character character, ProjectInfo projectInfo)
+        => GetDirectGroups(character, projectInfo).Where(g => g.IsSpecial).Select(g => g.Id);
+
     public static IEnumerable<CharacterGroupInfo> GetDirectGroups(this Character character, ProjectInfo projectInfo) => projectInfo.GroupTree.GetGroupsById([.. character.GetDirectGroupIds()]);
 }
