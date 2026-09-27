@@ -325,7 +325,7 @@ internal class CloneProjectHelper(
         }
         // Обработка исключения, которое EF6 бросает сам при SaveChanges; без неё сбой валидации
         // на одном персонаже уронил бы копирование проекта целиком. Удаляется вместе с EF6 на
-        // шаге переключения ORM (ADR015): в EF Core валидации при сохранении нет вообще.
+        // шаге переключения ORM (ADR016): в EF Core валидации при сохранении нет вообще.
         catch (DbEntityValidationException ex)
         {
             logger.LogWarning(ex, "Не удалось скопировать персонажа {characterId} в проект {projectId}. Копирование проекта будет продолжено.", oldCharacterId, projectId);
@@ -393,7 +393,7 @@ internal class CloneProjectHelper(
             }
             // Обработка исключения, которое EF6 бросает сам при SaveChanges; без неё сбой валидации
             // на одной сетке уронил бы копирование проекта целиком. Удаляется вместе с EF6 на
-            // шаге переключения ORM (ADR015): в EF Core валидации при сохранении нет вообще.
+            // шаге переключения ORM (ADR016): в EF Core валидации при сохранении нет вообще.
             catch (DbEntityValidationException ex)
             {
                 logger.LogWarning(ex, "Не удалось скопировать сетку ролей {Name} в проект {projectId}. Копирование проекта будет продолжено.", originalList.Name, projectId);
@@ -431,7 +431,7 @@ internal class CloneProjectHelper(
             }
             // Обработка исключения, которое EF6 бросает сам при SaveChanges; без неё сбой валидации
             // на одном сюжете уронил бы копирование проекта целиком. Удаляется вместе с EF6 на
-            // шаге переключения ORM (ADR015): в EF Core валидации при сохранении нет вообще.
+            // шаге переключения ORM (ADR016): в EF Core валидации при сохранении нет вообще.
             catch (DbEntityValidationException ex)
             {
                 logger.LogWarning(ex, "Не удалось скопировать сюжет {originalPlotId} в проект {projectId}. Копирование проекта будет продолжено.", originalPlotId, projectId);
