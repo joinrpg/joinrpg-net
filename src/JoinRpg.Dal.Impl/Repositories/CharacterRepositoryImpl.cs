@@ -33,8 +33,12 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
         await LoadProjectGroups(projectId);
         await LoadProjectFields(projectId);
 
+        // CreatedBy/UpdatedBy читает CharacterDetailsViewModel (история обновлений) —
+        // без Include это две ленивые загрузки на каждый заход (#4992).
         return
           await Ctx.Set<Character>().Include(ch => ch.ApprovedClaim!.Player)
+            .Include(ch => ch.CreatedBy)
+            .Include(ch => ch.UpdatedBy)
             .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
     public async Task<Character> GetCharacterWithDetails(int projectId, int characterId)

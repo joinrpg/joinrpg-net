@@ -33,7 +33,7 @@ public class PrintCharacterViewModel
 
         var plotElements = plots;
         HasUnready = !plotElements.All(x => x.Completed) || !handouts.All(x => x.Completed);
-        Plots = new PlotDisplayViewModel(plotElements, currentUser, character, projectInfo);
+        Plots = new PlotDisplayViewModel(plotElements, currentUser, character, character.Project, projectInfo);
 
         Handouts = [.. handouts.Select(e => new HandoutListItemViewModel(e))];
 

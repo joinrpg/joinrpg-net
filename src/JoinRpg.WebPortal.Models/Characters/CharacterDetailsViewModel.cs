@@ -44,15 +44,21 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
     public CharacterNavigationViewModel Navigation { get; }
     public bool HasMasterAccess { get; }
 
+    /// <param name="projectForRendering">
+    /// EF-граф проекта для рендеринга директив в тексте вводных (<c>%персонаж</c>, <c>%список</c>) —
+    /// см. <c>IProjectRepository.GetProjectForMarkdownRendering</c>.
+    /// </param>
     public CharacterDetailsViewModel(
         ICurrentUserAccessor currentUserId,
         Character character,
         CharacterInfo characterInfo,
         IReadOnlyCollection<PlotTextDto> plots,
+        Project projectForRendering,
         ProjectInfo projectInfo)
     {
-
-        PlayerLink = character.GetCharacterPlayerLinkViewModel(currentUserId.UserIdentificationOrDefault);
+        // Ссылка на игрока строится поверх агрегата (ADR013): у варианта поверх EF-сущности внутри
+        // лежит character.Project.Details.PublishPlot — ленивая загрузка на каждый заход (#4992).
+        PlayerLink = characterInfo.GetCharacterPlayerLinkViewModel(currentUserId.UserIdentificationOrDefault);
 
         var accessArguments = AccessArgumentsFactory.Create(character, currentUserId, projectInfo) with { EditAllowed = false };
 
@@ -66,7 +72,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
             projectInfo,
             accessArguments
             );
-        Plot = new PlotDisplayViewModel(plots, currentUserId, character, projectInfo);
+        Plot = new PlotDisplayViewModel(plots, currentUserId, character, projectForRendering, projectInfo);
 
         HasMasterAccess = accessArguments.MasterAccess;
         CreatedAt = character.CreatedAt;

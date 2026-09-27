@@ -1,6 +1,5 @@
 {
   "GET /x-game-api/{projectId}/claims/{claimId}": 1,
-  "GET /{projectId}/character/{characterid}/details": 1,
   "POST /x-game-api/{projectId}/characters": 1,
   "POST /x-game-api/{projectId}/characters/{characterId}/fields": 2
 }
