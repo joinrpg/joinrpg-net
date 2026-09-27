@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Models.Accommodation;
@@ -136,6 +137,25 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         Rooms = rl;
     }
 
+    /// <summary>
+    /// Форма редактирования типа проживания: берёт настройку из метаданных проекта (ADR015).
+    /// Комнаты и заявки в метаданные не входят и здесь не нужны — их показывает отдельная
+    /// страница «Комнаты».
+    /// </summary>
+    public RoomTypeViewModel(AccommodationTypeInfo typeInfo, UserIdentification userId, ProjectInfo projectInfo)
+        : this(userId, projectInfo)
+    {
+        Id = typeInfo.Id.AccommodationTypeId;
+        Cost = typeInfo.Cost;
+        Name = typeInfo.Name;
+        Capacity = typeInfo.Capacity;
+        IsPlayerSelectable = typeInfo.IsPlayerSelectable;
+        DescriptionEditable = typeInfo.Description.Value;
+        DescriptionView = typeInfo.Description.ToHtmlString();
+        Requests = [];
+        UnassignedRequests = [];
+    }
+
     public RoomTypeViewModel(UserIdentification userId, ProjectInfo projectInfo)
     {
         ProjectName = projectInfo.ProjectName.Value;
@@ -147,18 +167,4 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     public RoomTypeViewModel()
     {
     }
-
-    public ProjectAccommodationType ToEntity()
-        => new()
-        {
-            ProjectId = ProjectId,
-            Id = Id,
-            Cost = Cost,
-            Name = Name,
-            Capacity = Capacity,
-            Description = new MarkdownDbValue(DescriptionEditable),
-            IsInfinite = IsInfinite,
-            IsPlayerSelectable = IsPlayerSelectable,
-            IsAutoFilledAccommodation = IsAutoFilledAccommodation,
-        };
 }

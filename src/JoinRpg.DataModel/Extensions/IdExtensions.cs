@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
 
@@ -43,6 +44,10 @@ public static class IdExtensions
     /// <summary>Идентификатор значения поля-справочника.</summary>
     public static ProjectFieldVariantIdentification GetId(this ProjectFieldDropdownValue variant)
         => new(variant.ProjectId, variant.ProjectFieldId, variant.ProjectFieldDropdownValueId);
+
+    /// <summary>Идентификатор типа проживания.</summary>
+    public static AccommodationTypeIdentification GetId(this ProjectAccommodationType accommodationType)
+        => new(accommodationType.ProjectId, accommodationType.Id);
 
     /// <summary>Идентификатор одобренной заявки персонажа, если она есть.</summary>
     public static ClaimIdentification? GetApprovedClaimIdOrDefault(this Character character)
