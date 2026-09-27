@@ -141,10 +141,12 @@ public record ProjectAccommodationSettings(
 `IProjectPropsService`:
 
 ```csharp
-Task<AccommodationTypeIdentification> CreateAccommodationType(ProjectIdentification projectId, AccommodationTypeCreateRequest request);
-Task UpdateAccommodationType(AccommodationTypeIdentification id, AccommodationTypeUpdateRequest request);
+Task<AccommodationTypeIdentification> CreateAccommodationType(ProjectIdentification projectId, AccommodationTypeRequest request);
+Task UpdateAccommodationType(AccommodationTypeIdentification id, AccommodationTypeRequest request);
 Task DeleteAccommodationType(AccommodationTypeIdentification id);
 ```
+
+Параметры создания и изменения совпадают, поэтому record запроса **один** на обе операции.
 
 Все три — `Permission.CanManageAccommodation`, `ProjectActiveRequirement.MustBeActive`. Проверка
 «тип занят, удалять нельзя» (`RoomIsOccupiedException`) остаётся доменной и выполняется внутри

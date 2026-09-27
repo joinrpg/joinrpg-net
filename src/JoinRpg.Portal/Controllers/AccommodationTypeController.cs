@@ -59,17 +59,12 @@ public class AccommodationTypeController(
     /// Shows "Edit room type" form
     /// </summary>
     [HttpGet("~/{projectId}/rooms/{roomTypeId}/edit")]
-    public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
+    public async Task<ActionResult> EditRoomType(AccommodationTypeIdentification roomTypeId)
     {
-        var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var pi = await projectMetadataRepository.GetProjectMetadata(roomTypeId.ProjectId);
 
         // Тип проживания — настройка проекта, он уже есть в метаданных (ADR015).
-        var typeInfo = pi.AccommodationSettings.Types
-            .SingleOrDefault(t => t.Id.AccommodationTypeId == roomTypeId);
-        if (typeInfo is null)
-        {
-            return Forbid();
-        }
+        var typeInfo = pi.AccommodationSettings.GetTypeById(roomTypeId);
 
         return View(new RoomTypeViewModel(typeInfo, currentUserAccessor.UserIdentification, pi));
     }
@@ -113,28 +108,21 @@ public class AccommodationTypeController(
         }
 
         var projectId = new ProjectIdentification(model.ProjectId);
-        var description = new MarkdownString(model.DescriptionEditable ?? "");
+        var request = new AccommodationTypeRequest(
+            model.Name,
+            new MarkdownString(model.DescriptionEditable ?? ""),
+            model.Cost,
+            model.Capacity,
+            model.IsPlayerSelectable);
+
         if (model.Id == 0)
         {
-            _ = await accommodationTypeService.CreateAccommodationType(
-                projectId,
-                new AccommodationTypeCreateRequest(
-                    model.Name,
-                    description,
-                    model.Cost,
-                    model.Capacity,
-                    model.IsPlayerSelectable));
+            _ = await accommodationTypeService.CreateAccommodationType(projectId, request);
         }
         else
         {
             await accommodationTypeService.UpdateAccommodationType(
-                new AccommodationTypeIdentification(projectId, model.Id),
-                new AccommodationTypeUpdateRequest(
-                    model.Name,
-                    description,
-                    model.Cost,
-                    model.Capacity,
-                    model.IsPlayerSelectable));
+                new AccommodationTypeIdentification(projectId, model.Id), request);
         }
 
         return RedirectToAction("Index", new { projectId = model.ProjectId });
@@ -145,11 +133,10 @@ public class AccommodationTypeController(
     /// </summary>
     [MasterAuthorize(Permission.CanManageAccommodation)]
     [HttpGet]
-    public async Task<ActionResult> DeleteRoomType(int roomTypeId, int projectId)
+    public async Task<ActionResult> DeleteRoomType(AccommodationTypeIdentification roomTypeId)
     {
-        await accommodationTypeService.DeleteAccommodationType(
-            new AccommodationTypeIdentification(new ProjectIdentification(projectId), roomTypeId));
-        return RedirectToAction("Index", new { ProjectId = projectId });
+        await accommodationTypeService.DeleteAccommodationType(roomTypeId);
+        return RedirectToAction("Index", new { ProjectId = roomTypeId.ProjectId.Value });
     }
 
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]

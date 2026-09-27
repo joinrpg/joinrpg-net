@@ -37,7 +37,7 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
     {
         await CreateService().CreateAccommodationType(
             ProjectId,
-            new AccommodationTypeCreateRequest("Домик", new MarkdownString("Тёплый"), Cost: 1500, Capacity: 4, IsPlayerSelectable: true));
+            new AccommodationTypeRequest("Домик", new MarkdownString("Тёплый"), Cost: 1500, Capacity: 4, IsPlayerSelectable: true));
 
         var created = Result.AccommodationSettings.Types.ShouldHaveSingleItem();
         created.Name.ShouldBe("Домик");
@@ -54,7 +54,7 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
         // Игрок (mock.Player) не входит в ACL проекта
         await Should.ThrowAsync<NoAccessToProjectException>(() => CreateService(mock.Player.UserId).CreateAccommodationType(
             ProjectId,
-            new AccommodationTypeCreateRequest("Домик", new MarkdownString(""), Cost: 0, Capacity: 1, IsPlayerSelectable: true)));
+            new AccommodationTypeRequest("Домик", new MarkdownString(""), Cost: 0, Capacity: 1, IsPlayerSelectable: true)));
 
         mock.AccommodationTypes.ShouldBeEmpty();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -67,7 +67,7 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
 
         await CreateService().UpdateAccommodationType(
             id,
-            new AccommodationTypeUpdateRequest("Люкс", new MarkdownString("С душем"), Cost: 9000, Capacity: 2, IsPlayerSelectable: false));
+            new AccommodationTypeRequest("Люкс", new MarkdownString("С душем"), Cost: 9000, Capacity: 2, IsPlayerSelectable: false));
 
         var updated = Result.AccommodationSettings.Types.ShouldHaveSingleItem();
         updated.Name.ShouldBe("Люкс");
@@ -84,7 +84,7 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
 
         await Should.ThrowAsync<NoAccessToProjectException>(() => CreateService(mock.Player.UserId).UpdateAccommodationType(
             id,
-            new AccommodationTypeUpdateRequest("Люкс", new MarkdownString(""), Cost: 9000, Capacity: 2, IsPlayerSelectable: false)));
+            new AccommodationTypeRequest("Люкс", new MarkdownString(""), Cost: 9000, Capacity: 2, IsPlayerSelectable: false)));
 
         mock.AccommodationTypes.ShouldHaveSingleItem().Name.ShouldBe("Палатка");
         unitOfWork.SaveChangesCallCount.ShouldBe(0);

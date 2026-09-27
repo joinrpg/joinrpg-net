@@ -1,29 +1,14 @@
 namespace JoinRpg.Services.Interfaces.ProjectMetadata;
 
 /// <summary>
-/// Параметры создаваемого типа проживания.
+/// Параметры типа проживания — те же и при создании, и при изменении.
 /// </summary>
 /// <param name="Name">Название типа, как его видит игрок</param>
 /// <param name="Description">Описание типа проживания</param>
 /// <param name="Cost">Стоимость проживания для одного игрока</param>
 /// <param name="Capacity">Сколько игроков помещается в одну комнату этого типа</param>
 /// <param name="IsPlayerSelectable">Может ли игрок сам выбрать этот тип в своей заявке</param>
-public record AccommodationTypeCreateRequest(
-    string Name,
-    MarkdownString Description,
-    int Cost,
-    int Capacity,
-    bool IsPlayerSelectable);
-
-/// <summary>
-/// Новые параметры существующего типа проживания.
-/// </summary>
-/// <param name="Name">Название типа, как его видит игрок</param>
-/// <param name="Description">Описание типа проживания</param>
-/// <param name="Cost">Стоимость проживания для одного игрока</param>
-/// <param name="Capacity">Сколько игроков помещается в одну комнату этого типа</param>
-/// <param name="IsPlayerSelectable">Может ли игрок сам выбрать этот тип в своей заявке</param>
-public record AccommodationTypeUpdateRequest(
+public record AccommodationTypeRequest(
     string Name,
     MarkdownString Description,
     int Cost,
@@ -42,14 +27,14 @@ public interface IAccommodationTypeService
     /// </summary>
     Task<AccommodationTypeIdentification> CreateAccommodationType(
         ProjectIdentification projectId,
-        AccommodationTypeCreateRequest request);
+        AccommodationTypeRequest request);
 
     /// <summary>
     /// Изменяет параметры типа проживания.
     /// </summary>
     Task UpdateAccommodationType(
         AccommodationTypeIdentification accommodationTypeId,
-        AccommodationTypeUpdateRequest request);
+        AccommodationTypeRequest request);
 
     /// <summary>
     /// Удаляет тип проживания.

@@ -44,7 +44,7 @@ internal partial class CreateProjectService
 
         _ = await accommodationTypeService.CreateAccommodationType(
             projectId,
-            new AccommodationTypeCreateRequest(
+            new AccommodationTypeRequest(
                 Name: "Вид поселения для примера",
                 Description: new MarkdownString("Измените свойства поселения в настройках"),
                 Cost: 0,

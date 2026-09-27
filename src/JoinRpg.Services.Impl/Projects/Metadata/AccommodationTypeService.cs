@@ -16,7 +16,7 @@ internal class AccommodationTypeService(
     /// <inheritdoc />
     public async Task<AccommodationTypeIdentification> CreateAccommodationType(
         ProjectIdentification projectId,
-        AccommodationTypeCreateRequest request)
+        AccommodationTypeRequest request)
     {
         var entity = await projectPropsService.ChangeProjectProperties(
             projectId,
@@ -44,13 +44,13 @@ internal class AccommodationTypeService(
             });
 
         // Id генерируется базой при SaveChanges — читаем уже после возврата из props-сервиса.
-        return new AccommodationTypeIdentification(projectId, entity.Id);
+        return entity.GetId();
     }
 
     /// <inheritdoc />
     public Task UpdateAccommodationType(
         AccommodationTypeIdentification accommodationTypeId,
-        AccommodationTypeUpdateRequest request)
+        AccommodationTypeRequest request)
         => projectPropsService.ChangeProjectProperties(
             accommodationTypeId.ProjectId,
             Permission.CanManageAccommodation,
