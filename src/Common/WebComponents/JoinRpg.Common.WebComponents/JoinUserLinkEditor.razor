@@ -1,4 +1,5 @@
 @using System.Linq.Expressions
+@inject IUserLinkResolveClient ResolveClient
 
 @for (var i = 0; i < RowsToRender.Count; i++)
 {
@@ -14,6 +15,23 @@
             <JoinButton Preset="ButtonPreset.Delete" Label="" Size="SizeStyleEnum.Small" OnClick="@(() => OnRemoveRowAsync(index))" />
         }
     </div>
+    @if (ResolveEnabled)
+    {
+        var state = StateFor(RowsToRender[index]);
+        if (state is not null)
+        {
+            <div class="join-user-link-editor-status">
+                @if (state.User is not null)
+                {
+                    <UserLink Model="@state.User" />
+                }
+                else
+                {
+                    <span class="text-danger">@state.Error</span>
+                }
+            </div>
+        }
+    }
 }
 
 @code {
@@ -30,10 +48,26 @@
     [Parameter]
     public Expression<Func<List<string>>>? ValuesExpression { get; set; }
 
+    /// <summary>
+    /// Проект, в контексте которого резолвится ссылка. null — резолв выключен, компонент работает
+    /// как чистый ввод строк (так его использует форма приглашения игрока, где строка уходит
+    /// на сервер как есть).
+    /// </summary>
+    [Parameter]
+    public int? ProjectId { get; set; }
+
     [CascadingParameter]
     private EditContext? EditContext { get; set; }
 
     private FieldIdentifier fieldIdentifier;
+
+    private sealed record ResolveState(UserLinkViewModel? User, string? Error);
+
+    private readonly Dictionary<string, ResolveState> resolved = new(StringComparer.Ordinal);
+    private readonly HashSet<string> inFlight = new(StringComparer.Ordinal);
+    private bool initialized;
+
+    private bool ResolveEnabled => ProjectId is not null;
 
     protected override void OnParametersSet()
     {
@@ -41,6 +75,53 @@
         {
             fieldIdentifier = FieldIdentifier.Create(ValuesExpression);
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        initialized = true;
+
+        foreach (var value in Values.ToList())
+        {
+            await ResolveIfNeededAsync(value);
+        }
+    }
+
+    private static string Key(string? value) => value?.Trim() ?? "";
+
+    private ResolveState? StateFor(string value)
+        => resolved.TryGetValue(Key(value), out var state) ? state : null;
+
+    private async Task ResolveIfNeededAsync(string value)
+    {
+        var key = Key(value);
+        if (!ResolveEnabled || !initialized || key.Length == 0 || resolved.ContainsKey(key))
+        {
+            return;
+        }
+
+        if (!inFlight.Add(key))
+        {
+            return;
+        }
+
+        try
+        {
+            var user = await ResolveClient.ResolveUserLink(ProjectId!.Value, key);
+            resolved[key] = new ResolveState(user, null);
+        }
+        catch (Exception exception)
+        {
+            resolved[key] = new ResolveState(
+                null,
+                string.IsNullOrWhiteSpace(exception.Message) ? "Пользователь не найден" : exception.Message);
+        }
+        finally
+        {
+            _ = inFlight.Remove(key);
+        }
+
+        StateHasChanged();
     }
 
     private List<string> RowsToRender
@@ -84,6 +165,7 @@
         }
 
         await NotifyChangedAsync();
+        await ResolveIfNeededAsync(newValue);
     }
 
     private async Task OnRemoveRowAsync(int index)

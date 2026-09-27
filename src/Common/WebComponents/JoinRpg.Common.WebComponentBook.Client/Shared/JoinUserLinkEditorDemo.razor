@@ -8,8 +8,19 @@
 <h4>Multiple="true"</h4>
 <JoinUserLinkEditor Multiple="true" @bind-Values="@Multi" />
 
+<h4>С резолвом и скрытым инпутом (остров в MVC-форме)</h4>
+<p>Резолв в каталоге компонентов фальшивый: число — «Пользователь N», ссылка на vk — «Вася Пупкин», остальное не находится.</p>
+<JoinUserLinkEditor @bind-Values="@Resolvable" ProjectId="1" />
+
+<h4>С резолвом, мультивыбор</h4>
+<JoinUserLinkEditor Multiple="true" @bind-Values="@ResolvableMulti" ProjectId="1" />
+
 @code {
     private List<string> Single { get; set; } = ["123"];
 
     private List<string> Multi { get; set; } = ["123", "vk.com/id456"];
+
+    private List<string> Resolvable { get; set; } = ["123"];
+
+    private List<string> ResolvableMulti { get; set; } = ["123", "vk.com/id456"];
 }
