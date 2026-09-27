@@ -20,20 +20,12 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
             return null;
         }
 
-        if (row.CurrentVersionNumber != row.LastVersionNumber && row.CurrentContent is null)
+        if (!row.CurrentVersionExists)
         {
-            // Пустой текст у существующей версии отличить от отсутствующей версии нельзя,
-            // поэтому спрашиваем базу прямо: раньше несуществующую версию ловил билдер.
-            var versionExists = await Ctx.Set<PlotElementTexts>()
-              .AnyAsync(t => t.PlotElementId == elementId.PlotElementId && t.Version == row.CurrentVersionNumber);
-
-            if (!versionExists)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(version),
-                    version,
-                    $"У вводной {elementId} нет версии {row.CurrentVersionNumber}");
-            }
+            throw new ArgumentOutOfRangeException(
+                nameof(version),
+                version,
+                $"У вводной {elementId} нет версии {row.CurrentVersionNumber}");
         }
 
         return row.ToDto();

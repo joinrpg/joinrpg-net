@@ -40,6 +40,7 @@ internal static class PlotElementRowQuery
                     .FirstOrDefault(),
 
                 CurrentVersionNumber = x.Shown,
+                CurrentVersionExists = x.Element.Texts.Any(t => t.Version == x.Shown),
                 CurrentContent = x.Element.Texts
                     .Where(t => t.Version == x.Shown).Select(t => t.Content.Contents).FirstOrDefault(),
                 CurrentTodoField = x.Element.Texts

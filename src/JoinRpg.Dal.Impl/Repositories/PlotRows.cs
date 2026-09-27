@@ -34,6 +34,13 @@ internal sealed class PlotElementRow : IOrderableEntity
     public string? LastVersionTodoField { get; set; }
 
     public int CurrentVersionNumber { get; set; }
+
+    /// <summary>
+    /// Есть ли у вводной запрошенная версия. Отдельный флаг, потому что пустой текст существующей
+    /// версии от отсутствующей версии по <see cref="CurrentContent"/> не отличить.
+    /// </summary>
+    public bool CurrentVersionExists { get; set; }
+
     public string? CurrentContent { get; set; }
     public string? CurrentTodoField { get; set; }
     public DateTime CurrentModifiedAt { get; set; }
