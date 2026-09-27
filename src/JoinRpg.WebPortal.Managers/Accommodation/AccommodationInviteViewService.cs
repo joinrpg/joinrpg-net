@@ -30,7 +30,7 @@ internal class AccommodationInviteViewService(
     public async Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId)
     {
         // Список соседей — не публичные данные, поэтому доступ такой же, как у самой панели проживания
-        var claim = (await claimsRepository.GetClaim(claimId))
+        _ = (await claimsRepository.GetClaim(claimId))
             .RequestAccess(currentUserAccessor.UserId,
                 Permission.CanSetPlayersAccommodations,
                 ExtraAccessReason.PlayerOrResponsible);
@@ -47,15 +47,14 @@ internal class AccommodationInviteViewService(
         var roomFreeSpace = acceptedRequest.GetRoomFreeSpace();
 
         var currentNeighbors = (await accommodationRequestRepository
-                .GetClaimsWithSameAccommodationRequest(acceptedRequest.Id))
-            .Select(c => c.ClaimId)
+                .GetClaimsWithSameAccommodationRequest(claimId.ProjectId, acceptedRequest.Id))
             .ToHashSet();
 
         var withSameType = (await accommodationRequestRepository
-                .GetClaimsWithSameAccommodationTypeToInvite(acceptedRequest.AccommodationTypeId))
-            .Where(c => c.ClaimId != claim.ClaimId);
+                .GetClaimsWithSameAccommodationTypeToInvite(claimId.ProjectId, acceptedRequest.AccommodationTypeId))
+            .Where(c => c.ClaimId != claimId);
         var withoutRequest = await accommodationRequestRepository
-            .GetClaimsWithOutAccommodationRequest(claimId.ProjectId.Value);
+            .GetClaimsWithOutAccommodationRequest(claimId.ProjectId);
 
         var potentialNeighbors = withSameType
             .Union(withoutRequest)
@@ -64,8 +63,8 @@ internal class AccommodationInviteViewService(
 
         // Уже сложившиеся группы приглашаются целиком, поэтому те, кому не хватит места, отсеиваются
         var groupedTargets = potentialNeighbors
-            .Where(c => c.AccommodationRequest_Id != null)
-            .GroupBy(c => c.AccommodationRequest_Id!.Value)
+            .Where(c => c.AccommodationRequestId != null)
+            .GroupBy(c => c.AccommodationRequestId!.Value)
             .Where(group => group.Count() <= roomFreeSpace)
             .Select(group => new AccommodationInviteTargetViewModel(
                 AccommodationTargetIdentification.From(
@@ -75,9 +74,9 @@ internal class AccommodationInviteViewService(
                 Subtext: group.Count() > 1 ? GroupSubtext : ""));
 
         var singleTargets = potentialNeighbors
-            .Where(c => c.AccommodationRequest_Id == null)
+            .Where(c => c.AccommodationRequestId == null)
             .Select(c => new AccommodationInviteTargetViewModel(
-                AccommodationTargetIdentification.From(c.GetId()),
+                AccommodationTargetIdentification.From(c.ClaimId),
                 Text: GetPlayerName(c),
                 ExtraSearch: GetCharacterName(c),
                 Subtext: NoRequestSubtext));
@@ -128,14 +127,13 @@ internal class AccommodationInviteViewService(
         var currentNeighbors = claim.AccommodationRequest is null
             ? []
             : (await accommodationRequestRepository
-                    .GetClaimsWithSameAccommodationRequest(claim.AccommodationRequest.Id))
-                .Select(c => c.ClaimId)
+                    .GetClaimsWithSameAccommodationRequest(claimId.ProjectId, claim.AccommodationRequest.Id))
                 .ToHashSet();
 
         return
         [
             .. visible
-                .Where(invite => !currentNeighbors.Contains(Counterparty(invite, direction).ClaimId))
+                .Where(invite => !currentNeighbors.Contains(Counterparty(invite, direction).GetId()))
                 .Select(invite => new AccommodationInviteViewModel(
                     new AccommodationInviteIdentification(claimId.ProjectId, invite.Id),
                     ToUserLink(Counterparty(invite, direction).Player),
@@ -159,18 +157,18 @@ internal class AccommodationInviteViewService(
     private static UserLinkViewModel ToUserLink(User user)
         => new(user.ToUserInfoHeader());
 
-    private static string GetPlayerName(Claim claim) => claim.Player.GetDisplayName();
+    private static string GetPlayerName(AccommodationNeighbourCandidate candidate) => candidate.Player.DisplayName;
 
-    private static string GetCharacterName(Claim claim) => claim.Character.CharacterName;
+    private static string GetCharacterName(AccommodationNeighbourCandidate candidate) => candidate.CharacterName;
 
     /// <summary>
     /// Склеивает имена участников группы через запятую. Если основное имя пустое, берётся запасное —
     /// так строка никогда не оказывается пустой в списке.
     /// </summary>
     private static string JoinNames(
-        IEnumerable<Claim> claims,
-        Func<Claim, string> primary,
-        Func<Claim, string> fallback)
+        IEnumerable<AccommodationNeighbourCandidate> claims,
+        Func<AccommodationNeighbourCandidate, string> primary,
+        Func<AccommodationNeighbourCandidate, string> fallback)
         => string.Join(", ", claims.Select(claim =>
         {
             var name = primary(claim);
