@@ -33,7 +33,7 @@ public class PublicGroupUnderPrivateScenario(JoinApplicationFactory factory) : I
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
             var candidates = await sp.GetRequiredService<ICharacterGroupRepository>()
-                .GetProjectsWithPublicGroupUnderPrivateParent();
+                .GetProjectsWithPublicGroupWithoutPublicParent();
 
             candidates.ShouldContain(projectId);
         });
@@ -64,6 +64,34 @@ public class PublicGroupUnderPrivateScenario(JoinApplicationFactory factory) : I
         group.IsPublic.ShouldBeFalse();
     }
 
+    /// <summary>
+    /// Регрессия: публичная группа, ветка которой оборвана удалённой группой. Прежний
+    /// запрос-кандидат искал ребро «публичная под непубличной» и такие группы не видел вообще —
+    /// на проде так осталось непочиненными 102 группы в 23 проектах.
+    /// </summary>
+    [Fact]
+    public async Task ProjectWithPublicGroupUnderDeletedParentIsFound()
+    {
+        var (masterId, projectId, _, parentGroupId) = await CreateTwoLevelPublicTree();
+
+        // Родителя удаляем (IsActive = false), не меняя публичность: потомок остаётся публичным,
+        // но пути от корня до него больше нет.
+        await DeactivateGroup(projectId, parentGroupId);
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var candidates = await sp.GetRequiredService<ICharacterGroupRepository>()
+                .GetProjectsWithPublicGroupWithoutPublicParent();
+
+            candidates.ShouldContain(projectId);
+
+            var hidden = await sp.GetRequiredService<IPublicGroupVisibilityFixer>()
+                .HideGroupsWithoutPublicPath(projectId);
+
+            hidden.ShouldBe(["Потомок"]);
+        });
+    }
+
     [Fact]
     public async Task CleanProjectIsNotFound()
     {
@@ -72,7 +100,7 @@ public class PublicGroupUnderPrivateScenario(JoinApplicationFactory factory) : I
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
             var candidates = await sp.GetRequiredService<ICharacterGroupRepository>()
-                .GetProjectsWithPublicGroupUnderPrivateParent();
+                .GetProjectsWithPublicGroupWithoutPublicParent();
 
             candidates.ShouldNotContain(projectId);
         });
@@ -114,7 +142,14 @@ public class PublicGroupUnderPrivateScenario(JoinApplicationFactory factory) : I
         return (masterId, projectId, childGroupId, parentGroupId);
     }
 
+    private async Task DeactivateGroup(ProjectIdentification projectId, CharacterGroupIdentification groupId)
+        => await ChangeGroup(projectId, groupId, group => group.IsActive = false);
+
     private async Task MakeGroupPrivate(ProjectIdentification projectId, CharacterGroupIdentification groupId)
+        => await ChangeGroup(projectId, groupId, group => group.IsPublic = false);
+
+    private async Task ChangeGroup(
+        ProjectIdentification projectId, CharacterGroupIdentification groupId, Action<CharacterGroup> change)
     {
         using var scope = factory.Services.CreateScope();
         var myDb = scope.ServiceProvider.GetRequiredService<MyDbContext>();
@@ -124,7 +159,7 @@ public class PublicGroupUnderPrivateScenario(JoinApplicationFactory factory) : I
         var group = await myDb.Set<CharacterGroup>()
             .Include(g => g.Project.CharacterGroups)
             .SingleAsync(g => g.ProjectId == projectId.Value && g.CharacterGroupId == groupId.CharacterGroupId);
-        group.IsPublic = false;
+        change(group);
 
         _ = await myDb.SaveChangesAsync();
     }

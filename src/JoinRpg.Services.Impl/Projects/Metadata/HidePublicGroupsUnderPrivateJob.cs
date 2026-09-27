@@ -19,14 +19,14 @@ internal class HidePublicGroupsUnderPrivateJob(
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {
-        var candidates = await characterGroupRepository.GetProjectsWithPublicGroupUnderPrivateParent();
+        var candidates = await characterGroupRepository.GetProjectsWithPublicGroupWithoutPublicParent();
         if (candidates.Count == 0)
         {
-            logger.LogDebug("Публичных групп под непубличными не найдено");
+            logger.LogDebug("Публичных групп без публичного пути наверх не найдено");
             return;
         }
 
-        logger.LogInformation("Проектов с публичной группой под непубличной: {projectCount}", candidates.Count);
+        logger.LogInformation("Проектов-кандидатов на нарушение публичного пути: {projectCount}", candidates.Count);
 
         var hiddenTotal = 0;
         foreach (var projectId in candidates)
