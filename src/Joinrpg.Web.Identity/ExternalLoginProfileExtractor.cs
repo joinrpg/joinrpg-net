@@ -38,7 +38,12 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
         return result;
     }
 
-    public async Task TryExtractProfile(JoinIdentityUser user, ExternalLoginInfo loginInfo)
+    /// <summary>
+    /// Извлекает данные профиля из внешнего логина.
+    /// </summary>
+    /// <param name="ct">Токен отмены запроса: скачивание аватарки из соцсети ходит в сеть,
+    /// и если пользователь ушёл, ждать его завершения не нужно (см. #4995).</param>
+    public async Task TryExtractProfile(JoinIdentityUser user, ExternalLoginInfo loginInfo, CancellationToken ct = default)
     {
         logger.LogInformation("TryExtractProfile для {userId} по логину {loginProvider}", user.Id, loginInfo.LoginProvider);
 
@@ -49,7 +54,7 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
         {
             var avatar = AvatarInfo.FromOptional(loginInfo.Principal.FindFirstValue(VkontakteAuthenticationConstants.Claims.PhotoUrl));
 
-            await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vk, avatar);
+            await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vk, avatar, ct);
 
             var rawBirthDate = loginInfo.Principal.FindFirstValue(IdentityConfigurator.VkBirthDateClaimType);
             if (VkBirthDateParser.TryParse(rawBirthDate, out var birthDate))
@@ -64,7 +69,8 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
         }
     }
 
-    public async Task TryExtractTelegramProfile(JoinIdentityUser user, Dictionary<string, string> loginInfo)
+    /// <inheritdoc cref="TryExtractProfile"/>
+    public async Task TryExtractTelegramProfile(JoinIdentityUser user, Dictionary<string, string> loginInfo, CancellationToken ct = default)
     {
         var bornName = BornName.FromOptional(loginInfo.GetValueOrDefault("first_name"));
         var surName = SurName.FromOptional(loginInfo.GetValueOrDefault("last_name"));
@@ -79,7 +85,7 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
 
         var telegram = new TelegramSocialLink(new TelegramChatId(long.Parse(loginInfo["id"])), prefferedName, isVerified: true);
 
-        await userService.SetTelegramIfNotSetWithoutAccessChecks(user.Id, telegram, avatar);
+        await userService.SetTelegramIfNotSetWithoutAccessChecks(user.Id, telegram, avatar, ct);
     }
 
     private static UserFullName TryGetUserName(ExternalLoginInfo loginInfo)

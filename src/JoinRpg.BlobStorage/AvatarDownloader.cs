@@ -4,11 +4,26 @@ namespace JoinRpg.BlobStorage;
 
 internal class AvatarDownloader(IHttpClientFactory httpClientFactory, ILogger<AvatarDownloader> logger)
 {
+    /// <summary>
+    /// Имя именованного <see cref="HttpClient"/> для скачивания аватарок.
+    /// Регистрируется в <see cref="BlobStorageRegistration.AddJoinBlobStorage"/>;
+    /// константа нужна, чтобы регистрация и использование не разъехались по опечатке
+    /// (именно так появился баг #4995: клиента с таким именем не существовало, и
+    /// фабрика молча отдавала дефолтный с таймаутом 100 секунд).
+    /// </summary>
+    internal const string HttpClientName = "download-avatar-client";
+
+    /// <summary>
+    /// Таймаут на скачивание аватарки. Размер аватарки ограничен 1 МБ (см. maxSize ниже),
+    /// поэтому дольше ждать смысла нет: пользователь стоит и ждёт ответа на редирект логина.
+    /// </summary>
+    internal static readonly TimeSpan DownloadTimeout = TimeSpan.FromSeconds(10);
+
     internal async Task<(string ContentType, string Extension)> DownloadAvatarAsync(Uri remoteUri, Stream target, CancellationToken ct)
     {
         logger.LogInformation("Start downloading avatar for {avatarRemoteUri}", remoteUri);
 
-        var httpClient = httpClientFactory.CreateClient("download-avatar-client");
+        var httpClient = httpClientFactory.CreateClient(HttpClientName);
 
         var response = await httpClient.GetAsync(remoteUri, ct);
 

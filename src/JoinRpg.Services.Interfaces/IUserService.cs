@@ -16,7 +16,7 @@ public interface IUserService
     /// Set vk Link if not set already.
     /// All access check fortfeit (cause is method typically called during login, so ICurrentUserAccessor could be old).
     /// </summary>
-    Task SetVkIfNotSetWithoutAccessChecks(int id, VkSocialLink vk, AvatarInfo? avatarInfo);
+    Task SetVkIfNotSetWithoutAccessChecks(int id, VkSocialLink vk, AvatarInfo? avatarInfo, CancellationToken ct = default);
 
     /// <summary>
     /// Set birth date if not set already (e.g. pulled from VK on login). Never overwrites an already-set value.
@@ -29,7 +29,7 @@ public interface IUserService
     Task SetBirthDate(UserIdentification userId, DateOnly? birthDate);
 
 
-    Task SetTelegramIfNotSetWithoutAccessChecks(int id, TelegramSocialLink telegram, AvatarInfo? avatarInfo);
+    Task SetTelegramIfNotSetWithoutAccessChecks(int id, TelegramSocialLink telegram, AvatarInfo? avatarInfo, CancellationToken ct = default);
 
     Task RemoveVkFromProfile(UserIdentification id);
     Task RemoveTelegramFromProfile(int id);
