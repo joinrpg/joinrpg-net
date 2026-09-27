@@ -74,9 +74,7 @@ internal class AccommodationTypeService(
         // Комнаты и их жильцы — оперативные данные, в граф метаданных проекта они не входят
         // (ADR015), поэтому занятость проверяем отдельным запросом, а не по ctx.Project: иначе
         // получилась бы ленивая догрузка, которую операциям props-сервиса делать нельзя (#4987).
-        // В аргументы операции найденную комнату не кладём — это EF-сущность, а аргументы уходят
-        // в структурный лог.
-        var occupiedRoom = await accommodationRepository.GetOccupiedRoomOfType(accommodationTypeId);
+        var hasOccupiedRoom = await accommodationRepository.HasOccupiedRoomOfType(accommodationTypeId);
 
         await projectPropsService.ChangeProjectProperties(
             accommodationTypeId.ProjectId,
@@ -87,9 +85,9 @@ internal class AccommodationTypeService(
             {
                 var entity = ctx.GetAccommodationTypeForChange(ctx.Request);
 
-                if (occupiedRoom is not null)
+                if (hasOccupiedRoom)
                 {
-                    throw new RoomIsOccupiedException(occupiedRoom);
+                    throw new AccommodationTypeIsOccupiedException(ctx.Request);
                 }
 
                 ctx.RemovePermanently(entity);

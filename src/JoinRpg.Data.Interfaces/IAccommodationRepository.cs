@@ -6,10 +6,9 @@ namespace JoinRpg.Data.Interfaces;
 public interface IAccommodationRepository
 {
     /// <summary>
-    /// Первая комната указанного типа проживания, в которой кто-то живёт, или <c>null</c>, если
-    /// все комнаты этого типа свободны.
+    /// Есть ли у этого типа проживания хоть одна комната, в которой кто-то живёт.
     /// </summary>
-    Task<ProjectAccommodation?> GetOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId);
+    Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId);
 
     Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId);
 

@@ -16,13 +16,12 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
     }
 
 
-    public async Task<ProjectAccommodation?> GetOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
+    public async Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
     {
         return await ctx.Set<ProjectAccommodation>()
             .Where(room => room.ProjectId == accommodationTypeId.ProjectId.Value
                 && room.AccommodationTypeId == accommodationTypeId.AccommodationTypeId)
-            .Where(room => room.Inhabitants.Any())
-            .FirstOrDefaultAsync()
+            .AnyAsync(room => room.Inhabitants.Any())
             .ConfigureAwait(false);
     }
 

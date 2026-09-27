@@ -39,7 +39,7 @@ public interface IAccommodationTypeService
     /// <summary>
     /// Удаляет тип проживания.
     /// </summary>
-    /// <exception cref="JoinRpg.Domain.RoomIsOccupiedException">
+    /// <exception cref="JoinRpg.Domain.AccommodationTypeIsOccupiedException">
     /// В одной из комнат этого типа кто-то живёт — сначала нужно выселить.
     /// </exception>
     Task DeleteAccommodationType(AccommodationTypeIdentification accommodationTypeId);

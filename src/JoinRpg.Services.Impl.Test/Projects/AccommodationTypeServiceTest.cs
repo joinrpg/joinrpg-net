@@ -14,15 +14,15 @@ namespace JoinRpg.Services.Impl.Test.Projects;
 /// </summary>
 public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
 {
-    /// <summary>Комната, которую «видит» репозиторий как занятую; <c>null</c> — все свободны.</summary>
-    private ProjectAccommodation? occupiedRoom;
+    /// <summary>Что репозиторий отвечает про занятость комнат этого типа.</summary>
+    private bool hasOccupiedRoom;
 
     private AccommodationTypeService CreateService(int? currentUserId = null, bool isAdmin = false)
     {
         var currentUser = CreateCurrentUser(currentUserId, isAdmin);
         return new AccommodationTypeService(
             CreatePropsService(currentUser),
-            new FakeAccommodationRepository(() => occupiedRoom));
+            new FakeAccommodationRepository(() => hasOccupiedRoom));
     }
 
     private AccommodationTypeIdentification AddAccommodationType(string name = "Палатка")
@@ -117,11 +117,10 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
     public async Task DeleteAccommodationType_WithOccupiedRoom_Throws()
     {
         var id = AddAccommodationType();
-        var accommodationType = mock.AccommodationTypes.Single();
-        var request = mock.CreateAccommodationRequest(accommodationType);
-        occupiedRoom = mock.CreateRoom(request);
+        hasOccupiedRoom = true;
 
-        _ = await Should.ThrowAsync<RoomIsOccupiedException>(() => CreateService().DeleteAccommodationType(id));
+        _ = await Should.ThrowAsync<AccommodationTypeIsOccupiedException>(
+            () => CreateService().DeleteAccommodationType(id));
 
         mock.AccommodationTypes.ShouldHaveSingleItem();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -131,10 +130,10 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
     /// Занятость комнат — оперативные данные вне метаданных проекта, сервис берёт их отдельным
     /// запросом. Фейк отдаёт то, что задал тест.
     /// </summary>
-    private sealed class FakeAccommodationRepository(Func<ProjectAccommodation?> occupiedRoom) : IAccommodationRepository
+    private sealed class FakeAccommodationRepository(Func<bool> hasOccupiedRoom) : IAccommodationRepository
     {
-        public Task<ProjectAccommodation?> GetOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
-            => Task.FromResult(occupiedRoom());
+        public Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
+            => Task.FromResult(hasOccupiedRoom());
 
         public Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId)
             => throw new NotSupportedException();

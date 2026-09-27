@@ -149,8 +149,8 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
 Параметры создания и изменения совпадают, поэтому record запроса **один** на обе операции.
 
 Все три — `Permission.CanManageAccommodation`, `ProjectActiveRequirement.MustBeActive`. Проверка
-«тип занят, удалять нельзя» (`RoomIsOccupiedException`) остаётся доменной и выполняется внутри
-мутации над EF-сущностью, как сейчас.
+«тип занят, удалять нельзя» остаётся доменной и выполняется внутри мутации
+(`AccommodationTypeIsOccupiedException`).
 
 Остальные методы `IAccommodationService` (комнаты, `OccupyRoom`/`UnOccupy*`) в этом ADR **не трогаем**.
 
@@ -186,8 +186,9 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
 
    - Занятость комнат в граф метаданных не входит, а ленивые догрузки в операциях props-сервиса
      запрещены (#4987), поэтому проверка «тип занят» делается отдельным запросом
-     `IAccommodationRepository.GetOccupiedRoomOfType` **до** входа в мутацию, а сам
-     `RoomIsOccupiedException` кидается внутри неё — то есть после проверки прав и активности.
+     `IAccommodationRepository.HasOccupiedRoomOfType` **до** входа в мутацию, а
+     `AccommodationTypeIsOccupiedException` кидается внутри неё — то есть после проверки прав и
+     активности.
    - `GetRoomTypeAsync` в `IAccommodationService` остаётся: у него есть вызывающий
      `EditRoomTypeRooms` (страница комнат), которому нужны `ProjectAccommodations`/`Desirous` —
      оперативные данные, которых в метаданных нет и не будет.
