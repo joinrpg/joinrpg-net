@@ -297,6 +297,59 @@ public class MockedProject
         return plotElement;
     }
 
+    /// <summary>
+    /// Спецгруппа — группа, в которую персонаж попадает автоматически по значению поля; руками
+    /// положить туда нельзя. Создаётся дочерней к корню, как её создаёт <c>FieldSetupServiceImpl</c>.
+    /// </summary>
+    public CharacterGroup CreateSpecialGroup()
+    {
+        var group = CreateCharacterGroup();
+        group.IsSpecial = true;
+        group.ParentCharacterGroupIds = [Project.RootGroup.CharacterGroupId];
+        return group;
+    }
+
+    /// <summary>
+    /// Поле-дропдаун с единственным вариантом, к которому привязана спецгруппа. Так на сайте
+    /// настраивают «поле B доступно тем, кто выбрал вариант X поля A»: персонаж попадает в
+    /// спецгруппу варианта автоматически, по значению поля.
+    /// </summary>
+    /// <remarks>
+    /// Именно <see cref="AddField"/>, а не <see cref="CreateField"/>: поле должно быть настоящей
+    /// сущностью проекта, иначе оно исчезнет при пересборке метаданных (<see cref="ReInitProjectInfo"/>).
+    /// </remarks>
+    public (ProjectFieldInfo Field, ProjectFieldVariant Variant) AddDropdownFieldWithSpecialGroup(
+        string name,
+        CharacterGroup variantSpecialGroup)
+    {
+        var field = AddField(f =>
+        {
+            f.FieldName = name;
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.FieldBoundTo = FieldBoundTo.Character;
+            f.CanPlayerView = true;
+            f.CanPlayerEdit = true;
+            f.ValidForNpc = true;
+            f.ValuesOrdering = "";
+            f.DropdownValues =
+            [
+                new ProjectFieldDropdownValue
+                {
+                    ProjectFieldDropdownValueId = 1,
+                    Label = name + "-вариант",
+                    IsActive = true,
+                    PlayerSelectable = true,
+                    ProjectId = Project.ProjectId,
+                    Project = Project,
+                    CharacterGroup = variantSpecialGroup,
+                    CharacterGroupId = variantSpecialGroup.CharacterGroupId,
+                },
+            ];
+        });
+
+        return (field, field.Variants.Single());
+    }
+
     public ProjectFieldInfo CreateConditionalField(CharacterGroup conditionGroup)
     {
         return CreateField("CondField", availForIds: [new(ProjectInfo.ProjectId, conditionGroup.CharacterGroupId)]);

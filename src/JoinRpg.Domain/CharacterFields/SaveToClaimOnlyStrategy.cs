@@ -20,6 +20,12 @@ internal class SaveToClaimOnlyStrategy(Claim claim,
     protected new Claim Claim => base.Claim!; //Claim should always exists
 
     /// <summary>
+    /// Персонажа в расчёте доступности нет: заявка не утверждена, поля пишутся только в неё.
+    /// Значит поля, ограниченные группами, здесь обязательными не считаются.
+    /// </summary>
+    protected override IFieldAvailabilityTarget? AvailabilityTarget => null;
+
+    /// <summary>
     /// Персонаж здесь не меняется: игрок правит ещё не утверждённую заявку.
     /// </summary>
     protected override (CharacterUpdate? Character, FieldLayerContainer? ClaimFields) BuildResult(
@@ -38,5 +44,5 @@ internal class SaveToClaimOnlyStrategy(Claim claim,
     [DoesNotReturn]
     protected override void ThrowRequiredField(FieldWithValue field) => throw new CharacterFieldRequiredException(field.Field.Name, field.Field.Id, new(ProjectInfo.ProjectId, Claim.CharacterId));
 
-    protected override bool FieldIsMandatory(FieldWithValue field) => field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character, ProjectInfo);
+    protected override bool FieldIsMandatory(FieldWithValue field) => field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(AvailabilityTarget);
 }

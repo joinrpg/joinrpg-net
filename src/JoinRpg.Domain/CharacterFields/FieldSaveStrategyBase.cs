@@ -19,6 +19,18 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     protected AccessArguments AccessArguments { get; } = characterFieldLayers.AccessArguments;
 
+    /// <summary>
+    /// Персонаж, по которому внутри сохранения считается доступность полей (обязательность и
+    /// генерация значений по умолчанию). <c>null</c> — «персонажа нет»: тогда доступны только поля
+    /// без ограничения по группам.
+    /// </summary>
+    /// <remarks>
+    /// Именно свойство стратегии, а не EF-сущность: список групп персонажа по итогам операции
+    /// известен только здесь, а присваивать сущностям внутри сохранения нельзя (см.
+    /// <see cref="BuildResult"/>).
+    /// </remarks>
+    protected abstract IFieldAvailabilityTarget? AvailabilityTarget { get; }
+
     private Dictionary<ProjectFieldIdentification, FieldWithPreviousAndNewValue> UpdatedFields { get; } = [];
 
     /// <summary>
@@ -78,7 +90,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     {
         foreach (var field in fields.Values.Where(
             f => !f.HasEditableValue && f.Field.CanHaveValue &&
-                 f.Field.IsAvailableForTarget(Character, ProjectInfo)))
+                 f.Field.IsAvailableForTarget(AvailabilityTarget)))
         {
             var newValue = GenerateDefaultValue(field);
 

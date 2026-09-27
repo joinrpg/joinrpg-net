@@ -6,11 +6,13 @@ internal class SaveToCharacterAndClaimStrategy(Claim claim,
     Character character,
     UserIdentification currentUserId,
     IFieldDefaultValueGenerator generator,
-    ProjectInfo projectInfo) : CharacterExistsStrategyBase(claim,
+    ProjectInfo projectInfo,
+    IReadOnlyCollection<CharacterGroupIdentification> regularGroupIds) : CharacterExistsStrategyBase(claim,
     character,
     currentUserId,
     generator,
-    projectInfo)
+    projectInfo,
+    regularGroupIds)
 {
     protected new Claim Claim => base.Claim!; //Claim should always exists
 
@@ -19,5 +21,5 @@ internal class SaveToCharacterAndClaimStrategy(Claim claim,
 
     protected override string CharacterNameFromPlayer() => Claim.Player.GetDisplayName();
 
-    protected override bool FieldIsMandatory(FieldWithValue field) => field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(Character, ProjectInfo);
+    protected override bool FieldIsMandatory(FieldWithValue field) => field.Field.MandatoryStatus == MandatoryStatus.Required && field.Field.IsAvailableForTarget(AvailabilityTarget);
 }

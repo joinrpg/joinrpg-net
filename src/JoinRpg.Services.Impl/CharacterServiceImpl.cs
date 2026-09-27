@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Characters;
@@ -18,12 +17,10 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
             addCharacterRequest,
             ctx =>
             {
+                // Группы здесь не проставляются: итоговый список (выбранные мастером обычные плюс
+                // спецгруппы по значениям полей) пишет SaveFields ниже.
                 var character = new Character
                 {
-                    // Здесь — только обычные группы, выбранные мастером; спецгруппы допишет
-                    // SaveFields ниже (см. подробный комментарий в EditCharacter).
-                    ParentCharacterGroupIds = ctx.ProjectInfo.GroupTree
-                        .ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds).ToIntArray(),
                     ProjectId = ctx.Request.ProjectId,
                     Project = ctx.Project,
                 };
@@ -31,7 +28,10 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
                 ctx.SetCharacterSettings(character, ctx.Request.CharacterTypeInfo);
 
                 //TODO we do not send message for creating character
-                _ = ctx.SaveFields(character, ctx.Request.FieldValues);
+                _ = ctx.SaveFields(
+                    character,
+                    ctx.Request.FieldValues,
+                    ctx.ProjectInfo.GroupTree.ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds));
 
                 return character;
             });
@@ -50,19 +50,15 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
             {
                 ctx.SetCharacterSettings(ctx.Request.CharacterTypeInfo);
 
-                // Присваивание записывает ТОЛЬКО обычные группы, выбранные мастером: спецгруппы,
-                // которые были у персонажа, из сущности при этом исчезают. Возвращает их обратно
-                // SaveFields: CharacterExistsStrategyBase.ComputeParentGroupIds объединяет
-                // спецгруппы, выведенные из значений полей, с обычными группами, которые он
-                // вычитывает с персонажа, а FieldSaveHelper.Apply пишет результат в
-                // ParentCharacterGroupIds. То есть это не полная перезапись списка групп, а
-                // сознательно «половина» двухшагового рукопожатия — половина обычных групп.
-                // Между двумя шагами спецгрупп у персонажа нет, и доступность полей считается
-                // именно в этот момент (поведение унаследованное, вынесено в отдельную задачу).
-                ctx.Character.ParentCharacterGroupIds = ctx.ProjectInfo.GroupTree
-                    .ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds).ToIntArray();
-
-                _ = ctx.SaveFields(ctx.Request.FieldValues);
+                // Выбранные мастером группы — всегда только обычные (форма и присылает лишь их,
+                // см. CharacterController.EditCharacter). Спецгруппы персонаж получает
+                // автоматически по значениям полей, поэтому итоговый список групп собирает и пишет
+                // SaveFields: обычные берёт отсюда, спецгруппы пересчитывает сам. Сущность до
+                // сохранения не трогаем — иначе внутри сохранения у персонажа не окажется
+                // спецгрупп, а по ним считается доступность полей (#4937).
+                _ = ctx.SaveFields(
+                    ctx.Request.FieldValues,
+                    ctx.ProjectInfo.GroupTree.ValidateGroupListForCharacter(ctx.Request.ParentCharacterGroupIds));
 
                 // TODO: восстановить отправку письма об изменении полей, см. ADR014.
             });
