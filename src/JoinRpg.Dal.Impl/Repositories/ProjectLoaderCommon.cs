@@ -8,6 +8,11 @@ internal static class ProjectLoaderCommon
         var query = skipCache ? ctx.ProjectsSet.AsNoTracking() : ctx.ProjectsSet;
         return await query
          .Include(p => p.Details)
+         // Поля имени и описания у ProjectDetails — только навигации, FK-свойства не отображены,
+         // а ProjectInfo читает их идентификаторы всегда. Без Include это две ленивые загрузки
+         // на каждую сборку метаданных — и в чтении, и в каждой доменной операции (#4987).
+         .Include(p => p.Details.CharacterNameField)
+         .Include(p => p.Details.CharacterDescription)
          .Include(p => p.ProjectAcls.Select(a => a.User))
          .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
          .Include(p => p.PaymentTypes.Select(p => p.User))

@@ -80,7 +80,9 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
                     throw new CharacterHasActiveClaimsException(ctx.Request.Id);
                 }
 
-                if (ctx.Character.Project.Details.DefaultTemplateCharacter == ctx.Character)
+                // Шаблон берём из снимка метаданных, а не через навигацию
+                // Details.DefaultTemplateCharacter — та дала бы ленивую загрузку персонажа (#4987).
+                if (ctx.ProjectInfo.ClaimSettings.DefaultTemplate == ctx.CharacterInfo.Id)
                 {
                     throw new DefaultTemplateCharacterCannotBeDeletedException(ctx.Request.Id);
                 }

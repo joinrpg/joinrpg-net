@@ -220,6 +220,24 @@ public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
         SaveChangesCallCount.ShouldBe(0);
     }
 
+    /// <summary>
+    /// Персонажа-шаблон удалять нельзя, и признак берётся из снимка метаданных
+    /// (<see cref="ProjectClaimSettings.DefaultTemplate"/>), а не через EF-навигацию (#4987).
+    /// </summary>
+    [Fact]
+    public async Task DeleteCharacter_DefaultTemplate_Throws()
+    {
+        var character = mock.CreateCharacter("Шаблон");
+        mock.Project.Details.DefaultTemplateCharacterId = character.CharacterId;
+        mock.ReInitProjectInfo();
+
+        await Should.ThrowAsync<DefaultTemplateCharacterCannotBeDeletedException>(
+            () => CreateService().DeleteCharacter(new DeleteCharacterRequest(character.GetId())));
+
+        character.IsActive.ShouldBeTrue();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
     [Fact]
     public async Task SetFields_SavesOnce_AndMarksChanged()
     {
