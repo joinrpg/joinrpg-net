@@ -53,7 +53,10 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
 
     public async Task<UserSubscriptionDto> LoadSubscriptionById(ProjectIdentification projectId, int subscriptionId)
     {
-        var subscribe = await ctx.Set<UserSubscription>()
+        // AsExpandable обязателен: SubscriptionDtoBuilder внутри делает Invoke другого выражения,
+        // и без раскрытия LinqKit запрос падает в NotSupportedException уже на выполнении.
+        // Соседний GetSubscriptionsByPredicate с тем же проектором его не забыл.
+        var subscribe = await ctx.Set<UserSubscription>().AsExpandable()
             .Where(x => x.ProjectId == projectId && x.UserSubscriptionId == subscriptionId)
             .Select(SubscriptionDtoBuilder())
             .FirstOrDefaultAsync();
