@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -100,7 +101,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       Func<string?, string?> externalPaymentUrlFactory,
       ClaimAccommodationViewModel? accommodationModel,
       UserInfo playerInfo,
-      ILinkRenderer linkRenderer)
+      ILinkRenderer linkRenderer,
+      IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
     {
         ClaimIdentification = claim.GetId();
         AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
@@ -132,7 +134,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         ResponsibleMasterId = new UserIdentification(claim.ResponsibleMasterUserId);
         ResponsibleMaster = claim.ResponsibleMasterUser;
-        Fields = new CustomFieldsViewModel(currentUser.UserId, claim, projectInfo);
+        Fields = new CustomFieldsViewModel(currentUser.UserId, claim, projectInfo, fieldUsers);
         Navigation =
             CharacterNavigationViewModel.FromClaim(characterInfo,
                 claim.GetId(),

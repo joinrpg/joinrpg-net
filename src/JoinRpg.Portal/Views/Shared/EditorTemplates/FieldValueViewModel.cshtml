@@ -107,6 +107,10 @@
         case ProjectFieldViewType.String:
           <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
           break;
+        @* Временно: редактор с выбором пользователя делается отдельно, пока просто id текстом. *@
+        case ProjectFieldViewType.UserLink:
+          <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
+          break;
         case ProjectFieldViewType.Uri:
            <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
            <a href="@Model.DisplayString">[link]</a>

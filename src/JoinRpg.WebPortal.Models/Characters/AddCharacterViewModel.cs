@@ -9,13 +9,15 @@ public class AddCharacterViewModel : CharacterViewModelBase
     {
         ProjectId = characterGroup.ProjectId;
         CharacterTypeInfo = CharacterTypeInfo.Default();
+        // Персонаж только создаётся, значений полей у него нет — значит, нет и ссылок
+        // на пользователей, грузить некого.
         FillFields(new Character()
         {
             Project = characterGroup.Project,
             ProjectId = ProjectId,
             IsAcceptingClaims = true,
             ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
-        }, currentUserId, projectInfo);
+        }, currentUserId, projectInfo, FieldUserLinksLoader.None);
         return this;
     }
 

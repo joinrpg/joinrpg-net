@@ -49,7 +49,11 @@ public class ClaimController(
         var userInfo = await UserRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification);
         var projectDetails = await projectMetadataRepository.GetProjectDetails(characterId.ProjectId);
 
-        return View("Add", AddClaimViewModel.Create(character, userInfo, projectDetails));
+        return View("Add", AddClaimViewModel.Create(
+            character,
+            userInfo,
+            projectDetails,
+            await UserRepository.LoadFieldUserLinks(character)));
     }
 
     [HttpGet("/{projectid}/apply")]
@@ -89,11 +93,13 @@ public class ClaimController(
             var source = await characterInfoRepository.GetCharacterInfo(
                 new CharacterIdentification(projectId, viewModel.CharacterId));
             var projectDetails = await projectMetadataRepository.GetProjectDetails(projectId);
+            var postedValues = Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
             viewModel.Fill(
                 source,
                 userInfo,
                 projectDetails,
-                Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
+                await UserRepository.LoadFieldUserLinks(source, postedValues),
+                postedValues);
             return base.View(viewModel);
         }
     }
@@ -137,7 +143,8 @@ public class ClaimController(
             userInfo,
             plots.Count > 0
                 ? await linkRendererFactory.Load(new ProjectIdentification(claim.ProjectId))
-                : JoinrpgMarkdownLinkRendererFactory.NoDirectives);
+                : JoinrpgMarkdownLinkRendererFactory.NoDirectives,
+            await UserRepository.LoadFieldUserLinks(claim, projectInfo));
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
         {

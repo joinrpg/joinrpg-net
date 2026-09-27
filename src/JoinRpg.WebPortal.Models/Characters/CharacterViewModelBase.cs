@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
@@ -41,9 +42,13 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; set; }
 
-    protected void FillFields(Character field, int currentUserId, ProjectInfo projectInfo)
+    protected void FillFields(
+        Character field,
+        int currentUserId,
+        ProjectInfo projectInfo,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
     {
-        Fields = new CustomFieldsViewModel(field, projectInfo, AccessArgumentsFactory.Create(field, new UserIdentification(currentUserId), projectInfo));
+        Fields = new CustomFieldsViewModel(field, projectInfo, AccessArgumentsFactory.Create(field, new UserIdentification(currentUserId), projectInfo), fieldUsers);
         CharactersHaveNameField = projectInfo.CharacterNameField is not null;
         AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
     }

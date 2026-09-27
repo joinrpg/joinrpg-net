@@ -1,4 +1,6 @@
 using System.Text.Encodings.Web;
+using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
@@ -84,9 +86,16 @@ public class FieldValueViewModel
     public IReadOnlyList<FieldPossibleValueViewModel> ValueList { get; }
     public IReadOnlyList<FieldPossibleValueViewModel> PossibleValueList { get; }
 
+    /// <summary>
+    /// Ссылки на пользователей для полей типа <see cref="ProjectFieldViewType.UserLink"/> (ADR017).
+    /// У остальных типов полей пуст.
+    /// </summary>
+    public IReadOnlyList<UserLinkViewModel> UserLinks { get; }
+
     public FieldValueViewModel(
         CustomFieldsViewModel model,
-        FieldWithValue ch)
+        FieldWithValue ch,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users)
     {
         ArgumentNullException.ThrowIfNull(ch);
 
@@ -150,6 +159,13 @@ public class FieldValueViewModel
             : (MandatoryStatusViewType)ch.Field.MandatoryStatus;
 
         ProjectId = ch.Field.Id.ProjectId;
+
+        // Пользователь, которого нет в словаре, удалён (или id в значении — мусор):
+        // ссылки не будет, но запись поля из-за этого не пропадает.
+        UserLinks = [.. ch.UserIds.Select(userId =>
+            users.TryGetValue(userId, out var user)
+                ? new UserLinkViewModel(user)
+                : UserLinkViewModel.Deleted)];
 
         SetFieldLabels(ch);
 
@@ -237,8 +253,13 @@ public class CustomFieldsViewModel
     /// <summary>
     /// Called from AddClaimViewModel
     /// </summary>
-    public CustomFieldsViewModel(Character target, ProjectInfo projectInfo, AccessArguments accessArguments, Dictionary<int, string?>? overrideValues)
-        : this(accessArguments, AvailabilityTarget(target, projectInfo), target.GetFields(projectInfo), overrideValues, projectInfo)
+    public CustomFieldsViewModel(
+        Character target,
+        ProjectInfo projectInfo,
+        AccessArguments accessArguments,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users,
+        Dictionary<int, string?>? overrideValues)
+        : this(accessArguments, AvailabilityTarget(target, projectInfo), target.GetFields(projectInfo), overrideValues, projectInfo, users)
     {
     }
 
@@ -248,8 +269,9 @@ public class CustomFieldsViewModel
     public CustomFieldsViewModel(
         CharacterInfo character,
         AccessArguments accessArguments,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users,
         Dictionary<int, string?>? overrideValues = null)
-        : this(accessArguments, character, character.GetAllFields(), overrideValues, character.ProjectInfo)
+        : this(accessArguments, character, character.GetAllFields(), overrideValues, character.ProjectInfo, users)
     {
     }
 
@@ -269,6 +291,7 @@ public class CustomFieldsViewModel
       Character character,
       ProjectInfo projectInfo,
       AccessArguments accessArguments,
+      IReadOnlyDictionary<UserIdentification, UserInfoHeader> users,
       bool wherePrintEnabled = false,
       Dictionary<int, string?>? overrideValues = null)
         : this(
@@ -276,20 +299,26 @@ public class CustomFieldsViewModel
               AvailabilityTarget(character, projectInfo),
               character.GetFields(projectInfo).Where(f => f.Field.BoundTo == FieldBoundTo.Character).Where(f => !wherePrintEnabled || f.Field.IncludeInPrint),
               overrideValues,
-              projectInfo)
+              projectInfo,
+              users)
     {
     }
 
     /// <summary>
     /// Called from Claim and Claim list
     /// </summary>
-    public CustomFieldsViewModel(int? currentUserId, Claim claim, ProjectInfo projectInfo)
+    public CustomFieldsViewModel(
+        int? currentUserId,
+        Claim claim,
+        ProjectInfo projectInfo,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users)
       : this(
             AccessArgumentsFactory.Create(claim, currentUserId, projectInfo),
             AvailabilityTarget(claim.Character, projectInfo),
             claim.GetFields(projectInfo),
             overrideValues: null,
-            projectInfo)
+            projectInfo,
+            users)
     {
     }
 
@@ -304,7 +333,8 @@ public class CustomFieldsViewModel
         IFieldAvailabilityTarget target,
         IEnumerable<FieldWithValue> fields,
         Dictionary<int, string?>? overrideValues,
-        ProjectInfo projectInfo
+        ProjectInfo projectInfo,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users
         )
     {
         foreach (var key in Enum.GetValues<FieldBoundToViewModel>())
@@ -315,15 +345,18 @@ public class CustomFieldsViewModel
         AccessArguments = accessArguments;
         Target = target;
         ProjectInfo = projectInfo;
-        Fields = fields.Select(ch => CreateFieldValueView(ch, overrideValues)).ToList();
+        Fields = fields.Select(ch => CreateFieldValueView(ch, overrideValues, users)).ToList();
     }
 
     /// <summary>
     /// Creates field value view object
     /// </summary>
-    private FieldValueViewModel CreateFieldValueView(FieldWithValue fv, Dictionary<int, string?>? overrideValues)
+    private FieldValueViewModel CreateFieldValueView(
+        FieldWithValue fv,
+        Dictionary<int, string?>? overrideValues,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users)
     {
-        var result = new FieldValueViewModel(this, TryOverrideValue(fv));
+        var result = new FieldValueViewModel(this, TryOverrideValue(fv), users);
         // Here is the point to calculate total fee
         if (result.HasPrice)
         {

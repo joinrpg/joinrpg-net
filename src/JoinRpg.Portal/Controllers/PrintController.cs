@@ -3,6 +3,7 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Models.Print;
@@ -18,6 +19,7 @@ public class PrintController(
     ICharacterRepository characterRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
+    IUserRepository userRepository,
     CharacterPlotViewService characterPlotViewService,
     JoinrpgMarkdownLinkRendererFactory linkRendererFactory
     ) : JoinControllerGameBase
@@ -43,8 +45,14 @@ public class PrintController(
 
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
-        return View(new PrintCharacterViewModel(currentUserAccessor, character, plots[characterId], projectInfo, handouts[characterId],
-            await linkRendererFactory.Load(projectId)));
+        return View(new PrintCharacterViewModel(
+            currentUserAccessor,
+            character,
+            plots[characterId],
+            projectInfo,
+            handouts[characterId],
+            await linkRendererFactory.Load(projectId),
+            await userRepository.LoadFieldUserLinks(character, projectInfo)));
     }
 
     [MasterAuthorize()]
@@ -72,12 +80,15 @@ public class PrintController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var linkRenderer = await linkRendererFactory.Load(projectId);
 
+        // Один запрос на всю пачку печати, а не по персонажу.
+        var fieldUsers = await userRepository.LoadFieldUserLinks(characters, projectInfo);
+
         return
           [.. characters.Select(
             c =>
             {
                 var characterId = new CharacterIdentification(c.ProjectId, c.CharacterId);
-                return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], projectInfo, handouts[characterId], linkRenderer);
+                return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], projectInfo, handouts[characterId], linkRenderer, fieldUsers);
             })];
     }
 

@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
@@ -24,7 +25,8 @@ public class CustomFieldsViewModelTest
         var vm = new CustomFieldsViewModel(
             mock.Character,
             mock.ProjectInfo,
-            AccessArgumentsFactory.Create(mock.Character, new UserIdentification(mock.Player.UserId), mock.ProjectInfo));
+            AccessArgumentsFactory.Create(mock.Character, new UserIdentification(mock.Player.UserId), mock.ProjectInfo),
+            FieldUserLinksLoader.None);
 
         vm.Field(markdownField)!.DisplayString.ToHtmlString().ShouldBe($"<p>%персонаж{target.CharacterId}</p>");
     }
@@ -32,14 +34,14 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void HideMasterOnlyFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), []);
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), FieldUserLinksLoader.None, []);
         vm.Field(Mock.MasterOnlyFieldInfo)!.CanView.ShouldBeFalse();
     }
 
     [Fact]
     public void HideUnApprovedFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), []);
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), FieldUserLinksLoader.None, []);
         vm.Field(Mock.HideForUnApprovedClaimInfo)!.CanView.ShouldBeFalse();
     }
 
@@ -50,7 +52,8 @@ public class CustomFieldsViewModelTest
             new FieldWithValue(Mock.PublicFieldInfo, "1"));
 
         var vm = new CustomFieldsViewModel(character: Mock.Character, projectInfo: Mock.ProjectInfo,
-            AccessArgumentsFactory.Create(Mock.Character, new UserIdentification(Mock.Player.UserId), Mock.ProjectInfo)
+            AccessArgumentsFactory.Create(Mock.Character, new UserIdentification(Mock.Player.UserId), Mock.ProjectInfo),
+            FieldUserLinksLoader.None
             );
 
         var publicField = vm.Field(Mock.PublicFieldInfo);
@@ -67,7 +70,8 @@ public class CustomFieldsViewModelTest
         var vm = new CustomFieldsViewModel(
             character: Mock.Character,
             projectInfo: Mock.ProjectInfo,
-            accessArguments: AccessArgumentsFactory.Create(Mock.Character, new UserIdentification(Mock.Player.UserId), Mock.ProjectInfo) with { EditAllowed = false });
+            accessArguments: AccessArgumentsFactory.Create(Mock.Character, new UserIdentification(Mock.Player.UserId), Mock.ProjectInfo) with { EditAllowed = false },
+            users: FieldUserLinksLoader.None);
         var publicField = vm.Field(Mock.PublicFieldInfo);
         _ = publicField.ShouldNotBeNull();
         publicField.CanView.ShouldBeTrue();
@@ -77,7 +81,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), []);
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), FieldUserLinksLoader.None, []);
         var characterField = vm.Field(Mock.CharacterFieldInfo);
 
         _ = characterField.ShouldNotBeNull();
@@ -94,7 +98,7 @@ public class CustomFieldsViewModelTest
         var claim = mock.CreateClaim(mock.Character, mock.Player);
         MockedProject.AssignFieldValues(claim, new FieldWithValue(mock.CharacterFieldInfo, "test"));
 
-        var vm = new CustomFieldsViewModel(mock.Player.UserId, claim, mock.ProjectInfo);
+        var vm = new CustomFieldsViewModel(mock.Player.UserId, claim, mock.ProjectInfo, FieldUserLinksLoader.None);
 
         var characterField = vm.Field(mock.CharacterFieldInfo);
 
@@ -111,7 +115,7 @@ public class CustomFieldsViewModelTest
         var mock = new MockedProject();
         var claim = mock.CreateClaim(mock.Character, mock.Player);
 
-        var vm = new CustomFieldsViewModel(mock.Player.UserId, claim, mock.ProjectInfo);
+        var vm = new CustomFieldsViewModel(mock.Player.UserId, claim, mock.ProjectInfo, FieldUserLinksLoader.None);
 
         var characterField = vm.Field(mock.CharacterFieldInfo);
 
@@ -128,7 +132,7 @@ public class CustomFieldsViewModelTest
         var mock = new MockedProject();
 
         // Права считаем по тому же моку, что и вьюмодель: раньше тут стоял мок из поля класса.
-        var vm = new CustomFieldsViewModel(mock.Character, mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(mock.GetCharacterInfo(mock.Character), new(mock.Player.UserId)), []);
+        var vm = new CustomFieldsViewModel(mock.Character, mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(mock.GetCharacterInfo(mock.Character), new(mock.Player.UserId)), FieldUserLinksLoader.None, []);
 
         var characterField = vm.Field(mock.CharacterFieldInfo);
 
@@ -143,7 +147,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimForCharacterTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)));
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), FieldUserLinksLoader.None);
         var characterField = vm.Field(Mock.CharacterFieldInfo);
         _ = characterField.ShouldNotBeNull();
 
@@ -159,7 +163,7 @@ public class CustomFieldsViewModelTest
         var conditionalHeader = Mock.CreateConditionalHeader(Mock.Group);
         var claim = Mock.CreateApprovedClaim(Mock.CreateCharacter("another"), Mock.Player);
 
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo, FieldUserLinksLoader.None);
         var characterField = vm.Field(conditionalHeader);
 
         _ = characterField.ShouldNotBeNull();
@@ -177,7 +181,7 @@ public class CustomFieldsViewModelTest
 
         var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
 
-        var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo);
+        var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim, Mock.ProjectInfo, FieldUserLinksLoader.None);
         var characterField = vm.Field(conditionalHeader);
 
         _ = characterField.ShouldNotBeNull();
@@ -190,7 +194,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimForGroupTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)));
+        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), FieldUserLinksLoader.None);
         var characterField = vm.Field(Mock.CharacterFieldInfo);
         _ = characterField.ShouldNotBeNull();
         characterField.ShouldBeHidden();
@@ -198,6 +202,58 @@ public class CustomFieldsViewModelTest
         characterField.ShouldNotHaveValue();
 
         characterField.ShouldBeEditable();
+    }
+
+    [Fact]
+    public void UserLinkFieldShowsUserNameAndLink()
+    {
+        var (vm, field) = CreateUserLinkFieldViewModel("7");
+
+        var userLink = vm.Field(field).ShouldNotBeNull().UserLinks.ShouldHaveSingleItem();
+        userLink.DisplayName.ShouldBe("Седьмой");
+        userLink.UserId.ShouldBe(new UserIdentification(7));
+    }
+
+    [Fact]
+    public void UserLinkFieldShowsDeletedUserWithoutLink()
+    {
+        var (vm, field) = CreateUserLinkFieldViewModel("8");
+
+        var userLink = vm.Field(field).ShouldNotBeNull().UserLinks.ShouldHaveSingleItem();
+        userLink.DisplayName.ShouldBe("пользователь удалён");
+        userLink.UserId.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Мусор в уже сохранённом значении не должен ронять показ страницы (ADR017).
+    /// </summary>
+    [Fact]
+    public void UserLinkFieldWithGarbageValueDoesNotThrow()
+    {
+        var (vm, field) = CreateUserLinkFieldViewModel("abc");
+
+        vm.Field(field).ShouldNotBeNull().UserLinks.ShouldBeEmpty();
+    }
+
+    /// <param name="value">Сырое значение поля, как оно лежит в базе</param>
+    private static (CustomFieldsViewModel vm, ProjectFieldInfo field) CreateUserLinkFieldViewModel(string value)
+    {
+        var mock = new MockedProject();
+        var field = mock.CreateField("Ответственный мастер", fieldType: ProjectFieldType.UserLink);
+        MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(field, value));
+
+        // В словаре только седьмой: всё остальное на экране считается удалённым пользователем.
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users = new Dictionary<UserIdentification, UserInfoHeader>
+        {
+            [new UserIdentification(7)] = new(new UserIdentification(7), new UserDisplayName("Седьмой", null)),
+        };
+
+        var vm = new CustomFieldsViewModel(
+            mock.Character,
+            mock.ProjectInfo,
+            AccessArgumentsFactory.Create(mock.Character, new UserIdentification(mock.Master.UserId), mock.ProjectInfo),
+            users);
+        return (vm, field);
     }
 
     //[Fact]

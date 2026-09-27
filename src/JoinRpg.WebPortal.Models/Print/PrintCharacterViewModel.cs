@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
@@ -23,7 +24,13 @@ public class PrintCharacterViewModel
     public EnvelopeViewModel Envelope { get; }
 
     public PrintCharacterViewModel
-      (ICurrentUserAccessor currentUser, Character character, IReadOnlyCollection<PlotTextDto> plots, ProjectInfo projectInfo, IReadOnlyCollection<PlotTextDto> handouts, ILinkRenderer linkRenderer)
+      (ICurrentUserAccessor currentUser,
+       Character character,
+       IReadOnlyCollection<PlotTextDto> plots,
+       ProjectInfo projectInfo,
+       IReadOnlyCollection<PlotTextDto> handouts,
+       ILinkRenderer linkRenderer,
+       IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
     {
         ArgumentNullException.ThrowIfNull(character);
 
@@ -42,6 +49,7 @@ public class PrintCharacterViewModel
             character,
             projectInfo,
             AccessArgumentsFactory.Create(character, currentUser, projectInfo, CharacterAccessMode.Print) with { EditAllowed = false },
+            fieldUsers,
             wherePrintEnabled: true);
     }
 }

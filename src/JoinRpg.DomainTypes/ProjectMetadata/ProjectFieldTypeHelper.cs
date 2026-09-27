@@ -12,7 +12,7 @@ public static class ProjectFieldTypeHelper
             ProjectFieldType.Dropdown or ProjectFieldType.MultiSelect or ProjectFieldType.Checkbox or ProjectFieldType.Number => true,
             ProjectFieldType.String or ProjectFieldType.Text or ProjectFieldType.Header or ProjectFieldType.Login
                 or ProjectFieldType.ScheduleRoomField or ProjectFieldType.ScheduleTimeSlotField or ProjectFieldType.PinCode
-                or ProjectFieldType.Uri
+                or ProjectFieldType.Uri or ProjectFieldType.UserLink
                 => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
@@ -33,7 +33,7 @@ public static class ProjectFieldTypeHelper
             ProjectFieldType.Checkbox or ProjectFieldType.Number => true,
 
             ProjectFieldType.String or ProjectFieldType.Text or ProjectFieldType.Header or ProjectFieldType.Login
-            or ProjectFieldType.PinCode or ProjectFieldType.Uri
+            or ProjectFieldType.PinCode or ProjectFieldType.Uri or ProjectFieldType.UserLink
                 => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
@@ -58,9 +58,15 @@ public static class ProjectFieldTypeHelper
             ProjectFieldType.Login => false,
             ProjectFieldType.PinCode => false,
             ProjectFieldType.Uri => false,
+            ProjectFieldType.UserLink => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
     }
+
+    /// <summary>
+    /// Поле ссылается на пользователей сайта — значение хранит их идентификаторы (ADR017)
+    /// </summary>
+    public static bool IsUserLink(this ProjectFieldType self) => self is ProjectFieldType.UserLink;
 
     /// <summary>
     /// Returns true if field values could be mass added and doesn't require special setup
