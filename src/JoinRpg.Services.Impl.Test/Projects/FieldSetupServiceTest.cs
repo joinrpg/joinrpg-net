@@ -85,6 +85,20 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
 
+    /// <summary>
+    /// ADR017: поле-ссылку на пользователя заполняют только мастера — даже если запрос просит иного.
+    /// </summary>
+    [Fact]
+    public async Task AddField_UserLink_IsNeverPlayerEditable()
+    {
+        var service = CreateService(mock.Master.UserId);
+
+        var result = await service.AddField(
+            CreateFieldRequest(ProjectFieldType.UserLink, name: "Куратор роли"));
+
+        Result.UnsortedFields.Single(f => f.Id == result).CanPlayerEdit.ShouldBeFalse();
+    }
+
     [Fact]
     public async Task MoveFieldVariantAfter_MovesVariantAndReturnsNewOrder()
     {

@@ -35,5 +35,11 @@ public class GameFieldCreateViewModel : GameFieldViewModelBase
             yield return new ValidationResult(
                 $"Поле {FieldViewType} не поддерживает ввод цены.");
         }
+        if (((ProjectFieldType)FieldViewType).IsUserLink() && CanPlayerEdit)
+        {
+            yield return new ValidationResult(
+                "Поле-ссылку на пользователя заполняют только мастера: оно называет третьего человека, который об этом не узнает.",
+                new List<string> { nameof(FieldViewType), nameof(CanPlayerEdit) });
+        }
     }
 }

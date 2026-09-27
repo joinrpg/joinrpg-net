@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -55,7 +56,8 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
         CharacterInfo characterInfo,
         IReadOnlyCollection<PlotTextDto> plots,
         ILinkRenderer linkRenderer,
-        ProjectInfo projectInfo)
+        ProjectInfo projectInfo,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
     {
         // Ссылка на игрока строится поверх агрегата (ADR013): у варианта поверх EF-сущности внутри
         // лежит character.Project.Details.PublishPlot — ленивая загрузка на каждый заход (#4992).
@@ -71,7 +73,8 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
         Fields = new CustomFieldsViewModel(
             character,
             projectInfo,
-            accessArguments
+            accessArguments,
+            fieldUsers
             );
         Plot = new PlotDisplayViewModel(plots, currentUserId, character, linkRenderer, projectInfo);
 

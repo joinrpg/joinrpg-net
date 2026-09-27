@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -44,9 +45,10 @@ public class AddClaimViewModel : IProjectIdAware
     public static AddClaimViewModel Create(
         CharacterInfo character,
         UserInfo userInfo,
-        ProjectDetails projectDetails)
+        ProjectDetails projectDetails,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
         => new AddClaimViewModel { CharacterId = character.Id.CharacterId }
-            .Fill(character, userInfo, projectDetails);
+            .Fill(character, userInfo, projectDetails, fieldUsers);
 
     public bool SenstiveDataRequired { get; private set; }
 
@@ -64,6 +66,7 @@ public class AddClaimViewModel : IProjectIdAware
         CharacterInfo claimSource,
         UserInfo userInfo,
         ProjectDetails projectDetails,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         Dictionary<int, string?>? overrideValues = null)
     {
         var projectInfo = claimSource.ProjectInfo;
@@ -89,7 +92,7 @@ public class AddClaimViewModel : IProjectIdAware
         var accessArguments = AccessArgumentsFactory.CreateForAdd(claimSource, userInfo.UserId);
         HasMasterAccess = accessArguments.MasterAccess;
 
-        Fields = new CustomFieldsViewModel(claimSource, accessArguments.WithoutMasterAccess(), overrideValues);
+        Fields = new CustomFieldsViewModel(claimSource, accessArguments.WithoutMasterAccess(), fieldUsers, overrideValues);
         SenstiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
         return this;
     }

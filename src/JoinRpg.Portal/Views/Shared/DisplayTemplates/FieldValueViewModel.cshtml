@@ -94,6 +94,15 @@
             case ProjectFieldViewType.Uri:
                 <a href="@Model.DisplayString">@Model.DisplayString</a>
                 break;
+            case ProjectFieldViewType.UserLink:
+                foreach (var userLink in Model.UserLinks)
+                {
+                    <component
+                      type="typeof(JoinRpg.Common.WebComponents.UserLink)"
+                      render-mode="Static"
+                      param-Model="@userLink" />
+                }
+                break;
             case ProjectFieldViewType.String:
             case ProjectFieldViewType.Text:
             case ProjectFieldViewType.Login:
