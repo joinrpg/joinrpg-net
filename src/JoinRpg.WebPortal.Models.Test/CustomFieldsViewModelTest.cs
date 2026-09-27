@@ -1,12 +1,33 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.WebPortal.Models.Test;
 
 public class CustomFieldsViewModelTest
 {
     private static MockedProject Mock { get; } = new MockedProject();
+
+    /// <summary>
+    /// Директивы (%персонаж, %контакты, %список) разворачиваются только во вводных, в значениях
+    /// полей — нет: см. docs/plot/special.rst в joinrpg-docs. Текст должен остаться как есть.
+    /// </summary>
+    [Fact]
+    public void DirectiveInFieldValueIsNotRendered()
+    {
+        var mock = new MockedProject();
+        var markdownField = mock.CreateField("Знакомства", canPlayerEdit: true, showOnUnApprovedClaims: true, fieldType: ProjectFieldType.Text);
+        var target = mock.CreateCharacter("Элендил");
+        MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(markdownField, $"%персонаж{target.CharacterId}"));
+
+        var vm = new CustomFieldsViewModel(
+            mock.Character,
+            mock.ProjectInfo,
+            AccessArgumentsFactory.Create(mock.Character, new UserIdentification(mock.Player.UserId), mock.ProjectInfo));
+
+        vm.Field(markdownField)!.DisplayString.ToHtmlString().ShouldBe($"<p>%персонаж{target.CharacterId}</p>");
+    }
 
     [Fact]
     public void HideMasterOnlyFieldOnAddClaimTest()

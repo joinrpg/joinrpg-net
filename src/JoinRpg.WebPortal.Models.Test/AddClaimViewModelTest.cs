@@ -3,7 +3,6 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.Web.Models.Helpers;
 // В JoinRpg.DataModel есть своя ProjectDetails (EF-сущность), здесь нужна доменная.
 using ProjectDetails = JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails;
 
@@ -21,8 +20,7 @@ public class AddClaimViewModelTest
         => AddClaimViewModel.Create(
             Mock.GetCharacterInfo(character),
             Mock.PlayerInfo,
-            new ProjectDetails(Mock.ProjectInfo, new MarkdownString(""), new MarkdownString("правила подачи"), [], false),
-            new JoinrpgMarkdownLinkRenderer(Mock.Project, Mock.ProjectInfo));
+            new ProjectDetails(Mock.ProjectInfo, new MarkdownString(""), new MarkdownString("правила подачи"), [], false));
 
     [Fact]
     public void AddClaimAllowedCharacter()

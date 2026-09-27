@@ -44,10 +44,9 @@ public class AddClaimViewModel : IProjectIdAware
     public static AddClaimViewModel Create(
         CharacterInfo character,
         UserInfo userInfo,
-        ProjectDetails projectDetails,
-        ILinkRenderer renderer)
+        ProjectDetails projectDetails)
         => new AddClaimViewModel { CharacterId = character.Id.CharacterId }
-            .Fill(character, userInfo, projectDetails, renderer);
+            .Fill(character, userInfo, projectDetails);
 
     public bool SenstiveDataRequired { get; private set; }
 
@@ -61,12 +60,10 @@ public class AddClaimViewModel : IProjectIdAware
     /// <see cref="ProjectInfo"/> берётся из них же — это тот самый экземпляр, к которому привязан
     /// агрегат персонажа.
     /// </param>
-    /// <param name="renderer">См. <see cref="CustomFieldsViewModel"/>: рендерер ссылок живёт на EF-проекте.</param>
     public AddClaimViewModel Fill(
         CharacterInfo claimSource,
         UserInfo userInfo,
         ProjectDetails projectDetails,
-        ILinkRenderer renderer,
         Dictionary<int, string?>? overrideValues = null)
     {
         var projectInfo = claimSource.ProjectInfo;
@@ -92,7 +89,7 @@ public class AddClaimViewModel : IProjectIdAware
         var accessArguments = AccessArgumentsFactory.CreateForAdd(claimSource, userInfo.UserId);
         HasMasterAccess = accessArguments.MasterAccess;
 
-        Fields = new CustomFieldsViewModel(claimSource, accessArguments.WithoutMasterAccess(), renderer, overrideValues);
+        Fields = new CustomFieldsViewModel(claimSource, accessArguments.WithoutMasterAccess(), overrideValues);
         SenstiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
         return this;
     }
