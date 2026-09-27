@@ -22,7 +22,11 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
     private delegate void CharGroupRenderFunc(HtmlRenderer renderer, CharacterGroupInfo characterGroup, IReadOnlyCollection<Character> characters, string extra);
     private delegate void FieldColumnRenderFunc(HtmlRenderer renderer, Character character, ProjectInfo projectInfo, Dictionary<ProjectFieldIdentification, FieldWithValue> fields);
 
-    public JoinrpgMarkdownLinkRenderer(Project project, ProjectInfo projectInfo)
+    /// <remarks>
+    /// Создаётся только через <see cref="JoinrpgMarkdownLinkRendererFactory"/>: выбор способа
+    /// загрузки данных живёт там, а не у вызывающих.
+    /// </remarks>
+    internal JoinrpgMarkdownLinkRenderer(Project project, ProjectInfo projectInfo)
     {
         Project = project;
         this.projectInfo = projectInfo;

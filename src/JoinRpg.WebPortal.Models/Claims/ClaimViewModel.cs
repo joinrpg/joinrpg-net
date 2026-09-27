@@ -6,6 +6,7 @@ using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;
@@ -98,7 +99,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       IProblemValidator<Claim> problemValidator,
       Func<string?, string?> externalPaymentUrlFactory,
       ClaimAccommodationViewModel? accommodationModel,
-      UserInfo playerInfo)
+      UserInfo playerInfo,
+      ILinkRenderer linkRenderer)
     {
         ClaimIdentification = claim.GetId();
         AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
@@ -165,7 +167,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         Plot = new PlotDisplayViewModel(plotElements,
             currentUser,
             claim.Character,
-            claim.Project,
+            linkRenderer,
             projectInfo);
         AccommodationModel = accommodationModel;
 

@@ -11,6 +11,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,8 @@ public class CharacterController(
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser,
-    CharacterPlotViewService characterPlotViewService
+    CharacterPlotViewService characterPlotViewService,
+    JoinrpgMarkdownLinkRendererFactory linkRendererFactory
         ) : JoinControllerGameBase
 {
 
@@ -53,20 +55,19 @@ public class CharacterController(
 
         var plots = await characterPlotViewService.GetPlotsForCharacter(character.GetId());
 
-        // Директивы вида %персонаж/%список рендерер разворачивает поверх EF-графа проекта.
-        // Тянем граф одним запросом — иначе EF6 грузит персонажей, их заявки и игроков по одному
-        // (#4992). И только когда вводные реально показываются: пустой список — значит доступа
-        // к сюжету нет и граф никому не нужен.
-        var projectForRendering = plots.Count > 0
-            ? await projectRepository.GetProjectForMarkdownRendering(new ProjectIdentification(character.ProjectId))
-            : character.Project;
+        // Загрузка данных для рендерера — дорогая (персонажи проекта с заявками и игроками, #4992),
+        // поэтому платим за неё только когда вводные реально показываются: пустой список — значит
+        // доступа к сюжету нет и разворачивать нечего.
+        var linkRenderer = plots.Count > 0
+            ? await linkRendererFactory.Load(new ProjectIdentification(character.ProjectId))
+            : JoinrpgMarkdownLinkRendererFactory.NoDirectives;
 
         return View("Details",
             new CharacterDetailsViewModel(currentUser,
                 character,
                 await characterInfoRepository.GetCharacterInfo(character.GetId()),
                 plots,
-                projectForRendering,
+                linkRenderer,
                 projectInfo));
     }
 

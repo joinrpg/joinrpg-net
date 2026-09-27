@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -44,16 +45,16 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
     public CharacterNavigationViewModel Navigation { get; }
     public bool HasMasterAccess { get; }
 
-    /// <param name="projectForRendering">
-    /// EF-граф проекта для рендеринга директив в тексте вводных (<c>%персонаж</c>, <c>%список</c>) —
-    /// см. <c>IProjectRepository.GetProjectForMarkdownRendering</c>.
+    /// <param name="linkRenderer">
+    /// Разворачивает директивы в тексте вводных (<c>%персонаж</c>, <c>%список</c>). Собирается
+    /// вызывающим через <c>JoinrpgMarkdownLinkRendererFactory</c>.
     /// </param>
     public CharacterDetailsViewModel(
         ICurrentUserAccessor currentUserId,
         Character character,
         CharacterInfo characterInfo,
         IReadOnlyCollection<PlotTextDto> plots,
-        Project projectForRendering,
+        ILinkRenderer linkRenderer,
         ProjectInfo projectInfo)
     {
         // Ссылка на игрока строится поверх агрегата (ADR013): у варианта поверх EF-сущности внутри
@@ -72,7 +73,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
             projectInfo,
             accessArguments
             );
-        Plot = new PlotDisplayViewModel(plots, currentUserId, character, projectForRendering, projectInfo);
+        Plot = new PlotDisplayViewModel(plots, currentUserId, character, linkRenderer, projectInfo);
 
         HasMasterAccess = accessArguments.MasterAccess;
         CreatedAt = character.CreatedAt;

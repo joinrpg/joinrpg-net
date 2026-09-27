@@ -5,7 +5,7 @@ namespace JoinRpg.Markdown;
 /// <summary>
 /// Default implementations of link renderer that will not render any links
 /// </summary>
-internal class DoNothingLinkRenderer : ILinkRenderer
+public class DoNothingLinkRenderer : ILinkRenderer
 {
     /// <inheritdoc />
     public string[] LinkTypesToMatch { get; } = [];

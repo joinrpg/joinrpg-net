@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces.Plots;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Plots;
@@ -9,7 +8,6 @@ using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.Plots.Elements;
 using JoinRpg.Web.Plots.Folders;
@@ -36,7 +34,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: «Интриги Гэндальфа #мордор #гондор #костромская_область»")]
     public string PlotFolderTitleAndTags { get; set; }
 
-    public EditPlotFolderViewModel(PlotFolderDetailsDto folder, Project projectForRendering, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
+    public EditPlotFolderViewModel(PlotFolderDetailsDto folder, ILinkRenderer linkRenderer, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
         if (folder == null)
         {
@@ -46,7 +44,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
         PlotFolderId = folder.Id.PlotFolderId;
         TodoField = folder.TodoField;
         ProjectId = folder.Id.ProjectId.Value;
-        Fill(folder, projectForRendering, currentUser, uriService, projectInfo);
+        Fill(folder, linkRenderer, currentUser, uriService, projectInfo);
         if (TagNames.Any())
         {
             PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.Tags.Select(t => "#" + t).JoinStrings(" ");
@@ -59,12 +57,11 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
 
     [MemberNotNull(nameof(TagNames))]
     [MemberNotNull(nameof(Elements))]
-    public void Fill(PlotFolderDetailsDto folder, Project projectForRendering, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
+    public void Fill(PlotFolderDetailsDto folder, ILinkRenderer linkRenderer, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
         PlotFolderMasterTitle = folder.MasterTitle;
         Status = folder.GetStatus();
 
-        var linkRenderer = new JoinrpgMarkdownLinkRenderer(projectForRendering, projectInfo);
         Elements = PlotElementListItemViewModel.FromFolder(folder, currentUser, projectInfo, linkRenderer);
         TagNames = folder.Tags;
 
@@ -82,7 +79,7 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
 
 public class PlotElementListItemViewModel : IProjectIdAware
 {
-    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolderDetailsDto folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
+    public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolderDetailsDto folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, ILinkRenderer linkRenderer)
     {
         // Порядок задаёт репозиторий; здесь он только превращается в список id для контрола перетаскивания.
         var itemIds = folder.Elements.Select(x => x.Id.ToString()).ToArray();
@@ -96,7 +93,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         PlotElementDetailsDto element,
         PlotAccessArguments accessArguments,
         string[]? itemIdsToParticipateInSort,
-        JoinrpgMarkdownLinkRenderer renderer,
+        ILinkRenderer renderer,
         bool printMode = false)
     {
         var currentVersionText = element.CurrentVersion;

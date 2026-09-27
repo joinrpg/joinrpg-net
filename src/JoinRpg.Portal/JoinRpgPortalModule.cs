@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Controllers;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.WebPortal.Managers.Projects;
 using Microsoft.AspNetCore.Authorization;
 using PscbApi;
@@ -22,6 +23,9 @@ internal class JoinRpgPortalModule : Module
         _ = builder.RegisterType<ConfigurationAdapter>().AsImplementedInterfaces();
 
         _ = builder.RegisterType<CurrentProjectAccessor>().AsImplementedInterfaces();
+
+        // Кэш загруженных графов проекта внутри фабрики живёт ровно на время запроса.
+        _ = builder.RegisterType<JoinrpgMarkdownLinkRendererFactory>().AsSelf().InstancePerLifetimeScope();
 
         _ = builder.RegisterType<ReCaptchaService>().SingleInstance();
         _ = builder.RegisterType<RecaptchaVerificator>().AsImplementedInterfaces();

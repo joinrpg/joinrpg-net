@@ -3,24 +3,23 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Interfaces;
-using JoinRpg.Web.Models.Helpers;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Plots.Elements;
 
 namespace JoinRpg.Web.Models.Plot;
 
 public class PlotDisplayViewModel
 {
-    /// <param name="projectForRendering">
-    /// EF-граф проекта, поверх которого рендерер разворачивает директивы (<c>%персонаж</c>,
-    /// <c>%список</c>). Граф передаётся отдельным параметром, а не берётся из
-    /// <c>character.Project</c>: иначе его состав зависит от того, что случайно загрузил вызывающий,
-    /// и EF6 дотягивает персонажей с заявками по одному (#4992). Кто рендерит текст, тот и грузит
-    /// граф — <c>IProjectRepository.GetProjectForMarkdownRendering</c>.
+    /// <param name="linkRenderer">
+    /// Разворачивает директивы (<c>%персонаж</c>, <c>%список</c>) в тексте вводных. Собирается
+    /// вызывающим через <c>JoinrpgMarkdownLinkRendererFactory</c>: кто рендерит текст, тот и платит
+    /// за загрузку данных. Когда вводных нет, сюда приходит
+    /// <c>JoinrpgMarkdownLinkRendererFactory.NoDirectives</c>.
     /// </param>
     public PlotDisplayViewModel(IReadOnlyCollection<PlotTextDto> plots,
         ICurrentUserAccessor currentUser,
         Character character,
-        Project projectForRendering,
+        ILinkRenderer linkRenderer,
         ProjectInfo projectInfo
         )
     {
@@ -36,8 +35,6 @@ public class PlotDisplayViewModel
             Elements = [];
             return;
         }
-
-        var linkRenderer = new JoinrpgMarkdownLinkRenderer(projectForRendering, projectInfo);
 
         Elements = plots.Select(p => p.Render(linkRenderer, projectInfo, currentUser)).ToList();
     }

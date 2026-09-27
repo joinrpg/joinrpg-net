@@ -20,11 +20,11 @@ namespace JoinRpg.Portal.Controllers;
 public class PlotController(
     IPlotService plotService,
     IPlotRepository plotRepository,
-    IProjectRepository projectRepository,
     IUriService uriService,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
-    ILogger<PlotController> logger
+    ILogger<PlotController> logger,
+    JoinrpgMarkdownLinkRendererFactory linkRendererFactory
     ) : JoinControllerGameBase
 {
     [MasterAuthorize(Permission.CanManagePlots)]
@@ -69,8 +69,8 @@ public class PlotController(
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(projectId));
-        return View(new EditPlotFolderViewModel(folder, projectForRendering, currentUserAccessor, uriService, projectInfo));
+        var linkRenderer = await linkRendererFactory.Load(new(projectId));
+        return View(new EditPlotFolderViewModel(folder, linkRenderer, currentUserAccessor, uriService, projectInfo));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanManagePlots)]
@@ -91,8 +91,8 @@ public class PlotController(
                 return NotFound();
             }
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
-            var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(viewModel.ProjectId));
-            viewModel.Fill(folder, projectForRendering, currentUserAccessor, uriService, projectInfo);
+            var linkRenderer = await linkRendererFactory.Load(new(viewModel.ProjectId));
+            viewModel.Fill(folder, linkRenderer, currentUserAccessor, uriService, projectInfo);
             return View(viewModel);
         }
     }
@@ -182,8 +182,8 @@ public class PlotController(
             return NotFound();
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(new(projectId));
-        return View(new EditPlotFolderViewModel(folder, projectForRendering, currentUserAccessor, uriService, projectInfo));
+        var linkRenderer = await linkRendererFactory.Load(new(projectId));
+        return View(new EditPlotFolderViewModel(folder, linkRenderer, currentUserAccessor, uriService, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
@@ -281,7 +281,7 @@ public class PlotController(
             element,
             AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor),
             itemIdsToParticipateInSort: null,
-            renderer: new JoinrpgMarkdownLinkRenderer(await projectRepository.GetProjectForMarkdownRendering(projectId), projectInfo),
+            renderer: await linkRendererFactory.Load(projectId),
             printMode: printMode));
     }
 

@@ -13,6 +13,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,8 @@ public class ClaimController(
     IProjectMetadataRepository projectMetadataRepository,
     IProblemValidator<Claim> claimValidator,
     ICurrentUserAccessor currentUserAccessor,
-    CharacterPlotViewService characterPlotViewService
+    CharacterPlotViewService characterPlotViewService,
+    JoinrpgMarkdownLinkRendererFactory linkRendererFactory
     ) : JoinControllerGameBase
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
@@ -132,7 +134,10 @@ public class ClaimController(
             claimValidator,
             paymentsService.GetExternalPaymentUrl,
             accommodationModel,
-            userInfo);
+            userInfo,
+            plots.Count > 0
+                ? await linkRendererFactory.Load(new ProjectIdentification(claim.ProjectId))
+                : JoinrpgMarkdownLinkRendererFactory.NoDirectives);
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
         {

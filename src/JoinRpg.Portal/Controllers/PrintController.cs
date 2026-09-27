@@ -4,6 +4,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Models.Print;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
@@ -17,7 +18,8 @@ public class PrintController(
     ICharacterRepository characterRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
-    CharacterPlotViewService characterPlotViewService
+    CharacterPlotViewService characterPlotViewService,
+    JoinrpgMarkdownLinkRendererFactory linkRendererFactory
     ) : JoinControllerGameBase
 {
     [HttpGet]
@@ -41,7 +43,8 @@ public class PrintController(
 
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
-        return View(new PrintCharacterViewModel(currentUserAccessor, character, plots[characterId], projectInfo, handouts[characterId]));
+        return View(new PrintCharacterViewModel(currentUserAccessor, character, plots[characterId], projectInfo, handouts[characterId],
+            await linkRendererFactory.Load(projectId)));
     }
 
     [MasterAuthorize()]
@@ -67,13 +70,14 @@ public class PrintController(
         var handouts = await characterPlotViewService.GetHandoutsForCharacters(characterIdsList);
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var linkRenderer = await linkRendererFactory.Load(projectId);
 
         return
           [.. characters.Select(
             c =>
             {
                 var characterId = new CharacterIdentification(c.ProjectId, c.CharacterId);
-                return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], projectInfo, handouts[characterId]);
+                return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], projectInfo, handouts[characterId], linkRenderer);
             })];
     }
 
