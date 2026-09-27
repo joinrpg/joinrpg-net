@@ -1,4 +1,6 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 
@@ -53,7 +55,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             CreateFields(project, fieldSettings).ToList(),
             fieldSettings,
             financeSettings,
-            project.Details.EnableAccommodation,
+            CreateAccommodationSettings(project),
             groupTree: groupTree,
             masters: CreateMasterList(project),
             publishPlot: project.Details.PublishPlot,
@@ -85,6 +87,21 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 acl.IsOwner)
                 )
                 ];
+        }
+
+        ProjectAccommodationSettings CreateAccommodationSettings(Project project)
+        {
+            return new ProjectAccommodationSettings(
+                project.Details.EnableAccommodation,
+                [.. project.ProjectAccommodationTypes.Select(type => new AccommodationTypeInfo(
+                    new AccommodationTypeIdentification(projectId, type.Id),
+                    type.Name,
+                    // Описания типа в БД может не быть, а домен ждёт значение — отдаём пустой
+                    // markdown, как это сделано для описания персонажа и анонса проекта.
+                    new MarkdownString(type.Description?.Contents ?? ""),
+                    type.Cost,
+                    type.Capacity,
+                    type.IsPlayerSelectable))]);
         }
 
         IEnumerable<ProjectFieldInfo> CreateFields(Project project, ProjectFieldSettings fieldSettings)

@@ -143,6 +143,7 @@ public class MockedProject
             ProjectName = "Mocked project",
             KogdaIgraGames = [],
             ProjectRolesLists = [],
+            ProjectAccommodationTypes = [],
         };
 
         // Навигационные свойства ACL заполняем, как это сделал бы реальный запрос с Include:
@@ -514,13 +515,17 @@ public class MockedProject
     }
 
     /// <summary>
-    /// Типы поселения проекта. Отдельная коллекция, а не навигация <see cref="DataModel.Project"/>:
-    /// её у проекта нет, а write-хэндл грузит тип поселения отдельным запросом.
+    /// Типы поселения проекта — навигация <see cref="DataModel.Project"/>, из неё же собираются
+    /// настройки проживания в <see cref="ProjectInfo"/> (ADR015).
     /// </summary>
-    public List<ProjectAccommodationType> AccommodationTypes { get; } = [];
+    public ICollection<ProjectAccommodationType> AccommodationTypes => Project.ProjectAccommodationTypes;
 
     /// <summary>Тип поселения проекта (палатка, домик, номер…).</summary>
-    public ProjectAccommodationType CreateAccommodationType(string name = "Палатка", int capacity = 4)
+    public ProjectAccommodationType CreateAccommodationType(
+        string name = "Палатка",
+        int capacity = 4,
+        int cost = 0,
+        bool isPlayerSelectable = true)
     {
         var accommodationType = new ProjectAccommodationType
         {
@@ -529,11 +534,15 @@ public class MockedProject
             ProjectId = Project.ProjectId,
             Name = name,
             Capacity = capacity,
-            Cost = 0,
+            Cost = cost,
+            IsPlayerSelectable = isPlayerSelectable,
             ProjectAccommodations = [],
             Desirous = [],
         };
         AccommodationTypes.Add(accommodationType);
+        // ReInitProjectInfo намеренно не зовём: он подменяет экземпляр ProjectInfo, а тесты
+        // поселения создают типы уже после того, как заведены поля и персонажи, привязанные
+        // к текущему экземпляру. Кому нужны свежие метаданные — зовёт ReInitProjectInfo сам.
         return accommodationType;
     }
 
