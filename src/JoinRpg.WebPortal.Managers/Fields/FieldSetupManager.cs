@@ -170,6 +170,7 @@ public class FieldSetupManager
         {
             Page = page,
             ProjectId = projectInfo.ProjectId,
+            DefaultTemplateCharacterId = projectInfo.ClaimSettings.DefaultTemplate,
         };
     }
 

@@ -96,6 +96,14 @@ public class AddClaimViewModel : IProjectIdAware
 
     public bool CanSendClaim() => ValidationStatus.Count == 0;
 
+    /// <summary>
+    /// Показывать ли поля формы. Мастеру форма показывается всегда — это его способ посмотреть,
+    /// что увидит игрок, не открывая приём заявок (кнопка «посмотреть форму заявки» на странице
+    /// полей). Отправить заявку он от этого не сможет: см. <see cref="CanSendClaim"/>, а на
+    /// сервере — проверку в <c>ClaimValidator.EnsureCanAddClaim</c>.
+    /// </summary>
+    public bool ShowFields => CanSendClaim() || HasMasterAccess;
+
     public bool IsProjectRelatedReason { get; private set; }
 
     public bool ProjectAllowsMultipleCharacters { get; private set; }

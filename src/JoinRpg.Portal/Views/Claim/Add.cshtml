@@ -30,7 +30,9 @@
                        param-ProjectLifecycleStatus="Model.ProjectLifecycleStatus" />
         }
 
-        @if (Model.IsProjectRelatedReason)
+        @* Мастеру форму показываем всегда — чтобы он мог посмотреть, что увидит игрок, даже когда
+           заявки закрыты. Отправить её всё равно нельзя: кнопки нет, а сервер проверяет права. *@
+        @if (Model.IsProjectRelatedReason && !Model.HasMasterAccess)
         {
             return;
         }
@@ -61,6 +63,10 @@
         {
             <div class="alert alert-info">
                 Несмотря на то, что у вас есть мастерские права, форма заявки показывается так, как ее видят игроки (мастерские поля не видны).
+                @if (!Model.CanSendClaim())
+                {
+                    <text>Отправить заявку из этого режима нельзя — форма показана только для просмотра.</text>
+                }
             </div>
         }
 
@@ -85,7 +91,7 @@
 
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-        @if (Model.CanSendClaim())
+        @if (Model.ShowFields)
         {
             @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 
@@ -93,7 +99,10 @@
             {
                 @await Html.PartialAsync("_ClaimFieldsSubtotal", 0)
             }
+        }
 
+        @if (Model.CanSendClaim())
+        {
             <div class="form-group">
                 @Html.LabelFor(model => model.ClaimText, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
