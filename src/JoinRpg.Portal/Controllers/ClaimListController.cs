@@ -139,12 +139,12 @@ public class ClaimListController(
         else
         {
             var projectMetadata = await projectMetadataRepository.GetProjectMetadata(projectId);
-            var roomType = projectMetadata.AccommodationSettings.Types
-                .SingleOrDefault(type => type.Id.AccommodationTypeId == roomTypeId.Value);
+            // OrDefault, а не GetTypeById: id приходит параметром фильтра, и промах — это 404,
+            // а не исключение. Раньше запрос за типом вообще не учитывал проект и падал 500-й.
+            var roomType = projectMetadata.AccommodationSettings.GetTypeByIdOrDefault(
+                new AccommodationTypeIdentification(projectId, roomTypeId.Value));
             if (roomType is null)
             {
-                // Не GetTypeById: тут id приходит параметром фильтра, и на промахе нужен 404,
-                // а не исключение. Раньше запрос за типом вообще не учитывал проект и падал 500-й.
                 return NotFound();
             }
 

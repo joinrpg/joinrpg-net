@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Accommodation;
@@ -18,6 +19,16 @@ public record AccommodationTypeViewModel(
     int Cost,
     string DescriptionHtml)
 {
+    /// <summary>
+    /// Собрать из доменного типа проживания. Описание приходит уже отрисованным: markdown
+    /// превращает в HTML сервер (<c>JoinRpg.Markdown</c>), этой сборке он недоступен — она
+    /// компилируется и под браузер.
+    /// </summary>
+    public AccommodationTypeViewModel(AccommodationTypeInfo type, string descriptionHtml)
+        : this(type.Id, type.Name, type.Capacity, type.Cost, descriptionHtml)
+    {
+    }
+
     // Это нужно, потому что MarkupString не умеет нормально десериализоваться из JSON
     [JsonIgnore]
     public MarkupString Description { get; } = new(DescriptionHtml);

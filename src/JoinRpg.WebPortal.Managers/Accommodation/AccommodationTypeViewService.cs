@@ -32,9 +32,7 @@ internal class AccommodationTypeViewService(
         var hasMasterAccess = claim.HasMasterAccess(currentUserAccessor);
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
-        var selectedTypeId = request is null
-            ? null
-            : new AccommodationTypeIdentification(claimId.ProjectId, request.AccommodationTypeId);
+        var selectedTypeId = claim.GetAccommodationTypeIdOrDefault();
 
         // Мастеру показываем всё, игроку — только помеченное как выбираемое, плюс то, что у него уже стоит.
         // Готовый ProjectAccommodationSettings.PlayerSelectableTypes здесь не подходит: к нему всё равно
@@ -43,12 +41,7 @@ internal class AccommodationTypeViewService(
             .Where(type => type.IsPlayerSelectable
                 || type.Id == selectedTypeId
                 || hasMasterAccess)
-            .Select(type => new AccommodationTypeViewModel(
-                type.Id,
-                type.Name,
-                type.Capacity,
-                type.Cost,
-                type.Description.ToHtmlString().Value))
+            .Select(type => new AccommodationTypeViewModel(type, type.Description.ToHtmlString().Value))
             .ToArray();
 
         return new AccommodationTypeChoiceViewModel(
