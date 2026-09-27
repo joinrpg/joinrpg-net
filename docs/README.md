@@ -35,6 +35,7 @@
 - [ADR013: CharacterInfo — доменный агрегат персонажа](adr013-character-info.md)
 - [ADR014: CharacterPropsService — единая точка изменения персонажей и заявок](adr014-claim-props-service.md)
 - [ADR015: типы проживания — настройка проекта внутри ProjectInfo](adr015-accommodation-types-in-project-info.md)
+- [ADR016: Переход основной БД с EF6 на EF Core](adr016-efcore-migration.md)
 
 ## Быстрые ссылки
 
