@@ -196,7 +196,10 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
    `ClaimListController`) переведены на `ProjectInfo`; удалены `GetAccommodationForProject`,
    `GetRoomTypeById` и `IAccommodationService.GetRoomTypesAsync` (вызывающих не осталось).
    Клонирование трогать не пришлось — оно типы не копирует.
-4. **PR 4** — вычистить `[Obsolete] AccomodationEnabled`.
+4. **PR 4** — ✅ сделано. Одиннадцать вызывающих переведены на `AccommodationSettings.Enabled`,
+   `[Obsolete]`-прокси `AccomodationEnabled` удалён. Счётчик CS0618 в сборке: 127 → 116.
+
+План выполнен целиком; решение ADR реализовано.
 
 Последствия
 ==

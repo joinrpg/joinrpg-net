@@ -30,7 +30,7 @@ public class AccommodationPrintController(
             return NotFound();
         }
 
-        if (!project.AccomodationEnabled)
+        if (!project.AccommodationSettings.Enabled)
         {
             return RedirectToAction("Edit", "Game");
         }

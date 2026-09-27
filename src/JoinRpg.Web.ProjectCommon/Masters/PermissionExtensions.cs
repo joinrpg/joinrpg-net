@@ -11,7 +11,7 @@ public static class PermissionExtensions
         return Enum.GetValues<Permission>()
             .Select(permission => new PermissionBadgeViewModel(permission, acl.Contains(permission)))
             .Where(badge => !badge.IsNone)
-            .Where(badge => !badge.OnlyIfAccommodationEnabled || project.AccomodationEnabled)
+            .Where(badge => !badge.OnlyIfAccommodationEnabled || project.AccommodationSettings.Enabled)
             .ToArray();
     }
 }

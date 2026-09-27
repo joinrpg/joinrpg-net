@@ -81,7 +81,7 @@ internal class CloneProjectHelper(
             original.ProjectCheckInSettings.CheckInModuleEnabled,
             original.ProjectCheckInSettings.AllowSecondRoles);
 
-        await projectService.SetAccommodationSettings(projectId, original.AccomodationEnabled);
+        await projectService.SetAccommodationSettings(projectId, original.AccommodationSettings.Enabled);
 
         await projectService.SetClaimSettings(projectId, original.ClaimSettings with { DefaultTemplate = original.ClaimSettings.DefaultTemplate is not null ? CharacterMapping.GetValueOrDefault(original.ClaimSettings.DefaultTemplate) : null });
 

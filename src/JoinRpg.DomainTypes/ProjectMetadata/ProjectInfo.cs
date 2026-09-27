@@ -29,9 +29,6 @@ public record class ProjectInfo
     /// <summary>Настройки проживания проекта: включён ли модуль и какие типы заведены (ADR015)</summary>
     public ProjectAccommodationSettings AccommodationSettings { get; }
 
-    [Obsolete("Использовать AccommodationSettings.Enabled")]
-    public bool AccomodationEnabled => AccommodationSettings.Enabled;
-
     /// <summary>Дерево групп персонажей проекта.</summary>
     public ProjectGroupTree GroupTree { get; }
 
