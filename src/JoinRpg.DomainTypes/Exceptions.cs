@@ -8,7 +8,7 @@ namespace JoinRpg.DomainTypes;
 /// </summary>
 /// <remarks>
 /// Заменяет исторически использовавшийся для этого EF6-шный
-/// <c>System.Data.Entity.Validation.DbEntityValidationException</c> (см. ADR015, задача P4).
+/// <c>System.Data.Entity.Validation.DbEntityValidationException</c> (см. ADR016, задача P4).
 /// Кидать это исключение стоит только там, где нарушение действительно сводится к «данные
 /// невалидны». Если для места есть более точное по смыслу исключение («сущность не найдена»,
 /// «нарушено конкретное бизнес-правило») — заводить и использовать его.

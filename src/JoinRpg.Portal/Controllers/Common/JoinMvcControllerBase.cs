@@ -28,7 +28,7 @@ public abstract class JoinMvcControllerBase : Controller
         {
             // Обработка исключения, которое EF6 бросает сам при SaveChanges, если нарушены
             // [Required]/[MaxLength]/[Range] на сущностях. Удаляется вместе с EF6 на шаге
-            // переключения ORM (ADR015): в EF Core валидации при сохранении нет вообще.
+            // переключения ORM (ADR016): в EF Core валидации при сохранении нет вообще.
             case DbEntityValidationException validation:
                 var dbValidationErrors = validation.EntityValidationErrors
                     .SelectMany(eve => eve.ValidationErrors).ToList();
