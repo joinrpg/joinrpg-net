@@ -4,7 +4,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Markdown;
-using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.ProjectMasterTools.Fields;
 using Microsoft.AspNetCore.Components;
 
@@ -87,15 +86,17 @@ public class FieldValueViewModel
 
     public FieldValueViewModel(
         CustomFieldsViewModel model,
-        FieldWithValue ch,
-        ILinkRenderer renderer)
+        FieldWithValue ch)
     {
         ArgumentNullException.ThrowIfNull(ch);
 
         Value = ch.Value;
 
+        // Директивы вида %персонаж123/%контакты123/%список45 в значениях полей НЕ разворачиваются:
+        // рендерер тут не передаётся, и markdown рендерится с DoNothingLinkRenderer. Это работает
+        // только во вводных — см. docs/plot/special.rst в joinrpg-docs.
         DisplayString = ch.Field.SupportsMarkdown
-            ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
+            ? new MarkdownString(ch.DisplayString).ToHtmlString()
             : new MarkupString(HtmlEncoder.Default.Encode(ch.DisplayString));
         FieldViewType = (ProjectFieldViewType)ch.Field.Type;
         FieldName = ch.Field.Name;
@@ -237,23 +238,18 @@ public class CustomFieldsViewModel
     /// Called from AddClaimViewModel
     /// </summary>
     public CustomFieldsViewModel(Character target, ProjectInfo projectInfo, AccessArguments accessArguments, Dictionary<int, string?>? overrideValues)
-        : this(accessArguments, AvailabilityTarget(target, projectInfo), target.GetFields(projectInfo), overrideValues, projectInfo, Renderer(target, projectInfo))
+        : this(accessArguments, AvailabilityTarget(target, projectInfo), target.GetFields(projectInfo), overrideValues, projectInfo)
     {
     }
 
     /// <summary>
     /// Поля персонажа поверх доменного агрегата (ADR013) — страница подачи заявки.
     /// </summary>
-    /// <param name="renderer">
-    /// Рендерер ссылок в markdown. Передаётся снаружи, потому что до сих пор живёт на EF-проекте:
-    /// ему нужны все персонажи и группы проекта.
-    /// </param>
     public CustomFieldsViewModel(
         CharacterInfo character,
         AccessArguments accessArguments,
-        ILinkRenderer renderer,
         Dictionary<int, string?>? overrideValues = null)
-        : this(accessArguments, character, character.GetAllFields(), overrideValues, character.ProjectInfo, renderer)
+        : this(accessArguments, character, character.GetAllFields(), overrideValues, character.ProjectInfo)
     {
     }
 
@@ -280,8 +276,7 @@ public class CustomFieldsViewModel
               AvailabilityTarget(character, projectInfo),
               character.GetFields(projectInfo).Where(f => f.Field.BoundTo == FieldBoundTo.Character).Where(f => !wherePrintEnabled || f.Field.IncludeInPrint),
               overrideValues,
-              projectInfo,
-              Renderer(character, projectInfo))
+              projectInfo)
     {
     }
 
@@ -294,16 +289,12 @@ public class CustomFieldsViewModel
             AvailabilityTarget(claim.Character, projectInfo),
             claim.GetFields(projectInfo),
             overrideValues: null,
-            projectInfo,
-            Renderer(claim.Character, projectInfo))
+            projectInfo)
     {
     }
 
     private static CharacterItem AvailabilityTarget(Character character, ProjectInfo projectInfo)
         => new(character, [.. character.GetParentGroupIdsToTop(projectInfo)]);
-
-    private static JoinrpgMarkdownLinkRenderer Renderer(Character character, ProjectInfo projectInfo)
-        => new(character.Project, projectInfo);
 
     /// <summary>
     /// Common constructor
@@ -313,8 +304,7 @@ public class CustomFieldsViewModel
         IFieldAvailabilityTarget target,
         IEnumerable<FieldWithValue> fields,
         Dictionary<int, string?>? overrideValues,
-        ProjectInfo projectInfo,
-        ILinkRenderer renderer
+        ProjectInfo projectInfo
         )
     {
         foreach (var key in Enum.GetValues<FieldBoundToViewModel>())
@@ -325,15 +315,15 @@ public class CustomFieldsViewModel
         AccessArguments = accessArguments;
         Target = target;
         ProjectInfo = projectInfo;
-        Fields = fields.Select(ch => CreateFieldValueView(ch, renderer, overrideValues)).ToList();
+        Fields = fields.Select(ch => CreateFieldValueView(ch, overrideValues)).ToList();
     }
 
     /// <summary>
     /// Creates field value view object
     /// </summary>
-    private FieldValueViewModel CreateFieldValueView(FieldWithValue fv, ILinkRenderer renderer, Dictionary<int, string?>? overrideValues)
+    private FieldValueViewModel CreateFieldValueView(FieldWithValue fv, Dictionary<int, string?>? overrideValues)
     {
-        var result = new FieldValueViewModel(this, TryOverrideValue(fv), renderer);
+        var result = new FieldValueViewModel(this, TryOverrideValue(fv));
         // Here is the point to calculate total fee
         if (result.HasPrice)
         {
