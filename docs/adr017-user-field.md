@@ -2,10 +2,35 @@
 
 ## Статус
 
-Принято, не реализовано. Issues: [#4509](https://github.com/joinrpg/joinrpg-net/issues/4509)
+Принято, реализуется. Issues: [#4509](https://github.com/joinrpg/joinrpg-net/issues/4509)
 (одиночная ссылка), [#4511](https://github.com/joinrpg/joinrpg-net/issues/4511) (мультивыбор).
 Предпосылка [#4510](https://github.com/joinrpg/joinrpg-net/issues/4510) (режим `Multiple`
 у `JoinUserLinkEditor`) уже закрыта.
+
+## Статус реализации
+
+- ✅ **§1 Члены перечислений** — `ProjectFieldType.UserLink` и `ProjectFieldViewType.UserLink`,
+  все `switch` в `ProjectFieldTypeHelper` закрыты, плюс `IsUserLink()` как единственное место,
+  которое знает состав user-типов. `MultiUserLink` появится вместе с #4511.
+- ✅ **§2 Хранение** — `FieldWithValue.UserIds`: читает терпимо (мусор в базе не роняет показ),
+  пишет строго — `FieldUserValueInvalidException` на нечисло, неположительный id и на второй
+  id у одиночного типа. `DisplayString` остался сырым, как и решено.
+- ✅ **§3 Только мастер** — в трёх местах: `ProjectField.Validate` (инвариант данных),
+  `GameFieldCreateViewModel.ValidateCore` (понятная ошибка в форме),
+  `FieldSetupServiceImpl` (`CanPlayerEdit` гасится принудительно, тест
+  `AddField_UserLink_IsNeverPlayerEditable`).
+- ⚠️ **§4 Отображение** — частично. Сделан `FieldUserLinksLoader`: один
+  `GetUserInfoHeaders` на экран, словарь идёт в `CustomFieldsViewModel` → `FieldValueViewModel.UserLinks`,
+  `DisplayTemplates/FieldValueViewModel.cshtml` рисует компонент `UserLink`. Покрыты страница
+  персонажа, заявка, подача заявки и печать. **Экспорт (`CustomExporter`) и x-api по-прежнему
+  отдают сырые id** — они ходят мимо `FieldValueViewModel`, напрямую в `DisplayString`.
+  Удалённый пользователь показывается как «пользователь удалён» (новый `ViewMode.Deleted`).
+- ❌ **§5 Редактор** — не сделано. Пока обычный `<input type="text">` с id; остров
+  `JoinUserLinkEditor` с резолвом ссылки — следующим PR.
+- ❌ **§7 Валидация существования пользователя** — не сделано: сейчас проверяется только формат.
+  Идёт вместе с редактором.
+- ✅ **§9 Тесты** — `UserLinkFieldTest` (домен), `CustomFieldsViewModelTest` (резолв, удалённый
+  пользователь, мусор), `FieldSetupServiceTest`. Тест инварианта приватности из §9 — вместе с §7.
 
 ## Контекст
 
