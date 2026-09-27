@@ -17,4 +17,7 @@
     <ProjectReference Include="..\JoinRpg.Mcp\JoinRpg.Mcp.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" />
+  </ItemGroup>
 </Project>
