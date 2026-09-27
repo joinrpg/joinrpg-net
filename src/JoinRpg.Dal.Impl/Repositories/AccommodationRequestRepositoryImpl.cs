@@ -5,14 +5,6 @@ namespace JoinRpg.Dal.Impl.Repositories;
 public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : IAccommodationRequestRepository
 {
     public async Task<IReadOnlyCollection<AccommodationRequest>>
-        GetAccommodationRequestForProject(int projectId)
-    {
-        return await ctx.Set<AccommodationRequest>()
-            .Where(request => request.ProjectId == projectId)
-            .ToListAsync().ConfigureAwait(false);
-    }
-
-    public async Task<IReadOnlyCollection<AccommodationRequest>>
         GetAccommodationRequestForClaim(int claimId)
     {
         return await ctx.Set<AccommodationRequest>().Where(request =>
