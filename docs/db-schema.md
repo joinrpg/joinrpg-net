@@ -671,7 +671,6 @@ erDiagram
         int ToClaimId FK "кого приглашают"
         enum IsAccepted "InviteState"
         enum ResolveDescription "почему принято или отклонено"
-        bool IsGroupInvite "legacy: колонка есть в базе с 2018 года, модель её не отображает"
     }
 
     ProjectAccommodationTypes ||--o{ ProjectAccommodations : "комнаты"
