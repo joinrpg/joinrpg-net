@@ -1,11 +1,9 @@
 using JoinRpg.Data.Interfaces.Plots;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.CharacterGroups;
-using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.Plots.Folders;
 
@@ -20,7 +18,7 @@ public class PlotFolderFullListViewModel
 
     public string ProjectName { get; }
 
-    public PlotFolderFullListViewModel(IReadOnlyCollection<PlotFolderDetailsDto> folders, Project projectForRendering, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false)
+    public PlotFolderFullListViewModel(IReadOnlyCollection<PlotFolderDetailsDto> folders, ILinkRenderer linkRenderer, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, bool inWorkOnly = false)
     {
         ProjectName = projectInfo.ProjectName;
         InWorkOnly = inWorkOnly;
@@ -31,8 +29,6 @@ public class PlotFolderFullListViewModel
         }
         else
         {
-            var linkRenderer = new JoinrpgMarkdownLinkRenderer(projectForRendering, projectInfo);
-
             //TODO правильная сортировка
             Folders =
               folders
@@ -58,7 +54,7 @@ public class PlotFolderListFullItemViewModel : PlotFolderViewModelBase, IPlotFol
 
     public IEnumerable<string> TagNames { get; }
 
-    public PlotFolderListFullItemViewModel(PlotFolderDetailsDto folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, JoinrpgMarkdownLinkRenderer linkRenderer)
+    public PlotFolderListFullItemViewModel(PlotFolderDetailsDto folder, ICurrentUserAccessor currentUser, ProjectInfo projectInfo, ILinkRenderer linkRenderer)
     {
         PlotFolderId = folder.Id;
         PlotFolderMasterTitle = folder.MasterTitle;

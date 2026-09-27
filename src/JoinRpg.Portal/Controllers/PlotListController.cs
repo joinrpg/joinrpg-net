@@ -4,6 +4,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Models.Plot;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,8 @@ public class PlotListController(
     IPlotRepository plotRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser,
-    ICharacterGroupRepository charGroupRepository
+    ICharacterGroupRepository charGroupRepository,
+    JoinrpgMarkdownLinkRendererFactory linkRendererFactory
     ) : JoinControllerGameBase
 {
     [RequireMasterOrPublish]
@@ -82,11 +84,11 @@ public class PlotListController(
     {
         var folders = await plotRepository.GetActivePlotFolders(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(projectId);
+        var linkRenderer = await linkRendererFactory.Load(projectId);
         return View(
             new PlotFolderFullListViewModel(
                 folders,
-                projectForRendering,
+                linkRenderer,
                 currentUser,
                 projectInfo));
     }
@@ -97,9 +99,9 @@ public class PlotListController(
     {
         var folders = await plotRepository.GetActivePlotFolders(projectId);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var projectForRendering = await projectRepository.GetProjectForMarkdownRendering(projectId);
+        var linkRenderer = await linkRendererFactory.Load(projectId);
         return View("FlatList",
-            new PlotFolderFullListViewModel(folders, projectForRendering, currentUser, projectInfo, true));
+            new PlotFolderFullListViewModel(folders, linkRenderer, currentUser, projectInfo, true));
     }
 
     private async Task<ActionResult> PlotList(ProjectIdentification projectId, Func<PlotFolder, bool> predicate)
