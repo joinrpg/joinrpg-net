@@ -17,7 +17,7 @@ public interface IAvatarService
     /// <summary>
     /// Recache avatar
     /// </summary>
-    Task RecacheAvatar(UserIdentification userId, AvatarIdentification avatarIdentification);
+    Task RecacheAvatar(UserIdentification userId, AvatarIdentification avatarIdentification, CancellationToken ct = default);
 
     /// <summary>
     /// Select avatar for user

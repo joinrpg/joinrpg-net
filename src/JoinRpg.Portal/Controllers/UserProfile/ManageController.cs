@@ -151,7 +151,7 @@ public class ManageController(
                 {
                     logger.LogInformation("Пользователь {userId} повторно привязал уже свой {loginProvider} / {loginProviderKey} — дозаполняем профиль",
                         userId, loginInfo.LoginProvider, loginInfo.ProviderKey);
-                    await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+                    await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo, HttpContext.RequestAborted);
                     return RedirectToAction("SetupProfile");
                 }
 
@@ -163,7 +163,7 @@ public class ManageController(
             return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
         }
 
-        await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+        await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo, HttpContext.RequestAborted);
         return RedirectToAction("SetupProfile");
     }
 
@@ -196,7 +196,7 @@ public class ManageController(
         await loginStore.AddCustomLoginAsync(user, telegramUserId, "telegram", CancellationToken.None);
         logger.LogInformation("Привязали телеграмм аккаунт {telegramUserId}", telegramUserId);
 
-        await externalLoginProfileExtractor.TryExtractTelegramProfile(user, dictionary);
+        await externalLoginProfileExtractor.TryExtractTelegramProfile(user, dictionary, HttpContext.RequestAborted);
         return RedirectToAction("SetupProfile");
     }
 

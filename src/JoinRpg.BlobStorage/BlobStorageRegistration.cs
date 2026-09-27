@@ -10,6 +10,9 @@ public static class BlobStorageRegistration
         _ = services.AddHealthChecks()
             .AddCheck<HealthCheckS3Storage>("S3 storage");
 
+        _ = services
+            .AddHttpClient(AvatarDownloader.HttpClientName, client => client.Timeout = AvatarDownloader.DownloadTimeout);
+
         return services
             .AddHttpClient()
             .AddTransient<AvatarDownloader>()

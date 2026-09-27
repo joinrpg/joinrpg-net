@@ -40,7 +40,8 @@ public class AvatarController(
     {
         await avatarService.RecacheAvatar(
             currentUserAccessor.UserIdentification,
-            new AvatarIdentification(userAvatarId)
+            new AvatarIdentification(userAvatarId),
+            HttpContext.RequestAborted
             );
         await RefreshUserProfile();
         return RedirectToAction("SetupProfile", "Manage");

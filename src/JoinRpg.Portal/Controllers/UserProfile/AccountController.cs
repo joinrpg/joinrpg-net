@@ -405,7 +405,7 @@ public class AccountController(
                 result = await signInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
                 if (result.Succeeded)
                 {
-                    await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+                    await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo, HttpContext.RequestAborted);
                 }
                 else
                 {
@@ -421,7 +421,7 @@ public class AccountController(
             var loggedInUser = await userManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
             if (loggedInUser is not null)
             {
-                await externalLoginProfileExtractor.TryExtractProfile(loggedInUser, loginInfo);
+                await externalLoginProfileExtractor.TryExtractProfile(loggedInUser, loginInfo, HttpContext.RequestAborted);
             }
             return RedirectToLocal(returnUrl);
         }
@@ -495,7 +495,7 @@ public class AccountController(
 
                     await signInManager.SignInAsync(user, isPersistent: true);
 
-                    await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+                    await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo, HttpContext.RequestAborted);
                     await avatarService.EnsureAvatarPresent(user.Id);
                     return RedirectToLocal(model.ReturnUrl);
                 }

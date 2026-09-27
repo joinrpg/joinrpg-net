@@ -126,7 +126,7 @@ public class UserServiceImpl(
     }
 
     /// <inheritdoc />
-    async Task IUserService.SetVkIfNotSetWithoutAccessChecks(int userId, VkSocialLink vk, AvatarInfo? avatarInfo)
+    async Task IUserService.SetVkIfNotSetWithoutAccessChecks(int userId, VkSocialLink vk, AvatarInfo? avatarInfo, CancellationToken ct)
     {
         logger.LogInformation("About to link user: {userId} to {vk}", userId, vk);
         var user = await UserRepository.WithProfile(userId);
@@ -136,7 +136,7 @@ public class UserServiceImpl(
         user.Extra.Vk = $"id{vk.Id}";
         user.Extra.VkVerified = true;
 
-        await TryAddSocialAvatarImplAsync(avatarInfo, user, "Vkontakte");
+        await TryAddSocialAvatarImplAsync(avatarInfo, user, "Vkontakte", ct);
 
         await UnitOfWork.SaveChangesAsync();
     }
@@ -160,7 +160,7 @@ public class UserServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IUserService.SetTelegramIfNotSetWithoutAccessChecks(int userId, TelegramSocialLink telegram, AvatarInfo? avatarInfo)
+    async Task IUserService.SetTelegramIfNotSetWithoutAccessChecks(int userId, TelegramSocialLink telegram, AvatarInfo? avatarInfo, CancellationToken ct)
     {
         logger.LogInformation("About to link user: {userId} to {telegram}", userId, telegram);
         var user = await UserRepository.WithProfile(userId);
@@ -168,12 +168,12 @@ public class UserServiceImpl(
         user.Extra ??= new UserExtra();
         user.Extra.Telegram = string.IsNullOrWhiteSpace(telegram.PrettyName?.Value) ? user.Extra.Telegram : telegram.PrettyName;
 
-        await TryAddSocialAvatarImplAsync(avatarInfo, user, "telegram");
+        await TryAddSocialAvatarImplAsync(avatarInfo, user, "telegram", ct);
 
         await UnitOfWork.SaveChangesAsync();
     }
 
-    private async Task TryAddSocialAvatarImplAsync(AvatarInfo? avatarInfo, User user, string providerId)
+    private async Task TryAddSocialAvatarImplAsync(AvatarInfo? avatarInfo, User user, string providerId, CancellationToken ct)
     {
         if (avatarInfo is null)
         {
@@ -196,7 +196,7 @@ public class UserServiceImpl(
         UserAvatar userAvatar;
         try
         {
-            userAvatar = await UploadNewAvatar(avatarInfo.Uri, user, providerId);
+            userAvatar = await UploadNewAvatar(avatarInfo.Uri, user, providerId, ct);
         }
         catch (Exception ex)
         {
@@ -209,9 +209,9 @@ public class UserServiceImpl(
         user.Avatars.Add(userAvatar);
     }
 
-    private async Task<UserAvatar> UploadNewAvatar(Uri avatarUri, User user, string providerId)
+    private async Task<UserAvatar> UploadNewAvatar(Uri avatarUri, User user, string providerId, CancellationToken ct)
     {
-        var cachedUri = await avatarStorageService.StoreAvatar(avatarUri);
+        var cachedUri = await avatarStorageService.StoreAvatar(avatarUri, ct);
 
         var userAvatar = new UserAvatar()
         {
@@ -341,7 +341,7 @@ public class UserServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    async Task IAvatarService.RecacheAvatar(UserIdentification userId, AvatarIdentification avatarIdentification)
+    async Task IAvatarService.RecacheAvatar(UserIdentification userId, AvatarIdentification avatarIdentification, CancellationToken ct)
     {
         logger.LogInformation("Starting recache of {avatarId} for user({userId})", avatarIdentification, userId);
 
@@ -357,7 +357,7 @@ public class UserServiceImpl(
             throw new JoinRpgEntityNotFoundException(avatarIdentification, "userAvatar");
         }
 
-        var cachedUri = await avatarStorageService.StoreAvatar(new Uri(avatar.OriginalUri));
+        var cachedUri = await avatarStorageService.StoreAvatar(new Uri(avatar.OriginalUri), ct);
 
         avatar.CachedUri = cachedUri?.AbsoluteUri;
 
