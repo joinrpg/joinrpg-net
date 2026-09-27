@@ -53,7 +53,7 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     {
         await CreateService().SetAccommodationSettings(ProjectId, enableAccommodation: true);
 
-        Result.AccomodationEnabled.ShouldBeTrue();
+        Result.AccommodationSettings.Enabled.ShouldBeTrue();
     }
 
     [Fact]

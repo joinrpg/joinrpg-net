@@ -33,7 +33,7 @@ public class AccommodationTypeController(
             return NotFound($"Project {projectId} not found");
         }
 
-        if (!project.AccomodationEnabled)
+        if (!project.AccommodationSettings.Enabled)
         {
             return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
         }
@@ -181,7 +181,7 @@ public class AccommodationTypeController(
             return NotFound($"Project {projectId} not found");
         }
 
-        if (!project.AccomodationEnabled)
+        if (!project.AccommodationSettings.Enabled)
         {
             return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
         }
@@ -201,7 +201,7 @@ public class AccommodationTypeController(
             return NotFound($"Project {projectId} not found");
         }
 
-        if (!project.AccomodationEnabled)
+        if (!project.AccommodationSettings.Enabled)
         {
             return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
         }

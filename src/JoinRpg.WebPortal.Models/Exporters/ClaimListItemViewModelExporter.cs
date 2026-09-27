@@ -24,7 +24,7 @@ public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo 
         {
             yield return BoolColumn(x => x.PreferentialFeeUser);
         }
-        if (projectInfo.AccomodationEnabled)
+        if (projectInfo.AccommodationSettings.Enabled)
         {
             yield return StringColumn(x => x.AccomodationType);
             yield return StringColumn(x => x.RoomName);

@@ -9,7 +9,7 @@ public class MenuViewModelBase(ProjectInfo projectInfo, ICurrentUserAccessor cur
 {
     public int ProjectId { get; } = projectInfo.ProjectId.Value;
     public string ProjectName { get; } = projectInfo.ProjectName;
-    public bool EnableAccommodation { get; } = projectInfo.AccomodationEnabled;
+    public bool EnableAccommodation { get; } = projectInfo.AccommodationSettings.Enabled;
     public bool IsAdmin { get; } = currentUserAccessor.IsAdmin;
     public bool ShowSchedule { get; } = projectInfo.ProjectScheduleSettings.ScheduleEnabled;
     public ProjectLifecycleStatus ProjectStatus { get; } = projectInfo.ProjectStatus;

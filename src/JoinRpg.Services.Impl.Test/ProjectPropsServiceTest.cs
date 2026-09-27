@@ -46,7 +46,7 @@ public class ProjectPropsServiceTest
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
         // Пересобранный ProjectInfo согласован с Project и положен в кэш
         metadataRepository.LastPrimed.ShouldNotBeNull();
-        metadataRepository.LastPrimed!.AccomodationEnabled.ShouldBeTrue();
+        metadataRepository.LastPrimed!.AccommodationSettings.Enabled.ShouldBeTrue();
     }
 
     [Fact]
