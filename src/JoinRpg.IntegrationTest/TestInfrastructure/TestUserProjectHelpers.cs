@@ -4,7 +4,7 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.Services.Interfaces.Projects;
 
-namespace JoinRpg.IntegrationTests.TestInfrastructure;
+namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
 public static class TestUserProjectHelpers
 {

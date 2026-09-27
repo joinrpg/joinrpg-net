@@ -5,7 +5,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.IntegrationTest.Scenarios;

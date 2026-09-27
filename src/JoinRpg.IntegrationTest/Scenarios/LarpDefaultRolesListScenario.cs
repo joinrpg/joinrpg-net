@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 

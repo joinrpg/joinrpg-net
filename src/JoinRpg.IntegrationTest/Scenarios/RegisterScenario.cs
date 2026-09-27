@@ -1,7 +1,6 @@
 using System.Net;
 using HtmlAgilityPack;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 

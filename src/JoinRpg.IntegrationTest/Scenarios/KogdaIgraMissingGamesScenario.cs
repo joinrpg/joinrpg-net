@@ -6,7 +6,6 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Projects;
 using JoinRpg.DomainTypes;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.IntegrationTests.TestInfrastructure;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.ProjectCommon.Projects;
 

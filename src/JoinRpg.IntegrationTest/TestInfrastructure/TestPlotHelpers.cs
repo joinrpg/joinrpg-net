@@ -6,7 +6,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 
-namespace JoinRpg.IntegrationTests.TestInfrastructure;
+namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
 /// <summary>
 /// Помощники для наполнения проекта сюжетами (папка сюжета + вводные с таргетами).
