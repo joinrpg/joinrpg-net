@@ -143,7 +143,83 @@ public static class TestPlotHelpers
 
         return content;
     }
+
+    /// <summary>
+    /// Создаёт в папке вводную с несколькими версиями текста: у каждой версии свой уникальный текст,
+    /// мастерское TODO заполнено только у последней.
+    /// </summary>
+    /// <remarks>
+    /// TODO только у последней версии — не прихоть сида, а проверяемое поведение: страница
+    /// редактирования показывает текст запрошенной версии, но TODO всегда от последней
+    /// (<c>PlotElementDetailsDto.LastVersionTodoField</c>).
+    /// </remarks>
+    /// <param name="serviceProvider">Scoped service provider с включённой impersonation мастера.</param>
+    /// <param name="plotFolderId">Папка, в которой создаётся вводная.</param>
+    /// <param name="targetCharacterId">Персонаж в таргетах вводной.</param>
+    /// <param name="versionCount">Сколько версий создать; версии нумеруются с нуля.</param>
+    /// <param name="publishVersion">Номер версии для публикации; <c>null</c> — не публиковать вовсе.</param>
+    public static async Task<PlotVersionsSeedResult> SeedElementWithVersionsAsync(
+        IServiceProvider serviceProvider,
+        PlotFolderIdentification plotFolderId,
+        CharacterIdentification targetCharacterId,
+        int versionCount,
+        int? publishVersion = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(versionCount, 1);
+        if (publishVersion is int p)
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(p, versionCount);
+        }
+
+        var plotService = serviceProvider.GetRequiredService<IPlotService>();
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var contents = new List<string>(versionCount);
+
+        string ContentOf(int version) => $"Версия {version} вводной {suffix}";
+        var lastTodo = $"Доделать к версии {versionCount - 1} {suffix}";
+
+        contents.Add(ContentOf(0));
+        var firstVersionId = await plotService.CreatePlotElement(
+            plotFolderId,
+            content: ContentOf(0),
+            todoField: versionCount == 1 ? lastTodo : "",
+            targetGroups: [],
+            targetChars: [targetCharacterId],
+            elementType: PlotElementType.RegularPlot,
+            isMasterOnly: false);
+        var elementId = firstVersionId.PlotElementId;
+
+        for (var version = 1; version < versionCount; version++)
+        {
+            contents.Add(ContentOf(version));
+            await plotService.EditPlotElementText(
+                elementId,
+                ContentOf(version),
+                todoField: version == versionCount - 1 ? lastTodo : "");
+        }
+
+        if (publishVersion is int versionToPublish)
+        {
+            await plotService.PublishElementVersion(
+                new PlotVersionIdentification(elementId, versionToPublish),
+                sendNotification: false,
+                commentText: null);
+        }
+
+        return new PlotVersionsSeedResult(elementId, contents, lastTodo);
+    }
 }
+
+/// <summary>
+/// Вводная с несколькими версиями текста.
+/// </summary>
+/// <param name="ElementId">Созданная вводная.</param>
+/// <param name="VersionContents">Текст каждой версии; индекс в списке равен номеру версии.</param>
+/// <param name="LastVersionTodoField">Мастерское TODO последней версии.</param>
+public record PlotVersionsSeedResult(
+    PlotElementIdentification ElementId,
+    IReadOnlyList<string> VersionContents,
+    string LastVersionTodoField);
 
 /// <summary>
 /// Результат наполнения проекта тестовым сюжетом.
