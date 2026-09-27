@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace JoinRpg.Web.Plots;
+namespace JoinRpg.Web.Plots.Elements;
 
 public class PublishPlotElementViewModel
 {

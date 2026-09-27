@@ -1,4 +1,5 @@
 using JoinRpg.Domain;
+using JoinRpg.Web.Plots.Folders;
 
 namespace JoinRpg.Web.Models.Plot;
 

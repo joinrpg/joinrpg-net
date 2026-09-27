@@ -1,8 +1,8 @@
 @using JoinRpg.Web.Models.Plot
-@using JoinRpg.Web.Plots
+@using JoinRpg.Web.Plots.Folders
 @model PlotFolderListViewModel
 
 @{
     ViewBag.Title = Model.Title;
 }
-<component type="typeof(JoinRpg.Web.Plots.PlotFolderListPanel)" render-mode="Static" param-Model="@Model" />
+<component type="typeof(JoinRpg.Web.Plots.Folders.PlotFolderListPanel)" render-mode="Static" param-Model="@Model" />

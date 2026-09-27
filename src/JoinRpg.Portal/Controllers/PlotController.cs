@@ -11,7 +11,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Models.Plot;
-using JoinRpg.Web.Plots;
+using JoinRpg.Web.Plots.Elements;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;

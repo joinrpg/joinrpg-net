@@ -1,50 +1,15 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Plots;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Plot;
-
-public abstract class PlotFolderViewModelBase
-{
-    [Required]
-    public int ProjectId { get; set; }
-
-    [ReadOnly(true), Display(Name = "Название сюжета")]
-    public string PlotFolderMasterTitle { get; set; }
-
-    [Display(Name = "TODO"), DataType(DataType.MultilineText), Description("Что сделать по сюжету")]
-    public string TodoField
-    { get; set; }
-
-    [ReadOnly(true), Display(Name = "Статус")]
-    public PlotStatus Status { get; set; }
-}
 
 public static class PlotStatusExts
 {
     public static PlotStatus GetStatus(this PlotFolder folder) => folder.IsActive ? (folder.InWork ? PlotStatus.InWork : PlotStatus.Completed) : PlotStatus.Deleted;
 
     public static PlotStatus GetStatus(this PlotFolderDetailsDto folder) => folder.IsActive ? (folder.InWork ? PlotStatus.InWork : PlotStatus.Completed) : PlotStatus.Deleted;
-
-    public static PlotStatus GetStatus(this PlotElement e)
-    {
-        if (!e.IsActive)
-        {
-            return PlotStatus.Deleted;
-        }
-
-        if (e.Published == null)
-        {
-            return PlotStatus.InWork;
-        }
-        if (e.LastVersion().Version == e.Published)
-        {
-            return PlotStatus.Completed;
-        }
-        return PlotStatus.HasNewVersion;
-    }
 
     public static PlotStatus GetStatus(this PlotElementDetailsDto e)
     {

@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.Plots;
+namespace JoinRpg.Web.Plots.Elements;
 
 public record PlotElementControlsViewModel(
     PlotVersionIdentification? PublishedVersion,

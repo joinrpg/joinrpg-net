@@ -1,4 +1,4 @@
-@model JoinRpg.Web.Plots.PlotElementCreateViewModel
+@model JoinRpg.Web.Plots.Elements.PlotElementCreateViewModel
 
 @{
     ViewBag.Title = "Добавить вводную";
@@ -13,7 +13,7 @@
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-        <component type="typeof(JoinRpg.Web.Plots.PlotElementEditPanel)"
+        <component type="typeof(JoinRpg.Web.Plots.Elements.PlotElementEditPanel)"
                    param-Model="@Model"
                    render-mode="WebAssemblyPrerendered" />
 

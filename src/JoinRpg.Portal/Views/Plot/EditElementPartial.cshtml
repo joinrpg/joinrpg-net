@@ -1,5 +1,6 @@
 @using JoinRpg.Web.Models.Plot
 @using JoinRpg.Web.Plots
+@using JoinRpg.Web.Plots.Elements
 @using JoinRpg.Common.WebComponents.ElementMoving
 @model PlotElementListItemViewModel
 
@@ -139,7 +140,7 @@
                             Model.PlotElementIdentification, 
                             Model.CurrentVersion2,
                             CouldBePublished: !string.IsNullOrWhiteSpace(Model.TodoField) && Model.Target.Any());
-                        <component type="typeof(JoinRpg.Web.Plots.PlotElementControls)" 
+                        <component type="typeof(JoinRpg.Web.Plots.Elements.PlotElementControls)" 
                             param-Model="@controlsModel"
                             render-mode="WebAssembly"  />
 

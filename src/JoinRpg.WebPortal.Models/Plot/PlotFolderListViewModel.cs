@@ -7,6 +7,7 @@ using JoinRpg.Markdown;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.Plots;
+using JoinRpg.Web.Plots.Folders;
 
 namespace JoinRpg.Web.Models.Plot;
 

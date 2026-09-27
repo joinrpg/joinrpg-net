@@ -2,6 +2,8 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Plots;
+using JoinRpg.Web.Plots.Elements;
+using JoinRpg.Web.Plots.Folders;
 
 namespace JoinRpg.WebPortal.Managers.Plots;
 

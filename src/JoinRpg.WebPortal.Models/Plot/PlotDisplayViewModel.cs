@@ -4,7 +4,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models.Helpers;
-using JoinRpg.Web.Plots;
+using JoinRpg.Web.Plots.Elements;
 
 namespace JoinRpg.Web.Models.Plot;
 

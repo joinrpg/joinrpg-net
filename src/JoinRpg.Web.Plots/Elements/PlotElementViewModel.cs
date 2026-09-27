@@ -1,6 +1,6 @@
 using static JoinRpg.Web.Plots.PlotStatus;
 
-namespace JoinRpg.Web.Plots;
+namespace JoinRpg.Web.Plots.Elements;
 
 // Content хранится как string, а не MarkupString: MarkupString не переживает
 // JSON-сериализацию параметров компонента на границе WebAssemblyPrerendered
