@@ -94,11 +94,16 @@ public static class TestUserProjectHelpers
     /// <param name="client">HTTP-клиент (без аутентификации).</param>
     /// <param name="email">Email пользователя.</param>
     /// <param name="password">Пароль пользователя.</param>
+    /// <param name="followsRedirects">
+    /// Ходит ли клиент по редиректам. Успешный вход отвечает 302 на главную, поэтому клиент,
+    /// который редиректы не проходит (такой у смоука по всем страницам, #4956), видит именно 302.
+    /// </param>
     /// <returns>Тот же HTTP-клиент с установленными аутентификационными cookie.</returns>
     public static async Task<HttpClient> CreateAuthenticatedClientAsync(
         HttpClient client,
         string email,
-        string password = "Password123!")
+        string password = "Password123!",
+        bool followsRedirects = true)
     {
         // Получить страницу входа для antiforgery токена
         var loginGetResponse = await client.GetAsync("account/login");
@@ -121,7 +126,14 @@ public static class TestUserProjectHelpers
                 }));
 
         // Вход должен быть успешным
-        loginPostResponse.IsSuccessStatusCode.ShouldBeTrue();
+        if (followsRedirects)
+        {
+            loginPostResponse.IsSuccessStatusCode.ShouldBeTrue();
+        }
+        else
+        {
+            loginPostResponse.StatusCode.ShouldBe(HttpStatusCode.Found);
+        }
 
         return client;
     }
