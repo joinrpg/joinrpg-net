@@ -7,86 +7,72 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx), IPlotRepository
 {
-    private static PlotFolderDetailsDto ToDetails(PlotFolder folder)
-    {
-        var orderedElements = folder.Elements.OrderByStoredOrder(folder.ElementsOrdering);
-
-        return new PlotFolderDetailsDto(
-            folder.GetId(),
-            folder.MasterTitle,
-            folder.TodoField,
-            folder.MasterSummary,
-            folder.IsActive,
-            [.. folder.PlotTags.Select(tag => tag.TagName).Order()],
-            [.. orderedElements.Select(e => e.GetDetails())]);
-    }
 
     public async Task<PlotElementDetailsDto?> GetPlotElementDetails(PlotElementIdentification elementId, int? version = null)
     {
-        var element = await Ctx.Set<PlotElement>()
-          .Include(e => e.Texts.Select(t => t.AuthorUser))
-          .Include(e => e.TargetCharacters)
-          .Include(e => e.TargetGroups)
-          .Include(e => e.PlotFolder)
-          .SingleOrDefaultAsync(e => e.PlotElementId == elementId.PlotElementId && e.ProjectId == elementId.ProjectId.Value);
+        var row = await Ctx.Set<PlotElement>()
+          .Where(e => e.PlotElementId == elementId.PlotElementId && e.ProjectId == elementId.ProjectId.Value)
+          .ToRows(version)
+          .SingleOrDefaultAsync();
 
-        return element?.GetDetails(version);
+        if (row is null)
+        {
+            return null;
+        }
+
+        if (!row.CurrentVersionExists)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(version),
+                version,
+                $"У вводной {elementId} нет версии {row.CurrentVersionNumber}");
+        }
+
+        return row.ToDto();
     }
 
     public async Task<PlotFolderDetailsDto?> GetPlotFolderDetails(PlotFolderIdentification plotFolderId)
     {
-        var folder = await GetPlotFolderAsync(plotFolderId);
+        var folder = await FolderRows(
+            pf => pf.PlotFolderId == plotFolderId.PlotFolderId && pf.ProjectId == plotFolderId.ProjectId.Value)
+          .SingleOrDefaultAsync();
+
         if (folder is null)
         {
             return null;
         }
 
-        return ToDetails(folder);
-    }
-
-    private async Task<PlotFolder?> GetPlotFolderAsync(PlotFolderIdentification plotFolderId)
-    {
-        var folder =
-          await Ctx.Set<PlotFolder>()
-            .Include(pf => pf.Elements)
-            .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
-            .Include(pf => pf.PlotTags)
-            .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId.PlotFolderId && pf.ProjectId == plotFolderId.ProjectId);
-
-        if (folder is not null)
-        {
-            await LoadPlotElementTargets(plotFolderId);
-        }
-
-        return folder;
+        return folder.ToDto();
     }
 
     /// <summary>
-    /// Подгружает таргеты вводных папки — по одному запросу на связь, вместо ленивой загрузки на каждую вводную.
+    /// Отбирает папки сюжета вместе со вводными и отображаемой версией текста каждой вводной.
     /// </summary>
     /// <remarks>
-    /// Не <c>Include</c> в основном запросе: EF6 разворачивает несколько коллекций-сиблингов в LEFT JOIN'ы,
-    /// и <c>Elements × Texts × TargetCharacters × TargetGroups</c> дало бы декартово произведение — на папке
-    /// с тысячей вводных и историей версий это хуже, чем N+1, который мы чиним. Отдельные запросы связываются
-    /// с уже загруженными вводными через relationship fixup EF6, как это делают <see cref="LoadMasters"/>
-    /// и соседние методы <c>GameRepositoryImplBase</c>.
+    /// Проекция, а не загрузка EF-сущностей: страницам нужна только последняя версия текста плюс
+    /// даты соседних, а история правок у крупных папок — основной объём данных. Через сущности так
+    /// не выходит: <c>Include</c> в EF6 фильтровать нельзя.
     ///
-    /// Сами персонажи и группы в контекст при этом не тянутся: таргету вводной нужны только имя и id,
-    /// а полный граф проекта грузится отдельно и лишь там, где рендерится markdown
-    /// (<c>IProjectRepository.GetProjectForMarkdownRendering</c>).
+    /// Вводные приходят вложенной проекцией через LinqKit: вызвать там обычный extension-метод
+    /// нельзя — EF6 его не транслирует, страницы падали с 500, — а подстановка выражения
+    /// <c>Invoke</c> на <c>AsExpandable</c>-запросе работает.
     /// </remarks>
-    private async Task LoadPlotElementTargets(PlotFolderIdentification plotFolderId)
-    {
-        await Ctx.Set<PlotElement>()
-          .Include(e => e.TargetCharacters)
-          .Where(e => e.PlotFolderId == plotFolderId.PlotFolderId && e.ProjectId == plotFolderId.ProjectId)
-          .LoadAsync();
-
-        await Ctx.Set<PlotElement>()
-          .Include(e => e.TargetGroups)
-          .Where(e => e.PlotFolderId == plotFolderId.PlotFolderId && e.ProjectId == plotFolderId.ProjectId)
-          .LoadAsync();
-    }
+    private IQueryable<PlotFolderRow> FolderRows(Expression<Func<PlotFolder, bool>> filter)
+        => Ctx.Set<PlotFolder>()
+          .AsExpandable()
+          .Where(filter)
+          .Select(pf => new PlotFolderRow
+          {
+              ProjectId = pf.ProjectId,
+              PlotFolderId = pf.PlotFolderId,
+              MasterTitle = pf.MasterTitle,
+              TodoField = pf.TodoField,
+              MasterSummary = pf.MasterSummary.Contents,
+              IsActive = pf.IsActive,
+              ElementsOrdering = pf.ElementsOrdering,
+              Tags = pf.PlotTags.Select(tag => tag.TagName),
+              Elements = pf.Elements.AsQueryable().Select(e => PlotElementRowQuery.RowSelector(null).Invoke(e)),
+          });
 
     public async Task<IReadOnlyCollection<PlotElement>> GetDirectPlotsForCharacter(CharacterIdentification character)
     {
@@ -101,16 +87,9 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
 
     public async Task<IReadOnlyList<PlotFolderDetailsDto>> GetActivePlotFolders(ProjectIdentification projectId)
     {
-        var folders = await Ctx.Set<PlotFolder>()
-          .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
-          .Include(pf => pf.Elements.Select(e => e.TargetGroups))
-          .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
-          .Include(pf => pf.PlotTags)
-          .Where(pf => pf.IsActive)
-          .Where(pf => pf.ProjectId == projectId.Value)
-          .ToListAsync();
+        var folders = await FolderRows(pf => pf.IsActive && pf.ProjectId == projectId.Value).ToListAsync();
 
-        return [.. folders.Select(ToDetails)];
+        return [.. folders.Select(row => row.ToDto())];
     }
 
     public async Task<IReadOnlyList<PlotFolder>> GetPlots(ProjectIdentification projectId)
