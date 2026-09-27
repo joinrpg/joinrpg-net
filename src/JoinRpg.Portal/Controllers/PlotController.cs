@@ -118,7 +118,7 @@ public class PlotController(
             PlotFolderId = selectedPlotFolderId,
             ElementType = PlotElementTypeView.RegularPlot,
             HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
-            Content = originalElement?.CurrentVersion.Content.Contents ?? PlotElementCreateViewModel.GetDefaultContent(),
+            Content = originalElement?.CurrentVersion.Content?.Value ?? PlotElementCreateViewModel.GetDefaultContent(),
             TodoField = originalElement?.LastVersionTodoField ?? "",
             TargetCharacters = [.. originalElement?.Target.CharacterTargets.Select(c => c.CharacterId) ?? []],
             TargetGroups = [.. originalElement?.Target.GroupTargets.Select(g => g.CharacterGroupId) ?? []],
@@ -225,7 +225,7 @@ public class PlotController(
             HasManageAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
             HasPublishedVersion = element.PublishedVersion != null,
             Target = element.Target,
-            Content = element.CurrentVersion.Content.Contents ?? "",
+            Content = element.CurrentVersion.Content?.Value ?? "",
             // TODO показывается от последней версии, даже когда открыта старая — так было и раньше.
             TodoField = element.LastVersionTodoField,
             TargetCharacters = [.. element.Target.CharacterTargets.Select(c => c.CharacterId)],
