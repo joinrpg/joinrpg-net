@@ -114,17 +114,26 @@ public IReadOnlyList<UserIdentification> UserIds =>
 
 ### 4. Отображение: резолв пачкой, общий форматтер
 
-Интерфейс в `JoinRpg.Services.Interfaces`, реализация в `JoinRpg.Services.Impl` поверх
-`IUserRepository.GetUserInfoHeaders` — оба проекта доступны и менеджерам, и `JoinRpg.Services.Email`:
+Отдельной абстракции для этого не заводим: резолвить нечего, это буквально
+`IUserRepository.GetUserInfoHeaders(ids)`. Вся собственная логика — собрать идентификаторы по
+полям экрана, а это чистая функция над `FieldWithValue.UserIds`, которой не нужен ни DI, ни мок
+в тестах. Поэтому — extension-методы над репозиторием:
 
 ```csharp
-public interface IUserFieldResolver
-{
-    /// Резолвит пачкой все user-поля набора. Несуществующие id в словарь не попадают.
-    Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> Resolve(
-        IReadOnlyCollection<FieldWithValue> fields);
-}
+// JoinRpg.WebPortal.Models/FieldUserLinksLoader.cs
+public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> LoadFieldUserLinks(
+    this IUserRepository userRepository,
+    IEnumerable<FieldWithValue> fields,
+    Dictionary<int, string?>? overrideValues = null);
 ```
+
+Несуществующие id в словарь не попадают — показ разбирается с этим сам (см. ниже).
+
+> Первая редакция ADR предлагала здесь интерфейс `IUserFieldResolver` в
+> `JoinRpg.Services.Interfaces` — чтобы им могли пользоваться и менеджеры, и
+> `JoinRpg.Services.Email`. Письма каналом не оказались (рендер значений полей там
+> закомментирован), а остальным потребителям хватило extension-метода: интерфейс пришлось бы
+> регистрировать и подменять в тестах ради одного вызова.
 
 Правило: **резолв всегда пачкой на весь экран/выгрузку**, не по одному значению. Поле с десятью
 ссылками в списке заявок иначе даёт N+1; интеграционные тесты ленивых загрузок
