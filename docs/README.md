@@ -36,6 +36,7 @@
 - [ADR014: CharacterPropsService — единая точка изменения персонажей и заявок](adr014-claim-props-service.md)
 - [ADR015: типы проживания — настройка проекта внутри ProjectInfo](adr015-accommodation-types-in-project-info.md)
 - [ADR016: Переход основной БД с EF6 на EF Core](adr016-efcore-migration.md)
+- [ADR017: Тип поля «ссылка на пользователя»](adr017-user-field.md)
 
 ## Быстрые ссылки
 
