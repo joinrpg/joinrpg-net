@@ -126,6 +126,16 @@ internal static class ProjectOperationContextExtensions
             ?? throw new JoinRpgEntityNotFoundException(id.PaymentTypeId, nameof(PaymentType));
 
     /// <summary>
+    /// Резолвит тип проживания для изменения. Аудит-полей <see cref="ProjectAccommodationType"/>
+    /// не несёт, поэтому (как и <see cref="GetPaymentTypeForChange"/>) не помечает сущность
+    /// изменённой.
+    /// </summary>
+    public static ProjectAccommodationType GetAccommodationTypeForChange(
+        this ProjectMutationContext ctx, AccommodationTypeIdentification id)
+        => ctx.Project.ProjectAccommodationTypes.SingleOrDefault(t => t.Id == id.AccommodationTypeId)
+            ?? throw new JoinRpgEntityNotFoundException(id.AccommodationTypeId, nameof(ProjectAccommodationType));
+
+    /// <summary>
     /// Проверяет право <see cref="Permission.CanManageMoney"/> внутри мутации. Нужно операциям, у
     /// которых требуемое право зависит от данных и не может быть указано в
     /// <c>ChangeProjectProperties</c> заранее. Админ проходит проверку, как и в самом сервисе.

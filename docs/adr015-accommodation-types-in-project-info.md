@@ -176,9 +176,19 @@ Task DeleteAccommodationType(AccommodationTypeIdentification id);
 1. **PR 1** — ✅ сделано. `AccommodationTypeInfo`, `ProjectAccommodationSettings`, навигация,
    `Include`, маппинг, поле в `ProjectInfo`, `[Obsolete]`-прокси `AccomodationEnabled`, юнит-тесты
    на маппинг поверх `MockedProject`. Потребители не трогались.
-2. **PR 2** — операции создания/изменения/удаления типа на `IProjectPropsService`, перевод
-   `AccommodationTypeController` и `CreateProjectService.Setup`, удаление `SaveRoomTypeAsync`/
-   `RemoveRoomType` из `IAccommodationService`.
+2. **PR 2** — ✅ сделано. `IAccommodationTypeService` поверх `IProjectPropsService` (создание,
+   изменение, удаление), перевод `AccommodationTypeController` и `CreateProjectService.Setup`,
+   удаление `SaveRoomTypeAsync`/`RemoveRoomType` из `IAccommodationService`.
+
+   Два уточнения по факту реализации:
+
+   - Занятость комнат в граф метаданных не входит, а ленивые догрузки в операциях props-сервиса
+     запрещены (#4987), поэтому проверка «тип занят» делается отдельным запросом
+     `IAccommodationRepository.GetOccupiedRoomOfType` **до** входа в мутацию, а сам
+     `RoomIsOccupiedException` кидается внутри неё — то есть после проверки прав и активности.
+   - `GetRoomTypeAsync` в `IAccommodationService` остаётся: у него есть вызывающий
+     `EditRoomTypeRooms` (страница комнат), которому нужны `ProjectAccommodations`/`Desirous` —
+     оперативные данные, которых в метаданных нет и не будет.
 3. **PR 3** — перевод читающих потребителей (`AccommodationTypeViewService`, `ClaimListController`,
    клонирование), удаление `GetAccommodationForProject`/`GetRoomTypeById`.
 4. **PR 4** — вычистить `[Obsolete] AccomodationEnabled`.

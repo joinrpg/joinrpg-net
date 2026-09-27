@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
 
@@ -42,17 +42,14 @@ internal partial class CreateProjectService
         await projectService.SetClaimSettings(projectId,
             new ProjectClaimSettings(defaultChar, StrictlyOneCharacter: true, AutoAcceptClaims: true, IsAcceptingClaims: false, IsPublicProject: true));
 
-        await accommodationService.SaveRoomTypeAsync(new ProjectAccommodationType()
-        {
-            Capacity = 1,
-            Cost = 0,
-            Description = new MarkdownDbValue("Измените свойства поселения в настройках"),
-            IsInfinite = false,
-            IsPlayerSelectable = true,
-            Name = "Вид поселения для примера",
-            ProjectId = projectId,
-            IsAutoFilledAccommodation = false,
-        });
+        _ = await accommodationTypeService.CreateAccommodationType(
+            projectId,
+            new AccommodationTypeCreateRequest(
+                Name: "Вид поселения для примера",
+                Description: new MarkdownString("Измените свойства поселения в настройках"),
+                Cost: 0,
+                Capacity: 1,
+                IsPlayerSelectable: true));
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended, RequireRealName = MandatoryStatus.Required });
 

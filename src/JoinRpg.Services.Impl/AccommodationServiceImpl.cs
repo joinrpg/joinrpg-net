@@ -10,38 +10,6 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
 {
     private IEmailService EmailService { get; }
 
-    public async Task<ProjectAccommodationType?> SaveRoomTypeAsync(ProjectAccommodationType roomType)
-    {
-        if (roomType.ProjectId == 0)
-        {
-            throw new ArgumentException("Inconsistent state. ProjectId can't be 0");
-        }
-
-        ProjectAccommodationType result;
-
-        if (roomType.Id != 0)
-        {
-            result = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(roomType.Id).ConfigureAwait(false);
-            if (result?.ProjectId != roomType.ProjectId)
-            {
-                return null;
-            }
-            result.Name = roomType.Name;
-            result.Cost = roomType.Cost;
-            result.Capacity = roomType.Capacity;
-            result.Description = roomType.Description;
-            result.IsAutoFilledAccommodation = roomType.IsAutoFilledAccommodation;
-            result.IsInfinite = roomType.IsInfinite;
-            result.IsPlayerSelectable = roomType.IsPlayerSelectable;
-        }
-        else
-        {
-            result = UnitOfWork.GetDbSet<ProjectAccommodationType>().Add(roomType);
-        }
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-        return result;
-    }
-
     public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypesAsync(int projectId) => await AccomodationRepository.GetAccommodationForProject(projectId).ConfigureAwait(false);
 
     public async Task<ProjectAccommodationType> GetRoomTypeAsync(int roomTypeId)
@@ -178,26 +146,6 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
         {
             await UnOccupyRoomImpl(room, room.Inhabitants.ToList());
         }
-    }
-
-    public async Task RemoveRoomType(int accomodationTypeId)
-    {
-        var entity = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(accomodationTypeId);
-
-        if (entity == null)
-        {
-            throw new JoinRpgEntityNotFoundException(accomodationTypeId, "ProjectAccommodationType");
-        }
-
-        var occupiedRoom =
-            entity.ProjectAccommodations.FirstOrDefault(pa => pa.IsOccupied());
-        if (occupiedRoom != null)
-        {
-            throw new RoomIsOccupiedException(occupiedRoom);
-        }
-        _ = UnitOfWork.GetDbSet<ProjectAccommodationType>().Remove(entity);
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
     }
 
     public async Task<IEnumerable<ProjectAccommodation>> AddRooms(int projectId, int roomTypeId, string rooms)

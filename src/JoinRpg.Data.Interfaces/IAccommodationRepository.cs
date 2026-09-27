@@ -1,9 +1,16 @@
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Data.Interfaces;
 
 public interface IAccommodationRepository
 {
+    /// <summary>
+    /// Первая комната указанного типа проживания, в которой кто-то живёт, или <c>null</c>, если
+    /// все комнаты этого типа свободны.
+    /// </summary>
+    Task<ProjectAccommodation?> GetOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId);
+
     Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId);
 
     Task<IReadOnlyCollection<ClaimAccommodationInfoRow>> GetClaimAccommodationReport(int project);

@@ -61,6 +61,10 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
             {
                 _ = mock.Project.ProjectFeeSettings.Remove(feeSetting);
             }
+            if (entity is ProjectAccommodationType accommodationType)
+            {
+                _ = mock.Project.ProjectAccommodationTypes.Remove(accommodationType);
+            }
         }
     }
 }

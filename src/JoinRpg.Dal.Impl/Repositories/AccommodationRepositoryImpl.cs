@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -14,6 +15,16 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
             .ConfigureAwait(false);
     }
 
+
+    public async Task<ProjectAccommodation?> GetOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
+    {
+        return await ctx.Set<ProjectAccommodation>()
+            .Where(room => room.ProjectId == accommodationTypeId.ProjectId.Value
+                && room.AccommodationTypeId == accommodationTypeId.AccommodationTypeId)
+            .Where(room => room.Inhabitants.Any())
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+    }
 
     public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
         GetClaimAccommodationReport(int project)

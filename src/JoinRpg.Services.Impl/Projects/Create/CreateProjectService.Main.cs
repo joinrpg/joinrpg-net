@@ -9,7 +9,7 @@ namespace JoinRpg.Services.Impl.Projects;
 internal partial class CreateProjectService
     (ProjectService projectService,
     IFieldSetupService fieldSetupService,
-    IAccommodationService accommodationService,
+    IAccommodationTypeService accommodationTypeService,
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
     IProjectRepository projectRepository,

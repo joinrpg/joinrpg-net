@@ -5,13 +5,6 @@ namespace JoinRpg.Services.Interfaces;
 public interface IAccommodationService
 {
     /// <summary>
-    /// Adds new room type
-    /// </summary>
-    Task<ProjectAccommodationType?> SaveRoomTypeAsync(ProjectAccommodationType roomType);
-
-    Task RemoveRoomType(int roomTypeId);
-
-    /// <summary>
     /// Adds rooms to specified room type of specified project
     /// </summary>
     Task<IEnumerable<ProjectAccommodation>> AddRooms(int projectId, int roomTypeId, string rooms);

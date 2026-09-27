@@ -4,6 +4,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Web.Models.Accommodation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,7 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/rooms/[action]")]
 public class AccommodationTypeController(
     IAccommodationService accommodationService,
+    IAccommodationTypeService accommodationTypeService,
     IAccommodationRepository accommodationRepository,
     IClaimsRepository claimsRepository,
     IProjectMetadataRepository projectMetadataRepository,
@@ -59,15 +61,17 @@ public class AccommodationTypeController(
     [HttpGet("~/{projectId}/rooms/{roomTypeId}/edit")]
     public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
     {
-        var entity = await accommodationService.GetRoomTypeAsync(roomTypeId).ConfigureAwait(false);
-        if (entity == null || entity.ProjectId != projectId)
+        var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
+        // Тип проживания — настройка проекта, он уже есть в метаданных (ADR015).
+        var typeInfo = pi.AccommodationSettings.Types
+            .SingleOrDefault(t => t.Id.AccommodationTypeId == roomTypeId);
+        if (typeInfo is null)
         {
             return Forbid();
         }
 
-        var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-
-        return View(new RoomTypeViewModel(entity, currentUserAccessor.UserIdentification, pi));
+        return View(new RoomTypeViewModel(typeInfo, currentUserAccessor.UserIdentification, pi));
     }
 
     /// <summary>
@@ -107,7 +111,32 @@ public class AccommodationTypeController(
 
             return View("EditRoomType", model);
         }
-        _ = await accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
+
+        var projectId = new ProjectIdentification(model.ProjectId);
+        var description = new MarkdownString(model.DescriptionEditable ?? "");
+        if (model.Id == 0)
+        {
+            _ = await accommodationTypeService.CreateAccommodationType(
+                projectId,
+                new AccommodationTypeCreateRequest(
+                    model.Name,
+                    description,
+                    model.Cost,
+                    model.Capacity,
+                    model.IsPlayerSelectable));
+        }
+        else
+        {
+            await accommodationTypeService.UpdateAccommodationType(
+                new AccommodationTypeIdentification(projectId, model.Id),
+                new AccommodationTypeUpdateRequest(
+                    model.Name,
+                    description,
+                    model.Cost,
+                    model.Capacity,
+                    model.IsPlayerSelectable));
+        }
+
         return RedirectToAction("Index", new { projectId = model.ProjectId });
     }
 
@@ -118,7 +147,8 @@ public class AccommodationTypeController(
     [HttpGet]
     public async Task<ActionResult> DeleteRoomType(int roomTypeId, int projectId)
     {
-        await accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
+        await accommodationTypeService.DeleteAccommodationType(
+            new AccommodationTypeIdentification(new ProjectIdentification(projectId), roomTypeId));
         return RedirectToAction("Index", new { ProjectId = projectId });
     }
 
