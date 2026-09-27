@@ -23,17 +23,6 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : IAccommodatio
     }
 
     public async Task<IReadOnlyCollection<Claim>>
-        GetClaimsWithSameAccommodationType(int accommodationTypeId)
-    {
-        return await ctx.Set<AccommodationRequest>().Where(request =>
-                request.AccommodationTypeId == accommodationTypeId)
-            .SelectMany(request => request.Subjects)
-            .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
-            .Include(claim => claim.Player)
-            .ToListAsync().ConfigureAwait(false);
-    }
-
-    public async Task<IReadOnlyCollection<Claim>>
         GetClaimsWithSameAccommodationTypeToInvite(int accommodationTypeId)
     {
         return await ctx.Set<AccommodationRequest>().Where(request =>
