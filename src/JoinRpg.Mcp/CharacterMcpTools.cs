@@ -37,14 +37,20 @@ public sealed class CharacterMcpTools(
         "сначала отбери id через list_characters или search_characters.")]
     public async Task<IReadOnlyCollection<CharacterInfo>> GetCharacters(
         [Description("Id проекта")] int projectId,
-        [Description("Id персонажей одного проекта")] int[] characterIds)
+        // Именно List<int>, а не int[] и не IReadOnlyList<int>. Autofac неявно разрешает
+        // массивы и интерфейсные коллекции как «все регистрации элемента»: для int это пустой
+        // массив, то есть GetService(typeof(int[])) успешно возвращает [] . SDK из этого
+        // заключает, что параметр приходит из контейнера, убирает его из схемы инструмента и
+        // подставляет пустоту сам. Клиент такой параметр передать не может в принципе — он его
+        // не видит. List<int> Autofac не разрешает, поэтому параметр остаётся в схеме.
+        // Проверено на всех формах, см. CharacterMcpToolsSchemaTests.
+        [Description("Id персонажей одного проекта")] List<int> characterIds)
     {
         authContext.EnsureProjectGranted(projectId);
 
-        // Без этой проверки пустой список id молча давал пустой результат, и отличить «таких
-        // персонажей нет» от «аргумент не доехал» было нечем. Ровно на это напоролись при
-        // работе через клиента: инструмент отдавал пустоту, а причину приходилось угадывать.
-        if (characterIds is not { Length: > 0 })
+        // Пустой список id иначе молча давал пустой результат, и отличить «таких персонажей
+        // нет» от «аргумент не доехал» было нечем.
+        if (characterIds is not { Count: > 0 })
         {
             throw new McpException(
                 "Не передан characterIds — список id персонажей обязателен. "
