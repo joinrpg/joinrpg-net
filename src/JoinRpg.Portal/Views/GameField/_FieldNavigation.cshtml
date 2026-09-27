@@ -15,6 +15,17 @@
     <nav-link asp-controller="GameField" asp-action="Create" asp-route-ProjectId="@Model.ProjectId">
         <join-icon icon="Add" />Добавить новое поле
     </nav-link>
+    @* Форма заявки в дефолтного персонажа — мастеру она показывается так, как её увидит игрок,
+       даже если приём заявок закрыт. Без дефолтного шаблона ссылке некуда вести. *@
+    @if (Model.DefaultTemplateCharacterId is CharacterIdentification defaultTemplateCharacterId)
+    {
+        <nav-link asp-controller="Claim" asp-action="AddForCharacter"
+                  asp-route-ProjectId="@Model.ProjectId"
+                  asp-route-CharacterId="@defaultTemplateCharacterId.CharacterId"
+                  title="Посмотреть форму заявки так, как ее видит игрок">
+            <join-icon icon="Claim" />Посмотреть форму заявки
+        </nav-link>
+    }
 </ul>
 
 <h3>@ViewBag.Title</h3>

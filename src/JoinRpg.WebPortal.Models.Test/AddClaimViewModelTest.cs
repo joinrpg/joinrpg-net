@@ -3,6 +3,7 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.Users;
 // В JoinRpg.DataModel есть своя ProjectDetails (EF-сущность), здесь нужна доменная.
 using ProjectDetails = JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails;
 
@@ -16,10 +17,10 @@ public class AddClaimViewModelTest
     /// Вьюмодель строится поверх агрегата (ADR013), поэтому собирать его надо после всех правок
     /// персонажа и проекта — он привязан к текущему экземпляру <see cref="ProjectInfo"/>.
     /// </summary>
-    private AddClaimViewModel CreateViewModel(Character character)
+    private AddClaimViewModel CreateViewModel(Character character, UserInfo? userInfo = null)
         => AddClaimViewModel.Create(
             Mock.GetCharacterInfo(character),
-            Mock.PlayerInfo,
+            userInfo ?? Mock.PlayerInfo,
             new ProjectDetails(Mock.ProjectInfo, new MarkdownString(""), new MarkdownString("правила подачи"), [], false));
 
     [Fact]
@@ -57,6 +58,51 @@ public class AddClaimViewModelTest
         vm.CanSendClaim().ShouldBeFalse();
         vm.IsProjectRelatedReason.ShouldBeTrue();
 
+    }
+
+    /// <summary>
+    /// Мастеру форма показывается и при закрытом приёме заявок — это его способ посмотреть, что
+    /// увидит игрок, не открывая заявки. Отправить её всё равно нельзя.
+    /// </summary>
+    [Fact]
+    public void MasterSeesFieldsEvenIfClaimsClosed()
+    {
+        Mock.Project.IsAcceptingClaims = false;
+        Mock.ReInitProjectInfo();
+
+        var vm = CreateViewModel(Mock.Character, Mock.MasterInfo);
+        vm.HasMasterAccess.ShouldBeTrue();
+        vm.ShowFields.ShouldBeTrue();
+        vm.CanSendClaim().ShouldBeFalse();
+        // Причина фатальная, но вместе с мастерскими правами форму она больше не прячет.
+        vm.IsProjectRelatedReason.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void MasterSeesFieldsEvenIfProjectArchived()
+    {
+        // Архив — это Active = false вместе с закрытым приёмом заявок, см. ProjectLoaderCommon.CreateStatus.
+        Mock.Project.Active = false;
+        Mock.Project.IsAcceptingClaims = false;
+        Mock.ReInitProjectInfo();
+
+        var vm = CreateViewModel(Mock.Character, Mock.MasterInfo);
+        vm.ShowFields.ShouldBeTrue();
+        vm.CanSendClaim().ShouldBeFalse();
+    }
+
+    /// <summary>
+    /// Игроку при закрытом приёме заявок форму по-прежнему не показываем.
+    /// </summary>
+    [Fact]
+    public void PlayerDoesNotSeeFieldsIfClaimsClosed()
+    {
+        Mock.Project.IsAcceptingClaims = false;
+        Mock.ReInitProjectInfo();
+
+        var vm = CreateViewModel(Mock.Character);
+        vm.HasMasterAccess.ShouldBeFalse();
+        vm.ShowFields.ShouldBeFalse();
     }
 
     [Fact]

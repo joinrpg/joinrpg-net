@@ -9,6 +9,13 @@ public class FieldNavigationModel
     public FieldNavigationPage Page { get; set; }
 
     public int ProjectId { get; set; }
+
+    /// <summary>
+    /// Дефолтный шаблон заявки проекта, если он задан. На него ведёт ссылка «Посмотреть форму
+    /// заявки»: мастеру показывается та же форма, что увидит игрок. Если шаблон не задан, ссылку
+    /// не показываем — игроцкая страница «выберите роль» мастеру тут ничем не поможет.
+    /// </summary>
+    public CharacterIdentification? DefaultTemplateCharacterId { get; set; }
 }
 
 /// <summary>
