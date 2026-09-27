@@ -2,6 +2,7 @@ using System.ComponentModel;
 using JoinRpg.DomainTypes;
 using JoinRpg.WebPortal.Managers.Characters;
 using JoinRpg.XGameApi.Contract;
+using ModelContextProtocol;
 using ModelContextProtocol.Server;
 
 namespace JoinRpg.Mcp;
@@ -39,6 +40,17 @@ public sealed class CharacterMcpTools(
         [Description("Id персонажей одного проекта")] int[] characterIds)
     {
         authContext.EnsureProjectGranted(projectId);
+
+        // Без этой проверки пустой список id молча давал пустой результат, и отличить «таких
+        // персонажей нет» от «аргумент не доехал» было нечем. Ровно на это напоролись при
+        // работе через клиента: инструмент отдавал пустоту, а причину приходилось угадывать.
+        if (characterIds is not { Length: > 0 })
+        {
+            throw new McpException(
+                "Не передан characterIds — список id персонажей обязателен. "
+                + "Отбери id через list_characters или search_characters и передай их массивом.");
+        }
+
         return await characterApiViewService.GetCharactersByIds(new ProjectIdentification(projectId), characterIds);
     }
 
