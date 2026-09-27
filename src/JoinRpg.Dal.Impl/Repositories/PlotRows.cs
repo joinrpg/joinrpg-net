@@ -48,7 +48,7 @@ internal sealed class PlotElementRow : IOrderableEntity
     public DateTime? PrevVersionModifiedAt { get; set; }
     public DateTime? NextVersionModifiedAt { get; set; }
 
-    public PlotAuthorRow? Author { get; set; }
+    public User? Author { get; set; }
 
     public IEnumerable<PlotTargetRow> Characters { get; set; } = [];
     public IEnumerable<PlotTargetRow> Groups { get; set; } = [];
@@ -75,7 +75,7 @@ internal sealed class PlotElementRow : IOrderableEntity
                 CurrentContent is null ? null : new MarkdownString(CurrentContent),
                 CurrentTodoField ?? "",
                 CurrentModifiedAt,
-                Author?.ToHeader()),
+                Author is null ? null : new UserInfoHeader(new UserIdentification(Author.UserId), Author.ExtractDisplayName())),
             LastVersionNumber,
             LastVersionTodoField ?? "",
             PrevVersionModifiedAt,
@@ -88,38 +88,6 @@ internal sealed class PlotTargetRow
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";
-}
-
-/// <summary>
-/// Автор версии текста.
-/// </summary>
-/// <remarks>
-/// Поля имени выбираются по отдельности и собираются здесь: <c>UserExtensions.ToUserInfoHeader</c>
-/// живёт в <c>JoinRpg.Domain</c>, на который <c>Dal.Impl</c> не ссылается и ссылаться не должен
-/// (ADR014). Так же поступает <c>CharacterGroupRepository</c>.
-/// </remarks>
-internal sealed class PlotAuthorRow
-{
-    public int UserId { get; set; }
-
-    // Имена полей отличаются от имён типов-обёрток (PrefferedName и прочих) — иначе внутри класса
-    // они перекрывают типы и вызвать FromOptional нельзя.
-    public string? Preffered { get; set; }
-    public string? Born { get; set; }
-    public string? Sur { get; set; }
-    public string? Father { get; set; }
-    public string EmailAddress { get; set; } = "";
-
-    public UserInfoHeader ToHeader()
-        => new(
-            new UserIdentification(UserId),
-            new UserDisplayName(
-                new UserFullName(
-                    PrefferedName.FromOptional(Preffered),
-                    BornName.FromOptional(Born),
-                    SurName.FromOptional(Sur),
-                    FatherName.FromOptional(Father)),
-                new Email(EmailAddress)));
 }
 
 /// <summary>

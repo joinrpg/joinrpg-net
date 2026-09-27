@@ -60,17 +60,11 @@ internal static class PlotElementRowQuery
                 .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)) + 1)
                 .Select(t => (DateTime?)t.ModifiedDateTime).FirstOrDefault(),
 
+            // Автор проецируется сущностью: имя из неё собирает UserTransformationExtensions,
+            // заводить для этого ещё один тип-строку незачем.
             Author = e.Texts
-                .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)) && t.AuthorUser != null)
-                .Select(t => new PlotAuthorRow
-                {
-                    UserId = t.AuthorUser.UserId,
-                    Preffered = t.AuthorUser.PrefferedName,
-                    Born = t.AuthorUser.BornName,
-                    Sur = t.AuthorUser.SurName,
-                    Father = t.AuthorUser.FatherName,
-                    EmailAddress = t.AuthorUser.Email,
-                }).FirstOrDefault(),
+                .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)))
+                .Select(t => t.AuthorUser).FirstOrDefault(),
 
             Characters = e.TargetCharacters
                 .Select(c => new PlotTargetRow { Id = c.CharacterId, Name = c.CharacterName }),
