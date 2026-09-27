@@ -115,9 +115,11 @@
           обязательное поле ловит серверная валидация.
         *@
         case ProjectFieldViewType.UserLink:
+        case ProjectFieldViewType.MultiUserLink:
           <component type="typeof(JoinRpg.Common.WebComponents.JoinUserLinkEditor)"
                      param-Name="@(Model.FieldClientId)"
                      param-ProjectId="@((int?)Model.ProjectId)"
+                     param-Multiple="@(Model.FieldViewType == ProjectFieldViewType.MultiUserLink)"
                      param-Values="@(new List<string>(Model.Value?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? []))"
                      param-InitialUsers="@(Model.UserLinks)"
                      render-mode="WebAssembly" />

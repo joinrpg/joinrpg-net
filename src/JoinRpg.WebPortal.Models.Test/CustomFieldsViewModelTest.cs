@@ -235,11 +235,30 @@ public class CustomFieldsViewModelTest
         vm.Field(field).ShouldNotBeNull().UserLinks.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Мультивыбор (#4511) резолвит все значения, порядок сохраняется, ненайденные показываются
+    /// как удалённые.
+    /// </summary>
+    [Fact]
+    public void MultiUserLinkFieldShowsAllUsersInOrder()
+    {
+        var (vm, field) = CreateUserLinkFieldViewModel("8,7", ProjectFieldType.MultiUserLink);
+
+        var userLinks = vm.Field(field).ShouldNotBeNull().UserLinks;
+        userLinks.Count.ShouldBe(2);
+        userLinks[0].UserId.ShouldBeNull();
+        userLinks[1].DisplayName.ShouldBe("Седьмой");
+        userLinks[1].UserId.ShouldBe(new UserIdentification(7));
+    }
+
     /// <param name="value">Сырое значение поля, как оно лежит в базе</param>
-    private static (CustomFieldsViewModel vm, ProjectFieldInfo field) CreateUserLinkFieldViewModel(string value)
+    /// <param name="fieldType">Тип поля — одиночная ссылка или мультивыбор</param>
+    private static (CustomFieldsViewModel vm, ProjectFieldInfo field) CreateUserLinkFieldViewModel(
+        string value,
+        ProjectFieldType fieldType = ProjectFieldType.UserLink)
     {
         var mock = new MockedProject();
-        var field = mock.CreateField("Ответственный мастер", fieldType: ProjectFieldType.UserLink);
+        var field = mock.CreateField("Ответственный мастер", fieldType: fieldType);
         MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(field, value));
 
         // В словаре только седьмой: всё остальное на экране считается удалённым пользователем.

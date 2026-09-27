@@ -103,7 +103,8 @@ public sealed class FieldWithValue
         if (normalized is not null && Field.Type.IsUserLink())
         {
             var userIds = ParseUserIds(normalized, strict: true);
-            if (Field.Type == ProjectFieldType.UserLink && userIds.Count > 1)
+            // У мультивыбора идентификаторов может быть сколько угодно, у одиночного — не больше одного
+            if (!Field.Type.IsMultiUserLink() && userIds.Count > 1)
             {
                 throw new FieldUserValueInvalidException(Field.Id, normalized);
             }

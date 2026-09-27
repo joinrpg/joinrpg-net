@@ -46,6 +46,11 @@ public enum ProjectFieldViewType
         Description = "Ссылка на любого пользователя joinrpg",
         Order = 13)]
     UserLink,
+    [Display(
+        Name = "Ссылка на пользователей (мультивыбор)",
+        Description = "Несколько пользователей сайта: кураторы роли, ответственные мастера, соседи по каюте. Заполняют только мастера; упоминание не даёт доступа к контактам",
+        Order = 14)]
+    MultiUserLink,
 }
 
 public static class ProjectFieldViewTypeHelper

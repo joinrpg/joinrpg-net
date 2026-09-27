@@ -95,6 +95,7 @@
                 <a href="@Model.DisplayString">@Model.DisplayString</a>
                 break;
             case ProjectFieldViewType.UserLink:
+            case ProjectFieldViewType.MultiUserLink:
                 foreach (var userLink in Model.UserLinks)
                 {
                     <component
