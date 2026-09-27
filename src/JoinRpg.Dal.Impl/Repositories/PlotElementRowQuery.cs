@@ -1,3 +1,5 @@
+using LinqKit;
+
 namespace JoinRpg.Dal.Impl.Repositories;
 
 /// <summary>
@@ -8,69 +10,75 @@ internal static class PlotElementRowQuery
     /// <summary>
     /// Отбирает поля вводной вместе с одной версией текста.
     /// </summary>
-    /// <param name="elements">Вводные, которые нужно выбрать.</param>
     /// <param name="version">
     /// Версия для показа; <c>null</c> — последняя. Страницы папки всегда показывают последнюю,
     /// конкретную версию запрашивает только страница истории.
     /// </param>
     /// <remarks>
-    /// Номер отображаемой версии считается в отдельном <c>Select</c>, а не подставляется в каждое
-    /// подвыражение: иначе <c>e.Texts.Max(...)</c> пришлось бы повторять пять раз подряд.
+    /// Выражение, а не готовый <c>IQueryable</c>: так его можно подставить и во вложенную проекцию
+    /// (вводные внутри папки) через LinqKit — <c>Invoke</c> на стороне <c>AsExpandable</c>-запроса.
+    /// Вызов обычного extension-метода EF6 бы там не стерпел.
+    ///
+    /// Номер отображаемой версии приходится повторять в каждом подвыражении: промежуточный
+    /// <c>Select</c>, который вычислил бы его один раз, в одно выражение не укладывается.
     /// </remarks>
+    public static Expression<Func<PlotElement, PlotElementRow>> RowSelector(int? version)
+        => e => new PlotElementRow
+        {
+            ProjectId = e.ProjectId,
+            PlotFolderId = e.PlotFolderId,
+            PlotElementId = e.PlotElementId,
+            PlotFolderMasterTitle = e.PlotFolder.MasterTitle,
+
+            ElementType = e.ElementType,
+            IsMasterOnly = e.IsMasterOnly,
+            IsActive = e.IsActive,
+            IsCompleted = e.IsCompleted,
+            PublishedVersion = e.Published,
+
+            LastVersionNumber = e.Texts.Max(t => t.Version),
+            LastVersionTodoField = e.Texts
+                .Where(t => t.Version == e.Texts.Max(m => m.Version))
+                .Select(t => t.TodoField).FirstOrDefault(),
+
+            CurrentVersionNumber = version ?? e.Texts.Max(t => t.Version),
+            CurrentVersionExists = e.Texts.Any(t => t.Version == (version ?? e.Texts.Max(m => m.Version))),
+            CurrentContent = e.Texts
+                .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)))
+                .Select(t => t.Content.Contents).FirstOrDefault(),
+            CurrentTodoField = e.Texts
+                .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)))
+                .Select(t => t.TodoField).FirstOrDefault(),
+            CurrentModifiedAt = e.Texts
+                .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)))
+                .Select(t => t.ModifiedDateTime).FirstOrDefault(),
+
+            PrevVersionModifiedAt = e.Texts
+                .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)) - 1)
+                .Select(t => (DateTime?)t.ModifiedDateTime).FirstOrDefault(),
+            NextVersionModifiedAt = e.Texts
+                .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)) + 1)
+                .Select(t => (DateTime?)t.ModifiedDateTime).FirstOrDefault(),
+
+            Author = e.Texts
+                .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)) && t.AuthorUser != null)
+                .Select(t => new PlotAuthorRow
+                {
+                    UserId = t.AuthorUser.UserId,
+                    Preffered = t.AuthorUser.PrefferedName,
+                    Born = t.AuthorUser.BornName,
+                    Sur = t.AuthorUser.SurName,
+                    Father = t.AuthorUser.FatherName,
+                    EmailAddress = t.AuthorUser.Email,
+                }).FirstOrDefault(),
+
+            Characters = e.TargetCharacters
+                .Select(c => new PlotTargetRow { Id = c.CharacterId, Name = c.CharacterName }),
+            Groups = e.TargetGroups
+                .Select(g => new PlotTargetRow { Id = g.CharacterGroupId, Name = g.CharacterGroupName }),
+        };
+
+    /// <summary>Проецирует вводные, показывая указанную версию (<c>null</c> — последнюю).</summary>
     public static IQueryable<PlotElementRow> ToRows(this IQueryable<PlotElement> elements, int? version = null)
-        => elements
-            .Select(e => new { Element = e, Shown = version ?? e.Texts.Max(t => t.Version) })
-            .Select(x => new PlotElementRow
-            {
-                ProjectId = x.Element.ProjectId,
-                PlotFolderId = x.Element.PlotFolderId,
-                PlotElementId = x.Element.PlotElementId,
-                PlotFolderMasterTitle = x.Element.PlotFolder.MasterTitle,
-
-                ElementType = x.Element.ElementType,
-                IsMasterOnly = x.Element.IsMasterOnly,
-                IsActive = x.Element.IsActive,
-                IsCompleted = x.Element.IsCompleted,
-                PublishedVersion = x.Element.Published,
-
-                LastVersionNumber = x.Element.Texts.Max(t => t.Version),
-                LastVersionTodoField = x.Element.Texts
-                    .Where(t => t.Version == x.Element.Texts.Max(m => m.Version))
-                    .Select(t => t.TodoField)
-                    .FirstOrDefault(),
-
-                CurrentVersionNumber = x.Shown,
-                CurrentVersionExists = x.Element.Texts.Any(t => t.Version == x.Shown),
-                CurrentContent = x.Element.Texts
-                    .Where(t => t.Version == x.Shown).Select(t => t.Content.Contents).FirstOrDefault(),
-                CurrentTodoField = x.Element.Texts
-                    .Where(t => t.Version == x.Shown).Select(t => t.TodoField).FirstOrDefault(),
-                CurrentModifiedAt = x.Element.Texts
-                    .Where(t => t.Version == x.Shown).Select(t => t.ModifiedDateTime).FirstOrDefault(),
-
-                PrevVersionModifiedAt = x.Element.Texts
-                    .Where(t => t.Version == x.Shown - 1)
-                    .Select(t => (DateTime?)t.ModifiedDateTime).FirstOrDefault(),
-                NextVersionModifiedAt = x.Element.Texts
-                    .Where(t => t.Version == x.Shown + 1)
-                    .Select(t => (DateTime?)t.ModifiedDateTime).FirstOrDefault(),
-
-                Author = x.Element.Texts
-                    .Where(t => t.Version == x.Shown && t.AuthorUser != null)
-                    .Select(t => new PlotAuthorRow
-                    {
-                        UserId = t.AuthorUser.UserId,
-                        Preffered = t.AuthorUser.PrefferedName,
-                        Born = t.AuthorUser.BornName,
-                        Sur = t.AuthorUser.SurName,
-                        Father = t.AuthorUser.FatherName,
-                        EmailAddress = t.AuthorUser.Email,
-                    })
-                    .FirstOrDefault(),
-
-                Characters = x.Element.TargetCharacters
-                    .Select(c => new PlotTargetRow { Id = c.CharacterId, Name = c.CharacterName }),
-                Groups = x.Element.TargetGroups
-                    .Select(g => new PlotTargetRow { Id = g.CharacterGroupId, Name = g.CharacterGroupName }),
-            });
+        => elements.AsExpandable().Select(RowSelector(version));
 }

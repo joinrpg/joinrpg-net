@@ -42,11 +42,6 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
             return null;
         }
 
-        folder.Elements = await Ctx.Set<PlotElement>()
-          .Where(e => e.ProjectId == plotFolderId.ProjectId.Value && e.PlotFolderId == plotFolderId.PlotFolderId)
-          .ToRows()
-          .ToListAsync();
-
         return folder.ToDto();
     }
 
@@ -58,11 +53,13 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
     /// даты соседних, а история правок у крупных папок — основной объём данных. Через сущности так
     /// не выходит: <c>Include</c> в EF6 фильтровать нельзя.
     ///
-    /// Вводные докладываются отдельным запросом: вложенную проекцию
-    /// (<c>pf.Elements.AsQueryable().ToRows()</c>) EF6 не транслирует — страницы падали с 500.
+    /// Вводные приходят вложенной проекцией через LinqKit: вызвать там обычный extension-метод
+    /// нельзя — EF6 его не транслирует, страницы падали с 500, — а подстановка выражения
+    /// <c>Invoke</c> на <c>AsExpandable</c>-запросе работает.
     /// </remarks>
     private IQueryable<PlotFolderRow> FolderRows(Expression<Func<PlotFolder, bool>> filter)
         => Ctx.Set<PlotFolder>()
+          .AsExpandable()
           .Where(filter)
           .Select(pf => new PlotFolderRow
           {
@@ -74,6 +71,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
               IsActive = pf.IsActive,
               ElementsOrdering = pf.ElementsOrdering,
               Tags = pf.PlotTags.Select(tag => tag.TagName),
+              Elements = pf.Elements.AsQueryable().Select(e => PlotElementRowQuery.RowSelector(null).Invoke(e)),
           });
 
     public async Task<IReadOnlyCollection<PlotElement>> GetDirectPlotsForCharacter(CharacterIdentification character)
@@ -90,17 +88,6 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
     public async Task<IReadOnlyList<PlotFolderDetailsDto>> GetActivePlotFolders(ProjectIdentification projectId)
     {
         var folders = await FolderRows(pf => pf.IsActive && pf.ProjectId == projectId.Value).ToListAsync();
-
-        var elements = await Ctx.Set<PlotElement>()
-          .Where(e => e.ProjectId == projectId.Value && e.PlotFolder.IsActive)
-          .ToRows()
-          .ToListAsync();
-
-        var elementsByFolder = elements.ToLookup(e => e.PlotFolderId);
-        foreach (var folder in folders)
-        {
-            folder.Elements = elementsByFolder[folder.PlotFolderId];
-        }
 
         return [.. folders.Select(row => row.ToDto())];
     }
