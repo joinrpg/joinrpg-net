@@ -202,7 +202,7 @@ public class AccountController(
         {
             return NotFound();
         }
-        var user = await userManager.FindByIdAsync(userId.Value.ToString()) ?? throw new InvalidOperationException();
+        var user = await userManager.FindRequiredByIdAsync(new UserIdentification(userId.Value));
         var result = await userManager.ConfirmEmailAsync(user, code);
         if (result.Succeeded)
         {

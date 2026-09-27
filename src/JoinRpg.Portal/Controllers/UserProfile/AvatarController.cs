@@ -49,7 +49,7 @@ public class AvatarController(
 
     private async Task RefreshUserProfile()
     {
-        var user = await userManager.FindByIdAsync(currentUserAccessor.UserId.ToString());
+        var user = await userManager.FindRequiredByIdAsync(currentUserAccessor.UserIdentification);
         await signInManager.RefreshSignInAsync(user);
     }
 }
