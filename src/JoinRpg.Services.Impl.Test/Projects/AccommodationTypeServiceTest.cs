@@ -135,16 +135,10 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
         public Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
             => Task.FromResult(hasOccupiedRoom());
 
-        public Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId)
-            => throw new NotSupportedException();
-
         public Task<IReadOnlyCollection<ClaimAccommodationInfoRow>> GetClaimAccommodationReport(int project)
             => throw new NotSupportedException();
 
         public Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project)
-            => throw new NotSupportedException();
-
-        public Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId)
             => throw new NotSupportedException();
     }
 }

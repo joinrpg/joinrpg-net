@@ -6,16 +6,6 @@ namespace JoinRpg.Dal.Impl.Repositories;
 
 public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationRepository
 {
-    public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(
-        int projectId)
-    {
-        return await ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == projectId)
-            .Include(x => x.ProjectAccommodations)
-            .ToListAsync()
-            .ConfigureAwait(false);
-    }
-
-
     public async Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
     {
         return await ctx.Set<ProjectAccommodation>()
@@ -65,14 +55,6 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
                 FullyOccupiedRoomsCount = x.ProjectAccommodations.Count(room => (room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count) ?? 0) == x.Capacity),
             })
             .ToListAsync()
-            .ConfigureAwait(false);
-    }
-
-    public async Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId)
-    {
-        return await ctx.Set<ProjectAccommodationType>().Where(a => a.Id == roomTypeId)
-            .Include(x => x.ProjectAccommodations)
-            .SingleAsync()
             .ConfigureAwait(false);
     }
 }
