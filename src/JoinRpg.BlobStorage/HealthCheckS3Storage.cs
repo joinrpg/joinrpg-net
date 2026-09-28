@@ -1,4 +1,4 @@
-using Amazon.S3.Util;
+using Amazon.S3.Model;
 using JoinRpg.Services.Interfaces;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -19,16 +19,23 @@ public class HealthCheckS3Storage(IAmazonS3 amazonS3,
         var data = new Dictionary<string, object> { { "bucket", options.BucketName ?? "null" } };
         try
         {
-            var exists = await AmazonS3Util.DoesS3BucketExistV2Async(amazonS3, options.BucketName);
-            if (exists)
-            {
-                return HealthCheckResult.Healthy(data: data);
-            }
-            else
-            {
+            // AmazonS3Util.DoesS3BucketExistV2Async не принимает CancellationToken, поэтому
+            // подвисший S3 отменить невозможно — вызываем API напрямую, с токеном.
+            _ = await amazonS3.GetBucketLocationAsync(
+                new GetBucketLocationRequest { BucketName = options.BucketName },
+                cancellationToken);
 
-                return HealthCheckResult.Degraded("Bucket does not exists", data: data);
-            }
+            return HealthCheckResult.Healthy(data: data);
+        }
+        catch (AmazonS3Exception exception) when (exception.ErrorCode is "NoSuchBucket" or "NotFound")
+        {
+            return HealthCheckResult.Degraded("Bucket does not exists", data: data);
+        }
+        catch (OperationCanceledException)
+        {
+            // Отмена — это сработавший таймаут чека или ушедший клиент. Пусть движок
+            // health-чеков отчитается про таймаут, а не мы про «сломанный S3».
+            throw;
         }
         catch (Exception exception)
         {
