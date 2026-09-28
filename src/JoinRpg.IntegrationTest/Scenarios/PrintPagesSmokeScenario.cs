@@ -117,7 +117,7 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
             {
                 var seed = await TestPlotHelpers.SeedPlotFolderAsync(sp, projectId, elementCount: 1);
                 var handout = await TestPlotHelpers.SeedHandoutAsync(sp, seed.PlotFolderId, seed.TargetCharacterId);
-                return (seed, handout);
+                return (seed, handout.Content);
             });
 
         var masterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(

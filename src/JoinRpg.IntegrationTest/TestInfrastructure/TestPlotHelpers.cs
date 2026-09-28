@@ -114,14 +114,14 @@ public static class TestPlotHelpers
 
     /// <summary>
     /// Добавляет в папку сюжета одну опубликованную вводную типа «раздатка», привязанную к указанному персонажу.
-    /// Возвращает её текст — он же должен отрисоваться в чек-листе раздатки на печати.
+    /// Возвращает её идентификатор и текст — текст же должен отрисоваться в чек-листе раздатки на печати.
     /// </summary>
     /// <remarks>
     /// Вызывать в скоупе с включённой impersonation мастера проекта, как и <see cref="SeedPlotFolderAsync"/>.
     /// Раздатка попадает на печать только опубликованной (<see cref="PlotVersionFilter.PublishedVersion"/>),
     /// поэтому сразу публикуем нулевую версию.
     /// </remarks>
-    public static async Task<string> SeedHandoutAsync(
+    public static async Task<HandoutSeedResult> SeedHandoutAsync(
         IServiceProvider serviceProvider,
         PlotFolderIdentification plotFolderId,
         CharacterIdentification targetCharacterId)
@@ -141,7 +141,7 @@ public static class TestPlotHelpers
 
         await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
 
-        return content;
+        return new(versionId.PlotElementId, content);
     }
 
     /// <summary>
@@ -209,6 +209,15 @@ public static class TestPlotHelpers
         return new PlotVersionsSeedResult(elementId, contents, lastTodo);
     }
 }
+
+/// <summary>
+/// Результат наполнения проекта тестовой раздаткой.
+/// </summary>
+/// <param name="ElementId">Созданная раздатка.</param>
+/// <param name="Content">Текст раздатки.</param>
+public record HandoutSeedResult(
+    PlotElementIdentification ElementId,
+    string Content);
 
 /// <summary>
 /// Вводная с несколькими версиями текста.

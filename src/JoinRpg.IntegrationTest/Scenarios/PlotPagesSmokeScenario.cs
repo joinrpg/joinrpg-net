@@ -1,6 +1,7 @@
 using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
@@ -100,9 +101,36 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
         }
     }
 
+    /// <summary>
+    /// Копирование раздатки должно открывать экран создания именно раздатки:
+    /// иначе мастер копирует раздатку и молча получает обычную вводную.
+    /// </summary>
+    [Fact]
+    public async Task CreateElementCopy_Handout_PreselectsHandoutType()
+    {
+        var context = await GetSeedAsync();
+        var projectId = context.ProjectId.Value;
+
+        var url = $"{projectId}/plots/createElement?copyFrom={Uri.EscapeDataString(context.HandoutElementId.ToString())}";
+
+        var response = await context.MasterClient.GetAsync(url);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var document = await response.AsHtmlDocument();
+        var handoutRadio = document.DocumentNode.SelectSingleNode("//input[@type='radio'][@value='Handout']")
+            ?? throw new InvalidOperationException($"На странице {url} нет радиокнопки раздатки");
+        handoutRadio.Attributes.Contains("checked").ShouldBeTrue(
+            "При копировании раздатки тип «Элемент раздатки» должен быть выбран по умолчанию");
+        document.DocumentNode.SelectSingleNode("//input[@type='radio'][@value='RegularPlot']")
+            .ShouldNotBeNull()
+            .Attributes.Contains("checked").ShouldBeFalse();
+    }
+
     private sealed record SeedContext(
         ProjectIdentification ProjectId,
         PlotSeedResult Seed,
+        PlotElementIdentification HandoutElementId,
         HttpClient MasterClient);
 
     // Сид одинаков для всех кейсов Theory, а xUnit создаёт новый экземпляр класса на каждый кейс,
@@ -140,13 +168,18 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
                 scope.ServiceProvider, masterId, "Проект с сюжетами");
         }
 
-        var seed = await factory.Services.RunAsAsync(
+        var (seed, handoutElementId) = await factory.Services.RunAsAsync(
             masterId,
-            sp => TestPlotHelpers.SeedPlotFolderAsync(sp, projectId, elementCount: 2));
+            async sp =>
+            {
+                var seed = await TestPlotHelpers.SeedPlotFolderAsync(sp, projectId, elementCount: 2);
+                var handout = await TestPlotHelpers.SeedHandoutAsync(sp, seed.PlotFolderId, seed.TargetCharacterId);
+                return (seed, handout.ElementId);
+            });
 
         var masterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
             factory.CreateClient(), email, password);
 
-        return new SeedContext(projectId, seed, masterClient);
+        return new SeedContext(projectId, seed, handoutElementId, masterClient);
     }
 }
