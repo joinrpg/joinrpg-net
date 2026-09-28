@@ -1,3 +1,4 @@
+using System.Net;
 using JoinRpg.Common.Telegram;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Markdown;
@@ -38,11 +39,14 @@ internal class TelegramSenderJobService(
 
     internal static TelegramHtmlString FormatMessage(string header, MarkdownString body, RenderedEntityLink? entityLink, UserDisplayName? displayName = null)
     {
-        // Заголовок — жирным, тело, ссылка, затем (если не пропущена) подпись курсивом. Теги
-        // <strong>/<em>/<a> переживают санитайзер Telegram (см. HtmlSanitizers.InitTelegramSanitizer).
+        // Заголовок — жирным и отдельной строкой, потом пустая строка, тело, ссылка, затем (если не
+        // пропущена) подпись курсивом. Теги <strong>/<em>/<a> переживают санитайзер Telegram
+        // (см. HtmlSanitizers.InitTelegramSanitizer).
+        // Заголовок — обычный текст, а не markdown, поэтому размечаем его сразу как HTML: иначе
+        // символы вроде * или _ внутри темы рассылки развалили бы выделение.
         var linkPart = entityLink is null ? "" : $"\n\n{entityLink.Markdown.Value}";
         var signaturePart = displayName is null ? "" : $"\n\n_{displayName.DisplayName}_";
-        var markdown = new MarkdownString($"**{header}**\n\n{body.Value}{linkPart}{signaturePart}");
-        return new TelegramHtmlString(markdown.ToHtmlString().Value);
+        var bodyHtml = new MarkdownString($"{body.Value}{linkPart}{signaturePart}").ToTelegramHtmlString();
+        return new TelegramHtmlString($"<strong>{WebUtility.HtmlEncode(header)}</strong>\n\n{bodyHtml.Contents}");
     }
 }

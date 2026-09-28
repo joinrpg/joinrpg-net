@@ -37,6 +37,18 @@ public static class MarkDownRendererFacade
     }
 
     /// <summary>
+    /// Превращает Markdown в HTML для Telegram.
+    /// </summary>
+    /// <remarks>
+    /// Telegram не понимает блочные теги, и санитайзер выкидывает &lt;p&gt; (см. <see cref="HtmlSanitizers"/>).
+    /// Поэтому абзацы приходится разделять пустой строкой вручную, иначе весь текст слипается в одну простыню.
+    /// </remarks>
+    public static TelegramHtmlString ToTelegramHtmlString(
+        this MarkdownString? markdownString,
+        ILinkRenderer? renderer = null)
+        => new(markdownString.ToHtmlString(renderer).Value.Replace("</p>", "</p>\n").TrimEnd());
+
+    /// <summary>
     /// Превращает Markdown в MarkupString, который можно вывести без дополнительного Escape HTML
     /// </summary>
     public static MarkupString ToPlainTextAndEscapeHtml(
