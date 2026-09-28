@@ -200,7 +200,7 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                     // увеличиваем общий счетчик ошибок по сообщению, если только проблема связана с ним
                     var nextAttempt = nextMessage.Attempts + 1;
 
-                    logger.LogWarning("Сообщение {messageId} не получилось отправить, откладываем до {nextAttemptMoment}. Это будет попытка {attemptCount}", nextMessage.MessageId, momentOfNextAttempt, nextMessage.Attempts);
+                    logger.LogWarning("Сообщение {messageId} не получилось отправить, откладываем до {nextAttemptMoment}. Это будет попытка {attemptCount}", nextMessage.MessageId, momentOfNextAttempt, nextAttempt);
                     await notificationRepository.MarkEnqueued(nextMessage.MessageId, channel, momentOfNextAttempt, nextAttempt);
 
                 }
@@ -211,11 +211,11 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
                     numberOfIndividualFailuresCounter.Add(1);
                     if (sendingResult.Repeatable)
                     {
-                        logger.LogError("Сообщение {messageId} не получилось отправить, это уже {attemptCount} ошибка, помечаем как неуспешное", nextMessage.MessageId, nextMessage.Attempts);
+                        logger.LogError("Сообщение {messageId} не получилось отправить, исчерпаны все {maxAttempts} попыток, помечаем как неуспешное", nextMessage.MessageId, WorkerOptions.MaxAttempts);
                     }
                     else
                     {
-                        logger.LogError("Сообщение {messageId} не получилось отправить, ошибка неповторяемая, помечаем как неуспешное без ретраев (попытка {attemptCount})", nextMessage.MessageId, nextMessage.Attempts);
+                        logger.LogError("Сообщение {messageId} не получилось отправить, ошибка неповторяемая, помечаем как неуспешное без ретраев (попытка {attemptCount})", nextMessage.MessageId, nextMessage.Attempts + 1);
                     }
 
                     await notificationRepository.MarkSendingFailed(nextMessage.MessageId, channel);

@@ -9,7 +9,7 @@ namespace JoinRpg.Common.Telegram.Test;
 public class TelegramNotificationServiceImplTimeoutTest
 {
     [Fact]
-    public async Task SendTelegramNotification_WithBotBlockedResponse_ReturnsUserRelatedFailure()
+    public async Task SendTelegramNotification_WithBotBlockedResponse_ReturnsPermanentUserFailure()
     {
         // Телеграм на заблокированного бота отвечает не транспортной ошибкой, а обычным HTTP-ответом с ok=false
         var handler = new RespondingHttpMessageHandler(
@@ -21,7 +21,9 @@ public class TelegramNotificationServiceImplTimeoutTest
 
         var result = await service.SendTelegramNotification(new TelegramChatId(1), new TelegramHtmlString("test"));
 
-        result.ShouldBe(SendingResult.UserRelatedFailure());
+        // PermanentUserFailure отличается от RepeatableFailure значением Repeatable=false,
+        // поэтому эта проверка действительно фиксирует «без ретраев» (см. #4997)
+        result.ShouldBe(SendingResult.PermanentUserFailure());
     }
 
     [Fact]

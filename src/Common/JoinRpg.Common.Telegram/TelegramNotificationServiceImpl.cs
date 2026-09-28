@@ -36,7 +36,7 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
         {
             CountError("blocked");
             logger.LogWarning("Пользователь {chatId} заблокировал бота", chatId);
-            return SendingResult.UserRelatedFailure();
+            return SendingResult.PermanentUserFailure();
         }
         catch (ApiRequestException exception)
         {
