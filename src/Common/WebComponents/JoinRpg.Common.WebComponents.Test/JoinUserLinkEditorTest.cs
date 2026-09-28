@@ -128,16 +128,50 @@ public class JoinUserLinkEditorTest
     }
 
     /// <summary>
-    /// Если строку не удалось разрезолвить, пользователь видит почему, а не молчание.
+    /// Без <c>Name</c> скрытого инпута нет: компонент живёт и внутри Blazor-форм, где значение
+    /// уезжает через биндинг, а лишний именованный инпут только мешал бы.
     /// </summary>
     [Fact]
-    public void UnresolvedValue_ShowsError()
+    public void WithoutName_NoHiddenInput()
+    {
+        using var ctx = CreateContext();
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, ["123"])
+            .Add(x => x.ProjectId, DemoProjectId));
+
+        cut.FindAll("input[type=hidden]").Count.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Главное требование встраивания в MVC-форму: id уезжает скрытым инпутом с именем поля.
+    /// </summary>
+    [Fact]
+    public void WithName_HiddenInputCarriesResolvedId()
+    {
+        using var ctx = CreateContext(new FakeUserLinkResolveClient { Users = { ["vk.com/id456"] = (456, "Вася Пупкин") } });
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, ["vk.com/id456"])
+            .Add(x => x.ProjectId, DemoProjectId)
+            .Add(x => x.Name, "field_1"));
+
+        var hidden = cut.Find("input[type=hidden]");
+        hidden.GetAttribute("name").ShouldBe("field_1");
+        hidden.GetAttribute("value").ShouldBe("456");
+    }
+
+    /// <summary>
+    /// Неразрезолвленное значение в форму не уезжает — иначе в базу попал бы мусор вместо id.
+    /// </summary>
+    [Fact]
+    public void UnresolvedValue_DoesNotGoToHiddenInput_AndShowsError()
     {
         using var ctx = CreateContext();
         var cut = ctx.Render<JoinUserLinkEditor>(p => p
             .Add(x => x.Values, ["кто-то"])
-            .Add(x => x.ProjectId, DemoProjectId));
+            .Add(x => x.ProjectId, DemoProjectId)
+            .Add(x => x.Name, "field_1"));
 
+        cut.Find("input[type=hidden]").GetAttribute("value").ShouldBe("");
         cut.Markup.ShouldContain("не найден");
     }
 
@@ -150,11 +184,33 @@ public class JoinUserLinkEditorTest
         using var ctx = CreateContext(new FakeUserLinkResolveClient { Users = { ["123"] = (123, "Вася Пупкин") } });
         var cut = ctx.Render<JoinUserLinkEditor>(p => p
             .Add(x => x.Values, [])
-            .Add(x => x.ProjectId, DemoProjectId));
+            .Add(x => x.ProjectId, DemoProjectId)
+            .Add(x => x.Name, "field_1"));
 
         cut.Find("input[type=text]").Change("123");
 
         cut.Markup.ShouldContain("Вася Пупкин");
+        cut.Find("input[type=hidden]").GetAttribute("value").ShouldBe("123");
+    }
+
+    /// <summary>
+    /// Сохранённое значение — это id; при загрузке страницы он должен показываться именем.
+    /// Имя приходит готовым из модели страницы, лишнего запроса за ним нет.
+    /// </summary>
+    [Fact]
+    public void InitialUsers_ShownWithoutResolveCall()
+    {
+        var client = new FakeUserLinkResolveClient();
+        using var ctx = CreateContext(client);
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, ["123"])
+            .Add(x => x.ProjectId, DemoProjectId)
+            .Add(x => x.Name, "field_1")
+            .Add(x => x.InitialUsers, [new UserLinkViewModel(new UserIdentification(123), "Вася Пупкин", ViewMode.Show)]));
+
+        cut.Markup.ShouldContain("Вася Пупкин");
+        cut.Find("input[type=hidden]").GetAttribute("value").ShouldBe("123");
+        client.CallCount.ShouldBe(0);
     }
 
     /// <summary>

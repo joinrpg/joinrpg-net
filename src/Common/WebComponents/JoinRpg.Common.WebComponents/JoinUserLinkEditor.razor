@@ -34,6 +34,12 @@
     }
 }
 
+@if (Name is not null)
+{
+    @* Значение уезжает обычным POST'ом MVC-формы — только успешно разрезолвленные id. *@
+    <input type="hidden" name="@Name" value="@HiddenValue" />
+}
+
 @code {
     [Parameter]
     public bool Multiple { get; set; } = false;
@@ -49,12 +55,27 @@
     public Expression<Func<List<string>>>? ValuesExpression { get; set; }
 
     /// <summary>
+    /// Имя скрытого инпута, в который уезжают разрезолвленные id через запятую. Нужно, когда
+    /// компонент встроен островом в обычную MVC-форму (ADR017 §5). null — инпута нет.
+    /// </summary>
+    [Parameter]
+    public string? Name { get; set; }
+
+    /// <summary>
     /// Проект, в контексте которого резолвится ссылка. null — резолв выключен, компонент работает
     /// как чистый ввод строк (так его использует форма приглашения игрока, где строка уходит
     /// на сервер как есть).
     /// </summary>
     [Parameter]
     public int? ProjectId { get; set; }
+
+    /// <summary>
+    /// Уже известные пользователи для начальных значений <see cref="Values"/> (i-й соответствует
+    /// i-му значению). Нужны, чтобы при загрузке страницы сохранённое значение сразу показывалось
+    /// именем, а не голым числом и не после лишнего запроса.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<UserLinkViewModel> InitialUsers { get; set; } = [];
 
     [CascadingParameter]
     private EditContext? EditContext { get; set; }
@@ -79,6 +100,16 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Ключ — сам id строкой: сохранённое значение поля выглядит именно так, а раскладывать
+        // по индексам нельзя — мусорное значение в базе сдвинуло бы соответствие.
+        foreach (var user in InitialUsers)
+        {
+            if (user.UserId is not null)
+            {
+                resolved[user.UserId.Value.ToString()] = new ResolveState(user, null);
+            }
+        }
+
         initialized = true;
 
         foreach (var value in Values.ToList())
@@ -91,6 +122,14 @@
 
     private ResolveState? StateFor(string value)
         => resolved.TryGetValue(Key(value), out var state) ? state : null;
+
+    private string HiddenValue
+        => string.Join(
+            ",",
+            Values
+                .Select(v => StateFor(v)?.User?.UserId?.Value)
+                .Where(id => id is not null)
+                .Distinct());
 
     private async Task ResolveIfNeededAsync(string value)
     {
