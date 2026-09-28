@@ -72,9 +72,11 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
 
         EnsureCanInvite(
             senderRequestId.ProjectId,
+            senderClaimId,
             senderAccommodationRequest,
             receiverCurrentAccommodationRequest,
-            newDwellersCount: receiverCurrentAccommodationRequest?.Subjects.Count ?? 1);
+            newDwellersCount: receiverCurrentAccommodationRequest?.Subjects.Count ?? 1,
+            receiverClaimId: receiverClaimId.ClaimId);
 
         var inviteRequest = new AccommodationInvite
         {
@@ -118,6 +120,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
 
         EnsureCanInvite(
             senderRequestId.ProjectId,
+            senderClaimId,
             senderAccommodationRequest,
             receiverCurrentAccommodationRequest,
             newDwellersCount: receiverCurrentAccommodationRequest?.Subjects.Count ?? 1);
@@ -155,10 +158,21 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
     //TODO[Localize]
     internal static void EnsureCanInvite(
         ProjectIdentification projectId,
+        ClaimIdentification senderClaimId,
         AccommodationRequest? senderRequest,
         AccommodationRequest? receiverRequest,
-        int newDwellersCount)
+        int newDwellersCount,
+        int? receiverClaimId = null)
     {
+        // Нельзя пригласить самого себя: ни напрямую на свою заявку, ни в составе группового
+        // приглашения на заявку на проживание, куда входит собственная заявка
+        if (receiverClaimId == senderClaimId.ClaimId
+            || receiverRequest?.Subjects.Any(subject => subject.ClaimId == senderClaimId.ClaimId) == true)
+        {
+            throw new AccommodationInviteNotAllowedException(projectId,
+                "Нельзя пригласить самого себя.");
+        }
+
         if (senderRequest is null)
         {
             throw new AccommodationInviteNotAllowedException(projectId,
