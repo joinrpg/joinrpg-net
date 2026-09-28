@@ -40,7 +40,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                         )
                     )],
             [.. project.ProjectFeeSettings.Select(
-                    fee => new ProjectFeeSettingInfo(fee.StartDate, fee.Fee, fee.PreferentialFee))]);
+                    fee => new ProjectFeeSettingInfo(fee.StartDate, fee.Fee, fee.PreferentialFee, fee.ProjectFeeSettingId))]);
 
         ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 

@@ -1,7 +1,8 @@
 namespace JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 /// <param name="FeeSchedule">
-/// Расписание взносов проекта. Порядок не важен: действующая строка выбирается в <see cref="GetFeeSettingForDate"/>.
+/// Расписание взносов проекта. Порядок в коллекции не важен: правильный порядок даёт
+/// <see cref="FeeScheduleOrdered"/>, действующая строка выбирается в <see cref="GetFeeSettingForDate"/>.
 /// </param>
 public record ProjectFinanceSettings(
     bool PreferentialFeeEnabled,
@@ -16,13 +17,22 @@ public record ProjectFinanceSettings(
     public bool CanAcceptCash(UserIdentification userId) => GetCashPaymentType(userId)?.Enabled ?? false;
 
     /// <summary>
+    /// Расписание в порядке вступления в силу: каждая следующая строка перебивает предыдущие.
+    /// При равной дате начала позже идёт созданная позже (с большим Id) — именно она и действует.
+    /// Этот порядок — единственный правильный способ показывать расписание списком.
+    /// </summary>
+    public IReadOnlyList<ProjectFeeSettingInfo> FeeScheduleOrdered
+        => [.. FeeSchedule
+            .OrderBy(fee => fee.StartDate.Date)
+            .ThenBy(fee => fee.ProjectFeeSettingId)];
+
+    /// <summary>
     /// Строка расписания, действующая на дату. <c>null</c>, если на эту дату взнос не назначен.
+    /// Если на одну дату заведено несколько строк, действует созданная позже (с большим Id).
     /// </summary>
     public ProjectFeeSettingInfo? GetFeeSettingForDate(DateTime date)
-        => FeeSchedule
-            .Where(fee => fee.StartDate.Date <= date.Date)
-            .OrderByDescending(fee => fee.StartDate.Date)
-            .FirstOrDefault();
+        => FeeScheduleOrdered
+            .LastOrDefault(fee => fee.StartDate.Date <= date.Date);
 
     /// <summary>
     /// Базовый взнос проекта на дату. Ноль, если взнос на эту дату не назначен, а также если

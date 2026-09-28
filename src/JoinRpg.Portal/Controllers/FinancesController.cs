@@ -38,7 +38,8 @@ public class FinancesController(
     public async Task<ActionResult> Setup(int projectid)
     {
         var project = await projectRepository.GetProjectForFinanceSetup(projectid);
-        return View(new FinanceSetupViewModel(project, currentUserAccessor.UserId, currentUserAccessor.IsAdmin, vpu.PaymentsUser));
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+        return View(new FinanceSetupViewModel(project, projectInfo, currentUserAccessor.UserId, currentUserAccessor.IsAdmin, vpu.PaymentsUser));
     }
 
     [HttpGet]
