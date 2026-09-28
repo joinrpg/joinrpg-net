@@ -128,28 +128,6 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
             });
     }
 
-    public async Task MoveCharacterGroup(CharacterGroupIdentification characterGroupId,
-        CharacterGroupIdentification parentCharacterGroupId,
-        short direction)
-    {
-        await projectPropsService.ChangeProjectProperties(
-            parentCharacterGroupId.ProjectId,
-            Permission.CanEditRoles,
-            ProjectActiveRequirement.MustBeActive,
-            (characterGroupId, parentCharacterGroupId, direction),
-            ctx =>
-            {
-                var (parentCharacterGroup, parentGroupInfo) = ctx.GetCharacterGroupForChange(ctx.Request.parentCharacterGroupId);
-
-                var thisCharacterGroup =
-                    parentCharacterGroup.ChildGroups.Single(i =>
-                        i.CharacterGroupId == ctx.Request.characterGroupId.CharacterGroupId);
-
-                parentCharacterGroup.ChildGroupsOrdering = parentCharacterGroup
-                    .GetCharacterGroupsContainer().Move(thisCharacterGroup, ctx.Request.direction).GetStoredOrder();
-            });
-    }
-
     public async Task<IReadOnlyList<CharacterIdentification>> MoveCharacterAfter(
         CharacterGroupIdentification parentCharacterGroupId,
         CharacterIdentification characterId,

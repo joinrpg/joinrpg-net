@@ -278,30 +278,6 @@ public class GameGroupsController(
         return viewModel;
     }
 
-    [MasterAuthorize(Permission.CanEditRoles)]
-    [HttpGet]
-    public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, -1);
-
-    private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, short direction)
-    {
-
-        try
-        {
-            await characterGroupService.MoveCharacterGroup(new(new(projectId), charactergroupId), new(new(projectId), parentCharacterGroupId), direction);
-
-
-            return RedirectToIndex(projectId, currentRootGroupId);
-        }
-        catch
-        {
-            return RedirectToIndex(projectId, currentRootGroupId);
-        }
-    }
-
-    [MasterAuthorize(Permission.CanEditRoles)]
-    [HttpGet]
-    public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
-
     [HttpGet, AllowAnonymous]
     public async Task<ActionResult> Details(ProjectIdentification projectId, int characterGroupId)
     {
