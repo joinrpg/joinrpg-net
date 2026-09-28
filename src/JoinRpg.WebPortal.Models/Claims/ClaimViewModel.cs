@@ -139,7 +139,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                 currentUser.UserIdentification,
                 CharacterNavigationPage.Claim);
         Problems = problemValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
-        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo, currentUser);
+        // playerInfo уже прочитан репозиторием одним запросом. Старый claim.GetUserInfo() лез
+        // по навигациям EF-сущности игрока (Extra, Auth, Allrpg, ExternalLogins, Claims, ProjectAcls),
+        // а на ProjectAcls ещё и дёргал .Project по одному на проект — до 48 догрузок за запрос (#4960).
+        PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUser);
         ProjectActive = claim.Project.Active;
         CheckInStarted = claim.Project.Details.CheckInProgress;
         CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
