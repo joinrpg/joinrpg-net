@@ -120,7 +120,9 @@ public class PlotController(
         {
             ProjectId = projectId,
             PlotFolderId = selectedPlotFolderId,
-            ElementType = PlotElementTypeView.RegularPlot,
+            ElementType = originalElement is null
+                ? PlotElementTypeView.RegularPlot
+                : (PlotElementTypeView)originalElement.ElementType,
             HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
             Content = originalElement?.CurrentVersion.Content?.Value ?? PlotElementCreateViewModel.GetDefaultContent(),
             TodoField = originalElement?.LastVersionTodoField ?? "",
