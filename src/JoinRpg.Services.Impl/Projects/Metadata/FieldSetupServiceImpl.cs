@@ -345,9 +345,7 @@ internal class FieldSetupServiceImpl(
         field.FieldName = ServiceValidation.Required(request.Name);
         field.Description = new MarkdownDbValue(request.FieldHint);
         field.MasterDescription = new MarkdownDbValue(request.MasterFieldHint);
-        // Поле-ссылку на пользователя заполняют только мастера (ADR017): оно называет третьего
-        // человека, который об этом не узнает и убрать себя не сможет.
-        field.CanPlayerEdit = request.CanPlayerEdit && !field.FieldType.IsUserLink();
+        field.CanPlayerEdit = request.CanPlayerEdit;
         field.CanPlayerView = request.CanPlayerView;
         field.ValidForNpc = request.ValidForNpc;
         field.IsPublic = request.IsPublic;
