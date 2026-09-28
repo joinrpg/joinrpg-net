@@ -27,7 +27,7 @@ public class FinanceSetupViewModel
     [ReadOnly(true)]
     public bool IsAdmin { get; }
 
-    public FinanceSetupViewModel(Project project, int currentUserId, bool isAdmin, User virtualPaymentsUser)
+    public FinanceSetupViewModel(Project project, ProjectInfo projectInfo, int currentUserId, bool isAdmin, User virtualPaymentsUser)
     {
         IsAdmin = isAdmin;
         ProjectName = project.ProjectName;
@@ -66,11 +66,8 @@ public class FinanceSetupViewModel
                     .ThenBy(li => li.Name))
                 .ToList();
 
-        // При равных датах позже в списке идёт созданная позже — именно она и действует.
-        FeeSettings = project.ProjectFeeSettings.OrderBy(pfs => pfs.StartDate.Date)
-            .ThenBy(pfs => pfs.ProjectFeeSettingId)
-            .Select(fs => new ProjectFeeSettingListItemViewModel(fs))
-            .ToList();
+        FeeSettings = [.. projectInfo.ProjectFinanceSettings.FeeScheduleOrdered
+            .Select(fs => new ProjectFeeSettingListItemViewModel(fs, projectInfo.ProjectId))];
 
         CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId)
             .Token.ToHexString();

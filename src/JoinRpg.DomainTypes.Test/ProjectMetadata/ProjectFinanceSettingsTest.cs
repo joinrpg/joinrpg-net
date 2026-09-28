@@ -73,6 +73,21 @@ public class ProjectFinanceSettingsTest
     }
 
     [Fact]
+    public void OrderedScheduleEndsWithEffectiveRowOfEachDate()
+    {
+        // На этот порядок опирается список взносов в настройках финансов: строка, действующая
+        // на свою дату, идёт в нём последней среди строк с той же датой.
+        var settings = Make(
+            new ProjectFeeSettingInfo(Day20, Fee: 3000, PreferentialFee: null, ProjectFeeSettingId: 13),
+            new ProjectFeeSettingInfo(Day10, Fee: 1000, PreferentialFee: null, ProjectFeeSettingId: 14),
+            new ProjectFeeSettingInfo(Day20, Fee: 2000, PreferentialFee: null, ProjectFeeSettingId: 12));
+
+        settings.FeeScheduleOrdered
+            .Select(fee => fee.ProjectFeeSettingId)
+            .ShouldBe([14, 12, 13]);
+    }
+
+    [Fact]
     public void AmongRowsWithSameStartDateOrderInScheduleDoesNotMatter()
     {
         // Порядок в коллекции не должен влиять: Id больше — строка побеждает.
