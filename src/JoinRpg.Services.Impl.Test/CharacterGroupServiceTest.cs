@@ -136,24 +136,6 @@ public class CharacterGroupServiceTest
     }
 
     [Fact]
-    public async Task MoveCharacterGroup_ReordersChildren()
-    {
-        var parent = mock.Group;
-        var first = mock.CreateCharacterGroup();
-        var second = mock.CreateCharacterGroup();
-        first.ParentCharacterGroupIds = [parent.CharacterGroupId];
-        second.ParentCharacterGroupIds = [parent.CharacterGroupId];
-        mock.ReInitProjectInfo();
-
-        var service = CreateService(mock.Master.UserId);
-
-        await service.MoveCharacterGroup(GroupId(second), GroupId(parent), direction: -1);
-
-        parent.ChildGroupsOrdering.ShouldNotBeNullOrEmpty();
-        unitOfWork.SaveChangesCallCount.ShouldBe(1);
-    }
-
-    [Fact]
     public async Task MoveCharacterAfter_ReordersCharacters()
     {
         var parent = mock.Group;

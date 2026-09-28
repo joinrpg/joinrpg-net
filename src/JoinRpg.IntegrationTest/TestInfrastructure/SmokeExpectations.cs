@@ -22,8 +22,6 @@ internal static class SmokeExpectations
         ["{projectId}/rooms/OccupyAll"] = "GET расселяет всех по комнатам — изменил бы сид",
         ["{projectId}/rooms/UnOccupyAll"] = "GET выселяет всех — изменил бы сид",
         ["{projectId}/rooms/UnOccupyRoom"] = "GET выселяет тип поселения — изменил бы сид",
-        ["{projectId}/roles/{characterGroupId}/MoveUp"] = "GET меняет порядок групп — изменил бы сид",
-        ["{projectId}/roles/{characterGroupId}/MoveDown"] = "GET меняет порядок групп — изменил бы сид",
 
         // Права админа, а смоук ходит под мастером проекта. Отдельный кейс, в этой итерации не тащим.
         ["{projectId}/masters/force-admin-access"] = "нужны права админа сайта, а не мастера проекта",

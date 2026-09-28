@@ -16,10 +16,6 @@ public interface ICharacterGroupService
 
     Task DeleteCharacterGroup(CharacterGroupIdentification characterGroupId);
 
-    Task MoveCharacterGroup(CharacterGroupIdentification characterGroupId,
-        CharacterGroupIdentification parentCharacterGroupId,
-        short direction);
-
     Task<IReadOnlyList<CharacterIdentification>> MoveCharacterAfter(
         CharacterGroupIdentification parentCharacterGroupId,
         CharacterIdentification characterId,
