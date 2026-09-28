@@ -1,9 +1,7 @@
 {
-  "GET /x-game-api/{projectId}/claims/{claimId}": 1,
   "GET /{ProjectId}/characters/bygroup/{characterGroupId}": 3,
-  "GET /{ProjectId}/claim/{ClaimId}/Edit": 7,
   "GET /{ProjectId}/claim/{ClaimId}/TransferClaimPayment": 3,
-  "GET /{ProjectId}/claim/{ClaimId}/checkin": 7,
+  "GET /{ProjectId}/claim/{ClaimId}/checkin": 5,
   "GET /{ProjectId}/goto/comment/{CommentId:int}": 3,
   "GET /{ProjectId}/goto/discussion/{CommentDiscussionId}": 3,
   "GET /{ProjectId}/goto/finance-operation/{FinanceOperationId:int}": 2,
