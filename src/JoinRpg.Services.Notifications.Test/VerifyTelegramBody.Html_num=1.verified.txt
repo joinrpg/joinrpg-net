@@ -1,4 +1,7 @@
-﻿<p><strong>Заголовок</strong></p>
+﻿<strong>Заголовок</strong>
+
 <p>Привет!</p>
+
 <p>Это <strong>тело</strong> сообщения.</p>
+
 <p><em>Master</em></p>

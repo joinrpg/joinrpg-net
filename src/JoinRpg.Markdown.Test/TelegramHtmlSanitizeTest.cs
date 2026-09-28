@@ -11,6 +11,15 @@ public class TelegramHtmlSanitizeTest
     }
 
     [Fact]
+    public void ToTelegramHtmlString_ParagraphsSeparatedByEmptyLine()
+    {
+        // Санитайзер Telegram выбросит <p>, поэтому пустая строка между абзацами должна быть
+        // проставлена заранее — иначе весь текст слипнется в одну простыню.
+        var message = new MarkdownString("Добрый день!\n\nЭто тестовое сообщение").ToTelegramHtmlString();
+        message.SanitizeHtml(4096).ShouldBe("Добрый день!\n\nЭто тестовое сообщение");
+    }
+
+    [Fact]
     public void SanitizeHtml_ShortMessage_NotTruncated()
     {
         var message = new TelegramHtmlString("<b>Короткое сообщение</b>");

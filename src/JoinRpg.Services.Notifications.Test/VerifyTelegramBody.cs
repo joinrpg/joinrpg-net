@@ -26,6 +26,8 @@ public class VerifyTelegramBody
     [Theory]
     [InlineData(3, "Заголовок", "Привет!\n\nЭто **тело** сообщения.", false)]
     [InlineData(4, "Заголовок", "Привет!\n\nЭто **тело** сообщения.", true)]
+    // Тему рассылки пишет мастер, и спецсимволы markdown/html в ней не должны ломать выделение
+    [InlineData(5, "Игра: 1*2_3 <b>", "Привет!", false)]
     public Task HtmlSkipSignature(int num, string header, string body, bool withLink)
     {
         var result = TelegramSenderJobService.FormatMessage(

@@ -48,9 +48,13 @@ public partial class MassProjectEmailService(
                 "%recepient.claim%")
             );
 
+        // Тема, которую ввел мастер — только часть заголовка, перед ней всегда название проекта
+        // (так же это показано в форме рассылки и так же устроены остальные письма проекта)
+        var header = $"{project.ProjectName.Value}: {subject}";
+
         var notification = new NotificationEvent(NotificationClass.MassProjectEmails,
                                                  project.ProjectId, // Казалось бы это заявка, но нет, письмо к заявке не имеет отношения, оно всем рассылается
-                                                 subject,
+                                                 header,
                                                  template,
                                                  recipients,
                                                  currentUserAccessor.UserIdentification);
@@ -59,7 +63,7 @@ public partial class MassProjectEmailService(
 
         if (alsoMailToMasters)
         {
-            await SendToAllMasters(project, template, subject, currentUserAccessor.UserIdentification, recipients);
+            await SendToAllMasters(project, template, header, currentUserAccessor.UserIdentification, recipients);
         }
     }
 
@@ -94,7 +98,7 @@ public partial class MassProjectEmailService(
         await notificationService.QueueNotification(notification);
     }
 
-    private async Task SendToAllMasters(ProjectInfo project, NotificationEventTemplate body, string subject, UserIdentification initiator, List<NotificationRecepient> players)
+    private async Task SendToAllMasters(ProjectInfo project, NotificationEventTemplate body, string header, UserIdentification initiator, List<NotificationRecepient> players)
     {
         var masterReps = new List<NotificationRecepient>();
         foreach (var master in project.Masters)
@@ -105,7 +109,7 @@ public partial class MassProjectEmailService(
                 masterReps.Add(new NotificationRecepient(master));
             }
         }
-        var notification = new NotificationEvent(NotificationClass.MasterProject, project.ProjectId, subject, body, masterReps, initiator);
+        var notification = new NotificationEvent(NotificationClass.MasterProject, project.ProjectId, header, body, masterReps, initiator);
         await notificationService.QueueNotification(notification);
 
     }
