@@ -32,11 +32,11 @@ public class ManageController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> RemoveLogin(string loginProvider, string? providerKey)
+    public async Task<ActionResult> RemoveLogin(string loginProvider)
     {
         var user = await userManager.FindRequiredByIdAsync(currentUserAccessor.UserIdentification);
         ManageMessageId? message;
-        var result = await externalLoginProfileExtractor.RemoveLogin(user, loginProvider, providerKey);
+        var result = await externalLoginProfileExtractor.RemoveLogin(user, loginProvider);
         if (result.Succeeded)
         {
             await signInManager.SignInAsync(user, isPersistent: true);

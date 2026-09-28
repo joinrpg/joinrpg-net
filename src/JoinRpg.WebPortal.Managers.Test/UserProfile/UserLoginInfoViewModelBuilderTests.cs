@@ -36,7 +36,6 @@ public class UserLoginInfoViewModelBuilderTests
         vk.AllowLink.ShouldBeTrue();
         vk.AllowUnlink.ShouldBeFalse();
         vk.NeedToReLink.ShouldBeFalse();
-        vk.ProviderKey.ShouldBeNull();
     }
 
     [Fact]
@@ -50,7 +49,6 @@ public class UserLoginInfoViewModelBuilderTests
         vk.AllowUnlink.ShouldBeTrue();
         vk.NeedToReLink.ShouldBeFalse();
         vk.IsOnlyLoginMethod.ShouldBeFalse();
-        vk.ProviderKey.ShouldBe("123");
     }
 
     [Fact]
@@ -66,8 +64,7 @@ public class UserLoginInfoViewModelBuilderTests
     [Fact]
     public void GetSocialLogins_ProfileValuePresentButNotVerified_NeedsRelinkButCanBeUnlinked()
     {
-        // Непровереннный VK всё равно хранится как ExternalLogin (Id есть), значит его можно
-        // отвязать, не подтверждая — не только предложить повторную привязку.
+        // Непровереннный VK можно отвязать, не подтверждая — не только предложить повторную привязку.
         var user = BuildUserInfo(vk: new VkSocialLink(123, isVerified: false));
 
         var vk = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Vk);
@@ -75,15 +72,13 @@ public class UserLoginInfoViewModelBuilderTests
         vk.AllowLink.ShouldBeFalse();
         vk.AllowUnlink.ShouldBeTrue();
         vk.NeedToReLink.ShouldBeTrue();
-        vk.ProviderKey.ShouldBe("123");
     }
 
     [Fact]
     public void GetSocialLogins_LegacyProfileValueWithoutExternalLogin_NeedsRelinkButCanBeUnlinked()
     {
         // Только legacy-поле (PrettyName без числового Id) — ExternalLogin отсутствует, но
-        // сам legacy-контакт всё равно можно удалить (ProviderKey пуст — контроллер очищает
-        // legacy-поле напрямую, не трогая ExternalLogin).
+        // сам legacy-контакт всё равно можно удалить.
         var user = BuildUserInfo(vk: new VkSocialLink(null, new PrefferedName("durov")));
 
         var vk = user.GetSocialLogins().Single(x => x.LoginProvider == ProviderDescViewModel.Vk);
@@ -91,7 +86,6 @@ public class UserLoginInfoViewModelBuilderTests
         vk.AllowLink.ShouldBeFalse();
         vk.AllowUnlink.ShouldBeTrue();
         vk.NeedToReLink.ShouldBeTrue();
-        vk.ProviderKey.ShouldBeNull();
     }
 
     [Fact]

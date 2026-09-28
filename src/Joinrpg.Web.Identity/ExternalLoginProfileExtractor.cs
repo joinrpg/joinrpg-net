@@ -16,21 +16,26 @@ public class ExternalLoginProfileExtractor(IUserService userService, JoinUserMan
     /// Removes external login and cleans up profile fields populated from it.
     /// Shared by self-service (<c>ManageController.RemoveLogin</c>) and admin (<c>UserAdminViewService.RemoveVkLink</c>) unlink paths.
     /// </summary>
-    public async Task<IdentityResult> RemoveLogin(JoinIdentityUser user, string loginProvider, string? providerKey)
+    public async Task<IdentityResult> RemoveLogin(JoinIdentityUser user, string loginProvider)
     {
-        // Пустой providerKey означает, что настоящей привязки (ExternalLogin) нет — это
-        // legacy-контакт без подтверждения (см. UserLoginInfoViewModelBuilder), для него нечего
-        // отвязывать через RemoveLoginAsync, только очистить legacy-поле.
-        var result = string.IsNullOrEmpty(providerKey)
+        // Настоящей привязки (ExternalLogin) может не быть вовсе: неподтверждённая соцсеть
+        // живёт только в legacy-поле профиля (UserExtra.Vk/UserExtra.Telegram). Что привязка
+        // есть, знает только база — по данным профиля это не восстановить (например, legacy-ВК
+        // хранит числовой id и выглядит точно так же, как привязанный). Поэтому спрашиваем
+        // список логинов, а не полагаемся на переданный ключ.
+        var login = (await userManager.GetLoginsAsync(user))
+            .FirstOrDefault(l => string.Equals(l.LoginProvider, loginProvider, StringComparison.OrdinalIgnoreCase));
+
+        var result = login is null
             ? IdentityResult.Success
-            : await userManager.RemoveLoginAsync(user, loginProvider, providerKey);
+            : await userManager.RemoveLoginAsync(user, login.LoginProvider, login.ProviderKey);
         if (result.Succeeded)
         {
-            if (loginProvider == UserExternalLogin.VkProvider)
+            if (string.Equals(loginProvider, UserExternalLogin.VkProvider, StringComparison.OrdinalIgnoreCase))
             {
                 await userService.RemoveVkFromProfile(new UserIdentification(user.Id));
             }
-            else if (loginProvider == "telegram")
+            else if (string.Equals(loginProvider, UserExternalLogin.TelegramProvider, StringComparison.OrdinalIgnoreCase))
             {
                 await userService.RemoveTelegramFromProfile(user.Id);
             }

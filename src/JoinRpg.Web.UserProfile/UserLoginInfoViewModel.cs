@@ -13,8 +13,6 @@ public record UserLoginInfoViewModel
 
     public required Uri? ProviderLink { get; set; }
 
-    public required string? ProviderKey { get; set; }
-
     public required bool AllowLink { get; set; }
     public required bool AllowUnlink { get; set; }
     public required bool NeedToReLink { get; set; }
