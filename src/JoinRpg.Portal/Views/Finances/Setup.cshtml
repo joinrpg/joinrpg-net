@@ -18,8 +18,8 @@
 }
 else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
 {
-    <div class="join alert alert-danger"><join-icon icon="Alert" />
-        Необходимо настроить хотя бы один метод оплаты, прежде чем принимать взносы.
+    <div class="join alert alert-warning"><join-icon icon="Alert" />
+        Игроки не могут сдавать взносы, пока не настроен ни один метод оплаты.
     </div>
 }
 
