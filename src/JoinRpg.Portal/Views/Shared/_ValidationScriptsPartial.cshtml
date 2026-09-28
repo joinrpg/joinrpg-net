@@ -10,4 +10,12 @@
     return element.checked;
   });
   jQuery.validator.unobtrusive.adapters.addBool("enforcetrue");
+  // Для обязательного мультивыбора в списке всегда остаётся выбран пустой placeholder
+  // «( ничего не выбрано )» (claim.js:multiChanged), поэтому стандартный required
+  // считает поле заполненным и алерт не показывается до ответа сервера.
+  // Считаем поле заполненным, только если выбран хотя бы один вариант с непустым значением.
+  jQuery.validator.addMethod("multiselectrequired", function (value, element) {
+    return $(element).find("option:selected").filter(function () { return $(this).val() !== ""; }).length > 0;
+  });
+  jQuery.validator.unobtrusive.adapters.addBool("multiselectrequired");
 </script>

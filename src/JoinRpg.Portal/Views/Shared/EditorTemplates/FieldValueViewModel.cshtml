@@ -69,6 +69,10 @@
         }
 
 
+        bool isMultiSelect = Model.FieldViewType is ProjectFieldViewType.MultiSelect
+            or ProjectFieldViewType.ScheduleRoomField
+            or ProjectFieldViewType.ScheduleTimeSlotField;
+
         switch (Model.MandatoryStatus)
         {
           case MandatoryStatusViewType.Optional:
@@ -78,7 +82,10 @@
             break;
           case MandatoryStatusViewType.Required:
             attrs["data-val"] = "true";
-            attrs["data-val-required"] = "Необходимо заполнить поле";
+            // Для мультивыбора стандартный required не подходит: jquery.validate считает
+            // поле заполненным, пока выбран пустой placeholder «( ничего не выбрано )».
+            // См. правило multiselectrequired в _ValidationScriptsPartial.
+            attrs[isMultiSelect ? "data-val-multiselectrequired" : "data-val-required"] = "Необходимо заполнить поле";
             break;
           default:
             throw new ArgumentOutOfRangeException();
