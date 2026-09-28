@@ -1,0 +1,28 @@
+@* Типизированный селектор заявок с поиском (bootstrap-select live-search при >10 заявках). *@
+
+<TypedSelector TKey="int" TItem="ClaimSelectorItem"
+    Name="@Name"
+    Items="Items"
+    KeySelector="@(c => c.ClaimId)"
+    ToListItem="@(c => TypedSelectList.CreateItem(
+        Value: c.ClaimId,
+        Text: c.Name,
+        Subtext: $"{c.Status}, {c.PlayerName}",
+        ExtraSearch: c.PlayerName))"
+    SelectedValues="Selected"
+    SelectedValuesChanged="HandleSelectedChanged"
+    Multiple="false"
+    />
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter] [EditorRequired] public ClaimSelectorItem[] Items { get; set; } = [];
+    [Parameter] public int? ClaimId { get; set; }
+    [Parameter] public EventCallback<int?> ClaimIdChanged { get; set; }
+
+    private int[] Selected => ClaimId is int id ? [id] : [];
+
+    private async Task HandleSelectedChanged(int[] values)
+        => await ClaimIdChanged.InvokeAsync(values.SingleOrDefault());
+}

@@ -1,9 +1,15 @@
-﻿@using JoinRpg.Portal.AppCodeCompiled
+﻿@using JoinRpg.Domain
+@using JoinRpg.Portal.AppCodeCompiled
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Money
+@using JoinRpg.Web.ProjectCommon
 @model PaymentTransferViewModel
 
-@{ ViewBag.Title = "Перевод взноса между заявками"; }
+@{ ViewBag.Title = "Перевод взноса между заявками";
+   var claimSelectorItems = Model.Claims
+       .Select(c => new ClaimSelectorItem(c.ClaimId, c.Name, c.Status, c.Player.GetDisplayName()))
+       .ToArray();
+}
 <h1>@ViewBag.Title</h1>
 
 <div class="form-horizontal" style="margin-top: 2em;">
@@ -21,7 +27,13 @@
 
       <div class="form-group">
         @Html.LabelFor(model => model.RecipientClaimId, new { @class = "col-md-3 control-label" })
-        <div class="col-md-6">@Html.DropDownListFor(model => model.RecipientClaimId, Model.Claims)</div>
+        <div class="col-md-6">
+          <component type="typeof(ClaimSelector)"
+                     param-Name="nameof(Model.RecipientClaimId)"
+                     param-Items="@claimSelectorItems"
+                     render-mode="Static" />
+          @Html.ValidationMessageFor(model => model.RecipientClaimId, "", new { @class = "text-danger" })
+        </div>
       </div>
       <div class="form-group">
         @Html.LabelFor(model => model.Money, new { @class = "col-md-3 control-label" })
