@@ -66,6 +66,12 @@
         <PackageVersion Include="OpenIddict.Validation.AspNetCore" Version="7.7.1" />
         <PackageVersion Include="OpenIddict.Validation.SystemNetHttp" Version="7.7.1" />
         <PackageVersion Include="OpenTelemetry.Api" Version="1.19.1" />
+        <!-- Пакет выпускается только в prerelease, стабильных версий у него нет никогда.
+             Dependabot такие не обновляет: в NuGet-апдейтере кандидат-prerelease проходит
+             фильтр, только если числовая часть версии совпадает с текущей
+             (VersionFinder.CreateVersionFilter), т.е. 1.19.1-beta.1 -> 1.19.1-beta.2 и не дальше.
+             Настройками dependabot.yml это не лечится — обновлять вручную,
+             сверяясь с версиями остальных OpenTelemetry.*. Подробнее — docs/dependabot.md. -->
         <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.19.1-beta.1" />
         <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.19.0" />
