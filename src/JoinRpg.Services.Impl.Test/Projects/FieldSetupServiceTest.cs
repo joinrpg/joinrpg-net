@@ -86,17 +86,18 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
     }
 
     /// <summary>
-    /// ADR017: поле-ссылку на пользователя заполняют только мастера — даже если запрос просит иного.
+    /// Поле-ссылка на пользователя настраивается как любое другое: право игрока его заполнять
+    /// решает мастер проекта галочкой, отдельного запрета нет (ADR017 §3).
     /// </summary>
     [Fact]
-    public async Task AddField_UserLink_IsNeverPlayerEditable()
+    public async Task AddField_UserLink_RespectsCanPlayerEdit()
     {
         var service = CreateService(mock.Master.UserId);
 
         var result = await service.AddField(
             CreateFieldRequest(ProjectFieldType.UserLink, name: "Куратор роли"));
 
-        Result.UnsortedFields.Single(f => f.Id == result).CanPlayerEdit.ShouldBeFalse();
+        Result.UnsortedFields.Single(f => f.Id == result).CanPlayerEdit.ShouldBeTrue();
     }
 
     [Fact]

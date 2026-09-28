@@ -101,13 +101,6 @@ public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObj
                 new List<string> { nameof(IsPublic), nameof(CanPlayerView) });
         }
 
-        if (FieldType.IsUserLink() && CanPlayerEdit)
-        {
-            yield return
-              new ValidationResult("Поле-ссылку на пользователя заполняют только мастера (ADR017).",
-                new List<string> { nameof(FieldType), nameof(CanPlayerEdit) });
-        }
-
         if (!CanPlayerView && CanPlayerEdit)
         {
             yield return
