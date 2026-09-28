@@ -10,6 +10,9 @@
         case JoinRpg.Common.WebComponents.ViewMode.Hide:
             <JoinIcon Icon="JoinIconType.User" /><i>занято</i>
             break;
+        case JoinRpg.Common.WebComponents.ViewMode.Deleted:
+            <JoinIcon Icon="JoinIconType.User" /><i>@Model.DisplayName</i>
+            break;
     }
 
 @code {

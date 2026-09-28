@@ -4,7 +4,12 @@ public enum ViewMode
 {
     Show,
     ShowAsPrivate,
-    Hide
+    Hide,
+    /// <summary>
+    /// Объекта больше нет (например, пользователь удалён). Показываем пояснение вместо ссылки.
+    /// В отличие от <see cref="Hide"/>, тут дело не в правах: показывать просто нечего.
+    /// </summary>
+    Deleted
 }
 
 public static class ViewModeSelector
