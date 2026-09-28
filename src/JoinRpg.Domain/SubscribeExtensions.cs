@@ -16,7 +16,7 @@ public static class SubscribeExtensions
             return [];
         }
 
-        return character.GetParentGroupsToTop() //Get all groups for the character
+        return GetParentGroupsToTop(character) //Get all groups for the character
           .SelectMany(g => g.Subscriptions) //get subscriptions on groups
           .Union(character.Subscriptions) //Subscriptions of the character itself.
           .Union(character.ApprovedClaim?.Subscriptions ?? []) //Subscriptions of the claim itself.
@@ -36,7 +36,7 @@ public static class SubscribeExtensions
       IEnumerable<User?>? extraRecipients = null,
       bool mastersOnly = false)
     {
-        return claim.Character.GetParentGroupsToTop() //Get all groups for claim
+        return GetParentGroupsToTop(claim.Character) //Get all groups for claim
             .SelectMany(g => g.Subscriptions) //get subscriptions on groups
             .Union(claim.Subscriptions) //subscribtions on claim
             .Union(claim.Character.Subscriptions ?? []) //and on characters
@@ -48,6 +48,11 @@ public static class SubscribeExtensions
             .VerifySubscriptions(mastersOnly, claim)
             .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
+
+    private static IEnumerable<CharacterGroup> GetParentGroupsToTop(Character? character)
+        => character?.Groups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups))
+            .OrderBy(g => g.CharacterGroupId)
+            .Distinct() ?? [];
 
     private static IEnumerable<User> VerifySubscriptions<TEntity>(
       this IEnumerable<User?> users,
