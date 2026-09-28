@@ -66,7 +66,9 @@ public class FinanceSetupViewModel
                     .ThenBy(li => li.Name))
                 .ToList();
 
+        // При равных датах позже в списке идёт созданная позже — именно она и действует.
         FeeSettings = project.ProjectFeeSettings.OrderBy(pfs => pfs.StartDate.Date)
+            .ThenBy(pfs => pfs.ProjectFeeSettingId)
             .Select(fs => new ProjectFeeSettingListItemViewModel(fs))
             .ToList();
 

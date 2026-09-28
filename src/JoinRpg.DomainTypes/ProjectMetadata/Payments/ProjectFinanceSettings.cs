@@ -17,11 +17,13 @@ public record ProjectFinanceSettings(
 
     /// <summary>
     /// Строка расписания, действующая на дату. <c>null</c>, если на эту дату взнос не назначен.
+    /// Если на одну дату заведено несколько строк, действует созданная позже (с большим Id).
     /// </summary>
     public ProjectFeeSettingInfo? GetFeeSettingForDate(DateTime date)
         => FeeSchedule
             .Where(fee => fee.StartDate.Date <= date.Date)
             .OrderByDescending(fee => fee.StartDate.Date)
+            .ThenByDescending(fee => fee.ProjectFeeSettingId)
             .FirstOrDefault();
 
     /// <summary>

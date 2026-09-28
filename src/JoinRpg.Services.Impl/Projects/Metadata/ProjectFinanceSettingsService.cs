@@ -171,7 +171,13 @@ internal class ProjectFinanceSettingsService(
 
                 // Самая ранняя строка расписания всегда действует с момента создания проекта —
                 // иначе до её начала взнос был бы не определён.
-                var firstFee = ctx.Project.ProjectFeeSettings.OrderBy(s => s.StartDate).First();
+                // Если на самую раннюю дату заведено несколько строк, назад переносим созданную
+                // раньше: на саму дату всё равно действует последняя (см. GetFeeSettingForDate).
+                // У только что добавленной строки Id ещё нулевой, поэтому она считается самой новой.
+                var firstFee = ctx.Project.ProjectFeeSettings
+                    .OrderBy(s => s.StartDate)
+                    .ThenBy(s => s.ProjectFeeSettingId == 0 ? int.MaxValue : s.ProjectFeeSettingId)
+                    .First();
                 firstFee.StartDate = ctx.Project.CreatedDate;
             });
 
