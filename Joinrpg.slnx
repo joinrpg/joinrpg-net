@@ -11,6 +11,7 @@
     <Project Path="src/Common/JoinRpg.Common.Telegram/JoinRpg.Common.Telegram.csproj" />
     <Project Path="src/Common/JoinRpg.Common.Telegram.Test/JoinRpg.Common.Telegram.Test.csproj" />
     <Project Path="src/Common/JoinRpg.Common.WebInfrastructure/JoinRpg.Common.WebInfrastructure.csproj" />
+    <Project Path="src/Common/JoinRpg.Common.WebInfrastructure.Test/JoinRpg.Common.WebInfrastructure.Test.csproj" />
     <Project Path="src/JoinRpg.Helpers/JoinRpg.Helpers.csproj" />
     <Project Path="src/JoinRpg.Markdown/JoinRpg.Markdown.csproj" />
   </Folder>

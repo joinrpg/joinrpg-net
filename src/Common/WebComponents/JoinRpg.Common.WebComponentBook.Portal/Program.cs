@@ -2,7 +2,7 @@ using JoinRpg.Common.WebInfrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHealthChecks();
+builder.Services.AddJoinHealthChecks();
 builder.Services.ConfigureForwardedHeaders();
 builder.Host.UseJoinSerilog("ComponentBook");
 

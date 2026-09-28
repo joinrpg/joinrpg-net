@@ -20,6 +20,8 @@ public static class WebInfrastructureRegistration
 
         services.ConfigureForwardedHeaders();
 
+        services.AddJoinHealthChecks();
+
         services
             .AddScoped(typeof(PerRequestCache<,>))
             .AddSingleton(typeof(SingletonCache<,>))
