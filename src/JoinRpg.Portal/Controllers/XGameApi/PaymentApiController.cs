@@ -15,7 +15,6 @@ public class PaymentApiController(IFinanceService financeService) : XGameApiCont
             {
                 Contents = comment ?? "",
                 ClaimId = claimId,
-                FeeChange = 0,
                 Money = amount,
                 OperationDate = DateTime.Now,
                 PaymentTypeId = new DomainTypes.ProjectMetadata.Payments.PaymentTypeIdentification(projectId, paymentTypeId),

@@ -5,8 +5,6 @@ public class PaymentViewModelBase : FinanceViewModelBase
     [Display(Name = "Внесено денег"), Required]
     public int Money { get; set; }
 
-    public int FeeChange { get; set; }
-
     [Display(Name = "Кому и как оплачено"), Required]
     public int PaymentTypeId { get; set; }
 

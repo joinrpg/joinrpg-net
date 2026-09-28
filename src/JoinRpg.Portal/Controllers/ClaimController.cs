@@ -422,7 +422,6 @@ public class ClaimController(
                 {
                     ClaimId = claim.ClaimId,
                     Contents = viewModel.CommentText,
-                    FeeChange = viewModel.FeeChange,
                     Money = viewModel.Money,
                     OperationDate = viewModel.OperationDate.ToDateTime(TimeOnly.MinValue),
                     PaymentTypeId = new DomainTypes.ProjectMetadata.Payments.PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId),

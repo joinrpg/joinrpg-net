@@ -410,7 +410,6 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 ClaimId = claims[0].ClaimId,
                 Contents = "Взнос за смоук",
                 OperationDate = DateTime.UtcNow.Date,
-                FeeChange = 0,
                 Money = 100,
                 PaymentTypeId = paymentTypeId,
             });

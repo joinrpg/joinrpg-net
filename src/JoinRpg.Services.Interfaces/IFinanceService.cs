@@ -15,7 +15,6 @@ public class FeeAcceptedOperationRequest : IClaimOperationRequest
     public int ClaimId { get; set; }
     public required string Contents { get; set; }
     public DateTime OperationDate { get; set; }
-    public int FeeChange { get; set; }
     public int Money { get; set; }
     public required PaymentTypeIdentification PaymentTypeId { get; set; }
 }
