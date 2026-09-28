@@ -38,6 +38,10 @@ updates:
       autofac:
         patterns:
           - "Autofac.*"
+      # OpenTelemetry.Exporter.Prometheus.AspNetCore живёт только в бета-версиях
+      # (стабильного релиза не будет, пакет задепрекейчен апстримом). Здесь ничего
+      # не игнорируем: dependabot предлагает prerelease-версии, пока текущая версия
+      # пакета — prerelease, поэтому бета здесь намеренная и её нужно просто обновлять.
       opentelemetry:
         patterns:
           - "OpenTelemetry.*"
