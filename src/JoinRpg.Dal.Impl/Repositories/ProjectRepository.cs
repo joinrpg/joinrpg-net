@@ -167,7 +167,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     async Task<ProjectPersonalizedInfo[]> IProjectRepository.GetPersonalizedProjectsBySpecification(PersonalizedProjectListSpecification projectListSpecification)
     {
         var filterPredicate = ProjectPredicates.BySpecification(projectListSpecification);
-        return await GetProjectPersonalizedListInternal(projectListSpecification.UserId, filterPredicate);
+        return await GetProjectPersonalizedListInternal(projectListSpecification.PersonalizeForUser, filterPredicate);
     }
 
     async Task<ProjectShortInfo[]> IProjectRepository.GetProjectsBySpecification(ProjectListSpecification projectListSpecification)

@@ -112,7 +112,19 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
 public record PersonalizedProjectListSpecification(ProjectListCriteria Criteria, bool LoadArchived, UserIdentification UserId)
     : ProjectListSpecification(Criteria, LoadArchived)
 {
+    /// <summary>
+    /// Пользователь, относительно которого считается персонализация («мой проект», «мои заявки»).
+    /// По умолчанию — тот же, по которому идет отбор проектов.
+    /// В чужом профиле это разные люди: отбираем проекты хозяина профиля,
+    /// а персонализируем под того, кто смотрит (возможно, анонима).
+    /// </summary>
+    public UserIdentification? PersonalizeForUser { get; private init; } = UserId;
 
+    /// <summary>
+    /// Считать персонализацию относительно другого пользователя (или анонима, если null)
+    /// </summary>
+    public PersonalizedProjectListSpecification PersonalizedFor(UserIdentification? userId)
+        => this with { PersonalizeForUser = userId };
 }
 
 public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, MasterManageClaimsAccess, All, Public };

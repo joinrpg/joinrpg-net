@@ -29,7 +29,10 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             return NotFound();
         }
 
-        var userProjects = await projectRepository.GetPersonalizedProjectsBySpecification(ProjectListSpecification.AllProjectsWithMasterAccess(userId));
+        // Отбираем проекты хозяина профиля, но «мой проект»/«мои заявки» считаем относительно того, кто смотрит (#5039)
+        var userProjects = await projectRepository.GetPersonalizedProjectsBySpecification(
+            ProjectListSpecification.AllProjectsWithMasterAccess(userId)
+                .PersonalizedFor(currentUserAccessor.UserIdentificationOrDefault));
         var activeUserProjects = userProjects.Where(p => p.Active).ToList();
 
         // Непубличные проекты в профиле видны только администраторам сайта
