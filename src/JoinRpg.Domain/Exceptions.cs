@@ -135,11 +135,15 @@ public class EntityWrongStatusException : JoinRpgProjectEntityException
     }
 }
 
-public class RoomIsOccupiedException : JoinRpgProjectEntityException
+/// <summary>
+/// Операция недопустима над заселённой комнатой — например, удаление (ADR018).
+/// </summary>
+public class RoomIsOccupiedException(AccommodationRoomIdentification roomId)
+    : JoinRpgProjectException(
+        roomId.ProjectId,
+        $"Операция недопустима: в комнате {roomId} живут игроки")
 {
-    public RoomIsOccupiedException(ProjectAccommodation entity) : base(entity, "Cannot peforrm this operation on occupied room.")
-    {
-    }
+    public AccommodationRoomIdentification RoomId { get; } = roomId;
 }
 
 /// <summary>

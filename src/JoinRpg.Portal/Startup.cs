@@ -27,6 +27,7 @@ using JoinRpg.Services.Advertisement;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
+using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces;
@@ -103,6 +104,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
                 SenderServiceActivityHolder.ActivitySourceName,
                 ProjectPropsServiceActivity.ActivitySourceName,
                 CharacterPropsServiceActivity.ActivitySourceName,
+                AccommodationPropsServiceActivity.ActivitySourceName,
                 NotificationServiceActivity.ActivitySourceName,
                 KogdaIgraSyncServiceActivity.ActivitySourceName,
             ]);

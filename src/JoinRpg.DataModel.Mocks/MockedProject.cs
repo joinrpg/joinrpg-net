@@ -578,21 +578,34 @@ public class MockedProject
         return request;
     }
 
+    /// <summary>Комнаты проекта — как их видел бы <c>DbSet</c>.</summary>
+    public List<ProjectAccommodation> Rooms { get; } = [];
+
     /// <summary>Комната, в которую расселена заявка на поселение.</summary>
     public ProjectAccommodation CreateRoom(AccommodationRequest request, string name = "Комната")
     {
+        var room = CreateEmptyRoom(request.AccommodationType, name);
+        room.Inhabitants.Add(request);
+        request.Accommodation = room;
+        request.AccommodationId = room.Id;
+        return room;
+    }
+
+    /// <summary>Пустая комната выбранного типа поселения.</summary>
+    public ProjectAccommodation CreateEmptyRoom(ProjectAccommodationType accommodationType, string name = "Комната")
+    {
         var room = new ProjectAccommodation
         {
-            Id = request.Id,
+            Id = Rooms.Count + 1,
             Name = name,
             Project = Project,
             ProjectId = Project.ProjectId,
-            ProjectAccommodationType = request.AccommodationType,
-            AccommodationTypeId = request.AccommodationTypeId,
-            Inhabitants = [request],
+            ProjectAccommodationType = accommodationType,
+            AccommodationTypeId = accommodationType.Id,
+            Inhabitants = [],
         };
-        request.Accommodation = room;
-        request.AccommodationId = room.Id;
+        accommodationType.ProjectAccommodations.Add(room);
+        Rooms.Add(room);
         return room;
     }
 

@@ -1,5 +1,6 @@
 using System.Reflection;
 using JoinRpg.Services.Email;
+using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
@@ -54,6 +55,7 @@ public static class Services
             .AddTransient<ICharacterGroupService, CharacterGroupService>()
             .AddTransient<IProjectPropsService, ProjectPropsService>()
             .AddTransient<ICharacterPropsService, CharacterPropsService>()
+            .AddTransient<IAccommodationPropsService, AccommodationPropsService>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IProjectRolesListService, ProjectRolesListService>()
             .AddTransient<IProjectAccessService, ProjectAccessService>()

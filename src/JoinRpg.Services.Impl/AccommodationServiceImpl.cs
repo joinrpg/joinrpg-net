@@ -2,13 +2,24 @@ using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Services.Impl.Accommodation;
+using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
-public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
+/// <summary>
+/// Сервис комнат и заселения. Управление комнатами переведено на агрегат плана поселения
+/// (ADR018, PR 4) и идёт через <see cref="IAccommodationPropsService"/>; заселение пока живёт
+/// на легаси-базе <see cref="DbServiceImplBase"/> и переедет в PR 5.
+/// </summary>
+// Класс internal, потому что принимает internal-сервис: публичный конструктор с internal-параметром
+// компилятор не пропустит. Наружу сервис виден через IAccommodationService, как и ClaimServiceImpl.
+internal class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
 {
     private IEmailService EmailService { get; }
+
+    private readonly IAccommodationPropsService accommodationPropsService;
 
     public async Task OccupyRoom(OccupyRequest request)
     {
@@ -138,109 +149,103 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
         }
     }
 
-    public async Task<IEnumerable<ProjectAccommodation>> AddRooms(int projectId, int roomTypeId, string rooms)
+    public async Task<IReadOnlyCollection<AccommodationRoomIdentification>> AddRooms(
+        RoomCategoryIdentification categoryId,
+        string rooms)
     {
         //TODO: Implement rooms names checking
-
-        ProjectAccommodationType roomType = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(roomTypeId);
-        if (roomType == null)
-        {
-            throw new JoinRpgEntityNotFoundException(roomTypeId, typeof(ProjectAccommodationType).Name);
-        }
-
-        if (roomType.ProjectId != projectId)
-        {
-            throw new ArgumentException($@"Room type {roomTypeId} is from another project than specified", nameof(roomTypeId));
-        }
-
-        // Internal function
-        // Creates new room using name and parameters from given room info
-        ProjectAccommodation CreateRoom(string name)
-            => new()
+        var created = await accommodationPropsService.ChangePlan(
+            categoryId,
+            Permission.CanManageAccommodation,
+            ProjectActiveRequirement.MustBeActive,
+            rooms,
+            ctx =>
             {
-                Name = name,
-                AccommodationTypeId = roomTypeId,
-                ProjectId = projectId,
-                ProjectAccommodationType = roomType,
-            };
-
-        // Internal function
-        // Iterates through rooms list and creates object for each room from a list
-        IEnumerable<ProjectAccommodation> CreateRooms(string r)
-        {
-            foreach (var roomCandidate in r.Split(','))
-            {
-                var rangePos = roomCandidate.IndexOf('-');
-                if (rangePos > -1)
+                var created = new List<ProjectAccommodation>();
+                foreach (var name in ParseRoomNames(ctx.Request))
                 {
-                    if (int.TryParse(roomCandidate.Substring(0, rangePos).Trim(), out var roomsRangeStart)
-                        && int.TryParse(roomCandidate.Substring(rangePos + 1).Trim(), out var roomsRangeEnd)
-                        && roomsRangeStart < roomsRangeEnd)
+                    var room = new ProjectAccommodation
                     {
-                        while (roomsRangeStart <= roomsRangeEnd)
-                        {
-                            yield return CreateRoom(roomsRangeStart.ToString());
-                            roomsRangeStart++;
-                        }
-                        // Range was defined correctly, we can continue to next item
-                        continue;
+                        Name = name,
+                        AccommodationTypeId = ctx.Category.Id,
+                        ProjectId = ctx.Category.ProjectId,
+                        ProjectAccommodationType = ctx.Category,
+                        Inhabitants = [],
+                    };
+                    // Обратную навигацию проставляем сами: у сущности, созданной через new,
+                    // relationship fixup EF6 до сохранения ещё не отработал.
+                    ctx.Category.ProjectAccommodations.Add(room);
+                    ctx.AddEntity(room);
+                    created.Add(room);
+                }
+                return created;
+            });
+
+        // Id генерируются базой при SaveChanges — читаем уже после возврата из props-сервиса.
+        return [.. created.Select(room => new AccommodationRoomIdentification(categoryId.ProjectId, room.Id))];
+    }
+
+    /// <summary>
+    /// Разбирает список комнат: имена через запятую, числовые диапазоны через дефис — «1,2,5-8».
+    /// Логика перенесена из легаси-варианта как есть.
+    /// </summary>
+    private static IEnumerable<string> ParseRoomNames(string rooms)
+    {
+        foreach (var roomCandidate in rooms.Split(','))
+        {
+            var rangePos = roomCandidate.IndexOf('-');
+            if (rangePos > -1)
+            {
+                if (int.TryParse(roomCandidate[..rangePos].Trim(), out var roomsRangeStart)
+                    && int.TryParse(roomCandidate[(rangePos + 1)..].Trim(), out var roomsRangeEnd)
+                    && roomsRangeStart < roomsRangeEnd)
+                {
+                    while (roomsRangeStart <= roomsRangeEnd)
+                    {
+                        yield return roomsRangeStart.ToString();
+                        roomsRangeStart++;
                     }
+                    // Диапазон задан корректно, переходим к следующему элементу списка
+                    continue;
+                }
+            }
+
+            yield return roomCandidate.Trim();
+        }
+    }
+
+    public Task RenameRoom(AccommodationRoomIdentification roomId, string name)
+        => accommodationPropsService.ChangePlanForRoom(
+            roomId,
+            Permission.CanManageAccommodation,
+            ProjectActiveRequirement.MustBeActive,
+            (RoomId: roomId, Name: name),
+            ctx => ctx.GetRoomForChange(ctx.Request.RoomId).Name = ServiceValidation.Required(ctx.Request.Name));
+
+    public Task DeleteRoom(AccommodationRoomIdentification roomId)
+        => accommodationPropsService.ChangePlanForRoom(
+            roomId,
+            Permission.CanManageAccommodation,
+            ProjectActiveRequirement.MustBeActive,
+            roomId,
+            ctx =>
+            {
+                // Заселённость смотрим по доменному снимку плана, а не по навигации EF-сущности.
+                if (ctx.Plan.GetRoom(ctx.Request).IsOccupied)
+                {
+                    throw new RoomIsOccupiedException(ctx.Request);
                 }
 
-                yield return CreateRoom(roomCandidate.Trim());
-            }
-        }
+                ctx.RemoveEntity(ctx.GetRoomForChange(ctx.Request));
+            });
 
-        IEnumerable<ProjectAccommodation> result =
-            UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(rooms));
-        await UnitOfWork.SaveChangesAsync();
-        return result;
-    }
-
-    private ProjectAccommodation GetRoom(int roomId, int? projectId = null, int? roomTypeId = null)
+    public AccommodationServiceImpl(
+        IUnitOfWork unitOfWork,
+        IEmailService emailService,
+        ICurrentUserAccessor currentUserAccessor,
+        IAccommodationPropsService accommodationPropsService) : base(unitOfWork, currentUserAccessor)
     {
-        var result = UnitOfWork.GetDbSet<ProjectAccommodation>().Find(roomId);
-
-        if (result == null)
-        {
-            throw new JoinRpgEntityNotFoundException(roomId, typeof(ProjectAccommodation).Name);
-        }
-
-        if (projectId.HasValue)
-        {
-            if (result.ProjectId != projectId.Value)
-            {
-                throw new ArgumentException($@"Room {roomId} is from different project than specified", nameof(projectId));
-            }
-        }
-        if (roomTypeId.HasValue)
-        {
-            if (result.AccommodationTypeId != roomTypeId.Value)
-            {
-                throw new ArgumentException($@"Room {roomId} is from different room type than specified", nameof(projectId));
-            }
-        }
-
-        return result;
+        EmailService = emailService;
+        this.accommodationPropsService = accommodationPropsService;
     }
-
-    public async Task EditRoom(int roomId, string name, int? projectId = null, int? roomTypeId = null)
-    {
-        var entity = GetRoom(roomId, projectId, roomTypeId);
-        entity.Name = name;
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-    }
-
-    public async Task DeleteRoom(int roomId, int? projectId = null, int? roomTypeId = null)
-    {
-        var entity = GetRoom(roomId, projectId, roomTypeId);
-        if (entity.IsOccupied())
-        {
-            throw new RoomIsOccupiedException(entity);
-        }
-        _ = UnitOfWork.GetDbSet<ProjectAccommodation>().Remove(entity);
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-    }
-
-    public AccommodationServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor) => EmailService = emailService;
 }
