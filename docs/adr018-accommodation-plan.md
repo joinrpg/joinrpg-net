@@ -110,12 +110,25 @@ ADR013/ADR014.
 Схема БД и `ProjectInfo` сейчас не меняются. Меняется только форма доменной модели — так, чтобы
 разделение потом было расширением, а не переделкой. Отсюда четыре решения:
 
-1. **План ключуется категорией.** Заводится `RoomCategoryIdentification`; сегодня загрузчик
-   производит его из id типа один-к-одному. Конвертация живёт **ровно в одном месте** — фабрике
-   `RoomCategoryIdentification.FromLegacyAccommodationType(typeId)` с XML-doc про будущий split, и
-   больше нигде. Опасность известна: два типизированных id, численно совпадающих сегодня и
-   разъезжающихся завтра, — идеальный материал для молча работающей ошибки. Единственная точка
-   конвертации и есть страховка от неё.
+1. **План ключуется категорией, и конвертации id в домене нет.** Заводится
+   `RoomCategoryIdentification`. Публичной фабрики «id типа → id категории» **не существует**:
+   знание о том, к какой категории относится тип, — это настройка мастера, то есть свойство
+   `AccommodationTypeInfo.RoomCategoryId` (по критерию ADR015 — там же, где имя и цена). Кому нужен
+   пул по типу, спрашивает `projectInfo.AccommodationSettings.GetTypeById(typeId).RoomCategoryId`;
+   у кого на руках категория — конвертировать нечего.
+
+   Полностью фикция всё же не исчезает: сегодня за `RoomCategoryId` нет колонки, поэтому маппер
+   метаданных заполняет его из `ProjectAccommodationType.Id`, а write-репозиторий на обратном пути
+   кладёт `categoryId.RoomCategoryId` в существующую колонку
+   `ProjectAccommodation.AccommodationTypeId`. Оба места — **в DAL**, где отображение «id ↔ колонка»
+   и так живёт для каждой сущности, и оба помечены комментарием про будущий split. Смысл решения
+   именно в этом: конвертацию нельзя устранить без миграции, но можно не выносить её в домен
+   публичным API.
+
+   Остаточный риск назван честно: числа совпадают, поэтому собранный вручную
+   `new RoomCategoryIdentification(projectId, <число типа>)` сработает молча и сломается в день
+   разделения. Исчезает не возможность так сделать, а повод. Радикальное лекарство — завести
+   таблицу `RoomCategory` уже сейчас, см. «Открытые вопросы».
 2. **План держит коллекцию типов, а не один тип.** Сегодня в ней ровно один элемент; инвариант
    «ровно один» **не** проверяется, чтобы его не пришлось снимать при разделении.
 3. **Вместимость не является свойством комнаты.** Поле `RoomInfo.Capacity` из первой редакции этого
@@ -236,23 +249,22 @@ public partial record AccommodationRoomIdentification(
 /// Идентификатор категории комнат — пула, из которого селятся типы проживания.
 /// </summary>
 /// <remarks>
-/// Пока категория и тип проживания не разделены (см. ADR018 §2), категория существует только в
-/// доменной модели: своей таблицы у неё нет, и её идентификатор производится из идентификатора
-/// типа проживания один-к-одному фабрикой <see cref="FromLegacyAccommodationType"/>. Это
-/// единственное место, где такая конвертация допустима: после разделения она станет неверной,
-/// и компилятор приведёт правку ровно сюда.
+/// Пока категория и тип проживания не разделены (см. ADR018 §2), своей таблицы у категории нет.
+/// Получить категорию по типу проживания можно только через метаданные —
+/// <c>AccommodationTypeInfo.RoomCategoryId</c>; конвертации идентификаторов в домене нет и заводить
+/// её нельзя.
 /// </remarks>
 [method: JsonConstructor]
 [TypedEntityId]
 public partial record RoomCategoryIdentification(
     ProjectIdentification ProjectId,
-    int RoomCategoryId) : IProjectEntityId
-{
-    public static RoomCategoryIdentification FromLegacyAccommodationType(
-        AccommodationTypeIdentification accommodationTypeId)
-        => new(accommodationTypeId.ProjectId, accommodationTypeId.AccommodationTypeId);
-}
+    int RoomCategoryId) : IProjectEntityId;
 ```
+
+Вместе с этим `AccommodationTypeInfo` (заведён ADR015) получает свойство
+`RoomCategoryIdentification RoomCategoryId` — единственный способ узнать пул по типу проживания.
+Сегодня `ProjectMetadataRepository` заполняет его из `ProjectAccommodationType.Id`; колонки за ним
+пока нет, и это отмечено комментарием в маппере.
 
 ### 2. Доменные типы
 
@@ -478,7 +490,7 @@ public interface IAccommodationService
 | `RoomViewModel(ProjectAccommodation, …)` | EF-сущность | `RoomInfo` |
 | `AccRequestViewModel(AccommodationRequest, …)` + `RequestParticipantViewModel(Claim, …)` | EF-сущности, `Claim.ClaimTotalFee`/`ClaimFeeDue` (оба `[Obsolete]`) | `AccommodationGroupInfo` + bulk `CharacterInfo`, `CalculateClaimBalance` поверх агрегата |
 | `AccommodationTypeController` (Occupy/UnOccupy/AddRoom/EditRoom/DeleteRoom) | `int`-параметры, `catch`-всё | типизированные id, доменные исключения |
-| `SmokeProjectFixture` (интеграционные тесты) | `AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2")` | `AddRooms(RoomCategoryIdentification.FromLegacyAccommodationType(roomTypeId), "1,2")` |
+| `SmokeProjectFixture` (интеграционные тесты) | `AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2")` | `AddRooms(projectInfo.AccommodationSettings.GetTypeById(roomTypeId).RoomCategoryId, "1,2")` |
 | `AccommodationPrintController`, `AccomodationReportExporter` | `IAccommodationRepository.GetClaimAccommodationReport` | не меняются — это отчёт, плоские строки, агрегат ему не нужен |
 | `AccommodationInviteServiceImpl`, `ClaimAccommodationViewModel` | `AccommodationExtensions` поверх EF | не меняются, см. «Что вне скоупа» |
 
@@ -500,7 +512,8 @@ public interface IAccommodationService
 
 ### 8. План миграции
 
-1. **PR 1.** `AccommodationRoomIdentification`, `RoomCategoryIdentification`; `AccommodationPlan`,
+1. **PR 1.** `AccommodationRoomIdentification`, `RoomCategoryIdentification`,
+   `AccommodationTypeInfo.RoomCategoryId` с маппингом; `AccommodationPlan`,
    `RoomInfo`, `AccommodationGroupInfo` с инвариантами; юнит-тесты в `JoinRpg.DomainTypes.Test`
    поверх `MockedProject` — в том числе тест на план с двумя типами в одном пуле, который сегодня
    не собирается из БД, но обязан собираться из модели. Потребителей не трогаем.
@@ -554,11 +567,16 @@ public interface IAccommodationService
   его придётся при разделении: занимает ли группа «Люкс на одного» всю комнату 101 или одно место,
   и что происходит, когда в одной комнате оказываются группы с разной вместимостью типа. Модель
   готова к любому ответу — он живёт в одном методе `AccommodationPlan.GetFreeSpace`.
-- **Разъезжающиеся идентификаторы.** Пока `RoomCategoryIdentification` численно равен
-  `AccommodationTypeIdentification`, ошибка «передали не тот id» не проявится ни в тестах, ни на
-  проде — и проявится вся сразу в день разделения. Единственная фабрика конвертации это
-  ограничивает, но не исключает; при реализации стоит проверить грепом, что других конвертаций
-  не завелось.
+- **Заводить ли таблицу `RoomCategory` сразу — решается до PR 1.** Пока её нет,
+  `RoomCategoryIdentification` численно равен `AccommodationTypeIdentification`, и собранный вручную
+  не тот id сработает молча, а сломается в день разделения. Устранить это до конца можно только
+  схемой: строка категории на каждый существующий тип, колонки `RoomCategoryId` у
+  `ProjectAccommodation` и `ProjectAccommodationType`, бэкфилл. Это **не** полное разделение — ни UI
+  категорий, ни изменений в цене и вместимости, ни новой функциональности, только схема; зато id с
+  первого дня настоящие, поля-фикции в маппере нет, а будущее разделение сводится к «разрешить
+  нескольким типам ссылаться на одну категорию» плюс UI. Цена — миграция и правка `DataModel`
+  (согласуется с @leotsarev по правилу CLAUDE.md). Доменная модель этого ADR не зависит от выбора:
+  меняется только то, чем маппер заполняет `AccommodationTypeInfo.RoomCategoryId`.
 - **`ProjectOperationGuard`** — выносить или нет, решается фактом при реализации PR 4, а не этим ADR.
 
 Статус
