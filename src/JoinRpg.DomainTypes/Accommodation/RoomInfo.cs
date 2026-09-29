@@ -15,7 +15,7 @@ public record class RoomInfo(
     IReadOnlyCollection<AccommodationGroupInfo> Inhabitants)
 {
     /// <summary>Сколько человек сейчас живёт в комнате</summary>
-    public int Occupancy => Inhabitants.Sum(i => i.Persons);
+    public int Occupancy => Inhabitants.Sum(i => i.SubjectsCount);
 
     /// <summary>Заселена ли комната хоть кем-то. Удалить можно только незаселённую комнату.</summary>
     public bool IsOccupied => Inhabitants.Count > 0;

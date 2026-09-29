@@ -17,5 +17,5 @@ public record class AccommodationGroupInfo(
     IReadOnlyCollection<ClaimIdentification> Subjects)
 {
     /// <summary>Сколько человек в группе</summary>
-    public int Persons => Subjects.Count;
+    public int SubjectsCount => Subjects.Count;
 }

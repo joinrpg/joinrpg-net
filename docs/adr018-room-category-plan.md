@@ -370,7 +370,7 @@ public record class AccommodationGroupInfo(
     AccommodationRoomIdentification? RoomId,
     IReadOnlyCollection<ClaimIdentification> Subjects)
 {
-    public int Persons => Subjects.Count;
+    public int SubjectsCount => Subjects.Count;
 }
 ```
 

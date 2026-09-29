@@ -295,7 +295,7 @@ public class RoomCategoryPlanTest
         plan.UnassignedGroups.Select(g => g.Id).ShouldBe([waiting.Id]);
         plan.Groups.Count.ShouldBe(2);
         plan.GetRoom(RoomId(1)).IsOccupied.ShouldBeTrue();
-        waiting.Persons.ShouldBe(2);
+        waiting.SubjectsCount.ShouldBe(2);
     }
 
     [Fact]
