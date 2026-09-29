@@ -1,4 +1,4 @@
-# ADR018: AccommodationPlan — доменный агрегат комнат и заселения
+# ADR018: RoomCategoryPlan — доменный агрегат комнат и заселения
 
 Проблема:
 ==
@@ -54,9 +54,16 @@
 Решение:
 ==
 
-**Комнаты и заселение — отдельный агрегат `AccommodationPlan`**, со своим доменным типом,
-загрузчиком и точкой мутации — по образцу `CharacterInfo` ([ADR013](adr013-character-info.md)) и
-`CharacterPropsService` ([ADR014](adr014-claim-props-service.md)).
+**Комнаты и заселение — отдельный агрегат `RoomCategoryPlan`**, по одному на категорию комнат, со
+своим доменным типом, загрузчиком и точкой мутации — по образцу `CharacterInfo`
+([ADR013](adr013-character-info.md)) и `CharacterPropsService`
+([ADR014](adr014-claim-props-service.md)).
+
+Имя выбрано так, чтобы область агрегата была видна в нём самом: план — про **одну** категорию
+комнат, а не про поселение проекта целиком. `RoomCategoryInfo` сознательно не занимаем — после
+разделения (§2) категория станет настройкой мастера внутри `ProjectInfo`, и это имя понадобится ей,
+парой к `AccommodationTypeInfo`. Разделение труда тогда ляжет ровно по границе ADR015:
+`RoomCategoryInfo` — настройка, `RoomCategoryPlan` — оперативные данные.
 
 Схема БД этим ADR **не меняется**: ни новых таблиц, ни новых колонок, ни миграций.
 
@@ -139,7 +146,7 @@ N сохранениями. Проект как корень не выражае
 
 **2. План держит коллекцию типов, а не один тип.** Сегодня в ней ровно один элемент.
 
-**3. Физическая вместимость — свойство пула, а не комнаты и не типа.** `AccommodationPlan.RoomCapacity`
+**3. Физическая вместимость — свойство пула, а не комнаты и не типа.** `RoomCategoryPlan.RoomCapacity`
 говорит, сколько мест в каждой комнате этого пула; `AccommodationTypeInfo.Capacity` остаётся
 продаваемой вместимостью. У `RoomInfo` вместимости нет вовсе: комнаты внутри категории одинаковы —
 именно это и делает их взаимозаменяемым пулом.
@@ -176,7 +183,7 @@ freeSpace(room, type) = min(effective(room), type.Capacity) − occupancy(room)
 
 ### 3. Сами типы проживания в агрегат не копируются
 
-`AccommodationPlan` держит ссылку на `ProjectInfo` и на `AccommodationTypeInfo` из его
+`RoomCategoryPlan` держит ссылку на `ProjectInfo` и на `AccommodationTypeInfo` из его
 `AccommodationSettings` — ровно как `CharacterInfo` держит `ProjectInfo`, а не пересобирает поля
 проекта. Это прямое следствие ADR015: единственный источник правды о типе — метаданные проекта,
 и второго не заводим. Вместимость и цена для расчётов берутся оттуда же.
@@ -197,10 +204,10 @@ freeSpace(room, type) = min(effective(room), type.Capacity) − occupancy(room)
 | Что | Кто владеет | Чем меняется |
 |---|---|---|
 | `AccommodationTypeId`, состав `Subjects`, создание и удаление строки | character-агрегат | `ICharacterPropsService.ChangeClaim` |
-| `AccommodationId` — в какой комнате живёт группа | **`AccommodationPlan`** | `IAccommodationPropsService` (этот ADR) |
+| `AccommodationId` — в какой комнате живёт группа | **`RoomCategoryPlan`** | `IAccommodationPropsService` (этот ADR) |
 | `IsAccepted` (приглашения) | `AccommodationInviteServiceImpl` | не трогаем, см. §13 |
 
-`AccommodationPlan` видит группы как read-only состав (`Subjects` — список `ClaimIdentification`) и
+`RoomCategoryPlan` видит группы как read-only состав (`Subjects` — список `ClaimIdentification`) и
 пишет ровно одно поле — номер комнаты. Обратное тоже верно: character-путь не должен менять
 `AccommodationId` иначе как через расформирование группы, и сегодня он этого и не делает
 (`ConsiderLeavingRoom` только шлёт письмо).
@@ -208,7 +215,7 @@ freeSpace(room, type) = min(effective(room), type.Capacity) − occupancy(room)
 ### 5. Деньги в агрегат не входят
 
 Страница комнат показывает по каждому жильцу «не оплачено X из Y». Складывать финансовые поля в
-`AccommodationPlan` — значит завести третью модель расчёта баланса рядом с `Claim` и
+`RoomCategoryPlan` — значит завести третью модель расчёта баланса рядом с `Claim` и
 `CharacterClaimInfo`. Вместо этого план несёт `ClaimIdentification` жильцов, а вью-сервис страницы
 догружает их bulk'ом через существующий `ICharacterInfoRepository.GetCharacterInfos(ids)` и считает
 баланс уже принятым способом — `FinanceExtensions.CalculateClaimBalance(CharacterInfo, CharacterClaimInfo, ProjectInfo)`.
@@ -234,7 +241,7 @@ ADR015, стёрлась бы обратно.
 бы дублировать машинерию ADR009: права, активность проекта, логирование, инвалидацию кеша. Для типов
 это верно, для комнат — нет. Инвалидация кеша не нужна вовсе: план не меняет метаданные, значит ни
 `handle.Refresh()`, ни `PrimeCache` не требуются, — а это и был главный пункт возражения. Второго
-кеша не возникает: у `AccommodationPlan`, как и у `CharacterInfo`, межзапросного кеша нет. Остаются
+кеша не возникает: у `RoomCategoryPlan`, как и у `CharacterInfo`, межзапросного кеша нет. Остаются
 права, активность и логирование — про них см. «Последствия».
 
 Подробности
@@ -283,12 +290,12 @@ public partial record RoomCategoryIdentification(
 
 ```csharp
 /// <summary>
-/// План поселения одного пула комнат (категории): его комнаты, типы проживания, которые из него
-/// селятся, и группы жильцов.
+/// План поселения одной категории комнат: её комнаты, типы проживания, которые из них селятся,
+/// и группы жильцов.
 /// Привязан к конкретному экземпляру <see cref="ProjectInfo"/>, кешированию между запросами
 /// не подлежит.
 /// </summary>
-public record class AccommodationPlan
+public record class RoomCategoryPlan
 {
     public RoomCategoryIdentification Id { get; }
     public ProjectInfo ProjectInfo { get; }
@@ -334,7 +341,7 @@ public record class AccommodationPlan
 
 /// <summary>
 /// Комната. Вместимости у комнаты нет — она общая для пула,
-/// см. <see cref="AccommodationPlan.RoomCapacity"/>.
+/// см. <see cref="RoomCategoryPlan.RoomCapacity"/>.
 /// </summary>
 public record class RoomInfo(
     AccommodationRoomIdentification Id,
@@ -356,7 +363,7 @@ public record class AccommodationGroupInfo(
 }
 ```
 
-Инварианты — в конструкторе `AccommodationPlan`, как это делают `CharacterTypeInfo` и `CharacterInfo`:
+Инварианты — в конструкторе `RoomCategoryPlan`, как это делают `CharacterTypeInfo` и `CharacterInfo`:
 
 - `Id.ProjectId == ProjectInfo.ProjectId`, и все `AccommodationTypes` — те самые экземпляры, что
   лежат в `ProjectInfo.AccommodationSettings` (`ReferenceEquals`);
@@ -373,7 +380,7 @@ public record class AccommodationGroupInfo(
   инварианта загрузки.
 
 `GetRoomFreeSpace(ProjectAccommodation)` и `IsOccupied(ProjectAccommodation)` из
-`src/JoinRpg.Domain/AccommodationExtensions.cs` заменяются на `AccommodationPlan.GetFreeSpace` и
+`src/JoinRpg.Domain/AccommodationExtensions.cs` заменяются на `RoomCategoryPlan.GetFreeSpace` и
 `RoomInfo.IsOccupied` и после миграции удаляются. Свободное место перестаёт быть методом комнаты —
 это и есть след, который будущее разделение типа и категории оставляет в сегодняшнем коде. Остальные
 методы файла (`GetClaimNeighbours`, `GetRoomFreeSpace(AccommodationRequest)`) обслуживают контур
@@ -381,24 +388,24 @@ public record class AccommodationGroupInfo(
 
 ### 9. Загрузка
 
-Файл: новый, `src/JoinRpg.Data.Interfaces/Accommodation/IAccommodationPlanRepository.cs`.
+Файл: новый, `src/JoinRpg.Data.Interfaces/Accommodation/IRoomCategoryPlanRepository.cs`.
 
 ```csharp
-public interface IAccommodationPlanRepository
+public interface IRoomCategoryPlanRepository
 {
-    Task<AccommodationPlan?> GetPlanOrDefault(RoomCategoryIdentification categoryId);
-    Task<IReadOnlyCollection<AccommodationPlan>> GetAllPlans(ProjectIdentification projectId);
+    Task<RoomCategoryPlan?> GetPlanOrDefault(RoomCategoryIdentification categoryId);
+    Task<IReadOnlyCollection<RoomCategoryPlan>> GetAllPlans(ProjectIdentification projectId);
 
     /// <summary>
     /// План пула, из которого селится данный тип проживания. Пока тип и категория не разделены,
     /// это тот же план, что <see cref="GetPlanOrDefault"/> по одноимённой категории; после
     /// разделения один план будут возвращать несколько типов.
     /// </summary>
-    Task<AccommodationPlan?> GetPlanForTypeOrDefault(AccommodationTypeIdentification typeId);
+    Task<RoomCategoryPlan?> GetPlanForTypeOrDefault(AccommodationTypeIdentification typeId);
 }
 ```
 
-Реализация — `src/JoinRpg.Dal.Impl/Repositories/Accommodation/AccommodationPlanLoader.cs`, по
+Реализация — `src/JoinRpg.Dal.Impl/Repositories/Accommodation/RoomCategoryPlanLoader.cs`, по
 образцу `CharacterInfoLoader` (ADR014): ядро принимает готовый `ProjectInfo`, чтобы им могли
 пользоваться и кеширующий репозиторий, и write-хэндл, и инвариант ссылочного равенства не ломался.
 Берёт `MyDbContext` напрямую, **не** наследует `GameRepositoryImplBase` (прогрев контекста всем
@@ -416,12 +423,12 @@ public interface IAccommodationPlanRepository
 ```csharp
 internal interface IAccommodationPropsService
 {
-    Task<TResult> ChangeAccommodationPlan<TArgs, TResult>(
+    Task<TResult> ChangePlan<TArgs, TResult>(
         RoomCategoryIdentification categoryId,
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Func<AccommodationMutationContext<TArgs>, TResult> action,
+        Func<RoomCategoryPlanMutationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "");
 }
 ```
@@ -429,12 +436,12 @@ internal interface IAccommodationPropsService
 Плюс перегрузка без результата и перегрузка по `ProjectIdentification` (для `UnOccupyAllRooms`,
 которая работает по всем пулам проекта в одной транзакции).
 
-`AccommodationMutationContext` отдаёт: трекаемые EF-сущности комнат и групп, доменный снимок
-`AccommodationPlan` **до** мутации, делегаты `AddEntity`/`RemoveEntity` (не `DbSet` наружу — как в
+`RoomCategoryPlanMutationContext` отдаёт: трекаемые EF-сущности комнат и групп, доменный снимок
+`RoomCategoryPlan` **до** мутации, делегаты `AddEntity`/`RemoveEntity` (не `DbSet` наружу — как в
 ADR014, это делает контекст подделываемым в юнит-тестах) и `AddLegacyEmail` для писем о заселении.
 
-Write-хэндл `IAccommodationPlanWriteRepository` берётся **только** из
-`IUnitOfWork.GetAccommodationPlanWriteRepository()`, а не из DI: `MyDbContext` зарегистрирован
+Write-хэндл `IRoomCategoryPlanWriteRepository` берётся **только** из
+`IUnitOfWork.GetRoomCategoryPlanWriteRepository()`, а не из DI: `MyDbContext` зарегистрирован
 транзиентом, и DI-экземпляр дал бы другой контекст — мутация трекалась бы в одном, а `SaveChanges`
 шёл в другом (ADR009 §1, ADR014 §2).
 
@@ -468,7 +475,7 @@ public interface IAccommodationService
 ```
 
 `GetRoomTypeAsync` уходит: его единственный вызывающий — страница `EditRoomTypeRooms`, которая
-переезжает на `IAccommodationPlanRepository`. Классы-запросы `OccupyRequest`, `UnOccupyRequest`,
+переезжает на `IRoomCategoryPlanRepository`. Классы-запросы `OccupyRequest`, `UnOccupyRequest`,
 `UnOccupyAllRequest`, `UnOccupyRoomTypeRequest` (mutable, с `int`-полями, один из них вообще без
 вызывающих) удаляются.
 
@@ -512,8 +519,8 @@ public interface IAccommodationService
 
 | Потребитель | Сейчас | Станет |
 |---|---|---|
-| `AccommodationTypeController.EditRoomTypeRooms` | `accommodationService.GetRoomTypeAsync` + ручная сверка `ProjectId` | `IAccommodationPlanRepository.GetPlanForTypeOrDefault` |
-| `RoomTypeViewModel(ProjectAccommodationType, …)` | EF-сущность с `Include(ProjectAccommodations)` и `Include(Desirous)` — навигация «заявки на проживание, желающие этот тип» | `AccommodationPlan`; EF-конструктор удаляется, остаётся уже существующий поверх `AccommodationTypeInfo` (ADR015) |
+| `AccommodationTypeController.EditRoomTypeRooms` | `accommodationService.GetRoomTypeAsync` + ручная сверка `ProjectId` | `IRoomCategoryPlanRepository.GetPlanForTypeOrDefault` |
+| `RoomTypeViewModel(ProjectAccommodationType, …)` | EF-сущность с `Include(ProjectAccommodations)` и `Include(Desirous)` — навигация «заявки на проживание, желающие этот тип» | `RoomCategoryPlan`; EF-конструктор удаляется, остаётся уже существующий поверх `AccommodationTypeInfo` (ADR015) |
 | `RoomViewModel(ProjectAccommodation, …)` | EF-сущность | `RoomInfo` |
 | `AccRequestViewModel(AccommodationRequest, …)` + `RequestParticipantViewModel(Claim, …)` | EF-сущности, `Claim.ClaimTotalFee`/`ClaimFeeDue` (оба `[Obsolete]`) | `AccommodationGroupInfo` + bulk `CharacterInfo`, `CalculateClaimBalance` поверх агрегата |
 | `AccommodationTypeController` (Occupy/UnOccupy/AddRoom/EditRoom/DeleteRoom) | `int`-параметры, `catch`-всё | типизированные id, доменные исключения |
@@ -543,11 +550,11 @@ public interface IAccommodationService
 
 0. **PR 0** — этот ADR и ссылка на него в [docs/README.md](README.md).
 1. **PR 1.** `AccommodationRoomIdentification`, `RoomCategoryIdentification`,
-   `AccommodationTypeInfo.RoomCategoryId` с маппингом; `AccommodationPlan`, `RoomInfo`,
+   `AccommodationTypeInfo.RoomCategoryId` с маппингом; `RoomCategoryPlan`, `RoomInfo`,
    `AccommodationGroupInfo` с инвариантами; юнит-тесты в `JoinRpg.DomainTypes.Test` поверх
    `MockedProject` — в том числе тест на план с двумя типами в одном пуле и разной вместимостью,
    который сегодня не собирается из БД, но обязан собираться из модели. Потребителей не трогаем.
-2. **PR 2.** `IAccommodationPlanRepository` + загрузчик + тесты маппинга в `JoinRpg.Dal.Impl.Test`,
+2. **PR 2.** `IRoomCategoryPlanRepository` + загрузчик + тесты маппинга в `JoinRpg.Dal.Impl.Test`,
    включая тест-страж: `plan.GetFreeSpace(room, type)` совпадает с
    `AccommodationExtensions.GetRoomFreeSpace` на том же наборе данных.
 3. **PR 3.** Страница комнат на план: `EditRoomTypeRooms`, вью-модели, деньги bulk'ом через

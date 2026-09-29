@@ -37,7 +37,7 @@
 - [ADR015: типы проживания — настройка проекта внутри ProjectInfo](adr015-accommodation-types-in-project-info.md)
 - [ADR016: Переход основной БД с EF6 на EF Core](adr016-efcore-migration.md)
 - [ADR017: Тип поля «ссылка на пользователя»](adr017-user-field.md)
-- [ADR018: AccommodationPlan — доменный агрегат комнат и заселения](adr018-accommodation-plan.md)
+- [ADR018: RoomCategoryPlan — доменный агрегат комнат и заселения](adr018-room-category-plan.md)
 
 ## Быстрые ссылки
 
