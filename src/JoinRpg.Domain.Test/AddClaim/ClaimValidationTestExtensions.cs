@@ -9,7 +9,7 @@ internal static class ClaimValidationTestExtensions
 {
     /// <summary>
     /// Причины запрета без флагов — чтобы тесты про правила говорили только о правилах,
-    /// а свойства причин проверялись отдельно (<see cref="ClaimForbiddenReasonTableTest"/>).
+    /// а свойства самих причин проверялись отдельно.
     /// </summary>
     public static IReadOnlyCollection<AddClaimForbideReason> Kinds(
         this IReadOnlyCollection<ClaimForbiddenReason> reasons)

@@ -10,12 +10,6 @@ namespace JoinRpg.Services.Impl.Test.Projects;
 /// <see cref="Project"/>/<see cref="ProjectInfo"/> и пересобирает снимок через тот же
 /// <c>CreateInfoFromProject</c>, что и боевой код.
 /// </summary>
-
-/// <summary>
-/// Write-репозиторий поверх <see cref="MockedProject"/>: отдаёт согласованную пару
-/// <see cref="Project"/>/<see cref="ProjectInfo"/> и пересобирает снимок через тот же
-/// <c>CreateInfoFromProject</c>, что и боевой код.
-/// </summary>
 internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : IProjectMetadataWriteRepository
 {
     public Task<IProjectMetadataUpdateHandle> LoadProjectForUpdate(ProjectIdentification projectId)
@@ -68,5 +62,3 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
         }
     }
 }
-
-/// <summary>Записывает вызовы <see cref="IClaimService.SetResponsible"/> вместо реального изменения заявки.</summary>

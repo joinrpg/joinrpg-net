@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects.Metadata;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 

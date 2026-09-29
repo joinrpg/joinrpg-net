@@ -1,16 +1,7 @@
-using JoinRpg.DataModel;
-using JoinRpg.DataModel.Mocks;
-using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Subscribe;
 
 namespace JoinRpg.Services.Impl.Test.Projects;
-
-/// <summary>
-/// Write-репозиторий поверх <see cref="MockedProject"/>: отдаёт согласованную пару
-/// <see cref="Project"/>/<see cref="ProjectInfo"/> и пересобирает снимок через тот же
-/// <c>CreateInfoFromProject</c>, что и боевой код.
-/// </summary>
 
 /// <summary>Записывает вызовы <see cref="IGameSubscribeService.RemoveAllSubscriptions"/>.</summary>
 internal sealed class FakeGameSubscribeService : IGameSubscribeService
