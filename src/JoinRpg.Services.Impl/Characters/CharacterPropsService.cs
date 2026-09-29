@@ -105,13 +105,13 @@ internal class CharacterPropsService(
                 return true;
             },
             _ => logger.LogInformation(
-                "Изменён персонаж {characterId}: операция {operation}, аргументы {@arguments}",
+                "Изменён персонаж {characterId}: операция {operation}, аргументы {arguments}",
                 characterId,
                 operationName,
                 arguments),
             e => logger.LogWarning(
                 e,
-                "Не удалось изменить персонажа {characterId}: операция {operation}, аргументы {@arguments}",
+                "Не удалось изменить персонажа {characterId}: операция {operation}, аргументы {arguments}",
                 characterId,
                 operationName,
                 arguments));
@@ -204,13 +204,13 @@ internal class CharacterPropsService(
                 return result;
             },
             _ => logger.LogInformation(
-                "Изменена заявка {claimId}: операция {operation}, аргументы {@arguments}",
+                "Изменена заявка {claimId}: операция {operation}, аргументы {arguments}",
                 claimId,
                 operationName,
                 arguments),
             e => logger.LogWarning(
                 e,
-                "Не удалось изменить заявку {claimId}: операция {operation}, аргументы {@arguments}",
+                "Не удалось изменить заявку {claimId}: операция {operation}, аргументы {arguments}",
                 claimId,
                 operationName,
                 arguments));
@@ -251,13 +251,13 @@ internal class CharacterPropsService(
                 return character;
             },
             character => logger.LogInformation(
-                "Создан персонаж {characterId}: операция {operation}, аргументы {@arguments}",
+                "Создан персонаж {characterId}: операция {operation}, аргументы {arguments}",
                 character.CharacterId,
                 operationName,
                 arguments),
             e => logger.LogWarning(
                 e,
-                "Не удалось создать персонажа в проекте {projectId}: операция {operation}, аргументы {@arguments}",
+                "Не удалось создать персонажа в проекте {projectId}: операция {operation}, аргументы {arguments}",
                 projectId,
                 operationName,
                 arguments));
@@ -366,14 +366,14 @@ internal class CharacterPropsService(
                 return claim;
             },
             claim => logger.LogInformation(
-                "Создана заявка {claimId} на персонажа {characterId}: операция {operation}, аргументы {@arguments}",
+                "Создана заявка {claimId} на персонажа {characterId}: операция {operation}, аргументы {arguments}",
                 claim.ClaimId,
                 characterId,
                 operationName,
                 arguments),
             e => logger.LogWarning(
                 e,
-                "Не удалось создать заявку на персонажа {characterId}: операция {operation}, аргументы {@arguments}",
+                "Не удалось создать заявку на персонажа {characterId}: операция {operation}, аргументы {arguments}",
                 characterId,
                 operationName,
                 arguments));

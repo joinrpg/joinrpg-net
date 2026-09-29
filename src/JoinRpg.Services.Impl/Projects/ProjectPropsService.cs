@@ -88,7 +88,7 @@ internal class ProjectPropsService(
             metadataRepository.PrimeCache(await handle.Refresh());
 
             logger.LogInformation(
-                "Изменены метаданные проекта {projectId}: операция {operation}, аргументы {@arguments}",
+                "Изменены метаданные проекта {projectId}: операция {operation}, аргументы {arguments}",
                 projectId,
                 operationName,
                 arguments);
@@ -99,7 +99,7 @@ internal class ProjectPropsService(
         {
             logger.LogWarning(
                 e,
-                "Не удалось изменить метаданные проекта {projectId}: операция {operation}, аргументы {@arguments}",
+                "Не удалось изменить метаданные проекта {projectId}: операция {operation}, аргументы {arguments}",
                 projectId,
                 operationName,
                 arguments);
@@ -123,7 +123,7 @@ internal class ProjectPropsService(
             await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation(
-                "Создан проект {projectName}: операция {operation}, аргументы {@arguments}",
+                "Создан проект {projectName}: операция {operation}, аргументы {arguments}",
                 project.ProjectName,
                 operationName,
                 arguments);
@@ -134,7 +134,7 @@ internal class ProjectPropsService(
         {
             logger.LogWarning(
                 e,
-                "Не удалось создать проект: операция {operation}, аргументы {@arguments}",
+                "Не удалось создать проект: операция {operation}, аргументы {arguments}",
                 operationName,
                 arguments);
             throw;
