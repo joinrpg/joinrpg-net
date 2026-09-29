@@ -1,12 +1,12 @@
 @if(string.IsNullOrWhiteSpace(Title) && TooltipContent is null)
 {
-    @ChildContent
+    @ChildContent@Text
     return;
 }
 
 <span class="join-tooltip-container">
     <span>
-        @ChildContent
+        @ChildContent@Text
     </span>
     <span class="join-tooltip">
         @if (TooltipContent is not null)
@@ -29,5 +29,12 @@
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Текст, к которому показываем подсказку — альтернатива <see cref="ChildContent"/> для MVC-разметки,
+    /// где тег-хелпер &lt;component&gt; не умеет передавать вложенное содержимое.
+    /// </summary>
+    [Parameter]
+    public string? Text { get; set; }
 }
 

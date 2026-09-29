@@ -65,7 +65,7 @@
       <td class="price-value">
         @if (Model.TotalPaid != 0 || Model.TotalAcceptedNotPaid == 0)
         {
-          <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.TotalPaid</span>
+          <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.PaidTooltip" param-Text="@Model.TotalPaid.ToString()" />
         }
         @if (Model.TotalAcceptedNotPaid != 0)
         {
@@ -73,9 +73,10 @@
           {
             <text>+</text>
           }
-          <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.TotalAcceptedNotPaid</span>
+          <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip" param-Text="@Model.TotalAcceptedNotPaid.ToString()" />
         }
-        = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@(Model.TotalPending)</span>
+        =
+        <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.TotalUnsettledTooltip" param-Text="@Model.TotalPending.ToString()" />
       </td>
       <td>
         <a class="btn btn-sm btn-default disabled" href="#"><join-icon icon="MenuHorizontal" /></a>

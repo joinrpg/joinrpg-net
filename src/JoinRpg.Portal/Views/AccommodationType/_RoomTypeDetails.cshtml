@@ -1,5 +1,4 @@
-﻿
-@using JoinRpg.Web.Models.Accommodation
+﻿@using JoinRpg.Web.Models.Accommodation
 @model RoomTypeListItemViewModel
 
 @{
@@ -7,6 +6,10 @@
     {
         roomTypeId = Model.Id,
         projectId = Model.ProjectId
+    };
+    var deleteConfirm = new Dictionary<string, object>
+    {
+        ["onclick"] = $"return confirm('Удалить тип размещения {Model.Name}?')",
     };
 }
 
@@ -39,13 +42,17 @@
                 <div>@Model.Capacity &#x2715; ∞ = ∞</div>
                 <div>
                     Занято:
-                    <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
-                    &#x2715; <span title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip">@Model.FullyOccupiedRoomsCount</span>
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.CapacityTooltip" param-Text="@Model.Capacity.ToString()" />
+                    &#x2715;
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip" param-Text="@Model.FullyOccupiedRoomsCount.ToString()" />
                     @if (Model.PartialRoomsCount > 0)
                     {
-                        <text>+ <span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Model.PartialOccupiedSeats</span></text>
+                        <text>+
+                        <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip" param-Text="@Model.PartialOccupiedSeats.ToString()" />
+                        </text>
                     }
-                    = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupied</span>
+                    =
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.TotalOccupiedTooltip" param-Text="@Model.Occupied.ToString()" />
                 </div>
             </td>
         }
@@ -54,30 +61,38 @@
             <td class="price-value">
                 <div>
                     Свободно:
-                    <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
-                    &#x2715; <span title="@RoomTypeListItemViewModel.FullyFreeRoomsTooltip">@Model.FullyFreeRoomsCount</span>
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.CapacityTooltip" param-Text="@Model.Capacity.ToString()" />
+                    &#x2715;
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.FullyFreeRoomsTooltip" param-Text="@Model.FullyFreeRoomsCount.ToString()" />
                     @if (Model.PartialRoomsCount > 0)
                     {
-                        <text>+ <span title="@RoomTypeListItemViewModel.PartialFreeSeatsTooltip">@Model.PartialFreeSeats</span></text>
+                        <text>+
+                        <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.PartialFreeSeatsTooltip" param-Text="@Model.PartialFreeSeats.ToString()" />
+                        </text>
                     }
-                    = <span title="@RoomTypeListItemViewModel.TotalFreeTooltip">@Model.FreeCapacity</span>
+                    =
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.TotalFreeTooltip" param-Text="@Model.FreeCapacity.ToString()" />
                 </div>
                 <div>
                     Занято:
-                    <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
-                    &#x2715; <span title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip">@Model.FullyOccupiedRoomsCount</span>
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.CapacityTooltip" param-Text="@Model.Capacity.ToString()" />
+                    &#x2715;
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip" param-Text="@Model.FullyOccupiedRoomsCount.ToString()" />
                     @if (Model.PartialRoomsCount > 0)
                     {
-                        <text>+ <span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Model.PartialOccupiedSeats</span></text>
+                        <text>+
+                        <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip" param-Text="@Model.PartialOccupiedSeats.ToString()" />
+                        </text>
                     }
-                    = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupied</span>
+                    =
+                    <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.TotalOccupiedTooltip" param-Text="@Model.Occupied.ToString()" />
                 </div>
             </td>
         }
         <td class="price-value">
             @if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
             {
-                <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.PaidCount</span>
+                <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.PaidTooltip" param-Text="@Model.PaidCount.ToString()" />
             }
             @if (Model.AcceptedNotPaidCount != 0)
             {
@@ -85,30 +100,48 @@
                 {
                     <text>+</text>
                 }
-                <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
+                <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip" param-Text="@Model.AcceptedNotPaidCount.ToString()" />
             }
-            = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
+            =
+            <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.TotalUnsettledTooltip" param-Text="@Model.PendingRequests.ToString()" />
         </td>
         <td>
             <div class="btn-group btn-group-sm" style="display: inline-block">
-                <a title="Показать список заявок на тип поселения «@Model.Name»" class="btn btn-default" href="@Url.Action("ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id })"><join-icon icon="MenuHorizontal" /></a>
+                <component type="typeof(JoinButton)"
+                           render-mode="Static"
+                           param-Link="@Url.Action("ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id })"
+                           param-Icon="@JoinIconType.MenuHorizontal"
+                           param-Size="@SizeStyleEnum.Small"
+                           param-Title="@($"Показать список заявок на тип поселения «{Model.Name}»")" />
                 @if (Model.CanAssignRooms)
                 {
-                    <a title="Расселение" href="@Url.Action("EditRoomTypeRooms", "AccommodationType", actionParams)" class="btn btn-default">
-                        <join-icon icon="Accommodation" />
-                    </a>
+                    <component type="typeof(JoinButton)"
+                               render-mode="Static"
+                               param-Link="@Url.Action("EditRoomTypeRooms", "AccommodationType", actionParams)"
+                               param-Icon="@JoinIconType.Accommodation"
+                               param-Size="@SizeStyleEnum.Small"
+                               param-Title='"Расселение"' />
                 }
                 @if (Model.CanManageRooms)
                 {
-                    <a title="Изменить" href="@Url.Action("EditRoomType", "AccommodationType", actionParams)" class="btn btn-primary">
-                        <join-icon icon="Edit" />
-                    </a>
+                    <component type="typeof(JoinButton)"
+                               render-mode="Static"
+                               param-Link="@Url.Action("EditRoomType", "AccommodationType", actionParams)"
+                               param-Icon="@JoinIconType.Edit"
+                               param-Style="@VariationStyleEnum.Primary"
+                               param-Size="@SizeStyleEnum.Small"
+                               param-Title='"Изменить"' />
                 }
                 @if (Model.CanManageRooms && Model.Occupied == 0)
                 {
-                    <a title="Удалить" href="@Url.Action("DeleteRoomType", "AccommodationType", actionParams)" class="btn btn-warning" onclick="return confirm('Удалить тип размещения @(Model.Name)?')">
-                        <join-icon icon="Delete" />
-                    </a>
+                    <component type="typeof(JoinButton)"
+                               render-mode="Static"
+                               param-Link="@Url.Action("DeleteRoomType", "AccommodationType", actionParams)"
+                               param-Icon="@JoinIconType.Delete"
+                               param-Style="@VariationStyleEnum.Warning"
+                               param-Size="@SizeStyleEnum.Small"
+                               param-Title='"Удалить"'
+                               param-AdditionalAttributes="@deleteConfirm" />
                 }
             </div>
         </td>

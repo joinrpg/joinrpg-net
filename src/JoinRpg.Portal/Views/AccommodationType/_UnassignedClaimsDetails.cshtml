@@ -10,7 +10,7 @@
     <td class="price-value">
         @if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
         {
-            <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.PaidCount</span>
+            <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.PaidTooltip" param-Text="@Model.PaidCount.ToString()" />
         }
         @if (Model.AcceptedNotPaidCount != 0)
         {
@@ -18,13 +18,19 @@
             {
                 <text>+</text>
             }
-            <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
+            <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip" param-Text="@Model.AcceptedNotPaidCount.ToString()" />
         }
-        = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
+        =
+        <component type="typeof(Tooltip)" render-mode="Static" param-Title="@RoomTypeListItemViewModel.TotalUnsettledTooltip" param-Text="@Model.PendingRequests.ToString()" />
     </td>
     <td>
         <div class="btn-group btn-group-sm" style="display: inline-block">
-            <a title="Показать список заявок с невыбранным типом поселения" class="btn btn-default" href="@Url.Action("ListWithoutRoomType", "ClaimList", new { Model.ProjectId })"><join-icon icon="MenuHorizontal" /></a>
+            <component type="typeof(JoinButton)"
+                       render-mode="Static"
+                       param-Link="@Url.Action("ListWithoutRoomType", "ClaimList", new { Model.ProjectId })"
+                       param-Icon="@JoinIconType.MenuHorizontal"
+                       param-Size="@SizeStyleEnum.Small"
+                       param-Title='"Показать список заявок с невыбранным типом поселения"' />
         </div>
     </td>
 </tr>
