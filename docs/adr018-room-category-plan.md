@@ -572,13 +572,11 @@ public interface IAccommodationService
      `JoinRpg.DomainTypes.Test` на DAL не ссылается), а на тамошнем `ProjectInfoFixture`, куда
      добавлен `MakeAccommodationType`. На `MockedProject` остался тест-страж — он и должен быть
      в `JoinRpg.Dal.Impl.Test`, потому что проверяет маппер.
-   - Промахи `GetRoom`/`GetGroup`/`GetAccommodationType` кидают `KeyNotFoundException` — так же,
-     как соседний `ProjectAccommodationSettings.GetTypeById`. Доменного
-     `AccommodationTypeNotFoundException` в `JoinRpg.DomainTypes` нет, а
-     `JoinRpgEntityNotFoundException` лежит в `JoinRpg.Data.Interfaces`, куда домен не смотрит.
-     Доменное `AccommodationTypeNotFoundException` заводится параллельным PR #5088, который растёт
-     от `master`, а не от этой ветки; согласовать промахи плана с ним — задача первого же ребейза
-     после его слияния.
+   - Промахи `GetRoom`/`GetGroup`/`GetAccommodationType` кидают доменные исключения —
+     `AccommodationRoomNotFoundException`, `AccommodationGroupNotFoundException` и
+     `AccommodationTypeNotFoundException` (последнее заведено #5088, два первых — этим PR). Все три
+     наследуют `JoinRpgProjectException`. `JoinRpgEntityNotFoundException` не годится: он лежит в
+     `JoinRpg.Data.Interfaces`, куда домен не смотрит.
    - `GetFreeSpace` не бывает отрицательным: комната могла оказаться переполненной (вместимость
      типа уменьшили после заселения — тот самый случай, ради которого «вместимость не превышена»
      сознательно не инвариант), и результат в этом случае ноль, а не минус.

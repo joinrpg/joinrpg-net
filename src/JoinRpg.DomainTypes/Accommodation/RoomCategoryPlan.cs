@@ -157,25 +157,25 @@ public record class RoomCategoryPlan
     public int TotalCapacity => Rooms.Count * RoomCapacity;
 
     /// <summary>Комната по идентификатору</summary>
-    /// <exception cref="KeyNotFoundException">Комнаты с таким идентификатором нет в этом плане</exception>
+    /// <exception cref="AccommodationRoomNotFoundException">Комнаты с таким идентификатором нет в этом плане</exception>
     public RoomInfo GetRoom(AccommodationRoomIdentification roomId)
         => roomsById.TryGetValue(roomId, out var room)
             ? room
-            : throw new KeyNotFoundException($"Не найдена комната с ID={roomId} в категории {Id}");
+            : throw new AccommodationRoomNotFoundException(roomId);
 
     /// <summary>Группа по идентификатору</summary>
-    /// <exception cref="KeyNotFoundException">Группы с таким идентификатором нет в этом плане</exception>
+    /// <exception cref="AccommodationGroupNotFoundException">Группы с таким идентификатором нет в этом плане</exception>
     public AccommodationGroupInfo GetGroup(AccommodationRequestIdentification groupId)
         => groupsById.TryGetValue(groupId, out var group)
             ? group
-            : throw new KeyNotFoundException($"Не найдена группа проживающих с ID={groupId} в категории {Id}");
+            : throw new AccommodationGroupNotFoundException(groupId);
 
     /// <summary>Тип проживания, селящийся из этого пула</summary>
-    /// <exception cref="KeyNotFoundException">Тип проживания не селится из этого пула</exception>
+    /// <exception cref="AccommodationTypeNotFoundException">Тип проживания не селится из этого пула</exception>
     public AccommodationTypeInfo GetAccommodationType(AccommodationTypeIdentification typeId)
         => typesById.TryGetValue(typeId, out var type)
             ? type
-            : throw new KeyNotFoundException($"Тип проживания с ID={typeId} не селится из категории {Id}");
+            : throw new AccommodationTypeNotFoundException(typeId);
 
     /// <summary>
     /// Сколько человек вмещает комната при нынешних жильцах: физический предел, ужатый

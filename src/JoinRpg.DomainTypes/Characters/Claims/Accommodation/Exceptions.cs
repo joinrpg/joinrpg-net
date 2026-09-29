@@ -24,3 +24,21 @@ public class AccommodationTypeNotFoundException(AccommodationTypeIdentification 
 {
     public AccommodationTypeIdentification AccommodationTypeId { get; } = accommodationTypeId;
 }
+
+/// <summary>
+/// В плане поселения нет комнаты с таким идентификатором.
+/// </summary>
+public class AccommodationRoomNotFoundException(AccommodationRoomIdentification roomId)
+    : JoinRpgProjectException(roomId.ProjectId, $"Не найдена комната с ID={roomId}")
+{
+    public AccommodationRoomIdentification RoomId { get; } = roomId;
+}
+
+/// <summary>
+/// В плане поселения нет группы проживающих с таким идентификатором.
+/// </summary>
+public class AccommodationGroupNotFoundException(AccommodationRequestIdentification groupId)
+    : JoinRpgProjectException(groupId.ProjectId, $"Не найдена группа проживающих с ID={groupId}")
+{
+    public AccommodationRequestIdentification GroupId { get; } = groupId;
+}

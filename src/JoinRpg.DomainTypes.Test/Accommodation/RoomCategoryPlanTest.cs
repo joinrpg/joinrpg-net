@@ -320,7 +320,7 @@ public class RoomCategoryPlanTest
         var lux = MakeLux();
         var plan = MakePlan(MakeProject(lux), [lux], 2, [], []);
 
-        _ = Should.Throw<KeyNotFoundException>(() => plan.GetRoom(RoomId(100500)));
+        _ = Should.Throw<AccommodationRoomNotFoundException>(() => plan.GetRoom(RoomId(100500)));
     }
 
     [Fact]
@@ -329,7 +329,7 @@ public class RoomCategoryPlanTest
         var lux = MakeLux();
         var plan = MakePlan(MakeProject(lux), [lux], 2, [], []);
 
-        _ = Should.Throw<KeyNotFoundException>(
+        _ = Should.Throw<AccommodationGroupNotFoundException>(
             () => plan.GetGroup(new AccommodationRequestIdentification(ProjectId, 100500)));
     }
 
@@ -340,7 +340,7 @@ public class RoomCategoryPlanTest
         var single = MakeLuxSingle();
         var plan = MakePlan(MakeProject(lux, single), [lux], 2, [], []);
 
-        _ = Should.Throw<KeyNotFoundException>(() => plan.GetAccommodationType(single.Id));
+        _ = Should.Throw<AccommodationTypeNotFoundException>(() => plan.GetAccommodationType(single.Id));
     }
 
     [Fact]
@@ -350,7 +350,7 @@ public class RoomCategoryPlanTest
         var single = MakeLuxSingle();
         var plan = MakePlan(MakeProject(lux, single), [lux], 2, [MakeRoom(1)], []);
 
-        _ = Should.Throw<KeyNotFoundException>(() => plan.GetFreeSpace(RoomId(1), single.Id));
+        _ = Should.Throw<AccommodationTypeNotFoundException>(() => plan.GetFreeSpace(RoomId(1), single.Id));
     }
 
     #endregion
