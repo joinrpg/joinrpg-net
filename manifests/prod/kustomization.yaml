@@ -79,6 +79,14 @@ patchesJson6902:
     patch: |-
       - op: remove #Remove CPU limits to reduce latency
         path: /spec/template/spec/containers/0/resources/limits/cpu
+      # 256Mi из base мало: под и в покое занимает ~188Mi, а 28.09 умер по памяти
+      # после ~17 часов uptime (issue #5048).
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 768Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 384Mi
 
   - target:
       group: policy
