@@ -72,7 +72,10 @@ public class DbServiceImplBase
         where T : class, IProjectEntity
     {
         var field = await UnitOfWork.GetDbSet<T>().FindAsync(subentityId);
-        if (field != null && field.Project.ProjectId == projectId)
+        // Сверяем по FK-свойству, а не по навигации field.Project: навигация стоит ленивой
+        // догрузки проекта на каждую загрузку подсущности, а проверка от этого не выигрывает
+        // ничего — ProjectId у сущности уже есть (#4989).
+        if (field != null && field.ProjectId == projectId)
         {
             return field;
         }
@@ -86,7 +89,8 @@ public class DbServiceImplBase
     where T : class, IProjectEntity
     {
         var field = await UnitOfWork.GetDbSet<T>().FindAsync(id.Id);
-        if (field != null && field.Project.ProjectId == id.ProjectId)
+        // См. комментарий в перегрузке выше: сверка идёт по FK, а не по навигации на проект.
+        if (field != null && field.ProjectId == id.ProjectId)
         {
             return field;
         }
