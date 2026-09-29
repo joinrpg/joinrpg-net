@@ -60,6 +60,7 @@ public static class Registration
         .AddScoped<Plots.CharacterPlotViewService>()
         .AddScoped<IAccommodationInviteClient, Accommodation.AccommodationInviteViewService>()
         .AddScoped<IAccommodationTypeClient, Accommodation.AccommodationTypeViewService>()
+        .AddScoped<Accommodation.RoomTypeRoomsViewService>()
         .AddScoped<IClaimOperationClient, ClaimsViewService>()
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()

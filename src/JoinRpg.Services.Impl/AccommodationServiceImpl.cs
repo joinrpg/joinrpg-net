@@ -10,14 +10,6 @@ public class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
 {
     private IEmailService EmailService { get; }
 
-    public async Task<ProjectAccommodationType> GetRoomTypeAsync(int roomTypeId)
-    {
-        return await UnitOfWork.GetDbSet<ProjectAccommodationType>()
-            .Include(x => x.ProjectAccommodations)
-            .Include(x => x.Desirous)
-            .FirstOrDefaultAsync(x => x.Id == roomTypeId);
-    }
-
     public async Task OccupyRoom(OccupyRequest request)
     {
         var room = await UnitOfWork.GetDbSet<ProjectAccommodation>()

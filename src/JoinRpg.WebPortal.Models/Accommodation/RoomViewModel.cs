@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Accommodation;
 
 namespace JoinRpg.Web.Models.Accommodation;
 
@@ -29,30 +29,25 @@ public class RoomViewModel
 
     public bool CanAssignRooms { get; set; }
 
-    public RoomViewModel(ProjectAccommodation entity, RoomTypeViewModel owner)
+    /// <summary>
+    /// Комната поверх доменного агрегата плана поселения (ADR018). Вместимость у комнаты не
+    /// своя — она общая для пула, поэтому берётся у типа проживания.
+    /// </summary>
+    public RoomViewModel(RoomInfo room, RoomTypeViewModel owner)
     {
-        if (entity.ProjectId == 0 || entity.Id == 0)
-        {
-            throw new ArgumentException("Entity must be valid object");
-        }
-
-        Id = entity.Id;
-        Name = entity.Name;
-        ProjectId = entity.ProjectId;
-        RoomTypeId = entity.AccommodationTypeId;
-        Capacity = entity.ProjectAccommodationType?.Capacity ?? 0;
+        Id = room.Id.RoomId;
+        Name = room.Name;
+        ProjectId = room.Id.ProjectId.Value;
+        RoomTypeId = owner.Id;
+        Capacity = owner.Capacity;
 
         // Extracting list of requests associated with this room
-        Requests = owner.Requests.Where(r =>
+        Requests = [.. owner.Requests.Where(r => r.RoomId == Id)];
+        Occupancy = Requests.Sum(r => r.Persons);
+        foreach (var request in Requests)
         {
-            var result = r.RoomId == Id;
-            if (result)
-            {
-                Occupancy += r.Persons;
-                r.Room = this;
-            }
-            return result;
-        }).ToList();
+            request.Room = this;
+        }
 
         CanManageRooms = owner.CanManageRooms;
         CanAssignRooms = owner.CanAssignRooms;

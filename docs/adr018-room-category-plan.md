@@ -612,8 +612,27 @@ public interface IAccommodationService
      Тест-страж сравнивает не буквально: legacy умеет уходить в минус на переполненной
      комнате, а доменный `GetFreeSpace` — нет (см. уточнение к PR 1), поэтому сверка идёт
      с `Math.Max(0, …)`.
-3. **PR 3.** Страница комнат на план: `EditRoomTypeRooms`, вью-модели, деньги bulk'ом через
-   `ICharacterInfoRepository`. `GetRoomTypeAsync` удаляется.
+3. **PR 3** — ✅ сделано. Страница комнат на план: `EditRoomTypeRooms`, вью-модели, деньги bulk'ом
+   через `ICharacterInfoRepository`. `GetRoomTypeAsync` удалён из `IAccommodationService` и
+   `AccommodationServiceImpl`.
+
+   Три уточнения по факту реализации:
+
+   - Загрузка страницы вынесена из контроллера в `RoomTypeRoomsViewService`
+     (`JoinRpg.WebPortal.Managers/Accommodation/`) — по structure.md контроллер только зовёт
+     вью-сервис. Промах по типу проживания даёт `NotFound`, как у соседних экшенов, а не
+     `Forbid` (§12).
+   - `ICharacterInfoRepository.GetCharacterInfos` берёт `CharacterIdentification`, а план несёт
+     жильцов как `ClaimIdentification` (§5) — прямого соответствия нет. Чтобы не делать два
+     запроса («сначала персонажи по заявкам, потом сами персонажи»), заведён
+     `GetCharacterInfosByClaims(IReadOnlyCollection<ClaimIdentification>)` — тот же загрузчик
+     `CharacterInfo` с предикатом по заявкам. Запрос на страницу остаётся один, как и обещано
+     в §5. Имена игроков отдельного запроса не требуют вовсе: `CharacterClaimInfo.Player` —
+     это `UserInfoHeader`, он уже внутри агрегата (ADR013).
+   - `RequestParticipantViewModel` перестал носить EF-сущности `Claim` и `User`: вместо
+     `Claim.ProjectId` шаблон отображения берёт `ClaimId.ProjectId`. `[Obsolete]`-методов
+     `ClaimTotalFee`/`ClaimFeeDue` на этой странице больше нет — баланс считает
+     `FinanceExtensions.CalculateClaimBalance(CharacterInfo, CharacterClaimInfo, ProjectInfo)`.
 4. **PR 4.** Write-хэндл, `IAccommodationPropsService`, вынос `ProjectOperationGuard` (если
    наберётся), перевод `AddRooms`/`RenameRoom`/`DeleteRoom` — права, активность, типизированный
    проект. Закрывает дефекты 1, 2, 4 для управления комнатами.

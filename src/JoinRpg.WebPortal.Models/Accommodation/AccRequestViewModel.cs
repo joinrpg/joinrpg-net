@@ -1,5 +1,7 @@
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Accommodation;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Helpers;
 using Newtonsoft.Json;
 
@@ -39,13 +41,21 @@ public class AccRequestViewModel
     public string PaymentStatusTitle
         => FeeToPay > 0 ? $@"Не оплачено {FeeToPay} из {FeeTotal}" : "Все оплачено полностью";
 
-    public AccRequestViewModel(AccommodationRequest entity, ProjectInfo projectInfo)
+    /// <summary>
+    /// Группа проживающих поверх доменного агрегата плана поселения (ADR018).
+    /// </summary>
+    /// <param name="group">Группа из плана — она несёт только идентификаторы жильцов</param>
+    /// <param name="participants">
+    /// Уже посчитанные жильцы: деньги в план не входят (ADR018, §5), поэтому они приходят снаружи,
+    /// из общей на всю страницу выборки персонажей.
+    /// </param>
+    public AccRequestViewModel(AccommodationGroupInfo group, IReadOnlyList<RequestParticipantViewModel> participants)
     {
-        Id = entity.Id;
-        ProjectId = entity.ProjectId;
-        AccommodationTypeId = entity.AccommodationTypeId;
-        RoomId = entity.AccommodationId ?? 0;
-        Participants = entity.Subjects.Select(c => new RequestParticipantViewModel(c, projectInfo)).ToList();
+        Id = group.Id.AccommodationRequestId;
+        ProjectId = group.Id.ProjectId.Value;
+        AccommodationTypeId = group.AccommodationTypeId.AccommodationTypeId;
+        RoomId = group.RoomId?.RoomId ?? 0;
+        Participants = participants;
         FeeTotal = Participants.Sum(p => p.FeeTotal);
         FeeToPay = Participants.Sum(p => p.FeeToPay);
         FeeToPay = FeeToPay > 0 ? FeeToPay : 0; // if FeeToPay < 0 we have overpaid
@@ -56,24 +66,27 @@ public class AccRequestViewModel
 
 public class RequestParticipantViewModel
 {
-    public int UserId;
-    public User User;
-    public int ClaimId;
-    public Claim Claim;
+    public ClaimIdentification ClaimId { get; }
 
-    public int FeeToPay;
-    public int FeeTotal;
+    public UserIdentification UserId { get; }
 
-    public string UserName
-        => User?.GetDisplayName() ?? "";
+    public int FeeToPay { get; }
 
-    public RequestParticipantViewModel(Claim claim, ProjectInfo projectInfo)
+    public int FeeTotal { get; }
+
+    public string UserName { get; }
+
+    /// <summary>
+    /// Жилец поверх доменного агрегата персонажа (ADR013): и имя игрока, и баланс заявки берутся
+    /// из него, без обращения к EF-сущностям.
+    /// </summary>
+    public RequestParticipantViewModel(CharacterInfo character, CharacterClaimInfo claim, ProjectInfo projectInfo)
     {
         ClaimId = claim.ClaimId;
-        Claim = claim;
-        UserId = claim.PlayerUserId;
-        User = claim.Player;
-        FeeTotal = Claim.ClaimTotalFee(projectInfo);
-        FeeToPay = Claim.ClaimFeeDue(projectInfo);
+        UserId = claim.PlayerId;
+        UserName = claim.Player.DisplayName.DisplayName;
+        var balance = character.CalculateClaimBalance(claim, projectInfo);
+        FeeTotal = balance.TotalFee;
+        FeeToPay = balance.FeeDue;
     }
 }

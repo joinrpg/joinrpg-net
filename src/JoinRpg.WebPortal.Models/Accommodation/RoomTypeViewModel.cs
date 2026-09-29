@@ -1,4 +1,5 @@
-using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using JoinRpg.Markdown;
 
@@ -70,25 +71,27 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// </summary>
     public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
 
-    public RoomTypeViewModel(ProjectAccommodationType entity, UserIdentification userId, ProjectInfo projectInfo)
-        : this(userId, projectInfo)
+    /// <summary>
+    /// Страница комнат: комнаты и группы проживающих берутся из доменного агрегата плана
+    /// поселения (ADR018), настройки типа — из метаданных проекта (ADR015).
+    /// </summary>
+    /// <param name="plan">План категории комнат, из которой селится этот тип проживания</param>
+    /// <param name="typeId">Тип проживания, чью страницу показываем</param>
+    /// <param name="participants">
+    /// Жильцы по идентификатору заявки. Денег в плане нет (ADR018, §5) — их считает вью-сервис
+    /// страницы одной общей выборкой персонажей.
+    /// </param>
+    public RoomTypeViewModel(
+        RoomCategoryPlan plan,
+        AccommodationTypeIdentification typeId,
+        IReadOnlyDictionary<ClaimIdentification, RequestParticipantViewModel> participants,
+        UserIdentification userId)
+        : this(plan.GetAccommodationType(typeId), userId, plan.ProjectInfo)
     {
-        if (entity.ProjectId == 0 || entity.Id == 0)
-        {
-            throw new ArgumentException("Entity must be valid object");
-        }
-        Id = entity.Id;
-        Cost = entity.Cost;
-        Name = entity.Name;
-        Capacity = entity.Capacity;
-        IsInfinite = entity.IsInfinite;
-        IsPlayerSelectable = entity.IsPlayerSelectable;
-        IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
-        DescriptionEditable = entity.Description.Contents ?? "";
-        DescriptionView = ((MarkdownString?)entity.Description).ToHtmlString();
-
         // Creating a list of requests associated with this room type
-        Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar, projectInfo)).ToList();
+        Requests = [.. plan.Groups.Select(group => new AccRequestViewModel(
+            group,
+            [.. group.Subjects.Select(claimId => participants[claimId])]))];
 
         // Creating a list of requests not assigned to any room
         var ua = Requests.Where(ar => ar.RoomId == 0).ToList();
@@ -110,7 +113,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         UnassignedRequests = ua;
 
         // Creating a list of rooms contained in this room type
-        var rl = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
+        var rl = plan.Rooms.Select(room => new RoomViewModel(room, this)).ToList();
         rl.Sort((x, y) =>
         {
             if (x.Occupancy == y.Occupancy)
