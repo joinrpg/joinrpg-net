@@ -10,7 +10,7 @@ namespace JoinRpg.DomainTypes.Characters;
 /// <remarks>
 /// <para>
 /// Тип user-independent: <see cref="AccessArguments"/> внутрь не входят, персонаж хранится
-/// «как есть». Фильтрация по доступу делается снаружи — через <see cref="GetFieldLayers"/>.
+/// «как есть». Фильтрация по доступу делается снаружи — через <c>GetFieldLayers</c>.
 /// </para>
 /// <para>
 /// ВАЖНО: экземпляр привязан к конкретному экземпляру <see cref="ProjectInfo"/> (это проверяется
@@ -295,9 +295,9 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
     /// <summary>
     /// Полный набор полей — запись для каждого поля проекта, без фильтрации по доступу.
     /// Для расчётов (взносы, проблемы), а не для показа: для показа нужен
-    /// <see cref="GetFieldLayers"/> с правами конкретного зрителя.
+    /// <see cref="GetFieldLayers(AccessArguments, ClaimIdentification?)"/> с правами конкретного зрителя.
     /// </summary>
-    /// <param name="claimId">См. <see cref="GetFieldLayers"/>.</param>
+    /// <param name="claimId">См. <see cref="GetFieldLayers(AccessArguments, ClaimIdentification?)"/>.</param>
     public IReadOnlyCollection<FieldWithValue> GetAllFields(ClaimIdentification? claimId = null)
         // AccessArguments.None здесь безвреден: GetAllFieldsForEdit прав не смотрит.
         => GetFieldLayers(AccessArguments.None, claimId).GetAllFieldsForEdit();
