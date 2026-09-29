@@ -60,7 +60,7 @@ internal abstract record ClaimMutationContext(
     /// заявки — при утверждении заявки на слот она к этому моменту уже переехала на только что
     /// созданного персонажа, которого в хэндле нет.
     /// </summary>
-    public new IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(FieldLayerContainer fieldsToSet)
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(FieldLayerContainer fieldsToSet)
         => SaveFieldsCore(Claim, fieldsToSet);
 
     /// <summary>
