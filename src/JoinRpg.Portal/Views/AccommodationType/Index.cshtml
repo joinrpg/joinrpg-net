@@ -41,7 +41,7 @@
       <th class="price-table" style="min-width: 10em; width: 10em;">Цена</th>
       <th class="price-table">Места</th>
       <th class="price-table">Нерасселено</th>
-      <th style="min-width: 9em; width: 9em;"></th>
+      <th style="min-width: 11em; width: 11em;"></th>
     </tr>
     </thead>
     <tbody>
@@ -76,10 +76,9 @@
           <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.TotalAcceptedNotPaid</span>
         }
         = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@(Model.TotalPending)</span>
-        <a class="btn btn-sm btn-default disabled" href="#"><join-icon icon="MenuHorizontal" /></a>
       </td>
       <td>
-        &nbsp;
+        <a class="btn btn-sm btn-default disabled" href="#"><join-icon icon="MenuHorizontal" /></a>
       </td>
     </tr>
     </tbody>

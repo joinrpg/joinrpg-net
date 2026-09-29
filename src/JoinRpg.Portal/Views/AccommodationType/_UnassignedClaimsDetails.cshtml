@@ -21,7 +21,10 @@
             <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
         }
         = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
-        <a title="Показать список заявок с невыбранным типом поселения" class="btn btn-sm btn-default" href="@Url.Action("ListWithoutRoomType", "ClaimList", new { Model.ProjectId })"><join-icon icon="MenuHorizontal" /></a>
     </td>
-    <td>&nbsp;</td>
+    <td>
+        <div class="btn-group btn-group-sm" style="display: inline-block">
+            <a title="Показать список заявок с невыбранным типом поселения" class="btn btn-default" href="@Url.Action("ListWithoutRoomType", "ClaimList", new { Model.ProjectId })"><join-icon icon="MenuHorizontal" /></a>
+        </div>
+    </td>
 </tr>
