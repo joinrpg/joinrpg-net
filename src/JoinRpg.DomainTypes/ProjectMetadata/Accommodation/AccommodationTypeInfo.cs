@@ -34,11 +34,11 @@ public record ProjectAccommodationSettings(
     IReadOnlyCollection<AccommodationTypeInfo> Types)
 {
     /// <summary>Тип проживания по идентификатору</summary>
-    /// <exception cref="KeyNotFoundException">Типа проживания с таким идентификатором нет</exception>
+    /// <exception cref="AccommodationTypeNotFoundException">Типа проживания с таким идентификатором нет</exception>
     public AccommodationTypeInfo GetTypeById(AccommodationTypeIdentification id)
     {
         return GetTypeByIdOrDefault(id)
-            ?? throw new KeyNotFoundException("Не найден тип проживания с ID=" + id);
+            ?? throw new AccommodationTypeNotFoundException(id);
     }
 
     /// <summary>

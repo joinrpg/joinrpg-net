@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Dal.Impl.Repositories.Characters;
 
@@ -179,15 +178,6 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                 .Include(e => e.TargetGroups)
                 .Where(e => e.TargetCharacters.Any(ch => ch.CharacterId == characterIntId))
                 .ToListAsync();
-        }
-
-        public async Task<ProjectAccommodationType> LoadAccommodationType(AccommodationTypeIdentification accommodationTypeId)
-        {
-            var typeIntId = accommodationTypeId.AccommodationTypeId;
-            var projectIntId = accommodationTypeId.ProjectId.Value;
-            return await ctx.Set<ProjectAccommodationType>()
-                    .SingleOrDefaultAsync(t => t.Id == typeIntId && t.ProjectId == projectIntId)
-                ?? throw new JoinRpgEntityNotFoundException(typeIntId, nameof(ProjectAccommodationType));
         }
 
         /// <summary>
