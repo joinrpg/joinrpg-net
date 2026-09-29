@@ -40,6 +40,8 @@ internal class UriServiceImpl(
     IUriLocator<ProjectRolesListIdentification>,
     IUriLocator<AccommodationTypeIdentification>,
     IUriLocator<AccommodationRequestIdentification>,
+    IUriLocator<AccommodationRoomIdentification>,
+    IUriLocator<RoomCategoryIdentification>,
     IUriLocator<AccommodationInviteIdentification>,
     IUriLocator<AccommodationTargetIdentification>,
     INotificationEntityLinkRenderer
@@ -177,6 +179,10 @@ internal class UriServiceImpl(
     public Uri GetUri(AccommodationTypeIdentification target) => GetRoomsUri(target.ProjectId);
 
     public Uri GetUri(AccommodationRequestIdentification target) => GetRoomsUri(target.ProjectId);
+
+    public Uri GetUri(AccommodationRoomIdentification target) => GetRoomsUri(target.ProjectId);
+
+    public Uri GetUri(RoomCategoryIdentification target) => GetRoomsUri(target.ProjectId);
 
     public Uri GetUri(AccommodationInviteIdentification target) => GetRoomsUri(target.ProjectId);
 

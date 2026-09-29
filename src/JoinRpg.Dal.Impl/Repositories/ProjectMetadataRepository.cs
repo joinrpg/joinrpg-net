@@ -95,6 +95,11 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 project.Details.EnableAccommodation,
                 [.. project.ProjectAccommodationTypes.Select(type => new AccommodationTypeInfo(
                     new AccommodationTypeIdentification(projectId, type.Id),
+                    // Отдельной колонки под категорию комнат в БД пока нет: тип проживания и
+                    // категория не разделены (ADR018, «Задел на разделение», пункт 1), поэтому
+                    // число категории совпадает с id типа. В день разделения это перестанет быть
+                    // верным — за равенством следит тест-страж в JoinRpg.Dal.Impl.Test.
+                    new RoomCategoryIdentification(projectId, type.Id),
                     type.Name,
                     // Описания типа в БД может не быть, а домен ждёт значение — отдаём пустой
                     // markdown, как это сделано для описания персонажа и анонса проекта.

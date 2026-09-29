@@ -7,6 +7,11 @@ namespace JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 /// метаданных проекта (ADR015).
 /// </summary>
 /// <param name="Id">Идентификатор типа проживания</param>
+/// <param name="RoomCategoryId">
+/// Категория комнат (пул), из которого селится этот тип проживания. Единственный способ узнать
+/// пул по типу проживания — конвертации идентификаторов в домене нет (ADR018, «Задел на
+/// разделение»).
+/// </param>
 /// <param name="Name">Название типа, как его видит игрок</param>
 /// <param name="Description">Описание типа проживания</param>
 /// <param name="Cost">Стоимость проживания для одного игрока</param>
@@ -18,6 +23,7 @@ namespace JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 /// </remarks>
 public record AccommodationTypeInfo(
     AccommodationTypeIdentification Id,
+    RoomCategoryIdentification RoomCategoryId,
     string Name,
     MarkdownString Description,
     int Cost,

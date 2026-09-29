@@ -370,7 +370,7 @@ public record class AccommodationGroupInfo(
     AccommodationRoomIdentification? RoomId,
     IReadOnlyCollection<ClaimIdentification> Subjects)
 {
-    public int Persons => Subjects.Count;
+    public int SubjectsCount => Subjects.Count;
 }
 ```
 
@@ -560,11 +560,29 @@ public interface IAccommodationService
 ### 14. План миграции
 
 0. **PR 0** — этот ADR и ссылка на него в [docs/README.md](README.md).
-1. **PR 1.** `AccommodationRoomIdentification`, `RoomCategoryIdentification`,
+1. **PR 1** — ✅ сделано. `AccommodationRoomIdentification`, `RoomCategoryIdentification`,
    `AccommodationTypeInfo.RoomCategoryId` с маппингом; `RoomCategoryPlan`, `RoomInfo`,
-   `AccommodationGroupInfo` с инвариантами; юнит-тесты в `JoinRpg.DomainTypes.Test` поверх
-   `MockedProject` — в том числе тест на план с двумя типами в одном пуле и разной вместимостью,
-   который сегодня не собирается из БД, но обязан собираться из модели. Потребителей не трогаем.
+   `AccommodationGroupInfo` с инвариантами; юнит-тесты в `JoinRpg.DomainTypes.Test` — в том числе
+   тест на план с двумя типами в одном пуле и разной вместимостью, который сегодня не собирается из
+   БД, но обязан собираться из модели. Потребителей не трогали.
+
+   Четыре уточнения по факту реализации:
+
+   - Юнит-тесты плана живут не на `MockedProject` (он в `JoinRpg.DataModel.Mocks`, а
+     `JoinRpg.DomainTypes.Test` на DAL не ссылается), а на тамошнем `ProjectInfoFixture`, куда
+     добавлен `MakeAccommodationType`. На `MockedProject` остался тест-страж — он и должен быть
+     в `JoinRpg.Dal.Impl.Test`, потому что проверяет маппер.
+   - Промахи `GetRoom`/`GetGroup`/`GetAccommodationType` кидают доменные исключения —
+     `AccommodationRoomNotFoundException`, `AccommodationGroupNotFoundException` и
+     `AccommodationTypeNotFoundException` (последнее заведено #5088, два первых — этим PR). Все три
+     наследуют `JoinRpgProjectException`. `JoinRpgEntityNotFoundException` не годится: он лежит в
+     `JoinRpg.Data.Interfaces`, куда домен не смотрит.
+   - `GetFreeSpace` не бывает отрицательным: комната могла оказаться переполненной (вместимость
+     типа уменьшили после заселения — тот самый случай, ради которого «вместимость не превышена»
+     сознательно не инвариант), и результат в этом случае ноль, а не минус.
+   - `RoomCategoryIdentification` и `AccommodationRoomIdentification` дописаны в
+     `ProjectEntityIdParser.TryParseId`: полиморфный разбор идентификаторов покрыт общим тестом
+     `IdentificationCommonTest`, и без регистрации новые id его не проходят.
 2. **PR 2.** `IRoomCategoryPlanRepository` + загрузчик + тесты маппинга в `JoinRpg.Dal.Impl.Test`,
    включая тест-страж: `plan.GetFreeSpace(room, type)` совпадает с
    `AccommodationExtensions.GetRoomFreeSpace` на том же наборе данных.
