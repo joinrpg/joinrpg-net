@@ -1,5 +1,7 @@
 using JoinRpg.Dal.Impl.Repositories;
+using JoinRpg.Dal.Impl.Repositories.Accommodation;
 using JoinRpg.Dal.Impl.Repositories.ProjectMetadata;
+using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
@@ -40,6 +42,7 @@ public static class Registraton
             .AddTransient<IAccommodationInviteRepository, AccommodationInviteRepositoryImpl>()
             .AddTransient<IAccommodationRepository, AccommodationRepositoryImpl>()
             .AddTransient<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl>()
+            .AddTransient<IRoomCategoryPlanRepository, RoomCategoryPlanRepository>()
             .AddTransient<IProjectRolesListRepository, ProjectRolesListRepository>()
             .AddTransient<IFinanceOperationsRepository, FinanceOperationsRepository>()
             .AddTransient<IAdvertisementLogRepository, AdvertisementLogRepository>()
