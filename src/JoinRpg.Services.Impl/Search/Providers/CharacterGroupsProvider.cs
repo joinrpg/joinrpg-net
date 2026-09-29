@@ -5,15 +5,9 @@ using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
 
-internal class CharacterGroupsProvider : WorldObjectProviderBase, IProjectScopedSearchProvider
+internal class CharacterGroupsProvider(IUnitOfWork unitOfWork, IProjectMetadataRepository projectMetadataRepository)
+  : WorldObjectProviderBase(projectMetadataRepository), IProjectScopedSearchProvider
 {
-    private readonly IUnitOfWork unitOfWork;
-
-    public CharacterGroupsProvider(IUnitOfWork unitOfWork)
-    {
-        this.unitOfWork = unitOfWork;
-    }
-
     public LinkType LinkType => LinkType.ResultCharacterGroup;
 
     public async Task<IReadOnlyCollection<SearchResult>> SearchAsync(int? currentUserId, string searchString, ProjectIdentification? projectId)
@@ -37,10 +31,16 @@ internal class CharacterGroupsProvider : WorldObjectProviderBase, IProjectScoped
               .ToListAsync();
 
         //search by ID is only for masters of the group's project
-        var characterGroups = queryResults.Where(cg =>
-          CheckMasterAccessIfMatchById(cg, currentUserId, characterGroupIdToFind));
+        var characterGroups = new List<CharacterGroup>();
+        foreach (var characterGroup in queryResults)
+        {
+            if (await CheckMasterAccessIfMatchById(characterGroup, currentUserId, characterGroupIdToFind))
+            {
+                characterGroups.Add(characterGroup);
+            }
+        }
 
-        return GetWorldObjectsResult(
+        return await GetWorldObjectsResult(
           currentUserId,
           characterGroups,
           LinkType.ResultCharacterGroup,

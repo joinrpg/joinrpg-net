@@ -1,13 +1,12 @@
 using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search.Providers;
 
-internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : IProjectScopedSearchProvider
+internal class ClaimsByIdProvider(IUnitOfWork unitOfWork, IProjectMetadataRepository projectMetadataRepository) : IProjectScopedSearchProvider
 {
     //keep longer strings first to please Regexp
     private static readonly string[] keysForPerfectMath = ["%заявка", "заявка",];
@@ -26,25 +25,37 @@ internal class ClaimsByIdProvider(IUnitOfWork unitOfWork) : IProjectScopedSearch
 
         var query =
             unitOfWork.GetDbSet<Claim>()
+              // Имя берём из Character — подтягиваем сразу, чтобы не лениво догружать (#4991).
+              .Include(claim => claim.Character)
               .Where(claim => claim.ClaimId == idToFind);
 
         query = query.FilterByProject(projectId, claim => claim.ProjectId);
 
         var results = await query.ToListAsync();
 
-        return results
-          .Where(claim => claim.HasMasterAccess(UserIdentification.FromOptional(currentUserId)))
-          .Select(claim => new SearchResult
-          {
-              LinkType = LinkType.Claim,
-              Name = claim.Character.CharacterName,
-              Description = SearchUtils.GetFoundByIdDescription(claim.ClaimId),
-              Identification = claim.ClaimId.ToString(),
-              ProjectId = claim.ProjectId,
-              IsPublic = false,
-              IsActive = claim.ClaimStatus.IsActive(),
-              IsPerfectMatch = claim.ClaimId == idToFind && matchByIdIsPerfect,
-          })
-          .ToList();
+        var searchResults = new List<SearchResult>();
+        foreach (var claim in results)
+        {
+            // Проверка доступа поверх ProjectInfo (кеш на запрос), а не claim.Project.ProjectAcls —
+            // иначе на каждый найденный объект лениво догружаются Projects и ProjectAcls (#4991).
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(claim.ProjectIdentification);
+            if (!projectInfo.HasMasterAccess(UserIdentification.FromOptional(currentUserId)))
+            {
+                continue;
+            }
+
+            searchResults.Add(new SearchResult
+            {
+                LinkType = LinkType.Claim,
+                Name = claim.Character.CharacterName,
+                Description = SearchUtils.GetFoundByIdDescription(claim.ClaimId),
+                Identification = claim.ClaimId.ToString(),
+                ProjectId = claim.ProjectId,
+                IsPublic = false,
+                IsActive = claim.ClaimStatus.IsActive(),
+                IsPerfectMatch = claim.ClaimId == idToFind && matchByIdIsPerfect,
+            });
+        }
+        return searchResults;
     }
 }

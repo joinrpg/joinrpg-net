@@ -25,11 +25,12 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
 {
     private const string Password = "Password123!";
     private const string CharacterName = "Вантала";
+    private const string PrivateCharacterName = "Тайный Вантала";
 
     [Fact]
     public async Task GlobalSearch_WithoutProjectScope_Works()
     {
-        var (masterId, email, projectId) = await CreateMasterWithProjectAndCharacterAsync();
+        var (masterId, email, projectId, _) = await CreateMasterWithProjectAndCharacterAsync();
 
         var client = factory.CreateClient();
         client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(client, email, Password);
@@ -49,7 +50,36 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
         scopedResults.Select(r => r.CharacterName).ShouldContain(CharacterName);
     }
 
-    private async Task<(UserIdentification masterId, string email, ProjectIdentification projectId)> CreateMasterWithProjectAndCharacterAsync()
+    /// <summary>
+    /// Регрессия #4991: проверка видимости результатов глобального поиска шла через
+    /// <c>entity.Project.Details.PublishPlot</c> и <c>entity.Project.ProjectAcls</c> — на каждый
+    /// найденный объект лениво догружались Projects, ProjectDetails и ProjectAcls. Маршрута
+    /// <c>GET /search</c> нет в lazy-loads-baseline.json, поэтому любая ленивая загрузка в этом
+    /// тесте падает со <see cref="LazyLoadBaselineException"/>.
+    /// </summary>
+    [Fact]
+    public async Task GlobalSearch_AnonymousSearchOverNonPublicCharacter_DoesNotLazyLoad()
+    {
+        var (_, _, _, characterId) = await CreateMasterWithProjectAndCharacterAsync(
+            CharacterVisibility.Private, PrivateCharacterName);
+
+        // Анонимный посетитель: непубличный персонаж без публикации сюжетов — видимость
+        // решается только проверкой мастерского доступа, которая раньше дёргала ленивые загрузки.
+        var anonymousClient = factory.CreateClient();
+
+        var byNameResponse = await anonymousClient.GetAsync(
+            $"search?searchString={Uri.EscapeDataString(PrivateCharacterName)}");
+        byNameResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Поиск по id: дополнительно включается CheckMasterAccessIfMatchById.
+        var byIdResponse = await anonymousClient.GetAsync(
+            $"search?searchString={Uri.EscapeDataString("персонаж" + characterId.CharacterId)}");
+        byIdResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    private async Task<(UserIdentification masterId, string email, ProjectIdentification projectId, CharacterIdentification characterId)> CreateMasterWithProjectAndCharacterAsync(
+        CharacterVisibility visibility = CharacterVisibility.Public,
+        string characterName = CharacterName)
     {
         UserIdentification masterId;
         string email;
@@ -63,7 +93,7 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
                 scope.ServiceProvider, masterId, "Проект для глобального поиска");
         }
 
-        await factory.Services.RunAsAsync(masterId, async sp =>
+        var characterId = await factory.Services.RunAsAsync(masterId, async sp =>
         {
             var metadataRepository = sp.GetRequiredService<IProjectMetadataRepository>();
             var characterService = sp.GetRequiredService<ICharacterService>();
@@ -73,13 +103,13 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
                 ?? throw new InvalidOperationException("В проекте нет поля имени персонажа"))
                 .Id.ProjectFieldId;
 
-            await characterService.AddCharacter(new AddCharacterRequest(
+            return await characterService.AddCharacter(new AddCharacterRequest(
                 projectId,
                 ParentCharacterGroupIds: [projectInfo.GroupTree.RootGroupId],
-                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
-                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = CharacterName })));
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, visibility),
+                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = characterName })));
         });
 
-        return (masterId, email, projectId);
+        return (masterId, email, projectId, characterId);
     }
 }

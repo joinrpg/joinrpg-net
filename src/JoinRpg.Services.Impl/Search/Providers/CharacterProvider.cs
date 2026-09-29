@@ -5,7 +5,8 @@ using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search.Providers;
 
-internal class CharacterProvider(IUnitOfWork unitOfWork) : WorldObjectProviderBase, IProjectScopedSearchProvider
+internal class CharacterProvider(IUnitOfWork unitOfWork, IProjectMetadataRepository projectMetadataRepository)
+  : WorldObjectProviderBase(projectMetadataRepository), IProjectScopedSearchProvider
 {
     //keep longer strings first to please Regexp
     private static readonly string[] keysForPerfectMath = ["%персонаж", "персонаж",];
@@ -33,10 +34,16 @@ internal class CharacterProvider(IUnitOfWork unitOfWork) : WorldObjectProviderBa
               .ToListAsync();
 
         //search by ID is only for masters of the character's project
-        var characters = results.Where(c =>
-          CheckMasterAccessIfMatchById(c, currentUserId, characterIdToFind));
+        var characters = new List<Character>();
+        foreach (var character in results)
+        {
+            if (await CheckMasterAccessIfMatchById(character, currentUserId, characterIdToFind))
+            {
+                characters.Add(character);
+            }
+        }
 
-        return GetWorldObjectsResult(
+        return await GetWorldObjectsResult(
           currentUserId,
           characters,
           LinkType.ResultCharacter,
