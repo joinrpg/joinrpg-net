@@ -20,7 +20,6 @@ namespace JoinRpg.Portal.Controllers;
 public class FinancesController(
     IProjectRepository projectRepository,
     IExportDataService exportDataService,
-    IFinanceService financeService,
     IProjectFinanceSettingsService financeSettingsService,
     IUriService uriService,
     IFinanceReportRepository financeReportRepository,

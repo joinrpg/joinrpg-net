@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
@@ -18,7 +17,6 @@ public class GameFieldController(
     IFieldSetupService fieldSetupService,
     FieldSetupManager manager,
     ICurrentProjectAccessor currentProjectAccessor,
-    ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository
         ) : JoinControllerGameBase
 {
