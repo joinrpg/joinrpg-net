@@ -1,8 +1,14 @@
+// Заимствованный код: держим близко к апстриму, поэтому его предупреждения глушим, а не правим.
 #pragma warning disable CS8604
 #pragma warning disable CS8625
+#pragma warning disable CS8602
 #pragma warning disable CS1572
 #pragma warning disable IDE0011
 #pragma warning disable IDE0040
+// Разбор Exception через SerializationInfo — как в апстриме. Альтернатива уже заложена ветвью
+// NO_SERIALIZATION, но она теряет в логах HelpURL, StackTraceString, ExceptionMethod и ClassName.
+#pragma warning disable SYSLIB0050
+#pragma warning disable SYSLIB0051
 
 // Copyright 2014 Serilog Contributors
 // 

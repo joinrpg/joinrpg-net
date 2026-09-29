@@ -1,3 +1,7 @@
+// Заимствованный код: держим близко к апстриму, поэтому его предупреждения глушим, а не правим.
+#pragma warning disable CS8600
+#pragma warning disable CS8625
+
 // Copyright 2013-2016 Serilog Contributors
 // Adapted from https://github.com/serilog-contrib/serilog-sinks-elasticsearch/blob/1e9777c3034c2d8d078f60822c77b9caad5b7870/src/Serilog.Formatting.Elasticsearch/DefaultJsonFormatter.cs#L1
 
