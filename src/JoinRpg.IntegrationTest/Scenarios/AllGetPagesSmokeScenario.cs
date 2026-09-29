@@ -22,7 +22,8 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// поднятия хоста, а MemberData вычисляется раньше; во-вторых, отчёт из одного сообщения со всеми
 /// упавшими маршрутами полезнее, чем первый упавший кейс из двухсот.
 /// </remarks>
-public class AllGetPagesSmokeScenario(SmokeProjectFixture fixture) : IClassFixture<SmokeProjectFixture>
+[Collection(SmokeCollection.Name)]
+public class AllGetPagesSmokeScenario(SmokeProjectFixture fixture)
 {
     [Fact]
     public async Task EveryReachableGetEndpoint_AnswersExpectedStatusUnderMaster()
