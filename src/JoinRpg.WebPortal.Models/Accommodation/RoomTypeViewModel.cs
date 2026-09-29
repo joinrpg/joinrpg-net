@@ -81,19 +81,25 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// Жильцы по идентификатору заявки. Денег в плане нет (ADR018, §5) — их считает вью-сервис
     /// страницы одной общей выборкой персонажей.
     /// </param>
+    /// <param name="currentUserId">
+    /// Пользователь, который смотрит страницу: по нему считаются права
+    /// <see cref="RoomTypeViewModelBase.CanManageRooms"/> и
+    /// <see cref="RoomTypeViewModelBase.CanAssignRooms"/>.
+    /// </param>
     public RoomTypeViewModel(
         RoomCategoryPlan plan,
         AccommodationTypeIdentification typeId,
         IReadOnlyDictionary<ClaimIdentification, RequestParticipantViewModel> participants,
-        UserIdentification userId)
-        : this(plan.GetAccommodationType(typeId), userId, plan.ProjectInfo)
+        UserIdentification currentUserId)
+        : this(plan.GetAccommodationType(typeId), currentUserId, plan.ProjectInfo)
     {
         // Creating a list of requests associated with this room type
         Requests = [.. plan.Groups.Select(group => new AccRequestViewModel(
             group,
             [.. group.Subjects.Select(claimId => participants[claimId])]))];
 
-        // Creating a list of requests not assigned to any room
+        // Нерасселённые группы: нулевой RoomId — это признак «комната не назначена»
+        // (см. AccRequestViewModel.RoomId).
         var ua = Requests.Where(ar => ar.RoomId == 0).ToList();
         ua.Sort((x, y) =>
         {
@@ -145,8 +151,13 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// Комнаты и заявки в метаданные не входят и здесь не нужны — их показывает отдельная
     /// страница «Комнаты».
     /// </summary>
-    public RoomTypeViewModel(AccommodationTypeInfo typeInfo, UserIdentification userId, ProjectInfo projectInfo)
-        : this(userId, projectInfo)
+    /// <param name="currentUserId">
+    /// Пользователь, который смотрит страницу: по нему считаются права
+    /// <see cref="RoomTypeViewModelBase.CanManageRooms"/> и
+    /// <see cref="RoomTypeViewModelBase.CanAssignRooms"/>.
+    /// </param>
+    public RoomTypeViewModel(AccommodationTypeInfo typeInfo, UserIdentification currentUserId, ProjectInfo projectInfo)
+        : this(currentUserId, projectInfo)
     {
         Id = typeInfo.Id.AccommodationTypeId;
         Cost = typeInfo.Cost;
@@ -159,12 +170,16 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         UnassignedRequests = [];
     }
 
-    public RoomTypeViewModel(UserIdentification userId, ProjectInfo projectInfo)
+    /// <summary>
+    /// Пустая форма типа проживания. Права на странице считаются по текущему пользователю
+    /// <paramref name="currentUserId"/>.
+    /// </summary>
+    public RoomTypeViewModel(UserIdentification currentUserId, ProjectInfo projectInfo)
     {
         ProjectName = projectInfo.ProjectName.Value;
         ProjectId = projectInfo.ProjectId.Value;
-        CanManageRooms = projectInfo.HasMasterAccess(userId, Permission.CanManageAccommodation);
-        CanAssignRooms = projectInfo.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
+        CanManageRooms = projectInfo.HasMasterAccess(currentUserId, Permission.CanManageAccommodation);
+        CanAssignRooms = projectInfo.HasMasterAccess(currentUserId, Permission.CanSetPlayersAccommodations);
     }
 
     public RoomTypeViewModel()

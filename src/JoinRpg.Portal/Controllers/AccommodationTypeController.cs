@@ -72,11 +72,12 @@ public class AccommodationTypeController(
     }
 
     /// <summary>
-    /// Shows "Edit room type" form
+    /// Страница «Комнаты» типа проживания: показывает комнаты, жильцов и нерасселённые заявки
+    /// и позволяет ими управлять.
     /// </summary>
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpGet("~/{projectId}/rooms/{roomTypeId}/details")]
-    public async Task<ActionResult> EditRoomTypeRooms(AccommodationTypeIdentification roomTypeId)
+    public async Task<ActionResult> RoomTypeDetails(AccommodationTypeIdentification roomTypeId)
     {
         var viewModel = await roomTypeRoomsViewService.GetRoomTypeRooms(roomTypeId);
         if (viewModel is null)
@@ -241,7 +242,7 @@ public class AccommodationTypeController(
         try
         {
             await accommodationService.UnOccupyRoomType(projectId, roomTypeId);
-            return RedirectToAction("EditRoomTypeRooms", "AccommodationType",
+            return RedirectToAction("RoomTypeDetails", "AccommodationType",
                 new { ProjectId = projectId, RoomTypeId = roomTypeId });
         }
         catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)

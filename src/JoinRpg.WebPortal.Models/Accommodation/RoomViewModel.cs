@@ -41,13 +41,9 @@ public class RoomViewModel
         RoomTypeId = owner.Id;
         Capacity = owner.Capacity;
 
-        // Extracting list of requests associated with this room
+        // Группы проживающих, расселённые именно в эту комнату
         Requests = [.. owner.Requests.Where(r => r.RoomId == Id)];
         Occupancy = Requests.Sum(r => r.Persons);
-        foreach (var request in Requests)
-        {
-            request.Room = this;
-        }
 
         CanManageRooms = owner.CanManageRooms;
         CanAssignRooms = owner.CanAssignRooms;

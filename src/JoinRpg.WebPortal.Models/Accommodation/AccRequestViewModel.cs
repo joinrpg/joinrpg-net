@@ -17,10 +17,16 @@ public class AccRequestViewModel
     [JsonIgnore]
     public int AccommodationTypeId { get; protected set; }
 
+    /// <summary>
+    /// Комната, в которую расселена группа, или <c>0</c>, если она ещё не расселена.
+    /// </summary>
+    /// <remarks>
+    /// Ноль здесь — часть контракта с <c>wwwroot/Scripts/rooms.js</c>: модель уезжает в разметку
+    /// как JSON (атрибут <c>requests</c> у строки комнаты и переменная <c>requestsNotAssigned</c>),
+    /// а скрипт расселяет и выселяет на клиенте, проверяя <c>req.RoomId &gt; 0</c> и сбрасывая
+    /// поле в <c>0</c> при выселении. Поэтому тип остаётся <c>int</c>, а не nullable.
+    /// </remarks>
     public int RoomId { get; protected set; }
-
-    [JsonIgnore]
-    public RoomViewModel Room { get; set; }
 
     [JsonIgnore]
     public IReadOnlyList<RequestParticipantViewModel> Participants { get; protected set; }
@@ -54,6 +60,8 @@ public class AccRequestViewModel
         Id = group.Id.AccommodationRequestId;
         ProjectId = group.Id.ProjectId.Value;
         AccommodationTypeId = group.AccommodationTypeId.AccommodationTypeId;
+        // RoomId у группы плана равен null ровно тогда, когда она ещё не расселена по комнатам
+        // (такие группы план отдаёт в UnassignedGroups). Вью-модель кодирует это нулём — см. RoomId.
         RoomId = group.RoomId?.RoomId ?? 0;
         Participants = participants;
         FeeTotal = Participants.Sum(p => p.FeeTotal);
