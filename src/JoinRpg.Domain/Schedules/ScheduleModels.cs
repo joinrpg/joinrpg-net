@@ -43,7 +43,7 @@ public class ProgramItemPlaced
 
 public record class ScheduleItemAttribute
 {
-    public MarkdownDbValue? Description { get; }
+    public MarkdownDbValue Description { get; }
     public string Name { get; }
     public ProjectFieldVariantIdentification Id { get; }
     public int SeqId { get; }
