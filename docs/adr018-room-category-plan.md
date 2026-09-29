@@ -208,8 +208,8 @@ freeSpace(room, type) = min(effective(room), type.Capacity) − occupancy(room)
 
 `AccommodationRequest` уже принадлежит character-агрегату: `ClaimServiceImpl.SetAccommodationType` и
 `LeaveAccommodationGroupAsync` создают и расформировывают группу через
-`ICharacterPropsService.ChangeClaim` ([ADR014](adr014-claim-props-service.md)), а тип догружается
-именованным загрузчиком `ctx.LoadAccommodationType`.
+`ICharacterPropsService.ChangeClaim` ([ADR014](adr014-claim-props-service.md)), а существование
+типа проверяется по метаданным — `ctx.ProjectInfo.AccommodationSettings`.
 
 Поэтому владение разделяется по колонкам одной строки:
 
@@ -237,10 +237,9 @@ freeSpace(room, type) = min(effective(room), type.Capacity) − occupancy(room)
 ### 6. Альтернативы и возражения
 
 **Именованные загрузчики на хэндле `IProjectPropsService`** (путь из PR #4843): комнаты в
-`ProjectInfo` не попадут, поэтому их пришлось бы догружать через хэндл, как это делает claim-контур
-с `LoadAccommodationType`. Отвергнуто: это работает, когда догружаемое — **деталь** операции над
-корнем (проверить существование типа при смене типа у заявки), и разваливается, когда догружаемое
-**является** предметом операции. `ChangeProjectPropertiesAsync` для переименования комнаты
+`ProjectInfo` не попадут, поэтому их пришлось бы догружать через хэндл, как claim-контур догружает
+сюжеты (`ctx.LoadDirectPlotsForCharacter`). Отвергнуто: это работает, когда догружаемое — **деталь**
+операции над корнем, и разваливается, когда догружаемое **является** предметом операции. `ChangeProjectPropertiesAsync` для переименования комнаты
 пересобирал бы `ProjectInfo` и прогревал кеш метаданных на каждое действие с комнатой — при том, что
 метаданные не менялись. Плюс правило ADR009 «метаданные меняются только через props-сервис»
 превратилось бы в «а ещё через него меняется всё, что удалось догрузить», и граница, проведённая
@@ -621,4 +620,4 @@ public interface IAccommodationService
 Статус
 ==
 
-Предложен. Issue #5037.
+Принят. Issue #5037. Ход реализации отмечается в §14.
