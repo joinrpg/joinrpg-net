@@ -21,25 +21,22 @@ public static class UserLoginInfoViewModelBuilder
                     AllowUnlink = true,
                     IsOnlyLoginMethod = user.HasSingleLoginMethod && link.CanLogin,
                     LoginProvider = provider,
-                    ProviderKey = link.Id?.ToString(),
                     NeedToReLink = false,
                     ProviderLink = link.Link,
                 };
             }
             else
             {
-                // Непровереннную привязку тоже можно удалить: если есть ExternalLogin (link.Id
-                // != null, например у VK, где верификация — отдельный legacy-флаг), удаляется
-                // он; если это только legacy pretty-name без ExternalLogin (link.Id == null),
-                // удаляется сам legacy-контакт (см. UserServiceImpl.RemoveVkFromProfile/
-                // RemoveTelegramFromProfile — они не требуют ExternalLogin).
+                // Непровереннную привязку тоже можно удалить. Есть ли за ней настоящий
+                // ExternalLogin, по данным профиля не видно (legacy-ВК хранит числовой id и
+                // выглядит как привязанный), поэтому решает ExternalLoginProfileExtractor.RemoveLogin:
+                // он смотрит реальные логины и в любом случае чистит legacy-поле профиля.
                 return new UserLoginInfoViewModel()
                 {
                     AllowLink = link is null,
                     AllowUnlink = link is not null,
                     IsOnlyLoginMethod = false,
                     LoginProvider = provider,
-                    ProviderKey = link?.Id?.ToString(),
                     NeedToReLink = link is not null,
                     ProviderLink = link?.Link,
                 };

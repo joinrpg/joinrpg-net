@@ -30,18 +30,9 @@ public class UserAdminViewService(
         }
 
         var user = await userManager.FindRequiredByIdAsync(userId);
-        var logins = await userManager.GetLoginsAsync(user);
-        var vkLogin = logins.FirstOrDefault(l =>
-            string.Equals(l.LoginProvider, UserExternalLogin.VkProvider, StringComparison.OrdinalIgnoreCase));
-        if (vkLogin is not null)
-        {
-            await externalLoginProfileExtractor.RemoveLogin(user, vkLogin.LoginProvider, vkLogin.ProviderKey);
-        }
-        else
-        {
-            // ВК мог быть привязан без записи в AspNetUserLogins (легаси-данные) — чистим профиль напрямую.
-            await userService.RemoveVkFromProfile(userId);
-        }
+        // ВК мог быть привязан без записи в AspNetUserLogins (легаси-данные) —
+        // RemoveLogin сам разберётся и в этом случае просто почистит профиль.
+        _ = await externalLoginProfileExtractor.RemoveLogin(user, UserExternalLogin.VkProvider);
     }
 
     private static bool IsVkOnlyLoginMethod(UserInfo userInfo)
