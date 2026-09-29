@@ -1,5 +1,6 @@
 using System.Text.Json;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DomainTypes.Characters;
 
@@ -115,4 +116,17 @@ public class FieldLayerContainer
 
         return LayerData.GetValueOrDefault(fieldId) ?? (!field.CanHaveValue ? new FieldWithValue(field, null) : null);
     }
+
+    /// <summary>
+    /// Только изменяемые поля и их значения — без <see cref="ProjectInfo"/>.
+    /// </summary>
+    /// <remarks>
+    /// Контейнер попадает в логи как аргумент операций props-сервисов, а он по устройству
+    /// (ADR013, ADR014) несёт в себе весь <see cref="ProjectInfo"/>: поля проекта с вариантами,
+    /// дерево групп, мастеров с почтой. Разворачивать это в лог незачем, поэтому шаблоны логируют
+    /// аргумент без деструктуризации (<c>{arguments}</c>, не <c>{@arguments}</c>) — и вся выдача
+    /// определяется этим методом.
+    /// </remarks>
+    public override string ToString()
+        => $"FieldLayer({LayerData.Values.Select(f => f.ToString()).JoinStrings(", ")})";
 }

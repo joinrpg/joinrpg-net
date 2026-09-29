@@ -7,6 +7,44 @@ namespace JoinRpg.DomainTypes.Test;
 
 public class FieldLayerContainerTest
 {
+    /// <summary>
+    /// Контейнер уезжает в логи как аргумент операций props-сервисов, поэтому его строковое
+    /// представление — это контракт: только изменяемые поля, без метаданных проекта.
+    /// </summary>
+    [Fact]
+    public void ToStringShowsOnlyChangedFields()
+    {
+        var projectInfo = MakeProject(MakeField(1), MakeField(2));
+        var container = new FieldLayerContainer(
+            projectInfo,
+            new Dictionary<int, string?> { { 1, "alpha" } });
+
+        container.ToString().ShouldBe("FieldLayer(Field1=alpha)");
+    }
+
+    /// <summary>
+    /// Главное, ради чего этот ToString и появился: в логе не должно оказаться ни списка полей
+    /// проекта, ни групп, ни почты мастеров.
+    /// </summary>
+    [Fact]
+    public void ToStringDoesNotLeakProjectInfo()
+    {
+        var projectInfo = MakeProject(MakeField(1), MakeField(2));
+        var container = new FieldLayerContainer(
+            projectInfo,
+            new Dictionary<int, string?> { { 1, "alpha" } });
+
+        var text = container.ToString();
+
+        text.ShouldNotContain("Field2");
+        text.ShouldNotContain("@example.com");
+        text.Length.ShouldBeLessThan(100);
+    }
+
+    [Fact]
+    public void ToStringOfEmptyLayerIsEmpty()
+        => FieldLayerContainer.Empty(MakeProject(MakeField(1))).ToString().ShouldBe("FieldLayer()");
+
     [Fact]
     public void ShouldCreateLayerDataWithSingleField()
     {
