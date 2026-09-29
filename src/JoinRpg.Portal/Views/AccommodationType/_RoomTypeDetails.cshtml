@@ -88,10 +88,10 @@
                 <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
             }
             = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
-            <a title="Показать список заявок на тип поселения «@Model.Name»" class="btn btn-sm btn-default" href="@Url.Action("ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id })"><join-icon icon="MenuHorizontal" /></a>
         </td>
         <td>
             <div class="btn-group btn-group-sm" style="display: inline-block">
+                <a title="Показать список заявок на тип поселения «@Model.Name»" class="btn btn-default" href="@Url.Action("ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id })"><join-icon icon="MenuHorizontal" /></a>
                 @if (Model.CanAssignRooms)
                 {
                     <a title="Расселение" href="@Url.Action("EditRoomTypeRooms", "AccommodationType", actionParams)" class="btn btn-default">
