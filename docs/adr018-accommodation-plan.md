@@ -57,13 +57,23 @@
 загрузчиком и точкой мутации — по образцу `CharacterInfo` ([ADR013](adr013-character-info.md)) и
 `CharacterPropsService` ([ADR014](adr014-claim-props-service.md)).
 
-### 1. Корень агрегата — тип проживания, а не проект и не комната
+### 1. Корень агрегата — пул комнат, а не тип проживания, не проект и не комната
 
-Границу задаёт инвариант. Их три, и ни один не пересекает границу типа проживания:
+Границу задаёт инвариант. Их три:
 
-- в комнате не больше жильцов, чем `Capacity` её типа;
-- заявка на проживание селится только в комнату **своего** типа;
+- в комнате не больше жильцов, чем позволяет вместимость;
+- группа селится только в комнату из **своего** пула;
 - удалить можно только незаселённую комнату.
+
+Сегодня пул комнат и тип проживания — одно и то же: у `ProjectAccommodation` есть
+`AccommodationTypeId`, и комнаты принадлежат типу. **Но это ненадолго**, см. §2: тип проживания и
+категорию комнат планируется разделить, и тогда несколько типов будут брать комнаты из общего пула.
+Инвариант вместимости при этом станет **над-типовым**: в комнате 101 могут оказаться группы,
+купившие разные типы, и свободное место в ней перестанет быть свойством одного типа.
+
+Поэтому корень агрегата — **пул комнат (категория)**, а не тип проживания. Сегодня это различение
+без разницы в данных (пул ровно один на тип), но с разницей в модели: агрегат с самого начала
+устроен как «комнаты плюс *множество* типов, которые из них селятся», а не «комнаты одного типа».
 
 Комната как корень слишком мелка: проверка вместимости требует всех её жильцов, а массовые операции
 (`UnOccupyRoomType`) трогают десятки комнат разом — с корнем-комнатой они так и остались бы циклом с
@@ -72,35 +82,75 @@ N сохранениями.
 Проект как корень **отвергнут не по объёму**. На крупном проекте комнат десятки, в пределе — единицы
 сотен (оценка @leotsarev по боевым данным), так что загрузка всех комнат проекта сама по себе не
 проблема и аргумента в духе [ADR011](adr011-roles-grid-payload.md) здесь нет. Против него другое:
-проектный корень не выражает ни одного из трёх инвариантов — все они внутритиповые, — и потому
-превращает границу агрегата в границу «всё поселение», где каждая операция вольна трогать что угодно.
-Ровно от этого уходят ADR013/ADR014.
+проектный корень не выражает ни одного из трёх инвариантов и потому превращает границу агрегата в
+границу «всё поселение», где каждая операция вольна трогать что угодно. Ровно от этого уходят
+ADR013/ADR014.
 
-Тип проживания попадает в середину: это **и** естественная граница инвариантов, **и** то, что
-уже грузится одним запросом (`GetRoomTypeAsync` с `Include(ProjectAccommodations)` +
-`Include(Desirous)`), **и** то, что показывает страница комнат `EditRoomTypeRooms`.
+Пул попадает в середину: это **и** естественная граница инвариантов (в том числе будущих,
+над-типовых), **и** то, что уже грузится одним запросом (`GetRoomTypeAsync` с
+`Include(ProjectAccommodations)` + `Include(Desirous)`), **и** то, что показывает страница комнат
+`EditRoomTypeRooms`.
 
 Плата за выбор честная: проектный корень был бы проще для `UnOccupyAll` и для будущего
 автозаселения. Раз объём комнат невелик, схлопнуть план до проектного корня позже — рефакторинг на
 уровне загрузчика, а не переделка модели.
 
-Проектная операция `UnOccupyAll` остаётся операцией **над несколькими агрегатами** — цикл по типам
+Проектная операция `UnOccupyAll` остаётся операцией **над несколькими агрегатами** — цикл по пулам
 внутри одной мутации и одного `SaveChanges`. Это сознательное отступление: для редкой
 административной операции атомарность важнее чистоты границы, а дефект №3 именно про то, что
 сегодня её нет.
 
-### 2. Сам тип проживания в агрегат не копируется
+### 2. Задел на разделение `AccommodationType` и `RoomCategory`
+
+Планируемое (не в этом ADR и не в ближайших PR) разделение: **категория комнат** — «Люкс» с
+комнатами 101, 102; **типы проживания** — «Люкс с пятницы», «Люкс с четверга», «Люкс с пятницы на
+одного», каждый со своей ценой и своей вместимостью, и все трое селятся из общего пула комнат
+категории «Люкс». Цена и вместимость — у типа; комнаты — у категории.
+
+Схема БД и `ProjectInfo` сейчас не меняются. Меняется только форма доменной модели — так, чтобы
+разделение потом было расширением, а не переделкой. Отсюда четыре решения:
+
+1. **План ключуется категорией.** Заводится `RoomCategoryIdentification`; сегодня загрузчик
+   производит его из id типа один-к-одному. Конвертация живёт **ровно в одном месте** — фабрике
+   `RoomCategoryIdentification.FromLegacyAccommodationType(typeId)` с XML-doc про будущий split, и
+   больше нигде. Опасность известна: два типизированных id, численно совпадающих сегодня и
+   разъезжающихся завтра, — идеальный материал для молча работающей ошибки. Единственная точка
+   конвертации и есть страховка от неё.
+2. **План держит коллекцию типов, а не один тип.** Сегодня в ней ровно один элемент; инвариант
+   «ровно один» **не** проверяется, чтобы его не пришлось снимать при разделении.
+3. **Вместимость не является свойством комнаты.** Поле `RoomInfo.Capacity` из первой редакции этого
+   ADR убрано: после разделения вместимость комнаты 101 зависит от того, под каким типом её
+   заселяют, и «вместимость комнаты» просто не определена. Свободное место становится **функцией от
+   пары «комната + тип кандидата»**, а не свойством комнаты: `plan.GetFreeSpace(roomId, typeId)`.
+   Сегодня эта функция возвращает `type.Capacity - occupancy`, и подмена правила при разделении
+   затрагивает одно место.
+4. **Группа знает свой тип.** `AccommodationGroupInfo` несёт `AccommodationTypeIdentification` —
+   сегодня он у всех групп плана одинаковый и выводится из плана, завтра станет существенным.
+
+Что при разделении придётся доделать (и что этот ADR **не** решает): куда девается `Capacity` в
+`AccommodationTypeInfo`, какое правило считает свободное место в комнате со смешанными типами
+(«Люкс на одного» занимает всю комнату или одно место?) и как `RoomCategory` попадает в
+`ProjectInfo`. Последнее по критерию ADR015 очевидно: категория — настройка мастера, её место рядом
+с `AccommodationTypeInfo` в `AccommodationSettings`, а `AccommodationTypeInfo` получает ссылку
+`RoomCategoryId`. Комнаты остаются оперативными данными и в метаданные не едут.
+
+Одно следствие стоит отметить заранее: после разделения `UnOccupyRoomType` перестанет означать
+«выселить все комнаты этого типа» и станет означать «выселить все группы этого типа», оставив в
+комнатах соседей из братских типов. Сегодня это одно и то же, поэтому операция принимает **тип**, а
+не категорию, — и после разделения её смысл сузится сам собой, без смены сигнатуры.
+
+### 3. Сами типы проживания в агрегат не копируются
 
 `AccommodationPlan` держит ссылку на `ProjectInfo` и на `AccommodationTypeInfo` из его
 `AccommodationSettings` — ровно как `CharacterInfo` держит `ProjectInfo`, а не пересобирает поля
 проекта. Это прямое следствие ADR015: единственный источник правды о типе — метаданные проекта,
-и второго не заводим. `Capacity` для проверки вместимости берётся оттуда же.
+и второго не заводим. Вместимость и цена для расчётов берутся оттуда же.
 
-Следствие: инвариант ссылочного равенства из ADR013 действует и здесь —
-`ReferenceEquals(Plan.ProjectInfo, Plan.AccommodationType-owner)`, и межзапросного кеша у плана
-нет.
+Следствие: инвариант ссылочного равенства из ADR013 действует и здесь — каждый элемент
+`Plan.AccommodationTypes` обязан быть тем же экземпляром, что лежит в
+`Plan.ProjectInfo.AccommodationSettings`, — и межзапросного кеша у плана нет.
 
-### 3. Заявку на проживание делят два агрегата — и делят по колонкам
+### 4. Заявку на проживание делят два агрегата — и делят по колонкам
 
 `AccommodationRequest` (группа соседей, желающих жить вместе) уже принадлежит character-агрегату:
 `ClaimServiceImpl.SetAccommodationType` и `LeaveAccommodationGroupAsync` создают и расформировывают
@@ -120,7 +170,7 @@ N сохранениями.
 не должен менять `AccommodationId` иначе как через расформирование группы, и сегодня он этого и не
 делает (`ConsiderLeavingRoom` только шлёт письмо).
 
-### 4. Деньги в агрегат не входят
+### 5. Деньги в агрегат не входят
 
 Страница комнат показывает по каждому жильцу «не оплачено X из Y». Складывать финансовые поля в
 `AccommodationPlan` — значит завести третью модель расчёта баланса рядом с `Claim` и
@@ -131,7 +181,7 @@ N сохранениями.
 
 Имена игроков — тем же путём, что в ADR013: `UserInfoHeader` bulk'ом, не `Include` на каждого.
 
-### 5. Отвергнутые альтернативы
+### 6. Отвергнутые альтернативы
 
 **Именованные загрузчики на хэндле `IProjectPropsService`** (путь из PR #4843): комнаты в
 `ProjectInfo` не попадут, поэтому их пришлось бы догружать через хэндл, как это делает claim-контур
@@ -146,7 +196,7 @@ ADR015, стёрлась бы обратно.
 **Всё поселение одним агрегатом, включая типы** — рассмотрено и отвергнуто в ADR015; типы остаются
 в `ProjectInfo`.
 
-### 6. Ответ на возражение ADR015 про дублирование машинерии
+### 7. Ответ на возражение ADR015 про дублирование машинерии
 
 ADR015 отверг отдельный корень тем, что пришлось бы дублировать машинерию ADR009: права, активность
 проекта, логирование, инвалидацию кеша. Для **типов** это верно. Для комнат — нет:
@@ -165,7 +215,7 @@ ADR015 отверг отдельный корень тем, что пришло�
 Подробности
 ==
 
-### 1. Типизированный идентификатор комнаты
+### 1. Типизированные идентификаторы комнаты и категории
 
 У комнаты типизированного id нет — добавляется в существующий файл
 `src/JoinRpg.DomainTypes/Characters/Claims/Accommodation/AccommodationIdentifications.cs`, рядом с
@@ -181,6 +231,27 @@ ADR015 отверг отдельный корень тем, что пришло�
 public partial record AccommodationRoomIdentification(
     ProjectIdentification ProjectId,
     int RoomId) : IProjectEntityId;
+
+/// <summary>
+/// Идентификатор категории комнат — пула, из которого селятся типы проживания.
+/// </summary>
+/// <remarks>
+/// Пока категория и тип проживания не разделены (см. ADR018 §2), категория существует только в
+/// доменной модели: своей таблицы у неё нет, и её идентификатор производится из идентификатора
+/// типа проживания один-к-одному фабрикой <see cref="FromLegacyAccommodationType"/>. Это
+/// единственное место, где такая конвертация допустима: после разделения она станет неверной,
+/// и компилятор приведёт правку ровно сюда.
+/// </remarks>
+[method: JsonConstructor]
+[TypedEntityId]
+public partial record RoomCategoryIdentification(
+    ProjectIdentification ProjectId,
+    int RoomCategoryId) : IProjectEntityId
+{
+    public static RoomCategoryIdentification FromLegacyAccommodationType(
+        AccommodationTypeIdentification accommodationTypeId)
+        => new(accommodationTypeId.ProjectId, accommodationTypeId.AccommodationTypeId);
+}
 ```
 
 ### 2. Доменные типы
@@ -189,42 +260,60 @@ public partial record AccommodationRoomIdentification(
 
 ```csharp
 /// <summary>
-/// План поселения одного типа проживания: его комнаты и группы жильцов.
+/// План поселения одного пула комнат (категории): его комнаты, типы проживания, которые из него
+/// селятся, и группы жильцов.
 /// Привязан к конкретному экземпляру <see cref="ProjectInfo"/>, кешированию между запросами
 /// не подлежит.
 /// </summary>
 public record class AccommodationPlan
 {
-    public AccommodationTypeIdentification Id { get; }
+    public RoomCategoryIdentification Id { get; }
     public ProjectInfo ProjectInfo { get; }
-    public AccommodationTypeInfo AccommodationType { get; }
+
+    /// <summary>
+    /// Типы проживания, селящиеся из этого пула. Пока тип и категория не разделены (§2) — ровно
+    /// один; «ровно один» сознательно не является инвариантом.
+    /// </summary>
+    public IReadOnlyCollection<AccommodationTypeInfo> AccommodationTypes { get; }
 
     public IReadOnlyCollection<RoomInfo> Rooms { get; }
 
-    /// <summary>Все группы этого типа, включая ещё не расселённые</summary>
+    /// <summary>Все группы этого пула, включая ещё не расселённые</summary>
     public IReadOnlyCollection<AccommodationGroupInfo> Groups { get; }
 
     public IEnumerable<AccommodationGroupInfo> UnassignedGroups => Groups.Where(g => g.RoomId is null);
 
     public RoomInfo GetRoom(AccommodationRoomIdentification roomId);
     public AccommodationGroupInfo GetGroup(AccommodationRequestIdentification groupId);
+    public AccommodationTypeInfo GetAccommodationType(AccommodationTypeIdentification typeId);
+
+    /// <summary>
+    /// Сколько человек ещё можно поселить в комнату под данным типом проживания.
+    /// </summary>
+    /// <remarks>
+    /// Вместимость задаёт тип, а не комната, поэтому свободное место — функция от пары
+    /// «комната + тип кандидата», а не свойство комнаты (§2). Сегодня правило тривиально:
+    /// вместимость типа минус занятость комнаты. После разделения типа и категории в комнате
+    /// смогут оказаться группы разных типов, и правило поменяется — **здесь**.
+    /// </remarks>
+    public int GetFreeSpace(AccommodationRoomIdentification roomId, AccommodationTypeIdentification typeId)
+        => GetAccommodationType(typeId).Capacity - GetRoom(roomId).Occupancy;
 }
 
-/// <summary>Комната</summary>
+/// <summary>Комната. Вместимости у комнаты нет — её задаёт тип проживания, см. AccommodationPlan.GetFreeSpace</summary>
 public record class RoomInfo(
     AccommodationRoomIdentification Id,
     string Name,
-    int Capacity,
     IReadOnlyCollection<AccommodationGroupInfo> Inhabitants)
 {
     public int Occupancy => Inhabitants.Sum(i => i.Persons);
-    public int FreeSpace => Capacity - Occupancy;
     public bool IsOccupied => Inhabitants.Count > 0;
 }
 
 /// <summary>Группа, живущая (или желающая жить) вместе — одна <c>AccommodationRequest</c></summary>
 public record class AccommodationGroupInfo(
     AccommodationRequestIdentification Id,
+    AccommodationTypeIdentification AccommodationTypeId,
     AccommodationRoomIdentification? RoomId,
     IReadOnlyCollection<ClaimIdentification> Subjects)
 {
@@ -234,22 +323,27 @@ public record class AccommodationGroupInfo(
 
 Инварианты — в конструкторе `AccommodationPlan`, как это делают `CharacterTypeInfo` и `CharacterInfo`:
 
-- `Id.ProjectId == ProjectInfo.ProjectId`, и `AccommodationType` — тот самый экземпляр, что лежит в
-  `ProjectInfo.AccommodationSettings` (`ReferenceEquals`);
+- `Id.ProjectId == ProjectInfo.ProjectId`, и все `AccommodationTypes` — те самые экземпляры, что
+  лежат в `ProjectInfo.AccommodationSettings` (`ReferenceEquals`);
 - у всех комнат и групп `ProjectId` совпадает с `Id.ProjectId`;
 - `RoomInfo.Inhabitants ⊆ Groups`, и группа с непустым `RoomId` присутствует ровно в одной комнате;
-- `Capacity` у всех комнат один и тот же — `AccommodationType.Capacity` (сегодня вместимость
-  хранится у типа, а не у комнаты; хранить её в `RoomInfo` — задел на будущие «нестандартные»
-  комнаты, но правды сверх типа в ней сейчас нет).
+- `Groups[i].AccommodationTypeId ∈ AccommodationTypes` — группа куплена по типу, селящемуся из
+  этого пула.
 
-Превышение вместимости в конструкторе **не проверяется**: сегодняшние данные могли переполниться
-(вместимость типа уменьшили после заселения), и загрузка плана не должна падать на таком проекте.
-Это проверка операции, а не инварианта загрузки.
+**Чего среди инвариантов сознательно нет:**
+
+- «типов ровно один» — сегодня это правда, но проверка пришлось бы снимать при разделении (§2);
+- «вместимость не превышена» — сегодняшние данные могли переполниться (вместимость типа уменьшили
+  после заселения), и загрузка плана не должна падать на таком проекте. Это проверка операции, а не
+  инварианта загрузки.
 
 `GetRoomFreeSpace(ProjectAccommodation)` и `IsOccupied(ProjectAccommodation)` из
-`src/JoinRpg.Domain/AccommodationExtensions.cs` становятся свойствами `RoomInfo` и после миграции
-удаляются. Остальные методы этого файла (`GetClaimNeighbours`, `GetRoomFreeSpace(AccommodationRequest)`)
-обслуживают contour приглашений и карточку заявки — они вне скоупа и остаются.
+`src/JoinRpg.Domain/AccommodationExtensions.cs` заменяются на `AccommodationPlan.GetFreeSpace` и
+`RoomInfo.IsOccupied` и после миграции удаляются. Обрати внимание: `GetRoomFreeSpace` перестаёт
+быть методом комнаты — это и есть то место, где разделение типа и категории оставило след в
+сегодняшнем коде. Остальные методы файла (`GetClaimNeighbours`,
+`GetRoomFreeSpace(AccommodationRequest)`) обслуживают контур приглашений и карточку заявки — они вне
+скоупа и остаются.
 
 ### 3. Загрузка
 
@@ -258,8 +352,15 @@ public record class AccommodationGroupInfo(
 ```csharp
 public interface IAccommodationPlanRepository
 {
-    Task<AccommodationPlan?> GetPlanOrDefault(AccommodationTypeIdentification typeId);
+    Task<AccommodationPlan?> GetPlanOrDefault(RoomCategoryIdentification categoryId);
     Task<IReadOnlyCollection<AccommodationPlan>> GetAllPlans(ProjectIdentification projectId);
+
+    /// <summary>
+    /// План пула, из которого селится данный тип проживания. Пока тип и категория не разделены,
+    /// это тот же план, что <see cref="GetPlanOrDefault"/> по одноимённой категории; после
+    /// разделения один план будут возвращать несколько типов.
+    /// </summary>
+    Task<AccommodationPlan?> GetPlanForTypeOrDefault(AccommodationTypeIdentification typeId);
 }
 ```
 
@@ -278,7 +379,7 @@ public interface IAccommodationPlanRepository
 internal interface IAccommodationPropsService
 {
     Task<TResult> ChangeAccommodationPlan<TArgs, TResult>(
-        AccommodationTypeIdentification typeId,
+        RoomCategoryIdentification categoryId,
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
@@ -288,7 +389,7 @@ internal interface IAccommodationPropsService
 ```
 
 Плюс перегрузка без результата и перегрузка по `ProjectIdentification` (для `UnOccupyAllRooms`,
-которая работает по всем типам проекта в одной транзакции).
+которая работает по всем пулам проекта в одной транзакции).
 
 `AccommodationMutationContext` отдаёт: трекаемые EF-сущности комнат и заявок на проживание,
 доменный снимок `AccommodationPlan` **до** мутации, делегаты `AddEntity`/`RemoveEntity` (не `DbSet`
@@ -305,8 +406,9 @@ Write-хэндл `IAccommodationPlanWriteRepository` берётся **тольк
 ```csharp
 public interface IAccommodationService
 {
+    /// <summary>Комнаты добавляются в пул, а не в тип проживания</summary>
     Task<IReadOnlyCollection<AccommodationRoomIdentification>> AddRooms(
-        AccommodationTypeIdentification typeId, string rooms);
+        RoomCategoryIdentification categoryId, string rooms);
 
     Task RenameRoom(AccommodationRoomIdentification roomId, string name);
     Task DeleteRoom(AccommodationRoomIdentification roomId);
@@ -314,6 +416,9 @@ public interface IAccommodationService
     Task OccupyRoom(
         AccommodationRoomIdentification roomId,
         IReadOnlyCollection<AccommodationRequestIdentification> groupIds);
+
+    /// <summary>Выселить все группы данного типа проживания. После разделения типа и категории
+    /// соседи из братских типов останутся в комнатах — см. §2</summary>
 
     Task UnOccupyGroup(AccommodationRequestIdentification groupId);
     Task UnOccupyRoom(AccommodationRoomIdentification roomId);
@@ -342,10 +447,12 @@ public interface IAccommodationService
 
 Проверки внутри мутации (дефекты 5, 6, 7):
 
-- группа существует в плане и, значит, **того же типа**, что комната (`plan.GetGroup` кидает, если
-  нет) — дефект 5 закрывается самой формой агрегата;
-- свободное место считается по снимку явно, с учётом уже поселённых в этой же операции групп, без
-  надежды на relationship fixup — `JoinRpgInsufficientRoomSpaceException`;
+- и комната, и группа существуют в одном плане, то есть группа селится в комнату **своего пула**
+  (`plan.GetRoom`/`plan.GetGroup` кидают, если нет) — дефект 5 закрывается самой формой агрегата, и
+  закрывается в той формулировке, которая переживёт разделение типа и категории;
+- свободное место считается явно — `plan.GetFreeSpace(roomId, group.AccommodationTypeId)` по снимку,
+  с учётом уже поселённых в этой же операции групп, без надежды на relationship fixup —
+  `JoinRpgInsufficientRoomSpaceException`;
 - отсутствие комнаты или группы — `JoinRpgEntityNotFoundException` с типизированным id, а не NRE.
   Контроллер после этого может перестать ловить всё подряд в `catch { return StatusCode(500); }`.
 
@@ -366,12 +473,12 @@ public interface IAccommodationService
 
 | Потребитель | Сейчас | Станет |
 |---|---|---|
-| `AccommodationTypeController.EditRoomTypeRooms` | `accommodationService.GetRoomTypeAsync` + ручная сверка `ProjectId` | `IAccommodationPlanRepository.GetPlanOrDefault` |
+| `AccommodationTypeController.EditRoomTypeRooms` | `accommodationService.GetRoomTypeAsync` + ручная сверка `ProjectId` | `IAccommodationPlanRepository.GetPlanForTypeOrDefault` |
 | `RoomTypeViewModel(ProjectAccommodationType, …)` | EF-сущность с `Include(ProjectAccommodations/Desirous)` | `AccommodationPlan`; EF-конструктор удаляется, остаётся уже существующий поверх `AccommodationTypeInfo` (ADR015) |
 | `RoomViewModel(ProjectAccommodation, …)` | EF-сущность | `RoomInfo` |
 | `AccRequestViewModel(AccommodationRequest, …)` + `RequestParticipantViewModel(Claim, …)` | EF-сущности, `Claim.ClaimTotalFee`/`ClaimFeeDue` (оба `[Obsolete]`) | `AccommodationGroupInfo` + bulk `CharacterInfo`, `CalculateClaimBalance` поверх агрегата |
 | `AccommodationTypeController` (Occupy/UnOccupy/AddRoom/EditRoom/DeleteRoom) | `int`-параметры, `catch`-всё | типизированные id, доменные исключения |
-| `SmokeProjectFixture` (интеграционные тесты) | `AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2")` | `AddRooms(roomTypeId, "1,2")` |
+| `SmokeProjectFixture` (интеграционные тесты) | `AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2")` | `AddRooms(RoomCategoryIdentification.FromLegacyAccommodationType(roomTypeId), "1,2")` |
 | `AccommodationPrintController`, `AccomodationReportExporter` | `IAccommodationRepository.GetClaimAccommodationReport` | не меняются — это отчёт, плоские строки, агрегат ему не нужен |
 | `AccommodationInviteServiceImpl`, `ClaimAccommodationViewModel` | `AccommodationExtensions` поверх EF | не меняются, см. «Что вне скоупа» |
 
@@ -387,17 +494,19 @@ public interface IAccommodationService
 - **Почтовые модели** `RoomEmailBase` и `EmailServiceImpl` — остаются на EF-сущностях.
 - **Автозаселение** (`OccupyAll` с `//TODO: Implement mass occupation`) — не реализовано сегодня,
   не реализуется и здесь. Агрегат делает его дешевле: вместимость и свободные группы уже собраны.
-- **Вместимость на уровне комнаты** (`RoomInfo.Capacity` сверх типа) — поле заводится, данных под
-  ним нет, миграции нет.
+- **Само разделение `AccommodationType` и `RoomCategory`** — здесь только форма доменной модели под
+  него (§2). Таблицы, миграции, UI категорий, правило свободного места в смешанной комнате и
+  перенос `RoomCategory` в `ProjectInfo` — отдельная работа и, вероятно, отдельный ADR.
 
 ### 8. План миграции
 
-1. **PR 1.** `AccommodationRoomIdentification`; `AccommodationPlan`, `RoomInfo`,
-   `AccommodationGroupInfo` с инвариантами; юнит-тесты в `JoinRpg.DomainTypes.Test` поверх
-   `MockedProject`. Потребителей не трогаем.
+1. **PR 1.** `AccommodationRoomIdentification`, `RoomCategoryIdentification`; `AccommodationPlan`,
+   `RoomInfo`, `AccommodationGroupInfo` с инвариантами; юнит-тесты в `JoinRpg.DomainTypes.Test`
+   поверх `MockedProject` — в том числе тест на план с двумя типами в одном пуле, который сегодня
+   не собирается из БД, но обязан собираться из модели. Потребителей не трогаем.
 2. **PR 2.** `IAccommodationPlanRepository` + загрузчик + тесты маппинга в `JoinRpg.Dal.Impl.Test`,
-   включая тест-страж: свободное место по плану совпадает с `AccommodationExtensions.GetRoomFreeSpace`
-   на том же наборе данных.
+   включая тест-страж: `plan.GetFreeSpace(room, type)` совпадает с
+   `AccommodationExtensions.GetRoomFreeSpace` на том же наборе данных.
 3. **PR 3.** Страница комнат на план: `EditRoomTypeRooms`, вью-модели, деньги bulk'ом через
    `ICharacterInfoRepository`. `GetRoomTypeAsync` удаляется.
 4. **PR 4.** Write-хэндл, `IAccommodationPropsService`, вынос `ProjectOperationGuard` (если
@@ -427,6 +536,10 @@ public interface IAccommodationService
 - **Правило владения `AccommodationRequest` зафиксировано по колонкам.** Это не самая изящная
   граница, и её придётся держать в голове при следующей правке claim-контура — зато она явная,
   а не выведенная из того, кто первым дотянулся до сущности.
+- **Модель готова к разделению типа и категории раньше, чем БД.** Цена уплачена вперёд: лишний
+  идентификатор, коллекция из одного элемента и свободное место, вынесенное из комнаты в план.
+  Если разделение не состоится, это останется небольшой избыточностью — но не ошибкой: `GetFreeSpace`
+  на плане честнее и сегодня, потому что вместимость и правда лежит на типе, а не на комнате.
 - **Переходный период**: пока PR 3–5 не влиты, план сосуществует со старым `IAccommodationService`.
 
 Открытые вопросы
@@ -436,10 +549,16 @@ public interface IAccommodationService
   (@leotsarev). Транзакция на весь проект для `UnOccupyAll` при таком объёме безопасна, к варианту
   «транзакция на тип» возвращаться не нужно. Время самой операции по-прежнему не измерено, но при
   таком числе комнат это перестало быть риском решения.
-- **Вместимость в `RoomInfo`** заведена без данных под ней. Альтернатива — не заводить и брать
-  `AccommodationType.Capacity` в точке использования; решено в пользу поля, потому что иначе
-  `FreeSpace` невозможно посчитать, не таща тип в каждую комнату. Если «нестандартные комнаты» так и
-  не появятся, поле останется производным — это дёшево.
+- ~~Вместимость в `RoomInfo`~~ — **снят**: вместимости у комнаты нет вовсе, см. §2.3.
+- **Правило свободного места в комнате со смешанными типами** — за пределами этого ADR, но решать
+  его придётся при разделении: занимает ли группа «Люкс на одного» всю комнату 101 или одно место,
+  и что происходит, когда в одной комнате оказываются группы с разной вместимостью типа. Модель
+  готова к любому ответу — он живёт в одном методе `AccommodationPlan.GetFreeSpace`.
+- **Разъезжающиеся идентификаторы.** Пока `RoomCategoryIdentification` численно равен
+  `AccommodationTypeIdentification`, ошибка «передали не тот id» не проявится ни в тестах, ни на
+  проде — и проявится вся сразу в день разделения. Единственная фабрика конвертации это
+  ограничивает, но не исключает; при реализации стоит проверить грепом, что других конвертаций
+  не завелось.
 - **`ProjectOperationGuard`** — выносить или нет, решается фактом при реализации PR 4, а не этим ADR.
 
 Статус
