@@ -3,7 +3,6 @@
     <DebugType>full</DebugType>
     <UserSecretsId>aspnet-JoinRpg.Portal-D30D89A6-2652-4339-953B-C703F29AE5C7</UserSecretsId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
     <ContainerRegistry>cr.yandex</ContainerRegistry>
     <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-portal</ContainerRepository>
