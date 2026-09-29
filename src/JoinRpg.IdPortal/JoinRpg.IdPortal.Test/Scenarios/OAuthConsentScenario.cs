@@ -1,17 +1,20 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
+using HtmlAgilityPack;
 using JoinRpg.IdPortal.OAuthServer;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace JoinRpg.IdPortal.Test.Scenarios;
 
-// Covers ADR012 §4 (consent screen + per-project claim). The consent page itself is
-// InteractiveServer (see OAuthClientCreateScenario for why that can't be driven over plain
-// HTTP), so these tests exercise AuthorizeMethod directly by simulating what the page sends
-// back: a "consent=granted&projects=..." (or "consent=denied") query on connect/authorize.
+// Covers ADR012 §4 (consent screen + per-project claim). Большинство тестов обращается
+// к AuthorizeMethod напрямую, повторяя то, что присылает страница согласия: запрос
+// "consent=granted&projects=..." (или "consent=denied") на connect/authorize. Сама страница
+// рендерится статически, поэтому её форму можно прогнать и по-настоящему — см. тесты
+// ConsentPage_* в конце файла.
 // Each test uses its own client id: authorizations are keyed by (subject, client), and the
 // same test user is shared across tests in the collection, so reusing a client id would leak
 // consent state between tests.
@@ -64,6 +67,13 @@ public class OAuthConsentScenario(IdPortalApplicationFactory factory)
         location.ShouldStartWith(RedirectUri, Case.Insensitive);
         location.ShouldContain("code=");
 
+        var projectIds = await ReadGrantedProjectsAsync(clientId);
+        projectIds.ShouldBe([123, 456]);
+    }
+
+    /// <summary>Читает из выданного клиенту согласия список проектов, к которым открыт доступ.</summary>
+    private async Task<int[]> ReadGrantedProjectsAsync(string clientId)
+    {
         using var scope = factory.Services.CreateScope();
         var authorizationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictAuthorizationManager>();
         var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
@@ -81,7 +91,27 @@ public class OAuthConsentScenario(IdPortalApplicationFactory factory)
 
         var properties = await authorizationManager.GetPropertiesAsync(authorization);
         properties.ShouldContainKey(OAuthConsent.ProjectsClaimType);
-        var projectIds = properties[OAuthConsent.ProjectsClaimType].Deserialize<int[]>();
+        return properties[OAuthConsent.ProjectsClaimType].Deserialize<int[]>()!;
+    }
+
+    /// <summary>
+    /// Чекбоксы на странице согласия шлют каждый проект отдельным projects=N — проверяем,
+    /// что connect/authorize разбирает такой запрос так же, как список через запятую.
+    /// </summary>
+    [Fact]
+    public async Task Authorize_ConsentGrantedWithRepeatedProjectsParameter_StoresAllProjects()
+    {
+        var clientId = await CreateMcpClientAsync();
+        var client = await LoginAsync();
+
+        var response = await client.GetAsync(BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge) +
+            $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}" +
+            $"&{OAuthConsent.ProjectsParameter}=123&{OAuthConsent.ProjectsParameter}=456");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Found);
+        response.Headers.Location!.ToString().ShouldContain("code=");
+
+        var projectIds = await ReadGrantedProjectsAsync(clientId);
         projectIds.ShouldBe([123, 456]);
     }
 
@@ -102,6 +132,89 @@ public class OAuthConsentScenario(IdPortalApplicationFactory factory)
         response.StatusCode.ShouldBe(HttpStatusCode.Found);
         var location = response.Headers.Location!.ToString();
         location.ShouldStartWith(RedirectUri, Case.Insensitive);
+    }
+
+    [Fact]
+    public async Task ConsentPage_RendersStaticallyWithoutServerCircuit()
+    {
+        var client = await LoginAsync();
+        var page = await GetConsentPageAsync(client, await CreateMcpClientAsync());
+
+        page.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Маркер, которым Blazor размечает компонент с интерактивным render mode.
+        // Смотрим только на тело страницы: в шапке сайта живёт своя обвязка макета.
+        var doc = await page.AsHtmlDocument();
+        var body = doc.DocumentNode.SelectSingleNode("//div[contains(@class,'body-content')]");
+        body.ShouldNotBeNull();
+        body.InnerHtml.ShouldNotContain("\"type\":\"server\"");
+
+        // И форма согласия действительно есть — значит статического рендера хватает.
+        doc.DocumentNode.SelectSingleNode("//form[@id='oauth-consent-grant']").ShouldNotBeNull();
+
+        // Кнопки лежат снаружи форм и привязаны к ним атрибутом form.
+        doc.DocumentNode
+            .SelectNodes("//button[@type='submit' and @form]")
+            .Select(button => button.GetAttributeValue("form", ""))
+            .ShouldBe(["oauth-consent-grant", "oauth-consent-deny"], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task ConsentPage_SubmitGrantForm_RedirectsToClientWithCode()
+    {
+        var client = await LoginAsync();
+        var page = await GetConsentPageAsync(client, await CreateMcpClientAsync());
+
+        var response = await client.GetAsync(BuildGetFormUrl(await page.AsHtmlDocument(), "oauth-consent-grant"));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Found);
+        var location = response.Headers.Location!.ToString();
+        location.ShouldStartWith(RedirectUri, Case.Insensitive);
+        location.ShouldContain("code=");
+    }
+
+    [Fact]
+    public async Task ConsentPage_SubmitDenyForm_RedirectsToClientWithAccessDenied()
+    {
+        var client = await LoginAsync();
+        var page = await GetConsentPageAsync(client, await CreateMcpClientAsync());
+
+        var response = await client.GetAsync(BuildGetFormUrl(await page.AsHtmlDocument(), "oauth-consent-deny"));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Found);
+        var location = response.Headers.Location!.ToString();
+        location.ShouldStartWith(RedirectUri, Case.Insensitive);
+        location.ShouldContain($"error={Errors.AccessDenied}");
+    }
+
+    /// <summary>Идёт на connect/authorize и переходит по редиректу на страницу согласия.</summary>
+    private static async Task<HttpResponseMessage> GetConsentPageAsync(HttpClient client, string clientId)
+    {
+        var authorize = await client.GetAsync(BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge));
+        authorize.StatusCode.ShouldBe(HttpStatusCode.Found);
+        var consentUrl = authorize.Headers.Location!.ToString();
+        consentUrl.ShouldStartWith("/oauth/consent");
+        return await client.GetAsync(consentUrl);
+    }
+
+    /// <summary>
+    /// Собирает адрес, по которому браузер уйдёт при сабмите GET-формы с указанным id:
+    /// action плюс все её поля. Чекбоксы (выбор проектов) по умолчанию сняты, поэтому
+    /// в запрос не попадают — ровно как в браузере.
+    /// </summary>
+    private static string BuildGetFormUrl(HtmlDocument doc, string formId)
+    {
+        var form = doc.DocumentNode.SelectSingleNode($"//form[@id='{formId}']");
+        form.ShouldNotBeNull();
+
+        var fields = (form.SelectNodes(".//input") ?? Enumerable.Empty<HtmlNode>())
+            .Where(input => input.GetAttributeValue("type", "") != "checkbox"
+                || input.Attributes.Contains("checked"))
+            .Select(input => new KeyValuePair<string, string?>(
+                input.GetAttributeValue("name", ""),
+                WebUtility.HtmlDecode(input.GetAttributeValue("value", ""))));
+
+        return QueryHelpers.AddQueryString(form.GetAttributeValue("action", ""), fields);
     }
 
     private async Task<string> CreateMcpClientAsync()
