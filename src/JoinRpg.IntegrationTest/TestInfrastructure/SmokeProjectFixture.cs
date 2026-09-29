@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.DomainTypes.Users;
@@ -419,12 +420,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
 
             // Часть жильцов расселена, часть — нет: страница показывает и комнаты с жильцами,
             // и список нерасселённых, а в отчёте по расселению встречаются обе строки.
-            await sp.GetRequiredService<IAccommodationService>().OccupyRoom(new OccupyRequest
-            {
-                ProjectId = projectId.Value,
-                RoomId = roomId,
-                AccommodationRequestIds = [.. requestIds.SkipLast(1)],
-            });
+            await sp.GetRequiredService<IAccommodationService>().OccupyRoom(
+                new AccommodationRoomIdentification(projectId, roomId),
+                [.. requestIds.SkipLast(1).Select(id => new AccommodationRequestIdentification(projectId, id))]);
         });
 
     private static async Task<int> SeedSubscriptionAsync(
