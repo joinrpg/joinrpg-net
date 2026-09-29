@@ -1,4 +1,6 @@
 @using System.Linq.Expressions
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceProvider Services
 
 @for (var i = 0; i < RowsToRender.Count; i++)
 {
@@ -14,6 +16,26 @@
             <JoinButton Preset="ButtonPreset.Delete" Label="" Size="SizeStyleEnum.Small" OnClick="@(() => OnRemoveRowAsync(index))" />
         }
     </div>
+    var state = StateFor(RowsToRender[index]);
+    if (state is not null)
+    {
+        <div class="join-user-link-editor-status">
+            @if (state.User is not null)
+            {
+                <UserLink Model="@state.User" />
+            }
+            else
+            {
+                <span class="text-danger">@state.Error</span>
+            }
+        </div>
+    }
+}
+
+@if (Name is not null)
+{
+    @* Значение уезжает обычным POST'ом MVC-формы — только успешно разрезолвленные id. *@
+    <input type="hidden" name="@Name" value="@HiddenValue" />
 }
 
 @code {
@@ -30,10 +52,38 @@
     [Parameter]
     public Expression<Func<List<string>>>? ValuesExpression { get; set; }
 
+    /// <summary>
+    /// Имя скрытого инпута, в который уезжают разрезолвленные id через запятую. Нужно, когда
+    /// компонент встроен островом в обычную MVC-форму (ADR017 §5). null — инпута нет.
+    /// </summary>
+    [Parameter]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Уже известные пользователи для начальных значений <see cref="Values"/> (i-й соответствует
+    /// i-му значению). Нужны, чтобы при загрузке страницы сохранённое значение сразу показывалось
+    /// именем, а не голым числом и не после лишнего запроса.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<UserLinkViewModel> InitialUsers { get; set; } = [];
+
     [CascadingParameter]
     private EditContext? EditContext { get; set; }
 
     private FieldIdentifier fieldIdentifier;
+
+    private sealed record ResolveState(UserLinkViewModel? User, string? Error);
+
+    /// <summary>
+    /// Клиент резолва берётся из DI мягко: если хост его не зарегистрировал, компонент работает
+    /// как чистый ввод строк — ровно так, как он работал до появления резолва. Жёсткий
+    /// <c>@inject</c> сломал бы такие хосты рендером.
+    /// </summary>
+    private IUserLinkResolveClient? resolveClient;
+
+    private readonly Dictionary<string, ResolveState> resolved = new(StringComparer.Ordinal);
+    private readonly HashSet<string> inFlight = new(StringComparer.Ordinal);
+    private bool initialized;
 
     protected override void OnParametersSet()
     {
@@ -41,6 +91,73 @@
         {
             fieldIdentifier = FieldIdentifier.Create(ValuesExpression);
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        resolveClient = Services.GetService<IUserLinkResolveClient>();
+
+        // Ключ — сам id строкой: сохранённое значение поля выглядит именно так, а раскладывать
+        // по индексам нельзя — мусорное значение в базе сдвинуло бы соответствие.
+        foreach (var user in InitialUsers)
+        {
+            if (user.UserId is not null)
+            {
+                resolved[user.UserId.Value.ToString()] = new ResolveState(user, null);
+            }
+        }
+
+        initialized = true;
+
+        foreach (var value in Values.ToList())
+        {
+            await ResolveIfNeededAsync(value);
+        }
+    }
+
+    private static string Key(string? value) => value?.Trim() ?? "";
+
+    private ResolveState? StateFor(string value)
+        => resolved.TryGetValue(Key(value), out var state) ? state : null;
+
+    private string HiddenValue
+        => string.Join(
+            ",",
+            Values
+                .Select(v => StateFor(v)?.User?.UserId?.Value)
+                .Where(id => id is not null)
+                .Distinct());
+
+    private async Task ResolveIfNeededAsync(string value)
+    {
+        var key = Key(value);
+        if (resolveClient is null || !initialized || key.Length == 0 || resolved.ContainsKey(key))
+        {
+            return;
+        }
+
+        if (!inFlight.Add(key))
+        {
+            return;
+        }
+
+        try
+        {
+            var user = await resolveClient.ResolveUserLink(key);
+            resolved[key] = new ResolveState(user, null);
+        }
+        catch (Exception exception)
+        {
+            resolved[key] = new ResolveState(
+                null,
+                string.IsNullOrWhiteSpace(exception.Message) ? "Пользователь не найден" : exception.Message);
+        }
+        finally
+        {
+            _ = inFlight.Remove(key);
+        }
+
+        StateHasChanged();
     }
 
     private List<string> RowsToRender
@@ -84,6 +201,7 @@
         }
 
         await NotifyChangedAsync();
+        await ResolveIfNeededAsync(newValue);
     }
 
     private async Task OnRemoveRowAsync(int index)
