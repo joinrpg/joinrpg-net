@@ -87,6 +87,7 @@
     <Project Path="src/JoinRpg.Web.Accommodation.Test/JoinRpg.Web.Accommodation.Test.csproj" />
     <Project Path="src/JoinRpg.Web.Claims.Test/JoinRpg.Web.Claims.Test.csproj" />
     <Project Path="src/JoinRpg.Web.Plots.Test/JoinRpg.Web.Plots.Test.csproj" />
+    <Project Path="src/JoinRpg.Web.ProjectCommon.Test/JoinRpg.Web.ProjectCommon.Test.csproj" />
     <Project Path="src/JoinRpg.Web.ProjectMasterTools.Test/JoinRpg.Web.ProjectMasterTools.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Managers.Test/JoinRpg.WebPortal.Managers.Test.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Models.Test/JoinRpg.WebPortal.Models.Test.csproj" />

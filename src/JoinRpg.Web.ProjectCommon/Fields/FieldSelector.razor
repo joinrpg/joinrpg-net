@@ -17,10 +17,18 @@
     [Parameter] public EventCallback<ProjectFieldIdentification[]> SelectedFieldIdsChanged { get; set; }
 
     private ProjectFieldDto[]? _items;
+    /// <summary>Для какого проекта список уже загружен: пока он тот же, в сеть не ходим.</summary>
+    private ProjectIdentification? _loadedFor;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        _items = [.. await fieldsClient.GetProjectFields(ProjectId)];
+        // Параметры выставляются заново при каждой перерисовке родителя, поэтому грузим список только
+        // когда изменился проект.
+        if (_loadedFor != ProjectId)
+        {
+            _items = [.. await fieldsClient.GetProjectFields(ProjectId)];
+            _loadedFor = ProjectId;
+        }
     }
 }

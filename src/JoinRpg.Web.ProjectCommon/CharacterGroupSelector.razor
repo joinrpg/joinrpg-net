@@ -40,6 +40,8 @@ else
 
     private IntSelectListItem[] items = null!;
     private List<CharacterGroupDto> groups = null!;
+    /// <summary>Ключ загрузки: пока не изменился, в сеть не ходим.</summary>
+    private (int ProjectId, bool IncludeSpecial, CharacterGroupIdentification? ExcludeGroupId)? loadedFor;
     private FieldIdentifier? fieldIdentifier = null;
 
     private async Task SelectedValuesChanged(int[] values)
@@ -62,19 +64,25 @@ else
         {
             throw new InvalidOperationException($"{nameof(ExcludeGroupId)} requires {nameof(IncludeSpecial)}=false");
         }
-        groups = ExcludeGroupId is not null
-            ? await groupsClient.GetValidParentGroups(ExcludeGroupId)
-            : IncludeSpecial
-                ? await groupsClient.GetCharacterGroupsWithSpecial(ProjectId)
-                : await groupsClient.GetRealCharacterGroups(ProjectId);
+        // Параметры выставляются заново при каждой перерисовке родителя, поэтому грузим список только
+        // когда изменилось то, от чего он зависит.
+        if (loadedFor != (ProjectId, IncludeSpecial, ExcludeGroupId))
+        {
+            groups = ExcludeGroupId is not null
+                ? await groupsClient.GetValidParentGroups(ExcludeGroupId)
+                : IncludeSpecial
+                    ? await groupsClient.GetCharacterGroupsWithSpecial(ProjectId)
+                    : await groupsClient.GetRealCharacterGroups(ProjectId);
+            loadedFor = (ProjectId, IncludeSpecial, ExcludeGroupId);
 
-        items = groups
-          .Select(group =>
-            new IntSelectListItem(
-              Value: group.CharacterGroupId.CharacterGroupId,
-              Text: group.Name,
-              Subtext: string.Join("→", group.FullPath),
-              ExtraSearch: string.Join(" ", group.FullPath))).ToArray();
+            items = groups
+              .Select(group =>
+                new IntSelectListItem(
+                  Value: group.CharacterGroupId.CharacterGroupId,
+                  Text: group.Name,
+                  Subtext: string.Join("→", group.FullPath),
+                  ExtraSearch: string.Join(" ", group.FullPath))).ToArray();
+        }
 
         var selectedItems = groups.Where(item => SelectedGroupIds.Contains(item.CharacterGroupId)).ToArray();
         if (SelectedGroupIdsExpression is not null)

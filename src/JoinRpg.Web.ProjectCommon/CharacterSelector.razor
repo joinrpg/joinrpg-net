@@ -34,6 +34,11 @@
 
     public string SelectedCharactersText{ get; private set; } = "";
 
+    /// <summary>Что пришло с сервера. Зависит только от <see cref="ProjectId"/> и <see cref="ListType"/>.</summary>
+    private CharacterDto[]? loadedChars;
+    /// <summary>Ключ загрузки: пока не изменился, в сеть не ходим.</summary>
+    private (ProjectIdentification ProjectId, CharacterListType ListType)? loadedFor;
+    /// <summary>Что показываем: загруженное минус исключённые.</summary>
     private CharacterDto[]? chars;
     private FieldIdentifier? fieldIdentifier = null;
 
@@ -63,7 +68,16 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        chars = [.. (await client.GetCharacters(ProjectId, ListType)).Where(c => !ExcludeCharacterIds.Contains(c.CharacterId))];
+        // Параметры выставляются заново при каждой перерисовке родителя (например, на каждое нажатие
+        // клавиши в соседнем поле формы), поэтому грузим список только когда изменилось то, от чего он
+        // зависит. Остальное — фильтрация исключённых, подсветка выбранных — делается локально.
+        if (loadedFor != (ProjectId, ListType))
+        {
+            loadedChars = [.. await client.GetCharacters(ProjectId, ListType)];
+            loadedFor = (ProjectId, ListType);
+        }
+
+        chars = [.. loadedChars!.Where(c => !ExcludeCharacterIds.Contains(c.CharacterId))];
         var selectedItems = chars.Where(item => SelectedCharacterIds.Contains(item.CharacterId)).ToArray();
         RefreshSelectedNames(selectedItems);
 
