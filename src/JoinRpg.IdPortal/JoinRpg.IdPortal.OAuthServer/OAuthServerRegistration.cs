@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebInfrastructure;
@@ -156,6 +155,7 @@ public static class OAuthServerRegistration
                 });
 
         builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
+        builder.Services.AddScoped<IOAuthConsentService, OAuthConsentService>();
 
         builder.Services.AddAuthorization(options =>
         {
@@ -283,7 +283,7 @@ public static class OAuthServerRegistration
         // OIDC login (openid/email/profile/...) keeps behaving exactly as before this change.
         var requiresConsent = requestedScopes.Any(JoinRpgScopes.IsJoinRpgScope);
 
-        IReadOnlyList<int> grantedProjectIds = [];
+        int[] grantedProjectIds = [];
         if (requiresConsent)
         {
             if (context.Request.Query[OAuthConsent.ConsentParameter] == OAuthConsent.Denied)
@@ -291,40 +291,20 @@ public static class OAuthServerRegistration
                 return TypedResults.Redirect(BuildAccessDeniedRedirectUri(request));
             }
 
-            if (context.Request.Query[OAuthConsent.ConsentParameter] == OAuthConsent.Granted)
+            // Согласие здесь только читается. Записать его может исключительно страница
+            // согласия, POST-ом с antiforgery-токеном (см. OAuthConsent): иначе выдать доступ
+            // к чужим проектам можно было бы одной ссылкой вида «...&consent=granted».
+            var existingAuthorization = await FindMatchingAuthorizationAsync(
+                authorizationManager, subject, applicationId, requestedScopes);
+
+            if (existingAuthorization is null)
             {
-                // The user just came back from the consent page: persist the decision as a
-                // permanent authorization, so subsequent sign-ins skip the consent screen.
-                grantedProjectIds = OAuthConsent.ParseProjectIds(context.Request.Query[OAuthConsent.ProjectsParameter]);
-
-                var descriptor = new OpenIddictAuthorizationDescriptor
-                {
-                    ApplicationId = applicationId,
-                    Subject = subject,
-                    Type = AuthorizationTypes.Permanent,
-                    Status = Statuses.Valid,
-                };
-                foreach (var scope in requestedScopes)
-                {
-                    descriptor.Scopes.Add(scope);
-                }
-                StoreGrantedProjects(descriptor.Properties, grantedProjectIds);
-
-                _ = await authorizationManager.CreateAsync(descriptor);
+                // No consent on file yet for this client/scope combination — ask the user.
+                return TypedResults.Redirect($"/oauth/consent{context.Request.QueryString}");
             }
-            else
-            {
-                var existingAuthorization = await FindMatchingAuthorizationAsync(
-                    authorizationManager, subject, applicationId, requestedScopes);
 
-                if (existingAuthorization is null)
-                {
-                    // No consent on file yet for this client/scope combination — ask the user.
-                    return TypedResults.Redirect($"/oauth/consent{context.Request.QueryString}");
-                }
-
-                grantedProjectIds = ReadGrantedProjects(await authorizationManager.GetPropertiesAsync(existingAuthorization));
-            }
+            grantedProjectIds = OAuthConsent.ReadGrantedProjects(
+                await authorizationManager.GetPropertiesAsync(existingAuthorization));
         }
 
         // Create a new ClaimsIdentity containing the claims that
@@ -343,7 +323,7 @@ public static class OAuthServerRegistration
             identity.SetResources(JoinRpgResources.Mcp(hostNameOptions.Value));
         }
 
-        if (grantedProjectIds.Count > 0)
+        if (grantedProjectIds.Length > 0)
         {
             identity.SetClaim(OAuthConsent.ProjectsClaimType, OAuthConsent.FormatProjectIds(grantedProjectIds));
         }
@@ -396,16 +376,4 @@ public static class OAuthServerRegistration
         return null;
     }
 
-    private static void StoreGrantedProjects(Dictionary<string, JsonElement> properties, IReadOnlyList<int> projectIds)
-    {
-        if (projectIds.Count > 0)
-        {
-            properties[OAuthConsent.ProjectsClaimType] = JsonSerializer.SerializeToElement(projectIds);
-        }
-    }
-
-    private static int[] ReadGrantedProjects(ImmutableDictionary<string, JsonElement> properties)
-        => properties.TryGetValue(OAuthConsent.ProjectsClaimType, out var element)
-            ? element.Deserialize<int[]>() ?? []
-            : [];
 }

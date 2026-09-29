@@ -1,20 +1,18 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
-using HtmlAgilityPack;
 using JoinRpg.IdPortal.OAuthServer;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.WebUtilities;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace JoinRpg.IdPortal.Test.Scenarios;
 
-// Covers ADR012 §4 (consent screen + per-project claim). Большинство тестов обращается
-// к AuthorizeMethod напрямую, повторяя то, что присылает страница согласия: запрос
-// "consent=granted&projects=..." (или "consent=denied") на connect/authorize. Сама страница
-// рендерится статически, поэтому её форму можно прогнать и по-настоящему — см. тесты
-// ConsentPage_* в конце файла.
+// Covers ADR012 §4 (consent screen + per-project claim). Согласие выдаётся только через
+// страницу согласия — POST-ом её формы с antiforgery-токеном, поэтому тесты прогоняют
+// настоящий HTML: берут форму из отрисованной страницы и отправляют так, как это сделал бы
+// браузер (см. ConsentFlowHelpers). connect/authorize решение из запроса не принимает —
+// это стережёт Authorize_ConsentGrantedInQuery_IsIgnoredAndAsksUserAgain.
 // Each test uses its own client id: authorizations are keyed by (subject, client), and the
 // same test user is shared across tests in the collection, so reusing a client id would leak
 // consent state between tests.
@@ -52,67 +50,103 @@ public class OAuthConsentScenario(IdPortalApplicationFactory factory)
         location.ShouldContain($"error={Errors.AccessDenied}");
     }
 
-    [Fact]
-    public async Task Authorize_ConsentGranted_CreatesAuthorizationWithProjectsProperty()
-    {
-        var clientId = await CreateMcpClientAsync();
-        var client = await LoginAsync();
-        var (_, challenge) = CreatePkcePair();
-
-        var response = await client.GetAsync(BuildAuthorizeUrl(clientId, challenge) +
-            $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=123,456");
-
-        response.StatusCode.ShouldBe(HttpStatusCode.Found);
-        var location = response.Headers.Location!.ToString();
-        location.ShouldStartWith(RedirectUri, Case.Insensitive);
-        location.ShouldContain("code=");
-
-        var projectIds = await ReadGrantedProjectsAsync(clientId);
-        projectIds.ShouldBe([123, 456]);
-    }
-
-    /// <summary>Читает из выданного клиенту согласия список проектов, к которым открыт доступ.</summary>
-    private async Task<int[]> ReadGrantedProjectsAsync(string clientId)
-    {
-        using var scope = factory.Services.CreateScope();
-        var authorizationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictAuthorizationManager>();
-        var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
-        var application = await applicationManager.FindByClientIdAsync(clientId);
-        var applicationId = await applicationManager.GetIdAsync(application!);
-
-        object? authorization = null;
-        await foreach (var candidate in authorizationManager.FindAsync(
-            subject: null, client: applicationId, status: Statuses.Valid, type: AuthorizationTypes.Permanent, scopes: null))
-        {
-            authorization = candidate;
-            break;
-        }
-        authorization.ShouldNotBeNull();
-
-        var properties = await authorizationManager.GetPropertiesAsync(authorization);
-        properties.ShouldContainKey(OAuthConsent.ProjectsClaimType);
-        return properties[OAuthConsent.ProjectsClaimType].Deserialize<int[]>()!;
-    }
-
     /// <summary>
-    /// Чекбоксы на странице согласия шлют каждый проект отдельным projects=N — проверяем,
-    /// что connect/authorize разбирает такой запрос так же, как список через запятую.
+    /// Главная защита: согласие нельзя выдать ссылкой. Иначе достаточно было бы заманить
+    /// залогиненного пользователя на «...&amp;consent=granted», чтобы открыть чужому клиенту
+    /// доступ к его проектам — а клиент в CIMD регистрируется самозаписью по домену.
     /// </summary>
     [Fact]
-    public async Task Authorize_ConsentGrantedWithRepeatedProjectsParameter_StoresAllProjects()
+    public async Task Authorize_ConsentGrantedInQuery_IsIgnoredAndAsksUserAgain()
     {
         var clientId = await CreateMcpClientAsync();
         var client = await LoginAsync();
 
         var response = await client.GetAsync(BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge) +
-            $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}" +
-            $"&{OAuthConsent.ProjectsParameter}=123&{OAuthConsent.ProjectsParameter}=456");
+            $"&{OAuthConsent.ConsentParameter}=granted&{OAuthConsent.ProjectsParameter}={factory.TestProjectId}");
+
+        // Не код клиенту, а снова экран согласия.
+        response.StatusCode.ShouldBe(HttpStatusCode.Found);
+        response.Headers.Location!.ToString().ShouldStartWith("/oauth/consent");
+
+        (await FindAuthorizationAsync(clientId)).ShouldBeNull();
+    }
+
+    /// <summary>Без antiforgery-токена форму согласия отправить нельзя.</summary>
+    [Fact]
+    public async Task ConsentPage_SubmitWithoutAntiforgeryToken_Rejected()
+    {
+        var clientId = await CreateMcpClientAsync();
+        var client = await LoginAsync();
+        var page = await GetConsentPageAsync(client, clientId);
+
+        var fields = (await page.AsHtmlDocument())
+            .GetConsentFormFields(grant: true, factory.TestProjectId)
+            .Where(field => field.Key != "__RequestVerificationToken");
+
+        var response = await client.PostAsync(page.RequestMessage!.RequestUri, new FormUrlEncodedContent(fields!));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await FindAuthorizationAsync(clientId)).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ConsentPage_SubmitGrant_RedirectsToClientWithCode()
+    {
+        var clientId = await CreateMcpClientAsync();
+        var client = await LoginAsync();
+
+        var response = await client.AuthorizeWithConsentAsync(BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Found);
-        response.Headers.Location!.ToString().ShouldContain("code=");
+        var location = response.Headers.Location!.ToString();
+        location.ShouldStartWith(RedirectUri, Case.Insensitive);
+        location.ShouldContain("code=");
+    }
 
-        var projectIds = await ReadGrantedProjectsAsync(clientId);
-        projectIds.ShouldBe([123, 456]);
+    [Fact]
+    public async Task ConsentPage_SubmitDeny_RedirectsToClientWithAccessDenied()
+    {
+        var clientId = await CreateMcpClientAsync();
+        var client = await LoginAsync();
+
+        var response = await client.AuthorizeWithConsentAsync(
+            BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge), grant: false);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Found);
+        var location = response.Headers.Location!.ToString();
+        location.ShouldStartWith(RedirectUri, Case.Insensitive);
+        location.ShouldContain($"error={Errors.AccessDenied}");
+
+        (await FindAuthorizationAsync(clientId)).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ConsentPage_SubmitGrantWithProject_StoresProjectInAuthorization()
+    {
+        var clientId = await CreateMcpClientAsync();
+        var client = await LoginAsync();
+
+        _ = await client.AuthorizeWithConsentAsync(
+            BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge), projectIds: [factory.TestProjectId]);
+
+        (await ReadGrantedProjectsAsync(clientId)).ShouldBe([factory.TestProjectId]);
+    }
+
+    /// <summary>
+    /// Форму отправляет сам пользователь, поэтому дописать в неё чужой id ничто не мешает —
+    /// в согласие должны попасть только те проекты, которые ему на странице показали.
+    /// </summary>
+    [Fact]
+    public async Task ConsentPage_SubmitGrantWithForeignProject_ForeignProjectDropped()
+    {
+        var clientId = await CreateMcpClientAsync();
+        var client = await LoginAsync();
+
+        _ = await client.AuthorizeWithConsentAsync(
+            BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge),
+            projectIds: [factory.TestProjectId, 999999]);
+
+        (await ReadGrantedProjectsAsync(clientId)).ShouldBe([factory.TestProjectId]);
     }
 
     [Fact]
@@ -122,16 +156,14 @@ public class OAuthConsentScenario(IdPortalApplicationFactory factory)
         var client = await LoginAsync();
 
         // First pass grants consent...
-        var granted = await client.GetAsync(BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge) +
-            $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=789");
-        granted.StatusCode.ShouldBe(HttpStatusCode.Found);
+        _ = await client.AuthorizeWithConsentAsync(
+            BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge), projectIds: [factory.TestProjectId]);
 
         // ...second pass, without a consent decision, should go straight to the client callback.
         var response = await client.GetAsync(BuildAuthorizeUrl(clientId, CreatePkcePair().Challenge));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Found);
-        var location = response.Headers.Location!.ToString();
-        location.ShouldStartWith(RedirectUri, Case.Insensitive);
+        response.Headers.Location!.ToString().ShouldStartWith(RedirectUri, Case.Insensitive);
     }
 
     [Fact]
@@ -150,41 +182,14 @@ public class OAuthConsentScenario(IdPortalApplicationFactory factory)
         body.InnerHtml.ShouldNotContain("\"type\":\"server\"");
 
         // И форма согласия действительно есть — значит статического рендера хватает.
-        doc.DocumentNode.SelectSingleNode("//form[@id='oauth-consent-grant']").ShouldNotBeNull();
+        var form = doc.DocumentNode.SelectSingleNode($"//form[@id='{ConsentFlowHelpers.ConsentFormId}']");
+        form.ShouldNotBeNull();
+        form.GetAttributeValue("method", "").ShouldBe("post");
+        form.SelectSingleNode(".//input[@name='__RequestVerificationToken']").ShouldNotBeNull();
 
-        // Кнопки лежат снаружи форм и привязаны к ним атрибутом form.
-        doc.DocumentNode
-            .SelectNodes("//button[@type='submit' and @form]")
-            .Select(button => button.GetAttributeValue("form", ""))
-            .ShouldBe(["oauth-consent-grant", "oauth-consent-deny"], ignoreOrder: true);
-    }
-
-    [Fact]
-    public async Task ConsentPage_SubmitGrantForm_RedirectsToClientWithCode()
-    {
-        var client = await LoginAsync();
-        var page = await GetConsentPageAsync(client, await CreateMcpClientAsync());
-
-        var response = await client.GetAsync(BuildGetFormUrl(await page.AsHtmlDocument(), "oauth-consent-grant"));
-
-        response.StatusCode.ShouldBe(HttpStatusCode.Found);
-        var location = response.Headers.Location!.ToString();
-        location.ShouldStartWith(RedirectUri, Case.Insensitive);
-        location.ShouldContain("code=");
-    }
-
-    [Fact]
-    public async Task ConsentPage_SubmitDenyForm_RedirectsToClientWithAccessDenied()
-    {
-        var client = await LoginAsync();
-        var page = await GetConsentPageAsync(client, await CreateMcpClientAsync());
-
-        var response = await client.GetAsync(BuildGetFormUrl(await page.AsHtmlDocument(), "oauth-consent-deny"));
-
-        response.StatusCode.ShouldBe(HttpStatusCode.Found);
-        var location = response.Headers.Location!.ToString();
-        location.ShouldStartWith(RedirectUri, Case.Insensitive);
-        location.ShouldContain($"error={Errors.AccessDenied}");
+        // Проект тестового пользователя предлагается к выбору.
+        WebUtility.HtmlDecode(form.InnerText).ShouldContain(IdPortalApplicationFactory.TestProjectName);
+        form.SelectSingleNode($".//input[@type='checkbox' and @value='{factory.TestProjectId}']").ShouldNotBeNull();
     }
 
     /// <summary>Идёт на connect/authorize и переходит по редиректу на страницу согласия.</summary>
@@ -197,24 +202,34 @@ public class OAuthConsentScenario(IdPortalApplicationFactory factory)
         return await client.GetAsync(consentUrl);
     }
 
-    /// <summary>
-    /// Собирает адрес, по которому браузер уйдёт при сабмите GET-формы с указанным id:
-    /// action плюс все её поля. Чекбоксы (выбор проектов) по умолчанию сняты, поэтому
-    /// в запрос не попадают — ровно как в браузере.
-    /// </summary>
-    private static string BuildGetFormUrl(HtmlDocument doc, string formId)
+    /// <summary>Читает из выданного клиенту согласия список проектов, к которым открыт доступ.</summary>
+    private async Task<int[]> ReadGrantedProjectsAsync(string clientId)
     {
-        var form = doc.DocumentNode.SelectSingleNode($"//form[@id='{formId}']");
-        form.ShouldNotBeNull();
+        var authorization = await FindAuthorizationAsync(clientId);
+        authorization.ShouldNotBeNull();
 
-        var fields = (form.SelectNodes(".//input") ?? Enumerable.Empty<HtmlNode>())
-            .Where(input => input.GetAttributeValue("type", "") != "checkbox"
-                || input.Attributes.Contains("checked"))
-            .Select(input => new KeyValuePair<string, string?>(
-                input.GetAttributeValue("name", ""),
-                WebUtility.HtmlDecode(input.GetAttributeValue("value", ""))));
+        using var scope = factory.Services.CreateScope();
+        var authorizationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictAuthorizationManager>();
+        var properties = await authorizationManager.GetPropertiesAsync(authorization);
+        properties.ShouldContainKey(OAuthConsent.ProjectsClaimType);
+        return properties[OAuthConsent.ProjectsClaimType].Deserialize<int[]>()!;
+    }
 
-        return QueryHelpers.AddQueryString(form.GetAttributeValue("action", ""), fields);
+    private async Task<object?> FindAuthorizationAsync(string clientId)
+    {
+        using var scope = factory.Services.CreateScope();
+        var authorizationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictAuthorizationManager>();
+        var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var application = await applicationManager.FindByClientIdAsync(clientId);
+        var applicationId = await applicationManager.GetIdAsync(application!);
+
+        await foreach (var candidate in authorizationManager.FindAsync(
+            subject: null, client: applicationId, status: Statuses.Valid, type: AuthorizationTypes.Permanent, scopes: null))
+        {
+            return candidate;
+        }
+
+        return null;
     }
 
     private async Task<string> CreateMcpClientAsync()

@@ -84,13 +84,12 @@ public class OAuthIntrospectionScenario(IdPortalApplicationFactory factory)
         var verifier = Base64Url(RandomNumberGenerator.GetBytes(32));
         var challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
 
-        var authorize = await client.GetAsync(
+        var authorize = await client.AuthorizeWithConsentAsync(
             $"/connect/authorize?client_id={clientId}&response_type=code" +
             $"&scope={Uri.EscapeDataString(JoinRpgScopes.Read)}" +
             $"&redirect_uri={Uri.EscapeDataString(RedirectUri)}" +
             $"&resource={Uri.EscapeDataString(McpResource)}" +
-            $"&code_challenge={challenge}&code_challenge_method=S256" +
-            $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=42");
+            $"&code_challenge={challenge}&code_challenge_method=S256");
 
         authorize.StatusCode.ShouldBe(HttpStatusCode.Found);
         var code = System.Web.HttpUtility
