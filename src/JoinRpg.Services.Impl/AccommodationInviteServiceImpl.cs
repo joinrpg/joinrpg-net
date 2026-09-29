@@ -60,7 +60,9 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             .GetDbSet<Claim>()
             .Where(claim => claim.ClaimId == receiverClaimId.ClaimId)
             .Select(claim => claim.AccommodationRequest)
-            .Include(request => request.Subjects)
+            // Дерево выражений: EF разбирает его как путь свойства и никогда не выполняет,
+            // так что разыменования null тут нет.
+            .Include(request => request!.Subjects)
             .FirstOrDefaultAsync().ConfigureAwait(false);
 
         var senderAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()

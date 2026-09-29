@@ -141,7 +141,7 @@ internal class PaymentsService(
                 break;
             default:
                 // Непонятный статус, как мы здесь оказались?
-                logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} whereas payment state is {bankPaymentState}", fo.CommentId, claimId, projectId, pi.Payment.Status);
+                logger.LogError("Attempt to continue payment {financeOperationId} for claim {claimId} to project {projectId} whereas payment state is {bankPaymentState}", fo.CommentId, claimId, projectId, pi.Payment?.Status);
                 await UpdateFinanceOperationAsync(fo, pi);
                 throw new PaymentException(fo.Project, "Unable to continue payment that doesn't awaits payment");
 
