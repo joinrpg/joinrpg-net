@@ -44,6 +44,22 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     /// <summary>Значения параметров URL, выведенные из этого проекта.</summary>
     internal SmokeParameterValues Values { get; } = new();
 
+    /// <summary>Проект сида — нужен сценариям, которые строят URL сами.</summary>
+    public ProjectIdentification ProjectId { get; private set; } = null!;
+
+    /// <summary>Единственный тип поселения сида, у него есть жильцы.</summary>
+    public int RoomTypeId { get; private set; }
+
+    /// <summary>
+    /// Жильцы типа поселения: отображаемое имя и телефон игрока.
+    /// </summary>
+    /// <remarks>
+    /// Заявка на проживание есть у всех заявок сида, в том числе у отложенной. На странице типа
+    /// поселения видны все, а в отчёт по расселению отложенная не попадает
+    /// (<c>ClaimStatusSpec.Active</c> исключает <c>OnHold</c>) — отсюда флаг.
+    /// </remarks>
+    public IReadOnlyList<SmokeResident> Residents { get; private set; } = [];
+
     public async Task InitializeAsync()
     {
         await ((IAsyncLifetime)Factory).InitializeAsync();
@@ -57,6 +73,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
 
         var seeded = await SeedProjectContentAsync(ownerId, projectId);
         var players = await SeedClaimsAsync(ownerId, projectId, seeded.Characters);
+        await SeedAccommodationRequestsAsync(ownerId, projectId, seeded, players.AllClaims);
 
         MasterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
             Factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
@@ -88,6 +105,16 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         SeededClaims players)
     {
         var mainCharacter = seeded.Characters[0];
+
+        ProjectId = projectId;
+        RoomTypeId = seeded.RoomTypeId;
+        Residents =
+        [
+            .. players.PlayerIds.Select(id => new SmokeResident(
+                DisplayNameFor(id),
+                PhoneNumberFor(id),
+                ClaimIsActive: id != players.OnHoldPlayerId)),
+        ];
 
         _ = Values
             .Add("projectId", projectId.Value, projectId)
@@ -302,6 +329,49 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         return roomTypeId.AccommodationTypeId;
     }
 
+    /// <summary>
+    /// Заявки на проживание: одна расселённая комната и один нерасселённый жилец (#5070).
+    /// </summary>
+    /// <remarks>
+    /// Без этого сид давал тип поселения без жильцов, страница
+    /// <c>rooms/{roomTypeId}/details</c> рендерила пустые списки — и N+1 по жильцам (по одной
+    /// догрузке персонажа, игрока и денежных операций на заявку) в снапшот не попадал вовсе,
+    /// хотя на проде это самый дорогой маршрут суток. Поэтому заявки на проживание есть у всех
+    /// заявок сида, а не у одной: на одном жильце N+1 не отличить от одиночного запроса.
+    /// </remarks>
+    private Task SeedAccommodationRequestsAsync(
+        UserIdentification ownerId,
+        ProjectIdentification projectId,
+        SeededContent seeded,
+        IReadOnlyList<ClaimIdentification> claims)
+        => Factory.Services.RunAsAsync(ownerId, async sp =>
+        {
+            // Сервис добавления комнат не отдаёт их id наружу, поэтому берём комнату из базы.
+            var roomId = sp.GetRequiredService<MyDbContext>().Set<ProjectAccommodation>()
+                .Where(r => r.ProjectId == projectId.Value && r.AccommodationTypeId == seeded.RoomTypeId)
+                .OrderBy(r => r.Id)
+                .Select(r => r.Id)
+                .First();
+
+            var claimService = sp.GetRequiredService<IClaimService>();
+            var requestIds = new List<int>(claims.Count);
+            foreach (var claimId in claims)
+            {
+                var request = await claimService.SetAccommodationType(
+                    projectId.Value, claimId.ClaimId, seeded.RoomTypeId);
+                requestIds.Add(request.Id);
+            }
+
+            // Часть жильцов расселена, часть — нет: страница показывает и комнаты с жильцами,
+            // и список нерасселённых, а в отчёте по расселению встречаются обе строки.
+            await sp.GetRequiredService<IAccommodationService>().OccupyRoom(new OccupyRequest
+            {
+                ProjectId = projectId.Value,
+                RoomId = roomId,
+                AccommodationRequestIds = [.. requestIds.SkipLast(1)],
+            });
+        });
+
     private static async Task<int> SeedSubscriptionAsync(
         IServiceProvider sp,
         ProjectIdentification projectId,
@@ -379,10 +449,13 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         IReadOnlyList<CharacterIdentification> characters)
     {
         var claims = new List<ClaimIdentification>(characters.Count);
+        var playerIds = new List<UserIdentification>(characters.Count);
 
         foreach (var characterId in characters)
         {
             var (playerId, _) = await CreateUserAsync();
+            await FillPlayerProfileAsync(playerId);
+            playerIds.Add(playerId);
             claims.Add(await Factory.Services.RunAsAsync(playerId, async sp =>
             {
                 var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
@@ -432,11 +505,48 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
 
             return new SeededClaims(
                 claims[0],
+                claims,
+                playerIds,
+                playerIds[1],
                 discussion.CommentDiscussionId,
                 discussion.CommentId,
                 financeOperationId);
         });
     }
+
+    /// <summary>
+    /// Заполняет профиль игрока: имя и телефон.
+    /// </summary>
+    /// <remarks>
+    /// Телефон нужен отчёту по расселению — он печатает колонку из <c>UserExtra</c>, и на пустом
+    /// профиле колонка была бы пустой, то есть тест не проверял бы её содержимое (#5070).
+    /// </remarks>
+    private Task FillPlayerProfileAsync(UserIdentification playerId)
+        => Factory.Services.RunAsAsync(playerId, async sp =>
+        {
+            await sp.GetRequiredService<IUserService>().UpdateProfile(
+                playerId.Value,
+                new UserFullName(
+                    new PrefferedName(DisplayNameFor(playerId)),
+                    new BornName("Иван"),
+                    new SurName($"Игроков{playerId.Value}"),
+                    new FatherName("Иванович")),
+                Gender.Male,
+                phoneNumber: PhoneNumberFor(playerId),
+                nicknames: "",
+                groupNames: "",
+                livejournal: "",
+                ContactsAccessType.OnlyForMasters,
+                passportData: "",
+                registrationAddress: "",
+                birthDate: null);
+        });
+
+    /// <summary>Телефон игрока — он же ожидаемое содержимое колонки в отчёте по расселению.</summary>
+    private static string PhoneNumberFor(UserIdentification playerId) => $"+7900{playerId.Value:0000000}";
+
+    /// <summary>Отображаемое имя игрока: сайт показывает предпочитаемое имя.</summary>
+    private static string DisplayNameFor(UserIdentification playerId) => $"Смоук-игрок {playerId.Value}";
 
     private sealed record SeededContent(
         CharacterGroupIdentification RootGroupId,
@@ -453,6 +563,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
 
     private sealed record SeededClaims(
         ClaimIdentification ApprovedClaimId,
+        IReadOnlyList<ClaimIdentification> AllClaims,
+        IReadOnlyList<UserIdentification> PlayerIds,
+        UserIdentification OnHoldPlayerId,
         int CommentDiscussionId,
         int CommentId,
         int FinanceOperationId);

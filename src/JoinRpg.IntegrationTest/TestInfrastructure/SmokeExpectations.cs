@@ -31,7 +31,7 @@ internal static class SmokeExpectations
         ["{projectId}/reports/2d/{gameReport2DTemplateId}"] = "нужен сохранённый шаблон 2D-отчёта, сид его не создаёт",
         ["{projectId}/money/SummaryByMaster"] = "нужен токен выгрузки, выдаётся отдельной страницей",
         ["{projectId}/schedule/ical"] = "нужно настроенное расписание (поля времени и локации), без него бросает исключение",
-        ["{projectId}/rooms/report"] = "не HTML-страница: без параметра export отдаёт 404, отчёт существует только как выгрузка",
+        ["{projectId}/rooms/report"] = "не HTML-страница: без параметра export отдаёт 404, покрыто AccommodationPagesLazyLoadsScenario",
         ["{projectId}/plot/{**path}"] = "catch-all легаси-редиректа: осмысленного значения для path нет",
 
         // JWT-авторизация: cookie мастера тут не работает. Эти маршруты покрыты тестами XApi,
