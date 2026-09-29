@@ -60,7 +60,7 @@ public class FieldLayerContainer
     /// набор (непубличные character-bound поля отсекаются по <c>AnyAccessToCharacter</c>), но
     /// правило записано один раз — через <see cref="ProjectFieldInfo.HasViewAccess"/>.
     ///
-    /// Фильтровать слой нужно осознанно и на месте: <see cref="CharacterInfo.GetFieldLayers"/>
+    /// Фильтровать слой нужно осознанно и на месте: <see cref="CharacterInfo"/>.GetFieldLayers
     /// отдаёт слой персонажа как есть, потому что поверх него считаются в том числе взносы
     /// (см. <c>FinanceExtensions</c>), а там фильтрация по правам всё сломала бы.
     /// </remarks>
