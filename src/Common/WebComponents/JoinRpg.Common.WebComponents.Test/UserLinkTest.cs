@@ -96,7 +96,7 @@ public class UserLinkTest : IDisposable
                 throw new InvalidOperationException("Should not have url of hidden");
             }
             Calls.Add(target);
-            return new Uri($"https://example.com/user/{target.UserId.Value}");
+            return new Uri($"https://example.com/user/{target.UserId!.Value}");
         }
     }
 }
