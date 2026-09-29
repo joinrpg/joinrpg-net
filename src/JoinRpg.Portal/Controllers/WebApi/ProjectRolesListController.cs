@@ -50,7 +50,7 @@ public class ProjectRolesListController(IProjectRolesListClient client) : Contro
     [RequireMaster(Permission.CanEditRoles)]
     public async Task<ActionResult<ProjectRolesListViewModel>> Update([FromQuery] ProjectIdentification projectId, [FromBody] ProjectRolesList model)
     {
-        if (model.ProjectRolesListId.ProjectId != projectId)
+        if (model.ProjectRolesListId?.ProjectId != projectId)
         {
             return BadRequest();
         }
