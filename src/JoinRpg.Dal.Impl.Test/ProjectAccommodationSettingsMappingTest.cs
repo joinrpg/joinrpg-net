@@ -49,7 +49,7 @@ public class ProjectAccommodationSettingsMappingTest
     [Fact]
     public void GetTypeById_ThrowsForUnknownId()
     {
-        _ = Should.Throw<KeyNotFoundException>(
+        _ = Should.Throw<AccommodationTypeNotFoundException>(
             () => mock.ProjectInfo.AccommodationSettings.GetTypeById(
                 new AccommodationTypeIdentification(mock.ProjectInfo.ProjectId, 100500)));
     }

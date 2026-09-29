@@ -1,4 +1,3 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
@@ -1471,7 +1470,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
 
-        _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
+        _ = await Should.ThrowAsync<AccommodationTypeNotFoundException>(
             () => CreateService().SetAccommodationType(ProjectId.Value, claim.ClaimId, 12345));
 
         SaveChangesCallCount.ShouldBe(0);

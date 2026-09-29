@@ -4,7 +4,6 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.Services.Impl.Test.Fakes;
@@ -204,12 +203,6 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         public Task<IReadOnlyCollection<PlotElement>> LoadDirectPlotsForCharacter(CharacterIdentification characterId)
             => Task.FromResult<IReadOnlyCollection<PlotElement>>(
                 [.. mock.PlotElements.Where(e => e.TargetCharacters.Any(c => c.CharacterId == characterId.CharacterId))]);
-
-        public Task<ProjectAccommodationType> LoadAccommodationType(AccommodationTypeIdentification accommodationTypeId)
-            => Task.FromResult(
-                mock.AccommodationTypes.SingleOrDefault(t => t.Id == accommodationTypeId.AccommodationTypeId)
-                    ?? throw new JoinRpgEntityNotFoundException(
-                        accommodationTypeId.AccommodationTypeId, nameof(ProjectAccommodationType)));
 
         public Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim(ClaimIdentification claimId)
             => Task.FromResult<IReadOnlyCollection<AccommodationInvite>>(

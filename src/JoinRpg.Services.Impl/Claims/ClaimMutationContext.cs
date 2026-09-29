@@ -40,14 +40,6 @@ internal abstract record ClaimMutationContext(
         => Scope.LoadDirectPlotsForCharacter(characterId);
 
     /// <summary>
-    /// Тип поселения проекта. Именованный загрузчик, а не <c>ProjectInfo</c>: типы поселения в снимок
-    /// метаданных не входят.
-    /// </summary>
-    /// <exception cref="JoinRpgEntityNotFoundException">Тип поселения не найден в этом проекте.</exception>
-    public Task<ProjectAccommodationType> LoadAccommodationType(AccommodationTypeIdentification accommodationTypeId)
-        => Scope.LoadAccommodationType(accommodationTypeId);
-
-    /// <summary>
     /// Приглашения к совместному проживанию, в которых участвует эта заявка, — трекаемые тем же
     /// <c>DbContext</c>, поэтому их изменение уедет в то же единственное сохранение.
     /// </summary>

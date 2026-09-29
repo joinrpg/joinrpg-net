@@ -775,7 +775,9 @@ internal class ClaimServiceImpl(
             roomTypeId,
             async ctx =>
             {
-                // Player cannot change accommodation type if already checked in
+                // TODO: игрок не должен менять тип поселения после регистрации. Проверки нет и
+                // никогда не было: комментарий-намерение висит здесь с 2018 года (70ccb4a11), кода
+                // под ним не появилось. Оставлено как есть — это изменение поведения, не рефакторинг.
 
                 if (ctx.Claim.AccommodationRequest?.AccommodationTypeId == roomTypeId)
                 {
@@ -784,9 +786,10 @@ internal class ClaimServiceImpl(
                     return ctx.Claim.AccommodationRequest;
                 }
 
-                // Типа поселения нет в ProjectInfo, поэтому он приезжает именованным загрузчиком —
-                // через тот же DbContext, что и мутация. Нужен ради проверки существования.
-                _ = await ctx.LoadAccommodationType(
+                // Проверка, что тип поселения существует в этом проекте. Метаданные уже на руках
+                // (ADR015), отдельный запрос за сущностью не нужен: мутируем мы AccommodationRequest,
+                // а сам тип только называем по идентификатору.
+                _ = ctx.ProjectInfo.AccommodationSettings.GetTypeById(
                     new AccommodationTypeIdentification(ctx.ProjectInfo.ProjectId, roomTypeId));
 
                 // TODO: восстановить отправку изменений полей, см. ADR014
