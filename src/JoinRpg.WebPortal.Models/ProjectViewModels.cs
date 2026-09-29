@@ -18,7 +18,9 @@ public class EditProjectViewModel
      MinimumLength = 5)]
     public string ProjectName { get; set; }
 
-    [DisplayName("Анонс проекта"), UIHint("MarkdownString")]
+    [Display(Name = "Анонс проекта",
+        Description = "Не надо дублировать в этом поле данные из КогдаИгры — даты, МГ, регион и ссылки на сайт и соцсети."),
+        UIHint("MarkdownString")]
     public string ProjectAnnounce { get; set; }
 
     [DisplayName("Правила подачи заявок"), UIHint("MarkdownString")]

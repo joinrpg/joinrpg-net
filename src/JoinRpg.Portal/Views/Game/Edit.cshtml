@@ -32,6 +32,7 @@ param-Active="Model.Active" />
             @Html.LabelFor(model => model.ProjectAnnounce, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.ProjectAnnounce, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.DescriptionFor(model => model.ProjectAnnounce)
                 @Html.ValidationMessageFor(model => model.ProjectAnnounce, "", new { @class = "text-danger" })
             </div>
         </div>
