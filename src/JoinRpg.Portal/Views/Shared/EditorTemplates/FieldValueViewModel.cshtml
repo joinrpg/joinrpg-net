@@ -172,7 +172,7 @@
           throw new InvalidEnumArgumentException("Unknown field type name");
       }
         @{
-            var tryGetModelStateResult = ViewData.ModelState.TryGetValue(Model.FieldClientId, out var entry);
+            var tryGetModelStateResult = ViewData.ModelState.TryGetValue(Model!.FieldClientId, out var entry);
             var modelErrors = tryGetModelStateResult ? entry?.Errors : null;
             Microsoft.AspNetCore.Mvc.ModelBinding.ModelError? modelError = null;
             if (modelErrors != null && modelErrors.Count != 0)

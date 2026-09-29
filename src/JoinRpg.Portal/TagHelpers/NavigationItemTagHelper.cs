@@ -70,7 +70,7 @@ public class NavLinkTagHelper : AnchorTagHelper
             classAttr = new TagHelperAttribute("class", "active");
             output.Attributes.Add(classAttr);
         }
-        else if (classAttr.Value.ToString() == null || classAttr.Value.ToString().IndexOf("active") < 0)
+        else if (classAttr.Value?.ToString()?.Contains("active") != true)
         {
             output.Attributes.SetAttribute("class", classAttr.Value == null
                 ? "active"
