@@ -41,11 +41,6 @@
         <EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync">
             <DataAnnotationsValidator />
 
-            @if (errorMessage is not null)
-            {
-                <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
-            }
-
             <FormHorizontal>
                 <FormRowFor For="() => Input.ClientId">
                     <JoinTextInput @bind-Value="Input.ClientId" />
@@ -65,7 +60,6 @@
     private bool created;
     private string? createdSecret;
     private string? createdClientId;
-    private string? errorMessage;
 
     private InputModel Input { get; set; } = new();
 

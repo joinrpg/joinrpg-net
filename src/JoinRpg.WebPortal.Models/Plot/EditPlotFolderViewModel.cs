@@ -28,11 +28,11 @@ public class EditPlotFolderViewModel : PlotFolderViewModelBase
     public bool HasPlotEditorAccess { get; private set; }
 
     [ReadOnly(true)]
-    public IEnumerable<string> TagNames { get; private set; }
+    public IEnumerable<string> TagNames { get; private set; } = [];
 
 
     [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: «Интриги Гэндальфа #мордор #гондор #костромская_область»")]
-    public string PlotFolderTitleAndTags { get; set; }
+    public string PlotFolderTitleAndTags { get; set; } = "";
 
     public EditPlotFolderViewModel(PlotFolderDetailsDto folder, ILinkRenderer linkRenderer, ICurrentUserAccessor currentUser, IUriService uriService, ProjectInfo projectInfo)
     {
