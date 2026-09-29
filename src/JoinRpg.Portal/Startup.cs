@@ -204,7 +204,10 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         _ = app.UseAuthorization()
             .UseMiddleware<CsrfTokenCookieMiddleware>();
 
-        _ = app.MapRazorComponents<JoinRpg.Blazor.Client.Components.App>().AddInteractiveWebAssemblyRenderMode();
+        // Хостовая страница — дело серверного проекта: ImportMap и Assets живут в
+        // Microsoft.AspNetCore.Components.Endpoints, которой в WASM-клиенте нет. Копия в
+        // JoinRpg.Blazor.Client отдавала <ImportMap /> в разметку текстом (RZ10012).
+        _ = app.MapRazorComponents<Components.App>().AddInteractiveWebAssemblyRenderMode();
 
         _ = app.MapControllers().WithStaticAssets();
         app.MapJoinMcp();
