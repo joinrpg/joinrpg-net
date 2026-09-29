@@ -77,10 +77,12 @@ internal class ProjectRolesListClientImpl(
 
     public async Task<ProjectRolesListViewModel> Update(ProjectRolesList model)
     {
+        var projectRolesListId = model.ProjectRolesListId
+            ?? throw new ArgumentException("Нельзя сохранить ещё не созданную сетку ролей", nameof(model));
         try
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
-            var response = await httpClient.PostAsJsonAsync($"webapi/project-roles-list/update?projectId={model.ProjectRolesListId.ProjectId.Value}", model);
+            var response = await httpClient.PostAsJsonAsync($"webapi/project-roles-list/update?projectId={projectRolesListId.ProjectId.Value}", model);
             return await response
                 .EnsureSuccessStatusCode()
                 .Content

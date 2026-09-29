@@ -28,11 +28,11 @@ public class ProjectRolesListEditModel : PageModel
 
     public async Task<IActionResult> OnGet()
     {
-        if (IsEditMode)
+        if (Id is int projectRolesListId)
         {
             try
             {
-                var domain = await _client.GetById(new ProjectRolesListIdentification(ProjectId, Id.Value));
+                var domain = await _client.GetById(new ProjectRolesListIdentification(ProjectId, projectRolesListId));
                 Model = EditProjectRolesListViewModel.FromDomain(domain);
             }
             catch

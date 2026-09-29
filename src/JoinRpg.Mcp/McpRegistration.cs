@@ -76,7 +76,7 @@ public static class McpRegistration
                 options.SetIssuer(idPortalIssuer);
                 options.AddAudiences(resourceUri.ToString());
                 options.UseIntrospection()
-                    .SetClientId(mcpOptions.ClientId)
+                    .SetClientId(mcpOptions!.ClientId)
                     .SetClientSecret(mcpOptions.ClientSecret);
                 options.UseSystemNetHttp();
                 options.UseAspNetCore();
