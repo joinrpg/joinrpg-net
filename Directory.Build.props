@@ -13,6 +13,15 @@
 
         <NoWarn>$(NoWarn);CS1591</NoWarn>
 
+        <!--
+        По умолчанию проект никуда не пакуется. SDK по умолчанию считает наоборот, из-за чего
+        «пакет» нигде не был выражен явно: JoinRpg.Common.KogdaIgraClient публикуется в NuGet
+        (см. матрицу в .github/workflows/nuget-publish.yml), но в .csproj об этом не сказано
+        ни слова. Пакеты объявляют IsPackable=true у себя, всё остальное — не пакеты, и от
+        этого свойства можно отталкиваться в Directory.Build.targets.
+        -->
+        <IsPackable>false</IsPackable>
+
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <Nullable>enable</Nullable>
 
