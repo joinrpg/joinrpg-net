@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using System.Linq.Expressions;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -12,6 +13,21 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPlotService
 {
+    /// <summary>
+    /// Проверяет мастерский доступ к сюжетам проекта по снимку метаданных.
+    /// </summary>
+    /// <remarks>
+    /// Права берутся из <see cref="ProjectInfo"/>, а не из навигации <c>folder.Project.ProjectAcls</c>:
+    /// у сущности проекта, поднятой через <c>UnitOfWork</c>, ACL не загружены, и легаси-проверка
+    /// стоила ленивой догрузки <c>ProjectAcls</c> на каждом маршруте сюжетов (#4989, #4670).
+    /// Метаданные на запрос уже загружены — за <see cref="IProjectMetadataRepository"/> в Portal
+    /// стоит кеш запроса.
+    /// </remarks>
+    private async Task RequestMasterAccessAsync(ProjectIdentification projectId, Permission permission = Permission.CanManagePlots)
+        => _ = (await projectMetadataRepository.GetProjectMetadata(projectId))
+            .RequestMasterAccess(currentUserAccessor, permission)
+            .EnsureProjectActive();
+
     public async Task<PlotFolderIdentification> CreatePlotFolder(ProjectIdentification projectId, string masterTitle, string todo)
     {
         if (masterTitle == null)
@@ -19,8 +35,8 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
             throw new ArgumentNullException(nameof(masterTitle));
         }
 
-        var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId.Value);
-        _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
+        await RequestMasterAccessAsync(projectId);
+
         var startTimeUtc = DateTime.UtcNow;
         var plotFolder = new PlotFolder
         {
@@ -34,10 +50,35 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
         await AssignTagList(plotFolder.PlotTags, masterTitle);
 
-        project.PlotFolders.Add(plotFolder);
+        // Папка добавляется в свой DbSet, а не в project.PlotFolders: обращение к коллекции
+        // проекта тянуло бы все его папки сюжетов отдельным запросом (#4989).
+        _ = UnitOfWork.GetDbSet<PlotFolder>().Add(plotFolder);
         await UnitOfWork.SaveChangesAsync();
 
         return new PlotFolderIdentification(projectId, plotFolder.PlotFolderId);
+    }
+
+    /// <summary>
+    /// Папка сюжета вместе со связями, которые правит операция.
+    /// </summary>
+    /// <remarks>
+    /// Отдельный запрос, а не <c>LoadProjectSubEntityAsync</c>: тот поднимает сущность через
+    /// <c>Find</c>, куда <c>Include</c> не поставить, и связи приезжали ленивой догрузкой (#4989).
+    /// </remarks>
+    private async Task<PlotFolder> LoadFolderAsync(
+        PlotFolderIdentification plotFolderId,
+        params Expression<Func<PlotFolder, object>>[] includes)
+    {
+        var query = UnitOfWork.GetDbSet<PlotFolder>().AsQueryable();
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        return await query.SingleOrDefaultAsync(folder =>
+                folder.ProjectId == plotFolderId.ProjectId.Value
+                && folder.PlotFolderId == plotFolderId.PlotFolderId)
+            ?? throw new JoinRpgEntityNotFoundException(plotFolderId.PlotFolderId, nameof(PlotFolder));
     }
 
     private async Task AssignTagList(ICollection<ProjectItemTag> presentTags, string title)
@@ -58,9 +99,9 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
     public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)
     {
-        var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+        await RequestMasterAccessAsync(new ProjectIdentification(projectId));
 
-        _ = folder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
+        var folder = await LoadFolderAsync(new PlotFolderIdentification(projectId, plotFolderId), f => f.PlotTags);
 
         folder.TodoField = todoField;
         folder.IsActive = true; //Restore if deleted
@@ -75,9 +116,9 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     public async Task<PlotVersionIdentification> CreatePlotElement(PlotFolderIdentification plotFolderId, string content, string todoField,
       IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType, bool isMasterOnly)
     {
-        var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
+        await RequestMasterAccessAsync(plotFolderId.ProjectId, Permission.None);
 
-        _ = folder.RequestMasterAccess(CurrentUserId).EnsureProjectActive();
+        var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
 
         if (isMasterOnly)
         {
@@ -125,8 +166,9 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
     public async Task DeleteFolder(int projectId, int plotFolderId)
     {
-        var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-        _ = folder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
+        await RequestMasterAccessAsync(new ProjectIdentification(projectId));
+
+        var folder = await LoadFolderAsync(new PlotFolderIdentification(projectId, plotFolderId), f => f.Elements);
 
         _ = SmartDelete(folder);
         foreach (var element in folder.Elements)
@@ -149,17 +191,35 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
     private async Task<PlotElement> LoadElement(PlotElementIdentification plotElementId)
     {
-        var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
-        _ = folder.RequestMasterAccess(CurrentUserId).EnsureProjectActive();
-        return folder.Elements.Single(e => e.PlotElementId == plotElementId.PlotElementId);
+        await RequestMasterAccessAsync(plotElementId.ProjectId, Permission.None);
+        return await LoadElementCore(plotElementId);
     }
 
     private async Task<PlotElement> LoadElementForManage(PlotElementIdentification plotElementId)
     {
-        var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
-        _ = folder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
-        return folder.Elements.Single(e => e.PlotElementId == plotElementId.PlotElementId);
+        await RequestMasterAccessAsync(plotElementId.ProjectId);
+        return await LoadElementCore(plotElementId);
     }
+
+    /// <summary>
+    /// Вводная со всем, что правят операции над ней: версии текста, таргеты и папка.
+    /// </summary>
+    /// <remarks>
+    /// Раньше вводную достали из <c>folder.Elements</c> — то есть ленивой догрузкой всех вводных
+    /// папки, а за ней по одной догрузке на версии, таргет-группы и таргет-персонажей. Запрос по
+    /// обоим id проверяет принадлежность папке так же, как прежняя выборка из коллекции (#4989).
+    /// </remarks>
+    private async Task<PlotElement> LoadElementCore(PlotElementIdentification plotElementId)
+        => await UnitOfWork.GetDbSet<PlotElement>()
+            .Include(element => element.Texts)
+            .Include(element => element.TargetGroups)
+            .Include(element => element.TargetCharacters)
+            .Include(element => element.PlotFolder)
+            .SingleOrDefaultAsync(element =>
+                element.ProjectId == plotElementId.ProjectId.Value
+                && element.PlotFolderId == plotElementId.PlotFolderId.PlotFolderId
+                && element.PlotElementId == plotElementId.PlotElementId)
+            ?? throw new JoinRpgEntityNotFoundException(plotElementId.PlotElementId, nameof(PlotElement));
 
     public async Task EditPlotElement(PlotElementIdentification plotelementid, string contents,
       string todoField, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly)
@@ -287,8 +347,9 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
     public async Task ReorderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId)
     {
+        await RequestMasterAccessAsync(plotFolderId.ProjectId);
+
         var targetFolder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
-        _ = targetFolder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
 
         var afterFolder = afterPlotFolderId is not null ? await LoadProjectSubEntityAsync<PlotFolder>(afterPlotFolderId) : null;
 
@@ -300,9 +361,9 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
     public async Task ReorderPlotElements(PlotElementIdentification plotElementId, PlotElementIdentification? afterPlotElementId)
     {
-        var targetFolder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
+        await RequestMasterAccessAsync(plotElementId.ProjectId);
 
-        _ = targetFolder.RequestMasterAccess(CurrentUserId, Permission.CanManagePlots).EnsureProjectActive();
+        var targetFolder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
 
         targetFolder.ElementsOrdering = DomainMoveHelper.MoveAfter(plotElementId,
             afterPlotElementId,
