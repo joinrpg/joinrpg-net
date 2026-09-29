@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
@@ -89,6 +90,26 @@ internal static class ProjectInfoFixture
             WasEverUsed: false);
 
     public static CharacterGroupIdentification GroupId(int id) => new(ProjectId, id);
+
+    /// <summary>
+    /// Тип проживания для тестов. По умолчанию категория комнат совпадает с id типа — ровно так,
+    /// как их сегодня заполняет маппер метаданных, пока тип и категория не разделены (ADR018).
+    /// </summary>
+    public static AccommodationTypeInfo MakeAccommodationType(
+        int typeId,
+        int capacity,
+        int? roomCategoryId = null,
+        string? name = null,
+        int cost = 1000,
+        bool isPlayerSelectable = true)
+        => new(
+            new AccommodationTypeIdentification(ProjectId, typeId),
+            new RoomCategoryIdentification(ProjectId, roomCategoryId ?? typeId),
+            name ?? $"Тип проживания {typeId}",
+            new MarkdownString(""),
+            cost,
+            capacity,
+            isPlayerSelectable);
 
     /// <summary>
     /// Строит дерево групп по описанию «группа → её прямые родители», досчитывая транзитивные

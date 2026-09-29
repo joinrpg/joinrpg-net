@@ -46,6 +46,32 @@ public class ProjectAccommodationSettingsMappingTest
         settings.PlayerSelectableTypes.Select(t => t.Name).ShouldBe(["Палатка"]);
     }
 
+    /// <summary>
+    /// Тест-страж (ADR018, «Задел на разделение», пункт 1). Категория комнат и тип проживания
+    /// сегодня не разделены: своей таблицы у категории нет, и маппер заполняет
+    /// <c>RoomCategoryId</c> из <c>ProjectAccommodationType.Id</c>, то есть числа совпадают.
+    /// В день, когда категорию разделят с типом, этот тест упадёт первым — и это правильно:
+    /// он приведёт разработчика в раздел 2 ADR018, а не в случайное место, где идентификаторы
+    /// молча разъехались. Тогда его надо не «починить», а удалить вместе с фикцией.
+    /// </summary>
+    [Fact]
+    public void RoomCategoryId_TodayEqualsAccommodationTypeId()
+    {
+        _ = mock.CreateAccommodationType("Палатка", capacity: 4, cost: 1500);
+        _ = mock.CreateAccommodationType("Люкс", capacity: 2, cost: 9000);
+        mock.Project.Details.EnableAccommodation = true;
+
+        mock.ReInitProjectInfo();
+
+        var types = mock.ProjectInfo.AccommodationSettings.Types;
+        types.ShouldNotBeEmpty();
+        foreach (var type in types)
+        {
+            type.RoomCategoryId.ProjectId.ShouldBe(type.Id.ProjectId);
+            type.RoomCategoryId.RoomCategoryId.ShouldBe(type.Id.AccommodationTypeId);
+        }
+    }
+
     [Fact]
     public void GetTypeById_ThrowsForUnknownId()
     {

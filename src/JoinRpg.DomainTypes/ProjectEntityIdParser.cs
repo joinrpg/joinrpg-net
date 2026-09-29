@@ -104,6 +104,18 @@ public static class ProjectEntityIdParser
             return true;
         }
 
+        if (AccommodationRoomIdentification.TryParse(value, null, out var accRoom))
+        {
+            id = accRoom;
+            return true;
+        }
+
+        if (RoomCategoryIdentification.TryParse(value, null, out var roomCategory))
+        {
+            id = roomCategory;
+            return true;
+        }
+
         if (ClaimIdentification.TryParse(value, null, out var claim))
         {
             id = claim;

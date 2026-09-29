@@ -23,6 +23,30 @@ public partial record AccommodationTypeIdentification(
     int AccommodationTypeId) : IProjectEntityId;
 
 /// <summary>
+/// Идентификатор комнаты (места поселения) в проекте.
+/// </summary>
+[method: JsonConstructor]
+[TypedEntityId]
+public partial record AccommodationRoomIdentification(
+    ProjectIdentification ProjectId,
+    int RoomId) : IProjectEntityId;
+
+/// <summary>
+/// Идентификатор категории комнат — пула, из которого селятся типы проживания.
+/// </summary>
+/// <remarks>
+/// Пока категория и тип проживания не разделены (ADR018, «Задел на разделение»), своей таблицы у
+/// категории нет. Получить категорию по типу проживания можно только через метаданные —
+/// <c>AccommodationTypeInfo.RoomCategoryId</c>; конвертации идентификаторов в домене нет и заводить
+/// её нельзя.
+/// </remarks>
+[method: JsonConstructor]
+[TypedEntityId]
+public partial record RoomCategoryIdentification(
+    ProjectIdentification ProjectId,
+    int RoomCategoryId) : IProjectEntityId;
+
+/// <summary>
 /// Идентификатор приглашения к совместному проживанию.
 /// </summary>
 [method: JsonConstructor]
