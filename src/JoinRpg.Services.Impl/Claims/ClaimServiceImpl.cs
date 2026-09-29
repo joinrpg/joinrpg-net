@@ -775,7 +775,9 @@ internal class ClaimServiceImpl(
             roomTypeId,
             async ctx =>
             {
-                // Player cannot change accommodation type if already checked in
+                // TODO: игрок не должен менять тип поселения после регистрации. Проверки нет и
+                // никогда не было: комментарий-намерение висит здесь с 2018 года (70ccb4a11), кода
+                // под ним не появилось. Оставлено как есть — это изменение поведения, не рефакторинг.
 
                 if (ctx.Claim.AccommodationRequest?.AccommodationTypeId == roomTypeId)
                 {
