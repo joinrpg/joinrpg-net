@@ -1,5 +1,4 @@
 @page "/oauth/consent"
-@rendermode InteractiveServer
 @attribute [Authorize]
 @using JoinRpg.Data.Interfaces
 @using JoinRpg.IdPortal.OAuthServer
@@ -11,6 +10,11 @@
 @inject IProjectRepository ProjectRepository
 @inject ICurrentUserAccessor CurrentUserAccessor
 @inject NavigationManager NavigationManager
+
+@* Страница рендерится статически: интерактива ей не нужно, решение пользователя — это
+   обычная HTML-форма, которая уходит GET-ом обратно на connect/authorize (см. OAuthConsent).
+   Раньше здесь стоял @@rendermode InteractiveServer, то есть на каждый OAuth-логин
+   поднимался Blazor Server circuit. *@
 
 <PageTitle>Запрос доступа — id.joinrpg.ru</PageTitle>
 
@@ -58,33 +62,52 @@ else
         }
     </ul>
 
-    @if (requestsRead)
-    {
-        <p>Выберите проекты, к которым приложение получит доступ:</p>
-        @if (projects.Count == 0)
+    @* Обе кнопки лежат снаружи форм и привязаны к ним атрибутом form — иначе чекбоксы
+       пришлось бы дублировать или ломать вёрстку вложенными формами (что запрещено). *@
+    <form method="get" action="@AuthorizeEndpoint" id="@GrantFormId">
+        @RequestParameters(OAuthConsent.Granted)
+
+        @if (requestsRead)
         {
-            <JoinAlert Variation="VariationStyleEnum.Warning">
-                У вас нет проектов с правами мастера — доступ открывать не к чему.
-            </JoinAlert>
-        }
-        else
-        {
-            @foreach (var project in projects)
+            <p>Выберите проекты, к которым приложение получит доступ:</p>
+            @if (projects.Count == 0)
             {
-                <div class="checkbox">
-                    <label><CheckboxInput @bind-Value="project.Selected" /> @project.Name.Value</label>
-                </div>
+                <JoinAlert Variation="VariationStyleEnum.Warning">
+                    У вас нет проектов с правами мастера — доступ открывать не к чему.
+                </JoinAlert>
+            }
+            else
+            {
+                @foreach (var project in projects)
+                {
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox"
+                                   name="@OAuthConsent.ProjectsParameter"
+                                   value="@project.ProjectId" />
+                            @project.Name.Value
+                        </label>
+                    </div>
+                }
             }
         }
-    }
+    </form>
+
+    <form method="get" action="@AuthorizeEndpoint" id="@DenyFormId">
+        @RequestParameters(OAuthConsent.Denied)
+    </form>
 
     <p>
-        <JoinButton Label="Разрешить" OnClick="() => Submit(grant: true)" Preset="ButtonPreset.Save" />
-        <JoinButton Label="Отклонить" OnClick="() => Submit(grant: false)" Preset="ButtonPreset.Cancel" />
+        <JoinButton Submit="true" form="@GrantFormId" Label="Разрешить" Preset="ButtonPreset.Save" />
+        <JoinButton Submit="true" form="@DenyFormId" Label="Отклонить" Preset="ButtonPreset.Cancel" />
     </p>
 }
 
 @code {
+    private const string AuthorizeEndpoint = "/connect/authorize";
+    private const string GrantFormId = "oauth-consent-grant";
+    private const string DenyFormId = "oauth-consent-deny";
+
     private bool notFound;
     private string clientDisplayName = "";
     private string? cimdHost;
@@ -93,13 +116,40 @@ else
     private bool requestsRead;
     private bool requestsCharactersWrite;
     private readonly List<ProjectChoice> projects = [];
-    private string originalQueryString = "";
+
+    /// <summary>
+    /// Исходный запрос авторизации. GET-форма теряет query string из action, поэтому все
+    /// параметры (client_id, state, code_challenge и прочие) переносим в скрытые поля.
+    /// </summary>
+    private readonly List<KeyValuePair<string, string>> requestParameters = [];
+
+    private RenderFragment RequestParameters(string consentDecision) =>
+        @<text>
+            @foreach (var (name, value) in requestParameters)
+            {
+                <input type="hidden" name="@name" value="@value" />
+            }
+            <input type="hidden" name="@OAuthConsent.ConsentParameter" value="@consentDecision" />
+        </text>;
 
     protected override async Task OnInitializedAsync()
     {
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
         var query = QueryHelpers.ParseQuery(uri.Query);
-        originalQueryString = uri.Query;
+
+        foreach (var (name, values) in query)
+        {
+            // Своё решение проставляем сами, чужое из запроса не тащим.
+            if (name == OAuthConsent.ConsentParameter || name == OAuthConsent.ProjectsParameter)
+            {
+                continue;
+            }
+
+            foreach (var value in values)
+            {
+                requestParameters.Add(new(name, value ?? ""));
+            }
+        }
 
         var clientId = query.TryGetValue("client_id", out var clientIdValues) ? clientIdValues.ToString() : null;
         var application = clientId is null ? null : await ApplicationManager.FindByClientIdAsync(clientId);
@@ -141,28 +191,9 @@ else
         }
     }
 
-    private void Submit(bool grant)
-    {
-        if (!grant)
-        {
-            NavigationManager.NavigateTo(
-                $"/connect/authorize{originalQueryString}&{OAuthConsent.ConsentParameter}={OAuthConsent.Denied}",
-                forceLoad: true);
-            return;
-        }
-
-        var selectedProjectIds = projects.Where(p => p.Selected).Select(p => p.ProjectId).ToList();
-        var redirectUri = $"/connect/authorize{originalQueryString}" +
-            $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}" +
-            $"&{OAuthConsent.ProjectsParameter}={Uri.EscapeDataString(OAuthConsent.FormatProjectIds(selectedProjectIds))}";
-
-        NavigationManager.NavigateTo(redirectUri, forceLoad: true);
-    }
-
     private sealed class ProjectChoice(int projectId, JoinRpg.DomainTypes.ProjectMetadata.ProjectName name)
     {
         public int ProjectId { get; } = projectId;
         public JoinRpg.DomainTypes.ProjectMetadata.ProjectName Name { get; } = name;
-        public bool Selected { get; set; }
     }
 }

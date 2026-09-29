@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Primitives;
+
 namespace JoinRpg.IdPortal.OAuthServer;
 
 /// <summary>
@@ -30,4 +32,12 @@ public static class OAuthConsent
             .Select(int.Parse)
             .ToList();
     }
+
+    /// <summary>
+    /// Страница согласия — обычная HTML-форма, и каждый отмеченный чекбокс приезжает
+    /// отдельным <c>projects=N</c>. Поэтому значений в query может быть несколько,
+    /// и каждое из них само по себе может быть списком через запятую.
+    /// </summary>
+    public static IReadOnlyList<int> ParseProjectIds(StringValues values)
+        => [.. values.SelectMany(value => ParseProjectIds(value))];
 }

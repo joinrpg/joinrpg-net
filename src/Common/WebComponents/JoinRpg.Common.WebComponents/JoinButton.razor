@@ -5,13 +5,13 @@
 @if (Link is not null)
 {
   <Tooltip Title="@Title" TooltipContent="@TitleContent">
-        <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@Disabled">@LabelContent</a>
+        <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" @attributes="AdditionalAttributes">@LabelContent</a>
   </Tooltip>
 }
 else
 {
   <Tooltip Title="@ActualTitle" TooltipContent="@TitleContent">
-    <button class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" @onclick="OnClickHappened">@LabelContent</button>
+    <button class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" @onclick="OnClickHappened" @attributes="AdditionalAttributes">@LabelContent</button>
   </Tooltip>
 }
 @if (AutoConfirm)
@@ -160,6 +160,13 @@ else
     /// </summary>
     [Parameter]
     public EventCallback<ButtonClickEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Прочие HTML-атрибуты, которые надо повесить на сам элемент кнопки или ссылки.
+    /// Например, <c>form</c>, чтобы кнопка сабмитила форму, внутри которой она не лежит.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
 
     private JoinMessageDialog? _confirmDialogRef;
