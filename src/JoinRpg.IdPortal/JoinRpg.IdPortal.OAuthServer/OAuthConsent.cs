@@ -1,17 +1,35 @@
+using System.Collections.Immutable;
+using System.Text.Json;
 using Microsoft.Extensions.Primitives;
 
 namespace JoinRpg.IdPortal.OAuthServer;
 
 /// <summary>
-/// Query string contract between <c>connect/authorize</c> and the consent page (ADR012 §4):
-/// the consent page redirects back to <c>connect/authorize</c> carrying the user's decision.
+/// Контракт между <c>connect/authorize</c> и страницей согласия (ADR012 §4).
+/// <para>
+/// Само согласие <c>connect/authorize</c> из запроса не принимает: выдать его может только
+/// страница согласия, POST-ом с antiforgery-токеном (см. <see cref="IOAuthConsentService"/>).
+/// Иначе достаточно было бы заманить залогиненного пользователя по ссылке, чтобы открыть
+/// доступ к его проектам без его ведома — клиенты в CIMD регистрируются самозаписью,
+/// так что «свой» client_id доступен кому угодно.
+/// </para>
+/// <para>
+/// Через query приходит только отказ: подделать его никому не выгодно — в худшем случае
+/// одна попытка авторизации закончится <c>access_denied</c>.
+/// </para>
 /// </summary>
 public static class OAuthConsent
 {
+    /// <summary>Отказ, который страница согласия передаёт в <c>connect/authorize</c> через query.</summary>
     public const string ConsentParameter = "consent";
-    public const string ProjectsParameter = "projects";
-    public const string Granted = "granted";
     public const string Denied = "denied";
+
+    /// <summary>Имя поля формы с выбранными проектами — по одному на каждый отмеченный чекбокс.</summary>
+    public const string ProjectsParameter = "projects";
+
+    /// <summary>Имя поля формы с решением пользователя и его значение «разрешить».</summary>
+    public const string DecisionField = "decision";
+    public const string Granted = "granted";
 
     /// <summary>
     /// Claim type carrying the project ids the user granted access to. Access-token-only.
@@ -40,4 +58,17 @@ public static class OAuthConsent
     /// </summary>
     public static IReadOnlyList<int> ParseProjectIds(StringValues values)
         => [.. values.SelectMany(value => ParseProjectIds(value))];
+
+    internal static void StoreGrantedProjects(Dictionary<string, JsonElement> properties, IReadOnlyCollection<int> projectIds)
+    {
+        if (projectIds.Count > 0)
+        {
+            properties[ProjectsClaimType] = JsonSerializer.SerializeToElement(projectIds);
+        }
+    }
+
+    internal static int[] ReadGrantedProjects(ImmutableDictionary<string, JsonElement> properties)
+        => properties.TryGetValue(ProjectsClaimType, out var element)
+            ? element.Deserialize<int[]>() ?? []
+            : [];
 }

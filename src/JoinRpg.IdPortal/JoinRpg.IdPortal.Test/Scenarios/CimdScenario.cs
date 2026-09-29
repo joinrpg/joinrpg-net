@@ -102,8 +102,7 @@ public class CimdScenario(IdPortalApplicationFactory factory)
 
         (await CountApplicationRowsAsync(clientId)).ShouldBe(0);
 
-        var response = await client.GetAsync(BuildAuthorizeUrl(clientId)
-            + $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=42");
+        var response = await client.AuthorizeWithConsentAsync(BuildAuthorizeUrl(clientId), projectIds: [factory.TestProjectId]);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Found);
         response.Headers.Location!.ToString().ShouldStartWith(RedirectUri, Case.Insensitive);
@@ -121,8 +120,7 @@ public class CimdScenario(IdPortalApplicationFactory factory)
 
         for (var i = 0; i < 2; i++)
         {
-            var response = await client.GetAsync(BuildAuthorizeUrl(clientId)
-                + $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=42");
+            var response = await client.AuthorizeWithConsentAsync(BuildAuthorizeUrl(clientId), projectIds: [factory.TestProjectId]);
             response.StatusCode.ShouldBe(HttpStatusCode.Found);
         }
 
@@ -170,8 +168,7 @@ public class CimdScenario(IdPortalApplicationFactory factory)
         var client = await LoginAsync();
 
         // Своя строка в БД появляется после согласия — и она не должна «замораживать» документ.
-        var consent = await client.GetAsync(BuildAuthorizeUrl(clientId)
-            + $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=42");
+        var consent = await client.AuthorizeWithConsentAsync(BuildAuthorizeUrl(clientId), projectIds: [factory.TestProjectId]);
         consent.StatusCode.ShouldBe(HttpStatusCode.Found);
         (await CountApplicationRowsAsync(clientId)).ShouldBe(1);
 
@@ -192,8 +189,7 @@ public class CimdScenario(IdPortalApplicationFactory factory)
         var clientId = PublishDocument();
         var client = await LoginAsync();
 
-        var consent = await client.GetAsync(BuildAuthorizeUrl(clientId)
-            + $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=42");
+        var consent = await client.AuthorizeWithConsentAsync(BuildAuthorizeUrl(clientId), projectIds: [factory.TestProjectId]);
         consent.StatusCode.ShouldBe(HttpStatusCode.Found);
         (await CountApplicationRowsAsync(clientId)).ShouldBe(1);
 

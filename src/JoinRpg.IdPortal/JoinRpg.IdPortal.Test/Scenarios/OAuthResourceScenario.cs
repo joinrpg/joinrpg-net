@@ -28,7 +28,7 @@ public class OAuthResourceScenario(IdPortalApplicationFactory factory)
         var clientId = await CreateMcpClientAsync();
         var client = await LoginAsync();
 
-        var response = await client.GetAsync(BuildAuthorizeUrl(clientId, resource: McpResource));
+        var response = await client.AuthorizeWithConsentAsync(BuildAuthorizeUrl(clientId, resource: McpResource));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Found);
         var location = response.Headers.Location!.ToString();
@@ -59,7 +59,7 @@ public class OAuthResourceScenario(IdPortalApplicationFactory factory)
         var client = await LoginAsync();
         var (verifier, challenge) = CreatePkcePair();
 
-        var authorize = await client.GetAsync(
+        var authorize = await client.AuthorizeWithConsentAsync(
             BuildAuthorizeUrl(clientId, resource: McpResource, challenge: challenge));
         authorize.StatusCode.ShouldBe(HttpStatusCode.Found);
         var code = System.Web.HttpUtility
@@ -130,8 +130,7 @@ public class OAuthResourceScenario(IdPortalApplicationFactory factory)
         $"&redirect_uri={Uri.EscapeDataString(RedirectUri)}" +
         $"&resource={Uri.EscapeDataString(resource)}" +
         $"&code_challenge={Uri.EscapeDataString(challenge ?? CreatePkcePair().Challenge)}" +
-        "&code_challenge_method=S256" +
-        $"&{OAuthConsent.ConsentParameter}={OAuthConsent.Granted}&{OAuthConsent.ProjectsParameter}=42";
+        "&code_challenge_method=S256";
 
     private static (string Verifier, string Challenge) CreatePkcePair()
     {

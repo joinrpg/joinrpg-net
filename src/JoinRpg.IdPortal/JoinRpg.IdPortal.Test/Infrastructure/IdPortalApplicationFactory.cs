@@ -48,6 +48,10 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
     public const string TestResetUserPassword = "ResetPassword123!";
     public const string TestUnconfirmedUserEmail = "unconfirmed@joinrpg.ru";
 
+    /// <summary>Проект, в котором тестовый пользователь — мастер: без него на экране согласия не из чего выбирать.</summary>
+    public const string TestProjectName = "Проект тестового мастера";
+    public int TestProjectId { get; private set; }
+
     async Task IAsyncLifetime.InitializeAsync()
     {
         Log("Starting containers...");
@@ -103,6 +107,20 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
         dbAdmin.Auth.IsAdmin = true;
         myDb.SaveChanges();
         Log("Test admin promoted.");
+
+        Log("Creating test project...");
+        var project = new JoinRpg.DataModel.Project
+        {
+            ProjectName = TestProjectName,
+            CreatedDate = DateTime.UtcNow,
+            Active = true,
+            Details = new JoinRpg.DataModel.ProjectDetails { FieldsOrdering = "" },
+            ProjectAcls = [new JoinRpg.DataModel.ProjectAcl { UserId = dbAdmin.UserId, IsOwner = true }],
+        };
+        _ = myDb.Set<JoinRpg.DataModel.Project>().Add(project);
+        myDb.SaveChanges();
+        TestProjectId = project.ProjectId;
+        Log($"Test project created (id {TestProjectId}).");
 
         Log("Registering OAuth client...");
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
