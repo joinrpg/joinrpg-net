@@ -1,9 +1,7 @@
-using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -16,8 +14,6 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/roles/{characterGroupId}/[action]")]
 public class GameGroupsController(
     ICharacterGroupService characterGroupService,
-    IUriService uriService,
-    IUriLocator<UserLinkViewModel> userLinkLocator,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
     ICharacterGroupRepository charGroupRepository
