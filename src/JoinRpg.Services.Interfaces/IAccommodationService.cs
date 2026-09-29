@@ -26,47 +26,38 @@ public interface IAccommodationService
     Task DeleteRoom(AccommodationRoomIdentification roomId);
 
     /// <summary>
-    /// Move inhabitants to room
+    /// Селит группы жильцов в комнату. Группа обязана принадлежать тому же пулу, что и комната.
     /// </summary>
-    Task OccupyRoom(OccupyRequest request);
+    /// <param name="roomId">Комната, в которую селим.</param>
+    /// <param name="groupIds">Группы жильцов (заявки на проживание), которые въезжают.</param>
+    Task OccupyRoom(
+        AccommodationRoomIdentification roomId,
+        IReadOnlyCollection<AccommodationRequestIdentification> groupIds);
 
     /// <summary>
-    /// Move specific inhabitant coupling (aka AgreementRequest) from romm
+    /// Выселяет одну группу жильцов из её комнаты.
     /// </summary>
-    Task UnOccupyRoom(UnOccupyRequest request);
+    Task UnOccupyGroup(AccommodationRequestIdentification groupId);
 
     /// <summary>
-    /// Remove all inhabitants from room
+    /// Выселяет из комнаты всех её жильцов.
     /// </summary>
-    Task UnOccupyRoomAll(UnOccupyAllRequest request);
+    Task UnOccupyRoom(AccommodationRoomIdentification roomId);
 
     /// <summary>
-    /// Removes all inhabitants from all rooms of the specified type
+    /// Выселить все группы данного типа проживания. Сегодня это всё население пула; после
+    /// разделения типа и категории соседи из братских типов останутся в комнатах.
     /// </summary>
-    Task UnOccupyRoomType(int projectId, int roomTypeId);
+    /// <remarks>Атомарна: одна загрузка плана, один проход, одно сохранение (ADR018, §1).</remarks>
+    Task UnOccupyRoomType(AccommodationTypeIdentification typeId);
 
     /// <summary>
-    /// Removes all inhabitants from all rooms of all types
+    /// Выселяет всех жильцов всех комнат проекта.
     /// </summary>
-    Task UnOccupyAll(int projectId);
-}
-
-public class OccupyRequest
-{
-    public int ProjectId { get; set; }
-    public int RoomId { get; set; }
-    public required IReadOnlyCollection<int> AccommodationRequestIds { get; set; }
-}
-
-public class UnOccupyRequest
-{
-    public int ProjectId { get; set; }
-    public int AccommodationRequestId { get; set; }
-}
-
-public class UnOccupyAllRequest
-{
-    public int ProjectId { get; set; }
-    public int RoomId { get; set; }
+    /// <remarks>
+    /// Остаётся циклом по категориям — по транзакции на каждую (ADR018, §1). Частичное выполнение
+    /// не страшно: выселение идемпотентно, повторный запуск дочищает остаток.
+    /// </remarks>
+    Task UnOccupyAllRooms(ProjectIdentification projectId);
 }
 

@@ -53,14 +53,6 @@ public class JoinFieldScheduleShouldBeUniqueException : JoinRpgProjectEntityExce
     }
 }
 
-public class JoinRpgInsufficientRoomSpaceException : JoinRpgProjectEntityException
-{
-    public JoinRpgInsufficientRoomSpaceException(ProjectAccommodation entity) : base(entity, "There is no space in room")
-    {
-    }
-}
-
-
 public class CannotPerformOperationInFuture : JoinRpgBaseException
 {
     public CannotPerformOperationInFuture() : base("Cannot perform operation in future")
