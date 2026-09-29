@@ -99,7 +99,7 @@ public class ClaimBalanceOverCharacterInfoTest
         claim.CurrentFee = currentFee;
         claim.PreferentialFeeUser = preferential;
         claim.FinanceOperations = [];
-        claim.JsonData = fieldsJson;
+        claim.JsonData = fieldsJson!;
         return claim;
     }
 
