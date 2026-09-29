@@ -1,17 +1,9 @@
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl.Test.Projects;
-
-/// <summary>
-/// Write-репозиторий поверх <see cref="MockedProject"/>: отдаёт согласованную пару
-/// <see cref="Project"/>/<see cref="ProjectInfo"/> и пересобирает снимок через тот же
-/// <c>CreateInfoFromProject</c>, что и боевой код.
-/// </summary>
 
 /// <summary>Записывает вызовы <see cref="IClaimService.SetResponsible"/> вместо реального изменения заявки.</summary>
 internal sealed class FakeClaimService : IClaimService
@@ -44,5 +36,3 @@ internal sealed class FakeClaimService : IClaimService
     public Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed) => throw new NotSupportedException();
     public Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId) => throw new NotSupportedException();
 }
-
-/// <summary>Записывает вызовы <see cref="IGameSubscribeService.RemoveAllSubscriptions"/>.</summary>
