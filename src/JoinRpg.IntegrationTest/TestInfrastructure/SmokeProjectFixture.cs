@@ -235,9 +235,53 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                         new Dictionary<int, string?> { [nameFieldId] = $"Смоук-персонаж {i}" }))));
             }
 
+            // Скрытая группа и скрытый персонаж: проверка видимости
+            // (WorldObjectExtensions.IsVisible) выглядит как
+            // IsPublic || Project.Details.PublishPlot || HasMasterAccess(...), и на публичном
+            // объекте останавливается на первом операнде, не касаясь проекта. Пока в сиде всё
+            // было публичным, страницы со списками объектов мерились в ноль, хотя на проде
+            // догружали Projects/ProjectDetails/ProjectAcls на каждую строку (#4989, #4991).
+            var hiddenGroupId = await sp.GetRequiredService<ICharacterGroupService>().AddCharacterGroup(
+                projectId,
+                "Скрытая смоук-группа",
+                isPublic: false,
+                parentCharacterGroupIds: [groupId],
+                description: "Непубличная группа для смоука");
+            _ = await characterService.AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [hiddenGroupId],
+                new CharacterTypeInfo(
+                    CharacterType.Player,
+                    IsHot: false,
+                    SlotLimit: null,
+                    SlotName: null,
+                    CharacterVisibility.Private),
+                FieldValues: new FieldLayerContainer(
+                    projectInfo,
+                    new Dictionary<int, string?> { [nameFieldId] = "Скрытый смоук-персонаж" })));
+
             var (dropdownFieldId, dropdownVariantId) = await SeedDropdownFieldAsync(sp, projectId);
-            var plot = await TestPlotHelpers.SeedPlotFolderAsync(sp, projectId, elementCount: 2);
+
+            // Сюжет наполняется «в ширину»: три вводных, у каждой в таргетах все персонажи сида и
+            // две группы. На папке из двух вводных с одним таргетом N+1 по
+            // PlotElementCharacters/PlotElementCharacterGroups не отличить от одиночного запроса,
+            // поэтому страницы сюжетов и мерились в ноль при живом долге на проде (#4963, #4988).
+            var plot = await TestPlotHelpers.SeedPlotFolderAsync(
+                sp,
+                projectId,
+                elementCount: 3,
+                extraTargetChars: characters,
+                extraTargetGroups: [groupId]);
             _ = await TestPlotHelpers.SeedHandoutAsync(sp, plot.PlotFolderId, characters[0]);
+
+            // Вторая папка: списки сюжетов (plots, plots/FlatList) на одной строке тоже не
+            // показывают N+1 по папкам (#4965).
+            _ = await TestPlotHelpers.SeedPlotFolderAsync(
+                sp,
+                projectId,
+                elementCount: 2,
+                extraTargetChars: characters,
+                extraTargetGroups: [groupId]);
 
             var forumThreadId = await sp.GetRequiredService<IForumService>().CreateThread(
                 groupId,

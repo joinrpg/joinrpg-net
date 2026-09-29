@@ -26,10 +26,18 @@ public static class TestPlotHelpers
     /// <param name="serviceProvider">Scoped service provider с включённой impersonation мастера.</param>
     /// <param name="projectId">Проект, в котором создаётся сюжет.</param>
     /// <param name="elementCount">Сколько вводных создать в папке.</param>
+    /// <param name="extraTargetChars">
+    /// Дополнительные персонажи в таргетах каждой вводной — поверх созданного тут таргетперсонажа.
+    /// </param>
+    /// <param name="extraTargetGroups">
+    /// Дополнительные группы в таргетах каждой вводной — поверх созданной тут таргетгруппы.
+    /// </param>
     public static async Task<PlotSeedResult> SeedPlotFolderAsync(
         IServiceProvider serviceProvider,
         ProjectIdentification projectId,
-        int elementCount)
+        int elementCount,
+        IReadOnlyCollection<CharacterIdentification>? extraTargetChars = null,
+        IReadOnlyCollection<CharacterGroupIdentification>? extraTargetGroups = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(elementCount);
 
@@ -77,6 +85,11 @@ public static class TestPlotHelpers
         var elementIds = new List<PlotElementIdentification>(elementCount);
         var elementContents = new List<string>(elementCount);
 
+        // Таргеты одни и те же у всех вводных: именно на «много вводных × много таргетов»
+        // разворачивается N+1 по PlotElementCharacters/PlotElementCharacterGroups (#4963).
+        CharacterIdentification[] targetChars = [targetCharacterId, .. extraTargetChars ?? []];
+        CharacterGroupIdentification[] targetGroups = [targetGroupId, .. extraTargetGroups ?? []];
+
         for (var i = 1; i <= elementCount; i++)
         {
             var content = $"Уникальный текст вводной {i} {suffix}";
@@ -86,8 +99,8 @@ public static class TestPlotHelpers
                 plotFolderId,
                 content: $"Черновик вводной {i} {suffix}",
                 todoField: "",
-                targetGroups: [targetGroupId],
-                targetChars: [targetCharacterId],
+                targetGroups: targetGroups,
+                targetChars: targetChars,
                 elementType: PlotElementType.RegularPlot,
                 isMasterOnly: false);
 
