@@ -18,7 +18,7 @@ internal abstract record CharacterOperationContext(
     /// <summary>
     /// Тронула ли операция метаданные проекта. Сегодня единственный такой канал — отметка
     /// <see cref="ProjectField.WasEverUsed"/> при первом заполнении поля; её ставит
-    /// <see cref="CharacterFields.FieldSaveHelper"/>, а флаг поднимает <c>SaveFields</c>. Если флаг
+    /// <see cref="JoinRpg.Domain.CharacterFields.FieldSaveHelper"/>, а флаг поднимает <c>SaveFields</c>. Если флаг
     /// поднят, сервис после сохранения пересоберёт <see cref="ProjectInfo"/> и обновит кэш — иначе
     /// следующая страница в том же запросе покажет поле неиспользованным.
     /// </summary>
@@ -76,7 +76,7 @@ internal abstract record CharacterOperationContext(
 
     /// <summary>
     /// То же, но через заявку: персонаж берётся из неё, а выбор стратегии в
-    /// <see cref="CharacterFields.FieldSaveHelper"/> зависит от того, утверждена ли заявка.
+    /// <see cref="JoinRpg.Domain.CharacterFields.FieldSaveHelper"/> зависит от того, утверждена ли заявка.
     /// </summary>
     /// <param name="claim">Заявка, через которую сохраняются поля.</param>
     /// <param name="fieldsToSet">
@@ -123,7 +123,7 @@ internal abstract record CharacterMutationContext(
     /// <summary>Окончательно удаляет сущность из того же <c>DbContext</c>.</summary>
     public void RemoveEntity(object entity) => Scope.Remove(entity);
 
-    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore"/>
+    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Character, FieldLayerContainer, IReadOnlyCollection{CharacterGroupIdentification})"/>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(
         FieldLayerContainer fieldsToSet,
         IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
@@ -156,7 +156,7 @@ internal abstract record CharacterCreationContext(
     FieldSaveHelper FieldSaveHelper)
     : CharacterOperationContext(ProjectInfo, Now, CurrentUser, FieldSaveHelper)
 {
-    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore"/>
+    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Character, FieldLayerContainer, IReadOnlyCollection{CharacterGroupIdentification})"/>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(
         Character character,
         FieldLayerContainer fieldsToSet,

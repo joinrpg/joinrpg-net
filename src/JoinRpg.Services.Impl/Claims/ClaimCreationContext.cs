@@ -99,7 +99,7 @@ internal abstract record ClaimCreationContext(
         => Character.GetResponsibleMaster();
 #pragma warning restore CS0618
 
-    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore"/>
+    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Claim, FieldLayerContainer)"/>
     /// <param name="claim">Заявка, через которую сохраняются поля.</param>
     /// <param name="fieldsToSet">Значения полей, заполненные при подаче.</param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(
