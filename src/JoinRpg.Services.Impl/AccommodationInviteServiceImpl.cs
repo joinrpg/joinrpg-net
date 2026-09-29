@@ -60,7 +60,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             .GetDbSet<Claim>()
             .Where(claim => claim.ClaimId == receiverClaimId.ClaimId)
             .Select(claim => claim.AccommodationRequest)
-            .Include(request => request.Subjects)
+            .Include(request => request!.Subjects)
             .FirstOrDefaultAsync().ConfigureAwait(false);
 
         var senderAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
