@@ -2,7 +2,9 @@
 @inject IAvatarLoader avatarProvider
 @inject IAvatarService avatarService
 
-@rendermode InteractiveServer
+@* Никакого интерактива здесь нет: компонент грузит URI и рисует картинку.
+   Раньше стоял @@rendermode InteractiveServer — из-за этого circuit поднимался
+   на каждой авторизованной странице, потому что аватарка живёт в MainLayout. *@
 
 @if (AvatarUri is not null)
 {
