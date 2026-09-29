@@ -56,7 +56,6 @@
 
 @code {
     private EditContext? editContext;
-    private bool saving;
     private bool success;
     private bool formInvalid = true;
     private ValidationMessageStore? messageStore;
@@ -92,15 +91,12 @@
     {
         try
         {
-            saving = true;
             await settingsClient.SaveContactSettings(Model);
-            saving = false;
             success = true;
         }
         catch
         {
             messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
-            saving = false;
         }
     }
 
