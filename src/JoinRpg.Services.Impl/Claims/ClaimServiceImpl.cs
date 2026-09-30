@@ -23,7 +23,8 @@ internal class ClaimServiceImpl(
     IProblemValidator<Claim> claimValidator,
     ILogger<CharacterServiceImpl> logger,
     ICharacterPropsService characterPropsService,
-    IImpersonateAccessor impersonateAccessor
+    IImpersonateAccessor impersonateAccessor,
+    UserFieldValidator userFieldValidator
     ) : IClaimService
 {
     // Репозитории берутся из UnitOfWork, а не из DI: MyDbContext транзиентен, и DI-экземпляр
@@ -194,6 +195,10 @@ internal class ClaimServiceImpl(
         ArgumentNullException.ThrowIfNull(claimText);
 
         logger.LogDebug("About to add claim to character {characterId}", characterId);
+
+        // Существование упомянутых пользователей проверяется до сохранения: FieldSaveHelper
+        // синхронный и репозиториев не видит (ADR017 §7).
+        await userFieldValidator.ValidateUserFields(fields);
 
         var claim = await characterPropsService.CreateClaim(
             characterId,
@@ -1019,10 +1024,13 @@ internal class ClaimServiceImpl(
                     .Decorate(notification => notification with { OldResponsibleMaster = oldResponsibleMaster });
             });
 
-    public Task SaveFieldsFromClaim(
+    public async Task SaveFieldsFromClaim(
         ClaimIdentification claimId,
         FieldLayerContainer fieldsToSet)
-        => characterPropsService.ChangeClaim(
+    {
+        await userFieldValidator.ValidateUserFields(fieldsToSet);
+
+        await characterPropsService.ChangeClaim(
             claimId,
             ClaimAccessRequirement.MasterOrPlayer,
             ProjectActiveRequirement.MustBeActive,
@@ -1038,6 +1046,7 @@ internal class ClaimServiceImpl(
 
                 // TODO: восстановить отправку изменений полей, см. ADR014
             });
+    }
 
     public Task OnHoldByMaster(ClaimIdentification claimId, string commentText)
         => characterPropsService.ChangeClaim(
@@ -1191,6 +1200,8 @@ internal class ClaimServiceImpl(
         ArgumentNullException.ThrowIfNull(commentText);
 
         logger.LogDebug("About to add claim from master to character {characterId} for user {userId}", characterId, userId);
+
+        await userFieldValidator.ValidateUserFields(fields);
 
         // Правила подачи проверяет сам props-сервис: ClaimOperation.AddByMaster пропускает причины
         // с MasterCanOverride — закрытый приём заявок и незаполненные контакты игрока мастера не

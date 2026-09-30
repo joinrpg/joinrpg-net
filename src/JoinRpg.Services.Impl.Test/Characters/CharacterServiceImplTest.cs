@@ -16,7 +16,8 @@ namespace JoinRpg.Services.Impl.Test.Characters;
 /// </summary>
 public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
 {
-    private CharacterServiceImpl CreateService(int? userId = null) => new(CreatePropsService(userId));
+    private CharacterServiceImpl CreateService(int? userId = null)
+        => new(CreatePropsService(userId), CreateUserFieldValidator());
 
     private void ArchiveProject()
     {

@@ -6,10 +6,16 @@ using JoinRpg.Services.Interfaces.Characters;
 
 namespace JoinRpg.Services.Impl;
 
-internal class CharacterServiceImpl(ICharacterPropsService characterPropsService) : ICharacterService
+internal class CharacterServiceImpl(
+    ICharacterPropsService characterPropsService,
+    UserFieldValidator userFieldValidator) : ICharacterService
 {
     public async Task<CharacterIdentification> AddCharacter(AddCharacterRequest addCharacterRequest)
     {
+        // Существование упомянутых пользователей проверяется до сохранения: FieldSaveHelper
+        // синхронный и репозиториев не видит (ADR017 §7).
+        await userFieldValidator.ValidateUserFields(addCharacterRequest.FieldValues);
+
         var character = await characterPropsService.CreateCharacter(
             addCharacterRequest.ProjectId,
             Permission.CanEditRoles,
@@ -40,8 +46,11 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
         return new CharacterIdentification(character.ProjectId, character.CharacterId);
     }
 
-    public Task EditCharacter(EditCharacterRequest editCharacterRequest)
-        => characterPropsService.ChangeCharacter(
+    public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
+    {
+        await userFieldValidator.ValidateUserFields(editCharacterRequest.FieldValues);
+
+        await characterPropsService.ChangeCharacter(
             editCharacterRequest.Id,
             Permission.CanEditRoles,
             ProjectActiveRequirement.MustBeActive,
@@ -62,6 +71,7 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
 
                 // TODO: восстановить отправку письма об изменении полей, см. ADR014.
             });
+    }
 
     public Task DeleteCharacter(DeleteCharacterRequest deleteCharacterRequest)
         => characterPropsService.ChangeCharacter(
@@ -90,8 +100,11 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
                 ctx.Character.IsActive = false;
             });
 
-    public Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet)
-        => characterPropsService.ChangeCharacter(
+    public async Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet)
+    {
+        await userFieldValidator.ValidateUserFields(fieldsToSet);
+
+        await characterPropsService.ChangeCharacter(
             characterId,
             Permission.CanEditRoles,
             ProjectActiveRequirement.MustBeActive,
@@ -102,4 +115,5 @@ internal class CharacterServiceImpl(ICharacterPropsService characterPropsService
 
                 // TODO: восстановить отправку письма об изменении полей, см. ADR014.
             });
+    }
 }

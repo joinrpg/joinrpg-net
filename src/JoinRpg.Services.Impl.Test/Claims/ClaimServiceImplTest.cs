@@ -28,7 +28,8 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             new FakeProblemValidator<Claim>(),
             NullLogger<CharacterServiceImpl>.Instance,
             CreatePropsService(currentUserId),
-            impersonateAccessor);
+            impersonateAccessor,
+            CreateUserFieldValidator());
     }
 
     private Claim CreateClaim(ClaimStatus status, string characterName = "Вася")

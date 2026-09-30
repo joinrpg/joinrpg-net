@@ -67,3 +67,17 @@ public class FieldUserValueInvalidException(ProjectFieldIdentification fieldId, 
     public ProjectFieldIdentification FieldId { get; } = fieldId;
     public string Value { get; } = value;
 }
+
+/// <summary>
+/// Поле-ссылка на пользователя (ADR017 §7) ссылается на пользователя, которого нет на сайте.
+/// </summary>
+/// <remarks>
+/// Проверка существования делается до <c>FieldSaveHelper</c> (он синхронный и не видит
+/// репозиториев) — в сервисах, принимающих слой значений.
+/// </remarks>
+public class FieldUserNotFoundException(ProjectFieldIdentification fieldId, string fieldName, UserIdentification userId)
+    : JoinRpgBaseException($"Поле «{fieldName}»: пользователь с идентификатором {userId.Value} не найден")
+{
+    public ProjectFieldIdentification FieldId { get; } = fieldId;
+    public UserIdentification UserId { get; } = userId;
+}

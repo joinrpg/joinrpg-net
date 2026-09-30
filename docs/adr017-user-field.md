@@ -2,7 +2,7 @@
 
 ## Статус
 
-Принято, реализуется. Issues: [#4509](https://github.com/joinrpg/joinrpg-net/issues/4509)
+Принято, реализовано для одиночной ссылки (#4509); мультивыбор (#4511) — отдельно. Issues: [#4509](https://github.com/joinrpg/joinrpg-net/issues/4509)
 (одиночная ссылка), [#4511](https://github.com/joinrpg/joinrpg-net/issues/4511) (мультивыбор).
 Предпосылка [#4510](https://github.com/joinrpg/joinrpg-net/issues/4510) (режим `Multiple`
 у `JoinUserLinkEditor`) уже закрыта.
@@ -24,12 +24,23 @@
   персонажа, заявка, подача заявки и печать. **Экспорт (`CustomExporter`) и x-api по-прежнему
   отдают сырые id** — они ходят мимо `FieldValueViewModel`, напрямую в `DisplayString`.
   Удалённый пользователь показывается как «пользователь удалён» (новый `ViewMode.Deleted`).
-- ❌ **§5 Редактор** — не сделано. Пока обычный `<input type="text">` с id; остров
-  `JoinUserLinkEditor` с резолвом ссылки — следующим PR.
-- ❌ **§7 Валидация существования пользователя** — не сделано: сейчас проверяется только формат.
-  Идёт вместе с редактором.
+- ✅ **§5 Редактор** — `JoinUserLinkEditor` получил `Name` (скрытый инпут, значение уезжает
+  обычным POST'ом MVC-формы), `ProjectId` (nullable: без него компонент работает по-старому —
+  так сохранён потребитель `InvitePlayer`) и `InitialUsers` (имя сохранённого значения видно
+  сразу, без round-trip). Резолв ссылки — `POST /webapi/user-link/Resolve`, `[Authorize]`
+  по §3 и §6 — резолв нужен и игроку, раз поле заполняет он; анониму закрыт. В ответе только
+  id и отображаемое имя.
+  Известное ограничение: `data-val-required` на остров не перенесён — jQuery-валидация
+  игнорирует скрытые инпуты (`ignore: ":hidden"`), так что обязательность user-поля ловит
+  только сервер.
+- ✅ **§7 Валидация существования пользователя** — `UserFieldValidator`: один запрос на слой,
+  при пустом наборе id в базу не ходит, вызывается из шести точек входа `CharacterServiceImpl`
+  и `ClaimServiceImpl` до загрузки агрегата, так что при ошибке ничего не сохраняется.
 - ✅ **§9 Тесты** — `UserLinkFieldTest` (домен), `CustomFieldsViewModelTest` (резолв, удалённый
-  пользователь, мусор), `FieldSetupServiceTest`. Тест инварианта приватности из §9 — вместе с §7.
+  пользователь, мусор), `FieldSetupServiceTest`, `UserFieldValidatorTest`,
+  `UserLinkResolveControllerTest`. Инвариант приватности — `UserFieldPrivacyTest`: сверяет весь
+  публичный состав `UserLinkViewModel`, поэтому попытка протащить в показ user-поля контакты
+  уронит тест.
 
 ## Контекст
 
