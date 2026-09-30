@@ -1,5 +1,4 @@
 using System.Net;
-using HtmlAgilityPack;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.IntegrationTest.TestInfrastructure;
@@ -118,42 +117,16 @@ public class PlotMutationPagesScenario(JoinApplicationFactory factory) : IClassF
         string postUrl,
         params string[][] fields)
     {
-        var formResponse = await client.GetAsync(formUrl);
-        formResponse.StatusCode.ShouldBe(HttpStatusCode.OK, $"Форма {formUrl} не открылась");
+        var token = await client.GetAntiforgeryTokenAsync(formUrl);
 
-        var form = await formResponse.AsHtmlDocument();
-        var token = form.DocumentNode
-            .SelectSingleNode("//input[@name='__RequestVerificationToken']")?
-            .GetAttributeValue("value", "")
-            ?? throw new InvalidOperationException($"На странице {formUrl} нет antiforgery-токена");
-
-        var content = fields
-            .Select(field => new KeyValuePair<string?, string?>(field[0], field[1]))
-            .Append(new KeyValuePair<string?, string?>("__RequestVerificationToken", token));
-
-        var response = await client.PostAsync(postUrl, new FormUrlEncodedContent(content));
+        var response = await client.PostFormAsync(
+            postUrl,
+            token,
+            [.. fields.Select(field => (field[0], field[1]))]);
 
         response.StatusCode.ShouldBe(
             HttpStatusCode.Found,
-            $"POST {postUrl} не сохранил изменения: {await DescribeErrorsAsync(response)}");
-    }
-
-    /// <summary>Достаёт из вернувшейся формы текст ошибок — иначе падение выглядит как «ожидался 302».</summary>
-    private static async Task<string> DescribeErrorsAsync(HttpResponseMessage response)
-    {
-        if (response.StatusCode != HttpStatusCode.OK)
-        {
-            return $"ответ {(int)response.StatusCode}";
-        }
-
-        HtmlDocument document = await response.AsHtmlDocument();
-        var errors = document.DocumentNode
-            .SelectNodes("//*[contains(@class, 'validation-summary-errors')]|//*[contains(@class, 'field-validation-error')]")
-            ?.Select(node => WebUtility.HtmlDecode(node.InnerText).Trim())
-            .Where(text => text.Length > 0)
-            .ToList() ?? [];
-
-        return errors.Count > 0 ? string.Join("; ", errors) : "форма вернулась без явных ошибок валидации";
+            $"POST {postUrl} не сохранил изменения: {await response.DescribeValidationErrorsAsync()}");
     }
 
     private async Task<(UserIdentification MasterId, string Email)> CreateMasterAsync()
