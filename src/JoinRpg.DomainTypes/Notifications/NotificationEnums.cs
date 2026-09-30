@@ -19,7 +19,12 @@ public enum NotificationClass
     /// Уведомления, отсылаемые мастерам проекта по какой-то причине
     /// </summary>
     MasterProject,
-    AdminMessage
+    AdminMessage,
+    /// <summary>
+    /// Уведомления о проживании: изменение состава жителей комнаты, приглашения к совместному
+    /// проживанию
+    /// </summary>
+    Accommodation
 }
 
 public enum SubscriptionReason

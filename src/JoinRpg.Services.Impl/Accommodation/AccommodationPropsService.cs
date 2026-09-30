@@ -3,7 +3,6 @@ using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Services.Impl.Projects;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Accommodation;
 
@@ -19,7 +18,7 @@ internal class AccommodationPropsService(
     IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository metadataRepository,
-    IEmailService emailService,
+    IAccommodationNotificationService accommodationNotificationService,
     ILogger<AccommodationPropsService> logger)
     : IAccommodationPropsService
 {
@@ -152,11 +151,11 @@ internal class AccommodationPropsService(
 
             await unitOfWork.SaveChangesAsync();
 
-            // Письма легаси-канала уходят строго ПОСЛЕ успешного сохранения (ADR018, §11):
+            // Уведомления уходят строго ПОСЛЕ успешного сохранения (ADR018, §11):
             // до него операция ещё может упасть, и рассылка оказалась бы ложной.
-            foreach (var send in ctx.LegacyEmails)
+            foreach (var notification in ctx.RoomNotifications)
             {
-                await send(emailService);
+                await accommodationNotificationService.SendNotification(notification);
             }
 
             logger.LogInformation(

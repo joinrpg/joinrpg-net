@@ -4,6 +4,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Notification;
@@ -17,6 +18,7 @@ internal class CharacterPropsService(
     FieldSaveHelper fieldSaveHelper,
     CommentHelper commentHelper,
     IClaimNotificationService claimNotificationService,
+    IAccommodationNotificationService accommodationNotificationService,
     IEmailService emailService,
     ILogger<CharacterPropsService> logger)
     : ICharacterPropsService
@@ -194,7 +196,14 @@ internal class CharacterPropsService(
                             pending.Notification.WithCommentId(pending.Comment.CommentId));
                     }
 
-                    // Легаси-канал — после уведомлений, как это было до миграции.
+                    // Уведомления о проживании — после уведомлений по комментариям, в том же
+                    // порядке, в каком до миграции уходил легаси-канал.
+                    foreach (var notification in ctx.RoomNotifications)
+                    {
+                        await accommodationNotificationService.SendNotification(notification);
+                    }
+
+                    // Остаток легаси-канала — письма о приглашениях к проживанию.
                     foreach (var send in ctx.LegacyEmails)
                     {
                         await send(emailService);

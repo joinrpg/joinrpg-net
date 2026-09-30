@@ -5,6 +5,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -104,11 +105,11 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     #region DeclineByMaster
 
     /// <summary>
-    /// Заводит заявке поселение в комнате — тогда отказ порождает письмо легаси-канала.
+    /// Заводит заявкам общее поселение в комнате — тогда отказ порождает уведомление о выезде.
     /// </summary>
-    private AccommodationRequest CreateAccommodation(Claim claim)
+    private AccommodationRequest CreateAccommodation(params Claim[] claims)
     {
-        var request = mock.CreateAccommodationRequest(mock.CreateAccommodationType(), claim);
+        var request = mock.CreateAccommodationRequest(mock.CreateAccommodationType(), claims);
         _ = mock.CreateRoom(request);
         return request;
     }
@@ -223,11 +224,11 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     /// <summary>
-    /// Письмо о выезде из комнаты уходит вторым каналом и строго ПОСЛЕ уведомления — так было до
+    /// Уведомление о выезде из комнаты уходит строго ПОСЛЕ уведомления по комментарию — так было до
     /// миграции, и порядок остаётся частью контракта (ADR014, §3).
     /// </summary>
     [Fact]
-    public async Task DeclineByMaster_WithAccommodation_SendsLeaveRoomEmailAfterNotification()
+    public async Task DeclineByMaster_WithAccommodation_SendsLeaveRoomNotificationAfterComment()
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
         var accommodationRequest = CreateAccommodation(claim);
@@ -236,12 +237,39 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
 
         accommodationRequest.Subjects.ShouldBeEmpty();
-        SentEmails.ShouldHaveSingleItem().ShouldBeOfType<LeaveRoomEmail>()
-            .Initiator.ShouldBe(mock.Master);
+        var notification = SentRoomNotifications.ShouldHaveSingleItem();
+        notification.Kind.ShouldBe(RoomOccupancyChangeKind.ClaimDeclined);
+        notification.Initiator.UserId.ShouldBe(mock.Master.GetId());
+        notification.Changed.ShouldBe([claim.GetId()]);
+        // Выезжающий не должен попасть ещё и в соседей: Remaining считается по составу комнаты
+        // ДО изъятия заявки из группы.
+        notification.Remaining.ShouldBeEmpty();
 
         SentInOrder.Count.ShouldBe(2);
         _ = SentInOrder[0].ShouldBeOfType<ClaimSimpleChangedNotification>();
-        _ = SentInOrder[1].ShouldBeOfType<LeaveRoomEmail>();
+        _ = SentInOrder[1].ShouldBeOfType<RoomOccupancyNotification>();
+    }
+
+    /// <summary>
+    /// Сосед по комнате обязан попасть в <c>Remaining</c>, а выезжающий — нет. Считается это
+    /// строго до изъятия заявки из группы поселения, поэтому вычитание выезжающего явное.
+    /// </summary>
+    [Fact]
+    public async Task DeclineByMaster_WithNeighbour_PutsNeighbourIntoRemaining()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var neighbourClaim = CreateClaim(ClaimStatus.AddedByUser, "Сосед");
+        var request = CreateAccommodation(claim, neighbourClaim);
+
+        await CreateService().DeclineByMaster(
+            claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
+
+        // Группа не опустела — сосед в ней остался, значит удалять её нечего.
+        request.Subjects.ShouldBe([neighbourClaim]);
+
+        var notification = SentRoomNotifications.ShouldHaveSingleItem();
+        notification.Changed.ShouldBe([claim.GetId()]);
+        notification.Remaining.ShouldBe([neighbourClaim.GetId()]);
     }
 
     #endregion
@@ -1409,6 +1437,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
 
         SentEmails.ShouldBeEmpty();
+        SentRoomNotifications.ShouldBeEmpty();
     }
 
     #endregion
@@ -1431,21 +1460,22 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         SaveChangesCallCount.ShouldBe(1);
         SentEmails.ShouldBeEmpty();
+        SentRoomNotifications.ShouldBeEmpty();
     }
 
     /// <summary>
     /// Смена типа у уже поселённой заявки: старая комната покидается, письмо о выезде уходит
-    /// легаси-каналом — то есть после сохранения.
+    /// уведомлением — то есть после сохранения.
     /// </summary>
     [Fact]
-    public async Task SetAccommodationType_WhenAlreadyInRoom_LeavesOldRoom_AndMailsAfterSave()
+    public async Task SetAccommodationType_WhenAlreadyInRoom_LeavesOldRoom_AndNotifiesAfterSave()
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
         var oldRequest = CreateAccommodation(claim);
         var newType = mock.CreateAccommodationType("Домик");
 
-        var savesWhenEmailSent = -1;
-        emailService.OnEmail = () => savesWhenEmailSent = SaveChangesCallCount;
+        var savesWhenNotificationSent = -1;
+        accommodationNotifications.OnNotification = () => savesWhenNotificationSent = SaveChangesCallCount;
 
         var request = await CreateService().SetAccommodationType(
             ProjectId.Value, claim.ClaimId, newType.Id);
@@ -1454,8 +1484,8 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         oldRequest.Subjects.ShouldBeEmpty();
 
         SaveChangesCallCount.ShouldBe(1);
-        _ = SentEmails.ShouldHaveSingleItem().ShouldBeOfType<LeaveRoomEmail>();
-        savesWhenEmailSent.ShouldBe(1);
+        SentRoomNotifications.ShouldHaveSingleItem().Kind.ShouldBe(RoomOccupancyChangeKind.LeftRoom);
+        savesWhenNotificationSent.ShouldBe(1);
     }
 
     /// <summary>Тип уже такой — ранний выход обязан остаться холостым.</summary>
@@ -1472,6 +1502,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
         SentEmails.ShouldBeEmpty();
+        SentRoomNotifications.ShouldBeEmpty();
     }
 
     [Fact]
@@ -1484,6 +1515,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         SaveChangesCallCount.ShouldBe(0);
         SentEmails.ShouldBeEmpty();
+        SentRoomNotifications.ShouldBeEmpty();
     }
 
     /// <summary>
@@ -1534,6 +1566,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         result.ShouldBeNull();
         SaveChangesCallCount.ShouldBe(0);
         SentEmails.ShouldBeEmpty();
+        SentRoomNotifications.ShouldBeEmpty();
         SentNotifications.ShouldBeEmpty();
     }
 
@@ -1552,6 +1585,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         request.Subjects.ShouldBe([claim]);
         SaveChangesCallCount.ShouldBe(0);
         SentEmails.ShouldBeEmpty();
+        SentRoomNotifications.ShouldBeEmpty();
     }
 
     [Fact]
@@ -1577,7 +1611,9 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         ownRequest.Subjects.ShouldBe([claim]);
 
         SaveChangesCallCount.ShouldBe(1);
-        _ = SentEmails.ShouldHaveSingleItem().ShouldBeOfType<LeaveRoomEmail>();
+        var notification = SentRoomNotifications.ShouldHaveSingleItem();
+        notification.Kind.ShouldBe(RoomOccupancyChangeKind.LeftRoom);
+        notification.Remaining.ShouldBe([neighbourClaim.GetId()]);
     }
 
     [Fact]
@@ -1610,6 +1646,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         // Отправка письма об изменении полей была закомментирована и до миграции — см. ADR014.
         SentNotifications.ShouldBeEmpty();
         SentEmails.ShouldBeEmpty();
+        SentRoomNotifications.ShouldBeEmpty();
     }
 
     [Fact]
@@ -1732,6 +1769,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         secondRole.ClaimId.ClaimId.ShouldBe(newClaimId);
 
         SentEmails.ShouldBeEmpty();
+        SentRoomNotifications.ShouldBeEmpty();
     }
 
     /// <summary>

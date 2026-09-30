@@ -5,7 +5,6 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Projects;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl;
 
@@ -26,9 +25,6 @@ internal class AccommodationServiceImpl(
         AccommodationRoomIdentification roomId,
         IReadOnlyCollection<AccommodationRequestIdentification> groupIds)
     {
-        // Отправителя письма читаем заранее: мутация синхронная, ждать внутри неё нечего.
-        var initiator = await GetCurrentUser();
-
         await accommodationPropsService.ChangePlanForRoom(
             roomId,
             Permission.CanSetPlayersAccommodations,
@@ -50,7 +46,7 @@ internal class AccommodationServiceImpl(
                 var effectiveCapacity = ctx.Plan.GetEffectiveCapacity(ctx.Request.RoomId);
                 var occupancy = planRoom.Occupancy;
 
-                var moved = new List<AccommodationRequest>();
+                var moved = new List<AccommodationGroupInfo>();
                 foreach (var groupId in ctx.Request.GroupIds)
                 {
                     // Группа берётся из того же плана, что и комната, поэтому группу чужого пула
@@ -75,7 +71,7 @@ internal class AccommodationServiceImpl(
                     group.Accommodation = room;
                     // Обратную навигацию ведём сами, не надеясь на трекер (дефект 6).
                     room.Inhabitants.Add(group);
-                    moved.Add(group);
+                    moved.Add(groupInfo);
                 }
 
                 if (moved.Count == 0)
@@ -83,20 +79,22 @@ internal class AccommodationServiceImpl(
                     return;
                 }
 
-                // Те, кто уже жил в комнате, — по снимку плана.
-                var neighbours = planRoom.Inhabitants.Select(i => ctx.GetGroupForChange(i.Id));
-
-                // Письмо уходит после успешного сохранения, один раз на операцию (ADR018, §11).
-                var email = CreateRoomEmail<OccupyRoomEmail>(
-                    ctx, room, initiator, moved, [.. neighbours, .. moved]);
-                ctx.AddLegacyEmail(emailService => emailService.Email(email));
+                // Уведомление уходит после успешного сохранения, один раз на операцию (ADR018, §11).
+                // Те, кто уже жил в комнате, — по снимку плана, взятому строго ДО мутации. Из них
+                // вычитаем вселяемых: просьба вселить того, кто уже в комнате, проверку места
+                // проходит, и без вычитания игрок попал бы в текст дважды — и «вселился», и «уже
+                // был».
+                var movedIds = moved.Select(group => group.Id).ToHashSet();
+                QueueRoomNotification(
+                    ctx, ctx.Request.RoomId, planRoom.Name,
+                    RoomOccupancyChangeKind.Occupied,
+                    changed: moved,
+                    remaining: [.. planRoom.Inhabitants.Where(i => !movedIds.Contains(i.Id))]);
             });
     }
 
     public async Task UnOccupyGroup(AccommodationRequestIdentification groupId)
     {
-        var initiator = await GetCurrentUser();
-
         await accommodationPropsService.ChangePlanForGroup(
             groupId,
             Permission.CanSetPlayersAccommodations,
@@ -112,14 +110,12 @@ internal class AccommodationServiceImpl(
                     return;
                 }
 
-                EvictFromRoom(ctx, roomId, [groupInfo], initiator);
+                EvictFromRoom(ctx, roomId, [groupInfo]);
             });
     }
 
     public async Task UnOccupyRoom(AccommodationRoomIdentification roomId)
     {
-        var initiator = await GetCurrentUser();
-
         await accommodationPropsService.ChangePlanForRoom(
             roomId,
             Permission.CanSetPlayersAccommodations,
@@ -131,15 +127,13 @@ internal class AccommodationServiceImpl(
                 var planRoom = ctx.Plan.GetRoom(ctx.Request);
                 if (planRoom.Inhabitants.Count > 0)
                 {
-                    EvictFromRoom(ctx, ctx.Request, [.. planRoom.Inhabitants], initiator);
+                    EvictFromRoom(ctx, ctx.Request, [.. planRoom.Inhabitants]);
                 }
             });
     }
 
     public async Task UnOccupyRoomType(AccommodationTypeIdentification typeId)
     {
-        var initiator = await GetCurrentUser();
-
         // Категорию по типу проживания знают только метаданные — конвертации идентификаторов
         // в домене нет и заводить её нельзя (ADR018, §2).
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(typeId.ProjectId);
@@ -153,12 +147,11 @@ internal class AccommodationServiceImpl(
             ProjectActiveRequirement.MustBeActive,
             RoomCategoryPlanTracking.WithGroups,
             typeId,
-            ctx => EvictPlacedGroups(ctx, initiator, group => group.AccommodationTypeId == ctx.Request));
+            ctx => EvictPlacedGroups(ctx, group => group.AccommodationTypeId == ctx.Request));
     }
 
     public async Task UnOccupyAllRooms(ProjectIdentification projectId)
     {
-        var initiator = await GetCurrentUser();
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         // Цикл по категориям, по мутации и транзакции на каждую (ADR018, §1): единой транзакции
@@ -178,7 +171,7 @@ internal class AccommodationServiceImpl(
                 ProjectActiveRequirement.MustBeActive,
                 RoomCategoryPlanTracking.WithGroups,
                 categoryId,
-                ctx => EvictPlacedGroups(ctx, initiator, _ => true));
+                ctx => EvictPlacedGroups(ctx, _ => true));
         }
     }
 
@@ -188,7 +181,6 @@ internal class AccommodationServiceImpl(
     /// </summary>
     private static void EvictPlacedGroups(
         RoomCategoryPlanMutationContext ctx,
-        User initiator,
         Func<AccommodationGroupInfo, bool> selector)
     {
         var byRoom = ctx.Plan.Groups
@@ -197,7 +189,7 @@ internal class AccommodationServiceImpl(
 
         foreach (var roomGroups in byRoom)
         {
-            EvictFromRoom(ctx, roomGroups.Key, [.. roomGroups], initiator);
+            EvictFromRoom(ctx, roomGroups.Key, [.. roomGroups]);
         }
     }
 
@@ -207,62 +199,64 @@ internal class AccommodationServiceImpl(
     private static void EvictFromRoom(
         RoomCategoryPlanMutationContext ctx,
         AccommodationRoomIdentification roomId,
-        IReadOnlyCollection<AccommodationGroupInfo> groupInfos,
-        User initiator)
+        IReadOnlyCollection<AccommodationGroupInfo> groupInfos)
     {
         var room = ctx.GetRoomForChange(roomId);
 
-        var evicted = new List<AccommodationRequest>();
         foreach (var groupInfo in groupInfos)
         {
             var group = ctx.GetGroupForChange(groupInfo.Id);
             group.AccommodationId = null;
             group.Accommodation = null;
             _ = room.Inhabitants.Remove(group);
-            evicted.Add(group);
         }
 
         // Кто остался в комнате — по снимку плана, а не по навигации EF-сущности.
         var evictedIds = groupInfos.Select(group => group.Id).ToHashSet();
-        var staying = ctx.Plan.GetRoom(roomId).Inhabitants
+        var planRoom = ctx.Plan.GetRoom(roomId);
+        var staying = planRoom.Inhabitants
             .Where(inhabitant => !evictedIds.Contains(inhabitant.Id))
-            .Select(inhabitant => ctx.GetGroupForChange(inhabitant.Id));
+            .ToList();
 
-        // Письма ставятся в очередь и уходят все разом после единственного сохранения операции
-        // (ADR018, §11). Письмо на комнату, а не на операцию, потому что RoomEmailBase несёт
-        // ровно одну комнату, а массовое выселение трогает их несколько.
-        var email = CreateRoomEmail<UnOccupyRoomEmail>(
-            ctx, room, initiator, evicted, [.. staying, .. evicted]);
-        ctx.AddLegacyEmail(emailService => emailService.Email(email));
+        // Уведомления ставятся в очередь и уходят все разом после единственного сохранения операции
+        // (ADR018, §11). Уведомление на комнату, а не на операцию, потому что оно несёт ровно одну
+        // комнату, а массовое выселение трогает их несколько.
+        QueueRoomNotification(
+            ctx, roomId, planRoom.Name,
+            RoomOccupancyChangeKind.Evicted,
+            changed: groupInfos,
+            remaining: staying);
     }
 
     /// <summary>
-    /// Собирает письмо о комнате. Почтовые модели остаются на EF-сущностях (ADR018, §11).
+    /// Ставит в очередь уведомление об изменении состава жителей комнаты. Собирается по доменному
+    /// снимку плана: имена игроков и получателей сервис уведомлений добирает сам по идентификаторам
+    /// заявок, поэтому EF-навигация здесь больше не нужна.
     /// </summary>
     /// <param name="changed">Группы, которых операция сдвинула.</param>
-    /// <param name="recipientGroups">
-    /// Группы, чьи подписчики получат письмо. Считаются по трекаемым сущностям, а не по навигации
-    /// <c>room.Inhabitants</c>: полагаться на relationship fixup трекера мы перестали.
-    /// </param>
-    private static TEmail CreateRoomEmail<TEmail>(
+    /// <param name="remaining">Группы, которые остались (или уже были) в комнате.</param>
+    private static void QueueRoomNotification(
         RoomCategoryPlanMutationContext ctx,
-        ProjectAccommodation room,
-        User initiator,
-        IReadOnlyCollection<AccommodationRequest> changed,
-        IReadOnlyCollection<AccommodationRequest> recipientGroups)
-        where TEmail : RoomEmailBase, new()
-        => new()
-        {
-            Changed = [.. changed.SelectMany(group => group.Subjects)],
-            Initiator = initiator,
-            ProjectName = ctx.ProjectInfo.ProjectName.Value,
-            Recipients = [.. recipientGroups
-                .SelectMany(group => group.Subjects)
-                .SelectMany(claim => claim.GetSubscriptions(subs => subs.AccommodationChange, []))
-                .Distinct()],
-            Room = room,
-            Text = new MarkdownDbValue(),
-        };
+        AccommodationRoomIdentification roomId,
+        string roomName,
+        RoomOccupancyChangeKind kind,
+        IReadOnlyCollection<AccommodationGroupInfo> changed,
+        IReadOnlyCollection<AccommodationGroupInfo> remaining)
+    {
+        var notification = new RoomOccupancyNotification(
+            roomId,
+            roomName,
+            // Тип проживания комнаты — это тип категории, из которой она селится: сегодня пул
+            // ровно один на тип (ADR018, «Задел на разделение»).
+            new AccommodationTypeIdentification(roomId.ProjectId, ctx.Category.Id),
+            // Инициатор — текущий пользователь запроса, он же есть в контексте мутации.
+            ctx.CurrentUser.ToUserInfoHeader(),
+            [.. changed.SelectMany(group => group.Subjects)],
+            [.. remaining.SelectMany(group => group.Subjects)],
+            kind);
+
+        ctx.AddRoomNotification(notification);
+    }
 
     public async Task<IReadOnlyCollection<AccommodationRoomIdentification>> AddRooms(
         RoomCategoryIdentification categoryId,

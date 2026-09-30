@@ -3,6 +3,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -70,8 +71,16 @@ internal abstract record ClaimMutationContext(
     internal List<PendingComment> PendingComments { get; } = [];
 
     /// <summary>
-    /// Письма второго, легаси-канала (<c>LeaveRoomEmail</c> и подобные). Отправляются после всех
-    /// уведомлений — как это происходило до миграции.
+    /// Уведомления о выезде из комнаты, поставленные в очередь операцией над заявкой. Отправляются
+    /// после всех уведомлений по комментариям — в том же порядке, в каком это происходило до
+    /// миграции на <c>INotificationService</c>.
+    /// </summary>
+    internal List<RoomOccupancyNotification> RoomNotifications { get; } = [];
+
+    /// <summary>
+    /// Остаток легаси-канала: письма о приглашениях к совместному проживанию. Уедут на
+    /// <see cref="RoomNotifications"/> следующим шагом миграции, вместе с остальным
+    /// контуром приглашений.
     /// </summary>
     internal List<Func<IEmailService, Task>> LegacyEmails { get; } = [];
 
@@ -110,9 +119,14 @@ internal abstract record ClaimMutationContext(
         => OperationDateValidation.CheckOperationDate(operationDate, Now);
 
     /// <summary>
-    /// Ставит письмо легаси-канала в очередь. Отправится после сохранения и после уведомлений.
-    /// Передаётся отправителем, а не самим письмом: у <c>IEmailService</c> нет перегрузки по
-    /// базовому типу, только по конкретным.
+    /// Ставит уведомление о комнате в очередь. Отправится после сохранения и после уведомлений
+    /// по комментариям.
+    /// </summary>
+    public void AddRoomNotification(RoomOccupancyNotification notification)
+        => RoomNotifications.Add(notification);
+
+    /// <summary>
+    /// Ставит письмо легаси-канала в очередь. Остался один вид — о приглашениях к проживанию.
     /// </summary>
     public void AddLegacyEmail(Func<IEmailService, Task> send) => LegacyEmails.Add(send);
 

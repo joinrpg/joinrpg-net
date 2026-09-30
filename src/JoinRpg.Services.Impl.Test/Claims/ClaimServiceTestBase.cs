@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Notification;
@@ -12,7 +13,8 @@ namespace JoinRpg.Services.Impl.Test.Claims;
 /// <summary>
 /// Общая обвязка для тестов claim-контура (ADR014): <see cref="MockedProject"/>, фейковый
 /// <see cref="FakeUnitOfWork"/> со счётчиком сохранений, фейки обоих каналов уведомлений
-/// (новый — <see cref="FakeClaimNotificationService"/>, легаси-письма — <see cref="FakeEmailService"/>),
+/// (уведомления по заявке — <see cref="FakeClaimNotificationService"/>, о проживании —
+/// <see cref="FakeAccommodationNotificationService"/>, остаток легаси-писем — <see cref="FakeEmailService"/>),
 /// репозиторий метаданных и фабрика текущего пользователя.
 /// </summary>
 // Члены, протекающие internal-типы (фейки), помечены private protected, чтобы публичный
@@ -25,6 +27,7 @@ public abstract class ClaimServiceTestBase
     private readonly List<object> notificationJournal = [];
 
     private protected readonly FakeClaimNotificationService claimNotifications;
+    private protected readonly FakeAccommodationNotificationService accommodationNotifications;
     private protected readonly FakeEmailService emailService;
 
     private protected readonly FakeProjectMetadataRepository metadataRepository;
@@ -34,6 +37,7 @@ public abstract class ClaimServiceTestBase
         unitOfWork = new FakeUnitOfWork(mock);
         metadataRepository = new FakeProjectMetadataRepository(mock);
         claimNotifications = new FakeClaimNotificationService(notificationJournal);
+        accommodationNotifications = new FakeAccommodationNotificationService(notificationJournal);
         emailService = new FakeEmailService(notificationJournal);
     }
 
@@ -49,6 +53,7 @@ public abstract class ClaimServiceTestBase
             CreateFieldSaveHelper(),
             new CommentHelper(CreateCurrentUser(currentUserId)),
             claimNotifications,
+            accommodationNotifications,
             emailService,
             NullLogger<CharacterPropsService>.Instance);
 
@@ -84,7 +89,11 @@ public abstract class ClaimServiceTestBase
     /// <summary>Уведомления нового канала в порядке отправки.</summary>
     private protected IReadOnlyList<IClaimNotification> SentNotifications => claimNotifications.Sent;
 
-    /// <summary>Письма легаси-канала в порядке отправки.</summary>
+    /// <summary>Уведомления о проживании в порядке отправки.</summary>
+    private protected IReadOnlyList<RoomOccupancyNotification> SentRoomNotifications
+        => accommodationNotifications.RoomOccupancy;
+
+    /// <summary>Остаток легаси-писем (приглашения к проживанию) в порядке отправки.</summary>
     protected IReadOnlyList<EmailModelBase> SentEmails => emailService.Sent;
 
     /// <summary>
