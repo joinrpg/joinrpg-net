@@ -1,5 +1,6 @@
 using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
@@ -26,6 +27,14 @@ public interface IUnitOfWork : IDisposable
     /// <see cref="SaveChangesAsync"/>.
     /// </summary>
     ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository();
+
+    /// <summary>
+    /// Репозиторий записи агрегата поселения (ADR018). Доступен только отсюда, а не из DI:
+    /// иначе он получил бы другой <c>DbContext</c>, чем тот, на котором вызывается
+    /// <see cref="SaveChangesAsync"/>.
+    /// </summary>
+    IRoomCategoryPlanWriteRepository GetRoomCategoryPlanWriteRepository();
+
     IClaimsRepository GetClaimsRepository();
     IPlotRepository GetPlotRepository();
     IForumRepository GetForumRepository();

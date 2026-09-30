@@ -1,23 +1,29 @@
-using JoinRpg.DataModel;
-
 namespace JoinRpg.Services.Interfaces;
 
 public interface IAccommodationService
 {
     /// <summary>
-    /// Adds rooms to specified room type of specified project
+    /// Добавляет комнаты в пул (категорию комнат), а не в тип проживания (ADR018).
     /// </summary>
-    Task<IEnumerable<ProjectAccommodation>> AddRooms(int projectId, int roomTypeId, string rooms);
+    /// <param name="categoryId">Категория комнат, в которую добавляются комнаты.</param>
+    /// <param name="roomNames">
+    /// Готовые имена комнат. Разбор пользовательского ввода («1,2,5-8» и прочий синтаксис формы)
+    /// сюда не попадает — он остаётся в web-слое (<c>RoomNamesParser</c>).
+    /// </param>
+    /// <returns>Идентификаторы созданных комнат.</returns>
+    Task<IReadOnlyCollection<AccommodationRoomIdentification>> AddRooms(
+        RoomCategoryIdentification categoryId,
+        IReadOnlyCollection<string> roomNames);
 
     /// <summary>
-    /// Changes room name
+    /// Переименовывает комнату.
     /// </summary>
-    Task EditRoom(int roomId, string name, int? projectId = null, int? roomTypeId = null);
+    Task RenameRoom(AccommodationRoomIdentification roomId, string name);
 
     /// <summary>
-    /// Deletes specified room
+    /// Удаляет комнату. Удалить можно только незаселённую комнату.
     /// </summary>
-    Task DeleteRoom(int roomId, int? projectId = null, int? roomTypeId = null);
+    Task DeleteRoom(AccommodationRoomIdentification roomId);
 
     /// <summary>
     /// Move inhabitants to room
@@ -62,11 +68,5 @@ public class UnOccupyAllRequest
 {
     public int ProjectId { get; set; }
     public int RoomId { get; set; }
-}
-
-public class UnOccupyRoomTypeRequest
-{
-    public int ProjectId { get; set; }
-    public int RoomTypeId { get; set; }
 }
 

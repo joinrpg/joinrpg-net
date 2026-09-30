@@ -373,8 +373,13 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 Capacity: 4,
                 IsPlayerSelectable: true));
 
+        // Комнаты добавляются в категорию, а не в тип проживания; категорию по типу знают
+        // только метаданные (ADR018, §2).
+        var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
         _ = await sp.GetRequiredService<IAccommodationService>()
-            .AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, string.Join(',', SeededRoomNames));
+            .AddRooms(
+                projectInfo.AccommodationSettings.GetTypeById(roomTypeId).RoomCategoryId,
+                SeededRoomNames);
 
         return roomTypeId.AccommodationTypeId;
     }

@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -256,70 +257,90 @@ public class AccommodationTypeController(
     }
 
     /// <summary>
-    /// Removes room
+    /// Удаляет комнату
     /// </summary>
     [MasterAuthorize(Permission.CanManageAccommodation)]
     [HttpDelete]
-    public async Task<ActionResult> DeleteRoom(int projectId, int roomTypeId, int roomId)
+    public async Task<ActionResult> DeleteRoom(AccommodationRoomIdentification? roomId)
     {
+        // Проверки прав, активности проекта и принадлежности комнаты проекту делает сервис
+        // (ADR018, дефекты 1, 2, 4) — контроллеру остаётся отличить «неверный запрос» от «упало».
+        if (roomId is null || !ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         try
         {
-            await accommodationService.DeleteRoom(roomId, projectId, roomTypeId).ConfigureAwait(false);
+            await accommodationService.DeleteRoom(roomId);
             return Ok();
         }
-        catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+        catch (AccommodationRoomNotFoundException)
         {
+            return NotFound();
         }
-        catch
+        catch (RoomIsOccupiedException)
         {
-            return StatusCode(500);
+            return BadRequest();
         }
-        return BadRequest();
     }
 
     [MasterAuthorize(Permission.CanManageAccommodation)]
     [HttpPost("~/{projectId}/rooms/addroom")]
-    public async Task<ActionResult> AddRoom(int projectId, int roomTypeId, string name)
+    public async Task<ActionResult> AddRoom(AccommodationTypeIdentification? roomTypeId, string name)
     {
-        try
+        if (roomTypeId is null || !ModelState.IsValid)
         {
-            //TODO: Implement room names checking
-            //TODO: Implement new rooms HTML returning
-            _ = await accommodationService.AddRooms(projectId, roomTypeId, name);
-            return StatusCode(201);
+            return BadRequest();
         }
-        catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+
+        //TODO: Implement room names checking
+        //TODO: Implement new rooms HTML returning
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(roomTypeId.ProjectId);
+
+        // Категорию по типу проживания знают только метаданные — конвертации идентификаторов
+        // в домене нет и заводить её нельзя (ADR018, §2).
+        var typeInfo = projectInfo.AccommodationSettings.GetTypeByIdOrDefault(roomTypeId);
+        if (typeInfo is null)
         {
+            return NotFound();
         }
-        catch
+
+        // Синтаксис поля ввода («1,2,5-8») разбирает web-слой: сервис принимает готовые имена.
+        var roomNames = RoomNamesParser.Parse(name);
+        if (roomNames.Count == 0)
         {
-            return StatusCode(500);
+            return BadRequest();
         }
-        return BadRequest();
+
+        _ = await accommodationService.AddRooms(typeInfo.RoomCategoryId, roomNames);
+        return StatusCode(201);
     }
 
     /// <summary>
-    /// Applies new name to a room or adds a new room(s)
+    /// Переименовывает комнату
     /// </summary>
     [MasterAuthorize(Permission.CanManageAccommodation)]
     [HttpPost("~/{projectId}/rooms/editroom")]
-    public async Task<ActionResult> EditRoom(int projectId, int roomTypeId, string room, string name)
+    public async Task<ActionResult> EditRoom(AccommodationRoomIdentification? room, string name)
     {
+        if (room is null || !ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         try
         {
-            if (int.TryParse(room, out var roomId))
-            {
-                await accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
-                return Ok();
-            }
+            await accommodationService.RenameRoom(room, name);
+            return Ok();
         }
-        catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+        catch (AccommodationRoomNotFoundException)
         {
+            return NotFound();
         }
-        catch
+        catch (FieldRequiredException)
         {
-            return StatusCode(500);
+            return BadRequest();
         }
-        return BadRequest();
     }
 }

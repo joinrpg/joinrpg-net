@@ -1,5 +1,6 @@
 using System.Data.Entity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
@@ -34,6 +35,9 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
 
     public ICharacterAggregateWriteRepository GetCharacterAggregateWriteRepository()
         => new FakeCharacterAggregateWriteRepository(mock);
+
+    public IRoomCategoryPlanWriteRepository GetRoomCategoryPlanWriteRepository()
+        => new FakeRoomCategoryPlanWriteRepository(mock);
 
     /// <summary>
     /// НЕ ЗАГЛУШКА, НЕ «ЧИНИТЬ». Намеренный детектор: если сервис лезет в <see cref="DbSet{TEntity}"/>

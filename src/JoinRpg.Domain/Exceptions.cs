@@ -1,4 +1,3 @@
-using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 
@@ -133,24 +132,6 @@ public class EntityWrongStatusException : JoinRpgProjectEntityException
         : base(entity, $"This operation can not be performed on entity with this status")
     {
     }
-}
-
-public class RoomIsOccupiedException : JoinRpgProjectEntityException
-{
-    public RoomIsOccupiedException(ProjectAccommodation entity) : base(entity, "Cannot peforrm this operation on occupied room.")
-    {
-    }
-}
-
-/// <summary>
-/// Тип проживания нельзя удалить: в комнатах этого типа кто-то живёт.
-/// </summary>
-public class AccommodationTypeIsOccupiedException(AccommodationTypeIdentification accommodationTypeId)
-    : JoinRpgProjectException(
-        accommodationTypeId.ProjectId,
-        $"Нельзя удалить тип проживания {accommodationTypeId}: в комнатах этого типа живут игроки")
-{
-    public AccommodationTypeIdentification AccommodationTypeId { get; } = accommodationTypeId;
 }
 
 public class NoAccessToProjectException : JoinRpgProjectException
