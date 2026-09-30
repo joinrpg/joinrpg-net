@@ -107,9 +107,20 @@
         case ProjectFieldViewType.String:
           <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
           break;
-        @* Временно: редактор с выбором пользователя делается отдельно, пока просто id текстом. *@
+        @*
+          Остров ADR017 §5: мастер вводит ссылку/id/telegram/email, видит, кто это, а в форму
+          скрытым инпутом с именем FieldClientId уезжает числовой id.
+          Обязательность (data-val-required) сюда не переносится: jQuery-валидация по умолчанию
+          игнорирует скрытые инпуты, и подсказка всё равно бы не сработала. Незаполненное
+          обязательное поле ловит серверная валидация.
+        *@
         case ProjectFieldViewType.UserLink:
-          <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
+          <component type="typeof(JoinRpg.Common.WebComponents.JoinUserLinkEditor)"
+                     param-Name="@(Model.FieldClientId)"
+                     param-ProjectId="@((int?)Model.ProjectId)"
+                     param-Values="@(new List<string>(Model.Value?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? []))"
+                     param-InitialUsers="@(Model.UserLinks)"
+                     render-mode="WebAssembly" />
           break;
         case ProjectFieldViewType.Uri:
            <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />

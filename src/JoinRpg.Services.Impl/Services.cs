@@ -69,6 +69,7 @@ public static class Services
             .AddTransient<ClaimNotificationTextBuilder>()
             .AddTransient<SubscribeCalculator>()
             .AddTransient<IAdminNotificationService, AdminNotificationServiceImpl>()
+            .AddTransient<UserFieldValidator>()
             ;
     }
 

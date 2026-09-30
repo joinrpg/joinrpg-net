@@ -58,6 +58,12 @@ public abstract class ClaimServiceTestBase
     /// </summary>
     private protected readonly FakeImpersonateAccessor impersonateAccessor = new();
 
+    /// <summary>
+    /// Проверка ссылок на пользователей (ADR017 §7) поверх репозитория мока: существуют игрок и
+    /// мастер, любой другой идентификатор считается несуществующим.
+    /// </summary>
+    private protected UserFieldValidator CreateUserFieldValidator() => new(new FakeUserRepository(mock));
+
     private protected static FieldSaveHelper CreateFieldSaveHelper()
         => new(new MockedFieldDefaultValueGenerator(), NullLogger<FieldSaveHelper>.Instance);
 
