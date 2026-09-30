@@ -154,6 +154,31 @@ public class CharacterGroupServiceTest
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
 
+    /// <summary>
+    /// Issue #5111: персонажи, лежащие прямо в корне дерева, тоже должны переупорядочиваться —
+    /// раньше <see cref="CharacterGroupService.MoveCharacterAfter"/> не пропускал корневую группу
+    /// и мастер получал 500.
+    /// </summary>
+    [Fact]
+    public async Task MoveCharacterAfter_RootParent_ReordersTopLevelCharacters()
+    {
+        var root = mock.Project.CharacterGroups.Single(g => g.IsRoot);
+        var first = mock.CreateCharacter("Первый");
+        var second = mock.CreateCharacter("Второй");
+        first.ParentCharacterGroupIds = [root.CharacterGroupId];
+        second.ParentCharacterGroupIds = [root.CharacterGroupId];
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        var newOrder = await service.MoveCharacterAfter(RootGroupId, CharacterId(first), CharacterId(second));
+
+        var order = newOrder.ToList();
+        order.IndexOf(CharacterId(first)).ShouldBe(order.IndexOf(CharacterId(second)) + 1);
+        root.ChildCharactersOrdering.ShouldNotBeNullOrEmpty();
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
     [Fact]
     public async Task MoveCharacterGroupAfter_ReordersChildGroups()
     {

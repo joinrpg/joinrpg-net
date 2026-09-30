@@ -80,7 +80,8 @@ internal static class ProjectOperationContextExtensions
             || (allowRoot && groupInfo.GroupType == CharacterGroupType.Root);
         if (!allowed)
         {
-            throw new InvalidOperationException();
+            throw new InvalidOperationException(
+                $"Группу {id} типа {groupInfo.GroupType} нельзя менять этой операцией.");
         }
         return (group, groupInfo);
     }

@@ -140,7 +140,8 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
             (parentCharacterGroupId, characterId, afterCharacterId),
             ctx =>
             {
-                var (parentCharacterGroup, _) = ctx.GetCharacterGroupForChange(ctx.Request.parentCharacterGroupId, allowSpecialToValue: true);
+                var (parentCharacterGroup, _) = ctx.GetCharacterGroupForChange(
+                    ctx.Request.parentCharacterGroupId, allowSpecialToValue: true, allowRoot: true);
 
                 var container = parentCharacterGroup.GetCharactersContainer()
                     .MoveAfter(ctx.Request.characterId.CharacterId, ctx.Request.afterCharacterId?.CharacterId);
