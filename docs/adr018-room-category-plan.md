@@ -406,17 +406,18 @@ public record class AccommodationGroupInfo(
 ```csharp
 public interface IRoomCategoryPlanRepository
 {
-    Task<RoomCategoryPlan?> GetPlanOrDefault(RoomCategoryIdentification categoryId);
-    Task<IReadOnlyCollection<RoomCategoryPlan>> GetAllPlans(ProjectIdentification projectId);
-
     /// <summary>
     /// План пула, из которого селится данный тип проживания. Пока тип и категория не разделены,
-    /// это тот же план, что <see cref="GetPlanOrDefault"/> по одноимённой категории; после
-    /// разделения один план будут возвращать несколько типов.
+    /// это план одноимённой категории; после разделения один план будут возвращать несколько типов.
     /// </summary>
     Task<RoomCategoryPlan?> GetPlanForTypeOrDefault(AccommodationTypeIdentification typeId);
 }
 ```
+
+Метод один. В первой редакции ADR интерфейс был выписан из трёх — с загрузкой по категории и
+загрузкой всех планов проекта, — но потребителей у них так и не появилось: страница комнат
+открывается по типу проживания, а сводка по проекту берётся из `GetRoomTypesForProject` (§12).
+Оба удалены как мёртвый код; вернуть их — одна строка, когда появится вызывающий.
 
 Реализация — `src/JoinRpg.Dal.Impl/Repositories/Accommodation/RoomCategoryPlanLoader.cs`, по
 образцу `CharacterInfoLoader` (ADR014): ядро принимает готовый `ProjectInfo`, чтобы им могли

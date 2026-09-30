@@ -17,22 +17,6 @@ internal class RoomCategoryPlanRepository(MyDbContext ctx, IProjectMetadataRepos
 {
     private readonly RoomCategoryPlanLoader loader = new(ctx);
 
-    public async Task<RoomCategoryPlan?> GetPlanOrDefault(RoomCategoryIdentification categoryId)
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(categoryId.ProjectId);
-        return await loader.LoadOneAsync(projectInfo, categoryId);
-    }
-
-    public async Task<IReadOnlyCollection<RoomCategoryPlan>> GetAllPlans(ProjectIdentification projectId)
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-
-        // Сегодня категория и тип проживания — один и тот же ряд, поэтому «все категории проекта»
-        // это все типы проживания. После разделения (ADR018, §2) здесь появится группировка
-        // типов по категориям, а планов станет меньше, чем типов.
-        return await loader.LoadAsync(projectInfo, category => true);
-    }
-
     public async Task<RoomCategoryPlan?> GetPlanForTypeOrDefault(AccommodationTypeIdentification typeId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(typeId.ProjectId);
