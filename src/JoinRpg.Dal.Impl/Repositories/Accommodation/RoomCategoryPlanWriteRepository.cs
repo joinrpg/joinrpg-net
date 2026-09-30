@@ -96,8 +96,12 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         // Группы — отдельным запросом и только по запросу операции. Вторым Include их не взять:
         // рядом с комнатами это дало бы декартово произведение, а управлению комнатами группы
         // не нужны вовсе (ADR018, §10).
+        // Заявки группы (Subjects) подтягиваем сразу: письма о заселении и выселении собираются
+        // по ним (ADR018, §11), а без Include ленивая загрузка EF6 давала бы запрос на каждую
+        // группу — при выселении целого типа это десятки лишних запросов.
         var groups = tracking == RoomCategoryPlanTracking.WithGroups
             ? (await ctx.Set<AccommodationRequest>()
+                .Include(group => group.Subjects)
                 .Where(group => group.AccommodationTypeId == categoryIntId && group.ProjectId == projectIntId)
                 .ToListAsync())
                 .ToDictionary(group => new AccommodationRequestIdentification(projectId, group.Id))

@@ -199,8 +199,12 @@ public class AccommodationTypeController(
         return RedirectToAction("Index");
     }
 
+    /// <summary>
+    /// Выселяет всех жильцов всех комнат проекта
+    /// </summary>
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-    [HttpGet]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<ActionResult> UnOccupyAll(ProjectIdentification projectId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
@@ -222,14 +226,24 @@ public class AccommodationTypeController(
     /// <summary>
     /// Выселяет одну группу жильцов из комнаты
     /// </summary>
+    /// <remarks>
+    /// Адрес маршрута оставлен прежним (<c>unoccupyroom</c>): его собирает строкой скрипт
+    /// <c>rooms.js</c>, а имя экшена приведено к тому, что операция делает на самом деле.
+    /// </remarks>
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpPost("~/{projectId}/rooms/unoccupyroom")]
-    public async Task<ActionResult> UnOccupyRoom(ProjectIdentification projectId, int reqId)
+    public async Task<ActionResult> UnOccupyGroup(AccommodationRequestIdentification? reqId)
     {
+        // Типизированный идентификатор собирает модель-биндер: голое число из запроса он
+        // склеивает с текущим проектом маршрута (ProjectEntityIdModelBinder).
+        if (reqId is null || !ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         try
         {
-            await accommodationService.UnOccupyGroup(
-                new AccommodationRequestIdentification(projectId, reqId));
+            await accommodationService.UnOccupyGroup(reqId);
             return Ok();
         }
         catch (AccommodationGroupNotFoundException)
@@ -242,8 +256,9 @@ public class AccommodationTypeController(
     /// Выселяет всех жильцов всех комнат данного типа проживания
     /// </summary>
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-    [HttpGet]
-    public async Task<ActionResult> UnOccupyRoom(AccommodationTypeIdentification roomTypeId)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> UnOccupyRoomsByType(AccommodationTypeIdentification roomTypeId)
     {
         try
         {
