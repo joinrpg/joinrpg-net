@@ -364,6 +364,51 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
 
     /// <summary>Дефект 4 ADR018.</summary>
     [Fact]
+    public async Task UnOccupyGroup_InArchivedProject_Throws()
+    {
+        var group = CreateGroup(tent);
+        _ = mock.CreateRoom(group, "101");
+        ArchiveProject();
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => CreateService().UnOccupyGroup(GroupId(group)));
+
+        group.AccommodationId.ShouldNotBeNull();
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>Дефект 4 ADR018.</summary>
+    [Fact]
+    public async Task UnOccupyRoom_InArchivedProject_Throws()
+    {
+        var group = CreateGroup(tent);
+        var room = mock.CreateRoom(group, "101");
+        ArchiveProject();
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => CreateService().UnOccupyRoom(RoomId(room)));
+
+        group.AccommodationId.ShouldNotBeNull();
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>Дефект 4 ADR018.</summary>
+    [Fact]
+    public async Task UnOccupyRoomType_InArchivedProject_Throws()
+    {
+        var group = CreateGroup(tent);
+        _ = mock.CreateRoom(group, "101");
+        ArchiveProject();
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => CreateService().UnOccupyRoomType(TentId));
+
+        group.AccommodationId.ShouldNotBeNull();
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>Дефект 4 ADR018.</summary>
+    [Fact]
     public async Task UnOccupyAllRooms_InArchivedProject_Throws()
     {
         var group = CreateGroup(tent);

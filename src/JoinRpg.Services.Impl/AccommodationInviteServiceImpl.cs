@@ -229,11 +229,9 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             await GetAccommodationRequestByClaim(inviteRequest.FromClaimId)
                 .ConfigureAwait(false);
 
-        // Проверяем саму навигацию, а не FK: с непроставленной Accommodation в комнату
-        // всё равно не посчитать свободные места.
-        var roomFreeSpace = senderAccommodationRequest.Accommodation is { } senderRoom
-            ? senderRoom.GetRoomFreeSpace()
-            : senderAccommodationRequest.GetAbstractRoomFreeSpace();
+        // GetRoomFreeSpace сам смотрит на навигацию, а не на FK: с непроставленной Accommodation
+        // в комнату всё равно не посчитать свободные места, и тогда считается по типу проживания.
+        var roomFreeSpace = senderAccommodationRequest.GetRoomFreeSpace();
 
 
         var canInvite = roomFreeSpace >= (receiverAccommodationRequest?.Subjects.Count ?? 0);

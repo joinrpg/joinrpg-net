@@ -3,8 +3,6 @@
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
-    <!-- Только ради тест-стража ADR018: сверка доменного GetFreeSpace с legacy AccommodationExtensions -->
-    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
     <ProjectReference Include="..\JoinRpg.DomainTypes\JoinRpg.DomainTypes.csproj" />
   </ItemGroup>
   <ItemGroup>

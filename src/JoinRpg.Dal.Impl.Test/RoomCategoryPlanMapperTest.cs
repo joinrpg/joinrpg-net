@@ -1,7 +1,6 @@
 using JoinRpg.Dal.Impl.Repositories.Accommodation;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
@@ -143,44 +142,5 @@ public class RoomCategoryPlanMapperTest
         plan.AccommodationTypes.Single().Name.ShouldBe("Палатка");
         _ = Should.Throw<AccommodationTypeNotFoundException>(
             () => plan.GetAccommodationType(new AccommodationTypeIdentification(ProjectInfo.ProjectId, lux.Id)));
-    }
-
-    /// <summary>
-    /// Тест-страж миграции ADR018 (§14, PR 2): доменный <c>GetFreeSpace</c> считает свободное место
-    /// ровно так же, как legacy <see cref="AccommodationExtensions.GetRoomFreeSpace(ProjectAccommodation)"/>
-    /// поверх EF-сущностей — на одном и том же наборе данных. Пока тип и категория не разделены,
-    /// формула ADR018 вырождается в нынешнюю, и это должно быть видно тестом, а не на глаз.
-    /// Расхождение появится только вместе с разделением — тогда тест и надо пересмотреть.
-    /// </summary>
-    [Theory]
-    [InlineData(4, 0)]
-    [InlineData(4, 1)]
-    [InlineData(4, 4)]
-    // Вместимость уменьшили уже после заселения — комната переполнена
-    [InlineData(1, 2)]
-    public void GetFreeSpace_MatchesLegacyGetRoomFreeSpace(int capacity, int inhabitants)
-    {
-        var type = CreateType(capacity: capacity);
-        var claims = Enumerable.Range(1, inhabitants)
-            .Select(i => CreateClaim("Жилец " + i))
-            .ToArray();
-        var group = mock.CreateAccommodationRequest(type, claims);
-        var room = mock.CreateRoom(group, "101");
-        if (inhabitants == 0)
-        {
-            // Комната без жильцов: группа заведена, но в комнату не расселена
-            room.Inhabitants = [];
-            group.Accommodation = null;
-            group.AccommodationId = null;
-        }
-
-        var plan = RoomCategoryPlanMapper.Map(MakeRow(type, [room], [group]), ProjectInfo);
-
-        var freeSpace = plan.GetFreeSpace(
-            new AccommodationRoomIdentification(ProjectInfo.ProjectId, room.Id),
-            new AccommodationTypeIdentification(ProjectInfo.ProjectId, type.Id));
-
-        // Legacy умеет уходить в минус, доменный метод — нет (ADR018, §14, PR 1)
-        freeSpace.ShouldBe(Math.Max(0, room.GetRoomFreeSpace()));
     }
 }

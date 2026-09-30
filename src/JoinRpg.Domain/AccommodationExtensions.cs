@@ -2,18 +2,24 @@ namespace JoinRpg.Domain;
 
 public static class AccommodationExtensions
 {
-    public static int GetRoomFreeSpace(this ProjectAccommodation room) => room.ProjectAccommodationType.Capacity - room.GetAllInhabitants().Count();
-
     public static IEnumerable<Claim> GetAllInhabitants(this ProjectAccommodation room) =>
         room.Inhabitants.SelectMany(i => i.Subjects);
 
-    public static bool IsOccupied(this ProjectAccommodation pa) => pa.Inhabitants.Any();
-
+    /// <summary>
+    /// Сколько ещё человек влезет к этой группе: если группа расселена — по её комнате, если нет —
+    /// по вместимости выбранного типа проживания.
+    /// </summary>
+    /// <remarks>
+    /// Обслуживает контур приглашений и карточку заявки — он остался на EF-сущностях (ADR018, §13).
+    /// Свободное место в комнате для страницы комнат и для заселения считает доменный агрегат —
+    /// <c>RoomCategoryPlan.GetFreeSpace</c>; отдельного расчёта «свободное место комнаты» поверх
+    /// EF-сущностей больше нет (ADR018, §8).
+    /// </remarks>
     public static int GetRoomFreeSpace(this AccommodationRequest accommodationRequest1)
     {
         if (accommodationRequest1.Accommodation is ProjectAccommodation accommodation)
         {
-            return accommodation.GetRoomFreeSpace();
+            return accommodation.ProjectAccommodationType.Capacity - accommodation.GetAllInhabitants().Count();
         }
         else
         {
