@@ -49,6 +49,10 @@ public static class IdExtensions
     public static AccommodationTypeIdentification GetId(this ProjectAccommodationType accommodationType)
         => new(accommodationType.ProjectId, accommodationType.Id);
 
+    /// <summary>Идентификатор комнаты.</summary>
+    public static AccommodationRoomIdentification GetId(this ProjectAccommodation room)
+        => new(room.ProjectId, room.Id);
+
     /// <summary>Идентификатор типа проживания, выбранного в заявке, если он выбран.</summary>
     public static AccommodationTypeIdentification? GetAccommodationTypeIdOrDefault(this Claim claim)
         => claim.AccommodationRequest is AccommodationRequest request

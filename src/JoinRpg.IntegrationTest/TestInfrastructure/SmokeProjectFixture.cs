@@ -379,7 +379,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         _ = await sp.GetRequiredService<IAccommodationService>()
             .AddRooms(
                 projectInfo.AccommodationSettings.GetTypeById(roomTypeId).RoomCategoryId,
-                string.Join(',', SeededRoomNames));
+                SeededRoomNames);
 
         return roomTypeId.AccommodationTypeId;
     }

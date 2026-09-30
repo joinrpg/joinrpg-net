@@ -17,6 +17,7 @@ namespace JoinRpg.Services.Impl.Accommodation;
 internal class AccommodationPropsService(
     IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
+    IProjectMetadataRepository metadataRepository,
     ILogger<AccommodationPropsService> logger)
     : IAccommodationPropsService
 {
@@ -35,9 +36,10 @@ internal class AccommodationPropsService(
         Func<RoomCategoryPlanMutationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "")
         => ChangePlanCore(
+            categoryId.ProjectId,
             // Write-репозиторий берём из UnitOfWork: он обязан использовать тот же DbContext,
             // через который мы потом сохраняем (ADR009 §1, ADR014 §2).
-            write => write.LoadPlanForUpdate(categoryId),
+            (write, projectInfo) => write.LoadPlanForUpdate(projectInfo, categoryId),
             categoryId.ToString(),
             requiredPermission,
             activeRequirement,
@@ -52,7 +54,13 @@ internal class AccommodationPropsService(
         TArgs arguments,
         Action<RoomCategoryPlanMutationContext<TArgs>> action,
         [CallerMemberName] string operationName = "")
-        => ChangePlan(categoryId, requiredPermission, activeRequirement, arguments, AsFunc(action), operationName);
+        => ChangePlan(
+            categoryId,
+            requiredPermission,
+            activeRequirement,
+            arguments,
+            action.AsAlwaysTrueFunc(),
+            operationName);
 
     public Task ChangePlanForRoom<TArgs>(
         AccommodationRoomIdentification roomId,
@@ -62,21 +70,14 @@ internal class AccommodationPropsService(
         Action<RoomCategoryPlanMutationContext<TArgs>> action,
         [CallerMemberName] string operationName = "")
         => ChangePlanCore(
-            write => write.LoadPlanForRoomUpdate(roomId),
+            roomId.ProjectId,
+            (write, projectInfo) => write.LoadPlanForRoomUpdate(projectInfo, roomId),
             roomId.ToString(),
             requiredPermission,
             activeRequirement,
             arguments,
-            AsFunc(action),
+            action.AsAlwaysTrueFunc(),
             operationName);
-
-    private static Func<RoomCategoryPlanMutationContext<TArgs>, bool> AsFunc<TArgs>(
-        Action<RoomCategoryPlanMutationContext<TArgs>> action)
-        => ctx =>
-        {
-            action(ctx);
-            return true;
-        };
 
     /// <summary>
     /// Общий цикл операции: загрузка хэндла, право, активность проекта, мутация, сохранение и лог.
@@ -84,7 +85,8 @@ internal class AccommodationPropsService(
     /// <paramref name="loadHandle"/>.
     /// </summary>
     private async Task<TResult> ChangePlanCore<TArgs, TResult>(
-        Func<IRoomCategoryPlanWriteRepository, Task<IRoomCategoryPlanUpdateHandle>> loadHandle,
+        ProjectIdentification projectId,
+        Func<IRoomCategoryPlanWriteRepository, ProjectInfo, Task<IRoomCategoryPlanUpdateHandle>> loadHandle,
         string targetId,
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
@@ -98,7 +100,13 @@ internal class AccommodationPropsService(
         var now = DateTimeOffset.UtcNow;
         try
         {
-            var handle = await loadHandle(unitOfWork.GetRoomCategoryPlanWriteRepository());
+            // Снимок метаданных берём из общего репозитория: он кеширован на запрос, поэтому
+            // на пути записи это, как правило, попадание в кеш, а не ещё одна загрузка проекта.
+            // Своего снимка write-репозиторию заводить не нужно: план поселения его только читает
+            // (права, активность проекта, ссылки на типы), трекаемый Project ему не нужен.
+            var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
+
+            var handle = await loadHandle(unitOfWork.GetRoomCategoryPlanWriteRepository(), projectInfo);
 
             // Админ (в т.ч. робот, под которым выполняются фоновые джобы) проходит проверку прав —
             // как в ProjectPropsService: поселение целиком мастерский контур, игрокам сюда нельзя.
@@ -120,7 +128,7 @@ internal class AccommodationPropsService(
             await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation(
-                "Изменён план поселения {targetId}: операция {operation}, аргументы {@arguments}",
+                "Изменён план поселения {targetId}: операция {operation}, аргументы {arguments}",
                 targetId,
                 operationName,
                 arguments);
@@ -131,7 +139,7 @@ internal class AccommodationPropsService(
         {
             logger.LogWarning(
                 e,
-                "Не удалось изменить план поселения {targetId}: операция {operation}, аргументы {@arguments}",
+                "Не удалось изменить план поселения {targetId}: операция {operation}, аргументы {arguments}",
                 targetId,
                 operationName,
                 arguments);

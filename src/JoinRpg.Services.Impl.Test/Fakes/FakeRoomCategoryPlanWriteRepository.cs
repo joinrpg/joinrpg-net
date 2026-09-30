@@ -10,44 +10,49 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 
 /// <summary>
 /// Write-репозиторий агрегата поселения (ADR018) поверх <see cref="MockedProject"/>: отдаёт
-/// трекаемые EF-сущности комнат и групп вместе с согласованным доменным снимком
+/// трекаемые EF-сущности комнат вместе с согласованным доменным снимком
 /// <see cref="RoomCategoryPlan"/>, собранным из того же мока.
 /// </summary>
 internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : IRoomCategoryPlanWriteRepository
 {
-    public Task<IRoomCategoryPlanUpdateHandle> LoadPlanForUpdate(RoomCategoryIdentification categoryId)
+    public Task<IRoomCategoryPlanUpdateHandle> LoadPlanForUpdate(
+        ProjectInfo projectInfo,
+        RoomCategoryIdentification categoryId)
     {
         // Фильтр по проекту повторяет боевой запрос: категорию чужого проекта не найти.
         var category = mock.AccommodationTypes.SingleOrDefault(
                 type => type.Id == categoryId.RoomCategoryId && type.ProjectId == categoryId.ProjectId.Value)
             ?? throw new JoinRpgEntityNotFoundException(categoryId.RoomCategoryId, "room category");
 
-        return Task.FromResult<IRoomCategoryPlanUpdateHandle>(new Handle(mock, category));
+        return Task.FromResult<IRoomCategoryPlanUpdateHandle>(new Handle(mock, projectInfo, category));
     }
 
-    public Task<IRoomCategoryPlanUpdateHandle> LoadPlanForRoomUpdate(AccommodationRoomIdentification roomId)
+    public Task<IRoomCategoryPlanUpdateHandle> LoadPlanForRoomUpdate(
+        ProjectInfo projectInfo,
+        AccommodationRoomIdentification roomId)
     {
         // Фильтр по проекту здесь существен: он закрывает дефект 2 ADR018.
         var room = mock.Rooms.SingleOrDefault(
                 r => r.Id == roomId.RoomId && r.ProjectId == roomId.ProjectId.Value)
             ?? throw new AccommodationRoomNotFoundException(roomId);
 
-        return LoadPlanForUpdate(new RoomCategoryIdentification(roomId.ProjectId, room.AccommodationTypeId));
+        return LoadPlanForUpdate(
+            projectInfo,
+            new RoomCategoryIdentification(roomId.ProjectId, room.AccommodationTypeId));
     }
 
     private sealed class Handle : IRoomCategoryPlanUpdateHandle
     {
         private readonly MockedProject mock;
 
-        public Handle(MockedProject mock, ProjectAccommodationType category)
+        public Handle(MockedProject mock, ProjectInfo projectInfo, ProjectAccommodationType category)
         {
             this.mock = mock;
             Category = category;
 
-            // Порядок важен: ReInitProjectInfo подменяет экземпляр ProjectInfo, а конструктор
-            // плана требует ровно тот же экземпляр типов (ADR018, §3) — снимок строится ПОСЛЕ.
-            mock.ReInitProjectInfo();
-            ProjectInfo = mock.ProjectInfo;
+            // Снимок метаданных приходит снаружи, как и в бою: конструктор плана требует ровно
+            // того же экземпляра типов (ADR018, §3).
+            ProjectInfo = projectInfo;
 
             var projectId = ProjectInfo.ProjectId;
             var categoryId = new RoomCategoryIdentification(projectId, category.Id);
@@ -56,11 +61,13 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
                 .Where(room => room.AccommodationTypeId == category.Id)
                 .ToDictionary(room => new AccommodationRoomIdentification(projectId, room.Id));
 
-            Groups = mock.AccommodationRequests
+            // Группы нужны только доменному снимку: трекаемыми их хэндл больше не отдаёт —
+            // управление комнатами их не меняет.
+            var groups = mock.AccommodationRequests
                 .Where(group => group.AccommodationTypeId == category.Id)
-                .ToDictionary(group => new AccommodationRequestIdentification(projectId, group.Id));
+                .ToArray();
 
-            Plan = BuildPlan(categoryId, ProjectInfo, category, Rooms.Values, Groups.Values);
+            Plan = BuildPlan(categoryId, ProjectInfo, category, Rooms.Values, groups);
         }
 
         public ProjectInfo ProjectInfo { get; }
@@ -70,8 +77,6 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
         public ProjectAccommodationType Category { get; }
 
         public IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> Rooms { get; }
-
-        public IReadOnlyDictionary<AccommodationRequestIdentification, AccommodationRequest> Groups { get; }
 
         /// <summary>Всё, что сервис добавил в контекст, в порядке добавления.</summary>
         public List<object> Added { get; } = [];

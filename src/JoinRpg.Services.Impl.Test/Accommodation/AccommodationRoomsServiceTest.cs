@@ -40,7 +40,7 @@ public class AccommodationRoomsServiceTest : ProjectMetadataServiceTestBase
             new FakeEmailService(),
             currentUser,
             new AccommodationPropsService(
-                unitOfWork, currentUser, NullLogger<AccommodationPropsService>.Instance));
+                unitOfWork, currentUser, metadataRepository, NullLogger<AccommodationPropsService>.Instance));
     }
 
     /// <summary>Переводит проект в архив — операции над ним запрещены.</summary>
@@ -61,21 +61,13 @@ public class AccommodationRoomsServiceTest : ProjectMetadataServiceTestBase
     [Fact]
     public async Task AddRooms_CreatesRoomsInCategory()
     {
-        var created = await CreateService().AddRooms(CategoryId, "101, 102");
+        var created = await CreateService().AddRooms(CategoryId, ["101", "102"]);
 
         created.Count.ShouldBe(2);
         mock.Rooms.Select(room => room.Name).ShouldBe(["101", "102"]);
         mock.Rooms.ShouldAllBe(room => room.AccommodationTypeId == roomType.Id);
-        roomType.ProjectAccommodations.Count.ShouldBe(2);
+        mock.Rooms.ShouldAllBe(room => room.ProjectAccommodationType == roomType);
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
-    }
-
-    [Fact]
-    public async Task AddRooms_ExpandsNumericRanges()
-    {
-        _ = await CreateService().AddRooms(CategoryId, "1,2,5-8");
-
-        mock.Rooms.Select(room => room.Name).ShouldBe(["1", "2", "5", "6", "7", "8"]);
     }
 
     /// <summary>Дефект 1 ADR018: до переноса добавление комнат не проверяло прав вообще.</summary>
@@ -84,7 +76,7 @@ public class AccommodationRoomsServiceTest : ProjectMetadataServiceTestBase
     {
         // Игрок (mock.Player) не входит в ACL проекта
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateService(mock.Player.UserId).AddRooms(CategoryId, "101"));
+            () => CreateService(mock.Player.UserId).AddRooms(CategoryId, ["101"]));
 
         mock.Rooms.ShouldBeEmpty();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -97,7 +89,7 @@ public class AccommodationRoomsServiceTest : ProjectMetadataServiceTestBase
         ArchiveProject();
 
         _ = await Should.ThrowAsync<ProjectDeactivatedException>(
-            () => CreateService().AddRooms(CategoryId, "101"));
+            () => CreateService().AddRooms(CategoryId, ["101"]));
 
         mock.Rooms.ShouldBeEmpty();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);

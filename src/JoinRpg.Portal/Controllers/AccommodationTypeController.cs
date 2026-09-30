@@ -306,7 +306,14 @@ public class AccommodationTypeController(
             return NotFound();
         }
 
-        _ = await accommodationService.AddRooms(typeInfo.RoomCategoryId, name);
+        // Синтаксис поля ввода («1,2,5-8») разбирает web-слой: сервис принимает готовые имена.
+        var roomNames = RoomNamesParser.Parse(name);
+        if (roomNames.Count == 0)
+        {
+            return BadRequest();
+        }
+
+        _ = await accommodationService.AddRooms(typeInfo.RoomCategoryId, roomNames);
         return StatusCode(201);
     }
 

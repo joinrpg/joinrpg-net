@@ -6,7 +6,7 @@ namespace JoinRpg.Services.Impl.Accommodation;
 
 /// <summary>
 /// Контекст изменения плана категории комнат (ADR018, §10): доменный снимок ДО мутации,
-/// трекаемые EF-сущности комнат и групп и разрешённые действия над контекстом БД.
+/// трекаемые EF-сущности комнат и разрешённые действия над контекстом БД.
 /// Негенерик — чтобы приватные хелперы сервисов принимали его без параметра типа
 /// (как <c>ProjectMutationContext</c>, ADR009).
 /// </summary>
@@ -43,15 +43,6 @@ internal abstract record RoomCategoryPlanMutationContext(
         => Handle.Rooms.TryGetValue(roomId, out var room)
             ? room
             : throw new AccommodationRoomNotFoundException(roomId);
-
-    /// <summary>
-    /// Трекаемая группа жильцов пула, которую можно мутировать.
-    /// </summary>
-    /// <exception cref="AccommodationGroupNotFoundException">Группы с таким идентификатором в этом пуле нет.</exception>
-    public AccommodationRequest GetGroupForChange(AccommodationRequestIdentification groupId)
-        => Handle.Groups.TryGetValue(groupId, out var group)
-            ? group
-            : throw new AccommodationGroupNotFoundException(groupId);
 }
 
 /// <summary>

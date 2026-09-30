@@ -6,13 +6,14 @@ public interface IAccommodationService
     /// Добавляет комнаты в пул (категорию комнат), а не в тип проживания (ADR018).
     /// </summary>
     /// <param name="categoryId">Категория комнат, в которую добавляются комнаты.</param>
-    /// <param name="rooms">
-    /// Список комнат строкой: имена через запятую, диапазоны через дефис — «1,2,5-8».
+    /// <param name="roomNames">
+    /// Готовые имена комнат. Разбор пользовательского ввода («1,2,5-8» и прочий синтаксис формы)
+    /// сюда не попадает — он остаётся в web-слое (<c>RoomNamesParser</c>).
     /// </param>
     /// <returns>Идентификаторы созданных комнат.</returns>
     Task<IReadOnlyCollection<AccommodationRoomIdentification>> AddRooms(
         RoomCategoryIdentification categoryId,
-        string rooms);
+        IReadOnlyCollection<string> roomNames);
 
     /// <summary>
     /// Переименовывает комнату.

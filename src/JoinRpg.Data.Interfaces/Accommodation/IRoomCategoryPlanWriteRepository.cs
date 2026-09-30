@@ -19,20 +19,30 @@ public interface IRoomCategoryPlanWriteRepository
     /// <summary>
     /// Загружает план категории комнат: трекаемые сущности вместе с согласованным доменным снимком.
     /// </summary>
+    /// <param name="projectInfo">
+    /// Снимок метаданных проекта. Приходит снаружи, а не собирается здесь: репозиторий его только
+    /// читает, а вызывающий берёт его из кешированного на запрос <c>IProjectMetadataRepository</c>.
+    /// Конструктор агрегата требует, чтобы это был ровно тот же экземпляр (ADR018, §3).
+    /// </param>
     /// <param name="categoryId">Категория комнат, план которой будет изменён.</param>
     /// <exception cref="JoinRpgEntityNotFoundException">Категории комнат в проекте нет.</exception>
-    Task<IRoomCategoryPlanUpdateHandle> LoadPlanForUpdate(RoomCategoryIdentification categoryId);
+    Task<IRoomCategoryPlanUpdateHandle> LoadPlanForUpdate(
+        ProjectInfo projectInfo,
+        RoomCategoryIdentification categoryId);
 
     /// <summary>
     /// То же, но корень агрегата назван через комнату: пул в идентификаторе комнаты не закодирован,
-    /// поэтому репозиторий определяет его одним лёгким запросом перед загрузкой плана (ADR018, §10).
+    /// поэтому план ищется по принадлежности комнаты категории (ADR018, §10).
     /// </summary>
+    /// <param name="projectInfo">См. <see cref="LoadPlanForUpdate"/>.</param>
     /// <param name="roomId">Комната, которая будет изменена.</param>
     /// <exception cref="AccommodationRoomNotFoundException">
     /// Комнаты с таким идентификатором в этом проекте нет. Именно эта проверка закрывает дефект 2
     /// ADR018: чужую комнату не отредактировать и не удалить, даже зная её номер.
     /// </exception>
-    Task<IRoomCategoryPlanUpdateHandle> LoadPlanForRoomUpdate(AccommodationRoomIdentification roomId);
+    Task<IRoomCategoryPlanUpdateHandle> LoadPlanForRoomUpdate(
+        ProjectInfo projectInfo,
+        AccommodationRoomIdentification roomId);
 }
 
 /// <summary>
@@ -63,10 +73,13 @@ public interface IRoomCategoryPlanUpdateHandle
     ProjectAccommodationType Category { get; }
 
     /// <summary>Трекаемые комнаты пула по их идентификаторам.</summary>
+    /// <remarks>
+    /// Трекаемых групп жильцов (<see cref="AccommodationRequest"/>) здесь намеренно нет: ни одна
+    /// операция управления комнатами их не меняет, а кто где живёт, видно по доменному снимку
+    /// <see cref="Plan"/>. Заселение переедет сюда в PR 5 — тогда и появятся, вместе со своим
+    /// потребителем.
+    /// </remarks>
     IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> Rooms { get; }
-
-    /// <summary>Трекаемые группы жильцов пула по их идентификаторам, включая нерасселённые.</summary>
-    IReadOnlyDictionary<AccommodationRequestIdentification, AccommodationRequest> Groups { get; }
 
     /// <summary>
     /// Добавляет новую сущность в тот же <c>DbContext</c>, через который потом идёт

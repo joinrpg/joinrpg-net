@@ -447,7 +447,12 @@ internal interface IAccommodationPropsService
 Плюс перегрузка без результата. Входа по `ProjectIdentification` **нет**: `UnOccupyAllRooms`
 перебирает категории проекта и зовёт `ChangePlan` для каждой (§1).
 
-`RoomCategoryPlanMutationContext` отдаёт: трекаемые EF-сущности комнат и групп, доменный снимок
+Снимок метаданных write-хэндл **не собирает сам**: `ProjectInfo` приходит параметром из
+props-сервиса, который берёт его из `IProjectMetadataRepository` (тот кеширован на запрос, ADR015).
+Отличие от ADR014, где write-репозиторий строит `ProjectInfo` сам: там нужна ещё и трекаемая
+сущность `Project`, здесь — нет, план поселения метаданные только читает.
+
+`RoomCategoryPlanMutationContext` отдаёт: трекаемые EF-сущности комнат и (с PR 5) групп, доменный снимок
 `RoomCategoryPlan` **до** мутации, делегаты `AddEntity`/`RemoveEntity` (не `DbSet` наружу — как в
 ADR014, это делает контекст подделываемым в юнит-тестах) и `AddLegacyEmail` для писем о заселении.
 
@@ -463,7 +468,7 @@ public interface IAccommodationService
 {
     /// <summary>Комнаты добавляются в пул, а не в тип проживания</summary>
     Task<IReadOnlyCollection<AccommodationRoomIdentification>> AddRooms(
-        RoomCategoryIdentification categoryId, string rooms);
+        RoomCategoryIdentification categoryId, IReadOnlyCollection<string> roomNames);
 
     Task RenameRoom(AccommodationRoomIdentification roomId, string name);
     Task DeleteRoom(AccommodationRoomIdentification roomId);
@@ -517,6 +522,13 @@ public interface IAccommodationService
 `JoinRpgInsufficientRoomSpaceException` и `RoomIsOccupiedException` сегодня принимают EF-сущность
 `ProjectAccommodation` (`src/JoinRpg.Domain/Exceptions.cs`); переводятся на
 `AccommodationRoomIdentification` — так же, как ADR014 поступил с `ClaimWrongStatusException`.
+Переведённое исключение перестаёт зависеть от EF и переезжает из `JoinRpg.Domain` в
+`JoinRpg.DomainTypes/Characters/Claims/Accommodation/Exceptions.cs`, к остальным исключениям
+поселения.
+
+Разбор пользовательского ввода в сервис бизнес-логики **не попадает**: строку списка комнат
+(«1,2,5-8») разбирает web-слой (`RoomNamesParser` в `JoinRpg.WebPortal.Managers/Accommodation/`),
+а `AddRooms` принимает готовые имена.
 
 ### 11. Письма
 
@@ -649,7 +661,7 @@ public interface IAccommodationService
    `IAccommodationPropsService`, перевод `AddRooms`/`RenameRoom`/`DeleteRoom` — права, активность,
    типизированный проект. Закрывает дефекты 1, 2, 4 для управления комнатами.
 
-   Четыре уточнения по факту реализации:
+   Шесть уточнений по факту реализации:
 
    - **`ProjectOperationGuard` решено не выносить.** Общего кода оказалось на три строки —
      ровно `if (activeRequirement == MustBeActive) { projectInfo.EnsureProjectActive(); }`.
@@ -663,11 +675,32 @@ public interface IAccommodationService
      Пункт «открытых вопросов» закрыт: не выносим.
    - Перегрузок `ChangePlan` три, а не две: к варианту с результатом и варианту без него
      добавился `ChangePlanForRoom`. Корень агрегата в `RenameRoom`/`DeleteRoom` назван комнатой,
-     а не категорией, и определять пул одним лёгким запросом — дело хэндла (§10, там же это
-     обещано `UnOccupyGroup`). Публичного «дай категорию по комнате» в домене при этом не
-     появилось.
+     а не категорией; определять пул — дело хэндла (§10, там же это обещано `UnOccupyGroup`).
+     Отдельного запроса «в какой категории эта комната» при этом не нужно: план грузится сразу
+     по предикату «категория, которой принадлежит эта комната», и фильтр по проекту внутри
+     загрузчика по-прежнему закрывает дефект 2. Публичного «дай категорию по комнате» в домене
+     не появилось — и не могло бы: комнаты в `ProjectInfo` не входят, это оперативные данные
+     (ADR015), поэтому из метаданных категорию комнаты не узнать.
+   - **Запросов на мутацию — два** (по ревью). Было шесть: сборка `ProjectInfo` своим
+     `GetProjectWithFieldsAsync`, поиск категории по комнате, доменный снимок плана, ряд
+     категории, комнаты, группы. Стало: снимок плана (проекция, без трекинга) и ряд категории
+     вместе с комнатами одним `Include`. `ProjectInfo` приходит из кешированного на запрос
+     `IProjectMetadataRepository` — на web-запросе это попадание в кеш; трекаемые группы
+     жильцов из хэндла убраны вовсе, потому что ни одна операция управления комнатами их не
+     меняет, а кто где живёт, видно по доменному снимку. Вернутся в PR 5 вместе с заселением —
+     своим потребителем.
+   - **Разбор списка комнат ушёл из сервиса бизнес-логики в web-слой** (по ревью):
+     `RoomNamesParser` в `JoinRpg.WebPortal.Managers/Accommodation/`, `AddRooms` принимает
+     `IReadOnlyCollection<string>`. Синтаксис «1,2,5-8» — свойство конкретной формы, а не правило
+     предметной области. Разбор покрыт юнит-тестами в `JoinRpg.WebPortal.Managers.Test` (раньше
+     не был покрыт вовсе); заодно пустые элементы списка («101,») больше не превращаются в
+     комнату с пустым именем, а пустой ввод даёт `BadRequest` вместо пустой мутации.
    - `RoomIsOccupiedException` переведён на `AccommodationRoomIdentification` уже здесь: он
-     нужен `DeleteRoom`. `JoinRpgInsufficientRoomSpaceException` остаётся на EF-сущности до PR 5.
+     нужен `DeleteRoom`. Вместе с `AccommodationTypeIsOccupiedException` (PR 3) он перестал
+     зависеть от EF и переехал из `JoinRpg.Domain/Exceptions.cs` в
+     `JoinRpg.DomainTypes/Characters/Claims/Accommodation/Exceptions.cs`.
+     `JoinRpgInsufficientRoomSpaceException` остаётся на EF-сущности в `JoinRpg.Domain` до PR 5 —
+     он нужен ещё не мигрированному заселению.
      Из классов-запросов удалён только `UnOccupyRoomTypeRequest` (у него и так не было
      вызывающих); `OccupyRequest`, `UnOccupyRequest` и `UnOccupyAllRequest` ещё обслуживают
      немигрированное заселение и уйдут в PR 5.

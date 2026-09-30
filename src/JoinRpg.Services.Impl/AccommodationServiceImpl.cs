@@ -13,8 +13,6 @@ namespace JoinRpg.Services.Impl;
 /// (ADR018, PR 4) и идёт через <see cref="IAccommodationPropsService"/>; заселение пока живёт
 /// на легаси-базе <see cref="DbServiceImplBase"/> и переедет в PR 5.
 /// </summary>
-// Класс internal, потому что принимает internal-сервис: публичный конструктор с internal-параметром
-// компилятор не пропустит. Наружу сервис виден через IAccommodationService, как и ClaimServiceImpl.
 internal class AccommodationServiceImpl : DbServiceImplBase, IAccommodationService
 {
     private IEmailService EmailService { get; }
@@ -151,18 +149,18 @@ internal class AccommodationServiceImpl : DbServiceImplBase, IAccommodationServi
 
     public async Task<IReadOnlyCollection<AccommodationRoomIdentification>> AddRooms(
         RoomCategoryIdentification categoryId,
-        string rooms)
+        IReadOnlyCollection<string> roomNames)
     {
         //TODO: Implement rooms names checking
         var created = await accommodationPropsService.ChangePlan(
             categoryId,
             Permission.CanManageAccommodation,
             ProjectActiveRequirement.MustBeActive,
-            rooms,
+            roomNames,
             ctx =>
             {
                 var created = new List<ProjectAccommodation>();
-                foreach (var name in ParseRoomNames(ctx.Request))
+                foreach (var name in ctx.Request)
                 {
                     var room = new ProjectAccommodation
                     {
@@ -172,9 +170,6 @@ internal class AccommodationServiceImpl : DbServiceImplBase, IAccommodationServi
                         ProjectAccommodationType = ctx.Category,
                         Inhabitants = [],
                     };
-                    // Обратную навигацию проставляем сами: у сущности, созданной через new,
-                    // relationship fixup EF6 до сохранения ещё не отработал.
-                    ctx.Category.ProjectAccommodations.Add(room);
                     ctx.AddEntity(room);
                     created.Add(room);
                 }
@@ -182,36 +177,7 @@ internal class AccommodationServiceImpl : DbServiceImplBase, IAccommodationServi
             });
 
         // Id генерируются базой при SaveChanges — читаем уже после возврата из props-сервиса.
-        return [.. created.Select(room => new AccommodationRoomIdentification(categoryId.ProjectId, room.Id))];
-    }
-
-    /// <summary>
-    /// Разбирает список комнат: имена через запятую, числовые диапазоны через дефис — «1,2,5-8».
-    /// Логика перенесена из легаси-варианта как есть.
-    /// </summary>
-    private static IEnumerable<string> ParseRoomNames(string rooms)
-    {
-        foreach (var roomCandidate in rooms.Split(','))
-        {
-            var rangePos = roomCandidate.IndexOf('-');
-            if (rangePos > -1)
-            {
-                if (int.TryParse(roomCandidate[..rangePos].Trim(), out var roomsRangeStart)
-                    && int.TryParse(roomCandidate[(rangePos + 1)..].Trim(), out var roomsRangeEnd)
-                    && roomsRangeStart < roomsRangeEnd)
-                {
-                    while (roomsRangeStart <= roomsRangeEnd)
-                    {
-                        yield return roomsRangeStart.ToString();
-                        roomsRangeStart++;
-                    }
-                    // Диапазон задан корректно, переходим к следующему элементу списка
-                    continue;
-                }
-            }
-
-            yield return roomCandidate.Trim();
-        }
+        return [.. created.Select(room => room.GetId())];
     }
 
     public Task RenameRoom(AccommodationRoomIdentification roomId, string name)
