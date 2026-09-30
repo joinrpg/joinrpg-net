@@ -238,25 +238,26 @@ internal class ClaimServiceImpl(
     }
 
     /// <summary>
-    /// Комментарий к заявке — в том числе модерация финансовой операции из родительского
-    /// комментария.
+    /// Обычный комментарий к заявке — без побочных действий. Модерация финансовой операции —
+    /// отдельная операция, <see cref="ModerateFinanceOperation"/>.
     /// </summary>
     /// <remarks>
     /// Единственная claim-операция с <see cref="ProjectActiveRequirement.AllowInactive"/>: по ADR014
     /// комментирование в архивном проекте остаётся разрешённым — обсуждение игры продолжается после
     /// её конца, и форма комментария в UI намеренно не спрятана.
     /// </remarks>
-    public Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
+    public Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText)
         => characterPropsService.ChangeClaim(
             claimId,
             ClaimAccessRequirement.MasterOrPlayer,
             ProjectActiveRequirement.AllowInactive,
             (ParentCommentId: parentCommentId,
                 IsVisibleToPlayer: isVisibleToPlayer,
-                CommentText: commentText,
-                FinanceAction: financeAction),
+                CommentText: commentText),
             ctx =>
             {
+                // Комментарий может писать и игрок, и мастер; видимость выбирает автор — от этих
+                // двух вещей зависит и тип операции, и перевод заявки в обсуждение.
                 var claimOperationType = ctx.Claim.PlayerUserId == ctx.CurrentUser.UserId
                     ? ClaimOperationType.PlayerChange
                     : ctx.Request.IsVisibleToPlayer
@@ -265,66 +266,114 @@ internal class ClaimServiceImpl(
 
                 ctx.MarkDiscussed(ctx.Request.IsVisibleToPlayer);
 
-                // Комментарии дискуссии грузит write-хэндл (Include(c => c.CommentDiscussion.Comments)),
-                // иначе родителя было бы не найти и финансовая модерация тихо ломалась бы.
-                var parentComment = ctx.Claim.CommentDiscussion.Comments
-                    .SingleOrDefault(c => c.CommentId == ctx.Request.ParentCommentId);
+                var parentComment = ctx.Request.ParentCommentId is int parentCommentId
+                    ? FindParentComment(ctx, parentCommentId)
+                    : null;
 
-                CommentExtraAction? extraAction = null;
-
-                if (ctx.Request.FinanceAction != FinanceOperationAction.None)
-                {
-                    if (parentComment is null)
-                    {
-                        throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
-                    }
-                    extraAction = PerformFinanceOperation(ctx, ctx.Request.FinanceAction, parentComment);
-                }
-
-                var pending = ctx.AddComment(ctx.Request.CommentText, extraAction, claimOperationType);
-
-                if (parentComment is not null)
-                {
-                    // Внутри — проверка «нельзя ответить на скрытый комментарий так, чтобы игрок
-                    // ответ увидел».
-                    _ = pending.SetParent(parentComment, claimOperationType);
-                }
+                AddCommentCore(ctx, parentComment, ctx.Request.CommentText, extraAction: null, claimOperationType);
             });
 
-    private static CommentExtraAction PerformFinanceOperation(
-        ClaimMutationContext ctx,
-        FinanceOperationAction financeAction,
-        Comment parentComment)
-    {
-        var finance = parentComment.Finance;
-        if (finance == null)
-        {
-            throw new InvalidOperationException();
-        }
+    /// <summary>
+    /// Модерация финансовой операции, предложенной в комментарии: одобрение или отклонение.
+    /// Сопровождается комментарием мастера с проставленным <see cref="CommentExtraAction"/>.
+    /// </summary>
+    /// <remarks>
+    /// Три вещи, которыми модерация отличается от обычного комментария и которые поэтому не
+    /// параметры, а константы операции:
+    /// <list type="number">
+    /// <item>её всегда делает мастер — отсюда <see cref="ClaimOperationType.MasterVisibleChange"/>
+    /// без ветки «игрок»;</item>
+    /// <item>её результат всегда виден игроку — он платил, он и должен узнать решение;</item>
+    /// <item>она не переводит заявку в «обсуждается»: <c>MarkDiscussed</c> — про ответ
+    /// противоположной стороны по существу заявки, а не про деньги.</item>
+    /// </list>
+    /// Требование активности проекта то же, что у <see cref="AddComment"/>: модерация приходит
+    /// комментарием, а комментировать архивный проект разрешено (ADR014). Точный доступ — ниже по
+    /// телу: <see cref="Permission.CanManageMoney"/> либо владелец способа оплаты, и то, и другое
+    /// возможно только у мастера, отсюда <see cref="ClaimAccessRequirement.AnyMaster"/> снаружи.
+    /// </remarks>
+    public Task ModerateFinanceOperation(ClaimIdentification claimId, int parentCommentId, string commentText, FinanceOperationAction financeAction)
+        => characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.AnyMaster,
+            ProjectActiveRequirement.AllowInactive,
+            (ParentCommentId: parentCommentId,
+                CommentText: commentText,
+                FinanceAction: financeAction),
+            ctx =>
+            {
+                var parentComment = FindParentComment(ctx, ctx.Request.ParentCommentId)
+                    ?? throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
 
-        if (!finance.RequireModeration)
-        {
-            throw new ValueAlreadySetException("Finance entry is already moderated.");
-        }
+                var finance = parentComment.Finance
+                    ?? throw new InvalidOperationException("Requested to moderate comment without finance operation");
 
-        finance.RequestModerationAccess(ctx.CurrentUser.UserId);
-        finance.Changed = ctx.Now;
-        switch (financeAction)
-        {
-            case FinanceOperationAction.Approve:
-                finance.State = FinanceOperationState.Approved;
-                if (finance.OperationType == FinanceOperationType.PreferentialFeeRequest)
+                if (!finance.RequireModeration)
                 {
-                    ctx.Claim.PreferentialFeeUser = true;
+                    throw new ValueAlreadySetException("Finance entry is already moderated.");
                 }
-                ctx.Claim.UpdateClaimFeeIfRequired(finance.OperationDate, ctx.ProjectInfo);
-                return CommentExtraAction.ApproveFinance;
-            case FinanceOperationAction.Decline:
-                finance.State = FinanceOperationState.Declined;
-                return CommentExtraAction.RejectFinance;
-            case FinanceOperationAction.None:
-            default:
-                throw new ArgumentOutOfRangeException(nameof(financeAction), financeAction, null);
+
+                // Модерирует либо мастер с правом на деньги, либо мастер — владелец способа
+                // оплаты: поступления на свой счёт он подтверждает сам.
+                if (!ctx.ProjectInfo.HasMasterAccess(ctx.CurrentUser, Permission.CanManageMoney)
+                    && finance.PaymentType?.UserId != ctx.CurrentUser.UserId)
+                {
+                    throw new NoAccessToProjectException(ctx.ProjectInfo, ctx.CurrentUser.UserId);
+                }
+
+                finance.Changed = ctx.Now;
+
+                CommentExtraAction extraAction;
+                switch (ctx.Request.FinanceAction)
+                {
+                    case FinanceOperationAction.Approve:
+                        finance.State = FinanceOperationState.Approved;
+                        if (finance.OperationType == FinanceOperationType.PreferentialFeeRequest)
+                        {
+                            ctx.Claim.PreferentialFeeUser = true;
+                        }
+                        ctx.Claim.UpdateClaimFeeIfRequired(finance.OperationDate, ctx.ProjectInfo);
+                        extraAction = CommentExtraAction.ApproveFinance;
+                        break;
+                    case FinanceOperationAction.Decline:
+                        finance.State = FinanceOperationState.Declined;
+                        extraAction = CommentExtraAction.RejectFinance;
+                        break;
+                    case FinanceOperationAction.None:
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(financeAction), financeAction, null);
+                }
+
+                AddCommentCore(ctx, parentComment, ctx.Request.CommentText, extraAction, ClaimOperationType.MasterVisibleChange);
+            });
+
+    /// <summary>
+    /// Родительский комментарий этой же дискуссии, если он есть.
+    /// </summary>
+    /// <remarks>
+    /// Комментарии дискуссии грузит write-хэндл (<c>Include(c => c.CommentDiscussion.Comments)</c>),
+    /// иначе родителя было бы не найти и финансовая модерация тихо ломалась бы.
+    /// </remarks>
+    private static Comment? FindParentComment(ClaimMutationContext ctx, int parentCommentId)
+        => ctx.Claim.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
+
+    /// <summary>
+    /// Общая часть обеих операций комментирования: сам комментарий и привязка к родителю.
+    /// </summary>
+    private static void AddCommentCore(
+        ClaimMutationContext ctx,
+        Comment? parentComment,
+        string commentText,
+        CommentExtraAction? extraAction,
+        ClaimOperationType claimOperationType)
+    {
+        var pending = ctx.AddComment(commentText, extraAction, claimOperationType);
+
+        if (parentComment is not null)
+        {
+            // Внутри — проверка «нельзя ответить на скрытый комментарий так, чтобы игрок
+            // ответ увидел».
+            _ = pending.SetParent(parentComment, claimOperationType);
         }
     }
 

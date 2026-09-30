@@ -974,7 +974,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var claim = CreateClaim(ClaimStatus.AddedByUser);
 
         await CreateService().AddComment(
-            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "как дела?", FinanceOperationAction.None);
+            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "как дела?");
 
         var comment = claim.CommentDiscussion.Comments.ShouldHaveSingleItem();
         comment.IsVisibleToPlayer.ShouldBeTrue();
@@ -993,7 +993,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var claim = CreateClaim(ClaimStatus.AddedByMaster);
 
         await CreateService(mock.Player.UserId).AddComment(
-            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "согласен", FinanceOperationAction.None);
+            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "согласен");
 
         claim.CommentDiscussion.Comments.ShouldHaveSingleItem().IsCommentByPlayer.ShouldBeTrue();
         claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
@@ -1016,7 +1016,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         mock.ReInitProjectInfo();
 
         await CreateService().AddComment(
-            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "игра кончилась, обсудим", FinanceOperationAction.None);
+            claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "игра кончилась, обсудим");
 
         claim.CommentDiscussion.Comments.ShouldHaveSingleItem();
         SaveChangesCallCount.ShouldBe(1);
@@ -1030,7 +1030,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
             () => CreateService(mock.Player.UserId).AddComment(
-                claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "а вот и я", FinanceOperationAction.None));
+                claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "а вот и я"));
 
         claim.CommentDiscussion.Comments.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(0);
@@ -1038,13 +1038,13 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     [Fact]
-    public async Task AddComment_WithFinanceActionWithoutParentComment_Throws_AndDoesNotSave()
+    public async Task ModerateFinanceOperation_WithoutParentComment_Throws_AndDoesNotSave()
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
 
         _ = await Should.ThrowAsync<InvalidOperationException>(
-            () => CreateService().AddComment(
-                claim.GetId(), parentCommentId: null, isVisibleToPlayer: true, "принято", FinanceOperationAction.Approve));
+            () => CreateService().ModerateFinanceOperation(
+                claim.GetId(), parentCommentId: 12345, "принято", FinanceOperationAction.Approve));
 
         claim.CommentDiscussion.Comments.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(0);
@@ -1062,7 +1062,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         _ = await Should.ThrowAsync<EntityWrongStatusException>(
             () => CreateService().AddComment(
-                claim.GetId(), hidden.CommentId, isVisibleToPlayer: true, "отвечаю", FinanceOperationAction.None));
+                claim.GetId(), hidden.CommentId, isVisibleToPlayer: true, "отвечаю"));
 
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
@@ -1075,7 +1075,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var hidden = mock.CreateComment(claim, "только для мастеров", isVisibleToPlayer: false);
 
         await CreateService().AddComment(
-            claim.GetId(), hidden.CommentId, isVisibleToPlayer: false, "отвечаю", FinanceOperationAction.None);
+            claim.GetId(), hidden.CommentId, isVisibleToPlayer: false, "отвечаю");
 
         claim.CommentDiscussion.Comments.Last().Parent.ShouldBe(hidden);
         SaveChangesCallCount.ShouldBe(1);
@@ -1104,28 +1104,36 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     [Fact]
-    public async Task AddComment_ApprovingFinance_ApprovesOperation_AndMarksComment()
+    public async Task ModerateFinanceOperation_Approving_ApprovesOperation_AndMarksComment()
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
         var parent = CreateCommentWithProposedPayment(claim);
 
-        await CreateService().AddComment(
-            claim.GetId(), parent.CommentId, isVisibleToPlayer: true, "ок", FinanceOperationAction.Approve);
+        await CreateService().ModerateFinanceOperation(
+            claim.GetId(), parent.CommentId, "ок", FinanceOperationAction.Approve);
 
         parent.Finance.State.ShouldBe(FinanceOperationState.Approved);
-        claim.CommentDiscussion.Comments.Last().ExtraAction.ShouldBe(CommentExtraAction.ApproveFinance);
+        var comment = claim.CommentDiscussion.Comments.Last();
+        comment.ExtraAction.ShouldBe(CommentExtraAction.ApproveFinance);
+
+        // Решение по деньгам игрок обязан увидеть, поэтому видимость — не выбор мастера.
+        comment.IsVisibleToPlayer.ShouldBeTrue();
+
+        // И при этом модерация денег не двигает саму заявку: по существу заявки мастер не ответил.
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+
         SaveChangesCallCount.ShouldBe(1);
         SentNotifications.Count.ShouldBe(1);
     }
 
     [Fact]
-    public async Task AddComment_DecliningFinance_DeclinesOperation()
+    public async Task ModerateFinanceOperation_Declining_DeclinesOperation()
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
         var parent = CreateCommentWithProposedPayment(claim);
 
-        await CreateService().AddComment(
-            claim.GetId(), parent.CommentId, isVisibleToPlayer: true, "нет", FinanceOperationAction.Decline);
+        await CreateService().ModerateFinanceOperation(
+            claim.GetId(), parent.CommentId, "нет", FinanceOperationAction.Decline);
 
         parent.Finance.State.ShouldBe(FinanceOperationState.Declined);
         claim.CommentDiscussion.Comments.Last().ExtraAction.ShouldBe(CommentExtraAction.RejectFinance);
@@ -1133,15 +1141,15 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     [Fact]
-    public async Task AddComment_ModeratingAlreadyModeratedFinance_Throws_AndDoesNotSave()
+    public async Task ModerateFinanceOperation_AlreadyModerated_Throws_AndDoesNotSave()
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
         var parent = CreateCommentWithProposedPayment(claim);
         parent.Finance.State = FinanceOperationState.Approved;
 
         _ = await Should.ThrowAsync<ValueAlreadySetException>(
-            () => CreateService().AddComment(
-                claim.GetId(), parent.CommentId, isVisibleToPlayer: true, "ещё раз", FinanceOperationAction.Approve));
+            () => CreateService().ModerateFinanceOperation(
+                claim.GetId(), parent.CommentId, "ещё раз", FinanceOperationAction.Approve));
 
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
