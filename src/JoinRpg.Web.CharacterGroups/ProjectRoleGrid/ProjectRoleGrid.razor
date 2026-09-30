@@ -6,9 +6,17 @@
 @inject IProjectRoleGridClient Client
 @inject NavigationManager NavigationManager
 @inject PersistentComponentState ApplicationState
+@inject ILogger<ProjectRoleGrid> logger
 @implements IDisposable
 
-@if (Result is null)
+@if (loadFailed)
+{
+    @* Без этой ветки любой сбой загрузки оставлял «Идет загрузка...» навсегда: остров падал
+       молча, а сервер при этом отдавал HTTP 200, поэтому в логах прода не было ничего (см.
+       docs/adr011-roles-grid-payload.md и багу #4883 — сетка не грузилась при скрытом игроке). *@
+    <JoinErrorMessage>Не удалось загрузить сетку ролей. Попробуйте обновить страницу.</JoinErrorMessage>
+}
+else if (Result is null)
 {
     <JoinLoadingMessage />
 }
@@ -136,6 +144,7 @@ else
     [Parameter] public bool HotRolesOnly { get; set; }
 
     private ProjectRoleGridViewResult? Result { get; set; }
+    private bool loadFailed;
     private PersistingComponentStateSubscription _persistingSubscription;
     private List<object> _renderBlocks = [];
     private GroupNode? _treeRoot;
@@ -147,19 +156,32 @@ else
     {
         _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistData);
 
-        if (!ApplicationState.TryTakeFromJson<ProjectRoleGridViewResult>(nameof(ProjectRoleGrid), out var result))
+        // Ловим всё: и поход на сервер, и десериализацию (баг #4883 падал именно на ней —
+        // «Could not parse 'UserId(-1)'»), и сборку блоков рендера. Любое из этих падений
+        // раньше означало «Идет загрузка...» навсегда и ни строчки в логах.
+        try
         {
-            result = RolesListId is { } rolesListId
-                ? await Client.GetRoleGrid(rolesListId)
-                : await Client.GetClassicRoleGrid(ProjectId, ClassicGroupId, HotRolesOnly);
-        }
-        Result = result;
+            if (!ApplicationState.TryTakeFromJson<ProjectRoleGridViewResult>(nameof(ProjectRoleGrid), out var result))
+            {
+                result = RolesListId is { } rolesListId
+                    ? await Client.GetRoleGrid(rolesListId)
+                    : await Client.GetClassicRoleGrid(ProjectId, ClassicGroupId, HotRolesOnly);
+            }
+            Result = result;
 
-        if (result?.Grid is { } grid)
+            if (result?.Grid is { } grid)
+            {
+                BuildRenderBlocks(grid);
+                _treeRoot = RenderTreeBuilder.Build(grid.Rows);
+                _treeRootSiblings = _treeRoot is null ? [] : [_treeRoot];
+            }
+        }
+        catch (Exception ex)
         {
-            BuildRenderBlocks(grid);
-            _treeRoot = RenderTreeBuilder.Build(grid.Rows);
-            _treeRootSiblings = _treeRoot is null ? [] : [_treeRoot];
+            loadFailed = true;
+            // В WebAssembly это уходит в консоль браузера — до серверных логов ошибка пока не
+            // доезжает, мониторинг этот класс поломок по-прежнему не видит (см. скилл prod-logs).
+            logger.LogError(ex, "Не удалось загрузить сетку ролей {RolesListId} (проект {ProjectId})", RolesListId, ProjectId);
         }
     }
 
