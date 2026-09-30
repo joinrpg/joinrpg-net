@@ -182,14 +182,6 @@ public class JoinRpgConcealCommentException : JoinRpgBaseException
     {
     }
 }
-public class ProjectAccomodationNotFound : JoinRpgBaseException
-{
-    public ProjectAccomodationNotFound(int projectId, int accomodationTypeId, int accomodationType) : base($"Место проживание с id={accomodationType} не соотвествуют проекту с id={projectId} и типом проживания с id={accomodationTypeId} ")
-    {
-    }
-
-}
-
 public class JoinRpgAccountOperationFailedException(string message) : JoinRpgBaseException(message) { }
 
 public class JoinRpgProjectMisconfiguredException(ProjectIdentification projectId, string message) : JoinRpgProjectException(projectId, message);
