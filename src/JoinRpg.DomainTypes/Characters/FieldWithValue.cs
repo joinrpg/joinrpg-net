@@ -50,6 +50,17 @@ public sealed class FieldWithValue
         }
     }
 
+    /// <summary>
+    /// Идентификаторы пользователей для полей-ссылок на пользователя (ADR017).
+    /// Отдельно от <see cref="SelectedIds"/>: те заполняются только у полей со списком вариантов.
+    /// </summary>
+    /// <remarks>
+    /// Читает терпимо: мусор в уже сохранённом значении не должен ронять показ страницы.
+    /// Строгая проверка — при сохранении, в <see cref="NormalizeValueBeforeAssign"/>.
+    /// </remarks>
+    public IReadOnlyList<UserIdentification> UserIds
+        => Field.Type.IsUserLink() ? ParseUserIds(Value, strict: false) : [];
+
     public bool HasEditableValue => !string.IsNullOrWhiteSpace(Value);
 
     public bool HasViewableValue => !string.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue;
@@ -89,7 +100,60 @@ public sealed class FieldWithValue
             Field.ValidateVariantList(newIds, existingIds);
         }
 
+        if (normalized is not null && Field.Type.IsUserLink())
+        {
+            var userIds = ParseUserIds(normalized, strict: true);
+            if (Field.Type == ProjectFieldType.UserLink && userIds.Count > 1)
+            {
+                throw new FieldUserValueInvalidException(Field.Id, normalized);
+            }
+            normalized = userIds.Count == 0 ? null : userIds.Select(id => id.Value.ToString()).JoinStrings(",");
+        }
+
         return normalized;
+    }
+
+    /// <summary>
+    /// Разбирает значение поля-ссылки на пользователя. Дубликаты отбрасываются, порядок сохраняется.
+    /// </summary>
+    /// <param name="value">Сырое значение поля — идентификаторы через запятую</param>
+    /// <param name="strict">
+    /// true — нераспознанный кусок значения бросает <see cref="FieldUserValueInvalidException"/>,
+    /// false — молча пропускается.
+    /// </param>
+    private List<UserIdentification> ParseUserIds(string? value, bool strict)
+    {
+        var result = new List<UserIdentification>();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return result;
+        }
+
+        foreach (var part in value.Split(','))
+        {
+            var trimmed = part.Trim();
+            if (trimmed.Length == 0)
+            {
+                continue;
+            }
+
+            // UserIdentification.TryParse не принимает неположительные значения
+            if (!UserIdentification.TryParse(trimmed, null, out var userId))
+            {
+                if (strict)
+                {
+                    throw new FieldUserValueInvalidException(Field.Id, value);
+                }
+                continue;
+            }
+
+            if (!result.Contains(userId))
+            {
+                result.Add(userId);
+            }
+        }
+
+        return result;
     }
 
     public int GetCurrentFee()

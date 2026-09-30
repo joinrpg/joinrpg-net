@@ -57,3 +57,13 @@ public class FieldValueInvalidException(ProjectFieldIdentification fieldId, int 
     public ProjectFieldIdentification FieldId { get; } = fieldId;
     public int VariantId { get; } = variantId;
 }
+
+/// <summary>
+/// Значение поля-ссылки на пользователя (ADR017) не является списком идентификаторов пользователей
+/// </summary>
+public class FieldUserValueInvalidException(ProjectFieldIdentification fieldId, string value)
+    : JoinRpgBaseException($"Поле {fieldId}: значение «{value}» не является ссылкой на пользователя")
+{
+    public ProjectFieldIdentification FieldId { get; } = fieldId;
+    public string Value { get; } = value;
+}

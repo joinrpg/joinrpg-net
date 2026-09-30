@@ -26,6 +26,7 @@ public class CharacterController(
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUser,
+    IUserRepository userRepository,
     CharacterPlotViewService characterPlotViewService,
     JoinrpgMarkdownLinkRendererFactory linkRendererFactory
         ) : JoinControllerGameBase
@@ -68,7 +69,8 @@ public class CharacterController(
                 await characterInfoRepository.GetCharacterInfo(character.GetId()),
                 plots,
                 linkRenderer,
-                projectInfo));
+                projectInfo,
+                await userRepository.LoadFieldUserLinks(character, projectInfo)));
     }
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
@@ -85,7 +87,7 @@ public class CharacterController(
             CharacterTypeInfo = characterInfo.CharacterTypeInfo,
             Name = field.CharacterName,
             ParentCharacterGroupIds = [.. field.GetDirectNonSpecialGroupIds(projectInfo)],
-        }.Fill(field, characterInfo, currentUser.UserIdentification, projectInfo));
+        }.Fill(field, characterInfo, currentUser.UserIdentification, projectInfo, await userRepository.LoadFieldUserLinks(field, projectInfo)));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
@@ -99,7 +101,7 @@ public class CharacterController(
         {
             if (!ModelState.IsValid)
             {
-                return View(viewModel.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo));
+                return View(viewModel.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo, await userRepository.LoadFieldUserLinks(field, projectInfo)));
             }
 
             await characterService.EditCharacter(
@@ -116,7 +118,7 @@ public class CharacterController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            return View(viewModel.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo));
+            return View(viewModel.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo, await userRepository.LoadFieldUserLinks(field, projectInfo)));
         }
     }
 

@@ -41,6 +41,11 @@ public enum ProjectFieldViewType
         Description = "Ссылка на страницу на сайте, гугл-dok, чаршит etc",
         Order = 12)]
     Uri,
+    [Display(
+        Name = "Ссылка на пользователя",
+        Description = "Ссылка на любого пользователя joinrpg",
+        Order = 13)]
+    UserLink,
 }
 
 public static class ProjectFieldViewTypeHelper
