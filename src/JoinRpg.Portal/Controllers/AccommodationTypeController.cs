@@ -143,15 +143,21 @@ public class AccommodationTypeController(
 
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpPost("~/{projectId}/rooms/occupyroom")]
-    public async Task<ActionResult> OccupyRoom(ProjectIdentification projectId, int room, string reqId)
+    public async Task<ActionResult> OccupyRoom(
+        ProjectIdentification projectId,
+        AccommodationRoomIdentification? room,
+        string reqId)
     {
+        // Комнату собирает модель-биндер (ProjectEntityIdModelBinder склеивает голое число из
+        // запроса с проектом маршрута). Группы приходят списком через запятую — биндером такое
+        // не разобрать, поэтому они по-прежнему разбираются здесь.
         var groupIds = (reqId ?? "").Split(',')
             .Select(s => int.TryParse(s, out var val) ? val : 0)
             .Where(val => val > 0)
             .Select(val => new AccommodationRequestIdentification(projectId, val))
             .ToList();
 
-        if (groupIds.Count == 0)
+        if (room is null || !ModelState.IsValid || groupIds.Count == 0)
         {
             return BadRequest();
         }
@@ -161,8 +167,7 @@ public class AccommodationTypeController(
         // по кодам ответа. Ловить всё подряд с кодом 500 больше незачем.
         try
         {
-            await accommodationService.OccupyRoom(
-                new AccommodationRoomIdentification(projectId, room), groupIds);
+            await accommodationService.OccupyRoom(room, groupIds);
             return Ok();
         }
         catch (AccommodationRoomNotFoundException)
