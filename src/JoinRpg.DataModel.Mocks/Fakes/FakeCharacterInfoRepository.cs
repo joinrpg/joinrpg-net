@@ -33,6 +33,10 @@ public sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacter
         => Task.FromResult<IReadOnlyCollection<CharacterInfo>>(
             [.. All().Where(character => characterIds.Contains(character.Id))]);
 
+    public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByClaims(IReadOnlyCollection<ClaimIdentification> claimIds)
+        => Task.FromResult<IReadOnlyCollection<CharacterInfo>>(
+            [.. All().Where(character => character.Claims.Any(claim => claimIds.Contains(claim.ClaimId)))]);
+
     public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(
         ProjectIdentification projectId,
         IReadOnlyCollection<CharacterGroupIdentification> groupIds,

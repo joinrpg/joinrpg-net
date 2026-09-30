@@ -101,6 +101,20 @@ internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataReposito
         return await GetCoreAsync(projectId, character => characterIntIds.Contains(character.CharacterId));
     }
 
+    public async Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByClaims(
+        IReadOnlyCollection<ClaimIdentification> claimIds)
+    {
+        if (claimIds.Count == 0)
+        {
+            return [];
+        }
+
+        var projectId = claimIds.EnsureSameProject().First().ProjectId;
+        var claimIntIds = claimIds.Select(c => c.ClaimId).ToArray();
+
+        return await GetCoreAsync(projectId, character => character.Claims.Any(claim => claimIntIds.Contains(claim.ClaimId)));
+    }
+
     public async Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(
         ProjectIdentification projectId,
         IReadOnlyCollection<CharacterGroupIdentification> groupIds,

@@ -25,6 +25,17 @@ public interface ICharacterInfoRepository
     Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfos(IReadOnlyCollection<CharacterIdentification> characterIds);
 
     /// <summary>
+    /// Персонажи, на которых поданы указанные заявки — одним запросом.
+    /// </summary>
+    /// <remarks>
+    /// Нужен там, где на руках только идентификаторы заявок: так устроен, например, план поселения
+    /// (ADR018), который несёт жильцов как <c>ClaimIdentification</c>. Отдельный метод, а не связка
+    /// «сначала узнать персонажей по заявкам, потом загрузить их» — иначе на страницу приходится
+    /// два запроса вместо одного.
+    /// </remarks>
+    Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByClaims(IReadOnlyCollection<ClaimIdentification> claimIds);
+
+    /// <summary>
     /// Персонажи, лежащие непосредственно в любой из указанных групп. Раскрытие дерева групп —
     /// на стороне вызывающего (<c>ProjectInfo.GetChildGroupIdsIncludingThis</c>).
     /// </summary>
