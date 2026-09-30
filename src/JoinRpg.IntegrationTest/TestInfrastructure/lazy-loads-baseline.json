@@ -29,7 +29,6 @@
   "GET /{projectId}/money/ByMaster": 2,
   "GET /{projectId}/money/MoneySummary": 3,
   "GET /{projectId}/money/Operations": 3,
-  "GET /{projectId}/money/Setup": 2,
   "GET /{projectId}/print/Character": 6,
   "GET /{projectId}/print/CharacterList": 3,
   "GET /{projectId}/print/EnvelopesC5": 3,

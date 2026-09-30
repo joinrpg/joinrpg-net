@@ -34,27 +34,33 @@ public class FinanceSetupViewModel
         ProjectId = project.ProjectId;
         HasEditAccess = project.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney);
 
+        // Типы оплаты и мастера берём из метаданных проекта: там уже есть данные пользователей
+        // (UserInfoHeader), поэтому не приходится ходить по EF-навигациям PaymentType.User
+        // и ProjectAcl.User — каждая из них тянула отдельный запрос к Users (#4998).
+        var financeSettings = projectInfo.ProjectFinanceSettings;
+        var virtualPaymentsUserInfo = virtualPaymentsUser.ToUserInfoHeader();
+
         var potentialCashPaymentTypes =
-            project.ProjectAcls
+            projectInfo.Masters
                 .Where(
-                    acl => project.PaymentTypes
+                    master => financeSettings.PaymentTypes
                         .Where(pt => pt.TypeKind == PaymentTypeKind.Cash)
-                        .All(pt => pt.UserId != acl.UserId))
-                .Select(acl => new PaymentTypeListItemViewModel(acl));
+                        .All(pt => pt.User.UserId != master.UserId))
+                .Select(master => new PaymentTypeListItemViewModel(master, projectInfo.ProjectId));
 
         var existedPaymentTypes =
-            project.PaymentTypes
+            financeSettings.PaymentTypes
                 .Where(pt => !pt.TypeKind.IsOnline())
                 .Select(pt => new PaymentTypeListItemViewModel(pt));
 
         var onlinePaymentTypes = new[]
         {
-            project.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.Online)
+            financeSettings.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.Online)
                 .Select(pt => new PaymentTypeListItemViewModel(pt))
-                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.Online, virtualPaymentsUser, project.ProjectId),
-            project.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.OnlineSubscription)
+                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.Online, virtualPaymentsUserInfo, projectInfo.ProjectId),
+            financeSettings.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.OnlineSubscription)
                 .Select(pt => new PaymentTypeListItemViewModel(pt))
-                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.OnlineSubscription, virtualPaymentsUser, project.ProjectId),
+                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.OnlineSubscription, virtualPaymentsUserInfo, projectInfo.ProjectId),
         };
 
         PaymentTypes =

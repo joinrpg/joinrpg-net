@@ -38,15 +38,7 @@
                 </span>
             </td>
             <td>
-                <span style="display: inline-flex; align-items: center;">
-                    @if (item.Master.VerifiedProfileFlag)
-                    {
-                        <span style="margin-right: 0.5em">
-                            <component type="typeof(JoinBadge)" render-mode="Static" Param-Text="@Html.DisplayNameFor(model => item.Master.VerifiedProfileFlag)" />
-                        </span>
-                    }
-                    @Html.DisplayFor(modelItem => item.Master)
-                </span>
+                <component type="typeof(UserLink)" render-mode="Static" param-Model="@(new UserLinkViewModel(item.Master))" />
             </td>
             @if (Model.HasEditAccess)
             {
@@ -76,7 +68,7 @@
                                     data-element="@item.PaymentTypeId"
                                     data-name="@item.Name"
                                     data-kind="@item.TypeKind"
-                                    data-user="@item.Master.UserId"
+                                    data-user="@item.Master.UserId.Value"
                                     data-action="Включить">Включить</button>
                         }
                         else if (item.TypeKind == PaymentTypeKindViewModel.Online)
