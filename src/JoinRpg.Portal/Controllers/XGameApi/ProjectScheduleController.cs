@@ -1,5 +1,5 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain.Schedules;
+using JoinRpg.DomainTypes.Schedules;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
@@ -46,7 +46,7 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
     {
         return new ProgramItemInfoApi
         {
-            ProgramItemId = slot.ProgramItem.Id,
+            ProgramItemId = slot.ProgramItem.Id.CharacterId,
             Name = slot.ProgramItem.Name,
             Authors = slot.ProgramItem.Authors.Select(author =>
                             new AuthorInfoApi
@@ -61,16 +61,17 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
                 RoomId = room.Id.ProjectFieldVariantId,
                 Name = room.Name,
             }),
-            Description = ((MarkdownString?)slot.ProgramItem.Description).ToPlainTextWithoutHtmlEscape().ToString(),
-            DescriptionHtml = ((MarkdownString?)slot.ProgramItem.Description).ToHtmlString().ToString(),
-            DescriptionMarkdown = slot.ProgramItem.Description.Contents,
+            Description = slot.ProgramItem.Description.ToPlainTextWithoutHtmlEscape().ToString(),
+            DescriptionHtml = slot.ProgramItem.Description.ToHtmlString().ToString(),
+            DescriptionMarkdown = slot.ProgramItem.Description.Value,
             ProgramItemDetailsUri = new Uri(GetProgramItemLink(slot)),
-            ProjectId = slot.ProgramItem.ProjectId,
+            ProjectId = slot.ProgramItem.Id.ProjectId,
         };
 
         string GetProgramItemLink(ProgramItemPlaced slot)
         {
-            return Url.ActionLink("Details", "Character", new { slot.ProgramItem.ProjectId, CharacterId = slot.ProgramItem.Id })
+            return Url.ActionLink("Details", "Character",
+                    new { ProjectId = (int)slot.ProgramItem.Id.ProjectId, slot.ProgramItem.Id.CharacterId })
                 ?? throw new InvalidOperationException("URI should be present");
         }
     }

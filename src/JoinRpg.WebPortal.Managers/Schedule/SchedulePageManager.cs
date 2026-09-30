@@ -3,8 +3,10 @@ using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain;
-using JoinRpg.Domain.Schedules;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Schedules;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
@@ -17,7 +19,7 @@ public class SchedulePageManager(
     ICurrentProjectAccessor currentProject,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
-    ICharacterRepository characterRepository,
+    ICharacterInfoRepository characterInfoRepository,
     ILogger<SchedulePageManager> logger
         )
 {
@@ -95,18 +97,11 @@ public class SchedulePageManager(
             End = new CalDateTime(evt.EndTime.LocalDateTime, timeZone.Id),
             Summary = evt.ProgramItem.Name,
             Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
-            Description = ((MarkdownString?)evt.ProgramItem.Description).ToPlainTextWithoutHtmlEscape(),
+            Description = evt.ProgramItem.Description.ToPlainTextWithoutHtmlEscape(),
         };
     }
 
-    private async Task<ScheduleResult> GetCompiledSchedule()
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
-
-        var characters = await characterRepository.LoadCharactersWithGroups(currentProject.ProjectId);
-        var scheduleBuilder = new ScheduleBuilder(characters, projectInfo);
-        return scheduleBuilder.Build();
-    }
+    private async Task<ScheduleResult> GetCompiledSchedule() => (await GetBuilder()).Build();
 
     private async Task BuildAppointments(SchedulePageViewModel viewModel)
     {
@@ -327,7 +322,9 @@ public class SchedulePageManager(
 
     public async Task<ScheduleBuilder> GetBuilder()
     {
-        var characters = await characterRepository.LoadCharactersWithGroups(currentProject.ProjectId);
+        var characters = await characterInfoRepository.GetAllCharacterInfos(
+            currentProject.ProjectId,
+            CharacterStatusSpec.Active);
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
 

@@ -30,7 +30,8 @@ internal static class ProjectInfoFixture
         IReadOnlyCollection<ProjectMasterInfo>? masters = null,
         ProjectLifecycleStatus projectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
         IReadOnlyCollection<ProjectFeeSettingInfo>? feeSchedule = null,
-        ProjectAccommodationSettings? accommodationSettings = null)
+        ProjectAccommodationSettings? accommodationSettings = null,
+        bool scheduleEnabled = false)
         => new(
             ProjectId,
             new ProjectName("Test"),
@@ -44,7 +45,7 @@ internal static class ProjectInfoFixture
             false,
             new ProjectCheckInSettings(false, false, false),
             projectStatus,
-            new ProjectScheduleSettings(false),
+            new ProjectScheduleSettings(scheduleEnabled),
             ProjectCloneSettings.CloneDisabled,
             new DateOnly(2024, 1, 1),
             ProjectProfileRequirementSettings.AllNotRequired,
@@ -65,13 +66,14 @@ internal static class ProjectInfoFixture
         ProjectFieldType type = ProjectFieldType.String,
         ProjectFieldVisibility visibility = ProjectFieldVisibility.Public,
         FieldBoundTo boundTo = FieldBoundTo.Character,
-        string ordering = "")
+        string ordering = "",
+        IReadOnlyCollection<ProjectFieldVariant>? variants = null)
         => new(
             new ProjectFieldIdentification(ProjectId, fieldId),
             $"Field{fieldId}",
             type,
             boundTo,
-            [],
+            variants ?? [],
             ordering,
             0,
             true,

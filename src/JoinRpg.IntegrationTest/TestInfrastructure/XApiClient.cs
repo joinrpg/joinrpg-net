@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using JoinRpg.XGameApi.Contract;
+using JoinRpg.XGameApi.Contract.Schedule;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
 
@@ -108,6 +109,21 @@ public class XApiClient(HttpClient httpClient)
     public async Task<System.Net.HttpStatusCode> GetUserInfoRawAsync(int userId)
     {
         var response = await httpClient.GetAsync($"/x-api/users/{userId}/");
+        return response.StatusCode;
+    }
+
+    /// <summary>GET /x-game-api/{projectId}/schedule/all — all scheduled program items</summary>
+    public async Task<IReadOnlyList<ProgramItemInfoApi>> GetScheduleAsync(int projectId)
+    {
+        var response = await httpClient.GetAsync($"/x-game-api/{projectId}/schedule/all");
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<List<ProgramItemInfoApi>>())!;
+    }
+
+    /// <summary>Like GetScheduleAsync but returns the HTTP status code instead of throwing</summary>
+    public async Task<System.Net.HttpStatusCode> GetScheduleRawAsync(int projectId)
+    {
+        var response = await httpClient.GetAsync($"/x-game-api/{projectId}/schedule/all");
         return response.StatusCode;
     }
 

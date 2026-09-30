@@ -113,10 +113,15 @@ public class XApiMasterFixture : IAsyncLifetime
             },
             MasterDisplayName);
 
+    /// <param name="timeSlotOptions">
+    /// Время и длительность — обязательны для вариантов поля расписания
+    /// (<see cref="ProjectFieldType.ScheduleTimeSlotField"/>), для остальных полей не задаются.
+    /// </param>
     internal Task<int> CreateFieldVariant(
         UserIdentification userId,
         ProjectFieldIdentification fieldId,
-        string label)
+        string label,
+        TimeSlotOptions? timeSlotOptions = null)
         => Factory.Services.RunAsAsync(
             userId,
             async sp =>
@@ -130,7 +135,7 @@ public class XApiMasterFixture : IAsyncLifetime
                     programmaticValue: null,
                     price: 0,
                     playerSelectable: false,
-                    timeSlotOptions: null));
+                    timeSlotOptions));
                 return result.ProjectFieldVariantId;
             },
             MasterDisplayName);
