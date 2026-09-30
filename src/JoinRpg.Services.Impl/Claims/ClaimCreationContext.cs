@@ -13,9 +13,6 @@ namespace JoinRpg.Services.Impl.Claims;
 /// </summary>
 /// <param name="Character">Трекаемая EF-сущность персонажа, на которого подаётся заявка.</param>
 /// <param name="CharacterInfo">Доменный снимок персонажа; по нему считаются правила подачи.</param>
-/// <param name="Initiator">
-/// Текущий пользователь как EF-сущность — только для легаси-канала писем.
-/// </param>
 /// <param name="Player">
 /// Игрок, на которого оформляется заявка. При <see cref="ClaimOperation.AddByMaster"/> это
 /// <b>не</b> тот, кто выполняет операцию. <c>null</c> — если операция игрока заранее не знает:
@@ -29,7 +26,6 @@ internal abstract record ClaimCreationContext(
     ProjectInfo ProjectInfo,
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
-    User Initiator,
     UserInfo Player,
     Action<object> AddEntity,
     Func<ClaimIdentification, Task<Claim>> LoadOtherClaimCore,
@@ -146,11 +142,10 @@ internal sealed record ClaimCreationContext<TArgs>(
     ProjectInfo ProjectInfo,
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
-    User Initiator,
     UserInfo Player,
     Action<object> AddEntity,
     Func<ClaimIdentification, Task<Claim>> LoadOtherClaimCore,
     FieldSaveHelper FieldSaveHelper,
     TArgs Request)
-    : ClaimCreationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, Initiator, Player,
+    : ClaimCreationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, Player,
         AddEntity, LoadOtherClaimCore, FieldSaveHelper);

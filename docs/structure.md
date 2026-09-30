@@ -54,7 +54,8 @@
 ### Services
 - `JoinRpg.Services.Interfaces` — контракты сервисов. 1 метод = 1 действие пользователя
 - `JoinRpg.Services.Impl` — реализация бизнес-логики. Проверять права самостоятельно, не доверять входным данным. Инкапсулировать операции чтения (кроме выборки по первичному ключу) внутри репозиториев
-- `JoinRpg.Services.Email` — email-сервис (часть функций мигрирует в Notifications)
+- ~~`JoinRpg.Services.Email`~~ — удалён: все уведомления мигрировали в `JoinRpg.Services.Notifications`.
+  Одноимённый namespace ещё жив внутри `JoinRpg.Services.Impl` (`MassProjectEmailService`)
 - `JoinRpg.Services.Export` — экспорт в .xlsx (ClosedXML). Не знает ничего о специфике JoinRpg — универсальный компонент.
 - `JoinRpg.Services.Notifications` — оркестровка многоканальных уведомлений
 - `JoinRpg.Integrations.KogdaIgra` — бизнес-логика синхронизации с KogdaIgra

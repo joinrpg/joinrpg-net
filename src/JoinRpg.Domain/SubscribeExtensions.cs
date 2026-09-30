@@ -65,19 +65,4 @@ public static class SubscribeExtensions
             .WhereNotNull()
             .Where(u => !mastersOnly || entity.HasMasterAccess(new UserIdentification(u.UserId))); //remove player if we doing something not player visible
     }
-
-    public static IEnumerable<User> GetSubscriptions(this ProjectAccommodation room)
-    {
-        return room.Inhabitants.SelectMany(i => i.Subjects).SelectMany(claim =>
-           claim.GetSubscriptions(subs => subs.AccommodationChange, Enumerable.Empty<User>()).Distinct().ToList());
-    }
-
-    public static ICollection<User> GetInviteSubscriptions(this Claim[] possibleRecipients)
-    {
-        return possibleRecipients.Select(claim =>
-            claim.GetSubscriptions(subs => subs.AccommodationChange, Enumerable.Empty<User>()))
-            .SelectMany(user => user)
-            .Distinct()
-            .ToList();
-    }
 }

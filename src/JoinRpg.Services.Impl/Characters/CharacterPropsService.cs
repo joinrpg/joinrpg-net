@@ -75,7 +75,7 @@ internal class CharacterPropsService(
                 // Write-репозиторий берём из UnitOfWork: он обязан использовать тот же DbContext, через
                 // который мы потом сохраняем (ADR009).
                 var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
-                    .LoadCharacterForUpdate(characterId, currentUserAccessor.UserIdentification);
+                    .LoadCharacterForUpdate(characterId);
 
                 // Admin-bypass'а здесь нет — в отличие от ProjectPropsService. См. ADR014.
                 _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, requiredPermission);
@@ -168,7 +168,7 @@ internal class CharacterPropsService(
             async now =>
             {
                 var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
-                    .LoadClaimForUpdate(claimId, currentUserAccessor.UserIdentification);
+                    .LoadClaimForUpdate(claimId);
 
                 ClaimAccess.Request(handle.ProjectInfo, handle.ClaimInfo, currentUserAccessor, accessRequirement);
 
@@ -176,7 +176,7 @@ internal class CharacterPropsService(
 
                 var ctx = new ClaimMutationContext<TArgs>(
                     handle.Claim, handle.ClaimInfo, handle.Character, handle.CharacterInfo, handle.ProjectInfo,
-                    now, currentUserAccessor, handle.Initiator, handle, fieldSaveHelper,
+                    now, currentUserAccessor, handle, fieldSaveHelper,
                     commentHelper, arguments);
 
                 var result = await action(ctx);
@@ -306,7 +306,7 @@ internal class CharacterPropsService(
             async now =>
             {
                 var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
-                    .LoadCharacterForUpdate(characterId, currentUserAccessor.UserIdentification);
+                    .LoadCharacterForUpdate(characterId);
 
                 // Какие права нужны — решает вызывающая операция, сервис только проверяет.
                 ClaimAccess.RequestForCreation(handle.ProjectInfo, currentUserAccessor, accessRequirement);
@@ -325,9 +325,6 @@ internal class CharacterPropsService(
 
                 var ctx = new ClaimCreationContext<TArgs>(
                     handle.Character, handle.CharacterInfo, handle.ProjectInfo, now, currentUserAccessor,
-#pragma warning disable CS0618 // Initiator нужен только легаси-каналу писем
-                    handle.Initiator,
-#pragma warning restore CS0618
                     player, handle.Add, handle.LoadOtherClaim, fieldSaveHelper, arguments);
 
                 var claim = await factory(ctx);

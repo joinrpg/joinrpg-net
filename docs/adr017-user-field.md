@@ -169,7 +169,7 @@ public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> Load
 | Экспорт, печать | `DisplayName` текстом, через запятую |
 | x-api (`ApiInfoBuilder.ToFieldValue`) | `Value` — сырые id (контракт), `DisplayString` — имена |
 | MCP-сервер | как экспорт — имена |
-| Письма | рендер значений полей сейчас закомментирован (`EmailServiceImpl.cs:164`); учесть при его возврате |
+| Уведомления | рендера значений полей нет: он был закомментирован в `EmailServiceImpl`, удалённом вместе с легаси-каналом писем (`git show 01d1e7ca0:src/JoinRpg.Services.Email/EmailServiceImpl.cs`); учесть при его возврате |
 
 Показ только через `UserLinkViewModel` — не случайность. Рядом лежит
 `UserProfileDetailsViewModel(user, currentProject, currentUserAccessor)`, который отдаёт email,

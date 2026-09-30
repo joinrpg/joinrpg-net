@@ -70,7 +70,6 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
             .Where(request => request.Id == senderRequestId.AccommodationRequestId)
             .Include(request => request.Subjects)
             .Include(request => request.AccommodationType)
-            .Include(c => c.Project)
             .FirstOrDefaultAsync().ConfigureAwait(false);
 
         EnsureCanInvite(
@@ -116,7 +115,6 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
             .Where(request => request.Id == senderRequestId.AccommodationRequestId)
             .Include(request => request.Subjects)
             .Include(request => request.AccommodationType)
-            .Include(c => c.Project)
             .FirstOrDefaultAsync().ConfigureAwait(false);
 
         EnsureCanInvite(
@@ -129,7 +127,6 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
         var receiversClaims = await UnitOfWork
             .GetDbSet<Claim>()
             .Where(claim => claim.AccommodationRequest_Id == receiverRequestId.AccommodationRequestId)
-            .Include(c => c.Player)
             .ToArrayAsync()
             .ConfigureAwait(false);
 
@@ -259,7 +256,6 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
 
         var receivers = await UnitOfWork.GetDbSet<Claim>()
             .Where(claim => inviteRequest.FromClaimId == claim.ClaimId)
-            .Include(claim => claim.Player)
             .ToArrayAsync()
             .ConfigureAwait(false);
 
@@ -287,7 +283,6 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
         //todo: make null result descriptive
         var inviteRequest = await UnitOfWork.GetDbSet<AccommodationInvite>()
             .Where(invite => invite.Id == inviteId.AccommodationInviteId)
-            .Include(invite => invite.Project)
             .FirstOrDefaultAsync().ConfigureAwait(false);
 
         if (inviteRequest == null)
@@ -306,7 +301,6 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
             .Where(claim =>
                 claim.ClaimId == inviteRequest.FromClaimId ||
                 claim.ClaimId == inviteRequest.ToClaimId)
-            .Include(c => c.Player)
             .ToArrayAsync()
             .ConfigureAwait(false);
 
@@ -345,7 +339,6 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
         var receivers = await UnitOfWork
             .GetDbSet<Claim>()
             .Where(claim => claims.Contains(claim.ClaimId))
-            .Include(c => c.Player)
             .ToArrayAsync()
             .ConfigureAwait(false);
 

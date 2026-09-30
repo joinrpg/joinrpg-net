@@ -10,28 +10,25 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 
 /// <summary>
 /// Write-репозиторий агрегата персонажа (ADR014) поверх <see cref="MockedProject"/>: отдаёт
-/// согласованную четвёрку <see cref="Project"/>/<see cref="ProjectInfo"/>/<see cref="CharacterInfo"/>/
-/// инициатор, собранную теми же фабриками, что и боевой код.
+/// согласованную тройку <see cref="Project"/>/<see cref="ProjectInfo"/>/<see cref="CharacterInfo"/>,
+/// собранную теми же фабриками, что и боевой код.
 /// </summary>
 internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) : ICharacterAggregateWriteRepository
 {
     public Task<ICharacterAggregateUpdateHandle> LoadCharacterForUpdate(
-        CharacterIdentification characterId,
-        UserIdentification initiatorId)
+        CharacterIdentification characterId)
     {
         var character = FindCharacter(mock, characterId);
         return Task.FromResult<ICharacterAggregateUpdateHandle>(
-            new Handle(mock, character, FindInitiator(mock, initiatorId)));
+            new Handle(mock, character));
     }
 
-    public Task<IClaimUpdateHandle> LoadClaimForUpdate(
-        ClaimIdentification claimId,
-        UserIdentification initiatorId)
+    public Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId)
     {
         var claim = FindClaim(mock, claimId);
         var character = FindCharacter(mock, claim.GetCharacterId());
         return Task.FromResult<IClaimUpdateHandle>(
-            new ClaimHandle(mock, character, FindInitiator(mock, initiatorId), claim));
+            new ClaimHandle(mock, character, claim));
     }
 
     private static Character FindCharacter(MockedProject mock, CharacterIdentification characterId)
@@ -56,42 +53,14 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         return claim;
     }
 
-    /// <summary>
-    /// Инициатор ищется среди пользователей, известных моку: игроки заявок и мастера из ACL.
-    /// </summary>
-    private static User FindInitiator(MockedProject mock, UserIdentification initiatorId)
-        => KnownUsers(mock).FirstOrDefault(u => u.UserId == initiatorId.Value)
-            ?? throw new JoinRpgEntityNotFoundException(initiatorId.Value, "user");
-
-    private static IEnumerable<User> KnownUsers(MockedProject mock)
-    {
-        yield return mock.Player;
-        yield return mock.Master;
-        foreach (var acl in mock.Project.ProjectAcls)
-        {
-            if (acl.User is { } user)
-            {
-                yield return user;
-            }
-        }
-        foreach (var claim in mock.Project.Claims)
-        {
-            if (claim.Player is { } player)
-            {
-                yield return player;
-            }
-        }
-    }
-
     private class Handle : ICharacterAggregateUpdateHandle
     {
         private readonly MockedProject mock;
 
-        public Handle(MockedProject mock, Character character, User initiator)
+        public Handle(MockedProject mock, Character character)
         {
             this.mock = mock;
             Character = character;
-            Initiator = initiator;
 
             // Снимок ДО, согласованный с текущим Project (как делает боевой репозиторий при загрузке).
             // Порядок важен: ReInitProjectInfo подменяет экземпляр ProjectInfo, а конструктор
@@ -108,8 +77,6 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         public Character Character { get; }
 
         public CharacterInfo CharacterInfo { get; }
-
-        public User Initiator { get; }
 
         /// <summary>Всё, что сервис добавил в контекст, в порядке добавления.</summary>
         public List<object> Added { get; } = [];
@@ -212,8 +179,8 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
 
     private sealed class ClaimHandle : Handle, IClaimUpdateHandle
     {
-        public ClaimHandle(MockedProject mock, Character character, User initiator, Claim claim)
-            : base(mock, character, initiator)
+        public ClaimHandle(MockedProject mock, Character character, Claim claim)
+            : base(mock, character)
         {
             Claim = claim;
             // Ровно тот же экземпляр, что лежит в CharacterInfo.Claims — так делает боевой

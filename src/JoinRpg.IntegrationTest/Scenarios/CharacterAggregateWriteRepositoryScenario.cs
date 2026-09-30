@@ -74,7 +74,7 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
         using var lazyLoads = LazyLoadCounter.BeginScope();
 
         var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
-            .LoadClaimForUpdate(claimId, masterId);
+            .LoadClaimForUpdate(claimId);
 
         // ProjectInfo внутри CharacterInfo — ровно тот экземпляр, которым владеет хэндл
         // (этого требует конструктор CharacterInfo, ADR013).
@@ -89,7 +89,6 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
         handle.Character.CharacterId.ShouldBe(characterId.CharacterId);
         handle.CharacterInfo.Id.ShouldBe(characterId);
         handle.Project.ProjectId.ShouldBe(projectId.Value);
-        handle.Initiator.UserId.ShouldBe(masterId.Value);
 
         // Статусные даты заявки доезжают из БД в снимок ровно те же, что лежат в сущности.
         handle.Claim.MasterAcceptedDate.ShouldNotBeNull();
