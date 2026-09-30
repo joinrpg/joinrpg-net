@@ -6,6 +6,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Web.Models.Accommodation;
+using JoinRpg.WebPortal.Managers.Accommodation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
@@ -18,6 +19,7 @@ public class AccommodationTypeController(
     IAccommodationRepository accommodationRepository,
     IClaimsRepository claimsRepository,
     IProjectMetadataRepository projectMetadataRepository,
+    RoomTypeRoomsViewService roomTypeRoomsViewService,
     ICurrentUserAccessor currentUserAccessor) : Common.JoinControllerGameBase
 {
 
@@ -70,21 +72,20 @@ public class AccommodationTypeController(
     }
 
     /// <summary>
-    /// Shows "Edit room type" form
+    /// Страница «Комнаты» типа проживания: показывает комнаты, жильцов и нерасселённые заявки
+    /// и позволяет ими управлять.
     /// </summary>
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpGet("~/{projectId}/rooms/{roomTypeId}/details")]
-    public async Task<ActionResult> EditRoomTypeRooms(int projectId, int roomTypeId)
+    public async Task<ActionResult> RoomTypeDetails(AccommodationTypeIdentification roomTypeId)
     {
-        var entity = await accommodationService.GetRoomTypeAsync(roomTypeId);
-        if (entity == null || entity.ProjectId != projectId)
+        var viewModel = await roomTypeRoomsViewService.GetRoomTypeRooms(roomTypeId);
+        if (viewModel is null)
         {
-            return Forbid();
+            return NotFound($"Room type {roomTypeId} not found");
         }
 
-        var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-
-        return View(new RoomTypeViewModel(entity, currentUserAccessor.UserIdentification, pi));
+        return View(viewModel);
     }
 
     /// <summary>
@@ -241,7 +242,7 @@ public class AccommodationTypeController(
         try
         {
             await accommodationService.UnOccupyRoomType(projectId, roomTypeId);
-            return RedirectToAction("EditRoomTypeRooms", "AccommodationType",
+            return RedirectToAction("RoomTypeDetails", "AccommodationType",
                 new { ProjectId = projectId, RoomTypeId = roomTypeId });
         }
         catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)

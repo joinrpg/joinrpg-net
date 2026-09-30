@@ -1,4 +1,5 @@
-using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Web.Models.Accommodation;
 
@@ -29,33 +30,44 @@ public class RoomViewModel
 
     public bool CanAssignRooms { get; set; }
 
-    public RoomViewModel(ProjectAccommodation entity, RoomTypeViewModel owner)
+    /// <summary>
+    /// Комната поверх доменного агрегата плана поселения (ADR018).
+    /// </summary>
+    /// <param name="room">Комната из плана — она несёт только имя и своих жильцов</param>
+    /// <param name="roomTypeId">Тип проживания, чью страницу показываем</param>
+    /// <param name="roomCapacity">
+    /// Вместимость комнаты. Своей вместимости у комнаты нет, это свойство пула —
+    /// <see cref="RoomCategoryPlan.RoomCapacity"/>.
+    /// </param>
+    /// <param name="requests">
+    /// Группы проживающих, расселённые именно в эту комнату, в том же порядке, что и на всей
+    /// странице. Готовые вью-модели приходят снаружи: они же показываются в списке нерасселённых,
+    /// и строить их второй раз незачем.
+    /// </param>
+    /// <param name="canManageRooms">Право заводить, переименовывать и удалять комнаты</param>
+    /// <param name="canAssignRooms">Право расселять и выселять игроков</param>
+    /// <remarks>
+    /// Вью-модель типа проживания сюда сознательно не передаётся: комнате нужны ровно эти данные,
+    /// а не весь владелец с его коллекциями, и от порядка конструирования она не зависит.
+    /// </remarks>
+    public RoomViewModel(
+        RoomInfo room,
+        AccommodationTypeIdentification roomTypeId,
+        int roomCapacity,
+        IReadOnlyList<AccRequestViewModel> requests,
+        bool canManageRooms,
+        bool canAssignRooms)
     {
-        if (entity.ProjectId == 0 || entity.Id == 0)
-        {
-            throw new ArgumentException("Entity must be valid object");
-        }
+        Id = room.Id.RoomId;
+        Name = room.Name;
+        ProjectId = room.Id.ProjectId.Value;
+        RoomTypeId = roomTypeId.AccommodationTypeId;
+        Capacity = roomCapacity;
 
-        Id = entity.Id;
-        Name = entity.Name;
-        ProjectId = entity.ProjectId;
-        RoomTypeId = entity.AccommodationTypeId;
-        Capacity = entity.ProjectAccommodationType?.Capacity ?? 0;
+        Requests = requests;
+        Occupancy = room.Occupancy;
 
-        // Extracting list of requests associated with this room
-        Requests = owner.Requests.Where(r =>
-        {
-            var result = r.RoomId == Id;
-            if (result)
-            {
-                Occupancy += r.Persons;
-                r.Room = this;
-            }
-            return result;
-        }).ToList();
-
-        CanManageRooms = owner.CanManageRooms;
-        CanAssignRooms = owner.CanAssignRooms;
+        CanManageRooms = canManageRooms;
+        CanAssignRooms = canAssignRooms;
     }
 }
-

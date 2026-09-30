@@ -20,11 +20,6 @@ public interface IAccommodationService
     Task DeleteRoom(int roomId, int? projectId = null, int? roomTypeId = null);
 
     /// <summary>
-    /// Returns room type by id
-    /// </summary>
-    Task<ProjectAccommodationType> GetRoomTypeAsync(int roomTypeId);
-
-    /// <summary>
     /// Move inhabitants to room
     /// </summary>
     Task OccupyRoom(OccupyRequest request);

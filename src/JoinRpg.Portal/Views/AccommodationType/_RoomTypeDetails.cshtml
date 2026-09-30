@@ -94,7 +94,7 @@
                 <a title="Показать список заявок на тип поселения «@Model.Name»" class="btn btn-default" href="@Url.Action("ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id })"><join-icon icon="MenuHorizontal" /></a>
                 @if (Model.CanAssignRooms)
                 {
-                    <a title="Расселение" href="@Url.Action("EditRoomTypeRooms", "AccommodationType", actionParams)" class="btn btn-default">
+                    <a title="Расселение" href="@Url.Action("RoomTypeDetails", "AccommodationType", actionParams)" class="btn btn-default">
                         <join-icon icon="Accommodation" />
                     </a>
                 }

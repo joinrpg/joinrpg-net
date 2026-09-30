@@ -485,7 +485,7 @@ public interface IAccommodationService
 }
 ```
 
-`GetRoomTypeAsync` уходит: его единственный вызывающий — страница `EditRoomTypeRooms`, которая
+`GetRoomTypeAsync` уходит: его единственный вызывающий — страница комнат (`RoomTypeDetails`), которая
 переезжает на `IRoomCategoryPlanRepository`. Классы-запросы `OccupyRequest`, `UnOccupyRequest`,
 `UnOccupyAllRequest`, `UnOccupyRoomTypeRequest` (mutable, с `int`-полями, один из них вообще без
 вызывающих) удаляются.
@@ -530,7 +530,7 @@ public interface IAccommodationService
 
 | Потребитель | Сейчас | Станет |
 |---|---|---|
-| `AccommodationTypeController.EditRoomTypeRooms` | `accommodationService.GetRoomTypeAsync` + ручная сверка `ProjectId` | `IRoomCategoryPlanRepository.GetPlanForTypeOrDefault` |
+| `AccommodationTypeController.RoomTypeDetails` (был `EditRoomTypeRooms`) | `accommodationService.GetRoomTypeAsync` + ручная сверка `ProjectId` | `IRoomCategoryPlanRepository.GetPlanForTypeOrDefault` |
 | `RoomTypeViewModel(ProjectAccommodationType, …)` | EF-сущность с `Include(ProjectAccommodations)` и `Include(Desirous)` — навигация «заявки на проживание, желающие этот тип» | `RoomCategoryPlan`; EF-конструктор удаляется, остаётся уже существующий поверх `AccommodationTypeInfo` (ADR015) |
 | `RoomViewModel(ProjectAccommodation, …)` | EF-сущность | `RoomInfo` |
 | `AccRequestViewModel(AccommodationRequest, …)` + `RequestParticipantViewModel(Claim, …)` | EF-сущности, `Claim.ClaimTotalFee`/`ClaimFeeDue` (оба `[Obsolete]`) | `AccommodationGroupInfo` + bulk `CharacterInfo`, `CalculateClaimBalance` поверх агрегата |
@@ -612,8 +612,39 @@ public interface IAccommodationService
      Тест-страж сравнивает не буквально: legacy умеет уходить в минус на переполненной
      комнате, а доменный `GetFreeSpace` — нет (см. уточнение к PR 1), поэтому сверка идёт
      с `Math.Max(0, …)`.
-3. **PR 3.** Страница комнат на план: `EditRoomTypeRooms`, вью-модели, деньги bulk'ом через
-   `ICharacterInfoRepository`. `GetRoomTypeAsync` удаляется.
+3. **PR 3** — ✅ сделано. Страница комнат на план: экшен страницы комнат, вью-модели, деньги bulk'ом
+   через `ICharacterInfoRepository`. `GetRoomTypeAsync` удалён из `IAccommodationService` и
+   `AccommodationServiceImpl`.
+
+   Пять уточнений по факту реализации:
+
+   - Загрузка страницы вынесена из контроллера в `RoomTypeRoomsViewService`
+     (`JoinRpg.WebPortal.Managers/Accommodation/`) — по structure.md контроллер только зовёт
+     вью-сервис. Промах по типу проживания даёт `NotFound`, как у соседних экшенов, а не
+     `Forbid` (§12).
+   - `ICharacterInfoRepository.GetCharacterInfos` берёт `CharacterIdentification`, а план несёт
+     жильцов как `ClaimIdentification` (§5) — прямого соответствия нет. Чтобы не делать два
+     запроса («сначала персонажи по заявкам, потом сами персонажи»), заведён
+     `GetCharacterInfosByClaims(IReadOnlyCollection<ClaimIdentification>)` — тот же загрузчик
+     `CharacterInfo` с предикатом по заявкам. Запрос на страницу остаётся один, как и обещано
+     в §5. Имена игроков отдельного запроса не требуют вовсе: `CharacterClaimInfo.Player` —
+     это `UserInfoHeader`, он уже внутри агрегата (ADR013).
+   - `RequestParticipantViewModel` перестал носить EF-сущности `Claim` и `User`: вместо
+     `Claim.ProjectId` шаблон отображения берёт `ClaimId.ProjectId`. `[Obsolete]`-методов
+     `ClaimTotalFee`/`ClaimFeeDue` на этой странице больше нет — баланс считает
+     `FinanceExtensions.CalculateClaimBalance(CharacterInfo, CharacterClaimInfo, ProjectInfo)`.
+   - Экшен страницы переименован из `EditRoomTypeRooms` в `RoomTypeDetails` (по ревью): имя
+     не совпадало ни с маршрутом `~/{projectId}/rooms/{roomTypeId}/details`, ни с сутью —
+     страница не «редактирует тип», а показывает комнаты и жильцов. Вместе с экшеном
+     переименована вьюха (`Views/AccommodationType/RoomTypeDetails.cshtml`), поправлены
+     `RedirectToAction` и обе ссылки `Url.Action`. **Маршрут не менялся** — это внешний URL.
+   - Интеграционный тест на страницу есть и был до этого PR:
+     `AccommodationPagesLazyLoadsScenario.RoomTypeDetails_ListsInhabitants` — ходит мастером на
+     `{projectId}/rooms/{roomTypeId}/details`, ждёт 200 и проверяет, что на странице видны все
+     жильцы из `SmokeProjectFixture`. Этим PR он дополнен проверкой, что отрисованы и сами
+     комнаты (строки с атрибутом `roomId` совпадают с `SmokeProjectFixture.RoomNames`) — иначе
+     тест прошёл бы и на странице, собранной мимо плана. Кроме него маршрут меряет
+     `AllGetPagesSmokeScenario` и снапшот ленивых загрузок `lazy-loads-baseline.json`.
 4. **PR 4.** Write-хэндл, `IAccommodationPropsService`, вынос `ProjectOperationGuard` (если
    наберётся), перевод `AddRooms`/`RenameRoom`/`DeleteRoom` — права, активность, типизированный
    проект. Закрывает дефекты 1, 2, 4 для управления комнатами.

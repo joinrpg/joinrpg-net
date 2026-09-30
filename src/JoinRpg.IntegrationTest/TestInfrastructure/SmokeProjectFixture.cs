@@ -50,6 +50,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     /// <summary>Единственный тип поселения сида, у него есть жильцы.</summary>
     public int RoomTypeId { get; private set; }
 
+    /// <summary>Названия комнат, созданных у <see cref="RoomTypeId"/>.</summary>
+    public IReadOnlyList<string> RoomNames => SeededRoomNames;
+
     /// <summary>
     /// Жильцы типа поселения: отображаемое имя и телефон игрока.
     /// </summary>
@@ -353,6 +356,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         return (fieldId, variant.ProjectFieldVariantId);
     }
 
+    /// <summary>Названия комнат сида — их же ждёт на странице сценарий расселения.</summary>
+    private static readonly string[] SeededRoomNames = ["1", "2"];
+
     /// <summary>
     /// Тип проживания с парой комнат: тип — настройка проекта (ADR015), комнаты — нет.
     /// </summary>
@@ -368,7 +374,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 IsPlayerSelectable: true));
 
         _ = await sp.GetRequiredService<IAccommodationService>()
-            .AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2");
+            .AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, string.Join(',', SeededRoomNames));
 
         return roomTypeId.AccommodationTypeId;
     }

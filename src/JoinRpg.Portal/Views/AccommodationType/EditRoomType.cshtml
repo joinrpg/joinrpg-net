@@ -9,7 +9,7 @@
 <ul class="nav nav-tabs">
     <li><a href="@Url.Action("Index", "AccommodationType", new {Model.ProjectId})"><join-icon icon="Back" /> Список типов поселения</a></li>
     <li class="active"><a href="#">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
-    <li><a href="@Url.Action("EditRoomTypeRooms", "AccommodationType", new {Model.ProjectId, RoomTypeId = Model.Id })">Комнаты</a></li>
+    <li><a href="@Url.Action("RoomTypeDetails", "AccommodationType", new {Model.ProjectId, RoomTypeId = Model.Id })">Комнаты</a></li>
 </ul>
 @if (Model.CanManageRooms)
 {
