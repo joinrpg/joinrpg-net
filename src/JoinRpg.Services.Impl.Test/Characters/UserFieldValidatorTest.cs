@@ -22,11 +22,13 @@ public class UserFieldValidatorTest : Claims.ClaimServiceTestBase
     /// Именно <c>AddField</c>, а не <c>CreateField</c>: поле должно быть настоящей сущностью
     /// проекта, иначе оно исчезнет при пересборке метаданных внутри сохранения.
     /// </remarks>
-    private ProjectFieldInfo CreateUserField(string name = "Ответственный мастер")
+    private ProjectFieldInfo CreateUserField(
+        string name = "Ответственный мастер",
+        ProjectFieldType fieldType = ProjectFieldType.UserLink)
         => mock.AddField(f =>
         {
             f.FieldName = name;
-            f.FieldType = ProjectFieldType.UserLink;
+            f.FieldType = fieldType;
             f.FieldBoundTo = FieldBoundTo.Character;
             f.CanPlayerView = true;
             f.CanPlayerEdit = false;
@@ -75,6 +77,25 @@ public class UserFieldValidatorTest : Claims.ClaimServiceTestBase
         mock.GetCharacterInfo(mock.Character).CharacterFields
             .GetValue(field)
             .ShouldBe(mock.Master.UserId.ToString());
+    }
+
+    /// <summary>
+    /// Мультивыбор (#4511): несколько существующих пользователей сохраняются целиком,
+    /// в том порядке, в каком их указали.
+    /// </summary>
+    [Fact]
+    public async Task MultiUserField_SeveralExistingUsers_AreSaved()
+    {
+        var field = CreateUserField("Кураторы роли", ProjectFieldType.MultiUserLink);
+
+        await CreateService().SetFields(
+            mock.Character.GetId(),
+            Layer(field, $"{mock.Player.UserId},{mock.Master.UserId}"));
+
+        SaveChangesCallCount.ShouldBe(1);
+        mock.GetCharacterInfo(mock.Character).CharacterFields
+            .GetValue(field)
+            .ShouldBe($"{mock.Player.UserId},{mock.Master.UserId}");
     }
 
     /// <summary>Снятие ссылки — не ошибка.</summary>

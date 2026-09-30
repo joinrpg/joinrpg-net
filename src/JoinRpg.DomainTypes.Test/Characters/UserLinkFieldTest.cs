@@ -11,6 +11,9 @@ public class UserLinkFieldTest
     private static FieldWithValue UserLinkField(string? value)
         => new(ProjectInfoFixture.MakeField(1, ProjectFieldType.UserLink), value);
 
+    private static FieldWithValue MultiUserLinkField(string? value)
+        => new(ProjectInfoFixture.MakeField(1, ProjectFieldType.MultiUserLink), value);
+
     [Fact]
     public void ParsesSingleUserId()
         => UserLinkField("123").UserIds.ShouldBe([new UserIdentification(123)]);
@@ -76,4 +79,70 @@ public class UserLinkFieldTest
     /// </summary>
     [Fact]
     public void DisplayStringStaysRaw() => UserLinkField("123").DisplayString.ShouldBe("123");
+
+    #region Мультивыбор (#4511)
+
+    [Fact]
+    public void MultiParsesSeveralUserIds()
+        => MultiUserLinkField("123,456").UserIds
+            .ShouldBe([new UserIdentification(123), new UserIdentification(456)]);
+
+    [Fact]
+    public void MultiEmptyValueGivesNoUsers() => MultiUserLinkField(null).UserIds.ShouldBeEmpty();
+
+    [Fact]
+    public void MultiSeveralUsersAreAcceptedOnAssign()
+        => MultiUserLinkField(null).NormalizeValueBeforeAssign("123,456").ShouldBe("123,456");
+
+    /// <summary>Порядок, в котором мастер перечислил пользователей, — значимый.</summary>
+    [Fact]
+    public void MultiAssignKeepsOrder()
+        => MultiUserLinkField(null).NormalizeValueBeforeAssign("456,123").ShouldBe("456,123");
+
+    [Fact]
+    public void MultiAssignNormalizesSpacesAndEmptyParts()
+        => MultiUserLinkField(null).NormalizeValueBeforeAssign(" 123 , 456 ,").ShouldBe("123,456");
+
+    /// <summary>Дубликаты схлопываются, остаётся первое вхождение.</summary>
+    [Fact]
+    public void MultiAssignDeduplicates()
+        => MultiUserLinkField(null).NormalizeValueBeforeAssign("123,456,123").ShouldBe("123,456");
+
+    [Theory]
+    [InlineData("123,abc")]
+    [InlineData("123,0")]
+    [InlineData("123,-5")]
+    [InlineData("abc,123")]
+    public void MultiGarbageAmongValidIdsIsRejectedOnAssign(string value)
+        => Should.Throw<FieldUserValueInvalidException>(
+            () => MultiUserLinkField(null).NormalizeValueBeforeAssign(value));
+
+    /// <summary>Мусор в уже сохранённом значении не роняет показ и у мультивыбора.</summary>
+    [Fact]
+    public void MultiGarbageInStoredValueIsIgnoredOnRead()
+        => MultiUserLinkField("123,abc,456").UserIds
+            .ShouldBe([new UserIdentification(123), new UserIdentification(456)]);
+
+    [Fact]
+    public void MultiEmptyAssignGivesNull()
+        => MultiUserLinkField("123,456").NormalizeValueBeforeAssign("").ShouldBeNull();
+
+    [Fact]
+    public void MultiUserLinkFieldHasNoPriceAndNoVariants()
+    {
+        var field = ProjectInfoFixture.MakeField(1, ProjectFieldType.MultiUserLink);
+        field.HasValueList.ShouldBeFalse();
+        field.SupportsPricing.ShouldBeFalse();
+        field.SupportsMarkdown.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void MultiUserLinkIsUserLink()
+    {
+        ProjectFieldType.MultiUserLink.IsUserLink().ShouldBeTrue();
+        ProjectFieldType.MultiUserLink.IsMultiUserLink().ShouldBeTrue();
+        ProjectFieldType.UserLink.IsMultiUserLink().ShouldBeFalse();
+    }
+
+    #endregion
 }

@@ -12,7 +12,7 @@ public static class ProjectFieldTypeHelper
             ProjectFieldType.Dropdown or ProjectFieldType.MultiSelect or ProjectFieldType.Checkbox or ProjectFieldType.Number => true,
             ProjectFieldType.String or ProjectFieldType.Text or ProjectFieldType.Header or ProjectFieldType.Login
                 or ProjectFieldType.ScheduleRoomField or ProjectFieldType.ScheduleTimeSlotField or ProjectFieldType.PinCode
-                or ProjectFieldType.Uri or ProjectFieldType.UserLink
+                or ProjectFieldType.Uri or ProjectFieldType.UserLink or ProjectFieldType.MultiUserLink
                 => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
@@ -34,6 +34,7 @@ public static class ProjectFieldTypeHelper
 
             ProjectFieldType.String or ProjectFieldType.Text or ProjectFieldType.Header or ProjectFieldType.Login
             or ProjectFieldType.PinCode or ProjectFieldType.Uri or ProjectFieldType.UserLink
+            or ProjectFieldType.MultiUserLink
                 => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
@@ -59,6 +60,7 @@ public static class ProjectFieldTypeHelper
             ProjectFieldType.PinCode => false,
             ProjectFieldType.Uri => false,
             ProjectFieldType.UserLink => false,
+            ProjectFieldType.MultiUserLink => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
     }
@@ -66,7 +68,13 @@ public static class ProjectFieldTypeHelper
     /// <summary>
     /// Поле ссылается на пользователей сайта — значение хранит их идентификаторы (ADR017)
     /// </summary>
-    public static bool IsUserLink(this ProjectFieldType self) => self is ProjectFieldType.UserLink;
+    public static bool IsUserLink(this ProjectFieldType self)
+        => self is ProjectFieldType.UserLink or ProjectFieldType.MultiUserLink;
+
+    /// <summary>
+    /// Поле-ссылка на пользователя допускает несколько значений (ADR017)
+    /// </summary>
+    public static bool IsMultiUserLink(this ProjectFieldType self) => self is ProjectFieldType.MultiUserLink;
 
     /// <summary>
     /// Returns true if field values could be mass added and doesn't require special setup

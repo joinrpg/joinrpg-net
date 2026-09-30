@@ -2,19 +2,21 @@
 
 ## Статус
 
-Принято, реализовано для одиночной ссылки (#4509); мультивыбор (#4511) — отдельно. Issues: [#4509](https://github.com/joinrpg/joinrpg-net/issues/4509)
+Принято, реализовано: #4509 (одиночная ссылка) и #4511 (мультивыбор). Issues: [#4509](https://github.com/joinrpg/joinrpg-net/issues/4509)
 (одиночная ссылка), [#4511](https://github.com/joinrpg/joinrpg-net/issues/4511) (мультивыбор).
 Предпосылка [#4510](https://github.com/joinrpg/joinrpg-net/issues/4510) (режим `Multiple`
 у `JoinUserLinkEditor`) уже закрыта.
 
 ## Статус реализации
 
-- ✅ **§1 Члены перечислений** — `ProjectFieldType.UserLink` и `ProjectFieldViewType.UserLink`,
-  все `switch` в `ProjectFieldTypeHelper` закрыты, плюс `IsUserLink()` как единственное место,
-  которое знает состав user-типов. `MultiUserLink` появится вместе с #4511.
+- ✅ **§1 Члены перечислений** — `UserLink` и `MultiUserLink` в обоих перечислениях, все `switch`
+  в `ProjectFieldTypeHelper` закрыты. Состав user-типов знает только `IsUserLink()`, а какой из
+  них мультизначный — только `IsMultiUserLink()`; в остальном коде хардкода по типу нет, поэтому
+  мультивыбор подхватился почти даром.
 - ✅ **§2 Хранение** — `FieldWithValue.UserIds`: читает терпимо (мусор в базе не роняет показ),
   пишет строго — `FieldUserValueInvalidException` на нечисло, неположительный id и на второй
-  id у одиночного типа. `DisplayString` остался сырым, как и решено.
+  id у одиночного типа. У мультивыбора значений сколько угодно, дубликаты схлопываются, порядок
+  сохраняется. `DisplayString` остался сырым, как и решено.
 - ✅ **§3 Права на заполнение** — отдельного запрета нет, работает обычная галочка
   «игрок может менять» (тест `AddField_UserLink_RespectsCanPlayerEdit`). Прежний запрет для
   игроков снят на ревью #5023.
