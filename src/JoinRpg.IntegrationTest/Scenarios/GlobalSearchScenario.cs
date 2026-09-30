@@ -114,9 +114,9 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
     /// несколько, и каждый найденный объект — отдельная строка на странице результатов.
     /// </summary>
     /// <remarks>
-    /// Часть находок намеренно непубличные. Проверка видимости
-    /// (<c>WorldObjectExtensions.IsVisible</c>) выглядит как
-    /// <c>IsPublic || Project.Details.PublishPlot || HasMasterAccess(...)</c>: на публичном объекте
+    /// Часть находок намеренно непубличные. Проверка видимости (в поиске она живёт
+    /// в <c>WorldObjectProviderBase</c>) выглядит как
+    /// <c>IsPublic || PublishPlot || HasMasterAccess(...)</c>: на публичном объекте
     /// она останавливается на первом операнде и проекта не касается вовсе, а на непубличном идёт
     /// за проектом, его настройками и правами — это и есть догружаемая тройка
     /// <c>Projects</c>/<c>ProjectDetails</c>/<c>ProjectAcls</c> на каждую находку (#4991).

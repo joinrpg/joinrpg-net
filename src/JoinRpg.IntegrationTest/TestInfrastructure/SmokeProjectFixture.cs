@@ -236,8 +236,8 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             }
 
             // Скрытая группа и скрытый персонаж: проверка видимости
-            // (WorldObjectExtensions.IsVisible) выглядит как
-            // IsPublic || Project.Details.PublishPlot || HasMasterAccess(...), и на публичном
+            // (CharacterViewModelBuilder.IsVisible, в поиске — WorldObjectProviderBase) выглядит как
+            // IsPublic || PublishPlot || HasMasterAccess(...), и на публичном
             // объекте останавливается на первом операнде, не касаясь проекта. Пока в сиде всё
             // было публичным, страницы со списками объектов мерились в ноль, хотя на проде
             // догружали Projects/ProjectDetails/ProjectAcls на каждую строку (#4989, #4991).

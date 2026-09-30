@@ -37,7 +37,7 @@ internal class WorldObjectProviderBase(IProjectMetadataRepository projectMetadat
                 continue;
             }
 
-            // Аналог WorldObjectExtensions.IsVisible, но без обращения к EF-навигациям
+            // Виден ли объект: публичный, либо проект открыл сюжеты, либо смотрит мастер
             if (!result.IsPublic && !projectInfo.PublishPlot && !hasMasterAccess)
             {
                 continue;
