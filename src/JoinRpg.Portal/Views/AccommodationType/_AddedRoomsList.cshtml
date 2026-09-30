@@ -1,7 +1,0 @@
-﻿@using JoinRpg.Web.Models.Accommodation;
-@model IEnumerable<RoomViewModel>
-
-@foreach (var m in Model)
-{
-    @await Html.PartialAsync("_RoomDetails", m);
-}
