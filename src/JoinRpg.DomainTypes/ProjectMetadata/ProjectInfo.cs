@@ -190,9 +190,13 @@ public record class ProjectInfo
 
     public ProjectRolesList GetRolesListById(ProjectRolesListIdentification id)
     {
-        return ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id)
+        return GetRolesListByIdOrDefault(id)
             ?? throw new KeyNotFoundException("Не найдена сетка ролей с ID=" + id);
     }
+
+    /// <summary>Сетка ролей проекта или <c>null</c>, если такой сетки нет.</summary>
+    public ProjectRolesList? GetRolesListByIdOrDefault(ProjectRolesListIdentification id)
+        => ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id);
 
     public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
 

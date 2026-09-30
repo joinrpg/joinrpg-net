@@ -16,6 +16,13 @@ else if (!Result.HasAccess)
 {
     <JoinNoAccessToProjectPanel Model="Result.NoAccess!" />
 }
+else if (Result.NotFound)
+{
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+        <h4>Сетка ролей не найдена</h4>
+        <p>Такой группы или сетки ролей в проекте нет — возможно, ссылка устарела.</p>
+    </JoinAlert>
+}
 else
 {
     var Model = Result.Grid!;

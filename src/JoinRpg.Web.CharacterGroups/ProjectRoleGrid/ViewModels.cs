@@ -10,12 +10,19 @@ namespace JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 /// <summary>
 /// Результат запроса сетки ролей. При отсутствии доступа (непубличный список без
 /// мастер-доступа) <see cref="HasAccess"/> == false и заполнен <see cref="NoAccess"/> —
-/// показываем панель, а не ошибку.
+/// показываем панель, а не ошибку. Если запрошенной группы или сетки в проекте нет
+/// (битая ссылка, закладка на удалённое), <see cref="NotFound"/> == true — это тоже
+/// ожидаемая ситуация, а не сбой: остров показывает панель, сервер не отдаёт 500.
 /// </summary>
 public record ProjectRoleGridViewResult(
     bool HasAccess,
     ProjectRoleGridViewModel? Grid,
-    NoAccessToProjectViewModel? NoAccess);
+    NoAccessToProjectViewModel? NoAccess,
+    bool NotFound = false)
+{
+    public static ProjectRoleGridViewResult CreateNotFound()
+        => new(HasAccess: true, Grid: null, NoAccess: null, NotFound: true);
+}
 
 /// <summary>
 /// Сетка ролей для отображения. В табличных режимах колонки в фиксированном порядке:
