@@ -197,6 +197,44 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
         classicCharacterNames.ShouldContain(coldName);
     }
 
+    /// <summary>
+    /// Битая ссылка (id группы или сетки, которых в проекте нет) — не 500, а осмысленное
+    /// «не найдено», иначе остров навсегда зависает в «Идет загрузка...» (issue #5113).
+    /// </summary>
+    [Fact]
+    public async Task MissingGroupOrRolesList_ReturnsNotFound_NotServerError()
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            (masterId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Проект с битыми ссылками на сетку");
+        }
+
+        // Заведомо несуществующие id: в свежем проекте групп с таким номером точно нет.
+        const int missingGroupId = 999999;
+        const int missingRolesListId = 999999;
+
+        var anonClient = factory.CreateClient();
+
+        foreach (var url in new[]
+        {
+            $"webapi/project-role-grid/getclassic?projectId={projectId.Value}&characterGroupId={missingGroupId}",
+            $"webapi/project-role-grid/getclassic?projectId={projectId.Value}&characterGroupId={missingGroupId}&hotOnly=true",
+            $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={missingRolesListId}",
+        })
+        {
+            var response = await anonClient.GetAsync(url);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK, url);
+
+            var result = await response.Content.ReadFromJsonAsync<ProjectRoleGridViewResult>();
+            result!.NotFound.ShouldBeTrue(url);
+            result.Grid.ShouldBeNull(url);
+        }
+    }
+
     private static List<string> CharacterNames(ProjectRoleGridViewModel grid) =>
         [.. grid.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().Select(r => r.Character.Character.Name)];
 }

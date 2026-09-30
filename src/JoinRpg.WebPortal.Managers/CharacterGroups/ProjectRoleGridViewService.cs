@@ -22,20 +22,32 @@ internal class ProjectRoleGridViewService(
     public async Task<ProjectRoleGridViewResult> GetRoleGrid(ProjectRolesListIdentification id)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
-        var config = projectInfo.GetRolesListById(id);
-        return await BuildResult(projectInfo, config);
+        // Битая ссылка на несуществующую сетку — ожидаемая ситуация, а не 500.
+        var config = projectInfo.GetRolesListByIdOrDefault(id);
+        return config is null
+            ? ProjectRoleGridViewResult.CreateNotFound()
+            : await BuildResult(projectInfo, config);
     }
 
     public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly = false)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        // Группы с таким id в проекте может не быть (устаревшая ссылка, закладка, правка URL руками).
+        // Это ожидаемая ситуация: отвечаем «не найдено», а не падаем KeyNotFoundException/500.
+        var rootGroup = projectInfo.GroupTree.GetGroupByIdOrDefault(groupId ?? projectInfo.GroupTree.RootGroupId);
+        if (rootGroup is null)
+        {
+            return ProjectRoleGridViewResult.CreateNotFound();
+        }
+
         // Транзиентная настройка «на лету»: режим дерева + колонка описания, публичная (как старая Index);
         // для hotOnly — плоский список только горячих ролей (как старая GameGroups/Hot).
         var config = hotOnly
             ? ClassicRolesGridDefaults.BuildHot(groupId, projectInfo.CharacterDescriptionField?.Id)
             : ClassicRolesGridDefaults.Build(
                 groupId,
-                projectInfo.GetGroupById((groupId ?? projectInfo.GroupTree.RootGroupId).CharacterGroupId).Name,
+                rootGroup.Name,
                 projectInfo.CharacterDescriptionField?.Id);
         return await BuildResult(projectInfo, config);
     }
@@ -50,6 +62,13 @@ internal class ProjectRoleGridViewService(
         }
 
         var groupId = config.CharacterGroupId ?? projectInfo.GroupTree.RootGroupId;
+        // Корня сетки может не быть в проекте (сохранённая сетка на несуществующую группу) —
+        // тоже «не найдено», а не падение при построении вью-модели.
+        if (!projectInfo.GroupTree.Contains(groupId))
+        {
+            return ProjectRoleGridViewResult.CreateNotFound();
+        }
+
         // Если корень не задан явно, строим сетку от верха, не используя спецгруппы (см. doc-комментарий CharacterGroupId).
         var excludeSpecialGroups = config.CharacterGroupId is null;
 
