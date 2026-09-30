@@ -27,6 +27,13 @@ public class CanonicalRoutingTests(IntegrationTestPortalFactory factory)
     [InlineData("{projectId}/plots/flatlist", typeof(PlotListController), nameof(PlotListController.FlatList))]
     [InlineData("{projectId}/plots/ready", typeof(PlotListController), nameof(PlotListController.Ready))]
     [InlineData("{projectId}/rooms/addroomtype", typeof(AccommodationTypeController), nameof(AccommodationTypeController.AddRoomType))]
+    // Адреса операций над комнатами собирает строкой rooms.js, поэтому они закреплены здесь:
+    // код переехал в AccommodationRoomsController, а адреса остались прежними.
+    [InlineData("{projectId}/rooms/occupyroom", typeof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController), nameof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController.OccupyRoom))]
+    [InlineData("{projectId}/rooms/unoccupyroom", typeof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController), nameof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController.UnOccupyGroup))]
+    [InlineData("{projectId}/rooms/addroom", typeof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController), nameof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController.AddRoom))]
+    [InlineData("{projectId}/rooms/editroom", typeof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController), nameof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController.EditRoom))]
+    [InlineData("{projectId}/rooms/deleteroom", typeof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController), nameof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController.DeleteRoom))]
     [InlineData("{projectId}/character/{characterid}/details", typeof(CharacterController), nameof(CharacterController.Details))]
     [InlineData("{projectId}/characters/active", typeof(CharacterListController), nameof(CharacterListController.Active))]
     [InlineData("{projectId}/checkin/setup", typeof(CheckInController), nameof(CheckInController.Setup))]
