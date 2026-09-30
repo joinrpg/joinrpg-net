@@ -119,7 +119,18 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         UnassignedRequests = ua;
 
         // Creating a list of rooms contained in this room type
-        var rl = plan.Rooms.Select(room => new RoomViewModel(room, this)).ToList();
+        // Группы раскладываются по комнатам здесь, а не внутри RoomViewModel: вью-модели групп уже
+        // построены выше, и комната получает свои готовыми, в том же порядке, что и на странице.
+        var requestsByRoom = Requests.ToLookup(request => request.RoomId);
+        var rl = plan.Rooms
+            .Select(room => new RoomViewModel(
+                room,
+                typeId,
+                plan.RoomCapacity,
+                [.. requestsByRoom[room.Id.RoomId]],
+                CanManageRooms,
+                CanAssignRooms))
+            .ToList();
         rl.Sort((x, y) =>
         {
             if (x.Occupancy == y.Occupancy)
