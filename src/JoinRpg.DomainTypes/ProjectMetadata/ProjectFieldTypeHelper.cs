@@ -13,6 +13,7 @@ public static class ProjectFieldTypeHelper
             ProjectFieldType.String or ProjectFieldType.Text or ProjectFieldType.Header or ProjectFieldType.Login
                 or ProjectFieldType.ScheduleRoomField or ProjectFieldType.ScheduleTimeSlotField or ProjectFieldType.PinCode
                 or ProjectFieldType.Uri or ProjectFieldType.UserLink or ProjectFieldType.MultiUserLink
+                or ProjectFieldType.ScheduleAuthorField
                 => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
@@ -34,7 +35,7 @@ public static class ProjectFieldTypeHelper
 
             ProjectFieldType.String or ProjectFieldType.Text or ProjectFieldType.Header or ProjectFieldType.Login
             or ProjectFieldType.PinCode or ProjectFieldType.Uri or ProjectFieldType.UserLink
-            or ProjectFieldType.MultiUserLink
+            or ProjectFieldType.MultiUserLink or ProjectFieldType.ScheduleAuthorField
                 => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
@@ -61,6 +62,8 @@ public static class ProjectFieldTypeHelper
             ProjectFieldType.Uri => false,
             ProjectFieldType.UserLink => false,
             ProjectFieldType.MultiUserLink => false,
+            // Ведущий — ссылки на пользователей, а не список вариантов, хотя поле и специальное
+            ProjectFieldType.ScheduleAuthorField => false,
             _ => throw new ArgumentException(self.ToString(), nameof(self)),
         };
     }
@@ -69,12 +72,21 @@ public static class ProjectFieldTypeHelper
     /// Поле ссылается на пользователей сайта — значение хранит их идентификаторы (ADR017)
     /// </summary>
     public static bool IsUserLink(this ProjectFieldType self)
-        => self is ProjectFieldType.UserLink or ProjectFieldType.MultiUserLink;
+        => self is ProjectFieldType.UserLink or ProjectFieldType.MultiUserLink or ProjectFieldType.ScheduleAuthorField;
 
     /// <summary>
     /// Поле-ссылка на пользователя допускает несколько значений (ADR017)
     /// </summary>
-    public static bool IsMultiUserLink(this ProjectFieldType self) => self is ProjectFieldType.MultiUserLink;
+    public static bool IsMultiUserLink(this ProjectFieldType self)
+        => self is ProjectFieldType.MultiUserLink or ProjectFieldType.ScheduleAuthorField;
+
+    /// <summary>
+    /// Специальное поле расписания: время, место или ведущий мероприятия. Такое поле в проекте
+    /// может быть только одно (#4512).
+    /// </summary>
+    public static bool IsScheduleField(this ProjectFieldType self)
+        => self is ProjectFieldType.ScheduleTimeSlotField or ProjectFieldType.ScheduleRoomField
+            or ProjectFieldType.ScheduleAuthorField;
 
     /// <summary>
     /// Returns true if field values could be mass added and doesn't require special setup

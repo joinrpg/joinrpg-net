@@ -16,8 +16,12 @@ public class ScheduleBuilderTest
 {
     private const int TimeSlotFieldId = 10;
     private const int RoomFieldId = 20;
+    private const int AuthorFieldId = 30;
 
     private static readonly DateTimeOffset Day = new(2026, 6, 1, 0, 0, 0, TimeSpan.FromHours(3));
+
+    private static readonly IReadOnlyDictionary<UserIdentification, UserInfoHeader> NoAuthors
+        = new Dictionary<UserIdentification, UserInfoHeader>();
 
     [Fact]
     public void PutsItemIntoSelectedSlot()
@@ -25,7 +29,7 @@ public class ScheduleBuilderTest
         var projectInfo = MakeScheduleProject();
         var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1]);
 
-        var result = new ScheduleBuilder([character], projectInfo).Build();
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
 
         result.NotScheduled.ShouldBeEmpty();
         result.Conflicted.ShouldBeEmpty();
@@ -45,7 +49,7 @@ public class ScheduleBuilderTest
         var projectInfo = MakeScheduleProject();
         var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1, 2], rooms: [1, 2]);
 
-        var result = new ScheduleBuilder([character], projectInfo).Build();
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
 
         result.NotScheduled.ShouldBeEmpty();
         result.Conflicted.ShouldBeEmpty();
@@ -64,7 +68,7 @@ public class ScheduleBuilderTest
         var first = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1]);
         var second = MakeProgramItemCharacter(projectInfo, 2, timeSlots: [1], rooms: [1]);
 
-        var result = new ScheduleBuilder([first, second], projectInfo).Build();
+        var result = new ScheduleBuilder([first, second], projectInfo, NoAuthors).Build();
 
         result.Conflicted.Select(item => item.Id).ShouldBe([first.Id, second.Id], ignoreOrder: true);
         // Победил тот, кто встал в слот первым — второй в сетку не попадает.
@@ -79,7 +83,7 @@ public class ScheduleBuilderTest
         var projectInfo = MakeScheduleProject();
         var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [], rooms: []);
 
-        var result = new ScheduleBuilder([character], projectInfo).Build();
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
 
         result.NotScheduled.ShouldHaveSingleItem().Id.ShouldBe(character.Id);
         result.AllItems.ShouldBeEmpty();
@@ -93,7 +97,7 @@ public class ScheduleBuilderTest
         var projectInfo = MakeScheduleProject(deletedRoomId: 2);
         var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1, 2]);
 
-        var result = new ScheduleBuilder([character], projectInfo).Build();
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
 
         result.NotScheduled.ShouldHaveSingleItem().Id.ShouldBe(character.Id);
         // Оставшаяся часть расстановки при этом не теряется.
@@ -107,7 +111,7 @@ public class ScheduleBuilderTest
         var slot = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1],
             characterTypeInfo: CharacterTypeInfo.DefaultSlot("Слот"));
 
-        var result = new ScheduleBuilder([slot], projectInfo).Build();
+        var result = new ScheduleBuilder([slot], projectInfo, NoAuthors).Build();
 
         result.AllItems.ShouldBeEmpty();
         result.NotScheduled.ShouldBeEmpty();
@@ -121,7 +125,7 @@ public class ScheduleBuilderTest
         var claim = MakeApprovedClaim(projectInfo);
         var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1], approvedClaim: claim);
 
-        var result = new ScheduleBuilder([character], projectInfo).Build();
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
 
         var item = result.AllItems.ShouldHaveSingleItem().ProgramItem;
         item.Authors.ShouldHaveSingleItem().UserId.ShouldBe(claim.PlayerId);
@@ -136,11 +140,108 @@ public class ScheduleBuilderTest
             approvedClaim: MakeApprovedClaim(projectInfo),
             hidePlayerForCharacter: true);
 
-        var result = new ScheduleBuilder([character], projectInfo).Build();
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
 
         var item = result.AllItems.ShouldHaveSingleItem().ProgramItem;
         item.Authors.ShouldHaveSingleItem();
         item.ShowAuthors.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TakesAuthorsFromAuthorFieldInsteadOfPlayer()
+    {
+        var projectInfo = MakeScheduleProject(authorFieldVisibility: ProjectFieldVisibility.Public);
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1],
+            approvedClaim: MakeApprovedClaim(projectInfo),
+            authorFieldValue: "300,301");
+
+        var result = new ScheduleBuilder([character], projectInfo, MakeAuthorUsers(300, 301)).Build();
+
+        var item = result.AllItems.ShouldHaveSingleItem().ProgramItem;
+        item.Authors.Select(author => author.UserId.Value).ShouldBe([300, 301]);
+        item.ShowAuthors.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void FallsBackToPlayerWhenAuthorFieldIsEmpty()
+    {
+        var projectInfo = MakeScheduleProject(authorFieldVisibility: ProjectFieldVisibility.Public);
+        var claim = MakeApprovedClaim(projectInfo);
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1], approvedClaim: claim);
+
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
+
+        var item = result.AllItems.ShouldHaveSingleItem().ProgramItem;
+        item.Authors.ShouldHaveSingleItem().UserId.ShouldBe(claim.PlayerId);
+    }
+
+    /// <summary>
+    /// Ведущий назван в поле явно, поэтому настройка персонажа «скрыть игрока» его не скрывает —
+    /// видимость решает само поле (ADR017 §6).
+    /// </summary>
+    [Fact]
+    public void ShowsAuthorsFromPublicFieldEvenWhenPlayerIsHidden()
+    {
+        var projectInfo = MakeScheduleProject(authorFieldVisibility: ProjectFieldVisibility.Public);
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1],
+            hidePlayerForCharacter: true,
+            authorFieldValue: "300");
+
+        var result = new ScheduleBuilder([character], projectInfo, MakeAuthorUsers(300)).Build();
+
+        result.AllItems.ShouldHaveSingleItem().ProgramItem.ShowAuthors.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void HidesAuthorsFromNonMastersWhenAuthorFieldIsNotPublic()
+    {
+        var projectInfo = MakeScheduleProject(authorFieldVisibility: ProjectFieldVisibility.MasterOnly);
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1],
+            authorFieldValue: "300");
+
+        var result = new ScheduleBuilder([character], projectInfo, MakeAuthorUsers(300)).Build();
+
+        var item = result.AllItems.ShouldHaveSingleItem().ProgramItem;
+        item.Authors.ShouldHaveSingleItem();
+        item.ShowAuthors.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SkipsAuthorThatWasDeleted()
+    {
+        var projectInfo = MakeScheduleProject(authorFieldVisibility: ProjectFieldVisibility.Public);
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1],
+            approvedClaim: MakeApprovedClaim(projectInfo),
+            authorFieldValue: "300,301");
+
+        // Пользователя 301 в базе не нашлось — в словарь резолва он не попал.
+        var result = new ScheduleBuilder([character], projectInfo, MakeAuthorUsers(300)).Build();
+
+        var item = result.AllItems.ShouldHaveSingleItem().ProgramItem;
+        // Ровно один автор: на игрока при непустом поле мы не откатываемся.
+        item.Authors.ShouldHaveSingleItem().UserId.Value.ShouldBe(300);
+    }
+
+    [Fact]
+    public void CollectAuthorUserIdsDeduplicatesAcrossCharacters()
+    {
+        var projectInfo = MakeScheduleProject(authorFieldVisibility: ProjectFieldVisibility.Public);
+        var first = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1], authorFieldValue: "300,301");
+        var second = MakeProgramItemCharacter(projectInfo, 2, timeSlots: [2], rooms: [1], authorFieldValue: "301");
+
+        ProgramItem.CollectAuthorUserIds([first, second])
+            .Select(id => id.Value)
+            .ShouldBe([300, 301], ignoreOrder: true);
+    }
+
+    [Fact]
+    public void CollectAuthorUserIdsIsEmptyWithoutAuthorField()
+    {
+        var projectInfo = MakeScheduleProject();
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1],
+            approvedClaim: MakeApprovedClaim(projectInfo));
+
+        ProgramItem.CollectAuthorUserIds([character]).ShouldBeEmpty();
     }
 
     [Fact]
@@ -150,7 +251,7 @@ public class ScheduleBuilderTest
         var otherProjectInfo = MakeScheduleProject();
         var alien = MakeProgramItemCharacter(otherProjectInfo, 1, timeSlots: [1], rooms: [1]);
 
-        var ex = Should.Throw<ArgumentException>(() => new ScheduleBuilder([alien], projectInfo));
+        var ex = Should.Throw<ArgumentException>(() => new ScheduleBuilder([alien], projectInfo, NoAuthors));
 
         ex.ParamName.ShouldBe("characters");
     }
@@ -160,7 +261,7 @@ public class ScheduleBuilderTest
     {
         var projectInfo = MakeProject(MakeField(1));
 
-        _ = Should.Throw<Exception>(() => new ScheduleBuilder([], projectInfo));
+        _ = Should.Throw<Exception>(() => new ScheduleBuilder([], projectInfo, NoAuthors));
     }
 
     #region Фикстуры
@@ -169,10 +270,18 @@ public class ScheduleBuilderTest
     /// Проект с двумя временными слотами (10:00 и 11:00, по часу) и двумя комнатами.
     /// </summary>
     /// <param name="deletedRoomId">Номер комнаты, которую надо пометить удалённой.</param>
-    private static ProjectInfo MakeScheduleProject(int? deletedRoomId = null)
+    /// <param name="authorFieldVisibility">
+    /// Если задана — в проекте есть ещё и поле «ведущий мероприятия» (#4512) с такой видимостью.
+    /// </param>
+    private static ProjectInfo MakeScheduleProject(
+        int? deletedRoomId = null,
+        ProjectFieldVisibility? authorFieldVisibility = null)
         => Build(
             fields:
             [
+                .. authorFieldVisibility is { } visibility
+                    ? new[] { MakeField(AuthorFieldId, ProjectFieldType.ScheduleAuthorField, visibility) }
+                    : [],
                 MakeField(
                     TimeSlotFieldId,
                     ProjectFieldType.ScheduleTimeSlotField,
@@ -227,7 +336,8 @@ public class ScheduleBuilderTest
         int[] rooms,
         CharacterTypeInfo? characterTypeInfo = null,
         CharacterClaimInfo? approvedClaim = null,
-        bool hidePlayerForCharacter = false)
+        bool hidePlayerForCharacter = false,
+        string? authorFieldValue = null)
         => new(
             new CharacterIdentification(projectInfo.ProjectId, characterId),
             projectInfo,
@@ -240,17 +350,40 @@ public class ScheduleBuilderTest
             new MarkdownString($"Описание {characterId}"),
             originalCharacterSlotId: null,
             directGroupIds: [],
-            new FieldLayerContainer(projectInfo, new Dictionary<int, string?>
-            {
-                [TimeSlotFieldId] = string.Join(",", timeSlots),
-                [RoomFieldId] = string.Join(",", rooms),
-            }),
+            new FieldLayerContainer(projectInfo, MakeFieldValues(projectInfo, timeSlots, rooms, authorFieldValue)),
             claims: approvedClaim is null ? [] : [approvedClaim],
             approvedClaim?.ClaimId,
             new DateTime(2026, 1, 1),
             DefaultMasterId,
             new DateTime(2026, 1, 1),
             DefaultMasterId);
+
+    /// <remarks>
+    /// Поле-ведущий попадает в слой только если оно есть в проекте: контейнер слоя падает на
+    /// значении неизвестного поля.
+    /// </remarks>
+    private static Dictionary<int, string?> MakeFieldValues(
+        ProjectInfo projectInfo,
+        int[] timeSlots,
+        int[] rooms,
+        string? authorFieldValue)
+    {
+        var values = new Dictionary<int, string?>
+        {
+            [TimeSlotFieldId] = string.Join(",", timeSlots),
+            [RoomFieldId] = string.Join(",", rooms),
+        };
+        if (projectInfo.ScheduleAuthorField is not null)
+        {
+            values[AuthorFieldId] = authorFieldValue;
+        }
+        return values;
+    }
+
+    private static Dictionary<UserIdentification, UserInfoHeader> MakeAuthorUsers(params int[] userIds)
+        => userIds.ToDictionary(
+            id => new UserIdentification(id),
+            id => new UserInfoHeader(new UserIdentification(id), new UserDisplayName($"Ведущий {id}", null)));
 
     private static CharacterClaimInfo MakeApprovedClaim(ProjectInfo projectInfo)
         => new(

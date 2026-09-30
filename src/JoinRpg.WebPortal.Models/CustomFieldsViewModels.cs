@@ -187,6 +187,7 @@ public class FieldValueViewModel
         AddLabelIf(FieldSpecialLabelView.Description, ch.Field.IsDescription);
         AddLabelIf(FieldSpecialLabelView.ScheduleTime, ch.Field.IsTimeSlot);
         AddLabelIf(FieldSpecialLabelView.SchedulePlace, ch.Field.IsRoomSlot);
+        AddLabelIf(FieldSpecialLabelView.ScheduleAuthor, ch.Field.IsScheduleAuthor);
         AddLabelIf(FieldSpecialLabelView.Public, ch.Field.IsPublic);
     }
 

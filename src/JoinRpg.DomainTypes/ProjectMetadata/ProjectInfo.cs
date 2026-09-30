@@ -23,6 +23,12 @@ public record class ProjectInfo
     public ProjectFieldInfo? TimeSlotField { get; }
     public ProjectFieldInfo? RoomField { get; }
 
+    /// <summary>
+    /// Поле «ведущий мероприятия» — третье специальное поле расписания (#4512). Если его нет или
+    /// оно не заполнено, ведущим пункта программы считается игрок утверждённой заявки.
+    /// </summary>
+    public ProjectFieldInfo? ScheduleAuthorField { get; }
+
     public ProjectFieldSettings ProjectFieldSettings { get; }
     public ProjectFinanceSettings ProjectFinanceSettings { get; }
 
@@ -88,6 +94,7 @@ public record class ProjectInfo
 
         TimeSlotField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleTimeSlotField && f.IsActive);
         RoomField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleRoomField && f.IsActive);
+        ScheduleAuthorField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleAuthorField && f.IsActive);
 
         GroupTree = groupTree;
         Masters = masters;

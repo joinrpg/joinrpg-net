@@ -84,6 +84,10 @@ public record class ProjectFieldInfo(
     /// Специальное поле — слот помещения в расписании
     /// </summary>
     public bool IsRoomSlot => Type == ProjectFieldType.ScheduleRoomField;
+    /// <summary>
+    /// Специальное поле — ведущий мероприятия (#4512)
+    /// </summary>
+    public bool IsScheduleAuthor => Type == ProjectFieldType.ScheduleAuthorField;
 
     public IEnumerable<ProjectFieldVariant> GetPossibleVariants(
         AccessArguments accessArguments,

@@ -34,6 +34,17 @@ public static class FieldUserLinksLoader
         IReadOnlyCollection<UserIdentification> userIds =
             [.. fields.SelectMany(f => UserIdsWithOverride(f, overrideValues)).Distinct()];
 
+        return await userRepository.LoadUserLinks(userIds);
+    }
+
+    /// <summary>
+    /// Резолв уже собранного набора идентификаторов. Нужен там, где id берутся не прямо из полей
+    /// экрана — например ведущие пунктов программы в расписании (#4512).
+    /// </summary>
+    public static async Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> LoadUserLinks(
+        this IUserRepository userRepository,
+        IReadOnlyCollection<UserIdentification> userIds)
+    {
         if (userIds.Count == 0)
         {
             return None;

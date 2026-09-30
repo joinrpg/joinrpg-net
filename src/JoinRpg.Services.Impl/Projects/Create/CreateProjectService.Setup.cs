@@ -19,6 +19,8 @@ internal partial class CreateProjectService
         await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
         _ = await CreateField(projectId, "Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField, fieldHint: "Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
         _ = await CreateField(projectId, "Место проведения мероприятия", ProjectFieldType.ScheduleRoomField, fieldHint: "Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
+        // Публичное, но игрок его не меняет: если поле пустое, ведущим считается сам игрок (#4512)
+        _ = await CreateField(projectId, "Ведущий", ProjectFieldType.ScheduleAuthorField, fieldHint: "Кто ведёт мероприятие. Если поле не заполнено, ведущим считается игрок, подавший заявку");
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
 

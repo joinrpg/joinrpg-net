@@ -22,6 +22,11 @@ public enum ProjectFieldType
     /// Ссылки на нескольких пользователей сайта. Значение — id через запятую.
     /// </summary>
     MultiUserLink,
+    /// <summary>
+    /// Ведущие мероприятия — третье специальное поле расписания, рядом с временем и местом (#4512).
+    /// Хранится и редактируется как <see cref="MultiUserLink"/>; в проекте может быть только одно.
+    /// </summary>
+    ScheduleAuthorField,
 }
 
 public enum FieldBoundTo
