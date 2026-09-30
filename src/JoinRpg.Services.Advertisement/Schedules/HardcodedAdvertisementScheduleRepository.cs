@@ -16,15 +16,16 @@ internal class HardcodedAdvertisementScheduleRepository(IAdvertisementChannelRep
 
         if (await channelRepository.GetChannel(HardcodedAdvertisementChannelRepository.TestChannelId) is { } testChannel)
         {
-            schedules.Add(new(new AdvertisementScheduleIdentification(1), testChannel, AdvertisementMethod.SingleHotRole, EveryDay));
-
-            // Новый способ рекламы пока обкатываем только в тестовом канале, в боевой ZovemChannel не включаем.
-            schedules.Add(new(new AdvertisementScheduleIdentification(3), testChannel, AdvertisementMethod.NewlyOpenedProjectsDigest, Mondays));
+            // Оба способа обкатаны и переведены в боевой канал, в тестовом больше не шлём.
+            // Расписания не удаляем, чтобы не поехали идентификаторы (на них ссылается лог отправок).
+            schedules.Add(new(new AdvertisementScheduleIdentification(1), testChannel, AdvertisementMethod.SingleHotRole, EveryDay, IsActive: false));
+            schedules.Add(new(new AdvertisementScheduleIdentification(3), testChannel, AdvertisementMethod.NewlyOpenedProjectsDigest, Mondays, IsActive: false));
         }
 
         if (await channelRepository.GetChannel(HardcodedAdvertisementChannelRepository.ZovemChannelId) is { } zovemChannel)
         {
             schedules.Add(new(new AdvertisementScheduleIdentification(2), zovemChannel, AdvertisementMethod.SingleHotRole, Wednesdays));
+            schedules.Add(new(new AdvertisementScheduleIdentification(4), zovemChannel, AdvertisementMethod.NewlyOpenedProjectsDigest, Mondays));
         }
 
         return schedules;
