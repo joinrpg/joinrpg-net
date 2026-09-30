@@ -5,6 +5,7 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces.Characters;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.WebPortal.Managers.Characters;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
@@ -26,10 +27,26 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
     private const string Password = "Password123!";
     private const string CharacterName = "Вантала";
 
+    /// <summary>Сколько персонажей с искомым именем в каждом проекте.</summary>
+    /// <remarks>
+    /// Долг по ленивым загрузкам на этой странице — тройка <c>Projects</c>/<c>ProjectDetails</c>/
+    /// <c>ProjectAcls</c> на каждый найденный объект (#4991). На одном результате в одном проекте
+    /// она не отличима от одиночного запроса, поэтому объектов должно быть много и в разных
+    /// проектах — иначе замер честно показывает ноль при живом N+1 на проде.
+    /// </remarks>
+    private const int CharactersPerProject = 3;
+
     [Fact]
     public async Task GlobalSearch_WithoutProjectScope_Works()
     {
-        var (masterId, email, projectId) = await CreateMasterWithProjectAndCharacterAsync();
+        var (masterId, email) = await CreateMasterAsync();
+        var projectId = await SeedProjectWithMatchesAsync(masterId, "Проект для глобального поиска");
+
+        // Второй и третий проекты — чужие: в них ищущий не мастер, поэтому проверка видимости
+        // скрытых находок доходит до последнего операнда и лезет за правами (#4991).
+        var (otherMasterId, _) = await CreateMasterAsync();
+        _ = await SeedProjectWithMatchesAsync(otherMasterId, "Чужой проект для глобального поиска");
+        _ = await SeedProjectWithMatchesAsync(otherMasterId, "Второй чужой проект для глобального поиска");
 
         var client = factory.CreateClient();
         client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(client, email, Password);
@@ -49,18 +66,34 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
         scopedResults.Select(r => r.CharacterName).ShouldContain(CharacterName);
     }
 
-    private async Task<(UserIdentification masterId, string email, ProjectIdentification projectId)> CreateMasterWithProjectAndCharacterAsync()
+    private async Task<(UserIdentification MasterId, string Email)> CreateMasterAsync()
     {
-        UserIdentification masterId;
-        string email;
-        ProjectIdentification projectId;
+        using var scope = factory.Services.CreateScope();
+        return await TestUserProjectHelpers.CreateTestUserWithEmailAsync(
+            scope.ServiceProvider, password: Password);
+    }
 
+    /// <summary>
+    /// Проект, в котором искомую строку находят и персонажи, и группы: провайдеров поиска
+    /// несколько, и каждый найденный объект — отдельная строка на странице результатов.
+    /// </summary>
+    /// <remarks>
+    /// Часть находок намеренно непубличные. Проверка видимости
+    /// (<c>WorldObjectExtensions.IsVisible</c>) выглядит как
+    /// <c>IsPublic || Project.Details.PublishPlot || HasMasterAccess(...)</c>: на публичном объекте
+    /// она останавливается на первом операнде и проекта не касается вовсе, а на непубличном идёт
+    /// за проектом, его настройками и правами — это и есть догружаемая тройка
+    /// <c>Projects</c>/<c>ProjectDetails</c>/<c>ProjectAcls</c> на каждую находку (#4991).
+    /// </remarks>
+    private async Task<ProjectIdentification> SeedProjectWithMatchesAsync(
+        UserIdentification masterId,
+        string projectName)
+    {
+        ProjectIdentification projectId;
         using (var scope = factory.Services.CreateScope())
         {
-            (masterId, email) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(
-                scope.ServiceProvider, password: Password);
             projectId = await TestUserProjectHelpers.CreateProjectAsync(
-                scope.ServiceProvider, masterId, "Проект для глобального поиска");
+                scope.ServiceProvider, masterId, projectName);
         }
 
         await factory.Services.RunAsAsync(masterId, async sp =>
@@ -72,14 +105,36 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
             var nameFieldId = (projectInfo.CharacterNameField
                 ?? throw new InvalidOperationException("В проекте нет поля имени персонажа"))
                 .Id.ProjectFieldId;
+            var rootGroupId = projectInfo.GroupTree.RootGroupId;
 
-            await characterService.AddCharacter(new AddCharacterRequest(
+            var characterGroupService = sp.GetRequiredService<ICharacterGroupService>();
+            var groupId = await characterGroupService.AddCharacterGroup(
                 projectId,
-                ParentCharacterGroupIds: [projectInfo.GroupTree.RootGroupId],
-                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
-                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = CharacterName })));
+                $"Отряд {CharacterName}",
+                isPublic: true,
+                parentCharacterGroupIds: [rootGroupId],
+                description: "");
+            _ = await characterGroupService.AddCharacterGroup(
+                projectId,
+                $"Тайный отряд {CharacterName}",
+                isPublic: false,
+                parentCharacterGroupIds: [rootGroupId],
+                description: "");
+
+            for (var i = 1; i <= CharactersPerProject; i++)
+            {
+                // Первый персонаж публичный и назван ровно искомой строкой: на него смотрит
+                // проверка сужённого до проекта поиска. Остальные скрытые.
+                var name = i == 1 ? CharacterName : $"{CharacterName} {i}";
+                var visibility = i == 1 ? CharacterVisibility.Public : CharacterVisibility.Private;
+                await characterService.AddCharacter(new AddCharacterRequest(
+                    projectId,
+                    ParentCharacterGroupIds: [groupId],
+                    new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, visibility),
+                    FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = name })));
+            }
         });
 
-        return (masterId, email, projectId);
+        return projectId;
     }
 }
