@@ -35,15 +35,51 @@ public class ClaimSelectorTest
         return ctx;
     }
 
+    /// <summary>
+    /// Контракт с ProjectEntityIdModelBinder: он разбирает пришедшее из формы значение через
+    /// TryParse, поэтому value у опции должно им и разбираться — обратно в тот же id.
+    /// </summary>
     [Fact]
-    public void OptionValues_AreFullTypedIds()
+    public void OptionValues_AreParsedBackIntoSameIds()
     {
         using var ctx = CreateContext();
 
         var cut = ctx.Render<ClaimSelector>(p => p.Add(x => x.ProjectId, ProjectId));
 
         var values = cut.FindAll("option").Select(o => o.GetAttribute("value")).ToArray();
-        values.ShouldBe([FirstClaimId.ToString(), SecondClaimId.ToString()]);
+        values.Length.ShouldBe(2);
+
+        var parsed = values.Select(v =>
+        {
+            ClaimIdentification.TryParse(v, null, out var id).ShouldBeTrue($"Не разобрался id: '{v}'");
+            return id;
+        });
+        parsed.ShouldBe([FirstClaimId, SecondClaimId]);
+    }
+
+    /// <summary>Интерактивный режим: выбор уходит наружу и как id, и как заявка целиком.</summary>
+    [Fact]
+    public void Selecting_RaisesBothIdAndClaimCallbacks()
+    {
+        using var ctx = CreateContext();
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        var module = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+        module.SetupVoid("initBootstrapSelect", _ => true).SetVoidResult();
+        module.SetupVoid("refreshBootstrapSelect", _ => true).SetVoidResult();
+        module.Setup<List<string>>("getSelectedValues", _ => true).SetResult([SecondClaimId.ToString()]);
+
+        ClaimIdentification? changedId = null;
+        ClaimLinkViewModel? changedClaim = null;
+
+        var cut = ctx.Render<ClaimSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.ClaimIdChanged, id => changedId = id)
+            .Add(x => x.ClaimChanged, claim => changedClaim = claim));
+
+        cut.Find("select").Change(SecondClaimId.ToString());
+
+        changedId.ShouldBe(SecondClaimId);
+        changedClaim.ShouldNotBeNull().CharacterName.ShouldBe("Персонаж2");
     }
 
     [Fact]

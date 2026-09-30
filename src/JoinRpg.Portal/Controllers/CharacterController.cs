@@ -175,8 +175,10 @@ public class CharacterController(
             {
                 if (characterGroupId != null)
                 {
+                    // GET Create принимает номер группы, а не типизированный id — иначе в query
+                    // уедет "charactergroupid=CharacterGroupId(5-10)", не разберётся и подставится корень.
                     return RedirectToAction("Create",
-                        new { viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating });
+                        new { viewModel.ProjectId, characterGroupId = characterGroupId.CharacterGroupId, viewModel.ContinueCreating });
                 }
                 else
                 {

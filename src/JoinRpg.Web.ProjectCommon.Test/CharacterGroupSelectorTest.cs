@@ -45,8 +45,12 @@ public class CharacterGroupSelectorTest
         return (ctx, client);
     }
 
+    /// <summary>
+    /// Контракт с ProjectEntityIdModelBinder: он разбирает пришедшее из формы значение через
+    /// TryParse, поэтому value у опции должно им и разбираться — обратно в тот же id.
+    /// </summary>
     [Fact]
-    public void OptionValues_AreFullTypedIds()
+    public void OptionValues_AreParsedBackIntoSameIds()
     {
         var (ctx, _) = CreateContext();
         using var _unused = ctx;
@@ -54,7 +58,31 @@ public class CharacterGroupSelectorTest
         var cut = ctx.Render<CharacterGroupSelector>(p => p.Add(x => x.ProjectId, ProjectId));
 
         var values = cut.FindAll("option").Select(o => o.GetAttribute("value")).ToArray();
-        values.ShouldBe([FirstGroupId.ToString(), SecondGroupId.ToString()]);
+        values.Length.ShouldBe(2);
+
+        var parsed = values.Select(v =>
+        {
+            CharacterGroupIdentification.TryParse(v, null, out var id).ShouldBeTrue($"Не разобрался id: '{v}'");
+            return id;
+        });
+        parsed.ShouldBe([FirstGroupId, SecondGroupId]);
+    }
+
+    [Fact]
+    public void ChangingIncludeSpecial_RequestsGroupsAgain()
+    {
+        var (ctx, client) = CreateContext();
+        using var _unused = ctx;
+
+        var cut = ctx.Render<CharacterGroupSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.IncludeSpecial, true));
+
+        cut.Render(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.IncludeSpecial, false));
+
+        client.CallCount.ShouldBe(2);
     }
 
     [Fact]
@@ -82,6 +110,42 @@ public class CharacterGroupSelectorTest
             .Add(x => x.Name, "ParentCharacterGroupIds"));
 
         cut.Find("select").GetAttribute("name").ShouldBe("ParentCharacterGroupIds");
+    }
+
+    /// <summary>
+    /// Интерактивный режим: выбор в <c>&lt;select&gt;</c> уходит наружу через колбэки обёртки. От
+    /// <see cref="CharacterGroupSelector.SelectedGroupsChanged"/> зависит цепочка
+    /// SingleCharacterGroupSelector → формы капитанов/подписок/списков ролей, поэтому проверяются оба.
+    /// </summary>
+    [Fact]
+    public void Selecting_RaisesBothIdAndDtoCallbacks()
+    {
+        var (ctx, _) = CreateContext();
+        using var _unused = ctx;
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        SetupBootstrapSelectInterop(ctx, [SecondGroupId]);
+
+        CharacterGroupIdentification[]? changedIds = null;
+        CharacterGroupDto[]? changedGroups = null;
+
+        var cut = ctx.Render<CharacterGroupSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.SelectedGroupIdsChanged, ids => changedIds = ids)
+            .Add(x => x.SelectedGroupsChanged, groups => changedGroups = groups));
+
+        cut.Find("select").Change(SecondGroupId.ToString());
+
+        changedIds.ShouldBe([SecondGroupId]);
+        changedGroups.ShouldNotBeNull().Select(g => g.Name).ShouldBe(["Вторая"]);
+    }
+
+    private static void SetupBootstrapSelectInterop(BunitContext ctx, CharacterGroupIdentification[] selected)
+    {
+        var module = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+        module.SetupVoid("initBootstrapSelect", _ => true).SetVoidResult();
+        module.SetupVoid("refreshBootstrapSelect", _ => true).SetVoidResult();
+        module.Setup<List<string>>("getSelectedValues", _ => true)
+            .SetResult([.. selected.Select(x => x.ToString())]);
     }
 
     [Fact]

@@ -253,14 +253,23 @@ public class ProjectEntityIdModelBinderTest
     // именем, а свойство вью-модели — массив типизированных id. Массив биндит штатный ArrayModelBinder,
     // который для элемента спрашивает биндер у провайдеров, в том числе у нашего.
     [Fact]
-    public async Task ArrayOfIds_BindsFromRepeatedFormValues()
+    public Task ArrayOfIds_BindsFromRepeatedFormValues()
+        => CollectionOfIdsBinds(typeof(CharacterGroupIdentification[]), new ArrayModelBinderProvider());
+
+    // Экшены сюжетов (PlotController.CreateElement/EditElement) принимают группы как
+    // IReadOnlyCollection<>, а не как массив — это другой провайдер биндеров.
+    [Fact]
+    public Task ReadOnlyCollectionOfIds_BindsFromRepeatedFormValues()
+        => CollectionOfIdsBinds(typeof(IReadOnlyCollection<CharacterGroupIdentification>), new CollectionModelBinderProvider());
+
+    private static async Task CollectionOfIdsBinds(Type collectionType, IModelBinderProvider collectionBinderProvider)
     {
         var first = new CharacterGroupIdentification(CurrentProjectId, 5);
         var second = new CharacterGroupIdentification(CurrentProjectId, 7);
 
-        var arrayMetadata = MetadataProvider.GetMetadataForType(typeof(CharacterGroupIdentification[]));
-        var binder = new ArrayModelBinderProvider()
-            .GetBinder(new TestModelBinderProviderContext(arrayMetadata, MetadataProvider))
+        var collectionMetadata = MetadataProvider.GetMetadataForType(collectionType);
+        var binder = collectionBinderProvider
+            .GetBinder(new TestModelBinderProviderContext(collectionMetadata, MetadataProvider))
             .ShouldNotBeNull();
 
         var httpContext = new DefaultHttpContext();
@@ -274,7 +283,7 @@ public class ProjectEntityIdModelBinderTest
             }),
             CultureInfo.InvariantCulture);
         var bindingContext = DefaultModelBindingContext.CreateBindingContext(
-            actionContext, valueProvider, arrayMetadata, bindingInfo: null, modelName: "groupIds");
+            actionContext, valueProvider, collectionMetadata, bindingInfo: null, modelName: "groupIds");
 
         await binder.BindModelAsync(bindingContext);
 
