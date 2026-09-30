@@ -38,13 +38,19 @@ internal static class CharacterViewModelBuilder
             ProjectId = character.Id.ProjectId.Value,
         };
 
-    /// <summary>Зеркало <c>WorldObjectExtensions.IsVisible</c> для персонажа поверх агрегата.</summary>
+    /// <summary>
+    /// Виден ли персонаж пользователю (или анонимному посетителю, если <paramref name="currentUserId"/>
+    /// не задан). Считается поверх агрегата, без обращения к EF-навигациям.
+    /// </summary>
     public static bool IsVisible(CharacterInfo character, UserIdentification? currentUserId)
         => character.CharacterTypeInfo.IsNamePublic
             || character.ProjectInfo.PublishPlot
             || character.ProjectInfo.HasMasterAccess(currentUserId);
 
-    /// <summary>Зеркало <c>WorldObjectExtensions.IsVisible</c> для группы поверх метаданных.</summary>
+    /// <summary>
+    /// Видна ли группа пользователю (или анонимному посетителю, если <paramref name="currentUserId"/>
+    /// не задан). Считается поверх метаданных проекта, без обращения к EF-навигациям.
+    /// </summary>
     public static bool IsVisible(CharacterGroupInfo group, UserIdentification? currentUserId, ProjectInfo projectInfo)
         => group.IsPublic || projectInfo.PublishPlot || projectInfo.HasMasterAccess(currentUserId);
 }

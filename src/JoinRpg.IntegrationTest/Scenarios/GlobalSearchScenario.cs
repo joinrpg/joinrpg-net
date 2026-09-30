@@ -1,9 +1,11 @@
 using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.WebPortal.Managers.Characters;
@@ -66,6 +68,40 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
         scopedResults.Select(r => r.CharacterName).ShouldContain(CharacterName);
     }
 
+    /// <summary>
+    /// Глобальный поиск не должен догружать проект, его настройки и права на каждую находку (#4991).
+    /// </summary>
+    /// <remarks>
+    /// Замер идёт вокруг сервисного вызова, а не вокруг HTTP-запроса: <c>SearchController</c> висит
+    /// на конвенциональном маршруте, и в снапшоте <c>lazy-loads-baseline.json</c> он неотличим от
+    /// остальных страниц маршрута <c>GET /{controller=Home}/{action=Index}/{id?}</c>, где долг ещё есть.
+    /// </remarks>
+    [Fact]
+    public async Task GlobalSearch_DoesNotLazyLoadProjectPerResult()
+    {
+        var (masterId, _) = await CreateMasterAsync();
+        _ = await SeedProjectWithMatchesAsync(masterId, "Свой проект для замера ленивых загрузок");
+
+        // Чужие проекты: ищущий в них не мастер, поэтому на скрытых находках проверка видимости
+        // доходит до последнего операнда и на EF-сущностях полезла бы за Project/Details/Acls.
+        var (otherMasterId, _) = await CreateMasterAsync();
+        _ = await SeedProjectWithMatchesAsync(otherMasterId, "Чужой проект для замера ленивых загрузок");
+        _ = await SeedProjectWithMatchesAsync(otherMasterId, "Второй чужой проект для замера ленивых загрузок");
+
+        var (count, resultsCount) = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var searchService = sp.GetRequiredService<ISearchService>();
+
+            using var lazyLoads = LazyLoadCounter.BeginScope();
+            var results = await searchService.SearchAsync(masterId.Value, CharacterName);
+            return (lazyLoads.Count, results.Count);
+        });
+
+        // Находок должно быть много и из разных проектов — иначе замер ничего не сторожит.
+        resultsCount.ShouldBeGreaterThan(CharactersPerProject);
+        count.ShouldBe(0, $"Глобальный поиск дал {count} ленивых загрузок на {resultsCount} находок, см. #4991");
+    }
+
     private async Task<(UserIdentification MasterId, string Email)> CreateMasterAsync()
     {
         using var scope = factory.Services.CreateScope();
@@ -78,9 +114,9 @@ public class GlobalSearchScenario(JoinApplicationFactory factory) : IClassFixtur
     /// несколько, и каждый найденный объект — отдельная строка на странице результатов.
     /// </summary>
     /// <remarks>
-    /// Часть находок намеренно непубличные. Проверка видимости
-    /// (<c>WorldObjectExtensions.IsVisible</c>) выглядит как
-    /// <c>IsPublic || Project.Details.PublishPlot || HasMasterAccess(...)</c>: на публичном объекте
+    /// Часть находок намеренно непубличные. Проверка видимости (в поиске она живёт
+    /// в <c>WorldObjectProviderBase</c>) выглядит как
+    /// <c>IsPublic || PublishPlot || HasMasterAccess(...)</c>: на публичном объекте
     /// она останавливается на первом операнде и проекта не касается вовсе, а на непубличном идёт
     /// за проектом, его настройками и правами — это и есть догружаемая тройка
     /// <c>Projects</c>/<c>ProjectDetails</c>/<c>ProjectAcls</c> на каждую находку (#4991).

@@ -1,45 +1,75 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search;
 
-internal class WorldObjectProviderBase
+internal class WorldObjectProviderBase(IProjectMetadataRepository projectMetadataRepository)
 {
-    protected static List<SearchResult> GetWorldObjectsResult(
+    /// <summary>
+    /// Отбирает находки, которые можно показать пользователю, и превращает их в результаты поиска.
+    /// </summary>
+    /// <remarks>
+    /// Видимость и мастерский доступ считаются поверх <see cref="ProjectInfo"/>, а не по EF-навигациям
+    /// (<c>Project</c>/<c>Project.Details</c>/<c>Project.ProjectAcls</c>): иначе каждая скрытая находка
+    /// стоила бы тройку ленивых загрузок, а результаты глобального поиска — это N объектов из разных
+    /// проектов (#4991). Метаданные кешируются на запрос, и берутся они по одному разу на проект.
+    /// </remarks>
+    protected async Task<List<SearchResult>> GetWorldObjectsResultAsync(
       int? currentUserId,
-      IEnumerable<IWorldObject> results,
+      IReadOnlyCollection<IWorldObject> results,
       LinkType linkType,
-      Predicate<IWorldObject> wasFoundByIdPredicate,
-      Predicate<IWorldObject> perfectMatchPredicte)
+      int? searchedEntityId,
+      bool matchByIdIsPerfect = false)
     {
-        return [.. results.Where(cg => cg.IsVisible(currentUserId))
-          .Select(result =>
-            new SearchResult
+        var currentUser = UserIdentification.FromOptional(currentUserId);
+        var projects = await LoadProjectsMetadataAsync(results);
+
+        var searchResults = new List<SearchResult>();
+        foreach (var result in results)
+        {
+            var projectInfo = projects[new ProjectIdentification(result.ProjectId)];
+            var wasFoundById = searchedEntityId is not null && result.Id == searchedEntityId;
+            var hasMasterAccess = projectInfo.HasMasterAccess(currentUser);
+
+            // Поиск по id — только для мастеров проекта находки
+            if (wasFoundById && !hasMasterAccess)
+            {
+                continue;
+            }
+
+            // Виден ли объект: публичный, либо проект открыл сюжеты, либо смотрит мастер
+            if (!result.IsPublic && !projectInfo.PublishPlot && !hasMasterAccess)
+            {
+                continue;
+            }
+
+            searchResults.Add(new SearchResult
             {
                 LinkType = linkType,
                 Name = result.Name,
-                Description = wasFoundByIdPredicate(result)
-                ? SearchUtils.GetFoundByIdDescription(result.Id)
-                : result.Description,
+                Description = wasFoundById
+                  ? SearchUtils.GetFoundByIdDescription(result.Id)
+                  : result.Description,
                 Identification = result.Id.ToString(),
                 ProjectId = result.ProjectId,
                 IsPublic = result.IsPublic,
                 IsActive = result.IsActive,
-                IsPerfectMatch = perfectMatchPredicte(result),
-            })];
+                IsPerfectMatch = wasFoundById && matchByIdIsPerfect,
+            });
+        }
+
+        return searchResults;
     }
 
-    /// <summary>
-    /// Checks for master access is it's a match by Id
-    /// </summary>
-    protected static bool CheckMasterAccessIfMatchById(
-      IProjectEntity entity,
-      int? currentUserId,
-      int? searchedEntityId)
+    private async Task<Dictionary<ProjectIdentification, ProjectInfo>> LoadProjectsMetadataAsync(
+      IEnumerable<IProjectEntity> entities)
     {
-        return
-          entity.Id != searchedEntityId
-          || entity.Project.HasMasterAccess(UserIdentification.FromOptional(currentUserId));
+        var projects = new Dictionary<ProjectIdentification, ProjectInfo>();
+        foreach (var projectId in entities.Select(e => new ProjectIdentification(e.ProjectId)).Distinct())
+        {
+            projects[projectId] = await projectMetadataRepository.GetProjectMetadata(projectId);
+        }
+
+        return projects;
     }
 }
