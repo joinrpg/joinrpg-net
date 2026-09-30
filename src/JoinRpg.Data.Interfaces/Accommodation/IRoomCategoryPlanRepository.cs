@@ -15,19 +15,8 @@ namespace JoinRpg.Data.Interfaces.Accommodation;
 public interface IRoomCategoryPlanRepository
 {
     /// <summary>
-    /// План указанной категории комнат или <c>null</c>, если такой категории в проекте нет.
-    /// </summary>
-    Task<RoomCategoryPlan?> GetPlanOrDefault(RoomCategoryIdentification categoryId);
-
-    /// <summary>
-    /// Планы всех категорий комнат проекта. Все они разделяют один экземпляр <c>ProjectInfo</c>.
-    /// </summary>
-    Task<IReadOnlyCollection<RoomCategoryPlan>> GetAllPlans(ProjectIdentification projectId);
-
-    /// <summary>
     /// План пула, из которого селится данный тип проживания. Пока тип и категория не разделены,
-    /// это тот же план, что <see cref="GetPlanOrDefault"/> по одноимённой категории; после
-    /// разделения один план будут возвращать несколько типов.
+    /// это план одноимённой категории; после разделения один план будут возвращать несколько типов.
     /// </summary>
     Task<RoomCategoryPlan?> GetPlanForTypeOrDefault(AccommodationTypeIdentification typeId);
 }
