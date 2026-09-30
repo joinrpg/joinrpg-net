@@ -65,6 +65,7 @@ public static class Registration
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
+        .AddScoped<IUserLinkResolveClient, UserLinkResolveViewService>()
         .AddScoped<IMoveClient, MoveViewService>()
         .AddScoped<IProjectFieldOperationsClient, Fields.ProjectFieldOperationsViewService>()
         .AddScoped<INotificationDashboardClient, AdminTools.NotificationDashboardManager>()

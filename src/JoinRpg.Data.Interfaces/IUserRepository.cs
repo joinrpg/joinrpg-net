@@ -44,6 +44,11 @@ public interface IUserRepository
         return result;
     }
 
+    async Task<UserInfoHeader> GetRequiredUserInfoHeader(UserIdentification userId)
+    {
+        return (await GetRequiredUserInfoHeaders([userId])).Single();
+    }
+
     Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders();
 
     Task<UserIdentification?> FindByVk(string vkId);

@@ -64,6 +64,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>()
                 .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>()
                 .AddHttpClient<IMoveClient, MoveClientImpl>()
+                .AddHttpClient<IUserLinkResolveClient, UserLinkResolveClientImpl>()
                 .AddHttpClient<IProjectFieldOperationsClient, ProjectFieldOperationsClientImpl>()
                 .AddHttpClient<IUserAdminClient, UserAdminHttpClient>();
     }
