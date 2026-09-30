@@ -1,5 +1,4 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 
@@ -23,39 +22,41 @@ public class PaymentTypeListItemViewModel
     public bool CanBePermanentlyDeleted { get; }
 
     [Display(Name = "Ответственный")]
-    public User Master { get; }
+    public UserInfoHeader Master { get; }
 
-    public PaymentTypeListItemViewModel(PaymentType paymentType)
+    public PaymentTypeListItemViewModel(PaymentTypeInfo paymentType)
     {
-        PaymentTypeId = paymentType.PaymentTypeId;
-        ProjectId = paymentType.ProjectId;
+        PaymentTypeId = paymentType.PaymentTypeId.PaymentTypeId;
+        ProjectId = paymentType.PaymentTypeId.ProjectId.Value;
         TypeKind = (PaymentTypeKindViewModel)paymentType.TypeKind;
         Master = paymentType.User;
-        Name = TypeKind.GetDisplayName(null, paymentType.Name);
-        IsActive = paymentType.IsActive;
+        Name = TypeKind.GetDisplayName((UserInfoHeader?)null, paymentType.Name);
+        IsActive = paymentType.Enabled;
         IsDefault = paymentType.IsDefault;
-        CanBePermanentlyDeleted = IsActive
-            && TypeKind == PaymentTypeKindViewModel.Custom
-            && paymentType.CanBePermanentlyDeleted;
+        // PaymentType.CanBePermanentlyDeleted всегда false: типы оплаты только выключаются (soft-delete).
+        CanBePermanentlyDeleted = false;
     }
 
-    public PaymentTypeListItemViewModel(ProjectAcl acl)
+    /// <summary>
+    /// Потенциальные наличные: мастер проекта, у которого своего типа оплаты «наличные» ещё нет.
+    /// </summary>
+    public PaymentTypeListItemViewModel(ProjectMasterInfo master, ProjectIdentification projectId)
     {
         PaymentTypeId = null;
-        ProjectId = acl.ProjectId;
+        ProjectId = projectId.Value;
         Name = PaymentTypeKindViewModel.Cash.GetDisplayName();
         TypeKind = PaymentTypeKindViewModel.Cash;
-        Master = acl.User;
+        Master = master.UserInfo;
         IsActive = false;
         IsDefault = false;
         CanBePermanentlyDeleted = false;
     }
 
-    public PaymentTypeListItemViewModel(PaymentTypeKind typeKind, User user, int projectId)
+    public PaymentTypeListItemViewModel(PaymentTypeKind typeKind, UserInfoHeader user, ProjectIdentification projectId)
     {
         Name = typeKind.GetDisplayName(user);
         PaymentTypeId = null;
-        ProjectId = projectId;
+        ProjectId = projectId.Value;
         Master = user;
         TypeKind = (PaymentTypeKindViewModel)typeKind;
         CanBePermanentlyDeleted = false;
