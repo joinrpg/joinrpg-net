@@ -229,7 +229,7 @@ freeSpace(room, type) = min(effective(room), type.Capacity) − occupancy(room)
 Страница комнат показывает по каждому жильцу «не оплачено X из Y». Складывать финансовые поля в
 `RoomCategoryPlan` — значит завести третью модель расчёта баланса рядом с `Claim` и
 `CharacterClaimInfo`. Вместо этого план несёт `ClaimIdentification` жильцов, а вью-сервис страницы
-догружает их bulk'ом через существующий `ICharacterInfoRepository.GetCharacterInfos(ids)` и считает
+догружает их bulk'ом через `ICharacterInfoRepository` (`GetCharacterInfosByClaims`, §14) и считает
 баланс уже принятым способом — `FinanceExtensions.CalculateClaimBalance(CharacterInfo, CharacterClaimInfo, ProjectInfo)`.
 Это один дополнительный запрос на страницу, не N+1. Имена игроков — тем же путём, что в ADR013:
 `UserInfoHeader` bulk'ом, не `Include` на каждого.
@@ -359,7 +359,7 @@ public record class RoomInfo(
     string Name,
     IReadOnlyCollection<AccommodationGroupInfo> Inhabitants)
 {
-    public int Occupancy => Inhabitants.Sum(i => i.Persons);
+    public int Occupancy => Inhabitants.Sum(i => i.SubjectsCount);
     public bool IsOccupied => Inhabitants.Count > 0;
 }
 
@@ -453,7 +453,9 @@ internal interface IAccommodationPropsService
 значения по умолчанию: цена запроса должна быть видна на месте вызова. У `ChangePlanForGroup`
 его нет — корень агрегата, названный через группу, всегда `WithGroups`.
 
-Плюс перегрузка без результата. Входа по `ProjectIdentification` **нет**: `UnOccupyAllRooms`
+Плюс перегрузка без результата и два входа, называющих корень агрегата не категорией, а тем, что
+меняет операция, — `ChangePlanForRoom` и `ChangePlanForGroup` (всего четыре перегрузки, см. §14,
+уточнения к PR 4 и PR 5). Входа по `ProjectIdentification` **нет**: `UnOccupyAllRooms`
 перебирает категории проекта и зовёт `ChangePlan` для каждой (§1).
 
 Снимок метаданных write-хэндл **не собирает сам**: `ProjectInfo` приходит параметром из
@@ -545,8 +547,11 @@ public interface IAccommodationService
 `OccupyRoomEmail`/`UnOccupyRoomEmail` (`RoomEmailBase`) несут EF-сущности `ProjectAccommodation Room`
 и `Claim[] Changed`, а `EmailServiceImpl` зовёт по ним `GetAllInhabitants()`. Переписывать почтовый
 контур этот ADR не берётся: письма отправляются через `ctx.AddLegacyEmail(...)` — тот же механизм,
-которым ADR014 сохранил легаси-письма заявок. Единственное изменение по существу: письмо уходит
-**после** успешного `SaveChanges`, один раз на операцию, а не по письму на комнату внутри цикла.
+которым ADR014 сохранил легаси-письма заявок. Единственное изменение по существу: письма уходят
+**после** успешного `SaveChanges` операции, все разом из очереди, а не парой «сохранение + письмо»
+на каждую комнату внутри цикла. Само письмо при этом остаётся письмом **на комнату**: `RoomEmailBase`
+несёт ровно одну комнату, и «одно письмо на операцию» при нынешних почтовых моделях выразить нечем
+(§14, уточнения к PR 5).
 
 ### 12. Потребители
 
@@ -557,7 +562,7 @@ public interface IAccommodationService
 | `RoomViewModel(ProjectAccommodation, …)` | EF-сущность | `RoomInfo` |
 | `AccRequestViewModel(AccommodationRequest, …)` + `RequestParticipantViewModel(Claim, …)` | EF-сущности, `Claim.ClaimTotalFee`/`ClaimFeeDue` (оба `[Obsolete]`) | `AccommodationGroupInfo` + bulk `CharacterInfo`, `CalculateClaimBalance` поверх агрегата |
 | `AccommodationTypeController` (Occupy/UnOccupy/AddRoom/EditRoom/DeleteRoom) | `int`-параметры, `catch`-всё | типизированные id, доменные исключения |
-| `SmokeProjectFixture` (интеграционные тесты) | `AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2")` | `AddRooms(projectInfo.AccommodationSettings.GetTypeById(roomTypeId).RoomCategoryId, "1,2")` |
+| `SmokeProjectFixture` (интеграционные тесты) | `AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2")` | `AddRooms(projectInfo.AccommodationSettings.GetTypeById(roomTypeId).RoomCategoryId, ["1", "2"])` — строку разбирать больше нечем, сервис принимает готовые имена |
 | `AccommodationPrintController`, `AccomodationReportExporter` | `IAccommodationRepository.GetClaimAccommodationReport` | не меняются — это отчёт, плоские строки, агрегат ему не нужен |
 | `AccommodationInviteServiceImpl`, `ClaimAccommodationViewModel` | `AccommodationExtensions` поверх EF | не меняются, см. §13 |
 
@@ -823,7 +828,8 @@ public interface IAccommodationService
 
 - **Сервисный слой поселения перестаёт торговать EF-сущностями.** После ADR015 и этого ADR
   `JoinRpg.Domain/AccommodationExtensions.cs` остаётся только с частями, обслуживающими контур
-  приглашений.
+  приглашений, карточку заявки и почту (`GetAllInhabitants`, `GetRoomFreeSpace(AccommodationRequest)`,
+  `GetClaimNeighbours`).
 - **Права на комнаты перестают быть свойством контроллера** — дефекты, живущие с #5017 в типах
   и до сих пор в комнатах, закрываются одинаково.
 - **Выселение типа становится атомарным**, выселение всего проекта — нет: оно остаётся циклом по
