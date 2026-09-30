@@ -1,8 +1,9 @@
 namespace JoinRpg.Services.Impl.Accommodation;
 
 /// <summary>
-/// Что именно случилось с составом жителей комнаты. Один тип уведомления на три случая, а не три
-/// класса: тексты отличаются только формулировкой, а получатели и заголовок считаются одинаково.
+/// Что именно случилось с составом жителей комнаты. Один тип уведомления на четыре случая, а не
+/// четыре класса: тексты отличаются только формулировкой, а получатели и заголовок считаются
+/// одинаково.
 /// </summary>
 internal enum RoomOccupancyChangeKind
 {
@@ -55,3 +56,38 @@ internal record RoomOccupancyNotification(
     IReadOnlyCollection<ClaimIdentification> Changed,
     IReadOnlyCollection<ClaimIdentification> Remaining,
     RoomOccupancyChangeKind Kind);
+
+/// <summary>Что случилось с приглашением к совместному проживанию.</summary>
+internal enum InviteChangeKind
+{
+    /// <summary>Приглашение отправлено</summary>
+    Created,
+
+    /// <summary>Приглашение принято</summary>
+    Accepted,
+
+    /// <summary>
+    /// Приглашение отменено приглашающим, отклонено приглашённым или снято вместе с отзывом заявки.
+    /// Легаси-канал все три случая тоже отправлял одним письмом (<c>DeclineInviteEmail</c>).
+    /// </summary>
+    Cancelled,
+}
+
+/// <summary>
+/// Уведомление об изменении приглашения к совместному проживанию.
+/// </summary>
+/// <param name="RecipientClaims">
+/// Заявки, чьи подписчики получат уведомление. Уведомление ставится по одному на заявку: в нём
+/// ссылка на страницу этой заявки, где приглашениями и управляют, а у разных получателей заявки
+/// разные. Легаси-канал по той же причине отправлял по письму на получателя.
+/// </param>
+/// <remarks>
+/// Проекта в модели намеренно нет: он выводится из заявок получателей. Отдельным полем он был бы
+/// вторым источником правды, и он бы разошёлся — операции над приглашением не проверяют, что
+/// <c>AccommodationInviteIdentification.ProjectId</c> из запроса совпадает с проектом самого
+/// приглашения, так что название проекта в уведомлении оказалось бы управляемым извне.
+/// </remarks>
+internal record AccommodationInviteNotification(
+    IReadOnlyCollection<ClaimIdentification> RecipientClaims,
+    UserInfoHeader Initiator,
+    InviteChangeKind Kind);

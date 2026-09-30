@@ -8,7 +8,6 @@ using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Services.Impl.Test.Claims;
@@ -1400,14 +1399,15 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         invitesDeclinedAtSave.ShouldBeTrue();
         SaveChangesCallCount.ShouldBe(1);
 
-        // Письмо о снятии приглашения уходит легаси-каналом, то есть после уведомления.
-        var email = SentEmails.ShouldHaveSingleItem().ShouldBeOfType<DeclineInviteEmail>();
-        email.RecipientClaims.ShouldBe([neighbourClaim]);
-        email.Initiator.ShouldBe(mock.Master);
+        // Уведомление о снятии приглашения уходит после уведомления по комментарию.
+        var notification = SentInviteNotifications.ShouldHaveSingleItem();
+        notification.Kind.ShouldBe(InviteChangeKind.Cancelled);
+        notification.RecipientClaims.ShouldBe([neighbourClaim.GetId()]);
+        notification.Initiator.UserId.ShouldBe(mock.Master.GetId());
 
         SentInOrder.Count.ShouldBe(2);
         _ = SentInOrder[0].ShouldBeOfType<ClaimSimpleChangedNotification>();
-        _ = SentInOrder[1].ShouldBeOfType<DeclineInviteEmail>();
+        _ = SentInOrder[1].ShouldBeOfType<AccommodationInviteNotification>();
     }
 
     [Fact]
@@ -1423,20 +1423,20 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         invite.IsAccepted.ShouldBe(InviteState.Declined);
         SaveChangesCallCount.ShouldBe(1);
-        SentEmails.ShouldHaveSingleItem().ShouldBeOfType<DeclineInviteEmail>()
-            .RecipientClaims.ShouldBe([neighbourClaim]);
+        SentInviteNotifications.ShouldHaveSingleItem()
+            .RecipientClaims.ShouldBe([neighbourClaim.GetId()]);
     }
 
-    /// <summary>Приглашений нет — писем тоже нет, и лишних запросов не понадобилось.</summary>
+    /// <summary>Приглашений нет — уведомлений тоже нет, и лишних запросов не понадобилось.</summary>
     [Fact]
-    public async Task DeclineByMaster_WithoutInvites_SendsNoInviteEmail()
+    public async Task DeclineByMaster_WithoutInvites_SendsNoInviteNotification()
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
 
         await CreateService().DeclineByMaster(
             claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
 
-        SentEmails.ShouldBeEmpty();
+        SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
     }
 
@@ -1459,7 +1459,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         claim.AccommodationRequest.ShouldBe(request);
 
         SaveChangesCallCount.ShouldBe(1);
-        SentEmails.ShouldBeEmpty();
+        SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
     }
 
@@ -1501,7 +1501,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         result.ShouldBe(request);
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
-        SentEmails.ShouldBeEmpty();
+        SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
     }
 
@@ -1514,7 +1514,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             () => CreateService().SetAccommodationType(ProjectId.Value, claim.ClaimId, 12345));
 
         SaveChangesCallCount.ShouldBe(0);
-        SentEmails.ShouldBeEmpty();
+        SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
     }
 
@@ -1565,7 +1565,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         result.ShouldBeNull();
         SaveChangesCallCount.ShouldBe(0);
-        SentEmails.ShouldBeEmpty();
+        SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
         SentNotifications.ShouldBeEmpty();
     }
@@ -1584,7 +1584,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         result.ShouldBe(request);
         request.Subjects.ShouldBe([claim]);
         SaveChangesCallCount.ShouldBe(0);
-        SentEmails.ShouldBeEmpty();
+        SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
     }
 
@@ -1645,7 +1645,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         // Отправка письма об изменении полей была закомментирована и до миграции — см. ADR014.
         SentNotifications.ShouldBeEmpty();
-        SentEmails.ShouldBeEmpty();
+        SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
     }
 
@@ -1768,7 +1768,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         secondRole.CommentExtraAction.ShouldBe(CommentExtraAction.SecondRole);
         secondRole.ClaimId.ClaimId.ShouldBe(newClaimId);
 
-        SentEmails.ShouldBeEmpty();
+        SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
     }
 

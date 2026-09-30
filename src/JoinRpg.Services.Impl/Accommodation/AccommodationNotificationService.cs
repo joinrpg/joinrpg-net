@@ -66,6 +66,62 @@ internal class AccommodationNotificationService(
             model.Initiator.UserId));
     }
 
+    public async Task SendNotification(AccommodationInviteNotification model)
+    {
+        var claims = await claimsRepository.GetClaimHeadersWithPlayer(model.RecipientClaims);
+        if (claims.Count == 0)
+        {
+            return;
+        }
+
+        // Проект — из самих заявок: все получатели одной операции живут в одном проекте, а второму
+        // источнику неоткуда разойтись с первым.
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claims.First().ClaimId.ProjectId);
+
+        var data = new InviteTextData(projectInfo.ProjectName, model.Initiator.DisplayName, model.Kind);
+        var header = textBuilder.GetHeader(data);
+        var body = new NotificationEventTemplate(textBuilder.GetBody(data));
+
+        // По уведомлению на заявку, а не одно на всех: ссылка ведёт на страницу заявки получателя,
+        // где приглашениями и управляют, а она у каждого своя. Мастер, подписанный сразу на обе
+        // стороны приглашения, получит два уведомления — легаси-канал в этом случае слал одно
+        // письмо, но и ссылка в нём была верной не для всех.
+        foreach (var claim in claims)
+        {
+            var args = new SubscribeCalculateArgs(
+                // Не AccommodationChange: ответственный мастер на приглашения не подписан
+                // (см. SubscribeCalculator.CreateForRespMaster) — легаси-канал уведомлял и его.
+                Predicate: subscribe => subscribe.AccommodationInvitesChange,
+                Initiator: model.Initiator,
+                Player: [claim.Player],
+                // Ответственный мастер на приглашения не подписан по определению, поэтому в расчёт
+                // его не отдаём вовсе: предикат всё равно отсеет его запись, а
+                // SubscribeCalculator.CreateForRespMaster по пути сделал бы Masters.Single(...) —
+                // и упал бы на заявке, чей ответственный мастер уже снят с проекта.
+                RespMasters: [],
+                Claims: [claim.ClaimId],
+                Characters: [claim.CharacterId],
+                Finance: [],
+                RespondingTo: []);
+
+            var recipients = await subscribeCalculator.GetRecepients(args, projectInfo);
+            if (recipients.Count == 0)
+            {
+                // Обычный случай: заявка самого инициатора. Он в получателях не значится, а
+                // ответственный мастер на приглашения не подписан — уведомлять некого.
+                continue;
+            }
+
+            await notificationService.QueueNotification(new NotificationEvent(
+                NotificationClass.Accommodation,
+                claim.ClaimId,
+                header,
+                body,
+                recipients,
+                model.Initiator.UserId));
+        }
+    }
+
     /// <summary>
     /// Имена игроков строго в порядке переданных заявок: порядок виден в тексте уведомления, а
     /// репозиторий его не обещает. Заявку, которой в выборке не оказалось, молча пропускаем — на

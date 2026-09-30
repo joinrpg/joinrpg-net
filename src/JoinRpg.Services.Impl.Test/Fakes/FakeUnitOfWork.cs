@@ -39,12 +39,28 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
     public IRoomCategoryPlanWriteRepository GetRoomCategoryPlanWriteRepository()
         => new FakeRoomCategoryPlanWriteRepository(mock);
 
+    private readonly Dictionary<Type, object> dbSets = [];
+
+    /// <summary>
+    /// Разрешает конкретному тесту читать и писать <see cref="DbSet{TEntity}"/> этого типа поверх
+    /// коллекции мока. Нужно для сервисов, которые в write-репозитории ещё не переехали (например
+    /// <c>AccommodationInviteServiceImpl</c>): подключать набор приходится явно, чтобы у всех
+    /// остальных <see cref="GetDbSet{T}"/> продолжал падать (см. его описание).
+    /// </summary>
+    public void UseDbSet<T>(ICollection<T> data) where T : class
+        => dbSets[typeof(T)] = new FakeDbSet<T>(data);
+
     /// <summary>
     /// НЕ ЗАГЛУШКА, НЕ «ЧИНИТЬ». Намеренный детектор: если сервис лезет в <see cref="DbSet{TEntity}"/>
     /// напрямую, минуя write-репозиторий (ADR009/ADR014), тест обязан упасть — иначе мутация
-    /// прошла бы мимо проверяемого контура и незаметно для теста.
+    /// прошла бы мимо проверяемого контура и незаметно для теста. Исключение — набор, который тест
+    /// подключил сам через <see cref="UseDbSet{T}"/>.
     /// </summary>
-    public DbSet<T> GetDbSet<T>() where T : class => throw new NotSupportedException();
+    public DbSet<T> GetDbSet<T>() where T : class
+        => dbSets.TryGetValue(typeof(T), out var dbSet)
+            ? (DbSet<T>)dbSet
+            : throw new NotSupportedException(
+                $"Обращение к DbSet<{typeof(T).Name}> не предусмотрено тестом. Если так и задумано — подключи набор через UseDbSet.");
 
     public IUserRepository GetUsersRepository() => new FakeUserRepository(mock);
     public IProjectRepository GetProjectRepository() => throw new NotSupportedException();

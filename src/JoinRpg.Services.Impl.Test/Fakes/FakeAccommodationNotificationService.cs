@@ -15,6 +15,8 @@ internal sealed class FakeAccommodationNotificationService(List<object>? journal
 {
     public List<RoomOccupancyNotification> RoomOccupancy { get; } = [];
 
+    public List<AccommodationInviteNotification> Invites { get; } = [];
+
     /// <summary>
     /// Вызывается на каждом уведомлении. Нужен там, где важен не факт отправки, а момент.
     /// </summary>
@@ -23,6 +25,17 @@ internal sealed class FakeAccommodationNotificationService(List<object>? journal
     public Task SendNotification(RoomOccupancyNotification model)
     {
         RoomOccupancy.Add(model);
+        return Record(model);
+    }
+
+    public Task SendNotification(AccommodationInviteNotification model)
+    {
+        Invites.Add(model);
+        return Record(model);
+    }
+
+    private Task Record(object model)
+    {
         journal?.Add(model);
         OnNotification?.Invoke();
         return Task.CompletedTask;

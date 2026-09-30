@@ -5,7 +5,6 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;
 
@@ -78,11 +77,11 @@ internal abstract record ClaimMutationContext(
     internal List<RoomOccupancyNotification> RoomNotifications { get; } = [];
 
     /// <summary>
-    /// Остаток легаси-канала: письма о приглашениях к совместному проживанию. Уедут на
-    /// <see cref="RoomNotifications"/> следующим шагом миграции, вместе с остальным
-    /// контуром приглашений.
+    /// Уведомления о снятии приглашений к совместному проживанию. Отдельный список, а не общий с
+    /// <see cref="RoomNotifications"/>: типы уведомлений разные, а взаимный порядок между «о
+    /// комнате» и «о приглашении» ничего не значит — это сообщения о разных событиях.
     /// </summary>
-    internal List<Func<IEmailService, Task>> LegacyEmails { get; } = [];
+    internal List<AccommodationInviteNotification> InviteNotifications { get; } = [];
 
     /// <summary>
     /// Добавляет комментарий к этой заявке и ставит уведомление по нему в очередь.
@@ -126,9 +125,11 @@ internal abstract record ClaimMutationContext(
         => RoomNotifications.Add(notification);
 
     /// <summary>
-    /// Ставит письмо легаси-канала в очередь. Остался один вид — о приглашениях к проживанию.
+    /// Ставит уведомление о снятии приглашений в очередь. Отправится после сохранения и после
+    /// уведомлений по комментариям.
     /// </summary>
-    public void AddLegacyEmail(Func<IEmailService, Task> send) => LegacyEmails.Add(send);
+    public void AddInviteNotification(AccommodationInviteNotification notification)
+        => InviteNotifications.Add(notification);
 
     /// <summary>
     /// Помечает персонажа изменённым, если заявка утверждена. Перенос

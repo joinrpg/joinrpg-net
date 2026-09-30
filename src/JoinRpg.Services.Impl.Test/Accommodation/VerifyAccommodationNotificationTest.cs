@@ -28,7 +28,11 @@ public class VerifyAccommodationNotificationTest
             kind);
 
     private Task VerifyText(RoomOccupancyTextData data, string caseName)
-        => Verify($"{builder.GetHeader(data)}\n\n{builder.GetBody(data)}").UseParameters(caseName);
+        => VerifyText(builder.GetHeader(data), builder.GetBody(data), caseName);
+
+    /// <summary>Снапшот — это заголовок и тело вместе: пользователь видит их рядом.</summary>
+    private static Task VerifyText(string header, string body, string caseName)
+        => Verify($"{header}\n\n{body}").UseParameters(caseName);
 
     [Fact]
     public Task OccupiedEmptyRoom()
@@ -77,4 +81,26 @@ public class VerifyAccommodationNotificationTest
         => VerifyText(
             Data(RoomOccupancyChangeKind.LeftRoom, [Player("Вася")], []),
             nameof(LeftRoomAlone));
+
+    // Три [Fact] вместо [Theory]: InviteChangeKind — internal-тип, и публичный (для обнаружения
+    // xUnit) метод его параметром принять не может.
+    [Fact]
+    public Task InviteCreated() => VerifyInvite(InviteChangeKind.Created, nameof(InviteCreated));
+
+    [Fact]
+    public Task InviteAccepted() => VerifyInvite(InviteChangeKind.Accepted, nameof(InviteAccepted));
+
+    [Fact]
+    public Task InviteCancelled() => VerifyInvite(InviteChangeKind.Cancelled, nameof(InviteCancelled));
+
+    private Task VerifyInvite(InviteChangeKind kind, string caseName)
+    {
+        // Приглашаются игроки друг с другом, мастер в этом контуре обычно не участвует.
+        var data = new InviteTextData(
+            new ProjectName("Тестовая песочница"),
+            Player("Вася"),
+            kind);
+
+        return VerifyText(builder.GetHeader(data), builder.GetBody(data), caseName);
+    }
 }
