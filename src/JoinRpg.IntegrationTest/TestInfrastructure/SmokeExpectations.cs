@@ -30,6 +30,9 @@ internal static class SmokeExpectations
         ["{projectId}/reports/2d/{gameReport2DTemplateId}"] = "нужен сохранённый шаблон 2D-отчёта, сид его не создаёт",
         ["{projectId}/money/SummaryByMaster"] = "нужен токен выгрузки, выдаётся отдельной страницей",
         ["{projectId}/schedule/ical"] = "нужно настроенное расписание (поля времени и локации), без него бросает исключение",
+        // JWT тут не нужен — расписание отдаётся анонимно, доступ решает видимость полей
+        // времени и локации. Смоук всё равно не ходит: в его сиде расписание не настроено.
+        ["x-game-api/{projectId}/schedule/all"] = "нужно настроенное расписание, покрыт XApiScheduleTests",
         ["{projectId}/rooms/report"] = "не HTML-страница: без параметра export отдаёт 404, покрыто AccommodationPagesLazyLoadsScenario",
         ["{projectId}/plot/{**path}"] = "catch-all легаси-редиректа: осмысленного значения для path нет",
 
@@ -47,7 +50,6 @@ internal static class SmokeExpectations
         ["x-game-api/{projectId}/claims/{claimId}"] = "нужен JWT, покрыто тестами XApi",
         ["x-game-api/{projectId}/groups/{groupId}/characters"] = "нужен JWT, покрыто тестами XApi",
         ["x-game-api/{projectId}/metadata/fields"] = "нужен JWT, покрыто тестами XApi",
-        ["x-game-api/{projectId}/schedule/all"] = "нужен JWT, покрыто тестами XApi",
 
         // Страницы админки сайта, не проекта.
         ["Admin"] = "админка сайта, смоук ходит под мастером проекта",

@@ -416,3 +416,11 @@ claim-исключений, `ClaimWrongStatusException`, перестало пр
 *Обновлено: 11.09.2026 — правила заявки переехали в `DomainTypes` (`ClaimValidator` поверх
 `IClaimTarget`). Исправлено утверждение, что `ValidateIfCanAddClaim` остаётся снаружи из-за
 `UserInfo`: причина была указана неверно.*
+*Обновлено: 30.09.2026 — мигрировано расписание. `ProgramItem` и `ScheduleBuilder` переехали
+в `DomainTypes/Schedules/` и строятся из `CharacterInfo`, `SchedulePageManager` грузит персонажей
+через `ICharacterInfoRepository.GetAllCharacterInfos`. В `JoinRpg.Domain` остались только
+EF-расширения `ScheduleFieldExtensions`. Побочный результат: сетка расписания впервые покрыта
+юнит-тестами (`JoinRpg.DomainTypes.Test/Schedules`) — раньше для них пришлось бы собирать EF-граф.
+Заодно закрыта дыра в интеграционном покрытии: `GetAllCharacterInfos` до этого не выполнялся ни
+в одном тесте, а `x-game-api/{projectId}/schedule/all` числился покрытым, не будучи им —
+теперь есть `XApiScheduleTests` на живой БД.*

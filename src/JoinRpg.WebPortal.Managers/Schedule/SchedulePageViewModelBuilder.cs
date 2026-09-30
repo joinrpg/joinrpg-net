@@ -1,5 +1,5 @@
 using JoinRpg.Common.WebComponents;
-using JoinRpg.Domain.Schedules;
+using JoinRpg.DomainTypes.Schedules;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
 using Microsoft.AspNetCore.Components;
@@ -22,10 +22,10 @@ internal static class SchedulePageViewModelBuilder
         }
         return new ProgramItemViewModel()
         {
-            Id = item.Id,
+            Id = item.Id.CharacterId,
             Name = item.Name,
             Description = item.Description,
-            ProjectId = item.ProjectId,
+            ProjectId = item.Id.ProjectId,
             Users = GetAuthors(item, hasMasterAccess),
         };
     }
@@ -61,7 +61,7 @@ internal static class SchedulePageViewModelBuilder
             {
                 Id = room.Id.ProjectFieldVariantId,
                 Name = room.Name,
-                Description = ((MarkdownString?)room.Description).ToHtmlString()
+                Description = room.Description.ToHtmlString()
             };
         }
         throw new NotImplementedException();

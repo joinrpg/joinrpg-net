@@ -1,17 +1,19 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Helpers;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+namespace JoinRpg.DomainTypes.Schedules;
 
-namespace JoinRpg.Domain.Schedules;
-
-public class ProgramItem(Character character)
+/// <summary>
+/// Пункт программы — персонаж, размещаемый в сетке расписания.
+/// </summary>
+public class ProgramItem(CharacterInfo character)
 {
-    public int Id { get; } = character.CharacterId;
+    public CharacterIdentification Id { get; } = character.Id;
     public string Name { get; } = character.CharacterName;
-    public MarkdownDbValue Description { get; } = character.Description;
-    public UserInfoHeader[] Authors { get; } = new[] { character.ApprovedClaim?.Player.ToUserInfoHeader() }.WhereNotNull().ToArray();
-    public int ProjectId { get; } = character.ProjectId;
+    public MarkdownString Description { get; } = character.Description;
+    public UserInfoHeader[] Authors { get; } = new[] { character.ApprovedClaim?.Player }.WhereNotNull().ToArray();
 
     public bool ShowAuthors { get; } = !character.HidePlayerForCharacter;
 }
@@ -43,7 +45,7 @@ public class ProgramItemPlaced
 
 public record class ScheduleItemAttribute
 {
-    public MarkdownDbValue Description { get; }
+    public MarkdownString? Description { get; }
     public string Name { get; }
     public ProjectFieldVariantIdentification Id { get; }
     public int SeqId { get; }
@@ -87,4 +89,3 @@ public record ScheduleResult(
     List<ProgramItemPlaced> AllItems,
     ProjectScheduleSettings ProjectScheduleSettings)
 { }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

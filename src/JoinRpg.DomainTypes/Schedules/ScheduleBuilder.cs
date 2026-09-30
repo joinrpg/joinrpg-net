@@ -1,20 +1,48 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
-namespace JoinRpg.Domain.Schedules;
+namespace JoinRpg.DomainTypes.Schedules;
 
 /// <summary>
 /// Builds schedule from program item data
 /// </summary>
-public class ScheduleBuilder(IReadOnlyCollection<Character> characters, ProjectInfo projectInfo)
+public class ScheduleBuilder
 {
-    private readonly IReadOnlyCollection<Character> characters = characters.Where(ch => ch.IsActive).ToList();
-    private readonly ProjectInfo projectInfo = projectInfo;
+    private readonly IReadOnlyCollection<CharacterInfo> characters;
+    private readonly ProjectInfo projectInfo;
 
-    private ProjectFieldInfo TimeSlotField { get; } = projectInfo.TimeSlotField ?? throw new Exception("Schedule not enabled");
+    /// <param name="characters">
+    /// Персонажи, из которых строится сетка. Отбор — на стороне вызывающего: удалённых сюда
+    /// передавать не надо, отдельно они не отфильтровываются.
+    /// </param>
+    public ScheduleBuilder(IReadOnlyCollection<CharacterInfo> characters, ProjectInfo projectInfo)
+    {
+        ArgumentNullException.ThrowIfNull(characters);
+        ArgumentNullException.ThrowIfNull(projectInfo);
 
-    private ProjectFieldInfo RoomField { get; } = projectInfo.RoomField ?? throw new Exception("Schedule not enabled");
+        foreach (var character in characters)
+        {
+            // Тот же инвариант, что и в CharacterInfo (ADR013): агрегат привязан к конкретному
+            // экземпляру ProjectInfo, и сравнивать варианты полей по ссылке можно только внутри него.
+            if (!ReferenceEquals(character.ProjectInfo, projectInfo))
+            {
+                throw new ArgumentException(
+                    $"Character {character.Id} is bound to another ProjectInfo instance", nameof(characters));
+            }
+        }
 
-    private HashSet<ProgramItem> NotScheduled { get; } = new HashSet<ProgramItem>();
+        this.characters = characters;
+        this.projectInfo = projectInfo;
+
+        TimeSlotField = projectInfo.TimeSlotField ?? throw new Exception("Schedule not enabled");
+        RoomField = projectInfo.RoomField ?? throw new Exception("Schedule not enabled");
+    }
+
+    private ProjectFieldInfo TimeSlotField { get; }
+
+    private ProjectFieldInfo RoomField { get; }
+
+    private HashSet<ProgramItem> NotScheduled { get; } = [];
 
     public class ProgramItemSlot(TimeSlot slot, ScheduleRoom room)
     {
@@ -88,9 +116,9 @@ public class ScheduleBuilder(IReadOnlyCollection<Character> characters, ProjectI
         }
     }
 
-    private List<ProgramItemSlot> SelectSlots(ProgramItem programItem, Character character)
+    private List<ProgramItemSlot> SelectSlots(ProgramItem programItem, CharacterInfo character)
     {
-        var fields = character.GetFieldsDict(projectInfo);
+        var fields = character.GetAllFields().ToDictionary(f => f.Field.Id);
 
         int[] GetSlotIndexes(FieldWithValue field, IEnumerable<ScheduleItemAttribute> items)
         {
