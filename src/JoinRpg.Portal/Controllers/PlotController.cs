@@ -133,9 +133,9 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, PlotFolderIdentification plotFolderId, string content,
-      string todoField, IReadOnlyCollection<CharacterIdentification>? targetCharacters, ICollection<int>? targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
+      string todoField, IReadOnlyCollection<CharacterIdentification>? targetCharacters, IReadOnlyCollection<CharacterGroupIdentification>? targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
     {
-        var targetGroupIds = CharacterGroupIdentification.FromList(targetGroups ?? [], projectId).ToList();
+        var targetGroupIds = (targetGroups ?? []).EnsureProject(projectId);
         var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
         try
         {
@@ -242,7 +242,7 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, ProjectIdentification projectId, string content, string todoField,
-      IReadOnlyCollection<CharacterIdentification>? targetCharacters, ICollection<int>? targetGroups, bool isMasterOnly)
+      IReadOnlyCollection<CharacterIdentification>? targetCharacters, IReadOnlyCollection<CharacterGroupIdentification>? targetGroups, bool isMasterOnly)
     {
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
         try
@@ -250,7 +250,7 @@ public class PlotController(
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             if (project.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots))
             {
-                var targetGroupIds = CharacterGroupIdentification.FromList(targetGroups ?? [], projectId).ToList();
+                var targetGroupIds = (targetGroups ?? []).EnsureProject(projectId);
                 var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
 
                 await plotService.EditPlotElement(id, content, todoField, targetGroupIds, targetCharIds, isMasterOnly);

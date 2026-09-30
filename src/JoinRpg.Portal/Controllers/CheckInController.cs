@@ -42,7 +42,8 @@ public class CheckInController(
     }
 
     [HttpPost]
-    public ActionResult Index(int projectId, int claimId) => RedirectToAction("CheckIn", new { projectId, claimId });
+    public ActionResult Index(ClaimIdentification claimId)
+        => RedirectToAction("CheckIn", new { projectId = claimId.ProjectId.Value, claimId = claimId.ClaimId });
 
     [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
     public async Task<ActionResult> Setup(ProjectIdentification projectId)

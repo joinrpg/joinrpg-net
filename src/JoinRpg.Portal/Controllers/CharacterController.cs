@@ -105,7 +105,7 @@ public class CharacterController(
             await characterService.EditCharacter(
                 new EditCharacterRequest(
                     new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
-                    ParentCharacterGroupIds: CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
+                    ParentCharacterGroupIds: [.. viewModel.ParentCharacterGroupIds],
                     CharacterTypeInfo: viewModel.CharacterTypeInfo,
                     FieldValues: Request.GetFieldsToSetFromPost(projectInfo, FieldValueViewModel.HtmlIdPrefix))
                 );
@@ -167,7 +167,7 @@ public class CharacterController(
             await characterService.AddCharacter(new AddCharacterRequest(
                 ProjectId: new(viewModel.ProjectId),
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
-                ParentCharacterGroupIds: CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
+                ParentCharacterGroupIds: [.. viewModel.ParentCharacterGroupIds],
                 FieldValues: Request.GetFieldsToSetFromPost(projectInfo, FieldValueViewModel.HtmlIdPrefix)
             ));
 

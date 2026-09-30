@@ -6,7 +6,7 @@ public class CheckInIndexViewModel(ProjectInfo project) : IProjectIdAware
 {
     public ProjectIdentification ProjectId { get; } = project.ProjectId;
 
-    public int ClaimId { get; set; }
+    public ClaimIdentification? ClaimId { get; set; }
 
     int IProjectIdAware.ProjectId => ProjectId;
 }

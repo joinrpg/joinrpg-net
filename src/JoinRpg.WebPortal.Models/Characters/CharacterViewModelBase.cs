@@ -34,10 +34,6 @@ public abstract class CharacterViewModelBase : IProjectIdAware, IValidatableObje
     [DisplayName("Является частью групп")]
     public CharacterGroupIdentification[] ParentCharacterGroupIds { get; set; } = [];
 
-
-    [DisplayName("Является частью групп")]
-    public int[] ParentCharacterGroupIdInts { get; set; } = [];
-
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; set; }
 

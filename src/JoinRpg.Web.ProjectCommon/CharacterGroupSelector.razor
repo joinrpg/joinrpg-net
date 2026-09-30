@@ -1,33 +1,31 @@
 @using System.Linq.Expressions
 @inject ICharacterGroupsClient groupsClient
 
-@if (items is null)
-{
-   <JoinLoadingMessage />
-}
-else
-{
-    int[] initial = SelectedGroupIds is not null ? [.. SelectedGroupIds.Select(x => x.CharacterGroupId)] : [];
-  <IntSelector
+<TypedSelector TKey="CharacterGroupIdentification" TItem="CharacterGroupDto"
                Name="@Name"
-              SelectedValues="@initial"
-               SelectedValuesChanged="SelectedValuesChanged"
-               PossibleValues="items"
+               Items="groups"
+               KeySelector="@(g => g.CharacterGroupId)"
+               ToListItem="@(g => TypedSelectList.CreateItem(
+                   Value: g.CharacterGroupId,
+                   Text: g.Name,
+                   Subtext: string.Join("→", g.FullPath),
+                   ExtraSearch: string.Join(" ", g.FullPath)))"
+               SelectedValues="@SelectedGroupIds"
+               SelectedItemsChanged="HandleSelectedItemsChanged"
                Multiple="@Multiple"
                />
-  <p>
-    @if (SelectedGroupNames.Length > 1)
-    {
-      @string.Join(" • ", SelectedGroupNames)
-    }
-  </p>
-}
+<p>
+  @if (SelectedGroupNames.Length > 1)
+  {
+    @string.Join(" • ", SelectedGroupNames)
+  }
+</p>
 
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] public int ProjectId { get; set; }
-    [Parameter] public CharacterGroupIdentification[] SelectedGroupIds { get; set; } = []; 
+    [Parameter] public CharacterGroupIdentification[] SelectedGroupIds { get; set; } = [];
     [Parameter] public EventCallback<CharacterGroupIdentification[]> SelectedGroupIdsChanged { get; set; }
     [Parameter] public Expression<Func<CharacterGroupIdentification[]?>>? SelectedGroupIdsExpression { get; set; }
 
@@ -38,23 +36,21 @@ else
 
     public string[] SelectedGroupNames { get; private set; } = [];
 
-    private IntSelectListItem[] items = null!;
-    private List<CharacterGroupDto> groups = null!;
+    private CharacterGroupDto[]? groups;
     /// <summary>Ключ загрузки: пока не изменился, в сеть не ходим.</summary>
     private (int ProjectId, bool IncludeSpecial, CharacterGroupIdentification? ExcludeGroupId)? loadedFor;
     private FieldIdentifier? fieldIdentifier = null;
 
-    private async Task SelectedValuesChanged(int[] values)
+    private async Task HandleSelectedItemsChanged(CharacterGroupDto[] selectedItems)
     {
-        var selectedItems = groups.Where(item => values.Contains(item.CharacterGroupId.CharacterGroupId)).ToArray();
         RefreshSelectedNames(selectedItems);
-        await SelectedGroupIdsChanged.InvokeAsync(selectedItems.Select(x => x.CharacterGroupId).ToArray());
+        await SelectedGroupIdsChanged.InvokeAsync([.. selectedItems.Select(x => x.CharacterGroupId)]);
         await SelectedGroupsChanged.InvokeAsync(selectedItems);
     }
 
     private void RefreshSelectedNames(CharacterGroupDto[] val)
     {
-        SelectedGroupNames = val.Select(item => item.Name).ToArray();
+        SelectedGroupNames = [.. val.Select(item => item.Name)];
     }
 
     protected override async Task OnParametersSetAsync()
@@ -69,22 +65,14 @@ else
         if (loadedFor != (ProjectId, IncludeSpecial, ExcludeGroupId))
         {
             groups = ExcludeGroupId is not null
-                ? await groupsClient.GetValidParentGroups(ExcludeGroupId)
+                ? [.. await groupsClient.GetValidParentGroups(ExcludeGroupId)]
                 : IncludeSpecial
-                    ? await groupsClient.GetCharacterGroupsWithSpecial(ProjectId)
-                    : await groupsClient.GetRealCharacterGroups(ProjectId);
+                    ? [.. await groupsClient.GetCharacterGroupsWithSpecial(ProjectId)]
+                    : [.. await groupsClient.GetRealCharacterGroups(ProjectId)];
             loadedFor = (ProjectId, IncludeSpecial, ExcludeGroupId);
-
-            items = groups
-              .Select(group =>
-                new IntSelectListItem(
-                  Value: group.CharacterGroupId.CharacterGroupId,
-                  Text: group.Name,
-                  Subtext: string.Join("→", group.FullPath),
-                  ExtraSearch: string.Join(" ", group.FullPath))).ToArray();
         }
 
-        var selectedItems = groups.Where(item => SelectedGroupIds.Contains(item.CharacterGroupId)).ToArray();
+        var selectedItems = groups!.Where(item => SelectedGroupIds.Contains(item.CharacterGroupId)).ToArray();
         if (SelectedGroupIdsExpression is not null)
         {
             fieldIdentifier = FieldIdentifier.Create(SelectedGroupIdsExpression);

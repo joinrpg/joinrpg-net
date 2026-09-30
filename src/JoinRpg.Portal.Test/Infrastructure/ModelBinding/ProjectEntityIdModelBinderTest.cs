@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
@@ -15,10 +16,11 @@ namespace JoinRpg.Portal.Test.Infrastructure.ModelBinding;
 
 public class ProjectEntityIdModelBinderTest
 {
+    private static readonly IServiceProvider Services =
+        new ServiceCollection().AddLogging().AddMvc().Services.BuildServiceProvider();
+
     private static readonly ModelMetadataProvider MetadataProvider =
-        (ModelMetadataProvider)new ServiceCollection().AddLogging().AddMvc().Services
-            .BuildServiceProvider()
-            .GetRequiredService<IModelMetadataProvider>();
+        (ModelMetadataProvider)Services.GetRequiredService<IModelMetadataProvider>();
 
     private static readonly ProjectIdentification CurrentProjectId = new(100);
 
@@ -247,12 +249,48 @@ public class ProjectEntityIdModelBinderTest
         public static void WithFromBody([FromBody] CharacterIdentification characterId) { }
     }
 
+    // Мультиселекторы (CharacterGroupSelector) постятся в MVC-форму как несколько значений с одним
+    // именем, а свойство вью-модели — массив типизированных id. Массив биндит штатный ArrayModelBinder,
+    // который для элемента спрашивает биндер у провайдеров, в том числе у нашего.
+    [Fact]
+    public async Task ArrayOfIds_BindsFromRepeatedFormValues()
+    {
+        var first = new CharacterGroupIdentification(CurrentProjectId, 5);
+        var second = new CharacterGroupIdentification(CurrentProjectId, 7);
+
+        var arrayMetadata = MetadataProvider.GetMetadataForType(typeof(CharacterGroupIdentification[]));
+        var binder = new ArrayModelBinderProvider()
+            .GetBinder(new TestModelBinderProviderContext(arrayMetadata, MetadataProvider))
+            .ShouldNotBeNull();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items["ProjectId"] = CurrentProjectId.Value;
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor(), new ModelStateDictionary());
+        var valueProvider = new QueryStringValueProvider(
+            BindingSource.Query,
+            new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["groupIds"] = new StringValues([first.ToString(), second.ToString()]),
+            }),
+            CultureInfo.InvariantCulture);
+        var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+            actionContext, valueProvider, arrayMetadata, bindingInfo: null, modelName: "groupIds");
+
+        await binder.BindModelAsync(bindingContext);
+
+        bindingContext.Result.IsModelSet.ShouldBeTrue();
+        bindingContext.Result.Model.ShouldBe(new[] { first, second });
+    }
+
     private sealed class TestModelBinderProviderContext(ModelMetadata metadata, IModelMetadataProvider metadataProvider) : ModelBinderProviderContext
     {
         public override BindingInfo BindingInfo { get; } = new();
         public override ModelMetadata Metadata { get; } = metadata;
         public override IModelMetadataProvider MetadataProvider { get; } = metadataProvider;
+        public override IServiceProvider Services { get; } = ProjectEntityIdModelBinderTest.Services;
 
-        public override IModelBinder CreateBinder(ModelMetadata metadata) => throw new NotSupportedException();
+        public override IModelBinder CreateBinder(ModelMetadata metadata)
+            => Provider.GetBinder(new TestModelBinderProviderContext(metadata, MetadataProvider))
+                ?? throw new NotSupportedException($"Нет биндера для {metadata.ModelType}");
     }
 }
