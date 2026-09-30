@@ -438,11 +438,18 @@ internal interface IAccommodationPropsService
         RoomCategoryIdentification categoryId,
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
+        RoomCategoryPlanTracking tracking,
         TArgs arguments,
         Func<RoomCategoryPlanMutationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "");
 }
 ```
+
+`tracking` — `RoomsOnly` или `WithGroups`: нужны ли операции **трекаемые** группы жильцов.
+Управление комнатами их не меняет и обходится двумя запросами (план + ряд категории с комнатами);
+заселение и выселение группы двигают и платят за это третьим запросом. Параметр обязательный, без
+значения по умолчанию: цена запроса должна быть видна на месте вызова. У `ChangePlanForGroup`
+его нет — корень агрегата, названный через группу, всегда `WithGroups`.
 
 Плюс перегрузка без результата. Входа по `ProjectIdentification` **нет**: `UnOccupyAllRooms`
 перебирает категории проекта и зовёт `ChangePlan` для каждой (§1).
@@ -452,7 +459,7 @@ props-сервиса, который берёт его из `IProjectMetadataRep
 Отличие от ADR014, где write-репозиторий строит `ProjectInfo` сам: там нужна ещё и трекаемая
 сущность `Project`, здесь — нет, план поселения метаданные только читает.
 
-`RoomCategoryPlanMutationContext` отдаёт: трекаемые EF-сущности комнат и (с PR 5) групп, доменный снимок
+`RoomCategoryPlanMutationContext` отдаёт: трекаемые EF-сущности комнат и (при `WithGroups`) групп, доменный снимок
 `RoomCategoryPlan` **до** мутации, делегаты `AddEntity`/`RemoveEntity` (не `DbSet` наружу — как в
 ADR014, это делает контекст подделываемым в юнит-тестах) и `AddLegacyEmail` для писем о заселении.
 
@@ -495,8 +502,9 @@ public interface IAccommodationService
 `UnOccupyAllRequest`, `UnOccupyRoomTypeRequest` (mutable, с `int`-полями, один из них вообще без
 вызывающих) удаляются.
 
-`UnOccupyGroup` принимает id группы, а пул в нём не закодирован — хэндл определяет корень одним
-лёгким запросом «какого типа эта группа» перед загрузкой плана.
+`UnOccupyGroup` принимает id группы, а пул в нём не закодирован — как и с комнатой, отдельного
+запроса «какого типа эта группа» не делается: план ищется сразу предикатом по принадлежности
+группы категории.
 
 Права и активность — явными параметрами каждой операции:
 
@@ -687,8 +695,9 @@ public interface IAccommodationService
      вместе с комнатами одним `Include`. `ProjectInfo` приходит из кешированного на запрос
      `IProjectMetadataRepository` — на web-запросе это попадание в кеш; трекаемые группы
      жильцов из хэндла убраны вовсе, потому что ни одна операция управления комнатами их не
-     меняет, а кто где живёт, видно по доменному снимку. Вернутся в PR 5 вместе с заселением —
-     своим потребителем.
+     меняет, а кто где живёт, видно по доменному снимку. В PR 5 они вернулись вместе со своим
+     потребителем — но опциональными, третьим запросом только для заселения и выселения
+     (см. уточнения к PR 5).
    - **Разбор списка комнат ушёл из сервиса бизнес-логики в web-слой** (по ревью):
      `RoomNamesParser` в `JoinRpg.WebPortal.Managers/Accommodation/`, `AddRooms` принимает
      `IReadOnlyCollection<string>`. Синтаксис «1,2,5-8» — свойство конкретной формы, а не правило
@@ -700,7 +709,7 @@ public interface IAccommodationService
      зависеть от EF и переехал из `JoinRpg.Domain/Exceptions.cs` в
      `JoinRpg.DomainTypes/Characters/Claims/Accommodation/Exceptions.cs`.
      `JoinRpgInsufficientRoomSpaceException` остаётся на EF-сущности в `JoinRpg.Domain` до PR 5 —
-     он нужен ещё не мигрированному заселению.
+     он нужен ещё не мигрированному заселению, там же и переезжает.
      Из классов-запросов удалён только `UnOccupyRoomTypeRequest` (у него и так не было
      вызывающих); `OccupyRequest`, `UnOccupyRequest` и `UnOccupyAllRequest` ещё обслуживают
      немигрированное заселение и уйдут в PR 5.
@@ -709,11 +718,70 @@ public interface IAccommodationService
      `ClaimServiceImpl`. Контроллер вместо `catch (ArgumentException || JoinRpgEntityNotFoundException)`
      ловит `AccommodationRoomNotFoundException` → `NotFound` и `RoomIsOccupiedException` →
      `BadRequest`; `catch`-всё с кодом 500 у этих трёх экшенов больше нет.
-5. **PR 5.** Перевод `OccupyRoom`/`UnOccupy*` — один `SaveChanges` на операцию, проверка пула,
-   явный подсчёт мест, письма через `AddLegacyEmail`. Закрывает дефекты 5, 6, 7 и половину
-   третьего — `UnOccupyRoomType`.
+5. **PR 5** — ✅ сделано. Перевод `OccupyRoom`/`UnOccupy*` — один `SaveChanges` на операцию,
+   проверка пула, явный подсчёт мест, письма через `AddLegacyEmail`. Закрывает дефекты 5, 6, 7 и
+   половину третьего — `UnOccupyRoomType` стала атомарной, `UnOccupyAllRooms` осталась циклом по
+   категориям, по транзакции на каждую.
+
+   Семь уточнений по факту реализации:
+
+   - Перегрузок стало четыре: к `ChangePlan` (с результатом и без) и `ChangePlanForRoom`
+     добавился `ChangePlanForGroup` — корень агрегата в `UnOccupyGroup` назван группой, а пул в
+     её идентификаторе не закодирован. Отдельного запроса «какого типа эта группа» при этом,
+     как и с комнатой в PR 4, не делается: план ищется сразу предикатом по принадлежности группы
+     категории. В write-репозитории это `LoadPlanForGroupUpdate`.
+   - **Трекаемые группы вернулись в хэндл — но по запросу операции.** PR 4 убрал их совсем, чтобы
+     управление комнатами укладывалось в два запроса; заселению и выселению они нужны, поэтому
+     `LoadPlanForUpdate`/`LoadPlanForRoomUpdate` получили параметр `RoomCategoryPlanTracking`
+     (`RoomsOnly` | `WithGroups`), и третий запрос за группами делается только там, где они
+     действительно мутируются. `AddRooms`/`RenameRoom`/`DeleteRoom` остались на двух запросах,
+     `OccupyRoom`/`UnOccupy*` стоят трёх. Вторым `Include` группы взять нельзя — рядом с
+     комнатами это дало бы декартово произведение. Обращение к `Handle.Groups` без `WithGroups`
+     — `InvalidOperationException`: это ошибка программиста, а не данных, и фейковый хэндл ведёт
+     себя так же, чтобы тест ловил забытый `WithGroups`. У `ChangePlanForGroup` параметра нет:
+     назвать корень через группу может только операция, которая её и двигает.
+   - **Письмо — на комнату, а не на операцию.** `RoomEmailBase` несёт ровно одну комнату, а
+     массовое выселение трогает их несколько, так что «одно письмо на операцию» из §11 при
+     нынешних почтовых моделях выразить нечем. По существу изменение то же, что обещал §11:
+     письма ставятся в очередь `AddLegacyEmail` и уходят все разом **после** единственного
+     `SaveChanges` операции, а не парой «сохранение + письмо» на каждую комнату. Очередь
+     разгребает props-сервис, как `CharacterPropsService` разгребает `ctx.LegacyEmails`.
+   - Свободное место считается не одним вызовом `plan.GetFreeSpace`, а накопительно: при
+     заселении нескольких групп одной операцией каждая и занимает места, и может ужать комнату
+     вместимостью своего типа («Правило свободного места»). Для первой группы формула совпадает
+     с `plan.GetFreeSpace(room, type)` в точности; простое вычитание «уже поселённых» было бы
+     неверным в день, когда в пуле окажется больше одного типа.
+   - Получатели письма считаются по трекаемым группам, а не по `room.GetSubscriptions()`: та
+     ходит в навигацию `room.Inhabitants`, то есть опирается ровно на тот relationship fixup,
+     от которого уводит дефект 6. Побочный эффект — выселенные теперь тоже получают письмо о
+     выселении: у легаси они выпадали из `Inhabitants` раньше, чем считались подписчики.
+   - `JoinRpgInsufficientRoomSpaceException` переведён на `AccommodationRoomIdentification` и,
+     перестав зависеть от EF, переехал из `JoinRpg.Domain/Exceptions.cs` в
+     `JoinRpg.DomainTypes/Characters/Claims/Accommodation/Exceptions.cs` — туда же, куда PR 3 и
+     PR 4 отправили `AccommodationTypeIsOccupiedException` и `RoomIsOccupiedException`.
+     Классы-запросы `OccupyRequest`, `UnOccupyRequest`, `UnOccupyAllRequest` удалены вместе с
+     последними вызывающими; `catch`-всё с кодом 500 в `AccommodationTypeController` не осталось
+     ни у одного экшена.
+   - **Оба массовых выселения переведены с GET на POST** (по ревью). `UnOccupyAll` (весь проект) и
+     выселение типа проживания меняли состояние по обычной ссылке — их дёргал бы любой префетч или
+     краулер. Теперь это `[HttpPost] [ValidateAntiForgeryToken]`, а во вьюхах вместо `<a>` стоит
+     кнопка, отправляющая спрятанную рядом форму (вложить форму в `btn-group` нельзя — ломается
+     вёрстка BS3); `KickAll` в `rooms.js` вместо `location.href` сабмитит эту форму. Заодно
+     выселение типа переименовано в `UnOccupyRoomsByType` (по ревью; единственное число — экшен
+     принимает один `AccommodationTypeIdentification`), а выселение одной группы — из
+     `UnOccupyRoom` в `UnOccupyGroup`: имя совпало с тем, что операция делает, и исчезла
+     перегрузка двух разных операций под одним именем. **Маршрут `~/{projectId}/rooms/unoccupyroom`
+     у группы не менялся** — его собирает строкой `rooms.js`. Идентификатор группы контроллер
+     больше не собирает из `int` руками: параметр объявлен как `AccommodationRequestIdentification?`
+     и его склеивает с текущим проектом `ProjectEntityIdModelBinder`, как у соседних экшенов.
+     Из `SmokeExpectations.Skipped` убраны обе записи про мутирующий GET.
+     Там же по факту ребейза починен N+1: трекаемые группы грузятся с `Include(Subjects)` —
+     письма собираются по заявкам группы, и без этого ленивая загрузка EF6 давала запрос на
+     каждую группу. Глубже (подписки заявки, дерево групп персонажа) остаётся легаси-обход по
+     навигациям — это общий долг почтовых моделей на EF-сущностях (§11), в этот PR он не входит.
 6. **PR 6.** Зачистка: `GetRoomFreeSpace(room)`/`IsOccupied` из `AccommodationExtensions`,
-   классы-запросы `OccupyRequest` и соседи, EF-конструкторы вью-моделей, `catch`-всё в контроллере.
+   EF-конструкторы вью-моделей. (Классы-запросы и `catch`-всё в контроллере ушли уже в PR 5,
+   вместе с последними вызывающими.)
 
 Каждый из дефектов 1–7 сопровождается юнит-тестом, воспроизводящим его до фикса (правило CLAUDE.md
 про фикс багов). Для дефектов 1, 2 и 4 это тесты сервиса на фейковом хэндле — ровно как сделано

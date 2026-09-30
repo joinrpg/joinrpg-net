@@ -20,8 +20,7 @@ internal static class SmokeExpectations
         // испортил бы данные следующим кейсам. Легаси: по-хорошему это POST (#4956).
         ["{projectId}/rooms/DeleteRoomType"] = "GET удаляет тип поселения — снёс бы сид",
         ["{projectId}/rooms/OccupyAll"] = "GET расселяет всех по комнатам — изменил бы сид",
-        ["{projectId}/rooms/UnOccupyAll"] = "GET выселяет всех — изменил бы сид",
-        ["{projectId}/rooms/UnOccupyRoom"] = "GET выселяет тип поселения — изменил бы сид",
+        // UnOccupyAll и UnOccupyRoomsByType переведены на POST (ADR018, §14) — смоук их больше не видит.
 
         // Права админа, а смоук ходит под мастером проекта. Отдельный кейс, в этой итерации не тащим.
         ["{projectId}/masters/force-admin-access"] = "нужны права админа сайта, а не мастера проекта",

@@ -10,26 +10,29 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 
 /// <summary>
 /// Write-репозиторий агрегата поселения (ADR018) поверх <see cref="MockedProject"/>: отдаёт
-/// трекаемые EF-сущности комнат вместе с согласованным доменным снимком
+/// трекаемые EF-сущности комнат (и групп жильцов, если операция их запросила) вместе с
+/// согласованным доменным снимком
 /// <see cref="RoomCategoryPlan"/>, собранным из того же мока.
 /// </summary>
 internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : IRoomCategoryPlanWriteRepository
 {
     public Task<IRoomCategoryPlanUpdateHandle> LoadPlanForUpdate(
         ProjectInfo projectInfo,
-        RoomCategoryIdentification categoryId)
+        RoomCategoryIdentification categoryId,
+        RoomCategoryPlanTracking tracking)
     {
         // Фильтр по проекту повторяет боевой запрос: категорию чужого проекта не найти.
         var category = mock.AccommodationTypes.SingleOrDefault(
                 type => type.Id == categoryId.RoomCategoryId && type.ProjectId == categoryId.ProjectId.Value)
             ?? throw new JoinRpgEntityNotFoundException(categoryId.RoomCategoryId, "room category");
 
-        return Task.FromResult<IRoomCategoryPlanUpdateHandle>(new Handle(mock, projectInfo, category));
+        return Task.FromResult<IRoomCategoryPlanUpdateHandle>(new Handle(mock, projectInfo, category, tracking));
     }
 
     public Task<IRoomCategoryPlanUpdateHandle> LoadPlanForRoomUpdate(
         ProjectInfo projectInfo,
-        AccommodationRoomIdentification roomId)
+        AccommodationRoomIdentification roomId,
+        RoomCategoryPlanTracking tracking)
     {
         // Фильтр по проекту здесь существен: он закрывает дефект 2 ADR018.
         var room = mock.Rooms.SingleOrDefault(
@@ -38,14 +41,35 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
 
         return LoadPlanForUpdate(
             projectInfo,
-            new RoomCategoryIdentification(roomId.ProjectId, room.AccommodationTypeId));
+            new RoomCategoryIdentification(roomId.ProjectId, room.AccommodationTypeId),
+            tracking);
+    }
+
+    public Task<IRoomCategoryPlanUpdateHandle> LoadPlanForGroupUpdate(
+        ProjectInfo projectInfo,
+        AccommodationRequestIdentification groupId)
+    {
+        // Фильтр по проекту повторяет боевой запрос: группу чужого проекта не найти.
+        var group = mock.AccommodationRequests.SingleOrDefault(
+                g => g.Id == groupId.AccommodationRequestId && g.ProjectId == groupId.ProjectId.Value)
+            ?? throw new AccommodationGroupNotFoundException(groupId);
+
+        // Как и в бою: корень агрегата назван через группу — трекаемые группы нужны всегда.
+        return LoadPlanForUpdate(
+            projectInfo,
+            new RoomCategoryIdentification(groupId.ProjectId, group.AccommodationTypeId),
+            RoomCategoryPlanTracking.WithGroups);
     }
 
     private sealed class Handle : IRoomCategoryPlanUpdateHandle
     {
         private readonly MockedProject mock;
 
-        public Handle(MockedProject mock, ProjectInfo projectInfo, ProjectAccommodationType category)
+        public Handle(
+            MockedProject mock,
+            ProjectInfo projectInfo,
+            ProjectAccommodationType category,
+            RoomCategoryPlanTracking tracking)
         {
             this.mock = mock;
             Category = category;
@@ -61,11 +85,15 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
                 .Where(room => room.AccommodationTypeId == category.Id)
                 .ToDictionary(room => new AccommodationRoomIdentification(projectId, room.Id));
 
-            // Группы нужны только доменному снимку: трекаемыми их хэндл больше не отдаёт —
-            // управление комнатами их не меняет.
             var groups = mock.AccommodationRequests
                 .Where(group => group.AccommodationTypeId == category.Id)
                 .ToArray();
+
+            // Трекаемыми группы отдаются только по запросу операции — ровно как в бою, где за
+            // ними делается отдельный запрос. Так тест ловит забытый WithGroups.
+            TrackedGroups = tracking == RoomCategoryPlanTracking.WithGroups
+                ? groups.ToDictionary(group => new AccommodationRequestIdentification(projectId, group.Id))
+                : null;
 
             Plan = BuildPlan(categoryId, ProjectInfo, category, Rooms.Values, groups);
         }
@@ -77,6 +105,12 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
         public ProjectAccommodationType Category { get; }
 
         public IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> Rooms { get; }
+
+        private IReadOnlyDictionary<AccommodationRequestIdentification, AccommodationRequest>? TrackedGroups { get; }
+
+        public IReadOnlyDictionary<AccommodationRequestIdentification, AccommodationRequest> Groups
+            => TrackedGroups ?? throw new InvalidOperationException(
+                "Операция не запрашивала трекаемые группы жильцов: нужен RoomCategoryPlanTracking.WithGroups");
 
         /// <summary>Всё, что сервис добавил в контекст, в порядке добавления.</summary>
         public List<object> Added { get; } = [];

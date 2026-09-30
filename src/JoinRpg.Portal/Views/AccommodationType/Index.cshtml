@@ -22,15 +22,23 @@
     {
         @*<a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
             <join-icon icon="Accommodation" /> Заселить всех</a>*@
-        <a href="@Url.Action("UnOccupyAll", "AccommodationType", new {Model.ProjectId})" class="btn btn-default" onclick="return ConfirmKickAll()">
+        @* Выселение меняет состояние, поэтому это POST-форма, а не ссылка. Кнопка остаётся
+           в btn-group, а форма прячется рядом: вложенная в группу форма ломает вёрстку BS3. *@
+        <button type="button" class="btn btn-default"
+                onclick="if (ConfirmKickAll()) { document.getElementById('frmUnOccupyAll').submit(); }">
             <join-icon icon="EvictAll" /> Выселить всех
-        </a>
+        </button>
     }
     <a href="@Url.Action("ListForRoomType", "ClaimList", new {Model.ProjectId})" class="btn btn-default">Игроки без поселения...</a>
     <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", Model.ProjectId})" class="btn btn-default">
         <join-icon icon="Download" /> Список расселения (Excel)
     </a>
 </div>
+@if (Model.CanAssignRooms)
+{
+    <form id="frmUnOccupyAll" method="post" asp-action="UnOccupyAll" asp-controller="AccommodationType"
+          asp-route-projectId="@Model.ProjectId" hidden></form>
+}
 
 <div class="table-responsive" style="margin-top: 1em;">
   <table class="table">

@@ -15,6 +15,8 @@ namespace JoinRpg.Dal.Impl.Repositories.Accommodation;
 /// <para>
 /// На одну мутацию делает ровно два запроса: доменный снимок плана (проекция, без трекинга) и
 /// трекаемый ряд категории вместе с её комнатами. Снимок метаданных сюда приходит готовым.
+/// Третий запрос — за трекаемыми группами жильцов — делается только по явной просьбе операции
+/// (<see cref="RoomCategoryPlanTracking.WithGroups"/>), то есть у заселения и выселения.
 /// </para>
 /// </remarks>
 internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryPlanWriteRepository
@@ -25,17 +27,19 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
 
     public async Task<IRoomCategoryPlanUpdateHandle> LoadPlanForUpdate(
         ProjectInfo projectInfo,
-        RoomCategoryIdentification categoryId)
+        RoomCategoryIdentification categoryId,
+        RoomCategoryPlanTracking tracking)
     {
         var plan = await loader.LoadOneAsync(projectInfo, categoryId)
             ?? throw new JoinRpgEntityNotFoundException(categoryId.RoomCategoryId, "room category");
 
-        return await LoadHandle(projectInfo, plan);
+        return await LoadHandle(projectInfo, plan, tracking);
     }
 
     public async Task<IRoomCategoryPlanUpdateHandle> LoadPlanForRoomUpdate(
         ProjectInfo projectInfo,
-        AccommodationRoomIdentification roomId)
+        AccommodationRoomIdentification roomId,
+        RoomCategoryPlanTracking tracking)
     {
         // Отдельного запроса «в какой категории эта комната» не нужно: план ищется сразу по
         // принадлежности комнаты категории. Фильтр по проекту внутри загрузчика обязателен —
@@ -48,10 +52,32 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         var plan = plans.SingleOrDefault()
             ?? throw new AccommodationRoomNotFoundException(roomId);
 
-        return await LoadHandle(projectInfo, plan);
+        return await LoadHandle(projectInfo, plan, tracking);
     }
 
-    private async Task<IRoomCategoryPlanUpdateHandle> LoadHandle(ProjectInfo projectInfo, RoomCategoryPlan plan)
+    public async Task<IRoomCategoryPlanUpdateHandle> LoadPlanForGroupUpdate(
+        ProjectInfo projectInfo,
+        AccommodationRequestIdentification groupId)
+    {
+        // Как и с комнатой, отдельного запроса «какого типа эта группа» не нужно: план ищется
+        // сразу по принадлежности группы категории. Фильтр по проекту внутри загрузчика тот же.
+        var groupIntId = groupId.AccommodationRequestId;
+        var plans = await loader.LoadAsync(
+            projectInfo,
+            category => category.Desirous.Any(group => group.Id == groupIntId));
+
+        var plan = plans.SingleOrDefault()
+            ?? throw new AccommodationGroupNotFoundException(groupId);
+
+        // Назвать корень агрегата через группу может только операция, которая её и двигает,
+        // поэтому трекаемые группы здесь нужны всегда.
+        return await LoadHandle(projectInfo, plan, RoomCategoryPlanTracking.WithGroups);
+    }
+
+    private async Task<IRoomCategoryPlanUpdateHandle> LoadHandle(
+        ProjectInfo projectInfo,
+        RoomCategoryPlan plan,
+        RoomCategoryPlanTracking tracking)
     {
         // См. замечание к RoomCategoryPlanLoader: сегодня ряд категории — это ряд типа проживания.
         var categoryId = plan.Id;
@@ -66,13 +92,29 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
             ?? throw new JoinRpgEntityNotFoundException(categoryIntId, "room category");
 
         var projectId = categoryId.ProjectId;
+
+        // Группы — отдельным запросом и только по запросу операции. Вторым Include их не взять:
+        // рядом с комнатами это дало бы декартово произведение, а управлению комнатами группы
+        // не нужны вовсе (ADR018, §10).
+        // Заявки группы (Subjects) подтягиваем сразу: письма о заселении и выселении собираются
+        // по ним (ADR018, §11), а без Include ленивая загрузка EF6 давала бы запрос на каждую
+        // группу — при выселении целого типа это десятки лишних запросов.
+        var groups = tracking == RoomCategoryPlanTracking.WithGroups
+            ? (await ctx.Set<AccommodationRequest>()
+                .Include(group => group.Subjects)
+                .Where(group => group.AccommodationTypeId == categoryIntId && group.ProjectId == projectIntId)
+                .ToListAsync())
+                .ToDictionary(group => new AccommodationRequestIdentification(projectId, group.Id))
+            : null;
+
         return new Handle(
             ctx,
             projectInfo,
             plan,
             category,
             category.ProjectAccommodations.ToDictionary(
-                room => new AccommodationRoomIdentification(projectId, room.Id)));
+                room => new AccommodationRoomIdentification(projectId, room.Id)),
+            groups);
     }
 
     private sealed class Handle(
@@ -80,7 +122,8 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         ProjectInfo projectInfo,
         RoomCategoryPlan plan,
         ProjectAccommodationType category,
-        IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> rooms)
+        IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> rooms,
+        IReadOnlyDictionary<AccommodationRequestIdentification, AccommodationRequest>? groups)
         : IRoomCategoryPlanUpdateHandle
     {
         public ProjectInfo ProjectInfo { get; } = projectInfo;
@@ -90,6 +133,10 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         public ProjectAccommodationType Category { get; } = category;
 
         public IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> Rooms { get; } = rooms;
+
+        public IReadOnlyDictionary<AccommodationRequestIdentification, AccommodationRequest> Groups
+            => groups ?? throw new InvalidOperationException(
+                "Операция не запрашивала трекаемые группы жильцов: нужен RoomCategoryPlanTracking.WithGroups");
 
         public void Add(object entity) => _ = ctx.Set(entity.GetType()).Add(entity);
 

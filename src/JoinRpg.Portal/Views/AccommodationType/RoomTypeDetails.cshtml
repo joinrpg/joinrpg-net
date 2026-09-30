@@ -44,11 +44,18 @@
     <button id="bnPlaceAll" type="button" onclick="PlaceAll()" class="btn btn-default">
       <join-icon icon="Accommodation" /> Заселить всех
     </button>
-    <button id="bnKickAll" onclick="KickAll('@Url.Action("UnOccupyRoom", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.Id })')" class="btn btn-default">
+    @* Выселение меняет состояние, поэтому уходит POST-формой, а не переходом по ссылке. *@
+    <button id="bnKickAll" type="button" onclick="KickAll()" class="btn btn-default">
       <join-icon icon="EvictAll" /> Выселить всех
     </button>
   }
 </div>
+@if (Model.CanAssignRooms)
+{
+  @* Форма вынесена из btn-group: вложенная форма ломает вёрстку группы кнопок BS3. *@
+  <form id="frmUnOccupyRoomsByType" method="post" asp-action="UnOccupyRoomsByType" asp-controller="AccommodationType"
+        asp-route-projectId="@Model.ProjectId" asp-route-roomTypeId="@Model.Id" hidden></form>
+}
 
 <!-- Not assigned requests -->
 <div id="availRequests" style="margin-top: 1em; display: @(Model.UnassignedRequests.Count > 0 ? "block" : "none")">

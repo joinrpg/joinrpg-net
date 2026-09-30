@@ -179,12 +179,14 @@ function KickPeople(roomId)
     }
 }
 
-// Kicks everybody from all rooms
-function KickAll(href)
+// Kicks everybody from all rooms of this room type
+function KickAll()
 {
     if (ConfirmKickAllFromRoomType())
     {
-        location.href = href;
+        // Операция меняет состояние, поэтому уходит POST-формой (с antiforgery-токеном),
+        // а не переходом по ссылке.
+        document.getElementById("frmUnOccupyRoomsByType").submit();
     }
 }
 

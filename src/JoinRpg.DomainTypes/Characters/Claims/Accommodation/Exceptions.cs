@@ -55,6 +55,20 @@ public class RoomIsOccupiedException(AccommodationRoomIdentification roomId)
 }
 
 /// <summary>
+/// В комнате не хватает мест, чтобы поселить группу.
+/// </summary>
+/// <remarks>
+/// Переведён с EF-сущности <c>ProjectAccommodation</c> на типизированный идентификатор и переехал
+/// сюда из <c>JoinRpg.Domain</c> (ADR018, §10) — так же, как ADR014 поступил с
+/// <c>ClaimWrongStatusException</c>.
+/// </remarks>
+public class JoinRpgInsufficientRoomSpaceException(AccommodationRoomIdentification roomId)
+    : JoinRpgProjectException(roomId.ProjectId, $"В комнате {roomId} не хватает мест")
+{
+    public AccommodationRoomIdentification RoomId { get; } = roomId;
+}
+
+/// <summary>
 /// Тип проживания нельзя удалить: в комнатах этого типа кто-то живёт.
 /// </summary>
 public class AccommodationTypeIsOccupiedException(AccommodationTypeIdentification accommodationTypeId)

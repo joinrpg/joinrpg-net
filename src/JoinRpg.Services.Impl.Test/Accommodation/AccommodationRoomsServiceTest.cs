@@ -2,61 +2,30 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.Services.Impl.Accommodation;
-using JoinRpg.Services.Impl.Test.Projects;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Services.Impl.Test.Accommodation;
 
 /// <summary>
 /// Тесты управления комнатами (<c>AddRooms</c>/<c>RenameRoom</c>/<c>DeleteRoom</c>) поверх
-/// агрегата плана поселения (ADR018, PR 4). Сервис собран на реальном
-/// <see cref="AccommodationPropsService"/> и фейковом write-хэндле.
+/// агрегата плана поселения (ADR018, PR 4). Обвязка — <see cref="AccommodationServiceTestBase"/>.
 /// </summary>
 /// <remarks>
 /// Тесты «без права», «комната чужого проекта» и «архивный проект» воспроизводят дефекты 1, 2 и 4
 /// из ADR018: до переноса <c>EditRoom</c>/<c>DeleteRoom</c> не проверяли ни прав, ни проекта
 /// (<c>projectId</c> был необязательным), а активность проекта не проверял ни один метод.
 /// </remarks>
-public class AccommodationRoomsServiceTest : ProjectMetadataServiceTestBase
+public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
 {
     private readonly ProjectAccommodationType roomType;
 
     public AccommodationRoomsServiceTest()
     {
-        mock.Project.Details.EnableAccommodation = true;
         roomType = mock.CreateAccommodationType("Палатка", capacity: 4);
         mock.ReInitProjectInfo();
     }
 
     private RoomCategoryIdentification CategoryId
         => new(ProjectId, roomType.Id);
-
-    private AccommodationServiceImpl CreateService(int? currentUserId = null, bool isAdmin = false)
-    {
-        var currentUser = CreateCurrentUser(currentUserId, isAdmin);
-        return new AccommodationServiceImpl(
-            unitOfWork,
-            new FakeEmailService(),
-            currentUser,
-            new AccommodationPropsService(
-                unitOfWork, currentUser, metadataRepository, NullLogger<AccommodationPropsService>.Instance));
-    }
-
-    /// <summary>Переводит проект в архив — операции над ним запрещены.</summary>
-    private void ArchiveProject()
-    {
-        mock.Project.Active = false;
-        mock.Project.IsAcceptingClaims = false;
-        mock.ReInitProjectInfo();
-    }
-
-    private AccommodationRoomIdentification RoomId(ProjectAccommodation room)
-        => new(ProjectId, room.Id);
-
-    /// <summary>Идентификатор той же комнаты, но в чужом проекте.</summary>
-    private AccommodationRoomIdentification AlienRoomId(ProjectAccommodation room)
-        => new(new ProjectIdentification(ProjectId.Value + 1), room.Id);
 
     [Fact]
     public async Task AddRooms_CreatesRoomsInCategory()

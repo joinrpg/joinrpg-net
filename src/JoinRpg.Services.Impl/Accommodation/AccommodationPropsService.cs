@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Services.Impl.Projects;
+using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Accommodation;
 
@@ -18,6 +19,7 @@ internal class AccommodationPropsService(
     IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository metadataRepository,
+    IEmailService emailService,
     ILogger<AccommodationPropsService> logger)
     : IAccommodationPropsService
 {
@@ -32,6 +34,7 @@ internal class AccommodationPropsService(
         RoomCategoryIdentification categoryId,
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
+        RoomCategoryPlanTracking tracking,
         TArgs arguments,
         Func<RoomCategoryPlanMutationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "")
@@ -39,7 +42,7 @@ internal class AccommodationPropsService(
             categoryId.ProjectId,
             // Write-репозиторий берём из UnitOfWork: он обязан использовать тот же DbContext,
             // через который мы потом сохраняем (ADR009 §1, ADR014 §2).
-            (write, projectInfo) => write.LoadPlanForUpdate(projectInfo, categoryId),
+            (write, projectInfo) => write.LoadPlanForUpdate(projectInfo, categoryId, tracking),
             categoryId.ToString(),
             requiredPermission,
             activeRequirement,
@@ -51,6 +54,7 @@ internal class AccommodationPropsService(
         RoomCategoryIdentification categoryId,
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
+        RoomCategoryPlanTracking tracking,
         TArgs arguments,
         Action<RoomCategoryPlanMutationContext<TArgs>> action,
         [CallerMemberName] string operationName = "")
@@ -58,6 +62,7 @@ internal class AccommodationPropsService(
             categoryId,
             requiredPermission,
             activeRequirement,
+            tracking,
             arguments,
             action.AsAlwaysTrueFunc(),
             operationName);
@@ -66,13 +71,33 @@ internal class AccommodationPropsService(
         AccommodationRoomIdentification roomId,
         Permission requiredPermission,
         ProjectActiveRequirement activeRequirement,
+        RoomCategoryPlanTracking tracking,
         TArgs arguments,
         Action<RoomCategoryPlanMutationContext<TArgs>> action,
         [CallerMemberName] string operationName = "")
         => ChangePlanCore(
             roomId.ProjectId,
-            (write, projectInfo) => write.LoadPlanForRoomUpdate(projectInfo, roomId),
+            (write, projectInfo) => write.LoadPlanForRoomUpdate(projectInfo, roomId, tracking),
             roomId.ToString(),
+            requiredPermission,
+            activeRequirement,
+            arguments,
+            action.AsAlwaysTrueFunc(),
+            operationName);
+
+    public Task ChangePlanForGroup<TArgs>(
+        AccommodationRequestIdentification groupId,
+        Permission requiredPermission,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Action<RoomCategoryPlanMutationContext<TArgs>> action,
+        [CallerMemberName] string operationName = "")
+        => ChangePlanCore(
+            groupId.ProjectId,
+            // Параметра tracking нет: корень агрегата назван через группу — значит операция её и
+            // двигает, трекаемые группы нужны всегда.
+            (write, projectInfo) => write.LoadPlanForGroupUpdate(projectInfo, groupId),
+            groupId.ToString(),
             requiredPermission,
             activeRequirement,
             arguments,
@@ -126,6 +151,13 @@ internal class AccommodationPropsService(
             var result = action(ctx);
 
             await unitOfWork.SaveChangesAsync();
+
+            // Письма легаси-канала уходят строго ПОСЛЕ успешного сохранения (ADR018, §11):
+            // до него операция ещё может упасть, и рассылка оказалась бы ложной.
+            foreach (var send in ctx.LegacyEmails)
+            {
+                await send(emailService);
+            }
 
             logger.LogInformation(
                 "Изменён план поселения {targetId}: операция {operation}, аргументы {arguments}",

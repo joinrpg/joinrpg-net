@@ -1,12 +1,14 @@
 using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Accommodation;
+using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Accommodation;
 
 /// <summary>
 /// Контекст изменения плана категории комнат (ADR018, §10): доменный снимок ДО мутации,
-/// трекаемые EF-сущности комнат и разрешённые действия над контекстом БД.
+/// трекаемые EF-сущности комнат (и групп жильцов, если операция их запросила) и разрешённые
+/// действия над контекстом БД.
 /// Негенерик — чтобы приватные хелперы сервисов принимали его без параметра типа
 /// (как <c>ProjectMutationContext</c>, ADR009).
 /// </summary>
@@ -22,6 +24,19 @@ internal abstract record RoomCategoryPlanMutationContext(
 {
     /// <summary>Снимок метаданных проекта — тот же экземпляр, на который ссылается <see cref="Plan"/>.</summary>
     public ProjectInfo ProjectInfo => Handle.ProjectInfo;
+
+    /// <summary>
+    /// Письма легаси-канала, поставленные в очередь мутацией. Отправляются props-сервисом после
+    /// успешного сохранения.
+    /// </summary>
+    internal List<Func<IEmailService, Task>> LegacyEmails { get; } = [];
+
+    /// <summary>
+    /// Ставит письмо легаси-канала в очередь. Отправится после сохранения.
+    /// Передаётся отправителем, а не самим письмом: у <c>IEmailService</c> нет перегрузки по
+    /// базовому типу, только по конкретным (как в <c>ClaimMutationContext</c>, ADR014).
+    /// </summary>
+    public void AddLegacyEmail(Func<IEmailService, Task> send) => LegacyEmails.Add(send);
 
     /// <summary>
     /// Трекаемый ряд категории комнат: сегодня это ряд типа проживания (ADR018, «Задел на
@@ -43,6 +58,17 @@ internal abstract record RoomCategoryPlanMutationContext(
         => Handle.Rooms.TryGetValue(roomId, out var room)
             ? room
             : throw new AccommodationRoomNotFoundException(roomId);
+
+    /// <summary>
+    /// Трекаемая группа жильцов пула, которую можно мутировать. Доступна только операциям,
+    /// попросившим <see cref="RoomCategoryPlanTracking.WithGroups"/>, — иначе за группами просто
+    /// не ходили в базу.
+    /// </summary>
+    /// <exception cref="AccommodationGroupNotFoundException">Группы с таким идентификатором в этом пуле нет.</exception>
+    public AccommodationRequest GetGroupForChange(AccommodationRequestIdentification groupId)
+        => Handle.Groups.TryGetValue(groupId, out var group)
+            ? group
+            : throw new AccommodationGroupNotFoundException(groupId);
 }
 
 /// <summary>

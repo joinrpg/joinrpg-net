@@ -143,34 +143,40 @@ public class AccommodationTypeController(
 
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpPost("~/{projectId}/rooms/occupyroom")]
-    public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, int room, string reqId)
+    public async Task<ActionResult> OccupyRoom(ProjectIdentification projectId, int room, string reqId)
     {
-        try
+        var groupIds = (reqId ?? "").Split(',')
+            .Select(s => int.TryParse(s, out var val) ? val : 0)
+            .Where(val => val > 0)
+            .Select(val => new AccommodationRequestIdentification(projectId, val))
+            .ToList();
+
+        if (groupIds.Count == 0)
         {
-            var ids = reqId.Split(',')
-                .Select(s => int.TryParse(s, out var val) ? val : 0)
-                .Where(val => val > 0)
-                .ToList();
-            if (ids.Count > 0)
-            {
-                await accommodationService.OccupyRoom(new OccupyRequest()
-                {
-                    AccommodationRequestIds = ids,
-                    ProjectId = projectId,
-                    RoomId = room,
-                });
-                return Ok();
-            }
-        }
-        catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
-        {
-        }
-        catch
-        {
-            return StatusCode(500);
+            return BadRequest();
         }
 
-        return BadRequest();
+        // Проверки прав, активности проекта и принадлежности комнаты и групп одному пулу делает
+        // сервис (ADR018, дефекты 1, 4, 5) — контроллеру остаётся разложить доменные исключения
+        // по кодам ответа. Ловить всё подряд с кодом 500 больше незачем.
+        try
+        {
+            await accommodationService.OccupyRoom(
+                new AccommodationRoomIdentification(projectId, room), groupIds);
+            return Ok();
+        }
+        catch (AccommodationRoomNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (AccommodationGroupNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (JoinRpgInsufficientRoomSpaceException)
+        {
+            return BadRequest();
+        }
     }
 
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
@@ -193,8 +199,12 @@ public class AccommodationTypeController(
         return RedirectToAction("Index");
     }
 
+    /// <summary>
+    /// Выселяет всех жильцов всех комнат проекта
+    /// </summary>
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-    [HttpGet]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<ActionResult> UnOccupyAll(ProjectIdentification projectId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
@@ -208,52 +218,59 @@ public class AccommodationTypeController(
             return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
         }
 
-        await accommodationService.UnOccupyAll(projectId);
+        await accommodationService.UnOccupyAllRooms(projectId);
 
         return RedirectToAction("Index");
     }
 
+    /// <summary>
+    /// Выселяет одну группу жильцов из комнаты
+    /// </summary>
+    /// <remarks>
+    /// Адрес маршрута оставлен прежним (<c>unoccupyroom</c>): его собирает строкой скрипт
+    /// <c>rooms.js</c>, а имя экшена приведено к тому, что операция делает на самом деле.
+    /// </remarks>
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpPost("~/{projectId}/rooms/unoccupyroom")]
-    public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, int room, int reqId)
+    public async Task<ActionResult> UnOccupyGroup(AccommodationRequestIdentification? reqId)
     {
+        // Типизированный идентификатор собирает модель-биндер: голое число из запроса он
+        // склеивает с текущим проектом маршрута (ProjectEntityIdModelBinder).
+        if (reqId is null || !ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         try
         {
-            await accommodationService.UnOccupyRoom(new UnOccupyRequest()
-            {
-                ProjectId = projectId,
-                AccommodationRequestId = reqId,
-            });
+            await accommodationService.UnOccupyGroup(reqId);
             return Ok();
         }
-        catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+        catch (AccommodationGroupNotFoundException)
         {
+            return NotFound();
         }
-        catch
-        {
-            return StatusCode(500);
-        }
-        return BadRequest();
     }
 
+    /// <summary>
+    /// Выселяет всех жильцов всех комнат данного типа проживания
+    /// </summary>
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-    [HttpGet]
-    public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> UnOccupyRoomsByType(AccommodationTypeIdentification roomTypeId)
     {
         try
         {
-            await accommodationService.UnOccupyRoomType(projectId, roomTypeId);
-            return RedirectToAction("RoomTypeDetails", "AccommodationType",
-                new { ProjectId = projectId, RoomTypeId = roomTypeId });
+            await accommodationService.UnOccupyRoomType(roomTypeId);
         }
-        catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+        catch (AccommodationTypeNotFoundException)
         {
+            return NotFound();
         }
-        catch
-        {
-            return StatusCode(500);
-        }
-        return BadRequest();
+
+        return RedirectToAction("RoomTypeDetails", "AccommodationType",
+            new { ProjectId = roomTypeId.ProjectId.Value, RoomTypeId = roomTypeId.AccommodationTypeId });
     }
 
     /// <summary>
