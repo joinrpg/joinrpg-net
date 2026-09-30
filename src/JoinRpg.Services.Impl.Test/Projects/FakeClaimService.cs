@@ -18,7 +18,9 @@ internal sealed class FakeClaimService : IClaimService
 
     public Task<ClaimIdentification> AddClaimFromUser(CharacterIdentification characterId, string claimText, FieldLayerContainer fields, bool sensitiveDataAllowed) => throw new NotSupportedException();
     public Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, FieldLayerContainer fields) => throw new NotSupportedException();
-    public Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction) => throw new NotSupportedException();
+    public Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText) => throw new NotSupportedException();
+
+    public Task ModerateFinanceOperation(ClaimIdentification claimId, int parentCommentId, string commentText, FinanceOperationAction financeAction) => throw new NotSupportedException();
     public Task ApproveByMaster(ClaimIdentification claimId, string commentText) => throw new NotSupportedException();
     public Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter) => throw new NotSupportedException();
     public Task DeclineByPlayer(ClaimIdentification claimId, string commentText) => throw new NotSupportedException();

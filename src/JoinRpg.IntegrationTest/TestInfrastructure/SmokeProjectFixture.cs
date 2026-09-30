@@ -528,7 +528,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             await claimService.ApproveByMaster(claims[0], "Принято");
             await claimService.OnHoldByMaster(claims[1], "Пока подумаем");
             await claimService.AddComment(
-                claims[2], parentCommentId: null, isVisibleToPlayer: true, "Обсуждаем", FinanceOperationAction.None);
+                claims[2], parentCommentId: null, isVisibleToPlayer: true, "Обсуждаем");
 
             var paymentTypeId = GetPaymentType(sp, projectId, ownerId);
             await sp.GetRequiredService<IFinanceService>().FeeAcceptedOperation(new FeeAcceptedOperationRequest

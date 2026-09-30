@@ -163,17 +163,6 @@ public static class FinanceExtensions
     public static int ClaimBalance(this Claim claim)
         => claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
 
-    [Obsolete]
-    public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
-    {
-        if (!finance.Claim.HasAccess(currentUserId,
-                Permission.CanManageMoney) &&
-            finance.PaymentType?.UserId != currentUserId)
-        {
-            throw new NoAccessToProjectException(finance, currentUserId);
-        }
-    }
-
     [Obsolete("CalculateClaimBalance")]
     public static bool ClaimPaidInFull(this Claim claim, ProjectInfo projectInfo)
         => claim.ClaimBalance() >= claim.ClaimTotalFee(projectInfo);

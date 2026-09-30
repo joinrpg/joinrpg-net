@@ -130,12 +130,23 @@ public class ForumController(
             if (claim != null)
             {
 
-                await claimService.AddComment(
-                    claim.GetId(),
-                    viewModel.ParentCommentId,
-                    !viewModel.HideFromUser,
-                    viewModel.CommentText,
-                    (FinanceOperationAction)viewModel.FinanceAction);
+                if (viewModel.FinanceAction == FinanceOperationActionView.None)
+                {
+                    await claimService.AddComment(
+                        claim.GetId(),
+                        viewModel.ParentCommentId,
+                        !viewModel.HideFromUser,
+                        viewModel.CommentText);
+                }
+                else
+                {
+                    await claimService.ModerateFinanceOperation(
+                        claim.GetId(),
+                        viewModel.ParentCommentId
+                            ?? throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any"),
+                        viewModel.CommentText,
+                        (FinanceOperationAction)viewModel.FinanceAction);
+                }
             }
             else
             {
