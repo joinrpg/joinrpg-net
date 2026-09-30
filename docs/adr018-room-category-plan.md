@@ -583,9 +583,35 @@ public interface IAccommodationService
    - `RoomCategoryIdentification` и `AccommodationRoomIdentification` дописаны в
      `ProjectEntityIdParser.TryParseId`: полиморфный разбор идентификаторов покрыт общим тестом
      `IdentificationCommonTest`, и без регистрации новые id его не проходят.
-2. **PR 2.** `IRoomCategoryPlanRepository` + загрузчик + тесты маппинга в `JoinRpg.Dal.Impl.Test`,
-   включая тест-страж: `plan.GetFreeSpace(room, type)` совпадает с
-   `AccommodationExtensions.GetRoomFreeSpace` на том же наборе данных.
+2. **PR 2** — ✅ сделано. `IRoomCategoryPlanRepository` + загрузчик + тесты маппинга в
+   `JoinRpg.Dal.Impl.Test`, включая тест-страж: `plan.GetFreeSpace(room, type)` совпадает с
+   `AccommodationExtensions.GetRoomFreeSpace` на том же наборе данных. Потребителей не трогали.
+
+   Четыре уточнения по факту реализации:
+
+   - Загрузчик разложен на те же четыре файла, что и `CharacterInfo` (ADR013):
+     `RoomCategoryPlanRows` (проекция), `RoomCategoryPlanMapper` (чистое преобразование),
+     `RoomCategoryPlanLoader` (запрос, принимает `ProjectInfo` параметром),
+     `RoomCategoryPlanRepository` (берёт `ProjectInfo` из `IProjectMetadataRepository`).
+     Мапперу отдельный файл нужен ровно затем, зачем он нужен `CharacterInfoMapper`:
+     чтобы тесты маппинга шли без базы.
+   - Запрос строится **от таблицы типов проживания**: своей таблицы у категории нет, поэтому
+     ряд `ProjectAccommodationType` играет роль ряда категории, а комнаты и группы берутся из
+     его навигаций `ProjectAccommodations` и `Desirous` вложенными `Select`. Это даёт один
+     запрос на план (и один на все планы проекта) и естественный `null` для несуществующей
+     категории. Конвертация «id категории ↔ колонка id типа» живёт только в загрузчике и
+     помечена комментарием.
+   - `RoomCapacity` читается из `ProjectAccommodationType.Capacity` тем же запросом, а не из
+     `AccommodationTypeInfo.Capacity` метаданных: числу и так предстоит разъехаться надвое
+     (§2, пункт 3), и пусть у физической вместимости с самого начала будет своё чтение.
+     Типы проживания при этом, наоборот, **не** читаются из БД вовсе — они берутся из
+     `ProjectInfo.AccommodationSettings` по `RoomCategoryId`, иначе сломался бы инвариант
+     ссылочного равенства (§3).
+   - `JoinRpg.Dal.Impl.Test` получил ссылку на `JoinRpg.Domain` — только ради тест-стража,
+     которому нужен legacy `AccommodationExtensions`. Ссылка уйдёт вместе с ним в PR 6.
+     Тест-страж сравнивает не буквально: legacy умеет уходить в минус на переполненной
+     комнате, а доменный `GetFreeSpace` — нет (см. уточнение к PR 1), поэтому сверка идёт
+     с `Math.Max(0, …)`.
 3. **PR 3.** Страница комнат на план: `EditRoomTypeRooms`, вью-модели, деньги bulk'ом через
    `ICharacterInfoRepository`. `GetRoomTypeAsync` удаляется.
 4. **PR 4.** Write-хэндл, `IAccommodationPropsService`, вынос `ProjectOperationGuard` (если
