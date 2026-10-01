@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.XGameApi.Contract;
 // Доменный агрегат (ADR013) и DTO внешнего API называются одинаково — разводим псевдонимом.

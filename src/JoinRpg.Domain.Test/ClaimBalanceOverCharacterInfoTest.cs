@@ -3,6 +3,7 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 namespace JoinRpg.Domain.Test;
 
