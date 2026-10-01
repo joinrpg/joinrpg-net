@@ -1,8 +1,8 @@
+using System.Text.Json.Serialization;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Helpers;
-using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Models.Accommodation;
 
@@ -95,5 +95,23 @@ public class RequestParticipantViewModel
         var balance = character.CalculateClaimBalance(claim, projectInfo);
         FeeTotal = balance.TotalFee;
         FeeToPay = balance.FeeDue;
+    }
+
+    /// <summary>
+    /// Жилец из готовых значений — для тестов формы JSON (см. <see cref="AccRequestJson"/>).
+    /// Собирать ради проверки имён свойств доменный агрегат персонажа с метаданными проекта незачем.
+    /// </summary>
+    internal RequestParticipantViewModel(
+        ClaimIdentification claimId,
+        UserIdentification userId,
+        string userName,
+        int feeTotal,
+        int feeToPay)
+    {
+        ClaimId = claimId;
+        UserId = userId;
+        UserName = userName;
+        FeeTotal = feeTotal;
+        FeeToPay = feeToPay;
     }
 }

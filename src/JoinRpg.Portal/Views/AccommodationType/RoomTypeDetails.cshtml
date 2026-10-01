@@ -1,5 +1,4 @@
 ﻿@using JoinRpg.Web.Models.Accommodation
-@using Newtonsoft.Json
 @model RoomTypeViewModel
 @{
   ViewBag.Title = Model.ProjectName + ": тип поселения «" + Model.Name + "»";
@@ -19,7 +18,7 @@
     roomsCount = @Model.RoomsCount;
     roomCapacity = @Model.Capacity;
     roomsCapacity = @Model.TotalCapacity;
-    requestsNotAssigned = @Html.Raw(JsonConvert.SerializeObject(Model.UnassignedRequests));
+    requestsNotAssigned = @Html.Raw(AccRequestJson.Serialize(Model.UnassignedRequests));
     requestsAssignedCount = @(Model.Requests.Count - Model.UnassignedRequests.Count);
   </script>
 }

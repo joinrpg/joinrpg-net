@@ -1,8 +1,7 @@
 ﻿@using JoinRpg.Web.Models.Accommodation;
-@using Newtonsoft.Json
 @model RoomViewModel
 
-<tr id="room@(Model.Id)" roomId="@Model.Id" occupancy="@Model.Occupancy" requests="@JsonConvert.SerializeObject(Model.Requests)">
+<tr id="room@(Model.Id)" roomId="@Model.Id" occupancy="@Model.Occupancy" requests="@AccRequestJson.Serialize(Model.Requests)">
     <td>@Model.Name</td>
     <td>@Model.Occupancy / @Model.Capacity</td>
     <td id="roomReqs@(Model.Id)">
