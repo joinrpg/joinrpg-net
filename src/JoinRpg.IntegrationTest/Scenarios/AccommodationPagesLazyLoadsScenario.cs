@@ -82,7 +82,7 @@ public class AccommodationPagesLazyLoadsScenario(SmokeProjectFixture fixture)
         {
             if (!resident.ClaimIsActive)
             {
-                // Отклонённая заявка в отчёт не попадает, см. SmokeResident.
+                // Отклонённая и отложенная заявки в отчёт не попадают, см. SmokeResident.
                 csv.ShouldNotContain(resident.DisplayName);
                 continue;
             }

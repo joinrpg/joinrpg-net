@@ -56,8 +56,8 @@ public class AccommodationRoomTypeListScenario(SmokeProjectFixture fixture)
             "Одна комната сида занята частично, остальные должны считаться полностью свободными");
 
         // Строка «Итого» считается отдельно от строк типов — и должна давать то же самое.
-        // В строке типа те же числа выводятся формулой («Занято: 4 ✕ 0 + 2 = 2»), поэтому
-        // «Занято: 2» встречается только в итоге.
+        // В строке типа те же числа выводятся формулой («Занято: 4 ✕ 0 + 3 = 3»), поэтому
+        // «Занято: 3» встречается только в итоге.
         var pageText = WebUtility.HtmlDecode(
             document.DocumentNode.SelectSingleNode("//body")?.InnerText
             ?? throw new InvalidOperationException("Страница не содержит body"));

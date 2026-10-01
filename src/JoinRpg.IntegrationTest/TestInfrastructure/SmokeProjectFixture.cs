@@ -62,9 +62,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     /// Жильцы типа поселения: отображаемое имя и телефон игрока.
     /// </summary>
     /// <remarks>
-    /// Заявка на проживание есть у всех заявок сида, в том числе у отклонённой. На странице типа
-    /// поселения видны все, а в отчёт по расселению отклонённая не попадает
-    /// (<c>ClaimStatusSpec.Active</c> исключает отклонённые статусы) — отсюда флаг.
+    /// Заявка на проживание есть у всех заявок сида, в том числе у отклонённой и отложенной. На
+    /// странице типа поселения видны все, а в отчёт по расселению эти две не попадают
+    /// (<c>ClaimStatusSpec.Active</c> исключает и отклонённые статусы, и <c>OnHold</c>) — отсюда флаг.
     /// </remarks>
     public IReadOnlyList<SmokeResident> Residents { get; private set; } = [];
 
@@ -80,6 +80,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         await EnableProjectModulesAsync(ownerId, projectId);
 
         var seeded = await SeedProjectContentAsync(ownerId, projectId);
+        await AssignDropdownFieldAsync(ownerId, projectId, seeded);
         var players = await SeedClaimsAsync(ownerId, projectId, seeded.Characters);
         var placedResidentCount = await SeedAccommodationRequestsAsync(
             ownerId, projectId, seeded, players.AllClaims);
@@ -126,8 +127,8 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             .. players.PlayerIds.Select((id, index) => new SmokeResident(
                 DisplayNameFor(id),
                 PhoneNumberFor(id),
-                // Отклонённая заявка в отчёт по расселению не попадает.
-                ClaimIsActive: id != players.DeclinedPlayerId,
+                // Отклонённая и отложенная заявки в отчёт по расселению не попадают.
+                ClaimIsActive: !players.InactiveClaimPlayerIds.Contains(id),
                 IsPlaced: index < placedResidentCount)),
         ];
 
@@ -277,15 +278,6 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
 
             var (dropdownFieldId, dropdownVariantId) = await SeedDropdownFieldAsync(sp, projectId);
 
-            // Значение «смоук-поля» у первого персонажа: страница ByAssignedField показывает заявки
-            // с заполненным полем, и без единой такой строки список пуст — маршрут мерялся бы
-            // в ноль и в снапшот не попал (#5135).
-            await characterService.SetFields(
-                characters[0],
-                new FieldLayerContainer(
-                    projectInfo,
-                    new Dictionary<int, string?> { [dropdownFieldId.ProjectFieldId] = dropdownVariantId.ToString() }));
-
             // Сюжет наполняется «в ширину»: три вводных, у каждой в таргетах все персонажи сида и
             // две группы. На папке из двух вводных с одним таргетом N+1 по
             // PlotElementCharacters/PlotElementCharacterGroups не отличить от одиночного запроса,
@@ -339,6 +331,34 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                     ?? throw new InvalidOperationException("Список ролей создан без id"),
                 subscriptionId,
                 paymentTypeId);
+        });
+
+    /// <summary>Проставляет «смоук-поле» первому персонажу — до того, как на него подадут заявку.</summary>
+    /// <remarks>
+    /// Значение нужно странице <c>claims/ByAssignedField</c>: она показывает заявки с заполненным
+    /// полем, и без единой такой строки список пуст — маршрут мерялся бы в ноль и в снапшот не
+    /// попал (#5135). Отдельная операция, а не часть <see cref="SeedProjectContentAsync"/>:
+    /// метаданные проекта кешируются на область видимости, и в той же области <c>ProjectInfo</c>
+    /// только что созданного поля ещё не знает — <c>FieldLayerContainer</c> падал бы с
+    /// «Не найдено поле».
+    /// </remarks>
+    private Task AssignDropdownFieldAsync(
+        UserIdentification ownerId,
+        ProjectIdentification projectId,
+        SeededContent seeded)
+        => Factory.Services.RunAsAsync(ownerId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
+                .GetProjectMetadata(projectId);
+
+            await sp.GetRequiredService<ICharacterService>().SetFields(
+                seeded.Characters[0],
+                new FieldLayerContainer(
+                    projectInfo,
+                    new Dictionary<int, string?>
+                    {
+                        [seeded.DropdownFieldId.ProjectFieldId] = seeded.DropdownVariantId.ToString(),
+                    }));
         });
 
     private static async Task<(ProjectFieldIdentification FieldId, int VariantId)> SeedDropdownFieldAsync(
@@ -517,41 +537,34 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     }
 
     /// <summary>
-    /// Заявки от разных игроков в разных статусах: принятая с оплатой, отклонённая с оплатой и
-    /// на рассмотрении.
+    /// Заявки от разных игроков в разных статусах: принятая с оплатой, отклонённая с оплатой,
+    /// на рассмотрении и отложенная.
     /// </summary>
     /// <remarks>
     /// Разные статусы нужны, чтобы страницы списков заявок (их в приложении больше десятка)
     /// открывались не на пустом наборе: на пустом списке N+1 не проявляется, а именно он и
     /// ищется. Оплата у отклонённой заявки — для PaidDeclined: фильтр страницы требует заявку
     /// «отклонена, но баланс больше нуля», и пока такой строки в сиде не было, маршрут мерился
-    /// по пустому списку и в снапшот не попадал (#5135). Отложенного статуса в сиде намеренно нет:
-    /// он покрывался той же строкой, что DeclinedList, а отдельная заявка ради OnHoldList
-    /// добавила бы ещё одного жильца и перекроила бы половину снапшота.
+    /// по пустому списку и в снапшот не попадал (#5135). Отложенная заявка — четвёртая, и она
+    /// подана на ту же роль, что заявка «на рассмотрении»: отложенный статус раньше стоял на
+    /// заявке, которая стала отклонённой, и OnHoldList остался бы без данных, а отдельная роль
+    /// ради одной заявки перекроила бы замеры страниц ролей и печати.
     /// </remarks>
     private async Task<SeededClaims> SeedClaimsAsync(
         UserIdentification ownerId,
         ProjectIdentification projectId,
         IReadOnlyList<CharacterIdentification> characters)
     {
-        var claims = new List<ClaimIdentification>(characters.Count);
-        var playerIds = new List<UserIdentification>(characters.Count);
+        var claims = new List<ClaimIdentification>(characters.Count + 1);
+        var playerIds = new List<UserIdentification>(characters.Count + 1);
 
-        foreach (var characterId in characters)
+        // Претенденты на роли: по заявке на каждую роль сида и ещё одна, вторая на последнюю роль —
+        // именно её отложат.
+        foreach (var characterId in characters.Append(characters[^1]))
         {
-            var (playerId, _) = await CreateUserAsync();
-            await FillPlayerProfileAsync(playerId);
+            var (playerId, claimId) = await AddClaimFromNewPlayerAsync(projectId, characterId);
             playerIds.Add(playerId);
-            claims.Add(await Factory.Services.RunAsAsync(playerId, async sp =>
-            {
-                var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
-                    .GetProjectMetadata(projectId);
-                return await sp.GetRequiredService<IClaimService>().AddClaimFromUser(
-                    characterId,
-                    "Хочу играть эту роль",
-                    FieldLayerContainer.Empty(projectInfo),
-                    sensitiveDataAllowed: true);
-            }));
+            claims.Add(claimId);
         }
 
         return await Factory.Services.RunAsAsync(ownerId, async sp =>
@@ -561,6 +574,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             await claimService.ApproveByMaster(claims[0], "Принято");
             await claimService.AddComment(
                 claims[2], parentCommentId: null, isVisibleToPlayer: true, "Обсуждаем");
+            await claimService.OnHoldByMaster(claims[3], "Пока подумаем");
 
             // Вторая заявка проходит полный путь «принята → оплачена → отклонена»: строка с деньгами
             // нужна PaidDeclined. Отклонять надо до заявок на проживание — иначе отклонение удалит
@@ -612,11 +626,34 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 claims[0],
                 claims,
                 playerIds,
-                playerIds[1],
+                // Отклонённая и отложенная заявки активными не считаются, см. SmokeResident.
+                [playerIds[1], playerIds[3]],
                 discussion.CommentDiscussionId,
                 discussion.CommentId,
                 financeOperationId);
         });
+    }
+
+    /// <summary>Новый игрок с заполненным профилем и его заявка на роль.</summary>
+    private async Task<(UserIdentification PlayerId, ClaimIdentification ClaimId)> AddClaimFromNewPlayerAsync(
+        ProjectIdentification projectId,
+        CharacterIdentification characterId)
+    {
+        var (playerId, _) = await CreateUserAsync();
+        await FillPlayerProfileAsync(playerId);
+
+        var claimId = await Factory.Services.RunAsAsync(playerId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
+                .GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<IClaimService>().AddClaimFromUser(
+                characterId,
+                "Хочу играть эту роль",
+                FieldLayerContainer.Empty(projectInfo),
+                sensitiveDataAllowed: true);
+        });
+
+        return (playerId, claimId);
     }
 
     /// <summary>
@@ -670,7 +707,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         ClaimIdentification ApprovedClaimId,
         IReadOnlyList<ClaimIdentification> AllClaims,
         IReadOnlyList<UserIdentification> PlayerIds,
-        UserIdentification DeclinedPlayerId,
+        IReadOnlyCollection<UserIdentification> InactiveClaimPlayerIds,
         int CommentDiscussionId,
         int CommentId,
         int FinanceOperationId);
