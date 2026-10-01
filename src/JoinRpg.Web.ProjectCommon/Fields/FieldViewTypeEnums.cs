@@ -51,6 +51,11 @@ public enum ProjectFieldViewType
         Description = "Ссылка на любых пользователей joinrpg",
         Order = 14)]
     MultiUserLink,
+    [Display(
+        Name = "Ведущий мероприятия",
+        Description = "Кто ведёт мероприятие. Если поле не заполнено, ведущим считается игрок. В проекте может быть только одно такое поле",
+        Order = 15)]
+    ScheduleAuthorField,
 }
 
 public static class ProjectFieldViewTypeHelper
@@ -66,6 +71,17 @@ public static class ProjectFieldViewTypeHelper
     /// </summary>
     public static bool SupportsPricingOnField(this ProjectFieldViewType self)
         => ((ProjectFieldType)self).SupportsPricingOnField();
+
+    /// <summary>
+    /// Поле ссылается на пользователей сайта (ADR017) — показывается и редактируется одинаково
+    /// для всех таких типов
+    /// </summary>
+    public static bool IsUserLink(this ProjectFieldViewType self)
+        => ((ProjectFieldType)self).IsUserLink();
+
+    /// <summary>Поле-ссылка на пользователя допускает несколько значений (ADR017)</summary>
+    public static bool IsMultiUserLink(this ProjectFieldViewType self)
+        => ((ProjectFieldType)self).IsMultiUserLink();
 }
 
 public enum FieldBoundToViewModel

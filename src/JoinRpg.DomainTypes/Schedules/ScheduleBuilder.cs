@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
@@ -10,15 +11,24 @@ public class ScheduleBuilder
 {
     private readonly IReadOnlyCollection<CharacterInfo> characters;
     private readonly ProjectInfo projectInfo;
+    private readonly IReadOnlyDictionary<UserIdentification, UserInfoHeader> authorUsers;
 
     /// <param name="characters">
     /// Персонажи, из которых строится сетка. Отбор — на стороне вызывающего: удалённых сюда
     /// передавать не надо, отдельно они не отфильтровываются.
     /// </param>
-    public ScheduleBuilder(IReadOnlyCollection<CharacterInfo> characters, ProjectInfo projectInfo)
+    /// <param name="authorUsers">
+    /// Пользователи, указанные полем-ведущим (#4512), разрезолвленные пачкой на всю сетку —
+    /// см. <see cref="ProgramItem.CollectAuthorUserIds"/>. Пустой словарь, если поля в проекте нет.
+    /// </param>
+    public ScheduleBuilder(
+        IReadOnlyCollection<CharacterInfo> characters,
+        ProjectInfo projectInfo,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> authorUsers)
     {
         ArgumentNullException.ThrowIfNull(characters);
         ArgumentNullException.ThrowIfNull(projectInfo);
+        ArgumentNullException.ThrowIfNull(authorUsers);
 
         foreach (var character in characters)
         {
@@ -33,6 +43,7 @@ public class ScheduleBuilder
 
         this.characters = characters;
         this.projectInfo = projectInfo;
+        this.authorUsers = authorUsers;
 
         TimeSlotField = projectInfo.TimeSlotField ?? throw new Exception("Schedule not enabled");
         RoomField = projectInfo.RoomField ?? throw new Exception("Schedule not enabled");
@@ -68,7 +79,7 @@ public class ScheduleBuilder
 
         foreach (var character in characters.Where(ch => ch.CharacterType != CharacterType.Slot))
         {
-            var programItem = new ProgramItem(character);
+            var programItem = new ProgramItem(character, authorUsers);
             var slots = SelectSlots(programItem, character);
             PutItem(programItem, slots);
             if (slots.Any())

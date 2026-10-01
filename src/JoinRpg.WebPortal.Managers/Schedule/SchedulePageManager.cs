@@ -9,6 +9,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Schedules;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
+using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.WebPortal.Managers.Interfaces;
 
@@ -20,6 +21,7 @@ public class SchedulePageManager(
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterInfoRepository characterInfoRepository,
+    IUserRepository userRepository,
     ILogger<SchedulePageManager> logger
         )
 {
@@ -328,7 +330,10 @@ public class SchedulePageManager(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
 
-        return new ScheduleBuilder(characters, projectInfo);
+        // Ведущие, указанные полем-ведущим (#4512), резолвятся одним запросом на всю сетку (ADR017 §4)
+        var authorUsers = await userRepository.LoadUserLinks(ProgramItem.CollectAuthorUserIds(characters));
+
+        return new ScheduleBuilder(characters, projectInfo, authorUsers);
     }
 
     private IProjectRepository Project { get; } = project;

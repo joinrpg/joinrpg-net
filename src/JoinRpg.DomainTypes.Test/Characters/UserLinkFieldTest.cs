@@ -144,5 +144,27 @@ public class UserLinkFieldTest
         ProjectFieldType.UserLink.IsMultiUserLink().ShouldBeFalse();
     }
 
+    /// <summary>
+    /// «Ведущий мероприятия» (#4512) — это мультивыбор ссылок на пользователей: хранение,
+    /// редактор и показ достаются ему целиком от <see cref="ProjectFieldType.MultiUserLink"/>.
+    /// </summary>
+    [Fact]
+    public void ScheduleAuthorFieldIsMultiUserLink()
+    {
+        ProjectFieldType.ScheduleAuthorField.IsUserLink().ShouldBeTrue();
+        ProjectFieldType.ScheduleAuthorField.IsMultiUserLink().ShouldBeTrue();
+        ProjectFieldType.ScheduleAuthorField.IsScheduleField().ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ScheduleAuthorFieldStoresSeveralUserIds()
+    {
+        var field = new FieldWithValue(
+            ProjectInfoFixture.MakeField(1, ProjectFieldType.ScheduleAuthorField),
+            "123,456");
+
+        field.UserIds.Select(id => id.Value).ShouldBe([123, 456]);
+    }
+
     #endregion
 }

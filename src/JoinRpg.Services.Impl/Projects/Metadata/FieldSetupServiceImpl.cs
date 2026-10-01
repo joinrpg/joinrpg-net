@@ -20,12 +20,10 @@ internal class FieldSetupServiceImpl(
             request,
             ctx =>
             {
-                if (ctx.Project.GetTimeSlotFieldOrDefault() != null && ctx.Request.FieldType == ProjectFieldType.ScheduleTimeSlotField)
-                {
-                    throw new JoinFieldScheduleShouldBeUniqueException(ctx.Project);
-                }
-
-                if (ctx.Project.GetRoomFieldOrDefault() != null && ctx.Request.FieldType == ProjectFieldType.ScheduleRoomField)
+                // Специальных полей расписания (время, место, ведущий) в проекте не больше
+                // одного каждого типа
+                if (ctx.Request.FieldType.IsScheduleField()
+                    && ctx.Project.GetScheduleFieldOrDefault(ctx.Request.FieldType) is not null)
                 {
                     throw new JoinFieldScheduleShouldBeUniqueException(ctx.Project);
                 }

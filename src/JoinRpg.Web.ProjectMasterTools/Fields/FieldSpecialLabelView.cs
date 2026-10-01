@@ -7,5 +7,6 @@ public enum FieldSpecialLabelView
     Description,
     ScheduleTime,
     SchedulePlace,
+    ScheduleAuthor,
     Public,
 }

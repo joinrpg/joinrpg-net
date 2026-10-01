@@ -109,6 +109,23 @@ public class XApiScheduleTests(XApiMasterFixture fixture)
     }
 
     /// <summary>
+    /// Ведущий берётся из поля «Ведущий» — его заводит сам шаблон проекта (#4512). Утверждённой
+    /// заявки у персонажа тут нет, так что до поля список ведущих был бы пуст.
+    /// </summary>
+    [Fact]
+    public async Task TakesAuthorsFromAuthorField()
+    {
+        var project = await SeedScheduleProjectAsync();
+        var characterId = await AddProgramItemAsync(project, "Лекция с ведущим", timeSlots: [0], rooms: [0],
+            authors: [fixture.MasterUserId.Value]);
+
+        var item = (await fixture.MasterClient.GetScheduleAsync(project.ProjectId))
+            .Single(x => x.ProgramItemId == characterId);
+
+        item.Authors.ShouldHaveSingleItem().UserId.ShouldBe(fixture.MasterUserId.Value);
+    }
+
+    /// <summary>
     /// Расписание программы конвента публично: эндпоинт не требует JWT, а доступ решается
     /// видимостью полей времени и локации — шаблон проекта заводит их публичными.
     /// </summary>
@@ -166,6 +183,8 @@ public class XApiScheduleTests(XApiMasterFixture fixture)
                         ?? throw new InvalidOperationException("В шаблоне проекта нет поля времени"),
                     projectInfo.RoomField?.Id
                         ?? throw new InvalidOperationException("В шаблоне проекта нет поля локации"),
+                    projectInfo.ScheduleAuthorField?.Id
+                        ?? throw new InvalidOperationException("В шаблоне проекта нет поля ведущего"),
                     projectInfo.CharacterNameField?.Id
                         ?? throw new InvalidOperationException("В шаблоне проекта нет поля имени"),
                     projectInfo.CharacterDescriptionField?.Id
@@ -181,7 +200,8 @@ public class XApiScheduleTests(XApiMasterFixture fixture)
         string name,
         int[] timeSlots,
         int[] rooms,
-        string? description = null)
+        string? description = null,
+        int[]? authors = null)
     {
         var fieldValues = new Dictionary<int, JsonElement>
         {
@@ -203,6 +223,11 @@ public class XApiScheduleTests(XApiMasterFixture fixture)
             fieldValues[project.Fields.RoomFieldId.ProjectFieldId] =
                 JsonSerializer.SerializeToElement(rooms.Select(i => project.RoomVariants[i]));
         }
+        if (authors is { Length: > 0 })
+        {
+            fieldValues[project.Fields.AuthorFieldId.ProjectFieldId] =
+                JsonSerializer.SerializeToElement(authors);
+        }
 
         var header = await fixture.MasterClient.CreateCharacterAsync(project.ProjectId, new CreateCharacterRequest
         {
@@ -216,6 +241,7 @@ public class XApiScheduleTests(XApiMasterFixture fixture)
     private sealed record ScheduleFields(
         ProjectFieldIdentification TimeSlotFieldId,
         ProjectFieldIdentification RoomFieldId,
+        ProjectFieldIdentification AuthorFieldId,
         ProjectFieldIdentification NameFieldId,
         ProjectFieldIdentification DescriptionFieldId);
 

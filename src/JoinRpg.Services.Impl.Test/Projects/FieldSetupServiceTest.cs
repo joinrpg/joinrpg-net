@@ -73,16 +73,38 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
 
-    [Fact]
-    public async Task AddField_DuplicateScheduleTimeSlot_Throws()
+    /// <summary>
+    /// Специальных полей расписания — время, место, ведущий (#4512) — в проекте не больше одного
+    /// каждого типа.
+    /// </summary>
+    [Theory]
+    [InlineData(ProjectFieldType.ScheduleTimeSlotField)]
+    [InlineData(ProjectFieldType.ScheduleRoomField)]
+    [InlineData(ProjectFieldType.ScheduleAuthorField)]
+    public async Task AddField_DuplicateScheduleField_Throws(ProjectFieldType fieldType)
     {
-        _ = mock.AddField(f => f.FieldType = ProjectFieldType.ScheduleTimeSlotField);
+        _ = mock.AddField(f => f.FieldType = fieldType);
         var service = CreateService(mock.Master.UserId);
 
         await Should.ThrowAsync<JoinFieldScheduleShouldBeUniqueException>(
-            () => service.AddField(CreateFieldRequest(ProjectFieldType.ScheduleTimeSlotField)));
+            () => service.AddField(CreateFieldRequest(fieldType)));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Поле-ведущий не мешает завести время и место: уникальность считается по типу поля,
+    /// а не по «специальности» вообще.
+    /// </summary>
+    [Fact]
+    public async Task AddField_ScheduleFieldOfOtherType_Succeeds()
+    {
+        _ = mock.AddField(f => f.FieldType = ProjectFieldType.ScheduleAuthorField);
+        var service = CreateService(mock.Master.UserId);
+
+        var result = await service.AddField(CreateFieldRequest(ProjectFieldType.ScheduleTimeSlotField));
+
+        Result.TimeSlotField.ShouldNotBeNull().Id.ShouldBe(result);
     }
 
     /// <summary>
@@ -92,6 +114,7 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
     [Theory]
     [InlineData(ProjectFieldType.UserLink)]
     [InlineData(ProjectFieldType.MultiUserLink)]
+    [InlineData(ProjectFieldType.ScheduleAuthorField)]
     public async Task AddField_UserLink_RespectsCanPlayerEdit(ProjectFieldType fieldType)
     {
         var service = CreateService(mock.Master.UserId);

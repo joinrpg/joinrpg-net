@@ -8,14 +8,61 @@ namespace JoinRpg.DomainTypes.Schedules;
 /// <summary>
 /// Пункт программы — персонаж, размещаемый в сетке расписания.
 /// </summary>
-public class ProgramItem(CharacterInfo character)
+public class ProgramItem
 {
-    public CharacterIdentification Id { get; } = character.Id;
-    public string Name { get; } = character.CharacterName;
-    public MarkdownString Description { get; } = character.Description;
-    public UserInfoHeader[] Authors { get; } = new[] { character.ApprovedClaim?.Player }.WhereNotNull().ToArray();
+    /// <param name="authorUsers">
+    /// Пользователи, на которых ссылается поле-ведущий, разрезолвленные одной пачкой на всю
+    /// сетку (ADR017 §4). Собрать их id — <see cref="CollectAuthorUserIds"/>.
+    /// </param>
+    public ProgramItem(CharacterInfo character, IReadOnlyDictionary<UserIdentification, UserInfoHeader> authorUsers)
+    {
+        Id = character.Id;
+        Name = character.CharacterName;
+        Description = character.Description;
 
-    public bool ShowAuthors { get; } = !character.HidePlayerForCharacter;
+        if (character.ProjectInfo.ScheduleAuthorField is { } authorField
+            && GetAuthorFieldIds(character) is { Count: > 0 } authorIds)
+        {
+            // Ведущий указан явно (#4512). Настройка «скрыть игрока» тут не при чём: мастер
+            // называет в поле третье лицо, и видимость решает само поле (ADR017 §6).
+            // Ненайденный пользователь просто пропадает из списка — как и в показе user-полей.
+            Authors = [.. authorIds
+                .Select(id => authorUsers.TryGetValue(id, out var user) ? user : null)
+                .WhereNotNull()];
+            ShowAuthors = authorField.IsPublic;
+        }
+        else
+        {
+            // Поля нет или оно пустое — ведущим считается игрок утверждённой заявки
+            Authors = [.. new[] { character.ApprovedClaim?.Player }.WhereNotNull()];
+            ShowAuthors = !character.HidePlayerForCharacter;
+        }
+    }
+
+    public CharacterIdentification Id { get; }
+    public string Name { get; }
+    public MarkdownString Description { get; }
+    public UserInfoHeader[] Authors { get; }
+
+    public bool ShowAuthors { get; }
+
+    /// <summary>
+    /// Идентификаторы всех пользователей, указанных полем-ведущим у переданных персонажей.
+    /// Их надо разрезолвить одним запросом до построения сетки (ADR017 §4).
+    /// </summary>
+    public static IReadOnlyCollection<UserIdentification> CollectAuthorUserIds(IEnumerable<CharacterInfo> characters)
+        => [.. characters.SelectMany(GetAuthorFieldIds).Distinct()];
+
+    /// <summary>Значение поля-ведущего или пустой список, если поля в проекте нет.</summary>
+    private static IReadOnlyList<UserIdentification> GetAuthorFieldIds(CharacterInfo character)
+    {
+        if (character.ProjectInfo.ScheduleAuthorField is not { } authorField)
+        {
+            return [];
+        }
+
+        return character.GetAllFields().SingleOrDefault(f => f.Field.Id == authorField.Id)?.UserIds ?? [];
+    }
 }
 
 public class ProgramItemPlaced
