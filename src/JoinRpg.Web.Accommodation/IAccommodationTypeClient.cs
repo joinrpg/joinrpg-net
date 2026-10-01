@@ -12,6 +12,7 @@ namespace JoinRpg.Web.Accommodation;
 /// <param name="Capacity">Сколько человек помещается в номере</param>
 /// <param name="Cost">Стоимость</param>
 /// <param name="DescriptionHtml">Описание, уже отрисованное из Markdown</param>
+[method: JsonConstructor]
 public record AccommodationTypeViewModel(
     AccommodationTypeIdentification TypeId,
     string Name,
