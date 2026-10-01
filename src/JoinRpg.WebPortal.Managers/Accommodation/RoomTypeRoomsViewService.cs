@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Accommodation;
 
 namespace JoinRpg.WebPortal.Managers.Accommodation;
@@ -34,6 +35,9 @@ public class RoomTypeRoomsViewService(
         return new RoomTypeViewModel(
             plan,
             typeId,
+            // Markdown рендерится здесь, на сервере: вью-модель лежит в браузерной библиотеке
+            // JoinRpg.Web.Accommodation и рендерера markdown не видит.
+            plan.GetAccommodationType(typeId).Description.ToHtmlString(),
             await LoadParticipants(plan),
             currentUserAccessor.UserIdentification);
     }

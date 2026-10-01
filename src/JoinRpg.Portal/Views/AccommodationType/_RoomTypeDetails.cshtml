@@ -31,7 +31,8 @@
                 </div>
             }
         </td>
-        <td class="visible-lg">@Model.DescriptionView</td>
+        @* DescriptionView — MarkupString, уже отрендеренный и очищенный нашим санитайзером markdown *@
+        <td class="visible-lg">@Html.Raw(Model.DescriptionView.Value)</td>
         <td class="price-value">@(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = Model.Cost }))</td>
         @if (Model.IsInfinite)
         {

@@ -35,7 +35,8 @@
 
     <div class="form-group">
         @Html.LabelFor(model => model.DescriptionView, htmlAttributes: new { @class = "control-label col-md-3" })
-        <div class="col-md-9">@Model.DescriptionView</div>
+        @* DescriptionView — MarkupString, уже отрендеренный и очищенный нашим санитайзером markdown *@
+        <div class="col-md-9">@Html.Raw(Model.DescriptionView.Value)</div>
     </div>
 
     <div class="form-group">
