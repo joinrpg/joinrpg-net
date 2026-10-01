@@ -1,4 +1,5 @@
 
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
 
 namespace JoinRpg.DomainTypes;
@@ -23,6 +24,17 @@ public record CharacterTarget(CharacterIdentification CharacterId, string Name) 
 
 public record TargetsInfo(IReadOnlyCollection<CharacterTarget> CharacterTargets, IReadOnlyCollection<GroupTarget> GroupTargets)
 {
+    /// <summary>
+    /// Таргеты одного персонажа: он сам плюс все его группы вверх до корня. Именно так сюжет
+    /// находит персонажа — поэтому состав групп тут не сужается.
+    /// </summary>
+    public TargetsInfo(CharacterInfo character)
+        : this(
+            [new CharacterTarget(character.Id, character.CharacterName)],
+            [.. character.ParentGroupsToTop.Select(group => new GroupTarget(group.Id, group.Name))])
+    {
+    }
+
     public bool HasIntersections(TargetsInfo other) => CharacterTargets.Intersect(other.CharacterTargets).Any() || GroupTargets.Intersect(other.GroupTargets).Any();
 
     public IEnumerable<ILinkableWithName> AllLinks => CharacterTargets.Cast<ILinkableWithName>().Union(GroupTargets);

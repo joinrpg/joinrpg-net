@@ -96,7 +96,7 @@ public class CharacterPlotViewService(
 
     private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForActiveCharacters(ProjectIdentification projectId, CharacterAccessMode characterAccessMode)
     {
-        var characters = await characterInfoRepository.GetAllCharacterInfos(projectId);
+        var characters = await characterInfoRepository.GetAllCharacterInfos(projectId, CharacterStatusSpec.Active);
 
         return ToPlotInfo(characters, characterAccessMode);
     }
@@ -106,14 +106,13 @@ public class CharacterPlotViewService(
         CharacterAccessMode characterAccessMode)
         => characters
             .Where(c => AccessArgumentsFactory.Create(c, currentUser, characterAccessMode).CharacterPlotAccess)
-            .ToDictionary(x => x.Id, x => new ChPlotInfo(ToTarget(x), x.PlotElementOrderData));
+            // Порядок вставки в словарь виден наружу: HandoutReport обходит его как есть,
+            // и строки отчёта должны идти по именам персонажей. Раньше за это отвечал
+            // ORDER BY в GetAllCharacters, теперь сортируем явно.
+            .OrderBy(c => c.CharacterName)
+            .ToDictionary(x => x.Id, x => new ChPlotInfo(new TargetsInfo(x), x.PlotElementOrderData));
 
     private record ChPlotInfo(TargetsInfo Targets, string? Ordering);
-
-    private static TargetsInfo ToTarget(CharacterInfo character)
-        => new(
-            [new(character.Id, character.CharacterName)],
-            [.. character.ParentGroupsToTop.Select(x => new GroupTarget(x.Id, x.Name))]);
 
     public async Task<IReadOnlyList<PlotTextDto>> GetPlotsForCharacter(CharacterIdentification characterId)
     {
