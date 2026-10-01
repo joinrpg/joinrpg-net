@@ -205,6 +205,8 @@ internal class UriServiceImpl(
             ForumCommentIdentification c => (GetUri(c), "сообщение на форуме"),
             ForumThreadIdentification t => (GetUri(t), "обсуждение"),
             FinanceOperationIdentification f => (GetUri(f), "финансовая операция"),
+            // Отдельной страницы комнаты нет — ведём на список комнат проекта.
+            AccommodationRoomIdentification r => (GetRoomsUri(r.ProjectId), "комнаты"),
             ProjectIdentification p => (GetUri(p), "проект"),
             _ => (null, null),
         };
