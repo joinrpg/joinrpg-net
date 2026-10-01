@@ -23,12 +23,14 @@ public class AccommodationTypeJsonTest
         // конструктора, без [JsonConstructor] System.Text.Json в WASM не мог выбрать нужный
         // и весь селектор типа проживания падал при загрузке.
         var original = new AccommodationTypeChoiceViewModel(
-            [new AccommodationTypeViewModel(
+            // List, а не коллекционное выражение: ShouldBeEquivalentTo сравнивает в том числе
+            // рантайм-тип коллекции, а десериализатор всегда отдаёт List.
+            new List<AccommodationTypeViewModel> { new AccommodationTypeViewModel(
                 new AccommodationTypeIdentification(ProjectId, 11),
                 "Домик на четверых",
                 Capacity: 4,
                 Cost: 2500,
-                "<p>Домик</p>")],
+                "<p>Домик</p>") },
             SelectedTypeId: new AccommodationTypeIdentification(ProjectId, 11),
             RoomAssigned: true,
             HasNeighbours: false);
