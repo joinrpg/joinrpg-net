@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using Microsoft.AspNetCore.Components;
@@ -34,7 +35,20 @@ public abstract class RoomTypeViewModelBase
     public string Name { get; set; }
 
     /// <summary>
-    /// Описание типа проживания, уже отрендеренное из Markdown.
+    /// Описание типа проживания, уже отрендеренное из Markdown — HTML строкой.
+    /// </summary>
+    /// <remarks>
+    /// Именно строка, а не <see cref="MarkupString"/>, потому что эта вью-модель может уехать
+    /// в JSON: <see cref="MarkupString"/> — структура без подходящего конструктора, она
+    /// сериализуется как <c>{"Value":...}</c> и обратно не десериализуется. В репозитории
+    /// принято возить HTML строкой, а типизированное представление помечать
+    /// <see cref="JsonIgnoreAttribute"/> — так сделано в <c>AccommodationTypeViewModel</c>
+    /// и в вью-моделях сетки ролей.
+    /// </remarks>
+    public string DescriptionHtml { get; set; } = "";
+
+    /// <summary>
+    /// То же описание для вывода в разметке.
     /// </summary>
     /// <remarks>
     /// Значение приходит из <c>MarkdownString.ToHtmlString()</c>, то есть уже прошло наш
@@ -43,7 +57,8 @@ public abstract class RoomTypeViewModelBase
     /// и сам по себе был бы выведен с HTML-экранированием.
     /// </remarks>
     [DisplayName("Описание")]
-    public MarkupString DescriptionView { get; set; }
+    [JsonIgnore]
+    public MarkupString DescriptionView => new(DescriptionHtml);
 
     [DisplayName("Цена за 1 место")]
     public int Cost { get; set; }
@@ -197,7 +212,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         Capacity = typeInfo.Capacity;
         IsPlayerSelectable = typeInfo.IsPlayerSelectable;
         DescriptionEditable = typeInfo.Description.Value;
-        DescriptionView = descriptionView;
+        DescriptionHtml = descriptionView.Value;
         Requests = [];
         UnassignedRequests = [];
     }
