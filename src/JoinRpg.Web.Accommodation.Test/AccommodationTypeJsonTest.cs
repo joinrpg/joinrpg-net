@@ -37,6 +37,6 @@ public class AccommodationTypeJsonTest
         var restored = JsonSerializer.Deserialize<AccommodationTypeChoiceViewModel>(json, Options);
 
         restored.ShouldNotBeNull();
-        restored.ShouldBe(original);
+        restored.ShouldBeEquivalentTo(original);
     }
 }
