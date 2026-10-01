@@ -10,8 +10,18 @@ public abstract class RoomTypeViewModelBase
     public int Id { get; set; }
     public int ProjectId { get; set; }
 
+    /// <summary>
+    /// Разумный максимум мест в одном номере: больше похоже на опечатку, а не на настоящий номер.
+    /// </summary>
+    public const int MaxCapacity = 1000;
+
+    /// <summary>
+    /// Чем предзаполнена пустая форма: самый частый номер — двухместный.
+    /// </summary>
+    public const int DefaultCapacity = 2;
+
     [DisplayName("Количество мест в номере")]
-    [Range(1, int.MaxValue)]
+    [Range(1, MaxCapacity, ErrorMessage = "Укажите количество мест в номере — целое число от 1 до 1000")]
     public int Capacity { get; set; }
 
     [DisplayName("Бесконечное поселение")]
@@ -31,7 +41,7 @@ public abstract class RoomTypeViewModelBase
         => RoomsCount * Capacity;
 
     [DisplayName("Название")]
-    [Required]
+    [Required(ErrorMessage = "Укажите название типа поселения")]
     public string Name { get; set; }
 
     /// <summary>
@@ -61,6 +71,7 @@ public abstract class RoomTypeViewModelBase
     public MarkupString DescriptionView => new(DescriptionHtml);
 
     [DisplayName("Цена за 1 место")]
+    [Range(0, int.MaxValue, ErrorMessage = "Цена за 1 место не может быть отрицательной")]
     public int Cost { get; set; }
 
     public bool CanAssignRooms { get; set; }
@@ -223,6 +234,9 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// </summary>
     public RoomTypeViewModel(UserIdentification currentUserId, ProjectInfo projectInfo)
     {
+        // Пустая форма предзаполняется типовым двухместным номером: иначе в поле отрисуется 0
+        // (дефолт int), и первый же сабмит упирается в [Range] на Capacity.
+        Capacity = DefaultCapacity;
         ProjectName = projectInfo.ProjectName.Value;
         ProjectId = projectInfo.ProjectId.Value;
         CanManageRooms = projectInfo.HasMasterAccess(currentUserId, Permission.CanManageAccommodation);
