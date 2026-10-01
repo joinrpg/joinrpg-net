@@ -37,57 +37,81 @@
         {
             <td class="price-value">
                 <div>@Model.Capacity &#x2715; ∞ = ∞</div>
-                <div>
-                    Занято:
-                    <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
-                    &#x2715; <span title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip">@Model.FullyOccupiedRoomsCount</span>
-                    @if (Model.PartialRoomsCount > 0)
-                    {
-                        <text>+ <span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Model.PartialOccupiedSeats</span></text>
-                    }
-                    = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupied</span>
-                </div>
+                @if (Model.Occupied == 0)
+                {
+                    <div>Занято: нет</div>
+                }
+                else
+                {
+                    <div>
+                        Занято:
+                        <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
+                        &#x2715; <span title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip">@Model.FullyOccupiedRoomsCount</span>
+                        @if (Model.PartialRoomsCount > 0)
+                        {
+                            <text>+ <span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Model.PartialOccupiedSeats</span></text>
+                        }
+                        = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupied</span>
+                    </div>
+                }
             </td>
         }
         else
         {
             <td class="price-value">
-                <div>
-                    Свободно:
-                    <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
-                    &#x2715; <span title="@RoomTypeListItemViewModel.FullyFreeRoomsTooltip">@Model.FullyFreeRoomsCount</span>
-                    @if (Model.PartialRoomsCount > 0)
-                    {
-                        <text>+ <span title="@RoomTypeListItemViewModel.PartialFreeSeatsTooltip">@Model.PartialFreeSeats</span></text>
-                    }
-                    = <span title="@RoomTypeListItemViewModel.TotalFreeTooltip">@Model.FreeCapacity</span>
-                </div>
-                <div>
-                    Занято:
-                    <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
-                    &#x2715; <span title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip">@Model.FullyOccupiedRoomsCount</span>
-                    @if (Model.PartialRoomsCount > 0)
-                    {
-                        <text>+ <span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Model.PartialOccupiedSeats</span></text>
-                    }
-                    = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupied</span>
-                </div>
+                @if (Model.FreeCapacity == 0)
+                {
+                    <div>Свободно: нет</div>
+                }
+                else
+                {
+                    <div>
+                        Свободно:
+                        <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
+                        &#x2715; <span title="@RoomTypeListItemViewModel.FullyFreeRoomsTooltip">@Model.FullyFreeRoomsCount</span>
+                        @if (Model.PartialRoomsCount > 0)
+                        {
+                            <text>+ <span title="@RoomTypeListItemViewModel.PartialFreeSeatsTooltip">@Model.PartialFreeSeats</span></text>
+                        }
+                        = <span title="@RoomTypeListItemViewModel.TotalFreeTooltip">@Model.FreeCapacity</span>
+                    </div>
+                }
+                @if (Model.Occupied == 0)
+                {
+                    <div>Занято: нет</div>
+                }
+                else
+                {
+                    <div>
+                        Занято:
+                        <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
+                        &#x2715; <span title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip">@Model.FullyOccupiedRoomsCount</span>
+                        @if (Model.PartialRoomsCount > 0)
+                        {
+                            <text>+ <span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Model.PartialOccupiedSeats</span></text>
+                        }
+                        = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupied</span>
+                    </div>
+                }
             </td>
         }
         <td class="price-value">
-            @if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
+            @if (Model.PendingRequests != 0)
             {
-                <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.PaidCount</span>
-            }
-            @if (Model.AcceptedNotPaidCount != 0)
-            {
-                @if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
+                if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
                 {
-                    <text>+</text>
+                    <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.PaidCount</span>
                 }
-                <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
+                if (Model.AcceptedNotPaidCount != 0)
+                {
+                    if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
+                    {
+                        <text>+</text>
+                    }
+                    <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
+                }
+                <text>= </text><span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
             }
-            = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
         </td>
         <td>
             <div class="btn-group btn-group-sm" style="display: inline-block">

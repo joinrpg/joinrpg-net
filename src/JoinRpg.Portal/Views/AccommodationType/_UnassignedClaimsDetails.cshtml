@@ -8,19 +8,22 @@
     <td class="price-value">&nbsp;</td>
     <td class="price-value">&nbsp;</td>
     <td class="price-value">
-        @if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
+        @if (Model.PendingRequests != 0)
         {
-            <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.PaidCount</span>
-        }
-        @if (Model.AcceptedNotPaidCount != 0)
-        {
-            @if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
+            if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
             {
-                <text>+</text>
+                <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.PaidCount</span>
             }
-            <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
+            if (Model.AcceptedNotPaidCount != 0)
+            {
+                if (Model.PaidCount != 0 || Model.AcceptedNotPaidCount == 0)
+                {
+                    <text>+</text>
+                }
+                <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.AcceptedNotPaidCount</span>
+            }
+            <text>= </text><span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
         }
-        = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Model.PendingRequests</span>
     </td>
     <td>
         <div class="btn-group btn-group-sm" style="display: inline-block">
