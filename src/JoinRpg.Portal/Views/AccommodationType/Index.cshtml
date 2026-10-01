@@ -71,19 +71,22 @@
         <div>Занято: @(Model.TotalOccupied)</div>
       </td>
       <td class="price-value">
-        @if (Model.TotalPaid != 0 || Model.TotalAcceptedNotPaid == 0)
+        @if (Model.TotalPending != 0)
         {
-          <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.TotalPaid</span>
+            if (Model.TotalPaid != 0 || Model.TotalAcceptedNotPaid == 0)
+            {
+              <span title="@RoomTypeListItemViewModel.PaidTooltip">@Model.TotalPaid</span>
+            }
+            if (Model.TotalAcceptedNotPaid != 0)
+            {
+              if (Model.TotalPaid != 0 || Model.TotalAcceptedNotPaid == 0)
+              {
+                <text>+</text>
+              }
+              <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.TotalAcceptedNotPaid</span>
+            }
+            <text>= </text><span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@(Model.TotalPending)</span>
         }
-        @if (Model.TotalAcceptedNotPaid != 0)
-        {
-          @if (Model.TotalPaid != 0 || Model.TotalAcceptedNotPaid == 0)
-          {
-            <text>+</text>
-          }
-          <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@Model.TotalAcceptedNotPaid</span>
-        }
-        = <span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@(Model.TotalPending)</span>
       </td>
       <td>
         <a class="btn btn-sm btn-default disabled" href="#"><join-icon icon="MenuHorizontal" /></a>
