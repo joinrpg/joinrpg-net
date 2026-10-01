@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
@@ -61,9 +62,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     /// Жильцы типа поселения: отображаемое имя и телефон игрока.
     /// </summary>
     /// <remarks>
-    /// Заявка на проживание есть у всех заявок сида, в том числе у отложенной. На странице типа
-    /// поселения видны все, а в отчёт по расселению отложенная не попадает
-    /// (<c>ClaimStatusSpec.Active</c> исключает <c>OnHold</c>) — отсюда флаг.
+    /// Заявка на проживание есть у всех заявок сида, в том числе у отклонённой. На странице типа
+    /// поселения видны все, а в отчёт по расселению отклонённая не попадает
+    /// (<c>ClaimStatusSpec.Active</c> исключает отклонённые статусы) — отсюда флаг.
     /// </remarks>
     public IReadOnlyList<SmokeResident> Residents { get; private set; } = [];
 
@@ -125,7 +126,8 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             .. players.PlayerIds.Select((id, index) => new SmokeResident(
                 DisplayNameFor(id),
                 PhoneNumberFor(id),
-                ClaimIsActive: id != players.OnHoldPlayerId,
+                // Отклонённая заявка в отчёт по расселению не попадает.
+                ClaimIsActive: id != players.DeclinedPlayerId,
                 IsPlaced: index < placedResidentCount)),
         ];
 
@@ -274,6 +276,15 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                     new Dictionary<int, string?> { [nameFieldId] = "Скрытый смоук-персонаж" })));
 
             var (dropdownFieldId, dropdownVariantId) = await SeedDropdownFieldAsync(sp, projectId);
+
+            // Значение «смоук-поля» у первого персонажа: страница ByAssignedField показывает заявки
+            // с заполненным полем, и без единой такой строки список пуст — маршрут мерялся бы
+            // в ноль и в снапшот не попал (#5135).
+            await characterService.SetFields(
+                characters[0],
+                new FieldLayerContainer(
+                    projectInfo,
+                    new Dictionary<int, string?> { [dropdownFieldId.ProjectFieldId] = dropdownVariantId.ToString() }));
 
             // Сюжет наполняется «в ширину»: три вводных, у каждой в таргетах все персонажи сида и
             // две группы. На папке из двух вводных с одним таргетом N+1 по
@@ -506,11 +517,17 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     }
 
     /// <summary>
-    /// Заявки от разных игроков в разных статусах: принятая с оплатой, на рассмотрении и отложенная.
+    /// Заявки от разных игроков в разных статусах: принятая с оплатой, отклонённая с оплатой и
+    /// на рассмотрении.
     /// </summary>
     /// <remarks>
-    /// Разные статусы нужны, чтобы страницы списков заявок (их в приложении больше десятка) открывались
-    /// не на пустом наборе: на пустом списке N+1 не проявляется, а именно он и ищется.
+    /// Разные статусы нужны, чтобы страницы списков заявок (их в приложении больше десятка)
+    /// открывались не на пустом наборе: на пустом списке N+1 не проявляется, а именно он и
+    /// ищется. Оплата у отклонённой заявки — для PaidDeclined: фильтр страницы требует заявку
+    /// «отклонена, но баланс больше нуля», и пока такой строки в сиде не было, маршрут мерился
+    /// по пустому списку и в снапшот не попадал (#5135). Отложенного статуса в сиде намеренно нет:
+    /// он покрывался той же строкой, что DeclinedList, а отдельная заявка ради OnHoldList
+    /// добавила бы ещё одного жильца и перекроила бы половину снапшота.
     /// </remarks>
     private async Task<SeededClaims> SeedClaimsAsync(
         UserIdentification ownerId,
@@ -542,12 +559,17 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             var claimService = sp.GetRequiredService<IClaimService>();
 
             await claimService.ApproveByMaster(claims[0], "Принято");
-            await claimService.OnHoldByMaster(claims[1], "Пока подумаем");
             await claimService.AddComment(
                 claims[2], parentCommentId: null, isVisibleToPlayer: true, "Обсуждаем");
 
+            // Вторая заявка проходит полный путь «принята → оплачена → отклонена»: строка с деньгами
+            // нужна PaidDeclined. Отклонять надо до заявок на проживание — иначе отклонение удалит
+            // заявку на проживание (ConsiderLeavingRoom), а сид хочет её и у отклонённой.
+            await claimService.ApproveByMaster(claims[1], "Принято, но потом отклоним");
+
             var paymentTypeId = GetPaymentType(sp, projectId, ownerId);
-            await sp.GetRequiredService<IFinanceService>().FeeAcceptedOperation(new FeeAcceptedOperationRequest
+            var financeService = sp.GetRequiredService<IFinanceService>();
+            await financeService.FeeAcceptedOperation(new FeeAcceptedOperationRequest
             {
                 ClaimId = claims[0].ClaimId,
                 Contents = "Взнос за смоук",
@@ -555,6 +577,20 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 Money = 100,
                 PaymentTypeId = paymentTypeId,
             });
+            await financeService.FeeAcceptedOperation(new FeeAcceptedOperationRequest
+            {
+                ClaimId = claims[1].ClaimId,
+                Contents = "Взнос до отклонения",
+                OperationDate = DateTime.UtcNow.Date,
+                Money = 100,
+                PaymentTypeId = paymentTypeId,
+            });
+
+            await claimService.DeclineByMaster(
+                claims[1],
+                ClaimDenialReason.NotSuitable,
+                "Не подошла роль",
+                deleteCharacter: false);
 
             var db = sp.GetRequiredService<MyDbContext>();
             var discussion = db.Set<CommentDiscussion>()
@@ -634,7 +670,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         ClaimIdentification ApprovedClaimId,
         IReadOnlyList<ClaimIdentification> AllClaims,
         IReadOnlyList<UserIdentification> PlayerIds,
-        UserIdentification OnHoldPlayerId,
+        UserIdentification DeclinedPlayerId,
         int CommentDiscussionId,
         int CommentId,
         int FinanceOperationId);
