@@ -35,16 +35,49 @@ public class AccommodationListViewModel
 
     public UnassignedClaimsRowViewModel UnassignedClaims { get; set; }
 
+    /// <param name="roomTypes">Оперативная сводка занятости по типам проживания</param>
+    /// <param name="claimsWithoutRoomType">Активные заявки, в которых тип проживания не выбран</param>
+    /// <param name="unsettledClaims">
+    /// Заявки, выбравшие тип проживания, но ещё не расселённые по комнатам: по ним считается, сколько
+    /// нерасселённых оплачено. Баланс считается здесь, а не в строке таблицы: расчёт идёт по
+    /// EF-графу заявки, а <see cref="RoomTypeListItemViewModel"/> на EF не смотрит.
+    /// </param>
     public AccommodationListViewModel(ProjectInfo project,
         IReadOnlyCollection<RoomTypeInfoRow> roomTypes,
         IReadOnlyCollection<Claim> claimsWithoutRoomType,
+        IReadOnlyCollection<Claim> unsettledClaims,
         ICurrentUserAccessor userId)
     {
         ProjectId = project.ProjectId;
         ProjectName = project.ProjectName;
         CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
         CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
-        RoomTypes = roomTypes.Select(rt => new RoomTypeListItemViewModel(rt, userId, project)).ToList();
+
+        var paidByRoomType = unsettledClaims
+            .GroupBy(claim => claim.AccommodationRequest!.AccommodationTypeId)
+            .ToDictionary(
+                group => group.Key,
+                group => AccommodationClaimCounters.CountPaid(group, project));
+
+        RoomTypes = [.. roomTypes.Select(row =>
+        {
+            // Тип проживания — настройка проекта, он уже есть в метаданных (ADR015).
+            var typeInfo = project.AccommodationSettings.GetTypeById(row.RoomTypeId);
+            return new RoomTypeListItemViewModel(
+                typeInfo,
+                // Markdown рендерится здесь, на сервере: вью-модель лежит в браузерной библиотеке
+                // JoinRpg.Web.Accommodation и рендерера markdown не видит.
+                typeInfo.Description.ToHtmlString(),
+                new RoomTypeOccupancySummary(
+                    row.Occupied,
+                    row.RoomsCount,
+                    row.ApprovedClaims,
+                    row.FullyFreeRoomsCount,
+                    row.FullyOccupiedRoomsCount,
+                    paidByRoomType.GetValueOrDefault(row.RoomTypeId.AccommodationTypeId)),
+                userId.UserIdentification,
+                project);
+        })];
 
         IsInfinite = RoomTypes.Any(rt => rt.IsInfinite);
 
@@ -82,94 +115,26 @@ public class UnassignedClaimsRowViewModel
     public UnassignedClaimsRowViewModel(IReadOnlyCollection<Claim> claimsWithoutRoomType, ProjectInfo projectInfo)
     {
         PendingRequests = claimsWithoutRoomType.Count;
-
-        PaidCount = claimsWithoutRoomType.Count(claim =>
-        {
-            var balance = claim.CalculateClaimBalance(projectInfo);
-            var status = FinanceExtensions.GetClaimPaymentStatus(balance.TotalFee, balance.FeePaid);
-            return status is ClaimPaymentStatus.Paid or ClaimPaymentStatus.Overpaid;
-        });
+        PaidCount = AccommodationClaimCounters.CountPaid(claimsWithoutRoomType, projectInfo);
         AcceptedNotPaidCount = PendingRequests - PaidCount;
     }
 }
 
-public class RoomTypeListItemViewModel : RoomTypeViewModelBase
+/// <summary>
+/// Подсчёт оплаченных заявок для страницы «Поселение».
+/// </summary>
+/// <remarks>
+/// Баланс считается по EF-графу заявки (<c>FinanceExtensions.CalculateClaimBalance</c>, помечен
+/// <c>[Obsolete]</c>). Замена — расчёт поверх агрегата персонажа (ADR013), как это уже сделано на
+/// странице комнат; до тех пор страница «Поселение» держит EF-сущности.
+/// </remarks>
+internal static class AccommodationClaimCounters
 {
-    [DisplayName("Проживает")]
-    public int Occupied { get; }
-
-    public int PendingRequests { get; }
-
-    public override int RoomsCount { get; }
-
-    public int FullyFreeRoomsCount { get; }
-    public int FullyOccupiedRoomsCount { get; }
-    public int PartialRoomsCount { get; }
-    public int PartialFreeSeats { get; }
-    public int PartialOccupiedSeats { get; }
-
-    public int PaidCount { get; }
-    public int AcceptedNotPaidCount { get; }
-
-    public RoomTypeListItemViewModel(RoomTypeInfoRow row, ICurrentUserAccessor userId, ProjectInfo projectInfo)
-    {
-        var entity = row.RoomType;
-        var project = row.RoomType.Project;
-        if (entity.ProjectId == 0 || entity.Id == 0)
-        {
-            throw new ArgumentException("Entity must be valid object");
-        }
-        Id = entity.Id;
-        Cost = entity.Cost;
-        Name = entity.Name;
-        Capacity = entity.Capacity;
-        IsInfinite = entity.IsInfinite;
-
-        IsPlayerSelectable = entity.IsPlayerSelectable;
-        IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
-        DescriptionHtml = ((MarkdownString?)entity.Description).ToHtmlString().Value;
-        ProjectId = project.ProjectId;
-        CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
-        CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
-
-        Occupied = row.Occupied;
-        RoomsCount = row.RoomsCount;
-        ApprovedClaims = row.ApprovedClaims;
-
-        FreeCapacity = TotalCapacity - Occupied;
-        PendingRequests = ApprovedClaims - Occupied;
-
-        FullyFreeRoomsCount = row.FullyFreeRoomsCount;
-        FullyOccupiedRoomsCount = row.FullyOccupiedRoomsCount;
-        PartialRoomsCount = RoomsCount - FullyFreeRoomsCount - FullyOccupiedRoomsCount;
-        PartialFreeSeats = FreeCapacity - (Capacity * FullyFreeRoomsCount);
-        PartialOccupiedSeats = Occupied - (Capacity * FullyOccupiedRoomsCount);
-
-        var unsettledClaims = entity.Desirous
-            .Where(ar => ar.AccommodationId == null)
-            .SelectMany(ar => ar.Subjects);
-
-        PaidCount = unsettledClaims.Count(claim =>
+    public static int CountPaid(IEnumerable<Claim> claims, ProjectInfo projectInfo)
+        => claims.Count(claim =>
         {
             var balance = claim.CalculateClaimBalance(projectInfo);
             var status = FinanceExtensions.GetClaimPaymentStatus(balance.TotalFee, balance.FeePaid);
             return status is ClaimPaymentStatus.Paid or ClaimPaymentStatus.Overpaid;
         });
-        AcceptedNotPaidCount = PendingRequests - PaidCount;
-    }
-
-    public int ApprovedClaims { get; set; }
-    public int FreeCapacity { get; }
-
-    // Подписи для tooltip-ов над отдельными цифрами формул в разметке (Index.cshtml, _RoomTypeDetails.cshtml)
-    public const string CapacityTooltip = "это вместимость номера";
-    public const string FullyFreeRoomsTooltip = "это кол-во полностью свободных номеров";
-    public const string PartialFreeSeatsTooltip = "количество свободных мест в частично занятых номерах";
-    public const string TotalFreeTooltip = "всего свободных мест в этой категории";
-    public const string FullyOccupiedRoomsTooltip = "это кол-во полностью занятых номеров";
-    public const string PartialOccupiedSeatsTooltip = "количество занятых мест в частично занятых номерах";
-    public const string TotalOccupiedTooltip = "всего занятых мест в этой категории";
-    public const string PaidTooltip = "оплаченных";
-    public const string AcceptedNotPaidTooltip = "принятых, не оплаченных";
-    public const string TotalUnsettledTooltip = "всего";
 }

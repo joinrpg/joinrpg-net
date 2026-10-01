@@ -34,6 +34,18 @@ public interface IClaimsRepository : IDisposable
     Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(ProjectIdentification projectId, ClaimStatusSpec approved);
     Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId);
 
+    /// <summary>
+    /// Заявки проекта, у которых тип проживания выбран, а комната ещё не назначена
+    /// («нерасселённые»), вместе с данными для расчёта баланса.
+    /// </summary>
+    /// <remarks>
+    /// Фильтра по статусу нет намеренно — ровно так же считала страница «Поселение», когда обходила
+    /// <c>ProjectAccommodationType.Desirous</c>: отклонённая заявка выбывает из группы проживания
+    /// сама (<c>ClaimServiceImpl.ConsiderLeavingRoom</c>), так что фильтр ничего бы не изменил, а
+    /// заявке «на удержании» место в номере по-прежнему числится.
+    /// </remarks>
+    Task<IReadOnlyCollection<Claim>> GetUnsettledAccommodationClaims(ProjectIdentification projectId);
+
     Task<IReadOnlyCollection<Claim>> GetClaimsForMoneyTransfersListAsync(int projectId, ClaimStatusSpec claimStatusSpec);
 
     Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);

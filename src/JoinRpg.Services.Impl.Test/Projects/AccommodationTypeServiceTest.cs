@@ -138,7 +138,7 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
         public Task<IReadOnlyCollection<ClaimAccommodationInfoRow>> GetClaimAccommodationReport(int project)
             => throw new NotSupportedException();
 
-        public Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project)
+        public Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(ProjectIdentification projectId)
             => throw new NotSupportedException();
     }
 }
