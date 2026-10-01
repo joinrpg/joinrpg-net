@@ -53,6 +53,7 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                 JsonData = character.JsonData,
                 Description = character.Description,
                 ParentGroups = character.ParentGroupsImpl,
+                PlotElementOrderData = character.PlotElementOrderData,
                 ApprovedClaimId = character.ApprovedClaimId,
                 // Каст к int? превращает обращение к nullable-навигации в LEFT JOIN.
                 OriginalCharacterSlotId = (int?)character.OriginalCharacterSlot!.CharacterId,

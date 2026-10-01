@@ -397,6 +397,7 @@ public class MockedProject
             originalCharacterSlotId: null,
             [.. character.ParentCharacterGroupIds.Select(id => new CharacterGroupIdentification(projectId, id))],
             FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, character.JsonData),
+            character.PlotElementOrderData,
             [.. character.Claims.Select(GetClaimInfo)],
             ClaimIdentification.FromOptional(projectId, character.ApprovedClaimId),
             character.CreatedAt,

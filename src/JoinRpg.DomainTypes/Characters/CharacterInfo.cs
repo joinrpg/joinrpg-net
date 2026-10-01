@@ -56,6 +56,12 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
     /// <summary>Слой значений полей самого персонажа (без слоя заявки).</summary>
     public FieldLayerContainer CharacterFields { get; }
 
+    /// <summary>
+    /// Сохранённый порядок сюжетных элементов персонажа — непрозрачный для домена блоб
+    /// <c>VirtualOrderContainer</c>. <c>null</c>, если порядок никогда не менялся.
+    /// </summary>
+    public string? PlotElementOrderData { get; }
+
     /// <summary>Все заявки на этого персонажа, включая отклонённые.</summary>
     public IReadOnlyCollection<CharacterClaimInfo> Claims { get; }
 
@@ -79,6 +85,7 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
         CharacterIdentification? originalCharacterSlotId,
         IReadOnlyCollection<CharacterGroupIdentification> directGroupIds,
         FieldLayerContainer characterFields,
+        string? plotElementOrderData,
         IReadOnlyCollection<CharacterClaimInfo> claims,
         ClaimIdentification? approvedClaimId,
         DateTime createdAt,
@@ -151,6 +158,7 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
         OriginalCharacterSlotId = originalCharacterSlotId;
         DirectGroupIds = directGroupIds;
         CharacterFields = characterFields;
+        PlotElementOrderData = plotElementOrderData;
         Claims = claims;
         ApprovedClaimId = approvedClaimId;
         ApprovedClaim = approvedClaim;
@@ -177,13 +185,13 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
     public CharacterInfo WithDirectGroups(IReadOnlyCollection<CharacterGroupIdentification> directGroupIds)
         => new(Id, ProjectInfo, CharacterName, CharacterTypeInfo, HidePlayerForCharacter, IsActive,
             InGame, AutoCreated, Description, OriginalCharacterSlotId, directGroupIds, CharacterFields,
-            Claims, ApprovedClaimId, CreatedAt, CreatedById, UpdatedAt, UpdatedById);
+            PlotElementOrderData, Claims, ApprovedClaimId, CreatedAt, CreatedById, UpdatedAt, UpdatedById);
 
     /// <summary>Тот же персонаж с другими настройками типа. См. <see cref="WithDirectGroups"/>.</summary>
     public CharacterInfo WithCharacterTypeInfo(CharacterTypeInfo characterTypeInfo)
         => new(Id, ProjectInfo, CharacterName, characterTypeInfo, HidePlayerForCharacter, IsActive,
             InGame, AutoCreated, Description, OriginalCharacterSlotId, DirectGroupIds, CharacterFields,
-            Claims, ApprovedClaimId, CreatedAt, CreatedById, UpdatedAt, UpdatedById);
+            PlotElementOrderData, Claims, ApprovedClaimId, CreatedAt, CreatedById, UpdatedAt, UpdatedById);
 
     /// <summary>
     /// Инвариант: тип персонажа нельзя менять, пока у него есть активные заявки. Проверяется по
@@ -222,8 +230,8 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
         CharacterIdentification? originalCharacterSlotId = null)
         => new(id, projectInfo, characterName, characterTypeInfo, hidePlayerForCharacter,
             isActive: true, inGame: false, autoCreated, new MarkdownString(""),
-            originalCharacterSlotId, directGroupIds, characterFields, claims: [],
-            approvedClaimId: null, createdAt, createdById, createdAt, createdById);
+            originalCharacterSlotId, directGroupIds, characterFields, plotElementOrderData: null,
+            claims: [], approvedClaimId: null, createdAt, createdById, createdAt, createdById);
 
     public bool IsPublic => CharacterTypeInfo.IsPublic;
 

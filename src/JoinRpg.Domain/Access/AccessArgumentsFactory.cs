@@ -63,6 +63,41 @@ public static class AccessArgumentsFactory
         => Create(character, user.UserIdentificationOrDefault);
 
     /// <summary>
+    /// Права на персонажа поверх агрегата (ADR013) с учётом режима показа.
+    /// См. <see cref="CreateForPrint(CharacterInfo, UserIdentification?)"/> про режим печати.
+    /// </summary>
+    public static AccessArguments Create(CharacterInfo character, ICurrentUserAccessor user, CharacterAccessMode mode)
+        => mode switch
+        {
+            CharacterAccessMode.Usual => Create(character, user),
+            CharacterAccessMode.Print => CreateForPrint(character, user.UserIdentificationOrDefault),
+            _ => throw new NotImplementedException(),
+        };
+
+    /// <summary>
+    /// Для печати мы используем режим показа от имени игрока, даже если у нас есть мастерские права.
+    /// Версия поверх агрегата (ADR013).
+    /// </summary>
+    private static AccessArguments CreateForPrint(CharacterInfo character, UserIdentification? userId)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        var projectInfo = character.ProjectInfo;
+        var masterAccess = projectInfo.HasMasterAccess(userId);
+        var playerIsApprovedClaim = SamePlayerId(userId, character.ApprovedClaim?.PlayerId);
+
+        return new AccessArguments(
+              MasterAccess: false,
+              // Not a "player visible", because it could be master that asks to view as player
+              PlayerAccessToCharacter: playerIsApprovedClaim || masterAccess,
+              PlayerAccesToClaim: character.ApprovedClaim is not null && (playerIsApprovedClaim || masterAccess),
+              EditAllowed: projectInfo.IsActive,
+              Published: projectInfo.PublishPlot,
+              CharacterPublic: character.IsPublic,
+              IsCapitan: false);
+    }
+
+    /// <summary>
     /// Права при сохранении полей: кроме утверждённой заявки самого агрегата учитывается заявка,
     /// в которую идёт сохранение.
     /// </summary>

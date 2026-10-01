@@ -1,25 +1,23 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
 
 namespace JoinRpg.WebPortal.Managers.Plots;
 
-//TODO: Uncouple from DataModel, extract interface
+//TODO: extract interface
 public class CharacterPlotViewService(
-    ICharacterRepository characterRepository,
+    ICharacterInfoRepository characterInfoRepository,
     IPlotRepository plotRepository,
-    ICurrentUserAccessor currentUser,
-    IProjectMetadataRepository projectMetadataRepository
+    ICurrentUserAccessor currentUser
     )
 {
     public async Task<IReadOnlyDictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>>> GetHandoutsForActiveCharacters(ProjectIdentification projectId, PlotVersionFilter version)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var plotInfo = await LoadPlotInfoForActiveCharacters(projectId, CharacterAccessMode.Print, projectInfo);
+        var plotInfo = await LoadPlotInfoForActiveCharacters(projectId, CharacterAccessMode.Print);
 
         var specification = new PlotSpecification(plotInfo.Values.Select(x => x.Targets).UnionAll(), version, PlotElementType.Handout);
 
@@ -38,9 +36,7 @@ public class CharacterPlotViewService(
             return new Dictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>>();
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterIdList.First().ProjectId);
-
-        var plotInfo = await LoadPlotInfoForCharacters(characterIdList, CharacterAccessMode.Print, projectInfo);
+        var plotInfo = await LoadPlotInfoForCharacters(characterIdList, CharacterAccessMode.Print);
 
         var specification = new PlotSpecification(plotInfo.Values.Select(x => x.Targets).UnionAll(), PlotVersionFilter.PublishedVersion, PlotElementType.Handout);
 
@@ -59,8 +55,7 @@ public class CharacterPlotViewService(
         {
             return new Dictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>>();
         }
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterIdList.First().ProjectId);
-        var plotInfo = await LoadPlotInfoForCharacters(characterIdList, characterAccessMode, projectInfo);
+        var plotInfo = await LoadPlotInfoForCharacters(characterIdList, characterAccessMode);
 
         var specification = new PlotSpecification(plotInfo.Values.Select(x => x.Targets).UnionAll(), PlotVersionFilter.PublishedVersion, PlotElementType.RegularPlot);
 
@@ -92,34 +87,33 @@ public class CharacterPlotViewService(
         return dict;
     }
 
-    private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForCharacters(IReadOnlyCollection<CharacterIdentification> characterIdList, CharacterAccessMode characterAccessMode, ProjectInfo projectInfo)
+    private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForCharacters(IReadOnlyCollection<CharacterIdentification> characterIdList, CharacterAccessMode characterAccessMode)
     {
-        //TODO introduce method that loads only required data
-        var characters = await characterRepository.GetCharacters(characterIdList);
+        var characters = await characterInfoRepository.GetCharacterInfos(characterIdList);
 
-        characters = [.. characters.Where(c => AccessArgumentsFactory.Create(c, currentUser, projectInfo, characterAccessMode).CharacterPlotAccess)];
-
-        return characters.ToDictionary(x => x.GetId(), x => new ChPlotInfo(ToTarget(x, projectInfo), x.PlotElementOrderData));
+        return ToPlotInfo(characters, characterAccessMode);
     }
 
-    private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForActiveCharacters(ProjectIdentification projectId, CharacterAccessMode characterAccessMode, ProjectInfo projectInfo)
+    private async Task<Dictionary<CharacterIdentification, ChPlotInfo>> LoadPlotInfoForActiveCharacters(ProjectIdentification projectId, CharacterAccessMode characterAccessMode)
     {
-        //TODO introduce method that loads only required data
-        var characters = await characterRepository.GetAllCharacters(projectId);
+        var characters = await characterInfoRepository.GetAllCharacterInfos(projectId);
 
-        characters = [.. characters.Where(c => AccessArgumentsFactory.Create(c, currentUser, projectInfo, characterAccessMode).CharacterPlotAccess)];
-
-        return characters.ToDictionary(x => x.GetId(), x => new ChPlotInfo(ToTarget(x, projectInfo), x.PlotElementOrderData));
+        return ToPlotInfo(characters, characterAccessMode);
     }
 
-    private record ChPlotInfo(TargetsInfo Targets, string Ordering);
+    private Dictionary<CharacterIdentification, ChPlotInfo> ToPlotInfo(
+        IReadOnlyCollection<CharacterInfo> characters,
+        CharacterAccessMode characterAccessMode)
+        => characters
+            .Where(c => AccessArgumentsFactory.Create(c, currentUser, characterAccessMode).CharacterPlotAccess)
+            .ToDictionary(x => x.Id, x => new ChPlotInfo(ToTarget(x), x.PlotElementOrderData));
 
-    private TargetsInfo ToTarget(Character character, ProjectInfo projectInfo)
-    {
-        return new TargetsInfo(
-        [new(new(character.ProjectId, character.CharacterId), character.CharacterName)],
-            [.. character.GetParentGroupsToTop(projectInfo).Select(x => new GroupTarget(x.Id, x.Name))]);
-    }
+    private record ChPlotInfo(TargetsInfo Targets, string? Ordering);
+
+    private static TargetsInfo ToTarget(CharacterInfo character)
+        => new(
+            [new(character.Id, character.CharacterName)],
+            [.. character.ParentGroupsToTop.Select(x => new GroupTarget(x.Id, x.Name))]);
 
     public async Task<IReadOnlyList<PlotTextDto>> GetPlotsForCharacter(CharacterIdentification characterId)
     {

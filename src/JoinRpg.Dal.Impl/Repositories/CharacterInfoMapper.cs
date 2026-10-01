@@ -34,6 +34,7 @@ internal static class CharacterInfoMapper
             CharacterIdentification.FromOptional(projectId, row.OriginalCharacterSlotId),
             [.. row.ParentGroups._parentCharacterGroupIds.Select(id => new CharacterGroupIdentification(projectId, id))],
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, row.JsonData),
+            row.PlotElementOrderData,
             [.. row.Claims.Select(claim => MapClaim(claim, projectInfo))],
             ClaimIdentification.FromOptional(projectId, row.ApprovedClaimId),
             row.CreatedAt,

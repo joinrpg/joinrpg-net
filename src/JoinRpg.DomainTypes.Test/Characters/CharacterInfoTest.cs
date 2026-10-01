@@ -628,6 +628,7 @@ public class CharacterInfoTest
             originalCharacterSlotId: null,
             directGroupIds ?? [],
             characterFields ?? new FieldLayerContainer(projectInfo, new Dictionary<int, string?>()),
+            plotElementOrderData: null,
             claims ?? [],
             approvedClaimId,
             new DateTime(2024, 1, 1),

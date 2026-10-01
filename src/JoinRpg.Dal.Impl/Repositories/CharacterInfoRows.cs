@@ -26,6 +26,7 @@ internal sealed class CharacterInfoRow
     public required string? JsonData { get; init; }
     public required MarkdownDbValue Description { get; init; }
     public required IntList ParentGroups { get; init; }
+    public required string? PlotElementOrderData { get; init; }
     public required int? ApprovedClaimId { get; init; }
     public required int? OriginalCharacterSlotId { get; init; }
     public required DateTime CreatedAt { get; init; }
