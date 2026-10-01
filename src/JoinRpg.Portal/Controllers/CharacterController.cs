@@ -107,7 +107,7 @@ public class CharacterController(
             await characterService.EditCharacter(
                 new EditCharacterRequest(
                     new CharacterIdentification(viewModel.ProjectId, viewModel.CharacterId),
-                    ParentCharacterGroupIds: CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
+                    ParentCharacterGroupIds: [.. viewModel.ParentCharacterGroupIds],
                     CharacterTypeInfo: viewModel.CharacterTypeInfo,
                     FieldValues: Request.GetFieldsToSetFromPost(projectInfo, FieldValueViewModel.HtmlIdPrefix))
                 );
@@ -169,7 +169,7 @@ public class CharacterController(
             await characterService.AddCharacter(new AddCharacterRequest(
                 ProjectId: new(viewModel.ProjectId),
                 CharacterTypeInfo: viewModel.CharacterTypeInfo,
-                ParentCharacterGroupIds: CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, new ProjectIdentification(viewModel.ProjectId)).ToList(),
+                ParentCharacterGroupIds: [.. viewModel.ParentCharacterGroupIds],
                 FieldValues: Request.GetFieldsToSetFromPost(projectInfo, FieldValueViewModel.HtmlIdPrefix)
             ));
 
@@ -177,8 +177,10 @@ public class CharacterController(
             {
                 if (characterGroupId != null)
                 {
+                    // GET Create принимает номер группы, а не типизированный id — иначе в query
+                    // уедет "charactergroupid=CharacterGroupId(5-10)", не разберётся и подставится корень.
                     return RedirectToAction("Create",
-                        new { viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating });
+                        new { viewModel.ProjectId, characterGroupId = characterGroupId.CharacterGroupId, viewModel.ContinueCreating });
                 }
                 else
                 {
