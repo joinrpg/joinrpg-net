@@ -1,7 +1,7 @@
 
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Subscribe;
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Notifications;
 
@@ -9,7 +9,7 @@ namespace JoinRpg.Services.Impl.Claims;
 
 internal class SubscribeCalculator(
     IUserSubscribeRepository userSubscribeRepository,
-    ICharacterRepository characterRepository,
+    ICharacterInfoRepository characterInfoRepository,
     IClaimsRepository claimsRepository
     )
 {
@@ -27,10 +27,16 @@ internal class SubscribeCalculator(
         AddIfPredicateAndNotAlreadyPresent(claim, SubscriptionReason.SubscribedDirectMaster);
 
         IReadOnlyCollection<CharacterIdentification> characterIds = [.. args.Characters.WhereNotNull()];
-        var characters = await characterRepository.GetCharacters(characterIds);
+
+        // Доменный агрегат, а не EF-сущность: дерево групп персонажа он уже знает
+        // (ParentGroupIdsToTop), поэтому расчёту подписок не нужны ни JoinRpg.DataModel, ни
+        // GetParentGroupIdsToTop. Экземпляр ProjectInfo внутри CharacterInfo может оказаться не тем,
+        // что передан в метод, и это неважно: отсюда читается только дерево групп, одинаковое у
+        // любого снимка метаданных того же проекта.
+        var characters = await characterInfoRepository.GetCharacterInfos(characterIds);
 
         var character = await userSubscribeRepository.GetForCharAndGroups(
-            [.. characters.SelectMany(x => x.GetParentGroupIdsToTop(projectInfo)).Distinct()],
+            [.. characters.SelectMany(x => x.ParentGroupIdsToTop).Distinct()],
             characterIds);
         AddIfPredicateAndNotAlreadyPresent(character, SubscriptionReason.SubscribedMaster);
 
