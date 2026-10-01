@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Interfaces.Notifications;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,20 @@ public class NotificationEntityLinkRendererTests(IntegrationTestPortalFactory fa
         link.ShouldNotBeNull();
         link.Markdown.Value.ShouldStartWith("Подробнее: [проект](http");
         link.PlainText.ShouldStartWith("Подробнее: проект: http");
+    }
+
+    [Fact]
+    public void RendersLinkForAccommodationRoom()
+    {
+        using var scope = factory.Services.CreateScope();
+        var renderer = Resolve(scope);
+
+        // Отдельной страницы комнаты нет, поэтому ссылка ведёт на список комнат проекта.
+        var link = renderer.RenderEntityLink(new AccommodationRoomIdentification(new ProjectIdentification(1), 7));
+
+        link.ShouldNotBeNull();
+        link.Markdown.Value.ShouldStartWith("Подробнее: [комнаты](http");
+        link.PlainText.ShouldStartWith("Подробнее: комнаты: http");
     }
 
     [Fact]
