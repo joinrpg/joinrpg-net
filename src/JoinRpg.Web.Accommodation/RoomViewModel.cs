@@ -1,5 +1,4 @@
 using JoinRpg.DomainTypes.Accommodation;
-using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Web.Models.Accommodation;
 
