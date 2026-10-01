@@ -106,24 +106,14 @@ public static class TestUserProjectHelpers
         bool followsRedirects = true)
     {
         // Получить страницу входа для antiforgery токена
-        var loginGetResponse = await client.GetAsync("account/login");
-        loginGetResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-        var loginDoc = await loginGetResponse.AsHtmlDocument();
-        var antiforgeryToken = loginDoc.DocumentNode
-            .SelectSingleNode("//input[@name='__RequestVerificationToken']")?
-            .GetAttributeValue("value", "")
-            ?? throw new InvalidOperationException("Antiforgery token not found");
+        var antiforgeryToken = await client.GetAntiforgeryTokenAsync("account/login");
 
         // Выполнить вход
-        var loginPostResponse = await client.PostAsync("account/login",
-            new FormUrlEncodedContent(
-                new[]
-                {
-                    new KeyValuePair<string?, string?>("Email", email),
-                    new KeyValuePair<string?, string?>("Password", password),
-                    new KeyValuePair<string?, string?>("__RequestVerificationToken", antiforgeryToken),
-                }));
+        var loginPostResponse = await client.PostFormAsync(
+            "account/login",
+            antiforgeryToken,
+            ("Email", email),
+            ("Password", password));
 
         // Вход должен быть успешным
         if (followsRedirects)

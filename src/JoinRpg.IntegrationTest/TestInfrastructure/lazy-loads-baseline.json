@@ -40,5 +40,10 @@
   "GET /{projectId}/rooms": 6,
   "GET /{projectId}/rooms/report": 2,
   "GET /{projectId}/rooms/{roomTypeId}/details": 12,
-  "POST /x-game-api/{projectId}/characters": 1
+  "POST /error/{HttpStatusCode:int?}": 1,
+  "POST /x-game-api/{projectId}/characters": 1,
+  "POST /{projectId}/rooms/UnOccupyAll": 9,
+  "POST /{projectId}/rooms/UnOccupyRoomsByType": 9,
+  "POST /{projectId}/rooms/occupyroom": 13,
+  "POST /{projectId}/rooms/unoccupyroom": 13
 }

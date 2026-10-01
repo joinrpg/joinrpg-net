@@ -7,4 +7,8 @@ namespace JoinRpg.IntegrationTest.TestInfrastructure;
 /// Активна ли заявка. Отложенная заявка видна на странице типа поселения, но в отчёт по расселению
 /// не попадает: <c>ClaimStatusSpec.Active</c> исключает <c>OnHold</c>.
 /// </param>
-public sealed record SmokeResident(string DisplayName, string Phone, bool ClaimIsActive);
+/// <param name="IsPlaced">
+/// Расселён ли жилец в комнату. Часть заявок сида остаётся нерасселённой — по этому флагу сценарии
+/// знают, какое число должны показать счётчики занятости, не повторяя правило сида.
+/// </param>
+public sealed record SmokeResident(string DisplayName, string Phone, bool ClaimIsActive, bool IsPlaced);

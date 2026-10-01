@@ -54,6 +54,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     /// <summary>Названия комнат, созданных у <see cref="RoomTypeId"/>.</summary>
     public IReadOnlyList<string> RoomNames => SeededRoomNames;
 
+    /// <summary>Вместимость одной комнаты типа <see cref="RoomTypeId"/>.</summary>
+    public int RoomCapacity => SeededRoomCapacity;
+
     /// <summary>
     /// Жильцы типа поселения: отображаемое имя и телефон игрока.
     /// </summary>
@@ -77,7 +80,8 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
 
         var seeded = await SeedProjectContentAsync(ownerId, projectId);
         var players = await SeedClaimsAsync(ownerId, projectId, seeded.Characters);
-        await SeedAccommodationRequestsAsync(ownerId, projectId, seeded, players.AllClaims);
+        var placedResidentCount = await SeedAccommodationRequestsAsync(
+            ownerId, projectId, seeded, players.AllClaims);
 
         MasterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
             Factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
@@ -92,7 +96,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             HttpStatusCode.OK,
             "Мастерская страница не открылась — значит клиент смоука не аутентифицирован");
 
-        RegisterValues(projectId, ownerId, secondMasterId, seeded, players);
+        RegisterValues(projectId, ownerId, secondMasterId, seeded, players, placedResidentCount);
     }
 
     public async Task DisposeAsync()
@@ -106,18 +110,23 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         UserIdentification ownerId,
         UserIdentification secondMasterId,
         SeededContent seeded,
-        SeededClaims players)
+        SeededClaims players,
+        int placedResidentCount)
     {
         var mainCharacter = seeded.Characters[0];
 
         ProjectId = projectId;
         RoomTypeId = seeded.RoomTypeId;
+
+        // Заявки на проживание создавались в том же порядке, что и игроки, а расселялись первые
+        // placedResidentCount из них — отсюда и флаг расселённости.
         Residents =
         [
-            .. players.PlayerIds.Select(id => new SmokeResident(
+            .. players.PlayerIds.Select((id, index) => new SmokeResident(
                 DisplayNameFor(id),
                 PhoneNumberFor(id),
-                ClaimIsActive: id != players.OnHoldPlayerId)),
+                ClaimIsActive: id != players.OnHoldPlayerId,
+                IsPlaced: index < placedResidentCount)),
         ];
 
         _ = Values
@@ -360,6 +369,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     /// <summary>Названия комнат сида — их же ждёт на странице сценарий расселения.</summary>
     private static readonly string[] SeededRoomNames = ["1", "2"];
 
+    /// <summary>Вместимость комнаты сида — из неё сценарии считают ожидаемые счётчики занятости.</summary>
+    private const int SeededRoomCapacity = 4;
+
     /// <summary>
     /// Тип проживания с парой комнат: тип — настройка проекта (ADR015), комнаты — нет.
     /// </summary>
@@ -371,7 +383,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 "Смоук-палатка",
                 new MarkdownString("Палатка для смоука"),
                 Cost: 100,
-                Capacity: 4,
+                Capacity: SeededRoomCapacity,
                 IsPlayerSelectable: true));
 
         // Комнаты добавляются в категорию, а не в тип проживания; категорию по типу знают
@@ -395,7 +407,8 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     /// хотя на проде это самый дорогой маршрут суток. Поэтому заявки на проживание есть у всех
     /// заявок сида, а не у одной: на одном жильце N+1 не отличить от одиночного запроса.
     /// </remarks>
-    private Task SeedAccommodationRequestsAsync(
+    /// <returns>Сколько заявок на проживание расселено по комнатам.</returns>
+    private Task<int> SeedAccommodationRequestsAsync(
         UserIdentification ownerId,
         ProjectIdentification projectId,
         SeededContent seeded,
@@ -420,9 +433,12 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
 
             // Часть жильцов расселена, часть — нет: страница показывает и комнаты с жильцами,
             // и список нерасселённых, а в отчёте по расселению встречаются обе строки.
+            var placed = requestIds.SkipLast(1).ToList();
             await sp.GetRequiredService<IAccommodationService>().OccupyRoom(
                 new AccommodationRoomIdentification(projectId, roomId),
-                [.. requestIds.SkipLast(1).Select(id => new AccommodationRequestIdentification(projectId, id))]);
+                [.. placed.Select(id => new AccommodationRequestIdentification(projectId, id))]);
+
+            return placed.Count;
         });
 
     private static async Task<int> SeedSubscriptionAsync(
