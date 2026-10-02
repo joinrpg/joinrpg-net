@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain;
@@ -52,6 +53,17 @@ public static class ResponsibleMasterExtensions
             character.ApprovedClaim?.ResponsibleMasterUser
             ?? character.SelectResponsibleMaster()
             ?? character.Project.GetDefaultResponsibleMaster();
+    }
+
+    /// <summary>
+    /// Ответственный мастер персонажа по доменному агрегату (ADR013). Само правило выбора живёт
+    /// в <see cref="CharacterInfo.ResponsibleMasterId"/>, здесь только разворот id в мастера.
+    /// </summary>
+    public static ProjectMasterInfo GetResponsibleMaster(this CharacterInfo character)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        return character.ProjectInfo.GetMasterById(character.ResponsibleMasterId);
     }
 
     public static ProjectMasterInfo GetResponsibleMaster(this Character character, ProjectInfo projectInfo)

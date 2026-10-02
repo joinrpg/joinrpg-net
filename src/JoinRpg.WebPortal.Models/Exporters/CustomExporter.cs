@@ -131,14 +131,83 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
             ]);
     }
 
+    /// <summary>
+    /// Те же колонки, что и версия для EF-сущности, но поверх доменного <see cref="UserInfo"/>.
+    /// </summary>
+    /// <remarks>
+    /// Колонки собираются вручную, а не через <c>ComplexElementMemberColumn</c>: части имени
+    /// и контакты в <see cref="UserInfo"/> — опциональные value-типы, а дерево выражений не
+    /// допускает в себе <c>?.</c>. Заголовки (включая легаси-сегмент <c>.Extra.</c>) оставлены
+    /// ровно теми же, что были у версии для сущности: мастера выгружают эти таблицы годами и
+    /// разбирают их по именам колонок.
+    /// </remarks>
+    [Pure]
+    protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, UserInfo?>> func, ProjectInfo projectInfo)
+    {
+        if (projectInfo.ProjectStatus == ProjectLifecycleStatus.Archived)
+        {
+            return [ShortUserColumn(func)];
+        }
+
+        var prefix = CombineName(func.AsPropertyAccess());
+        var getter = func.Compile();
+
+        return
+        [
+            new TableColumn<string>(prefix, row => getter(row)?.DisplayName.DisplayName),
+            new TableColumn<string>($"{prefix}.SurName", row => getter(row)?.UserFullName.SurName?.Value),
+            new TableColumn<string>($"{prefix}.FatherName", row => getter(row)?.UserFullName.FatherName?.Value),
+            new TableColumn<string>($"{prefix}.BornName", row => getter(row)?.UserFullName.BornName?.Value),
+            new TableColumn<string>($"{prefix}.Email", row => getter(row)?.Email.Value),
+            new TableColumn<Uri>("ВК", row => getter(row)?.Social.Vk?.Link),
+            new TableColumn<Uri>("Телеграм", row => getter(row)?.Social.Telegram?.Link),
+            new TableColumn<string>($"{prefix}.Extra.Livejournal", row => getter(row)?.Social.LiveJournal?.Value),
+            new TableColumn<string>($"{prefix}.Extra.PhoneNumber", row => getter(row)?.PhoneNumber),
+        ];
+    }
+
     [Pure]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, User?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
+
+    /// <summary>
+    /// Та же колонка, что и версия для EF-сущности, но поверх <see cref="ProjectMasterInfo"/>.
+    /// </summary>
+    /// <remarks>
+    /// Собирается руками, а не через <c>ComplexElementMemberColumn</c>, именно из-за заголовка.
+    /// У версии для сущности вложенное выражение — вызов метода (<c>u => u.GetDisplayName()</c>),
+    /// который <c>AsPropertyAccess</c> не распознаёт, поэтому заголовок остаётся одним префиксом
+    /// («Ответственный»). Здесь отображаемое имя достаётся обращением к свойству, и тот же путь
+    /// дописал бы к заголовку «.DisplayName» — а заголовки выгрузок менять нельзя, мастера
+    /// разбирают таблицы по именам колонок.
+    /// </remarks>
+    [Pure]
+    protected ITableColumn ShortUserColumn(Expression<Func<TRow, ProjectMasterInfo?>> func, string? name = null)
+    {
+        name ??= CombineName(func.AsPropertyAccess());
+        var getter = func.Compile();
+        return new TableColumn<string>(name, row => getter(row)?.Name.DisplayName);
+    }
 
     [Pure]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserLinkViewModel?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.DisplayName, name);
 
+    /// <summary>
+    /// Та же колонка, что и версия для EF-сущности, но поверх <see cref="UserInfo"/>.
+    /// </summary>
+    /// <remarks>
+    /// Собирается руками по той же причине, что и версия для <see cref="ProjectMasterInfo"/>:
+    /// через <c>ComplexElementMemberColumn</c> заголовок по умолчанию получал бы хвост
+    /// «.DisplayName», которого не было у версии для сущности — там имя достаётся вызовом метода,
+    /// а <c>AsPropertyAccess</c> вызовы не распознаёт. Видно это на архивном проекте: от игрока
+    /// там остаётся ровно эта колонка.
+    /// </remarks>
     [Pure]
-    protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserInfo?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.DisplayName.DisplayName, name);
+    protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserInfo?>> func, string? name = null)
+    {
+        name ??= CombineName(func.AsPropertyAccess());
+        var getter = func.Compile();
+        return new TableColumn<string>(name, row => getter(row)?.DisplayName.DisplayName);
+    }
 
     [Pure]
     protected ITableColumn VkColumn(Expression<Func<TRow, User?>> func) => new TableColumn<Uri>("ВК", user => UserSocialLink.GetVKUri(func.Compile()(user)?.Extra?.Vk)?.Uri);

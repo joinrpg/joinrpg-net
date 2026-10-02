@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
@@ -11,12 +10,13 @@ using JoinRpg.Web.ProjectCommon;
 namespace JoinRpg.Web.Models.Characters;
 
 public class CharacterListByGroupViewModel(UserIdentification currentUserId,
-    IReadOnlyCollection<Character> characters,
+    IReadOnlyCollection<CharacterInfo> characters,
+    IReadOnlyDictionary<UserIdentification, UserInfo> players,
     CharacterGroupFullInfo group,
     ProjectInfo projectInfo,
-    IProblemValidator<Character> problemValidator) :
+    ICharacterProblemValidator problemValidator) :
 
-    CharacterListViewModel(currentUserId, $"Персонажи — {group.Name}", characters, projectInfo, problemValidator), IOperationsAwareView
+    CharacterListViewModel(currentUserId, $"Персонажи — {group.Name}", characters, players, projectInfo, problemValidator), IOperationsAwareView
 {
     public CharacterGroupDetailsViewModel GroupModel { get; } =
             new CharacterGroupDetailsViewModel(group,
@@ -29,21 +29,27 @@ public class CharacterListByGroupViewModel(UserIdentification currentUserId,
     string? IOperationsAwareView.InlineTitle => null;
 }
 
+/// <param name="players">
+/// Игроки утверждённых заявок, загруженные пачкой. Агрегат персонажа несёт только id игрока
+/// (ADR013), а грузить профили по одному — это N+1 запрос на каждой странице списка.
+/// </param>
 public class CharacterListViewModel(
     UserIdentification currentUserId,
     string title,
-    IReadOnlyCollection<Character> characters,
+    IReadOnlyCollection<CharacterInfo> characters,
+    IReadOnlyDictionary<UserIdentification, UserInfo> players,
     ProjectInfo projectInfo,
-    IProblemValidator<Character> problemValidator) : IOperationsAwareView
+    ICharacterProblemValidator problemValidator) : IOperationsAwareView
 {
     public IEnumerable<CharacterListItemViewModel> Items { get; } = characters.Select(
             character =>
                 new CharacterListItemViewModel(character,
                     currentUserId,
+                    players,
                     projectInfo, problemValidator)).ToArray();
     public int? ProjectId { get; } = projectInfo.ProjectId.Value;
-    public IReadOnlyCollection<ClaimIdentification> ClaimIds { get; } = characters.Select(c => c.ApprovedClaim?.GetId()).WhereNotNull().ToArray();
-    public IReadOnlyCollection<CharacterIdentification> CharacterIds { get; } = characters.Select(c => c.GetId()).ToArray();
+    public IReadOnlyCollection<ClaimIdentification> ClaimIds { get; } = characters.Select(c => c.ApprovedClaimId).WhereNotNull().ToArray();
+    public IReadOnlyCollection<CharacterIdentification> CharacterIds { get; } = characters.Select(c => c.Id).ToArray();
     public string ProjectName { get; } = projectInfo.ProjectName;
     public string Title { get; } = title;
 
@@ -74,45 +80,43 @@ public class CharacterListItemViewModel : ILinkable
     public int? ApprovedClaimId { get; }
 
     [Display(Name = "Игрок")]
-    public User? Player { get; set; }
+    public UserInfo? Player { get; set; }
 
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel Groups { get; }
 
     [Display(Name = "Ответственный мастер")]
-    public User Responsible { get; }
+    public ProjectMasterInfo Responsible { get; }
 
     public CharacterListItemViewModel(
-        Character character,
-        int currentUserId,
+        CharacterInfo character,
+        UserIdentification currentUserId,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players,
         ProjectInfo projectInfo,
-        IProblemValidator<Character> problemValidator)
+        ICharacterProblemValidator problemValidator)
     {
-        if (character == null)
-        {
-            throw new ArgumentNullException(nameof(character));
-        }
+        ArgumentNullException.ThrowIfNull(character);
+        ArgumentNullException.ThrowIfNull(players);
 
         BusyStatus = character.GetBusyStatus();
 
-        if (character.ApprovedClaim != null)
+        if (character.ApprovedClaim is { } approvedClaim)
         {
-            ApprovedClaimId = character.ApprovedClaim.ClaimId;
-            Player = character.ApprovedClaim.Player;
+            ApprovedClaimId = approvedClaim.ClaimId.ClaimId;
+            Player = players.GetValueOrDefault(approvedClaim.PlayerId);
         }
         else if (character.CharacterType == CharacterType.Slot)
         {
-            SlotCount = character.CharacterSlotLimit;
+            SlotCount = character.CharacterTypeInfo.SlotLimit;
         }
 
         Name = character.CharacterName;
-        CharacterId = character.CharacterId;
-        ProjectId = character.ProjectId;
-        Fields = character.GetFields(projectInfo);
-        Problems = problemValidator.Validate(character, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
+        CharacterId = character.Id.CharacterId;
+        ProjectId = character.Id.ProjectId.Value;
+        Fields = character.GetAllFields();
+        Problems = problemValidator.Validate(character).Select(p => new ProblemViewModel(p)).ToList();
 
-        Groups = new CharacterParentGroupsViewModel(character,
-            projectInfo.HasMasterAccess(new UserIdentification(currentUserId)), projectInfo);
+        Groups = new CharacterParentGroupsViewModel(character, projectInfo.HasMasterAccess(currentUserId));
 
         Responsible = character.GetResponsibleMaster();
     }
