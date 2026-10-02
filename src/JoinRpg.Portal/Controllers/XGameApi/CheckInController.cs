@@ -17,8 +17,7 @@ public class CheckInController(
     IClaimService claimsService,
     IClaimProblemValidator claimValidator,
     ICharacterInfoRepository characterInfoRepository,
-    IUserRepository userRepository,
-    IProjectMetadataRepository projectMetadataRepository) : XGameApiController
+    IUserRepository userRepository) : XGameApiController
 {
 
     /// <summary>

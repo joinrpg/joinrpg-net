@@ -157,4 +157,64 @@ public class ClaimContactsMissingFilterTest
         problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
         problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingRegistrationAddress);
     }
+
+    /// <summary>
+    /// Переход на UserProfileProblemsCalculator изменил смысл «ВК заполнен»: теперь это
+    /// привязка ExternalLogin плюс флаг верификации, а не флаг рядом с легаси-строкой.
+    /// </summary>
+    /// <remarks>
+    /// У игрока, которому ВК привязали до перехода на нынешний стек авторизации, в профиле есть
+    /// UserExtra.Vk и VkVerified, но записи в UserExternalLogins нет — и проблема теперь
+    /// появляется там, где её не было. Это осознанная цена согласованности: правила подачи
+    /// заявки (ClaimValidator.ValidateContacts) считали ВК ровно так уже до этого коммита, то
+    /// есть «нельзя подать заявку: нет ВК» и «в заявке проблема: нет ВК» расходились.
+    /// </remarks>
+    [Fact]
+    public void VkontakteFromLegacyFieldOnlyIsNotVerified()
+    {
+        var projectInfo = WithRequirement(s => s with { RequireVkontakte = MandatoryStatus.Required });
+        var player = WithSocial(vk: VkSocialLink.FromUserData(externalLoginKey: null, legacyVk: "durov", vkVerified: true));
+
+        Filter.GetProblems(MakeContext(projectInfo, player: player))
+            .ShouldContain(p => p.ProblemType == ClaimProblemType.MissingVkontakte);
+    }
+
+    [Fact]
+    public void VkontakteWithExternalLoginIsVerified()
+    {
+        var projectInfo = WithRequirement(s => s with { RequireVkontakte = MandatoryStatus.Required });
+        var player = WithSocial(vk: VkSocialLink.FromUserData(externalLoginKey: "1", legacyVk: null, vkVerified: true));
+
+        Filter.GetProblems(MakeContext(projectInfo, player: player))
+            .ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingVkontakte);
+    }
+
+    /// <summary>
+    /// Зеркальная сторона того же перехода: привязанный телеграм без @username раньше считался
+    /// незаполненным, потому что легаси-поле UserExtra.Telegram оставалось пустым.
+    /// </summary>
+    [Fact]
+    public void TelegramWithExternalLoginButWithoutUserNameIsFilled()
+    {
+        var projectInfo = WithRequirement(s => s with { RequireTelegram = MandatoryStatus.Required });
+        var player = WithSocial(telegram: TelegramSocialLink.FromUserData(externalLoginKey: "123", prettyName: null));
+
+        Filter.GetProblems(MakeContext(projectInfo, player: player))
+            .ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingTelegram);
+    }
+
+    [Fact]
+    public void TelegramMissingWhenNothingLinked()
+    {
+        var projectInfo = WithRequirement(s => s with { RequireTelegram = MandatoryStatus.Required });
+
+        Filter.GetProblems(MakeContext(projectInfo))
+            .ShouldContain(p => p.ProblemType == ClaimProblemType.MissingTelegram);
+    }
+
+    private UserInfo WithSocial(TelegramSocialLink? telegram = null, VkSocialLink? vk = null)
+        => Mock.PlayerInfo with
+        {
+            Social = Mock.PlayerInfo.Social with { Telegram = telegram, Vk = vk },
+        };
 }
