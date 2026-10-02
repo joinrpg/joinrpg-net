@@ -5,5 +5,5 @@ namespace JoinRpg.Web.Models.CharacterGroups;
 public class AddCharacterGroupViewModel : CharacterGroupViewModelBase
 {
     [CannotBeEmpty, DisplayName("Является частью групп")]
-    public int[] ParentCharacterGroupIdInts { get; set; } = [];
+    public CharacterGroupIdentification[] ParentCharacterGroupIds { get; set; } = [];
 }
