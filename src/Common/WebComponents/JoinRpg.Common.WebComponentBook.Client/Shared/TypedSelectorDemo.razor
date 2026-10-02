@@ -1,0 +1,18 @@
+<h3>TypedSelectorDemo</h3>
+
+<TypedSelector TKey="int" TItem="Variant"
+               Name="int"
+               Items="@variants"
+               KeySelector="@(v => v.Id)"
+               ToListItem="@(v => TypedSelectList.CreateItem(Value: v.Id, Text: v.Name))"
+               @bind-SelectedValues="@Selected"
+               Multiple="true"
+               />
+
+@code {
+  private sealed record Variant(int Id, string Name);
+
+  private readonly Variant[] variants = [new(1, "Test"), new(2, "Maybe")];
+
+  private int[] Selected { get; set; } = [1, 2];
+}
