@@ -122,11 +122,7 @@ public record class CharacterClaimInfo(
     DateTimeOffset? LastPlayerCommentAt,
     DateTimeOffset? LastMasterCommentAt,
     DateTimeOffset? LastVisibleMasterCommentAt,
-    int? CurrentFee,
-    bool PreferentialFeeUser,
-    int FeePaid,
-    bool FinanceOperationsRequireModeration,
-    int AccommodationFee,
+    ClaimFinanceInfo Finance,
     bool PlayerAllowedSensitiveData,
     FieldLayerContainer Fields)
 {
@@ -143,12 +139,19 @@ public record class CharacterClaimInfo(
   Это не «полные данные о комментариях»: сущностей `Comment` / `CommentDiscussion` здесь нет.
   `LastMasterCommentAt` (невидимый игроку) и `LastVisibleMasterCommentAt` различаются, а выбор между
   ними делается по `AccessArguments` снаружи — поэтому нужны оба.
-- **`CurrentFee`, `PreferentialFeeUser`, `FeePaid`, `AccommodationFee`, `Fields`** — полный вход
-  `FinanceExtensions.CalculateClaimBalance` без обращения к EF. Список `FinanceOperation` не тащим:
-  нужна только сумма approved-операций, ровно как это уже делает `UgClaim.FeePaid`.
-  К этому же блоку добавился **`FinanceOperationsRequireModeration`** — производный скаляр «есть
-  операции, ждущие решения мастера», единственное, что нужно проблеме
-  `FinanceModerationRequired`. Сам список `FinanceOperation` по-прежнему в агрегат не входит.
+- **`Finance` (`ClaimFinanceInfo`)** — финансовые факты заявки одной группой:
+  `FixedFee` (колонка `Claims.CurrentFee` — зафиксированный для заявки базовый взнос),
+  `PreferentialFeeUser`, `FeePaid`, `AccommodationFee`, `OperationsRequireModeration`. Вместе
+  с `Fields` это полный вход расчёта баланса без обращения к EF. Список `FinanceOperation` не
+  тащим: нужна только сумма approved-операций (ровно как это уже делает `UgClaim.FeePaid`) и
+  производный скаляр «есть операции, ждущие решения мастера» — единственное, что нужно проблеме
+  `FinanceModerationRequired`.
+  Сам расчёт живёт на этой же группе: `ClaimFinanceInfo.CalculateBalance(fieldsFee, projectInfo,
+  operationDate)` возвращает `ClaimBalance`, а `ClaimBalanceExtensions.CalculateClaimBalance`
+  поверх агрегата только подставляет взнос за поля. `ClaimBalance` с `ClaimFinanceInfo` не
+  объединяется: это результат расчёта, зависящий от даты, метаданных проекта и слоя полей, —
+  маппер его заполнить не может, а зафиксировать «баланс на момент загрузки» в кешируемом на
+  запрос агрегате нельзя, потому что базовый взнос берётся из расписания на дату.
   Правило «ждёт модерации» в SQL считается копией предиката
   (`FinancePredicates.RequireModeration`), потому что вычисляемое свойство
   `FinanceOperation.RequireModeration` EF6 не переводит; за совпадением копии с оригиналом следит
@@ -215,7 +218,7 @@ XML-doc типа.
 |---|---|
 | `CommentDiscussion`, `Comment[]` | отдельный агрегат; в `CharacterClaimInfo` есть только три скаляра «когда был последний комментарий» |
 | Сюжеты (`PlotElement`, `PlotElementOrderData`) | отдельный агрегат, есть `CharacterPlotViewService` и `PlotAccessArguments` |
-| `FinanceOperation[]`, `RecurrentPayment[]` | нужны только сумма `FeePaid` и факт «есть операции, ждущие модерации» (`FinanceOperationsRequireModeration`) |
+| `FinanceOperation[]`, `RecurrentPayment[]` | нужны только сумма `FeePaid` и факт «есть операции, ждущие модерации» — оба лежат в `ClaimFinanceInfo` |
 | `AccommodationRequest` целиком | нужна только `Cost` |
 | `UserSubscription[]` | своя ручка `IUserSubscribeRepository` |
 | Контакты, аватар и соцсети игрока (`UserExtra`, `ExternalLogins`) | только `UserInfoHeader` — id и отображаемое имя (см. уточнение ниже). Остальной профиль меняется независимо от персонажа, а его включение раздуло бы агрегат — см. ADR011, где контакты составляют заметную долю payload сетки. Отображение — bulk через `IUserRepository.GetUserInfoHeaders(ids)` |
@@ -294,7 +297,7 @@ public interface ICharacterInfoRepository
 | `AccessArgumentsFactory.Create(UgDto, …)` | `ApprovedClaim?.PlayerId`, `IsPublic` | нет |
 | `BusyStatusExtensions.GetBusyStatus` ×3 | `CharacterTypeInfo`, `ApprovedClaimId is not null`, `HasActiveClaims` | нет |
 | `UnifiedGrid/ItemBuilder` | `PlayerId`, `Status` / `DenialStatus`, `CreateDate`, `CheckInDate`, `ResponsibleMasterId`, финансы, `Last*CommentAt` ×3, `Player` | нет |
-| `FinanceExtensions.CalculateClaimBalance` | `FeePaid`, `CurrentFee`, `PreferentialFeeUser`, `Fields`, `AccommodationFee`, `ProjectInfo.ProjectFinanceSettings` | **была дырка**: расписание взносов в `ProjectFinanceSettings` отсутствовало, добавлено (см. «Статус»). Попутно уходит мутирующий кеш `Claim.FieldsFee` |
+| `FinanceExtensions.CalculateClaimBalance` | `Finance` (`ClaimFinanceInfo`), `Fields`, `ProjectInfo.ProjectFinanceSettings` | **была дырка**: расписание взносов в `ProjectFinanceSettings` отсутствовало, добавлено (см. «Статус»). Попутно уходит мутирующий кеш `Claim.FieldsFee` |
 | `CharacterView` | `Id`, `UpdatedAt`, `IsActive`, `IsPublic`, `InGame`, `CharacterTypeInfo`, `ApprovedClaim`, `Claims`, `DirectGroups`, `CharacterFields`, `CharacterName`, `Description` | `GroupHeader.ParentGroupIds` — уже в `ProjectInfo.Groups` |
 | `ProjectRoleGridViewModelBuilder` | всё выше + `HidePlayerForCharacter`, `ActiveClaimsCount`, `IntrestingGroupsForDisplay`, `GetFieldLayers` | контакты игрока — bulk (это улучшает ADR011) |
 | `CharacterListItemViewModel` | то же + `ResponsibleMasterId`, `ParentGroupsToTop` | `User` → `UserInfoHeader` bulk |

@@ -67,11 +67,12 @@ internal static class CharacterInfoMapper
             row.LastPlayerCommentAt,
             row.LastMasterCommentAt,
             row.LastVisibleMasterCommentAt,
-            row.CurrentFee,
-            row.PreferentialFeeUser,
-            row.FeePaid ?? 0,
-            row.FinanceOperationsRequireModeration,
-            row.AccommodationFee ?? 0,
+            new ClaimFinanceInfo(
+                row.CurrentFee,
+                row.PreferentialFeeUser,
+                row.FeePaid ?? 0,
+                row.AccommodationFee ?? 0,
+                row.FinanceOperationsRequireModeration),
             row.PlayerAllowedSensitiveData,
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, row.JsonData));
 }

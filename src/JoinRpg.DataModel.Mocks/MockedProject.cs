@@ -7,6 +7,7 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.DomainTypes.Users;
@@ -424,11 +425,12 @@ public class MockedProject
             claim.LastPlayerCommentAt,
             claim.LastMasterCommentAt,
             claim.LastVisibleMasterCommentAt,
-            claim.CurrentFee,
-            claim.PreferentialFeeUser,
-            FeePaid: 0,
-            FinanceOperationsRequireModeration: claim.FinanceOperations.Any(fo => fo.RequireModeration),
-            AccommodationFee: 0,
+            new ClaimFinanceInfo(
+                FixedFee: claim.CurrentFee,
+                PreferentialFeeUser: claim.PreferentialFeeUser,
+                FeePaid: 0,
+                AccommodationFee: 0,
+                OperationsRequireModeration: claim.FinanceOperations.Any(fo => fo.RequireModeration)),
             PlayerAllowedSensitiveData: claim.PlayerAllowedSenstiveData,
             FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, claim.JsonData));
 

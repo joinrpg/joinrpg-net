@@ -4,6 +4,7 @@ using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 namespace JoinRpg.Domain.Test.Access;
 
@@ -163,11 +164,12 @@ public class AccessArgumentsFactoryTest
             LastPlayerCommentAt: null,
             LastMasterCommentAt: null,
             LastVisibleMasterCommentAt: null,
-            CurrentFee: null,
-            PreferentialFeeUser: false,
-            FeePaid: 0,
-            FinanceOperationsRequireModeration: false,
-            AccommodationFee: 0,
+            Finance: new ClaimFinanceInfo(
+                FixedFee: null,
+                PreferentialFeeUser: false,
+                FeePaid: 0,
+                AccommodationFee: 0,
+                OperationsRequireModeration: false),
             PlayerAllowedSensitiveData: false,
             Fields: FieldLayerContainer.Empty(Mock.ProjectInfo));
 
