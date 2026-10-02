@@ -2,6 +2,7 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Plot;
@@ -26,6 +27,7 @@ public class PrintCharacterViewModel
     public PrintCharacterViewModel
       (ICurrentUserAccessor currentUser,
        Character character,
+       CharacterInfo characterInfo,
        IReadOnlyCollection<PlotTextDto> plots,
        ProjectInfo projectInfo,
        IReadOnlyCollection<PlotTextDto> handouts,
@@ -41,7 +43,7 @@ public class PrintCharacterViewModel
 
         var plotElements = plots;
         HasUnready = !plotElements.All(x => x.Completed) || !handouts.All(x => x.Completed);
-        Plots = new PlotDisplayViewModel(plotElements, currentUser, character, linkRenderer, projectInfo);
+        Plots = new PlotDisplayViewModel(plotElements, currentUser, characterInfo, linkRenderer);
 
         Handouts = [.. handouts.Select(e => new HandoutListItemViewModel(e))];
 
