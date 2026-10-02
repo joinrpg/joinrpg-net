@@ -1,6 +1,7 @@
 using System.Net;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Web.Models.Accommodation;
+using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 
@@ -19,6 +20,50 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 [Collection(SmokeCollection.Name)]
 public class AccommodationRoomTypeListScenario(SmokeProjectFixture fixture)
 {
+    /// <summary>
+    /// Описание типа проживания должно выводиться как разметка, а не как экранированный текст.
+    /// </summary>
+    /// <remarks>
+    /// Описание лежит в <c>RoomTypeViewModelBase.DescriptionView</c> типа <see cref="MarkupString"/>.
+    /// Это тип Blazor: в MVC-разметке он не <c>IHtmlContent</c>, и если вывести его просто как
+    /// <c>@Model.DescriptionView</c>, Razor вызовет <c>ToString()</c> и покажет пользователю
+    /// <c>&lt;p&gt;</c> текстом. Поэтому в <c>.cshtml</c> он выводится через
+    /// <c>@Html.Raw(...Value)</c> — значение уже прошло санитайзер рендерера markdown.
+    ///
+    /// Проверяется список типов (<c>_RoomTypeDetails</c>): второе место вывода,
+    /// <c>_RoomTypeOverview</c>, показывается только мастеру без права управлять поселением, но
+    /// выводит ровно то же свойство базы — одинаково на обеих страницах.
+    /// </remarks>
+    [Fact]
+    public async Task RoomTypeList_RendersDescriptionAsMarkup()
+    {
+        var url = $"{fixture.ProjectId.Value}/rooms/";
+
+        var response = await fixture.MasterClient.GetAsync(url);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, $"Страница {url} не открылась");
+
+        var document = await response.AsHtmlDocument();
+        var body = document.DocumentNode.SelectSingleNode("//body")
+            ?? throw new InvalidOperationException($"Страница {url} не содержит body");
+
+        // Жирный фрагмент описания должен приехать настоящим тегом, а не текстом.
+        body.SelectSingleNode($"//strong[normalize-space()='{SmokeProjectFixture.RoomTypeDescriptionBoldPart}']")
+            .ShouldNotBeNull(
+                $"На странице {url} описание типа проживания выведено не как разметка: тега <strong> нет");
+
+        var text = WebUtility.HtmlDecode(body.InnerText);
+
+        // Экранированное описание выглядело бы в тексте страницы как «<p>Палатка <strong>…».
+        text.ShouldNotContain(
+            "<strong>",
+            customMessage: $"На странице {url} HTML описания показан пользователю как текст");
+
+        // А нераскрытый Markdown — как «Палатка **для смоука**».
+        text.ShouldNotContain(
+            SmokeProjectFixture.RoomTypeDescriptionMarkdown,
+            customMessage: $"На странице {url} описание не прошло через рендерер markdown");
+    }
+
     [Fact]
     public async Task RoomTypeList_ShowsOccupancyCounters()
     {

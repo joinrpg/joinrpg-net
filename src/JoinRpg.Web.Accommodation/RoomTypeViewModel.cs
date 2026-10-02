@@ -1,7 +1,7 @@
+using System.Text.Json.Serialization;
 using JoinRpg.DomainTypes.Accommodation;
-using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
-using JoinRpg.Markdown;
+using Microsoft.AspNetCore.Components;
 
 namespace JoinRpg.Web.Models.Accommodation;
 
@@ -34,8 +34,31 @@ public abstract class RoomTypeViewModelBase
     [Required]
     public string Name { get; set; }
 
+    /// <summary>
+    /// Описание типа проживания, уже отрендеренное из Markdown — HTML строкой.
+    /// </summary>
+    /// <remarks>
+    /// Именно строка, а не <see cref="MarkupString"/>, потому что эта вью-модель может уехать
+    /// в JSON: <see cref="MarkupString"/> — структура без подходящего конструктора, она
+    /// сериализуется как <c>{"Value":...}</c> и обратно не десериализуется. В репозитории
+    /// принято возить HTML строкой, а типизированное представление помечать
+    /// <see cref="JsonIgnoreAttribute"/> — так сделано в <c>AccommodationTypeViewModel</c>
+    /// и в вью-моделях сетки ролей.
+    /// </remarks>
+    public string DescriptionHtml { get; set; } = "";
+
+    /// <summary>
+    /// То же описание для вывода в разметке.
+    /// </summary>
+    /// <remarks>
+    /// Значение приходит из <c>MarkdownString.ToHtmlString()</c>, то есть уже прошло наш
+    /// санитайзер, и выводится в MVC-разметке через <c>@Html.Raw(...Value)</c>:
+    /// <see cref="MarkupString"/> — тип Blazor, в .cshtml он не является <c>IHtmlContent</c>
+    /// и сам по себе был бы выведен с HTML-экранированием.
+    /// </remarks>
     [DisplayName("Описание")]
-    public JoinHtmlString DescriptionView { get; set; }
+    [JsonIgnore]
+    public MarkupString DescriptionView => new(DescriptionHtml);
 
     [DisplayName("Цена за 1 место")]
     public int Cost { get; set; }
@@ -77,6 +100,10 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// </summary>
     /// <param name="plan">План категории комнат, из которой селится этот тип проживания</param>
     /// <param name="typeId">Тип проживания, чью страницу показываем</param>
+    /// <param name="descriptionView">
+    /// Описание типа проживания, уже отрендеренное из Markdown вызывающей стороной
+    /// (рендерер markdown живёт на сервере, см. <see cref="RoomTypeViewModelBase.DescriptionView"/>).
+    /// </param>
     /// <param name="participants">
     /// Жильцы по идентификатору заявки. Денег в плане нет (ADR018, §5) — их считает вью-сервис
     /// страницы одной общей выборкой персонажей.
@@ -89,9 +116,10 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     public RoomTypeViewModel(
         RoomCategoryPlan plan,
         AccommodationTypeIdentification typeId,
+        MarkupString descriptionView,
         IReadOnlyDictionary<ClaimIdentification, RequestParticipantViewModel> participants,
         UserIdentification currentUserId)
-        : this(plan.GetAccommodationType(typeId), currentUserId, plan.ProjectInfo)
+        : this(plan.GetAccommodationType(typeId), descriptionView, currentUserId, plan.ProjectInfo)
     {
         // Creating a list of requests associated with this room type
         Requests = [.. plan.Groups.Select(group => new AccRequestViewModel(
@@ -162,12 +190,20 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
     /// Комнаты и заявки в метаданные не входят и здесь не нужны — их показывает отдельная
     /// страница «Комнаты».
     /// </summary>
+    /// <param name="descriptionView">
+    /// Описание типа проживания, уже отрендеренное из Markdown вызывающей стороной
+    /// (рендерер markdown живёт на сервере, см. <see cref="RoomTypeViewModelBase.DescriptionView"/>).
+    /// </param>
     /// <param name="currentUserId">
     /// Пользователь, который смотрит страницу: по нему считаются права
     /// <see cref="RoomTypeViewModelBase.CanManageRooms"/> и
     /// <see cref="RoomTypeViewModelBase.CanAssignRooms"/>.
     /// </param>
-    public RoomTypeViewModel(AccommodationTypeInfo typeInfo, UserIdentification currentUserId, ProjectInfo projectInfo)
+    public RoomTypeViewModel(
+        AccommodationTypeInfo typeInfo,
+        MarkupString descriptionView,
+        UserIdentification currentUserId,
+        ProjectInfo projectInfo)
         : this(currentUserId, projectInfo)
     {
         Id = typeInfo.Id.AccommodationTypeId;
@@ -176,7 +212,7 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         Capacity = typeInfo.Capacity;
         IsPlayerSelectable = typeInfo.IsPlayerSelectable;
         DescriptionEditable = typeInfo.Description.Value;
-        DescriptionView = typeInfo.Description.ToHtmlString();
+        DescriptionHtml = descriptionView.Value;
         Requests = [];
         UnassignedRequests = [];
     }

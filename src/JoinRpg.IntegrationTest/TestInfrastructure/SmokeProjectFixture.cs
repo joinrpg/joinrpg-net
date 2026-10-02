@@ -373,6 +373,15 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
     private const int SeededRoomCapacity = 4;
 
     /// <summary>
+    /// Описание типа проживания сида. Намеренно содержит разметку Markdown: по ней сценарий
+    /// проверяет, что описание выводится как разметка, а не как экранированный текст.
+    /// </summary>
+    public const string RoomTypeDescriptionMarkdown = "Палатка **для смоука**";
+
+    /// <summary>Часть описания, выделенная жирным в <see cref="RoomTypeDescriptionMarkdown"/>.</summary>
+    public const string RoomTypeDescriptionBoldPart = "для смоука";
+
+    /// <summary>
     /// Тип проживания с парой комнат: тип — настройка проекта (ADR015), комнаты — нет.
     /// </summary>
     private static async Task<int> SeedRoomTypeAsync(IServiceProvider sp, ProjectIdentification projectId)
@@ -381,7 +390,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             projectId,
             new AccommodationTypeRequest(
                 "Смоук-палатка",
-                new MarkdownString("Палатка для смоука"),
+                new MarkdownString(RoomTypeDescriptionMarkdown),
                 Cost: 100,
                 Capacity: SeededRoomCapacity,
                 IsPlayerSelectable: true));

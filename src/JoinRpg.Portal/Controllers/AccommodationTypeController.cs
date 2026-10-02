@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
@@ -73,7 +74,11 @@ public class AccommodationTypeController(
         // Тип проживания — настройка проекта, он уже есть в метаданных (ADR015).
         var typeInfo = pi.AccommodationSettings.GetTypeById(roomTypeId);
 
-        return View(new RoomTypeViewModel(typeInfo, currentUserAccessor.UserIdentification, pi));
+        return View(new RoomTypeViewModel(
+            typeInfo,
+            typeInfo.Description.ToHtmlString(),
+            currentUserAccessor.UserIdentification,
+            pi));
     }
 
     /// <summary>
