@@ -466,7 +466,8 @@ props-сервиса, который берёт его из `IProjectMetadataRep
 
 `RoomCategoryPlanMutationContext` отдаёт: трекаемые EF-сущности комнат и (при `WithGroups`) групп, доменный снимок
 `RoomCategoryPlan` **до** мутации, делегаты `AddEntity`/`RemoveEntity` (не `DbSet` наружу — как в
-ADR014, это делает контекст подделываемым в юнит-тестах) и `AddLegacyEmail` для писем о заселении.
+ADR014, это делает контекст подделываемым в юнит-тестах) и `AddAccommodationNotification` для
+уведомлений о заселении.
 
 Write-хэндл `IRoomCategoryPlanWriteRepository` берётся **только** из
 `IUnitOfWork.GetRoomCategoryPlanWriteRepository()`, а не из DI: `MyDbContext` зарегистрирован
@@ -543,16 +544,22 @@ public interface IAccommodationService
 («1,2,5-8») разбирает web-слой (`RoomNamesParser` в `JoinRpg.WebPortal.Managers/Accommodation/`),
 а `AddRooms` принимает готовые имена.
 
-### 11. Письма
+### 11. Уведомления
 
-`OccupyRoomEmail`/`UnOccupyRoomEmail` (`RoomEmailBase`) несут EF-сущности `ProjectAccommodation Room`
-и `Claim[] Changed`, а `EmailServiceImpl` зовёт по ним `GetAllInhabitants()`. Переписывать почтовый
-контур этот ADR не берётся: письма отправляются через `ctx.AddLegacyEmail(...)` — тот же механизм,
-которым ADR014 сохранил легаси-письма заявок. Единственное изменение по существу: письма уходят
-**после** успешного `SaveChanges` операции, все разом из очереди, а не парой «сохранение + письмо»
-на каждую комнату внутри цикла. Само письмо при этом остаётся письмом **на комнату**: `RoomEmailBase`
-несёт ровно одну комнату, и «одно письмо на операцию» при нынешних почтовых моделях выразить нечем
-(§14, уточнения к PR 5).
+Изначально этот ADR почтовый контур не переписывал: письма ставились в очередь
+`ctx.AddLegacyEmail(...)` — тем же механизмом, которым ADR014 сохранил легаси-письма заявок.
+Позже выяснилось, что тела этих писем в `EmailServiceImpl` были **закомментированы**, то есть
+контур не отправлял ничего, и он переведён на `INotificationService` (ADR003): очередь стала
+`ctx.AddAccommodationNotification(...)`, а разгребает её `IAccommodationNotificationService`.
+
+Что от этого ADR осталось в силе: уведомления уходят **после** успешного `SaveChanges` операции,
+все разом из очереди, а не парой «сохранение + рассылка» на каждую комнату внутри цикла; и
+уведомление остаётся уведомлением **на комнату** — `RoomOccupancyNotification` несёт ровно одну
+комнату, а массовое выселение трогает их несколько (§14, уточнения к PR 5).
+
+Модель уведомления EF-сущностей больше не несёт: в ней типизированные идентификаторы комнаты,
+типа проживания и заявок, а имена игроков и название типа сервис уведомлений добирает сам —
+по `IClaimsRepository.GetClaimHeadersWithPlayer` и по метаданным проекта.
 
 ### 12. Потребители
 
@@ -578,7 +585,8 @@ public interface IAccommodationService
 - **Приглашения** (`AccommodationInvite`, `AccommodationInviteServiceImpl`) и **выбор типа игроком**
   (`SetAccommodationType`, `LeaveAccommodationGroupAsync`). Они уже живут в character-контуре
   (ADR014) либо ждут собственной миграции; здесь меняется только колонка «в какой комнате».
-- **Почтовые модели** `RoomEmailBase` и `EmailServiceImpl` — остаются на EF-сущностях.
+- ~~**Почтовые модели** `RoomEmailBase` и `EmailServiceImpl` — остаются на EF-сущностях.~~
+  Сделано отдельной работой: контур переведён на `INotificationService`, см. §11.
 - **Автозаселение** (`OccupyAll` с `//TODO: Implement mass occupation`) — не реализовано сегодня,
   не реализуется и здесь. Агрегат делает его дешевле: вместимость и свободные группы уже собраны.
 - **Само разделение `AccommodationType` и `RoomCategory`** — здесь только форма доменной модели под
@@ -727,7 +735,8 @@ public interface IAccommodationService
      ловит `AccommodationRoomNotFoundException` → `NotFound` и `RoomIsOccupiedException` →
      `BadRequest`; `catch`-всё с кодом 500 у этих трёх экшенов больше нет.
 5. **PR 5** — ✅ сделано. Перевод `OccupyRoom`/`UnOccupy*` — один `SaveChanges` на операцию,
-   проверка пула, явный подсчёт мест, письма через `AddLegacyEmail`. Закрывает дефекты 5, 6, 7 и
+   проверка пула, явный подсчёт мест, уведомления через `AddAccommodationNotification`.
+   Закрывает дефекты 5, 6, 7 и
    половину третьего — `UnOccupyRoomType` стала атомарной, `UnOccupyAllRooms` осталась циклом по
    категориям, по транзакции на каждую.
 
@@ -748,21 +757,24 @@ public interface IAccommodationService
      — `InvalidOperationException`: это ошибка программиста, а не данных, и фейковый хэндл ведёт
      себя так же, чтобы тест ловил забытый `WithGroups`. У `ChangePlanForGroup` параметра нет:
      назвать корень через группу может только операция, которая её и двигает.
-   - **Письмо — на комнату, а не на операцию.** `RoomEmailBase` несёт ровно одну комнату, а
-     массовое выселение трогает их несколько, так что «одно письмо на операцию» из §11 при
-     нынешних почтовых моделях выразить нечем. По существу изменение то же, что обещал §11:
-     письма ставятся в очередь `AddLegacyEmail` и уходят все разом **после** единственного
-     `SaveChanges` операции, а не парой «сохранение + письмо» на каждую комнату. Очередь
-     разгребает props-сервис, как `CharacterPropsService` разгребает `ctx.LegacyEmails`.
+   - **Уведомление — на комнату, а не на операцию.** `RoomOccupancyNotification` несёт ровно одну
+     комнату, а массовое выселение трогает их несколько, так что «одно уведомление на операцию» из
+     §11 выразить нечем. По существу изменение то же, что обещал §11: уведомления ставятся в
+     очередь `AddAccommodationNotification` и уходят все разом **после** единственного
+     `SaveChanges` операции, а не парой «сохранение + рассылка» на каждую комнату. Очередь
+     разгребает props-сервис, как `CharacterPropsService` разгребает
+     `ctx.AccommodationNotifications`.
    - Свободное место считается не одним вызовом `plan.GetFreeSpace`, а накопительно: при
      заселении нескольких групп одной операцией каждая и занимает места, и может ужать комнату
      вместимостью своего типа («Правило свободного места»). Для первой группы формула совпадает
      с `plan.GetFreeSpace(room, type)` в точности; простое вычитание «уже поселённых» было бы
      неверным в день, когда в пуле окажется больше одного типа.
-   - Получатели письма считаются по трекаемым группам, а не по `room.GetSubscriptions()`: та
-     ходит в навигацию `room.Inhabitants`, то есть опирается ровно на тот relationship fixup,
-     от которого уводит дефект 6. Побочный эффект — выселенные теперь тоже получают письмо о
-     выселении: у легаси они выпадали из `Inhabitants` раньше, чем считались подписчики.
+   - Получатели считаются по снимку плана, а не по `room.GetSubscriptions()`: та ходила в
+     навигацию `room.Inhabitants`, то есть опиралась ровно на тот relationship fixup, от которого
+     уводит дефект 6. Побочный эффект — выселенные теперь тоже получают уведомление о выселении:
+     у легаси они выпадали из `Inhabitants` раньше, чем считались подписчики. Сам расчёт подписок
+     после перехода на `INotificationService` делает общий `SubscribeCalculator` с предикатом
+     `AccommodationChange` — тот же, что и у уведомлений по заявкам.
    - `JoinRpgInsufficientRoomSpaceException` переведён на `AccommodationRoomIdentification` и,
      перестав зависеть от EF, переехал из `JoinRpg.Domain/Exceptions.cs` в
      `JoinRpg.DomainTypes/Characters/Claims/Accommodation/Exceptions.cs` — туда же, куда PR 3 и

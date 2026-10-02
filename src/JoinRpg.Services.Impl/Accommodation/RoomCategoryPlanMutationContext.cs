@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Accommodation;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Accommodation;
 
@@ -26,17 +25,16 @@ internal abstract record RoomCategoryPlanMutationContext(
     public ProjectInfo ProjectInfo => Handle.ProjectInfo;
 
     /// <summary>
-    /// Письма легаси-канала, поставленные в очередь мутацией. Отправляются props-сервисом после
-    /// успешного сохранения.
+    /// Уведомления о составе жителей комнаты, поставленные в очередь мутацией. Отправляются
+    /// props-сервисом после успешного сохранения, в порядке добавления.
     /// </summary>
-    internal List<Func<IEmailService, Task>> LegacyEmails { get; } = [];
+    internal List<RoomOccupancyNotification> RoomNotifications { get; } = [];
 
     /// <summary>
-    /// Ставит письмо легаси-канала в очередь. Отправится после сохранения.
-    /// Передаётся отправителем, а не самим письмом: у <c>IEmailService</c> нет перегрузки по
-    /// базовому типу, только по конкретным (как в <c>ClaimMutationContext</c>, ADR014).
+    /// Ставит уведомление о комнате в очередь. Отправится после сохранения.
     /// </summary>
-    public void AddLegacyEmail(Func<IEmailService, Task> send) => LegacyEmails.Add(send);
+    public void AddRoomNotification(RoomOccupancyNotification notification)
+        => RoomNotifications.Add(notification);
 
     /// <summary>
     /// Трекаемый ряд категории комнат: сегодня это ряд типа проживания (ADR018, «Задел на

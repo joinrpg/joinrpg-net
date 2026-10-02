@@ -35,7 +35,22 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<MyClaimShortInfo>> GetMyActiveClaimsInActiveProjects(UserIdentification userId) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(ProjectIdentification projectId, UserIdentification userId, ClaimStatusSpec status) => throw new NotSupportedException();
-    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds) => throw new NotSupportedException();
+    /// <summary>
+    /// Заголовки заявок, которые вернёт <see cref="GetClaimHeadersWithPlayer(IReadOnlyCollection{ClaimIdentification})"/>.
+    /// Наполняются тестом напрямую, а не выводятся из мока: игрок заголовка нарочно не обязан
+    /// существовать в <c>MockedProject</c> — расчёту получателей хватает идентификатора.
+    /// </summary>
+    public List<ClaimWithPlayer> Headers { get; } = [];
+
+    /// <remarks>
+    /// Порядок выдачи намеренно обратный порядку запрошенных идентификаторов: настоящий запрос
+    /// порядок не обещает (<c>ORDER BY</c> в нём нет), а текст уведомления от порядка зависит.
+    /// Обратный порядок — самый дешёвый способ поймать код, который на порядок репозитория
+    /// полагается.
+    /// </remarks>
+    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds)
+        => Task.FromResult<IReadOnlyCollection<ClaimWithPlayer>>(
+            [.. Headers.Where(header => claimIds.Contains(header.ClaimId)).Reverse()]);
     public Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec) => throw new NotSupportedException();

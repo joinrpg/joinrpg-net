@@ -66,6 +66,8 @@ public static class Services
             .AddTransient<CommentHelper>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
             .AddTransient<IClaimNotificationService, ClaimNotificationService>()
+            .AddTransient<IAccommodationNotificationService, AccommodationNotificationService>()
+            .AddTransient<AccommodationNotificationTextBuilder>()
             .AddTransient<ForumNotificationService>()
             .AddTransient<MasterEmailService>()
             .AddTransient<ClaimNotificationTextBuilder>()

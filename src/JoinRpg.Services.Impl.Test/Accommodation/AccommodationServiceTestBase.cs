@@ -12,17 +12,17 @@ namespace JoinRpg.Services.Impl.Test.Accommodation;
 /// </summary>
 public abstract class AccommodationServiceTestBase : ProjectMetadataServiceTestBase
 {
-    /// <summary>Письма легаси-канала, ушедшие за тест.</summary>
-    private protected readonly FakeEmailService emailService = new();
+    /// <summary>Уведомления о проживании, ушедшие за тест.</summary>
+    private protected readonly FakeAccommodationNotificationService notificationService = new();
 
-    /// <summary>Общий журнал: сохранения и письма в порядке, в котором они случились.</summary>
+    /// <summary>Общий журнал: сохранения и уведомления в порядке, в котором они случились.</summary>
     private protected readonly List<string> journal = [];
 
     protected AccommodationServiceTestBase()
     {
         mock.Project.Details.EnableAccommodation = true;
         unitOfWork.OnSaveChanges = _ => journal.Add("save");
-        emailService.OnEmail = () => journal.Add("email");
+        notificationService.OnNotification = () => journal.Add("notification");
     }
 
     private protected AccommodationServiceImpl CreateService(int? currentUserId = null, bool isAdmin = false)
@@ -36,7 +36,7 @@ public abstract class AccommodationServiceTestBase : ProjectMetadataServiceTestB
                 unitOfWork,
                 currentUser,
                 metadataRepository,
-                emailService,
+                notificationService,
                 NullLogger<AccommodationPropsService>.Instance));
     }
 
@@ -47,12 +47,6 @@ public abstract class AccommodationServiceTestBase : ProjectMetadataServiceTestB
         mock.Project.IsAcceptingClaims = false;
         mock.ReInitProjectInfo();
     }
-
-    protected AccommodationRoomIdentification RoomId(ProjectAccommodation room)
-        => new(ProjectId, room.Id);
-
-    protected AccommodationRequestIdentification GroupId(AccommodationRequest group)
-        => new(ProjectId, group.Id);
 
     /// <summary>Идентификатор той же комнаты, но в чужом проекте.</summary>
     protected AccommodationRoomIdentification AlienRoomId(ProjectAccommodation room)

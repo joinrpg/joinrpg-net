@@ -5,6 +5,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Notification;
@@ -612,7 +613,7 @@ internal class ClaimServiceImpl(
                 // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
                 ctx.Claim.PlayerAllowedSenstiveData = false;
 
-                var roomEmail = CommonClaimDecline(ctx);
+                var roomNotification = CommonClaimDecline(ctx);
 
                 if (ctx.Request.DeleteCharacter)
                 {
@@ -630,10 +631,10 @@ internal class ClaimServiceImpl(
                     CommentExtraAction.DeclineByMaster,
                     ClaimOperationType.MasterVisibleChange);
 
-                if (roomEmail is not null)
+                if (roomNotification is not null)
                 {
-                    // Порядок «сначала уведомления, потом письма легаси-канала» обеспечивает сервис.
-                    ctx.AddLegacyEmail(emailService => emailService.Email(roomEmail));
+                    // Порядок «сначала уведомления по комментариям, потом о проживании» обеспечивает сервис.
+                    ctx.AddRoomNotification(roomNotification);
                 }
             });
 
@@ -664,10 +665,10 @@ internal class ClaimServiceImpl(
     }
 
     /// <summary>
-    /// Общая часть отклонения заявки на контексте мутации (ADR014). Возвращает письмо легаси-канала
-    /// о выезде из комнаты, если заявка была поселена.
+    /// Общая часть отклонения заявки на контексте мутации (ADR014). Возвращает уведомление о выезде
+    /// из комнаты, если заявка была поселена.
     /// </summary>
-    private static LeaveRoomEmail? CommonClaimDecline(ClaimMutationContext ctx)
+    private static RoomOccupancyNotification? CommonClaimDecline(ClaimMutationContext ctx)
     {
         ctx.MarkCharacterChangedIfApproved();
 
@@ -676,7 +677,7 @@ internal class ClaimServiceImpl(
             ctx.Claim.Character.ApprovedClaimId = null;
         }
 
-        return ConsiderLeavingRoom(ctx);
+        return ConsiderLeavingRoom(ctx, RoomOccupancyChangeKind.ClaimDeclined);
     }
 
     /// <summary>
@@ -684,7 +685,9 @@ internal class ClaimServiceImpl(
     /// из уже загруженного хэндла (лишнего запроса за текущим пользователем нет), а опустевшая заявка
     /// на поселение удаляется через тот же <c>DbContext</c>, а не через сырой <c>DbSet</c>.
     /// </summary>
-    private static LeaveRoomEmail? ConsiderLeavingRoom(ClaimMutationContext ctx)
+    private static RoomOccupancyNotification? ConsiderLeavingRoom(
+        ClaimMutationContext ctx,
+        RoomOccupancyChangeKind kind)
     {
         var claim = ctx.Claim;
 
@@ -693,19 +696,28 @@ internal class ClaimServiceImpl(
             return null;
         }
 
-        LeaveRoomEmail? email = null;
+        RoomOccupancyNotification? notification = null;
 
-        if (claim.AccommodationRequest.Accommodation is not null)
+        if (claim.AccommodationRequest.Accommodation is { } room)
         {
-            email = new LeaveRoomEmail()
-            {
-                Changed = [claim],
-                Initiator = ctx.Initiator,
-                ProjectName = claim.Project.ProjectName,
-                Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
-                Room = claim.AccommodationRequest.Accommodation,
-                Text = new MarkdownDbValue(),
-            };
+            var claimId = ctx.ClaimInfo.ClaimId;
+
+            notification = new RoomOccupancyNotification(
+                room.GetId(),
+                room.Name,
+                // Название типа сервис уведомлений возьмёт из метаданных: по навигации
+                // room.ProjectAccommodationType это была бы лишняя ленивая загрузка.
+                new AccommodationTypeIdentification(claimId.ProjectId, room.AccommodationTypeId),
+                // Из текущего запроса, а не из ctx.Initiator: EF-сущность пользователя нужна была
+                // только легаси-письмам.
+                ctx.CurrentUser.ToUserInfoHeader(),
+                Changed: [claimId],
+                // Соседи — состав комнаты без выезжающего. Считается до изъятия заявки из группы,
+                // поэтому её и исключаем явно.
+                Remaining: [.. room.Inhabitants
+                    .SelectMany(group => group.GetSubjectIds())
+                    .Where(id => id != claimId)],
+                kind);
         }
 
         _ = claim.AccommodationRequest.Subjects.Remove(claim);
@@ -714,7 +726,7 @@ internal class ClaimServiceImpl(
             ctx.RemoveEntity(claim.AccommodationRequest);
         }
 
-        return email;
+        return notification;
     }
 
     /// <summary>
@@ -797,7 +809,7 @@ internal class ClaimServiceImpl(
 
                 // TODO: восстановить отправку изменений полей, см. ADR014
 
-                var leaveEmail = ConsiderLeavingRoom(ctx);
+                var leaveNotification = ConsiderLeavingRoom(ctx, RoomOccupancyChangeKind.LeftRoom);
 
                 ctx.Claim.AccommodationRequest_Id = null;
                 ctx.Claim.AccommodationRequest = null;
@@ -810,9 +822,9 @@ internal class ClaimServiceImpl(
                     Subjects = [ctx.Claim],
                 });
 
-                if (leaveEmail is not null)
+                if (leaveNotification is not null)
                 {
-                    ctx.AddLegacyEmail(emailService => emailService.Email(leaveEmail));
+                    ctx.AddRoomNotification(leaveNotification);
                 }
 
                 return acr;
@@ -848,7 +860,7 @@ internal class ClaimServiceImpl(
 
                 // TODO: восстановить отправку изменений полей, см. ADR014
 
-                var leaveEmail = ConsiderLeavingRoom(ctx);
+                var leaveNotification = ConsiderLeavingRoom(ctx, RoomOccupancyChangeKind.LeftRoom);
 
                 // TODO: Just change accommodation type if this claim is the only occupant of previous room
                 var accommodationRequest = new AccommodationRequest
@@ -861,9 +873,9 @@ internal class ClaimServiceImpl(
 
                 ctx.AddEntity(accommodationRequest);
 
-                if (leaveEmail is not null)
+                if (leaveNotification is not null)
                 {
-                    ctx.AddLegacyEmail(emailService => emailService.Email(leaveEmail));
+                    ctx.AddRoomNotification(leaveNotification);
                 }
 
                 return accommodationRequest;
@@ -885,17 +897,17 @@ internal class ClaimServiceImpl(
 
                 await DeclineAllClaimInvites(ctx);
 
-                var roomEmail = CommonClaimDecline(ctx);
+                var roomNotification = CommonClaimDecline(ctx);
 
                 _ = ctx.AddComment(
                     ctx.Request,
                     CommentExtraAction.DeclineByPlayer,
                     ClaimOperationType.PlayerChange);
 
-                if (roomEmail is not null)
+                if (roomNotification is not null)
                 {
-                    // Порядок «сначала уведомления, потом письма легаси-канала» обеспечивает сервис.
-                    ctx.AddLegacyEmail(emailService => emailService.Email(roomEmail));
+                    // Порядок «сначала уведомления по комментариям, потом о проживании» обеспечивает сервис.
+                    ctx.AddRoomNotification(roomNotification);
                 }
             });
 

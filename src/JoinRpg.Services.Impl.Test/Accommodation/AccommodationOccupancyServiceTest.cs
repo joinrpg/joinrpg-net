@@ -2,7 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.Services.Impl.Accommodation;
 
 namespace JoinRpg.Services.Impl.Test.Accommodation;
 
@@ -44,23 +44,24 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         var group = CreateGroup(tent);
         var room = mock.CreateEmptyRoom(tent, "101");
 
-        await CreateService().OccupyRoom(RoomId(room), [GroupId(group)]);
+        await CreateService().OccupyRoom(room.GetId(), [group.GetId()]);
 
         group.AccommodationId.ShouldBe(room.Id);
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
 
-    /// <summary>Письма легаси-канала обязаны уходить уже после сохранения (ADR018, §11).</summary>
+    /// <summary>Уведомления обязаны уходить уже после сохранения (ADR018, §11).</summary>
     [Fact]
-    public async Task OccupyRoom_SendsEmailAfterSave()
+    public async Task OccupyRoom_SendsNotificationAfterSave()
     {
         var group = CreateGroup(tent);
         var room = mock.CreateEmptyRoom(tent, "101");
 
-        await CreateService().OccupyRoom(RoomId(room), [GroupId(group)]);
+        await CreateService().OccupyRoom(room.GetId(), [group.GetId()]);
 
-        journal.ShouldBe(["save", "email"]);
-        emailService.Sent.ShouldHaveSingleItem().ShouldBeOfType<OccupyRoomEmail>();
+        journal.ShouldBe(["save", "notification"]);
+        notificationService.RoomOccupancy.ShouldHaveSingleItem()
+            .Kind.ShouldBe(RoomOccupancyChangeKind.Occupied);
     }
 
     [Fact]
@@ -70,7 +71,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         var room = mock.CreateEmptyRoom(tent, "101");
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateService(mock.Player.UserId).OccupyRoom(RoomId(room), [GroupId(group)]));
+            () => CreateService(mock.Player.UserId).OccupyRoom(room.GetId(), [group.GetId()]));
 
         group.AccommodationId.ShouldBeNull();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -85,7 +86,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         ArchiveProject();
 
         _ = await Should.ThrowAsync<ProjectDeactivatedException>(
-            () => CreateService().OccupyRoom(RoomId(room), [GroupId(group)]));
+            () => CreateService().OccupyRoom(room.GetId(), [group.GetId()]));
 
         group.AccommodationId.ShouldBeNull();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -106,7 +107,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         var hotelRoom = mock.CreateEmptyRoom(hotel, "101");
 
         _ = await Should.ThrowAsync<AccommodationGroupNotFoundException>(
-            () => CreateService().OccupyRoom(RoomId(hotelRoom), [GroupId(tentGroup)]));
+            () => CreateService().OccupyRoom(hotelRoom.GetId(), [tentGroup.GetId()]));
 
         tentGroup.AccommodationId.ShouldBeNull();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -128,12 +129,12 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         var room = mock.CreateEmptyRoom(smallType, "101");
 
         _ = await Should.ThrowAsync<JoinRpgInsufficientRoomSpaceException>(
-            () => CreateService().OccupyRoom(RoomId(room), [GroupId(first), GroupId(second)]));
+            () => CreateService().OccupyRoom(room.GetId(), [first.GetId(), second.GetId()]));
 
         // Операция целиком не сохранилась — ни первая группа, ни вторая в комнату не въехали.
         // (Откат самих трекаемых сущностей — дело EF, фейковый UnitOfWork его не изображает.)
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
-        emailService.Sent.ShouldBeEmpty();
+        notificationService.RoomOccupancy.ShouldBeEmpty();
     }
 
     /// <summary>Ровно по вместимости несколько групп одной операцией заезжают.</summary>
@@ -147,7 +148,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         var second = CreateGroup(smallType, persons: 1);
         var room = mock.CreateEmptyRoom(smallType, "101");
 
-        await CreateService().OccupyRoom(RoomId(room), [GroupId(first), GroupId(second)]);
+        await CreateService().OccupyRoom(room.GetId(), [first.GetId(), second.GetId()]);
 
         first.AccommodationId.ShouldBe(room.Id);
         second.AccommodationId.ShouldBe(room.Id);
@@ -164,7 +165,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         var group = CreateGroup(tent);
 
         _ = await Should.ThrowAsync<AccommodationRoomNotFoundException>(
-            () => CreateService().OccupyRoom(new AccommodationRoomIdentification(ProjectId, 12345), [GroupId(group)]));
+            () => CreateService().OccupyRoom(new AccommodationRoomIdentification(ProjectId, 12345), [group.GetId()]));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
@@ -177,7 +178,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
 
         _ = await Should.ThrowAsync<AccommodationGroupNotFoundException>(
             () => CreateService().OccupyRoom(
-                RoomId(room), [new AccommodationRequestIdentification(ProjectId, 12345)]));
+                room.GetId(), [new AccommodationRequestIdentification(ProjectId, 12345)]));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
@@ -190,7 +191,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         var room = mock.CreateEmptyRoom(tent, "101");
 
         _ = await Should.ThrowAsync<AccommodationRoomNotFoundException>(
-            () => CreateService().OccupyRoom(AlienRoomId(room), [GroupId(group)]));
+            () => CreateService().OccupyRoom(AlienRoomId(room), [group.GetId()]));
 
         group.AccommodationId.ShouldBeNull();
     }
@@ -205,13 +206,104 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         leaving.AccommodationId = room.Id;
         room.Inhabitants.Add(leaving);
 
-        await CreateService().UnOccupyGroup(GroupId(leaving));
+        await CreateService().UnOccupyGroup(leaving.GetId());
 
         leaving.AccommodationId.ShouldBeNull();
         staying.AccommodationId.ShouldBe(room.Id);
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
-        journal.ShouldBe(["save", "email"]);
-        emailService.Sent.ShouldHaveSingleItem().ShouldBeOfType<UnOccupyRoomEmail>();
+        journal.ShouldBe(["save", "notification"]);
+        notificationService.RoomOccupancy.ShouldHaveSingleItem()
+            .Kind.ShouldBe(RoomOccupancyChangeKind.Evicted);
+    }
+
+    /// <summary>
+    /// Состав уведомления при заселении: сдвинутые — в <c>Changed</c>, прежние жильцы — в
+    /// <c>Remaining</c>, и эти множества не пересекаются. Стражит регрессию «взять состав комнаты
+    /// после мутации, а не по снимку плана».
+    /// </summary>
+    [Fact]
+    public async Task OccupyRoom_ToRoomWithNeighbours_SplitsChangedAndRemaining()
+    {
+        var neighbours = CreateGroup(tent, persons: 2);
+        var newcomer = CreateGroup(tent);
+        var room = mock.CreateRoom(neighbours, "101");
+
+        await CreateService().OccupyRoom(room.GetId(), [newcomer.GetId()]);
+
+        var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
+        notification.Changed.ShouldBe(newcomer.GetSubjectIds());
+        notification.Remaining.ShouldBe(neighbours.GetSubjectIds(), ignoreOrder: true);
+        notification.Changed.Intersect(notification.Remaining).ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Просьба вселить того, кто уже живёт в этой комнате, проверку свободного места проходит
+    /// (группа уже учтена в занятости). Игрок не должен оказаться и «вселившимся», и «уже бывшим».
+    /// </summary>
+    [Fact]
+    public async Task OccupyRoom_GroupAlreadyInRoom_DoesNotDuplicateInNotification()
+    {
+        var group = CreateGroup(tent);
+        var room = mock.CreateRoom(group, "101");
+
+        await CreateService().OccupyRoom(room.GetId(), [group.GetId()]);
+
+        var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
+        notification.Changed.ShouldBe(group.GetSubjectIds());
+        notification.Remaining.ShouldBeEmpty();
+    }
+
+    /// <summary>Инициатор уведомления — текущий пользователь, а не кто-то из жильцов.</summary>
+    [Fact]
+    public async Task OccupyRoom_TakesInitiatorFromCurrentUser()
+    {
+        var group = CreateGroup(tent);
+        var room = mock.CreateEmptyRoom(tent, "101");
+
+        await CreateService().OccupyRoom(room.GetId(), [group.GetId()]);
+
+        var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
+        notification.Initiator.UserId.ShouldBe(mock.Master.GetId());
+        // Тип комнаты уведомление несёт идентификатором — название сервис возьмёт из метаданных.
+        notification.AccommodationTypeId.ShouldBe(TentId);
+        notification.RoomId.ShouldBe(room.GetId());
+        notification.RoomName.ShouldBe("101");
+    }
+
+    /// <summary>Частичное выселение: выселенные — в <c>Changed</c>, соседи — в <c>Remaining</c>.</summary>
+    [Fact]
+    public async Task UnOccupyGroup_SplitsChangedAndRemaining()
+    {
+        var staying = CreateGroup(tent);
+        var leaving = CreateGroup(tent);
+        var room = mock.CreateRoom(staying, "101");
+        leaving.Accommodation = room;
+        leaving.AccommodationId = room.Id;
+        room.Inhabitants.Add(leaving);
+
+        await CreateService().UnOccupyGroup(leaving.GetId());
+
+        var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
+        notification.Changed.ShouldBe(leaving.GetSubjectIds());
+        notification.Remaining.ShouldBe(staying.GetSubjectIds());
+    }
+
+    /// <summary>Выселение всей комнаты: в комнате не остаётся никого.</summary>
+    [Fact]
+    public async Task UnOccupyRoom_LeavesNobodyRemaining()
+    {
+        var first = CreateGroup(tent);
+        var second = CreateGroup(tent);
+        var room = mock.CreateRoom(first, "101");
+        second.Accommodation = room;
+        second.AccommodationId = room.Id;
+        room.Inhabitants.Add(second);
+
+        await CreateService().UnOccupyRoom(room.GetId());
+
+        var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
+        notification.Remaining.ShouldBeEmpty();
+        notification.Changed.ShouldBe([.. first.GetSubjectIds(), .. second.GetSubjectIds()], ignoreOrder: true);
     }
 
     /// <summary>Выселение идемпотентно: нерасселённую группу выселять нечего (ADR018, §1).</summary>
@@ -220,9 +312,9 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
     {
         var group = CreateGroup(tent);
 
-        await CreateService().UnOccupyGroup(GroupId(group));
+        await CreateService().UnOccupyGroup(group.GetId());
 
-        emailService.Sent.ShouldBeEmpty();
+        notificationService.RoomOccupancy.ShouldBeEmpty();
     }
 
     /// <summary>Дефект 7 ADR018.</summary>
@@ -245,13 +337,13 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         second.AccommodationId = room.Id;
         room.Inhabitants.Add(second);
 
-        await CreateService().UnOccupyRoom(RoomId(room));
+        await CreateService().UnOccupyRoom(room.GetId());
 
         first.AccommodationId.ShouldBeNull();
         second.AccommodationId.ShouldBeNull();
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
-        // Комната одна — письмо одно, даже если жильцов было несколько.
-        emailService.Sent.ShouldHaveSingleItem();
+        // Комната одна — уведомление одно, даже если жильцов было несколько.
+        notificationService.RoomOccupancy.ShouldHaveSingleItem();
     }
 
     /// <summary>Дефект 7 ADR018.</summary>
@@ -284,10 +376,10 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
 
         groups.ShouldAllBe(group => group.AccommodationId == null);
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
-        // Письма — по одному на комнату (RoomEmailBase несёт ровно одну комнату), но все после
-        // единственного сохранения.
-        emailService.Sent.Count.ShouldBe(4);
-        journal.ShouldBe(["save", "email", "email", "email", "email"]);
+        // Уведомления — по одному на комнату (RoomOccupancyNotification несёт ровно одну комнату),
+        // но все после единственного сохранения.
+        notificationService.RoomOccupancy.Count.ShouldBe(4);
+        journal.ShouldBe(["save", "notification", "notification", "notification", "notification"]);
     }
 
     /// <summary>Жильцов братского типа выселение типа не трогает.</summary>
@@ -346,7 +438,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         tentGroup.AccommodationId.ShouldBeNull();
         hotelGroup.AccommodationId.ShouldBeNull();
         unitOfWork.SaveChangesCallCount.ShouldBe(2);
-        emailService.Sent.Count.ShouldBe(2);
+        notificationService.RoomOccupancy.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -371,7 +463,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         ArchiveProject();
 
         _ = await Should.ThrowAsync<ProjectDeactivatedException>(
-            () => CreateService().UnOccupyGroup(GroupId(group)));
+            () => CreateService().UnOccupyGroup(group.GetId()));
 
         group.AccommodationId.ShouldNotBeNull();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -386,7 +478,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         ArchiveProject();
 
         _ = await Should.ThrowAsync<ProjectDeactivatedException>(
-            () => CreateService().UnOccupyRoom(RoomId(room)));
+            () => CreateService().UnOccupyRoom(room.GetId()));
 
         group.AccommodationId.ShouldNotBeNull();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);

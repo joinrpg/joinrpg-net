@@ -69,7 +69,7 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
     {
         var room = mock.CreateEmptyRoom(roomType, "101");
 
-        await CreateService().RenameRoom(RoomId(room), "102");
+        await CreateService().RenameRoom(room.GetId(), "102");
 
         room.Name.ShouldBe("102");
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
@@ -82,7 +82,7 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
         var room = mock.CreateEmptyRoom(roomType, "101");
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateService(mock.Player.UserId).RenameRoom(RoomId(room), "102"));
+            () => CreateService(mock.Player.UserId).RenameRoom(room.GetId(), "102"));
 
         room.Name.ShouldBe("101");
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -112,7 +112,7 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
         ArchiveProject();
 
         _ = await Should.ThrowAsync<ProjectDeactivatedException>(
-            () => CreateService().RenameRoom(RoomId(room), "102"));
+            () => CreateService().RenameRoom(room.GetId(), "102"));
 
         room.Name.ShouldBe("101");
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -123,7 +123,7 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
     {
         var room = mock.CreateEmptyRoom(roomType, "101");
 
-        await CreateService().DeleteRoom(RoomId(room));
+        await CreateService().DeleteRoom(room.GetId());
 
         mock.Rooms.ShouldBeEmpty();
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
@@ -137,7 +137,7 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
         var room = mock.CreateRoom(group, "101");
 
         _ = await Should.ThrowAsync<RoomIsOccupiedException>(
-            () => CreateService().DeleteRoom(RoomId(room)));
+            () => CreateService().DeleteRoom(room.GetId()));
 
         mock.Rooms.ShouldHaveSingleItem();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -150,7 +150,7 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
         var room = mock.CreateEmptyRoom(roomType, "101");
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateService(mock.Player.UserId).DeleteRoom(RoomId(room)));
+            () => CreateService(mock.Player.UserId).DeleteRoom(room.GetId()));
 
         mock.Rooms.ShouldHaveSingleItem();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -180,7 +180,7 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
         ArchiveProject();
 
         _ = await Should.ThrowAsync<ProjectDeactivatedException>(
-            () => CreateService().DeleteRoom(RoomId(room)));
+            () => CreateService().DeleteRoom(room.GetId()));
 
         mock.Rooms.ShouldHaveSingleItem();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
