@@ -53,6 +53,11 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             claim.Player.Claims.Add(claim);
         }
 
+        // То же и с коллекцией финансовых операций: ClaimCreationContext.NewClaim её не задаёт,
+        // в бою она появляется при перечитывании заявки из базы. Без этого здесь падает с NRE
+        // любое обращение к FinanceOperations, включая ApprovedFinanceOperations.
+        claim.FinanceOperations ??= [];
+
         return claim;
     }
 
