@@ -46,6 +46,23 @@ public class AppointmentDetailsTest
             .ShouldBe("closeDetailsClickHandler()");
     }
 
+    /// <summary>
+    /// Единственное, что в этом переносе менялось по существу: тег-хелпер
+    /// <c>&lt;join-icon&gt;</c> заменён компонентом <c>JoinIcon</c>. Крестик на кнопке
+    /// закрытия должен остаться иконкой, а не исчезнуть.
+    /// </summary>
+    [Fact]
+    public void CloseButtonShowsIcon()
+    {
+        using var ctx = new BunitContext();
+
+        var svg = ctx.Render<AppointmentDetails>().Find("button.btn-link svg");
+
+        svg.GetAttribute("class").ShouldBe("join-icon");
+        // Крестик в наборе иконок называется "x" — см. JoinIconMarkup.
+        svg.QuerySelector("use")!.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#x");
+    }
+
     [Fact]
     public void LinkToSiteOpensInNewTab()
     {
