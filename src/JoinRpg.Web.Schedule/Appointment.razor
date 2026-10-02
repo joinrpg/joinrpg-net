@@ -20,14 +20,16 @@
             <a href="@characterUriLocator.GetDetailsUri(CharacterId)" target="@Target">@Model.DisplayName</a>
             @if (Model.HasMasterAccess)
             {
-                <a href="@characterUriLocator.GetEditUri(CharacterId)">(ред.)</a>
+                @* Пробел задан выражением, а не разметкой: Blazor, в отличие от cshtml,
+                   вырезает текстовые узлы из одних пробелов — и <text> </text> тоже. *@
+                @Space<a href="@characterUriLocator.GetEditUri(CharacterId)">(ред.)</a>
             }
         </div>
 
         @if (Model.ErrorType == AppointmentErrorType.NotLocated)
         {
             <div class="appointment-rooms">
-                <b>Комнаты:</b>
+                <b>Комнаты: </b>
                 @if (Model.Rooms.Count > 0)
                 {
                     @(Model.AllRooms ? "все" : Rooms)
@@ -38,7 +40,7 @@
                 }
             </div>
             <div class="appointment-slots">
-                <b>Слоты:</b>
+                <b>Слоты: </b>
                 @if (Model.Slots.Count > 0)
                 {
                     @Slots
@@ -52,7 +54,10 @@
         <div id="appointment@(Model.CharacterId)-users" class="appointment-users">
             @foreach (var user in Model.Users)
             {
-                <UserLink Model="user" />
+                @* Разделитель между именами: в самой карточке .appointment-users — flex,
+                   и склейки не видно, но JS копирует этот innerHTML в #details-users,
+                   а там обычный div. *@
+                <UserLink Model="user" />@Space
             }
         </div>
     </div>
@@ -64,6 +69,12 @@
     [Parameter]
     [EditorRequired]
     public AppointmentViewModel Model { get; set; } = null!;
+
+    /// <summary>
+    /// Пробел-разделитель. Статическую разметку из одних пробелов Blazor вырезает
+    /// (в отличие от cshtml), а вывод выражения — нет.
+    /// </summary>
+    private const string Space = " ";
 
     private CharacterIdentification CharacterId
         => new(new ProjectIdentification(Model.ProjectId), Model.CharacterId);
