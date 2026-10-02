@@ -10,7 +10,7 @@ public class FinanceProblemsFilter : IProblemFilter<Claim>
         {
             yield return new ClaimProblem(ClaimProblemType.FinanceModerationRequired, ProblemSeverity.Warning);
         }
-        if (claim.ClaimTotalFee(projectInfo) < claim.ClaimBalance() && claim.Project.Details.FinanceWarnOnOverPayment)
+        if (claim.ClaimTotalFee(projectInfo) < claim.ClaimBalance() && projectInfo.ProjectFinanceSettings.WarnOnOverPayment)
         {
             yield return new ClaimProblem(ClaimProblemType.TooManyMoney, ProblemSeverity.Error);
         }
