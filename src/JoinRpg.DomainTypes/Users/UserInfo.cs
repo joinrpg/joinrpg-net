@@ -26,6 +26,15 @@ public record class UserInfo(
 
     public UserInfoHeader ToUserInfoHeader() => new(UserId, DisplayName);
 
+    /// <summary>
+    /// Паспорт и адрес регистрации в текстовое представление не попадают: сгенерированный
+    /// record'ом <c>ToString()</c> напечатал бы их, и первая же интерполяция объекта в лог или
+    /// в текст исключения отправила бы персональные данные в логи. Тем же приёмом защищается
+    /// EF-сущность <c>UserExtra</c>.
+    /// </summary>
+    public override string ToString()
+        => $"UserInfo(UserId: {UserId}, DisplayName: {DisplayName}, Email: {Email})";
+
     // Не реализовано
     public bool PhoneNumberConfirmed { get; } = false;
 

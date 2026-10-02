@@ -94,6 +94,15 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         return await GetUserInfosByPredicate(user => ids.Contains(user.UserId));
     }
 
+    /// <remarks>
+    /// Паспорт и адрес регистрации проекция отдаёт намеренно: <see cref="UserInfo"/> объявляет их
+    /// своими свойствами, и по ним <c>UserInfo.GetMissingItems()</c> считает незаполненность
+    /// профиля. Без них у любого репозиторного <see cref="UserInfo"/> они всегда <c>null</c>, то
+    /// есть паспорт и адрес вечно «не заполнены». Отсечение по доступу к чувствительным данным
+    /// живёт выше — <c>sensitiveDataAccessAllowed</c> в <c>UserProfileProblemsCalculator</c> и
+    /// согласие на уровне заявки (<c>PlayerAllowedSenstiveData</c>). В дешёвую проекцию для
+    /// отображения (<see cref="GetUserInfoHeadersByPredicate"/>) эти поля не попадают.
+    /// </remarks>
     public async Task<IReadOnlyCollection<UserInfo>> GetUserInfosByPredicate(Expression<Func<User, bool>> predicate)
     {
         var activeclaimsPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
@@ -124,13 +133,6 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Auth.EmailConfirmed,
                 HasPassword = user.PasswordHash != null,
                 user.Extra.BirthDate,
-                // Паспорт и адрес регистрации UserInfo объявляет как свои свойства, и по ним
-                // UserInfo.GetMissingItems() считает незаполненность профиля — значит проекция
-                // обязана их отдавать, иначе у любого репозиторного UserInfo они всегда null
-                // и паспорт/адрес вечно «не заполнены». Отсечение по доступу к чувствительным
-                // данным живёт выше — в UserProfileProblemsCalculator (sensitiveDataAccessAllowed)
-                // и claim.PlayerAllowedSenstiveData. В дешёвую проекцию для отображения
-                // (GetUserInfoHeadersByPredicate) эти поля намеренно не попадают.
                 user.Extra.PassportData,
                 user.Extra.RegistrationAddress,
             };
