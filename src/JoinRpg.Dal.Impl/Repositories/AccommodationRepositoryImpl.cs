@@ -38,15 +38,16 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
 
     }
 
-    public async Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project)
+    public async Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(ProjectIdentification projectId)
     {
+        var project = projectId.Value;
 
-        return await ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == project)
-            .Include(x => x.Project)
-            .Include(x => x.Desirous.Select(ar => ar.Subjects.Select(c => c.FinanceOperations)))
-            .Select(x => new RoomTypeInfoRow()
+        // Сам тип проживания из базы не читается: его настройки приходят из метаданных проекта
+        // (ADR015), поэтому запросу нужны только идентификатор и счётчики занятости.
+        var rows = await ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == project)
+            .Select(x => new
             {
-                RoomType = x,
+                x.Id,
                 // cast to int? required to correctly handle SQL-LINQ nullness
                 Occupied = x.ProjectAccommodations.Sum(room => room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count)) ?? 0,
                 RoomsCount = x.ProjectAccommodations.Count,
@@ -56,5 +57,20 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
             })
             .ToListAsync()
             .ConfigureAwait(false);
+
+        // Типизированный идентификатор собирается уже в памяти: конструктор в дерево выражений
+        // EF6 не переводится.
+        return
+        [
+            .. rows.Select(row => new RoomTypeInfoRow()
+            {
+                RoomTypeId = new AccommodationTypeIdentification(projectId, row.Id),
+                Occupied = row.Occupied,
+                RoomsCount = row.RoomsCount,
+                ApprovedClaims = row.ApprovedClaims,
+                FullyFreeRoomsCount = row.FullyFreeRoomsCount,
+                FullyOccupiedRoomsCount = row.FullyOccupiedRoomsCount,
+            })
+        ];
     }
 }

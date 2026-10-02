@@ -49,6 +49,7 @@ public class AccommodationTypeController(
         return View(new AccommodationListViewModel(project,
             await accommodationRepository.GetRoomTypesForProject(projectId),
             await claimsRepository.GetClaimsForRoomType(projectId, ClaimStatusSpec.Active, roomTypeId: null),
+            await claimsRepository.GetUnsettledAccommodationClaims(projectId),
             currentUserAccessor));
     }
 
