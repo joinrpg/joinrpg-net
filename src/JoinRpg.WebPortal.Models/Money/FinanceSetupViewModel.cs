@@ -81,8 +81,8 @@ public class FinanceSetupViewModel
         GlobalSettings = new FinanceGlobalSettingsViewModel
         {
             ProjectId = ProjectId,
-            WarnOnOverPayment = project.Details.FinanceWarnOnOverPayment,
-            PreferentialFeeEnabled = project.Details.PreferentialFeeEnabled,
+            WarnOnOverPayment = financeSettings.WarnOnOverPayment,
+            PreferentialFeeEnabled = financeSettings.PreferentialFeeEnabled,
             PreferentialFeeConditions = project.Details.PreferentialFeeConditions.Contents,
         };
     }

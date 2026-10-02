@@ -28,6 +28,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         var financeSettings = new ProjectFinanceSettings(
             project.Details.PreferentialFeeEnabled,
+            project.Details.FinanceWarnOnOverPayment,
             [..
                 project.PaymentTypes.Select(
                     pt => new PaymentTypeInfo(

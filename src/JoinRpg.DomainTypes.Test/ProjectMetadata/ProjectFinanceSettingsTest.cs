@@ -12,7 +12,7 @@ public class ProjectFinanceSettingsTest
     private static readonly DateTime Day20 = new(2026, 3, 20);
 
     private static ProjectFinanceSettings Make(params ProjectFeeSettingInfo[] schedule)
-        => new(PreferentialFeeEnabled: true, PaymentTypes: [], FeeSchedule: schedule);
+        => new(PreferentialFeeEnabled: true, WarnOnOverPayment: true, PaymentTypes: [], FeeSchedule: schedule);
 
     [Fact]
     public void EmptyScheduleMeansNoFee()
