@@ -2,13 +2,21 @@
 @using JoinRpg.Web.CharacterGroups.ProjectRoleGrid
 @model GameRolesViewModel
 
-@{
+@if (Model.RolesListId is { } rolesListId)
+{
+    @* Сетка ролей по умолчанию: страница выглядит ровно как /{projectId}/roleslist/{id} —
+       тот же остров, тот же заголовок, без обрамления группы. *@
+    ViewData["Title"] = "Сетка ролей";
+    @(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { RolesListId = rolesListId }))
+}
+else
+{
     ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.RootGroupName;
     ViewData["ShowEditControls"] = Model.ShowEditControls;
+    @if (Model.Details is not null)
+    {
+        @Html.DisplayFor(model => model.Details)
+    }
+    @* Тело сетки строит остров ProjectRoleGrid в классическом режиме (транзиентная настройка без id). *@
+    @(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.ProjectId, ClassicGroupId = Model.GridGroupId }))
 }
-@if (Model.Details is not null)
-{
-    @Html.DisplayFor(model => model.Details)
-}
-@* Тело сетки строит остров ProjectRoleGrid в классическом режиме (транзиентная настройка без id). *@
-@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.ProjectId, ClassicGroupId = Model.GridGroupId }))

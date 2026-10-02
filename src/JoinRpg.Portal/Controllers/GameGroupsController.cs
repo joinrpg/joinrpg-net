@@ -27,9 +27,19 @@ public class GameGroupsController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var explicitGroupId = CharacterGroupIdentification.FromOptional(projectId, characterGroupId);
 
+        // На /{projectId}/roles (без группы в URL) показываем сетку ролей по умолчанию — ту же,
+        // что и /{projectId}/roleslist/{id}, но прямо здесь, без редиректа: /roles остаётся
+        // каноническим адресом сетки ролей проекта. Классическая (транзиентная) сетка остаётся
+        // только для проектов, у которых сеток ролей нет вообще, и для /roles/{characterGroupId}.
         if (explicitGroupId is null && projectInfo.DefaultRolesListId is { } defaultRolesListId)
         {
-            return Redirect($"/{projectId.Value}/roleslist/{defaultRolesListId.ProjectRolesListId}");
+            return View(
+              new GameRolesViewModel
+              {
+                  ProjectName = projectInfo.ProjectName,
+                  ProjectId = projectId,
+                  RolesListId = defaultRolesListId,
+              });
         }
 
         var characterGroupId2 = explicitGroupId ?? projectInfo.GroupTree.RootGroupId;
