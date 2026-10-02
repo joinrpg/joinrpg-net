@@ -257,19 +257,6 @@ public class CustomFieldsViewModel
     public int FieldsTotalFee => FieldsFee.Sum(kv => kv.Value);
 
     /// <summary>
-    /// Called from AddClaimViewModel
-    /// </summary>
-    public CustomFieldsViewModel(
-        Character target,
-        ProjectInfo projectInfo,
-        AccessArguments accessArguments,
-        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users,
-        Dictionary<int, string?>? overrideValues)
-        : this(accessArguments, AvailabilityTarget(target, projectInfo), target.GetFields(projectInfo), overrideValues, projectInfo, users)
-    {
-    }
-
-    /// <summary>
     /// Поля персонажа поверх доменного агрегата (ADR013) — страница подачи заявки.
     /// </summary>
     public CustomFieldsViewModel(
