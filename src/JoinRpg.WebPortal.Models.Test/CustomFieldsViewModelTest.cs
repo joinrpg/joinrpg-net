@@ -251,6 +251,26 @@ public class CustomFieldsViewModelTest
         userLinks[1].UserId.ShouldBe(new UserIdentification(7));
     }
 
+    /// <summary>
+    /// UserLinks уезжает параметром InitialUsers в WASM-остров JoinUserLinkEditor, а параметры
+    /// острова сериализуются вместе с именем рантайм-типа. Поэтому тип списка должен быть публичным
+    /// и жить не в этой сборке (её на клиенте нет), иначе остров падает на старте. Так ломался
+    /// показ заявки с полем «ведущий мероприятия»: collection expression для IReadOnlyList
+    /// порождает внутренний &lt;&gt;z__ReadOnlyList в JoinRpg.WebPortal.Models.
+    /// </summary>
+    [Fact]
+    public void UserLinksTypeIsResolvableOnWasmClient()
+    {
+        var (vm, field) = CreateUserLinkFieldViewModel("7");
+
+        var listType = vm.Field(field).ShouldNotBeNull().UserLinks.GetType();
+
+        listType.IsPublic.ShouldBeTrue($"Тип {listType} не публичный, клиент его не найдёт");
+        listType.Assembly.ShouldNotBe(
+            typeof(FieldValueViewModel).Assembly,
+            $"Тип {listType} лежит в серверной сборке, на клиенте его нет");
+    }
+
     /// <param name="value">Сырое значение поля, как оно лежит в базе</param>
     /// <param name="fieldType">Тип поля — одиночная ссылка или мультивыбор</param>
     private static (CustomFieldsViewModel vm, ProjectFieldInfo field) CreateUserLinkFieldViewModel(
