@@ -140,7 +140,7 @@ public class GameGroupsController(
         {
             await characterGroupService.EditCharacterGroup(charGroupId,
                 viewModel.Name, viewModel.IsPublic,
-                [.. viewModel.ParentCharacterGroupIds],
+                [.. viewModel.ParentCharacterGroupIdInts.Select(id => new CharacterGroupIdentification(projectId, id))],
                 viewModel.Description);
 
             return RedirectToIndex(viewModel.ProjectId, viewModel.CharacterGroupId, "Details");
@@ -199,7 +199,7 @@ public class GameGroupsController(
 
         return View(new AddCharacterGroupViewModel
         {
-            ParentCharacterGroupIds = [new(projectid, charactergroupid)],
+            ParentCharacterGroupIdInts = [charactergroupid],
             ProjectId = projectid.Value,
             ProjectName = projectInfo.ProjectName.Value,
         });
@@ -226,7 +226,7 @@ public class GameGroupsController(
 
         try
         {
-            List<CharacterGroupIdentification> parentCharacterGroupIds = [.. viewModel.ParentCharacterGroupIds];
+            List<CharacterGroupIdentification> parentCharacterGroupIds = [.. CharacterGroupIdentification.FromList(viewModel.ParentCharacterGroupIdInts, projectId)];
             await characterGroupService.AddCharacterGroup(
               projectId,
               viewModel.Name, viewModel.IsPublic,
@@ -252,7 +252,7 @@ public class GameGroupsController(
         return new EditCharacterGroupViewModel
         {
             CharacterGroupId = charGroupId.CharacterGroupId,
-            ParentCharacterGroupIds = [.. charGroupFullInfo.DirectParentGroupIds],
+            ParentCharacterGroupIdInts = [.. charGroupFullInfo.DirectParentGroupIds.Select(x => x.Id)],
             Description = charGroupFullInfo.Description?.Value ?? "",
             IsPublic = charGroupFullInfo.IsPublic,
             Name = charGroupFullInfo.Name,

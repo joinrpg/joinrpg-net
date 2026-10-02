@@ -8,7 +8,7 @@ public class EditCharacterGroupViewModel : CharacterGroupViewModelBase
     public int CharacterGroupId { get; set; }
 
     [CannotBeEmpty, DisplayName("Является частью групп")]
-    public CharacterGroupIdentification[] ParentCharacterGroupIds { get; set; } = [];
+    public int[] ParentCharacterGroupIdInts { get; set; } = [];
 
     public CreateUpdateMarksViewModel? Marks { get; set; }
 }
