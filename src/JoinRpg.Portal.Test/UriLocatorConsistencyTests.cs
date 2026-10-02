@@ -91,16 +91,19 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
     }
 
     /// <summary>
-    /// Клиентской реализации у <see cref="IScheduleUriLocator"/> нет (расписание рендерится
-    /// статически), поэтому сверяем серверную с роутом <c>ShowScheduleController</c> напрямую:
-    /// иначе переименование action'а сломает ссылку из полноэкранного режима молча.
+    /// Сверх обычной сверки серверной реализации с клиентской здесь закреплён и сам путь:
+    /// иначе переименование action'а в <c>ShowScheduleController</c> сломало бы единственный
+    /// выход из полноэкранного режима расписания молча — обе реализации независимы, но
+    /// клиентская задана строкой и о роутах ничего не знает.
     /// </summary>
     [Fact]
-    public void ScheduleUriShouldMatchControllerRoute()
+    public void ScheduleLocatorsShouldAgree()
     {
-        var uri = factory.Services.GetRequiredService<IScheduleUriLocator>().GetScheduleUri(ProjectId);
+        var server = factory.Services.GetRequiredService<IScheduleUriLocator>().GetScheduleUri(ProjectId);
+        var client = _clientServices.GetRequiredService<IScheduleUriLocator>().GetScheduleUri(ProjectId);
 
-        NormalizePathAndQuery(uri).ShouldBe($"/{ProjectId.Value}/schedule", StringCompareShould.IgnoreCase);
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+        NormalizePathAndQuery(server).ShouldBe($"/{ProjectId.Value}/schedule", StringCompareShould.IgnoreCase);
     }
 
     private static string NormalizePathAndQuery(Uri uri) =>

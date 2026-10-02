@@ -1,4 +1,5 @@
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.Schedule;
 
 namespace JoinRpg.Blazor.Client;
 
@@ -8,7 +9,8 @@ public static class UriLocatorExtensions
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
         IUriLocator<CharacterGroupIdentification>,
-        ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator
+        ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
+        IScheduleUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
@@ -69,6 +71,9 @@ public static class UriLocatorExtensions
 
         Uri IProjectFieldUriLocator.GetEditVariantUri(ProjectFieldVariantIdentification variantId) =>
             new($"/{variantId.FieldId.ProjectId.Value}/fields/EditValue?projectFieldId={variantId.FieldId.ProjectFieldId}&valueId={variantId.ProjectFieldVariantId}", UriKind.Relative);
+
+        Uri IScheduleUriLocator.GetScheduleUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/schedule", UriKind.Relative);
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {
@@ -82,6 +87,7 @@ public static class UriLocatorExtensions
             .AddSingleton<ICharacterUriLocator>(locator)
             .AddSingleton<ICharacterGroupUriLocator>(locator)
             .AddSingleton<IProjectFieldUriLocator>(locator)
+            .AddSingleton<IScheduleUriLocator>(locator)
             ;
     }
 }
