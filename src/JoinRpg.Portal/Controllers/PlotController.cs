@@ -135,7 +135,7 @@ public class PlotController(
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, PlotFolderIdentification plotFolderId, string content,
       string todoField, IReadOnlyCollection<CharacterIdentification>? targetCharacters, IReadOnlyCollection<CharacterGroupIdentification>? targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
     {
-        var targetGroupIds = (targetGroups ?? []).EnsureProject(projectId);
+        IReadOnlyCollection<CharacterGroupIdentification> targetGroupIds = targetGroups ?? [];
         var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
         try
         {
@@ -250,7 +250,7 @@ public class PlotController(
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             if (project.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots))
             {
-                var targetGroupIds = (targetGroups ?? []).EnsureProject(projectId);
+                IReadOnlyCollection<CharacterGroupIdentification> targetGroupIds = targetGroups ?? [];
                 var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
 
                 await plotService.EditPlotElement(id, content, todoField, targetGroupIds, targetCharIds, isMasterOnly);
