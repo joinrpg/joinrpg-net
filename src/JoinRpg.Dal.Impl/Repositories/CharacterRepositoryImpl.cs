@@ -79,21 +79,6 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
 
     public Task<Character> GetCharacterAsync(CharacterIdentification characterId) => GetCharacterAsync(characterId.ProjectId, characterId.CharacterId);
 
-    public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds)
-    {
-        characterIds.EnsureSameProject();
-
-        if (characterIds.Count == 0)
-        {
-            return [];
-        }
-
-        var projectId = characterIds.First().ProjectId;
-        var characterIntIds = characterIds.Select(x => x.CharacterId).ToArray();
-
-        return await LoadCharactersWithGroupsImpl(projectId, e => characterIntIds.Contains(e.CharacterId));
-    }
-
     private async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroupsImpl(ProjectIdentification projectId, Expression<Func<Character, bool>> predicate)
     {
         await LoadProjectGroups(projectId);

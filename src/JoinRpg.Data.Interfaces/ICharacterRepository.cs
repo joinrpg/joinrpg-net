@@ -22,8 +22,6 @@ public interface ICharacterRepository : IDisposable
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
     Task<Character> GetCharacterWithDetails(int projectId, int characterId);
     Task<IEnumerable<Character>> GetAllCharacters(int projectId);
-    Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds);
-
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(ProjectIdentification projectId);
 }
 

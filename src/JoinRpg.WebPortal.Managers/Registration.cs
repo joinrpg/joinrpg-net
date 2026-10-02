@@ -58,6 +58,7 @@ public static class Registration
         .AddScoped<IKogdaIgraSyncClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<IKogdaIgraBindClient, AdminTools.KogdaIgraSyncManager>()
         .AddScoped<Plots.CharacterPlotViewService>()
+        .AddScoped<Print.PrintViewService>()
         .AddScoped<IAccommodationInviteClient, Accommodation.AccommodationInviteViewService>()
         .AddScoped<IAccommodationTypeClient, Accommodation.AccommodationTypeViewService>()
         .AddScoped<Accommodation.RoomTypeRoomsViewService>()
