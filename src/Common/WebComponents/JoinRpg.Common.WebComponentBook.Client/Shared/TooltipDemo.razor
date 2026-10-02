@@ -1,0 +1,36 @@
+<h3>Tooltip</h3>
+
+<h4>Размещение</h4>
+<p>
+    @foreach (var placement in Enum.GetValues<TooltipPlacement>())
+    {
+        <text>
+            <Tooltip Title="@($"Подсказка: {placement}")" Placement="@placement">
+                <span class="btn btn-default">@placement</span>
+            </Tooltip>&nbsp;
+        </text>
+    }
+</p>
+
+<h4>Внутри контейнера с overflow: hidden</h4>
+<p>
+    Подсказка рисуется в top layer, поэтому её не обрезают ни рамки блока, ни его прокрутка —
+    именно это нужно шапке и левой колонке сетки расписания.
+</p>
+<div style="width: 220px; height: 90px; overflow: hidden; border: 1px solid silver; padding: 0.5em">
+    <Tooltip Title="Длинная подсказка, которая заметно шире и выше блока с overflow: hidden, в котором лежит цель">
+        <span class="btn btn-default">Цель в тесном блоке</span>
+    </Tooltip>
+</div>
+
+<h4>Разметка в подсказке</h4>
+<p>
+    <Tooltip>
+        <TooltipContent>
+            <b>Можно</b> и <i>разметку</i>
+        </TooltipContent>
+        <ChildContent>
+            <span class="btn btn-default">TooltipContent</span>
+        </ChildContent>
+    </Tooltip>
+</p>
