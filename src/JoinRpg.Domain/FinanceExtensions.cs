@@ -44,7 +44,7 @@ public static class FinanceExtensions
     {
         return claim.BaseFee(projectInfo, operationDate)
                + claim.ClaimFieldsFee(fieldsFee, projectInfo)
-               + claim.ClaimAccommodationFee();
+               + claim.ClaimAccommodationFee(projectInfo);
         /******************************************************************
          * If you want to add additional fee to a claim's fee,
          * append your value to the expression above.
@@ -113,8 +113,8 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns accommodation fee
     /// </summary>
-    public static int ClaimAccommodationFee(this Claim claim)
-        => claim.AccommodationRequest?.AccommodationType?.Cost ?? 0;
+    public static int ClaimAccommodationFee(this Claim claim, ProjectInfo projectInfo)
+        => claim.GetAccommodationType(projectInfo)?.Cost ?? 0;
 
     /// <summary>
     /// Returns how many money left to pay

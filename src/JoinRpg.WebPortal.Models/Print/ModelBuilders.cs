@@ -15,7 +15,7 @@ public static class ModelBuilders
         return new EnvelopeViewModel(
             FeeDue: approvedClaim?.ClaimFeeDue(projectInfo) ?? projectInfo.ProjectFinanceSettings.GetFeeForDate(DateTime.UtcNow, preferential: false),
             AccommodationEnabled: projectInfo.AccommodationSettings.Enabled,
-            AccommodationTypeName: approvedClaim?.AccommodationRequest?.AccommodationType?.Name,
+            AccommodationTypeName: approvedClaim?.GetAccommodationType(projectInfo)?.Name,
             AccommodationName: approvedClaim?.AccommodationRequest?.Accommodation?.Name,
             CharacterId: character.GetId(),
             PlayerDisplayName: approvedClaim?.Player?.ExtractDisplayName(),

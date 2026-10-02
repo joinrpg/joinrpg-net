@@ -73,7 +73,7 @@ public static class ClaimListBuilder
             TotalFee: balance.TotalFee,
             new UserLinkViewModel(lastModifiedBy),
             claim.GetId(),
-            claim.AccommodationRequest?.AccommodationType.Name,
+            claim.GetAccommodationType(projectInfo)?.Name,
             claim.AccommodationRequest?.Accommodation?.Name,
             claim.PreferentialFeeUser,
             PassportData,
