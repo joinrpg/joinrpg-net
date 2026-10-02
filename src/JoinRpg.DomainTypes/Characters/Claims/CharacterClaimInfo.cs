@@ -1,4 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 namespace JoinRpg.DomainTypes.Characters.Claims;
 
@@ -23,13 +24,11 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// <param name="CheckInDate">Когда игрока зарегистрировали на игре; <c>null</c>, если не регистрировали.</param>
 /// <param name="LastMasterCommentAt">Последний мастерский комментарий, включая невидимые игроку.</param>
 /// <param name="LastVisibleMasterCommentAt">Последний мастерский комментарий, видимый игроку.</param>
-/// <param name="FeePaid">Сумма подтверждённых финансовых операций по заявке.</param>
-/// <param name="FinanceOperationsRequireModeration">
-/// Есть ли по заявке финансовые операции, ожидающие решения мастера
-/// (<c>FinanceOperation.RequireModeration</c>). Сам список операций в агрегат не входит (ADR013):
-/// проблеме <c>FinanceModerationRequired</c> нужен только факт.
+/// <param name="Finance">
+/// Финансовые факты заявки: зафиксированный взнос, льгота, уплаченное, стоимость проживания,
+/// факт операций, ждущих модерации. Сгруппированы отдельным типом, потому что ими пользуются
+/// вместе — расчёт баланса и фильтры финансовых проблем.
 /// </param>
-/// <param name="AccommodationFee">Стоимость выбранного проживания, 0 если проживание не выбрано.</param>
 /// <param name="PlayerAllowedSensitiveData">
 /// Игрок разрешил мастерам видеть свои чувствительные данные (паспорт, адрес регистрации).
 /// Согласие даётся на уровне заявки, поэтому это факт о заявке, а не о профиле.
@@ -55,11 +54,7 @@ public record class CharacterClaimInfo(
     DateTimeOffset? LastPlayerCommentAt,
     DateTimeOffset? LastMasterCommentAt,
     DateTimeOffset? LastVisibleMasterCommentAt,
-    int? CurrentFee,
-    bool PreferentialFeeUser,
-    int FeePaid,
-    bool FinanceOperationsRequireModeration,
-    int AccommodationFee,
+    ClaimFinanceInfo Finance,
     bool PlayerAllowedSensitiveData,
     FieldLayerContainer Fields)
 {

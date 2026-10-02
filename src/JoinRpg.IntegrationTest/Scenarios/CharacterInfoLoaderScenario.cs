@@ -93,7 +93,7 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
             // Согласие игрока доехало из колонки PlayerAllowedSenstiveData (опечатка — в БД).
             claim.PlayerAllowedSensitiveData.ShouldBeTrue();
             // Финансовых операций по заявке пока нет — модерировать нечего.
-            claim.FinanceOperationsRequireModeration.ShouldBeFalse();
+            claim.Finance.OperationsRequireModeration.ShouldBeFalse();
         }
 
         // 5. Игрок просит льготный взнос. Это штатный сервисный путь, создающий операцию с
@@ -117,9 +117,9 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
             var repository = scope.ServiceProvider.GetRequiredService<ICharacterInfoRepository>();
             var claim = (await repository.GetCharacterInfo(characterId)).Claims.ShouldHaveSingleItem();
 
-            claim.FinanceOperationsRequireModeration.ShouldBeTrue();
+            claim.Finance.OperationsRequireModeration.ShouldBeTrue();
             // Операция ждёт решения мастера, поэтому в оплаченное она не попадает.
-            claim.FeePaid.ShouldBe(0);
+            claim.Finance.FeePaid.ShouldBe(0);
             claim.PlayerAllowedSensitiveData.ShouldBeTrue();
         }
     }

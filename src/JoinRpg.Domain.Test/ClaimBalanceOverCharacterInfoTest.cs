@@ -130,11 +130,12 @@ public class ClaimBalanceOverCharacterInfoTest
             LastPlayerCommentAt: null,
             LastMasterCommentAt: null,
             LastVisibleMasterCommentAt: null,
-            CurrentFee: currentFee,
-            PreferentialFeeUser: preferential,
-            FeePaid: feePaid,
-            FinanceOperationsRequireModeration: false,
-            AccommodationFee: accommodationFee,
+            Finance: new ClaimFinanceInfo(
+                FixedFee: currentFee,
+                PreferentialFeeUser: preferential,
+                FeePaid: feePaid,
+                AccommodationFee: accommodationFee,
+                OperationsRequireModeration: false),
             PlayerAllowedSensitiveData: false,
             Fields: FieldLayerContainer.DeserializeFieldLayer(projectInfo, fieldsJson));
 

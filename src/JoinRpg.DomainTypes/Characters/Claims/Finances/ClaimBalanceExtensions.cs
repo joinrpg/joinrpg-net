@@ -12,6 +12,8 @@ public static class ClaimBalanceExtensions
     /// (<c>JoinRpg.Domain.FinanceExtensions</c>): базовый взнос (зафиксированный в заявке или
     /// взятый из расписания проекта на дату), взнос за поля, стоимость проживания.
     /// Кеша <c>Claim.FieldsFee</c> здесь нет — взнос за поля всегда считается заново.
+    /// Сама формула живёт в <see cref="ClaimFinanceInfo.CalculateBalance"/>, здесь только
+    /// подставляется взнос за поля: слой полей принадлежит персонажу, а не финансам заявки.
     /// </remarks>
     public static ClaimBalance CalculateClaimBalance(
         this CharacterInfo character,
@@ -19,12 +21,11 @@ public static class ClaimBalanceExtensions
         ProjectInfo projectInfo,
         DateTime? date = null)
     {
-        var operationDate = date ?? DateTime.UtcNow;
+        ArgumentNullException.ThrowIfNull(character);
+        ArgumentNullException.ThrowIfNull(claim);
 
-        var baseFee = claim.CurrentFee
-            ?? projectInfo.ProjectFinanceSettings.GetFeeForDate(operationDate, claim.PreferentialFeeUser);
         var fieldsFee = character.GetAllFields(claim.ClaimId).Sum(field => field.GetCurrentFee());
 
-        return new ClaimBalance(claim.FeePaid, baseFee + fieldsFee + claim.AccommodationFee);
+        return claim.Finance.CalculateBalance(fieldsFee, projectInfo, date ?? DateTime.UtcNow);
     }
 }

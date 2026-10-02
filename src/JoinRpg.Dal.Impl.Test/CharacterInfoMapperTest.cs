@@ -198,8 +198,8 @@ public class CharacterInfoMapperTest
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
         var claim = result.Claims.Single();
-        claim.FeePaid.ShouldBe(0);
-        claim.AccommodationFee.ShouldBe(0);
+        claim.Finance.FeePaid.ShouldBe(0);
+        claim.Finance.AccommodationFee.ShouldBe(0);
     }
 
     [Fact]
@@ -210,8 +210,8 @@ public class CharacterInfoMapperTest
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
         var claim = result.Claims.Single();
-        claim.FeePaid.ShouldBe(1500);
-        claim.AccommodationFee.ShouldBe(300);
+        claim.Finance.FeePaid.ShouldBe(1500);
+        claim.Finance.AccommodationFee.ShouldBe(300);
     }
 
     // 4а. Флаги заявки, нужные фильтрам проблем, переносятся как есть — без инверсий и дефолтов.
@@ -225,7 +225,7 @@ public class CharacterInfoMapperTest
 
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
-        result.Claims.Single().FinanceOperationsRequireModeration.ShouldBe(requireModeration);
+        result.Claims.Single().Finance.OperationsRequireModeration.ShouldBe(requireModeration);
     }
 
     [Theory]

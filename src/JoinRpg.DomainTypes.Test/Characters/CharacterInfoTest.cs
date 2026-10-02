@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using static JoinRpg.DomainTypes.Test.ProjectInfoFixture;
 
@@ -661,11 +662,12 @@ public class CharacterInfoTest
             LastPlayerCommentAt: null,
             LastMasterCommentAt: null,
             LastVisibleMasterCommentAt: null,
-            CurrentFee: null,
-            PreferentialFeeUser: false,
-            FeePaid: 0,
-            FinanceOperationsRequireModeration: false,
-            AccommodationFee: 0,
+            Finance: new ClaimFinanceInfo(
+                FixedFee: null,
+                PreferentialFeeUser: false,
+                FeePaid: 0,
+                AccommodationFee: 0,
+                OperationsRequireModeration: false),
             PlayerAllowedSensitiveData: false,
             new FieldLayerContainer(projectInfo, fields ?? []));
 }
