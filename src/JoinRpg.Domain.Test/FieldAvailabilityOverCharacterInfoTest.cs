@@ -134,6 +134,7 @@ public class FieldAvailabilityOverCharacterInfoTest
             originalCharacterSlotId: null,
             [.. character.GetDirectGroupIds()],
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, null),
+            plotElementOrderData: null,
             [],
             approvedClaimId: null,
             DateTime.UtcNow,

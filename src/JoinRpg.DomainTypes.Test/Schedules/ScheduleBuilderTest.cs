@@ -351,6 +351,7 @@ public class ScheduleBuilderTest
             originalCharacterSlotId: null,
             directGroupIds: [],
             new FieldLayerContainer(projectInfo, MakeFieldValues(projectInfo, timeSlots, rooms, authorFieldValue)),
+            plotElementOrderData: null,
             claims: approvedClaim is null ? [] : [approvedClaim],
             approvedClaim?.ClaimId,
             new DateTime(2026, 1, 1),

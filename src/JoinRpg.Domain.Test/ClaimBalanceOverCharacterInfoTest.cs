@@ -149,6 +149,7 @@ public class ClaimBalanceOverCharacterInfoTest
             originalCharacterSlotId: null,
             [projectInfo.GroupTree.RootGroupId],
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, null),
+            plotElementOrderData: null,
             [claim],
             claimId,
             OperationDate,

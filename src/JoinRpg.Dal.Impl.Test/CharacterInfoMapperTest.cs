@@ -41,6 +41,7 @@ public class CharacterInfoMapperTest
         string? jsonData = null,
         MarkdownDbValue? description = null,
         IntList? parentGroups = null,
+        string? plotElementOrderData = null,
         int? approvedClaimId = null,
         int? originalCharacterSlotId = null,
         DateTime? createdAt = null,
@@ -63,6 +64,7 @@ public class CharacterInfoMapperTest
             JsonData = jsonData,
             Description = description ?? new MarkdownDbValue(null),
             ParentGroups = parentGroups ?? new IntList { ListIds = "" },
+            PlotElementOrderData = plotElementOrderData,
             ApprovedClaimId = approvedClaimId,
             OriginalCharacterSlotId = originalCharacterSlotId,
             CreatedAt = createdAt ?? SomeDate,
@@ -228,6 +230,28 @@ public class CharacterInfoMapperTest
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
         result.Description.ShouldBe(new MarkdownString(""));
+    }
+
+    // 5a. PlotElementOrderData переносится как есть — домен в этот блоб не заглядывает.
+
+    [Fact]
+    public void Map_PlotElementOrderData_ShouldBeCopiedAsIs()
+    {
+        var row = MakeRow(plotElementOrderData: "3,1,2");
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        result.PlotElementOrderData.ShouldBe("3,1,2");
+    }
+
+    [Fact]
+    public void Map_PlotElementOrderDataIsNull_ShouldStayNull()
+    {
+        var row = MakeRow(plotElementOrderData: null);
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        result.PlotElementOrderData.ShouldBeNull();
     }
 
     // 6. ApprovedClaimId/OriginalCharacterSlotId == null -> null; ненулевые -> корректные типизированные Id.
