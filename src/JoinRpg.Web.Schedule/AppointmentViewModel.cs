@@ -1,6 +1,4 @@
-using JoinRpg.Common.WebComponents;
-
-namespace JoinRpg.Web.Models.Schedules;
+namespace JoinRpg.Web.Schedule;
 
 public enum AppointmentErrorType
 {
@@ -24,7 +22,7 @@ public class AppointmentBaseViewModel
     public int ProjectId { get; set; }
     public int CharacterId { get; set; }
     public required IReadOnlyCollection<UserLinkViewModel> Users { get; set; }
-    public JoinHtmlString Description { get; set; }
+    public MarkupString Description { get; set; }
 }
 
 public class AppointmentViewModel : AppointmentBaseViewModel

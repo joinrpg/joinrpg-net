@@ -103,6 +103,7 @@
     <Project Path="src/JoinRpg.Web.Plots/JoinRpg.Web.Plots.csproj" />
     <Project Path="src/JoinRpg.Web.ProjectCommon/JoinRpg.Web.ProjectCommon.csproj" />
     <Project Path="src/JoinRpg.Web.ProjectMasterTools/JoinRpg.Web.ProjectMasterTools.csproj" />
+    <Project Path="src/JoinRpg.Web.Schedule/JoinRpg.Web.Schedule.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Managers/JoinRpg.WebPortal.Managers.csproj" />
     <Project Path="src/JoinRpg.WebPortal.Models/JoinRpg.WebPortal.Models.csproj" />
     <Project Path="src/JoinRpg.XGameApi.Contract/JoinRpg.XGameApi.Contract.csproj" />
