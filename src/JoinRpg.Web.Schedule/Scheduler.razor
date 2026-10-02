@@ -1,4 +1,10 @@
-﻿@model JoinRpg.Web.Schedule.SchedulePageViewModel
+@*
+    Сетка расписания: шапка с комнатами, левая колонка с тайм-слотами и поле карточек.
+
+    Шапка и левая колонка — отдельные блоки с overflow: hidden, которые JS синхронизирует
+    со прокруткой поля (handleScroll). Поэтому они не могут быть просто ячейками одной
+    таблицы, а скрипт обязан остаться рядом с разметкой: он ссылается на id элементов.
+*@
 <div id="scheduler" class="scheduler">
 
     <div class="scheduler-header">
@@ -6,12 +12,12 @@
         <div id="scheduler-header-scrollable" class="scheduler-header-scrollable">
             <table class="scheduler-header-columns">
                 <thead>
-                <tr>
-                    @foreach (var col in Model.Columns)
-                    {
-                        <th id="project-room@(col.Id)" class="scheduler-header-column" title="@Html.Raw(col.Description.Value)" data-toggle="tooltip" data-placement="bottom" style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px">@col.Name</th>
-                    }
-                </tr>
+                    <tr>
+                        @foreach (var col in Model.Columns)
+                        {
+                            <th id="project-room@(col.Id)" class="scheduler-header-column" title="@col.Description.Value" data-toggle="tooltip" data-placement="bottom" style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px">@col.Name</th>
+                        }
+                    </tr>
                 </thead>
             </table>
         </div>
@@ -23,7 +29,7 @@
             <div id="scheduler-header-rows-scrollable" class="scheduler-header-rows-scrollable">
                 @foreach (var row in Model.Rows)
                 {
-                    <div id="project-slot@(row.Id)" class="scheduler-header-row" title="@Html.Raw(row.Description.Value)" data-toggle="tooltip" data-placement="right" style="height: @(Model.RowHeight)px">@row.Name</div>
+                    <div id="project-slot@(row.Id)" class="scheduler-header-row" title="@row.Description.Value" data-toggle="tooltip" data-placement="right" style="height: @(Model.RowHeight)px">@row.Name</div>
                 }
             </div>
         </div>
@@ -32,22 +38,22 @@
 
             <table class="scheduler-grid">
                 <tbody>
-                @for (int row = 0; row < Model.Rows.Count; row++)
-                {
-                    <tr>
-                        @for (int i = 0; i < Model.Columns.Count; i++)
-                        {
-                            <td style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px; height: @(Model.RowHeight)px;"></td>
-                        }
-                    </tr>
-                }
+                    @for (var row = 0; row < Model.Rows.Count; row++)
+                    {
+                        <tr>
+                            @for (var i = 0; i < Model.Columns.Count; i++)
+                            {
+                                <td style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px; height: @(Model.RowHeight)px;"></td>
+                            }
+                        </tr>
+                    }
                 </tbody>
             </table>
 
             <div class="scheduler-appointments">
                 @foreach (var appointment in Model.Appointments)
                 {
-                    <partial name="_AppointmentPartial" model="appointment"/>
+                    <Appointment Model="appointment" />
                 }
             </div>
         </div>
@@ -76,3 +82,9 @@
         rowHeaderScrollable = document.getElementById("scheduler-header-rows-scrollable");
     });
 </script>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public SchedulePageViewModel Model { get; set; } = null!;
+}

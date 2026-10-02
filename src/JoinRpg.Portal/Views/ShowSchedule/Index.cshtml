@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Schedule.SchedulePageViewModel
+﻿@using JoinRpg.Web.Schedule
+@model SchedulePageViewModel
 
 @{
     ViewBag.Title = "Расписание";
@@ -12,21 +13,21 @@
 </div>
 
 <section class="scheduler-container">
-    @await Html.PartialAsync("Scheduler", Model)
+    @(await Html.RenderComponentAsync<Scheduler>(RenderMode.Static, new { Model }))
 </section>
 
 @if (Model.Intersections.Count > 0)
 {
     <h3>Мероприятия, пересекающиеся друг с другом</h3>
     <section>
-        @await Html.PartialAsync("Intersections", Model)
+        @(await Html.RenderComponentAsync<Intersections>(RenderMode.Static, new { Model }))
     </section>
 }
 @if (Model.NotAllocated.Count > 0)
 {
     <h3>Мероприятия, не размещенные в сетке</h3>
     <section>
-        @await Html.PartialAsync("Notallocated", Model)
+        @(await Html.RenderComponentAsync<NotAllocated>(RenderMode.Static, new { Model }))
     </section>
 }
 

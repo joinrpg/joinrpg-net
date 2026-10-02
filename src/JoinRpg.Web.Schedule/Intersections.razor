@@ -1,0 +1,13 @@
+@* Мероприятия, пересекающиеся друг с другом: карточки в потоке, без координат в сетке. *@
+<div class="scheduler-intersections">
+    @foreach (var appointment in Model.Intersections)
+    {
+        <Appointment Model="appointment" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public SchedulePageViewModel Model { get; set; } = null!;
+}
