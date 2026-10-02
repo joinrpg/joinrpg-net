@@ -17,10 +17,6 @@ namespace JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 /// <param name="Cost">Стоимость проживания для одного игрока</param>
 /// <param name="Capacity">Сколько игроков помещается в одну комнату этого типа</param>
 /// <param name="IsPlayerSelectable">Может ли игрок сам выбрать этот тип в своей заявке</param>
-/// <remarks>
-/// Поля <c>IsInfinite</c> и <c>IsAutoFilledAccommodation</c> EF-сущности сюда не переносятся:
-/// они помечены «not implemented yet» и нигде не читаются.
-/// </remarks>
 public record AccommodationTypeInfo(
     AccommodationTypeIdentification Id,
     RoomCategoryIdentification RoomCategoryId,
@@ -28,7 +24,36 @@ public record AccommodationTypeInfo(
     MarkdownString Description,
     int Cost,
     int Capacity,
-    bool IsPlayerSelectable);
+    bool IsPlayerSelectable)
+{
+    /// <summary>
+    /// Бесконечное поселение: тип, в который можно селить сколько угодно игроков, не заводя комнат
+    /// (например, «своя палатка»). <b>Функциональность не реализована</b>, поэтому свойство всегда
+    /// возвращает <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// Колонка <c>IsInfinite</c> в таблице типов проживания есть и остаётся — ADR015 переносил
+    /// настройки типа в метаданные, но колонку не удалял; на проде значение <c>true</c> стоит
+    /// у единиц строк в архивных проектах. Записать флаг нечем: <c>AccommodationTypeRequest</c>
+    /// такого поля не несёт, а чекбоксы в форме редактирования типа закомментированы.
+    /// Поэтому здесь объявлено именно свойство-заглушка, а не параметр записи, читаемый из
+    /// колонки: «не реализовано» должно быть видно в доменной модели, чтобы потребители
+    /// метаданных не оставляли флаг в неявном дефолте своей вью-модели (ADR015).
+    /// Когда функциональность реализуют, свойство станет настоящим — параметром записи,
+    /// читаемым из колонки, — и потребителей менять не придётся.
+    /// </remarks>
+    public bool IsInfinite => false;
+
+    /// <summary>
+    /// Автозаполнение: тип проживания, по которому игроки расселяются по комнатам автоматически.
+    /// <b>Функциональность не реализована</b>, поэтому свойство всегда возвращает <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// Всё сказанное про <see cref="IsInfinite"/> верно и здесь: колонка
+    /// <c>IsAutoFilledAccommodation</c> в БД есть и остаётся, а записать её нечем.
+    /// </remarks>
+    public bool IsAutoFilledAccommodation => false;
+}
 
 /// <summary>
 /// Настройки проживания проекта: включён ли модуль и какие типы проживания заведены.

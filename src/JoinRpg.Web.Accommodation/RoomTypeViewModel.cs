@@ -222,6 +222,11 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         Name = typeInfo.Name;
         Capacity = typeInfo.Capacity;
         IsPlayerSelectable = typeInfo.IsPlayerSelectable;
+        // Нереализованные флаги берём из метаданных явно, а не оставляем в дефолте вью-модели:
+        // в метаданных они всегда false (см. AccommodationTypeInfo.IsInfinite), и форма должна
+        // показывать именно это значение, а не совпадающий с ним по случайности дефолт.
+        IsInfinite = typeInfo.IsInfinite;
+        IsAutoFilledAccommodation = typeInfo.IsAutoFilledAccommodation;
         DescriptionEditable = typeInfo.Description.Value;
         DescriptionHtml = descriptionView.Value;
         Requests = [];
