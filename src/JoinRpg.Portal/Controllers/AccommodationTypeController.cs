@@ -108,17 +108,23 @@ public class AccommodationTypeController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> SaveRoomType(RoomTypeViewModel model)
     {
+        var projectId = new ProjectIdentification(model.ProjectId);
+
         if (!ModelState.IsValid)
         {
-            if (model.Id == 0)
-            {
-                return View("AddRoomType", model);
-            }
+            // Model binding собирает модель пустым конструктором, так что название проекта и права
+            // в неё не приходят. Без них EditRoomType показал бы read-only обзор вместо формы,
+            // и мастер не увидел бы, что именно он заполнил неправильно.
+            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+            model.ProjectName = projectInfo.ProjectName.Value;
+            model.CanManageRooms = projectInfo.HasMasterAccess(
+                currentUserAccessor.UserIdentification, Permission.CanManageAccommodation);
+            model.CanAssignRooms = projectInfo.HasMasterAccess(
+                currentUserAccessor.UserIdentification, Permission.CanSetPlayersAccommodations);
 
-            return View("EditRoomType", model);
+            return View(model.Id == 0 ? "AddRoomType" : "EditRoomType", model);
         }
 
-        var projectId = new ProjectIdentification(model.ProjectId);
         var request = new AccommodationTypeRequest(
             model.Name,
             new MarkdownString(model.DescriptionEditable ?? ""),
