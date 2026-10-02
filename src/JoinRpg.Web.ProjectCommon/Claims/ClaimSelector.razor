@@ -1,20 +1,19 @@
 @using JoinRpg.DomainTypes.Characters.Claims
 @inject IClaimListClient client
 
-@if (items is null)
-{
-   <JoinLoadingMessage />
-}
-else
-{
-  <IntSelector
+<TypedSelector TKey="ClaimIdentification" TItem="ClaimLinkViewModel"
                Name="@Name"
+               Items="claims"
+               KeySelector="@(c => c.ClaimId)"
+               ToListItem="@(c => TypedSelectList.CreateItem(
+                   Value: c.ClaimId,
+                   Text: c.CharacterName,
+                   Subtext: c.PlayerName.ToLongString(),
+                   ExtraSearch: c.OtherPlayerNicks))"
                SelectedValues="@Selected"
-               SelectedValuesChanged="@HandleSelectedChanged"
-               PossibleValues="items"
+               SelectedItemsChanged="HandleSelectedItemsChanged"
                Multiple="false"
                />
-}
 
 @code {
 
@@ -27,42 +26,28 @@ else
     [Parameter] public EventCallback<ClaimLinkViewModel?> ClaimChanged { get; set; }
     [Parameter] public ClaimStatusSpec Spec { get; set; } = ClaimStatusSpec.Active;
 
-	private int[] Selected { get; set; } = new int[0];
-	private IntSelectListItem[] items = null!;
-	private IReadOnlyCollection<ClaimLinkViewModel> Claims = null!;
+    private ClaimIdentification[] Selected { get; set; } = [];
+    private ClaimLinkViewModel[]? claims;
 
-	protected override async Task OnInitializedAsync()
-	{
-		Claims = await client.GetClaims(ProjectId, Spec);
-		items = Claims
-          .Select(claim  =>
-            new IntSelectListItem(
-			  Value: claim.ClaimId.ClaimId,
-              Text: claim.CharacterName,
-              Subtext: claim.PlayerName.ToLongString(),
-              ExtraSearch: claim.OtherPlayerNicks)
-          )
-           .ToArray();
-    }
+    protected override async Task OnInitializedAsync() => claims = [.. await client.GetClaims(ProjectId, Spec)];
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
         if (ClaimId is not null)
         {
-            Selected = new int[] { ClaimId.ClaimId };
+            Selected = [ClaimId];
         }
         else if (Claim is not null)
         {
-            Selected = new int[] { Claim.ClaimId.ClaimId };
+            Selected = [Claim.ClaimId];
         }
     }
 
-    private async Task HandleSelectedChanged(int[] values)
+    private async Task HandleSelectedItemsChanged(ClaimLinkViewModel[] selectedItems)
     {
-        ClaimIdentification? id = values.Length == 0 ? null :new ClaimIdentification (ProjectId, values.Single());
-		var claim = Claims.SingleOrDefault(m => m.ClaimId == id);
-		await ClaimIdChanged.InvokeAsync(id);
-		await ClaimChanged.InvokeAsync(claim);
+        var claim = selectedItems.SingleOrDefault();
+        await ClaimIdChanged.InvokeAsync(claim?.ClaimId);
+        await ClaimChanged.InvokeAsync(claim);
     }
 }

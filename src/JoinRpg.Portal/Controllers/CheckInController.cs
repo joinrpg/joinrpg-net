@@ -41,8 +41,13 @@ public class CheckInController(
         return View(new CheckInIndexViewModel(project));
     }
 
+    // claimId может не прийти вовсе: если заявок, готовых к регистрации, нет, селектор рендерит
+    // <select> без опций, и браузер не отправляет поле. Тогда просто возвращаемся на страницу выбора.
     [HttpPost]
-    public ActionResult Index(int projectId, int claimId) => RedirectToAction("CheckIn", new { projectId, claimId });
+    public ActionResult Index(ProjectIdentification projectId, ClaimIdentification? claimId)
+        => claimId is null
+            ? RedirectToAction("Index", new { projectId = projectId.Value })
+            : RedirectToAction("CheckIn", new { projectId = claimId.ProjectId.Value, claimId = claimId.ClaimId });
 
     [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
     public async Task<ActionResult> Setup(ProjectIdentification projectId)
