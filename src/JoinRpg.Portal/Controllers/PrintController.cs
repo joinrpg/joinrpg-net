@@ -106,10 +106,9 @@ public class PrintController(
     [HttpGet]
     public async Task<ActionResult> HandoutReport(ProjectIdentification projectid)
     {
-        var handoutsDict = await characterPlotViewService.GetHandoutsForActiveCharacters(projectid, PlotVersionFilter.LatestVersion);
+        var report = await characterPlotViewService.GetHandoutReport(projectid, PlotVersionFilter.LatestVersion);
 
-
-        return View(new HandoutReportViewModel(handoutsDict));
+        return View(report);
     }
 
     [MasterAuthorize()]

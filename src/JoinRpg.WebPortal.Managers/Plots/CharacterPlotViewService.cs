@@ -5,6 +5,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
+using JoinRpg.Web.Models.Print;
 
 namespace JoinRpg.WebPortal.Managers.Plots;
 
@@ -15,15 +16,24 @@ public class CharacterPlotViewService(
     ICurrentUserAccessor currentUser
     )
 {
-    public async Task<IReadOnlyDictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>>> GetHandoutsForActiveCharacters(ProjectIdentification projectId, PlotVersionFilter version)
+    /// <summary>
+    /// Отчёт по раздаткам всех активных персонажей проекта.
+    /// </summary>
+    /// <remarks>
+    /// Отдаём сразу агрегированный отчёт, а не словарь «персонаж → раздатки»: словарь не несёт
+    /// порядка сюжетов, и строки отчёта получались в порядке обхода персонажей, то есть случайном.
+    /// </remarks>
+    public async Task<HandoutReportViewModel> GetHandoutReport(ProjectIdentification projectId, PlotVersionFilter version)
     {
         var plotInfo = await LoadPlotInfoForActiveCharacters(projectId, CharacterAccessMode.Print);
 
-        var specification = new PlotSpecification(plotInfo.Values.Select(x => x.Targets).UnionAll(), version, PlotElementType.Handout);
+        var charactersTargets = plotInfo.Values.Select(x => x.Targets).ToArray();
+
+        var specification = new PlotSpecification(charactersTargets.UnionAll(), version, PlotElementType.Handout);
 
         var plots = await plotRepository.GetPlotsBySpecification(specification);
 
-        return MapPlotToTargets(plotInfo, plots);
+        return HandoutReportViewModelBuilder.Build(plots, charactersTargets);
     }
 
     public async Task<IReadOnlyDictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>>> GetHandoutsForCharacters(

@@ -6,30 +6,13 @@ using JoinRpg.Web.Plots;
 
 namespace JoinRpg.Web.Models.Print;
 
-public class HandoutReportViewModel
+/// <summary>
+/// Отчёт по раздаткам. Строки идут в порядке сюжетов — так их готовит
+/// <c>HandoutReportViewModelBuilder</c>, здесь порядок только сохраняется.
+/// </summary>
+public class HandoutReportViewModel(IReadOnlyList<HandoutReportItemViewModel> handouts)
 {
-    public HandoutReportViewModel(IReadOnlyDictionary<CharacterIdentification, IReadOnlyList<PlotTextDto>> handoutsDict)
-    {
-        var dict = new Dictionary<PlotTextDto, int>();
-        foreach (var pair in handoutsDict)
-        {
-            foreach (var handout in pair.Value)
-            {
-                if (dict.TryGetValue(handout, out var value))
-                {
-                    dict[handout] = value + 1;
-                }
-                else
-                {
-                    dict[handout] = 1;
-                }
-
-            }
-        }
-        Handouts = dict.Select(pair => new HandoutReportItemViewModel(pair.Key, pair.Value));
-    }
-
-    public IEnumerable<HandoutReportItemViewModel> Handouts { get; }
+    public IReadOnlyList<HandoutReportItemViewModel> Handouts { get; } = handouts;
 }
 
 public class HandoutListItemViewModel(PlotTextDto plotTextDto)
