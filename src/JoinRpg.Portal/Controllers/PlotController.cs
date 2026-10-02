@@ -137,6 +137,15 @@ public class PlotController(
     {
         IReadOnlyCollection<CharacterGroupIdentification> targetGroupIds = targetGroups ?? [];
         var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
+
+        // Биндер мог отвергнуть идентификатор цели (чужой проект, нераспознанная строка) — тогда
+        // элемент просто не попал в коллекцию. Создавать вводную с молча урезанным списком целей
+        // нельзя: показываем форму с ошибкой привязки.
+        if (!ModelState.IsValid)
+        {
+            return await ShowFormAgain();
+        }
+
         try
         {
             var versionId =
@@ -151,6 +160,11 @@ public class PlotController(
         catch (Exception exception)
         {
             AddModelException(exception);
+            return await ShowFormAgain();
+        }
+
+        async Task<ActionResult> ShowFormAgain()
+        {
             // Папка запрашивается только чтобы отличить «нет такой папки» от ошибки создания:
             // так было и раньше, до перехода на DTO.
             var folder = await plotRepository.GetPlotFolderDetails(plotFolderId);
@@ -245,6 +259,15 @@ public class PlotController(
       IReadOnlyCollection<CharacterIdentification>? targetCharacters, IReadOnlyCollection<CharacterGroupIdentification>? targetGroups, bool isMasterOnly)
     {
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
+
+        // Биндер мог отвергнуть идентификатор цели (чужой проект, нераспознанная строка) — тогда
+        // элемент просто не попал в коллекцию. Сохранять вводную с молча урезанным списком целей
+        // нельзя: возвращаем на страницу сюжета с ошибкой привязки.
+        if (!ModelState.IsValid)
+        {
+            return await Edit(projectId, plotFolderId);
+        }
+
         try
         {
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
