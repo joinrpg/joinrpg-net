@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
@@ -17,6 +18,7 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/print/[action]")]
 public class PrintController(
     ICharacterRepository characterRepository,
+    ICharacterInfoRepository characterInfoRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
     IUserRepository userRepository,
@@ -48,6 +50,7 @@ public class PrintController(
         return View(new PrintCharacterViewModel(
             currentUserAccessor,
             character,
+            await characterInfoRepository.GetCharacterInfo(characterId),
             plots[characterId],
             projectInfo,
             handouts[characterId],
@@ -74,6 +77,10 @@ public class PrintController(
         IReadOnlyCollection<CharacterIdentification> characterIdsList = characterIds.ToCharacterIds(projectId);
         var characters = await characterRepository.LoadCharactersWithGroups(characterIdsList);
 
+        // Агрегаты одним запросом на всю пачку — PlotDisplayViewModel считает права по ним (ADR013).
+        var characterInfos = (await characterInfoRepository.GetCharacterInfos(characterIdsList))
+            .ToDictionary(c => c.Id);
+
         var plots = await characterPlotViewService.GetPlotForCharacters(characterIdsList, Domain.Access.CharacterAccessMode.Print);
         var handouts = await characterPlotViewService.GetHandoutsForCharacters(characterIdsList);
 
@@ -88,7 +95,7 @@ public class PrintController(
             c =>
             {
                 var characterId = new CharacterIdentification(c.ProjectId, c.CharacterId);
-                return new PrintCharacterViewModel(currentUserAccessor, c, plots[characterId], projectInfo, handouts[characterId], linkRenderer, fieldUsers);
+                return new PrintCharacterViewModel(currentUserAccessor, c, characterInfos[characterId], plots[characterId], projectInfo, handouts[characterId], linkRenderer, fieldUsers);
             })];
     }
 

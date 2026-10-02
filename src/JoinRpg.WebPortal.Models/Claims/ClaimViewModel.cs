@@ -171,9 +171,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         Plot = new PlotDisplayViewModel(plotElements,
             currentUser,
-            claim.Character,
-            linkRenderer,
-            projectInfo);
+            characterInfo,
+            linkRenderer);
         AccommodationModel = accommodationModel;
 
         SensitiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;

@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Plots.Elements;
@@ -18,16 +17,16 @@ public class PlotDisplayViewModel
     /// </param>
     public PlotDisplayViewModel(IReadOnlyCollection<PlotTextDto> plots,
         ICurrentUserAccessor currentUser,
-        Character character,
-        ILinkRenderer linkRenderer,
-        ProjectInfo projectInfo
+        CharacterInfo character,
+        ILinkRenderer linkRenderer
         )
     {
         ArgumentNullException.ThrowIfNull(plots);
+        ArgumentNullException.ThrowIfNull(character);
 
-        var accessArguments = AccessArgumentsFactory.Create(character, currentUser, projectInfo);
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUser);
 
-        CharacterId = character.GetId();
+        CharacterId = character.Id;
         ShowEditControls = accessArguments.MasterAccess && accessArguments.EditAllowed;
 
         if (plots.Count == 0 || !accessArguments.CharacterPlotAccess)
@@ -36,7 +35,7 @@ public class PlotDisplayViewModel
             return;
         }
 
-        Elements = plots.Select(p => p.Render(linkRenderer, projectInfo, currentUser)).ToList();
+        Elements = plots.Select(p => p.Render(linkRenderer, character.ProjectInfo, currentUser)).ToList();
     }
 
     // Blazor-параметру PlotElementsView.PlotTexts нужен конкретный публичный тип (List<T>),

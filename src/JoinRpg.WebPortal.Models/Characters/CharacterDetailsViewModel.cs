@@ -76,7 +76,7 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
             accessArguments,
             fieldUsers
             );
-        Plot = new PlotDisplayViewModel(plots, currentUserId, character, linkRenderer, projectInfo);
+        Plot = new PlotDisplayViewModel(plots, currentUserId, characterInfo, linkRenderer);
 
         HasMasterAccess = accessArguments.MasterAccess;
         CreatedAt = character.CreatedAt;
