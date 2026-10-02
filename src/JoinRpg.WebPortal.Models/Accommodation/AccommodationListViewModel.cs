@@ -69,6 +69,7 @@ public class AccommodationListViewModel
                 // JoinRpg.Web.Accommodation и рендерера markdown не видит.
                 typeInfo.Description.ToHtmlString(),
                 new RoomTypeOccupancySummary(
+                    typeInfo.Capacity,
                     row.Occupied,
                     row.RoomsCount,
                     row.ApprovedClaims,
@@ -83,19 +84,19 @@ public class AccommodationListViewModel
 
         var allInfinite = RoomTypes.All(rt => rt.IsInfinite);
         TotalCapacity = allInfinite ? (int?)null : RoomTypes.Sum(rt => rt.TotalCapacity);
-        FreeCapacity = allInfinite ? (int?)null : RoomTypes.Sum(rt => rt.FreeCapacity);
+        FreeCapacity = allInfinite ? (int?)null : RoomTypes.Sum(rt => rt.Occupancy.FreeCapacity);
 
-        TotalOccupied = RoomTypes.Sum(x => x.Occupied);
+        TotalOccupied = RoomTypes.Sum(x => x.Occupancy.Occupied);
 
         UnassignedClaims = new UnassignedClaimsRowViewModel(claimsWithoutRoomType, project)
         {
             ProjectId = project.ProjectId,
         };
 
-        TotalPending = RoomTypes.Sum(x => x.PendingRequests) + UnassignedClaims.PendingRequests;
+        TotalPending = RoomTypes.Sum(x => x.Occupancy.PendingRequests) + UnassignedClaims.PendingRequests;
 
-        TotalPaid = RoomTypes.Sum(rt => rt.PaidCount) + UnassignedClaims.PaidCount;
-        TotalAcceptedNotPaid = RoomTypes.Sum(rt => rt.AcceptedNotPaidCount) + UnassignedClaims.AcceptedNotPaidCount;
+        TotalPaid = RoomTypes.Sum(rt => rt.Occupancy.PaidCount) + UnassignedClaims.PaidCount;
+        TotalAcceptedNotPaid = RoomTypes.Sum(rt => rt.Occupancy.AcceptedNotPaidCount) + UnassignedClaims.AcceptedNotPaidCount;
     }
 }
 
