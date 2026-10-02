@@ -135,11 +135,17 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     /// Те же колонки, что и версия для EF-сущности, но поверх доменного <see cref="UserInfo"/>.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Колонки собираются вручную, а не через <c>ComplexElementMemberColumn</c>: части имени
     /// и контакты в <see cref="UserInfo"/> — опциональные value-типы, а дерево выражений не
-    /// допускает в себе <c>?.</c>. Заголовки (включая легаси-сегмент <c>.Extra.</c>) оставлены
-    /// ровно теми же, что были у версии для сущности: мастера выгружают эти таблицы годами и
-    /// разбирают их по именам колонок.
+    /// допускает в себе <c>?.</c>.
+    /// </para>
+    /// <para>
+    /// Заголовки заданы явно и по-русски. У версии для EF-сущности они выводились из пути по
+    /// навигациям, поэтому мастер видел в выгрузке имена свойств C# и сегмент <c>.Extra.</c> —
+    /// имя таблицы, в которой у нас лежат контакты. Заголовок выгрузки — строка, видимая
+    /// пользователю, и по правилам проекта она должна быть русской.
+    /// </para>
     /// </remarks>
     [Pure]
     protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, UserInfo?>> func, ProjectInfo projectInfo)
@@ -155,14 +161,14 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
         return
         [
             new TableColumn<string>(prefix, row => getter(row)?.DisplayName.DisplayName),
-            new TableColumn<string>($"{prefix}.SurName", row => getter(row)?.UserFullName.SurName?.Value),
-            new TableColumn<string>($"{prefix}.FatherName", row => getter(row)?.UserFullName.FatherName?.Value),
-            new TableColumn<string>($"{prefix}.BornName", row => getter(row)?.UserFullName.BornName?.Value),
+            new TableColumn<string>($"{prefix}.Фамилия", row => getter(row)?.UserFullName.SurName?.Value),
+            new TableColumn<string>($"{prefix}.Отчество", row => getter(row)?.UserFullName.FatherName?.Value),
+            new TableColumn<string>($"{prefix}.Имя", row => getter(row)?.UserFullName.BornName?.Value),
             new TableColumn<string>($"{prefix}.Email", row => getter(row)?.Email.Value),
             new TableColumn<Uri>("ВК", row => getter(row)?.Social.Vk?.Link),
             new TableColumn<Uri>("Телеграм", row => getter(row)?.Social.Telegram?.Link),
-            new TableColumn<string>($"{prefix}.Extra.Livejournal", row => getter(row)?.Social.LiveJournal?.Value),
-            new TableColumn<string>($"{prefix}.Extra.PhoneNumber", row => getter(row)?.PhoneNumber),
+            new TableColumn<string>($"{prefix}.Livejournal", row => getter(row)?.Social.LiveJournal?.Value),
+            new TableColumn<string>($"{prefix}.Телефон", row => getter(row)?.PhoneNumber),
         ];
     }
 

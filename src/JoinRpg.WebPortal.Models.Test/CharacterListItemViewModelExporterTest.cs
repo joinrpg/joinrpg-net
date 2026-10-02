@@ -80,14 +80,14 @@ public class CharacterListItemViewModelExporterTest
             "Ответственный мастер",
             FieldName,
             "Игрок",
-            "Игрок.SurName",
-            "Игрок.FatherName",
-            "Игрок.BornName",
+            "Игрок.Фамилия",
+            "Игрок.Отчество",
+            "Игрок.Имя",
             "Игрок.Email",
             "ВК",
             "Телеграм",
-            "Игрок.Extra.Livejournal",
-            "Игрок.Extra.PhoneNumber",
+            "Игрок.Livejournal",
+            "Игрок.Телефон",
         ]);
     }
 
