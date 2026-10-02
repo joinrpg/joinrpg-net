@@ -34,14 +34,14 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void HideMasterOnlyFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), FieldUserLinksLoader.None, []);
+        var vm = CreateForAddClaim(Mock);
         vm.Field(Mock.MasterOnlyFieldInfo)!.CanView.ShouldBeFalse();
     }
 
     [Fact]
     public void HideUnApprovedFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), FieldUserLinksLoader.None, []);
+        var vm = CreateForAddClaim(Mock);
         vm.Field(Mock.HideForUnApprovedClaimInfo)!.CanView.ShouldBeFalse();
     }
 
@@ -81,7 +81,7 @@ public class CustomFieldsViewModelTest
     [Fact]
     public void AllowCharactersFieldOnAddClaimTest()
     {
-        var vm = new CustomFieldsViewModel(Mock.Character, Mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(Mock.GetCharacterInfo(Mock.Character), new(Mock.Player.UserId)), FieldUserLinksLoader.None, []);
+        var vm = CreateForAddClaim(Mock);
         var characterField = vm.Field(Mock.CharacterFieldInfo);
 
         _ = characterField.ShouldNotBeNull();
@@ -132,7 +132,7 @@ public class CustomFieldsViewModelTest
         var mock = new MockedProject();
 
         // Права считаем по тому же моку, что и вьюмодель: раньше тут стоял мок из поля класса.
-        var vm = new CustomFieldsViewModel(mock.Character, mock.ProjectInfo, AccessArgumentsFactory.CreateForAdd(mock.GetCharacterInfo(mock.Character), new(mock.Player.UserId)), FieldUserLinksLoader.None, []);
+        var vm = CreateForAddClaim(mock);
 
         var characterField = vm.Field(mock.CharacterFieldInfo);
 
@@ -269,6 +269,19 @@ public class CustomFieldsViewModelTest
         listType.Assembly.ShouldNotBe(
             typeof(FieldValueViewModel).Assembly,
             $"Тип {listType} лежит в серверной сборке, на клиенте его нет");
+    }
+
+    /// <summary>
+    /// Поля так, как их видит игрок на странице подачи заявки: тот же конструктор, что в
+    /// <see cref="AddClaimViewModel" />.
+    /// </summary>
+    private static CustomFieldsViewModel CreateForAddClaim(MockedProject mock)
+    {
+        var characterInfo = mock.GetCharacterInfo(mock.Character);
+        return new CustomFieldsViewModel(
+            characterInfo,
+            AccessArgumentsFactory.CreateForAdd(characterInfo, new UserIdentification(mock.Player.UserId)).WithoutMasterAccess(),
+            FieldUserLinksLoader.None);
     }
 
     /// <param name="value">Сырое значение поля, как оно лежит в базе</param>
