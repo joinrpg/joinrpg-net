@@ -1,23 +1,23 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.DataModel;
-using JoinRpg.DataModel.Mocks;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims;
 
-namespace JoinRpg.Services.Impl.Test.Fakes;
+namespace JoinRpg.DataModel.Mocks.Fakes;
 
 /// <summary>
-/// Read-репозиторий заявок поверх <see cref="MockedProject"/>. Нужен, например, автоприёму, который
-/// перечитывает заявку заново, а не смотрит в мутированный граф предыдущей операции (ADR014, §7).
+/// Read-репозиторий заявок поверх <see cref="MockedProject"/> — общий для всех тестовых проектов.
+/// Нужен, например, автоприёму, который перечитывает заявку заново, а не смотрит в мутированный
+/// граф предыдущей операции (ADR014, §7).
 /// </summary>
 /// <remarks>
 /// Реализованы ровно те методы, которые нужны проверяемым операциям; остальные бросают
 /// <see cref="NotSupportedException"/> намеренно — чтобы поход за незапланированными данными был
 /// виден в тесте, а не подменялся пустышкой.
 /// </remarks>
-internal sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
+public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
 {
-
     /// <summary>Заранее заготовленные заявки по (ProjectId, UserId) ответственного мастера.</summary>
     public Dictionary<(int ProjectId, int UserId), List<Claim>> ClaimsByResponsibleMaster { get; } = [];
 
