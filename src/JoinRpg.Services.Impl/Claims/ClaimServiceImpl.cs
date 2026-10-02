@@ -957,12 +957,13 @@ internal class ClaimServiceImpl(
                 // похода в ICharacterInfoRepository за правилами переноса больше нет.
                 var (target, targetInfo) = await ctx.LoadOtherCharacter(ctx.Request.CharacterId);
 
-                var userInfo = await UserRepository.GetRequiredUserInfo(
-                    new UserIdentification(ctx.Claim.PlayerUserId));
+                var userInfo = await UserRepository.GetRequiredUserInfo(ctx.ClaimInfo.PlayerId);
 
+                // Правила считаются по доменному снимку заявки (ctx.ClaimInfo), а не по трекаемой
+                // EF-сущности: снимок сделан до мутаций, так что в этой точке он с ней совпадает.
                 ClaimValidator.EnsureCanMoveClaim(
                     targetInfo,
-                    new UserClaimInfo(ctx.Claim.GetId(), ctx.Claim.ClaimStatus),
+                    new UserClaimInfo(ctx.ClaimInfo.ClaimId, ctx.ClaimInfo.Status),
                     userInfo,
                     ctx.ProjectInfo);
 
