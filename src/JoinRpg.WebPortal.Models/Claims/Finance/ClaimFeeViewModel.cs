@@ -19,8 +19,8 @@ public class ClaimFeeViewModel
         // Checks for base fee availability
         HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
 
-        AccommodationFee = claim.ClaimAccommodationFee();
-        RoomType = claim.AccommodationRequest?.AccommodationType.Name ?? "";
+        AccommodationFee = claim.ClaimAccommodationFee(projectInfo);
+        RoomType = claim.GetAccommodationType(projectInfo)?.Name ?? "";
         RoomName = claim.AccommodationRequest?.Accommodation?.Name ?? "";
 
         FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
