@@ -1,4 +1,5 @@
 
+using System.Text.Json.Serialization;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
 
@@ -22,6 +23,10 @@ public record CharacterTarget(CharacterIdentification CharacterId, string Name) 
     int? ILinkable.ProjectId => CharacterId.ProjectId;
 }
 
+// [method: JsonConstructor] обязателен: у record два публичных конструктора, и без атрибута
+// System.Text.Json не может выбрать нужный — остров падает на десериализации, а сервер при этом
+// отдаёт 200 и ничего не пишет в лог (ровно так сломался выбор типа проживания, #5139).
+[method: JsonConstructor]
 public record TargetsInfo(IReadOnlyCollection<CharacterTarget> CharacterTargets, IReadOnlyCollection<GroupTarget> GroupTargets)
 {
     /// <summary>

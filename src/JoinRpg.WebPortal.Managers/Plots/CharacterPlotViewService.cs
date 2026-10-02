@@ -106,10 +106,6 @@ public class CharacterPlotViewService(
         CharacterAccessMode characterAccessMode)
         => characters
             .Where(c => AccessArgumentsFactory.Create(c, currentUser, characterAccessMode).CharacterPlotAccess)
-            // Порядок вставки в словарь виден наружу: HandoutReport обходит его как есть,
-            // и строки отчёта должны идти по именам персонажей. Раньше за это отвечал
-            // ORDER BY в GetAllCharacters, теперь сортируем явно.
-            .OrderBy(c => c.CharacterName)
             .ToDictionary(x => x.Id, x => new ChPlotInfo(new TargetsInfo(x), x.PlotElementOrderData));
 
     private record ChPlotInfo(TargetsInfo Targets, string? Ordering);
