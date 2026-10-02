@@ -124,6 +124,15 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Auth.EmailConfirmed,
                 HasPassword = user.PasswordHash != null,
                 user.Extra.BirthDate,
+                // Паспорт и адрес регистрации UserInfo объявляет как свои свойства, и по ним
+                // UserInfo.GetMissingItems() считает незаполненность профиля — значит проекция
+                // обязана их отдавать, иначе у любого репозиторного UserInfo они всегда null
+                // и паспорт/адрес вечно «не заполнены». Отсечение по доступу к чувствительным
+                // данным живёт выше — в UserProfileProblemsCalculator (sensitiveDataAccessAllowed)
+                // и claim.PlayerAllowedSenstiveData. В дешёвую проекцию для отображения
+                // (GetUserInfoHeadersByPredicate) эти поля намеренно не попадают.
+                user.Extra.PassportData,
+                user.Extra.RegistrationAddress,
             };
 
 
@@ -160,7 +169,10 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             result.VerifiedProfileFlag,
             result.PhoneNumber,
             result.HasPassword,
-            result.BirthDate is DateTime birthDate ? DateOnly.FromDateTime(birthDate) : null
+            // Дальше идут опциональные параметры — передаём их по имени, чтобы случайно не сдвинуть позиционно.
+            BirthDate: result.BirthDate is DateTime birthDate ? DateOnly.FromDateTime(birthDate) : null,
+            PassportData: result.PassportData,
+            RegistrationAddress: result.RegistrationAddress
             );
         })];
     }
