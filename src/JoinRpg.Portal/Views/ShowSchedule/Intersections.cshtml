@@ -1,7 +1,0 @@
-﻿@model JoinRpg.Web.Schedule.SchedulePageViewModel
-<div class="scheduler-intersections">
-    @foreach (var appointment in Model.Intersections)
-    {
-        @await Html.PartialAsync("_AppointmentPartial", appointment)
-    }
-</div>

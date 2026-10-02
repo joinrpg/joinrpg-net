@@ -1,0 +1,13 @@
+@* Мероприятия, не размещённые в сетке: у них не хватает комнат или тайм-слотов. *@
+<div class="scheduler-notallocated">
+    @foreach (var appointment in Model.NotAllocated)
+    {
+        <Appointment Model="appointment" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public SchedulePageViewModel Model { get; set; } = null!;
+}

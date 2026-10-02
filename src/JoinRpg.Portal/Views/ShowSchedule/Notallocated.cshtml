@@ -1,7 +1,0 @@
-﻿@model JoinRpg.Web.Schedule.SchedulePageViewModel
-<div class="scheduler-notallocated">
-    @foreach (var appointment in Model.NotAllocated)
-    {
-        @await Html.PartialAsync("_AppointmentPartial", appointment)
-    }
-</div>

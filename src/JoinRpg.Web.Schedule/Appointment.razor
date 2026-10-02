@@ -1,0 +1,121 @@
+@inject ICharacterUriLocator characterUriLocator
+@*
+    Карточка мероприятия в сетке расписания. Data-атрибуты (display-name, rooms, slots,
+    no-users, all-rooms, error-mode, errors, details-url) читает JS полноэкранного режима,
+    чтобы заполнить оверлей деталей, — их состав и формат значений менять нельзя.
+*@
+<div id="appointment@(Model.CharacterId)"
+     class="@ClassNames"
+     style="@Style"
+     display-name="@Model.DisplayName"
+     details-url="@characterUriLocator.GetDetailsUri(CharacterId)"
+     no-users="@HasNoUsers.ToString()"
+     rooms="@Rooms"
+     slots="@Slots"
+     all-rooms="@Model.AllRooms.ToString()"
+     error-mode="@((Model.ErrorType == AppointmentErrorType.Intersection).ToString())"
+     errors="@Errors">
+    <div class="appointment-interior" title="@Title">
+        <div class="appointment-header">
+            <a href="@characterUriLocator.GetDetailsUri(CharacterId)" target="@Target">@Model.DisplayName</a>
+            @if (Model.HasMasterAccess)
+            {
+                <a href="@characterUriLocator.GetEditUri(CharacterId)">(ред.)</a>
+            }
+        </div>
+
+        @if (Model.ErrorType == AppointmentErrorType.NotLocated)
+        {
+            <div class="appointment-rooms">
+                <b>Комнаты:</b>
+                @if (Model.Rooms.Count > 0)
+                {
+                    @(Model.AllRooms ? "все" : Rooms)
+                }
+                else
+                {
+                    <b class="text-danger">нет</b>
+                }
+            </div>
+            <div class="appointment-slots">
+                <b>Слоты:</b>
+                @if (Model.Slots.Count > 0)
+                {
+                    @Slots
+                }
+                else
+                {
+                    <b class="text-danger">нет</b>
+                }
+            </div>
+        }
+        <div id="appointment@(Model.CharacterId)-users" class="appointment-users">
+            @foreach (var user in Model.Users)
+            {
+                <UserLink Model="user" />
+            }
+        </div>
+    </div>
+    <div class="appointment-click-overlay" onclick="appointmentClickHandler(@Model.CharacterId)"></div>
+    <div id="appointment@(Model.CharacterId)-description" style="display: none;">@Model.Description</div>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public AppointmentViewModel Model { get; set; } = null!;
+
+    private CharacterIdentification CharacterId
+        => new(new ProjectIdentification(Model.ProjectId), Model.CharacterId);
+
+    private bool HasNoUsers => Model.Users.Count == 0;
+
+    private bool IsIntersection => Model.ErrorType == AppointmentErrorType.Intersection;
+
+    private string Title => IsIntersection
+        ? Model.DisplayName + " (имеются пересечения)"
+        : Model.DisplayName;
+
+    /// <summary>
+    /// Ошибки размещения ведут на страницу персонажа в новой вкладке: с ними работают,
+    /// не теряя из вида саму сетку.
+    /// </summary>
+    private string Target => Model.ErrorType.HasValue ? "_blank" : "_self";
+
+    private string Rooms => string.Join(", ", Model.Rooms.Select(r => r.Name));
+
+    private string Slots => string.Join(", ", Model.Slots.Select(s => s.Name));
+
+    private string Errors => Model.ErrorType?.GetDisplayName() ?? "";
+
+    private string ClassNames
+    {
+        get
+        {
+            var classNames = "scheduler-appointment";
+            if (IsIntersection)
+            {
+                classNames += " appointment-intersection";
+            }
+            if (Model.AllRooms)
+            {
+                classNames += " appointment-all-rooms";
+            }
+            classNames += HasNoUsers ? " appointment-no-users" : " appointment-has-users";
+            return classNames;
+        }
+    }
+
+    /// <summary>
+    /// В сетке карточка позиционируется абсолютно по рассчитанным координатам, а в списках
+    /// ошибок (пересечения, не размещённые) она лежит в потоке и только ограничена по размеру.
+    /// Не размещённым нужна дополнительная высота под строки с комнатами и слотами.
+    /// </summary>
+    private string Style => Model.ErrorMode
+        ? $"max-width: {Model.Width * 2}px; height: {ErrorModeHeight}px;"
+        : $"left: {Model.Left}px; top: {Model.Top}px; width: {Model.Width - 1}px; height: {Model.Height - 1}px";
+
+    private int ErrorModeHeight => Model.ErrorType == AppointmentErrorType.NotLocated
+        ? Model.Height + Model.Height / 2
+        : Model.Height;
+}

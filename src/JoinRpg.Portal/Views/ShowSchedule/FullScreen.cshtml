@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Schedule.SchedulePageViewModel
+﻿@using JoinRpg.Web.Schedule
+@model SchedulePageViewModel
 @{
     Layout = "_FullScreenLayout.cshtml";
     ViewBag.Title = "Расписание";
@@ -21,7 +22,7 @@
 </ul>
 <div class="tab-content scheduler-fullscreen">
     <section id="scheduler" class="scheduler-container tab-pane in active">
-        @await Html.PartialAsync("Scheduler", Model)
+        @(await Html.RenderComponentAsync<Scheduler>(RenderMode.Static, new { Model }))
         <div id="scheduler-overlay" onclick="overlayClickHandler(event)" onwheel="overlayWheelHandler(event)">
             <div id="scheduler-details" all-rooms="false" no-users="false" error-mode="false">
                 @await Html.PartialAsync("_AppointmentDetailsPartial")
@@ -31,13 +32,13 @@
     @if (Model.Intersections.Count > 0)
     {
         <section id="intersections" class="scheduler-container tab-pane">
-            @await Html.PartialAsync("Intersections", Model)
+            @(await Html.RenderComponentAsync<Intersections>(RenderMode.Static, new { Model }))
         </section>
     }
     @if (Model.NotAllocated.Count > 0)
     {
         <section id="notallocated" class="scheduler-container tab-pane">
-            @await Html.PartialAsync("Notallocated", Model)
+            @(await Html.RenderComponentAsync<NotAllocated>(RenderMode.Static, new { Model }))
         </section>
     }
 </div>
