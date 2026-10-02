@@ -2,21 +2,23 @@ using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
-internal class BrokenClaimsAndCharacters : IProblemFilter<Claim>
+/// <remarks>
+/// Ветки «у заявки нет персонажа» здесь больше нет: в доменном агрегате заявка существует только
+/// как элемент <see cref="CharacterInfo.Claims"/>, а <see cref="ClaimProblemContext"/> проверяет
+/// это в конструкторе. Поэтому <c>ClaimProblemType.ClaimDontHaveTarget</c> недостижим по
+/// построению и помечен <c>[Obsolete]</c> — как <c>DeletedFieldHasValue</c> рядом.
+/// </remarks>
+internal class BrokenClaimsAndCharacters : IClaimProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
+    public IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context)
     {
-        if (claim.IsInDiscussion && claim.Character?.ApprovedClaim != null)
+        if (context.Claim.IsInDiscussion && context.Character.ApprovedClaimId is not null)
         {
             yield return new ClaimProblem(ClaimProblemType.ClaimActiveButCharacterHasApprovedClaim, ProblemSeverity.Error);
         }
-        if (claim.IsApproved && (claim.Character == null || !claim.Character.IsActive))
+        if (context.Claim.IsApproved && !context.Character.IsActive)
         {
             yield return new ClaimProblem(ClaimProblemType.NoCharacterOnApprovedClaim, ProblemSeverity.Fatal);
-        }
-        if (claim.Character == null) //TODO may be remove this it will be foreign key
-        {
-            yield return new ClaimProblem(ClaimProblemType.ClaimDontHaveTarget, ProblemSeverity.Fatal);
         }
     }
 }

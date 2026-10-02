@@ -1,7 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
@@ -80,11 +80,17 @@ public class PassportSensitiveDataScenario(JoinApplicationFactory factory) : ICl
             // 4. Проблема "нет доступа к чувствительным данным" должна быть ровно одна,
             // с той же severity (Warning), что была до перевода на UserProfileItemType —
             // а не MissingPassport/MissingRegistrationAddress по отдельности.
-            var problemValidator = scope.ServiceProvider.GetRequiredService<IProblemValidator<Claim>>();
-            var metadataRepository = scope.ServiceProvider.GetRequiredService<IProjectMetadataRepository>();
-            var projectInfo = await metadataRepository.GetProjectMetadata(projectId);
+            var problemValidator = scope.ServiceProvider.GetRequiredService<IClaimProblemValidator>();
+            var characterInfoRepository = scope.ServiceProvider.GetRequiredService<ICharacterInfoRepository>();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
-            var problems = problemValidator.Validate(claim, projectInfo).ToList();
+            var character = await characterInfoRepository.GetCharacterInfo(characterId);
+            var problemContext = new ClaimProblemContext(
+                character,
+                character.GetClaimById(claimId),
+                await userRepository.GetRequiredUserInfo(playerId));
+
+            var problems = problemValidator.Validate(problemContext).ToList();
 
             problems.ShouldContain(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed && p.Severity == ProblemSeverity.Warning);
             problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingPassport);

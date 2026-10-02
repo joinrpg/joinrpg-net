@@ -20,7 +20,10 @@ public record class ProblemViewModel(string ProblemTypeText, ClaimProblemType Pr
       {ClaimProblemType.FeePaidPartially, "Взнос уплачен частично"},
       {ClaimProblemType.UnApprovedClaimPayment, "Оплата в непринятой заявке"},
       {ClaimProblemType.ClaimWorkStopped, "Работа по заявке остановлена"},
-      {ClaimProblemType.ClaimDontHaveTarget, "Заявка не привязана ни к чему"},
+      // ClaimDontHaveTarget здесь больше нет: значение помечено Obsolete, потому что недостижимо
+      // по построению агрегата персонажа (ADR013). Соглашение проекта — у Obsolete-значений
+      // отображения не бывает, его сторожит ProblemTypeDisplayTest; так же устроен
+      // DeletedFieldHasValue.
       {ClaimProblemType.FieldIsEmpty, "Поле не заполнено"},
       {ClaimProblemType.FieldShouldNotHaveValue, "Поле не должно быть заполнено для этой группы"},
       {ClaimProblemType.NoParentGroup, "Персонаж не принадлежит ни к одной группе"},

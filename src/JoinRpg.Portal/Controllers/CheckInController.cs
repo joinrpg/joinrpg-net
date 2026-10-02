@@ -25,7 +25,7 @@ public class CheckInController(
     IClaimService claimService,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
-    IProblemValidator<Claim> claimValidator,
+    IClaimProblemValidator claimValidator,
     CharacterPlotViewService characterPlotViewService,
     ICurrentUserAccessor currentUserAccessor
         ) : JoinControllerGameBase
@@ -98,6 +98,7 @@ public class CheckInController(
             new CheckInClaimModel(claim,
             await characterInfoRepository.GetCharacterInfo(characterId),
             await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification),
+            await userRepository.GetRequiredUserInfo(claim.GetPlayerId()),
             handouts[characterId],
             claimValidator,
             projectInfo,

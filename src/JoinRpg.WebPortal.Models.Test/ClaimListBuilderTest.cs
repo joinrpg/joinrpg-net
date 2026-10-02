@@ -41,7 +41,8 @@ public class ClaimListBuilderTest
         var result = ClaimListBuilder.BuildItemForExport(
             claim,
             new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
-            Mock.ProjectInfo);
+            Mock.ProjectInfo,
+            Mock.PlayerInfo);
 
         result.AccomodationType.ShouldBe("Домик");
     }

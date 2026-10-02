@@ -1,22 +1,29 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
-internal class ClaimWorkStopped : IProblemFilter<Claim>
+internal class ClaimWorkStopped : IClaimProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
+    public IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context)
     {
-        if (claim.Project.Active)
+        var claim = context.Claim;
+
+        // Правило срабатывает только в архиве. Раньше условие было записано как
+        // claim.Project.Active, а Project.Active == false — это ровно
+        // ProjectLifecycleStatus.Archived (см. ProjectLoaderCommon.CreateStatus), то есть
+        // ProjectInfo.IsActive.
+        if (context.ProjectInfo.IsActive)
         {
             yield break;
         }
 
-        if (!claim.IsApproved) // Our concern is only approved claims
+        if (!claim.IsApproved) // Нас интересуют только утверждённые заявки
         {
             yield break;
         }
 
-        if (DateTime.UtcNow.Subtract(claim.CreateDate) < TimeSpan.FromDays(2)) //If filed only recently, do nothing
+        if (DateTime.UtcNow.Subtract(claim.CreateDate) < TimeSpan.FromDays(2)) // Только что поданную не трогаем
         {
             yield break;
         }

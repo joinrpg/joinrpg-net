@@ -4,16 +4,26 @@ using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain;
 
-public class ClaimCheckInValidator(Claim claim, IProblemValidator<Claim> claimValidator, ProjectInfo projectInfo)
+/// <summary>
+/// Можно ли зарегистрировать игрока по этой заявке. Считается целиком по доменным сущностям
+/// (ADR013, #4892): EF-графа здесь больше нет.
+/// </summary>
+public class ClaimCheckInValidator(ClaimProblemContext context, IClaimProblemValidator claimValidator)
 {
-    public int FeeDue => claim.ClaimFeeDue(projectInfo);
+    private readonly CharacterClaimInfo claim = context.Claim;
+
+    /// <summary>
+    /// Сколько осталось доплатить. Было <c>claim.ClaimFeeDue(projectInfo)</c> — та же величина
+    /// «начислено минус уплачено», но посчитанная по EF-графу.
+    /// </summary>
+    public int FeeDue => context.Character.CalculateClaimBalance(claim, context.ProjectInfo).FeeDue;
 
     public bool NotCheckedInAlready => claim.CheckInDate == null &&
-                                       claim.ClaimStatus != ClaimStatus.CheckedIn;
+                                       claim.Status != ClaimStatus.CheckedIn;
 
-    public bool IsApproved => claim.ClaimStatus == ClaimStatus.Approved;
+    public bool IsApproved => claim.Status == ClaimStatus.Approved;
 
-    public IReadOnlyCollection<FieldRelatedProblem> FieldProblems { get; } = [.. claimValidator.ValidateFieldsOnly(claim, projectInfo)];
+    public IReadOnlyCollection<FieldRelatedProblem> FieldProblems { get; } = [.. claimValidator.ValidateFieldsOnly(context)];
 
     public bool CanCheckInInPrinciple => NotCheckedInAlready && IsApproved && FieldProblems.Count == 0;
 

@@ -381,13 +381,24 @@ public class MockedProject
     /// <see cref="CharacterInfo"/> требует, чтобы слои полей были привязаны ровно к тому же
     /// экземпляру. По той же причине вызывать надо после того, как все поля проекта заведены.
     /// </remarks>
-    public CharacterInfo GetCharacterInfo(Character character)
+    public CharacterInfo GetCharacterInfo(Character character) => GetCharacterInfo(character, ProjectInfo);
+
+    /// <summary>
+    /// То же, но поверх явно заданных метаданных проекта.
+    /// </summary>
+    /// <param name="projectInfo">
+    /// Метаданные, к которым привязывается агрегат. Нужны там, где тест меняет настройки проекта
+    /// (<c>WithProfileRequirementSettings</c>, <c>WithChangedStatus</c> и подобные): такие методы
+    /// возвращают НОВЫЙ экземпляр <see cref="ProjectInfo"/>, а конструктор
+    /// <see cref="CharacterInfo"/> требует, чтобы слои полей были привязаны ровно к нему.
+    /// </param>
+    public CharacterInfo GetCharacterInfo(Character character, ProjectInfo projectInfo)
     {
-        var projectId = ProjectInfo.ProjectId;
+        var projectId = projectInfo.ProjectId;
 
         return new CharacterInfo(
             new CharacterIdentification(projectId, character.CharacterId),
-            ProjectInfo,
+            projectInfo,
             character.CharacterName,
             character.ToCharacterTypeInfo(),
             character.HidePlayerForCharacter,
@@ -397,9 +408,9 @@ public class MockedProject
             new MarkdownString(character.Description?.Contents ?? ""),
             originalCharacterSlotId: null,
             [.. character.ParentCharacterGroupIds.Select(id => new CharacterGroupIdentification(projectId, id))],
-            FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, character.JsonData),
+            FieldLayerContainer.DeserializeFieldLayer(projectInfo, character.JsonData),
             character.PlotElementOrderData,
-            [.. character.Claims.Select(GetClaimInfo)],
+            [.. character.Claims.Select(claim => GetClaimInfo(claim, projectInfo))],
             ClaimIdentification.FromOptional(projectId, character.ApprovedClaimId),
             character.CreatedAt,
             new UserIdentification(Master.UserId),
@@ -407,7 +418,9 @@ public class MockedProject
             new UserIdentification(Master.UserId));
     }
 
-    private CharacterClaimInfo GetClaimInfo(Claim claim)
+    private CharacterClaimInfo GetClaimInfo(Claim claim) => GetClaimInfo(claim, ProjectInfo);
+
+    private CharacterClaimInfo GetClaimInfo(Claim claim, ProjectInfo projectInfo)
         => new(
             claim.GetId(),
             new UserInfoHeader(
@@ -432,7 +445,7 @@ public class MockedProject
                 AccommodationFee: 0,
                 OperationsRequireModeration: claim.FinanceOperations.Any(fo => fo.RequireModeration)),
             PlayerAllowedSensitiveData: claim.PlayerAllowedSenstiveData,
-            FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, claim.JsonData));
+            FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.JsonData));
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)
     {

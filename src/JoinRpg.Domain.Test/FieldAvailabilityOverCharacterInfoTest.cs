@@ -114,7 +114,9 @@ public class FieldAvailabilityOverCharacterInfoTest
         // CharacterTypeInfo не разрешает лимит слотов не-слоту, а сущность про это не знает.
         character.CharacterSlotLimit = characterType == CharacterType.Slot ? 1 : null;
 
-        var entity = new CharacterBulkLoader().LoadCharacter(character, projectInfo);
+        // Раньше обёртку собирал CharacterBulkLoader; он ушёл вместе с переводом проблем заявки
+        // на доменные сущности (ADR013), а ничего, кроме кеша по CharacterId, не делал.
+        var entity = new CharacterItem(character, [.. character.GetParentGroupIdsToTop(projectInfo)]);
 
         var aggregate = new CharacterInfo(
             new CharacterIdentification(projectInfo.ProjectId, character.CharacterId),

@@ -3,30 +3,19 @@ using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
-internal class ClaimContactsMissingFilter : IProblemFilter<Claim>
+internal class ClaimContactsMissingFilter : IClaimProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
+    public IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context)
     {
-        // TODO этот фильтр работает напрямую с EF-сущностью Claim, а не с UserInfo (его сборка
-        // через claim.Player.GetUserInfo() неэффективна — тянет Claims/ProjectAcls). Когда
-        // ProblemValidator/фильтры проблем заявки научатся работать с UserInfo, убрать этот
-        // ручной вызов GetMissingItems и перейти на UserProfileProblemsCalculator.GetProblems(userInfo, ...).
-        var missingItems = UserProfileItemsCalculator.GetMissingItems(
-            hasTelegram: !string.IsNullOrWhiteSpace(claim.Player.Extra?.Telegram),
-            hasVerifiedVkontakte: claim.Player.Extra?.VkVerified == true && !string.IsNullOrWhiteSpace(claim.Player.Extra.Vk),
-            claim.Player.Extra?.PhoneNumber,
-            claim.Player.FullName,
-            claim.Player.Extra?.PassportData,
-            claim.Player.Extra?.RegistrationAddress);
-
-        // Доступ к паспорту/адресу — согласие на уровне заявки (claim.PlayerAllowedSenstiveData),
-        // а не факт о профиле, поэтому не входит в UserProfileItemType и передаётся в калькулятор
-        // отдельно: пока доступа нет, он не считает паспорт/адрес недостающими.
-        var sensitiveDataAllowed = !projectInfo.ProfileRequirementSettings.SensitiveDataRequired
-            || claim.PlayerAllowedSenstiveData;
+        // Доступ к паспорту/адресу — согласие на уровне заявки
+        // (CharacterClaimInfo.PlayerAllowedSensitiveData), а не факт о профиле, поэтому не входит
+        // в UserProfileItemType и передаётся в калькулятор отдельно: пока доступа нет, он не
+        // считает паспорт/адрес недостающими.
+        var sensitiveDataAllowed = !context.ProjectInfo.ProfileRequirementSettings.SensitiveDataRequired
+            || context.Claim.PlayerAllowedSensitiveData;
 
         var problems = UserProfileProblemsCalculator
-            .GetProblems(missingItems, projectInfo.ProfileRequirementSettings, sensitiveDataAllowed)
+            .GetProblems(context.Player, context.ProjectInfo.ProfileRequirementSettings, sensitiveDataAllowed)
             .Select(ToClaimProblem);
 
         if (!sensitiveDataAllowed)

@@ -97,7 +97,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       CharacterInfo characterInfo,
       IReadOnlyCollection<PlotTextDto> plotElements,
       ProjectInfo projectInfo,
-      IProblemValidator<Claim> problemValidator,
+      IClaimProblemValidator problemValidator,
       Func<string?, string?> externalPaymentUrlFactory,
       ClaimAccommodationViewModel? accommodationModel,
       UserInfo playerInfo,
@@ -140,7 +140,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                 claim.GetId(),
                 currentUser.UserIdentification,
                 CharacterNavigationPage.Claim);
-        Problems = problemValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList();
+        var problemContext = new ClaimProblemContext(characterInfo, characterInfo.GetClaimById(claim.GetId()), playerInfo);
+        Problems = problemValidator.Validate(problemContext).Select(p => new ProblemViewModel(p)).ToList();
         // playerInfo уже прочитан репозиторием одним запросом. Старый claim.GetUserInfo() лез
         // по навигациям EF-сущности игрока (Extra, Auth, Allrpg, ExternalLogins, Claims, ProjectAcls),
         // а на ProjectAcls ещё и дёргал .Project по одному на проект — до 48 догрузок за запрос (#4960).
@@ -148,7 +149,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         ProjectActive = claim.Project.Active;
         CheckInStarted = claim.Project.Details.CheckInProgress;
         CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
-        Validator = new ClaimCheckInValidator(claim, problemValidator, projectInfo);
+        Validator = new ClaimCheckInValidator(problemContext, problemValidator);
 
         AccommodationEnabled = claim.Project.Details.EnableAccommodation;
 
@@ -179,8 +180,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         HasSensitiveDataAccess = claim.PlayerAllowedSenstiveData && SensitiveDataRequired;
         if (HasSensitiveDataAccess)
         {
-            PassportData = claim.Player.Extra?.PassportData;
-            RegistrationAddress = claim.Player.Extra?.RegistrationAddress;
+            // Берём из уже загруженного playerInfo, а не по ленивой навигации claim.Player.Extra:
+            // репозиторий профиля отдаёт эти поля с тем же значением и без лишнего запроса.
+            PassportData = playerInfo.PassportData;
+            RegistrationAddress = playerInfo.RegistrationAddress;
         }
     }
 
