@@ -282,29 +282,39 @@ public class CustomFieldsViewModel
     }
 
     /// <summary>
+    /// Поля персонажа для печати поверх доменного агрегата (ADR013): только character-bound и только
+    /// те, что помечены «включать в распечатку».
+    /// </summary>
+    public static CustomFieldsViewModel ForPrint(
+        CharacterInfo character,
+        AccessArguments accessArguments,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> users)
+        => new(accessArguments,
+            character,
+            character.GetAllFields().Where(f => f.Field.BoundTo == FieldBoundTo.Character && f.Field.IncludeInPrint),
+            overrideValues: null,
+            character.ProjectInfo,
+            users);
+
+    /// <summary>
     ///  Called from
     /// - Character details
     /// - character list item
     /// - Edit character
-    /// - print character
     /// </summary>
-    /// <param name="character">Character to print</param>
+    /// <param name="character">Character to show</param>
     /// <param name="projectInfo"></param>
     /// <param name="accessArguments"></param>
-    /// <param name="wherePrintEnabled">when true - print only fields where IncludeInPrint = true</param>
-    /// <param name="overrideValues"></param>
     public CustomFieldsViewModel(
       Character character,
       ProjectInfo projectInfo,
       AccessArguments accessArguments,
-      IReadOnlyDictionary<UserIdentification, UserInfoHeader> users,
-      bool wherePrintEnabled = false,
-      Dictionary<int, string?>? overrideValues = null)
+      IReadOnlyDictionary<UserIdentification, UserInfoHeader> users)
         : this(
               accessArguments,
               AvailabilityTarget(character, projectInfo),
-              character.GetFields(projectInfo).Where(f => f.Field.BoundTo == FieldBoundTo.Character).Where(f => !wherePrintEnabled || f.Field.IncludeInPrint),
-              overrideValues,
+              character.GetFields(projectInfo).Where(f => f.Field.BoundTo == FieldBoundTo.Character),
+              overrideValues: null,
               projectInfo,
               users)
     {

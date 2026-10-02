@@ -1,7 +1,12 @@
 using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.IntegrationTest.TestInfrastructure;
+using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
@@ -20,6 +25,8 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
 {
     private const string PlotsHeader = "Загрузы";
     private const string FieldsHeader = "Поля персонажа";
+    private const string PrintableFieldName = "Поле для распечатки";
+    private const string PrintableFieldValue = "Значение для распечатки";
 
     [Fact]
     public async Task CharacterList_PrintsHandoutsPlotsAndFields()
@@ -33,6 +40,11 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         text.ShouldContain(PlotsHeader);
         text.ShouldContain(context.CharacterName);
         text.ShouldContain(FieldsHeader);
+
+        // Не только заголовок блока, но и само значение: на одном заголовке тест прошёл бы и при
+        // пустом наборе полей — то есть не заметил бы, если бы отбор полей печати уехал.
+        text.ShouldContain(PrintableFieldName);
+        text.ShouldContain(PrintableFieldValue);
     }
 
     [Fact]
@@ -50,6 +62,7 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         text.ShouldNotContain(context.PlotContent);
         text.ShouldNotContain(PlotsHeader);
         text.ShouldNotContain(FieldsHeader);
+        text.ShouldNotContain(PrintableFieldValue);
     }
 
     private static async Task<string> GetPrintPageText(SeedContext context, string action)
@@ -118,6 +131,42 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
                 var seed = await TestPlotHelpers.SeedPlotFolderAsync(sp, projectId, elementCount: 1);
                 var handout = await TestPlotHelpers.SeedHandoutAsync(sp, seed.PlotFolderId, seed.TargetCharacterId);
                 return (seed, handout.Content);
+            });
+
+        var fieldId = await factory.Services.RunAsAsync(
+            masterId,
+            sp => sp.GetRequiredService<IFieldSetupService>().AddField(new CreateFieldRequest(
+                projectId,
+                ProjectFieldType.String,
+                PrintableFieldName,
+                fieldHint: "",
+                canPlayerEdit: false,
+                canPlayerView: true,
+                isPublic: true,
+                FieldBoundTo.Character,
+                MandatoryStatus.Optional,
+                showForGroups: [],
+                validForNpc: true,
+                includeInPrint: true,
+                showForUnapprovedClaims: true,
+                price: 0,
+                masterFieldHint: "",
+                programmaticValue: null)));
+
+        // Значение проставляется отдельной областью видимости: метаданные проекта кешируются на
+        // область, и в той, где поле только что создано, ProjectInfo о нём ещё не знает.
+        await factory.Services.RunAsAsync(
+            masterId,
+            async sp =>
+            {
+                var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
+                    .GetProjectMetadata(projectId);
+
+                await sp.GetRequiredService<ICharacterService>().SetFields(
+                    seed.TargetCharacterId,
+                    new FieldLayerContainer(
+                        projectInfo,
+                        new Dictionary<int, string?> { [fieldId.ProjectFieldId] = PrintableFieldValue }));
             });
 
         var masterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(

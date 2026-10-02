@@ -1,6 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
@@ -24,12 +23,16 @@ public class PrintCharacterViewModel
 
     public EnvelopeViewModel Envelope { get; }
 
+    /// <param name="envelope">
+    /// Заглавная страница конверта. Приходит готовой, а не собирается здесь: ей нужны название
+    /// проживания и телефон игрока, а их в агрегате персонажа нет — собирает вызывающий,
+    /// как и для отдельных страниц наклеек и конвертов.
+    /// </param>
     public PrintCharacterViewModel
       (ICurrentUserAccessor currentUser,
-       Character character,
-       CharacterInfo characterInfo,
+       CharacterInfo character,
+       EnvelopeViewModel envelope,
        IReadOnlyCollection<PlotTextDto> plots,
-       ProjectInfo projectInfo,
        IReadOnlyCollection<PlotTextDto> handouts,
        ILinkRenderer linkRenderer,
        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
@@ -37,21 +40,18 @@ public class PrintCharacterViewModel
         ArgumentNullException.ThrowIfNull(character);
 
         CharacterName = character.CharacterName;
-        ProjectName = character.Project.ProjectName;
+        ProjectName = character.ProjectInfo.ProjectName;
 
-        Envelope = character.ToEnvelopeViewModel(projectInfo);
+        Envelope = envelope;
 
-        var plotElements = plots;
-        HasUnready = !plotElements.All(x => x.Completed) || !handouts.All(x => x.Completed);
-        Plots = new PlotDisplayViewModel(plotElements, currentUser, characterInfo, linkRenderer);
+        HasUnready = !plots.All(x => x.Completed) || !handouts.All(x => x.Completed);
+        Plots = new PlotDisplayViewModel(plots, currentUser, character, linkRenderer);
 
         Handouts = [.. handouts.Select(e => new HandoutListItemViewModel(e))];
 
-        Fields = new CustomFieldsViewModel(
+        Fields = CustomFieldsViewModel.ForPrint(
             character,
-            projectInfo,
-            AccessArgumentsFactory.Create(character, currentUser, projectInfo, CharacterAccessMode.Print) with { EditAllowed = false },
-            fieldUsers,
-            wherePrintEnabled: true);
+            AccessArgumentsFactory.Create(character, currentUser, CharacterAccessMode.Print) with { EditAllowed = false },
+            fieldUsers);
     }
 }

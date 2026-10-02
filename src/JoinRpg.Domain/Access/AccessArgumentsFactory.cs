@@ -135,42 +135,6 @@ public static class AccessArgumentsFactory
 
     private static bool SamePlayerId(ICurrentUserAccessor left, UserIdentification? right) => SamePlayerId(left.UserIdentificationOrDefault, right);
 
-    public static AccessArguments Create(Character character, ICurrentUserAccessor user, ProjectInfo projectInfo, CharacterAccessMode mode = CharacterAccessMode.Usual)
-    {
-        ArgumentNullException.ThrowIfNull(character);
-        return mode switch
-        {
-            CharacterAccessMode.Usual => Create(character, user, projectInfo),
-            CharacterAccessMode.Print => CreateForPrint(character, user.UserIdentificationOrDefault, projectInfo),
-            _ => throw new NotImplementedException(),
-        };
-    }
-
-    /// <summary>
-    /// Для печати мы используем режим показа от имени игрока, даже если у нас есть мастерские права
-    /// </summary>
-    /// <remarks>
-    /// Права считаем по <see cref="ProjectInfo"/>, а не по навигационным свойствам персонажа:
-    /// <c>character.Project.ProjectAcls</c> и <c>character.Project.Details</c> — ленивые загрузки,
-    /// а метаданные проекта на запрос уже загружены (#4670).
-    /// </remarks>
-    private static AccessArguments CreateForPrint(Character character, UserIdentification? userId, ProjectInfo projectInfo)
-    {
-        ArgumentNullException.ThrowIfNull(character);
-
-        var masterAccess = projectInfo.HasMasterAccess(userId);
-        var playerIsApprovedClaim = SamePlayerId(userId, UserIdentification.FromOptional(character.ApprovedClaim?.PlayerUserId));
-
-        return new AccessArguments(
-              MasterAccess: false,
-              // Not a "player visible", because it could be master that asks to view as player
-              PlayerAccessToCharacter: playerIsApprovedClaim || masterAccess,
-              PlayerAccesToClaim: character.ApprovedClaim is not null && (playerIsApprovedClaim || masterAccess),
-              EditAllowed: projectInfo.IsActive,
-              Published: projectInfo.PublishPlot,
-              CharacterPublic: character.IsPublic, IsCapitan: false);
-    }
-
     /// <summary>
     /// Для добавления заявки нужен особый режим, где у пользователя нет доступа к персонажу (точно), а вот доступ к заявке есть, несмотря на то что заявки нет
     /// </summary>

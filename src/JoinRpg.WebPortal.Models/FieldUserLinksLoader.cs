@@ -91,6 +91,11 @@ public static class FieldUserLinksLoader
 
     public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> LoadFieldUserLinks(
         this IUserRepository userRepository,
+        IEnumerable<CharacterInfo> characters)
+        => userRepository.LoadFieldUserLinks(characters.SelectMany(c => c.GetAllFields()));
+
+    public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> LoadFieldUserLinks(
+        this IUserRepository userRepository,
         Claim claim,
         ProjectInfo projectInfo)
         => userRepository.LoadFieldUserLinks(claim.GetFields(projectInfo));

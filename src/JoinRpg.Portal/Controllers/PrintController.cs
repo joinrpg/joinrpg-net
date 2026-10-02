@@ -47,15 +47,16 @@ public class PrintController(
 
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
+        var characterInfo = await characterInfoRepository.GetCharacterInfo(characterId);
+
         return View(new PrintCharacterViewModel(
             currentUserAccessor,
-            character,
-            await characterInfoRepository.GetCharacterInfo(characterId),
+            characterInfo,
+            character.ToEnvelopeViewModel(projectInfo),
             plots[characterId],
-            projectInfo,
             handouts[characterId],
             await linkRendererFactory.Load(projectId),
-            await userRepository.LoadFieldUserLinks(character, projectInfo)));
+            await userRepository.LoadFieldUserLinks(characterInfo)));
     }
 
     [MasterAuthorize()]
@@ -77,7 +78,7 @@ public class PrintController(
         IReadOnlyCollection<CharacterIdentification> characterIdsList = characterIds.ToCharacterIds(projectId);
         var characters = await characterRepository.LoadCharactersWithGroups(characterIdsList);
 
-        // Агрегаты одним запросом на всю пачку — PlotDisplayViewModel считает права по ним (ADR013).
+        // Агрегаты одним запросом на всю пачку — вью-модель печати живёт на них (ADR013).
         var characterInfos = (await characterInfoRepository.GetCharacterInfos(characterIdsList))
             .ToDictionary(c => c.Id);
 
@@ -88,14 +89,23 @@ public class PrintController(
         var linkRenderer = await linkRendererFactory.Load(projectId);
 
         // Один запрос на всю пачку печати, а не по персонажу.
-        var fieldUsers = await userRepository.LoadFieldUserLinks(characters, projectInfo);
+        var fieldUsers = await userRepository.LoadFieldUserLinks(characterInfos.Values);
 
         return
           [.. characters.Select(
             c =>
             {
                 var characterId = new CharacterIdentification(c.ProjectId, c.CharacterId);
-                return new PrintCharacterViewModel(currentUserAccessor, c, characterInfos[characterId], plots[characterId], projectInfo, handouts[characterId], linkRenderer, fieldUsers);
+                return new PrintCharacterViewModel(
+                    currentUserAccessor,
+                    characterInfos[characterId],
+                    // Конверт пока собирается по EF-сущности: в агрегате нет ни названия проживания,
+                    // ни телефона игрока.
+                    c.ToEnvelopeViewModel(projectInfo),
+                    plots[characterId],
+                    handouts[characterId],
+                    linkRenderer,
+                    fieldUsers);
             })];
     }
 
