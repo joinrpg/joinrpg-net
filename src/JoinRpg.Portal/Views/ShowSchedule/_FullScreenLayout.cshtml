@@ -1,7 +1,8 @@
 ﻿@using JoinRpg.Web.Schedule
 @{
     // Layout используется только из FullScreen.cshtml, он и кладёт модель в ViewData.
-    var schedule = (SchedulePageViewModel)ViewData["Schedule"]!;
+    var schedule = ViewData["Schedule"] as SchedulePageViewModel
+        ?? throw new InvalidOperationException("Layout расписания ждёт SchedulePageViewModel в ViewData[\"Schedule\"]");
 }
 <!DOCTYPE html>
 <html>
