@@ -1,4 +1,3 @@
-using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
@@ -118,7 +117,7 @@ public class CharacterListItemViewModel : ILinkable
 
         Groups = new CharacterParentGroupsViewModel(character, projectInfo.HasMasterAccess(currentUserId));
 
-        Responsible = character.GetResponsibleMaster();
+        Responsible = character.ResponsibleMaster;
     }
 
     [Display(Name = "Проблемы")]
