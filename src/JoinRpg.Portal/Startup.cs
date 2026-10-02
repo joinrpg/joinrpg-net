@@ -24,7 +24,6 @@ using JoinRpg.Portal.Infrastructure.ModelBinding;
 using JoinRpg.Portal.Infrastructure.XApi;
 using JoinRpg.Portal.Menu;
 using JoinRpg.Services.Advertisement;
-using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Impl.Accommodation;
@@ -145,7 +144,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .AddJoinDal()
             .AddJoinExportService()
             .AddJoinManagers()
-            .AddJoinNotificationServices()
             .AddJoinNotificationLayerServices()
             .AddJoinNotificationJobs()
             .AddJoinTelegram()

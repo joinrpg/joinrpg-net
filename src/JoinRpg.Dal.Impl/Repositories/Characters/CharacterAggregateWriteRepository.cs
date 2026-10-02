@@ -16,22 +16,18 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
     private readonly CharacterInfoLoader loader = new(ctx);
 
     public async Task<ICharacterAggregateUpdateHandle> LoadCharacterForUpdate(
-        CharacterIdentification characterId,
-        UserIdentification initiatorId)
+        CharacterIdentification characterId)
     {
         var (project, projectInfo) = await LoadProject(characterId.ProjectId);
 
         var character = await LoadCharacterEntity(characterId);
         var characterInfo = await LoadCharacterInfo(characterId, projectInfo);
-        var initiator = await LoadInitiator(initiatorId);
 
         return new CharacterAggregateUpdateHandle(
-            ctx, loader, project, projectInfo, character, characterInfo, initiator);
+            ctx, loader, project, projectInfo, character, characterInfo);
     }
 
-    public async Task<IClaimUpdateHandle> LoadClaimForUpdate(
-        ClaimIdentification claimId,
-        UserIdentification initiatorId)
+    public async Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId)
     {
         var (project, projectInfo) = await LoadProject(claimId.ProjectId);
 
@@ -44,10 +40,8 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         var claimInfo = characterInfo.Claims.SingleOrDefault(c => c.ClaimId == claimId)
             ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, "claim");
 
-        var initiator = await LoadInitiator(initiatorId);
-
         return new ClaimUpdateHandle(
-            ctx, loader, project, projectInfo, character, characterInfo, initiator, claim, claimInfo);
+            ctx, loader, project, projectInfo, character, characterInfo, claim, claimInfo);
     }
 
     private async Task<(Project, ProjectInfo)> LoadProject(ProjectIdentification projectId)
@@ -78,10 +72,6 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         return infos.SingleOrDefault()
             ?? throw new JoinRpgEntityNotFoundException(characterId.CharacterId, "character");
     }
-
-    private async Task<User> LoadInitiator(UserIdentification initiatorId)
-        => await ctx.Set<User>().FindAsync(initiatorId.Value)
-            ?? throw new JoinRpgEntityNotFoundException(initiatorId.Value, "user");
 
     /// <summary>
     /// Связи персонажа, нужные бизнес-логике, грузятся явно, а не ленивой загрузкой.
@@ -119,8 +109,7 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         Project project,
         ProjectInfo projectInfo,
         Character character,
-        CharacterInfo characterInfo,
-        User initiator)
+        CharacterInfo characterInfo)
         : ICharacterAggregateUpdateHandle
     {
         public Project Project { get; private set; } = project;
@@ -130,8 +119,6 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         public Character Character { get; } = character;
 
         public CharacterInfo CharacterInfo { get; } = characterInfo;
-
-        public User Initiator { get; } = initiator;
 
         public void Add(object entity) => _ = ctx.Set(entity.GetType()).Add(entity);
 
@@ -182,16 +169,16 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
 
         /// <summary>
         /// Повторяет запрос <c>AccommodationInviteServiceImpl.DeclineAllClaimInvites</c>, но на
-        /// <c>DbContext</c> этого хэндла. Заявки-участницы приезжают вместе с игроками: по ним
-        /// строится письмо, и второго запроса за получателями больше нет.
+        /// <c>DbContext</c> этого хэндла. Заявки-участницы (<c>From</c>/<c>To</c>) грузятся сразу:
+        /// вызывающий читает их, чтобы понять, какие приглашения отклонены.
         /// </summary>
         public async Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim(ClaimIdentification claimId)
         {
             var claimIntId = claimId.ClaimId;
             var projectIntId = claimId.ProjectId.Value;
             return await ctx.Set<AccommodationInvite>()
-                .Include(i => i.From.Player)
-                .Include(i => i.To.Player)
+                .Include(i => i.From)
+                .Include(i => i.To)
                 .Where(i => i.ProjectId == projectIntId)
                 .Where(i => i.ToClaimId == claimIntId || i.FromClaimId == claimIntId)
                 .ToListAsync();
@@ -205,10 +192,9 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         ProjectInfo projectInfo,
         Character character,
         CharacterInfo characterInfo,
-        User initiator,
         Claim claim,
         CharacterClaimInfo claimInfo)
-        : CharacterAggregateUpdateHandle(ctx, loader, project, projectInfo, character, characterInfo, initiator),
+        : CharacterAggregateUpdateHandle(ctx, loader, project, projectInfo, character, characterInfo),
             IClaimUpdateHandle
     {
         public Claim Claim { get; } = claim;

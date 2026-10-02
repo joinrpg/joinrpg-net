@@ -16,8 +16,9 @@ namespace JoinRpg.Data.Interfaces.Characters;
 /// в одном, а <c>SaveChanges</c> шёл бы в другом.
 /// </para>
 /// <para>
-/// Инициатор операции передаётся параметром, а не берётся из <c>ICurrentUserAccessor</c>:
-/// слой доступа к данным не должен зависеть от текущего пользователя.
+/// Инициатора операции репозиторий не знает и не спрашивает: единственным потребителем была
+/// EF-сущность <c>User</c> для легаси-канала писем, а он удалён. Кто совершает операцию, знает слой
+/// сервисов — через <c>ICurrentUserAccessor</c>.
 /// </para>
 /// </remarks>
 public interface ICharacterAggregateWriteRepository
@@ -26,26 +27,20 @@ public interface ICharacterAggregateWriteRepository
     /// Загружает агрегат персонажа: трекаемую сущность вместе с согласованным доменным снимком.
     /// </summary>
     /// <param name="characterId">Персонаж, который будет изменён.</param>
-    /// <param name="initiatorId">Пользователь, от имени которого идёт операция.</param>
     /// <exception cref="JoinRpgEntityNotFoundException">Персонаж не найден.</exception>
-    Task<ICharacterAggregateUpdateHandle> LoadCharacterForUpdate(
-        CharacterIdentification characterId,
-        UserIdentification initiatorId);
+    Task<ICharacterAggregateUpdateHandle> LoadCharacterForUpdate(CharacterIdentification characterId);
 
     /// <summary>
     /// Загружает агрегат персонажа, которому принадлежит заявка, и саму заявку.
     /// </summary>
     /// <param name="claimId">Заявка, которая будет изменена.</param>
-    /// <param name="initiatorId">Пользователь, от имени которого идёт операция.</param>
     /// <exception cref="JoinRpgEntityNotFoundException">Заявка или её персонаж не найдены.</exception>
-    Task<IClaimUpdateHandle> LoadClaimForUpdate(
-        ClaimIdentification claimId,
-        UserIdentification initiatorId);
+    Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId);
 }
 
 /// <summary>
-/// Согласованная четвёрка: трекаемый <see cref="Character"/>, <see cref="ProjectInfo"/>,
-/// <see cref="CharacterInfo"/> и <see cref="User"/>-инициатор (ADR014).
+/// Согласованная тройка: трекаемый <see cref="Character"/>, <see cref="ProjectInfo"/> и
+/// <see cref="CharacterInfo"/> (ADR014).
 /// </summary>
 /// <remarks>
 /// Хэндл не отдаёт <c>DbSet&lt;T&gt;</c> наружу — только <see cref="Add"/> и <see cref="Remove"/>.
@@ -135,14 +130,6 @@ public interface ICharacterAggregateUpdateHandle : IAggregateMutationScope
     /// строится доменными методами (<c>ForNewCharacter</c>/<c>WithXxx</c>), а не перечитыванием БД.
     /// </summary>
     CharacterInfo CharacterInfo { get; }
-
-    /// <summary>
-    /// Текущий пользователь как EF-сущность. Существует только ради легаси-канала писем:
-    /// <c>EmailModelBase.Initiator</c> требует именно сущность <see cref="User"/>.
-    /// </summary>
-    [Obsolete("Нужен только легаси-письмам (EmailModelBase.Initiator). Новый код должен обходиться "
-        + "UserIdentification/UserInfoHeader; свойство уйдёт вместе с легаси-каналом писем, см. ADR014")]
-    User Initiator { get; }
 
     /// <summary>
     /// Перечитывает проект из БД (тем же <c>DbContext</c>, значит — в той же транзакции)

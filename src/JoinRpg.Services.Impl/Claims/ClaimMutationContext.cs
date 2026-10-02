@@ -26,7 +26,6 @@ internal abstract record ClaimMutationContext(
     ProjectInfo ProjectInfo,
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
-    User Initiator,
     IAggregateMutationScope Scope,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper)
@@ -157,10 +156,9 @@ internal sealed record ClaimMutationContext<TArgs>(
     ProjectInfo ProjectInfo,
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
-    User Initiator,
     IAggregateMutationScope Scope,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper,
     TArgs Request)
     : ClaimMutationContext(Claim, ClaimInfo, Character, CharacterInfo, ProjectInfo, Now, CurrentUser,
-        Initiator, Scope, FieldSaveHelper, CommentHelper);
+        Scope, FieldSaveHelper, CommentHelper);
