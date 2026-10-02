@@ -2,6 +2,7 @@ using JoinRpg.Blazor.Client;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.Schedule;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Portal.Test;
@@ -87,6 +88,19 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
 
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
         NormalizePathAndQuery(server).ShouldEndWith("/details", Case.Insensitive);
+    }
+
+    /// <summary>
+    /// Клиентской реализации у <see cref="IScheduleUriLocator"/> нет (расписание рендерится
+    /// статически), поэтому сверяем серверную с роутом <c>ShowScheduleController</c> напрямую:
+    /// иначе переименование action'а сломает ссылку из полноэкранного режима молча.
+    /// </summary>
+    [Fact]
+    public void ScheduleUriShouldMatchControllerRoute()
+    {
+        var uri = factory.Services.GetRequiredService<IScheduleUriLocator>().GetScheduleUri(ProjectId);
+
+        NormalizePathAndQuery(uri).ShouldBe($"/{ProjectId.Value}/schedule", StringCompareShould.IgnoreCase);
     }
 
     private static string NormalizePathAndQuery(Uri uri) =>

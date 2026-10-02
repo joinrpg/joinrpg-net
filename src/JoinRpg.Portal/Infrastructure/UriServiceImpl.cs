@@ -9,6 +9,7 @@ using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.Schedule;
 using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Infrastructure;
@@ -22,6 +23,7 @@ internal class UriServiceImpl(
     IUriLocator<ProjectIdentification>,
     IProjectUriLocator,
     ICharacterUriLocator,
+    IScheduleUriLocator,
     ICharacterGroupUriLocator,
     IProjectFieldUriLocator,
     IUriLocator<PlotFolderIdentification>,
@@ -132,6 +134,7 @@ internal class UriServiceImpl(
     public Uri GetDetailsUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Details", "Character", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
     public Uri GetAddClaimUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForCharacter", "Claim", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
     public Uri GetEditUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Character", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
+    Uri IScheduleUriLocator.GetScheduleUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "ShowSchedule", new { ProjectId = projectId.Value }));
     Uri IProjectUriLocator.GetCreatePlotUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Create", "Plot", new { ProjectId = projectId.Value }));
     public Uri GetUri(PlotFolderIdentification target) => GetUri(new Linkable(target));
     Uri IProjectUriLocator.GetRolesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "GameGroups", new { ProjectId = projectId.Value }));
