@@ -1,11 +1,15 @@
 namespace JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
+/// <param name="WarnOnOverPayment">
+/// Предупреждать ли мастеров о переплате по заявке (проблема <c>TooManyMoney</c>).
+/// </param>
 /// <param name="FeeSchedule">
 /// Расписание взносов проекта. Порядок в коллекции не важен: правильный порядок даёт
 /// <see cref="FeeScheduleOrdered"/>, действующая строка выбирается в <see cref="GetFeeSettingForDate"/>.
 /// </param>
 public record ProjectFinanceSettings(
     bool PreferentialFeeEnabled,
+    bool WarnOnOverPayment,
     IReadOnlyCollection<PaymentTypeInfo> PaymentTypes,
     IReadOnlyCollection<ProjectFeeSettingInfo> FeeSchedule)
 {
