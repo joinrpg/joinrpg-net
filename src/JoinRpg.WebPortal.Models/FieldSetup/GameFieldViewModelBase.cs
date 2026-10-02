@@ -32,8 +32,6 @@ public abstract class GameFieldViewModelBase : IValidatableObject, IFieldNavigat
     [Display(Name = "Показывать только для групп", Description = "Если оставить пустым, будет показываться всегда")]
     public CharacterGroupIdentification[] ShowForGroups { get; set; } = [];
 
-    public int[] ShowForGroupsInts { get; set; } = [];
-
     [Display(Name = "Доступно NPC", Description = "Доступно для персонажей-NPC")]
     public bool ValidForNpc { get; set; }
 
