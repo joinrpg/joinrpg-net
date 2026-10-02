@@ -89,6 +89,11 @@ public static class FieldUserLinksLoader
         Dictionary<int, string?>? overrideValues = null)
         => userRepository.LoadFieldUserLinks(character.GetAllFields(), overrideValues);
 
+    /// <remarks>
+    /// Один и тот же пользователь встречается и в разных полях, и у разных персонажей пачки. Схлопывает
+    /// это общая перегрузка по полям: <c>Distinct</c> там стоит на уровне id пользователей, уже после
+    /// разбора значений, так что в репозиторий уходит один запрос с уникальным набором id.
+    /// </remarks>
     public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> LoadFieldUserLinks(
         this IUserRepository userRepository,
         IEnumerable<CharacterInfo> characters)
