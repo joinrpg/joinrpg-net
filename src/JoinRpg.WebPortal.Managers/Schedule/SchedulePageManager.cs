@@ -10,7 +10,7 @@ using JoinRpg.DomainTypes.Schedules;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Schedules;
+using JoinRpg.Web.Schedule;
 using JoinRpg.WebPortal.Managers.Interfaces;
 
 namespace JoinRpg.WebPortal.Managers.Schedule;

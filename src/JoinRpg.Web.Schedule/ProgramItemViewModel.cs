@@ -1,6 +1,4 @@
-using JoinRpg.Common.WebComponents;
-
-namespace JoinRpg.Web.Models.Schedules;
+namespace JoinRpg.Web.Schedule;
 
 public class ProgramItemViewModel
 {

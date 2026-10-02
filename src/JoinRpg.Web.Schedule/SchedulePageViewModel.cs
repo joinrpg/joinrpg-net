@@ -1,4 +1,4 @@
-namespace JoinRpg.Web.Models.Schedules;
+namespace JoinRpg.Web.Schedule;
 
 public class SchedulePageViewModel
 {

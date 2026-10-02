@@ -1,7 +1,7 @@
 using System.Text;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Schedules;
+using JoinRpg.Web.Schedule;
 using JoinRpg.WebPortal.Managers.Schedule;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

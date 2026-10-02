@@ -2,7 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Schedules;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
-using JoinRpg.Web.Models.Schedules;
+using JoinRpg.Web.Schedule;
 using JoinRpg.WebPortal.Managers.Schedule;
 using JoinRpg.XGameApi.Contract.Schedule;
 using Microsoft.AspNetCore.Mvc;

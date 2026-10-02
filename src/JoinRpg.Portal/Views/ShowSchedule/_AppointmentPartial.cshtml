@@ -1,5 +1,5 @@
 ﻿@using JoinRpg.Helpers
-@using JoinRpg.Web.Models.Schedules
+@using JoinRpg.Web.Schedule
 @model AppointmentViewModel
 @{
     string title = Model.DisplayName;
@@ -55,5 +55,5 @@
         </div>
     </div>
     <div class="appointment-click-overlay" onclick="appointmentClickHandler(@Model.CharacterId)"></div>
-    <div id="appointment@(Model.CharacterId)-description" style="display: none;">@Model.Description</div>
+    <div id="appointment@(Model.CharacterId)-description" style="display: none;">@Html.Raw(Model.Description.Value)</div>
 </div>
