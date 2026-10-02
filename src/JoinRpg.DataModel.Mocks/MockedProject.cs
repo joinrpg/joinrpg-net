@@ -427,7 +427,9 @@ public class MockedProject
             claim.CurrentFee,
             claim.PreferentialFeeUser,
             FeePaid: 0,
+            FinanceOperationsRequireModeration: claim.FinanceOperations.Any(fo => fo.RequireModeration),
             AccommodationFee: 0,
+            PlayerAllowedSensitiveData: claim.PlayerAllowedSenstiveData,
             FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, claim.JsonData));
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)

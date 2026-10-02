@@ -115,6 +115,9 @@ public record class CharacterClaimInfo(
     UserIdentification ResponsibleMasterId,
     DateTime CreateDate,
     DateTime LastUpdateDateTime,
+    DateTime? MasterAcceptedDate,
+    DateTime? MasterDeclinedDate,
+    DateTime? PlayerDeclinedDate,
     DateTime? CheckInDate,
     DateTimeOffset? LastPlayerCommentAt,
     DateTimeOffset? LastMasterCommentAt,
@@ -122,7 +125,9 @@ public record class CharacterClaimInfo(
     int? CurrentFee,
     bool PreferentialFeeUser,
     int FeePaid,
+    bool FinanceOperationsRequireModeration,
     int AccommodationFee,
+    bool PlayerAllowedSensitiveData,
     FieldLayerContainer Fields)
 {
     public bool IsApproved => Status is ClaimStatus.Approved or ClaimStatus.CheckedIn;
@@ -141,6 +146,17 @@ public record class CharacterClaimInfo(
 - **`CurrentFee`, `PreferentialFeeUser`, `FeePaid`, `AccommodationFee`, `Fields`** — полный вход
   `FinanceExtensions.CalculateClaimBalance` без обращения к EF. Список `FinanceOperation` не тащим:
   нужна только сумма approved-операций, ровно как это уже делает `UgClaim.FeePaid`.
+  К этому же блоку добавился **`FinanceOperationsRequireModeration`** — производный скаляр «есть
+  операции, ждущие решения мастера», единственное, что нужно проблеме
+  `FinanceModerationRequired`. Сам список `FinanceOperation` по-прежнему в агрегат не входит.
+  Правило «ждёт модерации» в SQL считается копией предиката
+  (`FinancePredicates.RequireModeration`), потому что вычисляемое свойство
+  `FinanceOperation.RequireModeration` EF6 не переводит; за совпадением копии с оригиналом следит
+  тест-страж `FinancePredicatesTest`.
+- **`PlayerAllowedSensitiveData`** — согласие игрока показывать мастерам паспорт и адрес
+  регистрации. Даётся на уровне заявки, поэтому это факт о заявке, а не о профиле; нужен фильтру
+  проблемы «не хватает контактов». В БД колонка называется `PlayerAllowedSenstiveData` — с
+  опечаткой; в доменном типе имя намеренно пишется правильно.
 - **`DenialStatus`** — вход `ClaimStatusBuilders.CreateFullStatus`; фильтруется снаружи по
   `AccessArguments.CanViewDenialStatus`.
 
@@ -199,7 +215,7 @@ XML-doc типа.
 |---|---|
 | `CommentDiscussion`, `Comment[]` | отдельный агрегат; в `CharacterClaimInfo` есть только три скаляра «когда был последний комментарий» |
 | Сюжеты (`PlotElement`, `PlotElementOrderData`) | отдельный агрегат, есть `CharacterPlotViewService` и `PlotAccessArguments` |
-| `FinanceOperation[]`, `RecurrentPayment[]` | нужна только сумма `FeePaid` |
+| `FinanceOperation[]`, `RecurrentPayment[]` | нужны только сумма `FeePaid` и факт «есть операции, ждущие модерации» (`FinanceOperationsRequireModeration`) |
 | `AccommodationRequest` целиком | нужна только `Cost` |
 | `UserSubscription[]` | своя ручка `IUserSubscribeRepository` |
 | Контакты, аватар и соцсети игрока (`UserExtra`, `ExternalLogins`) | только `UserInfoHeader` — id и отображаемое имя (см. уточнение ниже). Остальной профиль меняется независимо от персонажа, а его включение раздуло бы агрегат — см. ADR011, где контакты составляют заметную долю payload сетки. Отображение — bulk через `IUserRepository.GetUserInfoHeaders(ids)` |

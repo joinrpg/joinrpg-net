@@ -70,6 +70,8 @@ internal static class CharacterInfoMapper
             row.CurrentFee,
             row.PreferentialFeeUser,
             row.FeePaid ?? 0,
+            row.FinanceOperationsRequireModeration,
             row.AccommodationFee ?? 0,
+            row.PlayerAllowedSensitiveData,
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, row.JsonData));
 }
