@@ -80,10 +80,33 @@ public class AccommodationNotificationServiceTest
             remaining,
             RoomOccupancyChangeKind.Occupied);
 
+    private AccommodationInviteNotification Invite(
+        IReadOnlyCollection<ClaimIdentification> recipientClaims,
+        UserInfoHeader? initiatorOverride = null,
+        InviteChangeKind kind = InviteChangeKind.Created)
+        => new(
+            recipientClaims,
+            initiatorOverride ?? initiator,
+            kind);
+
     private NotificationEvent Queued() => notificationService.Queued.Single();
 
     private IReadOnlyCollection<UserIdentification> QueuedRecepients()
         => [.. Queued().Recepients.Select(r => r.UserId)];
+
+    /// <summary>
+    /// Уведомление, поставленное по конкретной заявке: приглашения ставятся по одному на заявку,
+    /// и найти своё можно только по ссылке на неё.
+    /// </summary>
+    private NotificationEvent QueuedFor(ClaimIdentification claimId)
+        => notificationService.Queued.Single(notification => Equals(notification.EntityReference, claimId));
+
+    private IReadOnlyCollection<UserIdentification> RecepientsOf(ClaimIdentification claimId)
+        => [.. QueuedFor(claimId).Recepients.Select(r => r.UserId)];
+
+    /// <summary>Поставлено ли вообще уведомление по этой заявке.</summary>
+    private bool QueuedAnythingFor(ClaimIdentification claimId)
+        => notificationService.Queued.Any(notification => Equals(notification.EntityReference, claimId));
 
     [Fact]
     public async Task InitiatorIsNotRecepientEvenWhenHeIsPlayer()
@@ -217,5 +240,120 @@ public class AccommodationNotificationServiceTest
 
         QueuedRecepients().ShouldContain(new UserIdentification(subscribedMaster.UserId));
         QueuedRecepients().ShouldNotContain(new UserIdentification(indifferentMaster.UserId));
+    }
+
+    [Fact]
+    public async Task Invite_OneNotificationPerClaimWithLinkToThatClaim()
+    {
+        // Уведомление ставится по одному на каждую заявку, и ссылка в нём ведёт именно на эту
+        // заявку: приглашениями управляют на странице заявки получателя, а она у каждого своя.
+        var first = AddClaim("Первый", playerId: 1);
+        var second = AddClaim("Второй", playerId: 3);
+
+        await CreateService().SendNotification(Invite([first.ClaimId, second.ClaimId]));
+
+        notificationService.Queued.Count.ShouldBe(2);
+        notificationService.Queued.Select(notification => notification.EntityReference)
+            .ShouldBe([first.ClaimId, second.ClaimId], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task Invite_RecepientsAreCountedPerClaim()
+    {
+        // Получатели каждого уведомления считаются от своей заявки: игрок другой заявки из того же
+        // вызова в них не попадает, хотя заявки пришли одним списком.
+        var first = AddClaim("Первый", playerId: 1);
+        var second = AddClaim("Второй", playerId: 3);
+
+        await CreateService().SendNotification(Invite([first.ClaimId, second.ClaimId]));
+
+        RecepientsOf(first.ClaimId).ShouldBe([first.Player.UserId]);
+        RecepientsOf(second.ClaimId).ShouldBe([second.Player.UserId]);
+    }
+
+    [Fact]
+    public async Task Invite_ResponsibleMasterIsNotRecepient()
+    {
+        // Ответственный мастер на приглашения не подписан: предикат AccommodationInvitesChange, а
+        // SubscribeCalculator.CreateForRespMaster выставляет его в false. Это отличие от
+        // уведомлений о комнате — там мастер получает, см. ResponsibleMasterIsRecepient.
+        var responsibleMaster = mock.CreateMaster();
+        mock.ReInitProjectInfo();
+        var claim = AddClaim("Приглашённый", playerId: 1, responsibleMaster);
+
+        await CreateService().SendNotification(Invite([claim.ClaimId]));
+
+        RecepientsOf(claim.ClaimId).ShouldBe([claim.Player.UserId]);
+        RecepientsOf(claim.ClaimId).ShouldNotContain(new UserIdentification(responsibleMaster.UserId));
+    }
+
+    [Fact]
+    public async Task Invite_InitiatorIsNotRecepient()
+    {
+        // Инициатор приглашения не должен получить уведомление о своём же действии, даже если он
+        // игрок одной из заявок-получателей (отмена приглашения уведомляет обе стороны). По его
+        // заявке уведомление не ставится вовсе: получателей у него не остаётся, а пустое
+        // уведомление — это лишние запросы и вводящая в заблуждение строка в логе.
+        var own = AddClaim("Свой", playerId: 1);
+        var other = AddClaim("Другой", playerId: 3);
+
+        await CreateService().SendNotification(
+            Invite([own.ClaimId, other.ClaimId], initiatorOverride: own.Player));
+
+        QueuedAnythingFor(own.ClaimId).ShouldBeFalse();
+        RecepientsOf(other.ClaimId).ShouldBe([other.Player.UserId]);
+    }
+
+    /// <summary>
+    /// Зеркало <see cref="SubscribedMasterIsRecepientOnlyWhenSubscribedToAccommodation"/> для
+    /// приглашений: здесь предикат другой — AccommodationInvitesChange. Тест нужен в обе стороны,
+    /// иначе опечатка в предикате (взяли не то поле) прошла бы незамеченной.
+    /// </summary>
+    [Fact]
+    public async Task Invite_SubscribedMasterIsRecepientOnlyWhenSubscribedToInvites()
+    {
+        var subscribedMaster = mock.CreateMaster("Подписанный на приглашения");
+        var roomOnlyMaster = mock.CreateMaster("Подписанный только на комнаты");
+        mock.ReInitProjectInfo();
+        subscribeRepository.ForCharacters.Add(new UserSubscribe(
+            subscribedMaster.ToUserInfoHeader(),
+            SubscriptionOptions.CreateNoneSet() with { AccommodationInvitesChange = true }));
+        subscribeRepository.ForCharacters.Add(new UserSubscribe(
+            roomOnlyMaster.ToUserInfoHeader(),
+            SubscriptionOptions.CreateNoneSet() with { AccommodationChange = true }));
+        var claim = AddClaim("Приглашённый", playerId: 1);
+
+        await CreateService().SendNotification(Invite([claim.ClaimId]));
+
+        var recipients = RecepientsOf(claim.ClaimId);
+        recipients.ShouldContain(new UserIdentification(subscribedMaster.UserId));
+        recipients.ShouldNotContain(new UserIdentification(roomOnlyMaster.UserId));
+    }
+
+    [Fact]
+    public async Task Invite_NotificationEventIsFilledForAccommodation()
+    {
+        var claim = AddClaim("Приглашённый", playerId: 1);
+
+        await CreateService().SendNotification(Invite([claim.ClaimId]));
+
+        var notification = Queued();
+        notification.NotificationClass.ShouldBe(NotificationClass.Accommodation);
+        notification.Initiator.ShouldBe(initiator.UserId);
+        notification.Header.ShouldContain(mock.ProjectInfo.ProjectName.Value);
+        notification.Header.ShouldContain("приглашения к проживанию");
+    }
+
+    [Fact]
+    public async Task Invite_NoClaims_NothingQueued()
+    {
+        // Пустой список получателей и заявка, которой нет в выборке: уведомление ставится уже
+        // ПОСЛЕ сохранения операции, поэтому падать здесь нельзя.
+        var orphan = new ClaimIdentification(mock.ProjectInfo.ProjectId, 9999);
+
+        await CreateService().SendNotification(Invite([]));
+        await CreateService().SendNotification(Invite([orphan]));
+
+        notificationService.Queued.ShouldBeEmpty();
     }
 }

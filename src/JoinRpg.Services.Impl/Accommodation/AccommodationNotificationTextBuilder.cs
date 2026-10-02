@@ -16,11 +16,47 @@ internal record RoomOccupancyTextData(
     RoomOccupancyChangeKind Kind);
 
 /// <summary>
+/// Готовые к подстановке данные уведомления о приглашении.
+/// </summary>
+internal record InviteTextData(
+    ProjectName ProjectName,
+    UserDisplayName Initiator,
+    InviteChangeKind Kind);
+
+/// <summary>
 /// Собирает текст уведомлений о проживании. Вынесен отдельным классом без зависимостей — чтобы
 /// каждый видимый игроку текст закрывался verify-тестом (ADR003, «Тестирование»).
 /// </summary>
+//TODO[Localize] Видимые пользователю строки вне JoinRpg.Portal — как и в соседнем
+// ClaimNotificationTextBuilder: тексты уведомлений живут в слое сервисов целиком.
 internal class AccommodationNotificationTextBuilder
 {
+    public string GetHeader(InviteTextData data)
+        => $"{data.ProjectName.Value}: приглашения к проживанию";
+
+    // Подписи инициатора в конце нет, в отличие от уведомлений о комнате: его имя уже стоит в самой
+    // фразе, и повтор читался бы странно.
+    public string GetBody(InviteTextData data)
+        => $"""
+            Добрый день, %recepient.name%
+
+            {GetInviteDescription(data)}
+
+            Управлять приглашениями можно на странице Вашей заявки.
+            """;
+
+    private static string GetInviteDescription(InviteTextData data)
+        => data.Kind switch
+        {
+            InviteChangeKind.Created =>
+                $"{data.Initiator.DisplayName} отправил Вам приглашение к совместному проживанию.",
+            InviteChangeKind.Accepted =>
+                $"{data.Initiator.DisplayName} принял Ваше приглашение к совместному проживанию.",
+            InviteChangeKind.Cancelled =>
+                $"{data.Initiator.DisplayName} отменил приглашение к совместному проживанию.",
+            _ => throw new ArgumentOutOfRangeException(nameof(data), data.Kind, "Неожиданное значение"),
+        };
+
     public string GetHeader(RoomOccupancyTextData data)
         => $"{data.ProjectName.Value}: комната {data.AccommodationTypeName} {data.RoomName}";
 

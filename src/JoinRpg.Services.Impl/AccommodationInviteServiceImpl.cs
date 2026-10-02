@@ -4,16 +4,19 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
-using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.Services.Impl.Accommodation;
 
 namespace JoinRpg.Services.Impl;
 
-public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
+internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
 {
-    public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) :
-        base(unitOfWork, currentUserAccessor) => EmailService = emailService;
+    public AccommodationInviteServiceImpl(
+        IUnitOfWork unitOfWork,
+        IAccommodationNotificationService notificationService,
+        ICurrentUserAccessor currentUserAccessor) :
+        base(unitOfWork, currentUserAccessor) => NotificationService = notificationService;
 
-    private IEmailService EmailService { get; }
+    private IAccommodationNotificationService NotificationService { get; }
 
     /// <inheritdoc />
     public async Task CreateAccommodationInvite(
@@ -94,9 +97,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             .Where(claim => claim.ClaimId == receiverClaimId.ClaimId)
             .ToArrayAsync().ConfigureAwait(false);
 
-        await EmailService
-            .Email(await CreateInviteEmail<NewInviteEmail>(receiver,
-                senderAccommodationRequest.Project).ConfigureAwait(false))
+        await NotifyAboutInvite(receiver, InviteChangeKind.Created)
             .ConfigureAwait(false);
     }
 
@@ -145,9 +146,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
 
         await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
-        await EmailService
-            .Email(await CreateInviteEmail<NewInviteEmail>(receiversClaims,
-                senderAccommodationRequest.Project).ConfigureAwait(false))
+        await NotifyAboutInvite(receiversClaims, InviteChangeKind.Created)
             .ConfigureAwait(false);
     }
 
@@ -200,18 +199,15 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
         }
     }
 
-    private async Task<T> CreateInviteEmail<T>(Claim[] recipients, Project project)
-        where T : InviteEmailModel, new()
-    {
-        return new T()
-        {
-            Initiator = await GetCurrentUser().ConfigureAwait(false),
-            ProjectName = project.ProjectName,
-            Recipients = recipients.GetInviteSubscriptions(),
-            RecipientClaims = recipients,
-            Text = new MarkdownDbValue(),
-        };
-    }
+    /// <summary>
+    /// Ставит уведомление о приглашении подписчикам перечисленных заявок. Инициатор берётся из
+    /// текущего запроса — сущность пользователя из базы для этого не нужна.
+    /// </summary>
+    private Task NotifyAboutInvite(Claim[] recipients, InviteChangeKind kind)
+        => NotificationService.SendNotification(new AccommodationInviteNotification(
+            [.. recipients.Select(claim => claim.GetId())],
+            currentUserAccessor.ToUserInfoHeader(),
+            kind));
 
     /// <inheritdoc />
     public async Task<AccommodationInvite?> AcceptAccommodationInvite(AccommodationInviteIdentification inviteId)
@@ -267,9 +263,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             .ToArrayAsync()
             .ConfigureAwait(false);
 
-        await EmailService
-            .Email(await CreateInviteEmail<AcceptInviteEmail>(receivers,
-                inviteRequest.Project).ConfigureAwait(false))
+        await NotifyAboutInvite(receivers, InviteChangeKind.Accepted)
             .ConfigureAwait(false);
 
 
@@ -316,9 +310,7 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             .ToArrayAsync()
             .ConfigureAwait(false);
 
-        await EmailService
-            .Email(await CreateInviteEmail<DeclineInviteEmail>(receivers,
-                inviteRequest.Project).ConfigureAwait(false))
+        await NotifyAboutInvite(receivers, InviteChangeKind.Cancelled)
             .ConfigureAwait(false);
 
         return inviteRequest;
@@ -357,14 +349,8 @@ public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationI
             .ToArrayAsync()
             .ConfigureAwait(false);
 
-        var firstClaim = receivers.First();
-        var project = await UnitOfWork.GetDbSet<Project>()
-            .Where(proj => proj.ProjectId == firstClaim.ProjectId)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
-
-        await EmailService
-            .Email(await CreateInviteEmail<DeclineInviteEmail>(receivers,
-                project).ConfigureAwait(false))
+        // Проект больше не читаем: название уведомление возьмёт из метаданных по заявкам получателей.
+        await NotifyAboutInvite(receivers, InviteChangeKind.Cancelled)
             .ConfigureAwait(false);
     }
 

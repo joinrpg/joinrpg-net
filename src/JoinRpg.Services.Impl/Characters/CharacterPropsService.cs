@@ -7,7 +7,6 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Impl.Projects;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Characters;
 
@@ -19,7 +18,6 @@ internal class CharacterPropsService(
     CommentHelper commentHelper,
     IClaimNotificationService claimNotificationService,
     IAccommodationNotificationService accommodationNotificationService,
-    IEmailService emailService,
     ILogger<CharacterPropsService> logger)
     : ICharacterPropsService
 {
@@ -203,10 +201,9 @@ internal class CharacterPropsService(
                         await accommodationNotificationService.SendNotification(notification);
                     }
 
-                    // Остаток легаси-канала — письма о приглашениях к проживанию.
-                    foreach (var send in ctx.LegacyEmails)
+                    foreach (var notification in ctx.InviteNotifications)
                     {
-                        await send(emailService);
+                        await accommodationNotificationService.SendNotification(notification);
                     }
                 }
 

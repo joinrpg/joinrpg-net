@@ -10,4 +10,9 @@ internal interface IAccommodationNotificationService
     /// Уведомление об изменении состава жителей комнаты.
     /// </summary>
     Task SendNotification(RoomOccupancyNotification model);
+
+    /// <summary>
+    /// Уведомление об изменении приглашения к совместному проживанию.
+    /// </summary>
+    Task SendNotification(AccommodationInviteNotification model);
 }

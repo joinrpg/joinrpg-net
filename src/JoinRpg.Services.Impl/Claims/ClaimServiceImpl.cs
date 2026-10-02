@@ -8,7 +8,6 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Projects;
-using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl.Claims;
 
@@ -731,7 +730,7 @@ internal class ClaimServiceImpl(
 
     /// <summary>
     /// Отклоняет все приглашения к совместному проживанию, в которых участвует заявка, и ставит
-    /// письмо остальным участникам в легаси-очередь.
+    /// уведомление остальным участникам в очередь.
     /// </summary>
     /// <remarks>
     /// Раньше это делал <c>AccommodationInviteServiceImpl.DeclineAllClaimInvites</c> на собственном
@@ -755,7 +754,7 @@ internal class ClaimServiceImpl(
 
             foreach (var participant in new[] { invite.From, invite.To })
             {
-                // Сама отклоняемая заявка письма о себе не получает.
+                // Сама отклоняемая заявка уведомления о себе не получает.
                 if (participant is not null
                     && participant.ClaimId != ctx.Claim.ClaimId
                     && !recipients.Contains(participant))
@@ -770,16 +769,12 @@ internal class ClaimServiceImpl(
             return;
         }
 
-        var email = new DeclineInviteEmail
-        {
-            Initiator = ctx.Initiator,
-            ProjectName = ctx.Claim.Project.ProjectName,
-            Recipients = [.. recipients.ToArray().GetInviteSubscriptions()],
-            RecipientClaims = recipients,
-            Text = new MarkdownDbValue(),
-        };
+        var notification = new AccommodationInviteNotification(
+            [.. recipients.Select(claim => claim.GetId())],
+            ctx.CurrentUser.ToUserInfoHeader(),
+            InviteChangeKind.Cancelled);
 
-        ctx.AddLegacyEmail(emailService => emailService.Email(email));
+        ctx.AddInviteNotification(notification);
     }
 
     /// <inheritdoc />
