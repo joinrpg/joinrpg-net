@@ -110,9 +110,13 @@ public class GameGroupsController(
             return Content("Can't edit special group");
         }
 
+        // Корневую группу настраивать нельзя, страницы для неё нет — это 404, а не редирект.
+        // Раньше тут был RedirectToActionPermanent("Index") без route values: ambient projectId
+        // не подставлялся, выигрывал конвенциональный маршрут {controller}/{action}, и выходил
+        // постоянный (кешируемый!) редирект на /gamegroups, который сам отдаёт 404.
         if (charGroupFullInfo.IsRoot)
         {
-            return RedirectToActionPermanent("Index");
+            return NotFound();
         }
 
         return View(await BuildEditViewModel(charGroupFullInfo, charGroupId));
@@ -131,9 +135,10 @@ public class GameGroupsController(
             return NotFound();
         }
 
+        // Как и в GET: корневую группу настраивать нельзя — 404, а не редирект (см. комментарий выше).
         if (charGroupFullInfo.IsRoot)
         {
-            return RedirectToActionPermanent("Index");
+            return NotFound();
         }
 
         if (charGroupFullInfo.IsSpecial)
