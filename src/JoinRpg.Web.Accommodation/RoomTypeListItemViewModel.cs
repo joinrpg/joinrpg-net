@@ -99,9 +99,10 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
     /// <see cref="RoomTypeViewModelBase.CanAssignRooms"/>.
     /// </param>
     /// <remarks>
-    /// <c>IsInfinite</c> и <c>IsAutoFilledAccommodation</c> здесь не заполняются: в метаданных их
-    /// нет по решению ADR015 — в EF-сущности оба помечены «not implemented yet», и путь сохранения
-    /// типа проживания (<c>AccommodationTypeRequest</c>) их не пишет.
+    /// <c>IsInfinite</c> и <c>IsAutoFilledAccommodation</c> берутся из метаданных явно, хотя там
+    /// всегда <c>false</c>: функциональность не реализована (см.
+    /// <see cref="AccommodationTypeInfo.IsInfinite"/>), и строка должна показывать именно это
+    /// значение, а не совпадающий с ним по случайности дефолт вью-модели.
     /// </remarks>
     public RoomTypeListItemViewModel(
         AccommodationTypeInfo typeInfo,
@@ -115,6 +116,8 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
         Name = typeInfo.Name;
         Capacity = typeInfo.Capacity;
         IsPlayerSelectable = typeInfo.IsPlayerSelectable;
+        IsInfinite = typeInfo.IsInfinite;
+        IsAutoFilledAccommodation = typeInfo.IsAutoFilledAccommodation;
         DescriptionHtml = descriptionView.Value;
 
         ProjectId = projectInfo.ProjectId.Value;

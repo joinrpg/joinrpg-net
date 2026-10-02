@@ -24,15 +24,34 @@ public abstract class RoomTypeViewModelBase
     [Range(1, MaxCapacity, ErrorMessage = "Укажите количество мест в номере — целое число от 1 до 1000")]
     public int Capacity { get; set; }
 
+    /// <summary>
+    /// Бесконечное поселение. Значение приходит из метаданных проекта
+    /// (<see cref="AccommodationTypeInfo.IsInfinite"/>), где функциональность объявлена
+    /// нереализованной.
+    /// </summary>
+    /// <remarks>
+    /// Сеттер закрыт: флаг ставят только конструкторы наследников из
+    /// <see cref="AccommodationTypeInfo"/>. Снаружи его поставить нельзя — в том числе биндингом
+    /// формы редактирования типа (<c>SaveRoomType</c> принимает эту вью-модель), чтобы
+    /// «не реализовано» не оказалось обойдено подобранным POST-ом.
+    /// </remarks>
     [DisplayName("Бесконечное поселение")]
-    public bool IsInfinite { get; set; } = false;
+    public bool IsInfinite { get; private protected init; } = false;
 
     [Display(Name = "Игроки могут выбрать данный тип проживания",
         Description = "Если снять этот флаг, то только мастер может назначать этот тип поселения игрокам")]
     public bool IsPlayerSelectable { get; set; } = true;
 
+    /// <summary>
+    /// Автозаполнение комнат. Значение приходит из метаданных проекта
+    /// (<see cref="AccommodationTypeInfo.IsAutoFilledAccommodation"/>), где функциональность
+    /// объявлена нереализованной.
+    /// </summary>
+    /// <remarks>
+    /// Сеттер закрыт по тем же причинам, что у <see cref="IsInfinite"/>.
+    /// </remarks>
     [DisplayName("Автозаполнение")]
-    public bool IsAutoFilledAccommodation { get; set; } = false;
+    public bool IsAutoFilledAccommodation { get; private protected init; } = false;
 
     public abstract int RoomsCount { get; }
 
@@ -222,6 +241,11 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         Name = typeInfo.Name;
         Capacity = typeInfo.Capacity;
         IsPlayerSelectable = typeInfo.IsPlayerSelectable;
+        // Нереализованные флаги берём из метаданных явно, а не оставляем в дефолте вью-модели:
+        // в метаданных они всегда false (см. AccommodationTypeInfo.IsInfinite), и форма должна
+        // показывать именно это значение, а не совпадающий с ним по случайности дефолт.
+        IsInfinite = typeInfo.IsInfinite;
+        IsAutoFilledAccommodation = typeInfo.IsAutoFilledAccommodation;
         DescriptionEditable = typeInfo.Description.Value;
         DescriptionHtml = descriptionView.Value;
         Requests = [];
