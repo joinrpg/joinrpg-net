@@ -18,7 +18,8 @@ public abstract class JoinControllerGameBase : JoinMvcControllerBase
 
     protected ActionResult RedirectToIndex(int projectId, int characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { projectId, characterGroupId, area = "" });
 
-    protected ActionResult RedirectToIndex(CharacterGroupIdentification characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { characterGroupId.ProjectId, characterGroupId.CharacterGroupId, area = "" });
+    // ProjectId в route values кладётся числом: типизированный id попал бы в путь как "project(5)".
+    protected ActionResult RedirectToIndex(CharacterGroupIdentification characterGroupId, string action = "Index") => RedirectToAction(action, "GameGroups", new { ProjectId = characterGroupId.ProjectId.Value, characterGroupId.CharacterGroupId, area = "" });
 
 
     [DoesNotReturn]
