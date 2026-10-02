@@ -75,6 +75,33 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         return await GetUserInfoHeadersByPredicate(user => ids.Contains(user.UserId));
     }
 
+    public async Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(
+        IReadOnlyCollection<UserIdentification> userIds)
+    {
+        if (userIds.Count == 0)
+        {
+            return new Dictionary<UserIdentification, PhoneNumber>();
+        }
+
+        var ids = userIds.Select(x => x.Value).ToList();
+
+        // Телефон живёт в отдельной таблице UserExtra. Её ряд создаётся при регистрации
+        // (MyUserStore), но JOIN всё равно LEFT OUTER — так EF6 строит обращение к навигации
+        // 1:1-зависимой сущности, — поэтому у пользователя без ряда колонка просто приедет null,
+        // а не выбросит его из выборки. Каст к string? ничего в SQL не меняет: он только делает
+        // nullability явной для FromOptional ниже.
+        var rows = await (
+            from user in ctx.Set<User>()
+            where ids.Contains(user.UserId)
+            select new { user.UserId, PhoneNumber = (string?)user.Extra!.PhoneNumber })
+            .ToListAsync();
+
+        return rows
+            .Select(row => (Id: new UserIdentification(row.UserId), Phone: PhoneNumber.FromOptional(row.PhoneNumber)))
+            .Where(row => row.Phone is not null)
+            .ToDictionary(row => row.Id, row => row.Phone!);
+    }
+
     private async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeadersByPredicate(Expression<Func<User, bool>> predicate)
     {
         var builder = UserInfoHeaderDtoBuilder();

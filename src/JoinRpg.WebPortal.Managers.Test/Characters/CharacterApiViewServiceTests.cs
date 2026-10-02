@@ -128,6 +128,7 @@ public class CharacterApiViewServiceTests
         public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
+        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotImplementedException();
         public Task<UserIdentification?> FindByVk(string vkId) => throw new NotImplementedException();
         public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotImplementedException();
