@@ -427,7 +427,11 @@ public class MockedProject
             claim.CurrentFee,
             claim.PreferentialFeeUser,
             FeePaid: 0,
+            // Коллекция объявлена ненулевой, но у заявок, собранных тестами вручную (а не через
+            // CreateClaim), она остаётся null — в моках без EF инициализировать её некому.
+            FinanceOperationsRequireModeration: claim.FinanceOperations?.Any(fo => fo.RequireModeration) ?? false,
             AccommodationFee: 0,
+            PlayerAllowedSensitiveData: claim.PlayerAllowedSenstiveData,
             FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, claim.JsonData));
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)

@@ -664,6 +664,8 @@ public class CharacterInfoTest
             CurrentFee: null,
             PreferentialFeeUser: false,
             FeePaid: 0,
+            FinanceOperationsRequireModeration: false,
             AccommodationFee: 0,
+            PlayerAllowedSensitiveData: false,
             new FieldLayerContainer(projectInfo, fields ?? []));
 }

@@ -166,7 +166,9 @@ public class AccessArgumentsFactoryTest
             CurrentFee: null,
             PreferentialFeeUser: false,
             FeePaid: 0,
+            FinanceOperationsRequireModeration: false,
             AccommodationFee: 0,
+            PlayerAllowedSensitiveData: false,
             Fields: FieldLayerContainer.Empty(Mock.ProjectInfo));
 
     #endregion

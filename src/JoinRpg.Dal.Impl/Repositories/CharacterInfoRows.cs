@@ -72,6 +72,19 @@ internal sealed class CharacterInfoClaimRow
     /// </summary>
     public required int? FeePaid { get; init; }
 
+    /// <summary>
+    /// Есть ли по заявке операции, ждущие решения мастера. Считается в SQL через
+    /// <see cref="FinancePredicates.RequireModeration"/>: вычисляемое свойство
+    /// <c>FinanceOperation.RequireModeration</c> EF6 в SQL не переводит.
+    /// </summary>
+    public required bool FinanceOperationsRequireModeration { get; init; }
+
     /// <summary>Стоимость выбранного проживания; <c>null</c>, если проживание не выбрано.</summary>
     public required int? AccommodationFee { get; init; }
+
+    /// <summary>
+    /// Разрешение игрока показывать мастерам чувствительные данные. В БД колонка названа с
+    /// опечаткой (<c>PlayerAllowedSenstiveData</c>), здесь и дальше в домене — правильно.
+    /// </summary>
+    public required bool PlayerAllowedSensitiveData { get; init; }
 }

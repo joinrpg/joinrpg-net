@@ -24,7 +24,18 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// <param name="LastMasterCommentAt">Последний мастерский комментарий, включая невидимые игроку.</param>
 /// <param name="LastVisibleMasterCommentAt">Последний мастерский комментарий, видимый игроку.</param>
 /// <param name="FeePaid">Сумма подтверждённых финансовых операций по заявке.</param>
+/// <param name="FinanceOperationsRequireModeration">
+/// Есть ли по заявке финансовые операции, ожидающие решения мастера
+/// (<c>FinanceOperation.RequireModeration</c>). Сам список операций в агрегат не входит (ADR013):
+/// проблеме <c>FinanceModerationRequired</c> нужен только факт.
+/// </param>
 /// <param name="AccommodationFee">Стоимость выбранного проживания, 0 если проживание не выбрано.</param>
+/// <param name="PlayerAllowedSensitiveData">
+/// Игрок разрешил мастерам видеть свои чувствительные данные (паспорт, адрес регистрации).
+/// Согласие даётся на уровне заявки, поэтому это факт о заявке, а не о профиле.
+/// В БД колонка называется <c>PlayerAllowedSenstiveData</c> — с опечаткой; в доменном типе
+/// имя намеренно пишется правильно, расхождение закрывается в маппере.
+/// </param>
 /// <param name="Fields">
 /// Слой значений полей этой заявки. Хранится для каждой заявки, а не только для утверждённой:
 /// без него нельзя ни показать поля заявки в обсуждении, ни посчитать её <c>ClaimFieldsFee</c>.
@@ -47,7 +58,9 @@ public record class CharacterClaimInfo(
     int? CurrentFee,
     bool PreferentialFeeUser,
     int FeePaid,
+    bool FinanceOperationsRequireModeration,
     int AccommodationFee,
+    bool PlayerAllowedSensitiveData,
     FieldLayerContainer Fields)
 {
     /// <summary>Игрок, подавший заявку.</summary>

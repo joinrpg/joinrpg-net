@@ -99,7 +99,9 @@ public class CharacterInfoMapperTest
         bool preferentialFeeUser = false,
         string? jsonData = null,
         int? feePaid = null,
-        int? accommodationFee = null)
+        int? accommodationFee = null,
+        bool financeOperationsRequireModeration = false,
+        bool playerAllowedSensitiveData = false)
         => new()
         {
             ClaimId = claimId,
@@ -126,6 +128,8 @@ public class CharacterInfoMapperTest
             JsonData = jsonData,
             FeePaid = feePaid,
             AccommodationFee = accommodationFee,
+            FinanceOperationsRequireModeration = financeOperationsRequireModeration,
+            PlayerAllowedSensitiveData = playerAllowedSensitiveData,
         };
 
     // 1. ParentGroups: непустой ListIds -> DirectGroupIds из соответствующих групп того же проекта.
@@ -208,6 +212,32 @@ public class CharacterInfoMapperTest
         var claim = result.Claims.Single();
         claim.FeePaid.ShouldBe(1500);
         claim.AccommodationFee.ShouldBe(300);
+    }
+
+    // 4а. Флаги заявки, нужные фильтрам проблем, переносятся как есть — без инверсий и дефолтов.
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Map_ClaimFinanceOperationsRequireModeration_ShouldPassThroughAsIs(bool requireModeration)
+    {
+        var row = MakeRow(claims: [MakeClaimRow(financeOperationsRequireModeration: requireModeration)]);
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        result.Claims.Single().FinanceOperationsRequireModeration.ShouldBe(requireModeration);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Map_ClaimPlayerAllowedSensitiveData_ShouldPassThroughAsIs(bool allowed)
+    {
+        var row = MakeRow(claims: [MakeClaimRow(playerAllowedSensitiveData: allowed)]);
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        result.Claims.Single().PlayerAllowedSensitiveData.ShouldBe(allowed);
     }
 
     // 5. Description == null и Description с null Contents -> пустая MarkdownString, без исключений.

@@ -405,7 +405,9 @@ public class ScheduleBuilderTest
             CurrentFee: null,
             PreferentialFeeUser: false,
             FeePaid: 0,
+            FinanceOperationsRequireModeration: false,
             AccommodationFee: 0,
+            PlayerAllowedSensitiveData: false,
             new FieldLayerContainer(projectInfo, new Dictionary<int, string?>()));
 
     #endregion

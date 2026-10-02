@@ -91,7 +91,15 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                     FeePaid = (int?)claim.FinanceOperations
                         .Where(fo => fo.State == FinanceOperationState.Approved)
                         .Sum(fo => fo.MoneyAmount),
+                    // Правило «ждёт модерации» живёт только в FinancePredicates; сюда оно
+                    // подставляется LinqKit'ом (.Invoke + AsExpandable на корне запроса),
+                    // потому что вычисляемое свойство FinanceOperation.RequireModeration
+                    // EF6 в SQL не переводит.
+                    FinanceOperationsRequireModeration = claim.FinanceOperations
+                        .Any(fo => FinancePredicates.RequireModeration().Invoke(fo)),
                     AccommodationFee = (int?)claim.AccommodationRequest!.AccommodationType.Cost,
+                    // Опечатка в имени — имя колонки EF (см. Claim.PlayerAllowedSenstiveData).
+                    PlayerAllowedSensitiveData = claim.PlayerAllowedSenstiveData,
                 }),
             };
 

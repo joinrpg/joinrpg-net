@@ -133,7 +133,9 @@ public class ClaimBalanceOverCharacterInfoTest
             CurrentFee: currentFee,
             PreferentialFeeUser: preferential,
             FeePaid: feePaid,
+            FinanceOperationsRequireModeration: false,
             AccommodationFee: accommodationFee,
+            PlayerAllowedSensitiveData: false,
             Fields: FieldLayerContainer.DeserializeFieldLayer(projectInfo, fieldsJson));
 
         var character = new CharacterInfo(
