@@ -33,7 +33,8 @@ else
                 data-tokens="@($"{val.Text} {val.ExtraSearch}")"
                 data-subtext="@(val.Subtext)"
                 value="@key"
-                selected="@selected">@val.Text</option>
+                selected="@selected"
+                disabled="@val.Disabled">@val.Text</option>
       }
     </select>
 }
