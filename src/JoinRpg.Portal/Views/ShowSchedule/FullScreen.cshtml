@@ -25,7 +25,7 @@
         @(await Html.RenderComponentAsync<Scheduler>(RenderMode.Static, new { Model }))
         <div id="scheduler-overlay" onclick="overlayClickHandler(event)" onwheel="overlayWheelHandler(event)">
             <div id="scheduler-details" all-rooms="false" no-users="false" error-mode="false">
-                @await Html.PartialAsync("_AppointmentDetailsPartial")
+                @(await Html.RenderComponentAsync<AppointmentDetails>(RenderMode.Static))
             </div>
         </div>
     </section>

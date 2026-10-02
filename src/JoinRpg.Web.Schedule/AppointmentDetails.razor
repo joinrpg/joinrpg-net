@@ -1,8 +1,16 @@
-﻿<div class="appointment-details-interior">
+@*
+    Оверлей деталей мероприятия в полноэкранном режиме расписания.
+
+    Разметка статична: содержимое по id подставляет JS из data-атрибутов карточки
+    (см. appointmentClickHandler в FullScreen.cshtml), он же навешивает классы
+    details-no-* на внешний #scheduler-details, чтобы спрятать пустые секции.
+    Поэтому id здесь — контракт со скриптом, а не деталь разметки.
+*@
+<div class="appointment-details-interior">
 
     <div class="appointment-details-header">
         <h4 id="details-title"></h4>
-        <button class="btn btn-link" onclick="closeDetailsClickHandler()"><join-icon icon="Remove" /></button>
+        <button class="btn btn-link" onclick="closeDetailsClickHandler()"><JoinIcon Icon="JoinIconType.Remove" /></button>
     </div>
 
     <div class="appointment-details-content">
