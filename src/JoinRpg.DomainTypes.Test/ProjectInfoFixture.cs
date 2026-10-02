@@ -31,15 +31,18 @@ internal static class ProjectInfoFixture
         ProjectLifecycleStatus projectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
         IReadOnlyCollection<ProjectFeeSettingInfo>? feeSchedule = null,
         ProjectAccommodationSettings? accommodationSettings = null,
-        bool scheduleEnabled = false,
-        bool warnOnOverPayment = true)
+        bool scheduleEnabled = false)
         => new(
             ProjectId,
             new ProjectName("Test"),
             ordering,
             fields ?? [],
             new ProjectFieldSettings(null, null),
-            new ProjectFinanceSettings(false, warnOnOverPayment, [], feeSchedule ?? []),
+            new ProjectFinanceSettings(
+                PreferentialFeeEnabled: false,
+                WarnOnOverPayment: true,
+                PaymentTypes: [],
+                FeeSchedule: feeSchedule ?? []),
             accommodationSettings ?? new ProjectAccommodationSettings(false, []),
             groupTree ?? new ProjectGroupTree(RootGroupId, new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()),
             masters ?? [MakeMaster(DefaultMasterId, isOwner: true)],
