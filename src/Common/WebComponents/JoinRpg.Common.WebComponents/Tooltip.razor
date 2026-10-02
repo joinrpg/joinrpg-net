@@ -1,14 +1,21 @@
+@*
+    Подсказка по наведению. Рисуется через Popover API — браузер выносит её в top layer,
+    поэтому подсказку не обрезают предки с overflow: hidden (шапка сетки расписания и т. п.).
+
+    Показом, скрытием и координатами занимается скрипт wwwroot/JoinRpg.Common.WebComponents.lib.module.js:
+    это JS-инициализатор Blazor, его подключает сам фреймворк, в разметке хоста ничего делать не нужно.
+*@
 @if(string.IsNullOrWhiteSpace(Title) && TooltipContent is null)
 {
     @ChildContent
     return;
 }
 
-<span class="join-tooltip-container">
+<span class="join-tooltip-container" data-join-tooltip-placement="@PlacementAttribute">
     <span>
         @ChildContent
     </span>
-    <span class="join-tooltip">
+    <span class="join-tooltip" popover="manual" role="tooltip">
         @if (TooltipContent is not null)
         {
             @TooltipContent
@@ -29,5 +36,16 @@
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-}
 
+    /// <summary>С какой стороны от цели показывать подсказку. По умолчанию — снизу.</summary>
+    [Parameter]
+    public TooltipPlacement Placement { get; set; } = TooltipPlacement.Bottom;
+
+    private string PlacementAttribute => Placement switch
+    {
+        TooltipPlacement.Top => "top",
+        TooltipPlacement.Left => "left",
+        TooltipPlacement.Right => "right",
+        _ => "bottom",
+    };
+}
