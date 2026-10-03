@@ -164,6 +164,15 @@ public class CharacterController(
     {
         var characterGroupId = viewModel.ParentCharacterGroupIds.FirstOrDefault();
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
+
+        // Биндер мог отвергнуть идентификатор группы (чужой проект, нераспознанная строка) — тогда
+        // элемент просто не попал в ParentCharacterGroupIds. Создавать роль в молча урезанном
+        // наборе групп нельзя: показываем форму с ошибкой привязки.
+        if (!ModelState.IsValid)
+        {
+            return await ShowFormAgain();
+        }
+
         try
         {
             await characterService.AddCharacter(new AddCharacterRequest(
@@ -197,6 +206,11 @@ public class CharacterController(
         catch (Exception exception)
         {
             AddModelException(exception);
+            return await ShowFormAgain();
+        }
+
+        async Task<ActionResult> ShowFormAgain()
+        {
             CharacterGroup? characterGroup;
             if (characterGroupId == null)
             {
