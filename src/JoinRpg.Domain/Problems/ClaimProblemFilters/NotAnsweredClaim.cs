@@ -1,19 +1,21 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
-internal class NotAnsweredClaim : IProblemFilter<Claim>
+internal class NotAnsweredClaim : IClaimProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(Claim claim, ProjectInfo projectInfo)
+    public IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context)
     {
+        var claim = context.Claim;
         var now = DateTime.UtcNow;
 
-        if (!claim.IsInDiscussion) // Our concern is only discussed claims
+        if (!claim.IsInDiscussion) // Нас интересуют только обсуждаемые заявки
         {
             yield break;
         }
 
-        if (now.Subtract(claim.CreateDate) < TimeSpan.FromDays(2)) //If filed only recently, do nothing
+        if (now.Subtract(claim.CreateDate) < TimeSpan.FromDays(2)) // Только что поданную не трогаем
         {
             yield break;
         }

@@ -11,8 +11,6 @@ public static class CommentExtensions
         return comments.Union(watermarks).Append(0).Max();
     }
 
-    public static bool HasMasterCommentsInLastXDays(this Claim claim, int days) => claim.LastVisibleMasterCommentAt?.AddDays(days) >= DateTimeOffset.Now;
-
     public static int GetUnreadCount(this ICommentDiscussionHeader commentDiscussion, int currentUserId)
     {
         var watermark = commentDiscussion.GetWatermark(currentUserId);

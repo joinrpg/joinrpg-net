@@ -1,9 +1,10 @@
 using System.Diagnostics.Contracts;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 
-internal class FieldNotSetFilter : IFieldRelatedProblemFilter<CharacterInfo>, IFieldRelatedProblemFilter<Claim>
+internal class FieldNotSetFilter : IFieldRelatedProblemFilter<CharacterInfo>, IFieldRelatedProblemFilter<CharacterClaimInfo>
 {
     public IEnumerable<FieldRelatedProblem> CheckField(IFieldAvailabilityTarget target, FieldWithValue fieldWithValue)
     {

@@ -1,6 +1,6 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -15,8 +15,9 @@ namespace JoinRpg.Portal.Controllers.XGameApi;
 public class CheckInController(
     IClaimsRepository claimsRepository,
     IClaimService claimsService,
-    IProblemValidator<Claim> claimValidator,
-    IProjectMetadataRepository projectMetadataRepository) : XGameApiController
+    IClaimProblemValidator claimValidator,
+    ICharacterInfoRepository characterInfoRepository,
+    IUserRepository userRepository) : XGameApiController
 {
 
     /// <summary>
@@ -78,9 +79,13 @@ public class CheckInController(
             return NotFound();
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-
-        var validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
+        var character = await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId());
+        var validator = new ClaimCheckInValidator(
+            new ClaimProblemContext(
+                character,
+                character.GetClaimById(claim.GetId()),
+                await userRepository.GetRequiredUserInfo(claim.GetPlayerId())),
+            claimValidator);
         return
             new ClaimCheckInValidationResult
             {

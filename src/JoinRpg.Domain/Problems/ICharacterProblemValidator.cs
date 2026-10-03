@@ -6,9 +6,10 @@ namespace JoinRpg.Domain.Problems;
 /// Проблемы персонажа, посчитанные по доменному агрегату (ADR013).
 /// </summary>
 /// <remarks>
-/// Отдельный интерфейс, а не <c>IProblemValidator&lt;CharacterInfo&gt;</c>: метаданные проекта
-/// лежат внутри агрегата, поэтому <see cref="ProjectInfo"/> параметром не нужен. Проблемы заявки
-/// пока считаются старым generic-валидатором поверх EF-сущности.
+/// Отдельный интерфейс на сторону персонажа, парный <see cref="IClaimProblemValidator"/>:
+/// метаданные проекта лежат внутри агрегата, поэтому <see cref="ProjectInfo"/> параметром не
+/// нужен. Общего generic-валидатора поверх EF-сущностей больше нет — проблемы заявки считаются
+/// по доменным сущностям так же.
 /// </remarks>
 public interface ICharacterProblemValidator
 {

@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Models.ClaimList;
 public static class ClaimListBuilder
 {
     internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo,
-       IProblemValidator<Claim> claimValidator, Dictionary<int, int> unreadComments)
+       IClaimProblemValidator claimValidator, ClaimProblemContext problemContext, Dictionary<int, int> unreadComments)
     {
         var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId, projectInfo);
         var balance = claim.CalculateClaimBalance(projectInfo);
@@ -36,13 +36,19 @@ public static class ClaimListBuilder
             TotalFee: balance.TotalFee,
             new UserLinkViewModel(lastModifiedBy),
             claim.GetId(),
-            claimValidator.Validate(claim, projectInfo).Select(p => new ProblemViewModel(p)).ToList(),
+            claimValidator.Validate(problemContext).Select(p => new ProblemViewModel(p)).ToList(),
             unreadComments.GetValueOrDefault(claim.CommentDiscussionId),
             claim.Player.FullName
             );
     }
 
-    internal static ClaimListItemForExportViewModel BuildItemForExport(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo)
+    /// <param name="playerInfo">
+    /// Профиль игрока. Приходит параметром, загруженный пачкой на весь список: раньше выгрузка
+    /// читала паспорт и адрес прямо из <c>claim.Player.Extra</c>, то есть по ленивой навигации
+    /// EF-сущности на каждую строку.
+    /// </param>
+    internal static ClaimListItemForExportViewModel BuildItemForExport(
+        Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo, UserInfo playerInfo)
     {
         var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId, projectInfo);
         (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claim, accessArguments);
@@ -51,8 +57,8 @@ public static class ClaimListBuilder
         string? PassportData, RegistrationAddress;
         if (claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
         {
-            PassportData = claim.Player.Extra.PassportData;
-            RegistrationAddress = claim.Player.Extra.RegistrationAddress;
+            PassportData = playerInfo.PassportData;
+            RegistrationAddress = playerInfo.RegistrationAddress;
         }
         else
         {
@@ -79,7 +85,7 @@ public static class ClaimListBuilder
             PassportData,
             RegistrationAddress,
             claim.GetFields(projectInfo).ToDictionary(x => x.Field.Id, x => x.DisplayString),
-            claim.Player
+            playerInfo
             );
     }
 

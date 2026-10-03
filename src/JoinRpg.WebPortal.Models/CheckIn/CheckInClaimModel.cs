@@ -15,8 +15,9 @@ public class CheckInClaimModel : IProjectIdAware
     public CheckInClaimModel(Claim claim,
         CharacterInfo characterInfo,
         UserInfo currentUser,
+        UserInfo playerInfo,
         IReadOnlyCollection<PlotTextDto> plotElements,
-        IProblemValidator<Claim> claimValidator,
+        IClaimProblemValidator claimValidator,
         ProjectInfo projectInfo,
         ICurrentUserAccessor currentUserAccessor
         )
@@ -24,11 +25,16 @@ public class CheckInClaimModel : IProjectIdAware
         ArgumentNullException.ThrowIfNull(claim);
 
         ArgumentNullException.ThrowIfNull(currentUser);
+        ArgumentNullException.ThrowIfNull(playerInfo);
 
-        Validator = new ClaimCheckInValidator(claim, claimValidator, projectInfo);
+        Validator = new ClaimCheckInValidator(
+            new ClaimProblemContext(characterInfo, characterInfo.GetClaimById(claim.GetId()), playerInfo),
+            claimValidator);
         CheckInTime = claim.CheckInDate;
         ClaimStatus = (ClaimStatusView)claim.ClaimStatus;
-        PlayerDetails = new UserProfileDetailsViewModel(claim.GetUserInfo(), projectInfo, currentUserAccessor);
+        // playerInfo приходит параметром: claim.GetUserInfo() собирал профиль по ленивым
+        // навигациям EF-сущности игрока (Extra, Auth, ExternalLogins, Claims, ProjectAcls).
+        PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUserAccessor);
         Navigation = CharacterNavigationViewModel.FromClaim(characterInfo, claim.GetId(), currentUserAccessor.UserIdentification, CharacterNavigationPage.None);
 
         CanAcceptFee = projectInfo.ProjectFinanceSettings.CanAcceptCash(currentUserAccessor.UserIdentification);

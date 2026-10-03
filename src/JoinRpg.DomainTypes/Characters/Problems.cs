@@ -37,6 +37,15 @@ public enum ClaimProblemType
     FeePaidPartially,
     UnApprovedClaimPayment,
     ClaimWorkStopped,
+    /// <summary>
+    /// Заявка не привязана к персонажу. Недостижимо: в доменном агрегате (ADR013) заявка
+    /// существует только как элемент <c>CharacterInfo.Claims</c>, и <c>ClaimProblemContext</c>
+    /// проверяет это в конструкторе. Значение остаётся в enum, потому что числовые значения
+    /// уезжают в сериализованные вью-модели островов и сдвиг их поломал бы. Отображения у него
+    /// при этом нет: тест-страж <c>ProblemTypeDisplayTest</c> требует, чтобы у Obsolete-значения
+    /// отображения не было, — так же устроен соседний <c>DeletedFieldHasValue</c>.
+    /// </summary>
+    [Obsolete("Недостижимо по построению агрегата персонажа, см. BrokenClaimsAndCharacters")]
     ClaimDontHaveTarget,
     [Obsolete]
     DeletedFieldHasValue,
