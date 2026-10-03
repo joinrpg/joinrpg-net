@@ -72,6 +72,12 @@ internal sealed class RoomCategoryPlanLoader(MyDbContext ctx)
     }
 
     /// <summary>
+    /// Планы всех категорий проекта — одним запросом, как и план одной категории.
+    /// </summary>
+    public Task<IReadOnlyCollection<RoomCategoryPlan>> LoadAllAsync(ProjectInfo projectInfo)
+        => LoadAsync(projectInfo, category => true);
+
+    /// <summary>
     /// План одной категории или <c>null</c>, если такой категории в проекте нет.
     /// </summary>
     public async Task<RoomCategoryPlan?> LoadOneAsync(

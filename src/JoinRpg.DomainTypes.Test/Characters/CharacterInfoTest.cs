@@ -668,6 +668,7 @@ public class CharacterInfoTest
                 FeePaid: 0,
                 AccommodationFee: 0,
                 OperationsRequireModeration: false),
+            AccommodationTypeId: null,
             PlayerAllowedSensitiveData: false,
             new FieldLayerContainer(projectInfo, fields ?? []));
 }

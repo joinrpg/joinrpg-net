@@ -79,12 +79,6 @@ public static class FieldUserLinksLoader
 
     public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> LoadFieldUserLinks(
         this IUserRepository userRepository,
-        IEnumerable<Character> characters,
-        ProjectInfo projectInfo)
-        => userRepository.LoadFieldUserLinks(characters.SelectMany(c => c.GetFields(projectInfo)));
-
-    public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> LoadFieldUserLinks(
-        this IUserRepository userRepository,
         CharacterInfo character,
         Dictionary<int, string?>? overrideValues = null)
         => userRepository.LoadFieldUserLinks(character.GetAllFields(), overrideValues);

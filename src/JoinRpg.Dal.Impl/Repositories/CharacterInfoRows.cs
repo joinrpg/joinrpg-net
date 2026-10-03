@@ -82,6 +82,9 @@ internal sealed class CharacterInfoClaimRow
     /// <summary>Стоимость выбранного проживания; <c>null</c>, если проживание не выбрано.</summary>
     public required int? AccommodationFee { get; init; }
 
+    /// <summary>Тип выбранного проживания; <c>null</c>, если проживание не выбрано.</summary>
+    public required int? AccommodationTypeId { get; init; }
+
     /// <summary>
     /// Разрешение игрока показывать мастерам чувствительные данные. В БД колонка названа с
     /// опечаткой (<c>PlayerAllowedSenstiveData</c>), здесь и дальше в домене — правильно.

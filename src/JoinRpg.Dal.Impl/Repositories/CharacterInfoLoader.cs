@@ -98,6 +98,8 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                     FinanceOperationsRequireModeration = claim.FinanceOperations
                         .Any(fo => FinancePredicates.RequireModeration().Invoke(fo)),
                     AccommodationFee = (int?)claim.AccommodationRequest!.AccommodationType.Cost,
+                    // Тот же LEFT JOIN, что и у стоимости: одна колонка, нового обращения к БД нет.
+                    AccommodationTypeId = (int?)claim.AccommodationRequest!.AccommodationTypeId,
                     // Опечатка в имени — имя колонки EF (см. Claim.PlayerAllowedSenstiveData).
                     PlayerAllowedSensitiveData = claim.PlayerAllowedSenstiveData,
                 }),

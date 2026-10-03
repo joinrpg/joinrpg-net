@@ -123,6 +123,7 @@ public record class CharacterClaimInfo(
     DateTimeOffset? LastMasterCommentAt,
     DateTimeOffset? LastVisibleMasterCommentAt,
     ClaimFinanceInfo Finance,
+    AccommodationTypeIdentification? AccommodationTypeId,
     bool PlayerAllowedSensitiveData,
     FieldLayerContainer Fields)
 {
@@ -156,6 +157,11 @@ public record class CharacterClaimInfo(
   (`FinancePredicates.RequireModeration`), потому что вычисляемое свойство
   `FinanceOperation.RequireModeration` EF6 не переводит; за совпадением копии с оригиналом следит
   тест-страж `FinancePredicatesTest`.
+- **`AccommodationTypeId`** — тип проживания, выбранный в заявке, или `null`, если не выбран.
+  Отдельно от `Finance`: там стоимость проживания как финансовый факт, здесь — выбор игрока, по
+  которому показывается название типа (печать конвертов). Сам тип — настройка проекта (ADR015),
+  поэтому в агрегате только идентификатор; комнаты здесь нет, она живёт в агрегате поселения
+  `RoomCategoryPlan` (ADR018).
 - **`PlayerAllowedSensitiveData`** — согласие игрока показывать мастерам паспорт и адрес
   регистрации. Даётся на уровне заявки, поэтому это факт о заявке, а не о профиле; нужен фильтру
   проблемы «не хватает контактов». В БД колонка называется `PlayerAllowedSenstiveData` — с
