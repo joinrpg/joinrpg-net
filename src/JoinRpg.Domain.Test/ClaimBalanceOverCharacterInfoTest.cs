@@ -136,6 +136,7 @@ public class ClaimBalanceOverCharacterInfoTest
                 FeePaid: feePaid,
                 AccommodationFee: accommodationFee,
                 OperationsRequireModeration: false),
+            AccommodationTypeId: null,
             PlayerAllowedSensitiveData: false,
             Fields: FieldLayerContainer.DeserializeFieldLayer(projectInfo, fieldsJson));
 

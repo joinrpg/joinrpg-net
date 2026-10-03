@@ -20,6 +20,7 @@ public record class RoomCategoryPlan
     private readonly Dictionary<AccommodationRoomIdentification, RoomInfo> roomsById;
     private readonly Dictionary<AccommodationRequestIdentification, AccommodationGroupInfo> groupsById;
     private readonly Dictionary<AccommodationTypeIdentification, AccommodationTypeInfo> typesById;
+    private readonly Dictionary<ClaimIdentification, AccommodationGroupInfo> groupByClaim;
 
     public RoomCategoryIdentification Id { get; }
     public ProjectInfo ProjectInfo { get; }
@@ -117,6 +118,27 @@ public record class RoomCategoryPlan
             }
         }
 
+        // Заявка входит максимум в одну группу: в БД это одна ссылка Claim.AccommodationRequest_Id.
+        // Инвариант проверяется здесь, а построенный по дороге индекс остаётся рабочим: по нему
+        // FindRoomByClaim отвечает за O(1), не обходя комнаты. Без проверки индекс был бы неверен
+        // молча — заявка из двух групп затёрлась бы последней, и печать конверта разошлась бы
+        // со страницей поселения.
+        groupByClaim = [];
+        foreach (var group in groups)
+        {
+            foreach (var claimId in group.Subjects)
+            {
+                if (groupByClaim.TryGetValue(claimId, out var otherGroup))
+                {
+                    throw new ArgumentException(
+                        $"Claim {claimId} is a subject of both group {otherGroup.Id} and group {group.Id}",
+                        nameof(groups));
+                }
+
+                groupByClaim[claimId] = group;
+            }
+        }
+
         foreach (var room in rooms)
         {
             foreach (var inhabitant in room.Inhabitants)
@@ -169,6 +191,21 @@ public record class RoomCategoryPlan
         => groupsById.TryGetValue(groupId, out var group)
             ? group
             : throw new AccommodationGroupNotFoundException(groupId);
+
+    /// <summary>
+    /// Комната, в которой живёт заявка, или <c>null</c>, если заявки нет в этом пуле либо её группа
+    /// ещё не расселена.
+    /// </summary>
+    /// <remarks>
+    /// Связь «заявка → комната» в плане хранится наоборот — комната знает свои группы, группа знает
+    /// свои заявки. Поэтому поиск живёт здесь, а не у вызывающих: иначе каждый, кому нужно показать
+    /// комнату игрока (печать конвертов, страница поселения), писал бы собственный обход.
+    /// Отвечает по индексу, собранному в конструкторе, — обхода комнат на каждый вызов нет.
+    /// </remarks>
+    public RoomInfo? FindRoomByClaim(ClaimIdentification claimId)
+        => groupByClaim.TryGetValue(claimId, out var group) && group.RoomId is { } roomId
+            ? GetRoom(roomId)
+            : null;
 
     /// <summary>Тип проживания, селящийся из этого пула</summary>
     /// <exception cref="AccommodationTypeNotFoundException">Тип проживания не селится из этого пула</exception>

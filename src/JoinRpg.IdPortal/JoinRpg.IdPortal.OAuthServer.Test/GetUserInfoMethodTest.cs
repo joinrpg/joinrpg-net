@@ -62,6 +62,7 @@ public class GetUserInfoMethodTest
         Task<UserAvatar> IUserRepository.LoadAvatar(AvatarIdentification userAvatarId) => throw new NotImplementedException();
         Task<IReadOnlyCollection<UserInfo>> IUserRepository.GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         Task<IReadOnlyCollection<UserInfoHeader>> IUserRepository.GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
+        Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> IUserRepository.GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         Task<IReadOnlyCollection<UserInfoHeader>> IUserRepository.GetAdminUserInfoHeaders() => throw new NotImplementedException();
         Task<UserIdentification?> IUserRepository.FindByVk(string vkId) => throw new NotImplementedException();
         Task<UserIdentification?> IUserRepository.FindByTelegram(string telegramUsername) => throw new NotImplementedException();

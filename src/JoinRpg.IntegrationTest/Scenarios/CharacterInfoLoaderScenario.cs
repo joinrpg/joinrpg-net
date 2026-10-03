@@ -92,6 +92,10 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
             claim.ClaimId.ShouldBe(claimId);
             // Согласие игрока доехало из колонки PlayerAllowedSenstiveData (опечатка — в БД).
             claim.PlayerAllowedSensitiveData.ShouldBeTrue();
+            // Проживание в этой заявке не выбрано: опциональная навигация обязана дать null,
+            // а не 0. Иначе печать конверта искала бы в метаданных тип с id 0 — упала бы или
+            // показала мусор вместо «Поселение: нет», причём далеко от DAL.
+            claim.AccommodationTypeId.ShouldBeNull();
             // Финансовых операций по заявке пока нет — модерировать нечего.
             claim.Finance.OperationsRequireModeration.ShouldBeFalse();
         }

@@ -30,4 +30,11 @@ internal class RoomCategoryPlanRepository(MyDbContext ctx, IProjectMetadataRepos
 
         return await loader.LoadOneAsync(projectInfo, type.RoomCategoryId);
     }
+
+    public async Task<IReadOnlyCollection<RoomCategoryPlan>> GetAllPlans(ProjectIdentification projectId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        return await loader.LoadAllAsync(projectInfo);
+    }
 }
