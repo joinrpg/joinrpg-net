@@ -3,7 +3,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Plots;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
-using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
@@ -133,16 +132,14 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, PlotFolderIdentification plotFolderId, string content,
-      string todoField, IReadOnlyCollection<CharacterIdentification>? targetCharacters, IReadOnlyCollection<CharacterGroupIdentification>? targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
+      string todoField, IReadOnlyCollection<CharacterIdentification> targetCharacters, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
     {
-        IReadOnlyCollection<CharacterGroupIdentification> targetGroupIds = targetGroups ?? [];
-        var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
         try
         {
             var versionId =
-                await plotService.CreatePlotElement(plotFolderId, content, todoField, targetGroupIds, targetCharIds, (PlotElementType)elementType, isMasterOnly);
+                await plotService.CreatePlotElement(plotFolderId, content, todoField, targetGroups, targetCharacters, (PlotElementType)elementType, isMasterOnly);
 
-            if (publishNow && string.IsNullOrWhiteSpace(todoField) && (isMasterOnly || targetGroupIds.Count != 0 || targetCharIds.Count != 0))
+            if (publishNow && string.IsNullOrWhiteSpace(todoField) && (isMasterOnly || targetGroups.Count != 0 || targetCharacters.Count != 0))
             {
                 await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
             }
@@ -166,8 +163,8 @@ public class PlotController(
                 ElementType = elementType,
                 Content = content,
                 TodoField = todoField,
-                TargetCharacters = [.. targetCharIds],
-                TargetGroups = [.. targetGroupIds],
+                TargetCharacters = [.. targetCharacters],
+                TargetGroups = [.. targetGroups],
                 HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
                 PublishNow = publishNow,
             });
@@ -242,7 +239,7 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, ProjectIdentification projectId, string content, string todoField,
-      IReadOnlyCollection<CharacterIdentification>? targetCharacters, IReadOnlyCollection<CharacterGroupIdentification>? targetGroups, bool isMasterOnly)
+      IReadOnlyCollection<CharacterIdentification> targetCharacters, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, bool isMasterOnly)
     {
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
         try
@@ -250,10 +247,7 @@ public class PlotController(
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             if (project.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots))
             {
-                IReadOnlyCollection<CharacterGroupIdentification> targetGroupIds = targetGroups ?? [];
-                var targetCharIds = (targetCharacters ?? []).EnsureProject(projectId);
-
-                await plotService.EditPlotElement(id, content, todoField, targetGroupIds, targetCharIds, isMasterOnly);
+                await plotService.EditPlotElement(id, content, todoField, targetGroups, targetCharacters, isMasterOnly);
             }
             else
             {
