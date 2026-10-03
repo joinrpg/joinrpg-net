@@ -1,4 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 namespace JoinRpg.DomainTypes.Characters.Claims;
@@ -29,6 +30,13 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// факт операций, ждущих модерации. Сгруппированы отдельным типом, потому что ими пользуются
 /// вместе — расчёт баланса и фильтры финансовых проблем.
 /// </param>
+/// <param name="AccommodationTypeId">
+/// Тип проживания, выбранный в заявке, или <c>null</c>, если проживание не выбрано. Отдельно от
+/// <paramref name="Finance"/>: там стоимость проживания — финансовый факт, а здесь выбор игрока,
+/// по которому показывается название типа. Сам тип — настройка проекта (ADR015), поэтому только
+/// идентификатор: название берётся из <c>ProjectInfo.AccommodationSettings</c>. Комнаты здесь нет —
+/// она оперативные данные и живёт в агрегате поселения <c>RoomCategoryPlan</c> (ADR018).
+/// </param>
 /// <param name="PlayerAllowedSensitiveData">
 /// Игрок разрешил мастерам видеть свои чувствительные данные (паспорт, адрес регистрации).
 /// Согласие даётся на уровне заявки, поэтому это факт о заявке, а не о профиле.
@@ -55,6 +63,7 @@ public record class CharacterClaimInfo(
     DateTimeOffset? LastMasterCommentAt,
     DateTimeOffset? LastVisibleMasterCommentAt,
     ClaimFinanceInfo Finance,
+    AccommodationTypeIdentification? AccommodationTypeId,
     bool PlayerAllowedSensitiveData,
     FieldLayerContainer Fields)
 {

@@ -409,6 +409,7 @@ public class ScheduleBuilderTest
                 FeePaid: 0,
                 AccommodationFee: 0,
                 OperationsRequireModeration: false),
+            AccommodationTypeId: null,
             PlayerAllowedSensitiveData: false,
             new FieldLayerContainer(projectInfo, new Dictionary<int, string?>()));
 

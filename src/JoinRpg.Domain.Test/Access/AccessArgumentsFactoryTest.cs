@@ -170,6 +170,7 @@ public class AccessArgumentsFactoryTest
                 FeePaid: 0,
                 AccommodationFee: 0,
                 OperationsRequireModeration: false),
+            AccommodationTypeId: null,
             PlayerAllowedSensitiveData: false,
             Fields: FieldLayerContainer.Empty(Mock.ProjectInfo));
 
