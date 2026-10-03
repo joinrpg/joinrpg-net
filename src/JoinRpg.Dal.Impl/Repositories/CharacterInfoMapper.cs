@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -73,6 +74,9 @@ internal static class CharacterInfoMapper
                 row.FeePaid ?? 0,
                 row.AccommodationFee ?? 0,
                 row.FinanceOperationsRequireModeration),
+            row.AccommodationTypeId is { } accommodationTypeId
+                ? new AccommodationTypeIdentification(projectInfo.ProjectId, accommodationTypeId)
+                : null,
             row.PlayerAllowedSensitiveData,
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, row.JsonData));
 }

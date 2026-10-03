@@ -19,6 +19,17 @@ public interface IUserRepository
 
     Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds);
 
+    /// <summary>
+    /// Телефоны пользователей пачкой. Пользователи без телефона в словарь не попадают.
+    /// </summary>
+    /// <remarks>
+    /// Отдельно от <see cref="GetUserInfos"/>: тому нужен весь профиль, и он тянет вложенными
+    /// проекциями заявки, доступы к проектам и внешние логины. Печать конвертов открывается на
+    /// весь проект — это до тысячи игроков, — а из профиля ей нужен ровно телефон.
+    /// </remarks>
+    Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(
+        IReadOnlyCollection<UserIdentification> userIds);
+
     async Task<UserInfo> GetRequiredUserInfo(UserIdentification userId)
     {
         return await GetUserInfo(userId) ?? throw new JoinRpgEntityNotFoundException(userId, "user");
