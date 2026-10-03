@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@using JoinRpg.Web.Schedule
+@{
+    // Layout используется только из FullScreen.cshtml, он и кладёт модель в ViewData.
+    var schedule = ViewData["Schedule"] as SchedulePageViewModel
+        ?? throw new InvalidOperationException("Layout расписания ждёт SchedulePageViewModel в ViewData[\"Schedule\"]");
+}
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -24,13 +30,13 @@
 </head>
 <body>
     <nav>
-        @await Html.PartialAsync("_FullScreenHeader", ViewData["Header"])
+        @(await Html.RenderComponentAsync<FullScreenHeader>(RenderMode.Static, new { ProjectId = new ProjectIdentification(schedule.ProjectId) }))
     </nav>
     <article>
         @RenderBody()
     </article>
     <footer>
-        @await Html.PartialAsync("_FullScreenFooter", ViewData["Footer"])
+        @(await Html.RenderComponentAsync<FullScreenFooter>(RenderMode.Static))
     </footer>
 
     <environment include="Development">

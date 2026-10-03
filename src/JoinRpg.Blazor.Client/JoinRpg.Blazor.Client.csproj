@@ -14,5 +14,6 @@
     <ProjectReference Include="..\JoinRpg.Web.Games\JoinRpg.Web.Games.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectMasterTools\JoinRpg.Web.ProjectMasterTools.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.Schedule\JoinRpg.Web.Schedule.csproj" />
   </ItemGroup>
 </Project>

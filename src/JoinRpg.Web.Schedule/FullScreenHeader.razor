@@ -1,0 +1,9 @@
+@inject IScheduleUriLocator scheduleUriLocator
+@* Шапка полноэкранного расписания: единственный выход из него — обратно в обычный вид. *@
+<a href="@scheduleUriLocator.GetScheduleUri(ProjectId)" class="header-link">Расписание в обычном виде...</a>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+}

@@ -3,8 +3,7 @@
 @{
     Layout = "_FullScreenLayout.cshtml";
     ViewBag.Title = "Расписание";
-    ViewData["Header"] = Model;
-    ViewData["Footer"] = Model;
+    ViewData["Schedule"] = Model;
 }
 
 <h1 class="page-title">@Html.ActionLink(Model.DisplayName, "Details", "Game", new { projectId = Model.ProjectId }, new {})</h1>

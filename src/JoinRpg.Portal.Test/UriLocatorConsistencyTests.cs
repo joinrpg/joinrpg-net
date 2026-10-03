@@ -2,6 +2,7 @@ using JoinRpg.Blazor.Client;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.Schedule;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Portal.Test;
@@ -87,6 +88,22 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
 
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
         NormalizePathAndQuery(server).ShouldEndWith("/details", Case.Insensitive);
+    }
+
+    /// <summary>
+    /// Сверх обычной сверки серверной реализации с клиентской здесь закреплён и сам путь:
+    /// иначе переименование action'а в <c>ShowScheduleController</c> сломало бы единственный
+    /// выход из полноэкранного режима расписания молча — обе реализации независимы, но
+    /// клиентская задана строкой и о роутах ничего не знает.
+    /// </summary>
+    [Fact]
+    public void ScheduleLocatorsShouldAgree()
+    {
+        var server = factory.Services.GetRequiredService<IScheduleUriLocator>().GetScheduleUri(ProjectId);
+        var client = _clientServices.GetRequiredService<IScheduleUriLocator>().GetScheduleUri(ProjectId);
+
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+        NormalizePathAndQuery(server).ShouldBe($"/{ProjectId.Value}/schedule", StringCompareShould.IgnoreCase);
     }
 
     private static string NormalizePathAndQuery(Uri uri) =>
