@@ -6,6 +6,7 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using Shouldly;
 using Xunit;
@@ -100,6 +101,7 @@ public class CharacterInfoMapperTest
         string? jsonData = null,
         int? feePaid = null,
         int? accommodationFee = null,
+        int? accommodationTypeId = null,
         bool financeOperationsRequireModeration = false,
         bool playerAllowedSensitiveData = false)
         => new()
@@ -128,6 +130,7 @@ public class CharacterInfoMapperTest
             JsonData = jsonData,
             FeePaid = feePaid,
             AccommodationFee = accommodationFee,
+            AccommodationTypeId = accommodationTypeId,
             FinanceOperationsRequireModeration = financeOperationsRequireModeration,
             PlayerAllowedSensitiveData = playerAllowedSensitiveData,
         };
@@ -238,6 +241,30 @@ public class CharacterInfoMapperTest
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
         result.Claims.Single().PlayerAllowedSensitiveData.ShouldBe(allowed);
+    }
+
+    // 4б. Тип проживания: id из заявки превращается в типизированный id того же проекта,
+    // а «проживание не выбрано» остаётся null — на нём строится «Поселение: нет» в конверте.
+
+    [Fact]
+    public void Map_ClaimAccommodationTypeIdSet_ShouldMapToProjectScopedId()
+    {
+        var row = MakeRow(claims: [MakeClaimRow(accommodationTypeId: 42)]);
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        result.Claims.Single().AccommodationTypeId
+            .ShouldBe(new AccommodationTypeIdentification(ProjectInfo.ProjectId, 42));
+    }
+
+    [Fact]
+    public void Map_ClaimAccommodationTypeIdNull_ShouldMapToNull()
+    {
+        var row = MakeRow(claims: [MakeClaimRow(accommodationTypeId: null)]);
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        result.Claims.Single().AccommodationTypeId.ShouldBeNull();
     }
 
     // 5. Description == null и Description с null Contents -> пустая MarkdownString, без исключений.

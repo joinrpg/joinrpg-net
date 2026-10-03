@@ -431,6 +431,7 @@ public class MockedProject
                 FeePaid: 0,
                 AccommodationFee: 0,
                 OperationsRequireModeration: claim.FinanceOperations.Any(fo => fo.RequireModeration)),
+            AccommodationTypeId: null,
             PlayerAllowedSensitiveData: claim.PlayerAllowedSenstiveData,
             FieldLayerContainer.DeserializeFieldLayer(ProjectInfo, claim.JsonData));
 
