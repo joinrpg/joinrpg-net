@@ -14,7 +14,16 @@ public class JoinRpgDomainModule : Module
 
         _ = builder.RegisterGeneric(typeof(ProblemValidator<>)).AsImplementedInterfaces();
 
+        _ = builder.RegisterType<CharacterProblemValidator>().AsImplementedInterfaces();
+
         _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly).AsClosedTypesOf(typeof(IProblemFilter<>)).SingleInstance();
+
+        // ICharacterProblemFilter не generic, поэтому AsClosedTypesOf тут не подходит —
+        // отбираем реализации явно.
+        _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly)
+            .AssignableTo<ICharacterProblemFilter>()
+            .As<ICharacterProblemFilter>()
+            .SingleInstance();
 
         _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly).AsClosedTypesOf(typeof(IFieldRelatedProblemFilter<>)).SingleInstance();
     }

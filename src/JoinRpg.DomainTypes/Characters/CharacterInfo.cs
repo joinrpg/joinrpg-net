@@ -267,6 +267,12 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
     /// </summary>
     public UserIdentification ResponsibleMasterId => responsibleMasterId.Value;
 
+    /// <summary>
+    /// Тот же ответственный мастер, но развёрнутый в <see cref="ProjectMasterInfo"/> — мастера
+    /// почти всегда надо показать, а не сравнить по id.
+    /// </summary>
+    public ProjectMasterInfo ResponsibleMaster => ProjectInfo.GetMasterById(ResponsibleMasterId);
+
     public CharacterClaimInfo GetClaimById(ClaimIdentification claimId)
         => Claims.SingleOrDefault(c => c.ClaimId == claimId)
             ?? throw new KeyNotFoundException($"Claim {claimId} not found on character {Id}");
@@ -309,4 +315,28 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
     public IReadOnlyCollection<FieldWithValue> GetAllFields(ClaimIdentification? claimId = null)
         // AccessArguments.None здесь безвреден: GetAllFieldsForEdit прав не смотрит.
         => GetFieldLayers(AccessArguments.None, claimId).GetAllFieldsForEdit();
+
+    /// <summary>
+    /// Поля, которые на этом уровне есть кому заполнять — вход расчёта проблемы «поле не заполнено».
+    /// </summary>
+    /// <param name="claimId">
+    /// Чья точка зрения. <c>null</c> — персонажа: его собственные поля спрашиваются всегда, а поля
+    /// заявки — только когда роль занята утверждённой заявкой. Иначе — точка зрения этой заявки:
+    /// её поля спрашиваются всегда, а поля персонажа — только когда заявка утверждена.
+    /// </param>
+    /// <remarks>
+    /// Пока персонаж свободен, заполнять поля заявки просто некому, и «поле не заполнено» было бы
+    /// ложной проблемой; симметрично и для неутверждённой заявки с полями персонажа. Правило живёт
+    /// здесь, а не в расчёте проблем, потому что обе его стороны — одно и то же утверждение о
+    /// слоях полей, и порознь они разъехались бы.
+    /// </remarks>
+    public IReadOnlyCollection<FieldWithValue> GetFieldsToFill(ClaimIdentification? claimId = null)
+    {
+        var ownLayer = claimId is null ? FieldBoundTo.Character : FieldBoundTo.Claim;
+        var layersJoined = claimId is null
+            ? ApprovedClaimId is not null
+            : GetClaimById(claimId).IsApproved;
+
+        return [.. GetAllFields(claimId).Where(field => layersJoined || field.Field.BoundTo == ownLayer)];
+    }
 }

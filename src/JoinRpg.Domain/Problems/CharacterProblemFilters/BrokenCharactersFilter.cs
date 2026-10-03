@@ -2,12 +2,12 @@ using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Domain.Problems.CharacterProblemFilters;
 
-internal class BrokenCharactersFilter : IProblemFilter<Character>
+internal class BrokenCharactersFilter : ICharacterProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(Character character, ProjectInfo projectInfo)
+    public IEnumerable<ClaimProblem> GetProblems(CharacterInfo character)
     {
-        var groups = character.GetParentGroupsToTop(projectInfo).Where(g => g.IsActive && !g.IsSpecial).ToArray();
-        if (!groups.Any())
+        var groups = character.ParentGroupsToTop.Where(g => g.IsActive && !g.IsSpecial).ToArray();
+        if (groups.Length == 0)
         {
             yield return new ClaimProblem(ClaimProblemType.NoParentGroup, ProblemSeverity.Fatal);
         }

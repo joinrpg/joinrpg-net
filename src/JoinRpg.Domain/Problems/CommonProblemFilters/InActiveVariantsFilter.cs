@@ -2,7 +2,7 @@ using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 
-internal class InActiveVariantsFilter : IFieldRelatedProblemFilter<Character>, IFieldRelatedProblemFilter<Claim>
+internal class InActiveVariantsFilter : IFieldRelatedProblemFilter<CharacterInfo>, IFieldRelatedProblemFilter<Claim>
 {
     public IEnumerable<FieldRelatedProblem> CheckField(IFieldAvailabilityTarget target, FieldWithValue fieldWithValue)
     {

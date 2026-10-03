@@ -30,6 +30,21 @@ public class CharacterParentGroupsViewModel
           .Select(g => new CharacterGroupLinkViewModel(g)).ToList();
         HasAnyGroups = ParentGroups.Count > 0;
     }
+
+    /// <summary>
+    /// Версия поверх доменного агрегата персонажа (ADR013).
+    /// </summary>
+    public CharacterParentGroupsViewModel(CharacterInfo character, bool hasMasterAccess)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+
+        HasMasterAccess = hasMasterAccess;
+        ParentGroups = [.. character
+          .DirectGroups
+          .Where(group => !group.IsRoot && !group.IsSpecial)
+          .Select(g => new CharacterGroupLinkViewModel(g))];
+        HasAnyGroups = ParentGroups.Count > 0;
+    }
 }
 
 public class CharacterDetailsViewModel : ICreatedUpdatedTracked

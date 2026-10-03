@@ -19,8 +19,9 @@ public class CharacterBulkLoader
 }
 
 /// <summary>
-/// Обёртка над EF-сущностью для проверок доступности поля. Временная: существует, пока проверки
-/// проблем не переехали на <see cref="CharacterInfo"/> (ADR013), который реализует тот же интерфейс.
+/// Обёртка над EF-сущностью для проверок доступности поля. Временная: нужна только проблемам
+/// заявки, которые ещё считаются по EF-графу. Проблемы персонажа уже считаются по
+/// <see cref="CharacterInfo"/> (ADR013) — он реализует тот же интерфейс сам, без обёртки.
 /// </summary>
 public record class CharacterItem(Character Character, IReadOnlyCollection<CharacterGroupIdentification> ParentGroups)
     : IFieldAvailabilityTarget

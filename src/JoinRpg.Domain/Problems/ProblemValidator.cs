@@ -63,12 +63,15 @@ internal class ProblemValidator<TObject>(
         }
     }
 
+    /// <remarks>
+    /// Ветки для персонажа здесь больше нет: его проблемы считает
+    /// <see cref="CharacterProblemValidator"/> поверх доменного агрегата (ADR013).
+    /// </remarks>
     private static FieldWithValue[] GetFields(TObject obj, ProjectInfo projectInfo)
     {
         return obj switch
         {
             Claim claim => claim.GetFields(projectInfo).Where(pf => pf.Field.BoundTo == FieldBoundTo.Claim || claim.IsApproved).ToArray(),
-            Character character => character.GetFields(projectInfo).Where(pf => pf.Field.BoundTo == FieldBoundTo.Character || character.ApprovedClaim != null).ToArray(),
             _ => throw new NotImplementedException(),
         };
     }
@@ -78,7 +81,6 @@ internal class ProblemValidator<TObject>(
         return obj switch
         {
             Claim claim => claim.Character,
-            Character character => character,
             _ => throw new NotImplementedException(),
         };
     }

@@ -1,7 +1,9 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain.Problems;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Users;
+using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
@@ -16,29 +18,29 @@ namespace JoinRpg.Portal.Controllers;
 [MasterAuthorize()]
 [Route("{projectId}/characters/[action]")]
 public class CharacterListController(
-    IProjectRepository projectRepository,
     IExportDataService exportDataService,
     IUriService uriService,
     IProjectMetadataRepository projectMetadataRepository,
-    IProblemValidator<Character> problemValidator,
-    ICharacterRepository characterRepository,
+    ICharacterProblemValidator problemValidator,
+    ICharacterInfoRepository characterInfoRepository,
     ICharacterGroupRepository charGroupRepository,
+    IUserRepository userRepository,
     ICurrentUserAccessor currentUserAccessor
     ) : JoinControllerGameBase
 {
     [HttpGet]
     public Task<ActionResult> Active(ProjectIdentification projectid, string export)
-     => MasterCharacterList(projectid, (character, projectInfo) => character.IsActive, export, "Все персонажи");
+     => MasterCharacterList(projectid, CharacterStatusSpec.Active, character => true, export, "Все персонажи");
 
     [HttpGet]
     public Task<ActionResult> Deleted(ProjectIdentification projectId, string export)
-      => MasterCharacterList(projectId, (character, projectInfo) => !character.IsActive, export, "Удаленные персонажи");
+      => MasterCharacterList(projectId, CharacterStatusSpec.Deleted, character => true, export, "Удаленные персонажи");
 
 
     [HttpGet]
     public Task<ActionResult> Problems(ProjectIdentification projectid, string export)
-      => MasterCharacterList(projectid,
-        (character, projectInfo) => character.IsActive && problemValidator.Validate(character, projectInfo).Any(), export,
+      => MasterCharacterList(projectid, CharacterStatusSpec.Active,
+        character => problemValidator.Validate(character).Any(), export,
         "Проблемные персонажи");
 
     [HttpGet]
@@ -47,18 +49,32 @@ public class CharacterListController(
         var pi = await projectMetadataRepository.GetProjectMetadata(projectId);
         var field = pi.GetFieldById(new ProjectFieldIdentification(projectId, projectfieldId));
 
-        return await MasterCharacterList(projectId,
-          (character, projectInfo) => character.IsActive && problemValidator.ValidateFieldOnly(character, projectInfo, field.Id).Any(),
+        return await MasterCharacterList(projectId, CharacterStatusSpec.Active,
+          character => problemValidator.ValidateFieldOnly(character, field.Id).Any(),
           export,
           "Поле (непроставлено): " + field.Name);
     }
 
-    private async Task<ActionResult> MasterCharacterList(ProjectIdentification projectId, Func<Character, ProjectInfo, bool> predicate, string export, string title)
+    /// <param name="spec">
+    /// Какие персонажи нужны списку. Отбор по «удалён / не удалён» уезжает в запрос: собирать
+    /// агрегат (поля, заявки) на персонажах, которых список всё равно не покажет, незачем.
+    /// </param>
+    /// <param name="predicate">
+    /// Доменный фильтр поверх уже загруженных персонажей — то, что в SQL не выразить (проблемы,
+    /// значения полей).
+    /// </param>
+    private async Task<ActionResult> MasterCharacterList(
+        ProjectIdentification projectId,
+        CharacterStatusSpec spec,
+        Func<CharacterInfo, bool> predicate,
+        string export,
+        string title)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        var characters = (await characterRepository.LoadCharactersWithGroups(projectId)).Where(c => predicate(c, projectInfo)).ToList();
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var characters = (await characterInfoRepository.GetAllCharacterInfos(projectId, spec)).Where(predicate).ToList();
+        var players = await LoadPlayers(characters);
 
-        var list = new CharacterListViewModel(currentUserAccessor.UserIdentification, title, characters, projectInfo, problemValidator);
+        var list = new CharacterListViewModel(currentUserAccessor.UserIdentification, title, characters, players, projectInfo, problemValidator);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -83,10 +99,11 @@ public class CharacterListController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var groupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(characterGroupIdentification).ToList();
-        var characters = (await projectRepository.GetCharacterByGroups(groupIds)).Where(ch => ch.IsActive).ToList();
+        var characters = await characterInfoRepository.GetCharacterInfosByGroups(projectId, groupIds, CharacterStatusSpec.Active);
+        var players = await LoadPlayers(characters);
 
         var list = new CharacterListByGroupViewModel(currentUserAccessor.UserIdentification,
-          characters, characterGroup, projectInfo, problemValidator);
+          characters, players, characterGroup, projectInfo, problemValidator);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -106,18 +123,36 @@ public class CharacterListController(
 
         return await MasterCharacterList(
           projectId,
-          (character, projectInfo) => character.IsActive && character.GetFields(projectInfo).Single(f => f.Field.Id == field.Id).HasEditableValue,
+          CharacterStatusSpec.Active,
+          character => character.GetAllFields().Single(f => f.Field.Id == field.Id).HasEditableValue,
           export,
           "Поле (проставлено): " + field.Name);
     }
 
     [HttpGet]
     public Task<ActionResult> Vacant(ProjectIdentification projectid, string export)
-      => MasterCharacterList(projectid, (character, projectInfo) => character.ApprovedClaim == null && character.IsActive, export, "Свободные персонажи");
+      => MasterCharacterList(projectid, CharacterStatusSpec.Active, character => character.ApprovedClaimId is null, export, "Свободные персонажи");
 
     [HttpGet]
     public Task<ActionResult> WithPlayers(ProjectIdentification projectid, string export)
-      => MasterCharacterList(projectid, (character, projectInfo) => character.ApprovedClaim != null && character.IsActive, export, "Занятые персонажи");
+      => MasterCharacterList(projectid, CharacterStatusSpec.Active, character => character.ApprovedClaimId is not null, export, "Занятые персонажи");
+
+    /// <summary>
+    /// Профили игроков утверждённых заявок — одним запросом на весь список, не по персонажу.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<UserIdentification, UserInfo>> LoadPlayers(
+        IReadOnlyCollection<CharacterInfo> characters)
+    {
+        IReadOnlyCollection<UserIdentification> playerIds =
+            [.. characters.Select(c => c.ApprovedClaim?.PlayerId).WhereNotNull().Distinct()];
+
+        if (playerIds.Count == 0)
+        {
+            return new Dictionary<UserIdentification, UserInfo>();
+        }
+
+        return (await userRepository.GetRequiredUserInfos(playerIds)).ToDictionary(user => user.UserId);
+    }
 
     private FileContentResult Export(CharacterListViewModel list, ExportType exportType, ProjectInfo projectInfo)
     {
@@ -129,5 +164,4 @@ public class CharacterListController(
         return GeneratorResultHelper.Result(list.ProjectName + ": " + list.Title, generator);
     }
 }
-
 

@@ -3,7 +3,7 @@ using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 
-internal class FieldNotSetFilter : IFieldRelatedProblemFilter<Character>, IFieldRelatedProblemFilter<Claim>
+internal class FieldNotSetFilter : IFieldRelatedProblemFilter<CharacterInfo>, IFieldRelatedProblemFilter<Claim>
 {
     public IEnumerable<FieldRelatedProblem> CheckField(IFieldAvailabilityTarget target, FieldWithValue fieldWithValue)
     {
