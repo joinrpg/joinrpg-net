@@ -1,0 +1,14 @@
+<h2>Мастера</h2>
+
+<ul class="list-unstyled">
+    @foreach (var master in Model.Masters)
+    {
+        <li><UserLink Model="master" /></li>
+    }
+</ul>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectMastersViewModel Model { get; set; } = null!;
+}
