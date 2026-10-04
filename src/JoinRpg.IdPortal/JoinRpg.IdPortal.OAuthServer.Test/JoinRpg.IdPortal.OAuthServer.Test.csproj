@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.IdPortal.OAuthServer\JoinRpg.IdPortal.OAuthServer.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

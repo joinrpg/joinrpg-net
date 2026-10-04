@@ -1,11 +1,8 @@
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebInfrastructure;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.DataModel.Users;
+using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.DomainTypes.Users;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
@@ -51,24 +48,6 @@ public class GetUserInfoMethodTest
         RatingHost = "rating.test",
     });
 
-    private class FakeUserRepository(UserInfo userInfo) : IUserRepository
-    {
-        Task<UserInfo?> IUserRepository.GetUserInfo(UserIdentification userId)
-            => Task.FromResult<UserInfo?>(userInfo);
-
-        Task<User> IUserRepository.GetById(int id) => throw new NotImplementedException();
-        Task<User> IUserRepository.WithProfile(int userId) => throw new NotImplementedException();
-        Task<User> IUserRepository.GetWithSubscribe(int currentUserId) => throw new NotImplementedException();
-        Task<UserAvatar> IUserRepository.LoadAvatar(AvatarIdentification userAvatarId) => throw new NotImplementedException();
-        Task<IReadOnlyCollection<UserInfo>> IUserRepository.GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        Task<IReadOnlyCollection<UserInfoHeader>> IUserRepository.GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> IUserRepository.GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        Task<IReadOnlyCollection<UserInfoHeader>> IUserRepository.GetAdminUserInfoHeaders() => throw new NotImplementedException();
-        Task<UserIdentification?> IUserRepository.FindByVk(string vkId) => throw new NotImplementedException();
-        Task<UserIdentification?> IUserRepository.FindByTelegram(string telegramUsername) => throw new NotImplementedException();
-        Task<UserIdentification?> IUserRepository.FindByEmail(string email) => throw new NotImplementedException();
-    }
-
     private class FakeAvatarLoader(string uri) : IAvatarLoader
     {
         private readonly Uri _uri = new Uri(uri);
@@ -111,7 +90,7 @@ public class GetUserInfoMethodTest
     {
         return await OAuthServerRegistration.GetUserInfoMethod(
                     principal,
-                    new FakeUserRepository(userInfo),
+                    FakeUserRepository.WithUsers(userInfo),
                     options ?? DefaultOptions,
                     new FakeAvatarLoader(avatarUrl));
     }

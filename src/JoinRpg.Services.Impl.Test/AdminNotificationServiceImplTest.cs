@@ -1,12 +1,8 @@
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.AdminTools;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Projects;
-using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.Extensions.Options;
 
@@ -16,7 +12,7 @@ public class AdminNotificationServiceImplTest
 {
     private static readonly UserInfoHeader admin = new(new UserIdentification(1), new UserDisplayName("Admin", null));
     private readonly FakeNotificationService fakeNotificationService = new();
-    private readonly FakeAdminUserRepository fakeUserRepository = new([admin]);
+    private readonly FakeUserRepository fakeUserRepository = FakeUserRepository.WithAdmins(admin);
     private readonly FakeKogdaIgraRepository fakeKogdaIgraRepository = new();
 
     private AdminNotificationServiceImpl CreateService()
@@ -66,23 +62,6 @@ public class AdminNotificationServiceImplTest
 
         await Verify(QueuedText());
     }
-}
-
-internal sealed class FakeAdminUserRepository(IReadOnlyCollection<UserInfoHeader> admins) : IUserRepository
-{
-    public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => Task.FromResult(admins);
-
-    public Task<User> GetById(int id) => throw new NotSupportedException();
-    public Task<User> WithProfile(int userId) => throw new NotSupportedException();
-    public Task<User> GetWithSubscribe(int currentUserId) => throw new NotSupportedException();
-    public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();
-    public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotSupportedException();
-    public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-    public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-    public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-    public Task<UserIdentification?> FindByVk(string vkId) => throw new NotSupportedException();
-    public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotSupportedException();
-    public Task<UserIdentification?> FindByEmail(string email) => throw new NotSupportedException();
 }
 
 internal sealed class FakeKogdaIgraRepository : IKogdaIgraRepository

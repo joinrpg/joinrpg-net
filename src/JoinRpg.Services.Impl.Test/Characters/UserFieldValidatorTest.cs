@@ -1,11 +1,6 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
-using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Services.Impl.Test.Characters;
 
@@ -124,7 +119,7 @@ public class UserFieldValidatorTest : Claims.ClaimServiceTestBase
             f.FieldName = "Возраст";
             f.FieldType = ProjectFieldType.Number;
         });
-        var repository = new CountingUserRepository(mock);
+        var repository = new FakeUserRepository(mock);
 
         await new UserFieldValidator(repository).ValidateUserFields(Layer(field, "42"));
 
@@ -136,7 +131,7 @@ public class UserFieldValidatorTest : Claims.ClaimServiceTestBase
     {
         var first = CreateUserField();
         var second = CreateUserField("Второй игрок");
-        var repository = new CountingUserRepository(mock);
+        var repository = new FakeUserRepository(mock);
 
         await new UserFieldValidator(repository).ValidateUserFields(
             new FieldLayerContainer(mock.ProjectInfo, new Dictionary<int, string?>
@@ -146,30 +141,5 @@ public class UserFieldValidatorTest : Claims.ClaimServiceTestBase
             }));
 
         repository.CallCount.ShouldBe(1);
-    }
-
-    private sealed class CountingUserRepository(MockedProject mock) : IUserRepository
-    {
-        private readonly FakeUserRepository inner = new(mock);
-
-        public int CallCount { get; private set; }
-
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds)
-        {
-            CallCount++;
-            return inner.GetUserInfoHeaders(userIds);
-        }
-
-        public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotSupportedException();
-        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<User> GetById(int id) => throw new NotSupportedException();
-        public Task<User> WithProfile(int userId) => throw new NotSupportedException();
-        public Task<User> GetWithSubscribe(int currentUserId) => throw new NotSupportedException();
-        public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByVk(string vkId) => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByEmail(string email) => throw new NotSupportedException();
     }
 }

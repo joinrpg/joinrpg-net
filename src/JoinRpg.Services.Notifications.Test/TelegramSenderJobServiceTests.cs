@@ -1,7 +1,5 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.Telegram;
-using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel.Users;
+using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.DomainTypes.Users;
@@ -14,6 +12,22 @@ namespace JoinRpg.Services.Notifications.Test;
 
 public class TelegramSenderJobServiceTests
 {
+    /// <summary>Инициатор уведомления — его отображаемое имя уезжает в подпись.</summary>
+    private static readonly UserInfo Initiator = new(
+        new UserIdentification(1),
+        new UserSocialNetworks(null, null, null, null, ContactsAccessType.OnlyForMasters),
+        [],
+        [],
+        [],
+        IsAdmin: true,
+        SelectedAvatarId: null,
+        new JoinRpg.Common.PrimitiveTypes.Email("robot@joinrpg.ru"),
+        EmailConfirmed: true,
+        new UserFullName(new PrefferedName("Master"), null, null, null),
+        VerifiedProfileFlag: false,
+        PhoneNumber: null,
+        HasPassword: false);
+
     private static TargetedNotificationMessageForRecipient MakeMessage(bool skipSignature, TelegramChatId chatId) =>
         new(
             new NotificationMessageForRecipient(
@@ -35,7 +49,7 @@ public class TelegramSenderJobServiceTests
         var service = new TelegramSenderJobService(
             Options.Create(new TelegramLoginOptions { BotName = "bot", BotId = 1, BotSecret = "secret" }),
             telegramClient,
-            userRepository: new ThrowingUserRepository(),
+            userRepository: FakeUserRepository.MustNotBeCalled("при SkipSignature=true подпись не строится"),
             linkRenderer: new NullEntityLinkRenderer());
 
         var chatId = new TelegramChatId(-100);
@@ -53,7 +67,7 @@ public class TelegramSenderJobServiceTests
         var service = new TelegramSenderJobService(
             Options.Create(new TelegramLoginOptions { BotName = "bot", BotId = 1, BotSecret = "secret" }),
             telegramClient,
-            userRepository: new FakeUserRepository(),
+            userRepository: FakeUserRepository.WithUsers(Initiator),
             linkRenderer: new NullEntityLinkRenderer());
 
         var chatId = new TelegramChatId(-100);
@@ -81,52 +95,5 @@ public class TelegramSenderJobServiceTests
     private sealed class NullEntityLinkRenderer : INotificationEntityLinkRenderer
     {
         public RenderedEntityLink? RenderEntityLink(IProjectEntityId? entityReference) => null;
-    }
-
-    private sealed class FakeUserRepository : IUserRepository
-    {
-        public Task<UserInfo?> GetUserInfo(UserIdentification userId) => Task.FromResult<UserInfo?>(new UserInfo(
-            userId,
-            new UserSocialNetworks(null, null, null, null, ContactsAccessType.OnlyForMasters),
-            [],
-            [],
-            [],
-            IsAdmin: true,
-            SelectedAvatarId: null,
-            new JoinRpg.Common.PrimitiveTypes.Email("robot@joinrpg.ru"),
-            EmailConfirmed: true,
-            new UserFullName(new PrefferedName("Master"), null, null, null),
-            VerifiedProfileFlag: false,
-            PhoneNumber: null,
-            HasPassword: false));
-
-        public Task<User> GetById(int id) => throw new NotSupportedException();
-        public Task<User> WithProfile(int userId) => throw new NotSupportedException();
-        public Task<User> GetWithSubscribe(int currentUserId) => throw new NotSupportedException();
-        public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByVk(string vkId) => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByEmail(string email) => throw new NotSupportedException();
-    }
-
-    private sealed class ThrowingUserRepository : IUserRepository
-    {
-        public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotSupportedException("Не должно вызываться при SkipSignature=true");
-
-        public Task<User> GetById(int id) => throw new NotSupportedException();
-        public Task<User> WithProfile(int userId) => throw new NotSupportedException();
-        public Task<User> GetWithSubscribe(int currentUserId) => throw new NotSupportedException();
-        public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByVk(string vkId) => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByEmail(string email) => throw new NotSupportedException();
     }
 }
