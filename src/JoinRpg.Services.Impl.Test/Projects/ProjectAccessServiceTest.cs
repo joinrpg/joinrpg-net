@@ -205,8 +205,29 @@ public class ProjectAccessServiceTest
 
         await service.RemoveAccess(ProjectId, new UserIdentification(50), null);
 
-        mock.Project.ProjectAcls.ShouldNotContain(a => a.UserId == 50);
+        ShouldBeRemoved(50);
         gameSubscribeService.RemoveAllSubscriptionsCalls.ShouldContain((ProjectId, new UserIdentification(50)));
+    }
+
+    /// <summary>
+    /// Снятый мастер (ADR019, §1): строка осталась, статус Removed, прав и владения нет,
+    /// в пересобранном ProjectInfo он среди бывших, а не действующих.
+    /// </summary>
+    private void ShouldBeRemoved(int userId)
+    {
+        var acl = mock.Project.ProjectAcls.Single(a => a.UserId == userId);
+        acl.Status.ShouldBe(ProjectAclStatus.Removed);
+        acl.IsOwner.ShouldBeFalse();
+        new[]
+        {
+            acl.CanChangeFields, acl.CanChangeProjectProperties, acl.CanGrantRights, acl.CanManageClaims,
+            acl.CanEditRoles, acl.CanManageMoney, acl.CanSendMassMails, acl.CanManagePlots,
+            acl.CanManageAccommodation, acl.CanSetPlayersAccommodations,
+        }.ShouldAllBe(flag => !flag);
+
+        var projectInfo = metadataRepository.LastPrimed.ShouldNotBeNull();
+        projectInfo.Masters.ShouldNotContain(m => m.UserId == new UserIdentification(userId));
+        projectInfo.FormerMasters.ShouldContain(m => m.UserId == new UserIdentification(userId));
     }
 
     [Fact]
@@ -220,8 +241,147 @@ public class ProjectAccessServiceTest
 
         await service.RemoveAccess(ProjectId, new UserIdentification(mock.Master.UserId), null);
 
-        mock.Project.ProjectAcls.ShouldNotContain(a => a.UserId == mock.Master.UserId);
+        ShouldBeRemoved(mock.Master.UserId);
         remaining.IsOwner.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task RemoveAccess_OwnerRemovesSelf_DoesNotTransferOwnershipToRemovedMaster()
+    {
+        // Снятый мастер с меньшим UserId, чем у действующего, — владение должно уйти действующему.
+        var former = AddMaster(3, canGrantRights: false);
+        former.Status = ProjectAclStatus.Removed;
+        var remaining = AddMaster(50, canGrantRights: true);
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.RemoveAccess(ProjectId, new UserIdentification(mock.Master.UserId), null);
+
+        former.IsOwner.ShouldBeFalse();
+        remaining.IsOwner.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task RemoveAccess_LastActiveWithCanGrantRights_IgnoresRemovedMastersWithStaleRights()
+    {
+        // У снятого мастера права «застряли» (как у строк до сброса прав) — он не считается хранителем ключей.
+        var former = AddMaster(50, canGrantRights: true);
+        former.Status = ProjectAclStatus.Removed;
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<LastMasterWithGrantRightsException>(
+            () => service.RemoveAccess(ProjectId, new UserIdentification(mock.Master.UserId), null));
+    }
+
+    [Fact]
+    public async Task RemoveAccess_AdminNotMasterRemovesOwner_TransfersOwnershipToActiveMaster()
+    {
+        // Раньше владение передавалось снимающему через Single(текущий пользователь) — для админа сайта,
+        // который не мастер проекта, это падало.
+        var remaining = AddMaster(50, canGrantRights: true);
+
+        var service = CreateService(99, isAdmin: true);
+
+        await service.RemoveAccess(ProjectId, new UserIdentification(mock.Master.UserId), null);
+
+        ShouldBeRemoved(mock.Master.UserId);
+        remaining.IsOwner.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task RemoveAccess_MasterRemovesOwner_TransfersOwnershipToCurrentUser()
+    {
+        var lowerId = AddMaster(3, canGrantRights: false);
+        var current = AddMaster(50, canGrantRights: true);
+
+        var service = CreateService(50);
+
+        await service.RemoveAccess(ProjectId, new UserIdentification(mock.Master.UserId), null);
+
+        current.IsOwner.ShouldBeTrue();
+        lowerId.IsOwner.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveAccess_AlreadyRemovedMaster_Throws()
+    {
+        var former = AddMaster(50, canGrantRights: false);
+        former.Status = ProjectAclStatus.Removed;
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(99, isAdmin: true);
+
+        await Should.ThrowAsync<InvalidOperationException>(
+            () => service.RemoveAccess(ProjectId, new UserIdentification(50), null));
+    }
+
+    [Fact]
+    public async Task ChangeAccess_RemovedMaster_Throws()
+    {
+        // Вернуть снятого мастера можно только выдачей доступа, а не правкой прав.
+        var former = AddMaster(50, canGrantRights: false);
+        former.Status = ProjectAclStatus.Removed;
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<InvalidOperationException>(() => service.ChangeAccess(new ChangeAccessRequest
+        {
+            ProjectId = ProjectId,
+            UserId = new UserIdentification(50),
+            Permissions = [Permission.CanManageClaims],
+        }));
+        former.Status.ShouldBe(ProjectAclStatus.Removed);
+    }
+
+    [Fact]
+    public async Task GrantFullAccess_AdminWithRemovedRow_ReactivatesSameRow()
+    {
+        var former = AddMaster(99, canGrantRights: false);
+        former.Status = ProjectAclStatus.Removed;
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(99, isAdmin: true);
+
+        await service.GrantFullAccess(ProjectId);
+
+        mock.Project.ProjectAcls.Count(a => a.UserId == 99).ShouldBe(1);
+        former.Status.ShouldBe(ProjectAclStatus.Active);
+        former.CanGrantRights.ShouldBeTrue();
+        former.Role.ShouldBe("Техподдержка joinrpg.ru");
+    }
+
+    [Fact]
+    public async Task GrantAccess_RemovedMaster_ReactivatesSameRow()
+    {
+        var acl = AddMaster(50, canGrantRights: false);
+        acl.Status = ProjectAclStatus.Removed;
+        acl.Role = "Мастер по боёвке";
+        acl.IsPublic = false;
+        acl.Description = new MarkdownDbValue("Боёвка и полигон");
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.GrantAccess(new GrantAccessRequest
+        {
+            ProjectId = ProjectId,
+            Role = "Мастер по экономике",
+            UserId = new UserIdentification(50),
+            Permissions = [Permission.CanManageClaims],
+        });
+
+        mock.Project.ProjectAcls.Count(a => a.UserId == 50).ShouldBe(1);
+        acl.Status.ShouldBe(ProjectAclStatus.Active);
+        acl.CanManageClaims.ShouldBeTrue();
+        // Роль — из запроса, описание и публичность возвращаются вместе с мастером.
+        acl.Role.ShouldBe("Мастер по экономике");
+        acl.IsPublic.ShouldBeFalse();
+        acl.Description.Contents.ShouldBe("Боёвка и полигон");
+        metadataRepository.LastPrimed.ShouldNotBeNull().Masters.ShouldContain(m => m.UserId == new UserIdentification(50));
     }
 
     [Fact]
@@ -285,7 +445,7 @@ public class ProjectAccessServiceTest
 
         claimService.ResponsibleChanges.ShouldContain((claim.GetId(), newResponsible));
         group.ResponsibleMasterUserId.ShouldBe(mock.Master.UserId);
-        mock.Project.ProjectAcls.ShouldNotContain(a => a.UserId == 50);
+        ShouldBeRemoved(50);
         gameSubscribeService.RemoveAllSubscriptionsCalls.ShouldContain((ProjectId, new UserIdentification(50)));
     }
 

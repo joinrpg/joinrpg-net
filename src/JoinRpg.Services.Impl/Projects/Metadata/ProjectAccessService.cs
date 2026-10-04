@@ -37,6 +37,13 @@ internal class ProjectAccessService(
                     };
                     ctx.Project.ProjectAcls.Add(acl);
                 }
+                else if (!acl.IsActive)
+                {
+                    // Повторная выдача снятому мастеру — та же строка (ADR019, §1): описание и публичность
+                    // возвращаются вместе с ним, роль задаёт заново тот, кто выдаёт доступ.
+                    acl.Status = ProjectAclStatus.Active;
+                    acl.Role = ctx.Request.Role;
+                }
                 acl.SetPermissions(ctx.Request.Permissions);
             });
 
@@ -48,9 +55,9 @@ internal class ProjectAccessService(
             request,
             ctx =>
             {
-                var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId);
+                var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId && a.IsActive);
                 acl.SetPermissions(ctx.Request.Permissions);
-                if (ctx.Project.ProjectAcls.All(a => !a.CanGrantRights))
+                if (ctx.Project.ProjectAcls.Where(a => a.IsActive).All(a => !a.CanGrantRights))
                 {
                     acl.CanGrantRights = true; // последний с CanGrantRights не может снять его сам с себя
                 }
@@ -91,12 +98,14 @@ internal class ProjectAccessService(
             (UserId: userId, NewResponsible: newResponsibleMasterIdOrDefault),
             ctx =>
             {
-                if (!ctx.Project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != ctx.Request.UserId.Value))
+                // Заодно держит инвариант «у проекта остаётся хотя бы один действующий мастер» —
+                // на нём стоят выбор ответственного по умолчанию и передача владения ниже.
+                if (!ctx.Project.ProjectAcls.Any(a => a.IsActive && a.CanGrantRights && a.UserId != ctx.Request.UserId.Value))
                 {
                     throw new LastMasterWithGrantRightsException(ctx.ProjectInfo.ProjectId, ctx.Request.UserId);
                 }
 
-                var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId.Value);
+                var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId.Value && a.IsActive);
 
                 foreach (var group in ctx.Project.CharacterGroups.Where(g => g.ResponsibleMasterUserId == ctx.Request.UserId.Value))
                 {
@@ -105,17 +114,19 @@ internal class ProjectAccessService(
 
                 if (acl.IsOwner)
                 {
-                    if (acl.UserId == ctx.CurrentUser.UserId)
-                    {
-                        ctx.Project.ProjectAcls.Where(a => a != acl).OrderBy(a => a.UserId).First().IsOwner = true;
-                    }
-                    else
-                    {
-                        ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.CurrentUser.UserId).IsOwner = true;
-                    }
+                    // Владение уходит тому, кто снимает (если это не сам владелец), иначе — действующему мастеру
+                    // с наименьшим UserId. Снятым мастерам владение не передаётся. Админ сайта, не будучи
+                    // мастером проекта, тоже попадает во вторую ветку.
+                    var newOwner = ctx.Project.ProjectAcls.SingleOrDefault(a => a != acl && a.IsActive && a.UserId == ctx.CurrentUser.UserId)
+                        ?? ctx.Project.ProjectAcls.Where(a => a != acl && a.IsActive).OrderBy(a => a.UserId).First();
+                    newOwner.IsOwner = true;
                 }
 
-                ctx.RemovePermanently(acl);
+                // Мягкое удаление (ADR019, §1): строка остаётся историей. Права сбрасываются — защита в глубину
+                // на случай проверки, которая забыла про статус, но спрашивает конкретное право.
+                acl.Status = ProjectAclStatus.Removed;
+                acl.IsOwner = false;
+                acl.SetPermissions([]);
             });
 
         await gameSubscribeService.RemoveAllSubscriptions(projectId, userId);
