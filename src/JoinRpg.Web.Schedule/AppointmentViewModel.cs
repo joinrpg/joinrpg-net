@@ -2,6 +2,7 @@ namespace JoinRpg.Web.Schedule;
 
 public enum AppointmentErrorType
 {
+    [Display(Name = "Не размещено в сетке расписания")]
     NotLocated,
 
     [Display(Name = "Пересечение с другими мероприятиями")]
