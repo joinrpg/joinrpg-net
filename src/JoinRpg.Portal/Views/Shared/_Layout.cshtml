@@ -15,7 +15,10 @@
     <link rel="stylesheet" href="~/lib/bootstrap-select/css/bootstrap-select.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
   </environment>
-  <link rel="stylesheet" href="~/css/components.css" />
+  @* Scoped CSS (*.razor.css) всех подключённых razor-библиотек. Бандл собирает SDK
+     из графа ProjectReference, список проектов поддерживать руками не нужно.
+     MapStaticAssets подставляет в href отпечаток содержимого, asp-append-version тут лишний. *@
+  <link rel="stylesheet" href="~/JoinRpg.Portal.styles.css" />
   <link rel="stylesheet" href="~/_content/JoinRpg.Common.WebComponents/css/join-icons.css" />
 
 
