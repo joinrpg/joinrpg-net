@@ -25,11 +25,8 @@ public class FinanceProblemsFilterTest : ClaimProblemFilterTestBase
         bool requireModeration = false,
         bool warnOnOverPayment = true)
     {
-        // Настройка живёт в сущности проекта, поэтому меняем её там и пересобираем метаданные:
-        // ProjectInfo.ProjectFinanceSettings — get-only, через `with` его не подменить.
-        Mock.Project.Details.FinanceWarnOnOverPayment = warnOnOverPayment;
-        Mock.ReInitProjectInfo();
-        var projectInfo = Mock.ProjectInfo;
+        var projectInfo = Mock.ProjectInfo.WithProjectFinanceSettings(
+            Mock.ProjectInfo.ProjectFinanceSettings with { WarnOnOverPayment = warnOnOverPayment });
 
         return [.. Filter.GetProblems(MakeContext(
             claim => claim with

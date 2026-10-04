@@ -17,9 +17,9 @@ public static class UserProfileItemsCalculator
     /// Перегрузка на "сырых" фактах. Заводилась под потребителей, которые не могли дёшево
     /// собрать полноценный <see cref="UserInfo"/> и читали контакты прямо из EF-сущностей;
     /// таких больше нет, и единственный вызывающий — <see cref="UserInfo.GetMissingItems"/>.
-    /// То есть это уже просто тело того метода, вынесенное отдельно.
+    /// То есть это уже просто тело того метода, вынесенное отдельно, — потому и internal.
     /// </summary>
-    public static IReadOnlyCollection<UserProfileItemType> GetMissingItems(
+    internal static IReadOnlyCollection<UserProfileItemType> GetMissingItems(
         bool hasTelegram,
         bool hasVerifiedVkontakte,
         string? phoneNumber,

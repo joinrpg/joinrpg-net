@@ -176,6 +176,17 @@ public record class ProjectInfo
             ProjectRolesLists, DefaultRolesListId);
     }
 
+    internal ProjectInfo WithProjectFinanceSettings(ProjectFinanceSettings projectFinanceSettings)
+    {
+        return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
+            ProjectFieldSettings, projectFinanceSettings, AccommodationSettings,
+            GroupTree,
+            Masters, PublishPlot, ProjectCheckInSettings,
+            ProjectStatus,
+            ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
+            ProjectRolesLists, DefaultRolesListId);
+    }
+
     internal ProjectInfo WithProfileRequirementSettings(ProjectProfileRequirementSettings profileRequirementSettings)
     {
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,

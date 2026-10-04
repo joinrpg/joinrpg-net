@@ -22,7 +22,7 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// LINQ to Objects. Ни то, ни другое не скажет, умеет ли EF6 перевести проекцию в SQL.
 /// </para>
 /// <para>
-/// Особенно это важно для <see cref="CharacterClaimInfo.FinanceOperationsRequireModeration"/>:
+/// Особенно это важно для <c>ClaimFinanceInfo.OperationsRequireModeration</c>:
 /// правило живёт в <c>FinancePredicates.RequireModeration()</c> и подставляется в запрос
 /// LinqKit'ом через <c>.Invoke()</c> внутри вложенного <c>Select</c>. Если такая подстановка
 /// перестанет работать, запрос упадёт в рантайме с <c>NotSupportedException</c> — и уронить его
