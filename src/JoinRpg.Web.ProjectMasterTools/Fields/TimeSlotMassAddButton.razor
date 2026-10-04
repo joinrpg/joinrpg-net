@@ -1,0 +1,140 @@
+@using System.ComponentModel.DataAnnotations
+@inject IProjectFieldOperationsClient ProjectFieldOperationsClient
+@inject NavigationManager NavigationManager
+@inject ILogger<TimeSlotMassAddButton> Logger
+
+<JoinButton Preset="ButtonPreset.Add" Label="Добавить много значений" OnClick="OpenDialogAsync" />
+
+@if (errorMessage is not null)
+{
+    <JoinErrorMessage>@errorMessage</JoinErrorMessage>
+}
+
+<JoinFormDialog Caption="Добавить много значений"
+                SubmitButtonPreset="ButtonPreset.Add"
+                Model="@form"
+                FormName="TimeSlotMassAddForm"
+                @ref="dialog">
+    <FormRowFor For="@(() => form.Prefix)">
+        <JoinTextInput @bind-Value="form.Prefix" Immediate="true" />
+    </FormRowFor>
+    <FormRowFor For="@(() => form.Date)">
+        <JoinRpgDatePicker Name="@nameof(form.Date)" @bind-Value="form.Date" />
+    </FormRowFor>
+    <FormRowFor For="@(() => form.StartTime)">
+        <JoinRpgTimePicker Name="@nameof(form.StartTime)" @bind-Value="form.StartTime" />
+    </FormRowFor>
+    <FormRowFor For="@(() => form.EndTime)">
+        <JoinRpgTimePicker Name="@nameof(form.EndTime)" @bind-Value="form.EndTime" />
+        @if (form.EndsNextDay)
+        {
+            <div class="help-block">Конец — на следующий день</div>
+        }
+    </FormRowFor>
+    <FormRowFor For="@(() => form.SlotMinutes)">
+        <NumberInput Name="@nameof(form.SlotMinutes)" @bind-Value="form.SlotMinutes" Min="1" />
+    </FormRowFor>
+    <FormRowFor For="@(() => form.BreakMinutes)">
+        <NumberInput Name="@nameof(form.BreakMinutes)" @bind-Value="form.BreakMinutes" Min="0" />
+    </FormRowFor>
+    <FormRow Label="Будет создано">
+        @{ var (errors, slots) = Preview(); }
+        @if (errors.Count > 0)
+        {
+            @foreach (var error in errors)
+            {
+                <div class="text-danger">@error</div>
+            }
+        }
+        else
+        {
+            <p>@slots.Count @CountForm(slots.Count): @PreviewLabels(slots)</p>
+        }
+    </FormRow>
+</JoinFormDialog>
+
+@code {
+    [Parameter, EditorRequired]
+    public TimeSlotMassAddViewModel Model { get; set; } = null!;
+
+    private JoinFormDialog<TimeSlotMassAddFormModel> dialog = default!;
+    private TimeSlotMassAddFormModel form = new();
+    private string? errorMessage;
+
+    protected override void OnParametersSet()
+    {
+        form = new TimeSlotMassAddFormModel
+        {
+            Date = Model.DefaultDate,
+            StartTime = Model.DefaultStartTime,
+            EndTime = Model.DefaultStartTime.AddHours(4),
+            SlotMinutes = Model.DefaultSlotMinutes,
+            BreakMinutes = 0,
+        };
+    }
+
+    private (IReadOnlyList<string> Errors, IReadOnlyList<TimeSlotBatchItem> Slots) Preview()
+    {
+        var results = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(form, new ValidationContext(form), results, validateAllProperties: true))
+        {
+            return (results.Select(r => r.ErrorMessage ?? "").ToList(), []);
+        }
+        var slots = form.Generate(TimeZoneInfo.FindSystemTimeZoneById(Model.TimeZoneId));
+        return slots.Count == 0
+            ? (["В указанный промежуток не помещается ни одного таймслота"], [])
+            : ([], slots);
+    }
+
+    private static string PreviewLabels(IReadOnlyList<TimeSlotBatchItem> slots)
+        => slots.Count <= 5
+            ? string.Join(", ", slots.Select(s => s.Label))
+            : $"{string.Join(", ", slots.Take(3).Select(s => s.Label))}, …, {slots[^1].Label}";
+
+    private static string CountForm(int count)
+        => (count % 100, count % 10) switch
+        {
+            ( >= 11 and <= 14, _) => "значений",
+            (_, 1) => "значение",
+            (_, >= 2 and <= 4) => "значения",
+            _ => "значений",
+        };
+
+    private async Task OpenDialogAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            errorMessage = null;
+            var result = await dialog.ShowModalAsync();
+            if (result is null)
+            {
+                return;
+            }
+            var (errors, _) = Preview();
+            if (errors.Count > 0)
+            {
+                errorMessage = string.Join(" ", errors);
+                return;
+            }
+            await ProjectFieldOperationsClient.CreateTimeSlots(new TimeSlotMassAddRequest(
+                Model.FieldId,
+                result.Prefix,
+                result.Date!.Value,
+                result.StartTime!.Value,
+                result.EndTime!.Value,
+                result.SlotMinutes!.Value,
+                result.BreakMinutes!.Value,
+                Model.TimeZoneId));
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при массовом добавлении таймслотов");
+            errorMessage = "Не удалось добавить значения";
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+}

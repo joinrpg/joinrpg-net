@@ -1,5 +1,6 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.ProjectMasterTools.Fields;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
@@ -7,8 +8,22 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 [Route("/webapi/project-field-operations/[action]")]
 [IgnoreAntiforgeryToken]
 [MasterAuthorize(Permission.CanChangeFields)]
-public class ProjectFieldOperationsController(IFieldSetupService fieldSetupService) : ControllerBase
+public class ProjectFieldOperationsController(
+    IFieldSetupService fieldSetupService,
+    IProjectFieldOperationsClient fieldOperationsClient) : ControllerBase
 {
+    [HttpPost]
+    public async Task<ActionResult> CreateTimeSlots([FromQuery] ProjectIdentification projectId, [FromBody] TimeSlotMassAddRequest request)
+    {
+        if (request.FieldId.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+
+        await fieldOperationsClient.CreateTimeSlots(request);
+        return Ok();
+    }
+
     [HttpPost]
     public async Task<ActionResult> Delete([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldIdentification fieldId)
     {

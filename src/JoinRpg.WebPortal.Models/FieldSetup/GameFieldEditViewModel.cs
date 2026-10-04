@@ -64,7 +64,31 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
         IsActive = field.IsActive;
         HasValueList = field.HasValueList;
         SupportsMassAdding = field.SupportsMassAdding;
+        TimeSlotMassAdd = field.IsTimeSlot ? CreateTimeSlotMassAdd(field) : null;
     }
+
+    // TODO: таймзона проекта, пока считаем всё московским
+    private const string TimeSlotTimeZoneId = "Europe/Moscow";
+
+    private static TimeSlotMassAddViewModel CreateTimeSlotMassAdd(ProjectFieldInfo field)
+    {
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(TimeSlotTimeZoneId);
+        var lastOptions = (field.LastVariant as TimeSlotFieldVariant)?.TimeSlotOptions ?? TimeSlotOptions.CreateDefault();
+        var lastEnd = TimeZoneInfo.ConvertTime(lastOptions.EndTime, timeZone);
+        return new TimeSlotMassAddViewModel(
+            field.Id,
+            TimeSlotTimeZoneId,
+            DateOnly.FromDateTime(lastEnd.DateTime),
+            // Без секунд: при пустом поле время берётся из текущего момента
+            new TimeOnly(lastEnd.Hour, lastEnd.Minute),
+            lastOptions.TimeSlotInMinutes);
+    }
+
+    /// <summary>
+    /// Параметры массового добавления таймслотов; null, если поле не таймслот
+    /// </summary>
+    [ReadOnly(true)]
+    public TimeSlotMassAddViewModel? TimeSlotMassAdd { get; private set; }
 
     public GameFieldEditViewModel()
     { }

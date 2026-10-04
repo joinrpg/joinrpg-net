@@ -16,4 +16,15 @@ internal class ProjectFieldOperationsViewService(IFieldSetupService fieldSetupSe
 
     public async Task DeleteUnusedVariants(ProjectFieldIdentification fieldId)
         => _ = await fieldSetupService.DeleteUnusedFieldValueVariants(fieldId);
+
+    public async Task CreateTimeSlots(TimeSlotMassAddRequest request)
+        => await fieldSetupService.CreateTimeSlotVariants(new CreateTimeSlotVariantsRequest(
+            request.FieldId,
+            request.Prefix,
+            request.Date,
+            request.StartTime,
+            request.EndTime,
+            request.TimeSlotInMinutes,
+            request.BreakInMinutes,
+            TimeZoneInfo.FindSystemTimeZoneById(request.TimeZoneId)));
 }
