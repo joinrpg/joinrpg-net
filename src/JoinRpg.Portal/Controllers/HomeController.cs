@@ -16,7 +16,7 @@ public class HomeController(ProjectListManager projectListManager) : Common.Join
     public ActionResult HowToHelp() => Redirect("/about");
     public ActionResult FromAllrpgInfo() => Redirect("/about");
 
-    public ActionResult Support() => View();
+    public ActionResult Support() => RedirectPermanent("/support");
 
     public async Task<ActionResult> BrowseGames() => View(await projectListManager.LoadModel());
 
