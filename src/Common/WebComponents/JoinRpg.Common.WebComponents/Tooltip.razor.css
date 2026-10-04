@@ -1,15 +1,25 @@
 .join-tooltip-container {
-  position: relative;
-  display: inline-block; /* Чтобы кнопка и popover располагались вместе */
+  display: inline-block; /* Чтобы цель и подсказка располагались вместе */
 }
 
-/* Скрытый popover по умолчанию */
+/*
+  Подсказка живёт в top layer (атрибут popover), поэтому её не обрезают предки
+  с overflow: hidden и не перебивает чужой z-index. Координаты ставит скрипт
+  JoinRpg.Common.WebComponents.lib.module.js, поэтому inset: auto — он отменяет
+  центрирование по умолчанию, которое браузер даёт любому [popover].
+  Пока подсказка не показана, браузер держит её в display: none.
+
+  display: none в базовом правиле — это не дубль правила браузера, а защита от браузера
+  без Popover API: там атрибут popover ничего не значит, и подсказка висела бы на странице
+  всегда. Правило с :popover-open такой браузер отбрасывает целиком (псевдокласс ему
+  неизвестен), поэтому подсказки там просто не будет — вместо сломанной вёрстки.
+*/
 .join-tooltip {
-  position: absolute;
-  margin-top: 5px;
-  top: 100%; /* Расположен над кнопкой */
-  left: 50%;
-  transform: translateX(-50%);
+  display: none;
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  pointer-events: none; /* Подсказка не должна перехватывать курсор у цели */
   background-color: #000;
   border: 1px solid #ddd;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -17,7 +27,7 @@
   max-width: 300px;
   padding: 3px 8px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size:12px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.42857143;
@@ -31,15 +41,9 @@
   word-spacing: normal;
   word-wrap: normal;
   white-space: normal;
-  z-index: 10;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
   color: #fff;
 }
 
-/* Отображение popover при наведении на контейнер */
-.join-tooltip-container:hover .join-tooltip {
-  opacity: 1;
-  visibility: visible;
+.join-tooltip:popover-open {
+  display: block;
 }
