@@ -1,13 +1,10 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.DataModel.Users;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.WebPortal.Managers.Characters;
 using CharacterInfo = JoinRpg.DomainTypes.Characters.CharacterInfo;
@@ -28,7 +25,7 @@ public class CharacterApiViewServiceTests
         new(
             new FakeCharacterRepository(Mock),
             new ThrowingCharacterInfoRepository(),
-            new ThrowingUserRepository(),
+            FakeUserRepository.MustNotBeCalled("проверяемые сценарии до пользователей не доходят"),
             new ThrowingCharacterService(),
             new FakeProjectMetadataRepository(Mock.ProjectInfo),
             new FakeCurrentUserAccessor(userId));
@@ -117,22 +114,6 @@ public class CharacterApiViewServiceTests
         public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> groupIds, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
-    }
-
-    private sealed class ThrowingUserRepository : IUserRepository
-    {
-        public Task<User> GetById(int id) => throw new NotImplementedException();
-        public Task<User> WithProfile(int userId) => throw new NotImplementedException();
-        public Task<User> GetWithSubscribe(int currentUserId) => throw new NotImplementedException();
-        public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotImplementedException();
-        public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotImplementedException();
-        public Task<UserIdentification?> FindByVk(string vkId) => throw new NotImplementedException();
-        public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotImplementedException();
-        public Task<UserIdentification?> FindByEmail(string email) => throw new NotImplementedException();
     }
 
     private sealed class ThrowingCharacterService : ICharacterService
