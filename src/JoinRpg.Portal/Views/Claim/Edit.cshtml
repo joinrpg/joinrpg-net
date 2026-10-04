@@ -407,7 +407,7 @@ new { Model.CharacterId, Model.ProjectId }, null)
 
     @if (Model.Status.IsAlreadyApproved() && Model.AccommodationEnabled)
     {
-        if (Model.CanChangeRooms && Model.Status.ClaimStatus == ClaimStatusView.Approved)
+        if (Model.CanChangeRooms)
         {
             @await Html.PartialAsync("_ClaimAccommodation", Model.AccommodationModel);
         }

@@ -29,11 +29,10 @@ internal class AccommodationInviteViewService(
 
     public async Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId)
     {
-        // Список соседей — не публичные данные, поэтому доступ такой же, как у самой панели проживания
+        // Список нужен только чтобы пригласить, поэтому доступ ровно как у самого приглашения:
+        // кому операция откажет, тому и список не отдаём (#5261)
         var claim = (await claimsRepository.GetClaim(claimId))
-            .RequestAccess(currentUserAccessor.UserId,
-                Permission.CanSetPlayersAccommodations,
-                ExtraAccessReason.PlayerOrResponsible);
+            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
 
         var acceptedRequest = (await accommodationRequestRepository.GetAccommodationRequestForClaim(claimId.ClaimId))
             .FirstOrDefault(request => request.IsAccepted == InviteState.Accepted);
@@ -105,10 +104,9 @@ internal class AccommodationInviteViewService(
         ClaimIdentification claimId,
         InviteDirection direction)
     {
+        // Панель приглашений — это кнопки ответа на них, поэтому доступ как у ответа (#5261)
         var claim = (await claimsRepository.GetClaim(claimId))
-            .RequestAccess(currentUserAccessor.UserId,
-                Permission.CanSetPlayersAccommodations,
-                ExtraAccessReason.PlayerOrResponsible);
+            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
 
         var invites = direction switch
         {

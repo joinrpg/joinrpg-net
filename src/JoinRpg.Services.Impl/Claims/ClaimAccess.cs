@@ -110,16 +110,11 @@ internal static class ClaimAccess
             ClaimAccessRequirement.ManageMoney => (Permission.CanManageMoney, ExtraAccessReason.None),
             ClaimAccessRequirement.ManageClaims => (Permission.CanManageClaims, ExtraAccessReason.None),
 
-            // Единственное требование, зависящее от данных: у утверждённой заявки поселение может
-            // менять сам игрок или ответственный мастер, у неутверждённой — только обладатель права.
-            // Сравнение именно с Approved, а не с CharacterClaimInfo.IsApproved, в который входит
-            // ещё и CheckedIn: после регистрации игрок своё проживание уже не меняет — это делает
-            // мастер с правом расселять. Так работало и до ADR014, и так решено оставить.
+            // Единственное требование, зависящее от данных — от статуса заявки. Правило общее с UI,
+            // чтобы кнопки показывались ровно тем, кому операция не откажет (см. AccommodationAccess).
             ClaimAccessRequirement.AccommodationChange => (
                 Permission.CanSetPlayersAccommodations,
-                claimInfo.Status == ClaimStatus.Approved
-                    ? ExtraAccessReason.PlayerOrResponsible
-                    : ExtraAccessReason.None),
+                AccommodationAccess.GetExtraAccessReason(claimInfo.Status)),
 
             _ => throw new ArgumentOutOfRangeException(nameof(requirement), requirement, null),
         };

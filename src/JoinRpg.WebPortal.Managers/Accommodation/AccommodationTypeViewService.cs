@@ -23,10 +23,9 @@ internal class AccommodationTypeViewService(
 {
     public async Task<AccommodationTypeChoiceViewModel> GetAccommodationTypes(ClaimIdentification claimId)
     {
+        // Варианты нужны только диалогу смены типа, поэтому доступ как у самой смены (#5261)
         var claim = (await claimsRepository.GetClaim(claimId))
-            .RequestAccess(currentUserAccessor.UserId,
-                Permission.CanSetPlayersAccommodations,
-                ExtraAccessReason.PlayerOrResponsible);
+            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
 
         var request = claim.AccommodationRequest;
         var hasMasterAccess = claim.HasMasterAccess(currentUserAccessor);
