@@ -238,6 +238,50 @@ internal class FieldSetupServiceImpl(
             });
     }
 
+    public async Task CreateTimeSlotVariants(CreateTimeSlotVariantsRequest request)
+    {
+        await projectPropsService.ChangeProjectProperties(
+            request.ProjectFieldId.ProjectId,
+            Permission.CanChangeFields,
+            ProjectActiveRequirement.MustBeActive,
+            request,
+            ctx =>
+            {
+                var field = GetField(ctx.Project, ctx.Request.ProjectFieldId.ProjectFieldId);
+                if (!field.IsTimeSlot())
+                {
+                    throw new ArgumentException("Поле не является таймслотом", nameof(request)); // TODO[Localize]
+                }
+
+                var slots = TimeSlotBatch.Generate(
+                    ctx.Request.Prefix,
+                    ctx.Request.Date,
+                    ctx.Request.StartTime,
+                    ctx.Request.EndTime,
+                    ctx.Request.TimeSlotInMinutes,
+                    ctx.Request.BreakInMinutes,
+                    ctx.Request.TimeZone);
+                if (slots.Count == 0)
+                {
+                    throw new ArgumentException("В указанный промежуток не помещается ни одного таймслота", nameof(request)); // TODO[Localize]
+                }
+
+                foreach (var slot in slots)
+                {
+                    _ = CreateFieldValueVariantImpl(ctx, new CreateFieldValueVariantRequest(
+                            ctx.Request.ProjectFieldId,
+                            slot.Label,
+                            description: null,
+                            masterDescription: null,
+                            programmaticValue: null,
+                            price: 0,
+                            field.CanPlayerEdit,
+                            slot.Options),
+                        field);
+                }
+            });
+    }
+
     public async Task<IReadOnlyList<ProjectFieldIdentification>> MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId)
     {
         return await projectPropsService.ChangeProjectProperties(
