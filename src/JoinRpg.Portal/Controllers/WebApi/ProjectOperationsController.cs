@@ -53,4 +53,18 @@ public class ProjectOperationsController(IProjectSettingsClient client) : Contro
         await client.SaveClaimSettings(model);
         return Ok();
     }
+
+    [HttpGet]
+    public async Task<ActionResult<ProjectTimeZoneSettingsViewModel>> GetTimeZoneSettings(ProjectIdentification projectId)
+        => Ok(await client.GetTimeZoneSettings(projectId));
+
+    [HttpPost]
+    public async Task<ActionResult> SaveTimeZoneSettings(
+        ProjectIdentification projectId,
+        ProjectTimeZoneSettingsViewModel model)
+    {
+        model.ProjectId = projectId;
+        await client.SaveTimeZoneSettings(model);
+        return Ok();
+    }
 }

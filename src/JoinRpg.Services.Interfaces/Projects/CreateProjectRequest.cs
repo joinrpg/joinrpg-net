@@ -18,8 +18,14 @@ public record CreateProjectRequest
     public KogdaIgraIdentification? KogdaIgraGameId { get; }
     public string? MessageForKogdaIgraEditors { get; }
 
+    /// <summary>
+    /// Часовой пояс нового проекта; <c>null</c> — по умолчанию (Europe/Moscow).
+    /// При клонировании не задаётся: пояс копируется из исходного проекта.
+    /// </summary>
+    public TimeZoneInfo? TimeZone { get; private init; }
+
     public static CreateProjectRequest Create(ProjectName ProjectName, ProjectTypeDto ProjectType, ProjectIdentification? CopyFromId, ProjectCopySettingsDto CopySettings,
-        KogdaIgraLinkChoiceDto KogdaIgraChoice, KogdaIgraIdentification? KogdaIgraGameId, string? MessageForKogdaIgraEditors)
+        KogdaIgraLinkChoiceDto KogdaIgraChoice, KogdaIgraIdentification? KogdaIgraGameId, string? MessageForKogdaIgraEditors, TimeZoneInfo? TimeZone = null)
     {
         if (CopyFromId is not null && ProjectType == ProjectTypeDto.CopyFromAnother)
         {
@@ -27,7 +33,7 @@ public record CreateProjectRequest
         }
         if (ProjectType != ProjectTypeDto.CopyFromAnother)
         {
-            return new CreateProjectRequest(ProjectName, ProjectType, KogdaIgraChoice, KogdaIgraGameId, MessageForKogdaIgraEditors);
+            return new CreateProjectRequest(ProjectName, ProjectType, KogdaIgraChoice, KogdaIgraGameId, MessageForKogdaIgraEditors) { TimeZone = TimeZone };
         }
         throw new ArgumentException("Incorrect combination of parameters");
     }

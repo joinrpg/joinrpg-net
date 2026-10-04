@@ -25,6 +25,10 @@ public class ProjectCreateViewModel
     [Display(Name = "Глубина копирования")]
     public ProjectCopySettingsViewModel CopySettings { get; set; } = default;
 
+    [Display(Name = "Часовой пояс проекта",
+        Description = "В этом часовом поясе показываются время и даты игры (расписание и т. п.)")]
+    public string? TimeZoneId { get; set; } = "Europe/Moscow";
+
     [Required]
     [Display(Name = "Есть ли это мероприятие на КогдаИгре?")]
     public KogdaIgraLinkChoiceViewModel KogdaIgraChoice { get; set; }

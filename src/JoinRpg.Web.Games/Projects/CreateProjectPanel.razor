@@ -54,6 +54,10 @@
                 <FormRowFor For="@(() => Model.CopySettings)" hidden="@(Model.ProjectType != ProjectTypeViewModel.CopyFromAnother)">
                     <EnumRadioButtonGroup @bind-SelectedValue="Model.CopySettings" />
                 </FormRowFor>
+                @* При клонировании часовой пояс копируется из исходного проекта *@
+                <FormRowFor For="@(() => Model.TimeZoneId)" hidden="@(Model.ProjectType == ProjectTypeViewModel.CopyFromAnother)">
+                    <TimeZoneSelector @bind-Value="Model.TimeZoneId" />
+                </FormRowFor>
                 <FormRowFor For="@(() => Model.KogdaIgraChoice)">
                     <EnumRadioButtonGroup @bind-SelectedValue="Model.KogdaIgraChoice" />
                     <JoinAlert Variation="VariationStyleEnum.Info"><a href="https://kogda-igra.ru/" target="_blank" rel="noopener">kogda-igra.ru</a> — календарь ролевых игр от нашей команды.</JoinAlert>
@@ -132,6 +136,10 @@
             {
                 messageStore?.Add(() => Model.CopyFromProjectId!, "Необходимо выбрать проект, откуда копировать");
             }
+        }
+        else if (string.IsNullOrWhiteSpace(Model.TimeZoneId))
+        {
+            messageStore?.Add(() => Model.TimeZoneId!, "Выберите часовой пояс");
         }
 
         if (Model.KogdaIgraChoice == KogdaIgraLinkChoiceViewModel.Linked && Model.KogdaIgraGameId is null)

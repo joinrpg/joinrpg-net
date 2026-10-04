@@ -92,6 +92,12 @@ internal partial class CreateProjectService
                 default:
                     throw new ArgumentOutOfRangeException(nameof(request.ProjectType));
             }
+
+            // После шаблона: ошибка с поясом не должна оставить проект без настроек типа.
+            if (request.TimeZone is { } timeZone)
+            {
+                await projectService.SetTimeZone(projectId, timeZone);
+            }
         }
         catch (Exception ex)
         {

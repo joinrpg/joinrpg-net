@@ -8,4 +8,6 @@ public interface IProjectSettingsClient
     Task<ProjectContactsSettingsViewModel> GetContactSettings(ProjectIdentification projectId);
     Task SaveClaimSettings(ProjectClaimSettingsViewModel model);
     Task<ProjectClaimSettingsViewModel> GetClaimSettings(ProjectIdentification projectId);
+    Task SaveTimeZoneSettings(ProjectTimeZoneSettingsViewModel model);
+    Task<ProjectTimeZoneSettingsViewModel> GetTimeZoneSettings(ProjectIdentification projectId);
 }

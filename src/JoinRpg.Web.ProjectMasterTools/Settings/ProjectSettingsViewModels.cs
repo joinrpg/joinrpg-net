@@ -66,3 +66,14 @@ public class ProjectClaimSettingsViewModel
         "Если эта опция включена, при принятии заявки какого-то игрока на одну роль все другие заявки этого игрока будут автоматически отклонены.")]
     public required bool StrictlyOneCharacter { get; set; }
 }
+
+public class ProjectTimeZoneSettingsViewModel
+{
+    public required ProjectIdentification ProjectId { get; set; }
+    public required ProjectLifecycleStatus ProjectStatus { get; init; }
+
+    [Display(Name = "Часовой пояс проекта",
+        Description = "В этом часовом поясе показываются время и даты игры (расписание и т. п.)")]
+    [Required(ErrorMessage = "Выберите часовой пояс")]
+    public required string? TimeZoneId { get; set; }
+}
