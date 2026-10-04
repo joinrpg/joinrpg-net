@@ -53,7 +53,7 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
         var receiver = CreateClaim("Приглашаемый");
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         Notification().Kind.ShouldBe(InviteChangeKind.Accepted);
         RecipientClaimIds().ShouldBe([sender.ClaimId]);
@@ -68,7 +68,7 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
         var receiver = CreateClaim("Приглашаемый");
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService().CancelOrDeclineAccommodationInvite(InviteId(invite), InviteState.Canceled);
+        await CreateService().CancelAccommodationInvite(InviteId(invite));
 
         Notification().Kind.ShouldBe(InviteChangeKind.Cancelled);
         RecipientClaimIds().ShouldBe([sender.ClaimId, receiver.ClaimId], ignoreOrder: true);
@@ -76,32 +76,23 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
     }
 
     [Fact]
-    public async Task DeclineAllClaimInvites_NotifiesOtherSidesOnly()
+    public async Task DeclineInvite_NotifiesBothSides()
     {
-        // Заявка отозвана — её собственные приглашения снимаются. Самой заявке писать незачем:
-        // операция случилась с ней, а не с ней в качестве адресата.
-        var declined = CreateClaimWithAccommodation("Отзываемая");
-        var invited = CreateClaim("Приглашённый ею");
-        var inviting = CreateClaim("Пригласивший её");
-        _ = mock.CreateAccommodationInvite(declined, invited);
-        _ = mock.CreateAccommodationInvite(inviting, declined);
+        // Отказ уведомляет так же, как отзыв: тело у обеих операций общее, но различие корней
+        // делает их разными операциями, поэтому проверяется каждая.
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        await CreateService().DeclineAllClaimInvites(declined.GetId());
+        await CreateService().DeclineAccommodationInvite(InviteId(invite));
 
         Notification().Kind.ShouldBe(InviteChangeKind.Cancelled);
-        RecipientClaimIds().ShouldBe([invited.ClaimId, inviting.ClaimId], ignoreOrder: true);
-        RecipientClaimIds().ShouldNotContain(declined.ClaimId);
+        RecipientClaimIds().ShouldBe([sender.ClaimId, receiver.ClaimId], ignoreOrder: true);
         NotificationWentAfterSave();
     }
 
-    [Fact]
-    public async Task DeclineAllClaimInvites_NoInvites_NothingSent()
-    {
-        // Приглашений не было — уведомлять некого, и пустое уведомление ставить не надо.
-        var claim = CreateClaimWithAccommodation("Отзываемая");
-
-        await CreateService().DeclineAllClaimInvites(claim.GetId());
-
-        notificationService.Invites.ShouldBeEmpty();
-    }
+    // Снятие всех приглашений заявки больше не живёт в этом сервисе: его делает claim-контур
+    // (приватный ClaimServiceImpl.DeclineAllClaimInvites поверх ctx.LoadInvitesForClaim), и покрыт
+    // он там же — DeclineByMaster_WithInvites_*, DeclineByPlayer_WithInvites_DeclinesThem,
+    // DeclineByMaster_WithoutInvites_SendsNoInviteNotification в ClaimServiceImplTest.
 }

@@ -7,14 +7,14 @@ using JoinRpg.DomainTypes.ProjectMetadata;
 namespace JoinRpg.Services.Impl.Test.Accommodation;
 
 /// <summary>
-/// Характеризующие тесты контура приглашений к совместному проживанию: что
-/// <c>AccommodationInviteServiceImpl</c> делает СЕГОДНЯ — вместе с его дефектами.
+/// Поведение контура приглашений к совместному проживанию: создание, приём, отказ и отзыв —
+/// вместе с отказами по правам, по состоянию приглашения и по нехватке мест.
 /// </summary>
 /// <remarks>
-/// Тесты написаны перед переводом сервиса на <c>ICharacterPropsService</c> (ADR014) и нужны
-/// затем, чтобы диффом было видно: поведение сохранилось либо изменилось осознанно. Там, где
-/// зафиксирован дефект, стоит комментарий, что с ним станет после миграции.
-/// Уведомления проверяет соседний <see cref="AccommodationInviteNotificationTest"/>.
+/// Тесты заведены характеризующими — до перевода сервиса на <c>ICharacterPropsService</c>
+/// (ADR014), — чтобы миграцию было видно диффом: каждый тест, который при переезде изменился,
+/// описывает в <c>remarks</c>, как операция вела себя раньше. Уведомления проверяет соседний
+/// <see cref="AccommodationInviteNotificationTest"/>.
 /// </remarks>
 public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
 {
@@ -306,7 +306,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         _ = mock.CreateAccommodationRequest(accommodationType, receiver, neighbour);
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         sender.AccommodationRequest!.Subjects
             .Select(claim => claim.ClaimId)
@@ -333,7 +333,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         var receiverRequest = mock.CreateAccommodationRequest(accommodationType, receiver);
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         mock.AccommodationRequests.ShouldNotContain(receiverRequest);
         mock.AccommodationRequests.ShouldHaveSingleItem().ShouldBe(sender.AccommodationRequest);
@@ -347,9 +347,8 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         var receiver = CreateClaim("Приглашаемый");
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        var result = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
-        result.ShouldBe(invite);
         invite.IsAccepted.ShouldBe(InviteState.Accepted);
         invite.ResolveDescription.ShouldBe(ResolveDescription.Accepted);
     }
@@ -380,7 +379,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         // Исходящее приглашение соседа
         var outgoingFromNeighbour = mock.CreateAccommodationInvite(neighbour, outsiderTarget);
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         // Сосед переехал вместе с принявшим — его входящее приглашение снято
         incomingToNeighbour.IsAccepted.ShouldBe(InviteState.Declined);
@@ -472,7 +471,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         _ = mock.CreateAccommodationRequest(accommodationType, receiver, firstNeighbour, secondNeighbour);
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         SaveChangesCallCount.ShouldBe(1);
     }
@@ -487,7 +486,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         var receiver = CreateClaim("Приглашаемый");
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
@@ -538,7 +537,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         var receiver = CreateClaim("Приглашаемый");
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         receiver.AccommodationRequest.ShouldBe(senderGroup);
         senderGroup.Accommodation.ShouldBe(room);
@@ -560,7 +559,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         _ = mock.CreateRoom(receiverGroup, "Комната приглашаемого");
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         mock.AccommodationRequests.ShouldNotContain(receiverGroup);
         receiver.AccommodationRequest.ShouldBe(sender.AccommodationRequest);
@@ -576,7 +575,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         var receiver = CreateClaim("Приглашаемый");
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        _ = await CreateService(mock.Player.UserId).AcceptAccommodationInvite(InviteId(invite));
+        await CreateService(mock.Player.UserId).AcceptAccommodationInvite(InviteId(invite));
 
         invite.IsAccepted.ShouldBe(InviteState.Accepted);
         receiver.AccommodationRequest.ShouldBe(sender.AccommodationRequest);
@@ -595,7 +594,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         var invite = mock.CreateAccommodationInvite(sender, receiver);
         var senderGroup = sender.AccommodationRequest;
 
-        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
             () => CreateService().AcceptAccommodationInvite(InviteId(invite)));
@@ -696,77 +695,114 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
 
     #endregion
 
-    #region CancelOrDeclineAccommodationInvite
+    #region DeclineAccommodationInvite / CancelAccommodationInvite
 
-    /// <summary>Пункт 12: отклонение приглашения приглашённым.</summary>
+    /// <summary>Приглашённый отказывается от приглашения.</summary>
     [Fact]
     public async Task DeclineInvite_MarksInviteDeclined()
     {
         var invite = CreateInviteBetweenNewClaims();
 
-        var result = await CreateService().CancelOrDeclineAccommodationInvite(
-            InviteId(invite), InviteState.Declined);
+        await CreateService().DeclineAccommodationInvite(InviteId(invite));
 
-        result.ShouldBe(invite);
         invite.IsAccepted.ShouldBe(InviteState.Declined);
         invite.ResolveDescription.ShouldBe(ResolveDescription.Declined);
-        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+        SaveChangesCallCount.ShouldBe(1);
     }
 
-    /// <summary>Пункт 12: отзыв приглашения приглашающим.</summary>
+    /// <summary>Приглашающий отзывает отправленное приглашение.</summary>
     [Fact]
     public async Task CancelInvite_MarksInviteCanceled()
     {
         var invite = CreateInviteBetweenNewClaims();
 
-        var result = await CreateService().CancelOrDeclineAccommodationInvite(
-            InviteId(invite), InviteState.Canceled);
+        await CreateService().CancelAccommodationInvite(InviteId(invite));
 
-        result.ShouldBe(invite);
         invite.IsAccepted.ShouldBe(InviteState.Canceled);
         invite.ResolveDescription.ShouldBe(ResolveDescription.Canceled);
-        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+        SaveChangesCallCount.ShouldBe(1);
     }
 
     /// <summary>
-    /// Пункт 13: операция умеет только отклонить и отозвать. Прочие состояния — молчаливый
-    /// <c>null</c>, без изменений и без сохранения.
+    /// У отказа и отзыва разные корни, и это видно по правам: <c>AccommodationChange</c> пускает
+    /// игрока к <b>утверждённой</b> заявке, но не к неутверждённой. Игрок, которому принадлежат
+    /// обе заявки, отзывает своё приглашение (его заявка утверждена) и не может отказаться за
+    /// приглашённого, чья заявка ещё не утверждена.
     /// </summary>
-    [Theory]
-    [InlineData(InviteState.Unanswered)]
-    [InlineData(InviteState.Accepted)]
-    public async Task CancelOrDeclineInvite_UnsupportedState_ReturnsNull(InviteState newState)
+    /// <remarks>
+    /// До миграции отказ и отзыв были одним методом с параметром <c>InviteState</c>, то есть у
+    /// обеих операций был один корень — хотя делают их разные люди.
+    /// </remarks>
+    [Fact]
+    public async Task DeclineAndCancel_UseDifferentRoots()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий, заявка утверждена");
+        var receiver = mock.CreateClaim(mock.CreateCharacter("Приглашаемый"), mock.Player);
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).DeclineAccommodationInvite(InviteId(invite)));
+
+        invite.IsAccepted.ShouldBe(InviteState.Unanswered);
+
+        await CreateService(mock.Player.UserId).CancelAccommodationInvite(InviteId(invite));
+
+        invite.IsAccepted.ShouldBe(InviteState.Canceled);
+    }
+
+    /// <summary>
+    /// Отказаться или отозвать может только сторона приглашения или мастер с правом расселять.
+    /// </summary>
+    /// <remarks>
+    /// До миграции проверки прав здесь не было вовсе: зная идентификатор приглашения, его мог
+    /// отклонить любой аутентифицированный пользователь.
+    /// </remarks>
+    [Fact]
+    public async Task DeclineAndCancelInvite_ByUnrelatedUser_Throws()
     {
         var invite = CreateInviteBetweenNewClaims();
 
-        var result = await CreateService().CancelOrDeclineAccommodationInvite(InviteId(invite), newState);
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(StrangerUserId).DeclineAccommodationInvite(InviteId(invite)));
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(StrangerUserId).CancelAccommodationInvite(InviteId(invite)));
 
-        result.ShouldBeNull();
         invite.IsAccepted.ShouldBe(InviteState.Unanswered);
-        invite.ResolveDescription.ShouldBe(ResolveDescription.Unspecified);
-        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        SaveChangesCallCount.ShouldBe(0);
         notificationService.Invites.ShouldBeEmpty();
     }
 
     /// <summary>
-    /// Пункт 14: приглашения с таким идентификатором нет — летит нетипизированное
-    /// <see cref="Exception"/> с английским текстом.
+    /// На приглашение уже ответили — второй ответ отклоняется. Раньше состояние не проверялось, и
+    /// повторный отказ переписывал уже принятое приглашение.
     /// </summary>
-    /// <remarks>
-    /// Сейчас так; после миграции на ADR014 это станет внятной ошибкой домена, и тест
-    /// обновится вместе с ней. В <c>AcceptAccommodationInvite</c> тот же промах по
-    /// идентификатору даёт <see cref="NullReferenceException"/> — см. соседний тест.
-    /// </remarks>
     [Fact]
-    public async Task CancelOrDeclineInvite_UnknownInvite_Throws()
+    public async Task DeclineInvite_AlreadyAnswered_Throws()
+    {
+        var invite = CreateInviteBetweenNewClaims();
+        await CreateService().DeclineAccommodationInvite(InviteId(invite));
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CancelAccommodationInvite(InviteId(invite)));
+
+        exception.Message.ShouldContain("уже ответили");
+        invite.IsAccepted.ShouldBe(InviteState.Declined);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Приглашения с таким идентификатором нет. До миграции летело нетипизированное
+    /// <see cref="Exception"/> с английским текстом «Invite request not found.».
+    /// </summary>
+    [Fact]
+    public async Task DeclineInvite_UnknownInvite_Throws()
     {
         var unknownInviteId = new AccommodationInviteIdentification(mock.ProjectInfo.ProjectId, 100500);
 
-        var exception = await Should.ThrowAsync<Exception>(
-            () => CreateService().CancelOrDeclineAccommodationInvite(unknownInviteId, InviteState.Declined));
+        _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
+            () => CreateService().DeclineAccommodationInvite(unknownInviteId));
 
-        exception.Message.ShouldBe("Invite request not found.");
-        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     /// <summary>
@@ -785,25 +821,20 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         SaveChangesCallCount.ShouldBe(0);
     }
 
-    /// <summary>
-    /// Пункт 15: отклонить или отозвать приглашение сегодня может ЛЮБОЙ пользователь —
-    /// проверки прав в <c>CancelOrDeclineAccommodationInvite</c> нет.
-    /// </summary>
-    /// <remarks>
-    /// IDOR, закрывается в PR 3 стека — там операция разделится на отклонение и отзыв, у каждого
-    /// появится своё <c>ClaimAccessRequirement.AccommodationChange</c>, и тест превратится
-    /// в проверку отказа.
-    /// </remarks>
+    /// <summary>В архивном проекте отказ и отзыв запрещены, как и остальное проживание.</summary>
     [Fact]
-    public async Task CancelOrDeclineInvite_ByUnrelatedUser_StillChangesInvite()
+    public async Task DeclineAndCancelInvite_InArchivedProject_Throw()
     {
         var invite = CreateInviteBetweenNewClaims();
+        ArchiveProject();
 
-        var result = await CreateService(StrangerUserId).CancelOrDeclineAccommodationInvite(
-            InviteId(invite), InviteState.Canceled);
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => CreateService().DeclineAccommodationInvite(InviteId(invite)));
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => CreateService().CancelAccommodationInvite(InviteId(invite)));
 
-        result.ShouldBe(invite);
-        invite.IsAccepted.ShouldBe(InviteState.Canceled);
+        invite.IsAccepted.ShouldBe(InviteState.Unanswered);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     #endregion

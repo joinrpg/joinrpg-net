@@ -1,5 +1,3 @@
-using System.Data.Entity;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Interfaces;
@@ -11,31 +9,15 @@ using JoinRpg.Services.Impl.Projects;
 
 namespace JoinRpg.Services.Impl;
 
-/// <remarks>
-/// Миграция на <c>ICharacterPropsService</c> (ADR014) идёт по одной операции: на props-сервис
-/// переведено создание приглашения, остальные три метода ещё ходят в
-/// <c>UnitOfWork.GetDbSet&lt;T&gt;()</c> через <c>[Obsolete] DbServiceImplBase</c>.
-/// </remarks>
-internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
+/// <summary>
+/// Приглашения к совместному проживанию. Каждая операция — мутация агрегата заявки действующей
+/// стороны (ADR014): приглашение живёт на группе проживающих, а группа принадлежит заявке
+/// (ADR018, §4).
+/// </summary>
+internal class AccommodationInviteServiceImpl(
+    ICharacterPropsService characterPropsService,
+    IAccommodationInviteRepository inviteRepository) : IAccommodationInviteService
 {
-    private readonly ICharacterPropsService characterPropsService;
-    private readonly IAccommodationInviteRepository inviteRepository;
-
-    public AccommodationInviteServiceImpl(
-        IUnitOfWork unitOfWork,
-        IAccommodationNotificationService notificationService,
-        ICharacterPropsService characterPropsService,
-        IAccommodationInviteRepository inviteRepository,
-        ICurrentUserAccessor currentUserAccessor) :
-        base(unitOfWork, currentUserAccessor)
-    {
-        NotificationService = notificationService;
-        this.characterPropsService = characterPropsService;
-        this.inviteRepository = inviteRepository;
-    }
-
-    private IAccommodationNotificationService NotificationService { get; }
-
     /// <inheritdoc />
     public Task CreateAccommodationInvite(
         ClaimIdentification senderClaimId,
@@ -198,24 +180,14 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
         }
     }
 
-    /// <summary>
-    /// Ставит уведомление о приглашении подписчикам перечисленных заявок. Инициатор берётся из
-    /// текущего запроса — сущность пользователя из базы для этого не нужна.
-    /// </summary>
-    private Task NotifyAboutInvite(Claim[] recipients, InviteChangeKind kind)
-        => NotificationService.SendNotification(new AccommodationInviteNotification(
-            [.. recipients.Select(claim => claim.GetId())],
-            currentUserAccessor.ToUserInfoHeader(),
-            kind));
-
     /// <inheritdoc />
-    public async Task<AccommodationInvite?> AcceptAccommodationInvite(AccommodationInviteIdentification inviteId)
+    public async Task AcceptAccommodationInvite(AccommodationInviteIdentification inviteId)
     {
         // Стороны нужны до начала мутации: корень операции — заявка принимающего, и узнать её
         // можно только по приглашению. Само приглашение внутри перечитывается трекаемым.
         var participants = await inviteRepository.GetInviteParticipants(inviteId);
 
-        return await characterPropsService.ChangeClaimAsync<AccommodationInviteIdentification, AccommodationInvite?>(
+        await characterPropsService.ChangeClaimAsync(
             participants.Receiver,
             ClaimAccessRequirement.AccommodationChange,
             ProjectActiveRequirement.MustBeActive,
@@ -298,8 +270,6 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
                     [participants.Sender],
                     ctx.CurrentUser.ToUserInfoHeader(),
                     InviteChangeKind.Accepted));
-
-                return invite;
             });
     }
 
@@ -355,84 +325,60 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
         }
     }
 
-    public async Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(
+    /// <inheritdoc />
+    public Task DeclineAccommodationInvite(AccommodationInviteIdentification inviteId)
+        // Отказывается приглашённый — значит корень операции его заявка.
+        => ResolveInvite(inviteId, byReceiver: true, InviteState.Declined, ResolveDescription.Declined);
+
+    /// <inheritdoc />
+    public Task CancelAccommodationInvite(AccommodationInviteIdentification inviteId)
+        // Отзывает приглашающий — корень операции его заявка.
+        => ResolveInvite(inviteId, byReceiver: false, InviteState.Canceled, ResolveDescription.Canceled);
+
+    /// <summary>
+    /// Общее тело отказа и отзыва: меняется только сторона, чья заявка становится корнем операции,
+    /// и то, в какое состояние уходит приглашение.
+    /// </summary>
+    /// <remarks>
+    /// До миграции это был один метод с параметром <c>InviteState</c>, и из-за этого у обеих
+    /// операций был один корень и одна проверка доступа — хотя отказ и отзыв делают разные люди.
+    /// Неподдерживаемое состояние он принимал молча (<c>return null</c>); теперь такого параметра
+    /// нет вовсе.
+    /// </remarks>
+    private async Task ResolveInvite(
         AccommodationInviteIdentification inviteId,
-        InviteState newState)
+        bool byReceiver,
+        InviteState newState,
+        ResolveDescription resolveDescription)
     {
-        var acceptedStates = new[]
-        {
-            InviteState.Declined, InviteState.Canceled,
-        };
+        var participants = await inviteRepository.GetInviteParticipants(inviteId);
 
-        if (!acceptedStates.Contains(newState))
-        {
-            return null;
-        }
+        await characterPropsService.ChangeClaimAsync(
+            byReceiver ? participants.Receiver : participants.Sender,
+            ClaimAccessRequirement.AccommodationChange,
+            ProjectActiveRequirement.MustBeActive,
+            inviteId,
+            async ctx =>
+            {
+                var invite = await ctx.LoadInvite(inviteId);
 
-        //todo: make null result descriptive
-        var inviteRequest = await UnitOfWork.GetDbSet<AccommodationInvite>()
-            .Where(invite => invite.Id == inviteId.AccommodationInviteId)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
+                // Отвечать можно только на неотвеченное — как и при приёме. Раньше состояние не
+                // проверялось, и повторный отказ переписывал уже принятое приглашение.
+                if (invite.IsAccepted != InviteState.Unanswered)
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(inviteId.ProjectId,
+                        "На это приглашение уже ответили.");
+                }
 
-        if (inviteRequest == null)
-        {
-            throw new Exception("Invite request not found.");
-        }
+                invite.IsAccepted = newState;
+                invite.ResolveDescription = resolveDescription;
 
-        inviteRequest.IsAccepted = newState;
-        inviteRequest.ResolveDescription = newState == InviteState.Canceled
-            ? ResolveDescription.Canceled
-            : ResolveDescription.Declined;
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
-        var receivers = await UnitOfWork
-            .GetDbSet<Claim>()
-            .Where(claim =>
-                claim.ClaimId == inviteRequest.FromClaimId ||
-                claim.ClaimId == inviteRequest.ToClaimId)
-            .ToArrayAsync()
-            .ConfigureAwait(false);
-
-        await NotifyAboutInvite(receivers, InviteChangeKind.Cancelled)
-            .ConfigureAwait(false);
-
-        return inviteRequest;
-    }
-
-    public async Task DeclineAllClaimInvites(ClaimIdentification claimId)
-    {
-        var inviteRequests = await UnitOfWork.GetDbSet<AccommodationInvite>()
-            .Where(invite => invite.ToClaimId == claimId.ClaimId || invite.FromClaimId == claimId.ClaimId)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        if (inviteRequests.Count == 0)
-        {
-            return;
-        }
-
-        var claims = new List<int>();
-        foreach (var accommodationInvite in inviteRequests)
-        {
-            claims.Add(accommodationInvite.FromClaimId);
-            claims.Add(accommodationInvite.ToClaimId);
-            accommodationInvite.IsAccepted = InviteState.Declined;
-            accommodationInvite.ResolveDescription = ResolveDescription.ClaimCanceled;
-        }
-
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
-        claims = claims.Distinct().ToList();
-        _ = claims.Remove(claimId.ClaimId);
-
-        var receivers = await UnitOfWork
-            .GetDbSet<Claim>()
-            .Where(claim => claims.Contains(claim.ClaimId))
-            .ToArrayAsync()
-            .ConfigureAwait(false);
-
-        // Проект больше не читаем: название уведомление возьмёт из метаданных по заявкам получателей.
-        await NotifyAboutInvite(receivers, InviteChangeKind.Cancelled)
-            .ConfigureAwait(false);
+                // Уведомление уходит обеим сторонам, как и до миграции.
+                ctx.AddInviteNotification(new AccommodationInviteNotification(
+                    [participants.Sender, participants.Receiver],
+                    ctx.CurrentUser.ToUserInfoHeader(),
+                    InviteChangeKind.Cancelled));
+            });
     }
 }

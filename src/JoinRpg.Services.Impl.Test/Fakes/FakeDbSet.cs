@@ -11,7 +11,7 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 /// </summary>
 /// <remarks>
 /// Нужен там, где проверяемый сервис ещё не переехал на write-репозитории (ADR009/ADR014) и ходит
-/// в <c>UnitOfWork.GetDbSet</c> напрямую — например <c>AccommodationInviteServiceImpl</c>. Поэтому
+/// в <c>UnitOfWork.GetDbSet</c> напрямую. Поэтому
 /// набор подключается к <see cref="FakeUnitOfWork"/> поштучно и явно
 /// (<see cref="FakeUnitOfWork.UseDbSet{T}"/>): у сервисов, которые в DbSet лазить не должны,
 /// <c>GetDbSet</c> обязан по-прежнему падать.
