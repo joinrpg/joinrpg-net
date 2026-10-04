@@ -160,17 +160,7 @@ public class FieldValueViewModel
 
         ProjectId = ch.Field.Id.ProjectId;
 
-        // Пользователь, которого нет в словаре, удалён (или id в значении — мусор):
-        // ссылки не будет, но запись поля из-за этого не пропадает.
-        // Здесь нельзя collection expression ([.. ...]): для IReadOnlyList<T> компилятор создаёт
-        // внутренний тип <>z__ReadOnlyList<T> в этой сборке, а список уезжает параметром
-        // InitialUsers в WASM-остров JoinUserLinkEditor. Параметры острова сериализуются вместе с
-        // именем рантайм-типа, и клиент такой тип найти не может — остров падает на старте
-        // («could not be found»), страница заявки ломается.
-        UserLinks = ch.UserIds.Select(userId =>
-            users.TryGetValue(userId, out var user)
-                ? new UserLinkViewModel(user)
-                : UserLinkViewModel.Deleted).ToList();
+        UserLinks = users.GetUserLinks(ch);
 
         SetFieldLabels(ch);
 

@@ -9,6 +9,7 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;
@@ -73,8 +74,9 @@ public class CharacterListController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var characters = (await characterInfoRepository.GetAllCharacterInfos(projectId, spec)).Where(predicate).ToList();
         var players = await LoadPlayers(characters);
+        var fieldUsers = await userRepository.LoadFieldUserLinks(characters);
 
-        var list = new CharacterListViewModel(currentUserAccessor.UserIdentification, title, characters, players, projectInfo, problemValidator);
+        var list = new CharacterListViewModel(currentUserAccessor.UserIdentification, title, characters, players, fieldUsers, projectInfo, problemValidator);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -101,9 +103,10 @@ public class CharacterListController(
         var groupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(characterGroupIdentification).ToList();
         var characters = await characterInfoRepository.GetCharacterInfosByGroups(projectId, groupIds, CharacterStatusSpec.Active);
         var players = await LoadPlayers(characters);
+        var fieldUsers = await userRepository.LoadFieldUserLinks(characters);
 
         var list = new CharacterListByGroupViewModel(currentUserAccessor.UserIdentification,
-          characters, players, characterGroup, projectInfo, problemValidator);
+          characters, players, fieldUsers, characterGroup, projectInfo, problemValidator);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 

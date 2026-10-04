@@ -1,4 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -54,6 +55,26 @@ public static class FieldUserLinksLoader
         // ронять весь экран, вместо ссылки покажем «пользователь удалён».
         return (await userRepository.GetUserInfoHeaders(userIds)).ToDictionary(user => user.UserId);
     }
+
+    /// <summary>
+    /// Ссылки на пользователей из значения поля — по словарю, загруженному на весь экран.
+    /// </summary>
+    /// <remarks>
+    /// Пользователь, которого нет в словаре, удалён (или id в значении — мусор):
+    /// ссылки не будет, но запись поля из-за этого не пропадает.
+    /// Здесь нельзя collection expression ([.. ...]): для IReadOnlyList<T> компилятор создаёт
+    /// внутренний тип &lt;&gt;z__ReadOnlyList&lt;T&gt; в этой сборке, а список уезжает параметром
+    /// InitialUsers в WASM-остров JoinUserLinkEditor. Параметры острова сериализуются вместе с
+    /// именем рантайм-типа, и клиент такой тип найти не может — остров падает на старте
+    /// («could not be found»), страница заявки ломается.
+    /// </remarks>
+    public static IReadOnlyList<UserLinkViewModel> GetUserLinks(
+        this IReadOnlyDictionary<UserIdentification, UserInfoHeader> users,
+        FieldWithValue field)
+        => field.UserIds.Select(userId =>
+            users.TryGetValue(userId, out var user)
+                ? new UserLinkViewModel(user)
+                : UserLinkViewModel.Deleted).ToList();
 
     /// <remarks>
     /// Значение из формы накладывается на новый <see cref="FieldWithValue"/>, а не на переданный:
