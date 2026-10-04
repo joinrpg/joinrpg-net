@@ -7,6 +7,12 @@ namespace JoinRpg.Web.ProjectMasterTools.Fields;
 /// </summary>
 public class TimeSlotMassAddFormModel : IValidatableObject
 {
+    /// <summary>
+    /// Границы игрового дня, подставляемые в форму по умолчанию
+    /// </summary>
+    public static readonly TimeOnly DefaultStartTime = new(10, 0);
+    public static readonly TimeOnly DefaultEndTime = new(22, 0);
+
     [Display(Name = "Префикс", Description = "Добавляется перед временем в названии значения, например «Зал 1 10:00–10:50»")]
     public string Prefix { get; set; } = "";
 

@@ -18,7 +18,6 @@ public class TimeSlotMassAddTest : BunitContext
         new ProjectFieldIdentification(new ProjectIdentification(1), 2),
         "Europe/Moscow",
         new DateOnly(2026, 7, 10),
-        new TimeOnly(10, 0),
         50);
 
     private static TimeSlotMassAddFormModel ValidForm() => new()
@@ -95,6 +94,9 @@ public class TimeSlotMassAddTest : BunitContext
         var cut = Render<TimeSlotMassAddButton>(p => p.Add(x => x.Model, Model));
 
         cut.Markup.ShouldContain("Добавить много значений");
+        cut.Find("input[name=StartTime]").GetAttribute("value").ShouldBe("10:00");
+        cut.Find("input[name=EndTime]").GetAttribute("value").ShouldBe("22:00");
+        cut.Find("input[type=date]").GetAttribute("value").ShouldBe("2026-07-10");
     }
 
     private class NotUsedClient : IProjectFieldOperationsClient
