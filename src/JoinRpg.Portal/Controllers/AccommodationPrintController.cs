@@ -1,6 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
@@ -42,9 +40,9 @@ public class AccommodationPrintController(
                 ClaimId = row.ClaimId,
                 AccomodationType = row.AccomodationType,
                 RoomName = row.RoomName,
-                DisplayName = row.User.GetDisplayName(),
-                FullName = row.User.FullName,
-                Phone = row.User.Extra?.PhoneNumber,
+                DisplayName = row.PlayerName.DisplayName,
+                FullName = row.PlayerName.FullName,
+                Phone = row.Phone?.Value,
             });
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);

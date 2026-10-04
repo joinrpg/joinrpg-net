@@ -9,7 +9,7 @@ public class AccomodationReportListItemViewModel : ILinkable
     public string DisplayName { get; set; }
 
     [Display(Name = "ФИО")]
-    public string FullName { get; set; }
+    public string? FullName { get; set; }
 
     public int ClaimId { get; set; }
 

@@ -18,13 +18,16 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
     public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
         GetClaimAccommodationReport(int project)
     {
-        return await ctx.Set<Claim>().AsExpandable().Include(claim => claim.Player.Extra)
+        // Игрок приезжает разобранным на части: отображаемое имя и телефон. Сущность User в DTO
+        // означала бы доступ к любым её навигациям из контроллера и ленивые загрузки (ADR013).
+        // Образец плоской проекции имени — CharacterInfoLoader.
+        var rows = await ctx.Set<Claim>().AsExpandable()
             .Where(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active))
             .Where(claim => claim.ProjectId == project)
             .Select(
-                claim => new ClaimAccommodationInfoRow()
+                claim => new
                 {
-                    ClaimId = claim.ClaimId,
+                    claim.ClaimId,
                     AccomodationType = claim.AccommodationRequest != null
                         ? claim.AccommodationRequest.AccommodationType.Name
                         : null,
@@ -33,9 +36,37 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
                         claim.AccommodationRequest.Accommodation != null
                             ? claim.AccommodationRequest.Accommodation.Name
                             : null,
-                    User = claim.Player,
+                    claim.Player.PrefferedName,
+                    claim.Player.BornName,
+                    claim.Player.SurName,
+                    claim.Player.FatherName,
+                    claim.Player.Email,
+                    // Телефон живёт в отдельной таблице UserExtra, и обращение к навигации
+                    // 1:1-зависимой сущности EF6 строит через LEFT OUTER JOIN — у игрока без
+                    // ряда колонка приедет null, а не выбросит его из отчёта. Каст к string?
+                    // в SQL ничего не меняет, он только делает nullability явной.
+                    PhoneNumber = (string?)claim.Player.Extra!.PhoneNumber,
                 }).ToListAsync();
 
+        // Отображаемое имя собирается в памяти: конструкторы value-типов в дерево выражений
+        // EF6 не переводятся.
+        return
+        [
+            .. rows.Select(row => new ClaimAccommodationInfoRow()
+            {
+                ClaimId = row.ClaimId,
+                AccomodationType = row.AccomodationType,
+                RoomName = row.RoomName,
+                PlayerName = new UserDisplayName(
+                    new UserFullName(
+                        PrefferedName.FromOptional(row.PrefferedName),
+                        BornName.FromOptional(row.BornName),
+                        SurName.FromOptional(row.SurName),
+                        FatherName.FromOptional(row.FatherName)),
+                    new Email(row.Email)),
+                Phone = PhoneNumber.FromOptional(row.PhoneNumber),
+            })
+        ];
     }
 
     public async Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(ProjectIdentification projectId)

@@ -15,7 +15,6 @@
   "GET /{projectId}/money/Operations": 5,
   "GET /{projectId}/project/settings": 1,
   "GET /{projectId}/roles/{characterGroupId}/forums": 1,
-  "GET /{projectId}/rooms/report": 2,
   "POST /error/{HttpStatusCode:int?}": 1,
   "POST /x-game-api/{projectId}/characters": 1,
   "POST /{projectId}/rooms/UnOccupyAll": 1,
