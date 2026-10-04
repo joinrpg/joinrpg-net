@@ -201,6 +201,21 @@ public class ProjectAccessServiceTest
     }
 
     [Fact]
+    public async Task RemoveAccess_OwnerRemovesSelf_WithLowestUserId_TransfersOwnershipToRemainingMaster()
+    {
+        // Регрессия: владелец (mock.Master, UserId = 2 — наименьший) уходит сам. Владение передавалось
+        // мастеру с наименьшим UserId без исключения удаляемого — то есть ему же, и проект оставался без владельца.
+        var remaining = AddMaster(50, canGrantRights: true);
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.RemoveAccess(ProjectId, new UserIdentification(mock.Master.UserId), null);
+
+        mock.Project.ProjectAcls.ShouldNotContain(a => a.UserId == mock.Master.UserId);
+        remaining.IsOwner.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task RemoveAccess_OtherUser_WithoutCanGrantRights_Throws_AndDoesNotSave()
     {
         AddMaster(50, canGrantRights: false);
