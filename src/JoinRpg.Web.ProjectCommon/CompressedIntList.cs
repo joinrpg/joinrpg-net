@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using JoinRpg.DomainTypes.Interfaces;
 
-namespace JoinRpg.Web.Models.CommonTypes;
+namespace JoinRpg.Web.ProjectCommon;
 /// <summary>
 /// Класс прендназначен для эффективнной компрессии при передаче через веб больших списков Id ников
 /// </summary>

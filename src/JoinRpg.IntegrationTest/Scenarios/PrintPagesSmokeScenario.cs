@@ -6,7 +6,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 
