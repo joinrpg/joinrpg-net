@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents.ElementMoving;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -242,6 +243,17 @@ public class AclController(
             _ = NoAccesToProjectView(projectInfo, currentUserAccessor); // бросает NoAccessToProjectException
         }
         return model;
+    }
+
+    // Форму постит JoinMoveControlNonInteractive: «кого» и «после кого» (пусто — в начало), как у сюжетов.
+    [HttpPost("reorder")]
+    [ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
+    public async Task<ActionResult> Reorder(ProjectIdentification projectId, ElementMoveCommandViewModel viewModel)
+    {
+        var userId = UserIdentification.Parse(viewModel.ElementIdentification, provider: null);
+        var afterUserId = UserIdentification.TryParse(viewModel.MoveAfterIdentification, provider: null, out var after) ? after : null;
+        await projectAccessService.MoveMasterAfter(projectId, userId, afterUserId);
+        return RedirectToAction("Index", "Acl", new { ProjectId = projectId.Value });
     }
 
     [AdminAuthorize]

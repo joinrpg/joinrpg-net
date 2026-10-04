@@ -156,6 +156,33 @@ internal class ProjectAccessService(
                 acl.IsPublic = ctx.Request.IsPublic;
             });
 
+    public Task MoveMasterAfter(ProjectIdentification projectId, UserIdentification userId, UserIdentification? afterUserId)
+        => projectPropsService.ChangeProjectProperties(
+            projectId,
+            Permission.CanGrantRights,
+            ProjectActiveRequirement.AllowInactive,
+            (UserId: userId, AfterUserId: afterUserId),
+            ctx =>
+            {
+                // Порядок храним только по действующим: снятые в строке не нужны и выпадут при следующей перестановке.
+                var active = ctx.Project.ProjectAcls.Where(a => a.IsActive).ToList();
+                // Страница могла устареть: мастера (или того, после кого ставим) уже сняли. Тогда двигать нечего.
+                if (active.SingleOrDefault(a => a.UserId == ctx.Request.UserId.Value) is not { } target)
+                {
+                    return;
+                }
+                ProjectAcl? after = null;
+                if (ctx.Request.AfterUserId is { } afterId
+                    && (after = active.SingleOrDefault(a => a.UserId == afterId.Value)) is null)
+                {
+                    return;
+                }
+                ctx.Project.Details.MastersOrdering = VirtualOrderContainerFacade
+                    .Create(active, ctx.Project.Details.MastersOrdering)
+                    .MoveAfter(target, after)
+                    .GetStoredOrder();
+            });
+
     public Task GrantFullAccess(ProjectIdentification projectId)
     {
         logger.LogInformation("Администратор {UserId} запрашивает полный доступ к проекту {ProjectId}", currentUserAccessor.UserId, projectId);
