@@ -5,9 +5,11 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.ProjectAccess;
+using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Masters;
 using JoinRpg.WebPortal.Models.Masters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
@@ -61,11 +63,21 @@ public class AclController(
         return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
     }
 
-    [RequireMasterOrAdmin()]
+    /// <summary>
+    /// Список мастеров виден всем, включая анонимов, — как на главной странице проекта (ADR019).
+    /// Права, заявки и управление — только мастерам и админу.
+    /// </summary>
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+
+        if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault) && !currentUserAccessor.IsAdmin)
+        {
+            return View("PublicIndex", ProjectMastersViewModel.Build(projectInfo));
+        }
+
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
 
         return View(new MastersListViewModel(claims, currentUserAccessor, projectInfo));

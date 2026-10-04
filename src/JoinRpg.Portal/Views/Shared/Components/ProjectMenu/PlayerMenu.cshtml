@@ -89,6 +89,8 @@
                     <li>@Html.ActionLink("Расписание", "Index", "ShowSchedule", new { Model.ProjectId }, null)</li>
                 }
 
+                <li>@Html.ActionLink("Мастера", "Index", "Acl", new { Model.ProjectId }, null)</li>
+
 
                 @if (Model.IsAdmin)
                 {

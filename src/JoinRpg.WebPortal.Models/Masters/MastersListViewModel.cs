@@ -24,7 +24,8 @@ public class MastersListViewModel
             claims.SingleOrDefault(c => c.MasterId == master.UserId.Value)?.ClaimCount ?? 0,
             projectInfo))];
 
-        CanCurrentUserGrantRights = Masters.Single(acl => acl.UserId == currentUser.UserId).CanGrantRights;
+        // Админ, который не мастер проекта, тоже видит эту страницу — его в списке нет.
+        CanCurrentUserGrantRights = Masters.SingleOrDefault(acl => acl.UserId == currentUser.UserId)?.CanGrantRights ?? false;
 
         AnyoneElseCanGrantRights = Masters.Any(x => x.CanGrantRights && x.UserId != currentUser.UserId);
 
