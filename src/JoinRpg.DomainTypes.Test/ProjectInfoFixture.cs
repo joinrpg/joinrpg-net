@@ -55,7 +55,8 @@ internal static class ProjectInfoFixture
             ProjectProfileRequirementSettings.AllNotRequired,
             new ProjectClaimSettings(null, false, false, false, false),
             [],
-            null);
+            null,
+            TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow"));
 
     public static ProjectMasterInfo MakeMaster(UserIdentification userId, bool isOwner = false)
         => new(

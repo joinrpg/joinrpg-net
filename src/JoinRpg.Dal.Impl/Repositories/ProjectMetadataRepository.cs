@@ -76,7 +76,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 IsPublicProject: project.Details.IsPublicProject
                 ),
             projectRolesLists: CreateRolesLists(project),
-            defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId));
+            defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId),
+            timeZone: TimeZoneInfo.FindSystemTimeZoneById(project.Details.TimeZoneId));
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {
