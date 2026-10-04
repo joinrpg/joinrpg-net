@@ -1,9 +1,9 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
@@ -79,24 +79,29 @@ public class CheckInController(
     [HttpGet("~/{ProjectId}/claim/{ClaimId}/checkin")]
     public async Task<ActionResult> CheckIn(ClaimIdentification claimId)
     {
-        var claim = await claimsRepository.GetClaimWithDetails(claimId);
-        if (claim == null)
-        {
-            return NotFound();
-        }
-        return await ShowCheckInForm(claim);
+        var characterInfo = await LoadCharacterByClaim(claimId);
+
+        return characterInfo is null ? NotFound() : await ShowCheckInForm(characterInfo, claimId);
     }
 
-    private async Task<ActionResult> ShowCheckInForm(Claim claim)
+    /// <summary>
+    /// Персонаж заявки одним запросом. Всё, что странице нужно знать о заявке, лежит в агрегате
+    /// (ADR013): и идентификатор персонажа, и игрок, и статус — поэтому EF-сущность здесь больше
+    /// не грузится.
+    /// </summary>
+    private async Task<CharacterInfo?> LoadCharacterByClaim(ClaimIdentification claimId)
+        => (await characterInfoRepository.GetCharacterInfosByClaims([claimId])).SingleOrDefault();
+
+    private async Task<ActionResult> ShowCheckInForm(CharacterInfo characterInfo, ClaimIdentification claimId)
     {
-        var characterId = claim.GetCharacterId();
+        var characterId = characterInfo.Id;
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
         return View("CheckIn",
-            new CheckInClaimModel(claim.GetId(),
-            await characterInfoRepository.GetCharacterInfo(characterId),
+            new CheckInClaimModel(claimId,
+            characterInfo,
             await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification),
-            await userRepository.GetRequiredUserInfo(claim.GetPlayerId()),
+            await userRepository.GetRequiredUserInfo(characterInfo.GetClaimById(claimId).PlayerId),
             handouts[characterId],
             claimValidator,
             currentUserAccessor
@@ -107,8 +112,10 @@ public class CheckInController(
     public async Task<ActionResult> DoCheckIn(ProjectIdentification projectId, int claimId, int money, Checkbox? feeAccepted)
     {
         var claimIdentification = new ClaimIdentification(projectId, claimId);
-        var claim = await claimsRepository.GetClaim(claimIdentification);
-        if (claim == null)
+        // Грузим заранее: нужен и для 404, и для того, чтобы показать ту же форму при ошибке
+        // сохранения. Неудачная операция ничего не коммитит, поэтому снимок остаётся верным.
+        var characterInfo = await LoadCharacterByClaim(claimIdentification);
+        if (characterInfo is null)
         {
             return NotFound();
         }
@@ -120,7 +127,7 @@ public class CheckInController(
         catch (Exception ex)
         {
             AddModelException(ex);
-            return await ShowCheckInForm(claim);
+            return await ShowCheckInForm(characterInfo, claimIdentification);
         }
     }
 
