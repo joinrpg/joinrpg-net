@@ -23,8 +23,7 @@
         </div>
     }
 
-    @* Чекбоксы — обычным input, а не CheckboxInput: у того значение лежит в скрытом поле, которое
-       обновляется только при интерактивном рендере, а здесь рендер статический. *@
+    @* Чекбокс — обычным input, а не CheckboxInput: тот в статическом рендере постит исходное значение (#5299). *@
     <JoinPanel>
         <Header>Профиль мастера</Header>
         <Body>
@@ -42,20 +41,7 @@
         </Body>
     </JoinPanel>
 
-    <JoinPanel>
-        <Header>Права доступа</Header>
-        <Body>
-            <FormHorizontal>
-                @foreach (var permission in Model.Permissions)
-                {
-                    var name = permission.Permission.ToString();
-                    <FormRow Label="@permission.DisplayName" Description="@permission.Description">
-                        <input type="checkbox" id="@name" name="@name" value="true" checked="@permission.Value" />
-                    </FormRow>
-                }
-            </FormHorizontal>
-        </Body>
-    </JoinPanel>
+    <MasterPermissionsPanel Permissions="Model.Permissions" />
 
     <JoinButton Preset="ButtonPreset.Add" Submit="true" Label="Добавить" />
     | <a href="@Model.UserProfileUrl">вернуться в профиль пользователя</a>

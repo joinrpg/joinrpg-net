@@ -9,4 +9,6 @@ public interface IProjectAccessService
     Task ChangeAccess(ChangeAccessRequest changeAccessRequest);
 
     Task GrantFullAccess(ProjectIdentification projectId);
+
+    Task ChangeMasterProfile(ChangeMasterProfileRequest request);
 }

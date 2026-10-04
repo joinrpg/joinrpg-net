@@ -138,6 +138,24 @@ internal class ProjectAccessService(
         await gameSubscribeService.RemoveAllSubscriptions(projectId, userId);
     }
 
+    public Task ChangeMasterProfile(ChangeMasterProfileRequest request)
+        => projectPropsService.ChangeProjectProperties(
+            request.ProjectId,
+            // Свой профиль мастер правит сам, чужой — с правом выдавать доступ (ADR019, §7).
+            request.UserId == currentUserAccessor.UserIdentificationOrDefault ? Permission.None : Permission.CanGrantRights,
+            // Страница мастеров архивной игры — её «титры», их правят и после игры.
+            ProjectActiveRequirement.AllowInactive,
+            request,
+            ctx =>
+            {
+                var acl = ctx.Project.ProjectAcls.SingleOrDefault(a => a.UserId == ctx.Request.UserId.Value && a.IsActive)
+                    ?? throw new InvalidOperationException("Мастер снят с проекта — его профиль больше не правится."); // TODO[Localize]
+                acl.Role = ctx.Request.Role.Value;
+                // Complex type EF6 не может быть null — пустое описание это пустой MarkdownDbValue, а не null.
+                acl.Description = new MarkdownDbValue(ctx.Request.Description?.Value);
+                acl.IsPublic = ctx.Request.IsPublic;
+            });
+
     public Task GrantFullAccess(ProjectIdentification projectId)
     {
         logger.LogInformation("Администратор {UserId} запрашивает полный доступ к проекту {ProjectId}", currentUserAccessor.UserId, projectId);

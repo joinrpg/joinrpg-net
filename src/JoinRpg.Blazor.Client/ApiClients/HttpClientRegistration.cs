@@ -12,6 +12,7 @@ using JoinRpg.Web.ProjectCommon.Claims;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.ProjectMasterTools.Acl;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
 using JoinRpg.Web.ProjectMasterTools.Fields;
 using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
@@ -43,6 +44,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IProjectListForAdminClient, ProjectListClient>()
                 .AddHttpClient<IProjectCreateClient, ProjectCreateClient>()
                 .AddHttpClient<IProjectSettingsClient, ProjectSettingsClient>()
+                .AddHttpClient<IMasterProfileClient, MasterProfileClient>()
                 .AddHttpClient<IPlotClient, PlotClient>()
                 .AddHttpClient<IMasterClient, MasterClient>()
                 .AddHttpClient<IKogdaIgraSyncClient, KogdaIgraClient>()

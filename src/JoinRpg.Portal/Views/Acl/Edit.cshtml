@@ -1,9 +1,10 @@
 @using JoinRpg.WebPortal.Models.Masters
+@using JoinRpg.Web.ProjectMasterTools.Acl
 
 @model AclViewModel
 
 @{
-    ViewBag.Title = "Изменение прав доступа в игру " + Model.ProjectName;
+    ViewBag.Title = "Мастер в игре " + Model.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -11,23 +12,18 @@
 <partial name="_UserDetailsPanel" model="@Model.UserDetails" />
 <hr class="col-md-12" />
 
-@using (Html.BeginForm())
+@* Профиль (роль, описание, публичность) — остров: свой мастер правит сам, чужой — с правом выдавать доступ. *@
+<component type="typeof(MasterProfilePanel)" render-mode="WebAssembly"
+           param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+           param-UserId="@(new UserIdentification(Model.UserId))" />
+
+@if (Model.CanEditPermissions)
 {
-    @Html.AntiForgeryToken()
-    @Html.HiddenFor(model => model.UserId)
-
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @foreach (var badge in Model.Badges)
-        {
-            <partial name="_PermissionBadgeCheckbox" model="@badge" />
-        }
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Сохранить" class="btn btn-default" />
-                | @Html.ActionLink("Назад к списку", "Index", new { Model.ProjectId })
-            </div>
-        </div>
-    </div>
+    <component type="typeof(EditMasterPermissionsForm)" render-mode="Static"
+               param-Endpoint="@Url.Action("Edit", new { Model.ProjectId })"
+               param-UserId="@Model.UserId"
+               param-Permissions="@Model.Badges"
+               param-Errors="@(ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToArray())" />
 }
+
+@Html.ActionLink("Назад к списку", "Index", new { Model.ProjectId })

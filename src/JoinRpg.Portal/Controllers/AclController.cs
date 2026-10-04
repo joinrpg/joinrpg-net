@@ -168,34 +168,72 @@ public class AclController(
     [ValidateAntiForgeryToken, RequireMaster()]
     public async Task<ActionResult> RemoveYourself(DeleteAclViewModel viewModel) => await Delete(viewModel);
 
+    // Свой профиль (роль, описание, публичность) мастер правит сам, чужой и права — с CanGrantRights (ADR019, §7).
     [HttpGet("edit")]
-    [MasterAuthorize(Permission.CanGrantRights)]
+    [RequireMaster()]
     public async Task<ActionResult> Edit(ProjectIdentification projectId, UserIdentification userId)
     {
-        var model = await GetAclViewModel(projectId, userId);
+        var model = await GetEditViewModel(projectId, userId);
         return model is null ? NotFound() : View(model);
     }
 
     [HttpPost("edit")]
-    [ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
+    [ValidateAntiForgeryToken, RequireMaster()]
     public async Task<ActionResult> Edit(ChangeAclViewModel viewModel)
     {
+        var projectId = new ProjectIdentification(viewModel.ProjectId);
+        var userId = new UserIdentification(viewModel.UserId);
+        if (await GetEditViewModel(projectId, userId) is not { } model)
+        {
+            return NotFound();
+        }
+        // Форма прав — только для того, кто может их менять. Профиль правится островом, мимо этого POST.
+        if (!model.CanEditPermissions)
+        {
+            return Forbid();
+        }
+
         try
         {
             await projectAccessService.ChangeAccess(new ChangeAccessRequest()
             {
-                ProjectId = new ProjectIdentification(viewModel.ProjectId),
-                UserId = new UserIdentification(viewModel.UserId),
+                ProjectId = projectId,
+                UserId = userId,
                 Permissions = viewModel.ToPermissions(),
             });
-        }
-        catch
-        {
-            //TODO Fix this
             return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
         }
-        return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
+        catch (Exception exception)
+        {
+            AddModelException(exception);
+        }
 
+        // Показываем форму с тем, что прислали, а не с тем, что лежит в базе.
+        var posted = viewModel.ToPermissions();
+        model.Badges = [.. model.Badges.Select(b => new PermissionBadgeViewModel(b.Permission, posted.Contains(b.Permission)))];
+        return View(model);
+    }
+
+    /// <summary>
+    /// Модель страницы правки мастера: остров профиля и, если можно, форма прав.
+    /// Чужого мастера без права выдавать доступ править нельзя.
+    /// </summary>
+    private async Task<AclViewModel?> GetEditViewModel(ProjectIdentification projectId, UserIdentification userId)
+    {
+        var model = await GetAclViewModel(projectId, userId);
+        if (model is null)
+        {
+            return null;
+        }
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var canGrantRights = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault, Permission.CanGrantRights);
+        // Права меняются только в активном проекте (ChangeAccess — MustBeActive), профиль — и в архиве: это «титры» игры.
+        model.CanEditPermissions = canGrantRights && projectInfo.IsActive;
+        if (!canGrantRights && userId != currentUserAccessor.UserIdentificationOrDefault)
+        {
+            _ = NoAccesToProjectView(projectInfo, currentUserAccessor); // бросает NoAccessToProjectException
+        }
+        return model;
     }
 
     [AdminAuthorize]

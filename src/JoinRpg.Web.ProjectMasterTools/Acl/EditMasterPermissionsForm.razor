@@ -1,0 +1,48 @@
+@using JoinRpg.Web.ProjectCommon.Masters
+@* Статический рендер: обычная HTML-форма, постится в MVC-экшен правки прав (поля — как у ChangeAclViewModel). *@
+
+@if (RendererInfo.IsInteractive)
+{
+    <JoinErrorMessage>Этот компонент пока не поддерживает интерактивный рендеринг</JoinErrorMessage>
+    return;
+}
+
+<form method="post" action="@Endpoint">
+    <AntiforgeryToken />
+    <input type="hidden" name="UserId" value="@UserId" />
+
+    @if (Errors.Count > 0)
+    {
+        <div class="text-danger">
+            <ul>
+                @foreach (var error in Errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <MasterPermissionsPanel Permissions="Permissions" />
+
+    <JoinButton Preset="ButtonPreset.Save" Submit="true" Label="Сохранить права" />
+</form>
+
+@code {
+    /// <summary>Куда постить форму.</summary>
+    [Parameter]
+    [EditorRequired]
+    public string Endpoint { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public int UserId { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyCollection<PermissionBadgeViewModel> Permissions { get; set; } = null!;
+
+    /// <summary>Ошибки предыдущей попытки — показываются над формой.</summary>
+    [Parameter]
+    public IReadOnlyCollection<string> Errors { get; set; } = [];
+}

@@ -1,0 +1,101 @@
+@inject IMasterProfileClient profileClient
+@implements IDisposable
+
+@if (Model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+<JoinPanel>
+    <Header>Профиль мастера</Header>
+    <Body>
+        <EditForm FormName="MasterProfile" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+            <FormHorizontal>
+                <ValidationSummary />
+                <DataAnnotationsValidator />
+
+                <FormRowFor For="@(() => Model.Role)">
+                    <InputText @bind-Value="Model.Role" class="form-control" maxlength="100" />
+                </FormRowFor>
+
+                <FormRowFor For="@(() => Model.Description)">
+                    <InputTextArea @bind-Value="Model.Description" class="form-control" rows="4" />
+                </FormRowFor>
+
+                <FormRowFor For="@(() => Model.IsPublic)">
+                    <CheckboxInput @bind-Value="Model.IsPublic" />
+                </FormRowFor>
+
+                <FormRow>
+                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+    </Body>
+</JoinPanel>
+
+@if (success)
+{
+    <JoinAlert Variation="VariationStyleEnum.Success">Профиль мастера сохранён</JoinAlert>
+}
+
+@code {
+    private EditContext? editContext;
+    private bool success;
+    private bool formInvalid = true;
+    private ValidationMessageStore? messageStore;
+
+    [Parameter]
+    [SupplyParameterFromForm]
+    public MasterProfileViewModel Model { get; set; } = null!;
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    [Parameter]
+    public UserIdentification UserId { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model ??= await profileClient.GetProfile(ProjectId, UserId);
+        editContext = new(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+        messageStore = new(editContext);
+        formInvalid = !editContext.Validate();
+        StateHasChanged();
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (editContext is not null)
+        {
+            success = false;
+            messageStore?.Clear();
+            formInvalid = !editContext.Validate();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await profileClient.SaveProfile(Model);
+            success = true;
+        }
+        catch
+        {
+            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
+            editContext?.NotifyValidationStateChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+    }
+}
