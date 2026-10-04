@@ -22,7 +22,10 @@ public class CaptureNoAccessExceptionFilter(IProjectMetadataRepository projectMe
             };
             viewResult.ViewData[Constants.ProjectIdName] = noAccessException.ProjectId.Value;
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(noAccessException.ProjectId);
-            viewResult.ViewData.Model = NoAccessToProjectViewModelBuilder.Build(projectInfo, noAccessException.Permission);
+            viewResult.ViewData.Model = NoAccessToProjectViewModelBuilder.Build(
+                projectInfo,
+                noAccessException.UserId is int userId ? new UserIdentification(userId) : null,
+                noAccessException.Permission);
             filterContext.Result = viewResult;
         }
 

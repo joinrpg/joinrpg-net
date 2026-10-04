@@ -58,7 +58,7 @@ internal class ProjectRoleGridViewService(
         // Возвращаем результат «нет доступа» (а не исключение), чтобы остров показал панель.
         if (!config.PublicMode && !projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))
         {
-            return new ProjectRoleGridViewResult(HasAccess: false, Grid: null, NoAccess: NoAccessToProjectViewModelBuilder.Build(projectInfo));
+            return new ProjectRoleGridViewResult(HasAccess: false, Grid: null, NoAccess: NoAccessToProjectViewModelBuilder.Build(projectInfo, currentUserAccessor.UserIdentificationOrDefault));
         }
 
         var groupId = config.CharacterGroupId ?? projectInfo.GroupTree.RootGroupId;

@@ -93,6 +93,14 @@ public record ProjectListSpecification(ProjectListCriteria Criteria, bool LoadAr
     public static PersonalizedProjectListSpecification AllProjectsWithMasterAccess(UserIdentification userId)
     => new(ProjectListCriteria.MasterAccess, LoadArchived: true, userId);
 
+    /// <summary>
+    /// Проекты, где пользователь мастер, — для его профиля. Непубличное мастерство (ADR019, §3) видно только
+    /// мастерам того же проекта, включая самого хозяина профиля: смотрящего задаёт
+    /// <see cref="PersonalizedProjectListSpecification.PersonalizedFor"/>.
+    /// </summary>
+    public static PersonalizedProjectListSpecification MasterProjectsForProfile(UserIdentification userId)
+        => new(ProjectListCriteria.MasterAccessVisibleToViewer, LoadArchived: true, userId);
+
     public static PersonalizedProjectListSpecification ActiveProjectsWithGrantMasterAccess(UserIdentification userId)
         => new(ProjectListCriteria.MasterGrantAccess, LoadArchived: false, userId);
 
@@ -127,4 +135,4 @@ public record PersonalizedProjectListSpecification(ProjectListCriteria Criteria,
         => this with { PersonalizeForUser = userId };
 }
 
-public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, MasterManageClaimsAccess, All, Public };
+public enum ProjectListCriteria { MasterAccess, MasterOrActiveClaim, ForCloning, HasSchedule, KogdaIgraMissing, MasterGrantAccess, MasterManageClaimsAccess, All, Public, MasterAccessVisibleToViewer };

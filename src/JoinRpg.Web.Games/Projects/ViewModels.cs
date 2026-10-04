@@ -22,14 +22,15 @@ public record class ProjectInfoViewModel(
 public class ProjectDetailsViewModel(ProjectInfo project, MarkupString projectDescription, IReadOnlyCollection<ClaimLinkViewModel> claims,
     IReadOnlyCollection<KogdaIgraCardViewModel> kogdaIgras,
     bool disableKogdaIgraMapping,
-    IReadOnlyCollection<CaptainAccessRule> captainAccessRules)
+    IReadOnlyCollection<CaptainAccessRule> captainAccessRules,
+    UserIdentification? viewer)
 {
     public ProjectLifecycleStatus Status { get; set; } = project.ProjectStatus;
     public ProjectIdentification ProjectId { get; } = project.ProjectId;
 
     [Display(Name = "Дата создания")]
     public DateOnly CreatedDate { get; } = project.CreateDate;
-    public IEnumerable<UserLinkViewModel> Masters { get; } = project.Masters.Select(acl => new UserLinkViewModel(acl.UserInfo));
+    public IEnumerable<UserLinkViewModel> Masters { get; } = project.GetMastersVisibleTo(viewer).Select(acl => new UserLinkViewModel(acl.UserInfo));
 
     [DisplayName("Анонс проекта")]
     public MarkupString ProjectAnnounce { get; } = projectDescription;

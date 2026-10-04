@@ -77,7 +77,7 @@ public class AclController(
 
         if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault) && !currentUserAccessor.IsAdmin)
         {
-            return View("PublicIndex", ProjectMastersViewModel.Build(projectInfo));
+            return View("PublicIndex", ProjectMastersViewModel.Build(projectInfo, currentUserAccessor.UserIdentificationOrDefault));
         }
 
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);

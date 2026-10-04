@@ -31,7 +31,8 @@ internal static class ProjectInfoFixture
         ProjectLifecycleStatus projectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
         IReadOnlyCollection<ProjectFeeSettingInfo>? feeSchedule = null,
         ProjectAccommodationSettings? accommodationSettings = null,
-        bool scheduleEnabled = false)
+        bool scheduleEnabled = false,
+        string? mastersOrdering = null)
         => new(
             ProjectId,
             new ProjectName("Test"),
@@ -46,6 +47,7 @@ internal static class ProjectInfoFixture
             accommodationSettings ?? new ProjectAccommodationSettings(false, []),
             groupTree ?? new ProjectGroupTree(RootGroupId, new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()),
             masters ?? [MakeMaster(DefaultMasterId, isOwner: true)],
+            mastersOrdering,
             false,
             new ProjectCheckInSettings(false, false, false),
             projectStatus,
@@ -58,13 +60,17 @@ internal static class ProjectInfoFixture
             null,
             TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow"));
 
-    public static ProjectMasterInfo MakeMaster(UserIdentification userId, bool isOwner = false)
+    // ProjectAclId берём равным UserId — уникален в пределах фикстуры, порядок по умолчанию совпадает с UserId.
+    public static ProjectMasterInfo MakeMaster(UserIdentification userId, bool isOwner = false, bool isPublic = true)
         => new(
             userId,
             new UserDisplayName($"Master{userId.Value}", null),
             new Email($"master{userId.Value}@example.com"),
             [Permission.None],
-            isOwner);
+            isOwner,
+            ProjectAclStatus.Active,
+            isPublic,
+            ProjectAclId: userId.Value);
 
     public static ProjectFieldInfo MakeField(
         int fieldId,

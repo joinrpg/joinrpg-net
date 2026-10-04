@@ -39,9 +39,14 @@ public record class ProjectInfo
     public ProjectGroupTree GroupTree { get; }
 
     /// <summary>
-    /// Действующие мастера проекта. Только они дают доступ (ADR019, §2): все проверки прав смотрят сюда.
+    /// Действующие мастера проекта, в сохранённом порядке (ADR019, §5). Только они дают доступ (ADR019, §2):
+    /// все проверки прав смотрят сюда. Немастерам показывать — через <see cref="GetMastersVisibleTo"/>.
     /// </summary>
     public IReadOnlyCollection<ProjectMasterInfo> Masters { get; }
+
+    // Строка порядка (ProjectAclId через запятую) снаружи не нужна: порядок уже применён к Masters,
+    // а меняют его через сущность. Хранится, только чтобы With* пересобрали ProjectInfo с тем же порядком.
+    private readonly string? mastersOrdering;
 
     /// <summary>
     /// Бывшие мастера — сняты с проекта, доступа не дают. Ни одна проверка прав сюда не смотрит.
@@ -83,6 +88,7 @@ public record class ProjectInfo
         ProjectGroupTree groupTree,
         // Все мастера в любом статусе — делятся на Masters и FormerMasters здесь.
         IReadOnlyCollection<ProjectMasterInfo> masters,
+        string? mastersOrdering,
         bool publishPlot,
         ProjectCheckInSettings projectCheckInSettings,
         ProjectLifecycleStatus projectStatus,
@@ -114,7 +120,8 @@ public record class ProjectInfo
 
         GroupTree = groupTree;
         allMasters = masters;
-        Masters = [.. masters.Where(m => m.Status == ProjectAclStatus.Active)];
+        this.mastersOrdering = mastersOrdering;
+        Masters = VirtualOrderContainerFacade.Create(masters.Where(m => m.Status == ProjectAclStatus.Active), mastersOrdering).OrderedItems;
         FormerMasters = [.. masters.Where(m => m.Status != ProjectAclStatus.Active)];
         PublishPlot = publishPlot;
         ProjectCheckInSettings = projectCheckInSettings;
@@ -148,6 +155,13 @@ public record class ProjectInfo
         return Masters.Any(acl => acl.UserId == userId && acl.Permissions.Contains(permission));
     }
 
+    /// <summary>
+    /// Мастера, которых можно показать этому пользователю (ADR019, §3): мастеру проекта — все действующие,
+    /// остальным, включая анонима, — только публичные. Порядок — как в <see cref="Masters"/>.
+    /// </summary>
+    public IReadOnlyCollection<ProjectMasterInfo> GetMastersVisibleTo(UserIdentification? viewer)
+        => HasMasterAccess(viewer) ? Masters : [.. Masters.Where(m => m.IsPublic)];
+
     public Permission[] GetMasterAccess(UserIdentification currentUser) => Masters.FirstOrDefault(m => m.UserId == currentUser)?.Permissions ?? [];
 
     public ProjectMasterInfo GetMasterById(UserIdentification currentUser) => Masters.First(m => m.UserId == currentUser);
@@ -168,7 +182,7 @@ public record class ProjectInfo
 
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings, GroupTree,
-            allMasters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
+            allMasters, mastersOrdering, PublishPlot, ProjectCheckInSettings, ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId, TimeZone);
     }
@@ -178,7 +192,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
-            allMasters, PublishPlot, ProjectCheckInSettings,
+            allMasters, mastersOrdering, PublishPlot, ProjectCheckInSettings,
             projectLifecycleStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId, TimeZone);
@@ -189,7 +203,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
-            allMasters, PublishPlot, ProjectCheckInSettings,
+            allMasters, mastersOrdering, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter },
             ProjectRolesLists, DefaultRolesListId, TimeZone);
@@ -200,7 +214,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, projectFinanceSettings, AccommodationSettings,
             GroupTree,
-            allMasters, PublishPlot, ProjectCheckInSettings,
+            allMasters, mastersOrdering, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId, TimeZone);
@@ -211,7 +225,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
-            allMasters, PublishPlot, ProjectCheckInSettings,
+            allMasters, mastersOrdering, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, profileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId, TimeZone);
