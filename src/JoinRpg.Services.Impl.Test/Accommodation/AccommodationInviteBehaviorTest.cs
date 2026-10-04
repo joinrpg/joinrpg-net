@@ -1,6 +1,8 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.Services.Impl.Test.Accommodation;
 
@@ -128,6 +130,163 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             AccommodationTargetIdentification.From(RequestId(group)));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Цель приглашения не выбрана вовсе: идентификатор не разворачивается ни в заявку, ни в группу.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_WithoutTarget_Throws()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(sender),
+                new AccommodationTargetIdentification(mock.ProjectInfo.ProjectId, 0)));
+
+        exception.Message.ShouldContain("кого приглашать");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Заявки приглашаемого в этом проекте нет. Идентификатор цели приходит из запроса, а
+    /// <c>EnsureProject</c> сверяет лишь объявленный в нём проект — поэтому существование заявки
+    /// проверяется загрузчиком, и промах по идентификатору становится ошибкой, а не «игрок без
+    /// типа проживания».
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_ToUnknownClaim_Throws()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var unknownClaimId = new ClaimIdentification(mock.ProjectInfo.ProjectId, 100500);
+
+        _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(sender),
+                AccommodationTargetIdentification.From(unknownClaimId)));
+
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+        notificationService.Invites.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// У приглашающего не выбран тип проживания — отказ именно об этом, а не о чужой заявке на
+    /// проживание: сверять <paramref name="senderRequestId"/> не с чем, и проверка пропускается.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_BySenderWithoutAccommodationType_ThrowsAboutMissingType()
+    {
+        var sender = CreateClaim("Приглашающий без типа проживания");
+        var receiver = CreateClaim("Приглашаемый");
+        var someoneElsesGroup = mock.CreateAccommodationRequest(accommodationType, CreateClaim("Чужая комната"));
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(someoneElsesGroup),
+                AccommodationTargetIdentification.From(receiver.GetId())));
+
+        exception.Message.ShouldContain("не выбран тип проживания");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Вместимость проверяется сквозь сервис, а не только в статическом правиле: тип проживания
+    /// приходит из метаданных проекта (ADR015), и это единственный тест, который видит всю связку.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_IntoFullRoom_ThrowsAboutSpace()
+    {
+        var smallType = mock.CreateAccommodationType("Двушка", capacity: 2);
+        mock.ReInitProjectInfo();
+
+        var sender = CreateClaim("Приглашающий");
+        _ = mock.CreateAccommodationRequest(smallType, sender);
+        var group = mock.CreateAccommodationRequest(smallType, CreateClaim("Сосед1"), CreateClaim("Сосед2"));
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(sender),
+                AccommodationTargetIdentification.From(RequestId(group))));
+
+        exception.Message.ShouldContain("не хватает мест");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Приглашение — подготовка к игре, поэтому в архивном проекте оно запрещено
+    /// (<c>ProjectActiveRequirement.MustBeActive</c>). Проверки активности в сервисе раньше не
+    /// было вовсе — это изменение поведения, принятое вместе с миграцией.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_InArchivedProject_Throws()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var senderRequestId = RequestId(sender);
+        ArchiveProject();
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                senderRequestId,
+                AccommodationTargetIdentification.From(receiver.GetId())));
+
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Заявка на проживание приглашающего приходит из формы отдельным идентификатором, и раньше
+    /// он проверялся только на принадлежность проекту: мастер мог пригласить соседа в чужую
+    /// комнату. Теперь группа берётся из самой заявки, а подсунутый чужой идентификатор — отказ.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_WithForeignSenderRequest_Throws()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var foreignGroup = mock.CreateAccommodationRequest(accommodationType, CreateClaim("Чужая комната"));
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(foreignGroup),
+                AccommodationTargetIdentification.From(receiver.GetId())));
+
+        exception.Message.ShouldContain("не принадлежит");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Приглашаемой группы с таким идентификатором нет. Раньше операция тихо не создавала ни
+    /// одного приглашения, но сохраняла изменения и отправляла уведомление в пустоту; теперь это
+    /// внятный отказ.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_ToUnknownGroup_Throws()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var unknownGroupId = new AccommodationRequestIdentification(mock.ProjectInfo.ProjectId, 100500);
+
+        _ = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(sender),
+                AccommodationTargetIdentification.From(unknownGroupId)));
+
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+        notificationService.Invites.ShouldBeEmpty();
     }
 
     #endregion

@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Data.Interfaces.Characters;
 
@@ -106,6 +107,27 @@ public interface IAggregateMutationScope
     /// единственное сохранение, что и остальная мутация (ADR014).
     /// </summary>
     Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim(ClaimIdentification claimId);
+
+    /// <summary>
+    /// Группа проживающих (<c>AccommodationRequest</c>) указанной заявки вместе с её составом, либо
+    /// <c>null</c>, если заявка ещё не выбрала тип проживания.
+    /// </summary>
+    /// <remarks>
+    /// Нужен приглашению к совместному проживанию: приглашаемая сторона — это другая заявка, то есть
+    /// выход за границу агрегата, а её состав определяет, хватит ли мест. Группа заявки хэндла
+    /// вместе с составом загружена с ней самой, этот загрузчик — про чужую.
+    /// </remarks>
+    Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId);
+
+    /// <summary>
+    /// Группа проживающих по её идентификатору вместе с составом, либо <c>null</c>, если такой
+    /// группы в этом проекте нет.
+    /// </summary>
+    /// <remarks>
+    /// Приглашать можно не только заявку, но и сложившуюся группу соседей целиком — тогда сторона
+    /// названа идентификатором группы, а не заявки.
+    /// </remarks>
+    Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId);
 }
 
 public interface ICharacterAggregateUpdateHandle : IAggregateMutationScope

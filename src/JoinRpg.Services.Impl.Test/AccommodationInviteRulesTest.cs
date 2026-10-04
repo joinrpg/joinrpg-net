@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 
 namespace JoinRpg.Services.Impl.Test;
 
@@ -15,9 +16,12 @@ public class AccommodationInviteRulesTest
     // чтобы не пересекаться с отправителем
     private static readonly ClaimIdentification SenderClaimId = new(1, 999);
 
+    /// <summary>
+    /// Заявка на проживание. Вместимость сюда больше не кладётся: её проверка читает метаданные
+    /// проекта (ADR015), а не навигацию на тип проживания — см. <see cref="Settings"/>.
+    /// </summary>
     private static AccommodationRequest Request(
-        int accommodationTypeId = 10,
-        int capacity = 4,
+        int accommodationTypeId = DefaultTypeId,
         int subjectCount = 1,
         int? accommodationId = null,
         int firstSubjectClaimId = 100)
@@ -25,18 +29,36 @@ public class AccommodationInviteRulesTest
         {
             ProjectId = ProjectId.Value,
             AccommodationTypeId = accommodationTypeId,
-            AccommodationType = new ProjectAccommodationType { Id = accommodationTypeId, Capacity = capacity },
             AccommodationId = accommodationId,
             Subjects = [.. Enumerable.Range(0, subjectCount).Select(i => new Claim { ClaimId = firstSubjectClaimId + i })],
         };
+
+    private const int DefaultTypeId = 10;
+
+    /// <summary>Метаданные проживания проекта с единственным типом известной вместимости.</summary>
+    private static ProjectAccommodationSettings Settings(int capacity)
+        => new(
+            Enabled: true,
+            Types:
+            [
+                new AccommodationTypeInfo(
+                    new AccommodationTypeIdentification(ProjectId, DefaultTypeId),
+                    new RoomCategoryIdentification(ProjectId, DefaultTypeId),
+                    Name: "Домик",
+                    Description: new MarkdownString(""),
+                    Cost: 0,
+                    Capacity: capacity,
+                    IsPlayerSelectable: true),
+            ]);
 
     private static void EnsureCanInvite(
         AccommodationRequest? sender,
         AccommodationRequest? receiver,
         int newDwellersCount,
-        int? receiverClaimId = null)
+        int? receiverClaimId = null,
+        int capacity = 4)
         => AccommodationInviteServiceImpl.EnsureCanInvite(
-            ProjectId, SenderClaimId, sender, receiver, newDwellersCount, receiverClaimId);
+            ProjectId, Settings(capacity), SenderClaimId, sender, receiver, newDwellersCount, receiverClaimId);
 
     [Fact]
     public void ShouldRejectSelfInviteToOwnClaim()
@@ -124,9 +146,10 @@ public class AccommodationInviteRulesTest
         // В номере на двоих уже живёт один, приглашаем двоих — не влезут
         var exception = Should.Throw<AccommodationInviteNotAllowedException>(
             () => EnsureCanInvite(
-                Request(capacity: 2, subjectCount: 1),
-                Request(capacity: 2, subjectCount: 2),
-                newDwellersCount: 2));
+                Request(subjectCount: 1),
+                Request(subjectCount: 2),
+                newDwellersCount: 2,
+                capacity: 2));
 
         exception.Message.ShouldContain("не хватает мест");
     }
@@ -135,9 +158,10 @@ public class AccommodationInviteRulesTest
     public void ShouldAllowInviteThatExactlyFillsTheRoom()
     {
         var act = () => EnsureCanInvite(
-            Request(capacity: 3, subjectCount: 1),
-            Request(capacity: 3, subjectCount: 2),
-            newDwellersCount: 2);
+            Request(subjectCount: 1),
+            Request(subjectCount: 2),
+            newDwellersCount: 2,
+            capacity: 3);
 
         act.ShouldNotThrow();
     }

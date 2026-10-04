@@ -46,6 +46,20 @@ internal abstract record ClaimMutationContext(
         => Scope.LoadInvitesForClaim(ClaimInfo.ClaimId);
 
     /// <summary>
+    /// Группа проживающих другой заявки вместе с составом, либо <c>null</c>, если та ещё не выбрала
+    /// тип проживания. Своя группа у заявки уже на руках — <c>Claim.AccommodationRequest</c>.
+    /// </summary>
+    public Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId)
+        => Scope.LoadAccommodationGroupForClaim(claimId);
+
+    /// <summary>
+    /// Группа проживающих по идентификатору вместе с составом, либо <c>null</c>, если такой группы
+    /// в проекте нет.
+    /// </summary>
+    public Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
+        => Scope.LoadAccommodationGroup(groupId);
+
+    /// <summary>
     /// Сохраняет поля <b>через заявку</b>, а не через персонажа хэндла. Разница не косметическая:
     /// стратегия сохранения выбирается по <c>Claim.IsApproved</c>, а сам персонаж берётся из
     /// заявки — при утверждении заявки на слот она к этому моменту уже переехала на только что
@@ -61,6 +75,14 @@ internal abstract record ClaimMutationContext(
     /// </summary>
     public Task<(Character Entity, CharacterInfo Info)> LoadOtherCharacter(CharacterIdentification characterId)
         => Scope.LoadOtherCharacter(characterId);
+
+    /// <summary>
+    /// То же для другой заявки того же проекта. Промах по идентификатору — ошибка: заявка приходит
+    /// параметром операции, и тихо считать её отсутствующей значило бы работать с чужими данными.
+    /// </summary>
+    /// <exception cref="JoinRpgEntityNotFoundException">Заявки в этом проекте нет.</exception>
+    public Task<Claim> LoadOtherClaim(ClaimIdentification claimId)
+        => Scope.LoadOtherClaim(claimId);
 
     /// <summary>
     /// Комментарии, созданные операцией, в порядке создания. Уведомления по ним сервис отправит

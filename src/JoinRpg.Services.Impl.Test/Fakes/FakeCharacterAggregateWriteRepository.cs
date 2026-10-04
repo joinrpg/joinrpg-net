@@ -4,6 +4,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.Services.Impl.Test.Fakes;
@@ -123,6 +124,11 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
                         subject.AccommodationRequest = request;
                     }
                     break;
+                case AccommodationInvite invite:
+                    // Навигации на приглашения у проекта нет, поэтому мок держит их отдельной
+                    // коллекцией — она и играет роль DbSet<AccommodationInvite>.
+                    AddOnce(mock.AccommodationInvites, invite);
+                    break;
                 default:
                     break;
             }
@@ -180,6 +186,14 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             => Task.FromResult<IReadOnlyCollection<AccommodationInvite>>(
                 [.. mock.AccommodationInvites.Where(
                     i => i.ToClaimId == claimId.ClaimId || i.FromClaimId == claimId.ClaimId)]);
+
+        public Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId)
+            => Task.FromResult(mock.AccommodationRequests.SingleOrDefault(
+                request => request.Subjects.Any(subject => subject.ClaimId == claimId.ClaimId)));
+
+        public Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
+            => Task.FromResult(mock.AccommodationRequests.SingleOrDefault(
+                request => request.Id == groupId.AccommodationRequestId));
     }
 
     private sealed class ClaimHandle : Handle, IClaimUpdateHandle
