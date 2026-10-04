@@ -14,6 +14,7 @@
                 MaxHeight="@MaxHeight"
     >
         <EditForm FormName="@FormName" EditContext="@editContext">
+            <DataAnnotationsValidator />
             <FormHorizontal>
               @ChildContent
             </FormHorizontal>
@@ -79,13 +80,19 @@
 
     private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
     {
-        if (editContext is not null)
-        {
-            // TODO если нужно добавить доп. валидацию, это тут
-            formInvalid = !editContext.Validate();
-            StateHasChanged();
-        }
+        formInvalid = !IsModelValid();
+        StateHasChanged();
     }
+
+    // Валидность считаем по самой модели, а не через editContext.Validate(): тот показал бы
+    // ошибки сразу у всех полей, включая ещё не тронутые. Сообщения у полей выводит
+    // DataAnnotationsValidator по мере их изменения.
+    private bool IsModelValid()
+        => System.ComponentModel.DataAnnotations.Validator.TryValidateObject(
+            Model,
+            new System.ComponentModel.DataAnnotations.ValidationContext(Model),
+            validationResults: null,
+            validateAllProperties: true);
 
     protected override Task OnParametersSetAsync()
     {
@@ -100,8 +107,10 @@
             }
             editContext = new(Model);
             editContext.OnFieldChanged += HandleFieldChanged;
-            formInvalid = !editContext.Validate();
         }
+        // Пересчитываем на каждую перерисовку родителя: не все поля (например, JoinRpgDatePicker)
+        // сообщают EditContext об изменениях, а перерисовку родителя @bind вызывает всегда
+        formInvalid = !IsModelValid();
         return base.OnParametersSetAsync();
     }
 }
