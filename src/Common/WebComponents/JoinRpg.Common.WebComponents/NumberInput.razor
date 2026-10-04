@@ -19,6 +19,11 @@
       private async Task UpdateValue(ChangeEventArgs eventArgs)
       {
         var value = eventArgs.Value?.ToString();
-        await ValueChanged.InvokeAsync(string.IsNullOrWhiteSpace(value) ? null : int.Parse(value));
+        // Браузер пропускает в type=number дроби, экспоненту и числа больше int —
+        // их считаем пустым значением, а не роняем обработчик
+        await ValueChanged.InvokeAsync(
+            int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+                ? parsed
+                : null);
       }
     }
