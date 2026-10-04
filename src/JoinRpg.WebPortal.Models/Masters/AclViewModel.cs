@@ -24,6 +24,12 @@ public class AclViewModel
     public int UserId { get; }
     public PermissionBadgeViewModel[] Badges { get; set; }
 
+    // Профиль мастера (ADR019, §4) — предзаполнение формы добавления (постится в AddAclViewModel)
+    // и роль в таблице мастеров. Правка профиля — отдельно, на странице мастера.
+    public string Role { get; set; } = AddAclViewModel.DefaultRole;
+    public string? Description { get; set; }
+    public bool IsPublic { get; set; } = true;
+
     public bool CanGrantRights => Badges.Single(b => b.Permission == Permission.CanGrantRights).Value;
 
     // For Add/Edit pages: needs full User entity for detailed profile display

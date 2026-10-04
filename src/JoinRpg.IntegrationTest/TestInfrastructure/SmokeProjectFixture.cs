@@ -191,7 +191,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             {
                 ProjectId = projectId,
                 UserId = secondMasterId,
-                Role = "Мастер",
+                Role = new("Мастер"),
                 Permissions = Enum.GetValues<Permission>().Where(p => p != Permission.None).ToArray(),
             }));
 

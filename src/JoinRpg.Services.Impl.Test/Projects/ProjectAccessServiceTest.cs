@@ -66,7 +66,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
-            Role = "Мастер",
+            Role = new("Мастер"),
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims, Permission.CanEditRoles],
         });
@@ -95,7 +95,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
-            Role = "Мастер",
+            Role = new("Мастер"),
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims],
         });
@@ -118,7 +118,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
-            Role = "Мастер",
+            Role = new("Мастер"),
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanGrantRights],
         });
@@ -135,7 +135,7 @@ public class ProjectAccessServiceTest
         await Should.ThrowAsync<NoAccessToProjectException>(() => service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
-            Role = "Мастер",
+            Role = new("Мастер"),
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims],
         }));
@@ -151,7 +151,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
-            Role = "Мастер",
+            Role = new("Мастер"),
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims],
         });
@@ -366,10 +366,13 @@ public class ProjectAccessServiceTest
 
         var service = CreateService(mock.Master.UserId);
 
+        // Форма добавления для бывшего мастера предзаполнена прежним профилем, мастер его поправил.
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
-            Role = "Мастер по экономике",
+            Role = new("Мастер по экономике"),
+            Description = new MarkdownString("Экономика и полигон"),
+            IsPublic = false,
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims],
         });
@@ -377,10 +380,10 @@ public class ProjectAccessServiceTest
         mock.Project.ProjectAcls.Count(a => a.UserId == 50).ShouldBe(1);
         acl.Status.ShouldBe(ProjectAclStatus.Active);
         acl.CanManageClaims.ShouldBeTrue();
-        // Роль — из запроса, описание и публичность возвращаются вместе с мастером.
+        // Профиль — из запроса.
         acl.Role.ShouldBe("Мастер по экономике");
         acl.IsPublic.ShouldBeFalse();
-        acl.Description.Contents.ShouldBe("Боёвка и полигон");
+        acl.Description.Contents.ShouldBe("Экономика и полигон");
         metadataRepository.LastPrimed.ShouldNotBeNull().Masters.ShouldContain(m => m.UserId == new UserIdentification(50));
     }
 
@@ -483,7 +486,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
-            Role = "Техподдержка joinrpg.ru",
+            Role = new("Техподдержка joinrpg.ru"),
             IsPublic = false,
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims],

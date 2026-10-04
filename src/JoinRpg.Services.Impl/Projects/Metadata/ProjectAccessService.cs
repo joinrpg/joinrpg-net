@@ -25,24 +25,30 @@ internal class ProjectAccessService(
             ctx =>
             {
                 var acl = ctx.Project.ProjectAcls.SingleOrDefault(a => a.UserId == ctx.Request.UserId);
-                if (acl is null)
+                // У действующего мастера выдача прав профиль не трогает.
+                if (acl is null || !acl.IsActive)
                 {
-                    acl = new ProjectAcl
+                    if (acl is null)
                     {
-                        ProjectId = ctx.Project.ProjectId,
-                        UserId = ctx.Request.UserId,
-                        Project = ctx.Project,
-                        Role = ctx.Request.Role,
-                        IsPublic = ctx.Request.IsPublic,
-                    };
-                    ctx.Project.ProjectAcls.Add(acl);
-                }
-                else if (!acl.IsActive)
-                {
-                    // Повторная выдача снятому мастеру — та же строка (ADR019, §1): описание и публичность
-                    // возвращаются вместе с ним, роль задаёт заново тот, кто выдаёт доступ.
-                    acl.Status = ProjectAclStatus.Active;
-                    acl.Role = ctx.Request.Role;
+                        acl = new ProjectAcl
+                        {
+                            ProjectId = ctx.Project.ProjectId,
+                            UserId = ctx.Request.UserId,
+                            Project = ctx.Project,
+                            Role = ctx.Request.Role.Value,
+                        };
+                        ctx.Project.ProjectAcls.Add(acl);
+                    }
+                    else
+                    {
+                        // Повторная выдача снятому мастеру — та же строка (ADR019, §1). Профиль — из формы,
+                        // которая для бывшего мастера предзаполнена его прежним профилем.
+                        acl.Status = ProjectAclStatus.Active;
+                        acl.Role = ctx.Request.Role.Value;
+                    }
+                    // Complex type EF6 не может быть null — пустое описание это пустой MarkdownDbValue.
+                    acl.Description = new MarkdownDbValue(ctx.Request.Description?.Value);
+                    acl.IsPublic = ctx.Request.IsPublic;
                 }
                 acl.SetPermissions(ctx.Request.Permissions);
             });
@@ -141,7 +147,7 @@ internal class ProjectAccessService(
             UserId = currentUserAccessor.UserIdentification,
             Permissions = [.. Enum.GetValues<Permission>().Where(p => p != Permission.None)],
             // Админ сайта, зашедший помочь, — не член команды проекта (ADR019, §4). TODO[Localize]
-            Role = "Техподдержка joinrpg.ru",
+            Role = new("Техподдержка joinrpg.ru"),
             IsPublic = false,
         });
     }
