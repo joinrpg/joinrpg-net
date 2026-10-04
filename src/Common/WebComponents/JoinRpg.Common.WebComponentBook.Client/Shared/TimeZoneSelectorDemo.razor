@@ -1,0 +1,9 @@
+<h3>TimeZoneSelector</h3>
+
+<TimeZoneSelector Name="timezone" @bind-Value="@Selected" />
+
+<p>Выбрано: @(Selected ?? "(ничего)")</p>
+
+@code {
+    private string? Selected { get; set; } = "Europe/Moscow";
+}

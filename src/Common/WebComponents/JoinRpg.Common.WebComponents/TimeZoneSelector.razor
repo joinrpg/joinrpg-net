@@ -1,0 +1,57 @@
+@* Выбор часового пояса из всех IANA-поясов. Значение — IANA-идентификатор, например Europe/Moscow. *@
+<TypedSelector TKey="string"
+               TItem="TimeZoneListItem"
+               Name="@name"
+               Items="@items"
+               KeySelector="@(z => z.Id)"
+               ToListItem="@(z => TypedSelectList.CreateItem(z.Id, z.DisplayName))"
+               SelectedValues="@selectedValues"
+               AllowEmpty="@(selectedValues.Length == 0)"
+               EmptyText="(не выбран)"
+               Width="auto"
+               SelectedValuesChanged="UpdateSelected" />
+
+@code {
+    private TimeZoneListItem[] items = [];
+    private string[] selectedValues = [];
+    private FieldIdentifier? fieldIdentifier;
+    private string? name;
+
+    [CascadingParameter]
+    public EditContext? EditContext { get; set; }
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public System.Linq.Expressions.Expression<Func<string?>>? ValueExpression { get; set; }
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (ValueExpression is not null)
+        {
+            fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+        }
+        name = Name ?? fieldIdentifier?.FieldName;
+        var value = string.IsNullOrWhiteSpace(Value) ? null : Value;
+        items = TimeZoneList.WithSelected(value);
+        // Без выбранного значения браузер молча выбрал бы первый пояс списка — показываем пустой пункт.
+        selectedValues = value is null ? [] : [value];
+    }
+
+    private async Task UpdateSelected(string[] values)
+    {
+        await ValueChanged.InvokeAsync(values.FirstOrDefault());
+        if (fieldIdentifier is { } field)
+        {
+            EditContext?.NotifyFieldChanged(field);
+        }
+    }
+}
