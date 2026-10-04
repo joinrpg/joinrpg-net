@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Web.ProjectCommon.Test;
@@ -137,6 +138,39 @@ public class CharacterGroupSelectorTest
 
         changedIds.ShouldBe([SecondGroupId]);
         changedGroups.ShouldNotBeNull().Select(g => g.Name).ShouldBe(["Вторая"]);
+    }
+
+    private sealed class FormModel
+    {
+        public CharacterGroupIdentification[]? GroupIds { get; set; }
+    }
+
+    /// <summary>
+    /// В <c>EditForm</c> валидация перерисовывает сообщение об ошибке по событию <c>OnFieldChanged</c>.
+    /// Без уведомления выбор группы не гасит ошибку до отправки формы — выглядит как «валидация не
+    /// отпускает, хотя группу выбрал».
+    /// </summary>
+    [Fact]
+    public void Selecting_NotifiesEditContextThatFieldChanged()
+    {
+        var (ctx, _) = CreateContext();
+        using var _unused = ctx;
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        SetupBootstrapSelectInterop(ctx, [SecondGroupId]);
+
+        var model = new FormModel();
+        var editContext = new EditContext(model);
+        var changedFields = new List<string>();
+        editContext.OnFieldChanged += (_, args) => changedFields.Add(args.FieldIdentifier.FieldName);
+
+        var cut = ctx.Render<CharacterGroupSelector>(p => p
+            .AddCascadingValue(editContext)
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.SelectedGroupIdsExpression, () => model.GroupIds));
+
+        cut.Find("select").Change(SecondGroupId.ToString());
+
+        changedFields.ShouldBe([nameof(FormModel.GroupIds)]);
     }
 
     private static void SetupBootstrapSelectInterop(BunitContext ctx, CharacterGroupIdentification[] selected)
