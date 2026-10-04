@@ -79,18 +79,10 @@ public class CheckInController(
     [HttpGet("~/{ProjectId}/claim/{ClaimId}/checkin")]
     public async Task<ActionResult> CheckIn(ClaimIdentification claimId)
     {
-        var characterInfo = await LoadCharacterByClaim(claimId);
+        var characterInfo = await characterInfoRepository.GetCharacterInfoByClaimOrDefault(claimId);
 
         return characterInfo is null ? NotFound() : await ShowCheckInForm(characterInfo, claimId);
     }
-
-    /// <summary>
-    /// Персонаж заявки одним запросом. Всё, что странице нужно знать о заявке, лежит в агрегате
-    /// (ADR013): и идентификатор персонажа, и игрок, и статус — поэтому EF-сущность здесь больше
-    /// не грузится.
-    /// </summary>
-    private async Task<CharacterInfo?> LoadCharacterByClaim(ClaimIdentification claimId)
-        => (await characterInfoRepository.GetCharacterInfosByClaims([claimId])).SingleOrDefault();
 
     private async Task<ActionResult> ShowCheckInForm(CharacterInfo characterInfo, ClaimIdentification claimId)
     {
@@ -114,7 +106,7 @@ public class CheckInController(
         var claimIdentification = new ClaimIdentification(projectId, claimId);
         // Грузим заранее: нужен и для 404, и для того, чтобы показать ту же форму при ошибке
         // сохранения. Неудачная операция ничего не коммитит, поэтому снимок остаётся верным.
-        var characterInfo = await LoadCharacterByClaim(claimIdentification);
+        var characterInfo = await characterInfoRepository.GetCharacterInfoByClaimOrDefault(claimIdentification);
         if (characterInfo is null)
         {
             return NotFound();

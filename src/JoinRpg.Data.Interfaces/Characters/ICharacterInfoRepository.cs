@@ -36,6 +36,17 @@ public interface ICharacterInfoRepository
     Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByClaims(IReadOnlyCollection<ClaimIdentification> claimIds);
 
     /// <summary>
+    /// Персонаж одной заявки. <c>null</c>, если такой заявки нет.
+    /// </summary>
+    /// <remarks>
+    /// Странице одной заявки агрегат рассказывает о ней всё — и персонажа, и игрока, и статус, —
+    /// поэтому отдельная загрузка EF-сущности ей не нужна. Суффикс <c>OrDefault</c> — по здешнему
+    /// соглашению: версия без него (<see cref="GetCharacterInfo"/>) бросает.
+    /// </remarks>
+    async Task<CharacterInfo?> GetCharacterInfoByClaimOrDefault(ClaimIdentification claimId)
+        => (await GetCharacterInfosByClaims([claimId])).SingleOrDefault();
+
+    /// <summary>
     /// Персонажи, лежащие непосредственно в любой из указанных групп. Раскрытие дерева групп —
     /// на стороне вызывающего (<c>ProjectInfo.GetChildGroupIdsIncludingThis</c>).
     /// </summary>
