@@ -27,7 +27,11 @@ internal class ProjectCreateViewService(
                 (ProjectCopySettingsDto)model.CopySettings,
                 (KogdaIgraLinkChoiceDto)model.KogdaIgraChoice,
                 model.KogdaIgraGameId,
-                model.MessageForKogdaIgraEditors
+                model.MessageForKogdaIgraEditors,
+                // При клонировании пояс копируется из исходного проекта, значение скрытого поля не смотрим.
+                model.ProjectType == ProjectTypeViewModel.CopyFromAnother || string.IsNullOrWhiteSpace(model.TimeZoneId)
+                    ? null
+                    : TimeZoneInfo.FindSystemTimeZoneById(model.TimeZoneId)
                 );
             var result = await createProjectService.CreateProject(request);
 

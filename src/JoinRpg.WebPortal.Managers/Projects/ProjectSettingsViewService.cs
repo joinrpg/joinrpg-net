@@ -74,4 +74,21 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
     {
         await projectService.SetPublishSettings(model.ProjectId, (ProjectCloneSettings)model.CloneSettings, model.PublishEnabled);
     }
+
+    async Task<ProjectTimeZoneSettingsViewModel> IProjectSettingsClient.GetTimeZoneSettings(ProjectIdentification projectId)
+    {
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return new ProjectTimeZoneSettingsViewModel()
+        {
+            ProjectId = projectId,
+            ProjectStatus = project.ProjectStatus,
+            TimeZoneId = project.TimeZone.Id,
+        };
+    }
+
+    async Task IProjectSettingsClient.SaveTimeZoneSettings(ProjectTimeZoneSettingsViewModel model)
+    {
+        var timeZoneId = model.TimeZoneId ?? throw new ArgumentException("Не указан часовой пояс", nameof(model));
+        await projectService.SetTimeZone(model.ProjectId, TimeZoneInfo.FindSystemTimeZoneById(timeZoneId));
+    }
 }

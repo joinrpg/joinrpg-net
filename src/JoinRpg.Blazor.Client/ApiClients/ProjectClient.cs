@@ -55,6 +55,14 @@ public class ProjectSettingsClient(HttpClient httpClient) : IProjectSettingsClie
     }
     async Task<ProjectClaimSettingsViewModel> IProjectSettingsClient.GetClaimSettings(ProjectIdentification projectId)
         => await httpClient.GetFromJsonAsync<ProjectClaimSettingsViewModel>($"webapi/{projectId.Value}/project/GetClaimSettings") ?? throw new Exception("Couldn't get result from server");
+
+    async Task IProjectSettingsClient.SaveTimeZoneSettings(ProjectTimeZoneSettingsViewModel model)
+    {
+        var response = await httpClient.PostAsJsonAsync($"/webapi/{model.ProjectId.Value}/project/SaveTimeZoneSettings", model);
+        response.EnsureSuccessStatusCode();
+    }
+    async Task<ProjectTimeZoneSettingsViewModel> IProjectSettingsClient.GetTimeZoneSettings(ProjectIdentification projectId)
+        => await httpClient.GetFromJsonAsync<ProjectTimeZoneSettingsViewModel>($"webapi/{projectId.Value}/project/GetTimeZoneSettings") ?? throw new Exception("Couldn't get result from server");
 }
 
 public class ProjectInfoClient(HttpClient httpClient) : IProjectInfoClient
