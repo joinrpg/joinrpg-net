@@ -49,6 +49,7 @@ public abstract class AccommodationInviteTestBase : ClaimServiceTestBase
             unitOfWork,
             notificationService,
             CreatePropsService(currentUserId),
+            new FakeAccommodationInviteRepository(mock),
             CreateCurrentUser(currentUserId));
 
     /// <summary>Переводит проект в архив — операции над ним запрещены.</summary>

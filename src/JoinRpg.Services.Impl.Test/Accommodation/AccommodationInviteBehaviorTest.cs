@@ -311,7 +311,14 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         sender.AccommodationRequest!.Subjects
             .Select(claim => claim.ClaimId)
             .ShouldBe([sender.ClaimId, receiver.ClaimId, neighbour.ClaimId], ignoreOrder: true);
-        receiver.AccommodationRequest.ShouldBe(sender.AccommodationRequest);
+
+        // Обе стороны связи проставлены всем переезжающим, а не только принявшей заявке: до
+        // миграции соседи полагались на relationship fixup EF6.
+        foreach (var moved in new[] { receiver, neighbour })
+        {
+            moved.AccommodationRequest.ShouldBe(sender.AccommodationRequest);
+            moved.AccommodationRequest_Id.ShouldBe(sender.AccommodationRequest!.Id);
+        }
     }
 
     /// <summary>
@@ -348,17 +355,16 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
-    /// Пункт 8: приватный <c>DeclineOtherInvite</c> снимает только ВХОДЯЩИЕ приглашения
-    /// (фильтр только по <c>ToClaimId</c>) и только у тех, кто переезжает вместе с принявшим,
-    /// — то есть у соседей принявшего, но не у него самого: его заявку убирают из группы
-    /// до цикла (<c>Subjects.Remove</c>), и в цикл она уже не попадает.
+    /// Приём снимает прочие ВХОДЯЩИЕ приглашения у всех, кто переехал, — и у соседей принявшего,
+    /// и у него самого. Исходящие не трогаются: их снимает отказ или отзыв.
     /// </summary>
     /// <remarks>
-    /// Сейчас так; после миграции на ADR014 снятие прочих приглашений станет общим для всех
-    /// переезжающих заявок, принявшую включая, и тест обновится вместе с ней.
+    /// До миграции собственные входящие приглашения принявшего оставались висеть: его заявку
+    /// убирали из группы раньше цикла снятия, и в цикл она не попадала — игрок мог принять
+    /// приглашение и тут же принять второе.
     /// </remarks>
     [Fact]
-    public async Task AcceptInvite_DeclinesIncomingInvitesOfMovedNeighboursOnly()
+    public async Task AcceptInvite_DeclinesIncomingInvitesOfEveryoneMoved()
     {
         var sender = CreateClaimWithAccommodation("Приглашающий");
         var receiver = CreateClaim("Приглашаемый");
@@ -384,18 +390,21 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         outgoingFromNeighbour.IsAccepted.ShouldBe(InviteState.Unanswered);
         outgoingFromNeighbour.ResolveDescription.ShouldBe(ResolveDescription.Unspecified);
 
-        // А вот входящее приглашение самого принявшего остаётся висеть неотвеченным — дефект:
-        // игрок уже переехал к приглашающему, но может принять и другое приглашение.
-        incomingToReceiver.IsAccepted.ShouldBe(InviteState.Unanswered);
+        // Входящее приглашение самого принявшего тоже снято: он уже переехал, отвечать на него нечем
+        incomingToReceiver.IsAccepted.ShouldBe(InviteState.Declined);
+        incomingToReceiver.ResolveDescription.ShouldBe(ResolveDescription.DeclinedWithAcceptOther);
     }
 
     /// <summary>
-    /// Пункт 9: мест на всех приглашённых не хватает — операция возвращает <c>null</c>
-    /// и ничего не меняет. Отказ при этом молчаливый (в коде так и помечено <c>todo</c>):
-    /// игрок не узнает причину.
+    /// Мест на всех переезжающих не хватает — внятный отказ, и ничего не изменилось.
     /// </summary>
+    /// <remarks>
+    /// До миграции операция молча возвращала <c>null</c> (в коде стояло <c>todo: make null result
+    /// descriptive</c>), и игрок не узнавал причину. Теперь это то же исключение, что у создания
+    /// приглашения, а контроллер отдаёт его текстом.
+    /// </remarks>
     [Fact]
-    public async Task AcceptInvite_NoFreeSpace_ReturnsNullAndChangesNothing()
+    public async Task AcceptInvite_NoFreeSpace_ThrowsAndChangesNothing()
     {
         var smallType = mock.CreateAccommodationType("Двушка", capacity: 2);
         mock.ReInitProjectInfo();
@@ -408,9 +417,10 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         var receiverRequest = mock.CreateAccommodationRequest(smallType, receiver);
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        var result = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().AcceptAccommodationInvite(InviteId(invite)));
 
-        result.ShouldBeNull();
+        exception.Message.ShouldContain("не хватает мест");
         invite.IsAccepted.ShouldBe(InviteState.Unanswered);
         invite.ResolveDescription.ShouldBe(ResolveDescription.Unspecified);
         senderRequest.Subjects.Select(claim => claim.ClaimId)
@@ -422,36 +432,38 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
-    /// Пункт 10: принять приглашение сегодня может ЛЮБОЙ пользователь — проверки прав в
-    /// <c>AcceptAccommodationInvite</c> нет вообще, достаточно знать идентификатор приглашения.
+    /// Принять приглашение может только тот, кому разрешено менять проживание принимающей заявки:
+    /// сам игрок, ответственный мастер или мастер с правом расселять. Посторонний получает отказ.
     /// </summary>
     /// <remarks>
-    /// IDOR, закрывается в PR 2 стека: там появится <c>ClaimAccessRequirement.AccommodationChange</c>
-    /// и тест превратится в проверку отказа.
+    /// До миграции проверки прав здесь не было вовсе — зная идентификатор приглашения, принять его
+    /// мог любой аутентифицированный пользователь и тем переселить людей по комнатам.
     /// </remarks>
     [Fact]
-    public async Task AcceptInvite_ByUnrelatedUser_StillAccepts()
+    public async Task AcceptInvite_ByUnrelatedUser_Throws()
     {
         var sender = CreateClaimWithAccommodation("Приглашающий");
         var receiver = CreateClaim("Приглашаемый");
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
-        var result = await CreateService(StrangerUserId).AcceptAccommodationInvite(InviteId(invite));
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(StrangerUserId).AcceptAccommodationInvite(InviteId(invite)));
 
-        result.ShouldBe(invite);
-        invite.IsAccepted.ShouldBe(InviteState.Accepted);
+        invite.IsAccepted.ShouldBe(InviteState.Unanswered);
+        SaveChangesCallCount.ShouldBe(0);
+        notificationService.Invites.ShouldBeEmpty();
     }
 
     /// <summary>
-    /// Пункт 11: сохранений на успешном приёме несколько — приватный <c>DeclineOtherInvite</c>
-    /// сохраняет на каждого переезжающего соседа, и ещё одно сохранение идёт в конце.
+    /// Приём — одна операция и одно сохранение, сколько бы соседей ни переезжало.
     /// </summary>
     /// <remarks>
-    /// Сейчас так (N+1 по числу переезжающих соседей); после миграции на ADR014 сохранение
-    /// станет одно, и тест обновится вместе с ней.
+    /// До миграции приватный <c>DeclineOtherInvite</c> сохранял на каждого переезжающего соседа,
+    /// то есть операция была неатомарной: падение на середине оставляло часть приглашений снятыми,
+    /// а переселение несделанным.
     /// </remarks>
     [Fact]
-    public async Task AcceptInvite_SavesOncePerMovedNeighbourPlusOne()
+    public async Task AcceptInvite_SavesOnce()
     {
         var sender = CreateClaimWithAccommodation("Приглашающий");
         var receiver = CreateClaim("Приглашаемый");
@@ -462,12 +474,11 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
 
         _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
-        unitOfWork.SaveChangesCallCount.ShouldBe(3);
+        SaveChangesCallCount.ShouldBe(1);
     }
 
     /// <summary>
-    /// Для сравнения с предыдущим: приглашённый без своей заявки на проживание переезжает
-    /// за одно сохранение — цикла по соседям просто нет.
+    /// То же и для приглашённого без своей заявки на проживание: он переезжает один.
     /// </summary>
     [Fact]
     public async Task AcceptInvite_ReceiverWithoutOwnRequest_SavesOnce()
@@ -479,6 +490,208 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Расселённая группа считает свободные места по своей комнате, а не по типу проживания:
+    /// в комнате живут не только соседи из той же группы. Вместимость при этом приходит из
+    /// метаданных проекта (ADR015), а не из навигации на тип.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_IntoFullRoom_Throws()
+    {
+        var smallType = mock.CreateAccommodationType("Двушка", capacity: 2);
+        mock.ReInitProjectInfo();
+
+        var sender = CreateClaim("Приглашающий");
+        var senderGroup = mock.CreateAccommodationRequest(smallType, sender);
+        var room = mock.CreateRoom(senderGroup, "Двушка №1");
+
+        // В той же комнате живёт ещё одна группа — мест больше нет
+        var neighbourGroup = mock.CreateAccommodationRequest(smallType, CreateClaim("Уже живёт"));
+        room.Inhabitants.Add(neighbourGroup);
+        neighbourGroup.Accommodation = room;
+        neighbourGroup.AccommodationId = room.Id;
+
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().AcceptAccommodationInvite(InviteId(invite)));
+
+        exception.Message.ShouldContain("не хватает мест");
+        receiver.AccommodationRequest.ShouldBeNull();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Та же комнатная ветка расчёта, но с запасом мест: приём проходит, и принявший оказывается
+    /// в комнате приглашающего.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_IntoRoomWithFreeSpace_Moves()
+    {
+        var sender = CreateClaim("Приглашающий");
+        var senderGroup = mock.CreateAccommodationRequest(accommodationType, sender);
+        var room = mock.CreateRoom(senderGroup, "Домик №1");
+
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
+        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+
+        receiver.AccommodationRequest.ShouldBe(senderGroup);
+        senderGroup.Accommodation.ShouldBe(room);
+        room.GetAllInhabitants().Select(claim => claim.ClaimId)
+            .ShouldBe([sender.ClaimId, receiver.ClaimId], ignoreOrder: true);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Опустевшая группа принимающего удаляется и тогда, когда была расселена по комнате: иначе в
+    /// комнате осталась бы группа без жильцов, занимающая место.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_RemovesEmptiedReceiverRequestSettledInRoom()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var receiverGroup = mock.CreateAccommodationRequest(accommodationType, receiver);
+        _ = mock.CreateRoom(receiverGroup, "Комната приглашаемого");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
+        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+
+        mock.AccommodationRequests.ShouldNotContain(receiverGroup);
+        receiver.AccommodationRequest.ShouldBe(sender.AccommodationRequest);
+    }
+
+    /// <summary>
+    /// Принять приглашение может и сам игрок принимающей заявки, не только мастер.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_ByPlayer_Accepts()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
+        _ = await CreateService(mock.Player.UserId).AcceptAccommodationInvite(InviteId(invite));
+
+        invite.IsAccepted.ShouldBe(InviteState.Accepted);
+        receiver.AccommodationRequest.ShouldBe(sender.AccommodationRequest);
+    }
+
+    /// <summary>
+    /// На приглашение уже ответили — повторный ответ отклоняется. Проверки состояния раньше не
+    /// было, а эндпойнт не идемпотентен: повторный приём доходил до операции, где приглашающий и
+    /// принимающий уже соседи, и отправлял их общую группу на удаление вместе с жильцами.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_Twice_Throws()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+        var senderGroup = sender.AccommodationRequest;
+
+        _ = await CreateService().AcceptAccommodationInvite(InviteId(invite));
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().AcceptAccommodationInvite(InviteId(invite)));
+
+        exception.Message.ShouldContain("уже ответили");
+        mock.AccommodationRequests.ShouldContain(senderGroup!);
+        receiver.AccommodationRequest.ShouldBe(senderGroup);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Встречные приглашения: A пригласил B, B пригласил A. Принято одно — второе сбылось само:
+    /// стороны уже живут вместе, отвечать на него нечего, и оно уходит в терминальный статус
+    /// «принято автоматически», а не остаётся висеть неотвеченным.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_ResolvesCounterpartInvite()
+    {
+        var first = CreateClaimWithAccommodation("Первый");
+        var second = CreateClaimWithAccommodation("Второй");
+        var counterpartInvite = mock.CreateAccommodationInvite(first, second);
+        var acceptedInvite = mock.CreateAccommodationInvite(second, first);
+
+        // Первый принял приглашение второго и переехал к нему
+        await CreateService().AcceptAccommodationInvite(InviteId(acceptedInvite));
+
+        acceptedInvite.IsAccepted.ShouldBe(InviteState.Accepted);
+        acceptedInvite.ResolveDescription.ShouldBe(ResolveDescription.Accepted);
+
+        counterpartInvite.IsAccepted.ShouldBe(InviteState.Accepted);
+        counterpartInvite.ResolveDescription.ShouldBe(ResolveDescription.AcceptedAuto);
+
+        first.AccommodationRequest.ShouldBe(second.AccommodationRequest);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Приглашение между теми, кто и так живёт в одной группе. Нормальным потоком такое не
+    /// создаётся (<c>EnsureCanInvite</c> не даёт приглашать своих) и не остаётся висеть — но в базе
+    /// лежат строки, созданные до этих правил, и принимать их нельзя: переезжать некуда, а группа,
+    /// которую приём считает опустевшей, — это та самая группа, где все и живут.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_WhenAlreadyNeighbours_Throws()
+    {
+        var first = CreateClaim("Первый");
+        var second = CreateClaim("Второй");
+        var commonGroup = mock.CreateAccommodationRequest(accommodationType, first, second);
+        var legacyInvite = mock.CreateAccommodationInvite(first, second);
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().AcceptAccommodationInvite(InviteId(legacyInvite)));
+
+        exception.Message.ShouldContain("уже живёт вместе");
+        mock.AccommodationRequests.ShouldContain(commonGroup);
+        commonGroup.Subjects.Select(claim => claim.ClaimId)
+            .ShouldBe([first.ClaimId, second.ClaimId], ignoreOrder: true);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// У приглашающего больше нет типа проживания — принимать приглашение некуда. Раньше здесь
+    /// падал <see cref="NullReferenceException"/>: результат запроса за его группой не проверялся.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_SenderWithoutAccommodationType_Throws()
+    {
+        var sender = CreateClaim("Приглашающий без типа проживания");
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().AcceptAccommodationInvite(InviteId(invite)));
+
+        exception.Message.ShouldContain("не выбран тип проживания");
+        invite.IsAccepted.ShouldBe(InviteState.Unanswered);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// В архивном проекте приём запрещён — как и остальные операции с проживанием. Проверки
+    /// активности здесь раньше не было вовсе.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_InArchivedProject_Throws()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+        ArchiveProject();
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => CreateService().AcceptAccommodationInvite(InviteId(invite)));
+
+        invite.IsAccepted.ShouldBe(InviteState.Unanswered);
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     #endregion
@@ -557,17 +770,19 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
-    /// Промах по идентификатору в приёме приглашения не проверяется вообще и даёт NRE —
-    /// пользователь видит «что-то пошло не так». Сейчас так; после миграции на ADR014
-    /// станет внятной ошибкой домена, и тест обновится вместе с ней.
+    /// Приглашения с таким идентификатором нет. До миграции промах по идентификатору в приёме не
+    /// проверялся вовсе и давал <see cref="NullReferenceException"/> — игрок видел «что-то пошло
+    /// не так».
     /// </summary>
     [Fact]
-    public async Task AcceptInvite_UnknownInvite_ThrowsNullReference()
+    public async Task AcceptInvite_UnknownInvite_Throws()
     {
         var unknownInviteId = new AccommodationInviteIdentification(mock.ProjectInfo.ProjectId, 100500);
 
-        _ = await Should.ThrowAsync<NullReferenceException>(
+        _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
             () => CreateService().AcceptAccommodationInvite(unknownInviteId));
+
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     /// <summary>

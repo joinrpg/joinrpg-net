@@ -203,13 +203,27 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                 .SingleOrDefaultAsync(request => request.Id == groupIntId);
         }
 
+        public async Task<AccommodationInvite> LoadInvite(AccommodationInviteIdentification inviteId)
+        {
+            var inviteIntId = inviteId.AccommodationInviteId;
+            var projectIntId = inviteId.ProjectId.Value;
+            return await ctx.Set<AccommodationInvite>()
+                    .Include(invite => invite.From)
+                    .Include(invite => invite.To)
+                    .SingleOrDefaultAsync(invite => invite.Id == inviteIntId && invite.ProjectId == projectIntId)
+                ?? throw new JoinRpgEntityNotFoundException(inviteIntId, nameof(AccommodationInvite));
+        }
+
         /// <summary>
-        /// Состав группы грузится явно: по нему считается, хватит ли в номере мест. Вместимость при
-        /// этом берётся из метаданных (ADR015), поэтому навигация на тип проживания не нужна.
+        /// Состав группы грузится явно: по нему считается, хватит ли в номере мест. Вместе с ним —
+        /// жильцы комнаты, если группа уже расселена: у расселённой группы свободное место считается
+        /// по комнате, а не по типу проживания. Вместимость при этом берётся из метаданных (ADR015),
+        /// поэтому навигация на тип проживания не нужна ни у группы, ни у комнаты.
         /// </summary>
         private IQueryable<AccommodationRequest> AccommodationGroupQuery(int projectId)
             => ctx.Set<AccommodationRequest>()
                 .Include(request => request.Subjects)
+                .Include(request => request.Accommodation!.Inhabitants.Select(group => group.Subjects))
                 .Where(request => request.ProjectId == projectId);
     }
 

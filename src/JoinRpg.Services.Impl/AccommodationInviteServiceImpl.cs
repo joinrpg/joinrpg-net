@@ -19,16 +19,19 @@ namespace JoinRpg.Services.Impl;
 internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
 {
     private readonly ICharacterPropsService characterPropsService;
+    private readonly IAccommodationInviteRepository inviteRepository;
 
     public AccommodationInviteServiceImpl(
         IUnitOfWork unitOfWork,
         IAccommodationNotificationService notificationService,
         ICharacterPropsService characterPropsService,
+        IAccommodationInviteRepository inviteRepository,
         ICurrentUserAccessor currentUserAccessor) :
         base(unitOfWork, currentUserAccessor)
     {
         NotificationService = notificationService;
         this.characterPropsService = characterPropsService;
+        this.inviteRepository = inviteRepository;
     }
 
     private IAccommodationNotificationService NotificationService { get; }
@@ -208,61 +211,148 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
     /// <inheritdoc />
     public async Task<AccommodationInvite?> AcceptAccommodationInvite(AccommodationInviteIdentification inviteId)
     {
-        //todo: make null result descriptive
-        var inviteRequest = await UnitOfWork.GetDbSet<AccommodationInvite>()
-            .Where(invite => invite.Id == inviteId.AccommodationInviteId)
-            .Include(invite => invite.To)
-            .Include(invite => invite.From)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
+        // Стороны нужны до начала мутации: корень операции — заявка принимающего, и узнать её
+        // можно только по приглашению. Само приглашение внутри перечитывается трекаемым.
+        var participants = await inviteRepository.GetInviteParticipants(inviteId);
 
-        var receiverAccommodationRequest =
-            await GetAccommodationRequestByClaim(inviteRequest.ToClaimId).ConfigureAwait(false);
-        var senderAccommodationRequest =
-            await GetAccommodationRequestByClaim(inviteRequest.FromClaimId)
-                .ConfigureAwait(false);
-
-        // GetRoomFreeSpace сам смотрит на навигацию, а не на FK: с непроставленной Accommodation
-        // в комнату всё равно не посчитать свободные места, и тогда считается по типу проживания.
-        var roomFreeSpace = senderAccommodationRequest.GetRoomFreeSpace();
-
-
-        var canInvite = roomFreeSpace >= (receiverAccommodationRequest?.Subjects.Count ?? 0);
-
-        if (!canInvite)
-        {
-            return null;
-        }
-
-        _ = (receiverAccommodationRequest?.Subjects.Remove(inviteRequest.To));
-        senderAccommodationRequest.Subjects.Add(inviteRequest.To);
-        inviteRequest.To.AccommodationRequest = senderAccommodationRequest;
-
-        if (receiverAccommodationRequest != null)
-        {
-            foreach (var claim in receiverAccommodationRequest.Subjects.ToList())
+        return await characterPropsService.ChangeClaimAsync<AccommodationInviteIdentification, AccommodationInvite?>(
+            participants.Receiver,
+            ClaimAccessRequirement.AccommodationChange,
+            ProjectActiveRequirement.MustBeActive,
+            inviteId,
+            async ctx =>
             {
-                await DeclineOtherInvite(claim.ClaimId, inviteId.AccommodationInviteId).ConfigureAwait(false);
-                senderAccommodationRequest.Subjects.Add(claim);
+                var invite = await ctx.LoadInvite(inviteId);
+
+                // Отвечать можно только на неотвеченное. Проверки не было, а принятые приглашения
+                // из базы не удаляются и эндпойнт не идемпотентен — поэтому повторный приём (двойной
+                // клик, повтор запроса) доходил до операции, у которой приглашающий и принимающий
+                // уже живут в одной группе, и та группа отправлялась на удаление вместе с жильцами.
+                if (invite.IsAccepted != InviteState.Unanswered)
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(inviteId.ProjectId,
+                        "На это приглашение уже ответили.");
+                }
+
+                var senderGroup = await ctx.LoadAccommodationGroupForClaim(participants.Sender);
+                if (senderGroup is null)
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(inviteId.ProjectId,
+                        "У приглашающего не выбран тип проживания.");
+                }
+
+                // Переезжает вся группа принимающего, а если группы у него нет — он один.
+                var receiverGroup = ctx.Claim.AccommodationRequest;
+
+                // Обе стороны уже соседи — переезжать некуда, а удалять «опустевшую» группу нельзя:
+                // это та же группа, в которой все и живут. Нормальным потоком такое приглашение не
+                // создаётся (EnsureCanInvite не даёт приглашать своих) и не остаётся висеть (приём
+                // закрывает встречные приглашения, см. ResolveInvitesOfMovedClaim) — но в базе
+                // лежат строки, созданные до этих правил.
+                if (ReferenceEquals(receiverGroup, senderGroup))
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(inviteId.ProjectId,
+                        "Приглашённый уже живёт вместе с приглашающим.");
+                }
+                var moving = receiverGroup is null ? [ctx.Claim] : receiverGroup.Subjects.ToList();
+
+                if (senderGroup.GetRoomFreeSpace(ctx.ProjectInfo) < moving.Count)
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(inviteId.ProjectId,
+                        "В номере не хватает мест для всех приглашаемых.");
+                }
+
+                foreach (var claim in moving)
+                {
+                    _ = receiverGroup?.Subjects.Remove(claim);
+                    senderGroup.Subjects.Add(claim);
+
+                    // Обе стороны связи проставляются явно: до миграции это делалось только для
+                    // принявшей заявки, а остальные переезжающие полагались на relationship fixup EF6.
+                    claim.AccommodationRequest = senderGroup;
+                    claim.AccommodationRequest_Id = senderGroup.Id;
+                }
+
+                if (receiverGroup is not null)
+                {
+                    // Группа опустела — все её жильцы переехали.
+                    ctx.RemoveEntity(receiverGroup);
+                }
+
+                // Состав группы к этому моменту окончательный, и только теперь видно, кто кому стал
+                // соседом, — поэтому прочие приглашения разбираются после переезда, а не внутри него.
+                var neighbours = senderGroup.Subjects.Select(claim => claim.ClaimId).ToHashSet();
+                foreach (var claim in moving)
+                {
+                    await ResolveInvitesOfMovedClaim(ctx, claim.GetId(), invite, neighbours);
+                }
+
+                invite.IsAccepted = InviteState.Accepted;
+                invite.ResolveDescription = ResolveDescription.Accepted;
+
+                ctx.AddInviteNotification(new AccommodationInviteNotification(
+                    [participants.Sender],
+                    ctx.CurrentUser.ToUserInfoHeader(),
+                    InviteChangeKind.Accepted));
+
+                return invite;
+            });
+    }
+
+    /// <summary>
+    /// Разбирает прочие приглашения заявки, которая только что переехала к новым соседям: ни одно
+    /// из них не должно остаться неотвеченным.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Приглашение между теми, кто теперь живёт вместе, считается <b>сбывшимся</b>: его цель
+    /// достигнута, отвечать на него нечего, и терминальный статус у него «принято автоматически».
+    /// Так закрываются встречные приглашения — A пригласил B, B пригласил A, принято одно: второе
+    /// иначе осталось бы висеть неотвеченным, и ответить на него было бы уже нельзя.
+    /// </para>
+    /// <para>
+    /// Входящие приглашения <b>со стороны</b> отклоняются: игрок уже переехал. Исходящие наружу не
+    /// трогаются — их снимает отказ или отзыв.
+    /// </para>
+    /// <para>
+    /// До миграции разбор шёл только по соседям принявшего, но не по нему самому — его заявку
+    /// убирали из группы раньше цикла, — поэтому игрок мог принять приглашение и тут же принять
+    /// второе.
+    /// </para>
+    /// </remarks>
+    private static async Task ResolveInvitesOfMovedClaim(
+        ClaimMutationContext ctx,
+        ClaimIdentification claimId,
+        AccommodationInvite acceptedInvite,
+        HashSet<int> neighbours)
+    {
+        var invites = await ctx.LoadInvitesForClaim(claimId);
+
+        foreach (var invite in invites)
+        {
+            if (invite.Id == acceptedInvite.Id || invite.IsAccepted != InviteState.Unanswered)
+            {
+                continue;
             }
 
-            _ = UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
+            var isIncoming = invite.ToClaimId == claimId.ClaimId;
+            var counterparty = isIncoming ? invite.FromClaimId : invite.ToClaimId;
+
+            if (neighbours.Contains(counterparty))
+            {
+                invite.IsAccepted = InviteState.Accepted;
+                invite.ResolveDescription = ResolveDescription.AcceptedAuto;
+            }
+            else if (isIncoming)
+            {
+                invite.IsAccepted = InviteState.Declined;
+                invite.ResolveDescription = ResolveDescription.DeclinedWithAcceptOther;
+            }
         }
-
-        inviteRequest.IsAccepted = InviteState.Accepted;
-        inviteRequest.ResolveDescription = ResolveDescription.Accepted;
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
-
-        var receivers = await UnitOfWork.GetDbSet<Claim>()
-            .Where(claim => inviteRequest.FromClaimId == claim.ClaimId)
-            .ToArrayAsync()
-            .ConfigureAwait(false);
-
-        await NotifyAboutInvite(receivers, InviteChangeKind.Accepted)
-            .ConfigureAwait(false);
-
-
-        return inviteRequest;
     }
 
     public async Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(
@@ -344,38 +434,5 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
         // Проект больше не читаем: название уведомление возьмёт из метаданных по заявкам получателей.
         await NotifyAboutInvite(receivers, InviteChangeKind.Cancelled)
             .ConfigureAwait(false);
-    }
-
-
-    private async Task<AccommodationRequest> GetAccommodationRequestByClaim(int claimId) =>
-        await UnitOfWork.GetDbSet<AccommodationRequest>()
-            .Where(request => request.Subjects.Any(subject => subject.ClaimId == claimId))
-            .Where(request => request.IsAccepted == InviteState.Accepted)
-            .Include(request => request.Subjects)
-            .Include(request => request.AccommodationType)
-            .Include(request => request.Accommodation)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
-
-
-    private async Task DeclineOtherInvite(int claimId,
-        int inviteId)
-    {
-        var inviteRequests = await UnitOfWork.GetDbSet<AccommodationInvite>()
-            .Where(invite => invite.ToClaimId == claimId)
-            .Where(invite => invite.Id != inviteId)
-            .ToListAsync().ConfigureAwait(false);
-        var stateToDecline = new[] { InviteState.Unanswered };
-        foreach (var accommodationInvite in inviteRequests)
-        {
-            if (!stateToDecline.Contains(accommodationInvite.IsAccepted))
-            {
-                continue;
-            }
-
-            accommodationInvite.IsAccepted = InviteState.Declined;
-            accommodationInvite.ResolveDescription = ResolveDescription.DeclinedWithAcceptOther;
-        }
-
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
     }
 }
