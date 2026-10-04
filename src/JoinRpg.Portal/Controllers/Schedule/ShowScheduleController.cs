@@ -46,6 +46,13 @@ public class ShowScheduleController(
     [HttpGet("ical")]
     public async Task<ActionResult> Ical(int projectId)
     {
+        // Права пока не проверяем (см. TODO выше), а без настроенного расписания календаря нет:
+        // подписке на календарь честнее ответить 404, чем страницей ошибки (#5266).
+        var errors = await manager.CheckScheduleConfiguration();
+        if (errors.Any(e => e != ScheduleConfigProblemsViewModel.NoAccess))
+        {
+            return NotFound();
+        }
         var schedule = await manager.GetIcalSchedule();
         return File(Encoding.UTF8.GetBytes(schedule), "text/calendar");
     }

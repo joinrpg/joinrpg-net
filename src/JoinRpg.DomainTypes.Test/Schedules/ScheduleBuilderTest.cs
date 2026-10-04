@@ -26,6 +26,17 @@ public class ScheduleBuilderTest
         = new Dictionary<UserIdentification, UserInfoHeader>();
 
     [Fact]
+    public void ThrowsDomainExceptionWhenScheduleNotConfigured()
+    {
+        var projectInfo = MakeProject();
+
+        var exception = Should.Throw<ScheduleNotEnabledException>(
+            () => new ScheduleBuilder([], projectInfo, NoAuthors));
+
+        exception.ProjectId.ShouldBe(ProjectId);
+    }
+
+    [Fact]
     public void PutsItemIntoSelectedSlot()
     {
         var projectInfo = MakeScheduleProject();
