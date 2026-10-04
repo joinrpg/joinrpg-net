@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
 namespace JoinRpg.Dal.Impl.Repositories.Characters;
 
@@ -101,6 +102,9 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
             .Include(c => c.Player.Claims)
             .Include(c => c.CommentDiscussion.Comments)
             .Include(c => c.AccommodationRequest)
+            // Состав группы проживающих — иначе и приглашение, и выход из группы читали бы
+            // Subjects ленивым запросом из середины мутации.
+            .Include(c => c.AccommodationRequest!.Subjects)
             .Include(c => c.FinanceOperations);
 
     private class CharacterAggregateUpdateHandle(
@@ -183,6 +187,30 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                 .Where(i => i.ToClaimId == claimIntId || i.FromClaimId == claimIntId)
                 .ToListAsync();
         }
+
+        public async Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId)
+        {
+            var claimIntId = claimId.ClaimId;
+            var projectIntId = claimId.ProjectId.Value;
+            return await AccommodationGroupQuery(projectIntId)
+                .SingleOrDefaultAsync(request => request.Subjects.Any(subject => subject.ClaimId == claimIntId));
+        }
+
+        public async Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
+        {
+            var groupIntId = groupId.AccommodationRequestId;
+            return await AccommodationGroupQuery(groupId.ProjectId.Value)
+                .SingleOrDefaultAsync(request => request.Id == groupIntId);
+        }
+
+        /// <summary>
+        /// Состав группы грузится явно: по нему считается, хватит ли в номере мест. Вместимость при
+        /// этом берётся из метаданных (ADR015), поэтому навигация на тип проживания не нужна.
+        /// </summary>
+        private IQueryable<AccommodationRequest> AccommodationGroupQuery(int projectId)
+            => ctx.Set<AccommodationRequest>()
+                .Include(request => request.Subjects)
+                .Where(request => request.ProjectId == projectId);
     }
 
     private sealed class ClaimUpdateHandle(

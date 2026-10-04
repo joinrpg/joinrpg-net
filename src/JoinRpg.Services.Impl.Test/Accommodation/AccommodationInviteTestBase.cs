@@ -1,7 +1,7 @@
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Services.Impl.Accommodation;
+using JoinRpg.Services.Impl.Test.Claims;
 
 namespace JoinRpg.Services.Impl.Test.Accommodation;
 
@@ -10,15 +10,13 @@ namespace JoinRpg.Services.Impl.Test.Accommodation;
 /// (<c>AccommodationInviteServiceImpl</c>).
 /// </summary>
 /// <remarks>
-/// Сервис ещё не переехал на write-репозитории и ходит в <c>UnitOfWork.GetDbSet</c>, поэтому
-/// наборы подключены к <see cref="FakeUnitOfWork"/> явно (см. <c>UseDbSet</c>).
+/// Наследует обвязку claim-контура (ADR014): корень агрегата у приглашения — заявка, поэтому
+/// сервису нужен настоящий <c>CharacterPropsService</c> поверх тех же фейков. Методы, которые на
+/// props-сервис ещё не переехали, ходят в <c>UnitOfWork.GetDbSet</c>, поэтому наборы подключены к
+/// <see cref="FakeUnitOfWork"/> явно (см. <c>UseDbSet</c>).
 /// </remarks>
-public abstract class AccommodationInviteTestBase
+public abstract class AccommodationInviteTestBase : ClaimServiceTestBase
 {
-    private protected readonly MockedProject mock = new();
-    private protected readonly FakeUnitOfWork unitOfWork;
-    private protected readonly FakeAccommodationNotificationService notificationService = new();
-
     /// <summary>Тип проживания по умолчанию: мест хватает на всех участников тестов.</summary>
     private protected readonly ProjectAccommodationType accommodationType;
 
@@ -31,21 +29,35 @@ public abstract class AccommodationInviteTestBase
         accommodationType = mock.CreateAccommodationType("Домик", capacity: 4);
         mock.ReInitProjectInfo();
 
-        unitOfWork = new FakeUnitOfWork(mock);
         unitOfWork.UseDbSet(mock.Project.Claims);
         unitOfWork.UseDbSet(mock.AccommodationRequests);
         unitOfWork.UseDbSet(mock.AccommodationInvites);
 
-        unitOfWork.OnSaveChanges = _ => journal.Add("save");
+        OnSaveChanges = _ => journal.Add("save");
         notificationService.OnNotification = () => journal.Add("notification");
     }
+
+    /// <summary>Канал уведомлений о проживании — в нём видно и приглашения.</summary>
+    private protected FakeAccommodationNotificationService notificationService => accommodationNotifications;
 
     /// <summary>
     /// Сервис от лица указанного пользователя; по умолчанию — от мастера проекта, у которого есть
     /// все права.
     /// </summary>
     private protected AccommodationInviteServiceImpl CreateService(int? currentUserId = null)
-        => new(unitOfWork, notificationService, new FakeCurrentUserAccessor(currentUserId ?? mock.Master.UserId));
+        => new(
+            unitOfWork,
+            notificationService,
+            CreatePropsService(currentUserId),
+            CreateCurrentUser(currentUserId));
+
+    /// <summary>Переводит проект в архив — операции над ним запрещены.</summary>
+    private protected void ArchiveProject()
+    {
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+    }
 
     /// <summary>Заявка игрока с выбранным типом проживания (своя заявка на проживание).</summary>
     private protected Claim CreateClaimWithAccommodation(string characterName)

@@ -2,24 +2,39 @@ using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
+using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using JoinRpg.Services.Impl.Accommodation;
+using JoinRpg.Services.Impl.Characters;
+using JoinRpg.Services.Impl.Claims;
+using JoinRpg.Services.Impl.Projects;
 
 namespace JoinRpg.Services.Impl;
 
+/// <remarks>
+/// Миграция на <c>ICharacterPropsService</c> (ADR014) идёт по одной операции: на props-сервис
+/// переведено создание приглашения, остальные три метода ещё ходят в
+/// <c>UnitOfWork.GetDbSet&lt;T&gt;()</c> через <c>[Obsolete] DbServiceImplBase</c>.
+/// </remarks>
 internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
 {
+    private readonly ICharacterPropsService characterPropsService;
+
     public AccommodationInviteServiceImpl(
         IUnitOfWork unitOfWork,
         IAccommodationNotificationService notificationService,
+        ICharacterPropsService characterPropsService,
         ICurrentUserAccessor currentUserAccessor) :
-        base(unitOfWork, currentUserAccessor) => NotificationService = notificationService;
+        base(unitOfWork, currentUserAccessor)
+    {
+        NotificationService = notificationService;
+        this.characterPropsService = characterPropsService;
+    }
 
     private IAccommodationNotificationService NotificationService { get; }
 
     /// <inheritdoc />
-    public async Task CreateAccommodationInvite(
+    public Task CreateAccommodationInvite(
         ClaimIdentification senderClaimId,
         AccommodationRequestIdentification senderRequestId,
         AccommodationTargetIdentification target)
@@ -28,123 +43,100 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
 
         _ = new IProjectEntityId[] { senderRequestId, target }.EnsureProject(senderClaimId.ProjectId);
 
-        // Приглашать может либо сам игрок, либо мастер с правом расселять — как и в остальных
-        // операциях с проживанием (см. IClaimService.SetAccommodationType/LeaveAccommodationGroupAsync)
-        var senderClaim = await ClaimsRepository.GetClaim(senderClaimId).ConfigureAwait(false);
-        _ = senderClaim.RequestAccess(currentUserAccessor.UserIdentification,
-            Permission.CanSetPlayersAccommodations,
-            senderClaim?.ClaimStatus == ClaimStatus.Approved
-                ? ExtraAccessReason.PlayerOrResponsible
-                : ExtraAccessReason.None);
-
-        if (target.AsAccommodationRequestId() is { } receiverRequestId)
-        {
-            await CreateAccommodationInviteToAccommodationRequest(senderClaimId, senderRequestId, receiverRequestId)
-                .ConfigureAwait(false);
-        }
-        else if (target.AsClaimId() is { } receiverClaimId)
-        {
-            await CreateAccommodationInviteToClaim(senderClaimId, senderRequestId, receiverClaimId)
-                .ConfigureAwait(false);
-        }
-        else
-        {
-            //TODO[Localize]
-            throw new AccommodationInviteNotAllowedException(target.ProjectId, "Не выбрано, кого приглашать.");
-        }
-    }
-
-    private async Task CreateAccommodationInviteToClaim(
-        ClaimIdentification senderClaimId,
-        AccommodationRequestIdentification senderRequestId,
-        ClaimIdentification receiverClaimId)
-    {
-        var receiverCurrentAccommodationRequest = await UnitOfWork
-            .GetDbSet<Claim>()
-            .Where(claim => claim.ClaimId == receiverClaimId.ClaimId)
-            .Select(claim => claim.AccommodationRequest)
-            .Include(request => request!.Subjects)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
-
-        var senderAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
-            .Where(request => request.Id == senderRequestId.AccommodationRequestId)
-            .Include(request => request.Subjects)
-            .Include(request => request.AccommodationType)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
-
-        EnsureCanInvite(
-            senderRequestId.ProjectId,
+        // Корень агрегата — заявка приглашающего (ADR014): приглашение живёт на её группе
+        // проживающих, и доступ требуется ровно такой же, как у остальных операций с проживанием
+        // (IClaimService.SetAccommodationType/LeaveAccommodationGroupAsync) — право расселять, а у
+        // утверждённой заявки ещё и сам игрок с ответственным мастером.
+        return characterPropsService.ChangeClaimAsync(
             senderClaimId,
-            senderAccommodationRequest,
-            receiverCurrentAccommodationRequest,
-            newDwellersCount: receiverCurrentAccommodationRequest?.Subjects.Count ?? 1,
-            receiverClaimId: receiverClaimId.ClaimId);
-
-        var inviteRequest = new AccommodationInvite
-        {
-            ProjectId = senderClaimId.ProjectId.Value,
-            FromClaimId = senderClaimId.ClaimId,
-            ToClaimId = receiverClaimId.ClaimId,
-            IsAccepted = InviteState.Unanswered,
-        };
-
-        _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
-        var receiver = await UnitOfWork
-            .GetDbSet<Claim>()
-            .Where(claim => claim.ClaimId == receiverClaimId.ClaimId)
-            .ToArrayAsync().ConfigureAwait(false);
-
-        await NotifyAboutInvite(receiver, InviteChangeKind.Created)
-            .ConfigureAwait(false);
-    }
-
-    private async Task CreateAccommodationInviteToAccommodationRequest(
-        ClaimIdentification senderClaimId,
-        AccommodationRequestIdentification senderRequestId,
-        AccommodationRequestIdentification receiverRequestId)
-    {
-        var receiverCurrentAccommodationRequest = await UnitOfWork
-            .GetDbSet<AccommodationRequest>()
-            .Where(request => request.Id == receiverRequestId.AccommodationRequestId)
-            .Include(request => request.Subjects)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
-
-        var senderAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
-            .Where(request => request.Id == senderRequestId.AccommodationRequestId)
-            .Include(request => request.Subjects)
-            .Include(request => request.AccommodationType)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
-
-        EnsureCanInvite(
-            senderRequestId.ProjectId,
-            senderClaimId,
-            senderAccommodationRequest,
-            receiverCurrentAccommodationRequest,
-            newDwellersCount: receiverCurrentAccommodationRequest?.Subjects.Count ?? 1);
-
-        var receiversClaims = await UnitOfWork
-            .GetDbSet<Claim>()
-            .Where(claim => claim.AccommodationRequest_Id == receiverRequestId.AccommodationRequestId)
-            .ToArrayAsync()
-            .ConfigureAwait(false);
-
-        foreach (var receiverClaim in receiversClaims)
-        {
-            _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(new AccommodationInvite
+            ClaimAccessRequirement.AccommodationChange,
+            ProjectActiveRequirement.MustBeActive,
+            target,
+            async ctx =>
             {
-                ProjectId = senderClaimId.ProjectId.Value,
-                FromClaimId = senderClaimId.ClaimId,
-                ToClaimId = receiverClaim.ClaimId,
-                IsAccepted = InviteState.Unanswered,
+                // Группа приглашающего берётся из его же заявки, а не по senderRequestId из
+                // запроса: идентификатор приходит из формы и раньше проверялся только на
+                // принадлежность проекту, то есть мастер мог пригласить соседа в чужую комнату.
+                var senderGroup = ctx.Claim.AccommodationRequest;
+                if (senderGroup is not null && senderGroup.Id != senderRequestId.AccommodationRequestId)
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(senderClaimId.ProjectId,
+                        "Заявка на проживание не принадлежит приглашающей заявке.");
+                }
+
+                var (receiverGroup, receiverClaimIds) = await LoadInviteTarget(ctx, target);
+
+                EnsureCanInvite(
+                    senderClaimId.ProjectId,
+                    ctx.ProjectInfo.AccommodationSettings,
+                    senderClaimId,
+                    senderGroup,
+                    receiverGroup,
+                    // Приглашается либо вся сложившаяся группа, либо один игрок, который группы
+                    // ещё не имеет.
+                    newDwellersCount: receiverGroup?.Subjects.Count ?? 1,
+                    // Приглашение конкретной заявки адресовано ей одной, даже если у неё есть
+                    // соседи; в приглашении группы такого «одного получателя» нет.
+                    receiverClaimId: target.AsClaimId()?.ClaimId);
+
+                foreach (var receiverClaimId in receiverClaimIds)
+                {
+                    ctx.AddEntity(new AccommodationInvite
+                    {
+                        ProjectId = senderClaimId.ProjectId.Value,
+                        FromClaimId = senderClaimId.ClaimId,
+                        ToClaimId = receiverClaimId.ClaimId,
+                        IsAccepted = InviteState.Unanswered,
+                    });
+                }
+
+                ctx.AddInviteNotification(new AccommodationInviteNotification(
+                    receiverClaimIds,
+                    ctx.CurrentUser.ToUserInfoHeader(),
+                    InviteChangeKind.Created));
             });
+    }
+
+    /// <summary>
+    /// Разворачивает цель приглашения: её группу проживающих (если та уже есть) и заявки, которым
+    /// уйдут приглашения.
+    /// </summary>
+    /// <remarks>
+    /// Обе стороны — выход за границу агрегата заявки, поэтому идут именованными загрузчиками
+    /// контекста: так они трекаются тем же <c>DbContext</c>, через который пойдёт сохранение
+    /// (ADR014).
+    /// </remarks>
+    private static async Task<(AccommodationRequest? Group, IReadOnlyCollection<ClaimIdentification> Receivers)>
+        LoadInviteTarget(ClaimMutationContext ctx, AccommodationTargetIdentification target)
+    {
+        if (target.AsAccommodationRequestId() is { } receiverGroupId)
+        {
+            // Приглашается сложившаяся группа соседей — приглашение уходит каждому её участнику.
+            var group = await ctx.LoadAccommodationGroup(receiverGroupId);
+            if (group is null)
+            {
+                //TODO[Localize]
+                throw new AccommodationInviteNotAllowedException(target.ProjectId,
+                    "Приглашаемая группа проживающих не найдена.");
+            }
+
+            return (group, [.. group.Subjects.Select(claim => claim.GetId())]);
         }
 
-        await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        if (target.AsClaimId() is { } receiverClaimId)
+        {
+            // Заявка приглашаемого грузится не ради данных, а ради проверки, что она вообще есть в
+            // этом проекте: идентификатор цели приходит из запроса, и EnsureProject сверяет лишь
+            // объявленный в нём проект. Без этого можно было пригласить заявку чужого проекта —
+            // приглашение создалось бы, и игрок чужой игры получил бы уведомление.
+            _ = await ctx.LoadOtherClaim(receiverClaimId);
 
-        await NotifyAboutInvite(receiversClaims, InviteChangeKind.Created)
-            .ConfigureAwait(false);
+            return (await ctx.LoadAccommodationGroupForClaim(receiverClaimId), [receiverClaimId]);
+        }
+
+        //TODO[Localize]
+        throw new AccommodationInviteNotAllowedException(target.ProjectId, "Не выбрано, кого приглашать.");
     }
 
     /// <summary>
@@ -154,6 +146,7 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
     //TODO[Localize]
     internal static void EnsureCanInvite(
         ProjectIdentification projectId,
+        ProjectAccommodationSettings accommodationSettings,
         ClaimIdentification senderClaimId,
         AccommodationRequest? senderRequest,
         AccommodationRequest? receiverRequest,
@@ -189,7 +182,13 @@ internal class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodatio
                 "Приглашать можно только тех, кто выбрал такой же тип проживания.");
         }
 
-        if (senderRequest.Subjects.Count + newDwellersCount > senderRequest.AccommodationType.Capacity)
+        // Вместимость — из метаданных проекта (ADR015), а не из навигации senderRequest
+        // .AccommodationType: та внутри мутации обернулась бы ленивой загрузкой.
+        var capacity = accommodationSettings
+            .GetTypeById(new AccommodationTypeIdentification(projectId, senderRequest.AccommodationTypeId))
+            .Capacity;
+
+        if (senderRequest.Subjects.Count + newDwellersCount > capacity)
         {
             throw new AccommodationInviteNotAllowedException(projectId,
                 "В номере не хватает мест для всех приглашаемых.");
