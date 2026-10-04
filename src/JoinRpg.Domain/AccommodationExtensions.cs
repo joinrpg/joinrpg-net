@@ -46,6 +46,29 @@ public static class AccommodationExtensions
         }
     }
 
+    /// <summary>
+    /// То же, но вместимость берётся из метаданных проекта (ADR015), а не из навигаций
+    /// <c>AccommodationType</c> / <c>Accommodation.ProjectAccommodationType</c>.
+    /// </summary>
+    /// <remarks>
+    /// Нужна мутациям: внутри операции обращение к незагруженной навигации — это скрытый запрос из
+    /// середины мутации, чего ADR014 не допускает. Расчёт тот же, что в перегрузке без метаданных.
+    /// </remarks>
+    public static int GetRoomFreeSpace(this AccommodationRequest accommodationRequest, ProjectInfo projectInfo)
+    {
+        if (accommodationRequest.Accommodation is ProjectAccommodation room)
+        {
+            return Capacity(room.AccommodationTypeId) - room.GetAllInhabitants().Count();
+        }
+
+        return Capacity(accommodationRequest.AccommodationTypeId) - accommodationRequest.Subjects.Count;
+
+        int Capacity(int accommodationTypeId)
+            => projectInfo.AccommodationSettings
+                .GetTypeById(new AccommodationTypeIdentification(projectInfo.ProjectId, accommodationTypeId))
+                .Capacity;
+    }
+
     public static List<User> GetClaimNeighbours(this Claim claim)
     {
         if (claim.AccommodationRequest is AccommodationRequest accommodationRequest)

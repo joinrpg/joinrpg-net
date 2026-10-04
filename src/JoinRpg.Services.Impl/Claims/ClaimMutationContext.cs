@@ -46,6 +46,21 @@ internal abstract record ClaimMutationContext(
         => Scope.LoadInvitesForClaim(ClaimInfo.ClaimId);
 
     /// <summary>
+    /// То же для другой заявки того же проекта: приём приглашения снимает повисшие приглашения со
+    /// всех, кто переезжает вместе с принявшим.
+    /// </summary>
+    public Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim(ClaimIdentification claimId)
+        => Scope.LoadInvitesForClaim(claimId);
+
+    /// <summary>
+    /// Приглашение к совместному проживанию по идентификатору — трекаемое, вместе с заявками обеих
+    /// сторон.
+    /// </summary>
+    /// <exception cref="JoinRpgEntityNotFoundException">Приглашения в этом проекте нет.</exception>
+    public Task<AccommodationInvite> LoadInvite(AccommodationInviteIdentification inviteId)
+        => Scope.LoadInvite(inviteId);
+
+    /// <summary>
     /// Группа проживающих другой заявки вместе с составом, либо <c>null</c>, если та ещё не выбрала
     /// тип проживания. Своя группа у заявки уже на руках — <c>Claim.AccommodationRequest</c>.
     /// </summary>

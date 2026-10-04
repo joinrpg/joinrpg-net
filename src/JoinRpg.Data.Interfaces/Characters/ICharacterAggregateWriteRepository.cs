@@ -128,6 +128,17 @@ public interface IAggregateMutationScope
     /// названа идентификатором группы, а не заявки.
     /// </remarks>
     Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId);
+
+    /// <summary>
+    /// Приглашение к совместному проживанию по идентификатору — трекаемое, вместе с заявками обеих
+    /// сторон.
+    /// </summary>
+    /// <remarks>
+    /// Фильтр по проекту здесь существенный: идентификатор приглашения приходит параметром
+    /// операции, а проект в нём только объявленный.
+    /// </remarks>
+    /// <exception cref="JoinRpgEntityNotFoundException">Приглашения в этом проекте нет.</exception>
+    Task<AccommodationInvite> LoadInvite(AccommodationInviteIdentification inviteId);
 }
 
 public interface ICharacterAggregateUpdateHandle : IAggregateMutationScope

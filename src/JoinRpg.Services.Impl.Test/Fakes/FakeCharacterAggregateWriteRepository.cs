@@ -150,6 +150,14 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
                 case Comment comment:
                     _ = comment.Discussion?.Comments.Remove(comment);
                     break;
+                case AccommodationRequest request:
+                    // Навигации на заявки проживания у проекта нет, поэтому роль DbSet играют
+                    // отдельные коллекции мока — см. Add.
+                    _ = mock.AccommodationRequests.Remove(request);
+                    break;
+                case AccommodationInvite invite:
+                    _ = mock.AccommodationInvites.Remove(invite);
+                    break;
                 default:
                     break;
             }
@@ -194,6 +202,14 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         public Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
             => Task.FromResult(mock.AccommodationRequests.SingleOrDefault(
                 request => request.Id == groupId.AccommodationRequestId));
+
+        public Task<AccommodationInvite> LoadInvite(AccommodationInviteIdentification inviteId)
+            => Task.FromResult(
+                mock.AccommodationInvites.SingleOrDefault(
+                    invite => invite.Id == inviteId.AccommodationInviteId
+                        && invite.ProjectId == inviteId.ProjectId.Value)
+                ?? throw new JoinRpgEntityNotFoundException(
+                    inviteId.AccommodationInviteId, nameof(AccommodationInvite)));
     }
 
     private sealed class ClaimHandle : Handle, IClaimUpdateHandle
