@@ -3,7 +3,8 @@
 
     Всё это — ячейки одного CSS grid внутри одного блока прокрутки. Шапка и левая колонка
     прилипают к краям (position: sticky), поэтому при прокрутке поля остаются на месте сами,
-    без скрипта. Линии сетки рисует фон подложки, а не пустые ячейки таблицы.
+    без скрипта. Линии сетки рисует фон подложки, а не пустые ячейки таблицы. Описания комнат
+    и слотов — в подсказках Tooltip: они в top layer, и их не обрезает блок прокрутки.
 *@
 <div id="scheduler" class="scheduler @(FullScreen ? "scheduler-fullscreen" : "scheduler-embedded")">
 
@@ -12,13 +13,13 @@
 
         @foreach (var (col, index) in Model.Columns.Select((col, index) => (col, index)))
         {
-            <div id="project-room@(col.Id.ProjectFieldVariantId)" class="scheduler-header-column" style="grid-column: @(index + 2)" title="@col.Description.Value" data-toggle="tooltip" data-placement="bottom">@col.Name</div>
+            <div id="project-room@(col.Id.ProjectFieldVariantId)" class="scheduler-header-column" style="grid-column: @(index + 2)">@HeaderWithTooltip(col, TooltipPlacement.Bottom)</div>
         }
 
         @for (var index = 0; index < Model.Rows.Count; index++)
         {
             var row = Model.Rows[index];
-            <div id="project-slot@(row.Id.ProjectFieldVariantId)" class="scheduler-header-row" style="grid-row: @(index + 2)" title="@row.Description.Value" data-toggle="tooltip" data-placement="right">@row.Name</div>
+            <div id="project-slot@(row.Id.ProjectFieldVariantId)" class="scheduler-header-row" style="grid-row: @(index + 2)">@HeaderWithTooltip(row, TooltipPlacement.Right)</div>
         }
 
         <div class="scheduler-grid"></div>
@@ -39,12 +40,6 @@
 
 <script type="text/javascript">
     let appointmentClickHandler = () => {};
-    $(document).ready(function(){
-        $('[data-toggle="tooltip"]').tooltip({
-            html: true,
-            container: 'body'
-        });
-    });
 </script>
 
 @code {
@@ -63,6 +58,18 @@
     /// Размеры колонок и строк живут в Scheduler.razor.css, отсюда приходит только их число.
     /// </summary>
     private string GridStyle => $"--scheduler-columns: {Model.Columns.Count}; --scheduler-rows: {Model.Rows.Count}";
+
+    /// <summary>
+    /// Описание комнаты или слота — HTML из markdown, поэтому идёт в подсказку разметкой,
+    /// а не строкой. Без описания подсказки нет: пустая всплывала бы пустым прямоугольником.
+    /// </summary>
+    private static RenderFragment HeaderWithTooltip(TableHeaderViewModel header, TooltipPlacement placement)
+        => string.IsNullOrWhiteSpace(header.Description.Value)
+            ? @<text>@header.Name</text>
+            : @<Tooltip Placement="placement">
+                <ChildContent>@header.Name</ChildContent>
+                <TooltipContent>@header.Description</TooltipContent>
+            </Tooltip>;
 
     /// <summary>
     /// Первая строка и первая колонка сетки заняты шапкой, поэтому сдвиг на 2, а не на 1.

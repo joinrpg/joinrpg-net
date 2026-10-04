@@ -98,12 +98,11 @@ public class SchedulerTest
     }
 
     /// <summary>
-    /// Описание слота — markdown, отрендеренный в HTML. Раньше оно писалось в атрибут
-    /// без экранирования, из-за чего кавычка в описании ломала разметку; теперь атрибут
-    /// экранируется, а значение в DOM остаётся тем же.
+    /// Описание комнаты — markdown, отрендеренный в HTML: в подсказку оно идёт разметкой,
+    /// а не текстом с тегами.
     /// </summary>
     [Fact]
-    public void HeaderDescriptionGoesToTitleAttribute()
+    public void HeaderDescriptionGoesToTooltipAsMarkup()
     {
         using var ctx = CreateContext();
         var model = Model();
@@ -111,7 +110,40 @@ public class SchedulerTest
 
         var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, model));
 
-        cut.Find("div.scheduler-header-column").GetAttribute("title").ShouldBe("<p>Большой</p>");
+        var header = cut.Find("div.scheduler-header-column");
+        header.QuerySelector(".join-tooltip-container")!.GetAttribute("data-join-tooltip-placement").ShouldBe("bottom");
+        header.QuerySelector(".join-tooltip p")!.TextContent.ShouldBe("Большой");
+        header.HasAttribute("title").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SlotTooltipOpensToTheRight()
+    {
+        using var ctx = CreateContext();
+        var model = Model();
+        model.Rows = [Header(101, "Пятница 13:00", "Начало в 13:00")];
+
+        var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, model));
+
+        cut.Find("div.scheduler-header-row .join-tooltip-container")
+            .GetAttribute("data-join-tooltip-placement").ShouldBe("right");
+    }
+
+    /// <summary>
+    /// Пустая подсказка всплывала бы пустым прямоугольником — без описания остаётся одно имя.
+    /// </summary>
+    [Fact]
+    public void HeaderWithoutDescriptionHasNoTooltip()
+    {
+        using var ctx = CreateContext();
+        var model = Model();
+        model.Columns = [Header(1, "Шатёр", "")];
+
+        var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, model));
+
+        var header = cut.Find("div.scheduler-header-column");
+        header.QuerySelector(".join-tooltip").ShouldBeNull();
+        header.TextContent.ShouldBe("Шатёр");
     }
 
     [Fact]
