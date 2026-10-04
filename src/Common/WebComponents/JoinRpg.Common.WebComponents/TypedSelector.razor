@@ -15,6 +15,7 @@ else
             data-live-search-normalize="true"
             data-size="10"
             data-none-selected-text="@EmptyText"
+            data-width="@Width"
             name="@Name"
             multiple="@Multiple"
             @ref="selectRef"
@@ -51,6 +52,8 @@ else
     [Parameter] public bool Multiple { get; set; } = false;
     [Parameter] public bool AllowEmpty { get; set; } = false;
     [Parameter] public string EmptyText { get; set; } = "(нет)";
+    /// <summary>Ширина bootstrap-select (data-width): например, "auto" — по самому длинному пункту. null — ширина по умолчанию.</summary>
+    [Parameter] public string? Width { get; set; }
 
     private ElementReference selectRef;
     private IJSObjectReference? module;
