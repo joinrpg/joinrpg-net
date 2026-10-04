@@ -1,0 +1,172 @@
+/*
+ * Собственные стили JoinButton. Значения перенесены 1:1 из Bootstrap 3.4.0 (.btn, .btn-*),
+ * чтобы кнопки в островах выглядели так же, как ручные btn в cshtml, — но без опоры
+ * на классы Bootstrap и его правила для родителей (.btn-group > .btn и т. п.).
+ *
+ * Свойства, которые Bootstrap задаёт глобально (box-sizing, наследование шрифта кнопкой,
+ * сброс margin), заданы здесь явно: кнопка должна выглядеть одинаково и без Bootstrap.
+ */
+.join-btn {
+    --join-btn-color: #333;
+    --join-btn-bg: #fff;
+    --join-btn-border: #ccc;
+    --join-btn-focus-bg: #e6e6e6;
+    --join-btn-focus-border: #8c8c8c;
+    --join-btn-hover-bg: #e6e6e6;
+    --join-btn-hover-border: #adadad;
+    --join-btn-active-hover-bg: #d4d4d4;
+    --join-btn-active-hover-border: #8c8c8c;
+
+    box-sizing: border-box;
+    display: inline-block;
+    margin: 0;
+    font-family: inherit;
+    font-weight: normal;
+    text-align: center;
+    text-transform: none;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid var(--join-btn-border);
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    border-radius: 4px;
+    -webkit-user-select: none;
+    user-select: none;
+    color: var(--join-btn-color);
+    background-color: var(--join-btn-bg);
+    text-decoration: none;
+}
+
+.join-btn:focus {
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+    color: var(--join-btn-color);
+    background-color: var(--join-btn-focus-bg);
+    border-color: var(--join-btn-focus-border);
+    text-decoration: none;
+}
+
+.join-btn:hover {
+    color: var(--join-btn-color);
+    background-color: var(--join-btn-hover-bg);
+    border-color: var(--join-btn-hover-border);
+    text-decoration: none;
+}
+
+.join-btn:active {
+    outline: 0;
+    background-color: var(--join-btn-hover-bg);
+    border-color: var(--join-btn-hover-border);
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
+.join-btn:active:hover,
+.join-btn:active:focus {
+    background-color: var(--join-btn-active-hover-bg);
+    border-color: var(--join-btn-active-hover-border);
+}
+
+.join-btn:active:focus {
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+}
+
+.join-btn[disabled],
+.join-btn[disabled]:hover,
+.join-btn[disabled]:focus,
+.join-btn[disabled]:active {
+    cursor: not-allowed;
+    opacity: 0.65;
+    box-shadow: none;
+    background-color: var(--join-btn-bg);
+    border-color: var(--join-btn-border);
+}
+
+a.join-btn[disabled] {
+    pointer-events: none;
+}
+
+.join-btn--primary {
+    --join-btn-color: #fff;
+    --join-btn-bg: #337ab7;
+    --join-btn-border: #2e6da4;
+    --join-btn-focus-bg: #286090;
+    --join-btn-focus-border: #122b40;
+    --join-btn-hover-bg: #286090;
+    --join-btn-hover-border: #204d74;
+    --join-btn-active-hover-bg: #204d74;
+    --join-btn-active-hover-border: #122b40;
+}
+
+.join-btn--success {
+    --join-btn-color: #fff;
+    --join-btn-bg: #5cb85c;
+    --join-btn-border: #4cae4c;
+    --join-btn-focus-bg: #449d44;
+    --join-btn-focus-border: #255625;
+    --join-btn-hover-bg: #449d44;
+    --join-btn-hover-border: #398439;
+    --join-btn-active-hover-bg: #398439;
+    --join-btn-active-hover-border: #255625;
+}
+
+.join-btn--info {
+    --join-btn-color: #fff;
+    --join-btn-bg: #5bc0de;
+    --join-btn-border: #46b8da;
+    --join-btn-focus-bg: #31b0d5;
+    --join-btn-focus-border: #1b6d85;
+    --join-btn-hover-bg: #31b0d5;
+    --join-btn-hover-border: #269abc;
+    --join-btn-active-hover-bg: #269abc;
+    --join-btn-active-hover-border: #1b6d85;
+}
+
+.join-btn--warning {
+    --join-btn-color: #fff;
+    --join-btn-bg: #f0ad4e;
+    --join-btn-border: #eea236;
+    --join-btn-focus-bg: #ec971f;
+    --join-btn-focus-border: #985f0d;
+    --join-btn-hover-bg: #ec971f;
+    --join-btn-hover-border: #d58512;
+    --join-btn-active-hover-bg: #d58512;
+    --join-btn-active-hover-border: #985f0d;
+}
+
+.join-btn--danger {
+    --join-btn-color: #fff;
+    --join-btn-bg: #d9534f;
+    --join-btn-border: #d43f3a;
+    --join-btn-focus-bg: #c9302c;
+    --join-btn-focus-border: #761c19;
+    --join-btn-hover-bg: #c9302c;
+    --join-btn-hover-border: #ac2925;
+    --join-btn-active-hover-bg: #ac2925;
+    --join-btn-active-hover-border: #761c19;
+}
+
+.join-btn--lg {
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.3333333;
+    border-radius: 6px;
+}
+
+.join-btn--sm {
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+
+.join-btn--xs {
+    padding: 1px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}

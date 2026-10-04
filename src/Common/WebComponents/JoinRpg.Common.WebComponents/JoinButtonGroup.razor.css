@@ -7,6 +7,9 @@
  * обёртка вокруг неё. Закрытый <dialog> скрыт браузером (display: none), в раскладке flex
  * не участвует, а из подсчёта первого и последнего сегмента его исключает
  * :nth-child(1 of :not(dialog)). Пробелы между потомками flex тоже игнорирует.
+ *
+ * Кнопкой считаются и JoinButton (.join-btn), и ручные кнопки Bootstrap (.btn): в группах
+ * встречаются и те и другие (ссылки a.btn, выпадающие меню JoinDotsMenu/TypedDropdownButton).
  */
 .join-btn-group {
     display: inline-flex;
@@ -45,14 +48,14 @@
     margin-left: -1px;
 }
 
-.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))).btn,
-.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))) .btn {
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))):is(.btn, .join-btn),
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))) :is(.btn, .join-btn) {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
 
-.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))).btn,
-.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))) .btn {
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))):is(.btn, .join-btn),
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))) :is(.btn, .join-btn) {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
@@ -62,14 +65,14 @@
     margin-top: -1px;
 }
 
-.join-btn-group--vertical ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))).btn,
-.join-btn-group--vertical ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))) .btn {
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))):is(.btn, .join-btn),
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))) :is(.btn, .join-btn) {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
 
-.join-btn-group--vertical ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))).btn,
-.join-btn-group--vertical ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))) .btn {
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))):is(.btn, .join-btn),
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))) :is(.btn, .join-btn) {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
@@ -78,7 +81,7 @@
     flex: 1;
 }
 
-.join-btn-group--vertical ::deep > :not(dialog).btn,
-.join-btn-group--vertical ::deep > :not(dialog) .btn {
+.join-btn-group--vertical ::deep > :not(dialog):is(.btn, .join-btn),
+.join-btn-group--vertical ::deep > :not(dialog) :is(.btn, .join-btn) {
     width: 100%;
 }

@@ -61,7 +61,7 @@ public class ProjectRolesListComponentTest : BunitContext
             parameters => parameters.Add(p => p.ProjectId, _projectId));
 
         // Assert
-        var addButton = cut.Find("button.btn");
+        var addButton = cut.Find("button.join-btn");
         addButton.ShouldNotBeNull();
         addButton.HasAttribute("disabled").ShouldBeFalse();
         addButton.TextContent.ShouldContain("Добавить сетку");
@@ -78,7 +78,7 @@ public class ProjectRolesListComponentTest : BunitContext
             parameters => parameters.Add(p => p.ProjectId, _projectId));
 
         // Assert
-        var addButton = cut.Find("button.btn");
+        var addButton = cut.Find("button.join-btn");
         addButton.ShouldNotBeNull();
         addButton.HasAttribute("disabled").ShouldBeTrue();
         addButton.TextContent.ShouldContain("Добавить сетку");

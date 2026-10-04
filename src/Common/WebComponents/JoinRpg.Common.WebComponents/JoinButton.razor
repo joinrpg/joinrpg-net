@@ -178,7 +178,7 @@ else
     private JoinMessageDialog? _confirmDialogRef;
 
     private string ButtonType => Submit ? "submit" : "button";
-    private string RenderedStyle => BootstrapStyle.Build("btn", ActualStyle, Size ?? GroupSize);
+    private string RenderedStyle => JoinButtonStyle.Build(ActualStyle, Size ?? GroupSize);
     private bool PreventSubmit => Disabled || InProgress;
     private string? ActualTitle => Disabled ? DisabledTitle ?? Title : Title;
 
