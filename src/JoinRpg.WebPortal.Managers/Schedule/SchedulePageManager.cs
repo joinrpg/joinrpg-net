@@ -52,30 +52,41 @@ public class SchedulePageManager(
     {
         var result = await GetCompiledSchedule();
 
-        var calendar = new Calendar();
-        calendar.Events.AddRange(result.AllItems.Select(BuildIcalEvent));
+        var calendar = CreateCalendar([.. result.AllItems.Select(BuildIcalEvent)]);
 
         var serializer = new CalendarSerializer();
         return serializer.SerializeToString(calendar) ?? ""; //TODO stream
+    }
+
+    /// <summary>
+    /// Календарь с описанием (VTIMEZONE) каждого пояса, на который ссылаются события:
+    /// без него не все клиенты (например, Outlook) понимают TZID с IANA-идентификатором.
+    /// </summary>
+    internal static Calendar CreateCalendar(IReadOnlyCollection<CalendarEvent> events)
+    {
+        var calendar = new Calendar();
+        foreach (var zone in events.GroupBy(e => e.Start!.TzId!))
+        {
+            // Ical.Net описывает пояс от этой даты до «сейчас» и падает, если она позже «сейчас»
+            var earliest = new[] { zone.Min(e => e.Start!.Value), DateTime.Now }.Min();
+            _ = calendar.AddTimeZone(zone.Key, earliest, includeHistoricalData: false);
+        }
+        calendar.Events.AddRange(events);
+        return calendar;
     }
 
     private static CalendarEvent BuildIcalEvent(ProgramItemPlaced evt)
     {
         return new CalendarEvent
         {
-            Start = ToCalDateTime(evt.StartTime, evt.ProjectTimeZone),
-            End = ToCalDateTime(evt.EndTime, evt.ProjectTimeZone),
+            // StartTime и EndTime уже в поясе проекта, DateTime — время на его часах
+            Start = new CalDateTime(evt.StartTime.DateTime, evt.ProjectTimeZone.Id),
+            End = new CalDateTime(evt.EndTime.DateTime, evt.ProjectTimeZone.Id),
             Summary = evt.ProgramItem.Name,
             Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
             Description = evt.ProgramItem.Description.ToPlainTextWithoutHtmlEscape(),
         };
     }
-
-    /// <summary>
-    /// Время на часах в поясе проекта с его идентификатором. Не LocalDateTime — это было бы время сервера.
-    /// </summary>
-    internal static CalDateTime ToCalDateTime(DateTimeOffset time, TimeZoneInfo timeZone)
-        => new(TimeZoneInfo.ConvertTime(time, timeZone).DateTime, timeZone.Id);
 
     private async Task<ScheduleResult> GetCompiledSchedule() => (await GetBuilder()).Build();
 
