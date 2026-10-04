@@ -147,10 +147,10 @@ internal class AccommodationInviteViewService(
         => await accommodationInviteService.AcceptAccommodationInvite(inviteId);
 
     public async Task DeclineInvite(AccommodationInviteIdentification inviteId)
-        => await accommodationInviteService.CancelOrDeclineAccommodationInvite(inviteId, InviteState.Declined);
+        => await accommodationInviteService.DeclineAccommodationInvite(inviteId);
 
     public async Task CancelInvite(AccommodationInviteIdentification inviteId)
-        => await accommodationInviteService.CancelOrDeclineAccommodationInvite(inviteId, InviteState.Canceled);
+        => await accommodationInviteService.CancelAccommodationInvite(inviteId);
 
     /// <summary>Вторая сторона приглашения: кто пригласил нас либо кого пригласили мы</summary>
     private static Claim Counterparty(AccommodationInvite invite, InviteDirection direction)

@@ -112,6 +112,9 @@ internal static class ClaimAccess
 
             // Единственное требование, зависящее от данных: у утверждённой заявки поселение может
             // менять сам игрок или ответственный мастер, у неутверждённой — только обладатель права.
+            // Сравнение именно с Approved, а не с CharacterClaimInfo.IsApproved, в который входит
+            // ещё и CheckedIn: после регистрации игрок своё проживание уже не меняет — это делает
+            // мастер с правом расселять. Так работало и до ADR014, и так решено оставить.
             ClaimAccessRequirement.AccommodationChange => (
                 Permission.CanSetPlayersAccommodations,
                 claimInfo.Status == ClaimStatus.Approved

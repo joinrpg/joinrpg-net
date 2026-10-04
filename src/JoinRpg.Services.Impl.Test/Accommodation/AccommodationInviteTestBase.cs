@@ -11,9 +11,10 @@ namespace JoinRpg.Services.Impl.Test.Accommodation;
 /// </summary>
 /// <remarks>
 /// Наследует обвязку claim-контура (ADR014): корень агрегата у приглашения — заявка, поэтому
-/// сервису нужен настоящий <c>CharacterPropsService</c> поверх тех же фейков. Методы, которые на
-/// props-сервис ещё не переехали, ходят в <c>UnitOfWork.GetDbSet</c>, поэтому наборы подключены к
-/// <see cref="FakeUnitOfWork"/> явно (см. <c>UseDbSet</c>).
+/// сервису нужен настоящий <c>CharacterPropsService</c> поверх тех же фейков. Наборы
+/// <c>DbSet</c> специально <b>не</b> подключаются: весь контур ходит через write-хэндл агрегата, и
+/// обращение в <c>UnitOfWork.GetDbSet</c> обязано валить тест — иначе мутация ушла бы на чужой
+/// <c>DbContext</c>, мимо единственного сохранения, и тест этого не заметил бы.
 /// </remarks>
 public abstract class AccommodationInviteTestBase : ClaimServiceTestBase
 {
@@ -29,10 +30,6 @@ public abstract class AccommodationInviteTestBase : ClaimServiceTestBase
         accommodationType = mock.CreateAccommodationType("Домик", capacity: 4);
         mock.ReInitProjectInfo();
 
-        unitOfWork.UseDbSet(mock.Project.Claims);
-        unitOfWork.UseDbSet(mock.AccommodationRequests);
-        unitOfWork.UseDbSet(mock.AccommodationInvites);
-
         OnSaveChanges = _ => journal.Add("save");
         notificationService.OnNotification = () => journal.Add("notification");
     }
@@ -46,11 +43,8 @@ public abstract class AccommodationInviteTestBase : ClaimServiceTestBase
     /// </summary>
     private protected AccommodationInviteServiceImpl CreateService(int? currentUserId = null)
         => new(
-            unitOfWork,
-            notificationService,
             CreatePropsService(currentUserId),
-            new FakeAccommodationInviteRepository(mock),
-            CreateCurrentUser(currentUserId));
+            new FakeAccommodationInviteRepository(mock));
 
     /// <summary>Переводит проект в архив — операции над ним запрещены.</summary>
     private protected void ArchiveProject()

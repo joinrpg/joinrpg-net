@@ -43,9 +43,10 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
 
     /// <summary>
     /// Разрешает конкретному тесту читать и писать <see cref="DbSet{TEntity}"/> этого типа поверх
-    /// коллекции мока. Нужно для сервисов, которые в write-репозитории ещё не переехали (например
-    /// <c>AccommodationInviteServiceImpl</c>): подключать набор приходится явно, чтобы у всех
-    /// остальных <see cref="GetDbSet{T}"/> продолжал падать (см. его описание).
+    /// коллекции мока. Нужно для сервисов, которые в write-репозитории ещё не переехали (ADR009/ADR014;
+    /// сейчас это, например, <c>PaymentsService</c> и <c>PlotServiceImpl</c>): подключать набор
+    /// приходится явно, чтобы у всех остальных <see cref="GetDbSet{T}"/> продолжал падать
+    /// (см. его описание).
     /// </summary>
     public void UseDbSet<T>(ICollection<T> data) where T : class
         => dbSets[typeof(T)] = new FakeDbSet<T>(data);

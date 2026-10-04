@@ -587,8 +587,12 @@ public interface IAccommodationService
 - **Приглашения** (`AccommodationInvite`, `AccommodationInviteServiceImpl`) и **выбор типа игроком**
   (`SetAccommodationType`, `LeaveAccommodationGroupAsync`). Они уже живут в character-контуре
   (ADR014) либо ждут собственной миграции; здесь меняется только колонка «в какой комнате».
-  Уведомления приглашений при этом уже переведены на `INotificationService` (§11) — сам сервис
-  на агрегат по-прежнему не переведён и ходит в `UnitOfWork.GetDbSet<T>()` напрямую.
+  Уведомления приглашений при этом уже переведены на `INotificationService` (§11) — ~~сам сервис
+  на агрегат по-прежнему не переведён и ходит в `UnitOfWork.GetDbSet<T>()` напрямую~~.
+
+  **Сделано отдельным стеком (#5225, #5229, #5238 и этот PR):** `AccommodationInviteServiceImpl`
+  переведён на `ICharacterPropsService` по ADR014 — корень агрегата у приглашения заявка, как и
+  предписывает таблица §4 для состава группы проживающих. Колонку «в какой комнате» стек не трогал.
 - ~~**Почтовые модели** `RoomEmailBase` и `EmailServiceImpl` — остаются на EF-сущностях.~~
   Сделано отдельной работой: контур переведён на `INotificationService`, см. §11.
 - **Автозаселение** (`OccupyAll` с `//TODO: Implement mass occupation`) — не реализовано сегодня,

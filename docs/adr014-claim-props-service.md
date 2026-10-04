@@ -435,11 +435,15 @@ ADR изначально относил входящие платёжные ко
 не было ни одного юнит-теста, страховкой служили четыре интеграционных сценария. Сейчас в
 `JoinRpg.Services.Impl.Test` больше 400 тестов, интеграционные — зелёные.
 
-`DbServiceImplBase` помечен `[Obsolete]`, но не удалён: от него ещё наследуются девять сервисов —
-`AccommodationInviteServiceImpl`, `AccommodationServiceImpl`, `CaptainRuleService`,
-`FinanceOperationsImpl`, `ForumServiceImpl`, `GameSubscribeService`, `PaymentsService`,
-`PlotServiceImpl`, `UserServiceImpl`. Все вне области этого ADR; два из них,
-`AccommodationServiceImpl` и `PaymentsService`, отвязываются отдельными PR (#4843, #4844). Счётчик
+`DbServiceImplBase` помечен `[Obsolete]`, но не удалён: от него ещё наследуются ~~девять~~ **восемь**
+сервисов — `AccommodationServiceImpl`, `CaptainRuleService`, `FinanceOperationsImpl`,
+`ForumServiceImpl`, `GameSubscribeService`, `PaymentsService`, `PlotServiceImpl`,
+`UserServiceImpl`. Все вне области этого ADR. ~~Два из них, `AccommodationServiceImpl` и
+`PaymentsService`, отвязываются отдельными PR (#4843, #4844).~~ `AccommodationServiceImpl` ушёл в
+собственный агрегат по [ADR018](adr018-room-category-plan.md) (#5099, #5105, #5108), а не этим
+путём, поэтому #4843 закрыт — но базовый класс он пока сохраняет ради чтений; `PaymentsService`
+ждёт #4844. `AccommodationInviteServiceImpl` из списка ушёл: он переведён на этот сервис отдельным
+стеком (#5225, #5229, #5238) — корень агрегата у приглашения заявка, см. ADR018 §4. Счётчик
 предупреждений `[Obsolete]` и служит метрикой остатка.
 
 ### Что вскрыла миграция
