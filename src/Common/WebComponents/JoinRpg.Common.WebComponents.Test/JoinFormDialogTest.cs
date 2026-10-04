@@ -7,7 +7,42 @@ public class JoinFormDialogTest
 {
     private class FormModel
     {
+        [System.ComponentModel.DataAnnotations.Required]
         public string Value { get; set; } = "";
+    }
+
+    private static IRenderedComponent<JoinFormDialog<FormModel>> RenderDialog(BunitContext ctx, FormModel model)
+        => ctx.Render<JoinFormDialog<FormModel>>(p => p
+            .Add(x => x.Model, model)
+            .Add(x => x.FormName, "Test")
+            .Add(x => x.SubmitButtonPreset, ButtonPreset.Save)
+            .Add(x => x.ChildContent, builder => builder.AddMarkupContent(0, "<span>поле</span>")));
+
+    private static bool SubmitDisabled(IRenderedComponent<JoinFormDialog<FormModel>> cut)
+        => cut.FindAll(".join-dialog-footer button")[0].HasAttribute("disabled");
+
+    /// <summary>
+    /// Кнопка отправки следует атрибутам валидации модели и пересчитывается при каждой перерисовке
+    /// родителя: поля вроде JoinRpgDatePicker не сообщают EditContext об изменениях.
+    /// </summary>
+    [Fact]
+    public void SubmitButton_FollowsModelValidity()
+    {
+        using var ctx = new BunitContext();
+        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        var model = new FormModel();
+
+        var cut = RenderDialog(ctx, model);
+        SubmitDisabled(cut).ShouldBeTrue();
+
+        model.Value = "заполнено";
+        cut.Render(p => p
+            .Add(x => x.Model, model)
+            .Add(x => x.FormName, "Test")
+            .Add(x => x.SubmitButtonPreset, ButtonPreset.Save)
+            .Add(x => x.ChildContent, builder => builder.AddMarkupContent(0, "<span>поле</span>")));
+
+        SubmitDisabled(cut).ShouldBeFalse();
     }
 
     private class EditContextProbe : ComponentBase
