@@ -128,6 +128,7 @@ erDiagram
         enum RequirePhone
         enum RequirePassport
         enum RequireRegistrationAddress
+        string TimeZoneId "IANA-пояс, по умолчанию Europe/Moscow"
     }
 
     ProjectAcls {

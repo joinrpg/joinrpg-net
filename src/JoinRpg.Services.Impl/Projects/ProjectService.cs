@@ -162,5 +162,18 @@ internal class ProjectService(
                 ctx.Project.Details.DefaultTemplateCharacterId = ctx.Request.DefaultTemplate?.CharacterId;
             });
     }
+
+    public async Task SetTimeZone(ProjectIdentification projectId, TimeZoneInfo timeZone)
+    {
+        // В БД храним только IANA-идентификаторы; Windows-идентификатор (например, TimeZoneInfo.Local на Windows) не пропускаем.
+        if (!timeZone.HasIanaId)
+        {
+            throw new ArgumentException($"Часовой пояс {timeZone.Id} не имеет IANA-идентификатора", nameof(timeZone)); // TODO[Localize]
+        }
+        await projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            timeZone.Id,
+            ctx => ctx.Project.Details.TimeZoneId = ctx.Request);
+    }
 }
 

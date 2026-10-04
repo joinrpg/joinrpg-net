@@ -58,6 +58,9 @@ public record class ProjectInfo
 
     public ProjectRolesListIdentification? DefaultRolesListId { get; }
 
+    /// <summary>Часовой пояс проекта.</summary>
+    public TimeZoneInfo TimeZone { get; }
+
     public ProjectInfo(
         ProjectIdentification projectId,
         ProjectName projectName,
@@ -77,7 +80,8 @@ public record class ProjectInfo
         ProjectProfileRequirementSettings profileRequirementSettings,
         ProjectClaimSettings projectClaimSettings,
         IReadOnlyCollection<ProjectRolesList> projectRolesLists,
-        ProjectRolesListIdentification? defaultRolesListId)
+        ProjectRolesListIdentification? defaultRolesListId,
+        TimeZoneInfo timeZone)
     {
         UnsortedFields = unsortedFields;
         ProjectId = projectId;
@@ -108,6 +112,7 @@ public record class ProjectInfo
         ClaimSettings = projectClaimSettings;
         ProjectRolesLists = projectRolesLists;
         DefaultRolesListId = defaultRolesListId;
+        TimeZone = timeZone;
     }
 
     public ProjectFieldInfo GetFieldById(ProjectFieldIdentification id)
@@ -151,7 +156,7 @@ public record class ProjectInfo
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings, GroupTree,
             Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, DefaultRolesListId);
+            ProjectRolesLists, DefaultRolesListId, TimeZone);
     }
 
     internal ProjectInfo WithChangedStatus(ProjectLifecycleStatus projectLifecycleStatus)
@@ -162,7 +167,7 @@ public record class ProjectInfo
             Masters, PublishPlot, ProjectCheckInSettings,
             projectLifecycleStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, DefaultRolesListId);
+            ProjectRolesLists, DefaultRolesListId, TimeZone);
     }
 
     internal ProjectInfo WithAllowManyClaims(bool strictlyOneCharacter)
@@ -173,7 +178,7 @@ public record class ProjectInfo
             Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter },
-            ProjectRolesLists, DefaultRolesListId);
+            ProjectRolesLists, DefaultRolesListId, TimeZone);
     }
 
     internal ProjectInfo WithProjectFinanceSettings(ProjectFinanceSettings projectFinanceSettings)
@@ -184,7 +189,7 @@ public record class ProjectInfo
             Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, DefaultRolesListId);
+            ProjectRolesLists, DefaultRolesListId, TimeZone);
     }
 
     internal ProjectInfo WithProfileRequirementSettings(ProjectProfileRequirementSettings profileRequirementSettings)
@@ -195,7 +200,7 @@ public record class ProjectInfo
             Masters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, profileRequirementSettings, ClaimSettings,
-            ProjectRolesLists, DefaultRolesListId);
+            ProjectRolesLists, DefaultRolesListId, TimeZone);
     }
 
     /// <summary>

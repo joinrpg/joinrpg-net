@@ -57,6 +57,25 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     }
 
     [Fact]
+    public async Task SetTimeZone_ChangesTimeZone()
+    {
+        await CreateService().SetTimeZone(ProjectId, TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg"));
+
+        Result.TimeZone.Id.ShouldBe("Asia/Yekaterinburg");
+        mock.Project.Details.TimeZoneId.ShouldBe("Asia/Yekaterinburg");
+    }
+
+    [Fact]
+    public async Task SetTimeZone_WithoutIanaId_Throws()
+    {
+        var withoutIanaId = TimeZoneInfo.CreateCustomTimeZone("Custom", TimeSpan.FromHours(3), "Custom", "Custom");
+
+        await Should.ThrowAsync<ArgumentException>(() => CreateService().SetTimeZone(ProjectId, withoutIanaId));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task SetPublishSettings_UpdatesCloneSettings()
     {
         await CreateService().SetPublishSettings(ProjectId, ProjectCloneSettings.CanBeClonedByAnyone, publishEnabled: true);

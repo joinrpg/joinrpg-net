@@ -83,6 +83,8 @@ internal class CloneProjectHelper(
 
         await projectService.SetAccommodationSettings(projectId, original.AccommodationSettings.Enabled);
 
+        await projectService.SetTimeZone(projectId, original.TimeZone);
+
         await projectService.SetClaimSettings(projectId, original.ClaimSettings with { DefaultTemplate = original.ClaimSettings.DefaultTemplate is not null ? CharacterMapping.GetValueOrDefault(original.ClaimSettings.DefaultTemplate) : null });
 
         return everythingFine;

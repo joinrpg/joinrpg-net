@@ -70,6 +70,12 @@ public class ProjectDetails : IValidatableObject
     public MandatoryStatus RequireRegistrationAddress { get; set; } = MandatoryStatus.Optional;
     public bool IsPublicProject { get; set; } = true;
 
+    /// <summary>
+    /// Часовой пояс проекта — IANA-идентификатор, например <c>Europe/Moscow</c>.
+    /// </summary>
+    [Required, MaxLength(64)]
+    public string TimeZoneId { get; set; } = "Europe/Moscow";
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (CharacterNameField != null)

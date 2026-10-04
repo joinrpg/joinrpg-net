@@ -172,4 +172,50 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             cloneB.ShowRolesFilter.ShouldBe(ShowRolesFilter.VacantOnly);
         });
     }
+
+    [Fact]
+    public async Task CloneProject_CopiesTimeZone()
+    {
+        UserIdentification masterId;
+        ProjectIdentification originalProjectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            originalProjectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Исходный проект с часовым поясом");
+        }
+
+        // Новый проект по умолчанию московский — значение доезжает из БД
+        await factory.Services.RunAsAsync(masterId, async sp =>
+            (await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(originalProjectId))
+                .TimeZone.Id.ShouldBe("Europe/Moscow"));
+
+        await factory.Services.RunAsAsync(masterId, sp => sp.GetRequiredService<IProjectService>()
+            .SetTimeZone(originalProjectId, TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg")));
+
+        var cloneProjectId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var result = await sp.GetRequiredService<ICreateProjectService>().CreateProject(
+                new CloneProjectRequest(
+                    new ProjectName("Клон проекта с часовым поясом"),
+                    originalProjectId,
+                    ProjectCopySettingsDto.SettingsAndFields,
+                    KogdaIgraLinkChoiceDto.ShouldNotBeOnKogdaIgra,
+                    null,
+                    null));
+
+            return result switch
+            {
+                SuccessCreateProjectResult r => r.ProjectId,
+                PartiallySuccessCreateProjectResult r => r.ProjectId,
+                _ => throw new InvalidOperationException($"Не удалось склонировать проект: {result}")
+            };
+        });
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var cloneInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(cloneProjectId);
+            cloneInfo.TimeZone.Id.ShouldBe("Asia/Yekaterinburg");
+        });
+    }
 }

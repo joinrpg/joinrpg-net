@@ -17,4 +17,7 @@ public interface IProjectService
     Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings);
     Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings);
     Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation);
+
+    /// <summary>Сменить часовой пояс проекта. Пояс должен иметь IANA-идентификатор.</summary>
+    Task SetTimeZone(ProjectIdentification projectId, TimeZoneInfo timeZone);
 }
