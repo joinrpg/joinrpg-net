@@ -4,11 +4,11 @@
     no-users, all-rooms, error-mode, errors, details-url) читает JS полноэкранного режима,
     чтобы заполнить оверлей деталей, — их состав и формат значений менять нельзя.
 *@
-<div id="appointment@(Model.CharacterId)"
+<div id="appointment@(Model.CharacterId.CharacterId)"
      class="@ClassNames"
      style="@Style"
      display-name="@Model.DisplayName"
-     details-url="@characterUriLocator.GetDetailsUri(CharacterId)"
+     details-url="@characterUriLocator.GetDetailsUri(Model.CharacterId)"
      no-users="@HasNoUsers.ToString()"
      rooms="@Rooms"
      slots="@Slots"
@@ -17,12 +17,12 @@
      errors="@Errors">
     <div class="appointment-interior" title="@Title">
         <div class="appointment-header">
-            <a href="@characterUriLocator.GetDetailsUri(CharacterId)" target="@Target">@Model.DisplayName</a>
+            <a href="@characterUriLocator.GetDetailsUri(Model.CharacterId)" target="@Target">@Model.DisplayName</a>
             @if (Model.HasMasterAccess)
             {
                 @* Пробел задан выражением, а не разметкой: Blazor, в отличие от cshtml,
                    вырезает текстовые узлы из одних пробелов — и <text> </text> тоже. *@
-                @Space<a href="@characterUriLocator.GetEditUri(CharacterId)">(ред.)</a>
+                @Space<a href="@characterUriLocator.GetEditUri(Model.CharacterId)">(ред.)</a>
             }
         </div>
 
@@ -51,7 +51,7 @@
                 }
             </div>
         }
-        <div id="appointment@(Model.CharacterId)-users" class="appointment-users">
+        <div id="appointment@(Model.CharacterId.CharacterId)-users" class="appointment-users">
             @foreach (var user in Model.Users)
             {
                 @* Разделитель между именами: в самой карточке .appointment-users — flex,
@@ -61,8 +61,8 @@
             }
         </div>
     </div>
-    <div class="appointment-click-overlay" onclick="appointmentClickHandler(@Model.CharacterId)"></div>
-    <div id="appointment@(Model.CharacterId)-description" style="display: none;">@Model.Description</div>
+    <div class="appointment-click-overlay" onclick="appointmentClickHandler(@Model.CharacterId.CharacterId)"></div>
+    <div id="appointment@(Model.CharacterId.CharacterId)-description" style="display: none;">@Model.Description</div>
 </div>
 
 @code {
@@ -75,9 +75,6 @@
     /// (в отличие от cshtml), а вывод выражения — нет.
     /// </summary>
     private const string Space = " ";
-
-    private CharacterIdentification CharacterId
-        => new(new ProjectIdentification(Model.ProjectId), Model.CharacterId);
 
     private bool HasNoUsers => Model.Users.Count == 0;
 

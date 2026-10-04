@@ -146,8 +146,7 @@ public class SchedulePageManager(
                     TimeSlotsCount = slot.RowSpan,
                     DisplayName = slot.Name,
                     Description = slot.Description.ToHtmlString(),
-                    ProjectId = slot.ProjectId,
-                    CharacterId = slot.Id,
+                    CharacterId = slot.Id!,
                     Users = slot.Users,
                     Rooms = [.. viewModel.Columns
                         .SkipWhile((v, index) => index < colIndex)
@@ -177,8 +176,7 @@ public class SchedulePageManager(
                     ErrorType = AppointmentErrorType.Intersection,
                     DisplayName = source.Name,
                     Description = source.Description.ToHtmlString(),
-                    ProjectId = source.ProjectId,
-                    CharacterId = source.Id,
+                    CharacterId = source.Id!,
                     Users = source.Users,
                     HasMasterAccess = hasMasterAccess,
                 })
@@ -200,8 +198,7 @@ public class SchedulePageManager(
                     AllRooms = source.ColSpan == viewModel.Columns.Count,
                     DisplayName = source.Name,
                     Description = source.Description.ToHtmlString(),
-                    ProjectId = source.ProjectId,
-                    CharacterId = source.Id,
+                    CharacterId = source.Id!,
                     Users = source.Users,
                     HasMasterAccess = hasMasterAccess,
                 })

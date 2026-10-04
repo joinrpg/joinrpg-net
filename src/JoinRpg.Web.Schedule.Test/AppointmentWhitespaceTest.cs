@@ -34,8 +34,7 @@ public class AppointmentWhitespaceTest
         => new(() => new Rect { Left = 0, Top = 0, Width = 225, Height = 90 })
         {
             DisplayName = "Мастер-класс",
-            ProjectId = 1620,
-            CharacterId = 7,
+            CharacterId = CharacterId,
             Users = [.. Enumerable.Range(1, usersCount).Select(
                 i => new UserLinkViewModel(new UserIdentification(i), $"Ведущий {i}", ViewMode.Show))],
             ErrorMode = errorType.HasValue,
@@ -46,8 +45,14 @@ public class AppointmentWhitespaceTest
             Slots = slots ?? [],
         };
 
+    private static readonly ProjectIdentification ProjectId = new(1620);
+    private static readonly CharacterIdentification CharacterId = new(ProjectId, 7);
+
+    private static ProjectFieldVariantIdentification Variant(int id)
+        => new(new ProjectFieldIdentification(ProjectId, 7), id);
+
     private static TableHeaderViewModel Header(int id, string name)
-        => new() { Id = id, Name = name, Description = new MarkupString("") };
+        => new() { Id = Variant(id), Name = name, Description = new MarkupString("") };
 
     /// <summary>
     /// В HTML любая последовательность пробелов и переводов строк — один пробел,
