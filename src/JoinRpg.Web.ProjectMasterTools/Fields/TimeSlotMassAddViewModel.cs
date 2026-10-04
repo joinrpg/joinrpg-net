@@ -5,13 +5,11 @@ namespace JoinRpg.Web.ProjectMasterTools.Fields;
 /// </summary>
 /// <param name="TimeZoneId">IANA-идентификатор таймзоны, в которой мастер вводит дату и время</param>
 /// <param name="DefaultDate">Дата, подставляемая в форму</param>
-/// <param name="DefaultStartTime">Время начала, подставляемое в форму</param>
 /// <param name="DefaultSlotMinutes">Длина слота, подставляемая в форму</param>
 public record TimeSlotMassAddViewModel(
     ProjectFieldIdentification FieldId,
     string TimeZoneId,
     DateOnly DefaultDate,
-    TimeOnly DefaultStartTime,
     int DefaultSlotMinutes);
 
 /// <summary>

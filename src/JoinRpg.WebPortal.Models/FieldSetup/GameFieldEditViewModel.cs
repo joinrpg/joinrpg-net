@@ -79,8 +79,6 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
             field.Id,
             TimeSlotTimeZoneId,
             DateOnly.FromDateTime(lastEnd.DateTime),
-            // Без секунд: при пустом поле время берётся из текущего момента
-            new TimeOnly(lastEnd.Hour, lastEnd.Minute),
             lastOptions.TimeSlotInMinutes);
     }
 
