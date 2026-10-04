@@ -13,6 +13,11 @@ public class TimeSlotMassAddFormModel : IValidatableObject
     public static readonly TimeOnly DefaultStartTime = new(10, 0);
     public static readonly TimeOnly DefaultEndTime = new(22, 0);
 
+    /// <summary>
+    /// Перерыв между таймслотами, подставляемый в форму по умолчанию
+    /// </summary>
+    public const int DefaultBreakMinutes = 10;
+
     [Display(Name = "Префикс", Description = "Добавляется перед временем в названии значения, например «Зал 1 10:00–10:50»")]
     public string Prefix { get; set; } = "";
 
