@@ -45,7 +45,23 @@ internal static class CharacterInfoMapper
     }
 
     private static CharacterClaimInfo MapClaim(CharacterInfoClaimRow row, ProjectInfo projectInfo)
-        => new(
+    {
+        var accommodationTypeId = row.AccommodationTypeId is { } typeId
+            ? new AccommodationTypeIdentification(projectInfo.ProjectId, typeId)
+            : (AccommodationTypeIdentification?)null;
+
+        // Стоимость проживания — настройка проекта, в метаданных она уже есть (ADR015), поэтому
+        // в проекции её не читаем. Тип, выбранный в заявке, обязан быть в метаданных: в БД на
+        // AccommodationRequest.AccommodationTypeId стоит FK, а метаданные отдают все типы проекта
+        // без фильтров. Поэтому промах — это рассинхрон, и GetTypeById бросает
+        // AccommodationTypeNotFoundException, а не подставляет 0: молчаливый ноль превратился бы
+        // в заниженный взнос по заявке, который никто не заметит. Так же ведёт себя и легаси-путь
+        // поверх EF — Claim.ClaimAccommodationFee через GetAccommodationType.
+        var accommodationFee = accommodationTypeId is { } id
+            ? projectInfo.AccommodationSettings.GetTypeById(id).Cost
+            : 0;
+
+        return new(
             new ClaimIdentification(projectInfo.ProjectId, row.ClaimId),
             new UserInfoHeader(
                 new UserIdentification(row.PlayerUserId),
@@ -72,11 +88,10 @@ internal static class CharacterInfoMapper
                 row.CurrentFee,
                 row.PreferentialFeeUser,
                 row.FeePaid ?? 0,
-                row.AccommodationFee ?? 0,
+                accommodationFee,
                 row.FinanceOperationsRequireModeration),
-            row.AccommodationTypeId is { } accommodationTypeId
-                ? new AccommodationTypeIdentification(projectInfo.ProjectId, accommodationTypeId)
-                : null,
+            accommodationTypeId,
             row.PlayerAllowedSensitiveData,
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, row.JsonData));
+    }
 }

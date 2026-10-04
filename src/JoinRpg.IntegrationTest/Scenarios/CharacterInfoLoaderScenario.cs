@@ -6,6 +6,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
+using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
@@ -124,6 +125,39 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
             // Операция ждёт решения мастера, поэтому в оплаченное она не попадает.
             claim.Finance.FeePaid.ShouldBe(0);
             claim.PlayerAllowedSensitiveData.ShouldBeTrue();
+        }
+
+        // 7. Мастер включает модуль проживания, заводит тип со стоимостью и ставит его заявке.
+        const int accommodationCost = 777;
+        var accommodationTypeId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            await sp.GetRequiredService<IProjectService>().SetAccommodationSettings(projectId, enableAccommodation: true);
+            var typeId = await sp.GetRequiredService<IAccommodationTypeService>().CreateAccommodationType(
+                projectId,
+                new AccommodationTypeRequest(
+                    "Палатка",
+                    new MarkdownString(""),
+                    Cost: accommodationCost,
+                    Capacity: 4,
+                    IsPlayerSelectable: true));
+
+            _ = await sp.GetRequiredService<IClaimService>().SetAccommodationType(
+                projectId.Value, claimId.ClaimId, typeId.AccommodationTypeId);
+
+            return typeId;
+        });
+
+        // 8. Стоимость проживания в агрегате больше не читается из БД: проекция отдаёт только id
+        // типа, а цену маппер берёт из метаданных проекта (ADR015). Тест на живой БД нужен именно
+        // здесь: он проверяет, что id приезжает тем же, под которым тип лежит в метаданных —
+        // юнит-тест маппера про согласованность этих двух источников ничего не знает.
+        using (var scope = factory.Services.CreateScope())
+        {
+            var repository = scope.ServiceProvider.GetRequiredService<ICharacterInfoRepository>();
+            var claim = (await repository.GetCharacterInfo(characterId)).Claims.ShouldHaveSingleItem();
+
+            claim.AccommodationTypeId.ShouldBe(accommodationTypeId);
+            claim.Finance.AccommodationFee.ShouldBe(accommodationCost);
         }
     }
 }
