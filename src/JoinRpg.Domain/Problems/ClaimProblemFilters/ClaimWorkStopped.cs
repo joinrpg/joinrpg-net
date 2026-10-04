@@ -9,11 +9,11 @@ internal class ClaimWorkStopped : IClaimProblemFilter
     {
         var claim = context.Claim;
 
-        // Правило срабатывает только в архиве. Раньше условие было записано как
-        // claim.Project.Active, а Project.Active == false — это ровно
-        // ProjectLifecycleStatus.Archived (см. ProjectLoaderCommon.CreateStatus), то есть
-        // ProjectInfo.IsActive.
-        if (context.ProjectInfo.IsActive)
+        // В архиве разбираться, остановилась ли работа по заявке, бессмысленно: игра кончилась.
+        // Прежний код проверял claim.Project.Active и вёл себя ровно наоборот — молчал на живых
+        // проектах и срабатывал в архиве, то есть единственный мастер, которому правило могло
+        // пригодиться, его и не видел. Условие исправлено при переносе на доменные сущности.
+        if (!context.ProjectInfo.IsActive)
         {
             yield break;
         }

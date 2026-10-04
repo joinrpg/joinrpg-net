@@ -5,13 +5,12 @@ using JoinRpg.DomainTypes.Characters.Claims;
 namespace JoinRpg.Domain.Test.Problems;
 
 /// <summary>
-/// «Работа по заявке остановлена» — правило только для архивных проектов.
+/// «Работа по заявке остановлена» — правило для живых проектов.
 /// </summary>
 /// <remarks>
-/// До перевода на доменные сущности условие было записано как <c>claim.Project.Active</c>.
-/// <c>Project.Active == false</c> — это ровно <see cref="ProjectLifecycleStatus.Archived"/>
-/// (см. <c>ProjectLoaderCommon.CreateStatus</c>), поэтому здесь проверяются оба состояния
-/// проекта: правило должно молчать на любом неархивном.
+/// До перевода на доменные сущности условие было записано как <c>claim.Project.Active</c> и
+/// работало наоборот: молчало на живых проектах и срабатывало в архиве, где разбираться с
+/// заявкой уже незачем. Здесь проверяются оба живых состояния проекта и архив.
 /// </remarks>
 public class ClaimWorkStoppedTest : ClaimProblemFilterTestBase
 {
@@ -37,30 +36,37 @@ public class ClaimWorkStoppedTest : ClaimProblemFilterTestBase
             projectInfo))];
     }
 
+    /// <summary>
+    /// Игра кончилась — разбираться, остановилась ли работа по заявке, незачем.
+    /// </summary>
+    [Fact]
+    public void ArchivedProjectIsNotChecked()
+    {
+        Problems(ProjectLifecycleStatus.Archived, lastMasterAnswerDaysAgo: null).ShouldBeEmpty();
+    }
+
     [Theory]
     [InlineData(ProjectLifecycleStatus.ActiveClaimsOpen)]
     [InlineData(ProjectLifecycleStatus.ActiveClaimsClosed)]
-    public void ActiveProjectIsNotChecked(ProjectLifecycleStatus projectStatus)
+    public void NotApprovedClaimIsNotChecked(ProjectLifecycleStatus projectStatus)
     {
-        Problems(projectStatus).ShouldBeEmpty();
+        Problems(projectStatus, status: ClaimStatus.Discussed).ShouldBeEmpty();
     }
 
-    [Fact]
-    public void NotApprovedClaimIsNotChecked()
+    [Theory]
+    [InlineData(ProjectLifecycleStatus.ActiveClaimsOpen)]
+    [InlineData(ProjectLifecycleStatus.ActiveClaimsClosed)]
+    public void FreshClaimIsNotChecked(ProjectLifecycleStatus projectStatus)
     {
-        Problems(ProjectLifecycleStatus.Archived, status: ClaimStatus.Discussed).ShouldBeEmpty();
+        Problems(projectStatus, createdDaysAgo: 1).ShouldBeEmpty();
     }
 
-    [Fact]
-    public void FreshClaimIsNotChecked()
+    [Theory]
+    [InlineData(ProjectLifecycleStatus.ActiveClaimsOpen)]
+    [InlineData(ProjectLifecycleStatus.ActiveClaimsClosed)]
+    public void NeverAnsweredClaimIsError(ProjectLifecycleStatus projectStatus)
     {
-        Problems(ProjectLifecycleStatus.Archived, createdDaysAgo: 1).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void ArchivedProjectWithNeverAnsweredClaimIsError()
-    {
-        var problems = Problems(ProjectLifecycleStatus.Archived, lastMasterAnswerDaysAgo: null);
+        var problems = Problems(projectStatus, lastMasterAnswerDaysAgo: null);
 
         problems.ShouldHaveSingleItem();
         problems.Single().ProblemType.ShouldBe(ClaimProblemType.ClaimNeverAnswered);
@@ -68,9 +74,9 @@ public class ClaimWorkStoppedTest : ClaimProblemFilterTestBase
     }
 
     [Fact]
-    public void ArchivedProjectWithAnswerOlderThanSixtyDaysIsHint()
+    public void AnswerOlderThanSixtyDaysIsHint()
     {
-        var problems = Problems(ProjectLifecycleStatus.Archived, lastMasterAnswerDaysAgo: 70);
+        var problems = Problems(ProjectLifecycleStatus.ActiveClaimsOpen, lastMasterAnswerDaysAgo: 70);
 
         problems.ShouldHaveSingleItem();
         problems.Single().ProblemType.ShouldBe(ClaimProblemType.ClaimWorkStopped);
@@ -78,8 +84,8 @@ public class ClaimWorkStoppedTest : ClaimProblemFilterTestBase
     }
 
     [Fact]
-    public void ArchivedProjectWithRecentAnswerIsNotAProblem()
+    public void RecentAnswerIsNotAProblem()
     {
-        Problems(ProjectLifecycleStatus.Archived, lastMasterAnswerDaysAgo: 10).ShouldBeEmpty();
+        Problems(ProjectLifecycleStatus.ActiveClaimsOpen, lastMasterAnswerDaysAgo: 10).ShouldBeEmpty();
     }
 }
