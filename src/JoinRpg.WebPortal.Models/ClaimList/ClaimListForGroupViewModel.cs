@@ -13,7 +13,7 @@ public class ClaimListForGroupViewModel(ICurrentUserAccessor currentUserId,
     IClaimProblemValidator claimValidator,
     IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext> problemContexts,
     ProjectInfo projectInfo,
-    string title) : ClaimListViewModel(currentUserId, claims, group.Id.ProjectId, unreadComments, title, projectInfo, claimValidator, problemContexts), IOperationsAwareView
+    string title) : ClaimListViewModel(currentUserId, claims, unreadComments, title, projectInfo, claimValidator, problemContexts), IOperationsAwareView
 {
     public CharacterGroupDetailsViewModel GroupModel { get; } = new CharacterGroupDetailsViewModel(group, projectInfo, currentUserId.UserIdentificationOrDefault, page);
 

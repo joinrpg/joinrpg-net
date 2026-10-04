@@ -28,7 +28,6 @@ public class ClaimListViewModel : IOperationsAwareView
     public ClaimListViewModel(
        ICurrentUserAccessor currentUserId,
        IReadOnlyCollection<Claim> claims,
-       ProjectIdentification projectId,
        Dictionary<int, int> unreadComments,
        string title,
        ProjectInfo projectInfo,
@@ -40,7 +39,7 @@ public class ClaimListViewModel : IOperationsAwareView
           .ToList();
         ClaimIds = claims.Select(c => c.GetId()).ToArray();
         CharacterIds = claims.Select(c => c.GetCharacterId()).ToArray();
-        ProjectId = projectId;
+        ProjectId = projectInfo.ProjectId;
         InlineTitle = title;
     }
 
