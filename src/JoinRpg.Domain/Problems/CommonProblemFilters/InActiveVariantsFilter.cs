@@ -1,8 +1,9 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain.Problems.CommonProblemFilters;
 
-internal class InActiveVariantsFilter : IFieldRelatedProblemFilter<CharacterInfo>, IFieldRelatedProblemFilter<Claim>
+internal class InActiveVariantsFilter : IFieldRelatedProblemFilter<CharacterInfo>, IFieldRelatedProblemFilter<CharacterClaimInfo>
 {
     public IEnumerable<FieldRelatedProblem> CheckField(IFieldAvailabilityTarget target, FieldWithValue fieldWithValue)
     {

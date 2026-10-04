@@ -11,14 +11,26 @@ namespace JoinRpg.Web.Models.ClaimList;
 /// </summary>
 /// <param name="currentUserId"></param>
 /// <param name="claimPair"></param>
-public class ClaimListForExportViewModel(ICurrentUserAccessor currentUserId, IReadOnlyCollection<(Claim Claim, ProjectInfo ProjectInfo)> claimPair)
+/// <param name="players">
+/// Профили игроков, загруженные пачкой на весь список (<c>IUserRepository.GetRequiredUserInfos</c>).
+/// Выгрузка показывает контакты игрока, а читать их по ленивым навигациям EF на каждую строку —
+/// это N+1.
+/// </param>
+public class ClaimListForExportViewModel(
+    ICurrentUserAccessor currentUserId,
+    IReadOnlyCollection<(Claim Claim, ProjectInfo ProjectInfo)> claimPair,
+    IReadOnlyDictionary<UserIdentification, UserInfo> players)
 {
     public IEnumerable<ClaimListItemForExportViewModel> Items { get; } = claimPair
-          .Select(c => ClaimListBuilder.BuildItemForExport(c.Claim, currentUserId, c.ProjectInfo))
+          .Select(c => ClaimListBuilder.BuildItemForExport(c.Claim, currentUserId, c.ProjectInfo, players[c.Claim.GetPlayerId()]))
           .ToList();
 
-    public ClaimListForExportViewModel(ICurrentUserAccessor currentUserId, IReadOnlyCollection<Claim> claims, ProjectInfo projectInfo)
-        : this(currentUserId, claims.Select(c => (c, projectInfo)).ToList())
+    public ClaimListForExportViewModel(
+        ICurrentUserAccessor currentUserId,
+        IReadOnlyCollection<Claim> claims,
+        ProjectInfo projectInfo,
+        IReadOnlyDictionary<UserIdentification, UserInfo> players)
+        : this(currentUserId, [.. claims.Select(c => (c, projectInfo))], players)
     {
     }
 }
@@ -43,7 +55,11 @@ public record class ClaimListItemForExportViewModel(
     [property: Display(Name = "Паспортные данные")] string? PassportData,
     [property: Display(Name = "Адрес")] string? RegistrationAddress,
     IReadOnlyDictionary<ProjectFieldIdentification, string> FieldValues,
-    User FullPlayer // Этому объекту не место в viewmodel
+    // Доменный UserInfo вместо EF-сущности User: выгрузке нужны имя, почта и контакты, и все они
+    // приезжают загруженными пачкой, без ленивых навигаций на каждую строку.
+    // Display нужен затем, что имя свойства становится префиксом заголовков колонок игрока
+    // в выгрузке, а мастеру не на что смотреть в «FullPlayer».
+    [property: Display(Name = "Игрок")] UserInfo FullPlayer
     ) : ILinkable
 {
     #region Implementation of ILinkable

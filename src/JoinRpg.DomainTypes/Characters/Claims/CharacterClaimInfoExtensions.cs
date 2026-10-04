@@ -28,4 +28,20 @@ public static class CharacterClaimInfoExtensions
         }
         return null;
     }
+
+    /// <summary>
+    /// Отвечал ли мастер по заявке за последние <paramref name="days"/> дней.
+    /// </summary>
+    /// <remarks>
+    /// Считается по последнему мастерскому комментарию, видимому игроку: «мастер отработал
+    /// заявку» — это именно ответ игроку, а внутренние мастерские комментарии к этому не
+    /// относятся. Сравнение идёт с локальным «сейчас» (<see cref="DateTimeOffset.Now"/>) —
+    /// перенесено один в один из версии для EF-сущности.
+    /// </remarks>
+    public static bool HasMasterCommentsInLastXDays(this CharacterClaimInfo claim, int days)
+    {
+        ArgumentNullException.ThrowIfNull(claim);
+
+        return claim.LastVisibleMasterCommentAt?.AddDays(days) >= DateTimeOffset.Now;
+    }
 }

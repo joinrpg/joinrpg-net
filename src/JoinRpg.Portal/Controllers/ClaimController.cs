@@ -30,7 +30,7 @@ public class ClaimController(
     IUserRepository UserRepository,
     IPaymentsService paymentsService,
     IProjectMetadataRepository projectMetadataRepository,
-    IProblemValidator<Claim> claimValidator,
+    IClaimProblemValidator claimValidator,
     ICurrentUserAccessor currentUserAccessor,
     CharacterPlotViewService characterPlotViewService,
     JoinrpgMarkdownLinkRendererFactory linkRendererFactory

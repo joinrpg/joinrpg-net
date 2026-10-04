@@ -2,9 +2,7 @@ namespace JoinRpg.DomainTypes.Users;
 
 /// <summary>
 /// Вычисляет, какие элементы профиля пользователя не заполнены. Не знает о настройках проекта —
-/// только о самих фактах (есть телеграм/вк/телефон/ФИО или нет). Используется и для полноценного
-/// <see cref="UserInfo"/>, и там, где нет возможности собрать его целиком (напр. фильтры проблем
-/// заявки, работающие напрямую с EF-сущностями).
+/// только о самих фактах (есть телеграм/вк/телефон/ФИО или нет).
 /// </summary>
 public static class UserProfileItemsCalculator
 {
@@ -16,12 +14,12 @@ public static class UserProfileItemsCalculator
     public static bool IsCorrectContact(string? value) => (value?.Length ?? 0) >= MinContactLength;
 
     /// <summary>
-    /// Перегрузка на "сырых" фактах — нужна тем потребителям, которые не могут дёшево собрать
-    /// полноценный <see cref="UserInfo"/> (напр. фильтры проблем заявки, работающие напрямую с
-    /// EF-сущностями, минуя UserInfo). Когда такие потребители переедут на UserInfo, этот
-    /// оверлоад можно будет убрать и оставить только <see cref="UserInfo.GetMissingItems"/>.
+    /// Перегрузка на "сырых" фактах. Заводилась под потребителей, которые не могли дёшево
+    /// собрать полноценный <see cref="UserInfo"/> и читали контакты прямо из EF-сущностей;
+    /// таких больше нет, и единственный вызывающий — <see cref="UserInfo.GetMissingItems"/>.
+    /// То есть это уже просто тело того метода, вынесенное отдельно, — потому и internal.
     /// </summary>
-    public static IReadOnlyCollection<UserProfileItemType> GetMissingItems(
+    internal static IReadOnlyCollection<UserProfileItemType> GetMissingItems(
         bool hasTelegram,
         bool hasVerifiedVkontakte,
         string? phoneNumber,

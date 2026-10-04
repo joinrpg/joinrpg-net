@@ -1,10 +1,12 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -21,16 +23,29 @@ public class ClaimListController(
     IExportDataService exportDataService,
     IClaimsRepository claimsRepository,
     IUriService uriService,
-    IProblemValidator<Claim> claimValidator,
+    IClaimProblemValidator claimValidator,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository charGroupRepository,
+    ICharacterInfoRepository characterInfoRepository,
+    IUserRepository userRepository,
     ICurrentUserAccessor currentUserAccessor
         ) : Common.JoinControllerGameBase
 {
 
     #region implementation
 
-    private async Task<ActionResult> ___ShowMasterClaimList(ProjectIdentification projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec)
+    /// <param name="problemContexts">
+    /// Уже собранные контексты проблем, если вызывающий строил их для отбора заявок. Иначе
+    /// собираются здесь. Передавать стоит: иначе на страницах, которые сами фильтруют по
+    /// проблемам, персонажи и профили грузились бы дважды.
+    /// </param>
+    private async Task<ActionResult> ___ShowMasterClaimList(
+        ProjectIdentification projectId,
+        string export,
+        string title,
+        IReadOnlyCollection<Claim> claims,
+        ClaimStatusSpec claimStatusSpec,
+        IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext>? problemContexts = null)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
@@ -38,12 +53,13 @@ public class ClaimListController(
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
-            var view = new ClaimListViewModel(currentUserAccessor, claims, projectId, unreadComments, title, projectInfo, claimValidator);
+            var view = new ClaimListViewModel(currentUserAccessor, claims, projectId, unreadComments, title, projectInfo, claimValidator,
+                problemContexts ?? await LoadProblemContexts(claims));
             return View("Index", view);
         }
         else
         {
-            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, projectInfo);
+            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, projectInfo, await LoadPlayers(claims));
 
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
@@ -51,10 +67,33 @@ public class ClaimListController(
         }
     }
 
-    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec)
+    /// <summary>
+    /// Контексты расчёта проблем на весь список — две выборки, а не по заявке.
+    /// </summary>
+    private Task<IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext>> LoadProblemContexts(
+        IReadOnlyCollection<Claim> claims)
+        => ClaimProblemContextLoader.Load(characterInfoRepository, userRepository, [.. claims.Select(c => c.GetId())]);
+
+    /// <summary>
+    /// Профили игроков для выгрузки — одним запросом на весь список, а не по заявке.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<UserIdentification, UserInfo>> LoadPlayers(IReadOnlyCollection<Claim> claims)
+    {
+        IReadOnlyCollection<UserIdentification> playerIds = [.. claims.Select(c => c.GetPlayerId()).Distinct()];
+
+        if (playerIds.Count == 0)
+        {
+            return new Dictionary<UserIdentification, UserInfo>();
+        }
+
+        return (await userRepository.GetRequiredUserInfos(playerIds)).ToDictionary(user => user.UserId);
+    }
+
+    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec,
+        IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext>? problemContexts = null)
     {
 
-        return await ___ShowMasterClaimList(projectId, export, title, claims, claimStatusSpec);
+        return await ___ShowMasterClaimList(projectId, export, title, claims, claimStatusSpec, problemContexts);
     }
 
     private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec)
@@ -73,12 +112,17 @@ public class ClaimListController(
 
     }
 
-    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<Claim, ProjectInfo, bool> predicate)
+    /// <param name="predicate">
+    /// Отбор по проблемам: считается по доменному контексту заявки, в SQL не выражается.
+    /// Контексты собираются один раз и переиспользуются при отрисовке списка.
+    /// </param>
+    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<ClaimProblemContext, bool> predicate)
     {
         var claims = await claimsRepository.GetClaimsForMaster(projectId, masterUserId, claimStatusSpec);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var problemContexts = await LoadProblemContexts(claims);
 
-        return await ___ShowMasterClaimList(projectId, export, title, claims.Where(c => predicate(c, projectInfo)).ToList(), claimStatusSpec);
+        return await ___ShowMasterClaimList(projectId, export, title,
+            [.. claims.Where(c => predicate(problemContexts[c.GetId()]))], claimStatusSpec, problemContexts);
 
     }
 
@@ -97,12 +141,13 @@ public class ClaimListController(
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.Id.ProjectId.Value, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
-            var view = new ClaimListForGroupViewModel(currentUserAccessor, claims, characterGroup, page, unreadComments, claimValidator, projectInfo, title);
+            var view = new ClaimListForGroupViewModel(currentUserAccessor, claims, characterGroup, page, unreadComments, claimValidator,
+                await LoadProblemContexts(claims), projectInfo, title);
             return View("ByGroup", view);
         }
         else
         {
-            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, projectInfo);
+            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, projectInfo, await LoadPlayers(claims));
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
                         new ClaimListItemViewModelExporter(uriService, projectInfo),
@@ -220,7 +265,7 @@ public class ClaimListController(
     [MasterAuthorize()]
     public async Task<ActionResult> ResponsibleProblems(ProjectIdentification projectId, int responsibleMasterId, string export)
         => await ShowMasterClaimList(projectId, export, "Проблемные заявки на мастере", ClaimStatusSpec.Any, responsibleMasterId,
-            (claim, projectInfo) => claimValidator.Validate(claim, projectInfo, ProblemSeverity.Warning).Any());
+            context => claimValidator.Validate(context, ProblemSeverity.Warning).Any());
     #endregion
 
     #region By Status
@@ -257,23 +302,25 @@ public class ClaimListController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
         var playerEditableFields = projectInfo.UnsortedFields.Where(p => p.CanPlayerEdit).Select(c => c.Id).ToList();
         var loadedClaims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved);
+        var problemContexts = await LoadProblemContexts(loadedClaims);
         var claims =
             loadedClaims
-            .Where(claim => claimValidator.ValidateFieldsOnly(claim, projectInfo, playerEditableFields).Any())
+            .Where(claim => claimValidator.ValidateFieldsOnly(problemContexts[claim.GetId()], playerEditableFields).Any())
             .ToList();
 
-        return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", claims, ClaimStatusSpec.Approved);
+        return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", claims, ClaimStatusSpec.Approved, problemContexts);
     }
 
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> Problems(ProjectIdentification projectId, string export)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var loadedClaims = await claimsRepository.GetClaims(projectId, ClaimStatusSpec.Any);
+        var problemContexts = await LoadProblemContexts(loadedClaims);
         var claims =
-            (await claimsRepository.GetClaims(projectId, ClaimStatusSpec.Any))
-            .Where(c => claimValidator.Validate(c, projectInfo, ProblemSeverity.Warning).Any()).ToList();
+            loadedClaims
+            .Where(c => claimValidator.Validate(problemContexts[c.GetId()], ProblemSeverity.Warning).Any()).ToList();
         return
-            await ShowMasterClaimList(projectId, export, "Проблемные заявки", claims, ClaimStatusSpec.Any);
+            await ShowMasterClaimList(projectId, export, "Проблемные заявки", claims, ClaimStatusSpec.Any, problemContexts);
     }
 
 

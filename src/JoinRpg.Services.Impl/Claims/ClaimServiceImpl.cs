@@ -20,7 +20,7 @@ internal class ClaimServiceImpl(
     IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
-    IProblemValidator<Claim> claimValidator,
+    IClaimProblemValidator claimValidator,
     ILogger<CharacterServiceImpl> logger,
     ICharacterPropsService characterPropsService,
     IImpersonateAccessor impersonateAccessor,
@@ -37,22 +37,30 @@ internal class ClaimServiceImpl(
     private IForumRepository ForumRepository => forumRepository.Value;
     private IClaimsRepository ClaimsRepository => claimsRepository.Value;
 
+    // Именно ChangeClaimAsync: у ChangeClaim есть перегрузка Func<ctx, TResult>, и async-лямбда
+    // связалась бы с ней (TResult = Task), то есть внутренний Task никто бы не ждал — исключения
+    // операции терялись бы, а сохранение не происходило.
     public Task CheckInClaim(ClaimIdentification claimId, int money)
-        => characterPropsService.ChangeClaim(
+        => characterPropsService.ChangeClaimAsync(
             claimId,
             // TODO(#4891) нужно специфическое право. Перенесено как есть: до миграции это был
             // LoadClaimAsMaster(claimId) без дополнительных требований.
             ClaimAccessRequirement.AnyMaster,
             ProjectActiveRequirement.MustBeActive,
             money,
-            ctx =>
+            async ctx =>
             {
                 // Проверяем заранее, а пишем статус после приёма денег — как и до миграции.
                 ctx.Claim.EnsureCanChangeStatus(ClaimStatus.CheckedIn);
 
-                // TODO(#4892) переписать ClaimCheckInValidator на доменную сущность: сейчас он
-                // считает правила по EF-графу, хотя рядом лежат ProjectInfo и CharacterClaimInfo.
-                var validator = new ClaimCheckInValidator(ctx.Claim, claimValidator, ctx.ProjectInfo);
+                // Правила регистрации считаются по доменным сущностям (#4892): персонаж и заявка
+                // уже лежат в контексте, профиль игрока нужен контексту проблем целиком.
+                var validator = new ClaimCheckInValidator(
+                    new ClaimProblemContext(
+                        ctx.CharacterInfo,
+                        ctx.ClaimInfo,
+                        await UserRepository.GetRequiredUserInfo(ctx.ClaimInfo.PlayerId)),
+                    claimValidator);
                 if (!validator.CanCheckInInPrinciple)
                 {
                     throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);

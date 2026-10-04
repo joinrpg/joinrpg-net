@@ -12,17 +12,20 @@ public class JoinRpgDomainModule : Module
 
         _ = builder.RegisterType<FieldSaveHelper>().AsSelf().InstancePerLifetimeScope();
 
-        _ = builder.RegisterGeneric(typeof(ProblemValidator<>)).AsImplementedInterfaces();
-
         _ = builder.RegisterType<CharacterProblemValidator>().AsImplementedInterfaces();
 
-        _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly).AsClosedTypesOf(typeof(IProblemFilter<>)).SingleInstance();
+        _ = builder.RegisterType<ClaimProblemValidator>().AsImplementedInterfaces();
 
-        // ICharacterProblemFilter не generic, поэтому AsClosedTypesOf тут не подходит —
-        // отбираем реализации явно.
+        // ICharacterProblemFilter / IClaimProblemFilter не generic, поэтому AsClosedTypesOf тут
+        // не подходит — отбираем реализации явно.
         _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly)
             .AssignableTo<ICharacterProblemFilter>()
             .As<ICharacterProblemFilter>()
+            .SingleInstance();
+
+        _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly)
+            .AssignableTo<IClaimProblemFilter>()
+            .As<IClaimProblemFilter>()
             .SingleInstance();
 
         _ = builder.RegisterAssemblyTypes(typeof(JoinRpgDomainModule).Assembly).AsClosedTypesOf(typeof(IFieldRelatedProblemFilter<>)).SingleInstance();

@@ -25,7 +25,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             unitOfWork,
             currentUser,
             metadataRepository,
-            new FakeProblemValidator<Claim>(),
+            new FakeProblemValidator(),
             NullLogger<CharacterServiceImpl>.Instance,
             CreatePropsService(currentUserId),
             impersonateAccessor,

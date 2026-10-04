@@ -45,7 +45,7 @@ internal class CharacterProblemValidator(
     private IEnumerable<FieldRelatedProblem> ValidateFieldsInternal(CharacterInfo character, FieldWithValue[] fieldWithValues)
     {
         // Агрегат сам является IFieldAvailabilityTarget, поэтому обёртка над сущностью
-        // (CharacterItem/CharacterBulkLoader) здесь не нужна — см. ADR013.
+        // (CharacterItem) здесь не нужна — см. ADR013.
         foreach (var fieldWithValue in fieldWithValues)
         {
             foreach (var filter in fieldFilters)
