@@ -1,5 +1,3 @@
-using JoinRpg.Web.ProjectCommon;
-
 namespace JoinRpg.Web.Models;
 
 public interface IOperationsAwareView
@@ -17,8 +15,4 @@ public interface IOperationsAwareView
     string? InlineTitle { get; }
 
     string? CountString { get; }
-
-    string ClaimIdCompressed() => new CompressedIntList(ClaimIds).ToString();
-
-    string CharacterIdCompressed() => new CompressedIntList(CharacterIds).ToString();
 }

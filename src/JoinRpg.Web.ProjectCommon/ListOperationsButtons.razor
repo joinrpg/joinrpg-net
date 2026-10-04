@@ -1,0 +1,57 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+@inject IProjectUriLocator ProjectUriLocator
+@inject ICharacterGroupUriLocator CharacterGroupUriLocator
+@*
+    Кнопки над списком персонажей, заявок или операций: счётчик, выгрузка и массовые действия.
+*@
+<JoinButtonGroup>
+    @if (CountString is not null)
+    {
+        <JoinButton Disabled="true" Label="@CountString" />
+    }
+    <JoinButton Link="@ExportUri" Preset="ButtonPreset.Download" Label="Скачать в Excel" />
+    @if (ProjectId is not null)
+    {
+        @if (ShowCreateCharacter)
+        {
+            var createUri = CharacterGroupId is not null
+                ? CharacterGroupUriLocator.GetCreateCharacterUri(CharacterGroupId)
+                : ProjectUriLocator.GetCreateCharacterUri(ProjectId);
+            <JoinButton Link="@createUri.ToString()" Preset="ButtonPreset.Add" Label="Добавить персонажа" />
+        }
+        @if (ClaimIds.Count > 0)
+        {
+            <JoinButton Link="@ProjectUriLocator.GetMassMailUri(ProjectId, ClaimIds).ToString()" Preset="ButtonPreset.Email" Label="Написать всем" />
+        }
+        @if (CharacterIds.Count > 0)
+        {
+            <JoinButton Link="@ProjectUriLocator.GetPrintCharactersUri(ProjectId, CharacterIds).ToString()" Preset="ButtonPreset.Print" Label="Распечатать все" />
+        }
+    }
+</JoinButtonGroup>
+
+@code {
+    /// <summary>Проект списка. Без него показываются только счётчик и выгрузка.</summary>
+    [Parameter]
+    public ProjectIdentification? ProjectId { get; set; }
+
+    /// <summary>Группа, в которую создавать персонажа. Без неё персонаж создаётся без группы.</summary>
+    [Parameter]
+    public CharacterGroupIdentification? CharacterGroupId { get; set; }
+
+    [Parameter]
+    public bool ShowCreateCharacter { get; set; }
+
+    [Parameter]
+    public IReadOnlyCollection<ClaimIdentification> ClaimIds { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyCollection<CharacterIdentification> CharacterIds { get; set; } = [];
+
+    [Parameter]
+    public string? CountString { get; set; }
+
+    /// <summary>Ссылка на выгрузку в Excel: строится от текущего запроса с его фильтрами, поэтому её даёт страница.</summary>
+    [Parameter, EditorRequired]
+    public string ExportUri { get; set; } = null!;
+}
