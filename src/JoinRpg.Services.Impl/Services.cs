@@ -52,6 +52,7 @@ public static class Services
             services
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
+            .AddDailyJob<FormerMastersBackfillJob>()
             .AddTransient<ICharacterGroupService, CharacterGroupService>()
             .AddTransient<IProjectPropsService, ProjectPropsService>()
             .AddTransient<ICharacterPropsService, CharacterPropsService>()

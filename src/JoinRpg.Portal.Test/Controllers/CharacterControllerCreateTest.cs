@@ -144,6 +144,7 @@ public class CharacterControllerCreateTest
         public Task<ICollection<Character>> GetCharacterByGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds) => throw new NotSupportedException();
 
         public Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<FormerMasterCandidate>> GetFormerMasterCandidates() => throw new NotSupportedException();
 
         public Task<ProjectPersonalizedInfo[]> GetPersonalizedProjectsBySpecification(PersonalizedProjectListSpecification projectListSpecification) => throw new NotSupportedException();
 
