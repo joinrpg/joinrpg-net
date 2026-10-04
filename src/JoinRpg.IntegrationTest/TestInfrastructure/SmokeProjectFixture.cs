@@ -16,7 +16,7 @@ using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Services.Interfaces.Subscribe;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.ProjectCommon;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;

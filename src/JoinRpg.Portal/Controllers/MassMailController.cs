@@ -6,7 +6,7 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.WebPortal.Managers.Claims;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,3 +1,5 @@
+using JoinRpg.Web.ProjectCommon;
+
 namespace JoinRpg.Web.Models;
 
 public interface IOperationsAwareView

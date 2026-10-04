@@ -1,6 +1,4 @@
-using JoinRpg.Web.Models.CommonTypes;
-
-namespace JoinRpg.WebPortal.Models.Test;
+namespace JoinRpg.Web.ProjectCommon.Test;
 
 public class TestIntListCompression
 {
