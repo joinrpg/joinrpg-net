@@ -1,4 +1,3 @@
-using System.Text.Json;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
@@ -280,8 +279,7 @@ internal class FieldSetupServiceImpl(
                     ctx.Request.StartTime,
                     ctx.Request.EndTime,
                     ctx.Request.TimeSlotInMinutes,
-                    ctx.Request.BreakInMinutes,
-                    ctx.Request.TimeZone);
+                    ctx.Request.BreakInMinutes);
                 if (slots.Count == 0)
                 {
                     throw new ArgumentException("В указанный промежуток не помещается ни одного таймслота", nameof(request)); // TODO[Localize]
@@ -454,7 +452,7 @@ internal class FieldSetupServiceImpl(
             throw new Exception("That's not time slot'");
         }
 
-        self.ProgrammaticValue = JsonSerializer.Serialize(timeSlotOptions);
+        self.ProgrammaticValue = timeSlotOptions?.ToJson();
     }
 
     private static ProjectFieldDropdownValue CreateFieldValueVariantImpl(ProjectMutationContext ctx, CreateFieldValueVariantRequest request, ProjectField field)

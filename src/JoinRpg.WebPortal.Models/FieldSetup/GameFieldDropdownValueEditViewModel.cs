@@ -21,7 +21,7 @@ public class GameFieldDropdownValueEditViewModel : GameFieldDropdownValueViewMod
         if (value is TimeSlotFieldVariant timeSlotFieldVariant)
         {
             TimeSlotInMinutes = timeSlotFieldVariant.TimeSlotOptions.TimeSlotInMinutes;
-            TimeSlotStartTime = timeSlotFieldVariant.TimeSlotOptions.StartTime;
+            TimeSlotStartTime = timeSlotFieldVariant.TimeSlotOptions.LocalStartTime;
         }
     }
 

@@ -16,7 +16,6 @@ public class TimeSlotMassAddTest : BunitContext
 {
     private static readonly TimeSlotMassAddViewModel Model = new(
         new ProjectFieldIdentification(new ProjectIdentification(1), 2),
-        "Europe/Moscow",
         new DateOnly(2026, 7, 10),
         50);
 

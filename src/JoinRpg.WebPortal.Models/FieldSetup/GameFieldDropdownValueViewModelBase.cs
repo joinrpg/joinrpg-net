@@ -37,9 +37,9 @@ public abstract class GameFieldDropdownValueViewModelBase
     [Display(Name = "Длина тайм-слота (в минутах")]
     public int TimeSlotInMinutes { get; set; }
 
-    [Display(Name = "Начало тайм-слота", Description = "В формате ГГГГ-ММ-ДДTЧЧ:ММ+03:00. Если часовой пояс не указан, время считается по часовому поясу проекта.")]
-    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mmK}", ApplyFormatInEditMode = true)]
-    public DateTimeOffset TimeSlotStartTime { get; set; }
+    [Display(Name = "Начало тайм-слота", Description = "По часовому поясу проекта")]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+    public DateTime TimeSlotStartTime { get; set; }
 
     [ReadOnly(true)]
     public bool IsTimeField { get; set; }
@@ -56,24 +56,14 @@ public abstract class GameFieldDropdownValueViewModelBase
 
     public GameFieldDropdownValueViewModelBase() { }
 
-    /// <param name="projectTimeZone">Часовой пояс проекта — в нём понимается время, введённое без смещения</param>
-    public TimeSlotOptions? GetTimeSlotRequest(bool isTimeSlot, string? value, TimeZoneInfo projectTimeZone)
-    {
-        return value is not null && isTimeSlot
-            ? new TimeSlotOptions
-            {
-                StartTime = ParseStartTime(value, projectTimeZone),
-                TimeSlotInMinutes = TimeSlotInMinutes
-            }
+    public TimeSlotOptions? GetTimeSlotRequest(bool isTimeSlot, string? value)
+        => value is not null && isTimeSlot
+            ? new TimeSlotOptions(ParseStartTime(value), TimeSlotInMinutes)
             : null;
-    }
 
-    internal static DateTimeOffset ParseStartTime(string value, TimeZoneInfo projectTimeZone)
-    {
-        if (DateTime.TryParseExact(value, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var local))
-        {
-            return new DateTimeOffset(local, projectTimeZone.GetUtcOffset(local));
-        }
-        return DateTimeOffset.ParseExact(value, "yyyy-MM-ddTHH:mmK", CultureInfo.InvariantCulture);
-    }
+    /// <summary>
+    /// Время на часах в поясе проекта. Смещение, если его всё-таки ввели, игнорируется.
+    /// </summary>
+    internal static DateTime ParseStartTime(string value)
+        => DateTimeOffset.ParseExact(value, "yyyy-MM-ddTHH:mmK", CultureInfo.InvariantCulture).DateTime;
 }

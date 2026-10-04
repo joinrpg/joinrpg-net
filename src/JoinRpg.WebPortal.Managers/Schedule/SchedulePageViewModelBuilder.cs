@@ -51,7 +51,7 @@ internal static class SchedulePageViewModelBuilder
                 Id = slot.Id,
                 Name = slot.Name,
                 Description =
-                    new MarkupString($"Начало: {slot.Options.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br /> {((MarkdownString?)scheduleItem.Description).ToHtmlString().Value}"),
+                    new MarkupString($"Начало: {slot.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br /> {((MarkdownString?)scheduleItem.Description).ToHtmlString().Value}"),
             };
         }
         if (scheduleItem is ScheduleRoom room)

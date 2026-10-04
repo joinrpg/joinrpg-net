@@ -70,11 +70,9 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
     private static TimeSlotMassAddViewModel CreateTimeSlotMassAdd(ProjectFieldInfo field, TimeZoneInfo timeZone)
     {
         var lastOptions = (field.LastVariant as TimeSlotFieldVariant)?.TimeSlotOptions ?? TimeSlotOptions.CreateDefault(timeZone);
-        var lastEnd = TimeZoneInfo.ConvertTime(lastOptions.EndTime, timeZone);
         return new TimeSlotMassAddViewModel(
             field.Id,
-            timeZone.Id,
-            DateOnly.FromDateTime(lastEnd.DateTime),
+            DateOnly.FromDateTime(lastOptions.LocalEndTime),
             lastOptions.TimeSlotInMinutes);
     }
 

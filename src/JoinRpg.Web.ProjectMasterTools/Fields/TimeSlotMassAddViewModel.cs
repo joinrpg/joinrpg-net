@@ -1,21 +1,18 @@
 namespace JoinRpg.Web.ProjectMasterTools.Fields;
 
 /// <summary>
-/// Параметры острова массового добавления таймслотов
+/// Параметры острова массового добавления таймслотов. Дата и время — на часах в часовом поясе проекта.
 /// </summary>
-/// <param name="TimeZoneId">IANA-идентификатор таймзоны, в которой мастер вводит дату и время</param>
 /// <param name="DefaultDate">Дата, подставляемая в форму</param>
 /// <param name="DefaultSlotMinutes">Длина слота, подставляемая в форму</param>
 public record TimeSlotMassAddViewModel(
     ProjectFieldIdentification FieldId,
-    string TimeZoneId,
     DateOnly DefaultDate,
     int DefaultSlotMinutes);
 
 /// <summary>
-/// Запрос на массовое добавление таймслотов
+/// Запрос на массовое добавление таймслотов. Дата и время — на часах в часовом поясе проекта.
 /// </summary>
-/// <param name="TimeZoneId">IANA-идентификатор таймзоны, в которой заданы дата и время</param>
 public record TimeSlotMassAddRequest(
     ProjectFieldIdentification FieldId,
     string? Prefix,
@@ -23,5 +20,4 @@ public record TimeSlotMassAddRequest(
     TimeOnly StartTime,
     TimeOnly EndTime,
     int TimeSlotInMinutes,
-    int BreakInMinutes,
-    string TimeZoneId);
+    int BreakInMinutes);

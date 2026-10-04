@@ -78,8 +78,8 @@ public class ProgramItemPlaced
     {
         ProgramItem = item;
         Rooms = rooms;
-        StartTime = timeSlots.Min(x => x.Options.StartTime);
-        EndTime = timeSlots.Max(x => x.Options.EndTime);
+        StartTime = timeSlots.Min(x => x.StartTime);
+        EndTime = timeSlots.Max(x => x.EndTime);
     }
 
     public DateTimeOffset EndTime { get; set; }
@@ -118,9 +118,21 @@ public record class TimeSlot : ScheduleItemAttribute
     public TimeSlot(TimeSlotFieldVariant variant, int seqId) : base(variant, seqId)
     {
         Options = variant.TimeSlotOptions;
+        StartTime = variant.StartTime;
+        EndTime = variant.EndTime;
     }
 
     public TimeSlotOptions Options { get; }
+
+    /// <summary>
+    /// Начало слота в часовом поясе проекта
+    /// </summary>
+    public DateTimeOffset StartTime { get; }
+
+    /// <summary>
+    /// Конец слота в часовом поясе проекта
+    /// </summary>
+    public DateTimeOffset EndTime { get; }
 }
 
 public record ScheduleResult(

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -19,7 +18,10 @@ public class ScheduleBuilderTest
     private const int RoomFieldId = 20;
     private const int AuthorFieldId = 30;
 
-    private static readonly DateTimeOffset Day = new(2026, 6, 1, 0, 0, 0, TimeSpan.FromHours(3));
+    private static readonly DateTime Day = new(2026, 6, 1);
+    private static readonly TimeZoneInfo ProjectTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
+
+    private static DateTimeOffset AtProjectTime(DateTime time) => new(time, TimeSpan.FromHours(3));
 
     private static readonly IReadOnlyDictionary<UserIdentification, UserInfoHeader> NoAuthors
         = new Dictionary<UserIdentification, UserInfoHeader>();
@@ -39,8 +41,8 @@ public class ScheduleBuilderTest
         result.Slots[1][0].ShouldBeNull();
 
         var placed = result.AllItems.ShouldHaveSingleItem();
-        placed.StartTime.ShouldBe(Day.AddHours(10));
-        placed.EndTime.ShouldBe(Day.AddHours(11));
+        placed.StartTime.ShouldBe(AtProjectTime(Day.AddHours(10)));
+        placed.EndTime.ShouldBe(AtProjectTime(Day.AddHours(11)));
         placed.Rooms.ShouldHaveSingleItem().Name.ShouldBe("Комната 1");
     }
 
@@ -57,8 +59,8 @@ public class ScheduleBuilderTest
         result.Slots.SelectMany(row => row).ShouldAllBe(item => item != null);
 
         var placed = result.AllItems.ShouldHaveSingleItem();
-        placed.StartTime.ShouldBe(Day.AddHours(10));
-        placed.EndTime.ShouldBe(Day.AddHours(12));
+        placed.StartTime.ShouldBe(AtProjectTime(Day.AddHours(10)));
+        placed.EndTime.ShouldBe(AtProjectTime(Day.AddHours(12)));
         placed.Rooms.Count.ShouldBe(2);
     }
 
@@ -302,7 +304,7 @@ public class ScheduleBuilderTest
             ],
             scheduleEnabled: true);
 
-    private static TimeSlotFieldVariant MakeTimeSlotVariant(int variantId, DateTimeOffset startTime)
+    private static TimeSlotFieldVariant MakeTimeSlotVariant(int variantId, DateTime startTime)
         => new(
             new ProjectFieldVariantIdentification(new ProjectFieldIdentification(ProjectId, TimeSlotFieldId), variantId),
             $"Слот {variantId}",
@@ -312,10 +314,10 @@ public class ScheduleBuilderTest
             CharacterGroupId: null,
             Description: null,
             MasterDescription: null,
-            JsonSerializer.Serialize(new TimeSlotOptions { StartTime = startTime, TimeSlotInMinutes = 60 }),
+            new TimeSlotOptions(startTime, TimeSlotInMinutes: 60).ToJson(),
             wasEverUsed: true,
             parentFieldName: "Слот",
-            projectTimeZone: TimeZoneInfo.Utc);
+            projectTimeZone: ProjectTimeZone);
 
     private static ProjectFieldVariant MakeRoomVariant(int variantId, bool isActive)
         => new(

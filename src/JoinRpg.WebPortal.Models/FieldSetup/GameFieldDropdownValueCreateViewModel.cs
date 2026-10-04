@@ -12,7 +12,7 @@ public class GameFieldDropdownValueCreateViewModel : GameFieldDropdownValueViewM
         {
             var options = GetDefaultTimeSlotOptions(field, projectTimeZone);
             TimeSlotInMinutes = options.TimeSlotInMinutes;
-            TimeSlotStartTime = options.StartTime;
+            TimeSlotStartTime = options.LocalStartTime;
         }
     }
 
@@ -26,11 +26,7 @@ public class GameFieldDropdownValueCreateViewModel : GameFieldDropdownValueViewM
         }
 
         var prevOptions = prev.TimeSlotOptions;
-        return new TimeSlotOptions()
-        {
-            TimeSlotInMinutes = prevOptions.TimeSlotInMinutes,
-            StartTime = prevOptions.EndTime.AddMinutes(10),
-        };
+        return prevOptions with { LocalStartTime = prevOptions.LocalEndTime.AddMinutes(10) };
     }
 
     public GameFieldDropdownValueCreateViewModel() { }//For binding

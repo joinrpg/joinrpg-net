@@ -194,7 +194,7 @@ public class GameFieldController(
             var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
             var field = metadata.GetFieldById(id);
 
-            var timeSlotOptions = viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault(), metadata.TimeZone);
+            var timeSlotOptions = viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault());
 
             await
                 fieldSetupService.CreateFieldValueVariant(
@@ -252,7 +252,7 @@ public class GameFieldController(
                 viewModel.ProgrammaticValue,
                 viewModel.Price,
                 viewModel.PlayerSelectable,
-                viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault(), metadata.TimeZone)
+                viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault())
                 ));
 
             return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });

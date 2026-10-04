@@ -47,6 +47,6 @@ public class TimeSlotMassAddFormModel : IValidatableObject
     /// <summary>
     /// Нарезать слоты. Вызывать только для валидной формы.
     /// </summary>
-    public IReadOnlyList<TimeSlotBatchItem> Generate(TimeZoneInfo timeZone)
-        => TimeSlotBatch.Generate(Prefix, Date!.Value, StartTime!.Value, EndTime!.Value, SlotMinutes!.Value, BreakMinutes!.Value, timeZone);
+    public IReadOnlyList<TimeSlotBatchItem> Generate()
+        => TimeSlotBatch.Generate(Prefix, Date!.Value, StartTime!.Value, EndTime!.Value, SlotMinutes!.Value, BreakMinutes!.Value);
 }
