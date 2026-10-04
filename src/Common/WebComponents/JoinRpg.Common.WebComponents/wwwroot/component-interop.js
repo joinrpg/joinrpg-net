@@ -14,7 +14,8 @@ function cachedScript(url, options) {
 
 
 export function initBootstrapSelect(ref, initialValues) {
-  cachedScript("/lib/bootstrap-select/js/bootstrap-select.js", {
+  // Плагин берём из статики самой библиотеки, а не из /lib хоста: у каталога компонентов своей копии нет.
+  cachedScript("/_content/JoinRpg.Common.WebComponents/lib/bootstrap-select/js/bootstrap-select.js", {
     complete: function (result) {
       $(ref).selectpicker();
       $(ref).selectpicker('val', initialValues);
