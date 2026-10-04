@@ -45,8 +45,8 @@ public class ScheduleBuilder
         this.projectInfo = projectInfo;
         this.authorUsers = authorUsers;
 
-        TimeSlotField = projectInfo.TimeSlotField ?? throw new Exception("Schedule not enabled");
-        RoomField = projectInfo.RoomField ?? throw new Exception("Schedule not enabled");
+        TimeSlotField = projectInfo.TimeSlotField ?? throw new ScheduleNotEnabledException(projectInfo.ProjectId);
+        RoomField = projectInfo.RoomField ?? throw new ScheduleNotEnabledException(projectInfo.ProjectId);
     }
 
     private ProjectFieldInfo TimeSlotField { get; }

@@ -29,7 +29,6 @@ internal static class SmokeExpectations
         ["{projectId}/plots/ByTag"] = "нужен сюжетный тег, сид его не создаёт",
         ["{projectId}/reports/2d/{gameReport2DTemplateId}"] = "нужен сохранённый шаблон 2D-отчёта, сид его не создаёт",
         ["{projectId}/money/SummaryByMaster"] = "нужен токен выгрузки, выдаётся отдельной страницей",
-        ["{projectId}/schedule/ical"] = "нужно настроенное расписание (поля времени и локации), без него бросает исключение",
         // JWT тут не нужен — расписание отдаётся анонимно, доступ решает видимость полей
         // времени и локации. Смоук всё равно не ходит: в его сиде расписание не настроено.
         ["x-game-api/{projectId}/schedule/all"] = "нужно настроенное расписание, покрыт XApiScheduleTests",
@@ -107,6 +106,9 @@ internal static class SmokeExpectations
 
             // Вторая роль предлагается только по заявке, прошедшей чек-ин.
             ["{ProjectId}/claim/{ClaimId}/secondrole"] = HttpStatusCode.Redirect,
+
+            // В сиде расписание не настроено, а подписке на календарь без расписания честнее 404 (#5266).
+            ["{projectId}/schedule/ical"] = HttpStatusCode.NotFound,
         };
 
     public static HttpStatusCode ExpectedStatusFor(SmokeEndpoint endpoint)
