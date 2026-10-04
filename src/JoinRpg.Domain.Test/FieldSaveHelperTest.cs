@@ -62,6 +62,67 @@ public class FieldSaveHelperTest
         claim.JsonData.ShouldBe($"{{\"{mock.CharacterFieldInfo.Id.ProjectFieldId}\":\"test\"}}");
     }
 
+    /// <summary>
+    /// Значение, введённое игроком, должно победить значение из шаблона — даже если поле публичное,
+    /// то есть видно слою персонажа и в неутверждённой заявке.
+    /// </summary>
+    [Fact]
+    public void PublicFieldValueFromPlayerShouldOverrideTemplateValue()
+    {
+        var mock = new MockedProject();
+        var field = mock.AddField(f =>
+        {
+            f.FieldName = "Публичное, игрок может менять";
+            f.FieldType = ProjectFieldType.String;
+            f.FieldBoundTo = FieldBoundTo.Character;
+            f.IsPublic = true;
+            f.CanPlayerView = true;
+            f.CanPlayerEdit = true;
+            f.ShowOnUnApprovedClaims = true;
+            f.ValidForNpc = true;
+            f.ValuesOrdering = "";
+        });
+
+        MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(field, "ValueFromTemplate"));
+
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Player.UserId,
+            claim,
+            new Dictionary<int, string?>
+            {
+                { field.Id.ProjectFieldId, "ValueFromPlayer" },
+            },
+            mock.ProjectInfo);
+
+        claim.GetSingleField(mock.ProjectInfo, field.Id)!.Value.ShouldBe("ValueFromPlayer");
+    }
+
+    /// <summary>
+    /// Результат сохранения должен нести значение ДО изменения: на нём строятся письма и
+    /// комментарии «поле изменено с X на Y».
+    /// </summary>
+    [Fact]
+    public void SaveResultShouldKeepPreviousValue()
+    {
+        var mock = new MockedProject();
+        MockedProject.AssignFieldValues(mock.Character, new FieldWithValue(mock.CharacterFieldInfo, "OldValue"));
+
+        var changed = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Master.UserId,
+            mock.Character,
+            new Dictionary<int, string?>
+            {
+                { mock.CharacterFieldInfo.Id.ProjectFieldId, "NewValue" },
+            },
+            mock.ProjectInfo);
+
+        var field = changed.Single(f => f.Field.Id == mock.CharacterFieldInfo.Id);
+        field.PreviousValue.ShouldBe("OldValue");
+        field.New.Value.ShouldBe("NewValue");
+    }
+
     [Fact]
     public void TryToChangeMasterOnlyFieldOnAdd()
     {
