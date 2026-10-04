@@ -30,21 +30,23 @@ public class SchedulePageManager(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
         var hasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor);
-        var viewModel = new SchedulePageViewModel()
+        var columns = result.Rooms.ToViewModel();
+        var rows = result.TimeSlots.ToViewModel();
+        var conflicted = result.Conflicted.ToViewModel(hasMasterAccess);
+        var slots = result.Slots.Select2DList(x => x.ToViewModel(hasMasterAccess));
+
+        MergeSlots(slots);
+
+        return new SchedulePageViewModel()
         {
             ProjectId = currentProject.ProjectId,
             DisplayName = projectInfo.ProjectName,
-            NotScheduledProgramItems = result.NotScheduled.ToViewModel(hasMasterAccess),
-            Columns = result.Rooms.ToViewModel(),
-            Rows = result.TimeSlots.ToViewModel(),
-            ConflictedProgramItems = result.Conflicted.ToViewModel(hasMasterAccess),
-            Slots = result.Slots.Select2DList(x => x.ToViewModel(hasMasterAccess)),
+            Columns = columns,
+            Rows = rows,
+            Appointments = BuildAppointments(slots, columns, rows, conflicted, hasMasterAccess),
+            Intersections = BuildIntersections(conflicted, hasMasterAccess),
+            NotAllocated = BuildNotAllocated(result.NotScheduled.ToViewModel(hasMasterAccess), columns, hasMasterAccess),
         };
-
-        MergeSlots(viewModel);
-        await BuildAppointments(viewModel);
-
-        return viewModel;
     }
 
     //TODO we ignore acces rights here
@@ -90,17 +92,18 @@ public class SchedulePageManager(
 
     private async Task<ScheduleResult> GetCompiledSchedule() => (await GetBuilder()).Build();
 
-    private async Task BuildAppointments(SchedulePageViewModel viewModel)
+    private static List<AppointmentViewModel> BuildAppointments(
+        List<List<ProgramItemViewModel>> slots,
+        IReadOnlyCollection<TableHeaderViewModel> columns,
+        IReadOnlyList<TableHeaderViewModel> rows,
+        IReadOnlyCollection<ProgramItemViewModel> conflicted,
+        bool hasMasterAccess)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
-
-        var hasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor);
-
         var result = new List<AppointmentViewModel>(64);
 
-        for (var i = 0; i < viewModel.Rows.Count; i++)
+        for (var i = 0; i < rows.Count; i++)
         {
-            var row = viewModel.Slots[i];
+            var row = slots[i];
             for (var j = 0; j < row.Count; j++)
             {
                 var slot = row[j];
@@ -112,18 +115,12 @@ public class SchedulePageManager(
                 var rowIndex = i;
                 var colIndex = j;
 
-                var appointment = new AppointmentViewModel(() => new Rect
+                var appointment = new AppointmentViewModel()
                 {
-                    Left = colIndex * viewModel.ColumnWidth,
-                    Top = rowIndex * viewModel.RowHeight,
-                    Width = slot.ColSpan * viewModel.ColumnWidth,
-                    Height = slot.RowSpan * viewModel.RowHeight
-                })
-                {
-                    ErrorType = viewModel.ConflictedProgramItems.FirstOrDefault(pi => pi.Id == slot.Id) != null
+                    ErrorType = conflicted.FirstOrDefault(pi => pi.Id == slot.Id) != null
                         ? AppointmentErrorType.Intersection
                         : null,
-                    AllRooms = slot.ColSpan == viewModel.Columns.Count,
+                    AllRooms = slot.ColSpan == columns.Count,
                     RoomIndex = colIndex,
                     RoomCount = slot.ColSpan,
                     HasMasterAccess = hasMasterAccess,
@@ -133,10 +130,10 @@ public class SchedulePageManager(
                     Description = slot.Description.ToHtmlString(),
                     CharacterId = slot.Id!,
                     Users = slot.Users,
-                    Rooms = [.. viewModel.Columns
+                    Rooms = [.. columns
                         .SkipWhile((v, index) => index < colIndex)
                         .Take(slot.ColSpan)],
-                    Slots = [.. viewModel.Rows
+                    Slots = [.. rows
                         .SkipWhile((v, index) => index < rowIndex)
                         .Take(slot.RowSpan)]
                 };
@@ -144,20 +141,16 @@ public class SchedulePageManager(
             }
         }
 
-        viewModel.Appointments = result;
+        return result;
+    }
 
-        viewModel.Intersections = viewModel.ConflictedProgramItems
+    private static List<AppointmentViewModel> BuildIntersections(
+        IReadOnlyCollection<ProgramItemViewModel> conflicted,
+        bool hasMasterAccess)
+        => conflicted
             .Select(
-                source => new AppointmentViewModel(
-                    () => new Rect
-                    {
-                        Left = 0,
-                        Top = 0,
-                        Width = viewModel.ColumnWidth,
-                        Height = viewModel.RowHeight
-                    })
+                source => new AppointmentViewModel()
                 {
-                    ErrorMode = true,
                     ErrorType = AppointmentErrorType.Intersection,
                     DisplayName = source.Name,
                     Description = source.Description.ToHtmlString(),
@@ -167,20 +160,16 @@ public class SchedulePageManager(
                 })
             .ToList();
 
-        viewModel.NotAllocated = viewModel.NotScheduledProgramItems
+    private static List<AppointmentViewModel> BuildNotAllocated(
+        IReadOnlyCollection<ProgramItemViewModel> notScheduled,
+        IReadOnlyCollection<TableHeaderViewModel> columns,
+        bool hasMasterAccess)
+        => notScheduled
             .Select(
-                source => new AppointmentViewModel(
-                    () => new Rect
-                    {
-                        Left = 0,
-                        Top = 0,
-                        Width = viewModel.ColumnWidth,
-                        Height = viewModel.RowHeight
-                    })
+                source => new AppointmentViewModel()
                 {
-                    ErrorMode = true,
                     ErrorType = AppointmentErrorType.NotLocated,
-                    AllRooms = source.ColSpan == viewModel.Columns.Count,
+                    AllRooms = source.ColSpan == columns.Count,
                     DisplayName = source.Name,
                     Description = source.Description.ToHtmlString(),
                     CharacterId = source.Id!,
@@ -188,13 +177,12 @@ public class SchedulePageManager(
                     HasMasterAccess = hasMasterAccess,
                 })
             .ToList();
-    }
 
-    private static void MergeSlots(SchedulePageViewModel viewModel)
+    private static void MergeSlots(List<List<ProgramItemViewModel>> slots)
     {
-        for (var rowIndex = 0; rowIndex < viewModel.Slots.Count; rowIndex++)
+        for (var rowIndex = 0; rowIndex < slots.Count; rowIndex++)
         {
-            var slotRow = viewModel.Slots[rowIndex];
+            var slotRow = slots[rowIndex];
             for (var colIndex = 0; colIndex < slotRow.Count; colIndex++)
             {
                 var slot = slotRow[colIndex];
@@ -210,7 +198,7 @@ public class SchedulePageManager(
 
                 slot.ColSpan = CountSameSlots(slotRow.Skip(colIndex));
 
-                slot.RowSpan = CountSameSlots(viewModel.Slots.Skip(rowIndex).Select(row => row[colIndex]));
+                slot.RowSpan = CountSameSlots(slots.Skip(rowIndex).Select(row => row[colIndex]));
 
                 for (var i = 0; i < slot.RowSpan; i++)
                 {
@@ -220,7 +208,7 @@ public class SchedulePageManager(
                         {
                             continue;
                         }
-                        var slotToRemove = viewModel.Slots[rowIndex + i][colIndex + j];
+                        var slotToRemove = slots[rowIndex + i][colIndex + j];
                         slotToRemove.ColSpan = 0;
                         slotToRemove.RowSpan = 0;
                     }

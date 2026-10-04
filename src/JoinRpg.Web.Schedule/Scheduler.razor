@@ -1,62 +1,34 @@
 @*
     Сетка расписания: шапка с комнатами, левая колонка с тайм-слотами и поле карточек.
 
-    Шапка и левая колонка — отдельные блоки с overflow: hidden, которые JS синхронизирует
-    со прокруткой поля (handleScroll). Поэтому они не могут быть просто ячейками одной
-    таблицы, а скрипт обязан остаться рядом с разметкой: он ссылается на id элементов.
+    Всё это — ячейки одного CSS grid внутри одного блока прокрутки. Шапка и левая колонка
+    прилипают к краям (position: sticky), поэтому при прокрутке поля остаются на месте сами,
+    без скрипта. Линии сетки рисует фон подложки, а не пустые ячейки таблицы.
 *@
 <div id="scheduler" class="scheduler @(FullScreen ? "scheduler-fullscreen" : "scheduler-embedded")">
 
-    <div class="scheduler-header">
-        <div class="scheduler-left-top" style="width: @(Model.LeftBarWidth)px"></div>
-        <div id="scheduler-header-scrollable" class="scheduler-header-scrollable">
-            <table class="scheduler-header-columns">
-                <thead>
-                    <tr>
-                        @foreach (var col in Model.Columns)
-                        {
-                            <th id="project-room@(col.Id.ProjectFieldVariantId)" class="scheduler-header-column" title="@col.Description.Value" data-toggle="tooltip" data-placement="bottom" style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px">@col.Name</th>
-                        }
-                    </tr>
-                </thead>
-            </table>
-        </div>
-    </div>
+    <div class="scheduler-scrollable" style="@GridStyle">
+        <div class="scheduler-left-top"></div>
 
-    <div class="scheduler-content">
+        @foreach (var (col, index) in Model.Columns.Select((col, index) => (col, index)))
+        {
+            <div id="project-room@(col.Id.ProjectFieldVariantId)" class="scheduler-header-column" style="grid-column: @(index + 2)" title="@col.Description.Value" data-toggle="tooltip" data-placement="bottom">@col.Name</div>
+        }
 
-        <div class="scheduler-header-rows" style="width: @(Model.LeftBarWidth)px; min-width: @(Model.LeftBarWidth)px;">
-            <div id="scheduler-header-rows-scrollable" class="scheduler-header-rows-scrollable">
-                @foreach (var row in Model.Rows)
-                {
-                    <div id="project-slot@(row.Id.ProjectFieldVariantId)" class="scheduler-header-row" title="@row.Description.Value" data-toggle="tooltip" data-placement="right" style="height: @(Model.RowHeight)px">@row.Name</div>
-                }
+        @for (var index = 0; index < Model.Rows.Count; index++)
+        {
+            var row = Model.Rows[index];
+            <div id="project-slot@(row.Id.ProjectFieldVariantId)" class="scheduler-header-row" style="grid-row: @(index + 2)" title="@row.Description.Value" data-toggle="tooltip" data-placement="right">@row.Name</div>
+        }
+
+        <div class="scheduler-grid"></div>
+
+        @foreach (var appointment in Model.Appointments)
+        {
+            <div class="scheduler-cell" style="@Placement(appointment)">
+                <Appointment Model="appointment" />
             </div>
-        </div>
-
-        <div class="scheduler-scrollable" onscroll="handleScroll(event)">
-
-            <table class="scheduler-grid">
-                <tbody>
-                    @for (var row = 0; row < Model.Rows.Count; row++)
-                    {
-                        <tr>
-                            @for (var i = 0; i < Model.Columns.Count; i++)
-                            {
-                                <td style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px; height: @(Model.RowHeight)px;"></td>
-                            }
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-            <div class="scheduler-appointments">
-                @foreach (var appointment in Model.Appointments)
-                {
-                    <Appointment Model="appointment" />
-                }
-            </div>
-        </div>
+        }
     </div>
 
     @if (FullScreen)
@@ -67,24 +39,11 @@
 
 <script type="text/javascript">
     let appointmentClickHandler = () => {};
-    let colHeaderScrollable;
-    let rowHeaderScrollable;
-    function handleScroll(ev)
-    {
-        const scrollLeft = Math.min(ev.target.scrollLeft, colHeaderScrollable.scrollWidth - colHeaderScrollable.clientWidth);
-        colHeaderScrollable.scrollLeft = scrollLeft;
-        ev.target.scrollLeft = scrollLeft;
-        const scrollTop = Math.min(ev.target.scrollTop, rowHeaderScrollable.scrollHeight - rowHeaderScrollable.clientHeight);
-        rowHeaderScrollable.scrollTop = scrollTop;
-        ev.target.scrollTop = scrollTop;
-    }
     $(document).ready(function(){
         $('[data-toggle="tooltip"]').tooltip({
             html: true,
             container: 'body'
         });
-        colHeaderScrollable = document.getElementById("scheduler-header-scrollable");
-        rowHeaderScrollable = document.getElementById("scheduler-header-rows-scrollable");
     });
 </script>
 
@@ -99,4 +58,15 @@
     /// </summary>
     [Parameter]
     public bool FullScreen { get; set; }
+
+    /// <summary>
+    /// Размеры колонок и строк живут в Scheduler.razor.css, отсюда приходит только их число.
+    /// </summary>
+    private string GridStyle => $"--scheduler-columns: {Model.Columns.Count}; --scheduler-rows: {Model.Rows.Count}";
+
+    /// <summary>
+    /// Первая строка и первая колонка сетки заняты шапкой, поэтому сдвиг на 2, а не на 1.
+    /// </summary>
+    private static string Placement(AppointmentViewModel appointment)
+        => $"grid-column: {appointment.RoomIndex + 2} / span {appointment.RoomCount}; grid-row: {appointment.TimeSlotIndex + 2} / span {appointment.TimeSlotsCount}";
 }

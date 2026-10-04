@@ -6,7 +6,6 @@
 *@
 <div id="appointment@(Model.CharacterId.CharacterId)"
      class="@ClassNames"
-     style="@Style"
      display-name="@Model.DisplayName"
      details-url="@characterUriLocator.GetDetailsUri(Model.CharacterId)"
      no-users="@HasNoUsers.ToString()"
@@ -113,17 +112,4 @@
             return classNames;
         }
     }
-
-    /// <summary>
-    /// В сетке карточка позиционируется абсолютно по рассчитанным координатам, а в списках
-    /// ошибок (пересечения, не размещённые) она лежит в потоке и только ограничена по размеру.
-    /// Не размещённым нужна дополнительная высота под строки с комнатами и слотами.
-    /// </summary>
-    private string Style => Model.ErrorMode
-        ? $"max-width: {Model.Width * 2}px; height: {ErrorModeHeight}px;"
-        : $"left: {Model.Left}px; top: {Model.Top}px; width: {Model.Width - 1}px; height: {Model.Height - 1}px";
-
-    private int ErrorModeHeight => Model.ErrorType == AppointmentErrorType.NotLocated
-        ? Model.Height + Model.Height / 2
-        : Model.Height;
 }

@@ -10,3 +10,9 @@
     overflow-x: hidden;
     overflow-y: auto;
 }
+
+/* Карточка вне сетки лежит в потоке: ширина по содержимому, но не шире двух колонок сетки. */
+.scheduler-intersections ::deep .scheduler-appointment {
+    max-width: 450px;
+    height: 90px;
+}

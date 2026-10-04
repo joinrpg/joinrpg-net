@@ -10,3 +10,10 @@
     overflow-x: hidden;
     overflow-y: auto;
 }
+
+/* Карточка вне сетки лежит в потоке: ширина по содержимому, но не шире двух колонок сетки.
+   Выше, чем в сетке: под заголовком ещё строки с комнатами и слотами. */
+.scheduler-notallocated ::deep .scheduler-appointment {
+    max-width: 450px;
+    height: 135px;
+}

@@ -6,7 +6,7 @@ namespace JoinRpg.Web.Schedule.Test;
 /// <summary>
 /// Карточка мероприятия переехала из cshtml-партиала <c>_AppointmentPartial</c> в razor-компонент
 /// без изменения поведения. Тесты фиксируют разметку, от которой зависят CSS и JS расписания:
-/// набор классов, абсолютное позиционирование в сетке и data-атрибуты, из которых
+/// набор классов и data-атрибуты, из которых
 /// полноэкранный режим собирает оверлей деталей.
 /// </summary>
 public class AppointmentTest
@@ -24,7 +24,6 @@ public class AppointmentTest
     }
 
     private static AppointmentViewModel Model(
-        bool errorMode = false,
         AppointmentErrorType? errorType = null,
         bool allRooms = false,
         bool hasMasterAccess = false,
@@ -32,14 +31,13 @@ public class AppointmentTest
         MarkupString description = default,
         IReadOnlyCollection<TableHeaderViewModel>? rooms = null,
         IReadOnlyCollection<TableHeaderViewModel>? slots = null)
-        => new(() => new Rect { Left = 450, Top = 180, Width = 225, Height = 90 })
+        => new()
         {
             DisplayName = "Мастер-класс по фехтованию",
             CharacterId = CharacterId,
             Users = [.. Enumerable.Range(1, usersCount).Select(
                 i => new UserLinkViewModel(new UserIdentification(i), $"Ведущий {i}", ViewMode.Show))],
             Description = description,
-            ErrorMode = errorMode,
             ErrorType = errorType,
             AllRooms = allRooms,
             HasMasterAccess = hasMasterAccess,
@@ -56,37 +54,20 @@ public class AppointmentTest
     private static IRenderedComponent<Appointment> Render(BunitContext ctx, AppointmentViewModel model)
         => ctx.Render<Appointment>(p => p.Add(x => x.Model, model));
 
-    [Fact]
-    public void InGrid_IsPositionedByComputedBounds()
+    /// <summary>
+    /// Карточка не знает, где лежит: место в сетке задаёт ячейка <c>Scheduler</c>,
+    /// а размер в списках ошибок — стили <c>Intersections</c> и <c>NotAllocated</c>.
+    /// </summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData(AppointmentErrorType.Intersection)]
+    [InlineData(AppointmentErrorType.NotLocated)]
+    public void HasNoInlineStyle(AppointmentErrorType? errorType)
     {
         using var ctx = CreateContext();
 
-        var style = Render(ctx, Model()).Find("div.scheduler-appointment").GetAttribute("style");
-
-        // Минус пиксель по ширине и высоте — чтобы соседние карточки не перекрывали рамки друг друга.
-        style.ShouldBe("left: 450px; top: 180px; width: 224px; height: 89px");
-    }
-
-    [Fact]
-    public void ErrorMode_IsLaidOutInFlowWithLimitedWidth()
-    {
-        using var ctx = CreateContext();
-
-        var style = Render(ctx, Model(errorMode: true, errorType: AppointmentErrorType.Intersection))
-            .Find("div.scheduler-appointment").GetAttribute("style");
-
-        style.ShouldBe("max-width: 450px; height: 90px;");
-    }
-
-    [Fact]
-    public void NotLocated_GetsExtraHeightForRoomsAndSlotsLines()
-    {
-        using var ctx = CreateContext();
-
-        var style = Render(ctx, Model(errorMode: true, errorType: AppointmentErrorType.NotLocated))
-            .Find("div.scheduler-appointment").GetAttribute("style");
-
-        style.ShouldBe("max-width: 450px; height: 135px;");
+        Render(ctx, Model(errorType: errorType)).Find("div.scheduler-appointment")
+            .HasAttribute("style").ShouldBeFalse();
     }
 
     [Fact]
@@ -183,7 +164,6 @@ public class AppointmentTest
         using var ctx = CreateContext();
 
         var cut = Render(ctx, Model(
-            errorMode: true,
             errorType: AppointmentErrorType.NotLocated,
             rooms: [Header(1, "Шатёр"), Header(2, "Поляна")],
             slots: [Header(10, "10:00")]));
@@ -197,7 +177,7 @@ public class AppointmentTest
     {
         using var ctx = CreateContext();
 
-        var cut = Render(ctx, Model(errorMode: true, errorType: AppointmentErrorType.NotLocated));
+        var cut = Render(ctx, Model(errorType: AppointmentErrorType.NotLocated));
 
         cut.Find("div.appointment-rooms b.text-danger").TextContent.ShouldBe("нет");
         cut.Find("div.appointment-slots b.text-danger").TextContent.ShouldBe("нет");
@@ -209,7 +189,6 @@ public class AppointmentTest
         using var ctx = CreateContext();
 
         var cut = Render(ctx, Model(
-            errorMode: true,
             errorType: AppointmentErrorType.NotLocated,
             allRooms: true,
             rooms: [Header(1, "Шатёр"), Header(2, "Поляна")]));
@@ -239,7 +218,7 @@ public class AppointmentTest
     {
         using var ctx = CreateContext();
 
-        Render(ctx, Model(errorMode: true, errorType: errorType))
+        Render(ctx, Model(errorType: errorType))
             .Find("div.scheduler-appointment").GetAttribute("errors").ShouldBe(expected);
     }
 
