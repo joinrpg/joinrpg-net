@@ -176,9 +176,16 @@ public class MockedProject
         MandatoryStatus mandatoryStatus = MandatoryStatus.Optional)
     {
         availForIds ??= [];
-        if (canPlayerEdit && projectFieldVisibility != ProjectFieldVisibility.PlayerAndMaster)
+        // Прод хранит три независимых флага (ProjectField.IsPublic/CanPlayerView/CanPlayerEdit), а
+        // ProjectFieldVisibility выводится из первых двух (ProjectMetadataRepository.CreateProjectFieldVisibility).
+        // Невозможна только одна комбинация: «игрок может менять поле, которого он не видит» —
+        // её запрещает валидация настройки поля (GameFieldViewModelBase.Validate). А вот
+        // «публичное + игрок может менять» настраивается свободно, и мок обязан её поддерживать.
+        if (canPlayerEdit && projectFieldVisibility == ProjectFieldVisibility.MasterOnly)
         {
-            throw new InvalidOperationException();
+            throw new InvalidOperationException(
+                "Поле, видимое только мастерам, не может быть доступно игроку на редактирование: "
+                + "настройка полей запрещает такую комбинацию (нельзя скрыть поле от игрока и одновременно разрешить ему менять его).");
         }
         var id = new ProjectFieldIdentification(ProjectInfo.ProjectId, ProjectInfo.UnsortedFields.GetNextId());
         var field = new ProjectFieldInfo(id, name, fieldType, FieldBoundTo.Character, [], "", 0, CanPlayerEdit: canPlayerEdit, ShowOnUnApprovedClaims: showOnUnApprovedClaims,
