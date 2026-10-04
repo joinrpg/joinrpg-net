@@ -195,7 +195,8 @@ public class MockedProject
             ProgrammaticValue: null,
             ProjectFieldVisibility: projectFieldVisibility,
             SpecialGroupId: null,
-            WasEverUsed: false
+            WasEverUsed: false,
+            ProjectTimeZone: ProjectInfo.TimeZone
             );
 
         ProjectInfo = ProjectInfo.WithAddedField(field);

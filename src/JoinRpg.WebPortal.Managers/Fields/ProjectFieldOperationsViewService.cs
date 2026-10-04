@@ -25,6 +25,5 @@ internal class ProjectFieldOperationsViewService(IFieldSetupService fieldSetupSe
             request.StartTime,
             request.EndTime,
             request.TimeSlotInMinutes,
-            request.BreakInMinutes,
-            TimeZoneInfo.FindSystemTimeZoneById(request.TimeZoneId)));
+            request.BreakInMinutes));
 }

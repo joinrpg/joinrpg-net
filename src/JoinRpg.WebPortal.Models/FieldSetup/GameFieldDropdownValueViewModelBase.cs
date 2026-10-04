@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 /// <summary>
@@ -35,9 +37,9 @@ public abstract class GameFieldDropdownValueViewModelBase
     [Display(Name = "Длина тайм-слота (в минутах")]
     public int TimeSlotInMinutes { get; set; }
 
-    [Display(Name = "Начало тайм-слота", Description = "В формате ГГГГ-ММ-ДДTЧЧ:ММ+03:00. Если таймзона не указывается, подразумевается московское.")]
-    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mmK}", ApplyFormatInEditMode = true)]
-    public DateTimeOffset TimeSlotStartTime { get; set; }
+    [Display(Name = "Начало тайм-слота", Description = "По часовому поясу проекта")]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+    public DateTime TimeSlotStartTime { get; set; }
 
     [ReadOnly(true)]
     public bool IsTimeField { get; set; }
@@ -55,16 +57,13 @@ public abstract class GameFieldDropdownValueViewModelBase
     public GameFieldDropdownValueViewModelBase() { }
 
     public TimeSlotOptions? GetTimeSlotRequest(bool isTimeSlot, string? value)
-    {
-        return value is not null && isTimeSlot
-            ? new TimeSlotOptions
-            {
-                StartTime = DateTimeOffset.ParseExact(
-                    value,
-                    "yyyy-MM-ddTHH:mmK",
-                    System.Globalization.CultureInfo.InvariantCulture),
-                TimeSlotInMinutes = TimeSlotInMinutes
-            }
+        => value is not null && isTimeSlot
+            ? new TimeSlotOptions(ParseStartTime(value), TimeSlotInMinutes)
             : null;
-    }
+
+    /// <summary>
+    /// Время на часах в поясе проекта. Смещение, если его всё-таки ввели, игнорируется.
+    /// </summary>
+    internal static DateTime ParseStartTime(string value)
+        => DateTimeOffset.ParseExact(value, "yyyy-MM-ddTHH:mmK", CultureInfo.InvariantCulture).DateTime;
 }

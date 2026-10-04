@@ -25,7 +25,8 @@ public record class ProjectFieldInfo(
     string? ProgrammaticValue,
     ProjectFieldVisibility ProjectFieldVisibility,
     CharacterGroupIdentification? SpecialGroupId,
-    bool WasEverUsed)
+    bool WasEverUsed,
+    TimeZoneInfo ProjectTimeZone)
     : IProjectEntityWithId
 {
     private const string CheckboxValueOn = "on";

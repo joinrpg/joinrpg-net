@@ -16,6 +16,7 @@ internal static class ProjectInfoFixture
     public static readonly ProjectIdentification ProjectId = new(1);
     public static readonly CharacterGroupIdentification RootGroupId = new(ProjectId, 1);
     public static readonly UserIdentification DefaultMasterId = new(100);
+    public static readonly TimeZoneInfo ProjectTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
 
     public static ProjectInfo MakeProject(params ProjectFieldInfo[] fields)
         => MakeProject("", fields);
@@ -56,7 +57,7 @@ internal static class ProjectInfoFixture
             new ProjectClaimSettings(null, false, false, false, false),
             [],
             null,
-            TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow"));
+            ProjectTimeZone);
 
     public static ProjectMasterInfo MakeMaster(UserIdentification userId, bool isOwner = false)
         => new(
@@ -94,7 +95,8 @@ internal static class ProjectInfoFixture
             null,
             visibility,
             null,
-            WasEverUsed: false);
+            WasEverUsed: false,
+            ProjectTimeZone);
 
     public static CharacterGroupIdentification GroupId(int id) => new(ProjectId, id);
 

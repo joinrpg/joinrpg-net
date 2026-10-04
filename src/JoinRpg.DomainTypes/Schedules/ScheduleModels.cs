@@ -67,20 +67,27 @@ public class ProgramItem
 
 public class ProgramItemPlaced
 {
-    public ProgramItemPlaced(ProgramItem programItem, List<ScheduleBuilder.ProgramItemSlot> slots)
-    : this(programItem, slots.Select(x => x.Room).Distinct().ToList(), slots.Select(x => x.TimeSlot).ToList())
+    public ProgramItemPlaced(ProgramItem programItem, List<ScheduleBuilder.ProgramItemSlot> slots, TimeZoneInfo projectTimeZone)
+    : this(programItem, slots.Select(x => x.Room).Distinct().ToList(), slots.Select(x => x.TimeSlot).ToList(), projectTimeZone)
     {
     }
 
     private ProgramItemPlaced(ProgramItem item,
         IReadOnlyCollection<ScheduleRoom> rooms,
-        IReadOnlyCollection<TimeSlot> timeSlots)
+        IReadOnlyCollection<TimeSlot> timeSlots,
+        TimeZoneInfo projectTimeZone)
     {
         ProgramItem = item;
         Rooms = rooms;
-        StartTime = timeSlots.Min(x => x.Options.StartTime);
-        EndTime = timeSlots.Max(x => x.Options.EndTime);
+        StartTime = timeSlots.Min(x => x.StartTime);
+        EndTime = timeSlots.Max(x => x.EndTime);
+        ProjectTimeZone = projectTimeZone;
     }
+
+    /// <summary>
+    /// Часовой пояс проекта, в котором заданы <see cref="StartTime"/> и <see cref="EndTime"/>
+    /// </summary>
+    public TimeZoneInfo ProjectTimeZone { get; }
 
     public DateTimeOffset EndTime { get; set; }
 
@@ -118,9 +125,21 @@ public record class TimeSlot : ScheduleItemAttribute
     public TimeSlot(TimeSlotFieldVariant variant, int seqId) : base(variant, seqId)
     {
         Options = variant.TimeSlotOptions;
+        StartTime = variant.StartTime;
+        EndTime = variant.EndTime;
     }
 
     public TimeSlotOptions Options { get; }
+
+    /// <summary>
+    /// Начало слота в часовом поясе проекта
+    /// </summary>
+    public DateTimeOffset StartTime { get; }
+
+    /// <summary>
+    /// Конец слота в часовом поясе проекта
+    /// </summary>
+    public DateTimeOffset EndTime { get; }
 }
 
 public record ScheduleResult(

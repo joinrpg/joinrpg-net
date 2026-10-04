@@ -20,6 +20,7 @@ namespace JoinRpg.IntegrationTest.Scenarios.XApi;
 [Collection("XApi")]
 public class XApiScheduleTests(XApiMasterFixture fixture)
 {
+    // Проект по умолчанию в Europe/Moscow
     private static readonly DateTimeOffset FirstSlotStart =
         new(2026, 7, 10, 10, 0, 0, TimeSpan.FromHours(3));
 
@@ -153,9 +154,9 @@ public class XApiScheduleTests(XApiMasterFixture fixture)
         var timeSlotVariants = new[]
         {
             await fixture.CreateFieldVariant(fixture.MasterUserId, fields.TimeSlotFieldId, "10:00",
-                new TimeSlotOptions { StartTime = FirstSlotStart, TimeSlotInMinutes = 60 }),
+                new TimeSlotOptions(FirstSlotStart.DateTime, TimeSlotInMinutes: 60)),
             await fixture.CreateFieldVariant(fixture.MasterUserId, fields.TimeSlotFieldId, "11:00",
-                new TimeSlotOptions { StartTime = FirstSlotStart.AddHours(1), TimeSlotInMinutes = 60 }),
+                new TimeSlotOptions(FirstSlotStart.AddHours(1).DateTime, TimeSlotInMinutes: 60)),
         };
 
         var roomVariants = new[]

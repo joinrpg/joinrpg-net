@@ -1,10 +1,18 @@
-using System.Text.Json;
-
 namespace JoinRpg.DomainTypes.ProjectMetadata;
 
 public record class TimeSlotFieldVariant : ProjectFieldVariant
 {
     public TimeSlotOptions TimeSlotOptions { get; }
+
+    /// <summary>
+    /// Начало слота в часовом поясе проекта
+    /// </summary>
+    public DateTimeOffset StartTime { get; }
+
+    /// <summary>
+    /// Конец слота в часовом поясе проекта
+    /// </summary>
+    public DateTimeOffset EndTime { get; }
 
     public TimeSlotFieldVariant(ProjectFieldVariantIdentification Id,
     string Label,
@@ -16,16 +24,13 @@ public record class TimeSlotFieldVariant : ProjectFieldVariant
     MarkdownString? MasterDescription,
     string? ProgrammaticValue,
     bool wasEverUsed,
-    string parentFieldName)
+    string parentFieldName,
+    TimeZoneInfo projectTimeZone)
         : base(Id, Label, Price, IsPlayerSelectable, IsActive, CharacterGroupId, Description, MasterDescription, ProgrammaticValue, wasEverUsed, parentFieldName)
     {
-        if (ProgrammaticValue is not null)
-        {
-            TimeSlotOptions = JsonSerializer.Deserialize<TimeSlotOptions>(ProgrammaticValue) ?? TimeSlotOptions.CreateDefault();
-        }
-        else
-        {
-            TimeSlotOptions = TimeSlotOptions.CreateDefault();
-        }
+        TimeSlotOptions = (ProgrammaticValue is null ? null : TimeSlotOptions.FromJson(ProgrammaticValue))
+            ?? TimeSlotOptions.CreateDefault(projectTimeZone);
+        StartTime = TimeSlotOptions.GetStartTime(projectTimeZone);
+        EndTime = TimeSlotOptions.GetEndTime(projectTimeZone);
     }
 }

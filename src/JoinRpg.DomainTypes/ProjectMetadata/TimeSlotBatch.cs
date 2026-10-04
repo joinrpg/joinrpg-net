@@ -22,18 +22,15 @@ public static class TimeSlotBatch
     /// длиной <paramref name="slotMinutes"/> с перерывом <paramref name="breakMinutes"/> между ними.
     /// Если конец раньше начала, он считается на следующий день. Хвост, в который слот целиком не влезает, отбрасывается.
     /// Если начало совпадает с концом, слотов нет.
-    /// Шаг идёт по местному времени: в поясах с переходом на летнее время слоты возле перехода
-    /// получат несуществующее или неоднозначное время. Пока таймзона всегда московская, это неважно.
+    /// Дата и время — на часах в часовом поясе проекта, шаг идёт по ним же.
     /// </summary>
-    /// <param name="timeZone">Таймзона, в которой заданы дата и время</param>
     public static IReadOnlyList<TimeSlotBatchItem> Generate(
         string? prefix,
         DateOnly date,
         TimeOnly start,
         TimeOnly end,
         int slotMinutes,
-        int breakMinutes,
-        TimeZoneInfo timeZone)
+        int breakMinutes)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(slotMinutes);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(slotMinutes, MaxMinutes);
@@ -55,12 +52,8 @@ public static class TimeSlotBatch
         var result = new List<TimeSlotBatchItem>();
         for (var slotStart = from; slotStart.AddMinutes(slotMinutes) <= to; slotStart = slotStart.AddMinutes(slotMinutes + breakMinutes))
         {
-            var options = new TimeSlotOptions
-            {
-                StartTime = new DateTimeOffset(slotStart, timeZone.GetUtcOffset(slotStart)),
-                TimeSlotInMinutes = slotMinutes,
-            };
-            result.Add(new TimeSlotBatchItem(FormatLabel(prefix, slotStart, slotStart.AddMinutes(slotMinutes)), options));
+            var options = new TimeSlotOptions(slotStart, slotMinutes);
+            result.Add(new TimeSlotBatchItem(FormatLabel(prefix, slotStart, options.LocalEndTime), options));
         }
         return result;
     }

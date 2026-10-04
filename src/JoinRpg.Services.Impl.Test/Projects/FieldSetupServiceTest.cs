@@ -416,10 +416,8 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         await Should.NotThrowAsync(() => service.MoveField(ProjectId.Value, field1.Id.ProjectFieldId, direction: 1));
     }
 
-    private static readonly TimeZoneInfo MskZone = TimeZoneInfo.CreateCustomTimeZone("MSK", TimeSpan.FromHours(3), "MSK", "MSK");
-
     private static CreateTimeSlotVariantsRequest CreateTimeSlotsRequest(ProjectFieldIdentification fieldId, TimeOnly end)
-        => new(fieldId, "Зал", new DateOnly(2026, 7, 10), new TimeOnly(10, 0), end, TimeSlotInMinutes: 50, BreakInMinutes: 10, MskZone);
+        => new(fieldId, "Зал", new DateOnly(2026, 7, 10), new TimeOnly(10, 0), end, TimeSlotInMinutes: 50, BreakInMinutes: 10);
 
     [Fact]
     public async Task CreateTimeSlotVariants_CreatesSlotsWithOptions()
@@ -431,7 +429,8 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
 
         var variants = Result.TimeSlotField.ShouldNotBeNull().Variants.Cast<TimeSlotFieldVariant>().ToList();
         variants.Select(v => v.Label).ShouldBe(["Зал 10:00–10:50", "Зал 11:00–11:50"]);
-        variants[1].TimeSlotOptions.StartTime.ShouldBe(new DateTimeOffset(2026, 7, 10, 11, 0, 0, TimeSpan.FromHours(3)));
+        // Проект по умолчанию в Europe/Moscow
+        variants[1].StartTime.ShouldBe(new DateTimeOffset(2026, 7, 10, 11, 0, 0, TimeSpan.FromHours(3)));
         variants.ShouldAllBe(v => v.TimeSlotOptions.TimeSlotInMinutes == 50);
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }

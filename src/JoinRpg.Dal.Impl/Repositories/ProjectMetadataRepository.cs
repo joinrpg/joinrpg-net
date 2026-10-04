@@ -45,6 +45,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
         ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
 
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(project.Details.TimeZoneId);
+
         var groupTree = new ProjectGroupTree(
             project.RootGroup.GetId(),
             CharacterGroupDictionaryBuilder.Build(project, projectId));
@@ -77,7 +79,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 ),
             projectRolesLists: CreateRolesLists(project),
             defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId),
-            timeZone: TimeZoneInfo.FindSystemTimeZoneById(project.Details.TimeZoneId));
+            timeZone: timeZone);
 
         IReadOnlyCollection<ProjectMasterInfo> CreateMasterList(Project project)
         {
@@ -138,7 +140,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                         field.ProgrammaticValue,
                         CreateProjectFieldVisibility(field),
                     CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroupId),
-                    WasEverUsed: field.WasEverUsed);
+                    WasEverUsed: field.WasEverUsed,
+                    ProjectTimeZone: timeZone);
             }
 
             static ProjectFieldVisibility CreateProjectFieldVisibility(ProjectField field)
@@ -170,7 +173,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                             variant.MasterDescription,
                             variant.ProgrammaticValue,
                             wasEverUsed: variant.WasEverUsed,
-                            field.FieldName
+                            field.FieldName,
+                            timeZone
                         );
                 }
             }

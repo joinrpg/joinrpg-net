@@ -212,9 +212,8 @@ public class UpdateFieldValueVariantRequest : FieldValueVariantRequestBase
 }
 
 /// <summary>
-/// Массовое создание значений поля-таймслота
+/// Массовое создание значений поля-таймслота. Дата и время — на часах в часовом поясе проекта.
 /// </summary>
-/// <param name="TimeZone">Таймзона, в которой заданы дата и время</param>
 public record CreateTimeSlotVariantsRequest(
     ProjectFieldIdentification ProjectFieldId,
     string? Prefix,
@@ -222,8 +221,7 @@ public record CreateTimeSlotVariantsRequest(
     TimeOnly StartTime,
     TimeOnly EndTime,
     int TimeSlotInMinutes,
-    int BreakInMinutes,
-    TimeZoneInfo TimeZone);
+    int BreakInMinutes);
 
 public class CreateFieldValueVariantRequest : FieldValueVariantRequestBase
 {

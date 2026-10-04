@@ -80,7 +80,7 @@
         {
             return (results.Select(r => r.ErrorMessage ?? "").ToList(), []);
         }
-        var slots = form.Generate(TimeZoneInfo.FindSystemTimeZoneById(Model.TimeZoneId));
+        var slots = form.Generate();
         return slots.Count == 0
             ? (["В указанный промежуток не помещается ни одного таймслота"], [])
             : ([], slots);
@@ -123,8 +123,7 @@
                 result.StartTime!.Value,
                 result.EndTime!.Value,
                 result.SlotMinutes!.Value,
-                result.BreakMinutes!.Value,
-                Model.TimeZoneId));
+                result.BreakMinutes!.Value));
             NavigationManager.Refresh(forceReload: true);
         }
         catch (Exception ex)
