@@ -1,0 +1,87 @@
+<h3>JoinButtonGroup</h3>
+
+<h4>Горизонтальная группа</h4>
+<p>Кнопки с подсказкой и без, с подтверждением и без, ссылка и кнопка — в одной группе.</p>
+<p>
+    <JoinButtonGroup>
+        @MixedButtons
+    </JoinButtonGroup>
+</p>
+
+<h4>Маленькая группа (Size = Small), у кнопок свой размер не задан</h4>
+<p>Так группа используется в списке сюжетов.</p>
+<p>
+    <JoinButtonGroup Size="SizeStyleEnum.Small">
+        @MixedButtons
+    </JoinButtonGroup>
+</p>
+
+<h4>Вертикальная группа</h4>
+<p>Так группа используется в панели действий администратора: все кнопки должны растягиваться на одну ширину.</p>
+<div style="width: 300px">
+    <JoinButtonGroup Vertical="true">
+        <JoinButton Label="Без подсказки" OnClick="ExitProgress" />
+        <JoinButton Label="С подсказкой" Title="Подсказка к кнопке" OnClick="ExitProgress" />
+        <JoinButton Label="С подтверждением"
+                    AutoConfirm="true"
+                    AutoConfirmMessage="Действительно выполнить действие?"
+                    OnClick="ExitProgress" />
+        <JoinButton Label="Подсказка и подтверждение"
+                    Title="Подсказка к кнопке с подтверждением"
+                    AutoConfirm="true"
+                    AutoConfirmMessage="Действительно выполнить действие?"
+                    OnClick="ExitProgress" />
+        <JoinButton Label="Ссылка" Link="#" />
+    </JoinButtonGroup>
+</div>
+
+<h4>Группа в ячейке узкой таблицы</h4>
+<p>
+    Таблица шириной 600px, группе места в ячейке хватает. Группа не должна вылезать из ячейки:
+    у обёртки <code>.table-responsive</code> не должно появляться горизонтальной прокрутки.
+</p>
+<div class="table-responsive" style="width: 600px; border: 1px solid silver">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Сюжет</td>
+                <td>
+                    <JoinButtonGroup Size="SizeStyleEnum.Small">
+                        <JoinButton Link="#" Preset="ButtonPreset.Add" Label="Добавить вводную" />
+                        <JoinButton Link="#" Preset="ButtonPreset.Delete" Label="Удалить" />
+                        <JoinButton Preset="ButtonPreset.Restore" OnClick="ExitProgress" />
+                        <JoinButton Preset="ButtonPreset.Up" Title="Переместить выше" OnClick="ExitProgress" />
+                        <JoinButton Preset="ButtonPreset.Down" Title="Переместить ниже" OnClick="ExitProgress" />
+                    </JoinButtonGroup>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private RenderFragment MixedButtons =>
+        @<text>
+            <JoinButton Label="Без подсказки" OnClick="ExitProgress" />
+            <JoinButton Label="С подсказкой" Title="Подсказка к кнопке" OnClick="ExitProgress" />
+            <JoinButton Label="С подтверждением"
+                        AutoConfirm="true"
+                        AutoConfirmMessage="Действительно выполнить действие?"
+                        OnClick="ExitProgress" />
+            <JoinButton Label="Подсказка и подтверждение"
+                        Title="Подсказка к кнопке с подтверждением"
+                        AutoConfirm="true"
+                        AutoConfirmMessage="Действительно выполнить действие?"
+                        OnClick="ExitProgress" />
+            <JoinButton Label="Ссылка" Link="#" />
+            <JoinButton Preset="ButtonPreset.Delete" OnClick="ExitProgress" />
+        </text>;
+
+    private static void ExitProgress(ButtonClickEventArgs args) => args.ExitProgressState = true;
+}

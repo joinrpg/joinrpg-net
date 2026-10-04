@@ -1,0 +1,121 @@
+<h3>JoinButton</h3>
+
+<h4>Стили и размеры</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Стиль</th>
+            @foreach (var size in sizes)
+            {
+                <th>@size</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var style in styles)
+        {
+            <tr>
+                <td>@style</td>
+                @foreach (var size in sizes)
+                {
+                    <td><JoinButton Label="Кнопка" Style="@style" Size="@size" OnClick="ExitProgress" /></td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Одиночные кнопки</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Вариант</th>
+            <th>Кнопка</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Обычная</td>
+            <td><JoinButton Label="Обычная" OnClick="ExitProgress" /></td>
+        </tr>
+        <tr>
+            <td>С подсказкой (Title)</td>
+            <td><JoinButton Label="С подсказкой" Title="Подсказка к кнопке" OnClick="ExitProgress" /></td>
+        </tr>
+        <tr>
+            <td>С подтверждением (AutoConfirm)</td>
+            <td>
+                <JoinButton Label="С подтверждением"
+                            AutoConfirm="true"
+                            AutoConfirmMessage="Действительно выполнить действие?"
+                            OnClick="ExitProgress" />
+            </td>
+        </tr>
+        <tr>
+            <td>С подсказкой и подтверждением</td>
+            <td>
+                <JoinButton Label="Подсказка и подтверждение"
+                            Title="Подсказка к кнопке с подтверждением"
+                            AutoConfirm="true"
+                            AutoConfirmMessage="Действительно выполнить действие?"
+                            OnClick="ExitProgress" />
+            </td>
+        </tr>
+        <tr>
+            <td>Ссылка (Link)</td>
+            <td><JoinButton Label="Ссылка" Link="#" /></td>
+        </tr>
+        <tr>
+            <td>Ссылка с подсказкой</td>
+            <td><JoinButton Label="Ссылка с подсказкой" Title="Подсказка к ссылке" Link="#" /></td>
+        </tr>
+        <tr>
+            <td>Недоступная (Disabled + DisabledTitle)</td>
+            <td>
+                <JoinButton Label="Недоступная"
+                            Disabled="true"
+                            Title="Эта подсказка не видна"
+                            DisabledTitle="Кнопка недоступна, потому что так надо"
+                            OnClick="ExitProgress" />
+            </td>
+        </tr>
+        <tr>
+            <td>В процессе (InProgress)</td>
+            <td><JoinButton Label="Сохранить" ProgressLabel="Сохраняем..." InProgress="true" OnClick="ExitProgress" /></td>
+        </tr>
+        <tr>
+            <td>Только иконка (Preset = Up)</td>
+            <td><JoinButton Preset="ButtonPreset.Up" OnClick="ExitProgress" /></td>
+        </tr>
+        <tr>
+            <td>Пресеты Delete, Save, Add</td>
+            <td>
+                <JoinButton Preset="ButtonPreset.Delete" OnClick="ExitProgress" />
+                <JoinButton Preset="ButtonPreset.Save" OnClick="ExitProgress" />
+                <JoinButton Preset="ButtonPreset.Add" OnClick="ExitProgress" />
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+    private static readonly VariationStyleEnum[] styles =
+    [
+        VariationStyleEnum.None,
+        VariationStyleEnum.Primary,
+        VariationStyleEnum.Success,
+        VariationStyleEnum.Info,
+        VariationStyleEnum.Warning,
+        VariationStyleEnum.Danger,
+    ];
+
+    private static readonly SizeStyleEnum[] sizes =
+    [
+        SizeStyleEnum.Large,
+        SizeStyleEnum.Medium,
+        SizeStyleEnum.Small,
+        SizeStyleEnum.ExtraSmall,
+    ];
+
+    private static void ExitProgress(ButtonClickEventArgs args) => args.ExitProgressState = true;
+}
