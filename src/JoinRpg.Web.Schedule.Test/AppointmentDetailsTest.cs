@@ -4,12 +4,14 @@ namespace JoinRpg.Web.Schedule.Test;
 /// Оверлей деталей заполняет JS (<c>appointmentClickHandler</c> в <c>FullScreen.cshtml</c>):
 /// он кладёт значения в элементы по id и навешивает классы <c>details-no-*</c> на внешний
 /// контейнер, чтобы спрятать пустые секции. Поэтому id и классы секций — контракт со
-/// скриптом и с <c>AppointmentDetails.css</c>, и переименование ломает оверлей молча,
+/// скриптом и с <c>AppointmentDetails.razor.css</c>, и переименование ломает оверлей молча,
 /// без ошибок в логах. Тест фиксирует этот контракт.
 /// </summary>
 public class AppointmentDetailsTest
 {
     [Theory]
+    [InlineData("scheduler-overlay")]
+    [InlineData("scheduler-details")]
     [InlineData("details-title")]
     [InlineData("details-problems")]
     [InlineData("details-users")]
@@ -35,6 +37,23 @@ public class AppointmentDetailsTest
         using var ctx = new BunitContext();
 
         ctx.Render<AppointmentDetails>().Find($"div.{className}").ShouldNotBeNull();
+    }
+
+    /// <summary>
+    /// Затемнение вокруг деталей закрывает их по клику — обработчики объявлены в скрипте
+    /// <c>FullScreen.cshtml</c>. Панель лежит прямо в затемнении: оно flex-контейнер и центрирует её.
+    /// </summary>
+    [Fact]
+    public void OverlayCallsScriptHandlersAndWrapsDetails()
+    {
+        using var ctx = new BunitContext();
+
+        var cut = ctx.Render<AppointmentDetails>();
+
+        var overlay = cut.Find("#scheduler-overlay");
+        overlay.GetAttribute("onclick").ShouldBe("overlayClickHandler(event)");
+        overlay.GetAttribute("onwheel").ShouldBe("overlayWheelHandler(event)");
+        cut.Find("#scheduler-overlay > #scheduler-details").ShouldNotBeNull();
     }
 
     [Fact]
