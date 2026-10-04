@@ -100,7 +100,7 @@ internal class ProjectAccessService(
                 {
                     if (acl.UserId == ctx.CurrentUser.UserId)
                     {
-                        ctx.Project.ProjectAcls.OrderBy(a => a.UserId).First().IsOwner = true;
+                        ctx.Project.ProjectAcls.Where(a => a != acl).OrderBy(a => a.UserId).First().IsOwner = true;
                     }
                     else
                     {
