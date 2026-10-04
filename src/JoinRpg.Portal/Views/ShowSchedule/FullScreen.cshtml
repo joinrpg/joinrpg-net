@@ -6,7 +6,7 @@
     ViewData["Schedule"] = Model;
 }
 
-<h1 class="page-title">@Html.ActionLink(Model.DisplayName, "Details", "Game", new { projectId = Model.ProjectId }, new {})</h1>
+<h1 class="page-title">@Html.ActionLink(Model.DisplayName, "Details", "Game", new { projectId = Model.ProjectId.Value }, new {})</h1>
 
 <ul class="nav nav-tabs">
     <li class="active"><a data-toggle="tab" href="#scheduler">Расписание</a></li>

@@ -30,7 +30,7 @@
 </head>
 <body>
     <nav>
-        @(await Html.RenderComponentAsync<FullScreenHeader>(RenderMode.Static, new { ProjectId = new ProjectIdentification(schedule.ProjectId) }))
+        @(await Html.RenderComponentAsync<FullScreenHeader>(RenderMode.Static, new { schedule.ProjectId }))
     </nav>
     <article>
         @RenderBody()

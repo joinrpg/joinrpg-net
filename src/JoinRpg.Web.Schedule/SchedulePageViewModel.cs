@@ -2,7 +2,7 @@ namespace JoinRpg.Web.Schedule;
 
 public class SchedulePageViewModel
 {
-    public int ProjectId { get; set; }
+    public required ProjectIdentification ProjectId { get; set; }
     public string DisplayName { get; set; }
 
     public IReadOnlyList<TableHeaderViewModel> Rows { get; set; }

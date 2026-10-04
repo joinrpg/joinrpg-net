@@ -19,8 +19,7 @@ public struct Rect
 public class AppointmentBaseViewModel
 {
     public string DisplayName { get; set; }
-    public int ProjectId { get; set; }
-    public int CharacterId { get; set; }
+    public required CharacterIdentification CharacterId { get; set; }
     public required IReadOnlyCollection<UserLinkViewModel> Users { get; set; }
     public MarkupString Description { get; set; }
 }

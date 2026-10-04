@@ -12,7 +12,7 @@ namespace JoinRpg.Web.Schedule.Test;
 public class AppointmentTest
 {
     private static readonly ProjectIdentification ProjectId = new(1620);
-    private const int CharacterId = 999;
+    private static readonly CharacterIdentification CharacterId = new(ProjectId, 999);
 
     private static BunitContext CreateContext()
     {
@@ -35,7 +35,6 @@ public class AppointmentTest
         => new(() => new Rect { Left = 450, Top = 180, Width = 225, Height = 90 })
         {
             DisplayName = "Мастер-класс по фехтованию",
-            ProjectId = ProjectId.Value,
             CharacterId = CharacterId,
             Users = [.. Enumerable.Range(1, usersCount).Select(
                 i => new UserLinkViewModel(new UserIdentification(i), $"Ведущий {i}", ViewMode.Show))],
@@ -49,7 +48,10 @@ public class AppointmentTest
         };
 
     private static TableHeaderViewModel Header(int id, string name)
-        => new() { Id = id, Name = name, Description = new MarkupString("") };
+        => new() { Id = Variant(id), Name = name, Description = new MarkupString("") };
+
+    private static ProjectFieldVariantIdentification Variant(int id)
+        => new(new ProjectFieldIdentification(ProjectId, 7), id);
 
     private static IRenderedComponent<Appointment> Render(BunitContext ctx, AppointmentViewModel model)
         => ctx.Render<Appointment>(p => p.Add(x => x.Model, model));
@@ -143,7 +145,7 @@ public class AppointmentTest
         var link = Render(ctx, Model()).Find("div.appointment-header a");
 
         link.GetAttribute("target").ShouldBe("_self");
-        link.GetAttribute("href").ShouldBe($"https://example.org/{ProjectId.Value}/character/{CharacterId}");
+        link.GetAttribute("href").ShouldBe($"https://example.org/{ProjectId.Value}/character/{CharacterId.CharacterId}");
     }
 
     [Fact]
@@ -172,7 +174,7 @@ public class AppointmentTest
 
         links.Count.ShouldBe(2);
         links[1].GetAttribute("href")
-            .ShouldBe($"https://example.org/{ProjectId.Value}/character/{CharacterId}/edit");
+            .ShouldBe($"https://example.org/{ProjectId.Value}/character/{CharacterId.CharacterId}/edit");
     }
 
     [Fact]
@@ -241,13 +243,13 @@ public class AppointmentTest
 
         var root = cut.Find("div.scheduler-appointment");
         root.GetAttribute("display-name").ShouldBe("Мастер-класс по фехтованию");
-        root.GetAttribute("details-url").ShouldBe($"https://example.org/{ProjectId.Value}/character/{CharacterId}");
+        root.GetAttribute("details-url").ShouldBe($"https://example.org/{ProjectId.Value}/character/{CharacterId.CharacterId}");
         root.GetAttribute("rooms").ShouldBe("Шатёр, Поляна");
         root.GetAttribute("slots").ShouldBe("10:00, 11:00");
         root.GetAttribute("errors").ShouldBe("Пересечение с другими мероприятиями");
 
-        cut.Find($"#appointment{CharacterId}-users").Children.Length.ShouldBe(1);
-        cut.Find($"#appointment{CharacterId}-description").InnerHtml
+        cut.Find($"#appointment{CharacterId.CharacterId}-users").Children.Length.ShouldBe(1);
+        cut.Find($"#appointment{CharacterId.CharacterId}-description").InnerHtml
             .ShouldBe("<p>Приходите <b>с мечом</b></p>");
     }
 
@@ -257,6 +259,6 @@ public class AppointmentTest
         using var ctx = CreateContext();
 
         Render(ctx, Model()).Find("div.appointment-click-overlay").GetAttribute("onclick")
-            .ShouldBe($"appointmentClickHandler({CharacterId})");
+            .ShouldBe($"appointmentClickHandler({CharacterId.CharacterId})");
     }
 }

@@ -22,10 +22,9 @@ internal static class SchedulePageViewModelBuilder
         }
         return new ProgramItemViewModel()
         {
-            Id = item.Id.CharacterId,
+            Id = item.Id,
             Name = item.Name,
             Description = item.Description,
-            ProjectId = item.Id.ProjectId,
             Users = GetAuthors(item, hasMasterAccess),
         };
     }
@@ -49,7 +48,7 @@ internal static class SchedulePageViewModelBuilder
         {
             return new TableHeaderViewModel()
             {
-                Id = slot.Id.ProjectFieldVariantId,
+                Id = slot.Id,
                 Name = slot.Name,
                 Description =
                     new MarkupString($"Начало: {slot.Options.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br /> {((MarkdownString?)scheduleItem.Description).ToHtmlString().Value}"),
@@ -59,7 +58,7 @@ internal static class SchedulePageViewModelBuilder
         {
             return new TableHeaderViewModel()
             {
-                Id = room.Id.ProjectFieldVariantId,
+                Id = room.Id,
                 Name = room.Name,
                 Description = room.Description.ToHtmlString()
             };

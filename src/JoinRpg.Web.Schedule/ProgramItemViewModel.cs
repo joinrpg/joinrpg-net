@@ -2,19 +2,22 @@ namespace JoinRpg.Web.Schedule;
 
 public class ProgramItemViewModel
 {
+    /// <summary>
+    /// Пустая ячейка сетки: мероприятия в этом слоте и помещении нет, поэтому и
+    /// <see cref="Id"/> нет. Раньше здесь стоял -1, но типизированные id
+    /// неположительных значений не принимают.
+    /// </summary>
     public static ProgramItemViewModel Empty { get; } = new ProgramItemViewModel()
     {
-        Id = -1,
+        Id = null,
         Name = "",
         Description = null,
-        ProjectId = -1,
         Users = [],
         IsEmpty = true,
     };
-    public required int Id { get; set; }
+    public required CharacterIdentification? Id { get; set; }
     public required string Name { get; set; }
     public required MarkdownString? Description { get; set; }
-    public required int ProjectId { get; set; }
     public required UserLinkViewModel[] Users { get; set; }
 
     public bool IsEmpty { get; private set; } = false;

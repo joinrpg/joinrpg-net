@@ -22,13 +22,16 @@ public class SchedulerTest
         return ctx;
     }
 
+    private static ProjectFieldVariantIdentification Variant(int id)
+        => new(new ProjectFieldIdentification(ProjectId, 7), id);
+
     private static TableHeaderViewModel Header(int id, string name, string description = "")
-        => new() { Id = id, Name = name, Description = new MarkupString(description) };
+        => new() { Id = Variant(id), Name = name, Description = new MarkupString(description) };
 
     private static SchedulePageViewModel Model(int columns = 3, int rows = 2, int appointments = 0)
         => new()
         {
-            ProjectId = ProjectId.Value,
+            ProjectId = ProjectId,
             DisplayName = "Тестовая песочница",
             Columns = [.. Enumerable.Range(1, columns).Select(i => Header(i, $"Комната {i}"))],
             Rows = [.. Enumerable.Range(1, rows).Select(i => Header(100 + i, $"Слот {i}"))],
@@ -36,8 +39,7 @@ public class SchedulerTest
                 new AppointmentViewModel(() => new Rect { Left = 0, Top = 0, Width = 225, Height = 90 })
                 {
                     DisplayName = $"Мероприятие {i}",
-                    ProjectId = ProjectId.Value,
-                    CharacterId = i,
+                    CharacterId = new CharacterIdentification(ProjectId, i),
                     Users = [],
                 })],
             NotAllocated = [],
