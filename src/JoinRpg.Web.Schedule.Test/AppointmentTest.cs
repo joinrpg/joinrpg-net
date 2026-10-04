@@ -227,6 +227,23 @@ public class AppointmentTest
     }
 
     /// <summary>
+    /// Текст из этого атрибута JS кладёт в оверлей деталей под заголовком «Проблемы»,
+    /// то есть он виден пользователю и должен быть по-русски. У обоих значений enum
+    /// обязан быть <see cref="DisplayAttribute"/>: без него <c>GetDisplayName()</c>
+    /// возвращает имя значения, и мастер видел бы «NotLocated».
+    /// </summary>
+    [Theory]
+    [InlineData(AppointmentErrorType.NotLocated, "Не размещено в сетке расписания")]
+    [InlineData(AppointmentErrorType.Intersection, "Пересечение с другими мероприятиями")]
+    public void ErrorText_IsHumanReadableRussian(AppointmentErrorType errorType, string expected)
+    {
+        using var ctx = CreateContext();
+
+        Render(ctx, Model(errorMode: true, errorType: errorType))
+            .Find("div.scheduler-appointment").GetAttribute("errors").ShouldBe(expected);
+    }
+
+    /// <summary>
     /// Атрибуты читает JS полноэкранного режима, чтобы заполнить оверлей деталей,
     /// поэтому их имена и формат значений — контракт, а не деталь реализации.
     /// </summary>
