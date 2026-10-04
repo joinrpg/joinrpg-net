@@ -39,6 +39,7 @@
 - [ADR016: Переход основной БД с EF6 на EF Core](adr016-efcore-migration.md)
 - [ADR017: Тип поля «ссылка на пользователя»](adr017-user-field.md)
 - [ADR018: RoomCategoryPlan — доменный агрегат комнат и заселения](adr018-room-category-plan.md)
+- [ADR019: Статус, публичность и профиль мастера проекта](adr019-project-master-status.md)
 
 ## Быстрые ссылки
 
