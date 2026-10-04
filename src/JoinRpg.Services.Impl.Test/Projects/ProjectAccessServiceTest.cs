@@ -500,4 +500,37 @@ public class ProjectAccessServiceTest
 
         await Should.ThrowAsync<NoAccessToProjectException>(() => service.GrantFullAccess(ProjectId));
     }
+
+    [Fact]
+    public async Task RegisterFormerMasters_AddsRemovedRowsOnlyForUsersWithoutAcl()
+    {
+        var active = AddMaster(50, canGrantRights: false);
+        var removed = AddMaster(51, canGrantRights: false);
+        removed.Status = ProjectAclStatus.Removed;
+        removed.Role = "Мастер по боёвке";
+        mock.ReInitProjectInfo();
+
+        // Под роботом-админом, как в джобе.
+        var service = CreateService(99, isAdmin: true);
+
+        await service.RegisterFormerMasters(ProjectId, [new(50), new(51), new(60), new(60)]);
+
+        var former = mock.Project.ProjectAcls.Single(a => a.UserId == 60);
+        former.Status.ShouldBe(ProjectAclStatus.Removed);
+        former.Role.ShouldBe("Мастер");
+        former.CanManageClaims.ShouldBeFalse();
+        // Существующие записи не трогаются ни в каком статусе.
+        active.Status.ShouldBe(ProjectAclStatus.Active);
+        removed.Role.ShouldBe("Мастер по боёвке");
+        mock.Project.ProjectAcls.Count(a => a.UserId is 50 or 51 or 60).ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task RegisterFormerMasters_WithoutCanGrantRights_Throws()
+    {
+        var service = CreateService(mock.Player.UserId);
+
+        await Should.ThrowAsync<NoAccessToProjectException>(
+            () => service.RegisterFormerMasters(ProjectId, [new(60)]));
+    }
 }
