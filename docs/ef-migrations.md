@@ -19,32 +19,78 @@ Add-Migration AddНазваниеМиграции
 
 Где `AddНазваниеМиграции` — описательное имя миграции (например, `AddProjectRolesList`).
 
-### Способ 2: Командная строка (если настроены CLI tools)
+### Способ 2: Командная строка через `ef6.dll` (без Visual Studio)
 
-Если у вас установлены Entity Framework CLI tools, можно использовать:
+`dotnet ef` из `.config/dotnet-tools.json` — инструмент EF Core, для EF6 он не подходит. Но в пакете
+`EntityFramework` 6.3+ лежит свой CLI, `ef6.dll`. Это тот же движок, что и у `Add-Migration`: он
+генерирует `.Designer.cs` и `.resx` со снапшотом модели. Так генерировались, например, миграции в #5240.
+
+Скаффолдер сверяет модель с базой, где накатаны все миграции. Общую локальную базу `joinrpg` для этого
+не трогайте: берите отдельную временную, например `joinrpg_scratch`.
 
 ```bash
-# Перейдите в папку проекта
-cd src/JoinRpg.Dal.Impl
+dotnet build src/Joinrpg.Dal.Migrate
+cd artifacts/bin/Joinrpg.Dal.Migrate/debug
 
-# Создайте миграцию (требуется EntityFramework.Commands)
-dotnet ef migrations add AddНазваниеМиграции --context MyDbContext --output-dir Migrations
+EF=~/.nuget/packages/entityframework/6.5.2/tools/net6.0/any/ef6.dll   # версия — как в Directory.Packages.props
+CS="Data Source=127.0.0.1;User Id=sa;Password=MsSqlPass1!;Initial Catalog=joinrpg_scratch;TrustServerCertificate=True"
+ef6() {
+  dotnet exec --depsfile Joinrpg.Dal.Migrate.deps.json --runtimeconfig Joinrpg.Dal.Migrate.runtimeconfig.json "$EF" "$@" \
+    -a JoinRpg.Dal.Impl.dll --migrations-config JoinRpg.Dal.Impl.Migrations.Configuration \
+    --connection-string "$CS" --connection-provider System.Data.SqlClient
+}
+
+# 1. Накатить существующие миграции на временную базу (создастся сама).
+#    В конце будет «Unable to update database to match the current model because there are pending changes» — это норма,
+#    так ef6 сообщает о ваших изменениях модели.
+ef6 database update
+
+# 2. Сгенерировать миграцию.
+ef6 migrations add AddНазваниеМиграции --project-dir <путь к репозиторию>/src/JoinRpg.Dal.Impl --root-namespace JoinRpg.Dal.Impl
+
+# 3. Проверить Up() и Down(): накатить, откатить к предыдущей миграции, снова накатить.
+ef6 database update
+ef6 database update --target ПредыдущаяМиграция
+ef6 database update
 ```
 
-**Примечание**: В проекте не настроены `EntityFramework.Commands`, поэтому способ 2 может не работать. Используйте способ 1.
+После генерации:
+
+- Основной `.cs` переписать в стиле соседних миграций: file-scoped namespace и **без BOM** (иначе
+  `dotnet format` упадёт с `CHARSET`). `.Designer.cs` с BOM трогать не нужно, у соседей так же.
+- NOT NULL-колонке на существующей таблице нужен `defaultValue`, иначе миграция упадёт на имеющихся строках.
+  Для строки с кириллицей `defaultValue` не подходит: EF6 пишет литерал без префикса `N`, и результат зависит
+  от collation базы. Добавьте колонку nullable, заполните через `Sql("UPDATE … SET X = N'…'")`, затем
+  `AlterColumn` в NOT NULL.
+- Явная `IndexAnnotation` на колонке внешнего ключа отключает конвенционный индекс `IX_<Колонка>`, и скаффолдер
+  сгенерирует его удаление. Добавьте `new IndexAttribute("IX_<Колонка>")` в ту же аннотацию, а лишнюю пару
+  Drop/Create того же индекса уберите руками.
+- Снапшоты моделей линейны. Пока в другом открытом PR есть ещё не влитая миграция, ставьте свою ветку поверх
+  неё; после её мерджа сделайте `git rebase --onto`.
+
+Удалить временную базу (в Git Bash без `MSYS_NO_PATHCONV=1` путь к `sqlcmd` испортится):
+
+```bash
+MSYS_NO_PATHCONV=1 docker exec joinrpg-net-sql-server-1 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'MsSqlPass1!' -C \
+  -Q "ALTER DATABASE joinrpg_scratch SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE joinrpg_scratch;"
+```
 
 ## Структура файлов миграций
 
-Каждая миграция создает два файла в папке `src/JoinRpg.Dal.Impl/Migrations/`:
+Каждая миграция создает три файла в папке `src/JoinRpg.Dal.Impl/Migrations/`:
 
 1. `{Timestamp}_{ИмяМиграции}.cs` — основной файл с методами `Up()` и `Down()`.
 2. `{Timestamp}_{ИмяМиграции}.Designer.cs` — автоматически сгенерированный файл с метаданными миграции.
+3. `{Timestamp}_{ИмяМиграции}.resx` — снапшот модели (`Target`), с ним скаффолдер сравнивает модель при следующей миграции.
 
 **Пример**:
 - `202605081320406_AddProjectRolesList.cs`
 - `202605081320406_AddProjectRolesList.Designer.cs`
+- `202605081320406_AddProjectRolesList.resx`
 
-**Важно**: Не редактируйте `.Designer.cs` файлы вручную — они генерируются автоматически. Все изменения вносите только в основной файл миграции.
+**Важно**: Не редактируйте `.Designer.cs` и `.resx` вручную — они генерируются автоматически. Все изменения вносите только в основной файл миграции.
+Поэтому миграцию, которая меняет модель, нельзя написать руками целиком: без снапшота следующий
+скаффолдинг снова сгенерирует те же изменения.
 
 ## Обновление схемы в документации
 
