@@ -140,7 +140,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                         field.ProgrammaticValue,
                         CreateProjectFieldVisibility(field),
                     CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroupId),
-                    WasEverUsed: field.WasEverUsed);
+                    WasEverUsed: field.WasEverUsed,
+                    ProjectTimeZone: timeZone);
             }
 
             static ProjectFieldVisibility CreateProjectFieldVisibility(ProjectField field)

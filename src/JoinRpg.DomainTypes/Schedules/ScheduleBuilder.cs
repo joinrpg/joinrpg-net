@@ -84,7 +84,7 @@ public class ScheduleBuilder
             PutItem(programItem, slots);
             if (slots.Any())
             {
-                allItems.Add(new ProgramItemPlaced(programItem, slots));
+                allItems.Add(new ProgramItemPlaced(programItem, slots, projectInfo.TimeZone));
             }
         }
         return new ScheduleResult(

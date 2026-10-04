@@ -67,20 +67,27 @@ public class ProgramItem
 
 public class ProgramItemPlaced
 {
-    public ProgramItemPlaced(ProgramItem programItem, List<ScheduleBuilder.ProgramItemSlot> slots)
-    : this(programItem, slots.Select(x => x.Room).Distinct().ToList(), slots.Select(x => x.TimeSlot).ToList())
+    public ProgramItemPlaced(ProgramItem programItem, List<ScheduleBuilder.ProgramItemSlot> slots, TimeZoneInfo projectTimeZone)
+    : this(programItem, slots.Select(x => x.Room).Distinct().ToList(), slots.Select(x => x.TimeSlot).ToList(), projectTimeZone)
     {
     }
 
     private ProgramItemPlaced(ProgramItem item,
         IReadOnlyCollection<ScheduleRoom> rooms,
-        IReadOnlyCollection<TimeSlot> timeSlots)
+        IReadOnlyCollection<TimeSlot> timeSlots,
+        TimeZoneInfo projectTimeZone)
     {
         ProgramItem = item;
         Rooms = rooms;
         StartTime = timeSlots.Min(x => x.StartTime);
         EndTime = timeSlots.Max(x => x.EndTime);
+        ProjectTimeZone = projectTimeZone;
     }
+
+    /// <summary>
+    /// Часовой пояс проекта, в котором заданы <see cref="StartTime"/> и <see cref="EndTime"/>
+    /// </summary>
+    public TimeZoneInfo ProjectTimeZone { get; }
 
     public DateTimeOffset EndTime { get; set; }
 

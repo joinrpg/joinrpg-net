@@ -181,7 +181,7 @@ public class GameFieldController(
         var id = new ProjectFieldIdentification(new(projectId), projectFieldId);
         var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
         var field = metadata.GetFieldById(id);
-        return View(new GameFieldDropdownValueCreateViewModel(field, metadata.TimeZone));
+        return View(new GameFieldDropdownValueCreateViewModel(field));
     }
 
     [HttpPost, ValidateAntiForgeryToken]

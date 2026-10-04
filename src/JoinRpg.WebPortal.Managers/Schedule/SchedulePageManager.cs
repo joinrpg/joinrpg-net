@@ -52,21 +52,19 @@ public class SchedulePageManager(
     {
         var result = await GetCompiledSchedule();
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
-
         var calendar = new Calendar();
-        calendar.Events.AddRange(result.AllItems.Select(i => BuildIcalEvent(i, projectInfo.TimeZone)));
+        calendar.Events.AddRange(result.AllItems.Select(BuildIcalEvent));
 
         var serializer = new CalendarSerializer();
         return serializer.SerializeToString(calendar) ?? ""; //TODO stream
     }
 
-    private static CalendarEvent BuildIcalEvent(ProgramItemPlaced evt, TimeZoneInfo timeZone)
+    private static CalendarEvent BuildIcalEvent(ProgramItemPlaced evt)
     {
         return new CalendarEvent
         {
-            Start = ToCalDateTime(evt.StartTime, timeZone),
-            End = ToCalDateTime(evt.EndTime, timeZone),
+            Start = ToCalDateTime(evt.StartTime, evt.ProjectTimeZone),
+            End = ToCalDateTime(evt.EndTime, evt.ProjectTimeZone),
             Summary = evt.ProgramItem.Name,
             Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
             Description = evt.ProgramItem.Description.ToPlainTextWithoutHtmlEscape(),
@@ -74,8 +72,7 @@ public class SchedulePageManager(
     }
 
     /// <summary>
-    /// Время слота в поясе проекта. Слоты хранятся с тем смещением, с каким их ввели,
-    /// поэтому сначала переводим в пояс проекта, а не берём время сервера (LocalDateTime).
+    /// Время на часах в поясе проекта с его идентификатором. Не LocalDateTime — это было бы время сервера.
     /// </summary>
     internal static CalDateTime ToCalDateTime(DateTimeOffset time, TimeZoneInfo timeZone)
         => new(TimeZoneInfo.ConvertTime(time, timeZone).DateTime, timeZone.Id);

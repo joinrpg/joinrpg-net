@@ -64,12 +64,12 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
         IsActive = field.IsActive;
         HasValueList = field.HasValueList;
         SupportsMassAdding = field.SupportsMassAdding;
-        TimeSlotMassAdd = field.IsTimeSlot ? CreateTimeSlotMassAdd(field, projectInfo.TimeZone) : null;
+        TimeSlotMassAdd = field.IsTimeSlot ? CreateTimeSlotMassAdd(field) : null;
     }
 
-    private static TimeSlotMassAddViewModel CreateTimeSlotMassAdd(ProjectFieldInfo field, TimeZoneInfo timeZone)
+    private static TimeSlotMassAddViewModel CreateTimeSlotMassAdd(ProjectFieldInfo field)
     {
-        var lastOptions = (field.LastVariant as TimeSlotFieldVariant)?.TimeSlotOptions ?? TimeSlotOptions.CreateDefault(timeZone);
+        var lastOptions = (field.LastVariant as TimeSlotFieldVariant)?.TimeSlotOptions ?? TimeSlotOptions.CreateDefault(field.ProjectTimeZone);
         return new TimeSlotMassAddViewModel(
             field.Id,
             DateOnly.FromDateTime(lastOptions.LocalEndTime),

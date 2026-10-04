@@ -19,7 +19,6 @@ public class ScheduleBuilderTest
     private const int AuthorFieldId = 30;
 
     private static readonly DateTime Day = new(2026, 6, 1);
-    private static readonly TimeZoneInfo ProjectTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
 
     private static DateTimeOffset AtProjectTime(DateTime time) => new(time, TimeSpan.FromHours(3));
 

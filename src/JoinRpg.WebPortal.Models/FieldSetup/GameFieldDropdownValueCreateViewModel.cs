@@ -5,24 +5,24 @@ namespace JoinRpg.WebPortal.Models.FieldSetup;
 /// </summary>
 public class GameFieldDropdownValueCreateViewModel : GameFieldDropdownValueViewModelBase
 {
-    public GameFieldDropdownValueCreateViewModel(ProjectFieldInfo field, TimeZoneInfo projectTimeZone) : base(field)
+    public GameFieldDropdownValueCreateViewModel(ProjectFieldInfo field) : base(field)
     {
         Label = $"Вариант {field.Variants.Count + 1}";
         if (field.IsTimeSlot)
         {
-            var options = GetDefaultTimeSlotOptions(field, projectTimeZone);
+            var options = GetDefaultTimeSlotOptions(field);
             TimeSlotInMinutes = options.TimeSlotInMinutes;
             TimeSlotStartTime = options.LocalStartTime;
         }
     }
 
-    private static TimeSlotOptions GetDefaultTimeSlotOptions(ProjectFieldInfo field, TimeZoneInfo projectTimeZone)
+    private static TimeSlotOptions GetDefaultTimeSlotOptions(ProjectFieldInfo field)
     {
         var prev = field.LastVariant as TimeSlotFieldVariant;
 
         if (prev?.TimeSlotOptions is null)
         {
-            return TimeSlotOptions.CreateDefault(projectTimeZone);
+            return TimeSlotOptions.CreateDefault(field.ProjectTimeZone);
         }
 
         var prevOptions = prev.TimeSlotOptions;
