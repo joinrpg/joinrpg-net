@@ -93,7 +93,7 @@ public class CheckInController(
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
         return View("CheckIn",
-            new CheckInClaimModel(claim,
+            new CheckInClaimModel(claim.GetId(),
             await characterInfoRepository.GetCharacterInfo(characterId),
             await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification),
             await userRepository.GetRequiredUserInfo(claim.GetPlayerId()),
