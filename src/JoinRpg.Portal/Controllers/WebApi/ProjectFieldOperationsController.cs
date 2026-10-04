@@ -32,4 +32,16 @@ public class ProjectFieldOperationsController(IFieldSetupService fieldSetupServi
         _ = await fieldSetupService.DeleteFieldValueVariant(projectId.Value, variantId.FieldId.ProjectFieldId, variantId.ProjectFieldVariantId);
         return Ok();
     }
+
+    [HttpPost]
+    public async Task<ActionResult> DeleteUnusedVariants([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldIdentification fieldId)
+    {
+        if (fieldId.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+
+        _ = await fieldSetupService.DeleteUnusedFieldValueVariants(fieldId);
+        return Ok();
+    }
 }

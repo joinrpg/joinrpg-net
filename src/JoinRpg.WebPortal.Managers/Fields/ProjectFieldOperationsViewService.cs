@@ -13,4 +13,7 @@ internal class ProjectFieldOperationsViewService(IFieldSetupService fieldSetupSe
             variantId.FieldId.ProjectId.Value,
             variantId.FieldId.ProjectFieldId,
             variantId.ProjectFieldVariantId);
+
+    public async Task DeleteUnusedVariants(ProjectFieldIdentification fieldId)
+        => _ = await fieldSetupService.DeleteUnusedFieldValueVariants(fieldId);
 }

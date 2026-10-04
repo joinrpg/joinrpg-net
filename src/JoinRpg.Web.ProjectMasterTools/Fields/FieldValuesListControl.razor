@@ -2,6 +2,18 @@
 @inject IProjectFieldOperationsClient ProjectFieldOperationsClient
 @inject NavigationManager NavigationManager
 
+@if (UnusedCount is var unusedCount && unusedCount > 0)
+{
+    <div style="margin-top: 1em;">
+        <JoinButton Preset="ButtonPreset.Delete"
+                    Label="Удалить все неиспользованные"
+                    Title="Удалить значения, которые ни разу не выбирали"
+                    AutoConfirm="true"
+                    AutoConfirmMessage="@($"Удалить значения, которые ни разу не выбирали ({unusedCount} шт.)? Это действие нельзя отменить.")"
+                    OnClick="DeleteUnusedAsync" />
+    </div>
+}
+
 <div class="table-responsive" style="margin-top: 1em;">
     <JoinTableSimple>
         <TableHeader>
@@ -63,6 +75,24 @@
 @code {
     [Parameter, EditorRequired]
     public IList<FieldVariantListItemViewModel> Items { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public ProjectFieldIdentification FieldId { get; set; } = null!;
+
+    private int UnusedCount => Items.Count(i => i.IsActive && !i.WasEverUsed);
+
+    private async Task DeleteUnusedAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            await ProjectFieldOperationsClient.DeleteUnusedVariants(FieldId);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
 
     private async Task DeleteAsync(FieldVariantListItemViewModel item, ButtonClickEventArgs args)
     {

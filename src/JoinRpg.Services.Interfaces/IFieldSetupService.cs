@@ -18,6 +18,13 @@ public interface IFieldSetupService
         int projectFieldId,
         int valueId);
 
+    /// <summary>
+    /// Удаляет все значения поля, которые ни разу не выбирали (<c>WasEverUsed == false</c>).
+    /// Использованные значения не трогает.
+    /// </summary>
+    /// <returns>Сколько значений удалено.</returns>
+    Task<int> DeleteUnusedFieldValueVariants(ProjectFieldIdentification projectFieldId);
+
     Task MoveField(int projectid, int projectcharacterfieldid, short direction);
 
     Task CreateFieldValueVariants(ProjectFieldIdentification projectFieldId,

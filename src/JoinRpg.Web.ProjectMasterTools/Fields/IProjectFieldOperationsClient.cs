@@ -4,4 +4,5 @@ public interface IProjectFieldOperationsClient
 {
     Task Delete(ProjectFieldIdentification fieldId);
     Task DeleteVariant(ProjectFieldVariantIdentification variantId);
+    Task DeleteUnusedVariants(ProjectFieldIdentification fieldId);
 }

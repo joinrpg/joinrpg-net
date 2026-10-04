@@ -56,6 +56,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
                 Price = v.Price,
                 IsActive = v.IsActive,
                 MasterRestricted = !v.IsPlayerSelectable && field.CanPlayerEdit,
+                WasEverUsed = v.WasEverUsed,
             })
             .ToList();
         FieldViewType = (ProjectFieldViewType)field.Type;

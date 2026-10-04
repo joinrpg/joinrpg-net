@@ -8,6 +8,7 @@ public class FieldVariantListItemViewModel : IMoveableListItem
     public int Price { get; init; }
     public bool IsActive { get; init; }
     public bool MasterRestricted { get; init; }
+    public bool WasEverUsed { get; init; }
 
     string IMoveableListItem.Id => VariantId.ToString()!;
     string IMoveableListItem.ParentId => VariantId.FieldId.ToString()!;
