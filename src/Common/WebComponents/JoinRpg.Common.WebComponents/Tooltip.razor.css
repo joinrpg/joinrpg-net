@@ -8,8 +8,14 @@
   JoinRpg.Common.WebComponents.lib.module.js, поэтому inset: auto — он отменяет
   центрирование по умолчанию, которое браузер даёт любому [popover].
   Пока подсказка не показана, браузер держит её в display: none.
+
+  display: none в базовом правиле — это не дубль правила браузера, а защита от браузера
+  без Popover API: там атрибут popover ничего не значит, и подсказка висела бы на странице
+  всегда. Правило с :popover-open такой браузер отбрасывает целиком (псевдокласс ему
+  неизвестен), поэтому подсказки там просто не будет — вместо сломанной вёрстки.
 */
 .join-tooltip {
+  display: none;
   position: fixed;
   inset: auto;
   margin: 0;
@@ -36,4 +42,8 @@
   word-wrap: normal;
   white-space: normal;
   color: #fff;
+}
+
+.join-tooltip:popover-open {
+  display: block;
 }
