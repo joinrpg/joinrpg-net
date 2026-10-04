@@ -21,6 +21,7 @@
 
 @code {
 
+    [CascadingParameter] public EditContext? EditContext { get; set; }
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] public int ProjectId { get; set; }
     [Parameter] public CharacterGroupIdentification[] SelectedGroupIds { get; set; } = [];
@@ -44,6 +45,11 @@
         RefreshSelectedNames(selectedItems);
         await SelectedGroupIdsChanged.InvokeAsync([.. selectedItems.Select(x => x.CharacterGroupId)]);
         await SelectedGroupsChanged.InvokeAsync(selectedItems);
+
+        if (EditContext is not null && fieldIdentifier is not null)
+        {
+            EditContext.NotifyFieldChanged(fieldIdentifier.Value);
+        }
     }
 
     private void RefreshSelectedNames(CharacterGroupDto[] val)
