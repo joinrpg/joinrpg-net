@@ -42,6 +42,10 @@ public class TimeSlotMassAddFormModel : IValidatableObject
         {
             yield return new ValidationResult("Время конца должно отличаться от времени начала", [nameof(EndTime)]);
         }
+        if (Date is DateOnly date && (date.Year < TimeSlotOptions.MinStartTime.Year || date.Year >= TimeSlotOptions.MaxStartTime.Year))
+        {
+            yield return new ValidationResult("Укажите дату с 2000 по 2099 год", [nameof(Date)]);
+        }
     }
 
     /// <summary>

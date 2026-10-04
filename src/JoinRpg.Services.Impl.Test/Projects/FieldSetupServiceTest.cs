@@ -447,6 +447,21 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
 
+    /// <summary>
+    /// Начало у края диапазона DateTime ломает загрузку метаданных проекта — такое не сохраняем
+    /// </summary>
+    [Fact]
+    public async Task CreateTimeSlotVariants_YearOutOfRange_Throws()
+    {
+        var field = mock.AddField(f => f.FieldType = ProjectFieldType.ScheduleTimeSlotField);
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<ArgumentException>(
+            () => service.CreateTimeSlotVariants(new(field.Id, "Зал", new DateOnly(1, 1, 1), new TimeOnly(0, 0), new TimeOnly(2, 0), TimeSlotInMinutes: 50, BreakInMinutes: 10)));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
     [Fact]
     public async Task CreateTimeSlotVariants_NoSlotFits_Throws()
     {

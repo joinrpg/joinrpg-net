@@ -8,6 +8,7 @@ using JoinRpg.WebPortal.Managers.Interfaces;
 using JoinRpg.WebPortal.Models.FieldSetup;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace JoinRpg.Portal.Controllers;
 
@@ -142,7 +143,7 @@ public class GameFieldController(
         }
         if (!ModelState.IsValid)
         {
-            viewModel.FillNotEditable(field, projectInfo);
+            viewModel.FillNotEditable(field);
             return View(viewModel);
         }
         try
@@ -169,7 +170,7 @@ public class GameFieldController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            viewModel.FillNotEditable(field, projectInfo);
+            viewModel.FillNotEditable(field);
             return View(viewModel);
         }
     }
@@ -193,8 +194,12 @@ public class GameFieldController(
             var id = new ProjectFieldIdentification(new(viewModel.ProjectId), viewModel.ProjectFieldId);
             var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
             var field = metadata.GetFieldById(id);
+            viewModel.FillNotEditable(field);
 
-            var timeSlotOptions = viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault());
+            if (!TryGetTimeSlotOptions(viewModel, field, out var timeSlotOptions))
+            {
+                return View(viewModel);
+            }
 
             await
                 fieldSetupService.CreateFieldValueVariant(
@@ -242,6 +247,12 @@ public class GameFieldController(
             var id = new ProjectFieldIdentification(new(viewModel.ProjectId), viewModel.ProjectFieldId);
             var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
             var field = metadata.GetFieldById(id);
+            viewModel.FillNotEditable(field);
+
+            if (!TryGetTimeSlotOptions(viewModel, field, out var timeSlotOptions))
+            {
+                return View(viewModel);
+            }
 
             await fieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
                 id,
@@ -252,7 +263,7 @@ public class GameFieldController(
                 viewModel.ProgrammaticValue,
                 viewModel.Price,
                 viewModel.PlayerSelectable,
-                viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault())
+                timeSlotOptions
                 ));
 
             return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
@@ -262,6 +273,42 @@ public class GameFieldController(
             AddModelException(ex);
             return View(viewModel);
         }
+    }
+
+    /// <summary>
+    /// Параметры таймслота из формы значения; false — начало или длина не заданы либо вне допустимых
+    /// границ, ошибки уже в ModelState
+    /// </summary>
+    private bool TryGetTimeSlotOptions(GameFieldDropdownValueViewModelBase viewModel, ProjectFieldInfo field, out TimeSlotOptions? options)
+    {
+        options = viewModel.GetTimeSlotRequest(field.IsTimeSlot);
+        if (options is null)
+        {
+            return true;
+        }
+        // Пустое или нераспознанное значение привязка оставляет значение по умолчанию со своей ошибкой на английском
+        var startValid = !HasModelError(nameof(viewModel.TimeSlotStartTime)) && options.HasValidStartTime;
+        if (!startValid)
+        {
+            ReplaceModelError(nameof(viewModel.TimeSlotStartTime), "Укажите начало тайм-слота с 2000 по 2099 год");
+        }
+        var lengthValid = !HasModelError(nameof(viewModel.TimeSlotInMinutes)) && options.HasValidLength;
+        if (!lengthValid)
+        {
+            ReplaceModelError(nameof(viewModel.TimeSlotInMinutes), "Длина тайм-слота должна быть больше нуля");
+        }
+        return startValid && lengthValid;
+    }
+
+    private bool HasModelError(string key) => ModelState.GetFieldValidationState(key) == ModelValidationState.Invalid;
+
+    /// <summary>
+    /// Заменить ошибки поля своей, сохранив введённое значение для перерисовки формы
+    /// </summary>
+    private void ReplaceModelError(string key, string message)
+    {
+        ModelState[key]?.Errors.Clear();
+        ModelState.AddModelError(key, message);
     }
 
 

@@ -78,7 +78,7 @@ public class FieldSetupManager
             return null;
         }
 
-        var model = new GameFieldEditViewModel(field, projectInfo);
+        var model = new GameFieldEditViewModel(field);
         return FillFromProject(projectInfo, model);
     }
 
