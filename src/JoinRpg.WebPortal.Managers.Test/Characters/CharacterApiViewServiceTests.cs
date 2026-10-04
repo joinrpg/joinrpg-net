@@ -95,7 +95,6 @@ public class CharacterApiViewServiceTests
         public Task<IEnumerable<Character>> GetAvailableTemplateCharacters(ProjectIdentification projectId) => throw new NotImplementedException();
         public Task<IEnumerable<Character>> GetAllCharacters(int projectId) => throw new NotImplementedException();
         public Task<IEnumerable<Character>> GetActiveTemplateCharacters(int projectId) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(IReadOnlyCollection<CharacterIdentification> characterIds) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(ProjectIdentification projectId) => throw new NotImplementedException();
         public void Dispose() { }
     }
