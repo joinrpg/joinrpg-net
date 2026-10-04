@@ -274,6 +274,31 @@ public class ProjectEntityIdModelBinderTest
     public Task ReadOnlyCollectionOfIds_BindsFromPlainNumbers()
         => CollectionOfIdsBinds(typeof(IReadOnlyCollection<CharacterGroupIdentification>), new CollectionModelBinderProvider(), id => id.CharacterGroupId.ToString(CultureInfo.InvariantCulture));
 
+    // Экшены сюжетов объявляют коллекции целей nullable и подставляют `?? []`. Проверяем, нужно ли
+    // это: если в форме нет ни одного значения, штатный биндер коллекций отдаёт пустую коллекцию,
+    // а не Failed (из которого параметр метода получил бы null).
+    [Fact]
+    public async Task CollectionOfIds_WithoutAnyValues_BindsToEmptyCollection()
+    {
+        var collectionMetadata = MetadataProvider.GetMetadataForType(typeof(IReadOnlyCollection<CharacterGroupIdentification>));
+        var binder = new CollectionModelBinderProvider()
+            .GetBinder(new TestModelBinderProviderContext(collectionMetadata, MetadataProvider))
+            .ShouldNotBeNull();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items["ProjectId"] = CurrentProjectId.Value;
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor(), new ModelStateDictionary());
+        var valueProvider = new QueryStringValueProvider(
+            BindingSource.Query, new QueryCollection(new Dictionary<string, StringValues>()), CultureInfo.InvariantCulture);
+        var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+            actionContext, valueProvider, collectionMetadata, bindingInfo: null, modelName: "groupIds");
+
+        await binder.BindModelAsync(bindingContext);
+
+        bindingContext.Result.IsModelSet.ShouldBeTrue();
+        bindingContext.Result.Model.ShouldBeAssignableTo<IReadOnlyCollection<CharacterGroupIdentification>>()!.ShouldBeEmpty();
+    }
+
     private static async Task CollectionOfIdsBinds(
         Type collectionType,
         IModelBinderProvider collectionBinderProvider,
