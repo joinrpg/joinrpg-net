@@ -16,15 +16,22 @@ public class RoomCategoryPlanTest
     private const int CategoryIntId = 10;
     private static readonly RoomCategoryIdentification CategoryId = new(ProjectId, CategoryIntId);
 
+    /// <summary>Вторая категория комнат — для тестов, которым нужно два пула.</summary>
+    private const int SecondCategoryIntId = 11;
+
     /// <summary>Тип «Люкс»: двухместный, селится из категории <see cref="CategoryId"/></summary>
     private static AccommodationTypeInfo MakeLux(int capacity = 2)
         => ProjectInfoFixture.MakeAccommodationType(
             CategoryIntId, capacity, roomCategoryId: CategoryIntId, name: "Люкс");
 
-    /// <summary>Тип «Люкс на одного» — живёт в том же пуле, но продаётся на одного</summary>
-    private static AccommodationTypeInfo MakeLuxSingle(int capacity = 1)
+    /// <summary>
+    /// Тип «Люкс на одного» — по умолчанию живёт в том же пуле, но продаётся на одного.
+    /// <paramref name="roomCategoryId"/> нужен тестам про второй пул: тип, селящийся из другой
+    /// категории, обязан и ссылаться на неё, иначе конфигурация невозможная.
+    /// </summary>
+    private static AccommodationTypeInfo MakeLuxSingle(int capacity = 1, int? roomCategoryId = null)
         => ProjectInfoFixture.MakeAccommodationType(
-            11, capacity, roomCategoryId: CategoryIntId, name: "Люкс на одного");
+            11, capacity, roomCategoryId: roomCategoryId ?? CategoryIntId, name: "Люкс на одного");
 
     private static ProjectInfo MakeProject(params AccommodationTypeInfo[] types)
         => ProjectInfoFixture.Build(
@@ -198,6 +205,22 @@ public class RoomCategoryPlanTest
         plan.GetFreeSpace(RoomId(1), lux.Id).ShouldBe(0);
     }
 
+    [Fact]
+    public void Constructor_ThrowsWhenClaimIsSubjectOfTwoGroups()
+    {
+        var lux = MakeLux();
+        var project = MakeProject(lux);
+
+        var first = MakeGroup(1, lux, roomId: 1);
+        var sharedClaim = first.Subjects.Single();
+        // Вторая группа в другой комнате претендует на ту же заявку.
+        var second = new AccommodationGroupInfo(
+            new AccommodationRequestIdentification(ProjectId, 2), lux.Id, RoomId(2), [sharedClaim]);
+
+        _ = Should.Throw<ArgumentException>(
+            () => MakePlan(project, [lux], 2, [MakeRoom(1, first), MakeRoom(2, second)], [first, second]));
+    }
+
     #endregion
 
     #region Расчёты
@@ -310,6 +333,70 @@ public class RoomCategoryPlanTest
         plan.IsFull(RoomId(1)).ShouldBeFalse();
     }
 
+    #endregion
+
+    #region Поиск комнаты по заявке
+
+    [Fact]
+    public void FindRoomByClaim_ReturnsRoomOfPlacedGroup()
+    {
+        var lux = MakeLux();
+        var placed = MakeGroup(1, lux, roomId: 1, persons: 2);
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1, placed), MakeRoom(2)], [placed]);
+
+        // Любой из жильцов группы живёт в её комнате — не только первый.
+        foreach (var claimId in placed.Subjects)
+        {
+            plan.FindRoomByClaim(claimId).ShouldBe(plan.GetRoom(RoomId(1)));
+        }
+    }
+
+    [Fact]
+    public void FindRoomByClaim_ReturnsNullForUnassignedGroup()
+    {
+        var lux = MakeLux();
+        var unassigned = MakeGroup(1, lux, roomId: null);
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1)], [unassigned]);
+
+        plan.FindRoomByClaim(unassigned.Subjects.Single()).ShouldBeNull();
+    }
+
+    [Fact]
+    public void FindRoomByClaim_ReturnsNullForClaimOutsidePlan()
+    {
+        var lux = MakeLux();
+        var placed = MakeGroup(1, lux, roomId: 1);
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1, placed)], [placed]);
+
+        plan.FindRoomByClaim(new ClaimIdentification(ProjectId, 100500)).ShouldBeNull();
+    }
+
+    [Fact]
+    public void FindRoomByClaim_AnswersPerPlan_NotAcrossPlans()
+    {
+        var lux = MakeLux();
+        var single = MakeLuxSingle(roomCategoryId: SecondCategoryIntId);
+        var project = MakeProject(lux, single);
+
+        var inLux = MakeGroup(1, lux, roomId: 1, persons: 2);
+        var luxPlan = MakePlan(project, [lux], 2, [MakeRoom(1, inLux), MakeRoom(2)], [inLux]);
+
+        var inSingle = MakeGroup(3, single, roomId: 3);
+        var singlePlan = MakePlan(
+            project,
+            [single],
+            1,
+            [MakeRoom(3, inSingle)],
+            [inSingle],
+            id: new RoomCategoryIdentification(ProjectId, SecondCategoryIntId));
+
+        // Каждый план знает только своих жильцов: вызывающий, у которого планов несколько,
+        // спрашивает их по очереди — своего индекса поверх коллекции для этого не нужно.
+        luxPlan.FindRoomByClaim(inLux.Subjects.First()).ShouldBe(luxPlan.GetRoom(RoomId(1)));
+        luxPlan.FindRoomByClaim(inSingle.Subjects.Single()).ShouldBeNull();
+        singlePlan.FindRoomByClaim(inSingle.Subjects.Single()).ShouldBe(singlePlan.GetRoom(RoomId(3)));
+        singlePlan.FindRoomByClaim(inLux.Subjects.First()).ShouldBeNull();
+    }
     #endregion
 
     #region Промахи по идентификатору
