@@ -57,6 +57,12 @@ else
     public SizeStyleEnum? Size { get; set; }
 
     /// <summary>
+    /// Размер, заданный окружающей <see cref="JoinButtonGroup"/>. Используется, если у кнопки нет своего <see cref="Size"/>.
+    /// </summary>
+    [CascadingParameter(Name = JoinButtonGroup.GroupSizeCascadeName)]
+    public SizeStyleEnum? GroupSize { get; set; }
+
+    /// <summary>
     /// When true and <see cref="Link"/> is null, button is rendered as form submit button.
     /// </summary>
     [Parameter]
@@ -172,7 +178,7 @@ else
     private JoinMessageDialog? _confirmDialogRef;
 
     private string ButtonType => Submit ? "submit" : "button";
-    private string RenderedStyle => BootstrapStyle.Build("btn", ActualStyle, Size);
+    private string RenderedStyle => BootstrapStyle.Build("btn", ActualStyle, Size ?? GroupSize);
     private bool PreventSubmit => Disabled || InProgress;
     private string? ActualTitle => Disabled ? DisabledTitle ?? Title : Title;
 

@@ -3,17 +3,26 @@
     @ChildContent
     return;
 }
-<div class="join-btn-group @(Vertical ? "join-btn-group--vertical" : "") @BootstrapStyle.Build(Vertical ? "btn-group-vertical" : "btn-group", variationStyle: null, size: Size)" role="group">
-    @ChildContent
+<div class="join-btn-group @(Vertical ? "join-btn-group--vertical" : "")" role="group">
+    <CascadingValue Name="@GroupSizeCascadeName" Value="@((SizeStyleEnum?)Size)" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
 </div>
 @code {
+    /// <summary>Имя каскадного параметра, через который группа передаёт свой размер кнопкам.</summary>
+    internal const string GroupSizeCascadeName = "JoinButtonGroupSize";
+
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Размер кнопок группы. Кнопка с собственным <see cref="JoinButton.Size"/> берёт свой.
+    /// </summary>
     [Parameter] public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Medium;
+
     [Parameter] public bool SkipGroup { get; set; } = false;
 
     /// <summary>
-    /// When true, buttons are stacked vertically and stretched to the group's full width
-    /// (works even for buttons wrapped by <see cref="Tooltip"/>, unlike plain Bootstrap 3 btn-group-vertical).
+    /// When true, buttons are stacked vertically and stretched to the group's full width.
     /// </summary>
     [Parameter] public bool Vertical { get; set; } = false;
 }

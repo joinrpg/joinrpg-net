@@ -1,53 +1,84 @@
-.join-btn-group {
-    display: inline-block;
-    white-space: nowrap;
-    /* font-size:0 "съедает" пробелы между inline-block кнопками */
-    font-size: 0;
-}
-
 /*
- * Восстанавливаем нормальный размер шрифта на прямых потомках группы.
- * Пробельные текстовые узлы между кнопками остаются с font-size:0 и схлопываются,
- * а содержимое кнопок и вложенных диалогов (JoinDialog построен на em-единицах)
- * получает вменяемую базу и не ломается.
- */
-.join-btn-group ::deep > * {
-    /* 1rem здесь — не браузерные 16px, а 10px (html { font-size: 10px } в Bootstrap 3),
-       поэтому используем 1.4rem, чтобы получить обычные 14px, как у body */
-    font-size: 1.4rem;
-}
-
-/*
- * Bootstrap 3 делает ".btn-group > .btn" плавающим (float: left). Под это правило попадают
- * только кнопки без Title (например, «Восстановить»), а кнопки с подсказкой обёрнуты в
- * span.join-tooltip-container и остаются строчными. Смесь float и строчных блоков ломает
- * расчёт собственной ширины группы: браузер занижает её, кнопки вылезают из ячейки таблицы,
- * и у .table-responsive появляется горизонтальная прокрутка. Пробелы между кнопками и так
- * съедает font-size: 0, так что float здесь не нужен.
- */
-.join-btn-group:not(.join-btn-group--vertical) ::deep > .btn {
-    float: none;
-}
-
-/*
- * Bootstrap 3's ".btn-group-vertical > .btn" ожидает, что .btn — прямой потомок группы.
- * Если кнопка обёрнута в Tooltip (JoinButton с заданным Title), прямым потомком становится
- * span.join-tooltip-container, и правило не срабатывает — кнопка не растягивается на всю
- * ширину, в отличие от остальных. Задаём растяжку сами, независимо от обёртки: делаем блочным
- * любой прямой потомок и растягиваем на 100% сам .btn, даже если он лежит внутри вложенных
- * inline-span из Tooltip (проценты ширины считаются от ближайшего блочного контейнера, то есть
- * от этой группы, а не от промежуточных inline-span).
+ * Группа не опирается на btn-group из Bootstrap 3: его правила рассчитаны на то, что .btn —
+ * прямой потомок группы, а у JoinButton прямым потомком бывает обёртка подсказки
+ * (span.join-tooltip-container) и <dialog> подтверждения (AutoConfirm).
  *
- * JoinButton с AutoConfirm рендерит рядом с кнопкой ещё и JoinMessageDialog (нативный <dialog>)
- * как отдельный прямой потомок — <dialog> скрыт браузером по умолчанию (display: none, пока нет
- * атрибута open), и наши правила ниже не должны это перебивать, иначе диалог подтверждения будет
- * всегда виден в потоке страницы. Поэтому везде исключаем dialog из выборки.
+ * Поэтому «сегмент» группы здесь — любой прямой потомок, кроме <dialog>: сама кнопка или
+ * обёртка вокруг неё. Закрытый <dialog> скрыт браузером (display: none), в раскладке flex
+ * не участвует, а из подсчёта первого и последнего сегмента его исключает
+ * :nth-child(1 of :not(dialog)). Пробелы между потомками flex тоже игнорирует.
  */
-.join-btn-group.join-btn-group--vertical ::deep > *:not(dialog) {
-    display: block;
+.join-btn-group {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    vertical-align: middle;
 }
 
-.join-btn-group.join-btn-group--vertical ::deep > *:not(dialog).btn,
-.join-btn-group.join-btn-group--vertical ::deep > *:not(dialog) .btn {
+.join-btn-group--vertical {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/*
+ * Внутри обёртки подсказки кнопка строчная, и строка добавляет ей высоту сверх собственной.
+ * Делаем обёртку и её внутренний span flex-контейнерами: тогда сегмент ровно по кнопке.
+ * Сам span.join-tooltip не трогаем — он скрыт, пока подсказка не показана.
+ */
+.join-btn-group ::deep > .join-tooltip-container,
+.join-btn-group ::deep > .join-tooltip-container > span:not(.join-tooltip) {
+    display: flex;
+}
+
+/* Наведённый сегмент поверх соседей, чтобы общая рамка подсвечивалась целиком */
+.join-btn-group ::deep > :not(dialog) {
+    position: relative;
+}
+
+.join-btn-group ::deep > :not(dialog):hover,
+.join-btn-group ::deep > :not(dialog):focus-within {
+    z-index: 2;
+}
+
+/* Горизонтальная группа: соседние сегменты делят рамку, скругления только по краям */
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))) {
+    margin-left: -1px;
+}
+
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))).btn,
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))) .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))).btn,
+.join-btn-group:not(.join-btn-group--vertical) ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))) .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Вертикальная группа: то же по вертикали, кнопки растянуты на ширину группы */
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))) {
+    margin-top: -1px;
+}
+
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))).btn,
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-child(1 of :not(dialog))) .btn {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))).btn,
+.join-btn-group--vertical ::deep > :not(dialog):not(:nth-last-child(1 of :not(dialog))) .btn {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.join-btn-group--vertical ::deep > .join-tooltip-container > span:not(.join-tooltip) {
+    flex: 1;
+}
+
+.join-btn-group--vertical ::deep > :not(dialog).btn,
+.join-btn-group--vertical ::deep > :not(dialog) .btn {
     width: 100%;
 }
