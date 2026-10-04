@@ -89,8 +89,6 @@ public class CheckInController(
 
     private async Task<ActionResult> ShowCheckInForm(Claim claim)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
-
         var characterId = claim.GetCharacterId();
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
@@ -101,7 +99,6 @@ public class CheckInController(
             await userRepository.GetRequiredUserInfo(claim.GetPlayerId()),
             handouts[characterId],
             claimValidator,
-            projectInfo,
             currentUserAccessor
           ));
     }

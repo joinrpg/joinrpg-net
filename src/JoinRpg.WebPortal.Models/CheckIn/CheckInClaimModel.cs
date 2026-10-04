@@ -18,7 +18,6 @@ public class CheckInClaimModel : IProjectIdAware
         UserInfo playerInfo,
         IReadOnlyCollection<PlotTextDto> plotElements,
         IClaimProblemValidator claimValidator,
-        ProjectInfo projectInfo,
         ICurrentUserAccessor currentUserAccessor
         )
     {
@@ -26,6 +25,10 @@ public class CheckInClaimModel : IProjectIdAware
 
         ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentNullException.ThrowIfNull(playerInfo);
+
+        // Метаданные проекта берём из агрегата, а не параметром: второй канал тех же данных
+        // можно было бы передать несогласованным с тем, к которому привязан сам персонаж.
+        var projectInfo = characterInfo.ProjectInfo;
 
         Validator = new ClaimCheckInValidator(
             new ClaimProblemContext(characterInfo, characterInfo.GetClaimById(claim.GetId()), playerInfo),
