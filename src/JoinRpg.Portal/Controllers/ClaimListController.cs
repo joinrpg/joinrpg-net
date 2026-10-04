@@ -53,7 +53,7 @@ public class ClaimListController(
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
-            var view = new ClaimListViewModel(currentUserAccessor, claims, projectId, unreadComments, title, projectInfo, claimValidator,
+            var view = new ClaimListViewModel(currentUserAccessor, claims, unreadComments, title, projectInfo, claimValidator,
                 problemContexts ?? await LoadProblemContexts(claims));
             return View("Index", view);
         }
