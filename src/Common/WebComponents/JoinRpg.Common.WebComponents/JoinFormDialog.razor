@@ -65,6 +65,10 @@
     public async Task<TViewModel?> ShowModalAsync()
     {
         var result = await dialogRef.ShowBoolModalAsync();
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
         editContext = null;
         if (result)
         {
@@ -86,9 +90,18 @@
     protected override Task OnParametersSetAsync()
     {
         buttons = [new DialogButton(SubmitButtonPreset), new DialogButton(ButtonPreset.Cancel, cancel: true)];
-        editContext = new(Model);
-        editContext.OnFieldChanged += HandleFieldChanged;
-        formInvalid = !editContext.Validate();
+        // Новый EditContext заставляет EditForm пересоздать всё содержимое: поле, в которое
+        // сейчас вводят, теряет фокус. Поэтому пересоздаём только при смене модели.
+        if (editContext is null || !ReferenceEquals(editContext.Model, Model))
+        {
+            if (editContext is not null)
+            {
+                editContext.OnFieldChanged -= HandleFieldChanged;
+            }
+            editContext = new(Model);
+            editContext.OnFieldChanged += HandleFieldChanged;
+            formInvalid = !editContext.Validate();
+        }
         return base.OnParametersSetAsync();
     }
 }
