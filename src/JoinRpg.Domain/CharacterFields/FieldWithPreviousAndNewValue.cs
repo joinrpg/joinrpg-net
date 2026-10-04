@@ -10,10 +10,15 @@ public record class FieldWithPreviousAndNewValue
     public FieldWithValue New { get; private set; }
     public FieldWithValue Previous { get; private set; }
     public ProjectFieldInfo Field => New.Field;
+    /// <param name="current">
+    /// Поле со значением ДО изменения. Запоминается копией: вызывающий (стратегия сохранения)
+    /// присваивает новое значение этому же изменяемому объекту сразу после, и ссылка на него
+    /// означала бы, что «значение до» равно «значению после».
+    /// </param>
     public FieldWithPreviousAndNewValue(FieldWithValue current, string? newValue)
     {
         New = new FieldWithValue(current.Field, newValue);
-        Previous = current;
+        Previous = new FieldWithValue(current.Field, current.Value);
     }
     public string? PreviousValue => Previous.Value;
 

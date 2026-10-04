@@ -705,6 +705,28 @@ public class FieldLayerContainerTest
         result[0].Value.ShouldBeNull();
     }
 
+    /// <summary>
+    /// Набор для правки — копии, а не объекты слоёв. Вызывающие присваивают в <c>FieldWithValue</c>
+    /// новые значения, и через общий объект правка молча меняла бы «значение до операции» прямо
+    /// в слое — на этом ломалось сохранение полей неутверждённой заявки.
+    /// </summary>
+    [Fact]
+    public void GetAllFieldsForEditShouldNotAliasLayerValues()
+    {
+        var projectInfo = MakeProject(MakeField(1), MakeField(2, boundTo: FieldBoundTo.Claim));
+        var claimLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 2, "claim-value" } });
+        var characterLayer = new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { { 1, "character-value" } });
+        var layers = new CharacterFieldLayers(claimLayer, characterLayer, AccessArgumentsNone);
+
+        foreach (var field in layers.GetAllFieldsForEdit())
+        {
+            field.Value = "changed";
+        }
+
+        characterLayer.LayerData[new ProjectFieldIdentification(1, 1)].Value.ShouldBe("character-value");
+        claimLayer.LayerData[new ProjectFieldIdentification(1, 2)].Value.ShouldBe("claim-value");
+    }
+
     [Fact]
     public void GetAllFieldsForEditShouldNotFilterByViewAccess()
     {
