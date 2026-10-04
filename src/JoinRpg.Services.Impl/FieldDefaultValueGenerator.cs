@@ -6,10 +6,25 @@ namespace JoinRpg.Services.Impl;
 
 internal class FieldDefaultValueGenerator : IFieldDefaultValueGenerator
 {
-    public string? CreateDefaultValue(Claim? claim, FieldWithValue field) => null;
+    public string? CreateDefaultValue(Claim? claim, FieldWithValue field)
+    {
+        if (field.Field.IsScheduleAuthor && claim is { IsApproved: true })
+        {
+            return claim.PlayerUserId.ToString();
+        }
+        return null;
+    }
 
     public string? CreateDefaultValue(Character? character, FieldWithValue field)
     {
+        if (field.Field.IsScheduleAuthor && character?.ApprovedClaim is { } approvedClaim)
+        {
+            // Пустой ведущий и так показывается как игрок утверждённой заявки, а записанное
+            // значение мастеру видно и его можно поправить
+            return approvedClaim.PlayerUserId.ToString();
+        }
+
+
         if (field.Field.IsName && character != null)
         {
             return character.CharacterName;
