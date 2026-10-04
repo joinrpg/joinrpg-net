@@ -1,5 +1,5 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
@@ -12,7 +12,7 @@ namespace JoinRpg.Web.Models.CheckIn;
 
 public class CheckInClaimModel : IProjectIdAware
 {
-    public CheckInClaimModel(Claim claim,
+    public CheckInClaimModel(ClaimIdentification claimId,
         CharacterInfo characterInfo,
         UserInfo currentUser,
         UserInfo playerInfo,
@@ -21,8 +21,8 @@ public class CheckInClaimModel : IProjectIdAware
         ICurrentUserAccessor currentUserAccessor
         )
     {
-        ArgumentNullException.ThrowIfNull(claim);
-
+        ArgumentNullException.ThrowIfNull(claimId);
+        ArgumentNullException.ThrowIfNull(characterInfo);
         ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentNullException.ThrowIfNull(playerInfo);
 
@@ -30,20 +30,26 @@ public class CheckInClaimModel : IProjectIdAware
         // можно было бы передать несогласованным с тем, к которому привязан сам персонаж.
         var projectInfo = characterInfo.ProjectInfo;
 
+        // Заявка — доменный снимок из агрегата. EF-сущность сюда больше не доезжает: она тянула
+        // за собой ленивые навигации (ResponsibleMasterUser), а страница и так уже строится по
+        // CharacterInfo (ADR013).
+        var claim = characterInfo.GetClaimById(claimId);
+
         Validator = new ClaimCheckInValidator(
-            new ClaimProblemContext(characterInfo, characterInfo.GetClaimById(claim.GetId()), playerInfo),
+            new ClaimProblemContext(characterInfo, claim, playerInfo),
             claimValidator);
         CheckInTime = claim.CheckInDate;
-        ClaimStatus = (ClaimStatusView)claim.ClaimStatus;
+        ClaimStatus = (ClaimStatusView)claim.Status;
         // playerInfo приходит параметром: claim.GetUserInfo() собирал профиль по ленивым
         // навигациям EF-сущности игрока (Extra, Auth, ExternalLogins, Claims, ProjectAcls).
         PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUserAccessor);
-        Navigation = CharacterNavigationViewModel.FromClaim(characterInfo, claim.GetId(), currentUserAccessor.UserIdentification, CharacterNavigationPage.None);
+        Navigation = CharacterNavigationViewModel.FromClaim(characterInfo, claimId, currentUserAccessor.UserIdentification, CharacterNavigationPage.None);
 
         CanAcceptFee = projectInfo.ProjectFinanceSettings.CanAcceptCash(currentUserAccessor.UserIdentification);
-        ClaimId = claim.ClaimId;
-        ProjectId = claim.ProjectId;
-        Master = claim.ResponsibleMasterUser;
+        ClaimId = claimId.ClaimId;
+        ProjectId = claimId.ProjectId.Value;
+        var responsibleMaster = projectInfo.GetMasterById(claim.ResponsibleMasterId);
+        Master = new UserLinkViewModel(responsibleMaster.UserId, responsibleMaster.Name.DisplayName, ViewMode.Show);
         Handouts = [.. plotElements.Select(e => new HandoutListItemViewModel(e))];
         ProblemFields = [.. Validator.FieldProblems.Select(frp => new NotFilledFieldViewModel(frp))];
 
@@ -60,7 +66,7 @@ public class CheckInClaimModel : IProjectIdAware
     public int ClaimId { get; }
     public int ProjectId { get; }
     [Display(Name = "Ответственный мастер")]
-    public User Master { get; }
+    public UserLinkViewModel Master { get; }
     public IReadOnlyCollection<NotFilledFieldViewModel> ProblemFields { get; }
     public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string CurrentUserFullName { get; }
