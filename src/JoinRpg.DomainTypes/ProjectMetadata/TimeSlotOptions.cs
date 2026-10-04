@@ -25,22 +25,19 @@ public class TimeSlotOptions
     /// </summary>
     public DateTimeOffset EndTime => StartTime.Add(TimeSlotLength);
 
-    public static TimeSlotOptions CreateDefault()
-    {
-        DateTimeOffset startTime;
-        try
-        {
-            var tz = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
-            startTime = new DateTimeOffset(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz), tz.BaseUtcOffset);
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            startTime = DateTimeOffset.UtcNow;
-        }
+    /// <summary>
+    /// Слот по умолчанию: начинается сейчас по времени часового пояса проекта
+    /// </summary>
+    public static TimeSlotOptions CreateDefault(TimeZoneInfo timeZone) => CreateDefault(timeZone, DateTimeOffset.UtcNow);
 
+    /// <summary>
+    /// Слот по умолчанию: начинается в момент <paramref name="now"/> по времени пояса <paramref name="timeZone"/>
+    /// </summary>
+    public static TimeSlotOptions CreateDefault(TimeZoneInfo timeZone, DateTimeOffset now)
+    {
         return new TimeSlotOptions()
         {
-            StartTime = startTime,
+            StartTime = TimeZoneInfo.ConvertTime(now, timeZone),
             TimeSlotInMinutes = 50,
         };
     }

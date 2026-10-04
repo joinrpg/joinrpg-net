@@ -64,20 +64,16 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
         IsActive = field.IsActive;
         HasValueList = field.HasValueList;
         SupportsMassAdding = field.SupportsMassAdding;
-        TimeSlotMassAdd = field.IsTimeSlot ? CreateTimeSlotMassAdd(field) : null;
+        TimeSlotMassAdd = field.IsTimeSlot ? CreateTimeSlotMassAdd(field, projectInfo.TimeZone) : null;
     }
 
-    // TODO: таймзона проекта, пока считаем всё московским
-    private const string TimeSlotTimeZoneId = "Europe/Moscow";
-
-    private static TimeSlotMassAddViewModel CreateTimeSlotMassAdd(ProjectFieldInfo field)
+    private static TimeSlotMassAddViewModel CreateTimeSlotMassAdd(ProjectFieldInfo field, TimeZoneInfo timeZone)
     {
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(TimeSlotTimeZoneId);
-        var lastOptions = (field.LastVariant as TimeSlotFieldVariant)?.TimeSlotOptions ?? TimeSlotOptions.CreateDefault();
+        var lastOptions = (field.LastVariant as TimeSlotFieldVariant)?.TimeSlotOptions ?? TimeSlotOptions.CreateDefault(timeZone);
         var lastEnd = TimeZoneInfo.ConvertTime(lastOptions.EndTime, timeZone);
         return new TimeSlotMassAddViewModel(
             field.Id,
-            TimeSlotTimeZoneId,
+            timeZone.Id,
             DateOnly.FromDateTime(lastEnd.DateTime),
             lastOptions.TimeSlotInMinutes);
     }

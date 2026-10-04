@@ -16,16 +16,17 @@ public record class TimeSlotFieldVariant : ProjectFieldVariant
     MarkdownString? MasterDescription,
     string? ProgrammaticValue,
     bool wasEverUsed,
-    string parentFieldName)
+    string parentFieldName,
+    TimeZoneInfo projectTimeZone)
         : base(Id, Label, Price, IsPlayerSelectable, IsActive, CharacterGroupId, Description, MasterDescription, ProgrammaticValue, wasEverUsed, parentFieldName)
     {
         if (ProgrammaticValue is not null)
         {
-            TimeSlotOptions = JsonSerializer.Deserialize<TimeSlotOptions>(ProgrammaticValue) ?? TimeSlotOptions.CreateDefault();
+            TimeSlotOptions = JsonSerializer.Deserialize<TimeSlotOptions>(ProgrammaticValue) ?? TimeSlotOptions.CreateDefault(projectTimeZone);
         }
         else
         {
-            TimeSlotOptions = TimeSlotOptions.CreateDefault();
+            TimeSlotOptions = TimeSlotOptions.CreateDefault(projectTimeZone);
         }
     }
 }

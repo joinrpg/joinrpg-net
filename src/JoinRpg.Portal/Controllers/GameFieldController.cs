@@ -181,7 +181,7 @@ public class GameFieldController(
         var id = new ProjectFieldIdentification(new(projectId), projectFieldId);
         var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
         var field = metadata.GetFieldById(id);
-        return View(new GameFieldDropdownValueCreateViewModel(field));
+        return View(new GameFieldDropdownValueCreateViewModel(field, metadata.TimeZone));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -194,7 +194,7 @@ public class GameFieldController(
             var metadata = await projectMetadataRepository.GetProjectMetadata(id.ProjectId);
             var field = metadata.GetFieldById(id);
 
-            var timeSlotOptions = viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault());
+            var timeSlotOptions = viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault(), metadata.TimeZone);
 
             await
                 fieldSetupService.CreateFieldValueVariant(
@@ -252,7 +252,7 @@ public class GameFieldController(
                 viewModel.ProgrammaticValue,
                 viewModel.Price,
                 viewModel.PlayerSelectable,
-                viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault())
+                viewModel.GetTimeSlotRequest(field.IsTimeSlot, Request.Form["TimeSlotStartTime"].FirstOrDefault(), metadata.TimeZone)
                 ));
 
             return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });

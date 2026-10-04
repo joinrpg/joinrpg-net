@@ -21,8 +21,7 @@ public class SchedulePageManager(
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterInfoRepository characterInfoRepository,
-    IUserRepository userRepository,
-    ILogger<SchedulePageManager> logger
+    IUserRepository userRepository
         )
 {
     public async Task<SchedulePageViewModel> GetSchedule()
@@ -53,55 +52,33 @@ public class SchedulePageManager(
     {
         var result = await GetCompiledSchedule();
 
-        var timeZone = GuessTimeZone(result);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
 
-        if (timeZone == null)
-        {
-            return "";
-        }
         var calendar = new Calendar();
-        calendar.Events.AddRange(result.AllItems.Select(i => BuildIcalEvent(i, timeZone)));
+        calendar.Events.AddRange(result.AllItems.Select(i => BuildIcalEvent(i, projectInfo.TimeZone)));
 
         var serializer = new CalendarSerializer();
         return serializer.SerializeToString(calendar) ?? ""; //TODO stream
     }
 
-    private TimeZoneInfo? GuessTimeZone(ScheduleResult result)
+    private static CalendarEvent BuildIcalEvent(ProgramItemPlaced evt, TimeZoneInfo timeZone)
     {
-        var offsets = result.AllItems.Select(i => i.StartTime.Offset).Distinct().ToList();
-
-        if (offsets.Count == 0)
-        {
-            return null;
-        }
-
-        if (offsets.Count == 1)
-        {
-            var tz = TimeZoneGuesser.GuessTimeZoneByOffset(offsets[0]);
-            if (tz != null)
-            {
-                return tz;
-            }
-        }
-
-        logger.LogError("Не удалось определить таймзону для проекта, встречаются варианты: {timeZoneHours}",
-            string.Join(",", offsets));
-
-        return null;
-    }
-
-    private CalendarEvent BuildIcalEvent(ProgramItemPlaced evt, TimeZoneInfo timeZone)
-    {
-        // TODO Здесь используется неявное предположение, что 
         return new CalendarEvent
         {
-            Start = new CalDateTime(evt.StartTime.LocalDateTime, timeZone.Id),
-            End = new CalDateTime(evt.EndTime.LocalDateTime, timeZone.Id),
+            Start = ToCalDateTime(evt.StartTime, timeZone),
+            End = ToCalDateTime(evt.EndTime, timeZone),
             Summary = evt.ProgramItem.Name,
             Location = string.Join(", ", evt.Rooms.Select(r => r.Name)),
             Description = evt.ProgramItem.Description.ToPlainTextWithoutHtmlEscape(),
         };
     }
+
+    /// <summary>
+    /// Время слота в поясе проекта. Слоты хранятся с тем смещением, с каким их ввели,
+    /// поэтому сначала переводим в пояс проекта, а не берём время сервера (LocalDateTime).
+    /// </summary>
+    internal static CalDateTime ToCalDateTime(DateTimeOffset time, TimeZoneInfo timeZone)
+        => new(TimeZoneInfo.ConvertTime(time, timeZone).DateTime, timeZone.Id);
 
     private async Task<ScheduleResult> GetCompiledSchedule() => (await GetBuilder()).Build();
 

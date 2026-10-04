@@ -314,7 +314,8 @@ public class ScheduleBuilderTest
             MasterDescription: null,
             JsonSerializer.Serialize(new TimeSlotOptions { StartTime = startTime, TimeSlotInMinutes = 60 }),
             wasEverUsed: true,
-            parentFieldName: "Слот");
+            parentFieldName: "Слот",
+            projectTimeZone: TimeZoneInfo.Utc);
 
     private static ProjectFieldVariant MakeRoomVariant(int variantId, bool isActive)
         => new(

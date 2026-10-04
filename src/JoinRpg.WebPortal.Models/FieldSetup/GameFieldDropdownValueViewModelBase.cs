@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 /// <summary>
@@ -35,7 +37,7 @@ public abstract class GameFieldDropdownValueViewModelBase
     [Display(Name = "Длина тайм-слота (в минутах")]
     public int TimeSlotInMinutes { get; set; }
 
-    [Display(Name = "Начало тайм-слота", Description = "В формате ГГГГ-ММ-ДДTЧЧ:ММ+03:00. Если таймзона не указывается, подразумевается московское.")]
+    [Display(Name = "Начало тайм-слота", Description = "В формате ГГГГ-ММ-ДДTЧЧ:ММ+03:00. Если часовой пояс не указан, время считается по часовому поясу проекта.")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mmK}", ApplyFormatInEditMode = true)]
     public DateTimeOffset TimeSlotStartTime { get; set; }
 
@@ -54,17 +56,24 @@ public abstract class GameFieldDropdownValueViewModelBase
 
     public GameFieldDropdownValueViewModelBase() { }
 
-    public TimeSlotOptions? GetTimeSlotRequest(bool isTimeSlot, string? value)
+    /// <param name="projectTimeZone">Часовой пояс проекта — в нём понимается время, введённое без смещения</param>
+    public TimeSlotOptions? GetTimeSlotRequest(bool isTimeSlot, string? value, TimeZoneInfo projectTimeZone)
     {
         return value is not null && isTimeSlot
             ? new TimeSlotOptions
             {
-                StartTime = DateTimeOffset.ParseExact(
-                    value,
-                    "yyyy-MM-ddTHH:mmK",
-                    System.Globalization.CultureInfo.InvariantCulture),
+                StartTime = ParseStartTime(value, projectTimeZone),
                 TimeSlotInMinutes = TimeSlotInMinutes
             }
             : null;
+    }
+
+    internal static DateTimeOffset ParseStartTime(string value, TimeZoneInfo projectTimeZone)
+    {
+        if (DateTime.TryParseExact(value, "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var local))
+        {
+            return new DateTimeOffset(local, projectTimeZone.GetUtcOffset(local));
+        }
+        return DateTimeOffset.ParseExact(value, "yyyy-MM-ddTHH:mmK", CultureInfo.InvariantCulture);
     }
 }

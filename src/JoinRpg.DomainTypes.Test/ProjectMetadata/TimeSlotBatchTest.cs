@@ -60,6 +60,18 @@ public class TimeSlotBatchTest
         result.ShouldHaveSingleItem().Options.StartTime.ShouldBe(new DateTimeOffset(2026, 7, 10, 10, 0, 0, TimeSpan.FromHours(7)));
     }
 
+    [Fact]
+    public void Offset_FollowsDaylightSavingTime()
+    {
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+        var summer = TimeSlotBatch.Generate(null, new DateOnly(2026, 7, 10), new(10, 0), new(11, 0), 60, 0, zone);
+        var winter = TimeSlotBatch.Generate(null, new DateOnly(2026, 1, 10), new(10, 0), new(11, 0), 60, 0, zone);
+
+        summer.ShouldHaveSingleItem().Options.StartTime.Offset.ShouldBe(TimeSpan.FromHours(2));
+        winter.ShouldHaveSingleItem().Options.StartTime.Offset.ShouldBe(TimeSpan.FromHours(1));
+    }
+
     [Theory]
     [InlineData(0, 0)]
     [InlineData(30, -1)]
