@@ -1,19 +1,10 @@
 @inject ICharacterUriLocator characterUriLocator
 @*
-    Карточка мероприятия в сетке расписания. Data-атрибуты (display-name, rooms, slots,
-    no-users, all-rooms, error-mode, errors, details-url) читает JS полноэкранного режима,
-    чтобы заполнить оверлей деталей, — их состав и формат значений менять нельзя.
+    Карточка мероприятия: в сетке расписания и в списках пересечений и не размещённых.
+    С деталями (полноэкранная сетка) поверх карточки лежит кнопка-слой, которая открывает
+    панель AppointmentDetails.
 *@
-<div id="appointment@(Model.CharacterId.CharacterId)"
-     class="@ClassNames"
-     display-name="@Model.DisplayName"
-     details-url="@characterUriLocator.GetDetailsUri(Model.CharacterId)"
-     no-users="@HasNoUsers.ToString()"
-     rooms="@Rooms"
-     slots="@Slots"
-     all-rooms="@Model.AllRooms.ToString()"
-     error-mode="@((Model.ErrorType == AppointmentErrorType.Intersection).ToString())"
-     errors="@Errors">
+<div class="@ClassNames">
     <div class="appointment-interior" title="@Title">
         <div class="appointment-header">
             <a href="@characterUriLocator.GetDetailsUri(Model.CharacterId)" target="@Target">@Model.DisplayName</a>
@@ -50,24 +41,31 @@
                 }
             </div>
         }
-        <div id="appointment@(Model.CharacterId.CharacterId)-users" class="appointment-users">
+        <div class="appointment-users">
             @foreach (var user in Model.Users)
             {
-                @* Разделитель между именами: в самой карточке .appointment-users — flex,
-                   и склейки не видно, но JS копирует этот innerHTML в #details-users,
-                   а там обычный div. *@
-                <UserLink Model="user" />@Space
+                <UserLink Model="user" />
             }
         </div>
     </div>
-    <div class="appointment-click-overlay" onclick="appointmentClickHandler(@Model.CharacterId.CharacterId)"></div>
-    <div id="appointment@(Model.CharacterId.CharacterId)-description" style="display: none;">@Model.Description</div>
+    @if (WithDetails)
+    {
+        <button type="button" class="appointment-click-overlay" popovertarget="@AppointmentDetails.GetId(Model)" title="@Title"></button>
+        <AppointmentDetails Model="Model" />
+    }
 </div>
 
 @code {
     [Parameter]
     [EditorRequired]
     public AppointmentViewModel Model { get; set; } = null!;
+
+    /// <summary>
+    /// Клик по карточке открывает панель деталей. Включает полноэкранная сетка; на обычной
+    /// странице и в списках ошибок слой поверх карточки закрыл бы ссылки.
+    /// </summary>
+    [Parameter]
+    public bool WithDetails { get; set; }
 
     /// <summary>
     /// Пробел-разделитель. Статическую разметку из одних пробелов Blazor вырезает
@@ -92,8 +90,6 @@
     private string Rooms => string.Join(", ", Model.Rooms.Select(r => r.Name));
 
     private string Slots => string.Join(", ", Model.Slots.Select(s => s.Name));
-
-    private string Errors => Model.ErrorType?.GetDisplayName() ?? "";
 
     private string ClassNames
     {

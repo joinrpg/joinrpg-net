@@ -84,7 +84,18 @@
     margin-top: 0.5em;
 }
 
-/* Показывает сетка в полноэкранном режиме — см. Scheduler.razor.css. */
+/* Кнопка-слой поверх всей карточки: клик по ней открывает панель деталей.
+   Ссылки под ней недоступны — поэтому слой есть только в полноэкранной сетке. */
 .appointment-click-overlay {
-    display: none;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
 }

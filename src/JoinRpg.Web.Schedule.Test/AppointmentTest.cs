@@ -89,7 +89,6 @@ public class AppointmentTest
 
         cut.Find("div.scheduler-appointment").GetAttribute("class")
             .ShouldBe("scheduler-appointment appointment-no-users");
-        cut.Find("div.scheduler-appointment").GetAttribute("no-users").ShouldBe("True");
     }
 
     [Fact]
@@ -103,11 +102,10 @@ public class AppointmentTest
             .ShouldBe("scheduler-appointment appointment-intersection appointment-has-users");
         cut.Find("div.appointment-interior").GetAttribute("title")
             .ShouldBe("Мастер-класс по фехтованию (имеются пересечения)");
-        cut.Find("div.scheduler-appointment").GetAttribute("error-mode").ShouldBe("True");
     }
 
     [Fact]
-    public void AllRooms_IsMarkedByClassAndAttribute()
+    public void AllRooms_IsMarkedByClass()
     {
         using var ctx = CreateContext();
 
@@ -115,7 +113,6 @@ public class AppointmentTest
 
         cut.Find("div.scheduler-appointment").GetAttribute("class")
             .ShouldBe("scheduler-appointment appointment-all-rooms appointment-has-users");
-        cut.Find("div.scheduler-appointment").GetAttribute("all-rooms").ShouldBe("True");
     }
 
     [Fact]
@@ -197,64 +194,33 @@ public class AppointmentTest
         cut.Find("div.appointment-rooms").TextContent.ShouldNotContain("Шатёр");
     }
 
+    /// <summary>
+    /// Без деталей поверх карточки ничего нет: слой-кнопка закрыл бы ссылки на персонажа.
+    /// </summary>
     [Fact]
-    public void InGrid_HasNoErrorText()
+    public void WithoutDetails_HasNoClickOverlayNorPanel()
     {
         using var ctx = CreateContext();
 
-        Render(ctx, Model()).Find("div.scheduler-appointment").GetAttribute("errors").ShouldBe("");
+        var cut = Render(ctx, Model());
+
+        cut.FindAll("button.appointment-click-overlay").ShouldBeEmpty();
+        cut.FindAll("[popover]").ShouldBeEmpty();
     }
 
     /// <summary>
-    /// Текст из этого атрибута JS кладёт в оверлей деталей под заголовком «Проблемы»,
-    /// то есть он виден пользователю и должен быть по-русски. У обоих значений enum
-    /// обязан быть <see cref="DisplayAttribute"/>: без него <c>GetDisplayName()</c>
-    /// возвращает имя значения, и мастер видел бы «NotLocated».
-    /// </summary>
-    [Theory]
-    [InlineData(AppointmentErrorType.NotLocated, "Не размещено в сетке расписания")]
-    [InlineData(AppointmentErrorType.Intersection, "Пересечение с другими мероприятиями")]
-    public void ErrorText_IsHumanReadableRussian(AppointmentErrorType errorType, string expected)
-    {
-        using var ctx = CreateContext();
-
-        Render(ctx, Model(errorType: errorType))
-            .Find("div.scheduler-appointment").GetAttribute("errors").ShouldBe(expected);
-    }
-
-    /// <summary>
-    /// Атрибуты читает JS полноэкранного режима, чтобы заполнить оверлей деталей,
-    /// поэтому их имена и формат значений — контракт, а не деталь реализации.
+    /// Панель открывает браузер по popovertarget — id кнопки и панели должны совпадать,
+    /// иначе клик молча ничего не делает.
     /// </summary>
     [Fact]
-    public void Attributes_CarryEverythingDetailsOverlayNeeds()
+    public void WithDetails_ClickOverlayOpensItsPanel()
     {
         using var ctx = CreateContext();
 
-        var cut = Render(ctx, Model(
-            errorType: AppointmentErrorType.Intersection,
-            rooms: [Header(1, "Шатёр"), Header(2, "Поляна")],
-            slots: [Header(10, "10:00"), Header(11, "11:00")],
-            description: new MarkupString("<p>Приходите <b>с мечом</b></p>")));
+        var cut = ctx.Render<Appointment>(p => p.Add(x => x.Model, Model()).Add(x => x.WithDetails, true));
 
-        var root = cut.Find("div.scheduler-appointment");
-        root.GetAttribute("display-name").ShouldBe("Мастер-класс по фехтованию");
-        root.GetAttribute("details-url").ShouldBe($"https://example.org/{ProjectId.Value}/character/{CharacterId.CharacterId}");
-        root.GetAttribute("rooms").ShouldBe("Шатёр, Поляна");
-        root.GetAttribute("slots").ShouldBe("10:00, 11:00");
-        root.GetAttribute("errors").ShouldBe("Пересечение с другими мероприятиями");
-
-        cut.Find($"#appointment{CharacterId.CharacterId}-users").Children.Length.ShouldBe(1);
-        cut.Find($"#appointment{CharacterId.CharacterId}-description").InnerHtml
-            .ShouldBe("<p>Приходите <b>с мечом</b></p>");
-    }
-
-    [Fact]
-    public void ClickOverlay_CallsHandlerWithCharacterId()
-    {
-        using var ctx = CreateContext();
-
-        Render(ctx, Model()).Find("div.appointment-click-overlay").GetAttribute("onclick")
-            .ShouldBe($"appointmentClickHandler({CharacterId.CharacterId})");
+        var target = cut.Find("button.appointment-click-overlay").GetAttribute("popovertarget");
+        target.ShouldBe($"appointment{CharacterId.CharacterId}-0-0-details");
+        cut.Find($"#{target}").HasAttribute("popover").ShouldBeTrue();
     }
 }

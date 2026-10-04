@@ -1,51 +1,113 @@
+@inject ICharacterUriLocator characterUriLocator
 @*
-    Оверлей деталей мероприятия в полноэкранном режиме расписания. Рендерит его сама сетка
-    (Scheduler с FullScreen), потому что оверлей накрывает именно её.
+    Детали мероприятия в полноэкранном режиме расписания: панель с атрибутом popover, которую
+    открывает кнопка-слой поверх карточки (popovertarget). Показ, закрытие кликом мимо панели
+    и по Escape делает браузер: панель в top layer, скрипт не нужен.
 
-    Разметка статична: содержимое по id подставляет JS из data-атрибутов карточки
-    (см. appointmentClickHandler в FullScreen.cshtml), он же навешивает классы
-    details-no-* и атрибуты all-rooms/no-users/error-mode на #scheduler-details, чтобы спрятать
-    пустые секции. Поэтому id здесь — контракт со скриптом, а не деталь разметки.
+    Рендерится на сервере для каждой карточки сетки — поэтому секции без содержимого просто
+    не выводятся.
 *@
-<div id="scheduler-overlay" onclick="overlayClickHandler(event)" onwheel="overlayWheelHandler(event)">
-    <div id="scheduler-details" all-rooms="false" no-users="false" error-mode="false">
-        <div class="appointment-details-interior">
+<div id="@Id" popover class="@ClassNames" role="dialog" aria-labelledby="@(Id)-title">
+    <div class="appointment-details-interior">
 
-            <div class="appointment-details-header">
-                <h4 id="details-title"></h4>
-                <button class="btn btn-link" onclick="closeDetailsClickHandler()"><JoinIcon Icon="JoinIconType.Remove" /></button>
-            </div>
+        <div class="appointment-details-header">
+            <h4 id="@(Id)-title" class="appointment-details-title">@Model.DisplayName</h4>
+            <button type="button" class="btn btn-link" popovertarget="@Id" popovertargetaction="hide" title="Закрыть"><JoinIcon Icon="JoinIconType.Remove" /></button>
+        </div>
 
-            <div class="appointment-details-content">
+        <div class="appointment-details-content">
+            @if (Model.ErrorType is { } errorType)
+            {
                 <div class="appointment-details appointment-details-errors">
                     <h4>Проблемы</h4>
-                    <div id="details-problems"></div>
+                    <div>@errorType.GetDisplayName()</div>
                 </div>
+            }
 
+            @if (Model.Users.Count > 0)
+            {
                 <div class="appointment-details appointment-details-users">
                     <h4>Мастера</h4>
-                    <div id="details-users"></div>
+                    <div>
+                        @foreach (var user in Model.Users)
+                        {
+                            <UserLink Model="user" />@Space
+                        }
+                    </div>
                 </div>
+            }
 
+            @if (!Model.AllRooms && Model.Rooms.Count > 0)
+            {
                 <div class="appointment-details appointment-details-rooms">
                     <h4>Комнаты</h4>
-                    <div id="details-rooms"></div>
+                    <div>@string.Join(", ", Model.Rooms.Select(r => r.Name))</div>
                 </div>
+            }
 
+            @if (Model.Slots.Count > 0)
+            {
                 <div class="appointment-details appointment-details-slots">
                     <h4>Слоты времени</h4>
-                    <div id="details-slots"></div>
+                    <div>@string.Join(", ", Model.Slots.Select(s => s.Name))</div>
                 </div>
+            }
 
+            @if (!string.IsNullOrWhiteSpace(Model.Description.Value))
+            {
                 <div class="appointment-details appointment-details-info">
                     <h4>Описание</h4>
-                    <div id="details-info"></div>
+                    <div>@Model.Description</div>
                 </div>
-            </div>
+            }
+        </div>
 
-            <div class="appointment-details-footer">
-                <a id="details-link" class="btn btn-link" href="#" target="_blank">Открыть на сайте&hellip;</a>
-            </div>
+        <div class="appointment-details-footer">
+            <a class="btn btn-link" href="@characterUriLocator.GetDetailsUri(Model.CharacterId)" target="_blank">Открыть на сайте&hellip;</a>
         </div>
     </div>
 </div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public AppointmentViewModel Model { get; set; } = null!;
+
+    /// <summary>
+    /// Id панели — на него ссылается popovertarget кнопки на карточке. Одно мероприятие может
+    /// лечь в сетку несколькими карточками (несмежные комнаты или слоты), поэтому в id и место
+    /// в сетке: иначе все карточки открывали бы панель первой.
+    /// </summary>
+    public static string GetId(AppointmentViewModel model)
+        => $"appointment{model.CharacterId.CharacterId}-{model.TimeSlotIndex}-{model.RoomIndex}-details";
+
+    private string Id => GetId(Model);
+
+    /// <summary>
+    /// Пробел-разделитель между мастерами. Статическую разметку из одних пробелов Blazor вырезает
+    /// (в отличие от cshtml), а вывод выражения — нет.
+    /// </summary>
+    private const string Space = " ";
+
+    /// <summary>Цвет шапки повторяет цвет карточки, заголовок пересечения — красный.</summary>
+    private string ClassNames
+    {
+        get
+        {
+            var classes = new List<string> { "appointment-details-popover" };
+            if (Model.AllRooms)
+            {
+                classes.Add("details-all-rooms");
+            }
+            if (Model.Users.Count == 0)
+            {
+                classes.Add("details-no-users");
+            }
+            if (Model.ErrorType == AppointmentErrorType.Intersection)
+            {
+                classes.Add("details-error");
+            }
+            return string.Join(" ", classes);
+        }
+    }
+}

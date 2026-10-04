@@ -1,25 +1,16 @@
-/* Позиционируется от корня полноэкранной сетки — см. .scheduler-fullscreen в Scheduler.razor.css. */
-#scheduler-overlay {
-    display: none;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(20, 20, 20, .5);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-}
-
-#scheduler-details {
-    max-width: 450px;
-    max-height: 700px;
-    height: 100%;
-    width: 100%;
+/* Панель живёт в top layer (атрибут popover): браузер центрирует её в окне поверх всего,
+   а фон затемняет ::backdrop. Пока панель не открыта, браузер держит её в display: none. */
+.appointment-details-popover {
+    width: min(450px, 100vw - 2em);
+    height: min(700px, 100vh - 2em);
+    padding: 0;
     background-color: white;
     border: 1px solid silver;
 }
+
+    .appointment-details-popover::backdrop {
+        background-color: rgba(20, 20, 20, .5);
+    }
 
 .appointment-details-interior {
     display: flex;
@@ -37,7 +28,7 @@
     background-color: cornsilk;
 }
 
-.appointment-details-header #details-title {
+.appointment-details-title {
     margin: 0.75em;
     flex-grow: 1;
     align-self: center;
@@ -45,15 +36,15 @@
     line-height: 1.4;
 }
 
-#scheduler-details[all-rooms=True] .appointment-details-header {
+.details-all-rooms .appointment-details-header {
     background-color: mintcream;
 }
 
-#scheduler-details[no-users=True] .appointment-details-header {
+.details-no-users .appointment-details-header {
     background-color: aliceblue;
 }
 
-#scheduler-details[error-mode=True] #details-title {
+.details-error .appointment-details-title {
     color: firebrick;
 }
 
@@ -73,11 +64,11 @@
     text-align: center;
 }
 
-.appointment-details-footer #details-link {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
+    .appointment-details-footer .btn {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
 
 .appointment-details-content {
     flex-grow: 1;
@@ -88,32 +79,11 @@
     overflow-y: auto;
 }
 
-.appointment-details-content .appointment-details {
-    margin-bottom: 1em;
-}
+    .appointment-details-content .appointment-details {
+        margin-bottom: 1em;
+    }
 
 .appointment-details h4:first-child {
     margin-top: 0;
     margin-bottom: 0.25em;
-}
-
-#scheduler-details.details-no-problems .appointment-details-errors {
-    display: none;
-}
-
-#scheduler-details.details-no-users .appointment-details-users {
-    display: none;
-}
-
-#scheduler-details[all-rooms=True] .appointment-details-rooms,
-#scheduler-details.details-no-rooms .appointment-details-rooms {
-    display: none;
-}
-
-#scheduler-details.details-no-slots .appointment-details-slots {
-    display: none;
-}
-
-#scheduler-details.details-no-info .appointment-details-info {
-    display: none;
 }

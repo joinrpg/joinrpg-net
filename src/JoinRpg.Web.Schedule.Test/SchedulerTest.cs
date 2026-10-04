@@ -174,34 +174,56 @@ public class SchedulerTest
     }
 
     /// <summary>
-    /// Режим задаёт модификатор на корне сетки: от него в scoped CSS зависят высота, рамка
-    /// и то, открываются ли детали по клику на карточку.
+    /// На обычной странице модификатор на корне сетки задаёт в scoped CSS фиксированную высоту
+    /// и рамку; полноэкранная сетка занимает всю вкладку и модификатора не несёт.
     /// </summary>
     [Theory]
-    [InlineData(false, "scheduler-embedded")]
-    [InlineData(true, "scheduler-fullscreen")]
-    public void MarksRootWithMode(bool fullScreen, string modeClass)
+    [InlineData(false, new[] { "scheduler", "scheduler-embedded" })]
+    [InlineData(true, new[] { "scheduler" })]
+    public void MarksRootWithMode(bool fullScreen, string[] classes)
     {
         using var ctx = CreateContext();
 
         var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, Model()).Add(x => x.FullScreen, fullScreen));
 
-        cut.Find("#scheduler").ClassList.ShouldBe(["scheduler", modeClass], ignoreOrder: true);
+        cut.Find("#scheduler").ClassList.ShouldBe(classes, ignoreOrder: true);
     }
 
     /// <summary>
-    /// Оверлей деталей накрывает сетку и позиционируется от её корня, поэтому живёт внутри неё,
-    /// и только в полноэкранном режиме: на обычной странице скрипта, который его заполняет, нет.
+    /// Мероприятие в несмежных комнатах или слотах ложится в сетку несколькими карточками.
+    /// Каждая обязана открывать свою панель, а не панель первой из них.
+    /// </summary>
+    [Fact]
+    public void SplitAppointmentOpensOwnDetailsFromEachPiece()
+    {
+        using var ctx = CreateContext();
+        var model = Model(columns: 3, rows: 1);
+        model.Appointments = [Appointment(1, roomIndex: 0), Appointment(1, roomIndex: 2)];
+
+        var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, model).Add(x => x.FullScreen, true));
+
+        var targets = cut.FindAll("button.appointment-click-overlay").Select(b => b.GetAttribute("popovertarget")).ToList();
+        targets.Distinct().Count().ShouldBe(2);
+        foreach (var target in targets)
+        {
+            cut.FindAll($"#{target}").Count.ShouldBe(1);
+        }
+    }
+
+    /// <summary>
+    /// Детали открываются кликом по карточке только в полноэкранном режиме: на обычной странице
+    /// слой-кнопка поверх карточки закрыл бы ссылки на персонажа.
     /// </summary>
     [Theory]
     [InlineData(false, 0)]
-    [InlineData(true, 1)]
-    public void RendersDetailsOverlayOnlyInFullScreen(bool fullScreen, int expectedCount)
+    [InlineData(true, 3)]
+    public void RendersDetailsPerAppointmentOnlyInFullScreen(bool fullScreen, int expectedCount)
     {
         using var ctx = CreateContext();
 
-        var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, Model()).Add(x => x.FullScreen, fullScreen));
+        var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, Model(appointments: 3)).Add(x => x.FullScreen, fullScreen));
 
-        cut.FindAll("#scheduler #scheduler-overlay").Count.ShouldBe(expectedCount);
+        cut.FindAll("div.appointment-details-popover[popover]").Count.ShouldBe(expectedCount);
+        cut.FindAll("button.appointment-click-overlay").Count.ShouldBe(expectedCount);
     }
 }
