@@ -22,6 +22,22 @@ internal static class ProjectPredicates
     public static Expression<Func<Project, bool>> MasterAccess(UserIdentification userInfoId)
         => project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId.Value && projectAcl.Status == ProjectAclStatus.Active);
 
+    /// <summary>
+    /// Пользователь — действующий мастер проекта, и это видно смотрящему: запись публичная (ADR019, §3)
+    /// или смотрящий сам действующий мастер этого проекта.
+    /// </summary>
+    private static Expression<Func<Project, bool>> MasterAccessVisibleTo(UserIdentification userId, UserIdentification? viewer)
+    {
+        // Без короткого замыкания по null внутри дерева — EF6 его не делает (условие строим снаружи).
+        if (viewer is null)
+        {
+            return project => project.ProjectAcls.Any(acl => acl.UserId == userId.Value && acl.Status == ProjectAclStatus.Active && acl.IsPublic);
+        }
+        var viewerId = viewer.Value;
+        return project => project.ProjectAcls.Any(acl => acl.UserId == userId.Value && acl.Status == ProjectAclStatus.Active
+            && (acl.IsPublic || project.ProjectAcls.Any(v => v.UserId == viewerId && v.Status == ProjectAclStatus.Active)));
+    }
+
     public static Expression<Func<Project, bool>> HasActiveClaim(UserIdentification userInfoId)
     {
         var claimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
@@ -44,6 +60,8 @@ internal static class ProjectPredicates
             { Criteria: ProjectListCriteria.Public } => predicate.And(p => p.Details.IsPublicProject)
                 .And(project => projectListSpecification.LoadArchived || project.Details.DisableKogdaIgraMapping || project.KogdaIgraGames.Count() == 0 || project.KogdaIgraGames.Any(k => k.End > DateTime.Now)),
             PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterAccess, UserId: var userId } => predicate.And(MasterAccess(userId)),
+            PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterAccessVisibleToViewer, UserId: var userId, PersonalizeForUser: var viewer }
+                => predicate.And(MasterAccessVisibleTo(userId, viewer)),
             PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.MasterOrActiveClaim, UserId: var userId }
                 => predicate.And(PredicateBuilder.New<Project>().Or(HasActiveClaim(userId)).Or(MasterAccess(userId))),
             PersonalizedProjectListSpecification { Criteria: ProjectListCriteria.ForCloning, UserId: var userId }

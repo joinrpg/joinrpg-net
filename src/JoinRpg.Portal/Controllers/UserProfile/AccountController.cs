@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Services.Interfaces.Notification;
@@ -534,13 +535,15 @@ public class AccountController(
     #endregion
 
     [AllowAnonymous]
-    public async Task<ActionResult> AccessDenied(string returnUrl, int? projectId, [FromServices] IProjectMetadataRepository projectMetadataRepository)
+    public async Task<ActionResult> AccessDenied(string returnUrl, int? projectId,
+        [FromServices] IProjectMetadataRepository projectMetadataRepository,
+        [FromServices] ICurrentUserAccessor currentUserAccessor)
     {
         if (projectId is int projectIdValue)
         {
             ViewBag.ProjectId = projectIdValue;
             var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectIdValue));
-            return View("ErrorNoAccessToProject", NoAccessToProjectViewModelBuilder.Build(projectInfo));
+            return View("ErrorNoAccessToProject", NoAccessToProjectViewModelBuilder.Build(projectInfo, currentUserAccessor.UserIdentificationOrDefault));
         }
         return View("AccessDenied", returnUrl);
     }

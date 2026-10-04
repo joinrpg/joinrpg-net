@@ -1,11 +1,12 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Games.Projects;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
 
-internal class ProjectInfoViewService(IProjectMetadataRepository projectMetadataRepository) : IProjectInfoClient
+internal class ProjectInfoViewService(IProjectMetadataRepository projectMetadataRepository, ICurrentUserAccessor currentUserAccessor) : IProjectInfoClient
 {
     async Task<ProjectInfoViewModel> IProjectInfoClient.GetProjectInfo(ProjectIdentification projectId)
     {
@@ -14,7 +15,7 @@ internal class ProjectInfoViewService(IProjectMetadataRepository projectMetadata
         return new ProjectInfoViewModel(
             ProjectId: project.ProjectId,
             Name: project.ProjectName,
-            Masters: [.. project.Masters.Select(m => new UserLinkViewModel(m.UserInfo))],
+            Masters: [.. project.GetMastersVisibleTo(currentUserAccessor.UserIdentificationOrDefault).Select(m => new UserLinkViewModel(m.UserInfo))],
             DescriptionHtml: details.ProjectDescription.ToHtmlString(),
             KogdaIgraLinkedIds: [.. details.KogdaIgraCards.Select(c => c.Id)]
             );

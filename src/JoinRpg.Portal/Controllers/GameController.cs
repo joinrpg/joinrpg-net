@@ -47,11 +47,11 @@ public class GameController(
         {
             var claims = await claimsRepository.GetClaimsHeadersForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId);
             var captainAccess = await captainRulesRepository.GetCaptainRules(projectId, userId);
-            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, details.DisableKogdaIgraMapping, captainAccess));
+            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, details.DisableKogdaIgraMapping, captainAccess, userId));
         }
         else
         {
-            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), [], list, details.DisableKogdaIgraMapping, []));
+            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), [], list, details.DisableKogdaIgraMapping, [], viewer: null));
         }
 
 

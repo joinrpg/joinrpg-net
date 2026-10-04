@@ -61,6 +61,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             CreateAccommodationSettings(project),
             groupTree: groupTree,
             masters: CreateMasterList(project),
+            mastersOrdering: project.Details.MastersOrdering,
             publishPlot: project.Details.PublishPlot,
             projectCheckInSettings: new ProjectCheckInSettings(project.Details.EnableCheckInModule, project.Details.CheckInProgress, project.Details.AllowSecondRoles),
             projectStatus: status,
@@ -89,7 +90,9 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 new Email(acl.User.Email),
                 acl.GetPermissions(),
                 acl.IsOwner,
-                acl.Status)
+                acl.Status,
+                acl.IsPublic,
+                acl.ProjectAclId)
                 )
                 ];
         }

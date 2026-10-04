@@ -5,6 +5,7 @@ namespace JoinRpg.Web.Games.Projects;
 /// </summary>
 public record ProjectMastersViewModel(IReadOnlyCollection<UserLinkViewModel> Masters)
 {
-    public static ProjectMastersViewModel Build(ProjectInfo project)
-        => new([.. project.Masters.Select(master => new UserLinkViewModel(master.UserInfo))]);
+    /// <param name="viewer">Кому показываем: непубличных мастеров видят только мастера проекта (ADR019, §3).</param>
+    public static ProjectMastersViewModel Build(ProjectInfo project, UserIdentification? viewer)
+        => new([.. project.GetMastersVisibleTo(viewer).Select(master => new UserLinkViewModel(master.UserInfo))]);
 }

@@ -29,9 +29,12 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             return NotFound();
         }
 
-        // Отбираем проекты хозяина профиля, но «мой проект»/«мои заявки» считаем относительно того, кто смотрит (#5039)
+        // Отбираем проекты хозяина профиля, но «мой проект»/«мои заявки» считаем относительно того, кто смотрит (#5039).
+        // Непубличное мастерство видно только мастерам того же проекта и администраторам сайта (ADR019, §3).
         var userProjects = await projectRepository.GetPersonalizedProjectsBySpecification(
-            ProjectListSpecification.AllProjectsWithMasterAccess(userId)
+            (currentUserAccessor.IsAdmin
+                ? ProjectListSpecification.AllProjectsWithMasterAccess(userId)
+                : ProjectListSpecification.MasterProjectsForProfile(userId))
                 .PersonalizedFor(currentUserAccessor.UserIdentificationOrDefault));
         var activeUserProjects = userProjects.Where(p => p.Active).ToList();
 
