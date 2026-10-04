@@ -24,6 +24,14 @@ internal sealed class FakeUserRepository(MockedProject mock) : IUserRepository
         => Task.FromResult<IReadOnlyCollection<UserInfo>>(
             [.. userIds.Select(mock.TryGetUserInfo).OfType<UserInfo>()]);
 
+    public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(
+        IReadOnlyCollection<UserIdentification> userIds)
+        => Task.FromResult<IReadOnlyDictionary<UserIdentification, PhoneNumber>>(
+            userIds.Select(mock.TryGetUserInfo).OfType<UserInfo>()
+                .Select(user => (user.UserId, Phone: PhoneNumber.FromOptional(user.PhoneNumber)))
+                .Where(x => x.Phone is not null)
+                .ToDictionary(x => x.UserId, x => x.Phone!));
+
     public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds)
         => Task.FromResult<IReadOnlyCollection<UserInfoHeader>>(
             [.. userIds.Select(mock.TryGetUserInfo).OfType<UserInfo>()

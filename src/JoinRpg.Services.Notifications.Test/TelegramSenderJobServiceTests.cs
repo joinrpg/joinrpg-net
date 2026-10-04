@@ -106,6 +106,7 @@ public class TelegramSenderJobServiceTests
         public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
+        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotSupportedException();
         public Task<UserIdentification?> FindByVk(string vkId) => throw new NotSupportedException();
         public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotSupportedException();
@@ -122,6 +123,7 @@ public class TelegramSenderJobServiceTests
         public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
+        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotSupportedException();
         public Task<UserIdentification?> FindByVk(string vkId) => throw new NotSupportedException();
         public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotSupportedException();
