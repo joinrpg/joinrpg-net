@@ -157,6 +157,12 @@ public record class CharacterClaimInfo(
   (`FinancePredicates.RequireModeration`), потому что вычисляемое свойство
   `FinanceOperation.RequireModeration` EF6 не переводит; за совпадением копии с оригиналом следит
   тест-страж `FinancePredicatesTest`.
+  `AccommodationFee` из БД не читается: стоимость проживания — настройка проекта, она уже есть
+  в `ProjectInfo.AccommodationSettings` (ADR015), и маппер берёт её оттуда по
+  `AccommodationTypeId`. В проекции остаётся только id типа, навигации на
+  `ProjectAccommodationTypes` у агрегата нет. Если выбранного типа в метаданных нет (на проде
+  невозможно — FK), маппер бросает `AccommodationTypeNotFoundException`: молчаливый ноль дал бы
+  заниженный взнос, который никто не заметит.
 - **`AccommodationTypeId`** — тип проживания, выбранный в заявке, или `null`, если не выбран.
   Отдельно от `Finance`: там стоимость проживания как финансовый факт, здесь — выбор игрока, по
   которому показывается название типа (печать конвертов). Сам тип — настройка проекта (ADR015),

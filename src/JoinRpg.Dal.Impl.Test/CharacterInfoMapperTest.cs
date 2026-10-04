@@ -100,7 +100,6 @@ public class CharacterInfoMapperTest
         bool preferentialFeeUser = false,
         string? jsonData = null,
         int? feePaid = null,
-        int? accommodationFee = null,
         int? accommodationTypeId = null,
         bool financeOperationsRequireModeration = false,
         bool playerAllowedSensitiveData = false)
@@ -129,7 +128,6 @@ public class CharacterInfoMapperTest
             PreferentialFeeUser = preferentialFeeUser,
             JsonData = jsonData,
             FeePaid = feePaid,
-            AccommodationFee = accommodationFee,
             AccommodationTypeId = accommodationTypeId,
             FinanceOperationsRequireModeration = financeOperationsRequireModeration,
             PlayerAllowedSensitiveData = playerAllowedSensitiveData,
@@ -191,12 +189,13 @@ public class CharacterInfoMapperTest
         result.Claims.Single().Fields.LayerData.ShouldBeEmpty();
     }
 
-    // 4. FeePaid == null -> 0, AccommodationFee == null -> 0; ненулевые значения проходят как есть.
+    // 4. FeePaid == null -> 0, проживание не выбрано -> AccommodationFee 0;
+    // ненулевой FeePaid проходит как есть.
 
     [Fact]
-    public void Map_ClaimFeePaidAndAccommodationFeeNull_ShouldMapToZero()
+    public void Map_ClaimFeePaidNullAndNoAccommodation_ShouldMapToZero()
     {
-        var row = MakeRow(claims: [MakeClaimRow(feePaid: null, accommodationFee: null)]);
+        var row = MakeRow(claims: [MakeClaimRow(feePaid: null, accommodationTypeId: null)]);
 
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
@@ -206,15 +205,57 @@ public class CharacterInfoMapperTest
     }
 
     [Fact]
-    public void Map_ClaimFeePaidAndAccommodationFeeSet_ShouldPassThroughAsIs()
+    public void Map_ClaimFeePaidSet_ShouldPassThroughAsIs()
     {
-        var row = MakeRow(claims: [MakeClaimRow(feePaid: 1500, accommodationFee: 300)]);
+        var row = MakeRow(claims: [MakeClaimRow(feePaid: 1500)]);
 
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
-        var claim = result.Claims.Single();
-        claim.Finance.FeePaid.ShouldBe(1500);
-        claim.Finance.AccommodationFee.ShouldBe(300);
+        result.Claims.Single().Finance.FeePaid.ShouldBe(1500);
+    }
+
+    // 4в. Стоимость проживания приезжает не из проекции, а из метаданных проекта по id типа
+    // (ADR015): в строке заявки колонки со стоимостью нет вовсе.
+
+    [Fact]
+    public void Map_ClaimAccommodationFee_ShouldComeFromProjectMetadata()
+    {
+        var accommodationType = _mock.CreateAccommodationType(cost: 1234);
+        _mock.ReInitProjectInfo();
+
+        var row = MakeRow(claims: [MakeClaimRow(accommodationTypeId: accommodationType.Id)]);
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        result.Claims.Single().Finance.AccommodationFee.ShouldBe(1234);
+    }
+
+    [Fact]
+    public void Map_ClaimAccommodationFee_ShouldFollowTheTypeChosenInClaim()
+    {
+        // Страж от «берём первый тип подряд»: типов в проекте несколько, цена должна совпасть
+        // именно с выбранным в заявке.
+        var cheap = _mock.CreateAccommodationType("Палатка", cost: 100);
+        var pricey = _mock.CreateAccommodationType("Домик", cost: 900);
+        _mock.ReInitProjectInfo();
+
+        int FeeFor(ProjectAccommodationType type)
+            => CharacterInfoMapper
+                .Map(MakeRow(claims: [MakeClaimRow(accommodationTypeId: type.Id)]), ProjectInfo)
+                .Claims.Single().Finance.AccommodationFee;
+
+        FeeFor(cheap).ShouldBe(100);
+        FeeFor(pricey).ShouldBe(900);
+    }
+
+    [Fact]
+    public void Map_ClaimAccommodationTypeMissingInMetadata_ShouldThrow()
+    {
+        // Решение по ненайденному типу: исключение, а не 0 — см. комментарий в CharacterInfoMapper.
+        var row = MakeRow(claims: [MakeClaimRow(accommodationTypeId: 12345)]);
+
+        Should.Throw<AccommodationTypeNotFoundException>(
+            () => CharacterInfoMapper.Map(row, ProjectInfo));
     }
 
     // 4а. Флаги заявки, нужные фильтрам проблем, переносятся как есть — без инверсий и дефолтов.
@@ -249,12 +290,15 @@ public class CharacterInfoMapperTest
     [Fact]
     public void Map_ClaimAccommodationTypeIdSet_ShouldMapToProjectScopedId()
     {
-        var row = MakeRow(claims: [MakeClaimRow(accommodationTypeId: 42)]);
+        var accommodationType = _mock.CreateAccommodationType();
+        _mock.ReInitProjectInfo();
+
+        var row = MakeRow(claims: [MakeClaimRow(accommodationTypeId: accommodationType.Id)]);
 
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
         result.Claims.Single().AccommodationTypeId
-            .ShouldBe(new AccommodationTypeIdentification(ProjectInfo.ProjectId, 42));
+            .ShouldBe(new AccommodationTypeIdentification(ProjectInfo.ProjectId, accommodationType.Id));
     }
 
     [Fact]

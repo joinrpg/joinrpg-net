@@ -97,8 +97,9 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                     // EF6 в SQL не переводит.
                     FinanceOperationsRequireModeration = claim.FinanceOperations
                         .Any(fo => FinancePredicates.RequireModeration().Invoke(fo)),
-                    AccommodationFee = (int?)claim.AccommodationRequest!.AccommodationType.Cost,
-                    // Тот же LEFT JOIN, что и у стоимости: одна колонка, нового обращения к БД нет.
+                    // Только id типа: стоимость проживания — настройка проекта, маппер берёт её
+                    // из ProjectInfo.AccommodationSettings (ADR015), а не из БД. Одна колонка
+                    // через LEFT JOIN к заявке на поселение, в сам тип проживания не ходим.
                     AccommodationTypeId = (int?)claim.AccommodationRequest!.AccommodationTypeId,
                     // Опечатка в имени — имя колонки EF (см. Claim.PlayerAllowedSenstiveData).
                     PlayerAllowedSensitiveData = claim.PlayerAllowedSenstiveData,

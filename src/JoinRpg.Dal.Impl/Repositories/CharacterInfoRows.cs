@@ -79,10 +79,11 @@ internal sealed class CharacterInfoClaimRow
     /// </summary>
     public required bool FinanceOperationsRequireModeration { get; init; }
 
-    /// <summary>Стоимость выбранного проживания; <c>null</c>, если проживание не выбрано.</summary>
-    public required int? AccommodationFee { get; init; }
-
-    /// <summary>Тип выбранного проживания; <c>null</c>, если проживание не выбрано.</summary>
+    /// <summary>
+    /// Тип выбранного проживания; <c>null</c>, если проживание не выбрано. Стоимости здесь нет:
+    /// она лежит в метаданных проекта (<c>ProjectInfo.AccommodationSettings</c>, ADR015) и
+    /// подставляется маппером по этому id.
+    /// </summary>
     public required int? AccommodationTypeId { get; init; }
 
     /// <summary>
