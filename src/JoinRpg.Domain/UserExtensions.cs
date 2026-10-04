@@ -19,8 +19,8 @@ public static class UserExtensions
             new UserSocialNetworks(telegram, LiveJournalId.FromOptional(user.Extra?.Livejournal), user.Allrpg?.Sid, vk, user.Extra?.SocialNetworksAccess ?? ContactsAccessType.Public),
             // Поле называется ActiveClaims — фильтр по активности тут был потерян.
             [.. user.Claims.Where(c => c.ClaimStatus.IsActive()).Select(c => new UserClaimInfo(c.GetId(), c.ClaimStatus))],
-            user.ProjectAcls.Where(p => p.Project.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
-            user.ProjectAcls.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
+            user.ProjectAcls.Where(p => p.IsActive && p.Project.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
+            user.ProjectAcls.Where(p => p.IsActive).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             user.Auth.IsAdmin,
             AvatarIdentification.FromOptional(user.SelectedAvatarId),
             new Email(user.Email),

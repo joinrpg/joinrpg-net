@@ -138,7 +138,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.ExternalLogins,
                 user.Extra.Telegram,
                 Claims = user.Claims.Where(claim => activeclaimsPredicate.Invoke(claim)).Select(claim => new { claim.ClaimId, claim.ProjectId, claim.ClaimStatus }),
-                Projects = user.ProjectAcls.Select(acl => new { acl.ProjectId, acl.Project.Active }),
+                Projects = user.ProjectAcls.Where(acl => acl.Status == ProjectAclStatus.Active).Select(acl => new { acl.ProjectId, acl.Project.Active }),
                 user.Auth.IsAdmin,
                 user.Extra!.Livejournal,
                 AllRpgInfoId = user.Allrpg!.Sid,

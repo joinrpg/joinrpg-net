@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
@@ -43,10 +45,34 @@ public class ProjectAcl : IProjectEntity
 
     public bool CanSetPlayersAccommodations { get; set; }
 
-    public static ProjectAcl CreateRootAcl(int userId, bool isOwner = false)
+    /// <summary>
+    /// Доступ даёт только <see cref="ProjectAclStatus.Active"/> (ADR019). Снятого мастера не удаляем, а помечаем.
+    /// </summary>
+    public ProjectAclStatus Status { get; set; } = ProjectAclStatus.Active;
+
+    public bool IsActive => Status == ProjectAclStatus.Active;
+
+    /// <summary>
+    /// Показывать ли мастера немастерам (главная страница проекта, страница мастеров).
+    /// </summary>
+    public bool IsPublic { get; set; } = true;
+
+    /// <summary>
+    /// Роль мастера в проекте — свободный текст: «Главный мастер», «Мастер по боёвке».
+    /// </summary>
+    [Required, MaxLength(100)]
+    public required string Role { get; set; }
+
+    /// <summary>
+    /// Чем мастер занимается в проекте и по каким вопросам ему писать.
+    /// </summary>
+    public MarkdownDbValue Description { get; set; } = new MarkdownDbValue();
+
+    public static ProjectAcl CreateRootAcl(int userId, string role, bool isOwner = false)
     {
         return new ProjectAcl
         {
+            Role = role,
             CanChangeFields = true,
             CanChangeProjectProperties = true,
             UserId = userId,

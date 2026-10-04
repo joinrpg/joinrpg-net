@@ -8,6 +8,13 @@ public static class PermissionExtensions
     [Pure]
     public static Func<ProjectAcl, bool> GetPermssionExpression(this Permission permission)
     {
+        var hasPermission = GetPermissionFlag(permission);
+        // Снятый мастер не даёт никаких прав, включая Permission.None — «вообще мастер» (ADR019, §2).
+        return acl => acl.IsActive && hasPermission(acl);
+    }
+
+    private static Func<ProjectAcl, bool> GetPermissionFlag(Permission permission)
+    {
         return permission switch
         {
             Permission.None => acl => true,

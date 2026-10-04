@@ -38,7 +38,18 @@ public record class ProjectInfo
     /// <summary>Дерево групп персонажей проекта.</summary>
     public ProjectGroupTree GroupTree { get; }
 
+    /// <summary>
+    /// Действующие мастера проекта. Только они дают доступ (ADR019, §2): все проверки прав смотрят сюда.
+    /// </summary>
     public IReadOnlyCollection<ProjectMasterInfo> Masters { get; }
+
+    /// <summary>
+    /// Бывшие мастера — сняты с проекта, доступа не дают. Ни одна проверка прав сюда не смотрит.
+    /// </summary>
+    public IReadOnlyCollection<ProjectMasterInfo> FormerMasters { get; }
+
+    private readonly IReadOnlyCollection<ProjectMasterInfo> allMasters;
+
     public string FieldsOrdering { get; }
 
     public bool PublishPlot { get; }
@@ -70,6 +81,7 @@ public record class ProjectInfo
         ProjectFinanceSettings projectFinanceSettings,
         ProjectAccommodationSettings accommodationSettings,
         ProjectGroupTree groupTree,
+        // Все мастера в любом статусе — делятся на Masters и FormerMasters здесь.
         IReadOnlyCollection<ProjectMasterInfo> masters,
         bool publishPlot,
         ProjectCheckInSettings projectCheckInSettings,
@@ -101,7 +113,9 @@ public record class ProjectInfo
         ScheduleAuthorField = UnsortedFields.SingleOrDefault(f => f.Type == ProjectFieldType.ScheduleAuthorField && f.IsActive);
 
         GroupTree = groupTree;
-        Masters = masters;
+        allMasters = masters;
+        Masters = [.. masters.Where(m => m.Status == ProjectAclStatus.Active)];
+        FormerMasters = [.. masters.Where(m => m.Status != ProjectAclStatus.Active)];
         PublishPlot = publishPlot;
         ProjectCheckInSettings = projectCheckInSettings;
         ProjectStatus = projectStatus;
@@ -154,7 +168,7 @@ public record class ProjectInfo
 
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, fields,
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings, GroupTree,
-            Masters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
+            allMasters, PublishPlot, ProjectCheckInSettings, ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId, TimeZone);
     }
@@ -164,7 +178,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
-            Masters, PublishPlot, ProjectCheckInSettings,
+            allMasters, PublishPlot, ProjectCheckInSettings,
             projectLifecycleStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId, TimeZone);
@@ -175,7 +189,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
-            Masters, PublishPlot, ProjectCheckInSettings,
+            allMasters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings with { StrictlyOneCharacter = strictlyOneCharacter },
             ProjectRolesLists, DefaultRolesListId, TimeZone);
@@ -186,7 +200,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, projectFinanceSettings, AccommodationSettings,
             GroupTree,
-            Masters, PublishPlot, ProjectCheckInSettings,
+            allMasters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, ProfileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId, TimeZone);
@@ -197,7 +211,7 @@ public record class ProjectInfo
         return new ProjectInfo(ProjectId, ProjectName, FieldsOrdering, UnsortedFields,
             ProjectFieldSettings, ProjectFinanceSettings, AccommodationSettings,
             GroupTree,
-            Masters, PublishPlot, ProjectCheckInSettings,
+            allMasters, PublishPlot, ProjectCheckInSettings,
             ProjectStatus,
             ProjectScheduleSettings, CloneSettings, CreateDate, profileRequirementSettings, ClaimSettings,
             ProjectRolesLists, DefaultRolesListId, TimeZone);

@@ -251,7 +251,8 @@ public class FinancesController(
 
         var guid = new Guid(Convert.FromHexString(token));
 
-        var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
+        // Токен снятого мастера больше не открывает сводку (ADR019, §1).
+        var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid && a.IsActive);
 
         if (acl == null)
         {

@@ -52,6 +52,8 @@ public class AclController(
                 ProjectId = new ProjectIdentification(viewModel.ProjectId),
                 UserId = new UserIdentification(viewModel.UserId),
                 Permissions = viewModel.ToPermissions(),
+                // Поле роли в форме появится позже (ADR019, PR 6), пока — значение по умолчанию.
+                Role = "Мастер",
             });
         }
         catch (Exception exception)

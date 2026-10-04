@@ -27,7 +27,14 @@ internal class ProjectAccessService(
                 var acl = ctx.Project.ProjectAcls.SingleOrDefault(a => a.UserId == ctx.Request.UserId);
                 if (acl is null)
                 {
-                    acl = new ProjectAcl { ProjectId = ctx.Project.ProjectId, UserId = ctx.Request.UserId, Project = ctx.Project };
+                    acl = new ProjectAcl
+                    {
+                        ProjectId = ctx.Project.ProjectId,
+                        UserId = ctx.Request.UserId,
+                        Project = ctx.Project,
+                        Role = ctx.Request.Role,
+                        IsPublic = ctx.Request.IsPublic,
+                    };
                     ctx.Project.ProjectAcls.Add(acl);
                 }
                 acl.SetPermissions(ctx.Request.Permissions);
@@ -122,6 +129,9 @@ internal class ProjectAccessService(
             ProjectId = projectId,
             UserId = currentUserAccessor.UserIdentification,
             Permissions = [.. Enum.GetValues<Permission>().Where(p => p != Permission.None)],
+            // Админ сайта, зашедший помочь, — не член команды проекта (ADR019, §4). TODO[Localize]
+            Role = "Техподдержка joinrpg.ru",
+            IsPublic = false,
         });
     }
 }
