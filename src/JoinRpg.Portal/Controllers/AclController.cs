@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.ProjectAccess;
@@ -99,15 +100,22 @@ public class AclController(
     public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var profiles = await masterProfileRepository.GetMasterProfiles(projectId);
 
         if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault) && !currentUserAccessor.IsAdmin)
         {
-            return View("PublicIndex", ProjectMastersViewModel.Build(projectInfo, currentUserAccessor.UserIdentificationOrDefault));
+            var viewer = currentUserAccessor.UserIdentificationOrDefault;
+            // Markdown рендерим только тем, кого покажем: непубличные всё равно отбросятся.
+            var visible = projectInfo.GetMastersVisibleTo(viewer).Select(m => m.UserId).ToHashSet();
+            var publicProfiles = profiles.Where(p => visible.Contains(p.UserId)).ToDictionary(
+                p => p.UserId,
+                p => new ProjectMasterProfileViewModel(p.Role.Value, p.Description is null ? null : p.Description.ToHtmlString()));
+            return View("PublicIndex", ProjectMastersViewModel.Build(projectInfo, viewer, publicProfiles));
         }
 
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
 
-        return View(new MastersListViewModel(claims, currentUserAccessor, projectInfo));
+        return View(new MastersListViewModel(claims, currentUserAccessor, projectInfo, profiles));
     }
 
     [HttpGet("delete")]
