@@ -30,6 +30,11 @@ public interface IFieldSetupService
     Task CreateFieldValueVariants(ProjectFieldIdentification projectFieldId,
         string valuesToAdd);
 
+    /// <summary>
+    /// Создать пачку значений поля-таймслота, нарезав промежуток времени (см. <see cref="TimeSlotBatch"/>)
+    /// </summary>
+    Task CreateTimeSlotVariants(CreateTimeSlotVariantsRequest request);
+
     Task<IReadOnlyList<ProjectFieldIdentification>> MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
 
     Task<IReadOnlyList<ProjectFieldVariantIdentification>> MoveFieldVariantAfter(ProjectFieldVariantIdentification variantId, ProjectFieldVariantIdentification? afterVariantId);
@@ -205,6 +210,20 @@ public class UpdateFieldValueVariantRequest : FieldValueVariantRequestBase
 
     public int ProjectFieldDropdownValueId { get; }
 }
+
+/// <summary>
+/// Массовое создание значений поля-таймслота
+/// </summary>
+/// <param name="TimeZone">Таймзона, в которой заданы дата и время</param>
+public record CreateTimeSlotVariantsRequest(
+    ProjectFieldIdentification ProjectFieldId,
+    string? Prefix,
+    DateOnly Date,
+    TimeOnly StartTime,
+    TimeOnly EndTime,
+    int TimeSlotInMinutes,
+    int BreakInMinutes,
+    TimeZoneInfo TimeZone);
 
 public class CreateFieldValueVariantRequest : FieldValueVariantRequestBase
 {

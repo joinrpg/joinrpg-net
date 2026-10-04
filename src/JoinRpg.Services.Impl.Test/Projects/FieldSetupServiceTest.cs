@@ -415,4 +415,48 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
 
         await Should.NotThrowAsync(() => service.MoveField(ProjectId.Value, field1.Id.ProjectFieldId, direction: 1));
     }
+
+    private static readonly TimeZoneInfo MskZone = TimeZoneInfo.CreateCustomTimeZone("MSK", TimeSpan.FromHours(3), "MSK", "MSK");
+
+    private static CreateTimeSlotVariantsRequest CreateTimeSlotsRequest(ProjectFieldIdentification fieldId, TimeOnly end)
+        => new(fieldId, "Зал", new DateOnly(2026, 7, 10), new TimeOnly(10, 0), end, TimeSlotInMinutes: 50, BreakInMinutes: 10, MskZone);
+
+    [Fact]
+    public async Task CreateTimeSlotVariants_CreatesSlotsWithOptions()
+    {
+        var field = mock.AddField(f => f.FieldType = ProjectFieldType.ScheduleTimeSlotField);
+        var service = CreateService(mock.Master.UserId);
+
+        await service.CreateTimeSlotVariants(CreateTimeSlotsRequest(field.Id, new TimeOnly(12, 0)));
+
+        var variants = Result.TimeSlotField.ShouldNotBeNull().Variants.Cast<TimeSlotFieldVariant>().ToList();
+        variants.Select(v => v.Label).ShouldBe(["Зал 10:00–10:50", "Зал 11:00–11:50"]);
+        variants[1].TimeSlotOptions.StartTime.ShouldBe(new DateTimeOffset(2026, 7, 10, 11, 0, 0, TimeSpan.FromHours(3)));
+        variants.ShouldAllBe(v => v.TimeSlotOptions.TimeSlotInMinutes == 50);
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task CreateTimeSlotVariants_NotTimeSlotField_Throws()
+    {
+        var field = mock.AddField(f => f.FieldType = ProjectFieldType.Dropdown);
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<ArgumentException>(
+            () => service.CreateTimeSlotVariants(CreateTimeSlotsRequest(field.Id, new TimeOnly(12, 0))));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task CreateTimeSlotVariants_NoSlotFits_Throws()
+    {
+        var field = mock.AddField(f => f.FieldType = ProjectFieldType.ScheduleTimeSlotField);
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<ArgumentException>(
+            () => service.CreateTimeSlotVariants(CreateTimeSlotsRequest(field.Id, new TimeOnly(10, 30))));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
 }
