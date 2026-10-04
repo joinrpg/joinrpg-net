@@ -19,14 +19,9 @@
         <li><a data-toggle="tab" href="#notallocated">Не размещенные</a></li>
     }
 </ul>
-<div class="tab-content scheduler-fullscreen">
+<div class="tab-content">
     <section id="scheduler" class="scheduler-container tab-pane in active">
-        @(await Html.RenderComponentAsync<Scheduler>(RenderMode.Static, new { Model }))
-        <div id="scheduler-overlay" onclick="overlayClickHandler(event)" onwheel="overlayWheelHandler(event)">
-            <div id="scheduler-details" all-rooms="false" no-users="false" error-mode="false">
-                @(await Html.RenderComponentAsync<AppointmentDetails>(RenderMode.Static))
-            </div>
-        </div>
+        @(await Html.RenderComponentAsync<Scheduler>(RenderMode.Static, new { Model, FullScreen = true }))
     </section>
     @if (Model.Intersections.Count > 0)
     {
@@ -125,7 +120,3 @@
         hideDetails();
     }
 </script>
-@section styles {
-    <link rel="stylesheet" href="~/css/Scheduler.css" />
-    <link rel="stylesheet" href="~/css/AppointmentDetails.css" />
-}

@@ -1,7 +1,4 @@
-﻿#scheduler {
-    position: relative;
-}
-
+/* Позиционируется от корня полноэкранной сетки — см. .scheduler-fullscreen в Scheduler.razor.css. */
 #scheduler-overlay {
     display: none;
     position: absolute;

@@ -5,7 +5,7 @@
     со прокруткой поля (handleScroll). Поэтому они не могут быть просто ячейками одной
     таблицы, а скрипт обязан остаться рядом с разметкой: он ссылается на id элементов.
 *@
-<div id="scheduler" class="scheduler">
+<div id="scheduler" class="scheduler @(FullScreen ? "scheduler-fullscreen" : "scheduler-embedded")">
 
     <div class="scheduler-header">
         <div class="scheduler-left-top" style="width: @(Model.LeftBarWidth)px"></div>
@@ -58,6 +58,11 @@
             </div>
         </div>
     </div>
+
+    @if (FullScreen)
+    {
+        <AppointmentDetails />
+    }
 </div>
 
 <script type="text/javascript">
@@ -87,4 +92,11 @@
     [Parameter]
     [EditorRequired]
     public SchedulePageViewModel Model { get; set; } = null!;
+
+    /// <summary>
+    /// Полноэкранный режим: сетка занимает всю вкладку, а клик по карточке открывает оверлей
+    /// деталей. На обычной странице сетка фиксированной высоты, и деталей нет.
+    /// </summary>
+    [Parameter]
+    public bool FullScreen { get; set; }
 }

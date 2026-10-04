@@ -117,6 +117,38 @@ public class SchedulerTest
     }
 
     /// <summary>
+    /// Режим задаёт модификатор на корне сетки: от него в scoped CSS зависят высота, рамка
+    /// и то, открываются ли детали по клику на карточку.
+    /// </summary>
+    [Theory]
+    [InlineData(false, "scheduler-embedded")]
+    [InlineData(true, "scheduler-fullscreen")]
+    public void MarksRootWithMode(bool fullScreen, string modeClass)
+    {
+        using var ctx = CreateContext();
+
+        var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, Model()).Add(x => x.FullScreen, fullScreen));
+
+        cut.Find("#scheduler").ClassList.ShouldBe(["scheduler", modeClass], ignoreOrder: true);
+    }
+
+    /// <summary>
+    /// Оверлей деталей накрывает сетку и позиционируется от её корня, поэтому живёт внутри неё,
+    /// и только в полноэкранном режиме: на обычной странице скрипта, который его заполняет, нет.
+    /// </summary>
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 1)]
+    public void RendersDetailsOverlayOnlyInFullScreen(bool fullScreen, int expectedCount)
+    {
+        using var ctx = CreateContext();
+
+        var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, Model()).Add(x => x.FullScreen, fullScreen));
+
+        cut.FindAll("#scheduler #scheduler-overlay").Count.ShouldBe(expectedCount);
+    }
+
+    /// <summary>
     /// Шапка и левая колонка прокручиваются скриптом по id — переименование сломает синхронизацию.
     /// </summary>
     [Fact]

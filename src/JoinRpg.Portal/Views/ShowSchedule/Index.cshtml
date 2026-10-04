@@ -12,7 +12,7 @@
     @Html.ActionLink("Ссылка для копирования", "Ical", "ShowSchedule", new { projectId = Model.ProjectId.Value })
 </div>
 
-<section class="scheduler-container">
+<section>
     @(await Html.RenderComponentAsync<Scheduler>(RenderMode.Static, new { Model }))
 </section>
 
@@ -29,26 +29,4 @@
     <section>
         @(await Html.RenderComponentAsync<NotAllocated>(RenderMode.Static, new { Model }))
     </section>
-}
-
-@section styles {
-    <link rel="stylesheet" href="~/css/Scheduler.css" />
-    <style type="text/css">
-        .scheduler-container {
-            display: block;
-            width: 100%;
-            height: 600px;
-            overflow: hidden;
-            margin-top: 1em;
-        }
-
-            .scheduler-container .scheduler-header {
-                border-left: 1px solid silver;
-                border-right: 1px solid silver;
-            }
-
-            .scheduler-container .scheduler-content {
-                border: 1px solid silver;
-            }
-    </style>
 }

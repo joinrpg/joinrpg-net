@@ -1,0 +1,90 @@
+.scheduler-appointment {
+    display: block;
+    padding: 3px;
+}
+
+.appointment-interior {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0.5em;
+    overflow: hidden;
+    background-color: cornsilk;
+    border: 1px solid burlywood;
+    border-radius: 5px;
+}
+
+.appointment-all-rooms .appointment-interior {
+    background-color: mintcream;
+    border: 1px solid mediumaquamarine;
+    justify-content: center;
+}
+
+.appointment-no-users .appointment-interior {
+    background-color: aliceblue;
+    border: 1px solid lightblue;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4em;
+}
+
+.appointment-intersection .appointment-interior {
+    border: 1px dashed red;
+}
+
+.appointment-header {
+    overflow: hidden;
+    font-weight: bold;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    text-align: left;
+}
+
+.appointment-users {
+    display: flex;
+    overflow: hidden;
+    flex-direction: row;
+    flex-grow: 1;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.appointment-slots,
+.appointment-rooms {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.appointment-no-users .appointment-users {
+    display: none;
+}
+
+.appointment-no-users .appointment-header {
+    text-align: center;
+    font-size: 1.2em;
+    -webkit-line-clamp: 3;
+}
+
+.appointment-all-rooms .appointment-header {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.appointment-all-rooms.appointment-has-users .appointment-header {
+    -webkit-line-clamp: 1;
+}
+
+.appointment-all-rooms.appointment-has-users .appointment-users {
+    justify-content: center;
+    flex-grow: 0;
+    margin-top: 0.5em;
+}
+
+/* Показывает сетка в полноэкранном режиме — см. Scheduler.razor.css. */
+.appointment-click-overlay {
+    display: none;
+}

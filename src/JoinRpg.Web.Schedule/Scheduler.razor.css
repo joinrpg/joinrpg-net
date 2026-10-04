@@ -1,0 +1,147 @@
+.scheduler {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    border-top: 1px solid silver;
+}
+
+/* Сетка на обычной странице: фиксированная высота, рамка вокруг. */
+.scheduler-embedded {
+    height: 600px;
+    overflow: hidden;
+    margin-top: 1em;
+}
+
+    .scheduler-embedded .scheduler-header {
+        border-left: 1px solid silver;
+        border-right: 1px solid silver;
+    }
+
+    .scheduler-embedded .scheduler-content {
+        border: 1px solid silver;
+    }
+
+/* Полноэкранная сетка: внутри неё лежит оверлей деталей, он позиционируется от корня. */
+.scheduler-fullscreen {
+    position: relative;
+}
+
+.scheduler-header {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    align-items: stretch;
+}
+
+.scheduler-left-top {
+    flex-shrink: 0;
+    border-right: 1px solid silver;
+}
+
+.scheduler-header-scrollable {
+    display: block;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+table.scheduler-header-columns {
+    position: relative;
+    border-collapse: separate;
+    empty-cells: show;
+}
+
+table.scheduler-header-columns th.scheduler-header-column {
+    border-right: 1px solid silver;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0.5em;
+    cursor: default;
+}
+
+.scheduler-content {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    border-top: 1px solid silver;
+}
+
+.scheduler-header-rows {
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    border-right: 1px solid silver;
+}
+
+.scheduler-header-rows-scrollable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.scheduler-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    border-bottom: 1px solid silver;
+    text-align: right;
+    padding: 0.5em;
+    font-weight: bold;
+    cursor: default;
+}
+
+.scheduler-scrollable {
+    overflow: auto;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+}
+
+table.scheduler-grid {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    border-collapse: separate;
+    empty-cells: show;
+}
+
+table.scheduler-grid td {
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+}
+
+.scheduler-appointments {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+
+/* Карточка — отдельный компонент: в сетке она позиционируется абсолютно,
+   а в списках пересечений и не размещённых лежит в потоке. */
+.scheduler-appointments ::deep .scheduler-appointment {
+    position: absolute;
+}
+
+/* Кликом по карточке детали открываются только в полноэкранном режиме:
+   на обычной странице оверлея деталей нет, а слой поверх карточки закрыл бы ссылки. */
+.scheduler-fullscreen ::deep .appointment-click-overlay {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    cursor: pointer;
+}
