@@ -21,4 +21,12 @@ internal sealed class FakeProjectUriLocator : IProjectUriLocator
     public Uri GetRolesListUri(ProjectIdentification projectId) => UriFor(projectId, "roles");
 
     public Uri GetCaptainCabinetUri(ProjectIdentification projectId) => UriFor(projectId, "captain-cabinet");
+
+    public Uri GetCreateCharacterUri(ProjectIdentification projectId) => UriFor(projectId, "create-character");
+
+    public Uri GetMassMailUri(ProjectIdentification projectId, IReadOnlyCollection<ClaimIdentification> claimIds)
+        => UriFor(projectId, "mass-mail");
+
+    public Uri GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
+        => UriFor(projectId, "print-characters");
 }
