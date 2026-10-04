@@ -6,6 +6,9 @@
     <ContainerRegistry>cr.yandex</ContainerRegistry>
     <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-dal-migrate</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    <!-- Content root = текущий каталог, а appsettings.json лежит здесь. Без этого «dotnet run» с ключом project
+         из корня репозитория не находит строки подключения (Web SDK задаёт это сам, обычный SDK нет). -->
+    <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />

@@ -12,9 +12,14 @@ public static class EfCoreMigrationExtensions
         Action<DbContextOptionsBuilder>? optionsBuilder = null)
         where TContext : DbContext
     {
-        _ = services
-            .AddScoped<IMigratorService, MigrateEfCoreHostService<TContext>>()
-            .AddJoinEfCoreDbContext<TContext>(configuration, environment, connectionStringName, optionsBuilder);
+        // Без строки подключения DbContext не регистрируется, и мигратор падал бы при запуске
+        // невнятной ошибкой DI («Unable to resolve service for type ...DbContext»).
+        if (!services.AddJoinEfCoreDbContext<TContext>(configuration, environment, connectionStringName, optionsBuilder))
+        {
+            throw new InvalidOperationException(
+                $"Не задана строка подключения ConnectionStrings:{connectionStringName} для {typeof(TContext).Name}");
+        }
+        _ = services.AddScoped<IMigratorService, MigrateEfCoreHostService<TContext>>();
     }
 
     public static IServiceCollection AddMigrationsLauncher(this IServiceCollection services) => services.AddHostedService<MigrationsLauncher>();
