@@ -1,0 +1,9 @@
+<h3>JoinRpgTimePicker</h3>
+
+<JoinRpgTimePicker Name="time" @bind-Value="@Selected" />
+
+<p>Выбрано: @(Selected?.ToString("HH:mm") ?? "(ничего)")</p>
+
+@code {
+    private TimeOnly? Selected { get; set; } = new TimeOnly(10, 0);
+}

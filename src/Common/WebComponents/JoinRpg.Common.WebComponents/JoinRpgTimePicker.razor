@@ -1,0 +1,29 @@
+<input type="time" class="form-control" style="max-width: 8em" @onchange="UpdateValue" name="@Name" value="@Format(Value)" />
+
+@code {
+    private const string IsoTimeFormat = "HH:mm";
+
+    // Браузер отдаёт секунды, если у поля задан step меньше минуты
+    private static readonly string[] ParseFormats = [IsoTimeFormat, "HH:mm:ss"];
+
+    [Parameter]
+    public TimeOnly? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<TimeOnly?> ValueChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = null!;
+
+    private static string? Format(TimeOnly? time) => time?.ToString(IsoTimeFormat, System.Globalization.CultureInfo.InvariantCulture);
+
+    private async Task UpdateValue(ChangeEventArgs eventArgs)
+    {
+        var value = eventArgs.Value?.ToString();
+        await ValueChanged.InvokeAsync(
+            TimeOnly.TryParseExact(value, ParseFormats, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var parsed)
+                ? parsed
+                : null);
+    }
+}
