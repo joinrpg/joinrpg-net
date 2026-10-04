@@ -55,6 +55,30 @@ public class TimeSlotOptionsTest
         new TimeSlotOptions(new DateTime(2026, 1, 10, 10, 0, 0), 50).GetStartTime(Berlin).Offset.ShouldBe(TimeSpan.FromHours(1));
     }
 
+    [Theory]
+    [InlineData(1999, 12, 31, false)]
+    [InlineData(2000, 1, 1, true)]
+    [InlineData(2099, 12, 31, true)]
+    [InlineData(2100, 1, 1, false)]
+    public void HasValidStartTime_Bounds(int year, int month, int day, bool expected)
+        => new TimeSlotOptions(new DateTime(year, month, day), 50).HasValidStartTime.ShouldBe(expected);
+
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, false)]
+    [InlineData(1, true)]
+    [InlineData(int.MaxValue, true)]
+    public void HasValidLength_Bounds(int minutes, bool expected)
+        => new TimeSlotOptions(new DateTime(2026, 7, 10), minutes).HasValidLength.ShouldBe(expected);
+
+    /// <summary>
+    /// Сверху длина не ограничена: конец не переполняется даже у самого позднего начала
+    /// </summary>
+    [Fact]
+    public void LongestSlot_FromLatestStart_HasEndTime()
+        => Should.NotThrow(() => new TimeSlotOptions(TimeSlotOptions.MaxStartTime.AddMinutes(-1), int.MaxValue)
+            .GetEndTime(TimeZoneInfo.FindSystemTimeZoneById("Pacific/Kiritimati")));
+
     [Fact]
     public void EndTime_AcrossDaylightSavingTransition_LastsRealMinutes()
     {

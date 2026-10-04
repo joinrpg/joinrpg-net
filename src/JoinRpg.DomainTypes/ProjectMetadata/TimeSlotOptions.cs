@@ -27,6 +27,36 @@ public record TimeSlotOptions(
     public DateTime LocalEndTime => LocalStartTime.Add(TimeSlotLength);
 
     /// <summary>
+    /// Самое раннее допустимое начало слота. У краёв диапазона DateTime начало и конец
+    /// в поясе проекта не посчитать — DateTimeOffset выходит за допустимые значения.
+    /// </summary>
+    public static readonly DateTime MinStartTime = new(2000, 1, 1);
+
+    /// <summary>
+    /// Самое позднее допустимое начало слота (не включая)
+    /// </summary>
+    public static readonly DateTime MaxStartTime = new(2100, 1, 1);
+
+    /// <summary>
+    /// Начало слота в допустимых границах
+    /// </summary>
+    [JsonIgnore]
+    public bool HasValidStartTime => LocalStartTime >= MinStartTime && LocalStartTime < MaxStartTime;
+
+    /// <summary>
+    /// Слот положительной длины. Огромная отрицательная длина уводит конец за начало диапазона DateTime.
+    /// Сверху длина не ограничена: int минут — около 4000 лет, переполнения нет.
+    /// </summary>
+    [JsonIgnore]
+    public bool HasValidLength => TimeSlotInMinutes > 0;
+
+    /// <summary>
+    /// Начало и конец слота можно посчитать в поясе проекта
+    /// </summary>
+    [JsonIgnore]
+    public bool IsValid => HasValidStartTime && HasValidLength;
+
+    /// <summary>
     /// Начало слота в часовом поясе проекта
     /// </summary>
     public DateTimeOffset GetStartTime(TimeZoneInfo projectTimeZone)

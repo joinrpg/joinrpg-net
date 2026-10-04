@@ -451,6 +451,10 @@ internal class FieldSetupServiceImpl(
         {
             throw new Exception("That's not time slot'");
         }
+        if (timeSlotOptions?.IsValid == false)
+        {
+            throw new ArgumentException("Начало таймслота должно быть с 2000 по 2099 год, а длина — больше нуля", nameof(timeSlotOptions)); // TODO[Localize]
+        }
 
         self.ProgrammaticValue = timeSlotOptions?.ToJson();
     }

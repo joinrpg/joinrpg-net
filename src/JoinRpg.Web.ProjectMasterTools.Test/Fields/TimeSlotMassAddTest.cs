@@ -62,6 +62,18 @@ public class TimeSlotMassAddTest : BunitContext
         Validate(form).ShouldNotBeEmpty();
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1999)]
+    [InlineData(2100)]
+    public void DateOutOfRange_IsError(int year)
+    {
+        var form = ValidForm();
+        form.Date = new DateOnly(year, 7, 10);
+
+        Validate(form).ShouldHaveSingleItem().MemberNames.ShouldBe([nameof(TimeSlotMassAddFormModel.Date)]);
+    }
+
     [Fact]
     public void EndBeforeStart_EndsNextDay()
     {

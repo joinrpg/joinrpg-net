@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace JoinRpg.DomainTypes.ProjectMetadata;
 
 public record class TimeSlotFieldVariant : ProjectFieldVariant
@@ -28,9 +30,26 @@ public record class TimeSlotFieldVariant : ProjectFieldVariant
     TimeZoneInfo projectTimeZone)
         : base(Id, Label, Price, IsPlayerSelectable, IsActive, CharacterGroupId, Description, MasterDescription, ProgrammaticValue, wasEverUsed, parentFieldName)
     {
-        TimeSlotOptions = (ProgrammaticValue is null ? null : TimeSlotOptions.FromJson(ProgrammaticValue))
-            ?? TimeSlotOptions.CreateDefault(projectTimeZone);
+        // Вариант строится при загрузке метаданных проекта: одно битое значение не должно ронять весь проект
+        TimeSlotOptions = TryParse(ProgrammaticValue) ?? TimeSlotOptions.CreateDefault(projectTimeZone);
         StartTime = TimeSlotOptions.GetStartTime(projectTimeZone);
         EndTime = TimeSlotOptions.GetEndTime(projectTimeZone);
+    }
+
+    private static TimeSlotOptions? TryParse(string? programmaticValue)
+    {
+        if (programmaticValue is null)
+        {
+            return null;
+        }
+        try
+        {
+            var options = TimeSlotOptions.FromJson(programmaticValue);
+            return options?.IsValid == true ? options : null;
+        }
+        catch (Exception ex) when (ex is JsonException or FormatException or ArgumentOutOfRangeException)
+        {
+            return null;
+        }
     }
 }

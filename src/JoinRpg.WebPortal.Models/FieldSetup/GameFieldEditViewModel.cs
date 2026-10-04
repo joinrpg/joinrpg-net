@@ -23,7 +23,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
         Description = "Используется для передачи во внешние ИТ-системы игры, если они есть. Значение определяется программистами внешней системы. Игнорируйте это поле, если у вас на игре нет никакой ИТ-системы")]
     public string ProgrammaticValue { get; set; }
 
-    public GameFieldEditViewModel(ProjectFieldInfo field, ProjectInfo projectInfo)
+    public GameFieldEditViewModel(ProjectFieldInfo field)
     {
         CanPlayerView = field.CanPlayerView;
         CanPlayerEdit = field.CanPlayerEdit;
@@ -42,10 +42,10 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
         ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
         Price = field.Price;
         ProgrammaticValue = field.ProgrammaticValue ?? "";
-        FillNotEditable(field, projectInfo);
+        FillNotEditable(field);
     }
 
-    public void FillNotEditable(ProjectFieldInfo field, ProjectInfo projectInfo)
+    public void FillNotEditable(ProjectFieldInfo field)
     {
         DropdownValues = field.SortedVariants
             .Select(v => new FieldVariantListItemViewModel

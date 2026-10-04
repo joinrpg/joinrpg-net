@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace JoinRpg.WebPortal.Models.FieldSetup;
 
 /// <summary>
@@ -30,8 +28,8 @@ public abstract class GameFieldDropdownValueViewModelBase
 
     public int ProjectId { get; set; }
     public int ProjectFieldId { get; set; }
-    public string FieldName { get; }
-    public bool CanPlayerEditField { get; }
+    public string FieldName { get; private set; }
+    public bool CanPlayerEditField { get; private set; }
 
 
     [Display(Name = "Длина тайм-слота (в минутах")]
@@ -42,28 +40,30 @@ public abstract class GameFieldDropdownValueViewModelBase
     public DateTime TimeSlotStartTime { get; set; }
 
     [ReadOnly(true)]
-    public bool IsTimeField { get; set; }
+    public bool IsTimeField { get; private set; }
 
 
     public GameFieldDropdownValueViewModelBase(ProjectFieldInfo field)
     {
-        FieldName = field.Name;
         ProjectId = field.Id.ProjectId;
         ProjectFieldId = field.Id.ProjectFieldId;
-        PlayerSelectable = CanPlayerEditField = field.CanPlayerEdit;
+        PlayerSelectable = field.CanPlayerEdit;
+        FillNotEditable(field);
+    }
+
+    /// <summary>
+    /// Свойства поля, которые не приходят из формы: без них перерисованная после ошибки форма
+    /// теряет заголовок, галочку «Игрок может выбрать» и поля таймслота
+    /// </summary>
+    public void FillNotEditable(ProjectFieldInfo field)
+    {
+        FieldName = field.Name;
+        CanPlayerEditField = field.CanPlayerEdit;
         IsTimeField = field.IsTimeSlot;
     }
 
     public GameFieldDropdownValueViewModelBase() { }
 
-    public TimeSlotOptions? GetTimeSlotRequest(bool isTimeSlot, string? value)
-        => value is not null && isTimeSlot
-            ? new TimeSlotOptions(ParseStartTime(value), TimeSlotInMinutes)
-            : null;
-
-    /// <summary>
-    /// Время на часах в поясе проекта. Смещение, если его всё-таки ввели, игнорируется.
-    /// </summary>
-    internal static DateTime ParseStartTime(string value)
-        => DateTimeOffset.ParseExact(value, "yyyy-MM-ddTHH:mmK", CultureInfo.InvariantCulture).DateTime;
+    public TimeSlotOptions? GetTimeSlotRequest(bool isTimeSlot)
+        => isTimeSlot ? new TimeSlotOptions(TimeSlotStartTime, TimeSlotInMinutes) : null;
 }
