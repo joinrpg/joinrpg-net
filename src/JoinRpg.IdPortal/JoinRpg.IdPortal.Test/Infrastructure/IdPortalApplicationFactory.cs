@@ -115,7 +115,7 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
             CreatedDate = DateTime.UtcNow,
             Active = true,
             Details = new JoinRpg.DataModel.ProjectDetails { FieldsOrdering = "" },
-            ProjectAcls = [new JoinRpg.DataModel.ProjectAcl { UserId = dbAdmin.UserId, IsOwner = true }],
+            ProjectAcls = [new JoinRpg.DataModel.ProjectAcl { UserId = dbAdmin.UserId, IsOwner = true, Role = "Главный мастер" }],
         };
         _ = myDb.Set<JoinRpg.DataModel.Project>().Add(project);
         myDb.SaveChanges();

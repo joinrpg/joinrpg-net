@@ -11,9 +11,10 @@ internal class ProjectService(
     IProjectPropsService projectPropsService
     ) : IProjectService
 {
-    public Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom)
+    /// <param name="ownerRole">Роль создателя проекта на странице мастеров (ADR019).</param>
+    public Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom, string ownerRole)
         => projectPropsService.CreateProject(
-            (projectName, rootCharacterGroupName, cloneFrom),
+            (projectName, rootCharacterGroupName, cloneFrom, ownerRole),
             ctx =>
             {
                 var rootGroup = new CharacterGroup()
@@ -33,7 +34,7 @@ internal class ProjectService(
                     CreatedDate = ctx.Now.UtcDateTime,
                     ProjectName = ctx.Request.projectName,
                     CharacterGroups = [rootGroup,],
-                    ProjectAcls = [ProjectAcl.CreateRootAcl(ctx.CurrentUser.UserId, isOwner: true),],
+                    ProjectAcls = [ProjectAcl.CreateRootAcl(ctx.CurrentUser.UserId, ctx.Request.ownerRole, isOwner: true),],
                     Details = new DataModel.ProjectDetails() { ClonedFromProjectId = ctx.Request.cloneFrom?.Value, },
                     ProjectFields = [],
                 };

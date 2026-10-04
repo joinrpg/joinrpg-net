@@ -30,7 +30,8 @@ internal partial class CreateProjectService
             project = await projectService.AddProject(
                 request.ProjectName,
                 rootCharacterGroupName: "Все роли",
-                cloneFrom: request is CloneProjectRequest cpr ? cpr.CopyFromId : null
+                cloneFrom: request is CloneProjectRequest cpr ? cpr.CopyFromId : null,
+                ownerRole: GetOwnerRole(request.ProjectType)
                 );
         }
         catch (Exception ex)
@@ -107,4 +108,15 @@ internal partial class CreateProjectService
 
         return new SuccessCreateProjectResult(projectId);
     }
+
+    // TODO[Localize]
+    /// <summary>
+    /// Роль создателя на странице мастеров (ADR019, §4). Тип проекта известен только здесь, поэтому
+    /// выбирается здесь, а не в <see cref="ProjectService.AddProject"/>.
+    /// </summary>
+    internal static string GetOwnerRole(ProjectTypeDto projectType) => projectType switch
+    {
+        ProjectTypeDto.Convention or ProjectTypeDto.ConventionProgram => "Главный организатор",
+        _ => "Главный мастер",
+    };
 }

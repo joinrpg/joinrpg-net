@@ -70,7 +70,7 @@ public class MockedProject
             Claims = new HashSet<Claim>(),
         };
 
-        var acl = ProjectAcl.CreateRootAcl(userId);
+        var acl = ProjectAcl.CreateRootAcl(userId, "Мастер");
         acl.User = user;
         acl.Project = Project;
         acl.ProjectId = Project.ProjectId;
@@ -126,7 +126,7 @@ public class MockedProject
 
     public MockedProject()
     {
-        var acl = ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true);
+        var acl = ProjectAcl.CreateRootAcl(Master.UserId, "Главный мастер", isOwner: true);
         acl.User = Master;
         Master.ProjectAcls.Add(acl);
         Project = new Project()

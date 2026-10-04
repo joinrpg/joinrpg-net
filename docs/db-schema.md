@@ -122,6 +122,7 @@ erDiagram
         bool DisableKogdaIgraMapping
         string FieldsOrdering "порядок полей, строка id"
         string PlotFoldersOrdering
+        string MastersOrdering "порядок мастеров, строка ProjectAclId"
         enum RequireRealName "MandatoryStatus"
         enum RequireTelegram
         enum RequireVkontakte
@@ -147,6 +148,10 @@ erDiagram
         bool CanManagePlots
         bool CanManageAccommodation
         bool CanSetPlayersAccommodations
+        enum Status "ProjectAclStatus: Active, Removed"
+        bool IsPublic "показывать немастерам"
+        string Role "роль мастера, обязательна"
+        string Description_Contents "markdown"
     }
 
     CaptainAccessRuleEntities {
@@ -226,6 +231,8 @@ erDiagram
 ```
 
 `ProjectAcls.Token` — токен-приглашение мастера, генерируется при создании записи.
+Снятый мастер не удаляется, а получает `Status = Removed` и доступа не даёт ([ADR019](adr019-project-master-status.md)),
+поэтому пара `(ProjectId, UserId)` уникальна — индекс `IX_ProjectAcl_ProjectId_UserId`.
 `CaptainAccessRuleEntities` — отдельный от ACL механизм: капитан группы, который может
 согласовывать заявки в свою группу. Таблица `AdvertisementLogEntries` отображается
 с класса `AdvertisementLogEntryEntity` (имя таблицы задано явно в `MyDbContext`).

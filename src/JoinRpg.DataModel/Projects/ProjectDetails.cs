@@ -43,6 +43,11 @@ public class ProjectDetails : IValidatableObject
 
     public string? PlotFoldersOrdering { get; set; }
 
+    /// <summary>
+    /// Порядок мастеров (VirtualOrderContainer по ProjectAclId), ADR019.
+    /// </summary>
+    public string? MastersOrdering { get; set; }
+
     [ForeignKey(nameof(DefaultTemplateCharacter))]
     public int? DefaultTemplateCharacterId { get; set; }
 

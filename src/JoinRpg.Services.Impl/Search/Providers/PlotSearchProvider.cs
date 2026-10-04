@@ -19,7 +19,7 @@ internal class PlotSearchProvider(IUnitOfWork unitOfWork) : IProjectScopedSearch
         var query =
             unitOfWork.GetDbSet<PlotFolder>()
              .Where(p =>
-               p.IsActive && p.Project.ProjectAcls.Any(acl => acl.UserId == currentUserId) && p.MasterTitle.Contains(searchString)
+               p.IsActive && p.Project.ProjectAcls.Any(acl => acl.UserId == currentUserId && acl.Status == ProjectAclStatus.Active) && p.MasterTitle.Contains(searchString)
              );
 
         query = query.FilterByProject(projectId, p => p.ProjectId);

@@ -70,6 +70,18 @@ public class MyDbContext : DbContext, IUnitOfWork
 
         _ = modelBuilder.Entity<ProjectAcl>().HasKey(c => new { c.UserId, c.ProjectId });
         _ = modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
+        // Снятый мастер остаётся строкой со статусом (ADR019), повторная выдача доступа реактивирует ту же строку.
+        _ = modelBuilder.Entity<ProjectAcl>().Property(acl => acl.ProjectId).HasColumnAnnotation(
+            IndexAnnotation.AnnotationName,
+            new IndexAnnotation(new IndexAttribute("IX_ProjectAcl_ProjectId_UserId", 0) { IsUnique = true }));
+        // IX_UserId — прежний индекс по внешнему ключу: явная аннотация отключает его автосоздание,
+        // а поиск проектов мастера идёт именно по UserId. По ProjectId хватает первой колонки уникального.
+        _ = modelBuilder.Entity<ProjectAcl>().Property(acl => acl.UserId).HasColumnAnnotation(
+            IndexAnnotation.AnnotationName,
+            new IndexAnnotation([
+                new IndexAttribute("IX_UserId"),
+                new IndexAttribute("IX_ProjectAcl_ProjectId_UserId", 1) { IsUnique = true },
+            ]));
 
         _ = modelBuilder.Entity<CharacterGroup>()
             .HasOptional(c => c.ResponsibleMasterUser)

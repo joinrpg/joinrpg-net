@@ -35,6 +35,7 @@ public class ProjectAccessServiceTest
             ProjectId = mock.Project.ProjectId,
             UserId = userId,
             Project = mock.Project,
+            Role = "Мастер",
             User = new User { UserId = userId, PrefferedName = $"User{userId}", Email = $"u{userId}@example.com", Claims = [] },
             CanGrantRights = canGrantRights,
         };
@@ -65,6 +66,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
+            Role = "Мастер",
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims, Permission.CanEditRoles],
         });
@@ -73,6 +75,9 @@ public class ProjectAccessServiceTest
         acl.CanManageClaims.ShouldBeTrue();
         acl.CanEditRoles.ShouldBeTrue();
         acl.CanGrantRights.ShouldBeFalse();
+        acl.Role.ShouldBe("Мастер");
+        acl.IsPublic.ShouldBeTrue();
+        acl.Status.ShouldBe(ProjectAclStatus.Active);
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
         metadataRepository.LastPrimed.ShouldNotBeNull();
     }
@@ -90,6 +95,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
+            Role = "Мастер",
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims],
         });
@@ -112,6 +118,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
+            Role = "Мастер",
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanGrantRights],
         });
@@ -128,6 +135,7 @@ public class ProjectAccessServiceTest
         await Should.ThrowAsync<NoAccessToProjectException>(() => service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
+            Role = "Мастер",
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims],
         }));
@@ -143,6 +151,7 @@ public class ProjectAccessServiceTest
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,
+            Role = "Мастер",
             UserId = new UserIdentification(50),
             Permissions = [Permission.CanManageClaims],
         });
@@ -296,6 +305,32 @@ public class ProjectAccessServiceTest
         acl.CanManagePlots.ShouldBeTrue();
         acl.CanChangeFields.ShouldBeTrue();
         acl.CanChangeProjectProperties.ShouldBeTrue();
+        // ADR019, §4: админ сайта — не член команды, игрокам его не показываем.
+        acl.Role.ShouldBe("Техподдержка joinrpg.ru");
+        acl.IsPublic.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task GrantAccess_ExistingMaster_KeepsRoleAndPublicity()
+    {
+        // Роль и публичность из запроса — только для нового мастера: admin-access на действующего мастера
+        // не должен переименовать его в «Техподдержку» и спрятать от игроков.
+        var acl = AddMaster(50, canGrantRights: false);
+        acl.Role = "Мастер по боёвке";
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.GrantAccess(new GrantAccessRequest
+        {
+            ProjectId = ProjectId,
+            Role = "Техподдержка joinrpg.ru",
+            IsPublic = false,
+            UserId = new UserIdentification(50),
+            Permissions = [Permission.CanManageClaims],
+        });
+
+        acl.Role.ShouldBe("Мастер по боёвке");
+        acl.IsPublic.ShouldBeTrue();
     }
 
     [Fact]

@@ -55,4 +55,55 @@ public class HasMasterAccessTests
     {
         Mock.Character.HasMasterAccess((UserIdentification?)null, permission).ShouldBeFalse();
     }
+
+    // ADR019: снятый мастер не даёт доступа ни через ProjectInfo, ни через EF-сущности.
+    // Права у строки оставлены (CreateMaster даёт все) — проверяется именно статус.
+    private UserIdentification CreateRemovedMaster()
+    {
+        var user = Mock.CreateMaster();
+        Mock.Project.ProjectAcls.Single(acl => acl.UserId == user.UserId).Status = ProjectAclStatus.Removed;
+        Mock.ReInitProjectInfo();
+        return new UserIdentification(user.UserId);
+    }
+
+    [Theory]
+    [InlineData(Permission.None)]
+    [InlineData(Permission.CanEditRoles)]
+    public void ProjectInfo_HasMasterAccess_RemovedMaster_ReturnsFalse(Permission permission)
+    {
+        var removed = CreateRemovedMaster();
+
+        Mock.ProjectInfo.HasMasterAccess(removed, permission).ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(Permission.None)]
+    [InlineData(Permission.CanEditRoles)]
+    public void HasMasterAccess_RemovedMaster_ReturnsFalse(Permission permission)
+    {
+        var removed = CreateRemovedMaster();
+
+        Mock.Character.HasMasterAccess(removed, permission).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ProjectInfo_RemovedMaster_IsFormerNotCurrent()
+    {
+        var removed = CreateRemovedMaster();
+
+        Mock.ProjectInfo.Masters.ShouldNotContain(m => m.UserId == removed);
+        Mock.ProjectInfo.FormerMasters.ShouldContain(m => m.UserId == removed && m.Status == ProjectAclStatus.Removed);
+        Mock.ProjectInfo.Masters.ShouldContain(m => m.UserId == MasterUser);
+    }
+
+    [Fact]
+    public void ProjectInfo_WithMethods_KeepFormerMasters()
+    {
+        var removed = CreateRemovedMaster();
+
+        _ = Mock.CreateField("Поле после снятия мастера"); // пересобирает ProjectInfo через WithAddedField
+
+        Mock.ProjectInfo.FormerMasters.ShouldContain(m => m.UserId == removed);
+        Mock.ProjectInfo.Masters.ShouldNotContain(m => m.UserId == removed);
+    }
 }

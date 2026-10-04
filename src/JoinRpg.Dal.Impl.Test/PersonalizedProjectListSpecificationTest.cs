@@ -19,7 +19,7 @@ public class PersonalizedProjectListSpecificationTest
     {
         Active = true,
         Details = new ProjectDetails(),
-        ProjectAcls = [new ProjectAcl { UserId = master.Value }],
+        ProjectAcls = [new ProjectAcl { UserId = master.Value, Role = "Мастер" }],
     };
 
     private static bool Matches(ProjectListSpecification specification, Project project)

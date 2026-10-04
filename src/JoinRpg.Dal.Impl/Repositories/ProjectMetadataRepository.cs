@@ -86,7 +86,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 acl.User.ExtractDisplayName(),
                 new Email(acl.User.Email),
                 acl.GetPermissions(),
-                acl.IsOwner)
+                acl.IsOwner,
+                acl.Status)
                 )
                 ];
         }

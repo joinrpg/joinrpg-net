@@ -76,8 +76,8 @@ public static class ResponsibleMasterExtensions
 
         return
             //if we failed to calculate responsible master, assign owner as responsible master
-            project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
+            project.ProjectAcls.Where(w => w.IsActive && w.IsOwner).FirstOrDefault()?.User
             //if we found no owner, assign random (but consistent) master
-            ?? project.ProjectAcls.OrderBy(u => u.UserId).First().User;
+            ?? project.ProjectAcls.Where(w => w.IsActive).OrderBy(u => u.UserId).First().User;
     }
 }
