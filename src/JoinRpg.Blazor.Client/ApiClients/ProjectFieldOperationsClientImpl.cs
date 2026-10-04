@@ -57,4 +57,21 @@ internal class ProjectFieldOperationsClientImpl(
             throw;
         }
     }
+
+    public async Task CreateTimeSlots(TimeSlotMassAddRequest request)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            var response = await httpClient.PostAsJsonAsync(
+                $"webapi/project-field-operations/createtimeslots?projectId={request.FieldId.ProjectId.Value}",
+                request);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during time slots mass creation");
+            throw;
+        }
+    }
 }

@@ -179,6 +179,12 @@
         {
             <button class="btn btn-default" data-toggle="modal" data-target="#massAddValueModal"><join-icon icon="Add" /><join-icon icon="Add" />Добавить несколько значений</button>
         }
+        @if (Model.TimeSlotMassAdd is not null)
+        {
+            <component type="typeof(JoinRpg.Web.ProjectMasterTools.Fields.TimeSlotMassAddButton)"
+                       render-mode="WebAssemblyPrerendered"
+                       param-Model="@Model.TimeSlotMassAdd" />
+        }
         <form asp-action="SortVariants" asp-route-projectId="@Model.ProjectId" asp-route-projectFieldId="@Model.ProjectFieldId" method="POST" style="display:inline">
             <button type="submit" class="btn btn-default" onclick="return confirm('Отсортировать варианты по алфавиту?')">
               <join-icon icon="SortByAlphabet" />Отсортировать по алфавиту
