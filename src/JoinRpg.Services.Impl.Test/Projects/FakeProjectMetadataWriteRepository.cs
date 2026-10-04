@@ -59,6 +59,17 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
             {
                 _ = mock.Project.ProjectAccommodationTypes.Remove(accommodationType);
             }
+            if (entity is ProjectFieldDropdownValue variant)
+            {
+                foreach (var field in mock.Project.ProjectFields)
+                {
+                    _ = field.DropdownValues.Remove(variant);
+                }
+            }
+            if (entity is CharacterGroup group)
+            {
+                _ = mock.Project.CharacterGroups.Remove(group);
+            }
         }
     }
 }

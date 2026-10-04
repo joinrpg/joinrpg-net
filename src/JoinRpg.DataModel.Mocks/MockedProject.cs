@@ -245,6 +245,8 @@ public class MockedProject
             IsActive = true,
             // В бою коллекция всегда материализована (EF); без неё обход подписок падает NRE.
             Subscriptions = [],
+            // То же для CanBePermanentlyDeleted (удаление спецгруппы вместе с вариантом поля).
+            DirectlyRelatedPlotElements = [],
         };
         Project.CharacterGroups.Add(characterGroup);
 

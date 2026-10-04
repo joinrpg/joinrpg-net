@@ -158,6 +158,27 @@ internal class FieldSetupServiceImpl(
             });
     }
 
+    public async Task<int> DeleteUnusedFieldValueVariants(ProjectFieldIdentification projectFieldId)
+    {
+        return await projectPropsService.ChangeProjectProperties(
+            projectFieldId.ProjectId,
+            Permission.CanChangeFields,
+            ProjectActiveRequirement.MustBeActive,
+            projectFieldId.ProjectFieldId,
+            ctx =>
+            {
+                // Копия обязательна: EF при удалении сразу вычищает сущность из DropdownValues.
+                var unused = GetField(ctx.Project, ctx.Request).DropdownValues
+                    .Where(v => v.IsActive && !v.WasEverUsed)
+                    .ToList();
+                foreach (var value in unused)
+                {
+                    DeleteFieldVariantValueImpl(ctx, value);
+                }
+                return unused.Count;
+            });
+    }
+
     public async Task MoveField(int projectId, int projectcharacterfieldid, short direction)
     {
         await projectPropsService.ChangeProjectProperties(

@@ -322,6 +322,88 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
             .ShouldBe([groupAlpha.CharacterGroupId, groupZebra.CharacterGroupId]);
     }
 
+    private static ProjectFieldDropdownValue CreateVariant(int id, string label, bool wasEverUsed, bool isActive = true)
+        => new()
+        {
+            ProjectFieldDropdownValueId = id,
+            Label = label,
+            IsActive = isActive,
+            WasEverUsed = wasEverUsed,
+            Description = new MarkdownDbValue(),
+            MasterDescription = new MarkdownDbValue(),
+        };
+
+    [Fact]
+    public async Task DeleteUnusedFieldValueVariants_DeletesOnlyNeverUsed()
+    {
+        var fieldInfo = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.DropdownValues =
+            [
+                CreateVariant(100, "Неиспользованное 1", wasEverUsed: false),
+                CreateVariant(101, "Использованное", wasEverUsed: true),
+                CreateVariant(102, "Неиспользованное 2", wasEverUsed: false),
+                CreateVariant(103, "Выключенное", wasEverUsed: true, isActive: false),
+                // Выключенное неиспользованное — не «живое» значение, массовое удаление его не трогает.
+                CreateVariant(104, "Выключенное неиспользованное", wasEverUsed: false, isActive: false),
+            ];
+        });
+        var field = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId);
+        var fieldGroup = AddSpecialGroup(field, "Поле");
+        var unusedGroup = AddSpecialGroup(field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == 100), fieldGroup, "Неиспользованное 1");
+        var usedGroup = AddSpecialGroup(field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == 101), fieldGroup, "Использованное");
+        var service = CreateService(mock.Master.UserId);
+
+        var deleted = await service.DeleteUnusedFieldValueVariants(fieldInfo.Id);
+
+        deleted.ShouldBe(2);
+        field.DropdownValues.Select(v => v.ProjectFieldDropdownValueId).ShouldBe([101, 103, 104], ignoreOrder: true);
+        field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == 101).IsActive.ShouldBeTrue();
+        mock.Project.CharacterGroups.ShouldNotContain(unusedGroup);
+        mock.Project.CharacterGroups.ShouldContain(usedGroup);
+        usedGroup.IsActive.ShouldBeTrue();
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+        Result.UnsortedFields.Single(f => f.Id == fieldInfo.Id).Variants
+            .Select(v => v.Id.ProjectFieldVariantId)
+            .ShouldBe([101, 103, 104], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task DeleteUnusedFieldValueVariants_AllUsed_DeletesNothing()
+    {
+        var fieldInfo = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.DropdownValues = [CreateVariant(100, "Использованное", wasEverUsed: true)];
+        });
+        var field = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId);
+        var service = CreateService(mock.Master.UserId);
+
+        var deleted = await service.DeleteUnusedFieldValueVariants(fieldInfo.Id);
+
+        deleted.ShouldBe(0);
+        field.DropdownValues.Single().IsActive.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task DeleteUnusedFieldValueVariants_ByPlayer_Throws_AndDoesNotSave()
+    {
+        var fieldInfo = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.DropdownValues = [CreateVariant(100, "Неиспользованное", wasEverUsed: false)];
+        });
+        var service = CreateService(mock.Player.UserId);
+
+        await Should.ThrowAsync<NoAccessToProjectException>(
+            () => service.DeleteUnusedFieldValueVariants(fieldInfo.Id));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId)
+            .DropdownValues.ShouldHaveSingleItem();
+    }
+
     [Fact]
     public async Task MoveField_WithoutSpecialGroup_DoesNotThrow()
     {
