@@ -35,6 +35,9 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     public bool HasMasterAccess { get; }
     public bool CanManageThisClaim { get; }
+    /// <summary>
+    /// Можно ли менять проживание — то же правило, что у операций с проживанием, включая поправку на статус заявки
+    /// </summary>
     public bool CanChangeRooms { get; }
     public bool ProjectActive { get; }
     public IReadOnlyCollection<CommentViewModel> RootComments { get; }
@@ -112,9 +115,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         CanManageThisClaim = claim.HasAccess(currentUser.UserId,
             Permission.CanManageClaims,
             ExtraAccessReason.ResponsibleMaster);
-        CanChangeRooms = claim.HasAccess(currentUser.UserId,
-            Permission.CanSetPlayersAccommodations,
-            ExtraAccessReason.PlayerOrResponsible);
+        CanChangeRooms = claim.CanChangeAccommodation(currentUser.UserIdentificationOrDefault);
         IsMyClaim = claim.PlayerUserId == currentUser.UserId;
         Player = claim.Player;
         PlayerLink = new UserLinkViewModel(playerInfo.ToUserInfoHeader());
