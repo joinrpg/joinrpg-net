@@ -9,14 +9,6 @@ public enum AppointmentErrorType
     Intersection,
 }
 
-public struct Rect
-{
-    public int Left;
-    public int Top;
-    public int Width;
-    public int Height;
-}
-
 public class AppointmentBaseViewModel
 {
     public string DisplayName { get; set; }
@@ -27,25 +19,20 @@ public class AppointmentBaseViewModel
 
 public class AppointmentViewModel : AppointmentBaseViewModel
 {
+    /// <summary>
+    /// Место в сетке: первая комната и первый слот (с нуля) и сколько их занято.
+    /// Для мероприятий вне сетки (пересечения, не размещённые) не заполняется.
+    /// </summary>
     public int RoomIndex { get; set; }
     public int RoomCount { get; set; }
     public int TimeSlotIndex { get; set; }
     public int TimeSlotsCount { get; set; }
+
     public bool AllRooms { get; set; }
-    public bool ErrorMode { get; set; }
     public AppointmentErrorType? ErrorType { get; set; }
 
     public IReadOnlyCollection<TableHeaderViewModel> Rooms { get; set; } = Array.Empty<TableHeaderViewModel>();
     public IReadOnlyCollection<TableHeaderViewModel> Slots { get; set; } = Array.Empty<TableHeaderViewModel>();
 
-    private readonly Lazy<Rect> _bounds;
-
-    public int Left => _bounds.Value.Left;
-    public int Top => _bounds.Value.Top;
-    public int Width => _bounds.Value.Width;
-    public int Height => _bounds.Value.Height;
-
     public bool HasMasterAccess { get; set; }
-
-    public AppointmentViewModel(Func<Rect> getBounds) => _bounds = new Lazy<Rect>(getBounds);
 }

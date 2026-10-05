@@ -31,13 +31,12 @@ public class AppointmentWhitespaceTest
         int usersCount = 2,
         IReadOnlyCollection<TableHeaderViewModel>? rooms = null,
         IReadOnlyCollection<TableHeaderViewModel>? slots = null)
-        => new(() => new Rect { Left = 0, Top = 0, Width = 225, Height = 90 })
+        => new()
         {
             DisplayName = "Мастер-класс",
             CharacterId = CharacterId,
             Users = [.. Enumerable.Range(1, usersCount).Select(
                 i => new UserLinkViewModel(new UserIdentification(i), $"Ведущий {i}", ViewMode.Show))],
-            ErrorMode = errorType.HasValue,
             ErrorType = errorType,
             AllRooms = allRooms,
             HasMasterAccess = hasMasterAccess,
