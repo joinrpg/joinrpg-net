@@ -1,0 +1,24 @@
+@inject IScheduleUriLocator scheduleUriLocator
+@*
+    Заголовок обычной страницы расписания. Справка про добавление в календарь, ссылка на iCal
+    и переход во весь экран ужаты до иконок и бейджа в строке заголовка — чтобы сетке оставалось
+    больше места на экране.
+*@
+<div class="schedule-header">
+    <h2>Расписание</h2>
+    <HelpLink Link="schedule/add_to_calendar.html"
+              Title="Чтобы добавить расписание мероприятий в свой календарь, откройте инструкцию" />
+    <a href="@scheduleUriLocator.GetIcalUri(ProjectId)">
+        <JoinBadge Text="ical" Variation="VariationStyleEnum.Info"
+                   Title="Ссылка на расписание в формате iCal: скопируйте её в свой календарь" />
+    </a>
+    <a href="@scheduleUriLocator.GetFullScreenUri(ProjectId)">
+        <JoinIcon Icon="JoinIconType.FullScreen" Title="Расписание во весь экран — например, для проектора на площадке" />
+    </a>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+}

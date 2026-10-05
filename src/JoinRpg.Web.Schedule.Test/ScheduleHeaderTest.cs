@@ -3,10 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace JoinRpg.Web.Schedule.Test;
 
 /// <summary>
-/// Шапка полноэкранного расписания — единственный выход из него в обычный вид,
-/// поэтому ссылка важна. Строится локатором, а не руками.
+/// Шапка обычной страницы расписания: ссылка на iCal строится локатором (её копируют
+/// в календарь, роут менять нельзя), справка ведёт на инструкцию в документации.
 /// </summary>
-public class FullScreenHeaderTest
+public class ScheduleHeaderTest
 {
     private sealed class FakeScheduleUriLocator : IScheduleUriLocator
     {
@@ -21,16 +21,18 @@ public class FullScreenHeaderTest
     }
 
     [Fact]
-    public void LinksBackToNormalSchedule()
+    public void LinksToInstructionIcalAndFullScreen()
     {
         using var ctx = new BunitContext();
         ctx.Services.AddSingleton<IScheduleUriLocator>(new FakeScheduleUriLocator());
 
-        var link = ctx.Render<FullScreenHeader>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1620)))
-            .Find("a");
+        var hrefs = ctx.Render<ScheduleHeader>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1620)))
+            .FindAll("a").Select(a => a.GetAttribute("href")).ToList();
 
-        link.GetAttribute("href").ShouldBe("https://example.org/1620/schedule");
-        link.GetAttribute("class").ShouldBe("header-link");
-        link.TextContent.ShouldBe("Расписание в обычном виде...");
+        hrefs.ShouldBe([
+            "https://docs.joinrpg.ru/schedule/add_to_calendar.html",
+            "https://example.org/1620/schedule/ical",
+            "https://example.org/1620/schedule/full",
+        ]);
     }
 }

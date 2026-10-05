@@ -103,6 +103,8 @@ internal static class JoinIconDefinitions
             { JoinIconType.Home, "home" },
 
             { JoinIconType.Vk, "brand-vk" },
+
+            { JoinIconType.FullScreen, "maximize" },
         }.ToFrozenDictionary();
 
     internal static JoinIconDefinition Get(JoinIconType icon)

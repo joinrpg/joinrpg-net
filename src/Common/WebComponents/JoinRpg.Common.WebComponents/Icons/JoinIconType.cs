@@ -153,4 +153,7 @@ public enum JoinIconType
 
     /// <summary>ВКонтакте.</summary>
     Vk,
+
+    /// <summary>Открыть во весь экран.</summary>
+    FullScreen,
 }

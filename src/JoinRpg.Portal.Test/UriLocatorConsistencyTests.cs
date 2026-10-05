@@ -106,6 +106,26 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         NormalizePathAndQuery(server).ShouldBe($"/{ProjectId.Value}/schedule", StringCompareShould.IgnoreCase);
     }
 
+    [Fact]
+    public void ScheduleIcalLocatorsShouldAgree()
+    {
+        var server = factory.Services.GetRequiredService<IScheduleUriLocator>().GetIcalUri(ProjectId);
+        var client = _clientServices.GetRequiredService<IScheduleUriLocator>().GetIcalUri(ProjectId);
+
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+        NormalizePathAndQuery(server).ShouldBe($"/{ProjectId.Value}/schedule/ical", StringCompareShould.IgnoreCase);
+    }
+
+    [Fact]
+    public void ScheduleFullScreenLocatorsShouldAgree()
+    {
+        var server = factory.Services.GetRequiredService<IScheduleUriLocator>().GetFullScreenUri(ProjectId);
+        var client = _clientServices.GetRequiredService<IScheduleUriLocator>().GetFullScreenUri(ProjectId);
+
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+        NormalizePathAndQuery(server).ShouldBe($"/{ProjectId.Value}/schedule/full", StringCompareShould.IgnoreCase);
+    }
+
     private static string NormalizePathAndQuery(Uri uri) =>
         uri.IsAbsoluteUri ? uri.PathAndQuery : uri.ToString();
 }
