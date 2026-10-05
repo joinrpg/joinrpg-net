@@ -1,10 +1,12 @@
 using System.Text.Encodings.Web;
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Markdown;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
+using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.ProjectCommon;
 using ProjectRolesList = JoinRpg.DomainTypes.ProjectMetadata.ProjectRolesList;
@@ -22,6 +24,7 @@ internal static class ProjectRoleGridViewModelBuilder
         ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
         IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         ProjectInfo projectInfo)
     {
         var hasGroupsColumn = config.GroupsColumn != ProjectRolesListVisibilityMode.None;
@@ -32,8 +35,8 @@ internal static class ProjectRoleGridViewModelBuilder
         var rootGroup = orderedGroups[0];
 
         var rows = config.GroupsViewMode == RolesGridGroupsViewMode.Tree
-            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, players, hasGroupsColumn, canViewPrivate, canEditSettings, excludeSpecialGroups, fields, projectInfo)
-            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, players, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
+            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, players, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, excludeSpecialGroups, fields, projectInfo)
+            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, players, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
 
         return new ProjectRoleGridViewModel(
             RolesListId: config.ProjectRolesListId,
@@ -55,6 +58,7 @@ internal static class ProjectRoleGridViewModelBuilder
         ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
         IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditSettings,
@@ -82,7 +86,7 @@ internal static class ProjectRoleGridViewModelBuilder
             {
                 if (config.GroupsViewMode != RolesGridGroupsViewMode.None || seen.Add(character.Id.CharacterId))
                 {
-                    result.Add(BuildCharacterRow(character, config, players, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
+                    result.Add(BuildCharacterRow(character, config, players, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
                 }
             }
         }
@@ -101,6 +105,7 @@ internal static class ProjectRoleGridViewModelBuilder
         ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
         IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditSettings,
@@ -146,7 +151,7 @@ internal static class ProjectRoleGridViewModelBuilder
             foreach (var character in ordered)
             {
                 result.Add(BuildCharacterRow(
-                    character, config, players, hasGroupsColumn, canViewPrivate, canEditSettings,
+                    character, config, players, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings,
                     fields, group.Id, firstCopy: seenCharacters.Add(character.Id.CharacterId)));
             }
 
@@ -168,6 +173,7 @@ internal static class ProjectRoleGridViewModelBuilder
         CharacterInfo character,
         ProjectRolesList config,
         IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditRoles,
@@ -193,23 +199,33 @@ internal static class ProjectRoleGridViewModelBuilder
             : null;
 
         var fieldsDict = character.GetAllFields().ToDictionary(field => field.Field.Id);
-        var fieldValuesHtml = firstCopy
-            ? fields.Select(f => RenderFieldValue(f, fieldsDict[f.Id].DisplayString)).ToList()
+        var fieldValues = firstCopy
+            ? fields.Select(f => RenderFieldValue(fieldsDict[f.Id], fieldUsers)).ToList()
             : [];
 
         // Количество активных заявок видно всем, как в классической сетке ролей.
         var activeClaimsCount = character.ActiveClaimsCount;
 
-        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValuesHtml, groupId, activeClaimsCount, firstCopy);
+        return new ProjectRoleGridCharacterRowViewModel(characterLink, player, groups, fieldValues, groupId, activeClaimsCount, firstCopy);
     }
 
 
     // Как и DisplayString в FieldValueViewModel: markdown-поля рендерим в HTML,
     // остальные — экранируем как обычный текст (renderer не передаём, как и для Description группы).
-    private static string RenderFieldValue(ProjectFieldInfo field, string value) =>
-        field.SupportsMarkdown
-            ? new MarkdownString(value).ToHtmlString().Value
-            : HtmlEncoder.Default.Encode(value);
+    // У полей-ссылок на пользователя DisplayString — сырые id (ADR017), их показываем ссылками.
+    private static ProjectRoleGridFieldValueViewModel RenderFieldValue(
+        FieldWithValue field,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
+    {
+        if (field.Field.Type.IsUserLink())
+        {
+            return new ProjectRoleGridFieldValueViewModel(Html: "", fieldUsers.GetUserLinks(field));
+        }
+
+        return new ProjectRoleGridFieldValueViewModel(field.Field.SupportsMarkdown
+            ? new MarkdownString(field.DisplayString).ToHtmlString().Value
+            : HtmlEncoder.Default.Encode(field.DisplayString));
+    }
 
     private static PlayerCellViewModel BuildPlayerCell(
         CharacterInfo character,

@@ -1,0 +1,21 @@
+@* Значение поля в ячейке сетки ролей. Общее для табличного и древовидного режимов. *@
+
+@if (Model.UserLinks is { } userLinks)
+{
+    @for (var i = 0; i < userLinks.Count; i++)
+    {
+        if (i > 0)
+        {
+            <text>, </text>
+        }
+        <UserLink Model="userLinks[i]" />
+    }
+}
+else
+{
+    @Model.Markup
+}
+
+@code {
+    [Parameter, EditorRequired] public ProjectRoleGridFieldValueViewModel Model { get; set; } = null!;
+}

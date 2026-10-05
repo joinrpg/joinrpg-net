@@ -88,15 +88,15 @@
                     {
                         @for (var i = 0; i < charRow.FieldValues.Count; i++)
                         {
-                            @if (!string.IsNullOrWhiteSpace(charRow.FieldValuesHtml[i]))
+                            @if (charRow.FieldValues[i].HasValue)
                             {
                                 @if (Model.SuppressFieldLabels)
                                 {
-                                    <div>@charRow.FieldValues[i]</div>
+                                    <div><ProjectRoleGridFieldValue Model="charRow.FieldValues[i]" /></div>
                                 }
                                 else
                                 {
-                                    <div><strong>@Model.FieldColumnNames[i]</strong>: @charRow.FieldValues[i]</div>
+                                    <div><strong>@Model.FieldColumnNames[i]</strong>: <ProjectRoleGridFieldValue Model="charRow.FieldValues[i]" /></div>
                                 }
                             }
                         }

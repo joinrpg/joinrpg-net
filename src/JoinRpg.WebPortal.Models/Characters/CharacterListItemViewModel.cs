@@ -1,3 +1,5 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
@@ -11,11 +13,12 @@ namespace JoinRpg.Web.Models.Characters;
 public class CharacterListByGroupViewModel(UserIdentification currentUserId,
     IReadOnlyCollection<CharacterInfo> characters,
     IReadOnlyDictionary<UserIdentification, UserInfo> players,
+    IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
     CharacterGroupFullInfo group,
     ProjectInfo projectInfo,
     ICharacterProblemValidator problemValidator) :
 
-    CharacterListViewModel(currentUserId, $"Персонажи — {group.Name}", characters, players, projectInfo, problemValidator), IOperationsAwareView
+    CharacterListViewModel(currentUserId, $"Персонажи — {group.Name}", characters, players, fieldUsers, projectInfo, problemValidator), IOperationsAwareView
 {
     public CharacterGroupDetailsViewModel GroupModel { get; } =
             new CharacterGroupDetailsViewModel(group,
@@ -32,11 +35,15 @@ public class CharacterListByGroupViewModel(UserIdentification currentUserId,
 /// Игроки утверждённых заявок, загруженные пачкой. Агрегат персонажа несёт только id игрока
 /// (ADR013), а грузить профили по одному — это N+1 запрос на каждой странице списка.
 /// </param>
+/// <param name="fieldUsers">
+/// Пользователи из полей-ссылок на пользователя (ADR017) — тоже пачкой на весь список.
+/// </param>
 public class CharacterListViewModel(
     UserIdentification currentUserId,
     string title,
     IReadOnlyCollection<CharacterInfo> characters,
     IReadOnlyDictionary<UserIdentification, UserInfo> players,
+    IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
     ProjectInfo projectInfo,
     ICharacterProblemValidator problemValidator) : IOperationsAwareView
 {
@@ -55,6 +62,11 @@ public class CharacterListViewModel(
     public bool HasEditAccess { get; } = projectInfo.HasEditRolesAccess(currentUserId);
 
     public IReadOnlyCollection<ProjectFieldInfo> Fields { get; } = projectInfo.SortedActiveFields.Where(f => !f.IsName && !f.IsMultiLine).ToArray();
+
+    /// <summary>
+    /// Значение поля-ссылки на пользователя: сам <see cref="FieldWithValue.DisplayString"/> отдаёт сырые id.
+    /// </summary>
+    public IReadOnlyList<UserLinkViewModel> GetUserLinks(FieldWithValue field) => fieldUsers.GetUserLinks(field);
 
     public string? CountString => CountHelper.DisplayCount(Items.Count(), "персонаж", "персонажа", "персонажей");
 

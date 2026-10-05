@@ -104,6 +104,16 @@
                                     sep = " • ";
                                 }
                           }
+                          else if (fieldValueViewModel.Field.Type.IsUserLink())
+                          {
+                            foreach (var userLink in Model.GetUserLinks(fieldValueViewModel))
+                            {
+                                <component
+                                  type="typeof(JoinRpg.Common.WebComponents.UserLink)"
+                                  render-mode="Static"
+                                  param-Model="@userLink" />
+                            }
+                          }
                           else
                           {
                             @fieldValueViewModel.DisplayString

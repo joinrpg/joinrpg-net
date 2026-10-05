@@ -54,7 +54,7 @@ public record ProjectRoleGridCharacterRowViewModel(
     CharacterLinkWithEditViewModel Character,
     PlayerCellViewModel Player,
     GroupsCellViewModel? Groups,
-    IReadOnlyList<string> FieldValuesHtml,
+    IReadOnlyList<ProjectRoleGridFieldValueViewModel> FieldValues,
     CharacterGroupIdentification GroupId,
     int ActiveClaimsCount = 0,
     bool FirstCopy = true) : ProjectRoleGridRowViewModel, IMoveableListItem
@@ -63,11 +63,24 @@ public record ProjectRoleGridCharacterRowViewModel(
     string IMoveableListItem.ParentId => GroupId.ToString();
     string IMoveableListItem.DisplayText => Character.Character.Name;
     string IMoveableListItem.Subtext => "";
+}
 
+/// <summary>
+/// Значение поля в сетке ролей.
+/// </summary>
+/// <param name="Html">Готовый HTML значения (markdown или экранированный текст)</param>
+/// <param name="UserLinks">
+/// Задан — поле ссылается на пользователей (ADR017), показываем их, а не <paramref name="Html"/>:
+/// там лежали бы сырые id.
+/// </param>
+public record ProjectRoleGridFieldValueViewModel(string Html, IReadOnlyList<UserLinkViewModel>? UserLinks = null)
+{
     // Это нужно, потому что MarkupString не умеет нормально десереиализоваться из JSON
     [JsonIgnore]
-    public IReadOnlyList<MarkupString> FieldValues { get; } =
-        FieldValuesHtml.Select(html => new MarkupString(html)).ToList();
+    public MarkupString Markup { get; } = new MarkupString(Html);
+
+    [JsonIgnore]
+    public bool HasValue => UserLinks is { } userLinks ? userLinks.Count > 0 : !string.IsNullOrWhiteSpace(Html);
 }
 
 /// <param name="Depth">Глубина вложенности в режиме дерева (0 = корневая группа сетки)</param>
