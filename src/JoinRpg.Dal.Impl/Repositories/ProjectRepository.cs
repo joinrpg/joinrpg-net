@@ -1,9 +1,7 @@
 using System.Collections.Immutable;
-using JoinRpg.DataModel.Finances;
 using JoinRpg.DataModel.Projects;
 using JoinRpg.DomainTypes.Advertisement;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 using LinqKit;
 
@@ -104,42 +102,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             };
 
         return await allQuery.ToListAsync();
-    }
-
-    public async Task<IReadOnlyCollection<FormerMasterCandidate>> GetFormerMasterCandidates()
-    {
-        // Следы мастерства, которые пережили физическое удаление ACL:
-        // 1. Комментарии в заявках «как мастер» (IsCommentByPlayer пишется в момент создания). Только заявки:
-        //    обсуждения форума тоже CommentDiscussion, но мастерство там не фиксируется.
-        var fromComments =
-            from claim in Ctx.ClaimSet
-            from comment in claim.CommentDiscussion.Comments
-            where !comment.IsCommentByPlayer
-            select new { claim.ProjectId, UserId = comment.AuthorUserId };
-
-        // 2. Касса мастера — тип оплаты, на который игроки платят ему лично (по нему же идут финансовые
-        //    операции). Онлайн-оплаты оформлены на служебного пользователя — это не мастер.
-        var fromPaymentTypes =
-            from paymentType in Ctx.Set<PaymentType>()
-            where paymentType.TypeKind != PaymentTypeKind.Online && paymentType.TypeKind != PaymentTypeKind.OnlineSubscription
-            select new { paymentType.ProjectId, paymentType.UserId };
-
-        // 3. Переводы между мастерами: отправитель, получатель, кто создал и кто менял.
-        var transfers = Ctx.Set<MoneyTransfer>();
-        var fromTransfers =
-            transfers.Select(t => new { t.ProjectId, UserId = t.SenderId })
-            .Concat(transfers.Select(t => new { t.ProjectId, UserId = t.ReceiverId }))
-            .Concat(transfers.Select(t => new { t.ProjectId, UserId = t.CreatedById }))
-            .Concat(transfers.Select(t => new { t.ProjectId, UserId = t.ChangedById }));
-
-        var query =
-            (from trace in fromComments.Concat(fromPaymentTypes).Concat(fromTransfers)
-             where !Ctx.Set<ProjectAcl>().Any(acl => acl.ProjectId == trace.ProjectId && acl.UserId == trace.UserId)
-             select trace)
-            .Distinct();
-
-        var pairs = await query.ToListAsync();
-        return [.. pairs.Select(p => new FormerMasterCandidate(new ProjectIdentification(p.ProjectId), new UserIdentification(p.UserId)))];
     }
 
     private class ProjectUpdateDateDto
