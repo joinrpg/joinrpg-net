@@ -1,0 +1,11 @@
+@*
+    Скрипт компонентов JoinRpg.Common.WebComponents (подсказки Tooltip).
+
+    Это JS-инициализатор Blazor, но blazor.web.js импортирует инициализаторы только при старте
+    WebAssembly-рантайма. На странице, где одни статические компоненты (RenderMode.Static),
+    рантайм не стартует, и без этого тега подсказки не открывались бы.
+
+    Повторно модуль не выполнится: MapStaticAssets подставляет в src тот же адрес с отпечатком,
+    что импортирует Blazor, а браузер исполняет модуль с одним адресом один раз.
+*@
+<script src="~/_content/JoinRpg.Common.WebComponents/JoinRpg.Common.WebComponents.lib.module.js" type="module"></script>
