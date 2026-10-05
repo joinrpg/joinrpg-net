@@ -1,6 +1,8 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.WebPortal.Managers.Accommodation;
 
@@ -19,7 +21,8 @@ public class AccommodationTypeViewServiceTest
 
     private Claim Claim { get; }
 
-    public AccommodationTypeViewServiceTest() => Claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+    // Игрок меняет проживание только у утверждённой заявки — у остальных диалог ему не положен
+    public AccommodationTypeViewServiceTest() => Claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
 
     private AccommodationTypeViewService CreateService(int userId)
         => new(
@@ -70,6 +73,18 @@ public class AccommodationTypeViewServiceTest
 
         result.Types.Select(t => t.Name).ShouldBe(["Палатка", "Служебный вагончик"], ignoreOrder: true);
         result.SelectedTypeId.ShouldBe(new AccommodationTypeIdentification(Mock.ProjectInfo.ProjectId, serviceType.Id));
+    }
+
+    [Theory]
+    [InlineData(ClaimStatus.Discussed)]
+    [InlineData(ClaimStatus.CheckedIn)]
+    public async Task Player_OfNotApprovedClaim_IsDenied(ClaimStatus status)
+    {
+        // Смена типа игроку на такой заявке откажет, значит и диалог ему не отдаём (#5261)
+        Claim.ClaimStatus = status;
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(Mock.Player.UserId).GetAccommodationTypes(ClaimId));
     }
 
     [Fact]
