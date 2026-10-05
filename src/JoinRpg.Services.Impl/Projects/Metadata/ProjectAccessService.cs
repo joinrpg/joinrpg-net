@@ -132,27 +132,6 @@ internal class ProjectAccessService(
         await gameSubscribeService.RemoveAllSubscriptions(projectId, userId);
     }
 
-    public Task RegisterFormerMasters(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
-        => projectPropsService.ChangeProjectProperties(
-            projectId,
-            Permission.CanGrantRights, // джоба работает под роботом-админом, admin-bypass срабатывает сам
-            ProjectActiveRequirement.AllowInactive, // почти все такие проекты в архиве
-            userIds,
-            ctx =>
-            {
-                foreach (var userId in ctx.Request.Where(u => !ctx.Project.ProjectAcls.Any(a => a.UserId == u.Value)).Distinct())
-                {
-                    ctx.Project.ProjectAcls.Add(new ProjectAcl
-                    {
-                        ProjectId = ctx.Project.ProjectId,
-                        UserId = userId.Value,
-                        Project = ctx.Project,
-                        Status = ProjectAclStatus.Removed,
-                        Role = "Мастер", // ADR019, §4. TODO[Localize]
-                    });
-                }
-            });
-
     public Task GrantFullAccess(ProjectIdentification projectId)
     {
         logger.LogInformation("Администратор {UserId} запрашивает полный доступ к проекту {ProjectId}", currentUserAccessor.UserId, projectId);
