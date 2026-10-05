@@ -25,8 +25,8 @@
 - ⚠️ **§4 Отображение** — частично. Сделан `FieldUserLinksLoader`: один
   `GetUserInfoHeaders` на экран, словарь идёт в `CustomFieldsViewModel` → `FieldValueViewModel.UserLinks`,
   `DisplayTemplates/FieldValueViewModel.cshtml` рисует компонент `UserLink`. Покрыты страница
-  персонажа, заявка, подача заявки, печать и сетка ролей (список персонажей грузит словарь
-  тем же `LoadFieldUserLinks` на весь список). **Экспорт (`CustomExporter`) и x-api по-прежнему
+  персонажа, заявка, подача заявки, печать, список персонажей и сетка ролей (`ProjectRoleGrid`):
+  оба грузят словарь тем же `LoadFieldUserLinks` на весь список, сетка — только по выбранным в неё полям. **Экспорт (`CustomExporter`) и x-api по-прежнему
   отдают сырые id** — они ходят мимо `FieldValueViewModel`, напрямую в `DisplayString`.
   Удалённый пользователь показывается как «пользователь удалён» (новый `ViewMode.Deleted`).
 - ✅ **§5 Редактор** — `JoinUserLinkEditor` получил `Name` (скрытый инпут, значение уезжает

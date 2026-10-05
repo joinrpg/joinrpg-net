@@ -99,6 +99,10 @@ internal class ProjectRoleGridViewService(
         // грузим одним запросом на всю сетку, а не по игроку на строку.
         var players = await LoadPlayers(shownCharacters);
 
+        // Пользователи из полей-ссылок (ADR017) — тоже одним запросом, и только по полям, выбранным в сетку.
+        var fieldUsers = await userRepository.LoadFieldUserLinks(
+            shownCharacters.SelectMany(c => c.GetAllFields()).Where(f => config.Fields.Contains(f.Field.Id)));
+
         var groupFullInfos =
             config.GroupsViewMode != RolesGridGroupsViewMode.None
                 ? (await characterGroupRepository.GetCharacterGroupsFullInfo([.. orderedGroups.Select(g => g.Id)]))
@@ -113,7 +117,7 @@ internal class ProjectRoleGridViewService(
             HasAccess: true,
             Grid: ProjectRoleGridViewModelBuilder.Build(
                 config, canEditSettings, canViewPrivate, excludeSpecialGroups,
-                orderedGroups, charactersByGroup, groupFullInfos, players, projectInfo),
+                orderedGroups, charactersByGroup, groupFullInfos, players, fieldUsers, projectInfo),
             NoAccess: null);
     }
 

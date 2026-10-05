@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
@@ -39,7 +40,8 @@ public class ProjectRoleGridViewModelBuilderTests
         IReadOnlyCollection<Character> characters,
         bool canEditSettings = false,
         bool canViewPrivate = true,
-        bool excludeSpecialGroups = false)
+        bool excludeSpecialGroups = false,
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader>? fieldUsers = null)
     {
         var rootId = _mock.ProjectInfo.GroupTree.RootGroupId;
         var orderedGroups = _mock.ProjectInfo.GroupTree.GetChildGroupsIncludingThis(rootId)
@@ -67,6 +69,7 @@ public class ProjectRoleGridViewModelBuilderTests
             orderedGroups, charactersByGroup,
             new Dictionary<CharacterGroupIdentification, CharacterGroupFullInfo>(),
             players,
+            fieldUsers ?? new Dictionary<UserIdentification, UserInfoHeader>(),
             _mock.ProjectInfo);
 
         // Сетка едет в остров по JSON, поэтому все тесты ниже проверяют утверждения на модели,
@@ -256,6 +259,28 @@ public class ProjectRoleGridViewModelBuilderTests
         result.FieldColumnNames.ShouldBe([field.Name]);
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .FieldValues.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Build_UserLinkField_ShowsUsersNotRawIds()
+    {
+        // ADR017: значение поля — id через запятую, DisplayString отдаёт их как есть.
+        // Сетка раньше показывала именно его — в ячейке была только цифра.
+        var field = _mock.CreateField("Кураторы", fieldType: ProjectFieldType.MultiUserLink);
+        var character = _mock.CreateCharacter("Вася");
+        MockedProject.AssignFieldValues(character, new FieldWithValue(field, "7,8"));
+        var curator = new UserInfoHeader(new UserIdentification(7), new UserDisplayName("Куратор", null));
+
+        var result = BuildGrid(
+            Config(fields: [field.Id]),
+            [character],
+            fieldUsers: new Dictionary<UserIdentification, UserInfoHeader> { [curator.UserId] = curator });
+
+        var value = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .FieldValues.ShouldHaveSingleItem();
+        value.HasValue.ShouldBeTrue();
+        // Пользователя 8 нет в словаре — удалён: ссылки нет, но запись не пропадает.
+        value.UserLinks.ShouldNotBeNull().ShouldBe([new UserLinkViewModel(curator), UserLinkViewModel.Deleted]);
     }
 
     [Fact]
