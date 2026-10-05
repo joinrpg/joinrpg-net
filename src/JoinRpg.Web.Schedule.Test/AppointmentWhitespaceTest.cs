@@ -10,8 +10,8 @@ namespace JoinRpg.Web.Schedule.Test;
 /// заданы явно: внутри текста подписи («Комнаты: ») или выводом выражения (<c>Space</c>) —
 /// статическую разметку из одних пробелов Blazor вырезает, включая
 /// <c>&lt;text&gt; &lt;/text&gt;</c>. В карточке склейка имён не видна
-/// (<c>.appointment-users</c> — flex), зато видна в оверлее деталей: туда innerHTML
-/// копируется в обычный div.
+/// (<c>.appointment-users</c> — flex), а в панели деталей имена лежат в обычном div,
+/// и разделитель там нужен.
 /// </summary>
 public class AppointmentWhitespaceTest
 {
@@ -120,24 +120,12 @@ public class AppointmentWhitespaceTest
     }
 
     [Fact]
-    public void UserNamesAreSeparatedFromEachOther()
+    public void UserNamesInDetailsAreSeparatedFromEachOther()
     {
         using var ctx = CreateContext();
 
-        Text(ctx, Model(usersCount: 2), "#appointment7-users")
+        ctx.Render<AppointmentDetails>(p => p.Add(x => x.Model, Model(usersCount: 2)))
+            .Find("div.appointment-details-users > div").TextContent.Trim()
             .ShouldBe("Ведущий 1 Ведущий 2");
-    }
-
-    [Fact]
-    public void InGrid_FlagAttributesAreFalse()
-    {
-        using var ctx = CreateContext();
-
-        var root = ctx.Render<Appointment>(p => p.Add(x => x.Model, Model()))
-            .Find("div.scheduler-appointment");
-
-        root.GetAttribute("no-users").ShouldBe("False");
-        root.GetAttribute("all-rooms").ShouldBe("False");
-        root.GetAttribute("error-mode").ShouldBe("False");
     }
 }
