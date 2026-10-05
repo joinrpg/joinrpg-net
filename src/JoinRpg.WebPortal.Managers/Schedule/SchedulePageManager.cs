@@ -289,12 +289,14 @@ public class SchedulePageManager(
                     yield return ScheduleConfigProblemsViewModel.NoAccess;
                 }
 
-                if (!timeSlotField.Variants.Any())
+                // Сетку строят только из активных вариантов (см. ScheduleBuilder): если все
+                // помещения или слоты удалены, показывать нечего, как и без вариантов вовсе.
+                if (!timeSlotField.Variants.Any(v => v.IsActive))
                 {
                     yield return ScheduleConfigProblemsViewModel.NoTimeSlots;
                 }
 
-                if (!roomField.Variants.Any())
+                if (!roomField.Variants.Any(v => v.IsActive))
                 {
                     yield return ScheduleConfigProblemsViewModel.NoRooms;
                 }
