@@ -47,3 +47,18 @@
 .join-tooltip:popover-open {
   display: block;
 }
+
+/*
+  Содержимое подсказки (TooltipContent) рендерит вызывающий компонент, поэтому правила — через ::deep.
+  Там бывает HTML из markdown (описания комнат и слотов расписания): синие ссылки Bootstrap
+  на чёрном фоне почти не видны, а картинка без ограничения вылезает за max-width подсказки.
+*/
+.join-tooltip ::deep a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.join-tooltip ::deep img {
+  max-width: 100%;
+  height: auto;
+}
