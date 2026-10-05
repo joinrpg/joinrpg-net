@@ -48,7 +48,7 @@ public class JoinButtonGroupTest
                 .Add(x => x.Label, "Кнопка")
                 .Add(x => x.Title, title)));
 
-        ButtonClasses(cut, "button").ShouldHaveSingleItem().Split(' ').ShouldContain("btn-sm");
+        ButtonClasses(cut, "button").ShouldHaveSingleItem().Split(' ').ShouldContain("join-btn--sm");
     }
 
     [Fact]
@@ -62,8 +62,8 @@ public class JoinButtonGroupTest
                 .Add(x => x.Size, SizeStyleEnum.Large)));
 
         var classes = ButtonClasses(cut, "button").ShouldHaveSingleItem().Split(' ');
-        classes.ShouldContain("btn-lg");
-        classes.ShouldNotContain("btn-sm");
+        classes.ShouldContain("join-btn--lg");
+        classes.ShouldNotContain("join-btn--sm");
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class JoinButtonGroupTest
 
         var dialogButtons = ButtonClasses(cut, "dialog .join-dialog-footer button");
         dialogButtons.ShouldNotBeEmpty();
-        dialogButtons.ShouldAllBe(c => !c.Split(' ', StringSplitOptions.None).Contains("btn-sm"));
+        dialogButtons.ShouldAllBe(c => !c.Split(' ', StringSplitOptions.None).Contains("join-btn--sm"));
     }
 
     /// <summary>
@@ -98,7 +98,7 @@ public class JoinButtonGroupTest
 
         var dialogButtons = ButtonClasses(cut, "dialog .join-dialog-footer button");
         dialogButtons.Length.ShouldBe(2);
-        dialogButtons.ShouldAllBe(c => !c.Split(' ', StringSplitOptions.None).Contains("btn-sm"));
+        dialogButtons.ShouldAllBe(c => !c.Split(' ', StringSplitOptions.None).Contains("join-btn--sm"));
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class JoinButtonGroupTest
                 .AddChildContent<JoinButton>(b => b.Add(x => x.Label, "Кнопка"))));
 
         cut.FindAll("[role=group]").Count.ShouldBe(1);
-        ButtonClasses(cut, "button").ShouldHaveSingleItem().Split(' ').ShouldContain("btn-sm");
+        ButtonClasses(cut, "button").ShouldHaveSingleItem().Split(' ').ShouldContain("join-btn--sm");
     }
 
     [Fact]
@@ -122,6 +122,6 @@ public class JoinButtonGroupTest
         using var ctx = CreateContext();
         var cut = ctx.Render<JoinButton>(b => b.Add(x => x.Label, "Кнопка"));
 
-        cut.Find("button").ClassList.ShouldAllBe(c => c != "btn-sm" && c != "btn-lg" && c != "btn-xs");
+        cut.Find("button").ClassList.ShouldAllBe(c => c != "join-btn--sm" && c != "join-btn--lg" && c != "join-btn--xs");
     }
 }
