@@ -145,6 +145,11 @@ internal class UriServiceImpl(
     public Uri GetUri(ClaimCommentIdentification target) =>
         new(GetUri(target.ClaimId).AbsoluteUri + $"#comment{target.CommentId}");
     Uri IProjectUriLocator.GetCaptainCabinetUri(ProjectIdentification projectId) => new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/CaptainCabinet", values: new { ProjectId = projectId.Value }));
+    Uri IProjectUriLocator.GetCreateCharacterUri(ProjectIdentification projectId) => new(GetBaseDomain(), linkGenerator.GetPathByAction("Create", "Character", new { ProjectId = projectId.Value }));
+    Uri IProjectUriLocator.GetMassMailUri(ProjectIdentification projectId, IReadOnlyCollection<ClaimIdentification> claimIds) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("ForClaims", "MassMail", new { ProjectId = projectId.Value, ClaimIds = new CompressedIntList(claimIds).ToString() }));
+    Uri IProjectUriLocator.GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("CharacterList", "Print", new { ProjectId = projectId.Value, CharacterIds = new CompressedIntList(characterIds).ToString() }));
 
     public Uri GetUri(CharacterIdentification target) => GetUri(new Linkable(target));
 
