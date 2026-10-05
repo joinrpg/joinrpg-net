@@ -186,7 +186,7 @@ public class SchedulerTest
 
         var cut = ctx.Render<Scheduler>(p => p.Add(x => x.Model, Model()).Add(x => x.FullScreen, fullScreen));
 
-        cut.Find("#scheduler").ClassList.ShouldBe(classes, ignoreOrder: true);
+        cut.Find("div.scheduler").ClassList.ShouldBe(classes, ignoreOrder: true);
     }
 
     /// <summary>
