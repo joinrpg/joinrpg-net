@@ -4,6 +4,9 @@
 @implements IAsyncDisposable
 
 <dialog class="join-dialog" @ref="_dialogRef" @onclose="DialogCloseHandler" style="@_styles">
+    @* Диалог часто рендерится внутри JoinButtonGroup (подтверждение у кнопки, сортировка у JoinMoveControl),
+       но размер группы относится к её кнопкам, а не к кнопкам диалога *@
+    <CascadingValue Name="@JoinButtonGroup.GroupSizeCascadeName" Value="@((SizeStyleEnum?)null)" IsFixed="true">
     <div class="join-dialog-interior">
     @if (_hasHeader)
     {
@@ -65,6 +68,7 @@
         </div>
     }
     </div>
+    </CascadingValue>
 </dialog>
 
 @code {
