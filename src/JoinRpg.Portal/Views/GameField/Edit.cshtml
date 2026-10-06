@@ -190,6 +190,14 @@
               <join-icon icon="SortByAlphabet" />Отсортировать по алфавиту
             </button>
         </form>
+        @if (Model.TimeSlotMassAdd is not null)
+        {
+            <form asp-action="SortVariantsByStartTime" asp-route-projectId="@Model.ProjectId" asp-route-projectFieldId="@Model.ProjectFieldId" method="POST" style="display:inline">
+                <button type="submit" class="btn btn-default" onclick="return confirm('Отсортировать варианты по времени начала?')">
+                  <join-icon icon="Sort" />Отсортировать по времени начала
+                </button>
+            </form>
+        }
     </div>
   <component type="typeof(JoinRpg.Web.ProjectMasterTools.Fields.FieldValuesListControl)"
              render-mode="WebAssemblyPrerendered"

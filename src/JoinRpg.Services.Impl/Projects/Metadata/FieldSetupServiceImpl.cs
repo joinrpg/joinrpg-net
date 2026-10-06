@@ -370,6 +370,43 @@ internal class FieldSetupServiceImpl(
             });
     }
 
+    public async Task SortTimeSlotVariantsByStartTime(ProjectFieldIdentification projectFieldId)
+    {
+        await projectPropsService.ChangeProjectProperties(
+            projectFieldId.ProjectId,
+            Permission.CanChangeFields,
+            ProjectActiveRequirement.MustBeActive,
+            projectFieldId,
+            ctx =>
+            {
+                var field = GetField(ctx.Project, ctx.Request.ProjectFieldId);
+                if (!field.IsTimeSlot())
+                {
+                    throw new ArgumentException("Поле не является таймслотом", nameof(projectFieldId)); // TODO[Localize]
+                }
+
+                var container = field.GetFieldValuesContainer();
+                // Варианты без разбираемого времени — в конец; одинаковое начало (параллельные слоты) — по названию,
+                // иначе порядок не определён: сортировка в контейнере нестабильная
+                container.SortBy(x => TimeSlotOptions.TryFromJson(x.ProgrammaticValue) is { } options
+                    ? (false, options.LocalStartTime, x.Label)
+                    : (true, DateTime.MinValue, x.Label));
+                field.ValuesOrdering = container.GetStoredOrder();
+
+                if (field.CharacterGroup != null)
+                {
+                    // Спецгруппы вариантов — в том же порядке, что и сами варианты
+                    var variantIndex = container.OrderedItems
+                        .Select((variant, index) => (variant.CharacterGroup, index))
+                        .Where(x => x.CharacterGroup is not null)
+                        .ToDictionary(x => x.CharacterGroup!.CharacterGroupId, x => x.index);
+                    var groupContainer = field.CharacterGroup.GetCharacterGroupsContainer();
+                    groupContainer.SortBy(g => variantIndex.GetValueOrDefault(g.CharacterGroupId, int.MaxValue));
+                    field.CharacterGroup.ChildGroupsOrdering = groupContainer.GetStoredOrder();
+                }
+            });
+    }
+
     private static ProjectField GetField(Project project, int projectFieldId)
         => project.ProjectFields.Single(f => f.ProjectFieldId == projectFieldId);
 

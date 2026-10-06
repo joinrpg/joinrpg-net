@@ -85,6 +85,26 @@ public record TimeSlotOptions(
     public static TimeSlotOptions? FromJson(string json) => JsonSerializer.Deserialize<TimeSlotOptions>(json);
 
     /// <summary>
+    /// Разбирает значение, сохранённое в ProgrammaticValue варианта. Пустое, битое или недопустимое значение — null.
+    /// </summary>
+    public static TimeSlotOptions? TryFromJson(string? json)
+    {
+        if (json is null)
+        {
+            return null;
+        }
+        try
+        {
+            var options = FromJson(json);
+            return options?.IsValid == true ? options : null;
+        }
+        catch (Exception ex) when (ex is JsonException or FormatException or ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Значение для сохранения в ProgrammaticValue варианта
     /// </summary>
     public string ToJson() => JsonSerializer.Serialize(this);
