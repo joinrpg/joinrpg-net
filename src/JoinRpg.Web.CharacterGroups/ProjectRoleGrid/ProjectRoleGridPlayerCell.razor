@@ -4,11 +4,11 @@
 @* Содержимое ячейки «Игрок»: статус/ссылка на игрока, счётчик активных заявок,
    контакты и кнопка «Заявиться». Общее для табличного и древовидного режимов. *@
 
-@if (Row.Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
+@if (Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
 {
     <text>NPC</text>
 }
-else if (Row.Player.ApplyStatus.IsSlot)
+else if (Player.ApplyStatus.IsSlot)
 {
     <text>шаблон</text>
     @if (Row.ActiveClaimsCount > 0)
@@ -16,7 +16,7 @@ else if (Row.Player.ApplyStatus.IsSlot)
         <text> (@ClaimsCountText)</text>
     }
 }
-else if (Row.Player.Link is { } link)
+else if (Player.Link is { } link)
 {
     <UserLink Model="link" />
 }
@@ -24,7 +24,7 @@ else if (Row.ActiveClaimsCount > 0)
 {
     <text>@ClaimsCountText</text>
 }
-else if (Row.Player.ApplyStatus.BusyStatus is not (CharacterBusyStatusView.Vacancy or CharacterBusyStatusView.HotVacancy))
+else if (Player.ApplyStatus.BusyStatus is not (CharacterBusyStatusView.Vacancy or CharacterBusyStatusView.HotVacancy))
 {
     @* Сейчас недостижимо: BusyStatus здесь всегда Vacancy/HotVacancy — нет заявок и нет игрока
        не даёт других значений. Статус проекта в него сознательно не заложен: BusyStatus
@@ -32,15 +32,16 @@ else if (Row.Player.ApplyStatus.BusyStatus is not (CharacterBusyStatusView.Vacan
        который считают доменные правила (ClaimValidator.IsAvailableForPlayer). *@
     <text>нет&nbsp;игрока</text>
 }
-@if (Row.Player.Contacts is not null)
+@if (Player.Contacts is not null)
 {
-    <text> (</text><UserContactsView Contacts="Row.Player.Contacts" /><text>)</text>
+    <text> (</text><UserContactsView Contacts="Player.Contacts" /><text>)</text>
 }
 <text> </text>
-<ApplyForCharacterButton Model="Row.Player.ApplyStatus" />
+<ApplyForCharacterButton Model="Player.ApplyStatus" />
 
 @code {
     [Parameter, EditorRequired] public ProjectRoleGridCharacterRowViewModel Row { get; set; } = null!;
+    [Parameter, EditorRequired] public PlayerCellViewModel Player { get; set; } = null!;
 
     private string ClaimsCountText => CountHelper.DisplayCount(Row.ActiveClaimsCount, "заявка", "заявки", "заявок");
 }

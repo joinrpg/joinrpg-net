@@ -34,7 +34,7 @@ public class ProjectRolesList : IProjectEntity, IValidatableObject
 
     public IntList FieldsImpl { get; set; } = new IntList();
 
-    public ProjectRolesListVisibilityMode ContactsColumn { get; set; }
+    public PlayerColumnMode ContactsColumn { get; set; }
 
     public ProjectRolesListVisibilityMode GroupsColumn { get; set; }
 
@@ -57,7 +57,7 @@ public class ProjectRolesList : IProjectEntity, IValidatableObject
             yield return new ValidationResult("Name is required", [nameof(Name)]);
         }
 
-        if (PublicMode && ContactsColumn == ProjectRolesListVisibilityMode.All)
+        if (PublicMode && ContactsColumn == PlayerColumnMode.All)
         {
             yield return new ValidationResult(
                 "В публичной сетке ролей нельзя показывать все контакты",

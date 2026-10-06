@@ -28,6 +28,7 @@ internal static class ProjectRoleGridViewModelBuilder
         ProjectInfo projectInfo)
     {
         var hasGroupsColumn = config.GroupsColumn != ProjectRolesListVisibilityMode.None;
+        var hasPlayerColumn = config.ContactsColumn != PlayerColumnMode.None;
 
         var fields = config.Fields.Select(projectInfo.GetFieldById).ToList();
         var fieldColumnNames = fields.Select(f => f.Name).ToList();
@@ -43,6 +44,7 @@ internal static class ProjectRoleGridViewModelBuilder
             Name: config.Name,
             CanEditSettings: canEditSettings,
             HasMasterAccess: canViewPrivate,
+            HasPlayerColumn: hasPlayerColumn,
             HasGroupsColumn: hasGroupsColumn,
             FieldColumnNames: fieldColumnNames,
             Rows: rows,
@@ -192,7 +194,11 @@ internal static class ProjectRoleGridViewModelBuilder
 
         var characterLink = new CharacterLinkWithEditViewModel(characterSlim, canEditRoles, approvedClaimId);
 
-        var player = BuildPlayerCell(character, players, config.ContactsColumn, canViewPrivate);
+        // Колонку «Игрок» скрыли (например, у сетки мероприятий есть своё поле «Ведущий») —
+        // данные игрока на клиент не отдаём вовсе, вместе с ними пропадает и кнопка «Заявиться».
+        var player = config.ContactsColumn == PlayerColumnMode.None
+            ? null
+            : BuildPlayerCell(character, players, config.ContactsColumn, canViewPrivate);
 
         GroupsCellViewModel? groups = hasGroupsColumn
             ? BuildGroupsCell(character, config.GroupsColumn)
@@ -230,7 +236,7 @@ internal static class ProjectRoleGridViewModelBuilder
     private static PlayerCellViewModel BuildPlayerCell(
         CharacterInfo character,
         IReadOnlyDictionary<UserIdentification, UserInfo> players,
-        ProjectRolesListVisibilityMode contactsColumn,
+        PlayerColumnMode contactsColumn,
         bool canViewPrivate)
     {
         var applyStatus = new CharacterApplyViewModel(
@@ -266,7 +272,7 @@ internal static class ProjectRoleGridViewModelBuilder
 
     private static UserContacts? BuildContacts(
         UserInfo player,
-        ProjectRolesListVisibilityMode contactsColumn,
+        PlayerColumnMode contactsColumn,
         ProjectInfo projectInfo)
     {
         // Для архивных проектов контакты не показываем (как GetPlayerString(showContacts: false)).
@@ -277,9 +283,9 @@ internal static class ProjectRoleGridViewModelBuilder
 
         var showContacts = contactsColumn switch
         {
-            ProjectRolesListVisibilityMode.All => true,
+            PlayerColumnMode.All => true,
             // Контакты показываем, только если игрок открыл их в профиле.
-            ProjectRolesListVisibilityMode.PublicOnly => player.Social.SocialNetworksAccess == ContactsAccessType.Public,
+            PlayerColumnMode.PublicOnly => player.Social.SocialNetworksAccess == ContactsAccessType.Public,
             _ => false,
         };
 
@@ -292,7 +298,7 @@ internal static class ProjectRoleGridViewModelBuilder
         // поэтому здесь ничего разбирать не надо.
         // Email — непубличный контакт, показывается только в режиме All.
         return new UserContacts(
-            contactsColumn == ProjectRolesListVisibilityMode.All ? player.Email : null,
+            contactsColumn == PlayerColumnMode.All ? player.Email : null,
             player.Social.Vk,
             player.Social.Telegram,
             player.Social.LiveJournal);

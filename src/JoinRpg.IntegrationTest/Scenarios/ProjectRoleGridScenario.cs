@@ -65,7 +65,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 CharacterGroupId: null,
                 PublicMode: true,
                 Fields: [],
-                ContactsColumn: ProjectRolesListVisibilityMode.None,
+                ContactsColumn: PlayerColumnMode.NameOnly,
                 GroupsColumn: ProjectRolesListVisibilityMode.None,
                 GroupsViewMode: RolesGridGroupsViewMode.Sections,
                 ShowRolesFilter: ShowRolesFilter.All));
@@ -115,7 +115,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
                 CharacterGroupId: null,
                 PublicMode: false,
                 Fields: [],
-                ContactsColumn: ProjectRolesListVisibilityMode.None,
+                ContactsColumn: PlayerColumnMode.NameOnly,
                 GroupsColumn: ProjectRolesListVisibilityMode.None,
                 GroupsViewMode: RolesGridGroupsViewMode.Sections,
                 ShowRolesFilter: ShowRolesFilter.All));
