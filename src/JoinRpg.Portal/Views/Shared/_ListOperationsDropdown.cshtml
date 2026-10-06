@@ -1,10 +1,6 @@
 @using JoinRpg.DomainTypes
 @using JoinRpg.Web.ProjectCommon
 @model JoinRpg.Web.Models.IOperationsAwareView
-@if (ViewBag.HideOperations == true)
-{
-    return;
-}
 @{
     var separator = ViewBag.FullyQualifiedUri.Contains('?') ? "&" : "?";
     var exportUri = ViewBag.FullyQualifiedUri + separator + "export=xlsx";
