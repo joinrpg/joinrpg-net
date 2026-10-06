@@ -19,6 +19,11 @@ public class InvitePlayerController(IInvitePlayerClient client) : ControllerBase
         {
             return TypedResults.BadRequest("Персонаж не принадлежит проекту");
         }
+        // Не полагаемся на то, что остров не отправит форму без выбранного персонажа (#5292)
+        if (targetId.CharacterId <= 0)
+        {
+            return TypedResults.BadRequest("Не выбран персонаж");
+        }
         try
         {
             return TypedResults.Ok(await client.InvitePlayer(targetId, userLink, claimText));

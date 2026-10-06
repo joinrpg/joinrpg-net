@@ -76,18 +76,18 @@
         if (HasMultiplePlayers(model.UserLinks) && !wasMultiplePlayers)
         {
             // Список персонажей сузился до шаблонов — ранее выбранный персонаж мог в него не попасть.
-            model.CharacterId = 0;
+            model.CharacterId = null;
         }
     }
 
     private CharacterIdentification? selectedCharacterId
     {
-        get => model.CharacterId > 0 ? new CharacterIdentification(ProjectId, model.CharacterId) : null;
+        get => model.CharacterId is int characterId ? new CharacterIdentification(ProjectId, characterId) : null;
         set
         {
             if (value is null)
             {
-                model.CharacterId = 0;
+                model.CharacterId = null;
             }
             else
             {

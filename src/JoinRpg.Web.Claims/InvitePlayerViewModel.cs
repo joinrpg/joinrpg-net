@@ -9,7 +9,7 @@ public class InvitePlayerViewModel
 
     [Required(ErrorMessage = "Выберите персонажа")]
     [DisplayName("Персонаж")]
-    public int CharacterId { get; set; }
+    public int? CharacterId { get; set; } // nullable: на не-nullable int [Required] не срабатывает, 0 проходит валидацию (#5292)
 
     [MinLength(1, ErrorMessage = "Введите хотя бы одну ссылку на пользователя")]
     [Display(Name = "Ссылки на пользователей",
@@ -22,5 +22,6 @@ public class InvitePlayerViewModel
 
     public string ProjectName { get; set; } = "";
 
-    public CharacterIdentification CharacterIdentification => new CharacterIdentification(new ProjectIdentification(ProjectId), CharacterId);
+    public CharacterIdentification CharacterIdentification
+        => new(new ProjectIdentification(ProjectId), CharacterId ?? throw new InvalidOperationException("Персонаж не выбран"));
 }
