@@ -112,7 +112,7 @@ jobs:
     needs: build
     if: always()
     steps:
-      - uses: dorny/test-reporter@v3.0.0
+      - uses: dorny/test-reporter@v3.2.0
         with:
           artifact: test-results-${{ github.run_attempt }} # artifact name, см. issue #5188
           name: Unit tests                  # Name of the check run which will be created
