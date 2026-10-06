@@ -1,7 +1,13 @@
-<a href="https://docs.joinrpg.ru/@Link"><JoinIcon Icon="JoinIconType.Help" />&nbsp;@Message</a>
+<a href="https://docs.joinrpg.ru/@Link"><JoinIcon Icon="JoinIconType.Help" Title="@Title" />@if (!string.IsNullOrEmpty(Message))
+{
+    <text>&nbsp;@Message</text>
+}</a>
 
 @code
 {
     [Parameter][EditorRequired] public string Link { get; set; } = null!;
     [Parameter] public string Message { get; set; } = "";
+
+    /// <summary>Подсказка на иконке — когда текста ссылки нет и пояснение уходит в неё.</summary>
+    [Parameter] public string? Title { get; set; }
 }

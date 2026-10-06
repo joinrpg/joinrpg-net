@@ -74,6 +74,12 @@ public static class UriLocatorExtensions
 
         Uri IScheduleUriLocator.GetScheduleUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/schedule", UriKind.Relative);
+
+        Uri IScheduleUriLocator.GetIcalUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/schedule/ical", UriKind.Relative);
+
+        Uri IScheduleUriLocator.GetFullScreenUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/schedule/full", UriKind.Relative);
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {

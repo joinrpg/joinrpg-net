@@ -135,6 +135,8 @@ internal class UriServiceImpl(
     public Uri GetAddClaimUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForCharacter", "Claim", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
     public Uri GetEditUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Character", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
     Uri IScheduleUriLocator.GetScheduleUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "ShowSchedule", new { ProjectId = projectId.Value }));
+    Uri IScheduleUriLocator.GetIcalUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Ical", "ShowSchedule", new { ProjectId = projectId.Value }));
+    Uri IScheduleUriLocator.GetFullScreenUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("FullScreen", "ShowSchedule", new { ProjectId = projectId.Value }));
     Uri IProjectUriLocator.GetCreatePlotUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Create", "Plot", new { ProjectId = projectId.Value }));
     public Uri GetUri(PlotFolderIdentification target) => GetUri(new Linkable(target));
     Uri IProjectUriLocator.GetRolesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "GameGroups", new { ProjectId = projectId.Value }));

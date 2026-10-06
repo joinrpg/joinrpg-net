@@ -1,0 +1,11 @@
+/* Заголовок, иконка справки и бейдж iCal — в одну строку. */
+.schedule-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5em;
+}
+
+    .schedule-header h2 {
+        margin-top: 0.5em;
+        margin-bottom: 0.25em;
+    }

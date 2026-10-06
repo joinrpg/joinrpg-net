@@ -11,4 +11,14 @@ public interface IScheduleUriLocator
     /// Расписание в обычном виде — внутри общего layout сайта, с меню проекта.
     /// </summary>
     Uri GetScheduleUri(ProjectIdentification projectId);
+
+    /// <summary>
+    /// Расписание в формате iCal — ссылка для подписки в календаре.
+    /// </summary>
+    Uri GetIcalUri(ProjectIdentification projectId);
+
+    /// <summary>
+    /// Расписание во весь экран — без меню сайта, для проектора на площадке.
+    /// </summary>
+    Uri GetFullScreenUri(ProjectIdentification projectId);
 }
