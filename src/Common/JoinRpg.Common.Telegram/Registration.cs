@@ -1,8 +1,10 @@
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 
 namespace JoinRpg.Common.Telegram;
 
@@ -40,16 +42,46 @@ public static class Registration
     }
 }
 
-internal class HealthCheckTelegram(ITelegramNotificationService service) : IHealthCheck
+internal class HealthCheckTelegram(
+    IOptions<TelegramLoginOptions> options,
+    IServiceProvider serviceProvider,
+    ILogger<HealthCheckTelegram> logger) : IHealthCheck
 {
-
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var username = await service.GetMyUserName(cancellationToken);
-        if (username is null)
+        var telegramOptions = options.Value;
+        if (!telegramOptions.Enabled)
         {
-            return new HealthCheckResult(HealthStatus.Degraded, "Telegram выключен");
+            return HealthCheckResult.Degraded("Telegram выключен");
         }
-        return new HealthCheckResult(HealthStatus.Healthy, description: "Подключен " + username);
+        if (telegramOptions.BotId is null || string.IsNullOrWhiteSpace(telegramOptions.BotSecret))
+        {
+            return HealthCheckResult.Degraded("Telegram не настроен: нет BotId или BotSecret");
+        }
+
+        try
+        {
+            // Сервис достаём здесь, а не через конструктор: TelegramBotClient падает уже при
+            // создании, если токен кривой, и это тоже должно стать диагнозом чека.
+            var service = serviceProvider.GetRequiredService<ITelegramNotificationService>();
+            var username = await service.GetMyUserName(cancellationToken);
+            return HealthCheckResult.Healthy("Подключен " + username);
+        }
+        catch (OperationCanceledException)
+        {
+            // Отмена — это сработавший таймаут чека или ушедший клиент. Пусть движок
+            // health-чеков отчитается про таймаут, а не мы про «сломанный Telegram».
+            throw;
+        }
+        catch (ApiRequestException exception)
+        {
+            logger.LogError(exception, "Telegram API вернул ошибку при проверке здоровья. Error code={telegramErrorCode}", exception.ErrorCode);
+            return HealthCheckResult.Unhealthy($"Telegram API вернул ошибку {exception.ErrorCode}: {exception.Message}", exception);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка при обращении к Telegram API при проверке здоровья");
+            return HealthCheckResult.Unhealthy("Ошибка при обращении к Telegram API: " + exception.Message, exception);
+        }
     }
 }
