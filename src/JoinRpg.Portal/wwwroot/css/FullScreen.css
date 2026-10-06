@@ -60,3 +60,59 @@ section.scheduler-container {
     width: 100%;
     height: 100%;
 }
+
+/* Вкладки на радиокнопках (FullScreen.cshtml). Кнопки скрыты визуально,
+   но остаются в фокусе и переключаются стрелками. */
+.schedule-tab-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    opacity: 0;
+}
+
+/* Оформление повторяет .nav-tabs > li > a из Bootstrap 3. */
+.nav-tabs > li > label {
+    display: block;
+    position: relative;
+    margin: 0 2px 0 0;
+    padding: 10px 15px;
+    line-height: 1.42857143;
+    font-weight: normal;
+    color: #337ab7;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+}
+
+.nav-tabs > li > label:hover {
+    background-color: #eee;
+    border-color: #eee #eee #ddd;
+}
+
+#tab-scheduler:checked ~ .nav-tabs label[for="tab-scheduler"],
+#tab-intersections:checked ~ .nav-tabs label[for="tab-intersections"],
+#tab-notallocated:checked ~ .nav-tabs label[for="tab-notallocated"] {
+    color: #555;
+    cursor: default;
+    background-color: #fff;
+    border-color: #ddd #ddd transparent;
+}
+
+#tab-scheduler:focus-visible ~ .nav-tabs label[for="tab-scheduler"],
+#tab-intersections:focus-visible ~ .nav-tabs label[for="tab-intersections"],
+#tab-notallocated:focus-visible ~ .nav-tabs label[for="tab-notallocated"] {
+    outline: 2px solid #337ab7;
+    outline-offset: -2px;
+}
+
+.schedule-tab-pane {
+    display: none;
+}
+
+#tab-scheduler:checked ~ .tab-content #scheduler,
+#tab-intersections:checked ~ .tab-content #intersections,
+#tab-notallocated:checked ~ .tab-content #notallocated {
+    display: block;
+}
