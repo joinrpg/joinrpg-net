@@ -8,30 +8,41 @@
 
 <h1 class="page-title">@Html.ActionLink(Model.DisplayName, "Details", "Game", new { projectId = Model.ProjectId.Value }, new {})</h1>
 
+@* Вкладки без скрипта: радиокнопки стоят соседями перед списком вкладок и панелями,
+   а FullScreen.css по отмеченной кнопке подсвечивает подпись и показывает панель. *@
+<input type="radio" name="schedule-tab" id="tab-scheduler" class="schedule-tab-input" checked />
+@if (Model.Intersections.Count > 0)
+{
+    <input type="radio" name="schedule-tab" id="tab-intersections" class="schedule-tab-input" />
+}
+@if (Model.NotAllocated.Count > 0)
+{
+    <input type="radio" name="schedule-tab" id="tab-notallocated" class="schedule-tab-input" />
+}
 <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#scheduler">Расписание</a></li>
+    <li><label for="tab-scheduler">Расписание</label></li>
     @if (Model.Intersections.Count > 0)
     {
-        <li><a data-toggle="tab" href="#intersections">Пересечения</a></li>
+        <li><label for="tab-intersections">Пересечения</label></li>
     }
     @if (Model.NotAllocated.Count > 0)
     {
-        <li><a data-toggle="tab" href="#notallocated">Не размещенные</a></li>
+        <li><label for="tab-notallocated">Не размещенные</label></li>
     }
 </ul>
 <div class="tab-content">
-    <section id="scheduler" class="scheduler-container tab-pane in active">
+    <section id="scheduler" class="scheduler-container schedule-tab-pane">
         @(await Html.RenderComponentAsync<Scheduler>(RenderMode.Static, new { Model, FullScreen = true }))
     </section>
     @if (Model.Intersections.Count > 0)
     {
-        <section id="intersections" class="scheduler-container tab-pane">
+        <section id="intersections" class="scheduler-container schedule-tab-pane">
             @(await Html.RenderComponentAsync<Intersections>(RenderMode.Static, new { Model }))
         </section>
     }
     @if (Model.NotAllocated.Count > 0)
     {
-        <section id="notallocated" class="scheduler-container tab-pane">
+        <section id="notallocated" class="scheduler-container schedule-tab-pane">
             @(await Html.RenderComponentAsync<NotAllocated>(RenderMode.Static, new { Model }))
         </section>
     }
