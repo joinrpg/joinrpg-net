@@ -32,18 +32,23 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
             logger.LogInformation("Отправлено сообщение пользователю в телеграм {chatId}", chatId);
             return SendingResult.Success();
         }
-        catch (ApiRequestException exception) when (exception.Message.Contains("bot was blocked by the user", StringComparison.OrdinalIgnoreCase))
+        catch (ApiRequestException exception) when (GetPermanentErrorType(exception) is { } errorType)
         {
-            CountError("blocked");
-            logger.LogWarning("Пользователь {chatId} заблокировал бота", chatId);
+            CountError(errorType);
+            logger.LogWarning("Телеграм-чат {chatId} недоступен для бота, повторять бессмысленно. Error code={telegramErrorCode}, Описание={telegramDescription}",
+                chatId,
+                exception.ErrorCode,
+                exception.Message);
             return SendingResult.PermanentUserFailure();
         }
         catch (ApiRequestException exception)
         {
             CountError("api");
-            logger.LogWarning(exception, "Ошибка при отправке сообщения в телеграм {chatId}. Error code={telegramErrorCode}, Параметры={telegramResponseParameters}",
+            // Описание отдельным полем, чтобы новый постоянный ответ Телеграма было видно в логах сразу, а не по семи ретраям
+            logger.LogWarning(exception, "Ошибка при отправке сообщения в телеграм {chatId}. Error code={telegramErrorCode}, Описание={telegramDescription}, Параметры={telegramResponseParameters}",
                 chatId,
                 exception.ErrorCode,
+                exception.Message,
                 exception.Parameters);
             throw;
         }
@@ -65,6 +70,19 @@ internal class TelegramNotificationServiceImpl(TelegramBotClient client, ILogger
             sendDurationHistogram.Record(sw.Elapsed.TotalMilliseconds);
         }
     }
+
+    /// <summary>
+    /// Ошибки, которые не исчезнут при повторе: боту закрыт доступ к этому чату. Возвращает тип ошибки для метрики или null.
+    /// 403 у Телеграма всегда значит «сюда писать нельзя» (заблокировал бота, удалил аккаунт, выгнал из группы и т. п.),
+    /// а среди 400 постоянна только «chat not found» — остальные 400 (например, кривая разметка) к получателю не относятся.
+    /// </summary>
+    private static string? GetPermanentErrorType(ApiRequestException exception) => exception.ErrorCode switch
+    {
+        403 when exception.Message.Contains("bot was blocked by the user", StringComparison.OrdinalIgnoreCase) => "blocked",
+        403 => "forbidden",
+        400 when exception.Message.Contains("chat not found", StringComparison.OrdinalIgnoreCase) => "chat_not_found",
+        _ => null,
+    };
 
     private static bool HasTimeoutInChain(Exception exception)
     {

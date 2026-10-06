@@ -3,6 +3,7 @@ using System.Text;
 using JoinRpg.Common.PrimitiveTypes;
 using Microsoft.Extensions.Logging.Abstractions;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 
 namespace JoinRpg.Common.Telegram.Test;
 
@@ -24,6 +25,40 @@ public class TelegramNotificationServiceImplTimeoutTest
         // PermanentUserFailure отличается от RepeatableFailure значением Repeatable=false,
         // поэтому эта проверка действительно фиксирует «без ретраев» (см. #4997)
         result.ShouldBe(SendingResult.PermanentUserFailure());
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest, 400, "Bad Request: chat not found")] // #5301
+    [InlineData(HttpStatusCode.Forbidden, 403, "Forbidden: user is deactivated")]
+    [InlineData(HttpStatusCode.Forbidden, 403, "Forbidden: bot can't initiate conversation with a user")]
+    public async Task SendTelegramNotification_WithChatUnavailableResponse_ReturnsPermanentUserFailure(HttpStatusCode statusCode, int errorCode, string description)
+    {
+        var service = CreateService(new RespondingHttpMessageHandler(
+            statusCode,
+            $$"""{"ok":false,"error_code":{{errorCode}},"description":"{{description}}"}"""));
+
+        var result = await service.SendTelegramNotification(new TelegramChatId(1), new TelegramHtmlString("test"));
+
+        result.ShouldBe(SendingResult.PermanentUserFailure());
+    }
+
+    [Fact]
+    public async Task SendTelegramNotification_WithOtherBadRequest_Throws()
+    {
+        // Прочие 400 к получателю не относятся — их не глушим, они остаются повторяемыми
+        var service = CreateService(new RespondingHttpMessageHandler(
+            HttpStatusCode.BadRequest,
+            """{"ok":false,"error_code":400,"description":"Bad Request: can't parse entities"}"""));
+
+        _ = await Should.ThrowAsync<ApiRequestException>(
+            () => service.SendTelegramNotification(new TelegramChatId(1), new TelegramHtmlString("test")));
+    }
+
+    private static TelegramNotificationServiceImpl CreateService(HttpMessageHandler handler)
+    {
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.telegram.org") };
+        var botClient = new TelegramBotClient("123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11", httpClient);
+        return new TelegramNotificationServiceImpl(botClient, NullLogger<TelegramNotificationServiceImpl>.Instance);
     }
 
     [Fact]
