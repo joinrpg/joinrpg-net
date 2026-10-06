@@ -63,8 +63,12 @@
     [Parameter]
     public bool AutoRefresh { get; set; } = false;
 
+    /// <summary>
+    /// Размер кнопок. Если не задан — размер группы, в которой стоят кнопки: собственной или,
+    /// при <see cref="SkipGroup"/>, окружающей <see cref="JoinButtonGroup"/>; вне группы обычный.
+    /// </summary>
     [Parameter]
-    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Small;
+    public SizeStyleEnum? Size { get; set; }
 
     private bool showUp, showDown, showSort;
     private TItem? targetIfUp, targetIfDown;
