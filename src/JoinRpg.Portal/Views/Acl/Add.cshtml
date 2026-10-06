@@ -1,8 +1,20 @@
 @using JoinRpg.WebPortal.Models.Masters
+@using JoinRpg.Web.ProjectMasterTools.Acl
 @model AclViewModel
 
 @{
     ViewBag.Title = "Добавление мастера в проект " + Model.ProjectName;
+    var form = new AddMasterFormViewModel
+    {
+        Endpoint = Url.Action("Add", new { Model.ProjectId, userId = Model.UserId })!,
+        UserProfileUrl = Url.Action("Details", "User", new { userId = Model.UserId })!,
+        UserId = Model.UserId,
+        Role = Model.Role,
+        Description = Model.Description ?? "",
+        IsPublic = Model.IsPublic,
+        Permissions = Model.Badges,
+        Errors = [.. ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)],
+    };
 }
 
 <h2>@ViewBag.Title</h2>
@@ -10,18 +22,4 @@
 <partial name="_UserDetailsPanel" model="@Model.UserDetails" />
 <hr class="col-md-12" />
 
-
-@using (Html.BeginForm(FormMethod.Post))
-{
-  <div class="form-horizontal">
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-    @foreach (var badge in Model.Badges)
-    {
-        <partial name="_PermissionBadgeCheckbox" model="@badge" />
-    }
-    
-    <input type="submit" value="Добавить" class="btn btn-success" />
-    | <a asp-controller="User" asp-action="Details" asp-route-userId="@Model.UserId">вернуться в профиль пользователя</a>
-  </div>
-}
+<component type="typeof(AddMasterForm)" render-mode="Static" param-Model="@form" />

@@ -2,13 +2,15 @@ namespace JoinRpg.Services.Interfaces.ProjectAccess;
 
 public class GrantAccessRequest : AccessRequestBase
 {
-    /// <summary>
-    /// Роль мастера в проекте (ADR019). Задаётся только новому мастеру; у того, кто уже мастер, не меняется.
-    /// </summary>
-    public required string Role { get; set; }
+    // Профиль (ADR019, §4) задаётся новому мастеру и тому, кого возвращают из бывших;
+    // у действующего мастера выдача прав профиль не трогает — его правят отдельно.
 
-    /// <summary>
-    /// Показывать ли мастера немастерам (ADR019). Как и <see cref="Role"/>, только для нового мастера.
-    /// </summary>
+    /// <summary>Роль мастера в проекте.</summary>
+    public required MasterRoleTitle Role { get; set; }
+
+    /// <summary>Чем мастер занимается и по каким вопросам ему писать.</summary>
+    public MarkdownString? Description { get; set; }
+
+    /// <summary>Показывать ли мастера немастерам.</summary>
     public bool IsPublic { get; set; } = true;
 }

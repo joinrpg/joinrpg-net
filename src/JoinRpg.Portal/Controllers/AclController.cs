@@ -8,6 +8,7 @@ using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Masters;
+using JoinRpg.Web.ProjectCommon.Masters;
 using JoinRpg.WebPortal.Models.Masters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,14 +22,15 @@ public class AclController(
     IClaimsRepository claimRepository,
     IUserRepository userRepository,
     IProjectAccessService projectAccessService,
-    ICurrentUserAccessor currentUserAccessor
+    ICurrentUserAccessor currentUserAccessor,
+    IProjectMasterProfileRepository masterProfileRepository
     ) : JoinControllerGameBase
 {
     [HttpGet("add/{userId}")]
     [MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Add(ProjectIdentification projectId, UserIdentification userId) => await ShowAddPage(projectId, userId);
 
-    private async Task<ActionResult> ShowAddPage(ProjectIdentification projectId, UserIdentification userId)
+    private async Task<ActionResult> ShowAddPage(ProjectIdentification projectId, UserIdentification userId, AddAclViewModel? posted = null)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         var targetUser = await userRepository.GetUserInfo(userId);
@@ -38,13 +40,35 @@ public class AclController(
             return NotFound();
         }
 
-        return View(new AclViewModel(project, targetUser, currentUserAccessor));
+        var model = new AclViewModel(project, targetUser, currentUserAccessor);
+        if (posted is not null)
+        {
+            // Показываем форму с тем, что прислали.
+            model.Role = posted.Role ?? "";
+            model.Description = posted.Description;
+            model.IsPublic = posted.IsPublic;
+            var permissions = posted.ToPermissions();
+            model.Badges = [.. model.Badges.Select(b => new PermissionBadgeViewModel(b.Permission, permissions.Contains(b.Permission)))];
+        }
+        else if (project.FormerMasters.SingleOrDefault(m => m.UserId == userId) is { } former
+            && await masterProfileRepository.GetMasterProfile(projectId, userId) is { } formerProfile)
+        {
+            // Возвращаем бывшего мастера: форма предзаполнена его прежним профилем (ADR019, §1).
+            model.Role = formerProfile.Role.Value;
+            model.Description = formerProfile.Description?.Value;
+            model.IsPublic = former.IsPublic;
+        }
+        return View(model);
     }
 
     [HttpPost("add/{userId}")]
     [MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Add(ChangeAclViewModel viewModel)
+    public async Task<ActionResult> Add(AddAclViewModel viewModel)
     {
+        if (!ModelState.IsValid)
+        {
+            return await ShowAddPage(new(viewModel.ProjectId), new UserIdentification(viewModel.UserId), viewModel);
+        }
         try
         {
             await projectAccessService.GrantAccess(new GrantAccessRequest()
@@ -52,14 +76,15 @@ public class AclController(
                 ProjectId = new ProjectIdentification(viewModel.ProjectId),
                 UserId = new UserIdentification(viewModel.UserId),
                 Permissions = viewModel.ToPermissions(),
-                // Поле роли в форме появится позже (ADR019, PR 6), пока — значение по умолчанию.
-                Role = "Мастер",
+                Role = new(viewModel.Role!), // ModelState проверен выше — [Required]
+                Description = MarkdownString.FromOptional(viewModel.Description),
+                IsPublic = viewModel.IsPublic,
             });
         }
         catch (Exception exception)
         {
             AddModelException(exception);
-            return await ShowAddPage(new(viewModel.ProjectId), new UserIdentification(viewModel.UserId));
+            return await ShowAddPage(new(viewModel.ProjectId), new UserIdentification(viewModel.UserId), viewModel);
         }
 
         return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });

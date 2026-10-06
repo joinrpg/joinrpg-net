@@ -27,6 +27,7 @@ public static class Registraton
             .AddTransient<IHotCharactersRepository, HotCharactersRepository>()
             .AddTransient<IKogdaIgraRepository, KogdaIgraRepository>()
             .AddTransient<IProjectMetadataRepository, ProjectMetadataRepository>()
+            .AddTransient<IProjectMasterProfileRepository, ProjectMasterProfileRepository>()
             .AddTransient<ICharacterGroupRepository, CharacterGroupRepository>()
             .AddTransient<IProjectRepository, ProjectRepository>()
             .AddTransient<ICharacterRepository, CharacterRepositoryImpl>()

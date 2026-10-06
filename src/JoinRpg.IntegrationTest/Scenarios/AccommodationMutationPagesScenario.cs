@@ -240,7 +240,7 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
             {
                 ProjectId = seed.ProjectId,
                 UserId = restrictedMasterId,
-                Role = "Мастер",
+                Role = new("Мастер"),
                 Permissions = [.. Enum.GetValues<Permission>()
                     .Where(p => p is not Permission.None and not Permission.CanSetPlayersAccommodations)],
             }));

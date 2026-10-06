@@ -134,7 +134,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
             {
                 ProjectId = projectId,
                 UserId = hiddenMasterId,
-                Role = "Мастер",
+                Role = new("Мастер"),
                 IsPublic = false,
                 Permissions = [Permission.CanManageClaims, Permission.CanGrantRights],
             }));
