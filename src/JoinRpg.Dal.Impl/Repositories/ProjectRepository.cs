@@ -73,9 +73,11 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
     }
 
     public Task<Project> GetProjectWithFinances(int projectid)
-      => Ctx.ProjectsSet.Include(f => f.Claims)
-        .Include(f => f.FinanceOperations)
+      => Ctx.ProjectsSet
+        .Include(p => p.PaymentTypes.Select(pt => pt.User))
         .Include(p => p.FinanceOperations.Select(fo => fo.Comment.Author))
+        .Include(p => p.FinanceOperations.Select(fo => fo.Claim.Character))
+        .Include(p => p.FinanceOperations.Select(fo => fo.Claim.Player))
         .SingleOrDefaultAsync(p => p.ProjectId == projectid);
 
     public Task<Project> GetProjectForFinanceSetup(int projectid)
