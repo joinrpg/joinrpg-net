@@ -29,4 +29,10 @@ internal class ProjectFieldOperationsViewService(IFieldSetupService fieldSetupSe
 
     public async Task SortTimeSlotsByStartTime(ProjectFieldIdentification fieldId)
         => await fieldSetupService.SortTimeSlotVariantsByStartTime(fieldId);
+
+    public async Task SortVariantsByLabel(ProjectFieldIdentification fieldId)
+        => await fieldSetupService.SortFieldVariants(fieldId.ProjectId.Value, fieldId.ProjectFieldId);
+
+    public async Task CreateVariants(FieldValuesMassAddRequest request)
+        => await fieldSetupService.CreateFieldValueVariants(request.FieldId, request.ValuesToAdd);
 }

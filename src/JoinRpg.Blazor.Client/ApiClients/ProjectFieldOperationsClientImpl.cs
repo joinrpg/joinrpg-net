@@ -91,4 +91,38 @@ internal class ProjectFieldOperationsClientImpl(
             throw;
         }
     }
+
+    public async Task SortVariantsByLabel(ProjectFieldIdentification fieldId)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            var response = await httpClient.PostAsJsonAsync(
+                $"webapi/project-field-operations/sortvariantsbylabel?projectId={fieldId.ProjectId.Value}",
+                fieldId);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during field variants sort");
+            throw;
+        }
+    }
+
+    public async Task CreateVariants(FieldValuesMassAddRequest request)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            var response = await httpClient.PostAsJsonAsync(
+                $"webapi/project-field-operations/createvariants?projectId={request.FieldId.ProjectId.Value}",
+                request);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during field variants mass creation");
+            throw;
+        }
+    }
 }

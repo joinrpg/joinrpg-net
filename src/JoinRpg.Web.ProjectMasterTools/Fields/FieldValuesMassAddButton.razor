@@ -1,0 +1,53 @@
+@inject IProjectFieldOperationsClient ProjectFieldOperationsClient
+@inject NavigationManager NavigationManager
+@inject ILogger<FieldValuesMassAddButton> Logger
+
+<JoinButton Preset="ButtonPreset.Add" Label="Добавить несколько значений" OnClick="OpenDialogAsync" />
+
+@if (errorMessage is not null)
+{
+    <JoinErrorMessage>@errorMessage</JoinErrorMessage>
+}
+
+<JoinFormDialog Caption="Добавить несколько значений"
+                SubmitButtonPreset="ButtonPreset.Add"
+                Model="@form"
+                FormName="FieldValuesMassAddForm"
+                @ref="dialog">
+    <FormRowFor For="@(() => form.ValuesToAdd)">
+        <JoinTextArea @bind-Value="form.ValuesToAdd" Rows="8" />
+    </FormRowFor>
+</JoinFormDialog>
+
+@code {
+    [Parameter, EditorRequired]
+    public ProjectFieldIdentification FieldId { get; set; } = null!;
+
+    private JoinFormDialog<FieldValuesMassAddFormModel> dialog = default!;
+    private readonly FieldValuesMassAddFormModel form = new();
+    private string? errorMessage;
+
+    private async Task OpenDialogAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            errorMessage = null;
+            var result = await dialog.ShowModalAsync();
+            if (result is null || string.IsNullOrWhiteSpace(result.ValuesToAdd))
+            {
+                return;
+            }
+            await ProjectFieldOperationsClient.CreateVariants(new FieldValuesMassAddRequest(FieldId, result.ValuesToAdd));
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при добавлении нескольких значений поля");
+            errorMessage = "Не удалось добавить значения";
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+}

@@ -7,4 +7,6 @@ public interface IProjectFieldOperationsClient
     Task DeleteUnusedVariants(ProjectFieldIdentification fieldId);
     Task CreateTimeSlots(TimeSlotMassAddRequest request);
     Task SortTimeSlotsByStartTime(ProjectFieldIdentification fieldId);
+    Task SortVariantsByLabel(ProjectFieldIdentification fieldId);
+    Task CreateVariants(FieldValuesMassAddRequest request);
 }
