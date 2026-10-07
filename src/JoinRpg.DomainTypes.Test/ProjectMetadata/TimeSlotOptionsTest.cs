@@ -21,11 +21,11 @@ public class TimeSlotOptionsTest
             .ShouldBe("""{"StartTime":"2026-07-10T10:00:00","TimeSlotInMinutes":50}""");
 
     [Fact]
-    public void FromJson_RoundTrips()
+    public void TryFromJson_RoundTrips()
     {
         var options = new TimeSlotOptions(new DateTime(2026, 7, 10, 10, 0, 0), 50);
 
-        TimeSlotOptions.FromJson(options.ToJson()).ShouldBe(options);
+        TimeSlotOptions.TryFromJson(options.ToJson()).ShouldBe(options);
     }
 
     /// <summary>
@@ -35,9 +35,9 @@ public class TimeSlotOptionsTest
     [InlineData("""{"StartTime":"2026-07-10T10:00:00+03:00","TimeSlotInMinutes":50,"TimeSlotLength":"00:50:00","EndTime":"2026-07-10T10:50:00+03:00"}""")]
     [InlineData("""{"StartTime":"2026-07-10T10:00:00+07:00","TimeSlotInMinutes":50}""")]
     [InlineData("""{"StartTime":"2026-07-10T10:00:00Z","TimeSlotInMinutes":50}""")]
-    public void FromJson_LegacyOffset_IsIgnored(string json)
+    public void TryFromJson_LegacyOffset_IsIgnored(string json)
     {
-        var options = TimeSlotOptions.FromJson(json).ShouldNotBeNull();
+        var options = TimeSlotOptions.TryFromJson(json).ShouldNotBeNull();
 
         options.LocalStartTime.ShouldBe(new DateTime(2026, 7, 10, 10, 0, 0));
         options.TimeSlotInMinutes.ShouldBe(50);

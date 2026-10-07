@@ -5,23 +5,25 @@
 @if (IsTimeSlot || UnusedCount > 0)
 {
     <div style="margin-top: 1em;">
-        @if (IsTimeSlot)
-        {
-            <JoinButton Preset="ButtonPreset.Sort"
-                        Label="Отсортировать по времени начала"
-                        AutoConfirm="true"
-                        AutoConfirmMessage="Отсортировать значения по времени начала?"
-                        OnClick="SortByStartTimeAsync" />
-        }
-        @if (UnusedCount is var unusedCount && unusedCount > 0)
-        {
-            <JoinButton Preset="ButtonPreset.Delete"
-                        Label="Удалить все неиспользованные"
-                        Title="Удалить значения, которые ни разу не выбирали"
-                        AutoConfirm="true"
-                        AutoConfirmMessage="@($"Удалить значения, которые ни разу не выбирали ({unusedCount} шт.)? Это действие нельзя отменить.")"
-                        OnClick="DeleteUnusedAsync" />
-        }
+        <JoinButtonGroup>
+            @if (IsTimeSlot)
+            {
+                <JoinButton Preset="ButtonPreset.Sort"
+                            Label="Отсортировать по времени начала"
+                            AutoConfirm="true"
+                            AutoConfirmMessage="Отсортировать значения по времени начала?"
+                            OnClick="SortByStartTimeAsync" />
+            }
+            @if (UnusedCount is var unusedCount && unusedCount > 0)
+            {
+                <JoinButton Preset="ButtonPreset.Delete"
+                            Label="Удалить все неиспользованные"
+                            Title="Удалить значения, которые ни разу не выбирали"
+                            AutoConfirm="true"
+                            AutoConfirmMessage="@($"Удалить значения, которые ни разу не выбирали ({unusedCount} шт.)? Это действие нельзя отменить.")"
+                            OnClick="DeleteUnusedAsync" />
+            }
+        </JoinButtonGroup>
     </div>
 }
 
