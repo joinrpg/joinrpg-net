@@ -1,8 +1,10 @@
+@using JoinRpg.Common.WebComponents.ElementMoving
 @using JoinRpg.Web.ProjectCommon
 @using JoinRpg.Web.ProjectCommon.Masters
 @model JoinRpg.Web.Models.Masters.MastersListViewModel
 @{
     ViewBag.Title = "Мастера";
+    var masterIds = Model.Masters.Select(m => m.UserId.ToString()).ToArray();
 }
 
 <h2>@ViewBag.Title</h2>
@@ -93,6 +95,16 @@
                  <a href="@Url.Action("Edit", new {item.ProjectId, userId = item.UserId})" class="btn btn-default btn-sm">
                             <join-icon icon="Edit" /> Мой профиль
                         </a>
+              }
+              @if (Model.CanCurrentUserGrantRights && Model.Masters.Count > 1)
+              {
+                  @* Порядок мастеров (ADR019, §5): «переместить после» соседа, как у сюжетов. *@
+                  <component type="typeof(JoinMoveControlNonInteractive)"
+                             render-mode="Static"
+                             param-Endpoint="@Url.Action("Reorder", "Acl", new { item.ProjectId })"
+                             param-SelfId="@item.UserId.ToString()"
+                             param-ItemIds="@masterIds"
+                             param-SkipGroup="true" />
               }
 
               @if (item.UserId == Model.CurrentUserId)

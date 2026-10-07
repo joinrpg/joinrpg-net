@@ -563,4 +563,65 @@ public class ProjectAccessServiceTest
 
         await Should.ThrowAsync<InvalidOperationException>(() => service.ChangeMasterProfile(ProfileRequest(51)));
     }
+
+    /// <summary>Мастера 2 (владелец), 50, 60 и снятый 61; по умолчанию идут по ProjectAclId — в этом порядке.</summary>
+    private void SetUpMastersForOrdering()
+    {
+        mock.Project.ProjectAcls.Single(a => a.UserId == mock.Master.UserId).ProjectAclId = 1;
+        AddMaster(50, canGrantRights: false).ProjectAclId = 2;
+        AddMaster(60, canGrantRights: false).ProjectAclId = 3;
+        var former = AddMaster(61, canGrantRights: false);
+        former.ProjectAclId = 4;
+        former.Status = ProjectAclStatus.Removed;
+        mock.ReInitProjectInfo();
+    }
+
+    private UserIdentification[] OrderAfterSave() => [.. metadataRepository.LastPrimed.ShouldNotBeNull().Masters.Select(m => m.UserId)];
+
+    [Fact]
+    public async Task MoveMasterAfter_PutsMasterAfterGivenOne()
+    {
+        SetUpMastersForOrdering();
+        var service = CreateService(mock.Master.UserId);
+
+        await service.MoveMasterAfter(ProjectId, new UserIdentification(mock.Master.UserId), new UserIdentification(60));
+
+        OrderAfterSave().ShouldBe([new(50), new(60), new(mock.Master.UserId)]);
+    }
+
+    [Fact]
+    public async Task MoveMasterAfter_Null_PutsMasterFirst()
+    {
+        SetUpMastersForOrdering();
+        var service = CreateService(mock.Master.UserId);
+
+        await service.MoveMasterAfter(ProjectId, new UserIdentification(60), afterUserId: null);
+
+        OrderAfterSave().ShouldBe([new(60), new(mock.Master.UserId), new(50)]);
+    }
+
+    [Theory]
+    [InlineData(61, 50)] // снятого мастера двигать нельзя — страница устарела
+    [InlineData(50, 61)] // «после» снятого — тоже
+    public async Task MoveMasterAfter_WithRemovedMaster_IsNoOp(int userId, int afterUserId)
+    {
+        SetUpMastersForOrdering();
+        var before = mock.ProjectInfo.Masters.Select(m => m.UserId).ToArray();
+        var service = CreateService(mock.Master.UserId);
+
+        await service.MoveMasterAfter(ProjectId, new UserIdentification(userId), new UserIdentification(afterUserId));
+
+        OrderAfterSave().ShouldBe(before);
+    }
+
+    [Fact]
+    public async Task MoveMasterAfter_WithoutCanGrantRights_Throws()
+    {
+        AddMaster(50, canGrantRights: false);
+
+        var service = CreateService(50);
+
+        await Should.ThrowAsync<NoAccessToProjectException>(
+            () => service.MoveMasterAfter(ProjectId, new UserIdentification(50), afterUserId: null));
+    }
 }
