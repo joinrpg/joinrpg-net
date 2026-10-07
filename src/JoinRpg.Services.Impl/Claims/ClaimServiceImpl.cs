@@ -556,6 +556,11 @@ internal class ClaimServiceImpl(
             throw new EntityWrongStatusException(slot);
         }
 
+        // Сюжеты грузятся до создания персонажа: прямые привязки берутся из этой выборки, а не из
+        // slot.DirectlyRelatedPlotElements — навигация на write-хэндле не загружена, и обращение к
+        // ней стоило бы ленивой загрузки (#5061).
+        var plots = await ctx.LoadDirectPlotsForCharacter(slot.GetId());
+
         var newCharacter = new Character()
         {
             ApprovedClaim = null,
@@ -570,7 +575,7 @@ internal class ClaimServiceImpl(
             CreatedAt = DateTime.Now,
             CreatedBy = player,
             CreatedById = player.UserId,
-            DirectlyRelatedPlotElements = slot.DirectlyRelatedPlotElements,
+            DirectlyRelatedPlotElements = [.. plots],
             HidePlayerForCharacter = slot.HidePlayerForCharacter,
             InGame = false,
             IsAcceptingClaims = true,
@@ -591,8 +596,6 @@ internal class ClaimServiceImpl(
         // Через контекст, а не через UnitOfWork.GetDbSet: сохраняет тот DbContext, который загрузил
         // агрегат, а DI-экземпляр UnitOfWork у сервиса — другой (ADR014).
         ctx.AddEntity(newCharacter);
-
-        var plots = await ctx.LoadDirectPlotsForCharacter(slot.GetId());
 
         foreach (var plot in plots)
         {

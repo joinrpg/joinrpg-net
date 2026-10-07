@@ -49,9 +49,9 @@ public class ApproveClaimLazyLoadsScenario(JoinApplicationFactory factory) : ICl
                 .ShouldBe(plot.ElementIds.Select(e => e.PlotElementId), ignoreOrder: true);
         }
 
-        // Долг #5061: персонаж из слота копирует DirectlyRelatedPlotElements и Subscriptions
-        // слота, и обе навигации грузятся лениво (PlotElementCharacters и UserSubscriptions).
-        count.ShouldBe(2, $"ApproveByMaster на слот дал {count} ленивых загрузок, см. #5061");
+        // Долг #5061: персонаж из слота забирает Subscriptions слота, и навигация грузится лениво
+        // (UserSubscriptions). Что должно происходить с подписками слота — открытый вопрос.
+        count.ShouldBe(1, $"ApproveByMaster на слот дал {count} ленивых загрузок, см. #5061");
     }
 
     private async Task<(int Count, ClaimIdentification ClaimId, PlotSeedResult Plot)> ApproveClaimAndCountLazyLoads(
