@@ -10,10 +10,10 @@ public class ForumThreadViewModel(ForumThread forumThread, CharacterGroupFullInf
 {
     public CharacterGroupDetailsViewModel GroupDetails { get; } = new CharacterGroupDetailsViewModel(characterGroup, projectInfo, currentUserId, GroupNavigationPage.None);
 
-    public IReadOnlyCollection<CommentViewModel> RootComments { get; } = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
+    public IReadOnlyCollection<CommentViewModel> RootComments { get; } = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId, projectInfo);
 
     public int ProjectId { get; } = forumThread.ProjectId;
-    public bool HasMasterAccess { get; } = forumThread.HasMasterAccess(currentUserId);
+    public bool HasMasterAccess { get; } = projectInfo.HasMasterAccess(currentUserId);
 
     public string ProjectName { get; } = forumThread.Project.ProjectName;
     public string Header { get; } = forumThread.Header;
@@ -57,7 +57,7 @@ public class CreateForumThreadViewModel
 
 public class ForumThreadListViewModel(ProjectInfo project, IEnumerable<IForumThreadListItem> threads, UserIdentification currentUserId)
 {
-    public IEnumerable<ForumThreadListItemViewModel> Items { get; } = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId)).ToList();
+    public IEnumerable<ForumThreadListItemViewModel> Items { get; } = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId, project)).ToList();
     public string ProjectName { get; } = project.ProjectName;
     public int ProjectId { get; } = project.ProjectId;
     public int RootGroupId { get; } = project.GroupTree.RootGroupId.CharacterGroupId;
@@ -72,9 +72,10 @@ public class ForumThreadListForGroupViewModel(ProjectInfo projectInfo, Character
 
 public class ForumThreadListItemViewModel
 {
-    public ForumThreadListItemViewModel(IForumThreadListItem thread, int currentUserId)
+    public ForumThreadListItemViewModel(IForumThreadListItem thread, int currentUserId, ProjectInfo projectInfo)
     {
-        var masterAccess = thread.HasMasterAccess(new UserIdentification(currentUserId));
+        // Права — по ProjectInfo, а не по thread.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
+        var masterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
         ProjectId = thread.Project.ProjectId;
         Header = thread.Header;
         Topicstarter = thread.Topicstarter;
@@ -82,8 +83,8 @@ public class ForumThreadListItemViewModel
         LastMessageText = ((MarkdownString?)(masterAccess ? thread.LastMessageText : thread.LastMessageTextForPlayer)).ToHtmlString();
         LastMessageAuthor = masterAccess ? thread.LastMessageAuthor : thread.LastMessageAuthorForPlayer;
         UpdatedAt = thread.UpdatedAt;
-        UnreadCount = thread.GetUnreadCount(currentUserId);
-        TotalCount = thread.Comments.Count(c => c.IsVisibleTo(currentUserId));
+        UnreadCount = thread.GetUnreadCount(currentUserId, projectInfo);
+        TotalCount = thread.Comments.Count(c => c.IsVisibleTo(currentUserId, projectInfo));
         ForumThreadId = thread.Id;
     }
 

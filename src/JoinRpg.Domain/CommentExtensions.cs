@@ -11,11 +11,16 @@ public static class CommentExtensions
         return comments.Union(watermarks).Append(0).Max();
     }
 
-    public static int GetUnreadCount(this ICommentDiscussionHeader commentDiscussion, int currentUserId)
+    public static int GetUnreadCount(this ICommentDiscussionHeader commentDiscussion, int currentUserId, ProjectInfo projectInfo)
     {
         var watermark = commentDiscussion.GetWatermark(currentUserId);
-        return commentDiscussion.Comments.Where(c => c.IsVisibleTo(currentUserId)).Count(comment => watermark < comment.Id);
+        return commentDiscussion.Comments.Where(c => c.IsVisibleTo(currentUserId, projectInfo)).Count(comment => watermark < comment.Id);
     }
 
-    public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId) => comment.IsVisibleToPlayer || comment.Project.HasMasterAccess(new UserIdentification(currentUserId));
+    /// <summary>
+    /// Мастерский доступ берётся из <paramref name="projectInfo"/>, а не из <c>comment.Project.ProjectAcls</c>:
+    /// навигация стоила ленивой догрузки ACL на страницах форума и обсуждений (#4989).
+    /// </summary>
+    public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId, ProjectInfo projectInfo)
+        => comment.IsVisibleToPlayer || projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
 }

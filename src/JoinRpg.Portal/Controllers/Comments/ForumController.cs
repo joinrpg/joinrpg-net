@@ -123,7 +123,7 @@ public class ForumController(
         {
             if (viewModel.HideFromUser)
             {
-                _ = discussion.RequestMasterAccess(currentUserAccessor.UserIdentification);
+                _ = discussionProjectInfo.RequestMasterAccess(currentUserAccessor.UserIdentification);
             }
 
             var claim = discussion.GetClaim();

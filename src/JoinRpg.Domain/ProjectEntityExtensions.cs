@@ -141,7 +141,10 @@ public static class ProjectEntityExtensions
     }
 
     [Obsolete]
-    public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId, ProjectInfo projectInfo) => discussion.HasMasterAccess(new UserIdentification(currentUserId)) || discussion.HasPlayerAccess(currentUserId, projectInfo);
+    public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId, ProjectInfo projectInfo)
+        // Мастерский доступ — по ProjectInfo, а не по discussion.Project.ProjectAcls: навигация стоила
+        // ленивой догрузки ACL на каждом переходе к обсуждению (#4989).
+        => projectInfo.HasMasterAccess(new UserIdentification(currentUserId)) || discussion.HasPlayerAccess(currentUserId, projectInfo);
 
     [Obsolete]
     public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId, ProjectInfo projectInfo)
@@ -178,7 +181,7 @@ public static class ProjectEntityExtensions
     {
         ArgumentNullException.ThrowIfNull(forumThread);
 
-        return forumThread.HasMasterAccess(UserIdentification.FromOptional(currentUserId)) || forumThread.HasPlayerAccess(currentUserId, projectInfo);
+        return projectInfo.HasMasterAccess(UserIdentification.FromOptional(currentUserId)) || forumThread.HasPlayerAccess(currentUserId, projectInfo);
     }
 
     [Pure]
