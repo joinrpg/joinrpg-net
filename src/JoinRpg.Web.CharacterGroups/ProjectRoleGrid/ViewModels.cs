@@ -32,6 +32,8 @@ public record ProjectRoleGridViewResult(
 /// <param name="RootGroupId">Корневая группа сетки — для меню управления группой у заголовка</param>
 /// <param name="SuppressFieldLabels">Не подписывать значения полей в режиме дерева
 /// (выбрано единственное поле и это «Описание персонажа»)</param>
+/// <param name="DefaultClaimProjectStatus">Статус проекта для большой кнопки «Заявиться» у заголовка
+/// (заявка на шаблон по умолчанию). null — кнопки нет: шаблона у проекта нет или проект в архиве.</param>
 public record ProjectRoleGridViewModel(
     ProjectRolesListIdentification? RolesListId,
     string Name,
@@ -44,7 +46,8 @@ public record ProjectRoleGridViewModel(
     RolesGridGroupsViewMode GroupsViewMode,
     CharacterGroupIdentification RootGroupId,
     CharacterGroupType RootGroupType,
-    bool SuppressFieldLabels);
+    bool SuppressFieldLabels,
+    ProjectLifecycleStatus? DefaultClaimProjectStatus);
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(ProjectRoleGridCharacterRowViewModel), "character")]

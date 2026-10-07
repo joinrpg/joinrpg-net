@@ -2,6 +2,7 @@
 @using JoinRpg.Web.CharacterGroups.GroupEditMenu
 @using JoinRpg.Web.ProjectCommon
 @using JoinRpg.Web.ProjectCommon.Characters
+@using JoinRpg.Web.ProjectCommon.Projects
 @using JoinRpg.Common.WebComponents
 @inject IProjectRoleGridClient Client
 @inject NavigationManager NavigationManager
@@ -43,6 +44,11 @@ else
                        HasMasterAccess="Model.HasMasterAccess"
                        ShowEditControls="Model.CanEditSettings"
                        Size="SizeStyleEnum.Medium" />
+        @* Заявка «просто на игру» — на шаблон по умолчанию (#5319). *@
+        @if (Model.DefaultClaimProjectStatus is { } projectStatus)
+        {
+            <SendClaimButton ProjectId="Model.RootGroupId.ProjectId" ProjectStatus="projectStatus" Size="SizeStyleEnum.Large" />
+        }
         @* У транзиентной («классической») сетки нет id — кнопки настроек не показываем. *@
         @if (Model.CanEditSettings && Model.RolesListId is { } rolesListId)
         {

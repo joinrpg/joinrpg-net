@@ -411,6 +411,47 @@ public class ProjectRoleGridViewModelBuilderTests
             .Player!.ApplyStatus.IsAvailable.ShouldBeFalse();
     }
 
+    /// <summary>
+    /// Большая кнопка «Заявиться» у заголовка ведёт на шаблон по умолчанию — без шаблона её нет (#5319).
+    /// </summary>
+    [Fact]
+    public void Build_NoDefaultTemplate_NoDefaultClaimButton()
+    {
+        var result = BuildGrid(Config(), [_mock.CreateCharacter("Вася")]);
+
+        result.DefaultClaimProjectStatus.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(true, ProjectLifecycleStatus.ActiveClaimsOpen)]
+    // При закрытом приёме кнопка остаётся, но неактивная — «Заявки закрыты».
+    [InlineData(false, ProjectLifecycleStatus.ActiveClaimsClosed)]
+    public void Build_DefaultTemplate_DefaultClaimButtonShown(bool isAcceptingClaims, ProjectLifecycleStatus expected)
+    {
+        var template = _mock.CreateCharacter("Шаблон");
+        _mock.Project.Details.DefaultTemplateCharacterId = template.CharacterId;
+        _mock.Project.IsAcceptingClaims = isAcceptingClaims;
+        _mock.ReInitProjectInfo();
+
+        var result = BuildGrid(Config(), [template]);
+
+        result.DefaultClaimProjectStatus.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Build_DefaultTemplate_ArchivedProject_NoDefaultClaimButton()
+    {
+        var template = _mock.CreateCharacter("Шаблон");
+        _mock.Project.Details.DefaultTemplateCharacterId = template.CharacterId;
+        _mock.Project.Active = false;
+        _mock.Project.IsAcceptingClaims = false;
+        _mock.ReInitProjectInfo();
+
+        var result = BuildGrid(Config(), [template]);
+
+        result.DefaultClaimProjectStatus.ShouldBeNull();
+    }
+
     [Fact]
     public void Build_SlotCharacter_SlotCountInApplyStatus()
     {
