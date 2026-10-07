@@ -74,4 +74,21 @@ internal class ProjectFieldOperationsClientImpl(
             throw;
         }
     }
+
+    public async Task SortTimeSlotsByStartTime(ProjectFieldIdentification fieldId)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            var response = await httpClient.PostAsJsonAsync(
+                $"webapi/project-field-operations/sorttimeslotsbystarttime?projectId={fieldId.ProjectId.Value}",
+                fieldId);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during time slots sort");
+            throw;
+        }
+    }
 }

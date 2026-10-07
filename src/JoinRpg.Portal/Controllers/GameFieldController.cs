@@ -357,20 +357,4 @@ public class GameFieldController(
             return ReturnToIndex();
         }
     }
-
-    [MasterAuthorize(Permission.CanChangeFields)]
-    [HttpPost("~/{projectId:int}/fields/{projectFieldId:int}/sortvariantsbytime")]
-    public async Task<ActionResult> SortVariantsByStartTime(int projectId, int projectFieldId)
-    {
-        var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        var field = metadata.UnsortedFields.SingleOrDefault(f => f.Id.ProjectFieldId == projectFieldId);
-        if (field is null || !field.IsTimeSlot)
-        {
-            return NotFound();
-        }
-
-        await fieldSetupService.SortTimeSlotVariantsByStartTime(field.Id);
-
-        return ReturnToField(field.Id);
-    }
 }

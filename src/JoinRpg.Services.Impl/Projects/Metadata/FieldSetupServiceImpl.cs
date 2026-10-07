@@ -354,20 +354,7 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.MustBeActive,
             projectFieldId,
-            ctx =>
-            {
-                var field = GetField(ctx.Project, ctx.Request);
-                var container = field.GetFieldValuesContainer();
-                container.SortBy(x => x.Label);
-                field.ValuesOrdering = container.GetStoredOrder();
-
-                if (field.CharacterGroup != null)
-                {
-                    var groupContainer = field.CharacterGroup.GetCharacterGroupsContainer();
-                    groupContainer.SortBy(g => g.CharacterGroupName);
-                    field.CharacterGroup.ChildGroupsOrdering = groupContainer.GetStoredOrder();
-                }
-            });
+            ctx => SortVariants(GetField(ctx.Project, ctx.Request), x => x.Label));
     }
 
     public async Task SortTimeSlotVariantsByStartTime(ProjectFieldIdentification projectFieldId)
@@ -385,26 +372,34 @@ internal class FieldSetupServiceImpl(
                     throw new ArgumentException("Поле не является таймслотом", nameof(projectFieldId)); // TODO[Localize]
                 }
 
-                var container = field.GetFieldValuesContainer();
                 // Варианты без разбираемого времени — в конец; одинаковое начало (параллельные слоты) — по названию,
                 // иначе порядок не определён: сортировка в контейнере нестабильная
-                container.SortBy(x => TimeSlotOptions.TryFromJson(x.ProgrammaticValue) is { } options
+                SortVariants(field, x => TimeSlotOptions.TryFromJson(x.ProgrammaticValue) is { } options
                     ? (false, options.LocalStartTime, x.Label)
                     : (true, DateTime.MinValue, x.Label));
-                field.ValuesOrdering = container.GetStoredOrder();
-
-                if (field.CharacterGroup != null)
-                {
-                    // Спецгруппы вариантов — в том же порядке, что и сами варианты
-                    var variantIndex = container.OrderedItems
-                        .Select((variant, index) => (variant.CharacterGroup, index))
-                        .Where(x => x.CharacterGroup is not null)
-                        .ToDictionary(x => x.CharacterGroup!.CharacterGroupId, x => x.index);
-                    var groupContainer = field.CharacterGroup.GetCharacterGroupsContainer();
-                    groupContainer.SortBy(g => variantIndex.GetValueOrDefault(g.CharacterGroupId, int.MaxValue));
-                    field.CharacterGroup.ChildGroupsOrdering = groupContainer.GetStoredOrder();
-                }
             });
+    }
+
+    /// <summary>
+    /// Сортирует варианты поля, а спецгруппы вариантов выстраивает в том же порядке
+    /// </summary>
+    private static void SortVariants<TKey>(ProjectField field, Func<ProjectFieldDropdownValue, TKey> key)
+        where TKey : IComparable<TKey>
+    {
+        var container = field.GetFieldValuesContainer();
+        container.SortBy(key);
+        field.ValuesOrdering = container.GetStoredOrder();
+
+        if (field.CharacterGroup != null)
+        {
+            var variantIndex = container.OrderedItems
+                .Select((variant, index) => (variant.CharacterGroup, index))
+                .Where(x => x.CharacterGroup is not null)
+                .ToDictionary(x => x.CharacterGroup!.CharacterGroupId, x => x.index);
+            var groupContainer = field.CharacterGroup.GetCharacterGroupsContainer();
+            groupContainer.SortBy(g => variantIndex.GetValueOrDefault(g.CharacterGroupId, int.MaxValue));
+            field.CharacterGroup.ChildGroupsOrdering = groupContainer.GetStoredOrder();
+        }
     }
 
     private static ProjectField GetField(Project project, int projectFieldId)
