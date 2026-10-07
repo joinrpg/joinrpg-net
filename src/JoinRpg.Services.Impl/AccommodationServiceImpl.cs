@@ -246,9 +246,7 @@ internal class AccommodationServiceImpl(
         var notification = new RoomOccupancyNotification(
             roomId,
             roomName,
-            // Тип проживания комнаты — это тип категории, из которой она селится: сегодня пул
-            // ровно один на тип (ADR018, «Задел на разделение»).
-            new AccommodationTypeIdentification(roomId.ProjectId, ctx.Category.Id),
+            ctx.Plan.Id,
             // Инициатор — текущий пользователь запроса, он же есть в контексте мутации.
             ctx.CurrentUser.ToUserInfoHeader(),
             [.. changed.SelectMany(group => group.Subjects)],

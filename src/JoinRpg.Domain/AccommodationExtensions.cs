@@ -29,36 +29,30 @@ public static class AccommodationExtensions
     /// по вместимости выбранного типа проживания.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Обслуживает контур приглашений и карточку заявки — он остался на EF-сущностях (ADR018, §13).
     /// Свободное место в комнате для страницы комнат и для заселения считает доменный агрегат —
-    /// <c>RoomCategoryPlan.GetFreeSpace</c>; отдельного расчёта «свободное место комнаты» поверх
-    /// EF-сущностей больше нет (ADR018, §8).
-    /// </remarks>
-    public static int GetRoomFreeSpace(this AccommodationRequest accommodationRequest1)
-    {
-        if (accommodationRequest1.Accommodation is ProjectAccommodation accommodation)
-        {
-            return accommodation.ProjectAccommodationType.Capacity - accommodation.GetAllInhabitants().Count();
-        }
-        else
-        {
-            return accommodationRequest1.AccommodationType.Capacity - accommodationRequest1.Subjects.Count;
-        }
-    }
-
-    /// <summary>
-    /// То же, но вместимость берётся из метаданных проекта (ADR015), а не из навигаций
-    /// <c>AccommodationType</c> / <c>Accommodation.ProjectAccommodationType</c>.
-    /// </summary>
-    /// <remarks>
-    /// Нужна мутациям: внутри операции обращение к незагруженной навигации — это скрытый запрос из
-    /// середины мутации, чего ADR014 не допускает. Расчёт тот же, что в перегрузке без метаданных.
+    /// <c>RoomCategoryPlan.GetFreeSpace</c>.
+    /// </para>
+    /// <para>
+    /// Вместимость берётся из метаданных проекта (ADR015), а не из навигаций EF: внутри мутации
+    /// обращение к незагруженной навигации — скрытый запрос, чего ADR014 не допускает. Перегрузки
+    /// поверх навигаций нет намеренно: правило минимума по типам жильцов на ней дало бы ленивую
+    /// загрузку на каждую группу, а без него список приглашений и приём приглашения считали бы
+    /// свободное место по-разному.
+    /// </para>
     /// </remarks>
     public static int GetRoomFreeSpace(this AccommodationRequest accommodationRequest, ProjectInfo projectInfo)
     {
         if (accommodationRequest.Accommodation is ProjectAccommodation room)
         {
-            return Capacity(room.AccommodationTypeId) - room.GetAllInhabitants().Count();
+            // Правило свободного места ADR018: комнату ужимает тип каждой живущей в ней группы,
+            // а не тип комнаты — у комнаты его нет, она принадлежит категории (ADR020).
+            var limit = room.Inhabitants
+                .Select(group => Capacity(group.AccommodationTypeId))
+                .Append(Capacity(accommodationRequest.AccommodationTypeId))
+                .Min();
+            return limit - room.GetAllInhabitants().Count();
         }
 
         return Capacity(accommodationRequest.AccommodationTypeId) - accommodationRequest.Subjects.Count;

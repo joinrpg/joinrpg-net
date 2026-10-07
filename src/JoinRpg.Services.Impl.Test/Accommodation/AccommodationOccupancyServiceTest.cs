@@ -264,8 +264,8 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
 
         var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
         notification.Initiator.UserId.ShouldBe(mock.Master.GetId());
-        // Тип комнаты уведомление несёт идентификатором — название сервис возьмёт из метаданных.
-        notification.AccommodationTypeId.ShouldBe(TentId);
+        // Категорию комнаты уведомление несёт идентификатором — название сервис возьмёт из метаданных.
+        notification.RoomCategoryId.ShouldBe(mock.ProjectInfo.AccommodationSettings.GetTypeById(TentId).RoomCategoryId);
         notification.RoomId.ShouldBe(room.GetId());
         notification.RoomName.ShouldBe("101");
     }

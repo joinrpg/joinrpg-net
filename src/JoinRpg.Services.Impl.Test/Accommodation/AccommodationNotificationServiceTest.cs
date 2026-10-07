@@ -74,7 +74,7 @@ public class AccommodationNotificationServiceTest
         => new(
             new AccommodationRoomIdentification(mock.ProjectInfo.ProjectId, 17),
             RoomName: "101",
-            accommodationType.GetId(),
+            mock.ProjectInfo.AccommodationSettings.GetTypeById(accommodationType.GetId()).RoomCategoryId,
             initiatorOverride ?? initiator,
             changed,
             remaining,
@@ -215,7 +215,10 @@ public class AccommodationNotificationServiceTest
         var claim = AddClaim("Вселился", playerId: 1);
 
         await CreateService().SendNotification(
-            Notification([claim.ClaimId], []) with { AccommodationTypeId = otherType.GetId() });
+            Notification([claim.ClaimId], []) with
+            {
+                RoomCategoryId = mock.ProjectInfo.AccommodationSettings.GetTypeById(otherType.GetId()).RoomCategoryId,
+            });
 
         Queued().Header.ShouldContain("Люкс");
         Queued().TemplateText.TemplateContents.ShouldContain("Люкс");

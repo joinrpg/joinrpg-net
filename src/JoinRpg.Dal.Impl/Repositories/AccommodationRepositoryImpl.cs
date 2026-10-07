@@ -8,10 +8,12 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
 {
     public async Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId)
     {
-        return await ctx.Set<ProjectAccommodation>()
-            .Where(room => room.ProjectId == accommodationTypeId.ProjectId.Value
-                && room.AccommodationTypeId == accommodationTypeId.AccommodationTypeId)
-            .AnyAsync(room => room.Inhabitants.Any())
+        // Занят тип, а не комната: комната принадлежит категории, и в ней могут жить группы
+        // сестринских типов (ADR020). Поэтому ищем расселённые группы именно этого типа.
+        return await ctx.Set<AccommodationRequest>()
+            .AnyAsync(group => group.ProjectId == accommodationTypeId.ProjectId.Value
+                && group.AccommodationTypeId == accommodationTypeId.AccommodationTypeId
+                && group.AccommodationId != null)
             .ConfigureAwait(false);
     }
 
@@ -84,7 +86,11 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
                 RoomsCount = x.ProjectAccommodations.Count,
                 ApprovedClaims = x.Desirous.Sum(ar => (int?)ar.Subjects.Count) ?? 0,
                 FullyFreeRoomsCount = x.ProjectAccommodations.Count(room => (room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count) ?? 0) == 0),
-                FullyOccupiedRoomsCount = x.ProjectAccommodations.Count(room => (room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count) ?? 0) == x.Capacity),
+                // «Заполнена» — по правилу свободного места ADR018: предел комнаты задаёт тип каждой
+                // живущей в ней группы, а не тип, к которому комната относится (ADR020).
+                FullyOccupiedRoomsCount = x.ProjectAccommodations.Count(room =>
+                    room.Inhabitants.Any()
+                    && room.Inhabitants.Sum(ar => ar.Subjects.Count) >= room.Inhabitants.Min(ar => ar.AccommodationType.Capacity)),
             })
             .ToListAsync()
             .ConfigureAwait(false);

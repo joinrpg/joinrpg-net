@@ -126,9 +126,9 @@ public class ClaimController(
         var plots = await characterPlotViewService.GetPlotsForCharacter(new CharacterIdentification(claim.ProjectId, claim.CharacterId));
 
 
-        var accommodationModel = claim.Project.Details.EnableAccommodation ? ShowAccommodationModel(claim) : null;
-
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
+
+        var accommodationModel = claim.Project.Details.EnableAccommodation ? ShowAccommodationModel(claim, projectInfo) : null;
 
         var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
 
@@ -156,7 +156,7 @@ public class ClaimController(
         return View("Edit", claimViewModel);
     }
 
-    private static ClaimAccommodationViewModel ShowAccommodationModel(Claim claim) => new(claim);
+    private static ClaimAccommodationViewModel ShowAccommodationModel(Claim claim, ProjectInfo projectInfo) => new(claim, projectInfo);
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(int projectId, int claimId, string ignoreMe)
