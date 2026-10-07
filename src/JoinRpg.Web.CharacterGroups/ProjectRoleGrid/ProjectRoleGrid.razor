@@ -64,7 +64,10 @@ else
         <thead>
             <tr>
                 <th>Персонаж</th>
-                <th>Игрок</th>
+                @if (Model.HasPlayerColumn)
+                {
+                    <th>Игрок</th>
+                }
                 @if (Model.HasGroupsColumn)
                 {
                     <th>Группы</th>
@@ -80,7 +83,7 @@ else
             {
                 @if (block is ProjectRoleGridGroupHeaderRowViewModel groupHeader)
                 {
-                    var colspan = 2 + (Model.HasGroupsColumn ? 1 : 0) + Model.FieldColumnNames.Count;
+                    var colspan = 1 + (Model.HasPlayerColumn ? 1 : 0) + (Model.HasGroupsColumn ? 1 : 0) + Model.FieldColumnNames.Count;
                     <tr class="table-secondary">
                         <td colspan="@colspan">
                             <strong><CharacterGroupLink Model="groupHeader.Group" /></strong>
@@ -112,9 +115,12 @@ else
                                                       OnMoveCompleted="StateHasChanged" />
                                 }
                             </td>
-                            <td>
-                                <ProjectRoleGridPlayerCell Row="charRow" />
-                            </td>
+                            @if (charRow.Player is { } player)
+                            {
+                                <td>
+                                    <ProjectRoleGridPlayerCell Row="charRow" Player="player" />
+                                </td>
+                            }
                             @if (charRow.Groups is { } groups)
                             {
                                 <td>

@@ -19,8 +19,8 @@ public class AddProjectRolesListViewModel : IValidatableObject
     [Display(Name = "Показывать в меню игрокам")]
     public bool PublicMode { get; set; } = false;
 
-    [Display(Name = "Колонка контактов")]
-    public ContactsColumnVisibilityModeView ContactsColumn { get; set; } = ContactsColumnVisibilityModeView.None;
+    [Display(Name = "Колонка «Игрок»")]
+    public PlayerColumnModeView ContactsColumn { get; set; } = PlayerColumnModeView.NameOnly;
 
     [Display(Name = "Колонка групп")]
     public ProjectRolesListVisibilityModeView GroupsColumn { get; set; } = ProjectRolesListVisibilityModeView.None;
@@ -36,7 +36,7 @@ public class AddProjectRolesListViewModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (PublicMode && ContactsColumn == ContactsColumnVisibilityModeView.All)
+        if (PublicMode && ContactsColumn == PlayerColumnModeView.All)
         {
             yield return new ValidationResult(
                 "В публичной сетке ролей нельзя показывать все контакты",
@@ -52,11 +52,31 @@ public class AddProjectRolesListViewModel : IValidatableObject
             CharacterGroupId: CharacterGroupId,
             PublicMode: PublicMode,
             Fields: Fields,
-            ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
+            ContactsColumn: ToDomainPlayerColumn(ContactsColumn),
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
             GroupsViewMode: (RolesGridGroupsViewMode)GroupsViewMode,
             ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter);
     }
+
+    // Порядок вариантов в форме не совпадает с числами в БД (NameOnly добавлен последним),
+    // поэтому соответствие явное, а не приведение через int.
+    protected static PlayerColumnMode ToDomainPlayerColumn(PlayerColumnModeView view) => view switch
+    {
+        PlayerColumnModeView.None => PlayerColumnMode.None,
+        PlayerColumnModeView.NameOnly => PlayerColumnMode.NameOnly,
+        PlayerColumnModeView.PublicOnly => PlayerColumnMode.PublicOnly,
+        PlayerColumnModeView.All => PlayerColumnMode.All,
+        _ => throw new ArgumentOutOfRangeException(nameof(view), view, null),
+    };
+
+    protected static PlayerColumnModeView ToViewPlayerColumn(PlayerColumnMode domain) => domain switch
+    {
+        PlayerColumnMode.None => PlayerColumnModeView.None,
+        PlayerColumnMode.NameOnly => PlayerColumnModeView.NameOnly,
+        PlayerColumnMode.PublicOnly => PlayerColumnModeView.PublicOnly,
+        PlayerColumnMode.All => PlayerColumnModeView.All,
+        _ => throw new ArgumentOutOfRangeException(nameof(domain), domain, null),
+    };
 
     protected static ProjectRolesListVisibilityMode ToDomainVisibilityMode(ProjectRolesListVisibilityModeView view)
         => (ProjectRolesListVisibilityMode)view;
@@ -78,7 +98,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             Name = domain.Name,
             CharacterGroupId = domain.CharacterGroupId,
             PublicMode = domain.PublicMode,
-            ContactsColumn = (ContactsColumnVisibilityModeView)domain.ContactsColumn,
+            ContactsColumn = ToViewPlayerColumn(domain.ContactsColumn),
             GroupsColumn = ToViewVisibilityMode(domain.GroupsColumn),
             Fields = domain.Fields,
             GroupsViewMode = (RolesGridGroupsViewModeView)domain.GroupsViewMode,
@@ -94,7 +114,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             CharacterGroupId: CharacterGroupId,
             PublicMode: PublicMode,
             Fields: Fields,
-            ContactsColumn: (ProjectRolesListVisibilityMode)ContactsColumn,
+            ContactsColumn: ToDomainPlayerColumn(ContactsColumn),
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
             GroupsViewMode: (RolesGridGroupsViewMode)GroupsViewMode,
             ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter);
@@ -113,10 +133,13 @@ public enum ProjectRolesListVisibilityModeView
     All
 }
 
-public enum ContactsColumnVisibilityModeView
+public enum PlayerColumnModeView
 {
-    [Display(Name = "Только имя игрока", Description = "Показывать колонку с именем игрока (ссылкой на профиль), без контактов")]
+    [Display(Name = "Не показывать", Description = "Колонки «Игрок» не будет. Кнопка «Заявиться» тоже не будет показываться — подходит, например, для сетки мероприятий со своим полем «Ведущий»")]
     None,
+
+    [Display(Name = "Только имя игрока", Description = "Показывать колонку с именем игрока (ссылкой на профиль), без контактов")]
+    NameOnly,
 
     [Display(Name = "Только публичные контакты", Description = "Показывать имя игрока и публично доступные контакты")]
     PublicOnly,

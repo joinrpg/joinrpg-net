@@ -25,7 +25,7 @@ public static class ClassicRolesGridDefaults
             CharacterGroupId: groupId,
             PublicMode: true, // как старая [AllowAnonymous] Index; приватное отсекает canViewPrivate
             Fields: descriptionField is { } field ? [field] : [],
-            ContactsColumn: ProjectRolesListVisibilityMode.None,
+            ContactsColumn: PlayerColumnMode.NameOnly,
             GroupsColumn: ProjectRolesListVisibilityMode.None,
             GroupsViewMode: RolesGridGroupsViewMode.Tree,
             ShowRolesFilter: ShowRolesFilter.All);
@@ -43,7 +43,7 @@ public static class ClassicRolesGridDefaults
             CharacterGroupId: groupId,
             PublicMode: true,
             Fields: descriptionField is { } field ? [field] : [],
-            ContactsColumn: ProjectRolesListVisibilityMode.None,
+            ContactsColumn: PlayerColumnMode.NameOnly,
             GroupsColumn: ProjectRolesListVisibilityMode.None,
             GroupsViewMode: RolesGridGroupsViewMode.None,
             ShowRolesFilter: ShowRolesFilter.HotOnly);

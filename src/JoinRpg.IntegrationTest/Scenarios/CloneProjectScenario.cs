@@ -82,7 +82,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
                 CharacterGroupId: null,
                 PublicMode: true,
                 Fields: [extraFieldId],
-                ContactsColumn: ProjectRolesListVisibilityMode.None,
+                ContactsColumn: PlayerColumnMode.NameOnly,
                 GroupsColumn: ProjectRolesListVisibilityMode.PublicOnly,
                 GroupsViewMode: RolesGridGroupsViewMode.Sections,
                 ShowRolesFilter: ShowRolesFilter.All));
@@ -94,7 +94,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
                 CharacterGroupId: groupId,
                 PublicMode: false,
                 Fields: [],
-                ContactsColumn: ProjectRolesListVisibilityMode.None,
+                ContactsColumn: PlayerColumnMode.NameOnly,
                 GroupsColumn: ProjectRolesListVisibilityMode.None,
                 GroupsViewMode: RolesGridGroupsViewMode.None,
                 ShowRolesFilter: ShowRolesFilter.VacantOnly));

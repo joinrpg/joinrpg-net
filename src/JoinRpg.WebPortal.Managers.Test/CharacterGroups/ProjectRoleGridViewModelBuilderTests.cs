@@ -20,7 +20,7 @@ public class ProjectRoleGridViewModelBuilderTests
     private readonly MockedProject _mock = new();
 
     private ProjectRolesList Config(
-        ProjectRolesListVisibilityMode contacts = ProjectRolesListVisibilityMode.None,
+        PlayerColumnMode contacts = PlayerColumnMode.NameOnly,
         ProjectRolesListVisibilityMode groups = ProjectRolesListVisibilityMode.None,
         IReadOnlyList<ProjectFieldIdentification>? fields = null,
         RolesGridGroupsViewMode groupsViewMode = RolesGridGroupsViewMode.None)
@@ -99,7 +99,7 @@ public class ProjectRoleGridViewModelBuilderTests
     {
         var character = _mock.CreateCharacter("Вася");
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.All), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.All), [character]);
 
         var row = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>();
         row.Player.ShouldNotBeNull();
@@ -114,7 +114,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var character = _mock.CreateCharacter("Страж");
         character.CharacterType = CharacterType.NonPlayer;
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.All), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.All), [character]);
 
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player!.ApplyStatus.BusyStatus.ShouldBe(CharacterBusyStatusView.Npc);
@@ -139,7 +139,7 @@ public class ProjectRoleGridViewModelBuilderTests
         });
         _mock.CreateApprovedClaim(character, _mock.Player);
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.All), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.All), [character]);
 
         var player = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player.ShouldNotBeNull();
@@ -165,7 +165,7 @@ public class ProjectRoleGridViewModelBuilderTests
         // ExternalLogin не привязан — только legacy-имя из профиля.
         _mock.CreateApprovedClaim(character, _mock.Player);
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.All), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.All), [character]);
 
         var contacts = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player!.Contacts.ShouldNotBeNull();
@@ -175,13 +175,45 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
+    public void Build_NameOnly_ShowsPlayerWithoutContacts()
+    {
+        var character = _mock.CreateCharacter("Вася");
+        _mock.Player.Extra = new UserExtra { SocialNetworksAccess = ContactsAccessType.Public };
+        _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.NameOnly), [character]);
+
+        result.HasPlayerColumn.ShouldBeTrue();
+        var player = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player.ShouldNotBeNull();
+        player.Link.ShouldNotBeNull().DisplayName.ShouldBe("Player");
+        player.Contacts.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(RolesGridGroupsViewMode.None)]
+    [InlineData(RolesGridGroupsViewMode.Tree)]
+    public void Build_PlayerColumnNone_NoPlayerColumnAndNoPlayerData(RolesGridGroupsViewMode groupsViewMode)
+    {
+        // Сетка мероприятий со своим полем «Ведущий»: колонки «Игрок» нет, а с ней и кнопки «Заявиться» —
+        // данные игрока на клиент не уходят вовсе.
+        var character = _mock.CreateCharacter("Вася");
+        _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.None, groupsViewMode: groupsViewMode), [character]);
+
+        result.HasPlayerColumn.ShouldBeFalse();
+        result.Rows.OfType<ProjectRoleGridCharacterRowViewModel>().ShouldHaveSingleItem().Player.ShouldBeNull();
+    }
+
+    [Fact]
     public void Build_PublicOnly_HidesContactsUnlessPlayerAllowed()
     {
         var character = _mock.CreateCharacter("Вася");
         _mock.Player.Extra = new UserExtra { SocialNetworksAccess = ContactsAccessType.OnlyForMasters };
         _mock.CreateApprovedClaim(character, _mock.Player);
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.PublicOnly), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.PublicOnly), [character]);
 
         var player = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player.ShouldNotBeNull();
@@ -196,7 +228,7 @@ public class ProjectRoleGridViewModelBuilderTests
         _mock.Player.Extra = new UserExtra { SocialNetworksAccess = ContactsAccessType.Public };
         _mock.CreateApprovedClaim(character, _mock.Player);
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.PublicOnly), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.PublicOnly), [character]);
 
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player!.Contacts.ShouldNotBeNull();
@@ -220,7 +252,7 @@ public class ProjectRoleGridViewModelBuilderTests
         });
         _mock.CreateApprovedClaim(character, _mock.Player);
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.PublicOnly), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.PublicOnly), [character]);
 
         var contacts = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player!.Contacts.ShouldNotBeNull();
@@ -242,7 +274,7 @@ public class ProjectRoleGridViewModelBuilderTests
         _mock.ReInitProjectInfo();
         _mock.ProjectInfo.ProjectStatus.ShouldBe(ProjectLifecycleStatus.Archived);
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.All), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.All), [character]);
 
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player!.Contacts.ShouldBeNull();
@@ -492,7 +524,7 @@ public class ProjectRoleGridViewModelBuilderTests
         _mock.Player.Extra = new UserExtra { SocialNetworksAccess = ContactsAccessType.Public };
         _mock.CreateApprovedClaim(character, _mock.Player);
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.PublicOnly), [character],
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.PublicOnly), [character],
             canViewPrivate: false);
 
         var row = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>();
@@ -541,7 +573,7 @@ public class ProjectRoleGridViewModelBuilderTests
         character.HidePlayerForCharacter = true;
         _mock.CreateApprovedClaim(character, _mock.Player);
 
-        var result = BuildGrid(Config(contacts: ProjectRolesListVisibilityMode.All), [character]);
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.All), [character]);
 
         var link = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Player.ShouldNotBeNull().Link.ShouldNotBeNull();
@@ -959,7 +991,7 @@ public class ProjectRoleGridViewModelBuilderTests
         config.PublicMode.ShouldBeTrue();
         config.GroupsViewMode.ShouldBe(RolesGridGroupsViewMode.Tree);
         config.ShowRolesFilter.ShouldBe(ShowRolesFilter.All);
-        config.ContactsColumn.ShouldBe(ProjectRolesListVisibilityMode.None);
+        config.ContactsColumn.ShouldBe(PlayerColumnMode.NameOnly);
         config.GroupsColumn.ShouldBe(ProjectRolesListVisibilityMode.None);
         config.Fields.ShouldHaveSingleItem().ShouldBe(descriptionField);
     }
@@ -993,7 +1025,7 @@ public class ProjectRoleGridViewModelBuilderTests
             CharacterGroupId: _mock.ProjectInfo.GroupTree.RootGroupId,
             PublicMode: true,
             Fields: [],
-            ContactsColumn: ProjectRolesListVisibilityMode.None,
+            ContactsColumn: PlayerColumnMode.NameOnly,
             GroupsColumn: ProjectRolesListVisibilityMode.None,
             GroupsViewMode: RolesGridGroupsViewMode.Tree,
             ShowRolesFilter: ShowRolesFilter.All);

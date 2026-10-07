@@ -61,8 +61,11 @@
                                          Size="SizeStyleEnum.ExtraSmall"
                                          OnMoveCompleted="StateHasChanged" />
                     }
-                    <text> </text>
-                    <ProjectRoleGridPlayerCell Row="charRow" />
+                    @if (charRow.Player is { } player)
+                    {
+                        <text> </text>
+                        <ProjectRoleGridPlayerCell Row="charRow" Player="player" />
+                    }
                     @if (charRow.Groups is { } groups && groups.Groups.Count > 0)
                     {
                         <div>

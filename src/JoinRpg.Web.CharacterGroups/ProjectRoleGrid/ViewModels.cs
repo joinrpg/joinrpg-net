@@ -26,7 +26,7 @@ public record ProjectRoleGridViewResult(
 
 /// <summary>
 /// Сетка ролей для отображения. В табличных режимах колонки в фиксированном порядке:
-/// Персонаж → Игрок → Группы (если есть) → Поля. В режиме дерева поля и группы
+/// Персонаж → Игрок (если есть) → Группы (если есть) → Поля. В режиме дерева поля и группы
 /// показываются под именем персонажа.
 /// </summary>
 /// <param name="RootGroupId">Корневая группа сетки — для меню управления группой у заголовка</param>
@@ -37,6 +37,7 @@ public record ProjectRoleGridViewModel(
     string Name,
     bool CanEditSettings,
     bool HasMasterAccess,
+    bool HasPlayerColumn,
     bool HasGroupsColumn,
     IReadOnlyList<string> FieldColumnNames,
     IReadOnlyList<ProjectRoleGridRowViewModel> Rows,
@@ -50,9 +51,10 @@ public record ProjectRoleGridViewModel(
 [JsonDerivedType(typeof(ProjectRoleGridGroupHeaderRowViewModel), "group")]
 public abstract record ProjectRoleGridRowViewModel;
 
+/// <param name="Player">null — колонка «Игрок» в этой сетке скрыта</param>
 public record ProjectRoleGridCharacterRowViewModel(
     CharacterLinkWithEditViewModel Character,
-    PlayerCellViewModel Player,
+    PlayerCellViewModel? Player,
     GroupsCellViewModel? Groups,
     IReadOnlyList<ProjectRoleGridFieldValueViewModel> FieldValues,
     CharacterGroupIdentification GroupId,
