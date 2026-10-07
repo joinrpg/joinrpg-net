@@ -65,18 +65,21 @@ public class GameController(
 
     [HttpGet("/{projectId}/project/settings")]
     [MasterAuthorize(Permission.CanChangeProjectProperties)]
-    public async Task<IActionResult> Edit(int projectId, [FromServices] IProjectRepository projectRepository)
+    public async Task<IActionResult> Edit(ProjectIdentification projectId)
     {
-        var project = await projectRepository.GetProjectAsync(projectId);
+        // Анонс и правила подачи — в ProjectDetails, остальное — в метаданных проекта:
+        // с EF-сущности Project.Details догружался бы лениво (#5112).
+        var details = await projectMetadataRepository.GetProjectDetails(projectId);
+        var project = details.ProjectInfo;
         return View(new EditProjectViewModel
         {
-            ClaimApplyRules = project.Details.ClaimApplyRules?.Contents ?? "",
-            ProjectAnnounce = project.Details.ProjectAnnounce?.Contents ?? "",
-            ProjectId = project.ProjectId,
+            ClaimApplyRules = details.ClaimApplyRules.Value,
+            ProjectAnnounce = details.ProjectDescription.Value,
+            ProjectId = projectId.Value,
             ProjectName = project.ProjectName,
             OriginalName = project.ProjectName,
-            Active = project.Active,
-            EnableAccomodation = project.Details.EnableAccommodation,
+            Active = project.IsActive,
+            EnableAccomodation = project.AccommodationSettings.Enabled,
         });
     }
 

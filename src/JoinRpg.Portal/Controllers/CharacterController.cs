@@ -248,7 +248,17 @@ public class CharacterController(
             return NotFound();
         }
 
-        return View(field);
+        return View(await CreateDeleteViewModel(field));
+    }
+
+    private async Task<DeleteCharacterViewModel> CreateDeleteViewModel(Character character)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(character.ProjectId));
+        return new DeleteCharacterViewModel(
+            character.ProjectId,
+            character.CharacterName,
+            character.HasActiveClaims(),
+            projectInfo.ClaimSettings.DefaultTemplate?.CharacterId == character.CharacterId);
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
@@ -265,7 +275,7 @@ public class CharacterController(
         }
         catch
         {
-            return View(field);
+            return View(await CreateDeleteViewModel(field));
         }
     }
 
