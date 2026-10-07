@@ -49,6 +49,9 @@ internal class CharacterRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase
           await Ctx.Set<Character>()
             .Include(ch => ch.ApprovedClaim)
             .Include(ch => ch.Claims)
+            // Форма редактирования показывает, кто создал и кто последним менял персонажа (#4965).
+            .Include(ch => ch.CreatedBy)
+            .Include(ch => ch.UpdatedBy)
             .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
