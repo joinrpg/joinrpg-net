@@ -8,6 +8,7 @@
   "GET /{ProjectId}/goto/comment/{CommentId:int}": 3,
   "GET /{ProjectId}/goto/discussion/{CommentDiscussionId}": 3,
   "GET /{ProjectId}/goto/finance-operation/{FinanceOperationId:int}": 2,
+  "GET /{projectId}/character/{characterid}/Delete": 1,
   "GET /{projectId}/character/{characterid}/Edit": 1,
   "GET /{projectId}/forums": 1,
   "GET /{projectId}/forums/{forumThreadId}/ViewThread": 3,
