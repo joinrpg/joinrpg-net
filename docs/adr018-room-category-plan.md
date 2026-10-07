@@ -189,9 +189,12 @@ freeSpace(room, type) = min(effective(room), type.Capacity) − occupancy(room)
   `occupancy >= effective(room)`. `AccommodationRepositoryImpl.FullyOccupiedRoomsCount` сегодня
   сравнивает занятость с вместимостью типа; после разделения это потеряло бы смысл.
 
-Что при разделении придётся решить дополнительно: как назвать две вместимости в UI мастера, чтобы их
+~~Что при разделении придётся решить дополнительно: как назвать две вместимости в UI мастера, чтобы их
 не путали, и как перенести `RoomCategory` в `ProjectInfo` (по критерию ADR015 её место рядом с
-`AccommodationTypeInfo` в `AccommodationSettings`).
+`AccommodationTypeInfo` в `AccommodationSettings`).~~ Решено в
+[ADR020](adr020-room-category-split.md). Второго числа в UI нет вовсе: физическая вместимость пула
+вычисляется как максимум вместимостей его типов, и правило свободного места от этого не меняется.
+`RoomCategoryInfo` лежит в `AccommodationSettings`.
 
 ### 3. Сами типы проживания в агрегат не копируются
 
@@ -599,7 +602,7 @@ public interface IAccommodationService
   не реализуется и здесь. Агрегат делает его дешевле: вместимость и свободные группы уже собраны.
 - **Само разделение `AccommodationType` и `RoomCategory`** — здесь только форма доменной модели под
   него: таблицы, миграции, UI категорий и перенос `RoomCategory` в `ProjectInfo` — отдельная работа
-  и, вероятно, отдельный ADR.
+  и ~~вероятно,~~ отдельный ADR: [ADR020](adr020-room-category-split.md).
 
 ### 14. План миграции
 
