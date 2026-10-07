@@ -577,11 +577,24 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             claims.Add(claimId);
         }
 
+        // Соперник на первую роль: его заявку отклонят после утверждения claims[0]. Отклонённая
+        // заявка на роль, у которой есть ДРУГАЯ утверждённая заявка, — то, на чём списки
+        // отклонённых заявок догружали чужую утверждённую заявку (Character.ApprovedClaim) по
+        // одной на строку (#5221). Без неё отклонённая заявка сида стояла на роли без игрока, и
+        // маршрут мерился в ноль. В общие списки игроков и заявок не входит: заявка на
+        // проживание ей не нужна, а отчёты по расселению считают жильцов именно по ним.
+        var (_, rivalClaimId) = await AddClaimFromNewPlayerAsync(projectId, characters[0]);
+
         return await Factory.Services.RunAsAsync(ownerId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
 
             await claimService.ApproveByMaster(claims[0], "Принято");
+            await claimService.DeclineByMaster(
+                rivalClaimId,
+                ClaimDenialReason.NotSuitable,
+                "Роль уже занята",
+                deleteCharacter: false);
             await claimService.AddComment(
                 claims[2], parentCommentId: null, isVisibleToPlayer: true, "Обсуждаем");
             await claimService.OnHoldByMaster(claims[3], "Пока подумаем");
