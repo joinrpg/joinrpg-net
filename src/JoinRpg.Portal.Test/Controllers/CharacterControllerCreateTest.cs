@@ -68,6 +68,31 @@ public class CharacterControllerCreateTest
         characterService.AddCharacterCalls.ShouldBe(1);
     }
 
+    /// <summary>
+    /// Регрессия #5323 (симметрично Edit): пустой список групп в проекте, где группы обязательны,
+    /// должен давать дружелюбную ошибку на форме, а не доезжать до сервиса, который падает
+    /// JoinValidationException. Проверка IValidatableObject в модели не срабатывает, потому что
+    /// AllowToSetGroups при POST не заполняется.
+    /// </summary>
+    [Fact]
+    public async Task EmptyGroups_WhenProjectRequiresGroups_DoesNotCreateCharacter()
+    {
+        var mock = new MockedProject();
+        var characterService = new RecordingCharacterService();
+        var controller = CreateController(mock, characterService);
+        // Пустой список групп: так POST выглядит, когда мастер не выбрал ни одной группы.
+        var viewModel = CreateViewModel(mock);
+        viewModel.ParentCharacterGroupIds = [];
+
+        var result = await controller.Create(viewModel);
+
+        characterService.AddCharacterCalls.ShouldBe(0);
+        result.ShouldBeOfType<ViewResult>().Model.ShouldBeOfType<AddCharacterViewModel>();
+        controller.ModelState[nameof(AddCharacterViewModel.ParentCharacterGroupIds)]
+            .ShouldNotBeNull()
+            .Errors.ShouldContain(e => e.ErrorMessage == CharacterViewModelBase.GroupsRequiredErrorMessage);
+    }
+
     private static AddCharacterViewModel CreateViewModel(MockedProject mock)
         => new()
         {
@@ -127,7 +152,7 @@ public class CharacterControllerCreateTest
 
         public void Dispose() { }
 
-        public Task<Project> GetProjectAsync(int project) => throw new NotSupportedException();
+        public Task<Project> GetProjectAsync(int project) => Task.FromResult(mock.Project);
 
         public Task<Project?> GetProjectWithFieldsAsync(int project) => throw new NotSupportedException();
 

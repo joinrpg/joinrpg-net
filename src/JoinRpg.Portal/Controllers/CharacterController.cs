@@ -97,6 +97,12 @@ public class CharacterController(
              await characterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
+
+        // У view-модели AllowToSetGroups при POST не заполнен (только Fill на GET), поэтому её
+        // IValidatableObject-проверка не срабатывает: пустой список групп доезжал до сервиса
+        // и падал там JoinValidationException (#5323). Ловим здесь, по метаданным проекта.
+        ValidateCharacterGroups(projectInfo, viewModel);
+
         try
         {
             if (!ModelState.IsValid)
@@ -164,6 +170,9 @@ public class CharacterController(
     {
         var characterGroupId = viewModel.ParentCharacterGroupIds.FirstOrDefault();
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
+
+        // См. Edit: пустой список групп ловим здесь, а не в сервисе (#5323).
+        ValidateCharacterGroups(projectInfo, viewModel);
 
         // Биндер мог отвергнуть идентификатор группы (чужой проект, нераспознанная строка) — тогда
         // элемент просто не попал в ParentCharacterGroupIds. Создавать роль в молча урезанном
@@ -257,6 +266,16 @@ public class CharacterController(
         catch
         {
             return View(field);
+        }
+    }
+
+    private void ValidateCharacterGroups(ProjectInfo projectInfo, CharacterViewModelBase viewModel)
+    {
+        if (projectInfo.GroupTree.AllowToSetGroups && viewModel.ParentCharacterGroupIds.Length == 0)
+        {
+            ModelState.AddModelError(
+                nameof(viewModel.ParentCharacterGroupIds),
+                CharacterViewModelBase.GroupsRequiredErrorMessage);
         }
     }
 
