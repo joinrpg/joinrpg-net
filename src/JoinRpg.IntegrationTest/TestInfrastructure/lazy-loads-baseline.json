@@ -16,6 +16,7 @@
   "GET /{projectId}/money/Operations": 5,
   "GET /{projectId}/project/settings": 1,
   "GET /{projectId}/roles/{characterGroupId}/forums": 1,
+  "POST /Payments/ClaimPayment": 4,
   "POST /error/{HttpStatusCode:int?}": 1,
   "POST /webapi/AccommodationInvite/CreateInvite": 4,
   "POST /x-game-api/{projectId}/characters": 1,

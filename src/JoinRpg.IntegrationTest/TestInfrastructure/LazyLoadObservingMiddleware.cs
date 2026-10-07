@@ -35,6 +35,12 @@ internal sealed class LazyLoadObservingMiddleware(RequestDelegate next, LazyLoad
     /// Ключ маршрута, а не URL: в URL сидят идентификаторы проектов и сущностей,
     /// они меняются от прогона к прогону.
     /// </summary>
+    /// <remarks>
+    /// Конвенциональный маршрут <c>{controller=Home}/{action=Index}/{id?}</c> один на все экшены без
+    /// атрибутного маршрута, поэтому для него ключ — пара «контроллер/экшен»
+    /// (<c>POST /Payments/ClaimPayment</c>). Иначе все такие ручки слились бы в одну строчку
+    /// снапшота, и планка самой «тяжёлой» прикрывала бы рост у остальных.
+    /// </remarks>
     private static string GetRouteKey(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
@@ -42,6 +48,14 @@ internal sealed class LazyLoadObservingMiddleware(RequestDelegate next, LazyLoad
             ?? endpoint?.DisplayName
             ?? context.Request.Path.Value
             ?? "/";
+
+        if (pattern.Contains("{controller", StringComparison.Ordinal)
+            && context.Request.RouteValues.TryGetValue("controller", out var controller)
+            && context.Request.RouteValues.TryGetValue("action", out var action))
+        {
+            pattern = $"{controller}/{action}";
+        }
+
         return $"{context.Request.Method} /{pattern.TrimStart('/')}";
     }
 }
