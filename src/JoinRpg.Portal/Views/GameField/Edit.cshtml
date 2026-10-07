@@ -194,7 +194,8 @@
   <component type="typeof(JoinRpg.Web.ProjectMasterTools.Fields.FieldValuesListControl)"
              render-mode="WebAssemblyPrerendered"
              Param-FieldId="@(new ProjectFieldIdentification(new ProjectIdentification(Model.ProjectId), Model.ProjectFieldId))"
-             Param-Items="@Model.DropdownValues" />
+             Param-Items="@Model.DropdownValues"
+             Param-IsTimeSlot="@Model.IsTimeSlot" />
 
   <!-- Mass addition dialog -->
   @if (Model.SupportsMassAdding)

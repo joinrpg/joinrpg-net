@@ -26,4 +26,7 @@ internal class ProjectFieldOperationsViewService(IFieldSetupService fieldSetupSe
             request.EndTime,
             request.TimeSlotInMinutes,
             request.BreakInMinutes));
+
+    public async Task SortTimeSlotsByStartTime(ProjectFieldIdentification fieldId)
+        => await fieldSetupService.SortTimeSlotVariantsByStartTime(fieldId);
 }

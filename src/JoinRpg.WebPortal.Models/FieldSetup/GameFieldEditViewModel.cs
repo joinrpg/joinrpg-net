@@ -64,8 +64,12 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
         IsActive = field.IsActive;
         HasValueList = field.HasValueList;
         SupportsMassAdding = field.SupportsMassAdding;
+        IsTimeSlot = field.IsTimeSlot;
         TimeSlotMassAdd = field.IsTimeSlot ? CreateTimeSlotMassAdd(field) : null;
     }
+
+    [ReadOnly(true)]
+    public bool IsTimeSlot { get; private set; }
 
     private static TimeSlotMassAddViewModel CreateTimeSlotMassAdd(ProjectFieldInfo field)
     {

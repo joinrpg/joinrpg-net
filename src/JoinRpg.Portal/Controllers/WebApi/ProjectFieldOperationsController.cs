@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectMasterTools.Fields;
@@ -10,7 +11,8 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 [MasterAuthorize(Permission.CanChangeFields)]
 public class ProjectFieldOperationsController(
     IFieldSetupService fieldSetupService,
-    IProjectFieldOperationsClient fieldOperationsClient) : ControllerBase
+    IProjectFieldOperationsClient fieldOperationsClient,
+    IProjectMetadataRepository projectMetadataRepository) : ControllerBase
 {
     [HttpPost]
     public async Task<ActionResult> CreateTimeSlots([FromQuery] ProjectIdentification projectId, [FromBody] TimeSlotMassAddRequest request)
@@ -57,6 +59,24 @@ public class ProjectFieldOperationsController(
         }
 
         _ = await fieldSetupService.DeleteUnusedFieldValueVariants(fieldId);
+        return Ok();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> SortTimeSlotsByStartTime([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldIdentification fieldId)
+    {
+        if (fieldId.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+
+        var metadata = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (!metadata.GetFieldById(fieldId).IsTimeSlot)
+        {
+            return BadRequest();
+        }
+
+        await fieldOperationsClient.SortTimeSlotsByStartTime(fieldId);
         return Ok();
     }
 }

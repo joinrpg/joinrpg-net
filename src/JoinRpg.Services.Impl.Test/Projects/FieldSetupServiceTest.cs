@@ -473,4 +473,76 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
+
+    private static ProjectFieldDropdownValue CreateTimeSlotVariant(int id, string label, int? startHour)
+    {
+        var variant = CreateVariant(id, label, wasEverUsed: false);
+        variant.ProgrammaticValue = startHour is { } hour
+            ? new TimeSlotOptions(new DateTime(2026, 7, 10, hour, 0, 0), 50).ToJson()
+            : null;
+        return variant;
+    }
+
+    private ProjectField AddTimeSlotField(params ProjectFieldDropdownValue[] variants)
+    {
+        var fieldInfo = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.ScheduleTimeSlotField;
+            f.DropdownValues = variants;
+        });
+        var field = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId);
+        field.ValuesOrdering = string.Join(",", variants.Select(v => v.ProjectFieldDropdownValueId));
+        return field;
+    }
+
+    [Fact]
+    public async Task SortTimeSlotVariantsByStartTime_SortsByStartThenLabel_InvalidLast()
+    {
+        var field = AddTimeSlotField(
+            CreateTimeSlotVariant(100, "Без времени", startHour: null),
+            CreateTimeSlotVariant(101, "Б 12:00", startHour: 12),
+            CreateTimeSlotVariant(102, "Вечер", startHour: 18),
+            CreateTimeSlotVariant(103, "А 12:00", startHour: 12),
+            CreateTimeSlotVariant(104, "Ж утро", startHour: 9));
+        field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == 102).ProgrammaticValue = "не json";
+        var service = CreateService(mock.Master.UserId);
+
+        await service.SortTimeSlotVariantsByStartTime(field.GetId());
+
+        field.GetFieldValuesContainer().OrderedItems
+            .Select(v => v.ProjectFieldDropdownValueId)
+            .ShouldBe([104, 103, 101, 100, 102]);
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task SortTimeSlotVariantsByStartTime_SpecialGroupsFollowVariants()
+    {
+        var late = CreateTimeSlotVariant(100, "А поздно", startHour: 15);
+        var early = CreateTimeSlotVariant(101, "Я рано", startHour: 10);
+        var field = AddTimeSlotField(late, early);
+        var fieldGroup = AddSpecialGroup(field, "Поле");
+        var lateGroup = AddSpecialGroup(late, fieldGroup, late.Label);
+        var earlyGroup = AddSpecialGroup(early, fieldGroup, early.Label);
+        fieldGroup.ChildGroupsOrdering = $"{lateGroup.CharacterGroupId},{earlyGroup.CharacterGroupId}";
+        var service = CreateService(mock.Master.UserId);
+
+        await service.SortTimeSlotVariantsByStartTime(field.GetId());
+
+        fieldGroup.GetCharacterGroupsContainer().OrderedItems
+            .Select(g => g.CharacterGroupId)
+            .ShouldBe([earlyGroup.CharacterGroupId, lateGroup.CharacterGroupId]);
+    }
+
+    [Fact]
+    public async Task SortTimeSlotVariantsByStartTime_NotTimeSlotField_Throws()
+    {
+        var field = mock.AddField(f => f.FieldType = ProjectFieldType.Dropdown);
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<ArgumentException>(
+            () => service.SortTimeSlotVariantsByStartTime(field.Id));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
 }

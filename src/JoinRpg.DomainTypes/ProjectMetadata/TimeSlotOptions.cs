@@ -80,9 +80,24 @@ public record TimeSlotOptions(
         => new(TimeZoneInfo.ConvertTime(now, timeZone).DateTime, TimeSlotInMinutes: 50);
 
     /// <summary>
-    /// Разбирает значение, сохранённое в ProgrammaticValue варианта
+    /// Разбирает значение, сохранённое в ProgrammaticValue варианта. Пустое, битое или недопустимое значение — null.
     /// </summary>
-    public static TimeSlotOptions? FromJson(string json) => JsonSerializer.Deserialize<TimeSlotOptions>(json);
+    public static TimeSlotOptions? TryFromJson(string? json)
+    {
+        if (json is null)
+        {
+            return null;
+        }
+        try
+        {
+            var options = JsonSerializer.Deserialize<TimeSlotOptions>(json);
+            return options?.IsValid == true ? options : null;
+        }
+        catch (Exception ex) when (ex is JsonException or FormatException or ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
 
     /// <summary>
     /// Значение для сохранения в ProgrammaticValue варианта

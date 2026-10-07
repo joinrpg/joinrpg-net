@@ -41,6 +41,11 @@ public interface IFieldSetupService
 
     Task SetFieldSettingsAsync(FieldSettingsRequest request);
     Task SortFieldVariants(int projectId, int projectFieldId);
+
+    /// <summary>
+    /// Отсортировать значения поля-таймслота по времени начала. Значения без разбираемого времени — в конец.
+    /// </summary>
+    Task SortTimeSlotVariantsByStartTime(ProjectFieldIdentification projectFieldId);
 }
 
 public class FieldSettingsRequest
