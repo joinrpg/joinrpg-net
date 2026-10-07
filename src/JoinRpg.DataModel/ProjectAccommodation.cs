@@ -9,11 +9,11 @@ public class ProjectAccommodation : IProjectEntity
     [Key]
     public int Id { get; set; }
 
-    public int AccommodationTypeId { get; set; }
+    public int RoomCategoryId { get; set; }
 
     [JsonIgnore]
-    [ForeignKey(nameof(AccommodationTypeId))]
-    public virtual ProjectAccommodationType ProjectAccommodationType { get; set; }
+    [ForeignKey(nameof(RoomCategoryId))]
+    public virtual ProjectRoomCategory RoomCategory { get; set; }
 
     [JsonIgnore]
     public int ProjectId { get; set; }

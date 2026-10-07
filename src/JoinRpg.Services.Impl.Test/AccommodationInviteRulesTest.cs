@@ -49,7 +49,8 @@ public class AccommodationInviteRulesTest
                     Cost: 0,
                     Capacity: capacity,
                     IsPlayerSelectable: true),
-            ]);
+            ],
+            RoomCategories: [new RoomCategoryInfo(new RoomCategoryIdentification(ProjectId, DefaultTypeId), "Домики")]);
 
     private static void EnsureCanInvite(
         AccommodationRequest? sender,

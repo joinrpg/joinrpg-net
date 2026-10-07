@@ -37,8 +37,7 @@ public class RoomCategoryPlanMapperTest
         IEnumerable<AccommodationRequest> groups)
         => new()
         {
-            RoomCategoryId = category.Id,
-            RoomCapacity = category.Capacity,
+            RoomCategoryId = category.RoomCategoryId,
             Rooms = [.. rooms.Select(room => new RoomCategoryPlanRoomRow
             {
                 RoomId = room.Id,
@@ -63,7 +62,7 @@ public class RoomCategoryPlanMapperTest
 
         var plan = RoomCategoryPlanMapper.Map(MakeRow(type, [], []), ProjectInfo);
 
-        plan.Id.ShouldBe(new RoomCategoryIdentification(ProjectInfo.ProjectId, type.Id));
+        plan.Id.ShouldBe(new RoomCategoryIdentification(ProjectInfo.ProjectId, type.RoomCategoryId));
         plan.RoomCapacity.ShouldBe(3);
         plan.Rooms.ShouldBeEmpty();
         plan.Groups.ShouldBeEmpty();
@@ -142,5 +141,27 @@ public class RoomCategoryPlanMapperTest
         plan.AccommodationTypes.Single().Name.ShouldBe("Палатка");
         _ = Should.Throw<AccommodationTypeNotFoundException>(
             () => plan.GetAccommodationType(new AccommodationTypeIdentification(ProjectInfo.ProjectId, lux.Id)));
+    }
+
+    /// <summary>
+    /// Два типа одной категории (ADR020) попадают в один план, а вместимость пула — наибольшая
+    /// из их вместимостей.
+    /// </summary>
+    [Fact]
+    public void SiblingTypes_ShareOnePlan()
+    {
+        mock.Project.Details.EnableAccommodation = true;
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 3);
+        var luxSingle = mock.CreateAccommodationType("Люкс на одного", capacity: 1, roomCategory: lux.RoomCategory);
+        mock.ReInitProjectInfo();
+        var single = mock.CreateAccommodationRequest(luxSingle, CreateClaim("Одиночка"));
+        var room = mock.CreateRoom(single, "101");
+
+        var plan = RoomCategoryPlanMapper.Map(MakeRow(lux, [room], [single]), ProjectInfo);
+
+        plan.AccommodationTypes.Select(type => type.Name).ShouldBe(["Люкс", "Люкс на одного"], ignoreOrder: true);
+        plan.RoomCapacity.ShouldBe(3);
+        var roomId = new AccommodationRoomIdentification(ProjectInfo.ProjectId, room.Id);
+        plan.IsFull(roomId).ShouldBeTrue();
     }
 }

@@ -23,6 +23,10 @@ public class ProjectAccommodationType : IProjectEntity
     //Not implemented yet, do not use
     public bool IsAutoFilledAccommodation { get; set; } = false;
 
-    public virtual ICollection<ProjectAccommodation> ProjectAccommodations { get; set; }
+    /// <summary>Категория комнат, из которой селится этот тип (ADR020)</summary>
+    public int RoomCategoryId { get; set; }
+    [ForeignKey(nameof(RoomCategoryId))]
+    public virtual ProjectRoomCategory RoomCategory { get; set; }
+
     public virtual ICollection<AccommodationRequest> Desirous { get; set; }
 }

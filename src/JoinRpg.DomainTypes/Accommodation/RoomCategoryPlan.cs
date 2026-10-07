@@ -11,9 +11,8 @@ namespace JoinRpg.DomainTypes.Accommodation;
 /// не подлежит.
 /// </summary>
 /// <remarks>
-/// Корень агрегата — пул комнат, а не тип проживания (ADR018). Сегодня пул ровно один на тип,
-/// но модель с самого начала устроена как «комнаты плюс множество типов, которые из них селятся»,
-/// чтобы будущее разделение типа и категории было расширением, а не переделкой.
+/// Корень агрегата — пул комнат, а не тип проживания (ADR018): из одной категории комнат могут
+/// селиться несколько типов проживания (ADR020).
 /// </remarks>
 public record class RoomCategoryPlan
 {
@@ -33,7 +32,12 @@ public record class RoomCategoryPlan
     /// Не путать с <see cref="AccommodationTypeInfo.Capacity"/>: та говорит, скольких мы селим
     /// в комнату по данному типу проживания.
     /// </summary>
-    public int RoomCapacity { get; }
+    /// <remarks>
+    /// Не хранится, а вычисляется — как наибольшая из вместимостей типов пула (ADR020, §2).
+    /// Правилу свободного места этого достаточно: такой предел никогда не ограничивает сильнее,
+    /// чем вместимость типа того, кого селят. Пул без типов вмещает ноль.
+    /// </remarks>
+    public int RoomCapacity => AccommodationTypes.Count == 0 ? 0 : AccommodationTypes.Max(type => type.Capacity);
 
     public IReadOnlyCollection<RoomInfo> Rooms { get; }
 
@@ -44,7 +48,6 @@ public record class RoomCategoryPlan
         RoomCategoryIdentification id,
         ProjectInfo projectInfo,
         IReadOnlyCollection<AccommodationTypeInfo> accommodationTypes,
-        int roomCapacity,
         IReadOnlyCollection<RoomInfo> rooms,
         IReadOnlyCollection<AccommodationGroupInfo> groups)
     {
@@ -69,6 +72,12 @@ public record class RoomCategoryPlan
             {
                 throw new ArgumentException(
                     $"Accommodation type {type.Id} is not the very instance from ProjectInfo.AccommodationSettings",
+                    nameof(accommodationTypes));
+            }
+            if (type.RoomCategoryId != id)
+            {
+                throw new ArgumentException(
+                    $"Accommodation type {type.Id} belongs to room category {type.RoomCategoryId}, not {id}",
                     nameof(accommodationTypes));
             }
         }
@@ -163,7 +172,6 @@ public record class RoomCategoryPlan
         Id = id;
         ProjectInfo = projectInfo;
         AccommodationTypes = accommodationTypes;
-        RoomCapacity = roomCapacity;
         Rooms = rooms;
         Groups = groups;
     }
@@ -173,8 +181,8 @@ public record class RoomCategoryPlan
         => Groups.Where(g => g.RoomId is null);
 
     /// <summary>
-    /// Сколько всего мест в пуле. Считается по комнатам пула, а не по типам проживания: после
-    /// разделения типа и категории сумма по типам посчитала бы одни и те же комнаты дважды.
+    /// Сколько всего мест в пуле. Считается по комнатам пула, а не по типам проживания: сумма по
+    /// типам одной категории посчитала бы одни и те же комнаты дважды.
     /// </summary>
     public int TotalCapacity => Rooms.Count * RoomCapacity;
 

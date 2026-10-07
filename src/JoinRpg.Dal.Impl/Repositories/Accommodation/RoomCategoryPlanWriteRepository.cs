@@ -47,7 +47,7 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         var roomIntId = roomId.RoomId;
         var plans = await loader.LoadAsync(
             projectInfo,
-            category => category.ProjectAccommodations.Any(room => room.Id == roomIntId));
+            category => category.Rooms.Any(room => room.Id == roomIntId));
 
         var plan = plans.SingleOrDefault()
             ?? throw new AccommodationRoomNotFoundException(roomId);
@@ -64,7 +64,7 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         var groupIntId = groupId.AccommodationRequestId;
         var plans = await loader.LoadAsync(
             projectInfo,
-            category => category.Desirous.Any(group => group.Id == groupIntId));
+            category => category.AccommodationTypes.Any(type => type.Desirous.Any(group => group.Id == groupIntId)));
 
         var plan = plans.SingleOrDefault()
             ?? throw new AccommodationGroupNotFoundException(groupId);
@@ -79,16 +79,15 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         RoomCategoryPlan plan,
         RoomCategoryPlanTracking tracking)
     {
-        // См. замечание к RoomCategoryPlanLoader: сегодня ряд категории — это ряд типа проживания.
         var categoryId = plan.Id;
         var categoryIntId = categoryId.RoomCategoryId;
         var projectIntId = categoryId.ProjectId.Value;
 
         // Комнаты берутся тем же запросом, что и категория: они нужны трекаемыми, а связь
         // «категория — комнаты» одна, декартова произведения не будет.
-        var category = await ctx.Set<ProjectAccommodationType>()
-            .Include(type => type.ProjectAccommodations)
-            .SingleOrDefaultAsync(type => type.Id == categoryIntId && type.ProjectId == projectIntId)
+        var category = await ctx.Set<ProjectRoomCategory>()
+            .Include(c => c.Rooms)
+            .SingleOrDefaultAsync(c => c.Id == categoryIntId && c.ProjectId == projectIntId)
             ?? throw new JoinRpgEntityNotFoundException(categoryIntId, "room category");
 
         var projectId = categoryId.ProjectId;
@@ -102,7 +101,7 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         var groups = tracking == RoomCategoryPlanTracking.WithGroups
             ? (await ctx.Set<AccommodationRequest>()
                 .Include(group => group.Subjects)
-                .Where(group => group.AccommodationTypeId == categoryIntId && group.ProjectId == projectIntId)
+                .Where(group => group.AccommodationType.RoomCategoryId == categoryIntId && group.ProjectId == projectIntId)
                 .ToListAsync())
                 .ToDictionary(group => new AccommodationRequestIdentification(projectId, group.Id))
             : null;
@@ -112,7 +111,7 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
             projectInfo,
             plan,
             category,
-            category.ProjectAccommodations.ToDictionary(
+            category.Rooms.ToDictionary(
                 room => new AccommodationRoomIdentification(projectId, room.Id)),
             groups);
     }
@@ -121,7 +120,7 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         MyDbContext ctx,
         ProjectInfo projectInfo,
         RoomCategoryPlan plan,
-        ProjectAccommodationType category,
+        ProjectRoomCategory category,
         IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> rooms,
         IReadOnlyDictionary<AccommodationRequestIdentification, AccommodationRequest>? groups)
         : IRoomCategoryPlanUpdateHandle
@@ -130,7 +129,7 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
 
         public RoomCategoryPlan Plan { get; } = plan;
 
-        public ProjectAccommodationType Category { get; } = category;
+        public ProjectRoomCategory Category { get; } = category;
 
         public IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> Rooms { get; } = rooms;
 

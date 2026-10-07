@@ -16,10 +16,8 @@ internal static class RoomCategoryPlanMapper
 
         // Типы проживания не копируются, а берутся из метаданных проекта: единственный источник
         // правды о типе — ProjectInfo, и конструктор плана проверяет это через ReferenceEquals
-        // (ADR018, §3). Сегодня тип у категории ровно один, завтра их станет несколько.
-        var accommodationTypes = projectInfo.AccommodationSettings.Types
-            .Where(type => type.RoomCategoryId == categoryId)
-            .ToArray();
+        // (ADR018, §3). Типов у категории может быть несколько (ADR020).
+        var accommodationTypes = projectInfo.AccommodationSettings.GetTypesOfCategory(categoryId);
 
         var groups = row.Groups
             .Select(group => new AccommodationGroupInfo(
@@ -41,7 +39,6 @@ internal static class RoomCategoryPlanMapper
             categoryId,
             projectInfo,
             accommodationTypes,
-            row.RoomCapacity,
             rooms,
             groups);
     }

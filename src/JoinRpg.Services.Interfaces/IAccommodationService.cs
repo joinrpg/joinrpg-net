@@ -45,8 +45,8 @@ public interface IAccommodationService
     Task UnOccupyRoom(AccommodationRoomIdentification roomId);
 
     /// <summary>
-    /// Выселить все группы данного типа проживания. Сегодня это всё население пула; после
-    /// разделения типа и категории соседи из братских типов останутся в комнатах.
+    /// Выселить все группы данного типа проживания. Соседи из других типов той же категории
+    /// остаются в комнатах (ADR020).
     /// </summary>
     /// <remarks>Атомарна: одна загрузка плана, один проход, одно сохранение (ADR018, §1).</remarks>
     Task UnOccupyRoomType(AccommodationTypeIdentification typeId);

@@ -47,29 +47,39 @@ public class ProjectAccommodationSettingsMappingTest
     }
 
     /// <summary>
-    /// Тест-страж (ADR018, «Задел на разделение», пункт 1). Категория комнат и тип проживания
-    /// сегодня не разделены: своей таблицы у категории нет, и маппер заполняет
-    /// <c>RoomCategoryId</c> из <c>ProjectAccommodationType.Id</c>, то есть числа совпадают.
-    /// В день, когда категорию разделят с типом, этот тест упадёт первым — и это правильно:
-    /// он приведёт разработчика в раздел 2 ADR018, а не в случайное место, где идентификаторы
-    /// молча разъехались. Тогда его надо не «починить», а удалить вместе с фикцией.
+    /// Категория комнат типа берётся из его колонки <c>RoomCategoryId</c>, а не из id типа
+    /// (ADR020). Мок нумерует категории иначе, чем типы, так что подмена одного другим здесь видна.
     /// </summary>
     [Fact]
-    public void RoomCategoryId_TodayEqualsAccommodationTypeId()
+    public void RoomCategories_AreMappedAndReferencedByTypes()
     {
-        _ = mock.CreateAccommodationType("Палатка", capacity: 4, cost: 1500);
-        _ = mock.CreateAccommodationType("Люкс", capacity: 2, cost: 9000);
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        var luxSingle = mock.CreateAccommodationType("Люкс на одного", capacity: 1, roomCategory: lux.RoomCategory);
+        var tent = mock.CreateAccommodationType("Палатка", capacity: 4);
         mock.Project.Details.EnableAccommodation = true;
 
         mock.ReInitProjectInfo();
 
-        var types = mock.ProjectInfo.AccommodationSettings.Types;
-        types.ShouldNotBeEmpty();
-        foreach (var type in types)
-        {
-            type.RoomCategoryId.ProjectId.ShouldBe(type.Id.ProjectId);
-            type.RoomCategoryId.RoomCategoryId.ShouldBe(type.Id.AccommodationTypeId);
-        }
+        var settings = mock.ProjectInfo.AccommodationSettings;
+        var projectId = mock.ProjectInfo.ProjectId;
+        settings.RoomCategories.Select(c => c.Name).ShouldBe(["Люкс", "Палатка"], ignoreOrder: true);
+
+        var luxCategoryId = new RoomCategoryIdentification(projectId, lux.RoomCategoryId);
+        settings.GetTypeById(new(projectId, lux.Id)).RoomCategoryId.ShouldBe(luxCategoryId);
+        settings.GetTypeById(new(projectId, luxSingle.Id)).RoomCategoryId.ShouldBe(luxCategoryId);
+        settings.GetTypeById(new(projectId, tent.Id)).RoomCategoryId
+            .ShouldBe(new RoomCategoryIdentification(projectId, tent.RoomCategoryId));
+        settings.GetTypesOfCategory(luxCategoryId).Select(t => t.Name)
+            .ShouldBe(["Люкс", "Люкс на одного"], ignoreOrder: true);
+        settings.GetRoomCategoryById(luxCategoryId).Name.ShouldBe("Люкс");
+    }
+
+    [Fact]
+    public void GetRoomCategoryById_ThrowsForUnknownId()
+    {
+        _ = Should.Throw<RoomCategoryNotFoundException>(
+            () => mock.ProjectInfo.AccommodationSettings.GetRoomCategoryById(
+                new RoomCategoryIdentification(mock.ProjectInfo.ProjectId, 100500)));
     }
 
     [Fact]

@@ -23,6 +23,8 @@ internal static class ProjectLoaderCommon
          // Типы проживания — настройка проекта и часть ProjectInfo (ADR015). Строки узкие,
          // типов на проект единицы-десятки, связанных коллекций не тянем.
          .Include(p => p.ProjectAccommodationTypes)
+         // Категории комнат — тоже настройка мастера (ADR020), строки ещё уже: id и имя.
+         .Include(p => p.ProjectRoomCategories)
          .SingleOrDefaultAsync(p => p.ProjectId == project);
     }
 

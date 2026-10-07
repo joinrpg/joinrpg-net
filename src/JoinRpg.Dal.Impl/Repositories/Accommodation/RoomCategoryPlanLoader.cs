@@ -21,10 +21,8 @@ namespace JoinRpg.Dal.Impl.Repositories.Accommodation;
 /// делает ровно один запрос с явной проекцией, без <c>Include</c> и без lazy load.
 /// </para>
 /// <para>
-/// Запрос строится от таблицы типов проживания: своей таблицы у категории комнат пока нет, и
-/// «категория» — это тот же ряд <c>ProjectAccommodationType</c> (ADR018, «Задел на разделение»,
-/// пункт 1). Конвертация «id категории ↔ колонка id типа» допустима только здесь, в DAL, где
-/// отображение «id ↔ колонка» и так живёт для каждой сущности; в домене её нет.
+/// Типы проживания и вместимость из БД не читаются вовсе: и то и другое — настройка мастера,
+/// она приходит из <see cref="ProjectInfo"/> (ADR018, §3; ADR020, §2).
 /// </para>
 /// </remarks>
 internal sealed class RoomCategoryPlanLoader(MyDbContext ctx)
@@ -36,28 +34,26 @@ internal sealed class RoomCategoryPlanLoader(MyDbContext ctx)
     /// </summary>
     public async Task<IReadOnlyCollection<RoomCategoryPlan>> LoadAsync(
         ProjectInfo projectInfo,
-        Expression<Func<ProjectAccommodationType, bool>> predicate)
+        Expression<Func<ProjectRoomCategory, bool>> predicate)
     {
         var projectId = projectInfo.ProjectId;
 
         var query =
-            from category in ctx.Set<ProjectAccommodationType>().AsNoTracking().AsExpandable()
+            from category in ctx.Set<ProjectRoomCategory>().AsNoTracking().AsExpandable()
             where category.ProjectId == projectId.Value
             where predicate.Invoke(category)
             select new RoomCategoryPlanRow
             {
                 RoomCategoryId = category.Id,
-                // Сегодня физическая вместимость пула и продаваемая вместимость типа — одно
-                // число в одной колонке (ADR018, «Задел на разделение», пункт 3).
-                RoomCapacity = category.Capacity,
-                Rooms = category.ProjectAccommodations.Select(room => new RoomCategoryPlanRoomRow
+                Rooms = category.Rooms.Select(room => new RoomCategoryPlanRoomRow
                 {
                     RoomId = room.Id,
                     Name = room.Name,
                 }),
                 // Группы — вложенным Select, а не Include: нужны все группы пула, включая ещё
-                // не расселённые (у них AccommodationId пуст).
-                Groups = category.Desirous.Select(request => new RoomCategoryPlanGroupRow
+                // не расселённые (у них AccommodationId пуст). Группа покупает тип, поэтому в пул
+                // она попадает через свой тип проживания (ADR020).
+                Groups = category.AccommodationTypes.SelectMany(type => type.Desirous).Select(request => new RoomCategoryPlanGroupRow
                 {
                     GroupId = request.Id,
                     AccommodationTypeId = request.AccommodationTypeId,
@@ -84,7 +80,6 @@ internal sealed class RoomCategoryPlanLoader(MyDbContext ctx)
         ProjectInfo projectInfo,
         RoomCategoryIdentification categoryId)
     {
-        // См. замечание к классу: сегодня id категории — это id ряда ProjectAccommodationType.
         var categoryIntId = categoryId.RoomCategoryId;
         var plans = await LoadAsync(projectInfo, category => category.Id == categoryIntId);
         return plans.SingleOrDefault();

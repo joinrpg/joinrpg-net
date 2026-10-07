@@ -458,7 +458,8 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         {
             // Сервис добавления комнат не отдаёт их id наружу, поэтому берём комнату из базы.
             var roomId = sp.GetRequiredService<MyDbContext>().Set<ProjectAccommodation>()
-                .Where(r => r.ProjectId == projectId.Value && r.AccommodationTypeId == seeded.RoomTypeId)
+                .Where(r => r.ProjectId == projectId.Value
+                    && r.RoomCategory.AccommodationTypes.Any(type => type.Id == seeded.RoomTypeId))
                 .OrderBy(r => r.Id)
                 .Select(r => r.Id)
                 .First();

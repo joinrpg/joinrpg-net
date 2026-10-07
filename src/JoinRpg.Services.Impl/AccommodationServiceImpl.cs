@@ -276,9 +276,9 @@ internal class AccommodationServiceImpl(
                     var room = new ProjectAccommodation
                     {
                         Name = name,
-                        AccommodationTypeId = ctx.Category.Id,
+                        RoomCategoryId = ctx.Category.Id,
                         ProjectId = ctx.Category.ProjectId,
-                        ProjectAccommodationType = ctx.Category,
+                        RoomCategory = ctx.Category,
                         Inhabitants = [],
                     };
                     ctx.AddEntity(room);

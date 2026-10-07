@@ -10,17 +10,8 @@ namespace JoinRpg.Dal.Impl.Repositories.Accommodation;
 /// </remarks>
 internal sealed class RoomCategoryPlanRow
 {
-    /// <summary>
-    /// Идентификатор категории. Своей таблицы у категории пока нет, поэтому здесь лежит
-    /// <c>ProjectAccommodationType.Id</c> — см. ADR018, «Задел на разделение», пункт 1.
-    /// </summary>
+    /// <summary>Идентификатор категории — <c>ProjectRoomCategory.Id</c></summary>
     public required int RoomCategoryId { get; init; }
-
-    /// <summary>
-    /// Физическая вместимость комнаты пула. Сегодня это то же число, что продаваемая вместимость
-    /// типа проживания: колонка одна на обе вместимости (ADR018, «Задел на разделение», пункт 3).
-    /// </summary>
-    public required int RoomCapacity { get; init; }
 
     public required IEnumerable<RoomCategoryPlanRoomRow> Rooms { get; init; }
 

@@ -78,6 +78,11 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
         created.Capacity.ShouldBe(4);
         created.IsPlayerSelectable.ShouldBeTrue();
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
+
+        // Пока выбора категории в форме нет, тип получает свою категорию с тем же именем (ADR020).
+        var category = Result.AccommodationSettings.RoomCategories.ShouldHaveSingleItem();
+        category.Name.ShouldBe("Домик");
+        created.RoomCategoryId.ShouldBe(category.Id);
     }
 
     [Fact]
@@ -131,6 +136,66 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
 
         Result.AccommodationSettings.Types.ShouldBeEmpty();
         mock.AccommodationTypes.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Категория, созданная вместе с типом, носит его имя — и переименовывается вслед за ним:
+    /// письма о заселении называют комнату по категории (ADR020).
+    /// </summary>
+    [Fact]
+    public async Task UpdateAccommodationType_RenamesCategoryWithSameName()
+    {
+        var id = AddAccommodationType("Палатка");
+
+        await CreateService().UpdateAccommodationType(
+            id,
+            new AccommodationTypeRequest("Шатёр", new MarkdownString(""), Cost: 0, Capacity: 4, IsPlayerSelectable: true));
+
+        Result.AccommodationSettings.RoomCategories.ShouldHaveSingleItem().Name.ShouldBe("Шатёр");
+    }
+
+    /// <summary>Имя, которое мастер дал категории отдельно, переименование типа не затирает.</summary>
+    [Fact]
+    public async Task UpdateAccommodationType_KeepsCategoryWithOwnName()
+    {
+        var category = mock.CreateRoomCategory("Люкс");
+        var type = mock.CreateAccommodationType("Люкс с пятницы", roomCategory: category);
+        mock.ReInitProjectInfo();
+
+        await CreateService().UpdateAccommodationType(
+            new AccommodationTypeIdentification(ProjectId, type.Id),
+            new AccommodationTypeRequest("Люкс с четверга", new MarkdownString(""), Cost: 0, Capacity: 2, IsPlayerSelectable: true));
+
+        Result.AccommodationSettings.RoomCategories.ShouldHaveSingleItem().Name.ShouldBe("Люкс");
+    }
+
+    /// <summary>
+    /// Последний тип категории уносит её с собой (ADR020, §4) — как раньше удаление типа уносило
+    /// его комнаты.
+    /// </summary>
+    [Fact]
+    public async Task DeleteAccommodationType_LastOfCategory_RemovesCategory()
+    {
+        var id = AddAccommodationType();
+
+        await CreateService().DeleteAccommodationType(id);
+
+        Result.AccommodationSettings.RoomCategories.ShouldBeEmpty();
+        mock.RoomCategories.ShouldBeEmpty();
+    }
+
+    /// <summary>У категории остался сестринский тип — категория и её комнаты остаются ему (ADR020, §4).</summary>
+    [Fact]
+    public async Task DeleteAccommodationType_WithSiblingType_KeepsCategory()
+    {
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        var luxSingle = mock.CreateAccommodationType("Люкс на одного", capacity: 1, roomCategory: lux.RoomCategory);
+        mock.ReInitProjectInfo();
+
+        await CreateService().DeleteAccommodationType(new AccommodationTypeIdentification(ProjectId, luxSingle.Id));
+
+        Result.AccommodationSettings.Types.ShouldHaveSingleItem().Name.ShouldBe("Люкс");
+        Result.AccommodationSettings.RoomCategories.ShouldHaveSingleItem().Name.ShouldBe("Люкс");
     }
 
     [Fact]
