@@ -79,4 +79,40 @@ public class ProjectFieldOperationsController(
         await fieldOperationsClient.SortTimeSlotsByStartTime(fieldId);
         return Ok();
     }
+
+    [HttpPost]
+    public async Task<ActionResult> SortVariantsByLabel([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldIdentification fieldId)
+    {
+        if (fieldId.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+
+        var metadata = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (!metadata.GetFieldById(fieldId).HasValueList)
+        {
+            return BadRequest();
+        }
+
+        await fieldOperationsClient.SortVariantsByLabel(fieldId);
+        return Ok();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> CreateVariants([FromQuery] ProjectIdentification projectId, [FromBody] FieldValuesMassAddRequest request)
+    {
+        if (request.FieldId.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+
+        var metadata = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (!metadata.GetFieldById(request.FieldId).SupportsMassAdding)
+        {
+            return BadRequest();
+        }
+
+        await fieldOperationsClient.CreateVariants(request);
+        return Ok();
+    }
 }

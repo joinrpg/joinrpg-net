@@ -2,30 +2,48 @@
 @inject IProjectFieldOperationsClient ProjectFieldOperationsClient
 @inject NavigationManager NavigationManager
 
-@if (IsTimeSlot || UnusedCount > 0)
-{
-    <div style="margin-top: 1em;">
-        <JoinButtonGroup>
-            @if (IsTimeSlot)
-            {
-                <JoinButton Preset="ButtonPreset.Sort"
-                            Label="Отсортировать по времени начала"
-                            AutoConfirm="true"
-                            AutoConfirmMessage="Отсортировать значения по времени начала?"
-                            OnClick="SortByStartTimeAsync" />
-            }
-            @if (UnusedCount is var unusedCount && unusedCount > 0)
-            {
-                <JoinButton Preset="ButtonPreset.Delete"
-                            Label="Удалить все неиспользованные"
-                            Title="Удалить значения, которые ни разу не выбирали"
-                            AutoConfirm="true"
-                            AutoConfirmMessage="@($"Удалить значения, которые ни разу не выбирали ({unusedCount} шт.)? Это действие нельзя отменить.")"
-                            OnClick="DeleteUnusedAsync" />
-            }
-        </JoinButtonGroup>
-    </div>
-}
+<div>
+    <JoinButtonGroup>
+        <JoinButton Preset="ButtonPreset.Add"
+                    Label="Добавить значение"
+                    Link="@UriLocator.GetCreateVariantUri(FieldId).ToString()" />
+        @if (SupportsMassAdding)
+        {
+            <FieldValuesMassAddButton FieldId="FieldId" />
+        }
+        @if (TimeSlotMassAdd is not null)
+        {
+            <TimeSlotMassAddButton Model="TimeSlotMassAdd" />
+        }
+    </JoinButtonGroup>
+    <JoinButtonGroup>
+        <JoinButton Preset="ButtonPreset.Sort"
+                    Icon="JoinIconType.SortByAlphabet"
+                    Label="Отсортировать по алфавиту"
+                    ProgressLabel="Сортируем..."
+                    AutoConfirm="true"
+                    AutoConfirmMessage="Отсортировать значения по алфавиту?"
+                    OnClick="SortByLabelAsync" />
+        @if (IsTimeSlot)
+        {
+            <JoinButton Preset="ButtonPreset.Sort"
+                        Label="Отсортировать по времени начала"
+                        ProgressLabel="Сортируем..."
+                        AutoConfirm="true"
+                        AutoConfirmMessage="Отсортировать значения по времени начала?"
+                        OnClick="SortByStartTimeAsync" />
+        }
+        @if (UnusedCount is var unusedCount && unusedCount > 0)
+        {
+            <JoinButton Preset="ButtonPreset.Delete"
+                        Label="Удалить все неиспользованные"
+                        Title="Удалить значения, которые ни разу не выбирали"
+                        AutoConfirm="true"
+                        AutoConfirmMessage="@($"Удалить значения, которые ни разу не выбирали ({unusedCount} шт.)? Это действие нельзя отменить.")"
+                        OnClick="DeleteUnusedAsync" />
+        }
+    </JoinButtonGroup>
+</div>
 
 <div class="table-responsive" style="margin-top: 1em;">
     <JoinTableSimple>
@@ -98,7 +116,32 @@
     [Parameter]
     public bool IsTimeSlot { get; set; }
 
+    /// <summary>
+    /// Можно добавить несколько значений сразу, по одному на строку
+    /// </summary>
+    [Parameter]
+    public bool SupportsMassAdding { get; set; }
+
+    /// <summary>
+    /// Параметры массового добавления таймслотов; null — кнопки нет
+    /// </summary>
+    [Parameter]
+    public TimeSlotMassAddViewModel? TimeSlotMassAdd { get; set; }
+
     private int UnusedCount => Items.Count(i => i.IsActive && !i.WasEverUsed);
+
+    private async Task SortByLabelAsync(ButtonClickEventArgs args)
+    {
+        try
+        {
+            await ProjectFieldOperationsClient.SortVariantsByLabel(FieldId);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
 
     private async Task SortByStartTimeAsync(ButtonClickEventArgs args)
     {

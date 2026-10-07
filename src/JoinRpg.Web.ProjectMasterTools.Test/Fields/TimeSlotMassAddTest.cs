@@ -117,5 +117,7 @@ public class TimeSlotMassAddTest : BunitContext
         public Task DeleteUnusedVariants(ProjectFieldIdentification fieldId) => throw new NotSupportedException();
         public Task CreateTimeSlots(TimeSlotMassAddRequest request) => throw new NotSupportedException();
         public Task SortTimeSlotsByStartTime(ProjectFieldIdentification fieldId) => throw new NotSupportedException();
+        public Task SortVariantsByLabel(ProjectFieldIdentification fieldId) => throw new NotSupportedException();
+        public Task CreateVariants(FieldValuesMassAddRequest request) => throw new NotSupportedException();
     }
 }

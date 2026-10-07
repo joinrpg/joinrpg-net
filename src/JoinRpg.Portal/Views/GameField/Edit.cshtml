@@ -172,63 +172,11 @@
 {
     <hr />
 
-    <div>
-        <a href="@Url.Action("CreateValue", new { Model.ProjectId, Model.ProjectFieldId })"
-           class="btn btn-default"><join-icon icon="Add" />Добавить значение</a>
-        @if (Model.SupportsMassAdding)
-        {
-            <button class="btn btn-default" data-toggle="modal" data-target="#massAddValueModal"><join-icon icon="Add" /><join-icon icon="Add" />Добавить несколько значений</button>
-        }
-        @if (Model.TimeSlotMassAdd is not null)
-        {
-            <component type="typeof(JoinRpg.Web.ProjectMasterTools.Fields.TimeSlotMassAddButton)"
-                       render-mode="WebAssemblyPrerendered"
-                       param-Model="@Model.TimeSlotMassAdd" />
-        }
-        <form asp-action="SortVariants" asp-route-projectId="@Model.ProjectId" asp-route-projectFieldId="@Model.ProjectFieldId" method="POST" style="display:inline">
-            <button type="submit" class="btn btn-default" onclick="return confirm('Отсортировать варианты по алфавиту?')">
-              <join-icon icon="SortByAlphabet" />Отсортировать по алфавиту
-            </button>
-        </form>
-    </div>
   <component type="typeof(JoinRpg.Web.ProjectMasterTools.Fields.FieldValuesListControl)"
              render-mode="WebAssemblyPrerendered"
              Param-FieldId="@(new ProjectFieldIdentification(new ProjectIdentification(Model.ProjectId), Model.ProjectFieldId))"
              Param-Items="@Model.DropdownValues"
-             Param-IsTimeSlot="@Model.IsTimeSlot" />
-
-  <!-- Mass addition dialog -->
-  @if (Model.SupportsMassAdding)
-  {
-    <div class="modal fade" id="massAddValueModal" tabindex="-1" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form asp-controller="GameField" asp-action="MassCreateValueVariants" asp-route-projectId="@Model.ProjectId" method="post">
-            @Html.HiddenFor(model => model.ProjectFieldId)
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть"><join-icon icon="Close" /></button>
-              <h4 class="modal-title">Добавить значения</h4>
-            </div>
-
-            <div class="modal-body">
-              <div class="form-horizontal">
-                <div class="form-group">
-                  <div class="col-md-10">
-                    <textarea type="text" required id="valuesToAdd" name="valuesToAdd" rows="4" class="form-control"></textarea>
-                    <div class="help-block">Введите сюда значения, которые хотите добавить этому полю. <br/> Одна строчка — одно значение</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-success">Добавить</button>
-              <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-
-            </div>
-          </form>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div>
-}
+             Param-SupportsMassAdding="@Model.SupportsMassAdding"
+             Param-IsTimeSlot="@Model.IsTimeSlot"
+             Param-TimeSlotMassAdd="@Model.TimeSlotMassAdd" />
 }
