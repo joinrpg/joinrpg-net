@@ -122,8 +122,23 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             Ctx.ClaimSet.Include(c => c.CommentDiscussion.Comments.Select(com => com.Finance))
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.Author))
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
+              // Страница заявки спрашивает у каждого комментария, прочитан ли он (#4960).
+              .Include(c => c.CommentDiscussion.Watermarks)
               .Include(c => c.AccommodationRequest)
               .Include(c => c.Character)
+              // ClaimContactsMissingFilter и панель контактов читают профиль игрока.
+              .Include(c => c.Player.Extra)
+              // Настройки проекта и типы оплаты читает ClaimViewModel/ClaimFeeViewModel.
+              .Include(c => c.Project.Details)
+              .Include(c => c.Project.PaymentTypes)
+              // Список платежей заявки: реквизиты приезжали по одной штуке на операцию —
+              // на проде это давало до 20 догрузок FinanceOperationBankDetails за запрос.
+              .Include(c => c.FinanceOperations.Select(fo => fo.BankDetails))
+              .Include(c => c.FinanceOperations.Select(fo => fo.PaymentType))
+              .Include(c => c.FinanceOperations.Select(fo => fo.RecurrentPayment))
+              .Include(c => c.FinanceOperations.Select(fo => fo.LinkedClaim!.Character))
+              .Include(c => c.FinanceOperations.Select(fo => fo.LinkedClaim!.Player))
+              .Include(c => c.RecurrentPayments)
               .SingleOrDefaultAsync(e => e.ClaimId == claimId.ClaimId && e.ProjectId == claimId.ProjectId.Value);
     }
 
