@@ -36,7 +36,6 @@
     <Body>
         <EditForm FormName="CreateProject" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
             <FormHorizontal>
-                <ValidationSummary />
                 <DataAnnotationsValidator />
                 <FormRowFor For="@(() => Model.ProjectName)">
                     <JoinTextInput @bind-Value="Model.ProjectName" />
@@ -77,6 +76,8 @@
                     </JoinAlert>
                 }
                 <FormRow>
+                    @* Сводка ошибок — рядом с кнопкой, иначе она оказывается за пределами экрана (#5325) *@
+                    <ValidationSummary />
                     <JoinButton Preset="ButtonPreset.Create" Submit="true" Disabled="@formInvalid" />
                 </FormRow>
             </FormHorizontal>
