@@ -99,13 +99,31 @@ internal class RoomCategoryPlanWriteRepository(MyDbContext ctx) : IRoomCategoryP
         // Заявки группы (Subjects) подтягиваем сразу: письма о заселении и выселении собираются
         // по ним (ADR018, §11), а без Include ленивая загрузка EF6 давала бы запрос на каждую
         // группу — при выселении целого типа это десятки лишних запросов.
+        // Жильцы комнат пула берутся тем же запросом, даже если тип у группы чужой (такие строки
+        // остались от времён до ADR018, дефект 5): тогда загрузка покрывает Inhabitants каждой
+        // комнаты целиком, и коллекцию можно объявить загруженной — см. ниже.
         var groups = tracking == RoomCategoryPlanTracking.WithGroups
             ? (await ctx.Set<AccommodationRequest>()
                 .Include(group => group.Subjects)
-                .Where(group => group.AccommodationTypeId == categoryIntId && group.ProjectId == projectIntId)
+                .Where(group => group.ProjectId == projectIntId
+                    && (group.AccommodationTypeId == categoryIntId
+                        || group.Accommodation!.AccommodationTypeId == categoryIntId))
                 .ToListAsync())
                 .ToDictionary(group => new AccommodationRequestIdentification(projectId, group.Id))
             : null;
+
+        if (groups is not null)
+        {
+            // Заселение и выселение ведут обратную навигацию room.Inhabitants сами (дефект 6), а
+            // первое обращение к ней — ленивая загрузка жильцов комнаты (#5070). Все жильцы уже
+            // в трекере и разложены по комнатам relationship fixup'ом, поэтому повторно за ними
+            // не ходим.
+            foreach (var room in category.ProjectAccommodations)
+            {
+                ctx.Entry(room).Collection(r => r.Inhabitants).IsLoaded = true;
+                room.Inhabitants ??= [];
+            }
+        }
 
         return new Handle(
             ctx,

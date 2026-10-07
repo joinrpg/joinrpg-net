@@ -1,6 +1,6 @@
 {
   "GET /x-game-api/{projectId}/claims/{claimId}": 1,
-  "GET /{ProjectId}/claim/{ClaimId}/Edit": 20,
+  "GET /{ProjectId}/claim/{ClaimId}/Edit": 12,
   "GET /{ProjectId}/claim/{ClaimId}/TransferClaimPayment": 1,
   "GET /{ProjectId}/claims/DeclinedList": 1,
   "GET /{ProjectId}/goto/comment/{CommentId:int}": 2,
@@ -13,16 +13,11 @@
   "GET /{projectId}/money/MoneySummary": 5,
   "GET /{projectId}/money/Operations": 5,
   "GET /{projectId}/project/settings": 1,
-  "POST /error/{HttpStatusCode:int?}": 1,
   "POST /webapi/project-field-operations/Delete": 6,
   "POST /webapi/project-field-operations/DeleteUnusedVariants": 4,
   "POST /webapi/project-field-operations/DeleteVariant": 2,
   "POST /x-game-api/{projectId}/characters": 1,
   "POST /{ProjectId}/claim/{ClaimId}/TransferClaimPayment": 5,
   "POST /{projectId}/forums/concealcomment": 2,
-  "POST /{projectId}/forums/createcomment": 2,
-  "POST /{projectId}/rooms/UnOccupyAll": 1,
-  "POST /{projectId}/rooms/UnOccupyRoomsByType": 1,
-  "POST /{projectId}/rooms/occupyroom": 1,
-  "POST /{projectId}/rooms/unoccupyroom": 1
+  "POST /{projectId}/forums/createcomment": 2
 }
