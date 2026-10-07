@@ -8,8 +8,9 @@
     [EditorRequired]
     public ClaimLinkViewModel Claim { get; set; } = null!;
 
+    /// <summary>Размер кнопки. Если не задан — размер окружающей <see cref="JoinButtonGroup"/>, вне группы обычный.</summary>
     [Parameter]
-    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Medium;
+    public SizeStyleEnum? Size { get; set; }
 
     private Uri uri = null!;
 
