@@ -63,7 +63,7 @@
                     }
                     @if (charRow.Player is { } player)
                     {
-                        <text> </text>
+                        @Space
                         <ProjectRoleGridPlayerCell Row="charRow" Player="player" />
                     }
                     @if (charRow.Groups is { } groups && groups.Groups.Count > 0)
@@ -125,6 +125,10 @@
     // Siblings принадлежит родительскому узлу (это его Node.Children) — после мутации
     // перерисовать нужно родителя (это его @foreach определяет видимый порядок), а не себя.
     [Parameter] public EventCallback OnSiblingsChanged { get; set; }
+
+    // Разделитель выводим выражением: статическую разметку из одних пробелов
+    // (включая <text> </text>) Blazor вырезает, и имя склеивается со «шаблон» (#5324).
+    private const string Space = " ";
 
     // Заголовки уровней как в классической сетке ролей: 1 → h2, 2 → h3, глубже → h4.
     private static string HeaderClass(int depth) => depth switch

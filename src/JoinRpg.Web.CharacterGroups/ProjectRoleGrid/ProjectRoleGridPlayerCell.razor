@@ -36,12 +36,15 @@ else if (Player.ApplyStatus.BusyStatus is not (CharacterBusyStatusView.Vacancy o
 {
     <text> (</text><UserContactsView Contacts="Player.Contacts" /><text>)</text>
 }
-<text> </text>
+@Space
 <ApplyForCharacterButton Model="Player.ApplyStatus" />
 
 @code {
     [Parameter, EditorRequired] public ProjectRoleGridCharacterRowViewModel Row { get; set; } = null!;
     [Parameter, EditorRequired] public PlayerCellViewModel Player { get; set; } = null!;
+
+    // Статическую разметку из одних пробелов (включая <text> </text>) Blazor вырезает.
+    private const string Space = " ";
 
     private string ClaimsCountText => CountHelper.DisplayCount(Row.ActiveClaimsCount, "заявка", "заявки", "заявок");
 }
