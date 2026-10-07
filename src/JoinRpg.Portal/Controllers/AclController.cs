@@ -10,7 +10,6 @@ using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Masters;
-using JoinRpg.Web.ProjectCommon.Masters;
 using JoinRpg.WebPortal.Models.Masters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,66 +29,17 @@ public class AclController(
 {
     [HttpGet("add/{userId}")]
     [MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Add(ProjectIdentification projectId, UserIdentification userId) => await ShowAddPage(projectId, userId);
-
-    private async Task<ActionResult> ShowAddPage(ProjectIdentification projectId, UserIdentification userId, AddAclViewModel? posted = null)
+    public async Task<ActionResult> Add(ProjectIdentification projectId, UserIdentification userId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (project.Masters.Any(m => m.UserId == userId) || project.FormerMasters.Any(m => m.UserId == userId))
+        {
+            // Действующего мастера правят, бывшего возвращают правкой прав — обоих на странице правки (ADR019, §1).
+            return RedirectToAction(nameof(Edit), new { projectId = projectId.Value, userId = userId.Value });
+        }
         var targetUser = await userRepository.GetUserInfo(userId);
-
-        if (targetUser is null)
-        {
-            return NotFound();
-        }
-
-        var model = new AclViewModel(project, targetUser, currentUserAccessor);
-        if (posted is not null)
-        {
-            // Показываем форму с тем, что прислали.
-            model.Role = posted.Role ?? "";
-            model.Description = posted.Description;
-            model.IsPublic = posted.IsPublic;
-            var permissions = posted.ToPermissions();
-            model.Badges = [.. model.Badges.Select(b => new PermissionBadgeViewModel(b.Permission, permissions.Contains(b.Permission)))];
-        }
-        else if (project.FormerMasters.SingleOrDefault(m => m.UserId == userId) is { } former
-            && await masterProfileRepository.GetMasterProfile(projectId, userId) is { } formerProfile)
-        {
-            // Возвращаем бывшего мастера: форма предзаполнена его прежним профилем (ADR019, §1).
-            model.Role = formerProfile.Role.Value;
-            model.Description = formerProfile.Description?.Value;
-            model.IsPublic = former.IsPublic;
-        }
-        return View(model);
-    }
-
-    [HttpPost("add/{userId}")]
-    [MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Add(AddAclViewModel viewModel)
-    {
-        if (!ModelState.IsValid)
-        {
-            return await ShowAddPage(new(viewModel.ProjectId), new UserIdentification(viewModel.UserId), viewModel);
-        }
-        try
-        {
-            await projectAccessService.GrantAccess(new GrantAccessRequest()
-            {
-                ProjectId = new ProjectIdentification(viewModel.ProjectId),
-                UserId = new UserIdentification(viewModel.UserId),
-                Permissions = viewModel.ToPermissions(),
-                Role = new(viewModel.Role!), // ModelState проверен выше — [Required]
-                Description = MarkdownString.FromOptional(viewModel.Description),
-                IsPublic = viewModel.IsPublic,
-            });
-        }
-        catch (Exception exception)
-        {
-            AddModelException(exception);
-            return await ShowAddPage(new(viewModel.ProjectId), new UserIdentification(viewModel.UserId), viewModel);
-        }
-
-        return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
+        // Форма — остров AddMasterPanel: профиль и права грузит и сохраняет через API (ADR019, §4).
+        return targetUser is null ? NotFound() : View(new AclViewModel(project, targetUser, currentUserAccessor));
     }
 
     /// <summary>
@@ -186,56 +136,25 @@ public class AclController(
         return model is null ? NotFound() : View(model);
     }
 
-    [HttpPost("edit")]
-    [ValidateAntiForgeryToken, RequireMaster()]
-    public async Task<ActionResult> Edit(ChangeAclViewModel viewModel)
-    {
-        var projectId = new ProjectIdentification(viewModel.ProjectId);
-        var userId = new UserIdentification(viewModel.UserId);
-        if (await GetEditViewModel(projectId, userId) is not { } model)
-        {
-            return NotFound();
-        }
-        // Форма прав — только для того, кто может их менять. Профиль правится островом, мимо этого POST.
-        if (!model.CanEditPermissions)
-        {
-            return Forbid();
-        }
-
-        try
-        {
-            await projectAccessService.ChangeAccess(new ChangeAccessRequest()
-            {
-                ProjectId = projectId,
-                UserId = userId,
-                Permissions = viewModel.ToPermissions(),
-            });
-            return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
-        }
-        catch (Exception exception)
-        {
-            AddModelException(exception);
-        }
-
-        // Показываем форму с тем, что прислали, а не с тем, что лежит в базе.
-        var posted = viewModel.ToPermissions();
-        model.Badges = [.. model.Badges.Select(b => new PermissionBadgeViewModel(b.Permission, posted.Contains(b.Permission)))];
-        return View(model);
-    }
-
     /// <summary>
-    /// Модель страницы правки мастера: остров профиля и, если можно, форма прав.
+    /// Модель страницы правки мастера: остров профиля и, если можно, остров прав.
     /// Чужого мастера без права выдавать доступ править нельзя.
     /// </summary>
     private async Task<AclViewModel?> GetEditViewModel(ProjectIdentification projectId, UserIdentification userId)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var canGrantRights = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault, Permission.CanGrantRights);
         var model = await GetAclViewModel(projectId, userId);
         if (model is null)
         {
-            return null;
+            // Бывший мастер: страница правки — это его возврат в проект, только с правом выдавать доступ (ADR019, §1).
+            if (!canGrantRights || projectInfo.FormerMasters.SingleOrDefault(m => m.UserId == userId) is not { } former)
+            {
+                return null;
+            }
+            var claims = await claimRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
+            model = new AclViewModel(former, claims.Count, projectInfo) { IsFormerMaster = true };
         }
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var canGrantRights = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault, Permission.CanGrantRights);
         // Права меняются только в активном проекте (ChangeAccess — MustBeActive), профиль — и в архиве: это «титры» игры.
         model.CanEditPermissions = canGrantRights && projectInfo.IsActive;
         if (!canGrantRights && userId != currentUserAccessor.UserIdentificationOrDefault)

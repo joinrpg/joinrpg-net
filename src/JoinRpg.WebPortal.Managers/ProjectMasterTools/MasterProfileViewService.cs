@@ -27,7 +27,7 @@ internal class MasterProfileViewService(
             ProjectId = projectId,
             UserId = userId,
             Role = profile.Role.Value,
-            Description = profile.Description?.Value,
+            Description = profile.Description?.Value ?? "",
             IsPublic = master.IsPublic,
         };
     }
@@ -38,7 +38,7 @@ internal class MasterProfileViewService(
             ProjectId = model.ProjectId,
             UserId = model.UserId,
             Role = new MasterRoleTitle(model.Role),
-            Description = MarkdownString.FromOptional(model.Description),
+            Description = model.Description.ToOptionalMarkdown(),
             IsPublic = model.IsPublic,
         });
 }

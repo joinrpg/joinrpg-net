@@ -15,17 +15,7 @@
                 <ValidationSummary />
                 <DataAnnotationsValidator />
 
-                <FormRowFor For="@(() => Model.Role)">
-                    <InputText @bind-Value="Model.Role" class="form-control" maxlength="100" />
-                </FormRowFor>
-
-                <FormRowFor For="@(() => Model.Description)">
-                    <InputTextArea @bind-Value="Model.Description" class="form-control" rows="4" />
-                </FormRowFor>
-
-                <FormRowFor For="@(() => Model.IsPublic)">
-                    <CheckboxInput @bind-Value="Model.IsPublic" />
-                </FormRowFor>
+                <MasterProfileFields Model="Model" />
 
                 <FormRow>
                     <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />

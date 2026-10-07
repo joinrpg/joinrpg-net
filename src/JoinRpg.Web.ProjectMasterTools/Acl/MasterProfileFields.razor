@@ -1,0 +1,19 @@
+@* Поля профиля мастера внутри EditForm: Model — модель EditContext, иначе валидация не привяжется к полям. *@
+
+<FormRowFor For="@(() => Model.Role)">
+    <JoinTextInput @bind-Value="Model.Role" maxlength="100" />
+</FormRowFor>
+
+<FormRowFor For="@(() => Model.Description)">
+    <JoinTextArea @bind-Value="Model.Description" />
+</FormRowFor>
+
+<FormRowFor For="@(() => Model.IsPublic)">
+    <CheckboxInput @bind-Value="Model.IsPublic" />
+</FormRowFor>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public MasterProfileViewModel Model { get; set; } = null!;
+}

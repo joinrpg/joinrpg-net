@@ -41,8 +41,8 @@ internal class ProjectAccessService(
                     }
                     else
                     {
-                        // Повторная выдача снятому мастеру — та же строка (ADR019, §1). Профиль — из формы,
-                        // которая для бывшего мастера предзаполнена его прежним профилем.
+                        // Повторная выдача снятому мастеру — та же строка (ADR019, §1), профиль — из запроса.
+                        // Так возвращает админа GrantFullAccess; из UI бывшего мастера возвращают правкой прав.
                         acl.Status = ProjectAclStatus.Active;
                         acl.Role = ctx.Request.Role.Value;
                     }
@@ -61,7 +61,12 @@ internal class ProjectAccessService(
             request,
             ctx =>
             {
-                var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId && a.IsActive);
+                var acl = ctx.Project.ProjectAcls.Single(a => a.UserId == ctx.Request.UserId);
+                if (!acl.IsActive)
+                {
+                    // Бывшего мастера возвращают со страницы правки прав: та же строка, прежний профиль (ADR019, §1).
+                    acl.Status = ProjectAclStatus.Active;
+                }
                 acl.SetPermissions(ctx.Request.Permissions);
                 if (ctx.Project.ProjectAcls.Where(a => a.IsActive).All(a => !a.CanGrantRights))
                 {

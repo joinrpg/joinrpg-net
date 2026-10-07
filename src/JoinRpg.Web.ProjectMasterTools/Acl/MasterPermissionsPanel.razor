@@ -1,24 +1,107 @@
-@using JoinRpg.Web.ProjectCommon.Masters
-@* Права мастера внутри статической формы: имена полей — как у ChangeAclViewModel.
-   Чекбоксы — обычным input, а не CheckboxInput: тот в статическом рендере постит исходное значение (#5299). *@
+@inject IMasterAccessClient accessClient
+@inject NavigationManager navigationManager
+@implements IDisposable
+
+@if (Model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
 
 <JoinPanel>
     <Header>Права доступа</Header>
     <Body>
-        <FormHorizontal>
-            @foreach (var permission in Permissions)
-            {
-                var name = permission.Permission.ToString();
-                <FormRow Label="@permission.DisplayName" Description="@permission.Description">
-                    <input type="checkbox" id="@name" name="@name" value="true" checked="@permission.Value" />
+        <EditForm FormName="MasterPermissions" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+            <FormHorizontal>
+                @* @key: после сохранения модель перечитывается, а CheckboxInput берёт значение только при создании. *@
+                <MasterPermissionFields @key="Model" Permissions="Model.Permissions" />
+
+                <FormRow>
+                    @if (Model.IsFormerMaster)
+                    {
+                        <JoinButton Preset="ButtonPreset.Save" Submit="true" Label="Вернуть в мастера" />
+                    }
+                    else
+                    {
+                        <JoinButton Preset="ButtonPreset.Save" Submit="true" />
+                    }
                 </FormRow>
-            }
-        </FormHorizontal>
+            </FormHorizontal>
+        </EditForm>
     </Body>
 </JoinPanel>
 
+@if (success)
+{
+    <JoinAlert Variation="VariationStyleEnum.Success">Права доступа сохранены</JoinAlert>
+}
+@if (failed)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">Неизвестная серверная ошибка при сохранении прав</JoinAlert>
+}
+
 @code {
+    private EditContext? editContext;
+    private bool success;
+    private bool failed;
+
+    private MasterPermissionsViewModel? Model { get; set; }
+
     [Parameter]
     [EditorRequired]
-    public IReadOnlyCollection<PermissionBadgeViewModel> Permissions { get; set; } = null!;
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public UserIdentification UserId { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+        Model = await accessClient.GetPermissions(ProjectId, UserId);
+        editContext = new(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        success = failed = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        success = failed = false;
+        try
+        {
+            await accessClient.SavePermissions(Model!);
+        }
+        catch
+        {
+            failed = true;
+            return;
+        }
+        if (Model!.IsFormerMaster)
+        {
+            // Мастер вернулся — перезагружаем страницу правки целиком: на ней появится его профиль.
+            navigationManager.NavigateTo(navigationManager.Uri, forceLoad: true);
+            return;
+        }
+        // Показываем то, что записано: последнему с правом выдавать доступ сервис это право не снимает.
+        await LoadAsync();
+        success = true;
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+    }
 }
