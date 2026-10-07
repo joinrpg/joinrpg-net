@@ -5,7 +5,7 @@
     <span  class="h2">@Model.Title</span> 
     @if (Model.PlotAccessArguments.HasPlotEditorAccess)
     {
-       <span>&nbsp;</span>   <JoinButton Preset="ButtonPreset.Add" Label="Добавить сюжет" Link="@projectUriLocator.GetCreatePlotUri(Model.ProjectId).AbsoluteUri" />
+       <span>&nbsp;</span>   <JoinButton Preset="ButtonPreset.Add" Label="Добавить сюжет" Link="@projectUriLocator.GetCreatePlotUri(Model.ProjectId).ToString()" />
     }
 </div>
 <br />

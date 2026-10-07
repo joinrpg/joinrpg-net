@@ -7,9 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace JoinRpg.Portal.Test;
 
 /// <summary>
-/// У <see cref="IProjectUriLocator"/> нет клиентской реализации, сверять серверную не с чем.
-/// Поэтому путь закреплён здесь: ссылки ведут в экшены MVC, и переименование экшена или
-/// параметра сломало бы кнопки списка молча.
+/// Клиентская реализация <see cref="IProjectUriLocator"/> сверяется с серверной в
+/// <see cref="UriLocatorConsistencyTests"/>, но обе можно поменять согласованно. Поэтому путь
+/// закреплён и здесь: ссылки ведут в экшены MVC, и переименование экшена или параметра сломало бы
+/// кнопки списка молча.
 /// </summary>
 public class ProjectUriLocatorTest(IntegrationTestPortalFactory factory) : IClassFixture<IntegrationTestPortalFactory>
 {
