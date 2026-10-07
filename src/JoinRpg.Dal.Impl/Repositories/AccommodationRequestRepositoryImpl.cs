@@ -11,6 +11,9 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : IAccommodatio
                 request.Subjects.Any(subject => subject.ClaimId == claimId))
             .Include(request => request.Subjects)
             .Include(request => request.Subjects.Select(cl => cl.Player))
+            // Жильцы комнаты нужны для подсчёта свободного места (GetRoomFreeSpace), иначе на
+            // расселённой группе это ленивые загрузки комнаты и её групп (#4964)
+            .Include(request => request.Accommodation!.Inhabitants.Select(group => group.Subjects))
             .ToListAsync().ConfigureAwait(false);
     }
 
@@ -23,6 +26,8 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : IAccommodatio
             .SelectMany(request => request.Subjects)
             .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
             .Include(claim => claim.Player)
+            // Имя персонажа показывается в списке целей приглашения (#4964)
+            .Include(claim => claim.Character)
             .ToListAsync().ConfigureAwait(false);
     }
 
@@ -44,6 +49,8 @@ public class AccommodationRequestRepositoryImpl(MyDbContext ctx) : IAccommodatio
         var projectClaims = await ctx.Set<Claim>()
             .Where(claim => claim.ProjectId == projectId)
             .Include(claim => claim.Player)
+            // Имя персонажа показывается в списке целей приглашения (#4964)
+            .Include(claim => claim.Character)
             .Where(claim => claim.ClaimStatus == ClaimStatus.Approved)
             .ToListAsync().ConfigureAwait(false);
         var claimsWithAccommodationRequest = await ctx.Set<AccommodationRequest>()

@@ -30,13 +30,7 @@ internal class AccommodationInviteViewService(
 
     public async Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId)
     {
-        // Список нужен только чтобы пригласить, поэтому доступ ровно как у самого приглашения:
-        // кому операция откажет, тому и список не отдаём (#5261)
-        var claim = (await claimsRepository.GetClaim(claimId))
-            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
-
-        var acceptedRequest = (await accommodationRequestRepository.GetAccommodationRequestForClaim(claimId.ClaimId))
-            .FirstOrDefault(request => request.IsAccepted == InviteState.Accepted);
+        var (claim, acceptedRequest) = await GetSenderRequest(claimId);
 
         if (acceptedRequest is null)
         {
@@ -93,15 +87,37 @@ internal class AccommodationInviteViewService(
 
     public async Task CreateInvite(ClaimIdentification claimId, AccommodationTargetIdentification target)
     {
-        var model = await GetInviteTargets(claimId);
-        if (model.SenderRequestId is null)
+        // Весь список целей тут не нужен — только группа приглашающего. Раньше он строился целиком
+        // и тащил за собой все свои загрузки (#4964)
+        var (_, acceptedRequest) = await GetSenderRequest(claimId);
+        if (acceptedRequest is null)
         {
             //TODO[Localize]
             throw new AccommodationInviteNotAllowedException(claimId.ProjectId,
                 "Сначала надо выбрать тип проживания.");
         }
 
-        await accommodationInviteService.CreateAccommodationInvite(claimId, model.SenderRequestId, target);
+        await accommodationInviteService.CreateAccommodationInvite(
+            claimId,
+            new AccommodationRequestIdentification(claimId.ProjectId, acceptedRequest.Id),
+            target);
+    }
+
+    /// <summary>
+    /// Заявка приглашающего (с проверкой доступа) и её принятая группа проживающих, если она есть.
+    /// </summary>
+    private async Task<(Claim Claim, AccommodationRequest? AcceptedRequest)> GetSenderRequest(
+        ClaimIdentification claimId)
+    {
+        // Список нужен только чтобы пригласить, поэтому доступ ровно как у самого приглашения:
+        // кому операция откажет, тому и список не отдаём (#5261)
+        var claim = (await claimsRepository.GetClaim(claimId))
+            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
+
+        var acceptedRequest = (await accommodationRequestRepository.GetAccommodationRequestForClaim(claimId.ClaimId))
+            .FirstOrDefault(request => request.IsAccepted == InviteState.Accepted);
+
+        return (claim, acceptedRequest);
     }
 
     public async Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
@@ -127,10 +143,11 @@ internal class AccommodationInviteViewService(
         }
 
         // Приглашения от/к тем, с кем уже живём в одной комнате, тоже не показываем
-        var currentNeighbors = claim.AccommodationRequest is null
+        // Группа — по внешнему ключу: навигация AccommodationRequest не загружена (#4964)
+        var currentNeighbors = claim.AccommodationRequest_Id is not int accommodationRequestId
             ? []
             : (await accommodationRequestRepository
-                    .GetClaimsWithSameAccommodationRequest(claim.AccommodationRequest.Id))
+                    .GetClaimsWithSameAccommodationRequest(accommodationRequestId))
                 .Select(c => c.ClaimId)
                 .ToHashSet();
 

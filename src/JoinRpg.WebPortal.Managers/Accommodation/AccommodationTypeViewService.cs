@@ -16,6 +16,7 @@ namespace JoinRpg.WebPortal.Managers.Accommodation;
 /// </summary>
 internal class AccommodationTypeViewService(
     IClaimsRepository claimsRepository,
+    IAccommodationRequestRepository accommodationRequestRepository,
     IProjectMetadataRepository projectMetadataRepository,
     IClaimService claimService,
     ICurrentUserAccessor currentUserAccessor)
@@ -27,11 +28,18 @@ internal class AccommodationTypeViewService(
         var claim = (await claimsRepository.GetClaim(claimId))
             .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
 
-        var request = claim.AccommodationRequest;
+        // Группа проживающих — отдельным запросом вместе с соседями: навигация
+        // claim.AccommodationRequest не загружена, и её чтение было ленивыми загрузками (#4964)
+        var request = claim.AccommodationRequest_Id is null
+            ? null
+            : (await accommodationRequestRepository.GetAccommodationRequestForClaim(claimId.ClaimId))
+                .SingleOrDefault(r => r.Id == claim.AccommodationRequest_Id);
         var hasMasterAccess = claim.HasMasterAccess(currentUserAccessor);
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
-        var selectedTypeId = claim.GetAccommodationTypeIdOrDefault();
+        var selectedTypeId = request is null
+            ? null
+            : new AccommodationTypeIdentification(claimId.ProjectId, request.AccommodationTypeId);
 
         // Мастеру показываем всё, игроку — только помеченное как выбираемое, плюс то, что у него уже стоит.
         // Готовый ProjectAccommodationSettings.PlayerSelectableTypes здесь не подходит: к нему всё равно
@@ -46,7 +54,7 @@ internal class AccommodationTypeViewService(
         return new AccommodationTypeChoiceViewModel(
             types,
             selectedTypeId,
-            RoomAssigned: request?.Accommodation != null,
+            RoomAssigned: request?.AccommodationId != null,
             HasNeighbours: request?.Subjects.Count > 1);
     }
 
