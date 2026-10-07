@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 namespace JoinRpg.IntegrationTest.Scenarios;
 
 /// <summary>
-/// POST-ручки сюжетов под мастером: создание и правка папки, создание и правка вводной, удаление
-/// папки.
+/// POST-ручки сюжетов под мастером: создание и правка папки, создание и правка вводной, удаление и
+/// восстановление вводной через webapi, удаление папки.
 /// </summary>
 /// <remarks>
 /// Смоук по страницам (<see cref="AllGetPagesSmokeScenario"/>) ходит только по GET, поэтому
@@ -36,9 +36,22 @@ public class PlotMutationPagesScenario(JoinApplicationFactory factory) : IClassF
                 scope.ServiceProvider, masterId, "Проект для правки сюжетов через ручки");
         }
 
+        // Папка наполняется «в ширину»: несколько вводных, у каждой несколько таргетов. На одной
+        // вводной с одним таргетом N+1 по вводным и их таргетам не отличить от одиночного
+        // запроса — так прод-долг по этим ручкам и мерился в ноль (#4988). Таргеты для ширины
+        // берём из соседней папки.
         seed = await factory.Services.RunAsAsync(
             masterId,
-            sp => TestPlotHelpers.SeedPlotFolderAsync(sp, projectId, elementCount: 1));
+            async sp =>
+            {
+                var neighbour = await TestPlotHelpers.SeedPlotFolderAsync(sp, projectId, elementCount: 1);
+                return await TestPlotHelpers.SeedPlotFolderAsync(
+                    sp,
+                    projectId,
+                    elementCount: 3,
+                    extraTargetChars: [neighbour.TargetCharacterId],
+                    extraTargetGroups: [neighbour.TargetGroupId]);
+            });
 
         // Редиректы намеренно не проходим: успех мутации — это 302 на страницу сюжета, а
         // переход по нему замерил бы ленивые загрузки уже другого маршрута.
@@ -91,6 +104,18 @@ public class PlotMutationPagesScenario(JoinApplicationFactory factory) : IClassF
             ["content", "Исправленный текст вводной"],
             ["todoField", ""],
             ["isMasterOnly", "false"]);
+
+        // Удаление и восстановление вводной — ajax-ручки острова, без antiforgery и с типизированными
+        // id в query, как их шлёт клиент острова (PlotClient).
+        var apiElementId = seed.ElementIds[1];
+        foreach (var action in new[] { "DeleteElement", "UnDeleteElement" })
+        {
+            var apiResponse = await client.PostAsync(
+                $"webapi/plots/{action}?projectId={Uri.EscapeDataString(apiElementId.ProjectId.ToString())}"
+                + $"&elementId={Uri.EscapeDataString(apiElementId.ToString())}",
+                new StringContent(""));
+            apiResponse.StatusCode.ShouldBe(HttpStatusCode.OK, $"POST webapi/plots/{action}");
+        }
 
         await PostAsync(
             client,
