@@ -16,6 +16,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             .ClaimSet
             .AsNoTracking()
             .Include(c => c.Player)
+            .Include(c => c.Character)
             .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
             .Where(c => c.ProjectId == projectId)
             .ToArrayAsync();
