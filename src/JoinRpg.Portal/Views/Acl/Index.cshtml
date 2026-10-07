@@ -30,6 +30,13 @@
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.UserDetails)
+                <div>
+                    <b>@item.Role</b>
+                    @if (!item.IsPublic)
+                    {
+                        <span class="label label-default" title="Непубличного мастера видят только мастера проекта">скрыт от игроков</span>
+                    }
+                </div>
             </td>
             <td class="hidden-xs">
                 @foreach (var badge in item.Badges.Take(item.Badges.Length / 2))

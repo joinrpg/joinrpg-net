@@ -98,7 +98,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
     public async Task Anonymous_DoesNotSeeNonPublicMaster(string page)
     {
         // ADR019, §3: непубличного мастера видят только мастера проекта.
-        var (projectId, _, _) = await CreateProjectWithHiddenMaster();
+        var (projectId, _, _, _) = await CreateProjectWithHiddenMaster();
 
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         var html = await GetPage(client, projectId, page);
@@ -111,7 +111,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
     public async Task Owner_SeesNonPublicMaster_OnProjectHome()
     {
         // Позитивный контроль к тесту выше: фильтр завязан на смотрящего, а не прячет всех непубличных подряд.
-        var (projectId, _, ownerEmail) = await CreateProjectWithHiddenMaster();
+        var (projectId, _, ownerEmail, _) = await CreateProjectWithHiddenMaster();
 
         var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
             factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
@@ -122,8 +122,54 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
         CountUserLinks(html).ShouldBe(2);
     }
 
+    [Fact]
+    public async Task Anonymous_SeesRoleAndSanitizedDescription()
+    {
+        var (projectId, _, _, ownerId) = await CreateProjectWithHiddenMaster();
+        UserIdentification storyMasterId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            storyMasterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+        }
+        await factory.Services.RunAsAsync(ownerId, sp =>
+            sp.GetRequiredService<IProjectAccessService>().GrantAccess(new GrantAccessRequest
+            {
+                ProjectId = projectId,
+                UserId = storyMasterId,
+                Role = new("Мастер по сюжету"),
+                Description = new MarkdownString("Пишите про **сюжет**<script>alert(1)</script>"),
+                IsPublic = true,
+                Permissions = [Permission.CanManagePlots],
+            }));
+
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var raw = await GetPage(client, projectId, "masters");
+        var html = WebUtility.HtmlDecode(raw);
+
+        html.ShouldContain("Мастер по сюжету");
+        // Описание отдаётся готовым HTML — проверяем по сырому ответу, иначе декодирование спрятало бы &lt;strong&gt;.
+        raw.ShouldContain("<strong>сюжет</strong>");
+        // А <script> не должно быть ни в каком виде — по раскодированному это строже.
+        html.ShouldNotContain("<script>alert(1)</script>");
+    }
+
+    [Fact]
+    public async Task MasterTable_ShowsRoleAndHiddenMark()
+    {
+        var (projectId, _, ownerEmail, _) = await CreateProjectWithHiddenMaster();
+
+        var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
+            factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
+            ownerEmail,
+            followsRedirects: false);
+        var html = WebUtility.HtmlDecode(await GetPage(client, projectId, "masters"));
+
+        html.ShouldContain("Главный мастер"); // роль создателя игры
+        html.ShouldContain("скрыт от игроков");
+    }
+
     /// <summary>Проект, где у владельца (публичного) есть непубличный мастер с правом выдавать доступ.</summary>
-    private async Task<(ProjectIdentification ProjectId, UserIdentification HiddenMasterId, string OwnerEmail)> CreateProjectWithHiddenMaster()
+    private async Task<(ProjectIdentification ProjectId, UserIdentification HiddenMasterId, string OwnerEmail, UserIdentification OwnerId)> CreateProjectWithHiddenMaster()
     {
         using var scope = factory.Services.CreateScope();
         var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
@@ -138,7 +184,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
                 IsPublic = false,
                 Permissions = [Permission.CanManageClaims, Permission.CanGrantRights],
             }));
-        return (projectId, hiddenMasterId, ownerEmail);
+        return (projectId, hiddenMasterId, ownerEmail, ownerId);
     }
 
     private static async Task<string> GetPage(HttpClient client, ProjectIdentification projectId, string pageFormat)

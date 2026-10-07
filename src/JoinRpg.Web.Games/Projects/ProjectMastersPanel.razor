@@ -1,11 +1,18 @@
 <h2>Мастера</h2>
 
-<ul class="list-unstyled">
-    @foreach (var master in Model.Masters)
-    {
-        <li><UserLink Model="master" /></li>
-    }
-</ul>
+@foreach (var master in Model.Masters)
+{
+    <div style="margin-bottom: 1.5em">
+        <h4>
+            <UserLink Model="master.User" />
+            <small>@master.Role</small>
+        </h4>
+        @if (master.Description is { } description)
+        {
+            <div>@description</div>
+        }
+    </div>
+}
 
 @code {
     [Parameter]
