@@ -77,9 +77,16 @@
               @if (Model.CanCurrentUserGrantRights)
                {
                  <a href="@Url.Action("Edit", new {item.ProjectId, userId = item.UserId})" class="btn btn-default btn-sm">
-                            <join-icon icon="Edit" /> Изменить права
+                            <join-icon icon="Edit" /> Изменить
                         </a>
                }
+              else if (item.UserId == Model.CurrentUserId)
+              {
+                 @* Свой профиль (роль, описание, публичность) мастер правит сам, ADR019 *@
+                 <a href="@Url.Action("Edit", new {item.ProjectId, userId = item.UserId})" class="btn btn-default btn-sm">
+                            <join-icon icon="Edit" /> Мой профиль
+                        </a>
+              }
 
               @if (item.UserId == Model.CurrentUserId)
               {

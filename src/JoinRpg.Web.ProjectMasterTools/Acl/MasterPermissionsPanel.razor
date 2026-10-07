@@ -1,0 +1,24 @@
+@using JoinRpg.Web.ProjectCommon.Masters
+@* Права мастера внутри статической формы: имена полей — как у ChangeAclViewModel.
+   Чекбоксы — обычным input, а не CheckboxInput: тот в статическом рендере постит исходное значение (#5299). *@
+
+<JoinPanel>
+    <Header>Права доступа</Header>
+    <Body>
+        <FormHorizontal>
+            @foreach (var permission in Permissions)
+            {
+                var name = permission.Permission.ToString();
+                <FormRow Label="@permission.DisplayName" Description="@permission.Description">
+                    <input type="checkbox" id="@name" name="@name" value="true" checked="@permission.Value" />
+                </FormRow>
+            }
+        </FormHorizontal>
+    </Body>
+</JoinPanel>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyCollection<PermissionBadgeViewModel> Permissions { get; set; } = null!;
+}

@@ -30,6 +30,9 @@ public class AclViewModel
     public string? Description { get; set; }
     public bool IsPublic { get; set; } = true;
 
+    /// <summary>Может ли текущий пользователь менять права (а не только профиль — свой профиль мастер правит сам).</summary>
+    public bool CanEditPermissions { get; set; } = true;
+
     public bool CanGrantRights => Badges.Single(b => b.Permission == Permission.CanGrantRights).Value;
 
     // For Add/Edit pages: needs full User entity for detailed profile display

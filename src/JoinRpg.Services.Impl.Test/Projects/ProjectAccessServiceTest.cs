@@ -503,4 +503,64 @@ public class ProjectAccessServiceTest
 
         await Should.ThrowAsync<NoAccessToProjectException>(() => service.GrantFullAccess(ProjectId));
     }
+
+    private ChangeMasterProfileRequest ProfileRequest(int userId) => new()
+    {
+        ProjectId = ProjectId,
+        UserId = new UserIdentification(userId),
+        Role = new("Мастер по боёвке"),
+        Description = new MarkdownString("Боёвка и полигон"),
+        IsPublic = false,
+    };
+
+    [Fact]
+    public async Task ChangeMasterProfile_Self_WithoutCanGrantRights_Succeeds()
+    {
+        var acl = AddMaster(50, canGrantRights: false);
+
+        var service = CreateService(50);
+
+        await service.ChangeMasterProfile(ProfileRequest(50));
+
+        acl.Role.ShouldBe("Мастер по боёвке");
+        acl.Description.Contents.ShouldBe("Боёвка и полигон");
+        acl.IsPublic.ShouldBeFalse();
+        metadataRepository.LastPrimed.ShouldNotBeNull().Masters.Single(m => m.UserId == new UserIdentification(50)).IsPublic.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ChangeMasterProfile_Other_WithoutCanGrantRights_Throws()
+    {
+        AddMaster(50, canGrantRights: false);
+        var other = AddMaster(51, canGrantRights: false);
+
+        var service = CreateService(50);
+
+        await Should.ThrowAsync<NoAccessToProjectException>(() => service.ChangeMasterProfile(ProfileRequest(51)));
+        other.Role.ShouldBe("Мастер");
+    }
+
+    [Fact]
+    public async Task ChangeMasterProfile_Other_WithCanGrantRights_Succeeds()
+    {
+        var other = AddMaster(51, canGrantRights: false);
+
+        var service = CreateService(mock.Master.UserId);
+
+        await service.ChangeMasterProfile(ProfileRequest(51));
+
+        other.Role.ShouldBe("Мастер по боёвке");
+    }
+
+    [Fact]
+    public async Task ChangeMasterProfile_RemovedMaster_Throws()
+    {
+        var former = AddMaster(51, canGrantRights: false);
+        former.Status = ProjectAclStatus.Removed;
+        mock.ReInitProjectInfo();
+
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<InvalidOperationException>(() => service.ChangeMasterProfile(ProfileRequest(51)));
+    }
 }
