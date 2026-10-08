@@ -41,6 +41,7 @@
 - [ADR018: RoomCategoryPlan — доменный агрегат комнат и заселения](adr018-room-category-plan.md)
 - [ADR019: Статус, публичность и профиль мастера проекта](adr019-project-master-status.md)
 - [ADR020: Разделение типа проживания и категории комнат](adr020-room-category-split.md)
+- [ADR021: ClaimInfo — заявка вместе с персонажем и игроком как доменный тип](adr021-claim-info.md)
 
 ## Быстрые ссылки
 
