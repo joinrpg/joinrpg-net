@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -9,7 +8,7 @@ namespace JoinRpg.Services.Impl.Claims;
 
 /// <summary>
 /// Контекст создания заявки (ADR014). Персонаж уже существует и трекается, а заявки ещё нет —
-/// её строит фабрика операции через <see cref="NewClaim(ClaimStatus, User)"/>.
+/// её строит фабрика операции через <see cref="NewClaim(ClaimStatus, UserIdentification)"/>.
 /// </summary>
 /// <param name="Character">Трекаемая EF-сущность персонажа, на которого подаётся заявка.</param>
 /// <param name="CharacterInfo">Доменный снимок персонажа; по нему считаются правила подачи.</param>
@@ -54,7 +53,7 @@ internal abstract record ClaimCreationContext(
     /// вправе расходиться, поэтому общего значения по умолчанию нет. Обычное правило проекта —
     /// <see cref="ResponsibleMasterByProjectRules"/>.
     /// </param>
-    public Claim NewClaim(ClaimStatus claimStatus, User responsibleMaster)
+    public Claim NewClaim(ClaimStatus claimStatus, UserIdentification responsibleMaster)
     {
         var claim = new Claim
         {
@@ -68,8 +67,7 @@ internal abstract record ClaimCreationContext(
             PlayerAcceptedDate = Now,
             CreateDate = Now,
             ClaimStatus = claimStatus,
-            ResponsibleMasterUserId = responsibleMaster.UserId,
-            ResponsibleMasterUser = responsibleMaster,
+            ResponsibleMasterUserId = responsibleMaster.Value,
             LastUpdateDateTime = Now,
             CommentDiscussion = new CommentDiscussion
             {
@@ -83,17 +81,10 @@ internal abstract record ClaimCreationContext(
 
     /// <summary>
     /// Ответственный мастер по обычному правилу проекта: мастер роли, а если его нет — мастер
-    /// ближайшей группы. Отдельный метод, а не значение по умолчанию у <see cref="NewClaim(ClaimStatus, User)"/>:
+    /// ближайшей группы. Отдельный метод, а не значение по умолчанию у <see cref="NewClaim(ClaimStatus, UserIdentification)"/>:
     /// выбор остаётся за операцией.
     /// </summary>
-    /// <remarks>
-    /// Возвращает именно EF-сущность <see cref="User"/> — она кладётся в навигацию
-    /// <c>Claim.ResponsibleMasterUser</c>, и доменного снимка тут недостаточно.
-    /// </remarks>
-    public User ResponsibleMasterByProjectRules()
-#pragma warning disable CS0618 // Правило живёт в legacy-расширении над EF-графом
-        => Character.GetResponsibleMaster();
-#pragma warning restore CS0618
+    public UserIdentification ResponsibleMasterByProjectRules() => CharacterInfo.ResponsibleMasterId;
 
     /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Claim, FieldLayerContainer)"/>
     /// <param name="claim">Заявка, через которую сохраняются поля.</param>
