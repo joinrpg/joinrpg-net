@@ -6,6 +6,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Claims;
@@ -141,7 +142,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                 claim.GetId(),
                 currentUser.UserIdentification,
                 CharacterNavigationPage.Claim);
-        var problemContext = new ClaimProblemContext(characterInfo, characterInfo.GetClaimById(claim.GetId()), playerInfo);
+        var problemContext = new ClaimInfo(new ClaimInCharacter(characterInfo, claim.GetId()), playerInfo);
         Problems = problemValidator.Validate(problemContext).Select(p => new ProblemViewModel(p)).ToList();
         // playerInfo уже прочитан репозиторием одним запросом. Старый claim.GetUserInfo() лез
         // по навигациям EF-сущности игрока (Extra, Auth, Allrpg, ExternalLogins, Claims, ProjectAcls),

@@ -57,9 +57,8 @@ internal class ClaimServiceImpl(
                 // Правила регистрации считаются по доменным сущностям (#4892): персонаж и заявка
                 // уже лежат в контексте, профиль игрока нужен контексту проблем целиком.
                 var validator = new ClaimCheckInValidator(
-                    new ClaimProblemContext(
-                        ctx.CharacterInfo,
-                        ctx.CharacterClaimInfo,
+                    new ClaimInfo(
+                        new ClaimInCharacter(ctx.CharacterInfo, ctx.CharacterClaimInfo),
                         await UserRepository.GetRequiredUserInfo(ctx.CharacterClaimInfo.PlayerId)),
                     claimValidator);
                 if (!validator.CanCheckInInPrinciple)

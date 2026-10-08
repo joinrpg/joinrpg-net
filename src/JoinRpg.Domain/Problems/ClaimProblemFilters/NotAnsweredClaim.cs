@@ -5,7 +5,7 @@ namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 internal class NotAnsweredClaim : IClaimProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context)
+    public IEnumerable<ClaimProblem> GetProblems(ClaimInfo context)
     {
         var claim = context.Claim;
         var now = DateTime.UtcNow;

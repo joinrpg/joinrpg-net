@@ -1,12 +1,12 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
-using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
 /// <summary>
-/// Собирает <see cref="ClaimProblemContext"/> для списка заявок — двумя запросами на весь список,
+/// Собирает <see cref="ClaimInfo"/> для списка заявок — двумя запросами на весь список,
 /// а не по заявке.
 /// </summary>
 /// <remarks>
@@ -17,7 +17,7 @@ namespace JoinRpg.Web.Models.ClaimList;
 /// </remarks>
 public static class ClaimProblemContextLoader
 {
-    public static async Task<IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext>> Load(
+    public static async Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> Load(
         ICharacterInfoRepository characterInfoRepository,
         IUserRepository userRepository,
         IReadOnlyCollection<ClaimIdentification> claimIds)
@@ -26,7 +26,7 @@ public static class ClaimProblemContextLoader
 
         if (claimIds.Count == 0)
         {
-            return new Dictionary<ClaimIdentification, ClaimProblemContext>();
+            return new Dictionary<ClaimIdentification, ClaimInfo>();
         }
 
         var characters = await characterInfoRepository.GetCharacterInfosByClaims(claimIds);
@@ -58,12 +58,12 @@ public static class ClaimProblemContextLoader
     /// <summary>
     /// Контекст одной заявки поверх уже загруженных персонажа и профилей игроков.
     /// </summary>
-    private static ClaimProblemContext BuildContext(
+    private static ClaimInfo BuildContext(
         CharacterInfo character,
         ClaimIdentification claimId,
         Dictionary<UserIdentification, UserInfo> players)
     {
-        var claim = character.GetClaimById(claimId);
-        return new ClaimProblemContext(character, claim, players[claim.PlayerId]);
+        var claim = new ClaimInCharacter(character, claimId);
+        return new ClaimInfo(claim, players[claim.Claim.PlayerId]);
     }
 }

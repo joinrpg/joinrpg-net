@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain.Problems;
 
@@ -7,16 +8,16 @@ namespace JoinRpg.Domain.Problems;
 /// </summary>
 /// <remarks>
 /// Зеркало <see cref="ICharacterProblemValidator"/> для стороны заявки. <see cref="ProjectInfo"/>
-/// параметром не передаётся — он приходит внутри <see cref="ClaimProblemContext"/>.
+/// параметром не передаётся — он приходит внутри <see cref="ClaimInfo"/>.
 /// </remarks>
 public interface IClaimProblemValidator
 {
-    IEnumerable<ClaimProblem> Validate(ClaimProblemContext context, ProblemSeverity minimalSeverity = ProblemSeverity.Hint);
+    IEnumerable<ClaimProblem> Validate(ClaimInfo context, ProblemSeverity minimalSeverity = ProblemSeverity.Hint);
 
-    IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimProblemContext context);
+    IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context);
 
-    IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimProblemContext context, IEnumerable<ProjectFieldIdentification> fields);
+    IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context, IEnumerable<ProjectFieldIdentification> fields);
 
-    IEnumerable<FieldRelatedProblem> ValidateFieldOnly(ClaimProblemContext context, ProjectFieldIdentification fieldId)
+    IEnumerable<FieldRelatedProblem> ValidateFieldOnly(ClaimInfo context, ProjectFieldIdentification fieldId)
         => ValidateFieldsOnly(context, [fieldId]);
 }

@@ -1,11 +1,12 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 internal class ClaimContactsMissingFilter : IClaimProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context)
+    public IEnumerable<ClaimProblem> GetProblems(ClaimInfo context)
     {
         // Доступ к паспорту/адресу — согласие на уровне заявки
         // (CharacterClaimInfo.PlayerAllowedSensitiveData), а не факт о профиле, поэтому не входит

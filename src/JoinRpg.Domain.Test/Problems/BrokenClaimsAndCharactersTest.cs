@@ -10,8 +10,8 @@ namespace JoinRpg.Domain.Test.Problems;
 /// <remarks>
 /// Третьей ветки прежнего правила — «у заявки нет персонажа» (<c>ClaimDontHaveTarget</c>) — здесь
 /// нет и быть не может: в доменном агрегате заявка существует только как элемент
-/// <c>CharacterInfo.Claims</c>, что проверяет конструктор <c>ClaimProblemContext</c>. Это
-/// проверяется в <see cref="ClaimProblemContextTest"/>.
+/// <c>CharacterInfo.Claims</c>, что проверяет конструктор <c>ClaimInCharacter</c>. Это
+/// проверяется в <see cref="ClaimInfoTest"/>.
 /// </remarks>
 public class BrokenClaimsAndCharactersTest : ClaimProblemFilterTestBase
 {

@@ -8,7 +8,7 @@ namespace JoinRpg.Domain;
 /// Можно ли зарегистрировать игрока по этой заявке. Считается целиком по доменным сущностям
 /// (ADR013, #4892): EF-графа здесь больше нет.
 /// </summary>
-public class ClaimCheckInValidator(ClaimProblemContext context, IClaimProblemValidator claimValidator)
+public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator claimValidator)
 {
     private readonly CharacterClaimInfo claim = context.Claim;
 

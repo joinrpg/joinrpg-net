@@ -1,7 +1,7 @@
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.Domain.Problems;
 using JoinRpg.Domain.Problems.ClaimProblemFilters;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Domain.Test.Problems;
@@ -26,7 +26,7 @@ public class ClaimContactsMissingFilterTest
     /// Профиль игрока; по умолчанию — <c>MockedProject.PlayerInfo</c>, в котором из контактов не
     /// заполнено ничего.
     /// </param>
-    private ClaimProblemContext MakeContext(
+    private ClaimInfo MakeContext(
         ProjectInfo projectInfo,
         bool sensitiveDataAllowed = false,
         UserInfo? player = null)
@@ -39,7 +39,7 @@ public class ClaimContactsMissingFilterTest
         // WithProfileRequirementSettings возвращает новый.
         var character = Mock.GetCharacterInfo(Mock.Character, projectInfo);
 
-        return new ClaimProblemContext(character, character.GetClaimById(claim.GetId()), player ?? Mock.PlayerInfo);
+        return new ClaimInfo(new ClaimInCharacter(character, claim.GetId()), player ?? Mock.PlayerInfo);
     }
 
     [Fact]

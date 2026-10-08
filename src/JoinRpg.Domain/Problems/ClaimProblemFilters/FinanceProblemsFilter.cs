@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
@@ -10,7 +11,7 @@ namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 /// </remarks>
 internal class FinanceProblemsFilter : IClaimProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context)
+    public IEnumerable<ClaimProblem> GetProblems(ClaimInfo context)
     {
         var claim = context.Claim;
 
