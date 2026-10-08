@@ -26,14 +26,14 @@ public class AccommodationInviteControlTest : BunitContext
 
     private static AccommodationInviteTargetViewModel SingleTarget(int claimId)
         => new(
-            AccommodationTargetIdentification.From(new ClaimIdentification(ProjectId, claimId)),
+            AccommodationGroupIdentification.From(new ClaimIdentification(ProjectId, claimId)),
             Text: $"Игрок {claimId}",
             ExtraSearch: $"Персонаж {claimId}",
             Subtext: "еще не выбрал тип проживания");
 
     private static AccommodationInviteTargetViewModel GroupTarget(int requestId)
         => new(
-            AccommodationTargetIdentification.From(new AccommodationRequestIdentification(ProjectId, requestId)),
+            AccommodationGroupIdentification.From(new AccommodationRequestIdentification(ProjectId, requestId)),
             Text: "Первый, Второй",
             ExtraSearch: "Персонаж-1, Персонаж-2",
             Subtext: "(группа проживающих)");
@@ -79,7 +79,7 @@ public class AccommodationInviteControlTest : BunitContext
 
     /// <summary>
     /// Группа проживающих кодируется отрицательным значением, отдельная заявка — положительным.
-    /// Это единственное место, где кодировка видна снаружи <see cref="AccommodationTargetIdentification"/>.
+    /// Это единственное место, где кодировка видна снаружи <see cref="AccommodationGroupIdentification"/>.
     /// </summary>
     [Fact]
     public void GroupTargetShouldBeRenderedWithNegativeValue()
@@ -93,9 +93,9 @@ public class AccommodationInviteControlTest : BunitContext
             .Select(option => option.GetAttribute("value"))
             .ToArray();
 
-        values.ShouldContain(AccommodationTargetIdentification
+        values.ShouldContain(AccommodationGroupIdentification
             .From(new AccommodationRequestIdentification(ProjectId, 7)).ToString());
-        values.ShouldContain(AccommodationTargetIdentification
+        values.ShouldContain(AccommodationGroupIdentification
             .From(new ClaimIdentification(ProjectId, 11)).ToString());
     }
 

@@ -71,7 +71,7 @@ internal class AccommodationInviteViewService(
             .GroupBy(c => c.AccommodationRequest_Id!.Value)
             .Where(group => group.Count() <= roomFreeSpace)
             .Select(group => new AccommodationInviteTargetViewModel(
-                AccommodationTargetIdentification.From(
+                AccommodationGroupIdentification.From(
                     new AccommodationRequestIdentification(claimId.ProjectId, group.Key)),
                 Text: JoinNames(group, GetPlayerName, GetCharacterName),
                 ExtraSearch: JoinNames(group, GetCharacterName, GetPlayerName),
@@ -80,7 +80,7 @@ internal class AccommodationInviteViewService(
         var singleTargets = potentialNeighbors
             .Where(c => c.AccommodationRequest_Id == null)
             .Select(c => new AccommodationInviteTargetViewModel(
-                AccommodationTargetIdentification.From(c.GetId()),
+                AccommodationGroupIdentification.From(c.GetId()),
                 Text: GetPlayerName(c),
                 ExtraSearch: GetCharacterName(c),
                 Subtext: NoRequestSubtext));
@@ -91,7 +91,7 @@ internal class AccommodationInviteViewService(
             [.. groupedTargets, .. singleTargets]);
     }
 
-    public async Task CreateInvite(ClaimIdentification claimId, AccommodationTargetIdentification target)
+    public async Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
     {
         var model = await GetInviteTargets(claimId);
         if (model.SenderRequestId is null)

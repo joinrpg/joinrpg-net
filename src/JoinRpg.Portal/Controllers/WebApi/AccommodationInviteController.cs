@@ -16,7 +16,7 @@ public class AccommodationInviteController(
     [HttpPost]
     public async Task<ActionResult> CreateInvite(
         [FromQuery] ClaimIdentification claimId,
-        [FromQuery] AccommodationTargetIdentification target)
+        [FromQuery] AccommodationGroupIdentification target)
         => await NotAllowedToBadRequest(() => inviteClient.CreateInvite(claimId, target));
 
     [HttpGet]

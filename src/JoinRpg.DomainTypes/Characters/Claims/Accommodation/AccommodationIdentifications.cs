@@ -56,33 +56,43 @@ public partial record AccommodationInviteIdentification(
     int AccommodationInviteId) : IProjectEntityId;
 
 /// <summary>
-/// Цель приглашения к совместному проживанию: либо отдельная заявка игрока (он ещё не выбрал тип
-/// проживания), либо целая заявка на проживание (сложившаяся группа соседей).
+/// Группа проживающих, в которой состоит заявка: либо сложившаяся группа соседей (заявка на
+/// проживание), либо сама заявка игрока как одиночная группа (он ещё не выбрал тип проживания).
 /// </summary>
 /// <remarks>
+/// <para>
+/// Используется как цель приглашения к совместному проживанию и как ссылка заявки на её группу
+/// (ADR022).
+/// </para>
+/// <para>
 /// Внутри — знаковое число: положительное значение это <see cref="ClaimIdentification"/>,
 /// отрицательное — <see cref="AccommodationRequestIdentification"/>. Это единственное место в системе,
 /// где знак интерпретируется; наружу тип отдаёт только типизированные идентификаторы.
+/// </para>
+/// <para>
+/// Раньше тип назывался «целью приглашения»; строковая форма со старым префиксом
+/// (<c>AccommodationTargetId(…)</c>) продолжает разбираться — она могла остаться в адресах виджета.
+/// </para>
 /// </remarks>
 [method: JsonConstructor]
-[TypedEntityId]
-public partial record AccommodationTargetIdentification(
+[TypedEntityId(AdditionalPrefixes = new[] { "AccommodationTargetId", "AccommodationTarget" })]
+public partial record AccommodationGroupIdentification(
     ProjectIdentification ProjectId,
     int SignedValue) : IProjectEntityId
 {
-    /// <summary>Заявка игрока, если приглашение адресовано ей, иначе <c>null</c></summary>
+    /// <summary>Заявка игрока, если группа одиночная, иначе <c>null</c></summary>
     public ClaimIdentification? AsClaimId()
         => SignedValue > 0 ? new ClaimIdentification(ProjectId, SignedValue) : null;
 
-    /// <summary>Заявка на проживание, если приглашение адресовано ей, иначе <c>null</c></summary>
+    /// <summary>Заявка на проживание, если это сложившаяся группа, иначе <c>null</c></summary>
     public AccommodationRequestIdentification? AsAccommodationRequestId()
         => SignedValue < 0 ? new AccommodationRequestIdentification(ProjectId, -SignedValue) : null;
 
-    /// <summary>Пригласить отдельную заявку игрока</summary>
-    public static AccommodationTargetIdentification From(ClaimIdentification claimId)
+    /// <summary>Заявка игрока как одиночная группа</summary>
+    public static AccommodationGroupIdentification From(ClaimIdentification claimId)
         => new(claimId.ProjectId, claimId.ClaimId);
 
-    /// <summary>Пригласить всю группу проживающих</summary>
-    public static AccommodationTargetIdentification From(AccommodationRequestIdentification requestId)
+    /// <summary>Сложившаяся группа проживающих</summary>
+    public static AccommodationGroupIdentification From(AccommodationRequestIdentification requestId)
         => new(requestId.ProjectId, -requestId.AccommodationRequestId);
 }

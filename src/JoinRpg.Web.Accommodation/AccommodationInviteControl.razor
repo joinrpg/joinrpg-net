@@ -31,13 +31,13 @@
     [Parameter, EditorRequired]
     public ClaimIdentification ClaimId { get; set; } = null!;
 
-    private AccommodationTargetIdentification? selectedTarget;
+    private AccommodationGroupIdentification? selectedTarget;
     private bool hasTargets;
     private string? errorMessage;
 
     private void HandleHasTargetsChanged(bool value) => hasTargets = value;
 
-    private void HandleTargetChanged(AccommodationTargetIdentification? target)
+    private void HandleTargetChanged(AccommodationGroupIdentification? target)
     {
         selectedTarget = target;
         errorMessage = null;

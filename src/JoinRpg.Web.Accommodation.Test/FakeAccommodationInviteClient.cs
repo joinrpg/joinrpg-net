@@ -10,14 +10,14 @@ internal sealed class FakeAccommodationInviteClient : IAccommodationInviteClient
 
     public Dictionary<InviteDirection, IReadOnlyCollection<AccommodationInviteViewModel>> NextInvites { get; } = [];
 
-    public List<(ClaimIdentification ClaimId, AccommodationTargetIdentification Target)> CreatedInvites { get; } = [];
+    public List<(ClaimIdentification ClaimId, AccommodationGroupIdentification Target)> CreatedInvites { get; } = [];
 
     public List<(string Action, AccommodationInviteIdentification InviteId)> Answers { get; } = [];
 
     public Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId)
         => Task.FromResult(NextTargets);
 
-    public Task CreateInvite(ClaimIdentification claimId, AccommodationTargetIdentification target)
+    public Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
     {
         CreatedInvites.Add((claimId, target));
         return Task.CompletedTask;

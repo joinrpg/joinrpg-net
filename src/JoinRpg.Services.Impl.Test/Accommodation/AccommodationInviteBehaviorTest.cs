@@ -42,7 +42,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         await CreateService().CreateAccommodationInvite(
             sender.GetId(),
             RequestId(sender),
-            AccommodationTargetIdentification.From(receiver.GetId()));
+            AccommodationGroupIdentification.From(receiver.GetId()));
 
         var invite = mock.AccommodationInvites.ShouldHaveSingleItem();
         invite.IsAccepted.ShouldBe(InviteState.Unanswered);
@@ -66,7 +66,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         await CreateService().CreateAccommodationInvite(
             sender.GetId(),
             RequestId(sender),
-            AccommodationTargetIdentification.From(RequestId(group)));
+            AccommodationGroupIdentification.From(RequestId(group)));
 
         mock.AccommodationInvites.Count.ShouldBe(2);
         mock.AccommodationInvites.Select(invite => invite.ToClaimId)
@@ -89,7 +89,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService(StrangerUserId).CreateAccommodationInvite(
                 sender.GetId(),
                 RequestId(sender),
-                AccommodationTargetIdentification.From(receiver.GetId())));
+                AccommodationGroupIdentification.From(receiver.GetId())));
 
         mock.AccommodationInvites.ShouldBeEmpty();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
@@ -109,7 +109,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         await CreateService().CreateAccommodationInvite(
             sender.GetId(),
             RequestId(sender),
-            AccommodationTargetIdentification.From(receiver.GetId()));
+            AccommodationGroupIdentification.From(receiver.GetId()));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
@@ -127,7 +127,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         await CreateService().CreateAccommodationInvite(
             sender.GetId(),
             RequestId(sender),
-            AccommodationTargetIdentification.From(RequestId(group)));
+            AccommodationGroupIdentification.From(RequestId(group)));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
@@ -144,7 +144,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService().CreateAccommodationInvite(
                 sender.GetId(),
                 RequestId(sender),
-                new AccommodationTargetIdentification(mock.ProjectInfo.ProjectId, 0)));
+                new AccommodationGroupIdentification(mock.ProjectInfo.ProjectId, 0)));
 
         exception.Message.ShouldContain("кого приглашать");
         mock.AccommodationInvites.ShouldBeEmpty();
@@ -167,7 +167,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService().CreateAccommodationInvite(
                 sender.GetId(),
                 RequestId(sender),
-                AccommodationTargetIdentification.From(unknownClaimId)));
+                AccommodationGroupIdentification.From(unknownClaimId)));
 
         mock.AccommodationInvites.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(0);
@@ -189,7 +189,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService().CreateAccommodationInvite(
                 sender.GetId(),
                 RequestId(someoneElsesGroup),
-                AccommodationTargetIdentification.From(receiver.GetId())));
+                AccommodationGroupIdentification.From(receiver.GetId())));
 
         exception.Message.ShouldContain("не выбран тип проживания");
         mock.AccommodationInvites.ShouldBeEmpty();
@@ -214,7 +214,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService().CreateAccommodationInvite(
                 sender.GetId(),
                 RequestId(sender),
-                AccommodationTargetIdentification.From(RequestId(group))));
+                AccommodationGroupIdentification.From(RequestId(group))));
 
         exception.Message.ShouldContain("не хватает мест");
         mock.AccommodationInvites.ShouldBeEmpty();
@@ -238,7 +238,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService().CreateAccommodationInvite(
                 sender.GetId(),
                 senderRequestId,
-                AccommodationTargetIdentification.From(receiver.GetId())));
+                AccommodationGroupIdentification.From(receiver.GetId())));
 
         mock.AccommodationInvites.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(0);
@@ -260,7 +260,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService().CreateAccommodationInvite(
                 sender.GetId(),
                 RequestId(foreignGroup),
-                AccommodationTargetIdentification.From(receiver.GetId())));
+                AccommodationGroupIdentification.From(receiver.GetId())));
 
         exception.Message.ShouldContain("не принадлежит");
         mock.AccommodationInvites.ShouldBeEmpty();
@@ -282,7 +282,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService().CreateAccommodationInvite(
                 sender.GetId(),
                 RequestId(sender),
-                AccommodationTargetIdentification.From(unknownGroupId)));
+                AccommodationGroupIdentification.From(unknownGroupId)));
 
         mock.AccommodationInvites.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(0);

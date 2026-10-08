@@ -9,7 +9,7 @@ namespace JoinRpg.Web.Accommodation;
 /// <param name="ExtraSearch">Дополнительные слова для поиска по списку (имена персонажей)</param>
 /// <param name="Subtext">Поясняющая подпись под строкой</param>
 public record AccommodationInviteTargetViewModel(
-    AccommodationTargetIdentification TargetId,
+    AccommodationGroupIdentification TargetId,
     string Text,
     string ExtraSearch,
     string Subtext);
@@ -57,7 +57,7 @@ public interface IAccommodationInviteClient
     Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId);
 
     /// <summary>Отправить приглашение. Бросает исключение, если пригласить нельзя</summary>
-    Task CreateInvite(ClaimIdentification claimId, AccommodationTargetIdentification target);
+    Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target);
 
     /// <summary>Полученные либо отправленные приглашения заявки, кроме уже принятых</summary>
     Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
