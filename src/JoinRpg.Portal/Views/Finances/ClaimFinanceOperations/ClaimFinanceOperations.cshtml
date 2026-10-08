@@ -12,7 +12,7 @@
     feeBalance = @(Model.CurrentBalance);
     feeBase = @(Model.BaseFee);
 </script>
-<div id="feeInfo" class="collapse in">
+<div id="feeInfo">
     @await Html.PartialAsync("Money", new Money(Model.CurrentFee, "feeTotalDisp2"))
     <strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
     <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@await Html.PartialAsync("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2"))</strong>)</span>
@@ -40,7 +40,7 @@
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#requestPreferentialFeeDialog">Запросить льготу&hellip;</button>
     }
 </div>
-<div id="feeDetails" class="collapse">
+<div id="feeDetails" hidden>
     <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Свернуть в компактный вид&hellip;</button>
     <table class="table table-condensed">
         <thead>
