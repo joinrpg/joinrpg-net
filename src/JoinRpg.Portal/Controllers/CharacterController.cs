@@ -240,42 +240,27 @@ public class CharacterController(
     }
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
-    public async Task<ActionResult> Delete(int projectid, int characterid)
+    public async Task<ActionResult> Delete(ProjectIdentification projectId, int characterId)
     {
-        var field = await characterRepository.GetCharacterAsync(projectid, characterid);
-        if (field == null)
-        {
-            return NotFound();
-        }
-
-        return View(await CreateDeleteViewModel(field));
-    }
-
-    private async Task<DeleteCharacterViewModel> CreateDeleteViewModel(Character character)
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(character.ProjectId));
-        return new DeleteCharacterViewModel(
-            character.ProjectId,
-            character.CharacterName,
-            character.HasActiveClaims(),
-            projectInfo.ClaimSettings.DefaultTemplate?.CharacterId == character.CharacterId);
+        var character = await characterInfoRepository.GetCharacterInfoOrDefault(new CharacterIdentification(projectId, characterId));
+        return character is null ? NotFound() : View(new DeleteCharacterViewModel(character));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
-    public async Task<ActionResult> Delete(int projectId,
+    public async Task<ActionResult> Delete(ProjectIdentification projectId,
         int characterId,
         IFormCollection form)
     {
-        var field = await characterRepository.GetCharacterAsync(projectId, characterId);
+        var id = new CharacterIdentification(projectId, characterId);
         try
         {
-            await characterService.DeleteCharacter(new DeleteCharacterRequest(new CharacterIdentification(projectId, characterId)));
+            await characterService.DeleteCharacter(new DeleteCharacterRequest(id));
 
-            return RedirectToIndex(field.Project);
+            return RedirectToAction("Index", "GameGroups", new { ProjectId = projectId.Value, area = "" });
         }
         catch
         {
-            return View(await CreateDeleteViewModel(field));
+            return View(new DeleteCharacterViewModel(await characterInfoRepository.GetCharacterInfo(id)));
         }
     }
 
