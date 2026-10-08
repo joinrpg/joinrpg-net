@@ -220,7 +220,12 @@ freeSpace(room, type) = min(effective(room), type.Capacity) − occupancy(room)
 |---|---|---|
 | `AccommodationTypeId`, состав `Subjects`, создание и удаление строки | character-агрегат | `ICharacterPropsService.ChangeClaim` |
 | `AccommodationId` — в какой комнате живёт группа | **`RoomCategoryPlan`** | `IAccommodationPropsService` (этот ADR) |
-| `IsAccepted` (приглашения) | `AccommodationInviteServiceImpl` | не трогаем, см. §13 |
+| `IsAccepted` | ~~`AccommodationInviteServiceImpl`~~ никто: пишет только `ClaimServiceImpl`, и всегда `Accepted` (ADR022 §5) | не трогаем, см. §13 |
+
+Разделение по колонкам остаётся в силе и после [ADR022](adr022-accommodation-group.md). Тот ADR
+меняет только то, по чему character-контур принимает решения: по доменным снимкам — ссылке на группу
+в `CharacterClaimInfo` и этому плану — вместо EF-навигаций. И он же делает план источником снимка
+группы для страницы заявки и виджета приглашений.
 
 `RoomCategoryPlan` видит группы как read-only состав (`Subjects` — список `ClaimIdentification`) и
 пишет ровно одно поле — номер комнаты. Обратное тоже верно: character-путь не должен менять
@@ -577,7 +582,7 @@ public interface IAccommodationService
 | `AccommodationTypeController` (Occupy/UnOccupy/AddRoom/EditRoom/DeleteRoom) | `int`-параметры, `catch`-всё | типизированные id, доменные исключения |
 | `SmokeProjectFixture` (интеграционные тесты) | `AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2")` | `AddRooms(projectInfo.AccommodationSettings.GetTypeById(roomTypeId).RoomCategoryId, ["1", "2"])` — строку разбирать больше нечем, сервис принимает готовые имена |
 | `AccommodationPrintController`, `AccomodationReportExporter` | `IAccommodationRepository.GetClaimAccommodationReport` | не меняются — это отчёт, плоские строки, агрегат ему не нужен |
-| `AccommodationInviteServiceImpl`, `ClaimAccommodationViewModel` | `AccommodationExtensions` поверх EF | не меняются, см. §13 |
+| `AccommodationInviteServiceImpl`, `ClaimAccommodationViewModel` | `AccommodationExtensions` поверх EF | ~~не меняются, см. §13~~ переводятся на этот план по [ADR022](adr022-accommodation-group.md) |
 
 `IAccommodationRepository.GetRoomTypesForProject` (строки со счётчиками занятости для страницы
 «Типы проживания») остаётся: это сводка по всему проекту, и гонять ради неё полный план каждого
