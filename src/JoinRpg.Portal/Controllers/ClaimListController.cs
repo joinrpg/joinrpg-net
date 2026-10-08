@@ -26,7 +26,7 @@ public class ClaimListController(
     IClaimProblemValidator claimValidator,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository charGroupRepository,
-    ICharacterInfoRepository characterInfoRepository,
+    IClaimInfoRepository claimInfoRepository,
     IUserRepository userRepository,
     ICurrentUserAccessor currentUserAccessor
         ) : Common.JoinControllerGameBase
@@ -35,7 +35,7 @@ public class ClaimListController(
     #region implementation
 
     /// <param name="problemContexts">
-    /// Уже собранные контексты проблем, если вызывающий строил их для отбора заявок. Иначе
+    /// Уже загруженные <see cref="ClaimInfo"/>, если вызывающий строил их для отбора заявок. Иначе
     /// собираются здесь. Передавать стоит: иначе на страницах, которые сами фильтруют по
     /// проблемам, персонажи и профили грузились бы дважды.
     /// </param>
@@ -68,11 +68,11 @@ public class ClaimListController(
     }
 
     /// <summary>
-    /// Контексты расчёта проблем на весь список — две выборки, а не по заявке.
+    /// <see cref="ClaimInfo"/> на весь список — для расчёта проблем, две выборки, а не по заявке.
     /// </summary>
     private Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> LoadProblemContexts(
         IReadOnlyCollection<Claim> claims)
-        => ClaimProblemContextLoader.Load(characterInfoRepository, userRepository, [.. claims.Select(c => c.GetId())]);
+        => claimInfoRepository.GetClaimInfos([.. claims.Select(c => c.GetId())]);
 
     /// <summary>
     /// Профили игроков для выгрузки — одним запросом на весь список, а не по заявке.

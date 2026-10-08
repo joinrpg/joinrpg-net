@@ -1,6 +1,8 @@
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 
@@ -139,6 +141,40 @@ public class XApiMasterFixture : IAsyncLifetime
                 return result.ProjectFieldVariantId;
             },
             MasterDisplayName);
+
+    /// <summary>Новый проект создаётся с закрытым приёмом заявок — открываем.</summary>
+    internal Task OpenClaims(ProjectIdentification projectId)
+        => Factory.Services.RunAsAsync(
+            MasterUserId,
+            sp => sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                projectId,
+                new ProjectClaimSettings(
+                    DefaultTemplate: null,
+                    StrictlyOneCharacter: false,
+                    AutoAcceptClaims: false,
+                    IsAcceptingClaims: true,
+                    IsPublicProject: true)));
+
+    /// <summary>
+    /// Заявку подаёт сам игрок: заявку, добавленную мастером, мастер же утвердить не может —
+    /// её сначала должен принять игрок.
+    /// </summary>
+    internal Task<ClaimIdentification> AddClaimFromPlayer(CharacterIdentification characterId, UserIdentification playerId)
+        => Factory.Services.RunAsAsync(
+            playerId,
+            async sp =>
+            {
+                var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
+                    .GetProjectMetadata(characterId.ProjectId);
+                return await sp.GetRequiredService<IClaimService>()
+                    .AddClaimFromUser(
+                        characterId, "Заявка от игрока", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: true);
+            });
+
+    internal Task ApproveClaim(ClaimIdentification claimId)
+        => Factory.Services.RunAsAsync(
+            MasterUserId,
+            sp => sp.GetRequiredService<IClaimService>().ApproveByMaster(claimId, "Принято"));
 
     public async Task DisposeAsync()
     {

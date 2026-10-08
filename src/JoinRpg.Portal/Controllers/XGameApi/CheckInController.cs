@@ -1,4 +1,3 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
@@ -16,8 +15,7 @@ public class CheckInController(
     IClaimsRepository claimsRepository,
     IClaimService claimsService,
     IClaimProblemValidator claimValidator,
-    ICharacterInfoRepository characterInfoRepository,
-    IUserRepository userRepository) : XGameApiController
+    IClaimInfoRepository claimInfoRepository) : XGameApiController
 {
 
     /// <summary>
@@ -61,7 +59,7 @@ public class CheckInController(
     }
 
     /// <summary>
-    /// Stub method. Not tested.
+    /// Stub method: handouts are hardcoded.
     /// </summary>
     [Route("{claimId}/prepare")]
     [HttpGet]
@@ -73,22 +71,17 @@ public class CheckInController(
         [FromRoute]
         int claimId)
     {
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
-        if (claim == null)
+        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(new ClaimIdentification(projectId, claimId));
+        if (claimInfo is null)
         {
             return NotFound();
         }
 
-        var character = await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId());
-        var validator = new ClaimCheckInValidator(
-            new ClaimInfo(
-                new ClaimInCharacter(character, claim.GetId()),
-                await userRepository.GetRequiredUserInfo(claim.GetPlayerId())),
-            claimValidator);
+        var validator = new ClaimCheckInValidator(claimInfo, claimValidator);
         return
             new ClaimCheckInValidationResult
             {
-                ClaimId = claim.ClaimId,
+                ClaimId = claimInfo.ClaimId.ClaimId,
                 CheckedIn = !validator.NotCheckedInAlready,
                 Approved = validator.IsApproved,
                 CheckInPossible = validator.CanCheckInInPrinciple,

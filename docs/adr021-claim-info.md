@@ -224,7 +224,7 @@ IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IR
    в `JoinRpg.Domain.Test` ради `MockedProject`: в `JoinRpg.DomainTypes.Test` моков нет. Поведение
    не меняется.
 2. **Репозиторий.** `IClaimInfoRepository` вместо `ClaimProblemContextLoader`. На него
-   переходят check-in в Portal и x-game-api и экспорт списка заявок.
+   переходят check-in в Portal и x-game-api и список заявок.
 3. **Сторона записи.** `IClaimUpdateHandle.ClaimSnapshot` и `ClaimMutationContext.LoadClaimInfo()`;
    на него переходят `ClaimServiceImpl.CheckInClaim` и `MoveByMaster`.
 4. **Утверждённые заявки пачкой.** `GetApprovedClaimInfos`; удаление копий `LoadPlayers` в
@@ -232,7 +232,9 @@ IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IR
 5. **Методы пары.** Перегрузки баланса, `AccessArguments`, `GetFieldLayers` и навигации на
    `ClaimInCharacter`; старые помечаются `[Obsolete]`.
 6. **Вьюмодели заявки.** `ClaimViewModel`, `SecondRoleViewModel`, `ClaimListBuilder` перестают
-   читать через EF то, что есть в контексте.
+   читать через EF то, что есть в `ClaimInfo`. Вместе с `BuildItemForExport` на `ClaimInfo`
+   переходит и выгрузка списка заявок: пока ей нужен только профиль, загружать ради неё ещё и
+   персонажей было бы дороже, чем сейчас.
 
 Шаг 0 — два независимых PR (DTO вместе с этим ADR, свойство контекста отдельно). Шаг 1 требует
 только освобождённого имени DTO. Шаги 2–6 не зависят друг от друга и идут после первого; шагу 3

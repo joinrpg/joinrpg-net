@@ -13,36 +13,31 @@ namespace JoinRpg.Web.Models.CheckIn;
 
 public class CheckInClaimModel : IProjectIdAware
 {
-    public CheckInClaimModel(ClaimIdentification claimId,
-        CharacterInfo characterInfo,
+    /// <param name="claimInfo">
+    /// Заявка вместе с персонажем и профилем игрока (ADR021). EF-сущность сюда больше не доезжает:
+    /// она тянула за собой ленивые навигации (ResponsibleMasterUser), а профиль игрока собирался
+    /// по навигациям EF-сущности пользователя.
+    /// </param>
+    public CheckInClaimModel(
+        ClaimInfo claimInfo,
         UserInfo currentUser,
-        UserInfo playerInfo,
         IReadOnlyCollection<PlotTextDto> plotElements,
         IClaimProblemValidator claimValidator,
         ICurrentUserAccessor currentUserAccessor
         )
     {
-        ArgumentNullException.ThrowIfNull(claimId);
-        ArgumentNullException.ThrowIfNull(characterInfo);
+        ArgumentNullException.ThrowIfNull(claimInfo);
         ArgumentNullException.ThrowIfNull(currentUser);
-        ArgumentNullException.ThrowIfNull(playerInfo);
 
-        // Метаданные проекта берём из агрегата, а не параметром: второй канал тех же данных
-        // можно было бы передать несогласованным с тем, к которому привязан сам персонаж.
-        var projectInfo = characterInfo.ProjectInfo;
+        var characterInfo = claimInfo.Character;
+        var projectInfo = claimInfo.ProjectInfo;
+        var claim = claimInfo.Claim;
+        var claimId = claimInfo.ClaimId;
+        var playerInfo = claimInfo.Player;
 
-        // Заявка — доменный снимок из агрегата. EF-сущность сюда больше не доезжает: она тянула
-        // за собой ленивые навигации (ResponsibleMasterUser), а страница и так уже строится по
-        // CharacterInfo (ADR013).
-        var claim = characterInfo.GetClaimById(claimId);
-
-        Validator = new ClaimCheckInValidator(
-            new ClaimInfo(new ClaimInCharacter(characterInfo, claim), playerInfo),
-            claimValidator);
+        Validator = new ClaimCheckInValidator(claimInfo, claimValidator);
         CheckInTime = claim.CheckInDate;
         ClaimStatus = (ClaimStatusView)claim.Status;
-        // playerInfo приходит параметром: claim.GetUserInfo() собирал профиль по ленивым
-        // навигациям EF-сущности игрока (Extra, Auth, ExternalLogins, Claims, ProjectAcls).
         PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUserAccessor);
         Navigation = CharacterNavigationViewModel.FromClaim(characterInfo, claimId, currentUserAccessor.UserIdentification, CharacterNavigationPage.None);
 

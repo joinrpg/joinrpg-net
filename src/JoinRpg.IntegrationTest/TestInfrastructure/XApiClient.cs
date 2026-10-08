@@ -89,6 +89,21 @@ public class XApiClient(HttpClient httpClient)
         return (await response.Content.ReadFromJsonAsync<CheckInStats>())!;
     }
 
+    /// <summary>GET /x-game-api/{projectId}/checkin/{claimId}/prepare — can this claim be checked in</summary>
+    public async Task<ClaimCheckInValidationResult> PrepareClaimForCheckInAsync(int projectId, int claimId)
+    {
+        var response = await httpClient.GetAsync($"/x-game-api/{projectId}/checkin/{claimId}/prepare");
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<ClaimCheckInValidationResult>())!;
+    }
+
+    /// <summary>Like PrepareClaimForCheckInAsync but returns the HTTP status code instead of throwing</summary>
+    public async Task<System.Net.HttpStatusCode> PrepareClaimForCheckInRawAsync(int projectId, int claimId)
+    {
+        var response = await httpClient.GetAsync($"/x-game-api/{projectId}/checkin/{claimId}/prepare");
+        return response.StatusCode;
+    }
+
     /// <summary>GET /x-game-api/{projectId}/claims/{claimId} — claim details</summary>
     public async Task<ClaimDetails> GetClaimAsync(int projectId, int claimId)
     {
