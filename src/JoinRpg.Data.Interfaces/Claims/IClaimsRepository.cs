@@ -46,8 +46,6 @@ public interface IClaimsRepository : IDisposable
     /// </remarks>
     Task<IReadOnlyCollection<Claim>> GetUnsettledAccommodationClaims(ProjectIdentification projectId);
 
-    Task<IReadOnlyCollection<Claim>> GetClaimsForMoneyTransfersListAsync(int projectId, ClaimStatusSpec claimStatusSpec);
-
     Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
 
 }

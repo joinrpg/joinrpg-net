@@ -10,17 +10,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 {
     public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, claim => true);
 
-    public async Task<IReadOnlyCollection<Claim>> GetClaimsForMoneyTransfersListAsync(int projectId, ClaimStatusSpec claimStatusSpec)
-    {
-        return await Ctx
-            .ClaimSet
-            .AsNoTracking()
-            .Include(c => c.Player)
-            .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
-            .Where(c => c.ProjectId == projectId)
-            .ToArrayAsync();
-    }
-
     private async Task<IReadOnlyCollection<Claim>> GetClaimsImpl(int projectId, ClaimStatusSpec status, Expression<Func<Claim, bool>> predicate)
     {
         await LoadProjectFields(projectId);

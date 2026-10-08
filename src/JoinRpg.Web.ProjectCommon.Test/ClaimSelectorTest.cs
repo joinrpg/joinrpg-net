@@ -105,4 +105,17 @@ public class ClaimSelectorTest
 
         cut.Find("select").GetAttribute("name").ShouldBe("ClaimId");
     }
+
+    /// <summary>Перевод взноса: заявку-источник нельзя выбрать получателем.</summary>
+    [Fact]
+    public void ExceptClaimId_IsNotOffered()
+    {
+        using var ctx = CreateContext();
+
+        var cut = ctx.Render<ClaimSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.ExceptClaimId, FirstClaimId));
+
+        cut.FindAll("option").Select(o => o.GetAttribute("value")).ShouldBe([SecondClaimId.ToString()]);
+    }
 }

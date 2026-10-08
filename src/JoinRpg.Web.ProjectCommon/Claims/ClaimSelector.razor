@@ -26,10 +26,14 @@
     [Parameter] public EventCallback<ClaimLinkViewModel?> ClaimChanged { get; set; }
     [Parameter] public ClaimStatusSpec Spec { get; set; } = ClaimStatusSpec.Active;
 
+    /// <summary>Заявка, которую нельзя выбрать (например, та, с которой переводят взнос).</summary>
+    [Parameter] public ClaimIdentification? ExceptClaimId { get; set; }
+
     private ClaimIdentification[] Selected { get; set; } = [];
     private ClaimLinkViewModel[]? claims;
 
-    protected override async Task OnInitializedAsync() => claims = [.. await client.GetClaims(ProjectId, Spec)];
+    protected override async Task OnInitializedAsync()
+        => claims = [.. (await client.GetClaims(ProjectId, Spec)).Where(c => c.ClaimId != ExceptClaimId)];
 
     protected override void OnParametersSet()
     {
