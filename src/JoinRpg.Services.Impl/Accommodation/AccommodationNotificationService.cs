@@ -38,7 +38,9 @@ internal class AccommodationNotificationService(
 
         var data = new RoomOccupancyTextData(
             projectInfo.ProjectName,
-            projectInfo.AccommodationSettings.GetTypeById(model.AccommodationTypeId).Name,
+            // Своего имени у категории пока нет: до разделения она одна на тип и называется по нему
+            // (ADR020, PR 2 заменит это на имя категории).
+            projectInfo.AccommodationSettings.Types.First(type => type.RoomCategoryId == model.RoomCategoryId).Name,
             model.RoomName,
             model.Initiator.DisplayName,
             PlayerNames(model.Changed, byId),

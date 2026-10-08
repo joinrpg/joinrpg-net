@@ -39,9 +39,10 @@ internal enum RoomOccupancyChangeKind
 /// Название (номер) комнаты. Это оперативные данные, в <c>ProjectInfo</c> их нет (ADR015), поэтому
 /// они приходят от вызывающего, у которого комната под рукой.
 /// </param>
-/// <param name="AccommodationTypeId">
-/// Тип проживания комнаты — по нему сервис возьмёт название из метаданных, без обращения к
-/// ленивой навигации EF.
+/// <param name="RoomCategoryId">
+/// Категория комнаты — по ней сервис возьмёт название из метаданных, без обращения к ленивой
+/// навигации EF. Именно категория, а не тип проживания: в одной комнате могут жить группы разных
+/// типов одного пула (ADR020).
 /// </param>
 /// <param name="Initiator">Кто выполнил операцию.</param>
 /// <param name="Changed">Заявки, которых операция сдвинула: вселила, выселила или выписала.</param>
@@ -51,7 +52,7 @@ internal enum RoomOccupancyChangeKind
 internal record RoomOccupancyNotification(
     AccommodationRoomIdentification RoomId,
     string RoomName,
-    AccommodationTypeIdentification AccommodationTypeId,
+    RoomCategoryIdentification RoomCategoryId,
     UserInfoHeader Initiator,
     IReadOnlyCollection<ClaimIdentification> Changed,
     IReadOnlyCollection<ClaimIdentification> Remaining,

@@ -19,6 +19,7 @@ internal class AccommodationInviteViewService(
     IAccommodationRequestRepository accommodationRequestRepository,
     IAccommodationInviteRepository accommodationInviteRepository,
     IAccommodationInviteService accommodationInviteService,
+    IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor)
     : IAccommodationInviteClient
 {
@@ -43,7 +44,10 @@ internal class AccommodationInviteViewService(
         }
 
         var senderRequestId = new AccommodationRequestIdentification(claimId.ProjectId, acceptedRequest.Id);
-        var roomFreeSpace = acceptedRequest.GetRoomFreeSpace();
+        // Тот же расчёт, что и при приёме приглашения (AccommodationInviteServiceImpl): иначе
+        // список предложил бы место, в котором операция откажет.
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
+        var roomFreeSpace = acceptedRequest.GetRoomFreeSpace(projectInfo);
 
         var currentNeighbors = (await accommodationRequestRepository
                 .GetClaimsWithSameAccommodationRequest(acceptedRequest.Id))

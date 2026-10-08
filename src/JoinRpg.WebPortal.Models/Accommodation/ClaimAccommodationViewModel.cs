@@ -10,14 +10,14 @@ namespace JoinRpg.Web.Models.Accommodation;
 /// </summary>
 public class ClaimAccommodationViewModel
 {
-    public ClaimAccommodationViewModel(Claim claim)
+    public ClaimAccommodationViewModel(Claim claim, ProjectInfo projectInfo)
     {
         AccommodationRequest = claim.AccommodationRequest;
         ClaimId = claim.ClaimId;
         ProjectId = claim.ProjectId;
         Neighbours = claim.GetClaimNeighbours();
 
-        RoomFreeSpace = claim.AccommodationRequest?.GetRoomFreeSpace() ?? 0;
+        RoomFreeSpace = claim.AccommodationRequest?.GetRoomFreeSpace(projectInfo) ?? 0;
     }
 
     public int ClaimId { get; }
