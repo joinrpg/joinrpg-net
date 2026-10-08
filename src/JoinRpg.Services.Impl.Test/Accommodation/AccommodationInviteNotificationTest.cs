@@ -19,7 +19,7 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
         await CreateService().CreateAccommodationInvite(
             sender.GetId(),
             RequestId(sender),
-            AccommodationTargetIdentification.From(receiver.GetId()));
+            AccommodationGroupIdentification.From(receiver.GetId()));
 
         Notification().Kind.ShouldBe(InviteChangeKind.Created);
         RecipientClaimIds().ShouldBe([receiver.ClaimId]);
@@ -38,7 +38,7 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
         await CreateService().CreateAccommodationInvite(
             sender.GetId(),
             RequestId(sender),
-            AccommodationTargetIdentification.From(RequestId(group)));
+            AccommodationGroupIdentification.From(RequestId(group)));
 
         Notification().Kind.ShouldBe(InviteChangeKind.Created);
         RecipientClaimIds().ShouldBe([firstNeighbour.ClaimId, secondNeighbour.ClaimId], ignoreOrder: true);

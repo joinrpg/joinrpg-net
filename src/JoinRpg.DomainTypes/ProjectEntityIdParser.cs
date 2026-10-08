@@ -98,7 +98,7 @@ public static class ProjectEntityIdParser
             return true;
         }
 
-        if (AccommodationTargetIdentification.TryParse(value, null, out var accTarget))
+        if (AccommodationGroupIdentification.TryParse(value, null, out var accTarget))
         {
             id = accTarget;
             return true;

@@ -22,7 +22,7 @@ internal class AccommodationInviteServiceImpl(
     public Task CreateAccommodationInvite(
         ClaimIdentification senderClaimId,
         AccommodationRequestIdentification senderRequestId,
-        AccommodationTargetIdentification target)
+        AccommodationGroupIdentification target)
     {
         // TODO: Search for and reuse previously cancelled invitation(s) to the same person(s)
 
@@ -93,7 +93,7 @@ internal class AccommodationInviteServiceImpl(
     /// (ADR014).
     /// </remarks>
     private static async Task<(AccommodationRequest? Group, IReadOnlyCollection<ClaimIdentification> Receivers)>
-        LoadInviteTarget(ClaimMutationContext ctx, AccommodationTargetIdentification target)
+        LoadInviteTarget(ClaimMutationContext ctx, AccommodationGroupIdentification target)
     {
         if (target.AsAccommodationRequestId() is { } receiverGroupId)
         {

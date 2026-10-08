@@ -13,7 +13,7 @@ public interface IAccommodationInviteService
     Task CreateAccommodationInvite(
         ClaimIdentification senderClaimId,
         AccommodationRequestIdentification senderRequestId,
-        AccommodationTargetIdentification target);
+        AccommodationGroupIdentification target);
 
     /// <summary>
     /// Принять приглашение: приглашённый вместе со своими соседями переезжает в группу

@@ -45,7 +45,7 @@ internal class UriServiceImpl(
     IUriLocator<AccommodationRoomIdentification>,
     IUriLocator<RoomCategoryIdentification>,
     IUriLocator<AccommodationInviteIdentification>,
-    IUriLocator<AccommodationTargetIdentification>,
+    IUriLocator<AccommodationGroupIdentification>,
     INotificationEntityLinkRenderer
 {
     public Uri GetUri(ILinkable linkable)
@@ -196,7 +196,7 @@ internal class UriServiceImpl(
 
     public Uri GetUri(AccommodationInviteIdentification target) => GetRoomsUri(target.ProjectId);
 
-    public Uri GetUri(AccommodationTargetIdentification target) => target.AsClaimId() switch
+    public Uri GetUri(AccommodationGroupIdentification target) => target.AsClaimId() switch
     {
         { } claimId => GetUri(claimId),
         null => GetRoomsUri(target.ProjectId),

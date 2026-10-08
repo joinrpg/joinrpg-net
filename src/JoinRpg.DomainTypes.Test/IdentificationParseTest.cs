@@ -1,3 +1,4 @@
+using System.Text.Json;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
@@ -215,47 +216,68 @@ public class IdentificationParseTest
         result.ShouldBe(new AccommodationInviteIdentification(new ProjectIdentification(1), 2));
     }
 
-    // AccommodationTargetIdentification — 2 листа: projectId, знаковое значение
+    // AccommodationGroupIdentification — 2 листа: projectId, знаковое значение
     [Theory]
-    [InlineData("AccommodationTargetId(1-2)")]
-    [InlineData("AccommodationTarget(1-2)")]
-    [InlineData("AccommodationTargetIdentification(1-2)")]
+    [InlineData("AccommodationGroupId(1-2)")]
+    [InlineData("AccommodationGroup(1-2)")]
+    [InlineData("AccommodationGroupIdentification(1-2)")]
     [InlineData("1-2")]
-    public void AccommodationTargetShouldParse(string val)
+    public void AccommodationGroupShouldParse(string val)
     {
-        AccommodationTargetIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
-        result.ShouldBe(new AccommodationTargetIdentification(new ProjectIdentification(1), 2));
+        AccommodationGroupIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(new AccommodationGroupIdentification(new ProjectIdentification(1), 2));
     }
 
-    // Отрицательное значение (цель — заявка на проживание) обязано пережить round-trip
+    // Отрицательное значение (группа — заявка на проживание) обязано пережить round-trip
     [Fact]
-    public void AccommodationTargetWithNegativeValueShouldRoundTrip()
+    public void AccommodationGroupWithNegativeValueShouldRoundTrip()
     {
-        var target = new AccommodationTargetIdentification(new ProjectIdentification(1), -42);
-        var asString = target.ToString();
-        asString.ShouldBe("AccommodationTargetId(1--42)");
+        var group = new AccommodationGroupIdentification(new ProjectIdentification(1), -42);
+        var asString = group.ToString();
+        asString.ShouldBe("AccommodationGroupId(1--42)");
 
-        AccommodationTargetIdentification.TryParse(asString, provider: null, out var result).ShouldBeTrue();
-        result.ShouldBe(target);
+        AccommodationGroupIdentification.TryParse(asString, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(group);
+    }
+
+    // Тип раньше назывался «целью приглашения»: строки со старым префиксом могли остаться в адресах
+    // виджета приглашений, поэтому должны разбираться, а выдаваться — уже в новой форме.
+    [Theory]
+    [InlineData("AccommodationTargetId(1--42)", -42)]
+    [InlineData("AccommodationTarget(1-2)", 2)]
+    public void AccommodationGroupShouldParseLegacyPrefix(string val, int signedValue)
+    {
+        var expected = new AccommodationGroupIdentification(new ProjectIdentification(1), signedValue);
+
+        AccommodationGroupIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(expected);
+
+        ProjectEntityIdParser.TryParseId(val, out var parsed).ShouldBeTrue();
+        parsed.ShouldBe(expected);
+
+        JsonSerializer.Deserialize<AccommodationGroupIdentification>(JsonSerializer.Serialize(val))
+            .ShouldBe(expected);
+
+        result.ToString().ShouldBe($"AccommodationGroupId(1-{signedValue})");
     }
 
     [Fact]
-    public void AccommodationTargetFromClaimShouldConvertBackToClaim()
+    public void AccommodationGroupFromClaimShouldConvertBackToClaim()
     {
         var claimId = new ClaimIdentification(new ProjectIdentification(1), 2);
-        var target = AccommodationTargetIdentification.From(claimId);
+        var group = AccommodationGroupIdentification.From(claimId);
 
-        target.AsClaimId().ShouldBe(claimId);
-        target.AsAccommodationRequestId().ShouldBeNull();
+        group.AsClaimId().ShouldBe(claimId);
+        group.AsAccommodationRequestId().ShouldBeNull();
     }
 
     [Fact]
-    public void AccommodationTargetFromRequestShouldConvertBackToRequest()
+    public void AccommodationGroupFromRequestShouldConvertBackToRequest()
     {
         var requestId = new AccommodationRequestIdentification(new ProjectIdentification(1), 2);
-        var target = AccommodationTargetIdentification.From(requestId);
+        var group = AccommodationGroupIdentification.From(requestId);
 
-        target.AsAccommodationRequestId().ShouldBe(requestId);
-        target.AsClaimId().ShouldBeNull();
+        group.AsAccommodationRequestId().ShouldBe(requestId);
+        group.AsClaimId().ShouldBeNull();
     }
 }

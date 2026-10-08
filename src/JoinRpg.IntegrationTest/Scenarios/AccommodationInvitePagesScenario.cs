@@ -128,7 +128,7 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
         // когда группы у приглашаемого нет и загрузчик обязан вернуть null, а не упасть.
         var noRequestTarget = FindTarget(
             targetsAfterAccept,
-            AccommodationTargetIdentification.From(seed.ClaimWithoutRequest));
+            AccommodationGroupIdentification.From(seed.ClaimWithoutRequest));
 
         var createSecond = await client.PostWithTokenHeaderAsync(
             InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", noRequestTarget.TargetId.ToString())),
@@ -344,7 +344,7 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
         string token,
         InviteSeed seed,
         int senderIndex,
-        AccommodationTargetIdentification target)
+        AccommodationGroupIdentification target)
     {
         var sender = seed.Claims[senderIndex];
         var targets = await GetTargetsAsync(client, sender);
@@ -375,7 +375,7 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
         string token,
         InviteSeed seed,
         int senderIndex,
-        AccommodationTargetIdentification receiverTarget)
+        AccommodationGroupIdentification receiverTarget)
     {
         var inviteId = await CreateInviteAsync(client, token, seed, senderIndex, receiverTarget);
 
@@ -428,7 +428,7 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// </summary>
     private static AccommodationInviteTargetViewModel FindTarget(
         AccommodationInviteTargetsViewModel model,
-        AccommodationTargetIdentification expected)
+        AccommodationGroupIdentification expected)
         => model.Targets.SingleOrDefault(target => target.TargetId == expected)
             ?? throw new InvalidOperationException(
                 $"Среди целей приглашения нет {expected}. Есть: "
@@ -597,8 +597,8 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
             => new(ProjectId, RequestIds[claimIndex]);
 
         /// <summary>Цель приглашения «вся группа указанной заявки».</summary>
-        public AccommodationTargetIdentification GroupTarget(int claimIndex)
-            => AccommodationTargetIdentification.From(RequestId(claimIndex));
+        public AccommodationGroupIdentification GroupTarget(int claimIndex)
+            => AccommodationGroupIdentification.From(RequestId(claimIndex));
 
         /// <summary>Заявка, которой изначально принадлежит эта заявка на проживание.</summary>
         public ClaimIdentification ClaimByRequest(AccommodationRequestIdentification requestId)

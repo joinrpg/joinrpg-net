@@ -186,7 +186,7 @@ public class DeleteAccommodationTypeScenario(JoinApplicationFactory factory)
             sp.GetRequiredService<IAccommodationInviteService>().CreateAccommodationInvite(
                 sender,
                 senderRequest,
-                AccommodationTargetIdentification.From(receiver)));
+                AccommodationGroupIdentification.From(receiver)));
 
         using var scope = factory.Services.CreateScope();
         var inviteId = await scope.ServiceProvider.GetRequiredService<MyDbContext>().Set<AccommodationInvite>()

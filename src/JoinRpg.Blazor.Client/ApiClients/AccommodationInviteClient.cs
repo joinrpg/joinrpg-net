@@ -12,7 +12,7 @@ public class AccommodationInviteClient(HttpClient httpClient, CsrfTokenProvider 
             $"webapi/AccommodationInvite/GetInviteTargets?claimId={claimId}")
             ?? throw new Exception("Couldn't get result from server");
 
-    public async Task CreateInvite(ClaimIdentification claimId, AccommodationTargetIdentification target)
+    public async Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
         => await Post($"webapi/AccommodationInvite/CreateInvite?claimId={claimId}&target={target}");
 
     public async Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
