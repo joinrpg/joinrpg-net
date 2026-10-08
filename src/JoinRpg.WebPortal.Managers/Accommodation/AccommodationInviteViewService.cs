@@ -1,8 +1,11 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Accommodation;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -16,10 +19,10 @@ namespace JoinRpg.WebPortal.Managers.Accommodation;
 /// </summary>
 internal class AccommodationInviteViewService(
     IClaimsRepository claimsRepository,
-    IAccommodationRequestRepository accommodationRequestRepository,
+    IClaimInfoRepository claimInfoRepository,
+    IRoomCategoryPlanRepository roomCategoryPlanRepository,
     IAccommodationInviteRepository accommodationInviteRepository,
     IAccommodationInviteService accommodationInviteService,
-    IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor)
     : IAccommodationInviteClient
 {
@@ -30,80 +33,97 @@ internal class AccommodationInviteViewService(
 
     public async Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId)
     {
-        // Список нужен только чтобы пригласить, поэтому доступ ровно как у самого приглашения:
-        // кому операция откажет, тому и список не отдаём (#5261)
-        var claim = (await claimsRepository.GetClaim(claimId))
-            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
-
-        var acceptedRequest = (await accommodationRequestRepository.GetAccommodationRequestForClaim(claimId.ClaimId))
-            .FirstOrDefault(request => request.IsAccepted == InviteState.Accepted);
-
-        if (acceptedRequest is null)
+        var sender = await GetSenderGroup(claimId);
+        if (sender is null)
         {
             return new AccommodationInviteTargetsViewModel(SenderRequestId: null, RoomFreeSpace: 0, Targets: []);
         }
 
-        var senderRequestId = new AccommodationRequestIdentification(claimId.ProjectId, acceptedRequest.Id);
+        var (plan, senderGroup) = sender.Value;
+
         // Тот же расчёт, что и при приёме приглашения (AccommodationInviteServiceImpl): иначе
         // список предложил бы место, в котором операция откажет.
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
-        var roomFreeSpace = acceptedRequest.GetRoomFreeSpace(projectInfo);
+        var roomFreeSpace = plan.GetFreeSpaceForGroup(senderGroup.Id);
 
-        var currentNeighbors = (await accommodationRequestRepository
-                .GetClaimsWithSameAccommodationRequest(acceptedRequest.Id))
-            .Select(c => c.ClaimId)
-            .ToHashSet();
-
-        var withSameType = (await accommodationRequestRepository
-                .GetClaimsWithSameAccommodationTypeToInvite(acceptedRequest.AccommodationTypeId))
-            .Where(c => c.ClaimId != claim.ClaimId);
-        var withoutRequest = await accommodationRequestRepository
-            .GetClaimsWithOutAccommodationRequest(claimId.ProjectId.Value);
-
-        var potentialNeighbors = withSameType
-            .Union(withoutRequest)
-            .Where(c => !currentNeighbors.Contains(c.ClaimId))
+        // Уже сложившиеся группы приглашаются целиком: в кандидатах только нерасселённые группы
+        // своего типа, на которые хватит места. Размер — полный состав, как его считает приём
+        // приглашения, а не число утверждённых в группе (ADR022 §3).
+        var candidateGroups = plan.UnassignedGroups
+            .Where(group => group.AccommodationTypeId == senderGroup.AccommodationTypeId
+                && group.Id != senderGroup.Id
+                && group.SubjectsCount <= roomFreeSpace)
             .ToArray();
 
-        // Уже сложившиеся группы приглашаются целиком, поэтому те, кому не хватит места, отсеиваются
-        var groupedTargets = potentialNeighbors
-            .Where(c => c.AccommodationRequest_Id != null)
-            .GroupBy(c => c.AccommodationRequest_Id!.Value)
-            .Where(group => group.Count() <= roomFreeSpace)
-            .Select(group => new AccommodationInviteTargetViewModel(
-                AccommodationGroupIdentification.From(
-                    new AccommodationRequestIdentification(claimId.ProjectId, group.Key)),
-                Text: JoinNames(group, GetPlayerName, GetCharacterName),
-                ExtraSearch: JoinNames(group, GetCharacterName, GetPlayerName),
-                Subtext: group.Count() > 1 ? GroupSubtext : ""));
+        // Фильтра по статусу нет: в группу проживающих попадает только утверждённая заявка, а при
+        // отклонении она из группы выбывает (ClaimServiceImpl.ConsiderLeavingRoom).
+        var headers = (await claimsRepository.GetClaimHeadersWithPlayer(
+                [.. candidateGroups.SelectMany(group => group.Subjects)]))
+            .ToDictionary(header => header.ClaimId);
 
-        var singleTargets = potentialNeighbors
-            .Where(c => c.AccommodationRequest_Id == null)
-            .Select(c => new AccommodationInviteTargetViewModel(
-                AccommodationGroupIdentification.From(c.GetId()),
-                Text: GetPlayerName(c),
-                ExtraSearch: GetCharacterName(c),
+        var groupedTargets = candidateGroups
+            .Select(group => (Group: group, Members: group.Subjects
+                .Where(headers.ContainsKey)
+                .Select(id => headers[id])
+                .ToArray()))
+            .Where(candidate => candidate.Members.Length > 0)
+            .Select(candidate => new AccommodationInviteTargetViewModel(
+                AccommodationGroupIdentification.From(candidate.Group.Id),
+                Text: string.Join(", ", candidate.Members.Select(GetPlayerName)),
+                ExtraSearch: string.Join(", ", candidate.Members.Select(GetCharacterName)),
+                Subtext: candidate.Group.SubjectsCount > 1 ? GroupSubtext : ""));
+
+        // Одиночек без типа ни в одном плане нет — они приходят отдельным запросом.
+        var singleTargets = (await claimsRepository.GetApprovedClaimHeadersWithoutAccommodation(claimId.ProjectId))
+            .Select(header => new AccommodationInviteTargetViewModel(
+                AccommodationGroupIdentification.From(header.ClaimId),
+                Text: GetPlayerName(header),
+                ExtraSearch: GetCharacterName(header),
                 Subtext: NoRequestSubtext));
 
         return new AccommodationInviteTargetsViewModel(
-            senderRequestId,
+            senderGroup.Id,
             roomFreeSpace,
             [.. groupedTargets, .. singleTargets]);
     }
 
     public async Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
     {
-        var model = await GetInviteTargets(claimId);
-        if (model.SenderRequestId is null)
-        {
+        // Только группа приглашающего — список целей ради неё строить незачем: цель проверяет
+        // сервис приглашений.
+        var sender = await GetSenderGroup(claimId)
             //TODO[Localize]
-            throw new AccommodationInviteNotAllowedException(claimId.ProjectId,
+            ?? throw new AccommodationInviteNotAllowedException(claimId.ProjectId,
                 "Сначала надо выбрать тип проживания.");
-        }
 
-        await accommodationInviteService.CreateAccommodationInvite(claimId, model.SenderRequestId, target);
+        await accommodationInviteService.CreateAccommodationInvite(claimId, sender.Group.Id, target);
     }
 
+    /// <summary>
+    /// План поселения и группа заявки, или <c>null</c>, если тип проживания по заявке не выбран.
+    /// </summary>
+    /// <remarks>
+    /// Доступ ровно как у самого приглашения: кому операция откажет, тому и список не отдаём
+    /// (#5261).
+    /// </remarks>
+    private async Task<(RoomCategoryPlan Plan, AccommodationGroupInfo Group)?> GetSenderGroup(ClaimIdentification claimId)
+    {
+        var claimInCharacter = await claimInfoRepository.GetClaimInCharacterOrDefault(claimId)
+            ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(ClaimIdentification));
+        var claimInfo = claimInCharacter
+            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault)
+            .Claim;
+
+        if (claimInfo.AccommodationTypeId is not { } typeId)
+        {
+            return null;
+        }
+
+        var plan = await roomCategoryPlanRepository.GetPlanForTypeOrDefault(typeId)
+            ?? throw new AccommodationTypeNotFoundException(typeId);
+
+        // Тип задан — значит, ссылка указывает на группу (инвариант CharacterClaimInfo, ADR022).
+        return (plan, plan.GetGroupOrDefault(claimInfo.AccommodationGroupId)!);
+    }
     public async Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
         ClaimIdentification claimId,
         InviteDirection direction)
@@ -126,18 +146,15 @@ internal class AccommodationInviteViewService(
             return [];
         }
 
-        // Приглашения от/к тем, с кем уже живём в одной комнате, тоже не показываем
-        var currentNeighbors = claim.AccommodationRequest is null
-            ? []
-            : (await accommodationRequestRepository
-                    .GetClaimsWithSameAccommodationRequest(claim.AccommodationRequest.Id))
-                .Select(c => c.ClaimId)
-                .ToHashSet();
+        // Приглашения от/к тем, кто уже в нашей группе, тоже не показываем. Сравниваем внешние
+        // ключи — скалярные колонки заявок, без навигации на саму группу.
+        bool IsSameGroup(Claim other)
+            => claim.AccommodationRequest_Id is { } ownGroupId && other.AccommodationRequest_Id == ownGroupId;
 
         return
         [
             .. visible
-                .Where(invite => !currentNeighbors.Contains(Counterparty(invite, direction).ClaimId))
+                .Where(invite => !IsSameGroup(Counterparty(invite, direction)))
                 .Select(invite => new AccommodationInviteViewModel(
                     new AccommodationInviteIdentification(claimId.ProjectId, invite.Id),
                     ToUserLink(Counterparty(invite, direction).Player),
@@ -161,21 +178,7 @@ internal class AccommodationInviteViewService(
     private static UserLinkViewModel ToUserLink(User user)
         => new(user.ToUserInfoHeader());
 
-    private static string GetPlayerName(Claim claim) => claim.Player.GetDisplayName();
+    private static string GetPlayerName(ClaimWithPlayer claim) => claim.Player.DisplayName.DisplayName;
 
-    private static string GetCharacterName(Claim claim) => claim.Character.CharacterName;
-
-    /// <summary>
-    /// Склеивает имена участников группы через запятую. Если основное имя пустое, берётся запасное —
-    /// так строка никогда не оказывается пустой в списке.
-    /// </summary>
-    private static string JoinNames(
-        IEnumerable<Claim> claims,
-        Func<Claim, string> primary,
-        Func<Claim, string> fallback)
-        => string.Join(", ", claims.Select(claim =>
-        {
-            var name = primary(claim);
-            return string.IsNullOrWhiteSpace(name) ? fallback(claim) : name;
-        }));
+    private static string GetCharacterName(ClaimWithPlayer claim) => claim.CharacterName;
 }

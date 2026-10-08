@@ -17,6 +17,15 @@ public interface IClaimInfoRepository
     Task<ClaimInfo?> GetClaimInfoOrDefault(ClaimIdentification claimId);
 
     /// <summary>
+    /// Заявка вместе с персонажем, без профиля игрока. <c>null</c>, если такой заявки нет.
+    /// </summary>
+    /// <remarks>
+    /// Для тех, кому профиль не нужен (например, виджет поселения, ADR022): на один запрос меньше,
+    /// чем у <see cref="GetClaimInfoOrDefault"/>.
+    /// </remarks>
+    Task<ClaimInCharacter?> GetClaimInCharacterOrDefault(ClaimIdentification claimId);
+
+    /// <summary>
     /// Заявки вместе с персонажами и игроками — двумя запросами на весь список, а не по заявке.
     /// Все заявки должны быть из одного проекта.
     /// </summary>
