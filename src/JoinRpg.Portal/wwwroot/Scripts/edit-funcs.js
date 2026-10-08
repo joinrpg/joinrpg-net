@@ -15,20 +15,10 @@ jQuery("input[type=submit]").click(function () {
     return true;
 });
 
-$("[data-toggle='confirmation']").popConfirm({
-    yesBtn: "OK",
-    noBtn: "Отмена",
-    title: "Подтверждение операции",
-    container: "body"
-});
 var hash = window.location.hash.substr(1);
 if (hash) {
     $("#" + hash).collapse('show');
 }
-
-$(function () {
-    $('[data-toggle="tooltip"]').tooltip();
-});
 
 $('.require-element-id')
     .on('show.bs.modal',
