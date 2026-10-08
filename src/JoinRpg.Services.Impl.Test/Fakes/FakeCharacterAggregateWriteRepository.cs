@@ -214,12 +214,12 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             Claim = claim;
             // Ровно тот же экземпляр, что лежит в CharacterInfo.Claims — так делает боевой
             // репозиторий, и на этом держатся проверки, читающие снимок заявки через агрегат.
-            ClaimInfo = CharacterInfo.Claims.SingleOrDefault(c => c.ClaimId.ClaimId == claim.ClaimId)
+            CharacterClaimInfo = CharacterInfo.Claims.SingleOrDefault(c => c.ClaimId.ClaimId == claim.ClaimId)
                 ?? throw new JoinRpgEntityNotFoundException(claim.ClaimId, "claim");
         }
 
         public Claim Claim { get; }
 
-        public CharacterClaimInfo ClaimInfo { get; }
+        public CharacterClaimInfo CharacterClaimInfo { get; }
     }
 }

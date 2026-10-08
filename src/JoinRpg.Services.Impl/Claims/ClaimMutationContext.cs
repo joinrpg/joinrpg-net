@@ -14,13 +14,13 @@ namespace JoinRpg.Services.Impl.Claims;
 /// <see cref="CharacterMutationContext"/> и даёт доступ и к персонажу, и к его снимку.
 /// </summary>
 /// <param name="Claim">Трекаемая EF-сущность заявки; её и нужно мутировать.</param>
-/// <param name="ClaimInfo">
+/// <param name="CharacterClaimInfo">
 /// Доменный снимок заявки строго ДО изменения — тот же экземпляр, что лежит в
 /// <see cref="CharacterMutationContext.CharacterInfo"/>.<c>Claims</c>.
 /// </param>
 internal abstract record ClaimMutationContext(
     Claim Claim,
-    CharacterClaimInfo ClaimInfo,
+    CharacterClaimInfo CharacterClaimInfo,
     Character Character,
     CharacterInfo CharacterInfo,
     ProjectInfo ProjectInfo,
@@ -43,7 +43,7 @@ internal abstract record ClaimMutationContext(
     /// <c>DbContext</c>, поэтому их изменение уедет в то же единственное сохранение.
     /// </summary>
     public Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim()
-        => Scope.LoadInvitesForClaim(ClaimInfo.ClaimId);
+        => Scope.LoadInvitesForClaim(CharacterClaimInfo.ClaimId);
 
     /// <summary>
     /// То же для другой заявки того же проекта: приём приглашения снимает повисшие приглашения со
@@ -187,7 +187,7 @@ internal abstract record ClaimMutationContext(
 /// </summary>
 internal sealed record ClaimMutationContext<TArgs>(
     Claim Claim,
-    CharacterClaimInfo ClaimInfo,
+    CharacterClaimInfo CharacterClaimInfo,
     Character Character,
     CharacterInfo CharacterInfo,
     ProjectInfo ProjectInfo,
@@ -197,5 +197,5 @@ internal sealed record ClaimMutationContext<TArgs>(
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper,
     TArgs Request)
-    : ClaimMutationContext(Claim, ClaimInfo, Character, CharacterInfo, ProjectInfo, Now, CurrentUser,
+    : ClaimMutationContext(Claim, CharacterClaimInfo, Character, CharacterInfo, ProjectInfo, Now, CurrentUser,
         Scope, FieldSaveHelper, CommentHelper);

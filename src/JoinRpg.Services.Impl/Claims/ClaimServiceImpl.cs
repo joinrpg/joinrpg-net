@@ -59,8 +59,8 @@ internal class ClaimServiceImpl(
                 var validator = new ClaimCheckInValidator(
                     new ClaimProblemContext(
                         ctx.CharacterInfo,
-                        ctx.ClaimInfo,
-                        await UserRepository.GetRequiredUserInfo(ctx.ClaimInfo.PlayerId)),
+                        ctx.CharacterClaimInfo,
+                        await UserRepository.GetRequiredUserInfo(ctx.CharacterClaimInfo.PlayerId)),
                     claimValidator);
                 if (!validator.CanCheckInInPrinciple)
                 {
@@ -717,7 +717,7 @@ internal class ClaimServiceImpl(
 
         if (claim.AccommodationRequest.Accommodation is { } room)
         {
-            var claimId = ctx.ClaimInfo.ClaimId;
+            var claimId = ctx.CharacterClaimInfo.ClaimId;
 
             notification = new RoomOccupancyNotification(
                 room.GetId(),
@@ -976,13 +976,13 @@ internal class ClaimServiceImpl(
                 // похода в ICharacterInfoRepository за правилами переноса больше нет.
                 var (target, targetInfo) = await ctx.LoadOtherCharacter(ctx.Request.CharacterId);
 
-                var userInfo = await UserRepository.GetRequiredUserInfo(ctx.ClaimInfo.PlayerId);
+                var userInfo = await UserRepository.GetRequiredUserInfo(ctx.CharacterClaimInfo.PlayerId);
 
-                // Правила считаются по доменному снимку заявки (ctx.ClaimInfo), а не по трекаемой
+                // Правила считаются по доменному снимку заявки (ctx.CharacterClaimInfo), а не по трекаемой
                 // EF-сущности: снимок сделан до мутаций, так что в этой точке он с ней совпадает.
                 ClaimValidator.EnsureCanMoveClaim(
                     targetInfo,
-                    new UserClaimInfo(ctx.ClaimInfo.ClaimId, ctx.ClaimInfo.Status),
+                    new UserClaimInfo(ctx.CharacterClaimInfo.ClaimId, ctx.CharacterClaimInfo.Status),
                     userInfo,
                     ctx.ProjectInfo);
 
@@ -1078,7 +1078,7 @@ internal class ClaimServiceImpl(
                 // Новый ответственный обязан быть мастером проекта.
                 _ = ctx.ProjectInfo.RequestMasterAccess(ctx.Request);
 
-                var oldResponsibleMaster = ctx.ClaimInfo.ResponsibleMasterId;
+                var oldResponsibleMaster = ctx.CharacterClaimInfo.ResponsibleMasterId;
                 var oldMasterDisplayName = ctx.Claim.ResponsibleMasterUser.GetDisplayName();
 
                 if (ctx.Request == oldResponsibleMaster)
