@@ -4,9 +4,12 @@ using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Characters;
+using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
@@ -83,6 +86,87 @@ public class ForumCommentMutationScenario(JoinApplicationFactory factory) : ICla
         concealed.StatusCode.ShouldBe(HttpStatusCode.Found);
 
         IsVisibleToPlayer(commentId).ShouldBeFalse();
+    }
+
+    /// <summary>
+    /// Та же ручка <c>forums/createcomment</c> обслуживает и обсуждение заявки — там комментарий уходит
+    /// в <see cref="IClaimService.AddComment"/>, и на проде этот путь догружал свой набор таблиц
+    /// (<c>Claims</c>, <c>FinanceOperations</c>, #4986).
+    /// </summary>
+    [Fact]
+    public async Task CreateComment_InClaimDiscussion_WorksUnderMaster()
+    {
+        UserIdentification masterId;
+        string email;
+        ProjectIdentification projectId;
+        UserIdentification playerId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            (masterId, email) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Проект для комментариев в заявке");
+            playerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+        }
+
+        var (threadId, characterId) = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                projectId,
+                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
+
+            // Тема нужна только как страница с antiforgery-токеном.
+            var threadId = await sp.GetRequiredService<IForumService>().CreateThread(
+                projectInfo.GroupTree.RootGroupId,
+                "Тема ради токена",
+                "Первый комментарий в теме",
+                hideFromUser: false,
+                emailEverybody: false);
+
+            var characterId = await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
+            return (threadId, characterId);
+        });
+
+        var claimId = await factory.Services.RunAsAsync(playerId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<IClaimService>().AddClaimFromUser(
+                characterId, "Хочу эту роль", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
+        });
+
+        var discussionId = GetClaimDiscussionId(claimId);
+
+        var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
+            factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
+            email,
+            followsRedirects: false);
+
+        var project = projectId.Value;
+        var token = await client.GetAntiforgeryTokenAsync($"{project}/forums/{threadId.ThreadId}/ViewThread");
+        var created = await client.PostFormAsync(
+            $"{project}/forums/createcomment",
+            token,
+            ("ProjectId", project.ToString()),
+            ("CommentDiscussionId", discussionId.ToString()),
+            ("CommentText", "Комментарий в заявку через ручку"),
+            ("HideFromUser", "false"));
+        created.StatusCode.ShouldBe(HttpStatusCode.Found);
+
+        // Ручка на ошибке тоже отвечает редиректом, поэтому успех проверяем по базе.
+        GetCommentId(discussionId, "Комментарий в заявку через ручку").ShouldNotBeNull();
+    }
+
+    private int GetClaimDiscussionId(ClaimIdentification claimId)
+    {
+        using var scope = factory.Services.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<MyDbContext>().Set<Claim>()
+            .Where(c => c.ClaimId == claimId.ClaimId)
+            .Select(c => c.CommentDiscussionId)
+            .Single();
     }
 
     private int GetDiscussionId(ForumThreadIdentification threadId)
