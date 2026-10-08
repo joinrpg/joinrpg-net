@@ -41,16 +41,12 @@
 
                         @if (!Model.IsSpecial && Model.ShowEditControls)
                         {
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Добавить...
-                                    <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a href="@Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}, null)">..персонажа</a></li>
-                                    <li>@Html.ActionLink("..подгруппу", "AddGroup", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null)</li>
-                                </ul>
-                            </div>
+                            <a class="btn btn-default" href="@Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                                <join-icon icon="Add" /> добавить персонажа
+                            </a>
+                            <a class="btn btn-default" href="@Url.Action("AddGroup", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                                <join-icon icon="Add" /> добавить подгруппу
+                            </a>
                         }
 
                     </div>
