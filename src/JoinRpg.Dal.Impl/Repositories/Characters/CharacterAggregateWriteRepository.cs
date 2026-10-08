@@ -183,14 +183,6 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                 .ToListAsync();
         }
 
-        public async Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId)
-        {
-            var claimIntId = claimId.ClaimId;
-            var projectIntId = claimId.ProjectId.Value;
-            return await AccommodationGroupQuery(projectIntId)
-                .SingleOrDefaultAsync(request => request.Subjects.Any(subject => subject.ClaimId == claimIntId));
-        }
-
         public async Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
         {
             var groupIntId = groupId.AccommodationRequestId;

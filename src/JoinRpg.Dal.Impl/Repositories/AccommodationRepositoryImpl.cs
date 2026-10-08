@@ -84,5 +84,4 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
             })
         ];
     }
-
 }

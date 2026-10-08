@@ -28,5 +28,6 @@ public class ProjectAccommodationType : IProjectEntity
     [ForeignKey(nameof(RoomCategoryId))]
     public virtual ProjectRoomCategory RoomCategory { get; set; }
 
+    [Obsolete("Нельзя использовать за пределами Dal.Impl (ADR022). Группы типа — из RoomCategoryPlan.Groups; ссылка заявки на группу — CharacterClaimInfo.AccommodationGroupId.", DiagnosticId = "JOIN001")]
     public virtual ICollection<AccommodationRequest> Desirous { get; set; }
 }

@@ -77,18 +77,6 @@ internal abstract record ClaimMutationContext(
         => Scope.LoadInvite(inviteId);
 
     /// <summary>
-    /// Трекаемая группа проживающих другой заявки вместе с составом, либо <c>null</c>, если та ещё
-    /// не выбрала тип проживания.
-    /// </summary>
-    /// <remarks>
-    /// Решения о группах по ней не принимаются — для этого есть снимки (ADR022 §4):
-    /// <see cref="LoadOtherClaimAccommodation"/> и план поселения. Потребителей не осталось, загрузчик
-    /// удаляется следующим шагом ADR022.
-    /// </remarks>
-    public Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId)
-        => Scope.LoadAccommodationGroupForClaim(claimId);
-
-    /// <summary>
     /// Трекаемая группа проживающих по идентификатору, либо <c>null</c>, если такой группы в проекте
     /// нет.
     /// </summary>

@@ -26,5 +26,6 @@ public class ProjectAccommodation : IProjectEntity
     public string Name { get; set; }
 
     [JsonIgnore]
+    [Obsolete("Нельзя использовать за пределами Dal.Impl (ADR022). Жильцы комнаты — из RoomCategoryPlan: RoomInfo.Inhabitants; ссылка заявки на группу — CharacterClaimInfo.AccommodationGroupId.", DiagnosticId = "JOIN001")]
     public virtual ICollection<AccommodationRequest> Inhabitants { get; set; }
 }

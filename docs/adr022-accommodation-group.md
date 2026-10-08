@@ -125,6 +125,11 @@ character-агрегат, комнату — план. Меняется толь
   снимкам: `CharacterClaimInfo` и плану поселения. План внутри мутации берётся новым именованным
   загрузчиком `IAggregateMutationScope` на `ProjectInfo` хэндла, чтобы инвариант ссылочного
   равенства ADR013 не ломался;
+- уточнение по факту (PR 7): приглашения берут группу и тип **отправителя** не из снимка чужого
+  персонажа, а из внешнего ключа `Claim.AccommodationRequest_Id` и включённой (`Include`) строки
+  группы трекаемой заявки (`ClaimMutationContext.LoadOtherClaimAccommodation`) — ради одного
+  запроса вместо загрузки второго агрегата. Строка служит только источником ссылки и типа; решения
+  («хватит ли мест», «уже соседи») по-прежнему принимаются по плану поселения;
 - изменение состава — внешним ключом `Claim.AccommodationRequest_Id`, без опоры на
   `Subjects`/`Inhabitants` и relationship fixup EF6;
 - `SetAccommodationType` и `LeaveAccommodationGroupAsync` возвращают `Task` без результата.
@@ -139,7 +144,7 @@ character-агрегат, комнату — план. Меняется толь
   колонки — изменение DataModel, отдельное согласование.
 - **Легаси-финансы поверх EF** (`Claim.ClaimAccommodationFee` через
   `AccommodationExtensions.GetAccommodationType(Claim)`) остаются на навигации и уходят вместе с
-  переводом финансов на `CharacterInfo`. `[Obsolete]` из PR 7 их пометит — это и есть счётчик.
+  переводом финансов на `CharacterInfo`. `[Obsolete]` из ~~PR 7~~ PR 8 их пометит — это и есть счётчик.
 - **Приглашения** (`AccommodationInvite`) остаются EF-сущностями; здесь меняется только то, как
   сервис приглашений читает группы.
 - **Отчёт по поселению** (`GetClaimAccommodationReport`) — плоские строки, агрегат ему не нужен.
@@ -147,23 +152,52 @@ character-агрегат, комнату — план. Меняется толь
 
 ### 6. План
 
-0. **PR 0**: этот ADR, строка в [docs/README.md](README.md), ссылки из ADR013 и ADR018 §4.
-1. **PR 1**: `AccommodationTargetIdentification` → `AccommodationGroupIdentification`, старые
-   префиксы как алиасы. Поведение не меняется.
-2. **PR 2**: `CharacterClaimInfo.AccommodationGroupId` с инвариантом §2, маппинг в
-   `CharacterInfoLoader`; методы плана из §3 с юнит-тестами, включая совпадение с
+Фактический разрез отличается от задуманного: шаг «сервисы записи» стал двумя PR (6 и 7), снос —
+восьмым. Устаревшие формулировки плана вычеркнуты, а не удалены.
+
+0. **PR 0** (#5370) — ✅ сделано. Этот ADR, строка в [docs/README.md](README.md), ссылки из
+   ADR013 и ADR018 §4.
+1. **PR 1** (#5371) — ✅ сделано. `AccommodationTargetIdentification` →
+   `AccommodationGroupIdentification`, старые префиксы как алиасы. Поведение не меняется.
+2. **PR 2** (#5374) — ✅ сделано. `CharacterClaimInfo.AccommodationGroupId` с инвариантом §2,
+   маппинг в `CharacterInfoLoader`; методы плана из §3 с юнит-тестами, включая совпадение с
    `GetRoomFreeSpace` на тех же данных.
-3. **PR 3**: виджет приглашений и диалог выбора типа (`AccommodationInviteViewService`,
-   `AccommodationTypeViewService`) — на план, запрос одиночек и доменные репозитории. Закрывает
-   #4964.
-4. **PR 4**: панель «Проживание» на странице заявки (`ClaimAccommodationViewModel` и оба
-   `_ClaimAccommodation*.cshtml`).
-5. **PR 5**: тип и имя комнаты в списках заявок и финансах, `AccommodationListViewModel` — тип из
-   `CharacterClaimInfo`, комната через `GetAllPlans`.
-6. **PR 6**: сервисы записи по §4; `IClaimService` без EF-результатов.
-7. **PR 7**: удаление `IAccommodationRequestRepository`, `GetRoomFreeSpace`, `GetClaimNeighbours`,
+3. **PR 3** (#5377) — ✅ сделано. Виджет приглашений и диалог выбора типа
+   (`AccommodationInviteViewService`, `AccommodationTypeViewService`) — на план, запрос одиночек и
+   доменные репозитории; `IAccommodationRequestRepository` удалён вместе с последним потребителем.
+   Закрывает #4964.
+4. **PR 4** (#5378) — ✅ сделано. Панель «Проживание» на странице заявки
+   (`ClaimAccommodationViewModel` и оба `_ClaimAccommodation*.cshtml`); `GetClaimNeighbours`
+   удалён вместе с последним потребителем.
+5. **PR 5** (#5379) — ✅ сделано. Тип и имя комнаты в ~~списках заявок и финансах,
+   `AccommodationListViewModel`~~ строке взноса и выгрузке заявок. В строке взноса тип и комната
+   из модели панели проживания (снимок заявки и план); в выгрузке — комната через `GetAllPlans`,
+   а тип пока через `GetAccommodationType(Claim)` (выгрузку целиком переводит шаг 6 ADR021).
+   `AccommodationListViewModel` остался на навигации — см. «Статус».
+6. ~~**PR 6**: сервисы записи по §4; `IClaimService` без EF-результатов.~~ Разрезан надвое:
+   - **PR 6** (#5380) — ✅ сделано. `ClaimServiceImpl` (выбор типа, выход из группы) и удаление
+     типа проживания (`AccommodationTypeService`) — решения по снимкам, состав по FK;
+     `IClaimService` без EF-результатов.
+   - **PR 7** (#5381) — ✅ сделано. Приглашения (`AccommodationInviteServiceImpl`) — решения по
+     плану, переезд группы по FK (уточнение в §4).
+7. ~~**PR 7**: удаление `IAccommodationRequestRepository`, `GetRoomFreeSpace`, `GetClaimNeighbours`,
    `GetAllInhabitants`, `IAggregateMutationScope.LoadAccommodationGroup*`; `[Obsolete]` на
-   оставшиеся навигации группы.
+   оставшиеся навигации группы.~~
+   **PR 8** (этот) — ✅ сделано. Снос: `AccommodationExtensions.GetRoomFreeSpace` и
+   `GetAllInhabitants` вместе с тестом `AccommodationRoomFreeSpaceTest` (его сценарии уже были в
+   `RoomCategoryPlanTest.GetFreeSpaceForGroup_*`), `IdExtensions.GetSubjectIds(AccommodationRequest)`,
+   `IAggregateMutationScope.LoadAccommodationGroupForClaim`. `IAccommodationRequestRepository` и
+   `GetClaimNeighbours` ушли раньше, в PR 3 и PR 4. `LoadAccommodationGroup` **остался**: приглашение
+   берёт из него существование и тип группы-цели, которой нет в плане приглашающего (§4).
+   `[Obsolete]` на навигациях группы: `Claim.AccommodationRequest`, `AccommodationRequest.Subjects`,
+   `.Accommodation`, `.AccommodationType`, `ProjectAccommodation.Inhabitants`,
+   `ProjectAccommodationType.Desirous`. У атрибута собственный диагностический id `JOIN001`
+   («Нельзя использовать за пределами Dal.Impl»), и в `JoinRpg.Dal.Impl` он подавлен целиком через
+   `NoWarn`: DAL строит из этих навигаций снимки и плоские строки, это и есть их законное место.
+   `JOIN001` — общий механизм, а не только для поселения: так можно закрывать вне DAL любые
+   EF-навигации по мере перевода их потребителей на доменные снимки.
+   ~~Подавление точечными `#pragma` вокруг выражений DAL~~ заменено по ревью #5382. Каждое
+   предупреждение `JOIN001` вне DAL — счётчик оставшегося долга.
 
 Последствия
 ==
@@ -174,3 +208,48 @@ character-агрегат, комнату — план. Меняется толь
   загрузок.
 - `CharacterClaimInfo` растёт на одно поле, проекция `CharacterInfoLoader` — на одну колонку.
 - Ссылка на группу общая для заявки и для цели приглашения: один тип, одна строковая форма.
+
+Статус
+==
+
+Принят и реализован: план (§6) выполнен, PR 0–8 (#5370, #5371, #5374, #5377–#5381 и снос).
+
+### Что сделано
+
+- Заявка ссылается на группу (`CharacterClaimInfo.AccommodationGroupId`), снимок группы, соседи и
+  свободное место — из `RoomCategoryPlan`. Второго расчёта свободного места поверх EF больше нет:
+  SQL-сводка `GetRoomTypesForProject` удалена в ADR020 (#5391), сводка `/rooms` считается по планам.
+- Страница заявки, виджет приглашений, диалог выбора типа, строка взноса и выгрузка заявок читают
+  снимки; ленивые загрузки #4964 закрыты.
+- Сервисы записи (`ClaimServiceImpl`, `AccommodationTypeService`, `AccommodationInviteServiceImpl`)
+  решают по снимкам и меняют состав внешним ключом; `IClaimService` не отдаёт EF-сущности.
+- Навигации группы помечены `[Obsolete(DiagnosticId = "JOIN001")]`; число предупреждений `JOIN001` —
+  счётчик оставшегося долга. На момент PR 8 их 16 в production-коде (`JoinRpg.Services.Impl` — 14,
+  `JoinRpg.Domain` и `JoinRpg.WebPortal.Models` — по одному) и 85 в тестах и
+  `JoinRpg.DataModel.Mocks` (фикстуры собирают граф EF-сущностей — это ожидаемо). В
+  `JoinRpg.Dal.Impl` — ноль: там `JOIN001` подавлен.
+
+### Что осталось открытым
+
+- **`AccommodationExtensions.GetAccommodationType(Claim)` на навигации**: через него идут
+  легаси-финансы (`FinanceExtensions.ClaimAccommodationFee`) и тип в выгрузке заявок
+  (`ClaimListBuilder.BuildItemForExport`), а `ClaimsRepositoryImpl` держит ради них `Include` группы.
+  Счётчик `JOIN001` этих мест не видит — навигацию прячет расширение. Финансы уходят с переводом на
+  `CharacterInfo` (§5), выгрузка — с шагом 6 ADR021.
+- **`AccommodationListViewModel`** — тип группы по-прежнему навигацией
+  `Claim.AccommodationRequest` (в PR 5 не вошёл, см. §6).
+- **Трекаемая группа в сервисах записи**: `ClaimServiceImpl` (выход из группы, новая группа
+  одиночки), `AccommodationInviteServiceImpl` (переезд, сверка трекаемого состава со снимком),
+  `ClaimMutationContext.LoadOtherClaimAccommodation` (§4) — решений по ним не принимают, но
+  навигации трогают. Сюда же контур ADR018: `AccommodationServiceImpl` и
+  `RoomCategoryPlanWriteRepository` ведут `Accommodation`/`Inhabitants` трекаемых сущностей при
+  заселении.
+- ~~**Стык с [ADR020](adr020-room-category-split.md)**: `RoomCategoryPlanLoader` собирает группы плана
+  через `category.Desirous`, то есть по типу, совпадающему с категорией. После разделения типа и
+  категории группы надо собирать по категории типа — иначе группы сестринских типов в план не
+  попадут, и `GetGroupOrDefault` бросит для них `AccommodationGroupNotFoundException`.~~ Закрыто
+  ADR020 (#5353): загрузчик собирает группы по всем типам категории.
+- **Приём приглашения не сверяет тип принимающего** с типом отправителя — как и до ADR022; это
+  поведение не менялось.
+- **Колонка `AccommodationRequests.IsAccepted`** — удаление требует изменения DataModel, отдельное
+  согласование (§5).

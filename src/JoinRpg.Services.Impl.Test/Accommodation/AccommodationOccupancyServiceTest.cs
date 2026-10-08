@@ -38,6 +38,10 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         return mock.CreateAccommodationRequest(type, claims);
     }
 
+    /// <summary>Идентификаторы заявок группы — по составу, который тест сам и собрал.</summary>
+    private static IReadOnlyCollection<ClaimIdentification> SubjectIds(AccommodationRequest group)
+        => [.. group.Subjects.Select(claim => claim.GetId())];
+
     [Fact]
     public async Task OccupyRoom_MovesGroupIntoRoom()
     {
@@ -231,8 +235,8 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         await CreateService().OccupyRoom(room.GetId(), [newcomer.GetId()]);
 
         var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
-        notification.Changed.ShouldBe(newcomer.GetSubjectIds());
-        notification.Remaining.ShouldBe(neighbours.GetSubjectIds(), ignoreOrder: true);
+        notification.Changed.ShouldBe(SubjectIds(newcomer));
+        notification.Remaining.ShouldBe(SubjectIds(neighbours), ignoreOrder: true);
         notification.Changed.Intersect(notification.Remaining).ShouldBeEmpty();
     }
 
@@ -249,7 +253,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         await CreateService().OccupyRoom(room.GetId(), [group.GetId()]);
 
         var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
-        notification.Changed.ShouldBe(group.GetSubjectIds());
+        notification.Changed.ShouldBe(SubjectIds(group));
         notification.Remaining.ShouldBeEmpty();
     }
 
@@ -284,8 +288,8 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         await CreateService().UnOccupyGroup(leaving.GetId());
 
         var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
-        notification.Changed.ShouldBe(leaving.GetSubjectIds());
-        notification.Remaining.ShouldBe(staying.GetSubjectIds());
+        notification.Changed.ShouldBe(SubjectIds(leaving));
+        notification.Remaining.ShouldBe(SubjectIds(staying));
     }
 
     /// <summary>Выселение всей комнаты: в комнате не остаётся никого.</summary>
@@ -303,7 +307,7 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
 
         var notification = notificationService.RoomOccupancy.ShouldHaveSingleItem();
         notification.Remaining.ShouldBeEmpty();
-        notification.Changed.ShouldBe([.. first.GetSubjectIds(), .. second.GetSubjectIds()], ignoreOrder: true);
+        notification.Changed.ShouldBe([.. SubjectIds(first), .. SubjectIds(second)], ignoreOrder: true);
     }
 
     /// <summary>Выселение идемпотентно: нерасселённую группу выселять нечего (ADR018, §1).</summary>
