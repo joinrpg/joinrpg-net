@@ -128,10 +128,10 @@ public static class FinanceExtensions
     /// </summary>
     /// <remarks>
     /// Легаси-путь: считает по графу EF и ленивым навигациям. Замена — перегрузка поверх доменного
-    /// агрегата, <see cref="ClaimBalanceExtensions.CalculateClaimBalance(CharacterInfo, CharacterClaimInfo, ProjectInfo, DateTime?)"/>
+    /// агрегата, <see cref="ClaimBalanceExtensions.CalculateBalance(ClaimInCharacter, DateTime?)"/>
     /// (ADR013); она не обращается к EF вовсе.
     /// </remarks>
-    [Obsolete("Используйте ClaimBalanceExtensions.CalculateClaimBalance поверх CharacterInfo/CharacterClaimInfo (ADR013)")]
+    [Obsolete("Используйте ClaimBalanceExtensions.CalculateBalance поверх ClaimInCharacter (ADR013, ADR021)")]
     public static ClaimBalance CalculateClaimBalance(this Claim claim, ProjectInfo projectInfo, DateTime? date = null)
     {
         var paid = claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);

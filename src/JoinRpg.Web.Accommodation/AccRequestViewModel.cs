@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using JoinRpg.DomainTypes.Accommodation;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Helpers;
 
@@ -87,12 +86,13 @@ public class RequestParticipantViewModel
     /// Жилец поверх доменного агрегата персонажа (ADR013): и имя игрока, и баланс заявки берутся
     /// из него, без обращения к EF-сущностям.
     /// </summary>
-    public RequestParticipantViewModel(CharacterInfo character, CharacterClaimInfo claim, ProjectInfo projectInfo)
+    public RequestParticipantViewModel(ClaimInCharacter claimInCharacter)
     {
+        var claim = claimInCharacter.Claim;
         ClaimId = claim.ClaimId;
         UserId = claim.PlayerId;
         UserName = claim.Player.DisplayName.DisplayName;
-        var balance = character.CalculateClaimBalance(claim, projectInfo);
+        var balance = claimInCharacter.CalculateBalance();
         FeeTotal = balance.TotalFee;
         FeeToPay = balance.FeeDue;
     }

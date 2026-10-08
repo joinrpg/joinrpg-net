@@ -16,7 +16,7 @@ public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator cla
     /// Сколько осталось доплатить. Было <c>claim.ClaimFeeDue(projectInfo)</c> — та же величина
     /// «начислено минус уплачено», но посчитанная по EF-графу.
     /// </summary>
-    public int FeeDue => context.Character.CalculateClaimBalance(claim, context.ProjectInfo).FeeDue;
+    public int FeeDue => context.ClaimInCharacter.CalculateBalance().FeeDue;
 
     public bool NotCheckedInAlready => claim.CheckInDate == null &&
                                        claim.Status != ClaimStatus.CheckedIn;
