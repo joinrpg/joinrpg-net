@@ -240,27 +240,24 @@ public class CharacterController(
     }
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
-    public async Task<ActionResult> Delete(ProjectIdentification projectId, int characterId)
+    public async Task<ActionResult> Delete(CharacterIdentification characterId)
     {
-        var character = await characterInfoRepository.GetCharacterInfoOrDefault(new CharacterIdentification(projectId, characterId));
+        var character = await characterInfoRepository.GetCharacterInfoOrDefault(characterId);
         return character is null ? NotFound() : View(new DeleteCharacterViewModel(character));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
-    public async Task<ActionResult> Delete(ProjectIdentification projectId,
-        int characterId,
-        IFormCollection form)
+    public async Task<ActionResult> Delete(CharacterIdentification characterId, IFormCollection form)
     {
-        var id = new CharacterIdentification(projectId, characterId);
         try
         {
-            await characterService.DeleteCharacter(new DeleteCharacterRequest(id));
+            await characterService.DeleteCharacter(new DeleteCharacterRequest(characterId));
 
-            return RedirectToAction("Index", "GameGroups", new { ProjectId = projectId.Value, area = "" });
+            return RedirectToAction("Index", "GameGroups", new { ProjectId = characterId.ProjectId.Value, area = "" });
         }
         catch
         {
-            return View(new DeleteCharacterViewModel(await characterInfoRepository.GetCharacterInfo(id)));
+            return View(new DeleteCharacterViewModel(await characterInfoRepository.GetCharacterInfo(characterId)));
         }
     }
 

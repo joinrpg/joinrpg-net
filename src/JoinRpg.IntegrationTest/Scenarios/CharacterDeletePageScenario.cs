@@ -1,6 +1,10 @@
 using System.Net;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
+using JoinRpg.Services.Interfaces.Characters;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 
@@ -33,5 +37,40 @@ public class CharacterDeletePageScenario(JoinApplicationFactory factory) : IClas
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = await response.Content.ReadAsStringAsync();
         html.ShouldContain("является шаблоном по умолчанию");
+    }
+
+    /// <summary>
+    /// Экшены удаления принимают <see cref="CharacterIdentification"/>, собранный из маршрута:
+    /// форма подтверждения шлёт только antiforgery-токен.
+    /// </summary>
+    [Fact]
+    public async Task DeleteForm_DeletesCharacter()
+    {
+        using var scope = factory.Services.CreateScope();
+        var (userId, email) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, userId);
+
+        var characterId = await factory.Services.RunAsAsync(userId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
+        });
+
+        var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), email);
+        var url = $"{projectId.Value}/character/{characterId.CharacterId}/delete";
+        var token = await client.GetAntiforgeryTokenAsync(url);
+
+        var response = await client.PostFormAsync(url, token);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        using var readScope = factory.Services.CreateScope();
+        var character = await readScope.ServiceProvider.GetRequiredService<ICharacterInfoRepository>()
+            .GetCharacterInfoOrDefault(characterId);
+        // Неиспользованный персонаж может удаляться физически, использованный — деактивируется.
+        (character?.IsActive ?? false).ShouldBeFalse();
     }
 }
