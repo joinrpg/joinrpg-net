@@ -3,6 +3,7 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 namespace JoinRpg.Domain.Test;
@@ -137,6 +138,7 @@ public class ClaimBalanceOverCharacterInfoTest
                 AccommodationFee: accommodationFee,
                 OperationsRequireModeration: false),
             AccommodationTypeId: null,
+            AccommodationGroupId: AccommodationGroupIdentification.From(claimId),
             PlayerAllowedSensitiveData: false,
             Fields: FieldLayerContainer.DeserializeFieldLayer(projectInfo, fieldsJson));
 

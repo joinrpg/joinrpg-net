@@ -101,6 +101,8 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                     // из ProjectInfo.AccommodationSettings (ADR015), а не из БД. Одна колонка
                     // через LEFT JOIN к заявке на поселение, в сам тип проживания не ходим.
                     AccommodationTypeId = (int?)claim.AccommodationRequest!.AccommodationTypeId,
+                    // Внешний ключ самой заявки — колонка Claims, без JOIN.
+                    AccommodationRequestId = claim.AccommodationRequest_Id,
                     // Опечатка в имени — имя колонки EF (см. Claim.PlayerAllowedSenstiveData).
                     PlayerAllowedSensitiveData = claim.PlayerAllowedSenstiveData,
                 }),

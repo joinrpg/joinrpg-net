@@ -4,6 +4,7 @@ using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 namespace JoinRpg.Domain.Test.Access;
@@ -150,7 +151,9 @@ public class AccessArgumentsFactoryTest
 
     private CharacterClaimInfo MakeClaimInfo(ClaimStatus status, UserIdentification playerId)
         => new(
-            new ClaimIdentification(Mock.ProjectInfo.ProjectId, -1),
+            // Положительный, но заведомо не из мока: отрицательное значение ссылка на группу
+            // проживающих прочла бы как группу, а не как заявку-одиночку (ADR022).
+            new ClaimIdentification(Mock.ProjectInfo.ProjectId, 999_999),
             new UserInfoHeader(playerId, new UserDisplayName("Игрок", null)),
             status,
             DenialStatus: null,
@@ -171,6 +174,8 @@ public class AccessArgumentsFactoryTest
                 AccommodationFee: 0,
                 OperationsRequireModeration: false),
             AccommodationTypeId: null,
+            AccommodationGroupId: AccommodationGroupIdentification.From(
+                new ClaimIdentification(Mock.ProjectInfo.ProjectId, 999_999)),
             PlayerAllowedSensitiveData: false,
             Fields: FieldLayerContainer.Empty(Mock.ProjectInfo));
 

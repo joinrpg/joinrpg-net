@@ -37,6 +37,12 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// идентификатор: название берётся из <c>ProjectInfo.AccommodationSettings</c>. Комнаты здесь нет —
 /// она оперативные данные и живёт в агрегате поселения <c>RoomCategoryPlan</c> (ADR018).
 /// </param>
+/// <param name="AccommodationGroupId">
+/// Группа проживающих, в которой состоит заявка (ADR022). Не опциональна: у заявки без группы это
+/// она сама как одиночка. Тип задан ⇔ ссылка указывает на сложившуюся группу — тип хранится только
+/// в строке группы, а выбор типа всегда заводит её, даже для одиночки. Состав группы и комнату
+/// агрегат не несёт: их снимок даёт <c>RoomCategoryPlan</c>.
+/// </param>
 /// <param name="PlayerAllowedSensitiveData">
 /// Игрок разрешил мастерам видеть свои чувствительные данные (паспорт, адрес регистрации).
 /// Согласие даётся на уровне заявки, поэтому это факт о заявке, а не о профиле.
@@ -64,9 +70,47 @@ public record class CharacterClaimInfo(
     DateTimeOffset? LastVisibleMasterCommentAt,
     ClaimFinanceInfo Finance,
     AccommodationTypeIdentification? AccommodationTypeId,
+    AccommodationGroupIdentification AccommodationGroupId,
     bool PlayerAllowedSensitiveData,
     FieldLayerContainer Fields)
 {
+    /// <summary>
+    /// Группа проживающих заявки. Свойство объявлено явно ради проверки инварианта «тип задан ⇔
+    /// ссылка на группу» при создании.
+    /// </summary>
+    public AccommodationGroupIdentification AccommodationGroupId { get; init; }
+        = EnsureAccommodationGroup(ClaimId, AccommodationTypeId, AccommodationGroupId);
+
+    private static AccommodationGroupIdentification EnsureAccommodationGroup(
+        ClaimIdentification claimId,
+        AccommodationTypeIdentification? typeId,
+        AccommodationGroupIdentification groupId)
+    {
+        ArgumentNullException.ThrowIfNull(groupId);
+
+        if (groupId.ProjectId != claimId.ProjectId)
+        {
+            throw new ArgumentException(
+                $"Accommodation group {groupId} of claim {claimId} belongs to another project", nameof(groupId));
+        }
+
+        if (typeId is not null && groupId.AsAccommodationRequestId() is null)
+        {
+            throw new ArgumentException(
+                $"Claim {claimId} has accommodation type {typeId}, but no accommodation group", nameof(groupId));
+        }
+
+        // Без типа заявка — одиночка и ссылается сама на себя: не на группу и не на чужую заявку.
+        if (typeId is null && groupId.AsClaimId() != claimId)
+        {
+            throw new ArgumentException(
+                $"Claim {claimId} has no accommodation type and must reference itself, not {groupId}",
+                nameof(groupId));
+        }
+
+        return groupId;
+    }
+
     /// <summary>Игрок, подавший заявку.</summary>
     public UserIdentification PlayerId => Player.UserId;
 

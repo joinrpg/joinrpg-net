@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
@@ -96,6 +97,8 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
             // а не 0. Иначе печать конверта искала бы в метаданных тип с id 0 — упала бы или
             // показала мусор вместо «Поселение: нет», причём далеко от DAL.
             claim.AccommodationTypeId.ShouldBeNull();
+            // Без проживания заявка — одиночка и ссылается на группу сама собой (ADR022).
+            claim.AccommodationGroupId.ShouldBe(AccommodationGroupIdentification.From(claimId));
             // Финансовых операций по заявке пока нет — модерировать нечего.
             claim.Finance.OperationsRequireModeration.ShouldBeFalse();
         }
@@ -158,6 +161,8 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
 
             claim.AccommodationTypeId.ShouldBe(accommodationTypeId);
             claim.Finance.AccommodationFee.ShouldBe(accommodationCost);
+            // Выбор типа завёл группу: ссылка из колонки Claims.AccommodationRequest_Id (ADR022).
+            _ = claim.AccommodationGroupId.AsAccommodationRequestId().ShouldNotBeNull();
         }
     }
 }

@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using static JoinRpg.DomainTypes.Test.ProjectInfoFixture;
@@ -572,7 +573,7 @@ public class CharacterInfoTest
         // Так сохраняются поля ещё не созданной заявки: её нет ни в БД, ни в агрегате.
         var projectInfo = MakeProject(MakeField(1, boundTo: FieldBoundTo.Claim));
         var character = MakeCharacter(projectInfo);
-        var unsavedClaim = MakeClaim(projectInfo, -1, fields: new() { { 1, "из новой заявки" } });
+        var unsavedClaim = MakeClaim(projectInfo, 999, fields: new() { { 1, "из новой заявки" } });
 
         var layers = character.GetFieldLayers(AccessArgumentsMaster, unsavedClaim);
 
@@ -605,6 +606,51 @@ public class CharacterInfoTest
 
         layers.CharacterLayer.LayerData.Count.ShouldBe(1);
     }
+
+    #endregion
+
+    #region Ссылка заявки на группу проживающих (ADR022)
+
+    private static readonly AccommodationTypeIdentification SomeTypeId = new(ProjectId, 7);
+
+    private static AccommodationGroupIdentification Group(int requestId)
+        => AccommodationGroupIdentification.From(new AccommodationRequestIdentification(ProjectId, requestId));
+
+    private static AccommodationGroupIdentification Solo(int claimId)
+        => AccommodationGroupIdentification.From(new ClaimIdentification(ProjectId, claimId));
+
+    [Fact]
+    public void Claim_WithTypeAndGroup_IsValid()
+    {
+        var claim = MakeClaim(MakeProject(), 5, accommodationTypeId: SomeTypeId, accommodationGroupId: Group(42));
+
+        claim.AccommodationGroupId.ShouldBe(Group(42));
+    }
+
+    [Fact]
+    public void Claim_WithTypeButSolo_IsRejected()
+        => Should.Throw<ArgumentException>(
+            () => MakeClaim(MakeProject(), 5, accommodationTypeId: SomeTypeId, accommodationGroupId: Solo(5)));
+
+    [Fact]
+    public void Claim_WithoutTypeButInGroup_IsRejected()
+        => Should.Throw<ArgumentException>(
+            () => MakeClaim(MakeProject(), 5, accommodationGroupId: Group(42)));
+
+    [Fact]
+    public void Claim_WithoutType_ReferencingAnotherClaim_IsRejected()
+        => Should.Throw<ArgumentException>(
+            () => MakeClaim(MakeProject(), 5, accommodationGroupId: Solo(6)));
+
+    [Fact]
+    public void Claim_WithGroupFromAnotherProject_IsRejected()
+        => Should.Throw<ArgumentException>(
+            () => MakeClaim(
+                MakeProject(),
+                5,
+                accommodationTypeId: SomeTypeId,
+                accommodationGroupId: AccommodationGroupIdentification.From(
+                    new AccommodationRequestIdentification(new ProjectIdentification(ProjectId.Value + 1), 42))));
 
     #endregion
 
@@ -646,7 +692,9 @@ public class CharacterInfoTest
         ClaimStatus status = ClaimStatus.AddedByUser,
         UserIdentification? playerId = null,
         UserIdentification? responsibleMasterId = null,
-        Dictionary<int, string?>? fields = null)
+        Dictionary<int, string?>? fields = null,
+        AccommodationTypeIdentification? accommodationTypeId = null,
+        AccommodationGroupIdentification? accommodationGroupId = null)
         => new(
             new ClaimIdentification(ProjectId, claimId),
             MakePlayer(playerId ?? PlayerId),
@@ -668,7 +716,9 @@ public class CharacterInfoTest
                 FeePaid: 0,
                 AccommodationFee: 0,
                 OperationsRequireModeration: false),
-            AccommodationTypeId: null,
+            AccommodationTypeId: accommodationTypeId,
+            AccommodationGroupId: accommodationGroupId
+                ?? AccommodationGroupIdentification.From(new ClaimIdentification(ProjectId, claimId)),
             PlayerAllowedSensitiveData: false,
             new FieldLayerContainer(projectInfo, fields ?? []));
 }

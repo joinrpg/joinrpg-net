@@ -454,7 +454,14 @@ public class MockedProject
                 FeePaid: 0,
                 AccommodationFee: 0,
                 OperationsRequireModeration: claim.FinanceOperations.Any(fo => fo.RequireModeration)),
-            AccommodationTypeId: null,
+            // Тип и группа — из EF-группы заявки, как их отдал бы маппер (ADR022). Стоимость
+            // проживания в Finance по-прежнему 0: тесты баланса задают её явно.
+            AccommodationTypeId: claim.AccommodationRequest is { } group
+                ? new AccommodationTypeIdentification(projectInfo.ProjectId, group.AccommodationTypeId)
+                : null,
+            AccommodationGroupId: claim.AccommodationRequest is { } request
+                ? AccommodationGroupIdentification.From(new AccommodationRequestIdentification(projectInfo.ProjectId, request.Id))
+                : AccommodationGroupIdentification.From(claim.GetId()),
             PlayerAllowedSensitiveData: claim.PlayerAllowedSenstiveData,
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.JsonData));
 
