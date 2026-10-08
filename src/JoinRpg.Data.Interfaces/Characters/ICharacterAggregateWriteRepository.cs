@@ -170,5 +170,5 @@ public interface IClaimUpdateHandle : ICharacterAggregateUpdateHandle
     /// Доменный снимок заявки строго <b>ДО</b> изменения. Это тот же экземпляр, что лежит
     /// в <see cref="ICharacterAggregateUpdateHandle.CharacterInfo"/>.<c>Claims</c>.
     /// </summary>
-    CharacterClaimInfo ClaimInfo { get; }
+    CharacterClaimInfo CharacterClaimInfo { get; }
 }

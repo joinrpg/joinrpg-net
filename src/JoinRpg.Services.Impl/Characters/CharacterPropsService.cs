@@ -167,12 +167,12 @@ internal class CharacterPropsService(
                 var handle = await unitOfWork.GetCharacterAggregateWriteRepository()
                     .LoadClaimForUpdate(claimId);
 
-                ClaimAccess.Request(handle.ProjectInfo, handle.ClaimInfo, currentUserAccessor, accessRequirement);
+                ClaimAccess.Request(handle.ProjectInfo, handle.CharacterClaimInfo, currentUserAccessor, accessRequirement);
 
                 EnsureActiveIfRequired(handle.ProjectInfo, activeRequirement);
 
                 var ctx = new ClaimMutationContext<TArgs>(
-                    handle.Claim, handle.ClaimInfo, handle.Character, handle.CharacterInfo, handle.ProjectInfo,
+                    handle.Claim, handle.CharacterClaimInfo, handle.Character, handle.CharacterInfo, handle.ProjectInfo,
                     now, currentUserAccessor, handle, fieldSaveHelper,
                     commentHelper, arguments);
 

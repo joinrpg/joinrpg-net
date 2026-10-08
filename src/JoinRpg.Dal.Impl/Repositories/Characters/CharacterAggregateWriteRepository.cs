@@ -233,6 +233,6 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
     {
         public Claim Claim { get; } = claim;
 
-        public CharacterClaimInfo ClaimInfo { get; } = claimInfo;
+        public CharacterClaimInfo CharacterClaimInfo { get; } = claimInfo;
     }
 }

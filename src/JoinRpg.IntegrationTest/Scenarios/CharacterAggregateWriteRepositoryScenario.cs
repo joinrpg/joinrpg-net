@@ -80,9 +80,9 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
         // (этого требует конструктор CharacterInfo, ADR013).
         ReferenceEquals(handle.CharacterInfo.ProjectInfo, handle.ProjectInfo).ShouldBeTrue();
 
-        // ClaimInfo — тот же экземпляр, что лежит в CharacterInfo.Claims, а не его копия.
+        // CharacterClaimInfo — тот же экземпляр, что лежит в CharacterInfo.Claims, а не его копия.
         var claimInfoFromCharacter = handle.CharacterInfo.Claims.Single(c => c.ClaimId == claimId);
-        ReferenceEquals(handle.ClaimInfo, claimInfoFromCharacter).ShouldBeTrue();
+        ReferenceEquals(handle.CharacterClaimInfo, claimInfoFromCharacter).ShouldBeTrue();
 
         // Трекаемые сущности соответствуют снимкам.
         handle.Claim.ClaimId.ShouldBe(claimId.ClaimId);
@@ -92,10 +92,10 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
 
         // Статусные даты заявки доезжают из БД в снимок ровно те же, что лежат в сущности.
         handle.Claim.MasterAcceptedDate.ShouldNotBeNull();
-        handle.ClaimInfo.MasterAcceptedDate.ShouldBe(handle.Claim.MasterAcceptedDate);
-        handle.ClaimInfo.MasterDeclinedDate.ShouldBe(handle.Claim.MasterDeclinedDate);
-        handle.ClaimInfo.PlayerDeclinedDate.ShouldBe(handle.Claim.PlayerDeclinedDate);
-        handle.ClaimInfo.CheckInDate.ShouldBe(handle.Claim.CheckInDate);
+        handle.CharacterClaimInfo.MasterAcceptedDate.ShouldBe(handle.Claim.MasterAcceptedDate);
+        handle.CharacterClaimInfo.MasterDeclinedDate.ShouldBe(handle.Claim.MasterDeclinedDate);
+        handle.CharacterClaimInfo.PlayerDeclinedDate.ShouldBe(handle.Claim.PlayerDeclinedDate);
+        handle.CharacterClaimInfo.CheckInDate.ShouldBe(handle.Claim.CheckInDate);
 
         // Ни одно обращение выше не полезло в базу за недостающей связью.
         lazyLoads.Count.ShouldBe(

@@ -29,7 +29,7 @@ public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
         var handle = await WriteRepository.LoadClaimForUpdate(claim.GetId());
 
         var fromAggregate = handle.CharacterInfo.Claims.Single(c => c.ClaimId == claim.GetId());
-        ReferenceEquals(handle.ClaimInfo, fromAggregate).ShouldBeTrue();
+        ReferenceEquals(handle.CharacterClaimInfo, fromAggregate).ShouldBeTrue();
     }
 
     [Fact]
