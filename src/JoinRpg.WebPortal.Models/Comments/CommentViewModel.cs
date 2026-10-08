@@ -7,12 +7,13 @@ namespace JoinRpg.Web.Models;
 
 public class CommentViewModel
 {
-    public CommentViewModel(CommentDiscussion parent, Comment comment, int currentUserId, int deepLevel)
+    public CommentViewModel(CommentDiscussion parent, Comment comment, int currentUserId, ProjectInfo projectInfo, int deepLevel)
     {
         DeepLevel = deepLevel;
         IsVisibleToPlayer = comment.IsVisibleToPlayer;
-        HasMasterAccess = comment.Project.HasMasterAccess(new UserIdentification(currentUserId));
-        CanModerateFinance = comment.Project.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney) ||
+        // Права — по ProjectInfo, а не по comment.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
+        HasMasterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
+        CanModerateFinance = projectInfo.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney) ||
                              comment.Finance?.PaymentType?.UserId == currentUserId;
         IsCommentByPlayer = comment.IsCommentByPlayer;
         Author = comment.Author;
@@ -27,10 +28,10 @@ public class CommentViewModel
         IsRead = comment.IsReadByUser(currentUserId);
         ChildComments =
           parent.Comments.Where(c => c.ParentCommentId == comment.CommentId)
-            .Select(c => new CommentViewModel(parent, c, currentUserId, deepLevel + 1))
+            .Select(c => new CommentViewModel(parent, c, currentUserId, projectInfo, deepLevel + 1))
             .OrderBy(c => c.CreatedTime);
         ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?)comment.ExtraAction.Value;
-        IsVisible = comment.IsVisibleTo(currentUserId);
+        IsVisible = comment.IsVisibleTo(currentUserId, projectInfo);
     }
 
     public bool IsRead { get; }

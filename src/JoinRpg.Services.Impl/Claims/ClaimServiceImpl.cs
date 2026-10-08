@@ -1158,7 +1158,7 @@ internal class ClaimServiceImpl(
     /// нет — то есть требование уже выполнено.
     /// </para>
     /// <para>
-    /// Права проверяются по самому комментарию (<c>HasMasterAccess</c>), а не через
+    /// Права проверяются по метаданным проекта (<c>ProjectInfo.HasMasterAccess</c>), а не через
     /// <c>LoadClaimAs*</c>, поэтому будущее удаление <c>ClaimImplBase</c> методу не мешает.
     /// </para>
     /// </remarks>
@@ -1175,7 +1175,10 @@ internal class ClaimServiceImpl(
             throw new JoinRpgEntityNotFoundException(commentId, nameof(Comment));
         }
 
-        if (comment.HasMasterAccess(currentUserAccessor) && !childComments.Any() &&
+        // Права — по ProjectInfo, а не по comment.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+
+        if (projectInfo.HasMasterAccess(currentUserAccessor) && !childComments.Any() &&
             comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
         {
             comment.IsVisibleToPlayer = false;
