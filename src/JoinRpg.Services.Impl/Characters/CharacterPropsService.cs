@@ -13,7 +13,6 @@ namespace JoinRpg.Services.Impl.Characters;
 internal class CharacterPropsService(
     IUnitOfWork unitOfWork,
     ICurrentUserAccessor currentUserAccessor,
-    IProjectMetadataRepository metadataRepository,
     FieldSaveHelper fieldSaveHelper,
     CommentHelper commentHelper,
     IClaimNotificationService claimNotificationService,
@@ -96,8 +95,6 @@ internal class CharacterPropsService(
                     EntityAudit.MarkChanged(handle.Character, now, currentUserAccessor.UserId);
 
                     await unitOfWork.SaveChangesAsync();
-
-                    await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
                 }
 
                 // Результата у операции над персонажем нет, но общий каркас RunOperation
@@ -185,8 +182,6 @@ internal class CharacterPropsService(
                 {
                     await unitOfWork.SaveChangesAsync();
 
-                    await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
-
                     // Уведомления уходят строго после сохранения: до него CommentId ещё не существует.
                     foreach (var pending in ctx.PendingComments)
                     {
@@ -251,8 +246,6 @@ internal class CharacterPropsService(
                 handle.Project.Characters.Add(character);
 
                 await unitOfWork.SaveChangesAsync();
-
-                await PrimeCacheIfMetadataChanged(ctx, handle.Refresh);
 
                 return character;
             },
@@ -358,8 +351,6 @@ internal class CharacterPropsService(
                 // Фаза 2: сохраняются комментарии и отметки времени, которые они проставили заявке.
                 await unitOfWork.SaveChangesAsync();
 
-                await PrimeCacheIfMetadataChanged(ctx, handle.RefreshProjectInfo);
-
                 foreach (var pending in pendingComments)
                 {
                     await claimNotificationService.SendNotification(
@@ -386,22 +377,6 @@ internal class CharacterPropsService(
         if (activeRequirement == ProjectActiveRequirement.MustBeActive)
         {
             _ = projectInfo.EnsureProjectActive();
-        }
-    }
-
-    /// <summary>
-    /// Пересобирает <see cref="ProjectInfo"/> и обновляет кэш, но только если операция тронула
-    /// метаданные. В отличие от <c>ProjectPropsService</c>, где пересборка безусловна: там каждая
-    /// операция по определению меняет метаданные, здесь — меньшинство, и безусловная пересборка
-    /// добавляла бы тяжёлый запрос к каждому сохранению полей.
-    /// </summary>
-    private async Task PrimeCacheIfMetadataChanged(
-        CharacterOperationContext ctx,
-        Func<Task<ProjectInfo>> refresh)
-    {
-        if (ctx.ProjectMetadataChanged)
-        {
-            metadataRepository.PrimeCache(await refresh());
         }
     }
 }

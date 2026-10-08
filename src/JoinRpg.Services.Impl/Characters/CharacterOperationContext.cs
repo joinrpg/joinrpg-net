@@ -16,19 +16,6 @@ internal abstract record CharacterOperationContext(
     FieldSaveHelper FieldSaveHelper)
 {
     /// <summary>
-    /// Тронула ли операция метаданные проекта. Сегодня единственный такой канал — отметка
-    /// <see cref="ProjectField.WasEverUsed"/> при первом заполнении поля; её ставит
-    /// <see cref="JoinRpg.Domain.CharacterFields.FieldSaveHelper"/>, а флаг поднимает <c>SaveFields</c>. Если флаг
-    /// поднят, сервис после сохранения пересоберёт <see cref="ProjectInfo"/> и обновит кэш — иначе
-    /// следующая страница в том же запросе покажет поле неиспользованным.
-    /// </summary>
-    /// <remarks>
-    /// Временное решение: по ADR014 отметка переедет в <c>ctx.MarkFieldsUsed</c>, и тогда у флага
-    /// появится единственный явный писатель.
-    /// </remarks>
-    internal bool ProjectMetadataChanged { get; set; }
-
-    /// <summary>
     /// Операция решила, что менять нечего: сервис не будет ни сохранять, ни рассылать.
     /// </summary>
     internal bool IsNoOp { get; private set; }
@@ -44,8 +31,9 @@ internal abstract record CharacterOperationContext(
     public void NothingChanged() => IsNoOp = true;
 
     /// <summary>
-    /// Сохраняет значения полей персонажа и поднимает <see cref="ProjectMetadataChanged"/>, если
-    /// операция впервые отметила поле или вариант как использованные.
+    /// Сохраняет значения полей персонажа. Отметку полей использованными сохранение не ставит — это
+    /// метаданные проекта, их до входа в операцию отмечает
+    /// <see cref="IFieldSetupService.MarkFieldsUsedIfNotUsedYet"/>.
     /// </summary>
     /// <param name="character">Персонаж, чьи поля сохраняются.</param>
     /// <param name="fieldsToSet">
@@ -63,16 +51,7 @@ internal abstract record CharacterOperationContext(
         Character character,
         FieldLayerContainer fieldsToSet,
         IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
-    {
-        var changed = FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, character, fieldsToSet, ProjectInfo, regularGroupIds);
-
-        if (changed.Any(field => field.MarksNewFieldUsage))
-        {
-            ProjectMetadataChanged = true;
-        }
-
-        return changed;
-    }
+        => FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, character, fieldsToSet, ProjectInfo, regularGroupIds);
 
     /// <summary>
     /// То же, но через заявку: персонаж берётся из неё, а выбор стратегии в
@@ -88,16 +67,7 @@ internal abstract record CharacterOperationContext(
     protected IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFieldsCore(
         Claim claim,
         FieldLayerContainer fieldsToSet)
-    {
-        var changed = FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, claim, fieldsToSet, ProjectInfo);
-
-        if (changed.Any(field => field.MarksNewFieldUsage))
-        {
-            ProjectMetadataChanged = true;
-        }
-
-        return changed;
-    }
+        => FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, claim, fieldsToSet, ProjectInfo);
 }
 
 /// <summary>

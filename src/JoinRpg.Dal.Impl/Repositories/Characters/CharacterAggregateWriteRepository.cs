@@ -116,9 +116,9 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         CharacterInfo characterInfo)
         : ICharacterAggregateUpdateHandle
     {
-        public Project Project { get; private set; } = project;
+        public Project Project { get; } = project;
 
-        public ProjectInfo ProjectInfo { get; private set; } = projectInfo;
+        public ProjectInfo ProjectInfo { get; } = projectInfo;
 
         public Character Character { get; } = character;
 
@@ -127,14 +127,6 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         public void Add(object entity) => _ = ctx.Set(entity.GetType()).Add(entity);
 
         public void Remove(object entity) => _ = ctx.Set(entity.GetType()).Remove(entity);
-
-        public async Task<ProjectInfo> RefreshProjectInfo()
-        {
-            var projectId = ProjectInfo.ProjectId;
-            Project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: true)
-                ?? throw new JoinRpgEntityNotFoundException(projectId.Value, "project");
-            return ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, projectId);
-        }
 
         public async Task<Claim> LoadOtherClaim(ClaimIdentification claimId)
             => await ClaimQuery(ctx).SingleOrDefaultAsync(

@@ -5,6 +5,8 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
+using JoinRpg.Services.Impl.Projects;
+using JoinRpg.Services.Impl.Projects.Metadata;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Services.Impl.Test.Claims;
@@ -46,12 +48,22 @@ public abstract class ClaimServiceTestBase
         => new(
             unitOfWork,
             CreateCurrentUser(currentUserId),
-            metadataRepository,
             CreateFieldSaveHelper(),
             new CommentHelper(CreateCurrentUser(currentUserId)),
             claimNotifications,
             accommodationNotifications,
             NullLogger<CharacterPropsService>.Instance);
+
+    /// <summary>
+    /// Боевой <see cref="FieldSetupServiceImpl"/> поверх боевого <see cref="ProjectPropsService"/>:
+    /// отметку полей использованными сервисы заявок и персонажей ставят через него.
+    /// </summary>
+    private protected FieldSetupServiceImpl CreateFieldSetupService(int? currentUserId = null)
+        => new(new ProjectPropsService(
+            unitOfWork,
+            CreateCurrentUser(currentUserId),
+            metadataRepository,
+            NullLogger<ProjectPropsService>.Instance));
 
     /// <summary>
     /// Подмена пользователя, под которой идёт автоприём. Настоящая: текущий пользователь

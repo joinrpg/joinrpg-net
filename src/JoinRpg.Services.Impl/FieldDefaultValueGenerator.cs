@@ -4,6 +4,10 @@ using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Services.Impl;
 
+/// <remarks>
+/// Новый генерируемый тип поля добавить и в <c>FieldSetupServiceImpl.HasGeneratedValues</c>: сгенерированные
+/// значения не проходят через отметку использованных полей, поэтому такое поле отмечается при создании.
+/// </remarks>
 internal class FieldDefaultValueGenerator : IFieldDefaultValueGenerator
 {
     public string? CreateDefaultValue(Claim? claim, FieldWithValue field)

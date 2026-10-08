@@ -22,7 +22,7 @@ internal class ProjectPropsService(
 
     public Task ChangeProjectProperties<TArgs>(
         ProjectIdentification projectId,
-        Permission requiredPermission,
+        Permission? requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Action<ProjectMutationContext<TArgs>> action,
@@ -32,7 +32,7 @@ internal class ProjectPropsService(
 
     public Task<TResult> ChangeProjectProperties<TArgs, TResult>(
         ProjectIdentification projectId,
-        Permission requiredPermission,
+        Permission? requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ProjectMutationContext<TArgs>, TResult> action,
@@ -49,7 +49,7 @@ internal class ProjectPropsService(
 
     private async Task<TResult> ChangeProjectPropertiesCore<TArgs, TResult>(
         ProjectIdentification projectId,
-        Permission requiredPermission,
+        Permission? requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ProjectMutationContext<TArgs>, TResult> action,
@@ -65,9 +65,9 @@ internal class ProjectPropsService(
             var handle = await unitOfWork.GetProjectMetadataWriteRepository().LoadProjectForUpdate(projectId);
 
             // Админ (в т.ч. робот, под которым выполняются фоновые джобы) проходит проверку прав.
-            if (!currentUserAccessor.IsAdmin)
+            if (!currentUserAccessor.IsAdmin && requiredPermission is Permission permission)
             {
-                _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, requiredPermission);
+                _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, permission);
             }
 
             if (activeRequirement == ProjectActiveRequirement.MustBeActive)

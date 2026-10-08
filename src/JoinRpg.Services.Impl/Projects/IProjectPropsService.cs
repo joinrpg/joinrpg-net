@@ -29,14 +29,18 @@ internal interface IProjectPropsService
     /// </summary>
     /// <typeparam name="TArgs">Тип аргументов операции; логируется вместе с именем операции.</typeparam>
     /// <param name="projectId">Проект, метаданные которого меняются.</param>
-    /// <param name="requiredPermission">Право, которым должен обладать текущий пользователь (админ — в обход).</param>
+    /// <param name="requiredPermission">
+    /// Право, которым должен обладать текущий пользователь (админ — в обход). <c>null</c> — права не
+    /// проверяются вовсе: операция — побочный эффект действия, права на которое проверяет вызывающий
+    /// (например, отметка полей использованными при сохранении полей игроком).
+    /// </param>
     /// <param name="activeRequirement">Допустима ли операция над неактивным проектом.</param>
     /// <param name="arguments">Аргументы операции; передаются в <paramref name="action"/> и логируются.</param>
     /// <param name="action">Мутация EF-сущности проекта. Второй параметр — снимок метаданных ДО изменения.</param>
     /// <param name="operationName">Имя операции для лога; по умолчанию — имя вызывающего метода.</param>
     Task ChangeProjectProperties<TArgs>(
         ProjectIdentification projectId,
-        Permission requiredPermission,
+        Permission? requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Action<ProjectMutationContext<TArgs>> action,
@@ -48,14 +52,18 @@ internal interface IProjectPropsService
     /// <typeparam name="TArgs">Тип аргументов операции; логируется вместе с именем операции.</typeparam>
     /// <typeparam name="TResult">Тип результата, возвращаемого <paramref name="action"/>.</typeparam>
     /// <param name="projectId">Проект, метаданные которого меняются.</param>
-    /// <param name="requiredPermission">Право, которым должен обладать текущий пользователь (админ — в обход).</param>
+    /// <param name="requiredPermission">
+    /// Право, которым должен обладать текущий пользователь (админ — в обход). <c>null</c> — права не
+    /// проверяются вовсе: операция — побочный эффект действия, права на которое проверяет вызывающий
+    /// (например, отметка полей использованными при сохранении полей игроком).
+    /// </param>
     /// <param name="activeRequirement">Допустима ли операция над неактивным проектом.</param>
     /// <param name="arguments">Аргументы операции; передаются в <paramref name="action"/> и логируются.</param>
     /// <param name="action">Мутация EF-сущности проекта. Второй параметр — снимок метаданных ДО изменения.</param>
     /// <param name="operationName">Имя операции для лога; по умолчанию — имя вызывающего метода.</param>
     Task<TResult> ChangeProjectProperties<TArgs, TResult>(
         ProjectIdentification projectId,
-        Permission requiredPermission,
+        Permission? requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
         Func<ProjectMutationContext<TArgs>, TResult> action,

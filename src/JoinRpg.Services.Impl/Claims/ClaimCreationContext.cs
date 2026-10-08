@@ -61,8 +61,6 @@ internal abstract record ClaimCreationContext(
             CharacterId = Character.CharacterId,
             Character = Character,
             ProjectId = Character.ProjectId,
-            // Не украшение: FieldSaveHelper.MarkUsed читает project.ProjectFields, и без этой
-            // связки сохранение полей падает с NullReferenceException.
             Project = Character.Project,
             PlayerUserId = Player.UserId.Value,
             PlayerAcceptedDate = Now,

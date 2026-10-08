@@ -29,7 +29,8 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             NullLogger<CharacterServiceImpl>.Instance,
             CreatePropsService(currentUserId),
             impersonateAccessor,
-            CreateUserFieldValidator());
+            CreateUserFieldValidator(),
+            CreateFieldSetupService(currentUserId));
     }
 
     private Claim CreateClaim(ClaimStatus status, string characterName = "Вася")
@@ -495,8 +496,6 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         claim.PlayerUserId.ShouldBe(mock.Player.UserId);
         claim.Character.ShouldBe(character);
         claim.ResponsibleMasterUserId.ShouldBe(mock.Master.UserId);
-
-        // Связка нужна FieldSaveHelper.MarkUsed: он читает project.ProjectFields и без неё падает.
         claim.Project.ShouldBe(mock.Project);
 
         var comment = claim.CommentDiscussion.Comments.ShouldHaveSingleItem();
@@ -1659,6 +1658,32 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
                 claim.GetId(), FieldLayerContainer.Empty(mock.ProjectInfo)));
 
         SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Первое заполнение поля отмечает его использованным (его уже нельзя удалить окончательно) —
+    /// даже если заполняет игрок, у которого нет прав на настройку полей.
+    /// </summary>
+    [Fact]
+    public async Task SaveFieldsFromClaim_FirstFillByPlayer_MarksFieldUsed()
+    {
+        var fieldInfo = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.String;
+            f.FieldBoundTo = FieldBoundTo.Claim;
+            f.CanPlayerView = true;
+            f.CanPlayerEdit = true;
+            f.ShowOnUnApprovedClaims = true;
+        });
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService(mock.Player.UserId).SaveFieldsFromClaim(
+            claim.GetId(),
+            new FieldLayerContainer(mock.ProjectInfo, new Dictionary<int, string?> { [fieldInfo.Id.ProjectFieldId] = "значение" }));
+
+        mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId).WasEverUsed.ShouldBeTrue();
+        // Отдельное сохранение отметки, затем сохранение самих полей.
+        SaveChangesCallCount.ShouldBe(2);
     }
 
     #endregion

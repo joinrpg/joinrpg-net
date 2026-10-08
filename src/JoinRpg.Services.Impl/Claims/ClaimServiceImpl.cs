@@ -24,7 +24,8 @@ internal class ClaimServiceImpl(
     ILogger<CharacterServiceImpl> logger,
     ICharacterPropsService characterPropsService,
     IImpersonateAccessor impersonateAccessor,
-    UserFieldValidator userFieldValidator
+    UserFieldValidator userFieldValidator,
+    IFieldSetupService fieldSetupService
     ) : IClaimService
 {
     // Репозитории берутся из UnitOfWork, а не из DI: MyDbContext транзиентен, и DI-экземпляр
@@ -207,6 +208,7 @@ internal class ClaimServiceImpl(
         // Существование упомянутых пользователей проверяется до сохранения: FieldSaveHelper
         // синхронный и репозиториев не видит (ADR017 §7).
         await userFieldValidator.ValidateUserFields(fields);
+        await fieldSetupService.MarkFieldsUsedIfNotUsedYet(fields);
 
         var claim = await characterPropsService.CreateClaim(
             characterId,
@@ -1094,6 +1096,7 @@ internal class ClaimServiceImpl(
         FieldLayerContainer fieldsToSet)
     {
         await userFieldValidator.ValidateUserFields(fieldsToSet);
+        await fieldSetupService.MarkFieldsUsedIfNotUsedYet(fieldsToSet);
 
         await characterPropsService.ChangeClaim(
             claimId,
@@ -1267,6 +1270,7 @@ internal class ClaimServiceImpl(
         logger.LogDebug("About to add claim from master to character {characterId} for user {userId}", characterId, userId);
 
         await userFieldValidator.ValidateUserFields(fields);
+        await fieldSetupService.MarkFieldsUsedIfNotUsedYet(fields);
 
         // Правила подачи проверяет сам props-сервис: ClaimOperation.AddByMaster пропускает причины
         // с MasterCanOverride — закрытый приём заявок и незаполненные контакты игрока мастера не

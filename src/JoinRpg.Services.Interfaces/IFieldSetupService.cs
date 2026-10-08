@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters;
 
 namespace JoinRpg.Services.Interfaces;
 
@@ -24,6 +25,19 @@ public interface IFieldSetupService
     /// </summary>
     /// <returns>Сколько значений удалено.</returns>
     Task<int> DeleteUnusedFieldValueVariants(ProjectFieldIdentification projectFieldId);
+
+    /// <summary>
+    /// Отмечает заполненные поля слоя и выбранные в них значения как использованные
+    /// (<c>WasEverUsed</c>) — после этого их нельзя удалить окончательно. Вызывать ДО сохранения
+    /// значений полей, снаружи <c>ICharacterPropsService</c>.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет по снимку <see cref="FieldLayerContainer.ProjectInfo"/>: если всё уже отмечено — а
+    /// это подавляющее большинство сохранений, — в БД не ходит. Права не проверяет: это побочный
+    /// эффект сохранения полей, права на которое проверяет само сохранение. Ложная отметка, если
+    /// сохранение потом упадёт, безвредна — она лишь запрещает окончательное удаление.
+    /// </remarks>
+    Task MarkFieldsUsedIfNotUsedYet(FieldLayerContainer fields);
 
     Task MoveField(int projectid, int projectcharacterfieldid, short direction);
 

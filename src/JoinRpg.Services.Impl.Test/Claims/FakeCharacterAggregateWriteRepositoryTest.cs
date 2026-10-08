@@ -57,19 +57,6 @@ public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
     }
 
     [Fact]
-    public async Task RefreshProjectInfoReturnsNewInstance()
-    {
-        var claim = mock.CreateClaim(mock.Character, mock.Player);
-        var handle = await WriteRepository.LoadClaimForUpdate(claim.GetId());
-        var before = handle.ProjectInfo;
-
-        var after = await handle.RefreshProjectInfo();
-
-        ReferenceEquals(before, after).ShouldBeFalse();
-        handle.ProjectInfo.ShouldBeSameAs(after);
-    }
-
-    [Fact]
     public async Task LoadClaimForUpdateThrowsWhenClaimMissing()
         => _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
             () => WriteRepository.LoadClaimForUpdate(new ClaimIdentification(ProjectId, 100500)));
