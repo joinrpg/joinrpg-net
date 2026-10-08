@@ -20,7 +20,7 @@ public class PaymentTransferViewModel : AddCommentViewModel
     /// </summary>
     [Required]
     [Display(Name = "Заявка для перевода взноса")]
-    public int RecipientClaimId { get; set; }
+    public ClaimIdentification? RecipientClaimId { get; set; }
 
     /// <summary>
     /// Money to transfer
@@ -49,14 +49,9 @@ public class PaymentTransferViewModel : AddCommentViewModel
         set => base.CommentText = value;
     }
 
-    /// <summary>
-    /// List of claims to select recipient claim from
-    /// </summary>
-    public IReadOnlyCollection<RecipientClaimViewModel> Claims { get; set; }
-
     public PaymentTransferViewModel() { }
 
-    public PaymentTransferViewModel(Claim claim, IEnumerable<Claim> claims) : base()
+    public PaymentTransferViewModel(Claim claim) : base()
     {
         OperationDate = DateTime.UtcNow;
         ActionName = "Перевести";
@@ -65,10 +60,5 @@ public class PaymentTransferViewModel : AddCommentViewModel
         ProjectId = claim.ProjectId;
         CommentDiscussionId = claim.CommentDiscussionId;
         MaxMoney = claim.GetPaymentSum();
-        Claims = claims
-            .Where(c => c.ClaimId != ClaimId)
-            .Select(c => new RecipientClaimViewModel(c))
-            .OrderBy(c => c.Text)
-            .ToArray();
     }
 }

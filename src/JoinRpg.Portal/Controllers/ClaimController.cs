@@ -454,7 +454,8 @@ public class ClaimController(
                 {
                     ProjectId = data.ProjectId,
                     ClaimId = data.ClaimId,
-                    ToClaimId = data.RecipientClaimId,
+                    ToClaimId = data.RecipientClaimId?.ClaimId
+                        ?? throw new InvalidOperationException("Не выбрана заявка для перевода"),
                     CommentText = data.CommentText,
                     OperationDate = data.OperationDate,
                     Money = data.Money,
@@ -629,10 +630,10 @@ public class ClaimController(
         }
 
 
-        var claims = await claimsRepository.GetClaimsForMoneyTransfersListAsync(
-            claim.ProjectId,
+        var claims = await claimsRepository.GetClaimHeadersWithPlayer(
+            new ProjectIdentification(projectId),
             ClaimStatusSpec.ActiveOrOnHold);
-        if (claims.Count == 0 || (claims.Count == 1 && claims.First().ClaimId == claimId))
+        if (!claims.Any(c => c.ClaimId.ClaimId != claimId))
         {
             return View(
                 "~/Views/Payments/Error.cshtml",
@@ -645,7 +646,7 @@ public class ClaimController(
                 });
         }
 
-        return View("PaymentTransfer", new PaymentTransferViewModel(claim, claims));
+        return View("PaymentTransfer", new PaymentTransferViewModel(claim));
     }
 
     private async Task<ActionResult> RedirectToDefaultTemplate(int projectid)

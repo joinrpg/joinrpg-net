@@ -1,6 +1,8 @@
 ﻿@using JoinRpg.Portal.AppCodeCompiled
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Money
+@using JoinRpg.DomainTypes.Characters.Claims
+@using JoinRpg.Web.ProjectCommon.Claims
 @model PaymentTransferViewModel
 
 @{ ViewBag.Title = "Перевод взноса между заявками"; }
@@ -21,7 +23,14 @@
 
       <div class="form-group">
         @Html.LabelFor(model => model.RecipientClaimId, new { @class = "col-md-3 control-label" })
-        <div class="col-md-6">@Html.DropDownListFor(model => model.RecipientClaimId, Model.Claims)</div>
+        <div class="col-md-6">
+          <component type="typeof(ClaimSelector)"
+                     render-mode="Static"
+                     param-Name="@nameof(Model.RecipientClaimId)"
+                     param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+                     param-Spec="@(ClaimStatusSpec.ActiveOrOnHold)"
+                     param-ExceptClaimId="@(new ClaimIdentification(Model.ProjectId, Model.ClaimId))" />
+        </div>
       </div>
       <div class="form-group">
         @Html.LabelFor(model => model.Money, new { @class = "col-md-3 control-label" })
