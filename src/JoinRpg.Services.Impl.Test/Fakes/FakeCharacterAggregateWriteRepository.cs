@@ -78,7 +78,7 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
 
         public Project Project => mock.Project;
 
-        public ProjectInfo ProjectInfo { get; private set; }
+        public ProjectInfo ProjectInfo { get; }
 
         public Character Character { get; }
 
@@ -169,12 +169,6 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             {
                 collection.Add(entity);
             }
-        }
-
-        public Task<ProjectInfo> RefreshProjectInfo()
-        {
-            mock.ReInitProjectInfo();
-            return Task.FromResult(ProjectInfo = mock.ProjectInfo);
         }
 
         public Task<Claim> LoadOtherClaim(ClaimIdentification claimId)

@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Impl;
 
@@ -33,6 +34,10 @@ internal class FieldSetupServiceImpl(
                     Project = ctx.Project,
                     FieldType = ctx.Request.FieldType,
                     FieldBoundTo = ctx.Request.FieldBoundTo,
+                    // Значения таких полей генерирует само сохранение (IFieldDefaultValueGenerator),
+                    // их нет во входном слое, и MarkFieldsUsedIfNotUsedYet их не увидит. Поэтому
+                    // поле использовано с момента создания. Тип поля после создания не меняется.
+                    WasEverUsed = HasGeneratedValues(ctx.Request.FieldType),
                 };
 
                 SetFieldPropertiesFromRequest(ctx, ctx.Request, field);
@@ -47,6 +52,13 @@ internal class FieldSetupServiceImpl(
         // ProjectFieldId генерируется БД при SaveChanges — читаем уже после возврата из сервиса.
         return field.GetId();
     }
+
+    /// <summary>
+    /// Типы полей, значения которых проставляет <c>FieldDefaultValueGenerator</c>. Поле имени тоже
+    /// генерируется, но это не тип, а выбор в настройках — его отмечает <see cref="SetFieldSettingsAsync"/>.
+    /// </summary>
+    private static bool HasGeneratedValues(ProjectFieldType fieldType)
+        => fieldType is ProjectFieldType.PinCode or ProjectFieldType.ScheduleAuthorField;
 
     public async Task UpdateFieldParams(UpdateFieldRequest request)
     {
@@ -176,6 +188,46 @@ internal class FieldSetupServiceImpl(
                 }
                 return unused.Count;
             });
+    }
+
+    public async Task MarkFieldsUsedIfNotUsedYet(FieldLayerContainer fields)
+    {
+        var filled = fields.LayerData.Values.Where(f => f.HasEditableValue).ToList();
+
+        if (filled.All(f => f.Field.WasEverUsed && f.GetDropdownValues().All(v => v.WasEverUsed)))
+        {
+            return;
+        }
+
+        var usage = new FieldsUsage(
+            [.. filled.Select(f => f.Field.Id)],
+            [.. filled.SelectMany(f => f.GetDropdownValues()).Select(v => v.Id)]);
+
+        await projectPropsService.ChangeProjectProperties(
+            fields.ProjectInfo.ProjectId,
+            requiredPermission: null,
+            ProjectActiveRequirement.MustBeActive,
+            usage,
+            ctx =>
+            {
+                foreach (var fieldId in ctx.Request.Fields)
+                {
+                    GetField(ctx.Project, fieldId.ProjectFieldId).WasEverUsed = true;
+                }
+
+                foreach (var variantId in ctx.Request.Variants)
+                {
+                    GetFieldValue(ctx.Project, variantId.FieldId.ProjectFieldId, variantId.ProjectFieldVariantId).WasEverUsed = true;
+                }
+            });
+    }
+
+    /// <summary>Аргументы отметки использованных полей; <see cref="ToString"/> — ради лога.</summary>
+    private record FieldsUsage(
+        IReadOnlyCollection<ProjectFieldIdentification> Fields,
+        IReadOnlyCollection<ProjectFieldVariantIdentification> Variants)
+    {
+        public override string ToString() => $"поля [{string.Join(", ", Fields)}], значения [{string.Join(", ", Variants)}]";
     }
 
     public async Task MoveField(int projectId, int projectcharacterfieldid, short direction)
@@ -342,7 +394,14 @@ internal class FieldSetupServiceImpl(
             request,
             ctx =>
             {
-                ctx.Project.Details.CharacterNameField = ctx.Project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == ctx.Request.NameField?.ProjectFieldId);
+                var nameField = ctx.Project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == ctx.Request.NameField?.ProjectFieldId);
+                ctx.Project.Details.CharacterNameField = nameField;
+                if (nameField is not null)
+                {
+                    // Значение поля имени генерирует само сохранение (из CharacterName), мимо
+                    // MarkFieldsUsedIfNotUsedYet, — поэтому поле использовано с момента выбора.
+                    nameField.WasEverUsed = true;
+                }
                 ctx.Project.Details.CharacterDescription = ctx.Project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == ctx.Request.DescriptionField?.ProjectFieldId);
             });
     }

@@ -11,11 +11,11 @@ namespace JoinRpg.Services.Impl.Test.Characters;
 public class UserFieldValidatorTest : Claims.ClaimServiceTestBase
 {
     private CharacterServiceImpl CreateService()
-        => new(CreatePropsService(), CreateUserFieldValidator());
+        => new(CreatePropsService(), CreateUserFieldValidator(), CreateFieldSetupService());
 
     /// <remarks>
-    /// Именно <c>AddField</c>, а не <c>CreateField</c>: поле должно быть настоящей сущностью
-    /// проекта, иначе оно исчезнет при пересборке метаданных внутри сохранения.
+    /// Поле сразу отмечено использованным: иначе первое заполнение добавит отдельное сохранение
+    /// отметки, а тесты здесь считают сохранения самой операции.
     /// </remarks>
     private ProjectFieldInfo CreateUserField(
         string name = "Ответственный мастер",
@@ -28,6 +28,7 @@ public class UserFieldValidatorTest : Claims.ClaimServiceTestBase
             f.CanPlayerView = true;
             f.CanPlayerEdit = false;
             f.ValidForNpc = true;
+            f.WasEverUsed = true;
         });
 
     private FieldLayerContainer Layer(ProjectFieldInfo field, string? value)

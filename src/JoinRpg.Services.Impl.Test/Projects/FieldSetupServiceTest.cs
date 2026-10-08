@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects.Metadata;
 using JoinRpg.Services.Interfaces;
@@ -47,6 +48,40 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
         // Пересобранный ProjectInfo положен в кэш и содержит новое поле.
         Result.UnsortedFields.ShouldContain(f => f.Name == "Поле мастера");
+    }
+
+    /// <summary>
+    /// Значения PIN-кода и ведущего генерирует само сохранение, мимо
+    /// <see cref="FieldSetupServiceImpl.MarkFieldsUsedIfNotUsedYet"/>: такое поле обязано быть
+    /// использованным с момента создания, иначе его удалят окончательно вместе со значениями.
+    /// </summary>
+    [Theory]
+    [InlineData(ProjectFieldType.PinCode, true)]
+    [InlineData(ProjectFieldType.ScheduleAuthorField, true)]
+    [InlineData(ProjectFieldType.String, false)]
+    [InlineData(ProjectFieldType.Dropdown, false)]
+    public async Task AddField_WithGeneratedValues_IsUsedFromCreation(ProjectFieldType fieldType, bool expectedUsed)
+    {
+        var service = CreateService(mock.Master.UserId);
+
+        var fieldId = await service.AddField(CreateFieldRequest(fieldType));
+
+        Result.GetFieldById(fieldId).WasEverUsed.ShouldBe(expectedUsed);
+    }
+
+    /// <summary>
+    /// Значение поля имени тоже генерирует сохранение (из имени персонажа), поэтому поле
+    /// использовано с момента, как его выбрали полем имени.
+    /// </summary>
+    [Fact]
+    public async Task SetFieldSettings_NameField_MarksFieldUsed()
+    {
+        var field = mock.AddField(f => f.FieldType = ProjectFieldType.String);
+        var service = CreateService(mock.Master.UserId);
+
+        await service.SetFieldSettingsAsync(new FieldSettingsRequest { ProjectId = ProjectId, NameField = field.Id });
+
+        Result.GetFieldById(field.Id).WasEverUsed.ShouldBeTrue();
     }
 
     [Fact]
@@ -544,5 +579,89 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
             () => service.SortTimeSlotVariantsByStartTime(field.Id));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    private ProjectFieldInfo AddDropdownField(bool fieldUsed, bool variantUsed)
+        => mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.Dropdown;
+            f.WasEverUsed = fieldUsed;
+            f.DropdownValues =
+            [
+                CreateVariant(100, "Выбранное", wasEverUsed: variantUsed),
+                CreateVariant(101, "Невыбранное", wasEverUsed: false),
+            ];
+        });
+
+    /// <summary>
+    /// Отметку ставит побочный эффект сохранения полей, а поля сохраняет и игрок — прав мастера
+    /// на поля у него нет.
+    /// </summary>
+    [Fact]
+    public async Task MarkFieldsUsedIfNotUsedYet_ByPlayer_MarksFieldAndSelectedVariant()
+    {
+        var fieldInfo = AddDropdownField(fieldUsed: false, variantUsed: false);
+        var service = CreateService(mock.Player.UserId);
+
+        await service.MarkFieldsUsedIfNotUsedYet(new FieldLayerContainer(mock.ProjectInfo, new Dictionary<int, string?>
+        {
+            [fieldInfo.Id.ProjectFieldId] = "100",
+        }));
+
+        var field = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId);
+        field.WasEverUsed.ShouldBeTrue();
+        field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == 100).WasEverUsed.ShouldBeTrue();
+        field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == 101).WasEverUsed.ShouldBeFalse();
+        // Кэш обновлён — следующая страница в том же запросе увидит поле использованным.
+        Result.GetFieldById(fieldInfo.Id).WasEverUsed.ShouldBeTrue();
+    }
+
+    /// <summary>Поле использовано раньше, а выбранное значение — впервые: отмечать всё равно надо.</summary>
+    [Fact]
+    public async Task MarkFieldsUsedIfNotUsedYet_FieldUsedButVariantNot_MarksVariant()
+    {
+        var fieldInfo = AddDropdownField(fieldUsed: true, variantUsed: false);
+        var service = CreateService(mock.Player.UserId);
+
+        await service.MarkFieldsUsedIfNotUsedYet(new FieldLayerContainer(mock.ProjectInfo, new Dictionary<int, string?>
+        {
+            [fieldInfo.Id.ProjectFieldId] = "100",
+        }));
+
+        mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId)
+            .DropdownValues.Single(v => v.ProjectFieldDropdownValueId == 100).WasEverUsed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task MarkFieldsUsedIfNotUsedYet_AllAlreadyUsed_DoesNotSave()
+    {
+        var fieldInfo = AddDropdownField(fieldUsed: true, variantUsed: true);
+        var service = CreateService(mock.Player.UserId);
+
+        await service.MarkFieldsUsedIfNotUsedYet(new FieldLayerContainer(mock.ProjectInfo, new Dictionary<int, string?>
+        {
+            [fieldInfo.Id.ProjectFieldId] = "100",
+        }));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Форма редактирования присылает все поля, в том числе пустые: пустое поле использованным не
+    /// становится, иначе первое же сохранение отметило бы все поля проекта.
+    /// </summary>
+    [Fact]
+    public async Task MarkFieldsUsedIfNotUsedYet_EmptyValue_DoesNotMark()
+    {
+        var fieldInfo = AddDropdownField(fieldUsed: false, variantUsed: false);
+        var service = CreateService(mock.Player.UserId);
+
+        await service.MarkFieldsUsedIfNotUsedYet(new FieldLayerContainer(mock.ProjectInfo, new Dictionary<int, string?>
+        {
+            [fieldInfo.Id.ProjectFieldId] = null,
+        }));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId).WasEverUsed.ShouldBeFalse();
     }
 }

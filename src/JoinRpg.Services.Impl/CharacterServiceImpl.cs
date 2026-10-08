@@ -8,13 +8,15 @@ namespace JoinRpg.Services.Impl;
 
 internal class CharacterServiceImpl(
     ICharacterPropsService characterPropsService,
-    UserFieldValidator userFieldValidator) : ICharacterService
+    UserFieldValidator userFieldValidator,
+    IFieldSetupService fieldSetupService) : ICharacterService
 {
     public async Task<CharacterIdentification> AddCharacter(AddCharacterRequest addCharacterRequest)
     {
         // Существование упомянутых пользователей проверяется до сохранения: FieldSaveHelper
         // синхронный и репозиториев не видит (ADR017 §7).
         await userFieldValidator.ValidateUserFields(addCharacterRequest.FieldValues);
+        await fieldSetupService.MarkFieldsUsedIfNotUsedYet(addCharacterRequest.FieldValues);
 
         var character = await characterPropsService.CreateCharacter(
             addCharacterRequest.ProjectId,
@@ -49,6 +51,7 @@ internal class CharacterServiceImpl(
     public async Task EditCharacter(EditCharacterRequest editCharacterRequest)
     {
         await userFieldValidator.ValidateUserFields(editCharacterRequest.FieldValues);
+        await fieldSetupService.MarkFieldsUsedIfNotUsedYet(editCharacterRequest.FieldValues);
 
         await characterPropsService.ChangeCharacter(
             editCharacterRequest.Id,
@@ -103,6 +106,7 @@ internal class CharacterServiceImpl(
     public async Task SetFields(CharacterIdentification characterId, FieldLayerContainer fieldsToSet)
     {
         await userFieldValidator.ValidateUserFields(fieldsToSet);
+        await fieldSetupService.MarkFieldsUsedIfNotUsedYet(fieldsToSet);
 
         await characterPropsService.ChangeCharacter(
             characterId,

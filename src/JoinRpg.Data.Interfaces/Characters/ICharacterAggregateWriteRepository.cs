@@ -53,18 +53,10 @@ public interface ICharacterAggregateWriteRepository
 /// соседей агрегата. Всё — через тот же <c>DbContext</c>, что и последующий <c>SaveChanges</c>.
 /// </summary>
 /// <remarks>
-/// <para>
-/// Интерфейс намеренно уже хэндла. В нём нет <c>RefreshProjectInfo</c>: пересборка выполняется
-/// через <c>AsNoTracking</c>, после неё <c>Project</c> перестаёт быть трекаемым, и вызов её из
-/// середины мутации тихо обесценил бы последующие правки. Это дело сервиса, и только после
-/// сохранения.
-/// </para>
-/// <para>
 /// Единый интерфейс вместо делегата на каждую догрузку: делегаты пришлось бы протаскивать
 /// параметрами через оба контекста — и абстрактный, и типизированный, — а их число растёт с каждой
 /// мигрированной операцией. Доступ при этом не расширяется: произвольного репозитория здесь нет,
 /// только именованные догрузки, и подделать интерфейс в тестах не сложнее делегатов.
-/// </para>
 /// </remarks>
 public interface IAggregateMutationScope
 {
@@ -149,7 +141,7 @@ public interface ICharacterAggregateUpdateHandle : IAggregateMutationScope
     /// <summary>
     /// Снимок метаданных проекта. Тот самый экземпляр, на который ссылается
     /// <see cref="CharacterInfo"/> — это проверяется в конструкторе агрегата (ADR013).
-    /// Обновляется только вызовом <see cref="RefreshProjectInfo"/>.
+    /// Операции над агрегатом метаданных проекта не меняют, поэтому снимок не обновляется.
     /// </summary>
     ProjectInfo ProjectInfo { get; }
 
@@ -163,14 +155,6 @@ public interface ICharacterAggregateUpdateHandle : IAggregateMutationScope
     /// строится доменными методами (<c>ForNewCharacter</c>/<c>WithXxx</c>), а не перечитыванием БД.
     /// </summary>
     CharacterInfo CharacterInfo { get; }
-
-    /// <summary>
-    /// Перечитывает проект из БД (тем же <c>DbContext</c>, значит — в той же транзакции)
-    /// и пересобирает из него <see cref="ProjectInfo"/>. Нужен операциям, которые меняют
-    /// метаданные проекта, — сегодня это только <c>ProjectField.WasEverUsed</c>.
-    /// </summary>
-    Task<ProjectInfo> RefreshProjectInfo();
-
 }
 
 /// <summary>
