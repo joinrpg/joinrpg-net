@@ -23,7 +23,7 @@ public class MasterProfileViewModel
     public required string Role { get; set; }
 
     [Display(Name = "О себе", Description = "За что отвечает мастер и по каким вопросам ему писать. Видно игрокам на странице мастеров. Можно использовать Markdown.")]
-    public string? Description { get; set; }
+    public string Description { get; set; } = "";
 
     [Display(Name = "Показывать игрокам", Description = "Непубличного мастера видят только мастера проекта. На права и уведомления это не влияет.")]
     public bool IsPublic { get; set; }

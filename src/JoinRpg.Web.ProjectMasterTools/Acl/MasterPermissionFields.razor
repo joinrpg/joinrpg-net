@@ -1,0 +1,16 @@
+@using JoinRpg.Web.ProjectCommon.Masters
+@* Чекбоксы прав мастера внутри EditForm. *@
+
+@foreach (var permission in Permissions)
+{
+    var badge = new PermissionBadgeViewModel(permission.Permission, permission.Value);
+    <FormRow Label="@badge.DisplayName" Description="@badge.Description">
+        <CheckboxInput @bind-Value="permission.Value" />
+    </FormRow>
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyCollection<MasterPermissionValueViewModel> Permissions { get; set; } = null!;
+}

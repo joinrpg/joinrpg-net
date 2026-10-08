@@ -45,6 +45,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IProjectCreateClient, ProjectCreateClient>()
                 .AddHttpClient<IProjectSettingsClient, ProjectSettingsClient>()
                 .AddHttpClient<IMasterProfileClient, MasterProfileClient>()
+                .AddHttpClient<IMasterAccessClient, MasterAccessClient>()
                 .AddHttpClient<IPlotClient, PlotClient>()
                 .AddHttpClient<IMasterClient, MasterClient>()
                 .AddHttpClient<IKogdaIgraSyncClient, KogdaIgraClient>()

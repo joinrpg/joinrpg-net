@@ -39,6 +39,7 @@ public static class Registration
         return services.AddScoped<ProjectListManager>()
         .AddScoped<IProjectSettingsClient, ProjectSettingsViewService>()
         .AddScoped<IMasterProfileClient, ProjectMasterTools.MasterProfileViewService>()
+        .AddScoped<IMasterAccessClient, ProjectMasterTools.MasterAccessViewService>()
         .AddScoped<IProjectInfoClient, ProjectInfoViewService>()
         .AddScoped<FieldSetupManager>()
         .AddScoped<Schedule.SchedulePageManager>()

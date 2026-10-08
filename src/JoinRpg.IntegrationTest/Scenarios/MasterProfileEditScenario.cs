@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 namespace JoinRpg.IntegrationTest.Scenarios;
 
 /// <summary>
-/// Профиль мастера (ADR019, §4 и §7): остров «Профиль мастера» на странице правки, форма прав, форма добавления.
+/// Страница правки мастера (ADR019, §4 и §7): остров «Профиль мастера» и остров прав, оба сохраняют через API.
 /// </summary>
 public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
@@ -25,7 +25,7 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
         page.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = await page.Content.ReadAsStringAsync();
         html.ShouldContain("MasterProfilePanel"); // остров профиля на странице
-        html.ShouldNotContain("name=\"CanManageClaims\""); // формы прав нет — права ему не правятся
+        html.ShouldNotContain("MasterPermissionsPanel"); // острова прав нет — права ему не правятся
 
         var profile = await client.GetFromJsonAsync<MasterProfileViewModel>(ProfileUrl(projectId, "GetProfile") + $"?userId={masterId.Value}");
         profile.ShouldNotBeNull().Role.ShouldBe("Мастер");
@@ -68,19 +68,22 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
     }
 
     [Fact]
-    public async Task MasterWithoutGrantRights_CannotPostPermissions()
+    public async Task MasterWithoutGrantRights_CannotSavePermissions()
     {
         var (projectId, _, masterId, masterEmail) = await CreateProjectWithMaster();
         var client = await Login(masterEmail);
-        var editUrl = $"{projectId.Value}/masters/edit?userId={masterId.Value}";
 
-        var token = await client.GetAntiforgeryTokenAsync(editUrl);
-        var response = await client.PostFormAsync(editUrl, token,
-            ("UserId", masterId.Value.ToString()),
-            ("CanGrantRights", "true"));
+        var response = await client.PostAsJsonAsync(AccessUrl(projectId, "SavePermissions"), new MasterPermissionsViewModel
+        {
+            ProjectId = projectId,
+            UserId = masterId,
+            Permissions = [new() { Permission = Permission.CanGrantRights, Value = true }],
+        });
 
-        // Forbid() при cookie-аутентификации — редирект на AccessDenied, а не на список мастеров, как при успехе.
+        // Отказ атрибута авторизации, а не сервиса (тот дал бы 500): сейчас это редирект на AccessDenied.
         response.Headers.Location?.ToString().ShouldContain("AccessDenied");
+        (await client.GetAsync(AccessUrl(projectId, "GetPermissions") + $"?userId={masterId.Value}"))
+            .Headers.Location?.ToString().ShouldContain("AccessDenied");
         (await GetProjectInfo(projectId)).HasMasterAccess(masterId, Permission.CanGrantRights).ShouldBeFalse();
     }
 
@@ -89,22 +92,24 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
     {
         var (projectId, _, masterId, _) = await CreateProjectWithMaster();
         var client = await Login(owners[projectId]);
-        var editUrl = $"{projectId.Value}/masters/edit?userId={masterId.Value}";
 
-        // Форма прав — статический компонент: постит в экшен правки и несёт, чьи права меняются.
-        var page = await ReadDecoded(await client.GetAsync(editUrl));
-        page.ShouldContain($"action=\"/{projectId.Value}/masters/edit\"");
-        page.ShouldContain($"name=\"UserId\" value=\"{masterId.Value}\"");
+        (await ReadDecoded(await client.GetAsync($"{projectId.Value}/masters/edit?userId={masterId.Value}")))
+            .ShouldContain("MasterPermissionsPanel");
 
-        var token = await client.GetAntiforgeryTokenAsync(editUrl);
-        var response = await client.PostFormAsync(editUrl, token,
-            ("UserId", masterId.Value.ToString()),
-            ("CanEditRoles", "true"));
-        response.StatusCode.ShouldBe(HttpStatusCode.Found);
+        var permissions = await client.GetFromJsonAsync<MasterPermissionsViewModel>(
+            AccessUrl(projectId, "GetPermissions") + $"?userId={masterId.Value}");
+        permissions.ShouldNotBeNull().Permissions.Single(p => p.Permission == Permission.CanManageClaims).Value.ShouldBeTrue();
+
+        foreach (var permission in permissions.Permissions)
+        {
+            permission.Value = permission.Permission == Permission.CanEditRoles;
+        }
+        var response = await client.PostAsJsonAsync(AccessUrl(projectId, "SavePermissions"), permissions);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var projectInfo = await GetProjectInfo(projectId);
         projectInfo.HasMasterAccess(masterId, Permission.CanEditRoles).ShouldBeTrue();
-        projectInfo.HasMasterAccess(masterId, Permission.CanManageClaims).ShouldBeFalse(); // чекбокса не прислали — снят
+        projectInfo.HasMasterAccess(masterId, Permission.CanManageClaims).ShouldBeFalse();
         (await GetProfile(projectId, masterId)).Role.Value.ShouldBe("Мастер");
     }
 
@@ -118,7 +123,7 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
         var client = await Login(owners[projectId]);
 
         (await ReadDecoded(await client.GetAsync($"{projectId.Value}/masters/edit?userId={ownerId.Value}")))
-            .ShouldNotContain("name=\"CanGrantRights\"");
+            .ShouldNotContain("MasterPermissionsPanel");
 
         var response = await client.PostAsJsonAsync(ProfileUrl(projectId, "SaveProfile"), new MasterProfileViewModel
         {
@@ -132,6 +137,8 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
     }
 
     private static string ProfileUrl(ProjectIdentification projectId, string action) => $"webapi/{projectId.Value}/master-profile/{action}";
+
+    private static string AccessUrl(ProjectIdentification projectId, string action) => $"webapi/{projectId.Value}/master-access/{action}";
 
     private async Task<ProjectMasterProfileDto> GetProfile(ProjectIdentification projectId, UserIdentification userId)
     {

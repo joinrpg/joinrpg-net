@@ -4,22 +4,17 @@
 
 @{
     ViewBag.Title = "Добавление мастера в проект " + Model.ProjectName;
-    var form = new AddMasterFormViewModel
-    {
-        Endpoint = Url.Action("Add", new { Model.ProjectId, userId = Model.UserId })!,
-        UserProfileUrl = Url.Action("Details", "User", new { userId = Model.UserId })!,
-        UserId = Model.UserId,
-        Role = Model.Role,
-        Description = Model.Description ?? "",
-        IsPublic = Model.IsPublic,
-        Permissions = Model.Badges,
-        Errors = [.. ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)],
-    };
 }
 
 <h2>@ViewBag.Title</h2>
 
 <partial name="_UserDetailsPanel" model="@Model.UserDetails" />
 <hr class="col-md-12" />
+@* Карточка пользователя и линия — плавающие колонки: без clearfix панели острова обтекают карточку. *@
+<div class="clearfix"></div>
 
-<component type="typeof(AddMasterForm)" render-mode="Static" param-Model="@form" />
+<component type="typeof(AddMasterPanel)" render-mode="WebAssembly"
+           param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+           param-UserId="@(new UserIdentification(Model.UserId))"
+           param-MastersUrl="@Url.Action("Index", new { Model.ProjectId })"
+           param-UserProfileUrl="@Url.Action("Details", "User", new { userId = Model.UserId })" />

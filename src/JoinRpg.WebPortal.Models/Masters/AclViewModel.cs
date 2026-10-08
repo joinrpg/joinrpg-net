@@ -22,13 +22,14 @@ public class AclViewModel
     public int ClaimsCount { get; }
 
     public int UserId { get; }
-    public PermissionBadgeViewModel[] Badges { get; set; }
+    public PermissionBadgeViewModel[] Badges { get; }
 
-    // Профиль мастера (ADR019, §4) — предзаполнение формы добавления (постится в AddAclViewModel)
-    // и роль в таблице мастеров. Правка профиля — отдельно, на странице мастера.
-    public string Role { get; set; } = AddAclViewModel.DefaultRole;
-    public string? Description { get; set; }
-    public bool IsPublic { get; set; } = true;
+    // Профиль мастера (ADR019, §4) — для таблицы мастеров. Правится на странице мастера.
+    public string Role { get; init; } = "";
+    public bool IsPublic { get; init; } = true;
+
+    /// <summary>Мастер снят с проекта: на странице правки его возвращают, выдав права (ADR019, §1).</summary>
+    public bool IsFormerMaster { get; init; }
 
     /// <summary>Может ли текущий пользователь менять права (а не только профиль — свой профиль мастер правит сам).</summary>
     public bool CanEditPermissions { get; set; } = true;

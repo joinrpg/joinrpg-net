@@ -319,22 +319,44 @@ public class ProjectAccessServiceTest
     }
 
     [Fact]
-    public async Task ChangeAccess_RemovedMaster_Throws()
+    public async Task ChangeAccess_RemovedMaster_ReturnsWithFormerProfile()
     {
-        // Вернуть снятого мастера можно только выдачей доступа, а не правкой прав.
+        // Бывшего мастера возвращают со страницы правки прав (ADR019, §1): та же строка, прежний профиль.
         var former = AddMaster(50, canGrantRights: false);
         former.Status = ProjectAclStatus.Removed;
+        former.Role = "Мастер по боёвке";
+        former.IsPublic = false;
         mock.ReInitProjectInfo();
 
+        var service = CreateService(mock.Master.UserId);
+
+        await service.ChangeAccess(new ChangeAccessRequest
+        {
+            ProjectId = ProjectId,
+            UserId = new UserIdentification(50),
+            Permissions = [Permission.CanManageClaims],
+        });
+
+        mock.Project.ProjectAcls.Count(a => a.UserId == 50).ShouldBe(1);
+        former.Status.ShouldBe(ProjectAclStatus.Active);
+        former.CanManageClaims.ShouldBeTrue();
+        former.Role.ShouldBe("Мастер по боёвке");
+        former.IsPublic.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ChangeAccess_NotMaster_Throws()
+    {
+        // Нового мастера добавляют через GrantAccess — с ролью; правка прав строку не создаёт.
         var service = CreateService(mock.Master.UserId);
 
         await Should.ThrowAsync<InvalidOperationException>(() => service.ChangeAccess(new ChangeAccessRequest
         {
             ProjectId = ProjectId,
-            UserId = new UserIdentification(50),
+            UserId = new UserIdentification(60),
             Permissions = [Permission.CanManageClaims],
         }));
-        former.Status.ShouldBe(ProjectAclStatus.Removed);
+        mock.Project.ProjectAcls.ShouldNotContain(a => a.UserId == 60);
     }
 
     [Fact]
@@ -366,7 +388,7 @@ public class ProjectAccessServiceTest
 
         var service = CreateService(mock.Master.UserId);
 
-        // Форма добавления для бывшего мастера предзаполнена прежним профилем, мастер его поправил.
+        // Профиль при повторной выдаче — из запроса (так возвращает админа GrantFullAccess).
         await service.GrantAccess(new GrantAccessRequest
         {
             ProjectId = ProjectId,

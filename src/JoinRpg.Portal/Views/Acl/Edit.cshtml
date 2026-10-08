@@ -11,19 +11,31 @@
 
 <partial name="_UserDetailsPanel" model="@Model.UserDetails" />
 <hr class="col-md-12" />
+@* Карточка пользователя и линия — плавающие колонки: без clearfix панели острова обтекают карточку. *@
+<div class="clearfix"></div>
 
-@* Профиль (роль, описание, публичность) — остров: свой мастер правит сам, чужой — с правом выдавать доступ. *@
-<component type="typeof(MasterProfilePanel)" render-mode="WebAssembly"
-           param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
-           param-UserId="@(new UserIdentification(Model.UserId))" />
+@if (Model.IsFormerMaster)
+{
+    @* Бывшего мастера возвращают правкой прав; профиль у снятого не правится и вернётся прежним (ADR019, §1). *@
+    <p>
+        @(Model.CanEditPermissions
+            ? "Мастер снят с проекта. Отметьте права и нажмите «Вернуть в мастера» — роль и описание вернутся прежними."
+            : "Мастер снят с проекта. Вернуть его можно, только пока проект не в архиве.")
+    </p>
+}
+else
+{
+    @* Профиль (роль, описание, публичность) — остров: свой мастер правит сам, чужой — с правом выдавать доступ. *@
+    <component type="typeof(MasterProfilePanel)" render-mode="WebAssembly"
+               param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+               param-UserId="@(new UserIdentification(Model.UserId))" />
+}
 
 @if (Model.CanEditPermissions)
 {
-    <component type="typeof(EditMasterPermissionsForm)" render-mode="Static"
-               param-Endpoint="@Url.Action("Edit", new { Model.ProjectId })"
-               param-UserId="@Model.UserId"
-               param-Permissions="@Model.Badges"
-               param-Errors="@(ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToArray())" />
+    <component type="typeof(MasterPermissionsPanel)" render-mode="WebAssembly"
+               param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
+               param-UserId="@(new UserIdentification(Model.UserId))" />
 }
 
 @Html.ActionLink("Назад к списку", "Index", new { Model.ProjectId })

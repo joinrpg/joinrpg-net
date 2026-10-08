@@ -1,0 +1,102 @@
+@inject IMasterAccessClient accessClient
+@inject NavigationManager navigationManager
+@implements IDisposable
+
+@if (Model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+<EditForm FormName="AddMaster" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <JoinPanel>
+        <Header>Профиль мастера</Header>
+        <Body>
+            <FormHorizontal>
+                <MasterProfileFields Model="Model" />
+            </FormHorizontal>
+        </Body>
+    </JoinPanel>
+
+    <JoinPanel>
+        <Header>Права доступа</Header>
+        <Body>
+            <FormHorizontal>
+                <MasterPermissionFields Permissions="Model.Permissions" />
+            </FormHorizontal>
+        </Body>
+    </JoinPanel>
+
+    <JoinButton Preset="ButtonPreset.Add" Submit="true" Label="Добавить" Disabled="@formInvalid" />
+    | <a href="@UserProfileUrl">вернуться в профиль пользователя</a>
+</EditForm>
+
+@code {
+    private EditContext? editContext;
+    private bool formInvalid = true;
+    private ValidationMessageStore? messageStore;
+
+    private AddMasterViewModel? Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public UserIdentification UserId { get; set; } = null!;
+
+    /// <summary>Куда уйти после добавления — на страницу мастеров.</summary>
+    [Parameter]
+    [EditorRequired]
+    public string MastersUrl { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public string UserProfileUrl { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model = await accessClient.GetAddMaster(ProjectId, UserId);
+        editContext = new(Model);
+        editContext.OnFieldChanged += HandleFieldChanged;
+        messageStore = new(editContext);
+        formInvalid = !editContext.Validate();
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (editContext is not null)
+        {
+            messageStore?.Clear();
+            formInvalid = !editContext.Validate();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await accessClient.AddMaster(Model!);
+        }
+        catch
+        {
+            messageStore?.Add(() => Model!, "Неизвестная серверная ошибка при добавлении мастера");
+            editContext?.NotifyValidationStateChanged();
+            return;
+        }
+        navigationManager.NavigateTo(MastersUrl, forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+    }
+}
