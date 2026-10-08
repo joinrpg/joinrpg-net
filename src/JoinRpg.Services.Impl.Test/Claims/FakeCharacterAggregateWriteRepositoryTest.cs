@@ -33,6 +33,17 @@ public class FakeCharacterAggregateWriteRepositoryTest : ClaimServiceTestBase
     }
 
     [Fact]
+    public async Task ClaimSnapshotIsBuiltOverHandleCharacterInfo()
+    {
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+
+        var handle = await WriteRepository.LoadClaimForUpdate(claim.GetId());
+
+        // ADR021: снимок заявки — над тем же агрегатом, что отдаёт хэндл, а не над перечитанным.
+        ReferenceEquals(handle.ClaimSnapshot.Character, handle.CharacterInfo).ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task LoadOtherCharacterThrowsWhenCharacterMissing()
     {
         var claim = mock.CreateClaim(mock.Character, mock.Player);

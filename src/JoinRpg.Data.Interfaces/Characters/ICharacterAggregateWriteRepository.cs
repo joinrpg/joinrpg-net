@@ -167,8 +167,12 @@ public interface IClaimUpdateHandle : ICharacterAggregateUpdateHandle
     Claim Claim { get; }
 
     /// <summary>
-    /// Доменный снимок заявки строго <b>ДО</b> изменения. Это тот же экземпляр, что лежит
-    /// в <see cref="ICharacterAggregateUpdateHandle.CharacterInfo"/>.<c>Claims</c>.
+    /// Доменный снимок заявки в составе персонажа строго <b>ДО</b> изменения (ADR021). Персонаж в
+    /// нём — тот же экземпляр, что <see cref="ICharacterAggregateUpdateHandle.CharacterInfo"/>, а
+    /// заявка — тот же экземпляр, что лежит в его <c>Claims</c>.
     /// </summary>
-    CharacterClaimInfo CharacterClaimInfo { get; }
+    ClaimInCharacter ClaimSnapshot { get; }
+
+    /// <summary>Доменный снимок самой заявки — сокращение для <c>ClaimSnapshot.Claim</c>.</summary>
+    CharacterClaimInfo CharacterClaimInfo => ClaimSnapshot.Claim;
 }

@@ -172,7 +172,7 @@ internal class CharacterPropsService(
                 EnsureActiveIfRequired(handle.ProjectInfo, activeRequirement);
 
                 var ctx = new ClaimMutationContext<TArgs>(
-                    handle.Claim, handle.CharacterClaimInfo, handle.Character, handle.CharacterInfo, handle.ProjectInfo,
+                    handle.Claim, handle.ClaimSnapshot, handle.Character, handle.ProjectInfo,
                     now, currentUserAccessor, handle, fieldSaveHelper,
                     commentHelper, arguments);
 

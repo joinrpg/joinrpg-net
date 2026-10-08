@@ -38,6 +38,30 @@ public class ChangeClaimTest : ClaimServiceTestBase
     }
 
     /// <summary>
+    /// <c>LoadClaimInfo</c> достраивает профиль к снимку контекста, а не к перечитанному агрегату
+    /// (ADR021): иначе <c>ProjectInfo</c> внутри разошёлся бы с хэндлом (ADR013).
+    /// </summary>
+    [Fact]
+    public async Task LoadClaimInfo_IsBuiltOverContextSnapshot()
+    {
+        var claimId = CreateClaim();
+
+        await CreatePropsService().ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.AnyMaster,
+            ProjectActiveRequirement.MustBeActive,
+            0,
+            async ctx =>
+            {
+                var claimInfo = await ctx.LoadClaimInfo(new FakeUserRepository(mock));
+
+                claimInfo.ClaimInCharacter.ShouldBeSameAs(ctx.ClaimSnapshot);
+                claimInfo.Character.ShouldBeSameAs(ctx.CharacterInfo);
+                claimInfo.Player.UserId.ShouldBe(ctx.CharacterClaimInfo.PlayerId);
+            });
+    }
+
+    /// <summary>
     /// Если мутация упала, уведомления не уходят и ничего не сохраняется. До миграции это
     /// приходилось соблюдать вручную в каждом методе.
     /// </summary>
