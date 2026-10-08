@@ -1,5 +1,6 @@
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Services.Impl.Test.Fakes;
 
@@ -14,10 +15,10 @@ namespace JoinRpg.Services.Impl.Test.Fakes;
 internal sealed class FakeProblemValidator : IClaimProblemValidator
 {
     public IEnumerable<ClaimProblem> Validate(
-        ClaimProblemContext context, ProblemSeverity minimalSeverity = ProblemSeverity.Hint) => [];
+        ClaimInfo context, ProblemSeverity minimalSeverity = ProblemSeverity.Hint) => [];
 
     public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(
-        ClaimProblemContext context, IEnumerable<ProjectFieldIdentification> fields) => [];
+        ClaimInfo context, IEnumerable<ProjectFieldIdentification> fields) => [];
 
-    public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimProblemContext context) => [];
+    public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context) => [];
 }

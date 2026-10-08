@@ -220,8 +220,9 @@ IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IR
 0. **Освободить имя.** `XGameApi.Contract.ClaimInfo` → `ClaimDetails`; `ctx.ClaimInfo` /
    `IClaimUpdateHandle.ClaimInfo` → `CharacterClaimInfo`.
 1. **Перенос и переименование.** `ClaimProblemContext` → `ClaimInfo` + `ClaimInCharacter`
-   в `DomainTypes`. Фильтры, валидатор и тесты переименовываются, а тесты конструктора переезжают
-   в `JoinRpg.DomainTypes.Test`. Поведение не меняется.
+   в `DomainTypes`. Фильтры, валидатор и тесты переименовываются. Тесты конструктора остаются
+   в `JoinRpg.Domain.Test` ради `MockedProject`: в `JoinRpg.DomainTypes.Test` моков нет. Поведение
+   не меняется.
 2. **Репозиторий.** `IClaimInfoRepository` вместо `ClaimProblemContextLoader`. На него
    переходят check-in в Portal и x-game-api и экспорт списка заявок.
 3. **Сторона записи.** `IClaimUpdateHandle.ClaimSnapshot` и `ClaimMutationContext.LoadClaimInfo()`;

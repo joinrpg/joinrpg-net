@@ -45,7 +45,7 @@ public class ClaimListController(
         string title,
         IReadOnlyCollection<Claim> claims,
         ClaimStatusSpec claimStatusSpec,
-        IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext>? problemContexts = null)
+        IReadOnlyDictionary<ClaimIdentification, ClaimInfo>? problemContexts = null)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
@@ -70,7 +70,7 @@ public class ClaimListController(
     /// <summary>
     /// Контексты расчёта проблем на весь список — две выборки, а не по заявке.
     /// </summary>
-    private Task<IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext>> LoadProblemContexts(
+    private Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> LoadProblemContexts(
         IReadOnlyCollection<Claim> claims)
         => ClaimProblemContextLoader.Load(characterInfoRepository, userRepository, [.. claims.Select(c => c.GetId())]);
 
@@ -90,7 +90,7 @@ public class ClaimListController(
     }
 
     private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec,
-        IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext>? problemContexts = null)
+        IReadOnlyDictionary<ClaimIdentification, ClaimInfo>? problemContexts = null)
     {
 
         return await ___ShowMasterClaimList(projectId, export, title, claims, claimStatusSpec, problemContexts);
@@ -116,7 +116,7 @@ public class ClaimListController(
     /// Отбор по проблемам: считается по доменному контексту заявки, в SQL не выражается.
     /// Контексты собираются один раз и переиспользуются при отрисовке списка.
     /// </param>
-    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<ClaimProblemContext, bool> predicate)
+    private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<ClaimInfo, bool> predicate)
     {
         var claims = await claimsRepository.GetClaimsForMaster(projectId, masterUserId, claimStatusSpec);
         var problemContexts = await LoadProblemContexts(claims);

@@ -85,9 +85,8 @@ public class PassportSensitiveDataScenario(JoinApplicationFactory factory) : ICl
             var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             var character = await characterInfoRepository.GetCharacterInfo(characterId);
-            var problemContext = new ClaimProblemContext(
-                character,
-                character.GetClaimById(claimId),
+            var problemContext = new ClaimInfo(
+                new ClaimInCharacter(character, claimId),
                 await userRepository.GetRequiredUserInfo(playerId));
 
             var problems = problemValidator.Validate(problemContext).ToList();

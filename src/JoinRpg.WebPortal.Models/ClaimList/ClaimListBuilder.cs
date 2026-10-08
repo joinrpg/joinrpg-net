@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Models.ClaimList;
 public static class ClaimListBuilder
 {
     internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo,
-       IClaimProblemValidator claimValidator, ClaimProblemContext problemContext, Dictionary<int, int> unreadComments)
+       IClaimProblemValidator claimValidator, ClaimInfo problemContext, Dictionary<int, int> unreadComments)
     {
         var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId, projectInfo);
         var balance = claim.CalculateClaimBalance(projectInfo);

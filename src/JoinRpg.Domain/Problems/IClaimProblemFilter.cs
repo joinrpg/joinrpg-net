@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain.Problems;
 
@@ -7,9 +8,9 @@ namespace JoinRpg.Domain.Problems;
 /// </summary>
 /// <remarks>
 /// Зеркало <see cref="ICharacterProblemFilter"/> для стороны заявки. Всё, что правилу нужно знать,
-/// приходит одним <see cref="ClaimProblemContext"/>: EF-сущности <c>Claim</c> здесь больше нет.
+/// приходит одним <see cref="ClaimInfo"/>: EF-сущности <c>Claim</c> здесь больше нет.
 /// </remarks>
 public interface IClaimProblemFilter
 {
-    IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context);
+    IEnumerable<ClaimProblem> GetProblems(ClaimInfo context);
 }

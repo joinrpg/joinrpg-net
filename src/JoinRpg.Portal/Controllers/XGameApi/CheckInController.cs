@@ -81,9 +81,8 @@ public class CheckInController(
 
         var character = await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId());
         var validator = new ClaimCheckInValidator(
-            new ClaimProblemContext(
-                character,
-                character.GetClaimById(claim.GetId()),
+            new ClaimInfo(
+                new ClaimInCharacter(character, claim.GetId()),
                 await userRepository.GetRequiredUserInfo(claim.GetPlayerId())),
             claimValidator);
         return

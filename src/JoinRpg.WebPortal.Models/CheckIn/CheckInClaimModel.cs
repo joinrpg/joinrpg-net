@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Characters;
@@ -36,7 +37,7 @@ public class CheckInClaimModel : IProjectIdAware
         var claim = characterInfo.GetClaimById(claimId);
 
         Validator = new ClaimCheckInValidator(
-            new ClaimProblemContext(characterInfo, claim, playerInfo),
+            new ClaimInfo(new ClaimInCharacter(characterInfo, claim), playerInfo),
             claimValidator);
         CheckInTime = claim.CheckInDate;
         ClaimStatus = (ClaimStatusView)claim.Status;

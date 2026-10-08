@@ -39,7 +39,7 @@ public enum ClaimProblemType
     ClaimWorkStopped,
     /// <summary>
     /// Заявка не привязана к персонажу. Недостижимо: в доменном агрегате (ADR013) заявка
-    /// существует только как элемент <c>CharacterInfo.Claims</c>, и <c>ClaimProblemContext</c>
+    /// существует только как элемент <c>CharacterInfo.Claims</c>, и <c>ClaimInCharacter</c>
     /// проверяет это в конструкторе. Значение остаётся в enum, потому что числовые значения
     /// уезжают в сериализованные вью-модели островов и сдвиг их поломал бы. Отображения у него
     /// при этом нет: тест-страж <c>ProblemTypeDisplayTest</c> требует, чтобы у Obsolete-значения

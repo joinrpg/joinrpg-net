@@ -5,7 +5,7 @@ namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 internal class ClaimWorkStopped : IClaimProblemFilter
 {
-    public IEnumerable<ClaimProblem> GetProblems(ClaimProblemContext context)
+    public IEnumerable<ClaimProblem> GetProblems(ClaimInfo context)
     {
         var claim = context.Claim;
 

@@ -16,7 +16,7 @@ internal class ClaimProblemValidator(
     // двухсотками, а проблемы полей молча перестали бы считаться.
     private readonly IFieldRelatedProblemFilter<CharacterClaimInfo>[] fieldFilters = ShouldBeNotEmpty(fieldFilters);
 
-    public IEnumerable<ClaimProblem> Validate(ClaimProblemContext context, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
+    public IEnumerable<ClaimProblem> Validate(ClaimInfo context, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -26,14 +26,14 @@ internal class ClaimProblemValidator(
         return problems.Union(fieldProblems).Where(problem => problem.Severity >= minimalSeverity);
     }
 
-    public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimProblemContext context)
+    public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
         return ValidateFieldsInternal(context, [.. GetFieldsToFill(context)]);
     }
 
-    public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimProblemContext context, IEnumerable<ProjectFieldIdentification> fields)
+    public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context, IEnumerable<ProjectFieldIdentification> fields)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(fields);
@@ -43,7 +43,7 @@ internal class ClaimProblemValidator(
             [.. GetFieldsToFill(context).Where(f => fields.Contains(f.Field.Id))]);
     }
 
-    private IEnumerable<FieldRelatedProblem> ValidateFieldsInternal(ClaimProblemContext context, FieldWithValue[] fieldWithValues)
+    private IEnumerable<FieldRelatedProblem> ValidateFieldsInternal(ClaimInfo context, FieldWithValue[] fieldWithValues)
     {
         // Доступность поля проверяется по персонажу: это он лежит в группах, от которых зависят
         // правила «поле доступно для этой группы». Агрегат сам является IFieldAvailabilityTarget,
@@ -65,12 +65,12 @@ internal class ClaimProblemValidator(
     /// персонажа — только когда заявка утверждена. Правило живёт в агрегате, одно на сторону
     /// персонажа и сторону заявки, — см. <see cref="CharacterInfo.GetFieldsToFill"/>.
     /// </summary>
-    private static IReadOnlyCollection<FieldWithValue> GetFieldsToFill(ClaimProblemContext context)
+    private static IReadOnlyCollection<FieldWithValue> GetFieldsToFill(ClaimInfo context)
         => context.Character.GetFieldsToFill(context.Claim.ClaimId);
 
     private static T[] ShouldBeNotEmpty<T>(T[] filters)
         => filters.Length > 0
             ? filters
             : throw new InvalidOperationException(
-                $"Filters {typeof(T).FullName} for type {typeof(ClaimProblemContext).FullName} do not exists");
+                $"Filters {typeof(T).FullName} for type {typeof(ClaimInfo).FullName} do not exists");
 }

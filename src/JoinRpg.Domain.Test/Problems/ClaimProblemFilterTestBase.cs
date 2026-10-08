@@ -1,5 +1,4 @@
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -7,7 +6,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 namespace JoinRpg.Domain.Test.Problems;
 
 /// <summary>
-/// Общая оснастка тестов фильтров проблем заявки: собирает <see cref="ClaimProblemContext"/>, в
+/// Общая оснастка тестов фильтров проблем заявки: собирает <see cref="ClaimInfo"/>, в
 /// котором можно точечно подменить и персонажа, и заявку.
 /// </summary>
 /// <remarks>
@@ -30,7 +29,7 @@ public abstract class ClaimProblemFilterTestBase
     /// У персонажа есть утверждённая заявка, и это НЕ та, которую проверяем. Собирается как вторая
     /// заявка, потому что инварианты агрегата не дают сослаться на несуществующую.
     /// </param>
-    protected ClaimProblemContext MakeContext(
+    protected ClaimInfo MakeContext(
         Func<CharacterClaimInfo, CharacterClaimInfo>? setupClaim = null,
         ProjectInfo? projectInfo = null,
         bool characterIsActive = true,
@@ -59,7 +58,7 @@ public abstract class ClaimProblemFilterTestBase
 
         var character = MakeCharacter(projectInfo, claims, approvedClaimId, characterIsActive);
 
-        return new ClaimProblemContext(character, claim, Mock.PlayerInfo);
+        return new ClaimInfo(new ClaimInCharacter(character, claim), Mock.PlayerInfo);
     }
 
     /// <summary>

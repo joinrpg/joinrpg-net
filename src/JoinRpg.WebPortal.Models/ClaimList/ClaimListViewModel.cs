@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
@@ -32,7 +33,7 @@ public class ClaimListViewModel : IOperationsAwareView
        string title,
        ProjectInfo projectInfo,
        IClaimProblemValidator claimValidator,
-       IReadOnlyDictionary<ClaimIdentification, ClaimProblemContext> problemContexts)
+       IReadOnlyDictionary<ClaimIdentification, ClaimInfo> problemContexts)
     {
         Items = claims
           .Select(c => ClaimListBuilder.BuildItem(c, currentUserId, projectInfo, claimValidator, problemContexts[c.GetId()], unreadComments))
