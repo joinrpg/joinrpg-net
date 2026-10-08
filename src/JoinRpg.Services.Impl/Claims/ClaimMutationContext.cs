@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Accommodation;
@@ -88,6 +89,38 @@ internal abstract record ClaimMutationContext(
     /// </summary>
     public Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
         => Scope.LoadAccommodationGroup(groupId);
+
+    /// <summary>
+    /// План поселения категории, из которой селится тип проживания, — снимок ДО изменения на
+    /// <see cref="CharacterMutationContext.ProjectInfo"/> этой мутации. По нему, а не по навигациям
+    /// трекаемых сущностей, принимаются решения о группах (ADR022 §4).
+    /// </summary>
+    /// <exception cref="AccommodationTypeNotFoundException">Типа нет в этом проекте.</exception>
+    public Task<RoomCategoryPlan> LoadRoomCategoryPlan(AccommodationTypeIdentification typeId)
+        => Scope.LoadRoomCategoryPlan(typeId);
+
+    /// <summary>
+    /// Снимок группы проживающих этой заявки ДО изменения вместе с планом, из которого он взят, либо
+    /// <c>null</c>, если заявка ещё не выбрала тип проживания. В последнем случае в БД не ходит.
+    /// </summary>
+    /// <remarks>
+    /// Тип и ссылка на группу берутся из <see cref="CharacterClaimInfo"/>: его конструктор держит
+    /// инвариант «тип задан ⇔ ссылка указывает на группу» (ADR022 §2), поэтому группа с заданным
+    /// типом в плане этого типа обязана найтись.
+    /// </remarks>
+    public async Task<(RoomCategoryPlan Plan, AccommodationGroupInfo Group)?> LoadOwnAccommodationGroup()
+    {
+        if (CharacterClaimInfo.AccommodationTypeId is not { } typeId)
+        {
+            return null;
+        }
+
+        var plan = await LoadRoomCategoryPlan(typeId);
+        var group = plan.GetGroupOrDefault(CharacterClaimInfo.AccommodationGroupId)
+            ?? throw new InvalidOperationException(
+                $"Claim {CharacterClaimInfo.ClaimId} has accommodation type {typeId}, but no accommodation group");
+        return (plan, group);
+    }
 
     /// <summary>
     /// Сохраняет поля <b>через заявку</b>, а не через персонажа хэндла. Разница не косметическая:

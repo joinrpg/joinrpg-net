@@ -1,7 +1,6 @@
 using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
@@ -554,15 +553,15 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
             }
 
             // Тип проживания выбран у всех, кроме последней заявки: она остаётся целью-заявкой.
-            var result = new List<int>(claims.Count - 1);
-            foreach (var claimId in claims.SkipLast(1))
+            var withType = claims.SkipLast(1).ToList();
+            foreach (var claimId in withType)
             {
-                AccommodationRequest request = await claimService.SetAccommodationType(
+                await claimService.SetAccommodationType(
                     projectId.Value, claimId.ClaimId, roomTypeId.AccommodationTypeId);
-                result.Add(request.Id);
             }
 
-            return result;
+            var groupIds = await AccommodationTestHelpers.GetAccommodationGroupIdsAsync(sp, withType);
+            return groupIds.Select(groupId => groupId.AccommodationRequestId).ToList();
         });
 
         return new InviteSeed(

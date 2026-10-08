@@ -63,7 +63,7 @@ internal class AccommodationTypeViewService(
     public async Task SetAccommodationType(ClaimIdentification claimId, AccommodationTypeIdentification typeId)
     {
         _ = new IProjectEntityId[] { typeId }.EnsureProject(claimId.ProjectId);
-        _ = await claimService.SetAccommodationType(
+        await claimService.SetAccommodationType(
             claimId.ProjectId.Value,
             claimId.ClaimId,
             typeId.AccommodationTypeId);

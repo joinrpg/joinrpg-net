@@ -3,6 +3,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
+using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Accommodation;
@@ -620,7 +621,7 @@ internal class ClaimServiceImpl(
                 // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
                 ctx.Claim.PlayerAllowedSenstiveData = false;
 
-                var roomNotification = CommonClaimDecline(ctx);
+                var roomNotification = await CommonClaimDecline(ctx);
 
                 if (ctx.Request.DeleteCharacter)
                 {
@@ -675,7 +676,7 @@ internal class ClaimServiceImpl(
     /// Общая часть отклонения заявки на контексте мутации (ADR014). Возвращает уведомление о выезде
     /// из комнаты, если заявка была поселена.
     /// </summary>
-    private static RoomOccupancyNotification? CommonClaimDecline(ClaimMutationContext ctx)
+    private static async Task<RoomOccupancyNotification?> CommonClaimDecline(ClaimMutationContext ctx)
     {
         ctx.MarkCharacterChangedIfApproved();
 
@@ -684,58 +685,87 @@ internal class ClaimServiceImpl(
             ctx.Claim.Character.ApprovedClaimId = null;
         }
 
-        return ConsiderLeavingRoom(ctx, RoomOccupancyChangeKind.ClaimDeclined);
+        return ConsiderLeavingRoom(
+            ctx,
+            await ctx.LoadOwnAccommodationGroup(),
+            RoomOccupancyChangeKind.ClaimDeclined);
     }
 
     /// <summary>
-    /// Выселяет заявку из комнаты при отклонении: инициатор берётся
-    /// из уже загруженного хэндла (лишнего запроса за текущим пользователем нет), а опустевшая заявка
-    /// на поселение удаляется через тот же <c>DbContext</c>, а не через сырой <c>DbSet</c>.
+    /// Выводит заявку из её группы проживающих и, если группа была расселена, готовит уведомление о
+    /// выезде из комнаты. Опустевшая группа удаляется через тот же <c>DbContext</c>, а не через сырой
+    /// <c>DbSet</c>.
     /// </summary>
+    /// <param name="ctx">Контекст мутации заявки.</param>
+    /// <param name="ownGroup">
+    /// Снимок группы заявки ДО изменения и план, из которого он взят
+    /// (<see cref="ClaimMutationContext.LoadOwnAccommodationGroup"/>); <c>null</c> — группы нет,
+    /// делать нечего.
+    /// </param>
+    /// <param name="kind">Причина выезда — для уведомления.</param>
     /// <remarks>
+    /// <para>
+    /// Решения и уведомление — по доменным снимкам (ADR022 §4): комната, её название, категория и
+    /// оставшиеся соседи — из плана поселения, а не из навигаций трекаемых сущностей. Категория —
+    /// это <see cref="RoomCategoryPlan.Id"/>: после ADR020 она не обязана совпадать с типом группы.
+    /// </para>
+    /// <para>
+    /// Состав меняется внешним ключом заявки. Навигация обнуляется вместе с ним, чтобы EF6 при
+    /// <c>DetectChanges</c> видел согласованную пару, а не разбирал конфликт «ключ против ссылки».
+    /// Трекаемая группа нужна только как «ручка» для удаления опустевшей группы — решение «опустела
+    /// ли» принимается по снимку.
+    /// </para>
+    /// <para>
     /// Это ядро вывода заявки из группы проживания. Кроме операций этого сервиса им же пользуется
     /// удаление типа проживания (<c>AccommodationTypeService</c>), расформировывая группы удаляемого
     /// типа, — поэтому метод не приватный.
+    /// </para>
     /// </remarks>
     internal static RoomOccupancyNotification? ConsiderLeavingRoom(
         ClaimMutationContext ctx,
+        (RoomCategoryPlan Plan, AccommodationGroupInfo Group)? ownGroup,
         RoomOccupancyChangeKind kind)
     {
-        var claim = ctx.Claim;
-
-        if (claim.AccommodationRequest is null)
+        if (ownGroup is not var (plan, group))
         {
             return null;
         }
 
+        var claimId = ctx.CharacterClaimInfo.ClaimId;
+
         RoomOccupancyNotification? notification = null;
 
-        if (claim.AccommodationRequest.Accommodation is { } room)
+        if (group.RoomId is { } roomId)
         {
-            var claimId = ctx.CharacterClaimInfo.ClaimId;
-
             notification = new RoomOccupancyNotification(
-                room.GetId(),
-                room.Name,
-                // Название категории сервис уведомлений возьмёт из метаданных: по навигации
-                // room.RoomCategory это была бы лишняя ленивая загрузка.
-                new RoomCategoryIdentification(claimId.ProjectId, room.RoomCategoryId),
+                roomId,
+                plan.GetRoom(roomId).Name,
+                // Название категории сервис уведомлений возьмёт из метаданных.
+                plan.Id,
                 // Из текущего запроса, а не из ctx.Initiator: EF-сущность пользователя нужна была
                 // только легаси-письмам.
                 ctx.CurrentUser.ToUserInfoHeader(),
                 Changed: [claimId],
-                // Соседи — состав комнаты без выезжающего. Считается до изъятия заявки из группы,
-                // поэтому её и исключаем явно.
-                Remaining: [.. room.Inhabitants
-                    .SelectMany(group => group.GetSubjectIds())
-                    .Where(id => id != claimId)],
+                // Соседи — состав комнаты без выезжающего; план — снимок ДО выезда.
+                Remaining: plan.GetNeighbours(claimId),
                 kind);
         }
 
-        _ = claim.AccommodationRequest.Subjects.Remove(claim);
-        if (claim.AccommodationRequest.Subjects.Count == 0)
+        // Трекаемую группу берём до обнуления ссылки: она загружена вместе с заявкой хэндлом.
+        var trackedGroup = ctx.Claim.AccommodationRequest;
+
+        ctx.Claim.AccommodationRequest_Id = null;
+        ctx.Claim.AccommodationRequest = null;
+
+        if (group.SubjectsCount == 1)
         {
-            ctx.RemoveEntity(claim.AccommodationRequest);
+            if (trackedGroup is null || trackedGroup.Id != group.Id.AccommodationRequestId)
+            {
+                throw new InvalidOperationException(
+                    $"Accommodation group {group.Id} of claim {claimId} is not loaded with the claim");
+            }
+
+            ctx.RemoveEntity(trackedGroup);
         }
 
         return notification;
@@ -791,58 +821,46 @@ internal class ClaimServiceImpl(
     }
 
     /// <inheritdoc />
-    public Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId)
-        => characterPropsService.ChangeClaim<int, AccommodationRequest?>(
+    public Task LeaveAccommodationGroupAsync(int projectId, int claimId)
+        => characterPropsService.ChangeClaimAsync(
             new ClaimIdentification(projectId, claimId),
             ClaimAccessRequirement.AccommodationChange,
             ProjectActiveRequirement.MustBeActive,
             claimId,
-            ctx =>
+            async ctx =>
             {
-                var acr = ctx.Claim.AccommodationRequest;
-
                 // Оба ранних выхода обязаны остаться холостыми: до миграции они возвращали ответ,
-                // ничего не сохраняя.
-                if (acr is null)
+                // ничего не сохраняя. Решаются по снимкам (ADR022 §4): без типа проживания нет и
+                // группы — тогда план даже не грузится.
+                if (await ctx.LoadOwnAccommodationGroup() is not { } ownGroup)
                 {
                     ctx.NothingChanged();
-                    return null;
+                    return;
                 }
 
-                if (acr.Subjects.Count == 1)
+                if (ownGroup.Group.SubjectsCount == 1)
                 {
                     ctx.NothingChanged();
-                    return acr;
+                    return;
                 }
 
                 // TODO: восстановить отправку изменений полей, см. ADR014
 
-                var leaveNotification = ConsiderLeavingRoom(ctx, RoomOccupancyChangeKind.LeftRoom);
+                var leaveNotification = ConsiderLeavingRoom(ctx, ownGroup, RoomOccupancyChangeKind.LeftRoom);
 
-                ctx.Claim.AccommodationRequest_Id = null;
-                ctx.Claim.AccommodationRequest = null;
-
-                ctx.AddEntity(new AccommodationRequest
-                {
-                    ProjectId = projectId,
-                    AccommodationTypeId = acr.AccommodationTypeId,
-                    IsAccepted = InviteState.Accepted,
-                    Subjects = [ctx.Claim],
-                });
+                ctx.AddEntity(NewSingleClaimGroup(ctx, ownGroup.Group.AccommodationTypeId));
 
                 if (leaveNotification is not null)
                 {
                     ctx.AddRoomNotification(leaveNotification);
                 }
-
-                return acr;
             });
 
-    public Task<AccommodationRequest> SetAccommodationType(int projectId,
+    public Task SetAccommodationType(int projectId,
         int claimId,
         int roomTypeId)
         //todo set first state to Unanswered
-        => characterPropsService.ChangeClaimAsync<int, AccommodationRequest>(
+        => characterPropsService.ChangeClaimAsync(
             new ClaimIdentification(projectId, claimId),
             ClaimAccessRequirement.AccommodationChange,
             ProjectActiveRequirement.MustBeActive,
@@ -853,41 +871,57 @@ internal class ClaimServiceImpl(
                 // никогда не было: комментарий-намерение висит здесь с 2018 года (70ccb4a11), кода
                 // под ним не появилось. Оставлено как есть — это изменение поведения, не рефакторинг.
 
-                if (ctx.Claim.AccommodationRequest?.AccommodationTypeId == roomTypeId)
+                var typeId = new AccommodationTypeIdentification(ctx.ProjectInfo.ProjectId, roomTypeId);
+
+                if (ctx.CharacterClaimInfo.AccommodationTypeId == typeId)
                 {
                     // Тип уже такой — операции нет, как и до миграции.
                     ctx.NothingChanged();
-                    return ctx.Claim.AccommodationRequest;
+                    return;
                 }
 
                 // Проверка, что тип поселения существует в этом проекте. Метаданные уже на руках
                 // (ADR015), отдельный запрос за сущностью не нужен: мутируем мы AccommodationRequest,
                 // а сам тип только называем по идентификатору.
-                _ = ctx.ProjectInfo.AccommodationSettings.GetTypeById(
-                    new AccommodationTypeIdentification(ctx.ProjectInfo.ProjectId, roomTypeId));
+                _ = ctx.ProjectInfo.AccommodationSettings.GetTypeById(typeId);
 
                 // TODO: восстановить отправку изменений полей, см. ADR014
 
-                var leaveNotification = ConsiderLeavingRoom(ctx, RoomOccupancyChangeKind.LeftRoom);
+                var leaveNotification = ConsiderLeavingRoom(
+                    ctx,
+                    await ctx.LoadOwnAccommodationGroup(),
+                    RoomOccupancyChangeKind.LeftRoom);
 
                 // TODO: Just change accommodation type if this claim is the only occupant of previous room
-                var accommodationRequest = new AccommodationRequest
-                {
-                    ProjectId = projectId,
-                    Subjects = [ctx.Claim],
-                    AccommodationTypeId = roomTypeId,
-                    IsAccepted = InviteState.Accepted,
-                };
-
-                ctx.AddEntity(accommodationRequest);
+                ctx.AddEntity(NewSingleClaimGroup(ctx, typeId));
 
                 if (leaveNotification is not null)
                 {
                     ctx.AddRoomNotification(leaveNotification);
                 }
-
-                return accommodationRequest;
             });
+
+    /// <summary>
+    /// Новая группа проживающих из одной заявки этого контекста.
+    /// </summary>
+    /// <remarks>
+    /// Заявка привязывается к группе коллекцией <c>Subjects</c>, а не внешним ключом: у новой группы
+    /// до <c>SaveChanges</c> нет <c>Id</c> (он 0), и ключ ссылался бы в никуда. Через навигацию EF6
+    /// сам упорядочит вставку группы раньше обновления заявки и подставит выданный базой ключ. Это
+    /// не опора на навигацию при принятии решений (ADR022 §4): группа новая, по ней ничего не
+    /// решается, а ссылку заявки на старую группу <see cref="ConsiderLeavingRoom"/> к этому моменту
+    /// уже обнулил вместе с ключом.
+    /// </remarks>
+    private static AccommodationRequest NewSingleClaimGroup(
+        ClaimMutationContext ctx,
+        AccommodationTypeIdentification typeId)
+        => new()
+        {
+            ProjectId = typeId.ProjectId.Value,
+            AccommodationTypeId = typeId.AccommodationTypeId,
+            IsAccepted = InviteState.Accepted,
+            Subjects = [ctx.Claim],
+        };
 
 
     public Task DeclineByPlayer(ClaimIdentification claimId, string commentText)
@@ -905,7 +939,7 @@ internal class ClaimServiceImpl(
 
                 await DeclineAllClaimInvites(ctx);
 
-                var roomNotification = CommonClaimDecline(ctx);
+                var roomNotification = await CommonClaimDecline(ctx);
 
                 _ = ctx.AddComment(
                     ctx.Request,

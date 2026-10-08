@@ -236,7 +236,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         await CreateService().DeclineByMaster(
             claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
 
-        accommodationRequest.Subjects.ShouldBeEmpty();
+        // Заявка вышла из группы ключом, а опустевшая группа удалена.
+        claim.AccommodationRequest_Id.ShouldBeNull();
+        mock.AccommodationRequests.ShouldNotContain(accommodationRequest);
+
         var notification = SentRoomNotifications.ShouldHaveSingleItem();
         notification.Kind.ShouldBe(RoomOccupancyChangeKind.ClaimDeclined);
         notification.Initiator.UserId.ShouldBe(mock.Master.GetId());
@@ -265,11 +268,67 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
 
         // Группа не опустела — сосед в ней остался, значит удалять её нечего.
+        claim.AccommodationRequest_Id.ShouldBeNull();
+        neighbourClaim.AccommodationRequest_Id.ShouldBe(request.Id);
+        mock.AccommodationRequests.ShouldContain(request);
         request.Subjects.ShouldBe([neighbourClaim]);
 
         var notification = SentRoomNotifications.ShouldHaveSingleItem();
         notification.Changed.ShouldBe([claim.GetId()]);
         notification.Remaining.ShouldBe([neighbourClaim.GetId()]);
+    }
+
+    /// <summary>
+    /// Комната, её название и категория в уведомлении о выезде — из плана поселения (ADR022 §4), а
+    /// соседи — все жильцы комнаты, включая соседние группы, без выезжающего.
+    /// </summary>
+    [Fact]
+    public async Task DeclineByMaster_FromSharedRoom_NotificationDescribesRoomFromPlan()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var groupmate = CreateClaim(ClaimStatus.AddedByUser, "Сосед по группе");
+        var roommate = CreateClaim(ClaimStatus.AddedByUser, "Сосед по комнате");
+        var type = mock.CreateAccommodationType("Домик");
+        var group = mock.CreateAccommodationRequest(type, claim, groupmate);
+        var room = mock.CreateRoom(group, "Домик №7");
+        var otherGroup = mock.CreateAccommodationRequest(type, roommate);
+        room.Inhabitants.Add(otherGroup);
+        otherGroup.Accommodation = room;
+        otherGroup.AccommodationId = room.Id;
+
+        await CreateService().DeclineByMaster(
+            claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
+
+        var notification = SentRoomNotifications.ShouldHaveSingleItem();
+        notification.RoomId.ShouldBe(new AccommodationRoomIdentification(ProjectId, room.Id));
+        notification.RoomName.ShouldBe("Домик №7");
+        notification.RoomCategoryId.ShouldBe(new RoomCategoryIdentification(ProjectId, room.RoomCategoryId));
+        notification.Changed.ShouldBe([claim.GetId()]);
+        notification.Remaining.ShouldBe([groupmate.GetId(), roommate.GetId()], ignoreOrder: true);
+
+        // Группа не опустела — остаётся.
+        mock.AccommodationRequests.ShouldContain(group);
+        group.Subjects.ShouldBe([groupmate]);
+    }
+
+    /// <summary>
+    /// Нерасселённая группа: уведомления о выезде нет, а опустевшая группа всё равно удаляется.
+    /// </summary>
+    [Fact]
+    public async Task DeclineByPlayer_SoleMemberOfUnplacedGroup_RemovesGroup_WithoutRoomNotification()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var claim = mock.CreateApprovedClaim(character, mock.Player);
+        var group = mock.CreateAccommodationRequest(mock.CreateAccommodationType(), claim);
+        mock.ReInitProjectInfo();
+
+        await CreateService(mock.Player.UserId).DeclineByPlayer(claim.GetId(), "передумал");
+
+        claim.AccommodationRequest_Id.ShouldBeNull();
+        claim.AccommodationRequest.ShouldBeNull();
+        mock.AccommodationRequests.ShouldNotContain(group);
+        SentRoomNotifications.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(1);
     }
 
     #endregion
@@ -1449,13 +1508,15 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var claim = CreateClaim(ClaimStatus.AddedByUser);
         var newType = mock.CreateAccommodationType("Домик");
 
-        var request = await CreateService().SetAccommodationType(
+        await CreateService().SetAccommodationType(
             ProjectId.Value, claim.ClaimId, newType.Id);
 
+        var request = claim.AccommodationRequest.ShouldNotBeNull();
+        mock.AccommodationRequests.ShouldContain(request);
+        claim.AccommodationRequest_Id.ShouldBe(request.Id);
         request.AccommodationTypeId.ShouldBe(newType.Id);
         request.IsAccepted.ShouldBe(InviteState.Accepted);
         request.Subjects.ShouldBe([claim]);
-        claim.AccommodationRequest.ShouldBe(request);
 
         SaveChangesCallCount.ShouldBe(1);
         SentInviteNotifications.ShouldBeEmpty();
@@ -1476,14 +1537,21 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var savesWhenNotificationSent = -1;
         accommodationNotifications.OnNotification = () => savesWhenNotificationSent = SaveChangesCallCount;
 
-        var request = await CreateService().SetAccommodationType(
+        await CreateService().SetAccommodationType(
             ProjectId.Value, claim.ClaimId, newType.Id);
 
+        var request = claim.AccommodationRequest.ShouldNotBeNull();
         request.ShouldNotBe(oldRequest);
-        oldRequest.Subjects.ShouldBeEmpty();
+        request.AccommodationTypeId.ShouldBe(newType.Id);
+        claim.AccommodationRequest_Id.ShouldBe(request.Id);
+        // Заявка жила в группе одна — опустевшая группа удалена.
+        mock.AccommodationRequests.ShouldNotContain(oldRequest);
 
         SaveChangesCallCount.ShouldBe(1);
-        SentRoomNotifications.ShouldHaveSingleItem().Kind.ShouldBe(RoomOccupancyChangeKind.LeftRoom);
+        var notification = SentRoomNotifications.ShouldHaveSingleItem();
+        notification.Kind.ShouldBe(RoomOccupancyChangeKind.LeftRoom);
+        notification.RoomCategoryId.ShouldBe(new RoomCategoryIdentification(ProjectId, oldRequest.Accommodation!.RoomCategoryId));
+        notification.Remaining.ShouldBeEmpty();
         savesWhenNotificationSent.ShouldBe(1);
     }
 
@@ -1494,10 +1562,11 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var claim = CreateClaim(ClaimStatus.AddedByUser);
         var request = CreateAccommodation(claim);
 
-        var result = await CreateService().SetAccommodationType(
+        await CreateService().SetAccommodationType(
             ProjectId.Value, claim.ClaimId, request.AccommodationTypeId);
 
-        result.ShouldBe(request);
+        claim.AccommodationRequest.ShouldBe(request);
+        mock.AccommodationRequests.ShouldBe([request]);
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
         SentInviteNotifications.ShouldBeEmpty();
@@ -1544,10 +1613,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         mock.ReInitProjectInfo();
         var newType = mock.CreateAccommodationType("Домик");
 
-        var request = await CreateService(mock.Player.UserId).SetAccommodationType(
+        await CreateService(mock.Player.UserId).SetAccommodationType(
             ProjectId.Value, claim.ClaimId, newType.Id);
 
-        request.AccommodationTypeId.ShouldBe(newType.Id);
+        claim.AccommodationRequest.ShouldNotBeNull().AccommodationTypeId.ShouldBe(newType.Id);
         SaveChangesCallCount.ShouldBe(1);
     }
 
@@ -1560,9 +1629,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
 
-        var result = await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
+        await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
 
-        result.ShouldBeNull();
+        claim.AccommodationRequest.ShouldBeNull();
+        mock.AccommodationRequests.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(0);
         SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
@@ -1578,9 +1648,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var claim = CreateClaim(ClaimStatus.AddedByUser);
         var request = CreateAccommodation(claim);
 
-        var result = await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
+        await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
 
-        result.ShouldBe(request);
+        claim.AccommodationRequest.ShouldBe(request);
+        mock.AccommodationRequests.ShouldBe([request]);
         request.Subjects.ShouldBe([claim]);
         SaveChangesCallCount.ShouldBe(0);
         SentInviteNotifications.ShouldBeEmpty();
@@ -1594,25 +1665,58 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var neighbourClaim = CreateClaim(ClaimStatus.AddedByUser, "Сосед");
         var accommodationType = mock.CreateAccommodationType();
         var request = mock.CreateAccommodationRequest(accommodationType, claim, neighbourClaim);
-        _ = mock.CreateRoom(request);
+        var room = mock.CreateRoom(request, "Шатёр");
 
-        var result = await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
+        await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
 
-        // Возвращается СТАРАЯ заявка на поселение — так было и до миграции.
-        result.ShouldBe(request);
+        // Старая группа не опустела — остаётся с соседом.
+        mock.AccommodationRequests.ShouldContain(request);
         request.Subjects.ShouldBe([neighbourClaim]);
+        neighbourClaim.AccommodationRequest_Id.ShouldBe(request.Id);
 
         // Ушедший получил собственную одноместную заявку того же типа.
         var ownRequest = claim.AccommodationRequest.ShouldNotBeNull();
         ownRequest.ShouldNotBe(request);
+        claim.AccommodationRequest_Id.ShouldBe(ownRequest.Id);
         ownRequest.AccommodationTypeId.ShouldBe(accommodationType.Id);
         ownRequest.IsAccepted.ShouldBe(InviteState.Accepted);
+        ownRequest.AccommodationId.ShouldBeNull();
         ownRequest.Subjects.ShouldBe([claim]);
 
         SaveChangesCallCount.ShouldBe(1);
         var notification = SentRoomNotifications.ShouldHaveSingleItem();
         notification.Kind.ShouldBe(RoomOccupancyChangeKind.LeftRoom);
+        notification.RoomId.ShouldBe(new AccommodationRoomIdentification(ProjectId, room.Id));
+        notification.RoomName.ShouldBe("Шатёр");
+        notification.RoomCategoryId.ShouldBe(new RoomCategoryIdentification(ProjectId, room.RoomCategoryId));
+        notification.Changed.ShouldBe([claim.GetId()]);
         notification.Remaining.ShouldBe([neighbourClaim.GetId()]);
+    }
+
+    /// <summary>
+    /// Выход из нерасселённой группы двоих: комнаты нет — нет и уведомления о выезде, а состав
+    /// старой группы меняется ключом заявки, без удаления группы.
+    /// </summary>
+    [Fact]
+    public async Task LeaveAccommodationGroup_FromUnplacedGroupOfTwo_MovesToOwnRequest_WithoutNotification()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var neighbourClaim = CreateClaim(ClaimStatus.AddedByUser, "Сосед");
+        var accommodationType = mock.CreateAccommodationType();
+        var request = mock.CreateAccommodationRequest(accommodationType, claim, neighbourClaim);
+
+        await CreateService().LeaveAccommodationGroupAsync(ProjectId.Value, claim.ClaimId);
+
+        mock.AccommodationRequests.Count.ShouldBe(2);
+        request.Subjects.ShouldBe([neighbourClaim]);
+
+        var ownRequest = claim.AccommodationRequest.ShouldNotBeNull();
+        ownRequest.ShouldNotBe(request);
+        claim.AccommodationRequest_Id.ShouldBe(ownRequest.Id);
+        ownRequest.AccommodationTypeId.ShouldBe(accommodationType.Id);
+
+        SaveChangesCallCount.ShouldBe(1);
+        SentRoomNotifications.ShouldBeEmpty();
     }
 
     [Fact]

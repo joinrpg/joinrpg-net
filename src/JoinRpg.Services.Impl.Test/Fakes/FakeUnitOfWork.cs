@@ -26,6 +26,8 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
     public Task SaveChangesAsync()
     {
         SaveChangesCallCount++;
+        // EF6 вызывает DetectChanges до записи — обратные коллекции синхронизируются здесь же.
+        FakeCharacterAggregateWriteRepository.DetectAccommodationChanges(mock);
         OnSaveChanges?.Invoke(SaveChangesCallCount);
         return Task.CompletedTask;
     }

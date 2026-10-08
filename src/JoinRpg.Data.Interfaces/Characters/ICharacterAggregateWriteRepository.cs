@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
@@ -120,6 +121,19 @@ public interface IAggregateMutationScope
     /// названа идентификатором группы, а не заявки.
     /// </remarks>
     Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId);
+
+    /// <summary>
+    /// План поселения категории, из которой селится тип проживания <paramref name="typeId"/>, —
+    /// доменный снимок групп и комнат, по которому операция принимает решения (ADR022 §4).
+    /// </summary>
+    /// <remarks>
+    /// План строится на <c>ProjectInfo</c> хэндла, а не на экземпляре из
+    /// <c>IProjectMetadataRepository</c>: конструктор плана требует, чтобы типы проживания были
+    /// экземплярами из того же <c>ProjectInfo</c> (ADR013). План не трекается — это снимок
+    /// строго ДО изменения, мутация после него его не обновляет.
+    /// </remarks>
+    /// <exception cref="AccommodationTypeNotFoundException">Типа нет в этом проекте.</exception>
+    Task<RoomCategoryPlan> LoadRoomCategoryPlan(AccommodationTypeIdentification typeId);
 
     /// <summary>
     /// Приглашение к совместному проживанию по идентификатору — трекаемое, вместе с заявками обеих

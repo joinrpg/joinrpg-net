@@ -1,7 +1,6 @@
 using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
@@ -359,15 +358,14 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
         var requestIds = await factory.Services.RunAsAsync(ownerId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
-            var result = new List<int>(claims.Count);
             foreach (var claimId in claims)
             {
-                AccommodationRequest request = await claimService.SetAccommodationType(
+                await claimService.SetAccommodationType(
                     projectId.Value, claimId.ClaimId, roomTypeId.AccommodationTypeId);
-                result.Add(request.Id);
             }
 
-            return result;
+            var groupIds = await AccommodationTestHelpers.GetAccommodationGroupIdsAsync(sp, claims);
+            return groupIds.Select(groupId => groupId.AccommodationRequestId).ToList();
         });
 
         return new AccommodationSeed(
