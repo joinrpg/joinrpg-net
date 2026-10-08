@@ -51,7 +51,10 @@ internal static class ProjectRoleGridViewModelBuilder
             GroupsViewMode: config.GroupsViewMode,
             RootGroupId: rootGroup.Id,
             RootGroupType: rootGroup.GroupType,
-            SuppressFieldLabels: fields.Count == 1 && fields[0].IsDescription);
+            SuppressFieldLabels: fields.Count == 1 && fields[0].IsDescription,
+            DefaultClaimProjectStatus: projectInfo.ClaimSettings.DefaultTemplate is not null && projectInfo.IsActive
+                ? projectInfo.ProjectStatus
+                : null);
     }
 
     private static List<ProjectRoleGridRowViewModel> BuildRows(

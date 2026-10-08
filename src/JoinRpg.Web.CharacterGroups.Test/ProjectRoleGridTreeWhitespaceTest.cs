@@ -79,7 +79,8 @@ public class ProjectRoleGridTreeWhitespaceTest
             RolesGridGroupsViewMode.Tree,
             RootGroupId,
             CharacterGroupType.Root,
-            SuppressFieldLabels: false);
+            SuppressFieldLabels: false,
+            DefaultClaimProjectStatus: null);
 
         var root = RenderTreeBuilder.Build(grid.Rows)!;
 
