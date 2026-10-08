@@ -45,6 +45,13 @@ public interface IProjectRepository : IDisposable
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
 
     /// <summary>
+    /// Пользователи, оставившие следы мастерства в проекте — комментарии в заявках «как мастер»
+    /// (<c>IsCommentByPlayer = false</c>), своя касса (тип оплаты), переводы между мастерами, —
+    /// у которых в этом проекте нет записи <c>ProjectAcl</c> ни в каком статусе (ADR019, §6).
+    /// </summary>
+    Task<IReadOnlyCollection<FormerMasterCandidate>> GetFormerMasterCandidates();
+
+    /// <summary>
     /// Проекты грузятся всегда относительно какого-то пользователя.
     /// Даже в тех местах, где речь не идет про доступ — нужно всегда сортировать «мои» проекты вперед
     /// </summary>

@@ -52,6 +52,12 @@ public static class Services
             services
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
+#pragma warning disable CS0618 // Разовые починки данных, возвращены для восстановления майского бекапа
+            .AddDailyJob<UnhotNpcJob>()
+            .AddDailyJob<HidePublicGroupsUnderPrivateJob>()
+            .AddDailyJob<FormerMastersBackfillJob>()
+            .AddTransient<IPublicGroupVisibilityFixer, PublicGroupVisibilityFixer>()
+#pragma warning restore CS0618
             .AddTransient<ICharacterGroupService, CharacterGroupService>()
             .AddTransient<IProjectPropsService, ProjectPropsService>()
             .AddTransient<ICharacterPropsService, CharacterPropsService>()
