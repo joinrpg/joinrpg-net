@@ -165,9 +165,8 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
 
         /// <summary>
         /// Повторяет запрос, который снятие приглашений делало на собственном <c>DbContext</c>, но
-        /// на контексте этого хэндла (вызывающий — приватный
-        /// <c>ClaimServiceImpl.DeclineAllClaimInvites</c>). Заявки-участницы (<c>From</c>/<c>To</c>) грузятся сразу:
-        /// вызывающий читает их, чтобы понять, какие приглашения отклонены.
+        /// на контексте этого хэндла. Заявки-участницы (<c>From</c>/<c>To</c>) грузятся сразу:
+        /// вызывающие читают их, чтобы понять, чьи приглашения затронуты.
         /// </summary>
         public async Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim(ClaimIdentification claimId)
         {

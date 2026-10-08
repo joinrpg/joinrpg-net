@@ -9,6 +9,17 @@ public interface IAccommodationRepository
     /// </summary>
     Task<bool> HasOccupiedRoomOfType(AccommodationTypeIdentification accommodationTypeId);
 
+    /// <summary>
+    /// Заявки, состоящие в группах проживания (<c>AccommodationRequest</c>) этого типа, — и
+    /// расселённых, и нет.
+    /// </summary>
+    /// <remarks>
+    /// Нужно удалению типа: перед ним группы расформировываются, иначе база каскадом удалила бы
+    /// группы, на которые ещё ссылаются заявки.
+    /// </remarks>
+    Task<IReadOnlyCollection<ClaimIdentification>> GetClaimsInGroupsOfType(
+        AccommodationTypeIdentification accommodationTypeId);
+
     Task<IReadOnlyCollection<ClaimAccommodationInfoRow>> GetClaimAccommodationReport(int project);
 
     Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(ProjectIdentification projectId);

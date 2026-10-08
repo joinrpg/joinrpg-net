@@ -15,6 +15,20 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
             .ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyCollection<ClaimIdentification>> GetClaimsInGroupsOfType(
+        AccommodationTypeIdentification accommodationTypeId)
+    {
+        var projectId = accommodationTypeId.ProjectId.Value;
+        var typeId = accommodationTypeId.AccommodationTypeId;
+        var claimIds = await ctx.Set<AccommodationRequest>()
+            .Where(request => request.ProjectId == projectId && request.AccommodationTypeId == typeId)
+            .SelectMany(request => request.Subjects)
+            .Select(claim => claim.ClaimId)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        return [.. claimIds.Select(claimId => new ClaimIdentification(accommodationTypeId.ProjectId, claimId))];
+    }
+
     public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
         GetClaimAccommodationReport(int project)
     {
