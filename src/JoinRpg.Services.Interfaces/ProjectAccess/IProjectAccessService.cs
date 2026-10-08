@@ -16,4 +16,10 @@ public interface IProjectAccessService
     /// Переставить мастера в списке сразу после <paramref name="afterUserId"/> (null — в начало), ADR019, §5.
     /// </summary>
     Task MoveMasterAfter(ProjectIdentification projectId, UserIdentification userId, UserIdentification? afterUserId);
+
+    /// <summary>
+    /// Записать как бывших мастеров (статус Removed, без прав) тех, у кого в проекте нет записи ACL.
+    /// Пользователи, у которых запись уже есть в любом статусе, пропускаются. Бэкфилл ADR019, §6.
+    /// </summary>
+    Task RegisterFormerMasters(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds);
 }

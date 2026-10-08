@@ -126,6 +126,10 @@ public class GameGroupsControllerIndexTest
             => Task.FromResult<IReadOnlyList<CharacterGroupFullInfo>>(
                 [.. mock.ProjectInfo.GroupTree.AllGroups.Where(g => groupIds.Contains(g.Id)).Select(Build)]);
 
+        /// <summary>Нужен только разовой джобе починки данных, в этих тестах не участвует.</summary>
+        public Task<IReadOnlyCollection<ProjectIdentification>> GetProjectsWithPublicGroupWithoutPublicParent()
+            => throw new NotSupportedException();
+
         private static CharacterGroupFullInfo Build(CharacterGroupInfo group)
             => new(
                 group,
