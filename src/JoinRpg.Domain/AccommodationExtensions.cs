@@ -30,10 +30,9 @@ public static class AccommodationExtensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Единственный потребитель — приём приглашения в <c>AccommodationInviteServiceImpl</c>: он ещё на
-    /// EF-сущностях, остальные сервисы записи решают по плану поселения (ADR022 §4). Уходит вместе с
-    /// переводом на снимки сервиса приглашений. Для чтения есть
-    /// <c>RoomCategoryPlan.GetFreeSpaceForGroup</c>.
+    /// Потребителей в production-коде больше нет: все сервисы записи, включая приём приглашения,
+    /// решают по плану поселения (ADR022 §4) — <c>RoomCategoryPlan.GetFreeSpaceForGroup</c>.
+    /// Остался ради собственных тестов и удаляется следующим шагом ADR022.
     /// Свободное место в комнате для страницы комнат и для заселения считает доменный агрегат —
     /// <c>RoomCategoryPlan.GetFreeSpace</c>.
     /// </para>
