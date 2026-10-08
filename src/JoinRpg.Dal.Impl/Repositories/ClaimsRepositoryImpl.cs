@@ -32,6 +32,10 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
           .Include(c => c.Player.Extra)
           .Include(c => c.FinanceOperations)
           .Include(c => c.Character)
+          // Права на заявку смотрят на утверждённую заявку персонажа (AccessArgumentsFactory).
+          // В списке отклонённых это чаще всего чужая заявка, которой нет в выборке, — без
+          // Include она догружалась бы лениво на каждую строку (#5221).
+          .Include(c => c.Character.ApprovedClaim)
           .Where(predicate)
           .ToListAsync();
     }
@@ -227,6 +231,8 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
           .Include(c => c.Player)
           .Include(c => c.FinanceOperations)
           .Include(c => c.Character)
+          // Та же догрузка, что в GetClaimsImpl: отклонённая заявка игрока на роль, занятую другим.
+          .Include(c => c.Character.ApprovedClaim)
           .Include(c => c.Project)
           .Where(predicateBuilder)
           .ToListAsync();
