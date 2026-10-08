@@ -1,7 +1,7 @@
 @inject IProjectUriLocator projectUriLocator
 @if (ProjectStatus == ProjectLifecycleStatus.ActiveClaimsOpen)
 {
-    <JoinButton Link="@uri.AbsoluteUri" Size="@Size" Label="Заявиться" Preset="ButtonPreset.Claim" Title="Создать новую заявку на проект" />
+    <JoinButton Link="@uri.ToString()" Size="@Size" Label="Заявиться" Preset="ButtonPreset.Claim" Title="Создать новую заявку на проект" />
 } else
 {
     <JoinButton Size="@Size" Label="Заявки закрыты" Preset="ButtonPreset.Claim" Disabled="true" Title="Подать заявку невозможно, т.к. прием заявок закрыт мастерами" />

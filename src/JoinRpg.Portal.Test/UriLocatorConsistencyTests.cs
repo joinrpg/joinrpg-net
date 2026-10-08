@@ -2,6 +2,7 @@ using JoinRpg.Blazor.Client;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.Schedule;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -77,6 +78,30 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         _ = caseName;
         var server = call(factory.Services.GetRequiredService<IProjectFieldUriLocator>());
         var client = call(_clientServices.GetRequiredService<IProjectFieldUriLocator>());
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    public static IEnumerable<object[]> ProjectCases() =>
+    [
+        ["GetMyClaimUri", (Func<IProjectUriLocator, Uri>)(l => l.GetMyClaimUri(ProjectId))],
+        ["GetAddClaimUri", (Func<IProjectUriLocator, Uri>)(l => l.GetAddClaimUri(ProjectId))],
+        ["GetCreatePlotUri", (Func<IProjectUriLocator, Uri>)(l => l.GetCreatePlotUri(ProjectId))],
+        ["GetRolesListUri", (Func<IProjectUriLocator, Uri>)(l => l.GetRolesListUri(ProjectId))],
+        ["GetCaptainCabinetUri", (Func<IProjectUriLocator, Uri>)(l => l.GetCaptainCabinetUri(ProjectId))],
+        ["GetCreateCharacterUri", (Func<IProjectUriLocator, Uri>)(l => l.GetCreateCharacterUri(ProjectId))],
+        ["GetMassMailUri", (Func<IProjectUriLocator, Uri>)(l => l.GetMassMailUri(ProjectId, [new(ProjectId, 13), new(ProjectId, 451), new(ProjectId, 452)]))],
+        ["GetPrintCharactersUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintCharactersUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
+        // Большие разрывы между id дают в CompressedIntList запятую — проверяем, что обе стороны экранируют её одинаково.
+        ["GetMassMailUri with comma", (Func<IProjectUriLocator, Uri>)(l => l.GetMassMailUri(ProjectId, [new(ProjectId, 100), new(ProjectId, 200), new(ProjectId, 300)]))],
+    ];
+
+    [Theory]
+    [MemberData(nameof(ProjectCases))]
+    public void ProjectLocatorsShouldAgree(string caseName, Func<IProjectUriLocator, Uri> call)
+    {
+        _ = caseName;
+        var server = call(factory.Services.GetRequiredService<IProjectUriLocator>());
+        var client = call(_clientServices.GetRequiredService<IProjectUriLocator>());
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
     }
 

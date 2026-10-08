@@ -1,4 +1,5 @@
 using JoinRpg.Web.ProjectCommon;
+using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.Schedule;
 
 namespace JoinRpg.Blazor.Client;
@@ -10,7 +11,7 @@ public static class UriLocatorExtensions
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
         IUriLocator<CharacterGroupIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
-        IScheduleUriLocator
+        IScheduleUriLocator, IProjectUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
@@ -80,6 +81,31 @@ public static class UriLocatorExtensions
 
         Uri IScheduleUriLocator.GetFullScreenUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/schedule/full", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetMyClaimUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/myclaim", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetAddClaimUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/apply", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetCreatePlotUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/plots/create", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetRolesListUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/roles", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetCaptainCabinetUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/captain", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetCreateCharacterUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/character/create", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetMassMailUri(ProjectIdentification projectId, IReadOnlyCollection<ClaimIdentification> claimIds) =>
+            // В CompressedIntList только [A-Za-z0-9_,] — в query экранировать нечего (сервер тоже не экранирует).
+            new($"/{projectId.Value}/massmail/ForClaims?ClaimIds={new CompressedIntList(claimIds)}", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
+            new($"/{projectId.Value}/print/CharacterList?CharacterIds={new CompressedIntList(characterIds)}", UriKind.Relative);
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {
@@ -94,6 +120,7 @@ public static class UriLocatorExtensions
             .AddSingleton<ICharacterGroupUriLocator>(locator)
             .AddSingleton<IProjectFieldUriLocator>(locator)
             .AddSingleton<IScheduleUriLocator>(locator)
+            .AddSingleton<IProjectUriLocator>(locator)
             ;
     }
 }
