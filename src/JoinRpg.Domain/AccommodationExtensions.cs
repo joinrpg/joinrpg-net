@@ -30,7 +30,8 @@ public static class AccommodationExtensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Обслуживает контур приглашений и карточку заявки — он остался на EF-сущностях (ADR018, §13).
+    /// Обслуживает приём приглашения — он ещё на EF-сущностях; уходит вместе с переводом сервисов
+    /// записи на снимки (ADR022, PR 6). Для чтения есть <c>RoomCategoryPlan.GetFreeSpaceForGroup</c>.
     /// Свободное место в комнате для страницы комнат и для заселения считает доменный агрегат —
     /// <c>RoomCategoryPlan.GetFreeSpace</c>.
     /// </para>
@@ -61,24 +62,5 @@ public static class AccommodationExtensions
             => projectInfo.AccommodationSettings
                 .GetTypeById(new AccommodationTypeIdentification(projectInfo.ProjectId, accommodationTypeId))
                 .Capacity;
-    }
-
-    public static List<User> GetClaimNeighbours(this Claim claim)
-    {
-        if (claim.AccommodationRequest is AccommodationRequest accommodationRequest)
-        {
-            if (claim.AccommodationRequest.Accommodation is ProjectAccommodation accommodation)
-            {
-                return [.. accommodation.Inhabitants.SelectMany(i => i.Subjects).Where(s => s.ClaimId != claim.ClaimId).Select(c => c.Player)];
-            }
-            else
-            {
-                return [.. accommodationRequest.Subjects.Where(s => s.ClaimId != claim.ClaimId).Select(c => c.Player)];
-            }
-        }
-        else
-        {
-            return [];
-        }
     }
 }

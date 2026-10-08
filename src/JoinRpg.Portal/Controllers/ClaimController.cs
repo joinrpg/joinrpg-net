@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
@@ -33,7 +34,8 @@ public class ClaimController(
     IClaimProblemValidator claimValidator,
     ICurrentUserAccessor currentUserAccessor,
     CharacterPlotViewService characterPlotViewService,
-    JoinrpgMarkdownLinkRendererFactory linkRendererFactory
+    JoinrpgMarkdownLinkRendererFactory linkRendererFactory,
+    IRoomCategoryPlanRepository roomCategoryPlanRepository
     ) : JoinControllerGameBase
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
@@ -128,14 +130,20 @@ public class ClaimController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
-        // Настройку берём из метаданных, а не с сущности: Project.Details — ленивая догрузка (#5112).
-        var accommodationModel = projectInfo.AccommodationSettings.Enabled ? ShowAccommodationModel(claim, projectInfo) : null;
+        var characterInfo = await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId());
+
+        // Панель рисуется только у утверждённой заявки (Edit.cshtml) — у остальных план и соседей
+        // не грузим.
+        var claimInfo = characterInfo.Claims.Single(c => c.ClaimId == claim.GetId());
+        var accommodationModel = projectInfo.AccommodationSettings.Enabled && claimInfo.IsApproved
+            ? await ShowAccommodationModel(claimInfo, projectInfo)
+            : null;
 
         var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
 
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
-            await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId()),
+            characterInfo,
             plots,
             projectInfo,
             claimValidator,
@@ -157,7 +165,26 @@ public class ClaimController(
         return View("Edit", claimViewModel);
     }
 
-    private static ClaimAccommodationViewModel ShowAccommodationModel(Claim claim, ProjectInfo projectInfo) => new(claim, projectInfo);
+    /// <summary>
+    /// Панель «Проживание»: тип — из метаданных, комната, места и соседи — из плана поселения
+    /// (ADR022), имена соседей — одним запросом заголовков.
+    /// </summary>
+    private async Task<ClaimAccommodationViewModel> ShowAccommodationModel(CharacterClaimInfo claim, ProjectInfo projectInfo)
+    {
+        if (claim.AccommodationTypeId is not { } typeId)
+        {
+            return new(claim, projectInfo, plan: null, neighbours: []);
+        }
+
+        var plan = await roomCategoryPlanRepository.GetPlanForTypeOrDefault(typeId)
+            ?? throw new AccommodationTypeNotFoundException(typeId);
+        var neighbourIds = plan.GetNeighbours(claim.ClaimId);
+        var neighbours = neighbourIds.Count == 0
+            ? []
+            : (await claimsRepository.GetClaimHeadersWithPlayer(neighbourIds)).Select(header => header.Player).ToArray();
+
+        return new(claim, projectInfo, plan, neighbours);
+    }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(int projectId, int claimId, string ignoreMe)

@@ -12,7 +12,7 @@
         <h5>Проживание</h5>
     </div>
     <div class="panel-body">
-        @if (Model.AccommodationRequest == null)
+        @if (Model.AccommodationType == null)
         {
             <div>
                 <span>Проживание не выбрано.</span>
@@ -22,20 +22,20 @@
         {
           <div style="display: flex; flex-direction: row; align-items: center;">
             <span style="margin-right: 1em;">
-              <strong>@Model.AccommodationRequest.AccommodationType.Name</strong>
+              <strong>@Model.AccommodationType.Name</strong>
               <text>
-                        (@CountHelper.DisplayCount(Model.AccommodationRequest.AccommodationType.Capacity, "место",
-                   "места", "мест") в номере, @Model.AccommodationRequest.AccommodationType.Cost &#8381;)
+                        (@CountHelper.DisplayCount(Model.AccommodationType.Capacity, "место",
+                   "места", "мест") в номере, @Model.AccommodationType.Cost &#8381;)
               </text>
             </span>
           </div>
             <div class="help-block">
-                @Html.Raw(((JoinRpg.Common.PrimitiveTypes.MarkdownString?)Model.AccommodationRequest.AccommodationType.Description).ToHtmlString())
+                @Html.Raw(Model.AccommodationType.Description.ToHtmlString())
             </div>
-            if (Model.AccommodationRequest.Accommodation != null)
+            if (Model.RoomName != null)
             {
                 <div>
-                    <strong>Назначена комната:</strong> @Model.AccommodationRequest.Accommodation.Name
+                    <strong>Назначена комната:</strong> @Model.RoomName
                 </div>
             }
 

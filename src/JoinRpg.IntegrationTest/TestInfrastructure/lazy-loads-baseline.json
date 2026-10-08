@@ -1,6 +1,6 @@
 {
   "GET /x-game-api/{projectId}/claims/{claimId}": 1,
-  "GET /{ProjectId}/claim/{ClaimId}/Edit": 19,
+  "GET /{ProjectId}/claim/{ClaimId}/Edit": 7,
   "GET /{ProjectId}/claim/{ClaimId}/TransferClaimPayment": 1,
   "GET /{ProjectId}/goto/comment/{CommentId:int}": 2,
   "GET /{ProjectId}/goto/discussion/{CommentDiscussionId}": 2,
