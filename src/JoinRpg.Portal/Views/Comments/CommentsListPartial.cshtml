@@ -11,14 +11,19 @@
 
     function toggleCommentEditor(formIndex)
     {
-        $('#' + addCommentBtnIdPrefix + formIndex).collapse('toggle');
-        $('#' + addCommentFormIdPrefix + formIndex).collapse('toggle');
+        // У формы ответа на комментарий своей пары «кнопка/форма» нет — тогда ничего не делаем.
+        for (const id of [addCommentBtnIdPrefix + formIndex, addCommentFormIdPrefix + formIndex]) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.hidden = !element.hidden;
+            }
+        }
     }
 </script>
-<div id="@(addCommentModelTop.AddButtonId)" class="collapse in">
+<div id="@(addCommentModelTop.AddButtonId)">
     <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelTop.FormIndex))">Добавить комментарий</button>
 </div>
-<div id="@(addCommentModelTop.FormId)" class="collapse">
+<div id="@(addCommentModelTop.FormId)" hidden>
     @await Html.PartialAsync("..\\Comments\\_AddCommentFormPartial", addCommentModelTop)
 </div>
 
@@ -31,10 +36,10 @@
 
 @if (Model.RootComments.Any())
 {
-    <div id="@(addCommentModelBottom.AddButtonId)" class="collapse in">
+    <div id="@(addCommentModelBottom.AddButtonId)">
         <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelBottom.FormIndex))">Добавить комментарий</button>
     </div>
-    <div id="@(addCommentModelBottom.FormId)" class="collapse">
+    <div id="@(addCommentModelBottom.FormId)" hidden>
         @await Html.PartialAsync("..\\Comments\\_AddCommentFormPartial", addCommentModelBottom)
     </div>
 }

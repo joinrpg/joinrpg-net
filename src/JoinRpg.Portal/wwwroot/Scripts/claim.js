@@ -240,8 +240,10 @@ function checkChanged(event)
 
 function toggleFeeBlock()
 {
-    $("#feeInfo").collapse("toggle");
-    $("#feeDetails").collapse("toggle");
+    for (const id of ["feeInfo", "feeDetails"]) {
+        const block = document.getElementById(id);
+        block.hidden = !block.hidden;
+    }
 }
 
 

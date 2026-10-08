@@ -53,8 +53,6 @@ public class BootstrapJsPluginsAreNotUsedTest
             "src/JoinRpg.Portal/Views/Shared/Components/ProjectMenu/PlayerMenu.cshtml"),
         new(".collapse(", Collapse,
             ThisTest,
-            "src/JoinRpg.Portal/Views/Comments/CommentsListPartial.cshtml",
-            "src/JoinRpg.Portal/wwwroot/Scripts/claim.js",
             "src/JoinRpg.Portal/wwwroot/Scripts/edit-funcs.js"),
         new(".bs.collapse", Collapse,
             ThisTest),
