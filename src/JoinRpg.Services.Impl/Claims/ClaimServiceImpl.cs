@@ -694,7 +694,12 @@ internal class ClaimServiceImpl(
     /// из уже загруженного хэндла (лишнего запроса за текущим пользователем нет), а опустевшая заявка
     /// на поселение удаляется через тот же <c>DbContext</c>, а не через сырой <c>DbSet</c>.
     /// </summary>
-    private static RoomOccupancyNotification? ConsiderLeavingRoom(
+    /// <remarks>
+    /// Это ядро вывода заявки из группы проживания. Кроме операций этого сервиса им же пользуется
+    /// удаление типа проживания (<c>AccommodationTypeService</c>), расформировывая группы удаляемого
+    /// типа, — поэтому метод не приватный.
+    /// </remarks>
+    internal static RoomOccupancyNotification? ConsiderLeavingRoom(
         ClaimMutationContext ctx,
         RoomOccupancyChangeKind kind)
     {
