@@ -243,9 +243,9 @@ internal class CharacterPropsService(
                 // Как и в ChangeCharacter, отметку аудита ставит сервис, а не фабрика.
                 EntityAudit.MarkCreated(character, now, currentUserAccessor.UserId);
 
-                // Через DbSet, а не handle.Project.Characters: обращение к коллекции лениво
+                // Через handle, а не handle.Project.Characters: обращение к коллекции лениво
                 // догрузило бы всех персонажей проекта ради добавления одного (#4965).
-                _ = unitOfWork.GetDbSet<Character>().Add(character);
+                handle.AddCharacter(character);
 
                 await unitOfWork.SaveChangesAsync();
 

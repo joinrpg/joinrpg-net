@@ -44,4 +44,11 @@ public interface IProjectMetadataUpdateHandle
     /// вызывается <c>SaveChanges</c>. Используется для permanent-delete (см. SmartDelete).
     /// </summary>
     void Remove(object entity);
+
+    /// <summary>
+    /// Добавляет нового персонажа в тот же <c>DbContext</c>, через который потом вызывается
+    /// <c>SaveChanges</c>. Отдельный метод, а не <c>Project.Characters.Add</c>: коллекция персонажей
+    /// в загрузку проекта не входит, и обращение к ней лениво догрузило бы всех персонажей (#4965).
+    /// </summary>
+    void AddCharacter(Character character);
 }

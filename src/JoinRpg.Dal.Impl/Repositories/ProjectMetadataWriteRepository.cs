@@ -26,5 +26,7 @@ internal class ProjectMetadataWriteRepository(MyDbContext ctx) : IProjectMetadat
         }
 
         public void Remove(object entity) => ctx.Set(entity.GetType()).Remove(entity);
+
+        public void AddCharacter(Character character) => _ = ctx.Set<Character>().Add(character);
     }
 }
