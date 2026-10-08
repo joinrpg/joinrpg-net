@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.Models;
@@ -14,6 +13,7 @@ namespace JoinRpg.WebPortal.Managers.CharacterGroups;
 internal class ProjectRoleGridViewService(
     ICharacterInfoRepository characterInfoRepository,
     IUserRepository userRepository,
+    IClaimInfoRepository claimInfoRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository characterGroupRepository,
     ICurrentUserAccessor currentUserAccessor)
@@ -97,7 +97,7 @@ internal class ProjectRoleGridViewService(
 
         // Профиль игрока в агрегат персонажа не входит (ADR013), а колонке контактов он нужен —
         // грузим одним запросом на всю сетку, а не по игроку на строку.
-        var players = await LoadPlayers(shownCharacters);
+        var approvedClaims = await claimInfoRepository.GetApprovedClaimInfos(shownCharacters);
 
         // Пользователи из полей-ссылок (ADR017) — тоже одним запросом, и только по полям, выбранным в сетку.
         var fieldUsers = await userRepository.LoadFieldUserLinks(
@@ -117,22 +117,8 @@ internal class ProjectRoleGridViewService(
             HasAccess: true,
             Grid: ProjectRoleGridViewModelBuilder.Build(
                 config, canEditSettings, canViewPrivate, excludeSpecialGroups,
-                orderedGroups, charactersByGroup, groupFullInfos, players, fieldUsers, projectInfo),
+                orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, projectInfo),
             NoAccess: null);
-    }
-
-    private async Task<IReadOnlyDictionary<UserIdentification, UserInfo>> LoadPlayers(
-        IReadOnlyCollection<CharacterInfo> characters)
-    {
-        IReadOnlyCollection<UserIdentification> playerIds =
-            [.. characters.Select(c => c.ApprovedClaim?.PlayerId).WhereNotNull().Distinct()];
-
-        if (playerIds.Count == 0)
-        {
-            return new Dictionary<UserIdentification, UserInfo>();
-        }
-
-        return (await userRepository.GetRequiredUserInfos(playerIds)).ToDictionary(user => user.UserId);
     }
 
     private static List<CharacterInfo> ApplyRolesFilter(List<CharacterInfo> characters, ShowRolesFilter filter)

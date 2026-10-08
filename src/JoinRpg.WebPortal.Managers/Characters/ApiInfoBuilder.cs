@@ -5,8 +5,6 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.XGameApi.Contract;
-// Доменный агрегат (ADR013) и DTO внешнего API называются одинаково — разводим псевдонимом.
-using DomainCharacterInfo = JoinRpg.DomainTypes.Characters.CharacterInfo;
 
 namespace JoinRpg.WebPortal.Managers.Characters;
 
@@ -40,18 +38,15 @@ public class ApiInfoBuilder
     }
 
     /// <summary>
-    /// Сведения об игроке поверх доменного агрегата (ADR013). Отображаемые данные игрока в агрегат
-    /// не входят — они приходят отдельно из <c>IUserRepository</c>.
+    /// Сведения об игроке поверх утверждённой заявки (ADR021): профиль игрока приходит внутри
+    /// <see cref="ClaimInfo"/>, загруженный пачкой через <c>IClaimInfoRepository</c>.
     /// </summary>
-    public static CharacterPlayerInfo CreatePlayerInfo(
-        DomainCharacterInfo character,
-        CharacterClaimInfo claim,
-        UserInfo player)
+    public static CharacterPlayerInfo CreatePlayerInfo(ClaimInfo claim)
         => new(
-            claim.PlayerId.Value,
-            character.CalculateClaimBalance(claim, character.ProjectInfo).FeeDue <= 0,
-            player.DisplayName.DisplayName,
-            ToPlayerContacts(player));
+            claim.Claim.PlayerId.Value,
+            claim.Character.CalculateClaimBalance(claim.Claim, claim.ProjectInfo).FeeDue <= 0,
+            claim.Player.DisplayName.DisplayName,
+            ToPlayerContacts(claim.Player));
 
     public static PlayerContacts ToPlayerContacts(User player)
     {

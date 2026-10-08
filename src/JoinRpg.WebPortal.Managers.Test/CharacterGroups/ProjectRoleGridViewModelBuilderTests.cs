@@ -57,18 +57,23 @@ public class ProjectRoleGridViewModelBuilderTests
             .ToLookup(x => x.group, x => x.character);
 
         // Профиль игрока агрегат персонажа не несёт (ADR013) — сервис грузит его отдельно,
-        // поэтому тут собираем его из тех же данных мока.
+        // вместе с утверждённой заявкой (ADR021), поэтому тут собираем его из тех же данных мока.
         var players = _mock.Project.Claims
             .Select(claim => claim.Player)
             .Distinct()
             .Select(player => player.GetUserInfo())
             .ToDictionary(player => player.UserId);
+        var approvedClaims = characterInfos
+            .Where(c => c.ApprovedClaim is not null)
+            .ToDictionary(
+                c => c.Id,
+                c => new ClaimInfo(new ClaimInCharacter(c, c.ApprovedClaim!), players[c.ApprovedClaim!.PlayerId]));
 
         var grid = ProjectRoleGridViewModelBuilder.Build(
             config, canEditSettings, canViewPrivate, excludeSpecialGroups,
             orderedGroups, charactersByGroup,
             new Dictionary<CharacterGroupIdentification, CharacterGroupFullInfo>(),
-            players,
+            approvedClaims,
             fieldUsers ?? new Dictionary<UserIdentification, UserInfoHeader>(),
             _mock.ProjectInfo);
 

@@ -4,7 +4,7 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Users;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Web.Models.Characters;
@@ -20,7 +20,7 @@ namespace JoinRpg.WebPortal.Managers.Characters;
 internal class CharacterApiViewService(
     ICharacterRepository characterRepository,
     ICharacterInfoRepository characterInfoRepository,
-    IUserRepository userRepository,
+    IClaimInfoRepository claimInfoRepository,
     ICharacterService characterService,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor
@@ -50,7 +50,7 @@ internal class CharacterApiViewService(
         _ = projectInfo.RequestMasterAccess(currentUserAccessor);
 
         var character = await characterInfoRepository.GetCharacterInfo(characterId);
-        return MapToDto(character, await LoadPlayersAsync([character]));
+        return MapToDto(character, await claimInfoRepository.GetApprovedClaimInfos([character]));
     }
 
     public async Task<IReadOnlyCollection<CharacterInfo>> GetCharactersByIds(ProjectIdentification projectId, IReadOnlyCollection<int> characterIds)
@@ -85,31 +85,13 @@ internal class CharacterApiViewService(
     /// </remarks>
     private async Task<IReadOnlyCollection<CharacterInfo>> MapAllToDto(IReadOnlyCollection<DomainCharacterInfo> characters)
     {
-        var players = await LoadPlayersAsync(characters);
-        return [.. characters.Select(character => MapToDto(character, players))];
-    }
-
-    private async Task<IReadOnlyDictionary<UserIdentification, UserInfo>> LoadPlayersAsync(
-        IReadOnlyCollection<DomainCharacterInfo> characters)
-    {
-        UserIdentification[] playerIds = [..
-            characters
-                .Select(character => character.ApprovedClaim?.PlayerId)
-                .OfType<UserIdentification>()
-                .Distinct()];
-
-        if (playerIds.Length == 0)
-        {
-            return new Dictionary<UserIdentification, UserInfo>();
-        }
-
-        var players = await userRepository.GetRequiredUserInfos(playerIds);
-        return players.ToDictionary(player => player.UserId);
+        var approvedClaims = await claimInfoRepository.GetApprovedClaimInfos(characters);
+        return [.. characters.Select(character => MapToDto(character, approvedClaims))];
     }
 
     private CharacterInfo MapToDto(
         DomainCharacterInfo character,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players)
+        IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims)
     {
         // ProjectInfo несёт сам агрегат — отдельный запрос метаданных не нужен.
         var access = AccessArgumentsFactory.Create(character, currentUserAccessor);
@@ -131,21 +113,10 @@ internal class CharacterApiViewService(
 #pragma warning restore CS0612 // Type or member is obsolete
                 CharacterDescription = character.Description.Value,
                 CharacterName = character.CharacterName,
-                PlayerInfo = CreatePlayerInfo(character, players),
+                PlayerInfo = approvedClaims.GetValueOrDefault(character.Id) is { } approvedClaim
+                    ? ApiInfoBuilder.CreatePlayerInfo(approvedClaim)
+                    : null,
             };
-    }
-
-    private static CharacterPlayerInfo? CreatePlayerInfo(
-        DomainCharacterInfo character,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players)
-    {
-        if (character.ApprovedClaim is not { } approvedClaim)
-        {
-            return null;
-        }
-
-        var player = players[approvedClaim.PlayerId];
-        return ApiInfoBuilder.CreatePlayerInfo(character, approvedClaim, player);
     }
 
     public async Task<CharacterHeader> CreateCharacter(ProjectIdentification projectId, CreateCharacterRequest request)

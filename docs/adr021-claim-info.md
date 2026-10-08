@@ -29,10 +29,10 @@
   - `ApiInfoBuilder.CreatePlayerInfo(CharacterInfo, CharacterClaimInfo, UserInfo)` — та же тройка
     без названия.
 - **Пакетной загрузкой тройки сейчас занимается только `ClaimProblemContextLoader`**
-  (`WebPortal.Models/ClaimList`). Рядом пять почти одинаковых методов `LoadPlayers`
-  (`ClaimListController`, `CharacterListController`, `ProjectRoleGridViewService`,
-  `CharacterApiViewService`, плюс экспорт списка заявок). Каждый заново выбирает
-  `PlayerId` утверждённых заявок и вызывает `GetRequiredUserInfos`. Экспорт списка заявок
+  (`WebPortal.Models/ClaimList`). Рядом (до ADR021) было четыре почти одинаковых метода `LoadPlayers`
+  (`CharacterListController`, `ProjectRoleGridViewService`, `CharacterApiViewService` и
+  выгрузка в `ClaimListController`). Каждый заново выбирает `PlayerId` заявок и вызывает
+  `GetRequiredUserInfos`. Экспорт списка заявок
   загружает игроков второй раз, хотя `ClaimProblemContextLoader` уже загрузил их для той же страницы.
 - **Пара «персонаж + заявка» тоже передаётся разрозненно:**
   - `CalculateClaimBalance(this CharacterInfo, CharacterClaimInfo, ProjectInfo)`: `ProjectInfo`
@@ -132,14 +132,14 @@ Task<ClaimInfo?> GetClaimInfoOrDefault(ClaimIdentification claimId);
 Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds);
 
 /// Утверждённые заявки: персонажи без утверждённой заявки в словарь не попадают.
-IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IReadOnlyCollection<CharacterInfo> characters);
+Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimInfos(IReadOnlyCollection<CharacterInfo> characters);
 ```
 
 Пакетные методы делают два запроса на весь список: персонажей одним
 `GetCharacterInfosByClaims`, профили одним `GetRequiredUserInfos`. Это правило уже работает
 в текущем загрузчике.
 
-`GetApprovedClaimInfos` заменяет пять копий `LoadPlayers`. Персонажи у этих потребителей уже
+`GetApprovedClaimInfos` заменяет три копии `LoadPlayers` (сетка ролей, список персонажей, API персонажей; четвёртая — в выгрузке списка заявок, она уходит в шаге 6). Персонажи у этих потребителей уже
 загружены, поэтому метод принимает готовые агрегаты и догружает только профили. Персонаж без
 утверждённой заявки — нормальный случай, поэтому результат — словарь без такого ключа, а не
 `ClaimInfo` с пустым игроком: инвариант «у заявки всегда есть игрок» сохраняется.
@@ -245,7 +245,7 @@ IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IR
 
 - Согласованность «заявка — персонаж — игрок» проверяется в одном месте для всех потребителей,
   а не только для проблем.
-- Пропадают ручные `GetClaimById` + `GetRequiredUserInfo` и пять копий `LoadPlayers`.
+- Пропадают ручные `GetClaimById` + `GetRequiredUserInfo` и четыре копии `LoadPlayers`.
 - Сигнатуры становятся короче на один–два параметра, а избыточный `ProjectInfo` из них уходит.
 - Цена: новый тип там, где раньше хватало двух параметров. Для одноразовых вызовов это
   церемония, поэтому старые сигнатуры удаляются только после переезда последнего вызывающего,

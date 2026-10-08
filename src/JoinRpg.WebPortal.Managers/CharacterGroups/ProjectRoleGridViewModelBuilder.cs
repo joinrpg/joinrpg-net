@@ -23,7 +23,7 @@ internal static class ProjectRoleGridViewModelBuilder
         IReadOnlyList<CharacterGroupInfo> orderedGroups,
         ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         ProjectInfo projectInfo)
     {
@@ -36,8 +36,8 @@ internal static class ProjectRoleGridViewModelBuilder
         var rootGroup = orderedGroups[0];
 
         var rows = config.GroupsViewMode == RolesGridGroupsViewMode.Tree
-            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, players, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, excludeSpecialGroups, fields, projectInfo)
-            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, players, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
+            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, excludeSpecialGroups, fields, projectInfo)
+            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
 
         return new ProjectRoleGridViewModel(
             RolesListId: config.ProjectRolesListId,
@@ -62,7 +62,7 @@ internal static class ProjectRoleGridViewModelBuilder
         IReadOnlyList<CharacterGroupInfo> orderedGroups,
         ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         bool hasGroupsColumn,
         bool canViewPrivate,
@@ -91,7 +91,7 @@ internal static class ProjectRoleGridViewModelBuilder
             {
                 if (config.GroupsViewMode != RolesGridGroupsViewMode.None || seen.Add(character.Id.CharacterId))
                 {
-                    result.Add(BuildCharacterRow(character, config, players, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
+                    result.Add(BuildCharacterRow(character, config, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
                 }
             }
         }
@@ -109,7 +109,7 @@ internal static class ProjectRoleGridViewModelBuilder
         CharacterGroupIdentification rootGroupId,
         ILookup<CharacterGroupIdentification, CharacterInfo> charactersByGroup,
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         bool hasGroupsColumn,
         bool canViewPrivate,
@@ -156,7 +156,7 @@ internal static class ProjectRoleGridViewModelBuilder
             foreach (var character in ordered)
             {
                 result.Add(BuildCharacterRow(
-                    character, config, players, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings,
+                    character, config, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings,
                     fields, group.Id, firstCopy: seenCharacters.Add(character.Id.CharacterId)));
             }
 
@@ -177,7 +177,7 @@ internal static class ProjectRoleGridViewModelBuilder
     private static ProjectRoleGridCharacterRowViewModel BuildCharacterRow(
         CharacterInfo character,
         ProjectRolesList config,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         bool hasGroupsColumn,
         bool canViewPrivate,
@@ -201,7 +201,7 @@ internal static class ProjectRoleGridViewModelBuilder
         // данные игрока на клиент не отдаём вовсе, вместе с ними пропадает и кнопка «Заявиться».
         var player = config.ContactsColumn == PlayerColumnMode.None
             ? null
-            : BuildPlayerCell(character, players, config.ContactsColumn, canViewPrivate);
+            : BuildPlayerCell(character, approvedClaims, config.ContactsColumn, canViewPrivate);
 
         GroupsCellViewModel? groups = hasGroupsColumn
             ? BuildGroupsCell(character, config.GroupsColumn)
@@ -238,7 +238,7 @@ internal static class ProjectRoleGridViewModelBuilder
 
     private static PlayerCellViewModel BuildPlayerCell(
         CharacterInfo character,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         PlayerColumnMode contactsColumn,
         bool canViewPrivate)
     {
@@ -249,10 +249,9 @@ internal static class ProjectRoleGridViewModelBuilder
             character.CharacterTypeInfo.IsHot,
             ClaimValidator.IsAvailableForPlayer(character));
 
-        // Профиль игрока в агрегат персонажа не входит (ADR013) — он приходит отдельной загрузкой.
-        var player = character.ApprovedClaim is { } approvedClaim
-            ? players.GetValueOrDefault(approvedClaim.PlayerId)
-            : null;
+        // Профиль игрока в агрегат персонажа не входит (ADR013) — он приходит отдельной загрузкой,
+        // вместе с утверждённой заявкой (ADR021).
+        var player = approvedClaims.GetValueOrDefault(character.Id)?.Player;
         if (player is null)
         {
             // Нет одобренной заявки — «нет игрока» (Link == null).

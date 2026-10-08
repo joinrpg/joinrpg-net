@@ -2,8 +2,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Users;
-using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
@@ -26,6 +24,7 @@ public class CharacterListController(
     ICharacterInfoRepository characterInfoRepository,
     ICharacterGroupRepository charGroupRepository,
     IUserRepository userRepository,
+    IClaimInfoRepository claimInfoRepository,
     ICurrentUserAccessor currentUserAccessor
     ) : JoinControllerGameBase
 {
@@ -73,10 +72,10 @@ public class CharacterListController(
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var characters = (await characterInfoRepository.GetAllCharacterInfos(projectId, spec)).Where(predicate).ToList();
-        var players = await LoadPlayers(characters);
+        var approvedClaims = await claimInfoRepository.GetApprovedClaimInfos(characters);
         var fieldUsers = await userRepository.LoadFieldUserLinks(characters);
 
-        var list = new CharacterListViewModel(currentUserAccessor.UserIdentification, title, characters, players, fieldUsers, projectInfo, problemValidator);
+        var list = new CharacterListViewModel(currentUserAccessor.UserIdentification, title, characters, approvedClaims, fieldUsers, projectInfo, problemValidator);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -102,11 +101,11 @@ public class CharacterListController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var groupIds = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(characterGroupIdentification).ToList();
         var characters = await characterInfoRepository.GetCharacterInfosByGroups(projectId, groupIds, CharacterStatusSpec.Active);
-        var players = await LoadPlayers(characters);
+        var approvedClaims = await claimInfoRepository.GetApprovedClaimInfos(characters);
         var fieldUsers = await userRepository.LoadFieldUserLinks(characters);
 
         var list = new CharacterListByGroupViewModel(currentUserAccessor.UserIdentification,
-          characters, players, fieldUsers, characterGroup, projectInfo, problemValidator);
+          characters, approvedClaims, fieldUsers, characterGroup, projectInfo, problemValidator);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -139,23 +138,6 @@ public class CharacterListController(
     [HttpGet]
     public Task<ActionResult> WithPlayers(ProjectIdentification projectid, string export)
       => MasterCharacterList(projectid, CharacterStatusSpec.Active, character => character.ApprovedClaimId is not null, export, "Занятые персонажи");
-
-    /// <summary>
-    /// Профили игроков утверждённых заявок — одним запросом на весь список, не по персонажу.
-    /// </summary>
-    private async Task<IReadOnlyDictionary<UserIdentification, UserInfo>> LoadPlayers(
-        IReadOnlyCollection<CharacterInfo> characters)
-    {
-        IReadOnlyCollection<UserIdentification> playerIds =
-            [.. characters.Select(c => c.ApprovedClaim?.PlayerId).WhereNotNull().Distinct()];
-
-        if (playerIds.Count == 0)
-        {
-            return new Dictionary<UserIdentification, UserInfo>();
-        }
-
-        return (await userRepository.GetRequiredUserInfos(playerIds)).ToDictionary(user => user.UserId);
-    }
 
     private FileContentResult Export(CharacterListViewModel list, ExportType exportType, ProjectInfo projectInfo)
     {

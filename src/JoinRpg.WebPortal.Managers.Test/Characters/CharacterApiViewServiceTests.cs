@@ -5,6 +5,7 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.WebPortal.Managers.Characters;
 using CharacterInfo = JoinRpg.DomainTypes.Characters.CharacterInfo;
@@ -25,7 +26,7 @@ public class CharacterApiViewServiceTests
         new(
             new FakeCharacterRepository(Mock),
             new ThrowingCharacterInfoRepository(),
-            FakeUserRepository.MustNotBeCalled("проверяемые сценарии до пользователей не доходят"),
+            new ThrowingClaimInfoRepository(),
             new ThrowingCharacterService(),
             new FakeProjectMetadataRepository(Mock.ProjectInfo),
             new FakeCurrentUserAccessor(userId));
@@ -113,6 +114,14 @@ public class CharacterApiViewServiceTests
         public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> groupIds, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
+    }
+
+    /// <summary>Проверяемые сценарии до заявок и игроков не доходят.</summary>
+    private sealed class ThrowingClaimInfoRepository : IClaimInfoRepository
+    {
+        public Task<ClaimInfo?> GetClaimInfoOrDefault(ClaimIdentification claimId) => throw new NotImplementedException();
+        public Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds) => throw new NotImplementedException();
+        public Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimInfos(IReadOnlyCollection<CharacterInfo> characters) => throw new NotImplementedException();
     }
 
     private sealed class ThrowingCharacterService : ICharacterService
