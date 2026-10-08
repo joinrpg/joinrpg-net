@@ -27,6 +27,7 @@ public class AccommodationTypeViewServiceTest
     private AccommodationTypeViewService CreateService(int userId)
         => new(
             new FakeClaimsRepository(Mock),
+            new FakeAccommodationRequestRepository(Mock),
             new FakeProjectMetadataRepository(Mock),
             // GetAccommodationTypes не обращается к IClaimService — если обратится, тест упадёт,
             // и это ровно то поведение, которое здесь нужно.
