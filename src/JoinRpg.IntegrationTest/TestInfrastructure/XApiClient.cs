@@ -90,11 +90,11 @@ public class XApiClient(HttpClient httpClient)
     }
 
     /// <summary>GET /x-game-api/{projectId}/claims/{claimId} — claim details</summary>
-    public async Task<ClaimInfo> GetClaimAsync(int projectId, int claimId)
+    public async Task<ClaimDetails> GetClaimAsync(int projectId, int claimId)
     {
         var response = await httpClient.GetAsync($"/x-game-api/{projectId}/claims/{claimId}");
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<ClaimInfo>())!;
+        return (await response.Content.ReadFromJsonAsync<ClaimDetails>())!;
     }
 
     /// <summary>GET /x-api/users/{userId}/ — player info by user id (site admin only)</summary>

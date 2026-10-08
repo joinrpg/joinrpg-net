@@ -1,0 +1,252 @@
+# ADR021: ClaimInfo — заявка вместе с персонажем и игроком как доменный тип
+
+Статус: предложен.
+
+Проблема:
+==
+
+Агрегат персонажа (ADR013) хранит заявки как `CharacterInfo.Claims`, а корнем на запись
+остаётся `Character` (ADR014). У отдельной заявки поэтому нет своего доменного типа.
+`CharacterClaimInfo` — это элемент коллекции, а не самостоятельный объект: персонажа он не знает,
+а `ProjectInfo` и поля доступны только через агрегат.
+
+На практике почти каждому, кто работает с одной заявкой, нужна тройка «персонаж, одна из его
+заявок, профиль игрока». Сейчас эту тройку собирают вручную и каждый раз по-своему:
+
+- **Ровно эта тройка уже существует** — `ClaimProblemContext` (`src/JoinRpg.Domain/Problems/`).
+  Конструктор проверяет, что заявка лежит в `character.Claims`, а профиль принадлежит
+  `claim.PlayerId`. Но тип живёт в `JoinRpg.Domain` и называется так, будто нужен только для
+  фильтров проблем.
+- **Эту тройку сейчас собирают руками:**
+  - `CheckInController.ShowCheckInForm` (Portal): `GetClaimById(claimId).PlayerId` →
+    `GetRequiredUserInfo` → `CheckInClaimModel`, а модель внутри снова строит `ClaimProblemContext`.
+  - `XGameApi/CheckInController.PrepareClaimFoCheckIn`: грузит EF-`Claim` только ради
+    идентификаторов, потом `CharacterInfo`, `GetClaimById` и `GetRequiredUserInfo`.
+  - `ClaimServiceImpl.CheckInClaim` и `MoveByMaster`:
+    `ctx.CharacterInfo + ctx.ClaimInfo + GetRequiredUserInfo(ctx.ClaimInfo.PlayerId)`.
+  - `ClaimViewModel` (строка ~144) получает `CharacterInfo` и `UserInfo` отдельными параметрами
+    рядом с EF-`Claim`. Контроллер (`ClaimController`) грузит их отдельными вызовами.
+  - `ApiInfoBuilder.CreatePlayerInfo(CharacterInfo, CharacterClaimInfo, UserInfo)` — та же тройка
+    без названия.
+- **Пакетной загрузкой тройки сейчас занимается только `ClaimProblemContextLoader`**
+  (`WebPortal.Models/ClaimList`). Рядом пять почти одинаковых методов `LoadPlayers`
+  (`ClaimListController`, `CharacterListController`, `ProjectRoleGridViewService`,
+  `CharacterApiViewService`, плюс экспорт списка заявок). Каждый заново выбирает
+  `PlayerId` утверждённых заявок и вызывает `GetRequiredUserInfos`. Экспорт списка заявок
+  загружает игроков второй раз, хотя `ClaimProblemContextLoader` уже загрузил их для той же страницы.
+- **Пара «персонаж + заявка» тоже передаётся разрозненно:**
+  - `CalculateClaimBalance(this CharacterInfo, CharacterClaimInfo, ProjectInfo)`: `ProjectInfo`
+    здесь избыточен, он есть в агрегате;
+  - `AccessArgumentsFactory.Create(CharacterInfo, CharacterClaimInfo?, …)`;
+  - `RequestParticipantViewModel(CharacterInfo, CharacterClaimInfo, ProjectInfo)`;
+  - `CharacterNavigationViewModel.HasAccessToClaim(claim, character, user)`;
+  - write-хэндл `IClaimUpdateHandle` и `ClaimMutationContext`. В них отдельными полями лежат
+    `CharacterInfo` и `ClaimInfo`, а согласованность пары держится только на комментарии
+    «это тот же экземпляр».
+
+Пока данные идут отдельными параметрами, их можно передать несогласованными: заявку одного персонажа
+вместе с чужим персонажем или профиль не того игрока. `ClaimProblemContext` закрыл эту дыру для
+проблем. Во всех остальных местах она по-прежнему открыта.
+
+Решение:
+==
+
+### 1. Два доменных типа в `DomainTypes`
+
+Файлы: `src/JoinRpg.DomainTypes/Characters/Claims/ClaimInCharacter.cs` и `ClaimInfo.cs`.
+Новых ссылок проекту не нужно: `CharacterInfo`, `CharacterClaimInfo` и `UserInfo` уже лежат
+в `DomainTypes`.
+
+```csharp
+/// Заявка в составе своего агрегата: персонаж и одна из его заявок.
+public record class ClaimInCharacter
+{
+    public CharacterInfo Character { get; }
+    public CharacterClaimInfo Claim { get; }
+    public ProjectInfo ProjectInfo => Character.ProjectInfo;
+    public ClaimIdentification ClaimId => Claim.ClaimId;
+
+    public ClaimInCharacter(CharacterInfo character, ClaimIdentification claimId);
+    public ClaimInCharacter(CharacterInfo character, CharacterClaimInfo claim); // проверка «claim ∈ character.Claims»
+}
+
+/// Заявка, её персонаж и профиль игрока. Бывший ClaimProblemContext.
+public record class ClaimInfo
+{
+    public ClaimInCharacter ClaimInCharacter { get; }
+    public UserInfo Player { get; }
+
+    public CharacterInfo Character => ClaimInCharacter.Character;
+    public CharacterClaimInfo Claim => ClaimInCharacter.Claim;
+    public ProjectInfo ProjectInfo => Character.ProjectInfo;
+
+    public ClaimInfo(ClaimInCharacter claim, UserInfo player); // проверка Player.UserId == Claim.PlayerId
+}
+```
+
+**Почему два уровня, а не один.** Профиль игрока стоит отдельного запроса, а значительной части
+потребителей он не нужен: write-хэндл, баланс, `AccessArguments`, проживание, навигация.
+Если сделать профиль обязательным, эти места будут грузить его зря. Если сделать его nullable,
+пропадёт инвариант, ради которого `ClaimProblemContext` его и требует: проблема «в профиле не
+хватает контактов» не должна исчезать молча из-за того, что профиль забыли загрузить. Поэтому
+два типа с разным контрактом, а не один с необязательным полем.
+
+**Почему `ClaimInfo` включает `ClaimInCharacter`, а не наследует его.** Тип хранит пару
+внутри себя и не является ею. Так один и тот же `ClaimInCharacter` можно передать дальше без
+профиля, а равенство record не смешивает два типа.
+
+`ProjectInfo` отдельным полем не хранится ни в одном из типов: как и раньше, это защита от второго
+канала тех же метаданных. Инвариант ссылочного равенства `ProjectInfo` из ADR013 продолжает
+действовать — на стороне записи оба типа строятся из `CharacterInfo` хэндла, а не из кешированного.
+
+### 2. Поведение переезжает на тип
+
+Методы, которые сейчас принимают пару отдельными параметрами, получают перегрузку на
+`ClaimInCharacter`. Старые сигнатуры помечаются `[Obsolete]` (счётчик предупреждений служит
+burndown-метрикой) и удаляются, когда у них не остаётся вызывающих.
+
+| Сейчас | Станет |
+|---|---|
+| `character.CalculateClaimBalance(claim, projectInfo)` | `claim.CalculateBalance()` |
+| `character.GetFieldLayers(access, claimId)` | `claim.GetFieldLayers(access)` |
+| `AccessArgumentsFactory.Create(character, claim, user)` | `AccessArgumentsFactory.Create(claim, user)` |
+| `CharacterNavigationViewModel.HasAccessToClaim(claim, character, user)` | метод над `ClaimInCharacter` |
+
+На `ClaimInfo` переезжает то, чему нужен профиль: проблемы (`IClaimProblemValidator`,
+`IClaimProblemFilter`), `ClaimCheckInValidator`, `ApiInfoBuilder.CreatePlayerInfo`.
+
+Фильтры и валидатор проблем остаются в `JoinRpg.Domain`. Переезжает только тип, а
+переносить фильтры вместе с ним этот ADR не предлагает.
+
+### 3. Загрузчик
+
+`ClaimProblemContextLoader` превращается в репозиторий `IClaimInfoRepository`
+(`Data.Interfaces/Characters/`, реализация в `Dal.Impl`). Он собран из `ICharacterInfoRepository`
+и `IUserRepository`, своего SQL у него нет.
+
+Это именно отдельный интерфейс, а не методы-расширения над парой репозиториев. Так вызывающему
+нужна одна зависимость, а не две, и в юнит-тестах загрузку можно подделать одним фейком.
+
+```csharp
+Task<ClaimInfo?> GetClaimInfoOrDefault(ClaimIdentification claimId);
+Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds);
+
+/// Утверждённые заявки: персонажи без утверждённой заявки в словарь не попадают.
+IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IReadOnlyCollection<CharacterInfo> characters);
+```
+
+Пакетные методы делают два запроса на весь список: персонажей одним
+`GetCharacterInfosByClaims`, профили одним `GetRequiredUserInfos`. Это правило уже работает
+в текущем загрузчике.
+
+`GetApprovedClaimInfos` заменяет пять копий `LoadPlayers`. Персонажи у этих потребителей уже
+загружены, поэтому метод принимает готовые агрегаты и догружает только профили. Персонаж без
+утверждённой заявки — нормальный случай, поэтому результат — словарь без такого ключа, а не
+`ClaimInfo` с пустым игроком: инвариант «у заявки всегда есть игрок» сохраняется.
+
+### 4. Сторона записи
+
+`IClaimUpdateHandle` вместо пары `CharacterInfo` + `ClaimInfo` отдаёт
+`ClaimInCharacter ClaimSnapshot` — снимок ДО, построенный из `CharacterInfo` хэндла.
+`ClaimMutationContext` отдаёт его наружу, а для операций, которым нужен профиль, добавляется
+`Task<ClaimInfo> LoadClaimInfo()`. Сейчас его вручную собирают `CheckInClaim` и `MoveByMaster`.
+Свойство `ctx.CharacterInfo` остаётся вычисляемым. Свойство `ctx.ClaimInfo` (и одноимённое в
+`IClaimUpdateHandle`) сейчас означает `CharacterClaimInfo`. Рядом с типом `ClaimInfo` это было бы
+двусмысленно, поэтому оно переименовывается в `ctx.CharacterClaimInfo` — механически, средствами IDE,
+отдельным коммитом.
+
+Профиль в хэндл **не** добавляется: ADR014 намеренно держит хэндл узким, и большинству мутаций
+профиль не нужен.
+
+### 5. Именование
+
+`ClaimInfo` встаёт в один ряд с `ProjectInfo`, `CharacterInfo` и `UserInfo`: это доменный снимок,
+а не контекст операции. Слово «контекст» уже занято мутационными контекстами ADR009/ADR014
+(`ClaimMutationContext`), поэтому `ClaimProblemContext` переименовывается.
+
+Имя было занято публичным DTO x-game-api `XGameApi.Contract.ClaimInfo`. Он переименован в
+`ClaimDetails`. JSON-ответ `GET x-game-api/{projectId}/claims/{claimId}` от этого не меняется,
+меняется только имя схемы в Swagger. Пакетом контракт не публикуется (`IsPackable` не задан),
+внешних сборок с этим типом нет.
+
+`ClaimView` и `ClaimWithPlayer` заняты legacy-типами в `ICharacterRepository.cs`. `ClaimInCharacter`
+ни с чем не пересекается.
+
+Потребители:
+==
+
+По убыванию пользы:
+
+1. **Собирают ровно эту тройку** — сразу переходят на `ClaimInfo` через репозиторий:
+   - check-in в Portal (`CheckInController.ShowCheckInForm`, `CheckInClaimModel`);
+   - check-in в x-game-api (`PrepareClaimFoCheckIn` и соседнее действие, которое грузит EF-`Claim`
+     только ради 404) — EF отсюда уходит полностью;
+   - `ClaimServiceImpl.CheckInClaim`, `MoveByMaster`.
+2. **Список заявок и экспорт** — `ClaimListBuilder.BuildItem` перестаёт читать
+   `claim.Character.CharacterName`, `claim.Player` и EF-баланс. `BuildItemForExport` берёт игрока
+   из уже загруженного контекста, а `ClaimListController.LoadPlayers` удаляется.
+3. **Утверждённая заявка пачкой** через `GetApprovedClaimInfos`:
+   - сетка ролей (`ProjectRoleGridViewService`, `BuildPlayerCell`);
+   - список персонажей (`CharacterListController`, `CharacterListItemViewModel`);
+   - API персонажей (`CharacterApiViewService`, `ApiInfoBuilder`).
+4. **Пара без профиля** — `ClaimInCharacter`:
+   - баланс, `AccessArgumentsFactory`, `GetFieldLayers`;
+   - проживание (`RequestParticipantViewModel`, `RoomTypeRoomsViewService`);
+   - навигация персонажа;
+   - write-хэндл.
+5. **Частично**:
+   - `ClaimViewModel` и `SecondRoleViewModel` перестают читать через EF-`Claim` то, что знает
+     агрегат: имя персонажа, `IsActive`, утверждённую заявку, ответственного мастера, проект.
+     `Claim.HasAccess` получает доменную перегрузку на `ClaimInCharacter`.
+   - EF-`Claim` в этих вьюмоделях остаётся ради комментариев, финансовых операций и
+     `ClaimAccommodationViewModel`. В `CharacterClaimInfo` их нет, и этот ADR их туда не добавляет.
+
+Что сознательно НЕ делаем:
+==
+
+- **Уведомления.** `ClaimEmailModel` и `FieldsChangedEmail` построены на EF-`Claim` целиком.
+  Их перевод на `ClaimInfo` — отдельная большая миграция, а не попутная замена типа.
+- **`ClaimValidator.EnsureCanAddClaim/EnsureCanMoveClaim`.** Они работают с *целевым* персонажем
+  и `UserClaimInfo`, а не с заявкой в её собственном персонаже, и под эту форму не подходят.
+- **`ClaimCreationContext`.** На момент создания заявки ещё нет.
+- **Профиль внутри агрегата персонажа.** ADR013 держит в агрегате только `UserInfoHeader`
+  (имя — да, контакты — нет). `ClaimInfo` не меняет это правило. Профиль — отдельный слой,
+  который загружается по требованию.
+- **MCP.** Инструментов про заявки там пока нет, так что переводить нечего.
+
+Порядок работ:
+==
+
+0. **Освободить имя.** `XGameApi.Contract.ClaimInfo` → `ClaimDetails`; `ctx.ClaimInfo` /
+   `IClaimUpdateHandle.ClaimInfo` → `CharacterClaimInfo`.
+1. **Перенос и переименование.** `ClaimProblemContext` → `ClaimInfo` + `ClaimInCharacter`
+   в `DomainTypes`. Фильтры, валидатор и тесты переименовываются, а тесты конструктора переезжают
+   в `JoinRpg.DomainTypes.Test`. Поведение не меняется.
+2. **Репозиторий.** `IClaimInfoRepository` вместо `ClaimProblemContextLoader`. На него
+   переходят check-in в Portal и x-game-api и экспорт списка заявок.
+3. **Сторона записи.** `IClaimUpdateHandle.ClaimSnapshot` и `ClaimMutationContext.LoadClaimInfo()`;
+   на него переходят `ClaimServiceImpl.CheckInClaim` и `MoveByMaster`.
+4. **Утверждённые заявки пачкой.** `GetApprovedClaimInfos`; удаление копий `LoadPlayers` в
+   сетке ролей, списке персонажей и API.
+5. **Методы пары.** Перегрузки баланса, `AccessArguments`, `GetFieldLayers` и навигации на
+   `ClaimInCharacter`; старые помечаются `[Obsolete]`.
+6. **Вьюмодели заявки.** `ClaimViewModel`, `SecondRoleViewModel`, `ClaimListBuilder` перестают
+   читать через EF то, что есть в контексте.
+
+Шаг 0 — два независимых PR (DTO вместе с этим ADR, свойство контекста отдельно). Шаг 1 требует
+только освобождённого имени DTO. Шаги 2–6 не зависят друг от друга и идут после первого; шагу 3
+нужно ещё переименованное свойство контекста.
+
+Последствия:
+==
+
+- Согласованность «заявка — персонаж — игрок» проверяется в одном месте для всех потребителей,
+  а не только для проблем.
+- Пропадают ручные `GetClaimById` + `GetRequiredUserInfo` и пять копий `LoadPlayers`.
+- Сигнатуры становятся короче на один–два параметра, а избыточный `ProjectInfo` из них уходит.
+- Цена: новый тип там, где раньше хватало двух параметров. Для одноразовых вызовов это
+  церемония, поэтому старые сигнатуры удаляются только после переезда последнего вызывающего,
+  а не одним махом.
+
+---
+*Создано: 08.10.2026*
