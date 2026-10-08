@@ -3,12 +3,23 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Claims;
+using JoinRpg.Web.Models.Accommodation;
 
 namespace JoinRpg.Web.Models;
 
 public class ClaimFeeViewModel
 {
-    public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId, ProjectInfo projectInfo, Func<string?, string?> externalPaymentUrlFactory)
+    /// <param name="accommodation">
+    /// Проживание заявки — тип и комната из снимка заявки и плана поселения (ADR022); <c>null</c>,
+    /// если поселение в проекте выключено.
+    /// </param>
+    public ClaimFeeViewModel(
+        Claim claim,
+        ClaimViewModel model,
+        int currentUserId,
+        ProjectInfo projectInfo,
+        Func<string?, string?> externalPaymentUrlFactory,
+        ClaimAccommodationViewModel? accommodation)
     {
         Status = model.Status;
 
@@ -20,8 +31,8 @@ public class ClaimFeeViewModel
         HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
 
         AccommodationFee = claim.ClaimAccommodationFee(projectInfo);
-        RoomType = claim.GetAccommodationType(projectInfo)?.Name ?? "";
-        RoomName = claim.AccommodationRequest?.Accommodation?.Name ?? "";
+        RoomType = accommodation?.AccommodationType?.Name ?? "";
+        RoomName = accommodation?.RoomName;
 
         FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
         FieldsTotalFee = model.Fields.FieldsTotalFee;
@@ -126,9 +137,13 @@ public class ClaimFeeViewModel
     public string RoomType { get; }
 
     /// <summary>
-    /// Number or name of occupied room
+    /// Комната, в которой живёт группа заявки, или <c>null</c>, если ещё не расселена.
     /// </summary>
-    public string RoomName { get; }
+    /// <remarks>
+    /// Раньше здесь стояла пустая строка вместо <c>null</c>, и строка взноса за проживание у
+    /// нерасселённой заявки выводилась с пустым «, комната ».
+    /// </remarks>
+    public string? RoomName { get; }
 
     /// <summary>
     /// Fields fee, separated by bound

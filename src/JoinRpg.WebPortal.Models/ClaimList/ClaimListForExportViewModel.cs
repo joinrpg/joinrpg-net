@@ -16,21 +16,31 @@ namespace JoinRpg.Web.Models.ClaimList;
 /// Выгрузка показывает контакты игрока, а читать их по ленивым навигациям EF на каждую строку —
 /// это N+1.
 /// </param>
+/// <param name="roomNames">
+/// Комнаты заявок по планам поселения (ADR022): заявки, которых здесь нет, не расселены.
+/// </param>
 public class ClaimListForExportViewModel(
     ICurrentUserAccessor currentUserId,
     IReadOnlyCollection<(Claim Claim, ProjectInfo ProjectInfo)> claimPair,
-    IReadOnlyDictionary<UserIdentification, UserInfo> players)
+    IReadOnlyDictionary<UserIdentification, UserInfo> players,
+    IReadOnlyDictionary<ClaimIdentification, string> roomNames)
 {
     public IEnumerable<ClaimListItemForExportViewModel> Items { get; } = claimPair
-          .Select(c => ClaimListBuilder.BuildItemForExport(c.Claim, currentUserId, c.ProjectInfo, players[c.Claim.GetPlayerId()]))
+          .Select(c => ClaimListBuilder.BuildItemForExport(
+              c.Claim,
+              currentUserId,
+              c.ProjectInfo,
+              players[c.Claim.GetPlayerId()],
+              roomNames.GetValueOrDefault(c.Claim.GetId())))
           .ToList();
 
     public ClaimListForExportViewModel(
         ICurrentUserAccessor currentUserId,
         IReadOnlyCollection<Claim> claims,
         ProjectInfo projectInfo,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players)
-        : this(currentUserId, [.. claims.Select(c => (c, projectInfo))], players)
+        IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<ClaimIdentification, string> roomNames)
+        : this(currentUserId, [.. claims.Select(c => (c, projectInfo))], players, roomNames)
     {
     }
 }

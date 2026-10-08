@@ -168,7 +168,9 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                 .Where(pt => pt.UserId == currentUser.UserId)
                 .Select(pt => new PaymentTypeViewModel(pt));
         }
-        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory);
+        // Тип и комната — из модели панели «Проживание», построенной по снимку заявки и плану (ADR022).
+        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory,
+            accommodationModel);
 
         ParentGroups = new CharacterParentGroupsViewModel(claim.Character, HasMasterAccess, projectInfo);
 

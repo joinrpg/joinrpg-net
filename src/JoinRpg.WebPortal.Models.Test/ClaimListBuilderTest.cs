@@ -42,8 +42,29 @@ public class ClaimListBuilderTest
             claim,
             new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
             Mock.ProjectInfo,
-            Mock.PlayerInfo);
+            Mock.PlayerInfo,
+            roomName: null);
 
         result.AccomodationType.ShouldBe("Домик");
+    }
+
+    // Комната берётся из планов поселения (ADR022), а не цепочкой AccommodationRequest.Accommodation:
+    // навигации на комнату у заявки из списка нет, и выгрузка не должна в неё ходить.
+    [Fact]
+    public void ExportTakesRoomNameFromPlans_NotFromNavigation()
+    {
+        var accommodationType = Mock.CreateAccommodationType(name: "Домик");
+        Mock.ReInitProjectInfo();
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        _ = Mock.CreateRoom(Mock.CreateAccommodationRequest(accommodationType, claim), "по навигации");
+
+        var result = ClaimListBuilder.BuildItemForExport(
+            claim,
+            new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
+            Mock.ProjectInfo,
+            Mock.PlayerInfo,
+            roomName: "из плана");
+
+        result.RoomName.ShouldBe("из плана");
     }
 }
