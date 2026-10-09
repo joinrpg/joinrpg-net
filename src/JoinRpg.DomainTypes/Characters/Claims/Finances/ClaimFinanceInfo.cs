@@ -45,4 +45,26 @@ public record class ClaimFinanceInfo(
     /// </summary>
     public ClaimBalance CalculateBalance(int fieldsFee, ProjectInfo projectInfo, DateTime operationDate)
         => new(FeePaid, GetBaseFee(projectInfo, operationDate) + fieldsFee + AccommodationFee);
+
+    /// <summary>
+    /// Базовый взнос, который пора зафиксировать за заявкой, или <c>null</c>, если фиксировать
+    /// нечего: у проекта нет расписания взносов, взнос уже зафиксирован или заявка оплачена не полностью.
+    /// </summary>
+    /// <remarks>
+    /// Полнота оплаты сверяется с взносом на день раньше даты операции: платёж, внесённый в день
+    /// подорожания, засчитывается по старой цене. Фиксируется же цена на дату операции.
+    /// </remarks>
+    public int? GetFeeToFix(int fieldsFee, ProjectInfo projectInfo, DateTime operationDate)
+    {
+        ArgumentNullException.ThrowIfNull(projectInfo);
+
+        if (!projectInfo.ProjectFinanceSettings.FeeSchedule.Any()
+            || FixedFee is not null
+            || CalculateBalance(fieldsFee, projectInfo, operationDate.AddDays(-1)).FeeDue > 0)
+        {
+            return null;
+        }
+
+        return GetBaseFee(projectInfo, operationDate);
+    }
 }

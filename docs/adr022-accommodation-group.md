@@ -235,7 +235,9 @@ character-агрегат, комнату — план. Меняется толь
   легаси-финансы (`FinanceExtensions.ClaimAccommodationFee`) и тип в выгрузке заявок
   (`ClaimListBuilder.BuildItemForExport`), а `ClaimsRepositoryImpl` держит ради них `Include` группы.
   Счётчик `JOIN001` этих мест не видит — навигацию прячет расширение. Финансы уходят с переводом на
-  `CharacterInfo` (§5), выгрузка — с шагом 6 ADR021.
+  `CharacterInfo` (§5), выгрузка — с шагом 6 ADR021. Фиксация взноса (`UpdateClaimFeeIfRequired`) и
+  x-api уже решают по снимку (#5419); на EF-расчёте остались разбивка взноса на странице заявки
+  (`ClaimFeeViewModel`, #5397) и сводка `/rooms` (#5416) — после них расширение удаляется.
 - **`AccommodationListViewModel`** — тип группы по-прежнему навигацией
   `Claim.AccommodationRequest` (в PR 5 не вошёл, см. §6).
 - **Трекаемая группа в сервисах записи**: `ClaimServiceImpl` (выход из группы, новая группа

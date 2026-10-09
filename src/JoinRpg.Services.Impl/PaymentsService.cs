@@ -1,6 +1,7 @@
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Text;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
@@ -53,6 +54,7 @@ internal class PaymentsService(
     Lazy<IClaimNotificationService> claimNotificationService,
     ILogger<PaymentsService> logger,
     IProjectMetadataRepository projectMetadataRepository,
+    IClaimInfoRepository claimInfoRepository,
     CommentHelper commentHelper,
     IHttpClientFactory clientFactory) : DbServiceImplBase(unitOfWork, currentUserAccessor), IPaymentsService
 {
@@ -85,6 +87,17 @@ internal class PaymentsService(
     {
         var claim = await UnitOfWork.GetClaimsRepository().GetClaim(new(projectId, claimId));
         return claim ?? throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
+    }
+
+    /// <summary>
+    /// Фиксирует взнос по заявке, если она оплачена полностью. Решение — по доменному снимку
+    /// заявки (<see cref="FinanceExtensions.UpdateClaimFeeIfRequired"/>).
+    /// </summary>
+    private async Task UpdateClaimFeeIfRequired(Claim claim)
+    {
+        var snapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claim.GetId())
+            ?? throw new JoinRpgEntityNotFoundException(claim.ClaimId, nameof(Claim));
+        claim.UpdateClaimFeeIfRequired(snapshot, Now);
     }
 
     // TODO: We have to reimagine how we get payment purpose
@@ -661,8 +674,7 @@ internal class PaymentsService(
 
                 if (fo.Approved)
                 {
-                    var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(fo.ProjectId));
-                    claim.UpdateClaimFeeIfRequired(Now, projectInfo);
+                    await UpdateClaimFeeIfRequired(claim);
                 }
 
                 paymentNotification = PaymentNotification.Refund;
@@ -679,7 +691,6 @@ internal class PaymentsService(
                     logger.LogInformation("Online payment {financeOperationId} for claim {claimId} to project {projectId} has been successfully performed", fo.CommentId, fo.ClaimId, fo.ProjectId);
 
                     claim = await GetClaimAsync(fo.ProjectId, fo.ClaimId);
-                    var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(fo.ProjectId));
 
                     if (recurrentPayment is not null)
                     {
@@ -688,7 +699,7 @@ internal class PaymentsService(
                         recurrentPayment.Status = RecurrentPaymentStatus.Active;
                     }
 
-                    claim.UpdateClaimFeeIfRequired(Now, projectInfo);
+                    await UpdateClaimFeeIfRequired(claim);
 
                     paymentNotification = fo.RecurrentPaymentId.HasValue
                         ? PaymentNotification.RecurrentCharge

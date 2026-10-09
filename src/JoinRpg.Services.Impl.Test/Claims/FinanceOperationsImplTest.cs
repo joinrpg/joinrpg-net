@@ -25,6 +25,7 @@ public class FinanceOperationsImplTest : ClaimServiceTestBase
             claimNotifications,
             new CommentHelper(currentUser),
             metadataRepository,
+            new FakeClaimInfoRepository(mock),
             CreatePropsService(currentUserId));
     }
 

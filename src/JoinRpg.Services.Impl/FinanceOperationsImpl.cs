@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
@@ -16,6 +17,7 @@ internal class FinanceOperationsImpl(
     IClaimNotificationService claimNotificationService,
     CommentHelper commentHelper,
     IProjectMetadataRepository projectMetadataRepository,
+    IClaimInfoRepository claimInfoRepository,
     ICharacterPropsService characterPropsService) : DbServiceImplBase(unitOfWork, currentUserAccessor), IFinanceService
 {
     public Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
@@ -94,7 +96,7 @@ internal class FinanceOperationsImpl(
 
                 ctx.Claim.FinanceOperations.Add(financeOperation);
 
-                ctx.Claim.UpdateClaimFeeIfRequired(ctx.Request.OperationDate, ctx.ProjectInfo);
+                ctx.Claim.UpdateClaimFeeIfRequired(ctx.ClaimSnapshot, ctx.Request.OperationDate);
             });
 
     /// <inheritdoc />
@@ -173,7 +175,9 @@ internal class FinanceOperationsImpl(
         await UnitOfWork.SaveChangesAsync();
 
         // Trying to fix fee in destination claim
-        claimTo.UpdateClaimFeeIfRequired(Now, projectInfo);
+        var claimToSnapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claimTo.GetId())
+            ?? throw new JoinRpgEntityNotFoundException(request.ToClaimId, nameof(Claim));
+        claimTo.UpdateClaimFeeIfRequired(claimToSnapshot, Now);
 
         await UnitOfWork.SaveChangesAsync();
 
