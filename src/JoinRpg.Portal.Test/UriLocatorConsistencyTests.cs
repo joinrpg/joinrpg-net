@@ -1,6 +1,8 @@
 using JoinRpg.Blazor.Client;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Plots;
+using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.Schedule;
@@ -21,6 +23,8 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
     private static readonly CharacterIdentification CharId = new(ProjectId, 999);
     private static readonly ProjectFieldIdentification FieldId = new(ProjectId, 7);
     private static readonly ProjectFieldVariantIdentification VariantId = new(FieldId, 3);
+    private static readonly PlotElementIdentification PlotElementId = new(new PlotFolderIdentification(ProjectId, 17), 230);
+    private static readonly PlotVersionIdentification PlotVersionId = new(PlotElementId, 4);
 
     private readonly IServiceProvider _clientServices = new ServiceCollection().AddUriLocator().BuildServiceProvider();
 
@@ -151,6 +155,27 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         NormalizePathAndQuery(server).ShouldBe($"/{ProjectId.Value}/schedule/full", StringCompareShould.IgnoreCase);
     }
 
+    public static IEnumerable<object[]> PlotCases() =>
+    [
+        ["GetElementInFolderUri", (Func<IPlotUriLocator, Uri>)(l => l.GetElementInFolderUri(PlotElementId))],
+        ["GetEditElementUri", (Func<IPlotUriLocator, Uri>)(l => l.GetEditElementUri(PlotElementId))],
+        ["GetCopyElementUri", (Func<IPlotUriLocator, Uri>)(l => l.GetCopyElementUri(PlotElementId))],
+        ["GetVersionUri", (Func<IPlotUriLocator, Uri>)(l => l.GetVersionUri(PlotVersionId))],
+        ["GetPrintVersionUri", (Func<IPlotUriLocator, Uri>)(l => l.GetPrintVersionUri(PlotVersionId))],
+        ["GetReorderElementsUri", (Func<IPlotUriLocator, Uri>)(l => l.GetReorderElementsUri(ProjectId))],
+    ];
+
+    [Theory]
+    [MemberData(nameof(PlotCases))]
+    public void PlotLocatorsShouldAgree(string caseName, Func<IPlotUriLocator, Uri> call)
+    {
+        _ = caseName;
+        var server = call(factory.Services.GetRequiredService<IPlotUriLocator>());
+        var client = call(_clientServices.GetRequiredService<IPlotUriLocator>());
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    // Якорь тоже часть ссылки: GetElementInFolderUri без него не раскроет панель вводной.
     private static string NormalizePathAndQuery(Uri uri) =>
-        uri.IsAbsoluteUri ? uri.PathAndQuery : uri.ToString();
+        uri.IsAbsoluteUri ? uri.PathAndQuery + uri.Fragment : uri.ToString();
 }

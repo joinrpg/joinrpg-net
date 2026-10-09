@@ -7,6 +7,7 @@ using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.Schedule;
@@ -24,6 +25,7 @@ internal class UriServiceImpl(
     IProjectUriLocator,
     ICharacterUriLocator,
     IScheduleUriLocator,
+    IPlotUriLocator,
     ICharacterGroupUriLocator,
     IProjectFieldUriLocator,
     IUriLocator<PlotFolderIdentification>,
@@ -163,6 +165,26 @@ internal class UriServiceImpl(
     public Uri GetUri(PlotVersionIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ShowElementVersion", "Plot",
             new { ProjectId = target.ProjectId.Value, target.PlotFolderId.PlotFolderId, target.PlotElementId.PlotElementId, Version = target.Version }));
+
+    Uri IPlotUriLocator.GetElementInFolderUri(PlotElementIdentification elementId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Plot",
+            new { ProjectId = elementId.ProjectId.Value, elementId.PlotFolderId.PlotFolderId },
+            fragment: new FragmentString("#" + PlotElementAnchor.For(elementId))));
+
+    Uri IPlotUriLocator.GetEditElementUri(PlotElementIdentification elementId) => GetUri(elementId);
+
+    Uri IPlotUriLocator.GetCopyElementUri(PlotElementIdentification elementId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("CreateElement", "Plot",
+            new { ProjectId = elementId.ProjectId.Value, elementId.PlotFolderId.PlotFolderId, copyFrom = elementId }));
+
+    Uri IPlotUriLocator.GetVersionUri(PlotVersionIdentification versionId) => GetUri(versionId);
+
+    Uri IPlotUriLocator.GetPrintVersionUri(PlotVersionIdentification versionId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("ShowElementVersion", "Plot",
+            new { ProjectId = versionId.ProjectId.Value, versionId.PlotFolderId.PlotFolderId, versionId.PlotElementId.PlotElementId, versionId.Version, PrintMode = true }));
+
+    Uri IPlotUriLocator.GetReorderElementsUri(ProjectIdentification projectId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("ReorderElements", "Plot", new { ProjectId = projectId.Value }));
 
     public Uri GetUri(ProjectFieldIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "GameField", new { ProjectId = target.ProjectId.Value, target.ProjectFieldId }));
