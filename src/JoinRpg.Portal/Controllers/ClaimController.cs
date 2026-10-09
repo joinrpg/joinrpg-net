@@ -128,7 +128,8 @@ public class ClaimController(
 
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
 
-        var accommodationModel = claim.Project.Details.EnableAccommodation ? ShowAccommodationModel(claim, projectInfo) : null;
+        // Настройку берём из метаданных, а не с сущности: Project.Details — ленивая догрузка (#5112).
+        var accommodationModel = projectInfo.AccommodationSettings.Enabled ? ShowAccommodationModel(claim, projectInfo) : null;
 
         var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
 
