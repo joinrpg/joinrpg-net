@@ -1,0 +1,415 @@
+@* Контрол расселения на странице «Комнаты» типа проживания. Раньше жил в wwwroot/Scripts/rooms.js. *@
+@inject IAccommodationRoomsClient Client
+@inject ILogger<RoomTypeRoomsControl> Logger
+
+<div class="rooms-control">
+    <div style="margin-top: 1em;">
+        <JoinButtonGroup>
+            @if (Model.CanManageRooms)
+            {
+                <JoinButton Label="Добавить…" Icon="JoinIconType.Add" Disabled="@busy" AutoProgress="false" OnClick="@(_ => AddRooms())" data-action="add" />
+            }
+            @if (Model.CanAssignRooms)
+            {
+                <JoinButton Label="Заселить всех" Icon="JoinIconType.Accommodation" Disabled="@(busy || board.Unassigned.Count == 0 || board.Rooms.Count == 0)" AutoProgress="false" OnClick="@(_ => PlaceAll())" data-action="place-all" />
+                <JoinButton Label="Выселить всех" Icon="JoinIconType.EvictAll" Disabled="@(busy || board.AssignedGroupsOfTypeCount(Model.TypeId) == 0)" AutoProgress="false" OnClick="@(_ => KickAll())" data-action="kick-all" />
+            }
+        </JoinButtonGroup>
+    </div>
+
+    @if (board.Unassigned.Count > 0)
+    {
+        <div class="rooms-unassigned" style="margin-top: 1em;">
+            <h4>Нерасселенные участники</h4>
+            <div class="list-group rooms-unassigned-list">
+                <div class="rooms-unassigned-columns">
+                    @foreach (var group in board.Unassigned)
+                    {
+                        <AccommodationGroupItem @key="group.GroupId" Group="group" />
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="table-responsive rooms-rows" style="margin-top: 1em;">
+        <JoinBorderedTable Items="board.Rooms" Context="room">
+            <HeadContent>
+                <tr>
+                    <th style="min-width: 10em; width: 10em;">Комната</th>
+                    <th style="min-width: 10em; width: 10em;">Места</th>
+                    <th>Проживающие</th>
+                    <th style="min-width: 6em; width: 6em;"></th>
+                    <th style="min-width: 6em; width: 6em;"></th>
+                </tr>
+            </HeadContent>
+            <ItemTemplate>
+                <tr @key="room.RoomId" data-room-id="@room.RoomId.RoomId">
+                    <td class="rooms-room-name">@room.Name</td>
+                    <td class="rooms-room-occupancy">@($"{room.Occupancy} / {board.RoomCapacity}")</td>
+                    <td>
+                        @foreach (var group in room.Groups)
+                        {
+                            if (Model.CanAssignRooms)
+                            {
+                                <AccommodationGroupItem @key="group.GroupId" Group="group" KickDisabled="busy" OnKick="() => Kick(room, group)" />
+                            }
+                            else
+                            {
+                                <AccommodationGroupItem @key="group.GroupId" Group="group" />
+                            }
+                        }
+                    </td>
+                    <td>
+                        @if (Model.CanAssignRooms)
+                        {
+                            <JoinButtonGroup Size="SizeStyleEnum.Small">
+                                <JoinButton Icon="JoinIconType.Accommodation" Title="Заселить в комнату" Disabled="@(busy || board.GetFreeSpace(room) == 0)" AutoProgress="false" OnClick="@(_ => Occupy(room))" data-action="occupy" />
+                                <JoinButton Icon="JoinIconType.Evict" Title="Освободить комнату" Disabled="@(busy || !room.IsOccupied)" AutoProgress="false" OnClick="@(_ => KickRoom(room))" data-action="evict" />
+                            </JoinButtonGroup>
+                        }
+                    </td>
+                    <td>
+                        @if (Model.CanManageRooms)
+                        {
+                            <JoinButtonGroup Size="SizeStyleEnum.Small">
+                                <JoinButton Icon="JoinIconType.Edit" Style="VariationStyleEnum.Primary" Title="Переименовать комнату" Disabled="@busy" AutoProgress="false" OnClick="@(_ => Rename(room))" data-action="rename" />
+                                <JoinButton Icon="JoinIconType.Delete" Style="VariationStyleEnum.Warning" Title="Удалить комнату" Disabled="@(busy || room.IsOccupied)" AutoProgress="false" OnClick="@(_ => Delete(room))" data-action="delete" />
+                            </JoinButtonGroup>
+                        }
+                    </td>
+                </tr>
+            </ItemTemplate>
+            <EmptyContent>
+                <tr>
+                    <td colspan="5">(комнаты не добавлены)</td>
+                </tr>
+            </EmptyContent>
+        </JoinBorderedTable>
+    </div>
+
+    <RoomNameDialog @ref="nameDialog" />
+    <RoomOccupationDialog @ref="occupationDialog" Board="board" />
+    <JoinMessageDialog @ref="confirmDialog" Type="MessageDialogType.Confirmation"><span class="rooms-confirm">@confirmMessage</span></JoinMessageDialog>
+    <JoinMessageDialog @ref="messageDialog" Type="@messageType"><span class="rooms-message">@message</span></JoinMessageDialog>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public RoomTypeRoomsViewModel Model { get; set; } = null!;
+
+    private RoomTypeRoomsViewModel? appliedModel;
+    private RoomsBoard board = null!;
+
+    /// <summary>
+    /// Запрос к серверу в полёте. Пока он не вернулся, все мутации заблокированы: откат делается
+    /// снимком всего состояния, и параллельная операция иначе была бы затёрта при откате соседней.
+    /// </summary>
+    private bool busy;
+
+    private RoomNameDialog nameDialog = null!;
+    private RoomOccupationDialog occupationDialog = null!;
+    private JoinMessageDialog confirmDialog = null!;
+    private JoinMessageDialog messageDialog = null!;
+
+    private string confirmMessage = "";
+    private string message = "";
+    private MessageDialogType messageType = MessageDialogType.Fail;
+
+    protected override void OnParametersSet()
+    {
+        // Параметр меняется только при перезагрузке модели целиком — тогда и пересобираем состояние.
+        // Иначе перерисовка родителя затёрла бы ещё не подтверждённые сервером изменения.
+        if (!ReferenceEquals(appliedModel, Model))
+        {
+            ApplyModel(Model);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Как и раньше: у типа ещё нет ни одной комнаты — сразу предлагаем их добавить.
+        if (firstRender && Model.CanManageRooms && board.Rooms.Count == 0)
+        {
+            await AddRooms();
+            StateHasChanged();
+        }
+    }
+
+    private void ApplyModel(RoomTypeRoomsViewModel model)
+    {
+        appliedModel = model;
+        board = new RoomsBoard(model);
+    }
+
+    /// <summary>
+    /// Выполнить запрос к серверу, заблокировав остальные мутации. Изменения, сделанные до вызова,
+    /// сначала показываются — это и есть оптимистичное обновление.
+    /// </summary>
+    private async Task RunExclusive(Func<Task> request)
+    {
+        busy = true;
+        StateHasChanged();
+        try
+        {
+            await request();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task AddRooms()
+    {
+        if (busy)
+        {
+            return;
+        }
+
+        var names = await nameDialog.ShowAsync(name: null);
+        if (names is null)
+        {
+            return;
+        }
+
+        await RunExclusive(async () =>
+        {
+            try
+            {
+                // Идентификаторы новых комнат знает только сервер — поэтому без оптимистичного
+                // обновления: состояние приходит в ответе целиком.
+                ApplyModel(await Client.AddRooms(Model.TypeId, names));
+            }
+            catch (Exception exception)
+            {
+                ShowError(exception, "Произошла ошибка при добавлении или изменении комнат");
+            }
+        });
+    }
+
+    private async Task Rename(BoardRoom room)
+    {
+        if (busy)
+        {
+            return;
+        }
+
+        var name = await nameDialog.ShowAsync(room.Name);
+        if (name is null)
+        {
+            return;
+        }
+
+        var oldName = room.Name;
+        room.Name = name;
+        await RunExclusive(async () =>
+        {
+            try
+            {
+                await Client.RenameRoom(room.RoomId, name);
+            }
+            catch (Exception exception)
+            {
+                room.Name = oldName;
+                ShowError(exception, "Произошла ошибка при добавлении или изменении комнат");
+            }
+        });
+    }
+
+    private async Task Delete(BoardRoom room)
+    {
+        if (busy || !await Confirm($"Удалить комнату {room.Name}?"))
+        {
+            return;
+        }
+
+        var snapshot = board.Snapshot();
+        _ = board.Rooms.Remove(room);
+        await RunExclusive(async () =>
+        {
+            try
+            {
+                await Client.DeleteRoom(room.RoomId);
+            }
+            catch (Exception exception)
+            {
+                board.Restore(snapshot);
+                ShowError(exception, "Произошла ошибка при попытке удаления комнаты");
+            }
+        });
+    }
+
+    private async Task Occupy(BoardRoom room)
+    {
+        if (busy)
+        {
+            return;
+        }
+
+        if (board.Unassigned.Count == 0)
+        {
+            ShowMessage(MessageDialogType.Information, "Кажется, все участники уже расселены!");
+            return;
+        }
+
+        var groups = await occupationDialog.ShowAsync(room);
+        if (groups is null)
+        {
+            return;
+        }
+
+        var snapshot = board.Snapshot();
+        board.MoveToRoom(room, groups);
+        await RunExclusive(async () =>
+        {
+            try
+            {
+                await Client.OccupyRoom(room.RoomId, [.. groups.Select(g => g.GroupId)]);
+            }
+            catch (Exception exception)
+            {
+                board.Restore(snapshot);
+                ShowError(exception, "Произошла ошибка при заселении в комнату");
+            }
+        });
+    }
+
+    private async Task PlaceAll()
+    {
+        if (busy)
+        {
+            return;
+        }
+
+        var snapshot = board.Snapshot();
+        var placements = board.PlaceAll();
+        await RunExclusive(async () =>
+        {
+            Exception? failure = null;
+            foreach (var (room, groups) in placements)
+            {
+                try
+                {
+                    await Client.OccupyRoom(room.RoomId, [.. groups.Select(g => g.GroupId)]);
+                }
+                catch (Exception exception)
+                {
+                    // Комнаты заселяются независимо: откатываем только ту, что не прошла.
+                    board.RollbackMove(room, groups, snapshot);
+                    failure ??= exception;
+                }
+            }
+
+            if (failure is not null)
+            {
+                ShowError(failure, "Произошла ошибка при заселении в комнату");
+            }
+        });
+    }
+
+    private async Task Kick(BoardRoom room, AccommodationGroupViewModel group)
+    {
+        if (busy)
+        {
+            return;
+        }
+
+        var snapshot = board.Snapshot();
+        board.Kick(room, group);
+        await RunExclusive(async () =>
+        {
+            try
+            {
+                await Client.UnOccupyGroup(group.GroupId);
+            }
+            catch (Exception exception)
+            {
+                board.Restore(snapshot);
+                ShowError(exception, "Произошла ошибка при выселении из комнаты");
+            }
+        });
+    }
+
+    private async Task KickRoom(BoardRoom room)
+    {
+        if (busy || !await Confirm($"Выселить всех из комнаты '{room.Name}'?"))
+        {
+            return;
+        }
+
+        var snapshot = board.Snapshot();
+        board.KickAll(room);
+        await RunExclusive(async () =>
+        {
+            try
+            {
+                await Client.UnOccupyRoom(room.RoomId);
+            }
+            catch (Exception exception)
+            {
+                board.Restore(snapshot);
+                ShowError(exception, "Произошла ошибка при выселении из комнаты");
+            }
+        });
+    }
+
+    private async Task KickAll()
+    {
+        if (busy || !await Confirm("Вы точно уверены, что хотите выселить ВСЕХ участников из ВСЕХ комнат этого типа?"))
+        {
+            return;
+        }
+
+        var snapshot = board.Snapshot();
+        board.KickAllOfType(Model.TypeId);
+        await RunExclusive(async () =>
+        {
+            try
+            {
+                await Client.UnOccupyRoomType(Model.TypeId);
+            }
+            catch (Exception exception)
+            {
+                board.Restore(snapshot);
+                ShowError(exception, "Произошла ошибка при выселении из комнаты");
+                return;
+            }
+
+            try
+            {
+                // Раньше выселение уходило формой и страница перезагружалась — нерасселённые снова
+                // шли в привычном порядке. Перечитываем состояние так же; не вышло — оставляем
+                // уже показанный результат, выселение-то прошло.
+                ApplyModel(await Client.GetRooms(Model.TypeId));
+            }
+            catch (Exception exception)
+            {
+                Logger.LogWarning(exception, "Не удалось перечитать комнаты после выселения по типу");
+            }
+        });
+    }
+
+    private async Task<bool> Confirm(string text)
+    {
+        confirmMessage = text;
+        StateHasChanged();
+        return await confirmDialog.ShowBoolModalAsync();
+    }
+
+    private void ShowError(Exception exception, string text)
+    {
+        Logger.LogError(exception, "Ошибка операции над комнатами: {Text}", text);
+        var reason = exception is AccommodationRoomsOperationRefusedException ? exception.Message : null;
+        ShowMessage(MessageDialogType.Fail, reason is null ? text : $"{text}: {reason}");
+    }
+
+    private void ShowMessage(MessageDialogType type, string text)
+    {
+        messageType = type;
+        message = text;
+        StateHasChanged();
+        // Ответа от этого окна не ждём: операция уже закончилась, окно только сообщает.
+        _ = messageDialog.ShowModalAsync();
+    }
+}

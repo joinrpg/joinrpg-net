@@ -1,0 +1,36 @@
+@* Группа проживающих в строке комнаты или в списке нерасселённых. Пробелы между ссылками на жильцов —
+   часть текста, поэтому Blazor не должен их вырезать. *@
+@preservewhitespace true
+@using JoinRpg.Web.ProjectCommon.Claims
+<div class="list-group-item">
+    @if (OnKick.HasDelegate)
+    {
+        <JoinButton Icon="JoinIconType.Remove"
+                    Size="SizeStyleEnum.ExtraSmall"
+                    Title="Выселить из комнаты"
+                    Disabled="@KickDisabled"
+                    AutoProgress="false"
+                    OnClick="@(_ => OnKick.InvokeAsync())"
+                    data-action="kick" />
+    }
+    <AccommodationPaymentBadge Group="Group" />
+    <span class="acc-request">
+        @foreach (var resident in Group.Residents)
+        {
+            <span class="acc-resident"><ClaimLink Model="resident" ShowPlayer="true" /></span>
+        }
+    </span>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public AccommodationGroupViewModel Group { get; set; } = null!;
+
+    /// <summary>Выселить группу. Не задан — кнопки выселения нет (группа не расселена или нет права)</summary>
+    [Parameter]
+    public EventCallback OnKick { get; set; }
+
+    /// <summary>Кнопка выселения видна, но нажать её сейчас нельзя — идёт другая операция</summary>
+    [Parameter]
+    public bool KickDisabled { get; set; }
+}

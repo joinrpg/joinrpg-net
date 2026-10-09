@@ -1,186 +1,231 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.WebPortal.Managers.Accommodation;
+using JoinRpg.Web.Accommodation.Rooms;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
 
 /// <summary>
-/// Операции над комнатами и расселением, которые вызывает скрипт <c>rooms.js</c> со страницы
-/// «Комнаты»: отвечают кодами ответа, а не вью.
+/// Контрол расселения на странице «Комнаты» типа проживания (<see cref="RoomTypeRoomsControl"/>).
 /// </summary>
 /// <remarks>
-/// Адреса у всех экшенов заданы явно и умышленно легаси-вида (<c>/{projectId}/rooms/...</c>,
-/// без префикса <c>/webapi</c>, как у соседей по папке): их собирает строкой <c>rooms.js</c>,
-/// поэтому переезд кода в другой класс не должен менять ни один внешний адрес.
-/// В частности <see cref="DeleteRoom"/> раньше получал адрес не из своего атрибута, а из
-/// маршрута-соглашения на классе (<c>{projectId}/rooms/[action]</c>) — здесь такого маршрута
-/// нет, и прежний адрес закреплён явно.
+/// Права, активность проекта и принадлежность комнаты и групп одному пулу проверяет сервис
+/// расселения (ADR018, дефекты 1, 4, 5); атрибуты здесь повторяют его разделение прав, чтобы
+/// до сервиса не доходил заведомо чужой запрос. Контроллеру остаётся сверить проект запроса
+/// с проектом идентификаторов из тела и разложить доменные исключения по кодам ответа —
+/// с причиной текстом: её контрол показывает мастеру.
+///
+/// <c>[IgnoreAntiforgeryToken]</c> здесь сознательно нет: остров присылает токен заголовком,
+/// и глобальный фильтр antiforgery закрывает и эти ручки.
 /// </remarks>
-[MasterAuthorize()]
-public class AccommodationRoomsController(
-    IAccommodationService accommodationService,
-    IProjectMetadataRepository projectMetadataRepository) : ControllerBase
+[Route("/webapi/accommodation-rooms/[action]")]
+[RequireMaster]
+public class AccommodationRoomsController(IAccommodationRoomsClient client) : ControllerBase
 {
-    [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-    [HttpPost("~/{projectId}/rooms/occupyroom")]
-    public async Task<ActionResult> OccupyRoom(
-        ProjectIdentification projectId,
-        AccommodationRoomIdentification? room,
-        string reqId)
+    private const string WrongProject = "Неверный запрос: объект не найден в проекте";
+    private const string RoomNotFound = "Комната не найдена";
+    private const string GroupNotFound = "Заявка на проживание не найдена";
+    private const string TypeNotFound = "Тип проживания не найден";
+
+    [HttpGet]
+    [RequireMaster(Permission.CanSetPlayersAccommodations)]
+    public async Task<ActionResult<RoomTypeRoomsViewModel>> GetRooms(
+        [FromQuery] ProjectIdentification projectId,
+        [FromQuery] AccommodationTypeIdentification? roomTypeId)
     {
-        // Комнату собирает модель-биндер (ProjectEntityIdModelBinder склеивает голое число из
-        // запроса с проектом маршрута). Группы приходят списком через запятую — биндером такое
-        // не разобрать, поэтому они по-прежнему разбираются здесь.
-        var groupIds = (reqId ?? "").Split(',')
-            .Select(s => int.TryParse(s, out var val) ? val : 0)
-            .Where(val => val > 0)
-            .Select(val => new AccommodationRequestIdentification(projectId, val))
-            .ToList();
-
-        if (room is null || !ModelState.IsValid || groupIds.Count == 0)
+        if (roomTypeId is null || !ModelState.IsValid || roomTypeId.ProjectId != projectId)
         {
-            return BadRequest();
-        }
-
-        // Проверки прав, активности проекта и принадлежности комнаты и групп одному пулу делает
-        // сервис (ADR018, дефекты 1, 4, 5) — контроллеру остаётся разложить доменные исключения
-        // по кодам ответа. Ловить всё подряд с кодом 500 больше незачем.
-        try
-        {
-            await accommodationService.OccupyRoom(room, groupIds);
-            return Ok();
-        }
-        catch (AccommodationRoomNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (AccommodationGroupNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (JoinRpgInsufficientRoomSpaceException)
-        {
-            return BadRequest();
-        }
-    }
-
-    /// <summary>
-    /// Выселяет одну группу жильцов из комнаты
-    /// </summary>
-    /// <remarks>
-    /// Адрес маршрута оставлен прежним (<c>unoccupyroom</c>): его собирает строкой скрипт
-    /// <c>rooms.js</c>, а имя экшена приведено к тому, что операция делает на самом деле.
-    /// </remarks>
-    [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-    [HttpPost("~/{projectId}/rooms/unoccupyroom")]
-    public async Task<ActionResult> UnOccupyGroup(AccommodationRequestIdentification? reqId)
-    {
-        // Типизированный идентификатор собирает модель-биндер: голое число из запроса он
-        // склеивает с текущим проектом маршрута (ProjectEntityIdModelBinder).
-        if (reqId is null || !ModelState.IsValid)
-        {
-            return BadRequest();
+            return BadRequest(WrongProject);
         }
 
         try
         {
-            await accommodationService.UnOccupyGroup(reqId);
-            return Ok();
+            return await client.GetRooms(roomTypeId);
         }
-        catch (AccommodationGroupNotFoundException)
+        catch (AccommodationTypeNotFoundException)
         {
-            return NotFound();
+            return NotFound(TypeNotFound);
         }
     }
 
-    [MasterAuthorize(Permission.CanManageAccommodation)]
-    [HttpPost("~/{projectId}/rooms/addroom")]
-    public async Task<ActionResult> AddRoom(AccommodationTypeIdentification? roomTypeId, string name)
+    [HttpPost]
+    [RequireMaster(Permission.CanManageAccommodation)]
+    public async Task<ActionResult<RoomTypeRoomsViewModel>> AddRooms(
+        [FromQuery] ProjectIdentification projectId,
+        [FromBody] AddRoomsRequest? request)
     {
-        if (roomTypeId is null || !ModelState.IsValid)
+        if (request is null || !ModelState.IsValid || request.TypeId.ProjectId != projectId)
         {
-            return BadRequest();
-        }
-
-        //TODO: Implement room names checking
-        //TODO: Implement new rooms HTML returning
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(roomTypeId.ProjectId);
-
-        // Категорию по типу проживания знают только метаданные — конвертации идентификаторов
-        // в домене нет и заводить её нельзя (ADR018, §2).
-        var typeInfo = projectInfo.AccommodationSettings.GetTypeByIdOrDefault(roomTypeId);
-        if (typeInfo is null)
-        {
-            return NotFound();
-        }
-
-        // Синтаксис поля ввода («1,2,5-8») разбирает web-слой: сервис принимает готовые имена.
-        var roomNames = RoomNamesParser.Parse(name);
-        if (roomNames.Count == 0)
-        {
-            return BadRequest();
-        }
-
-        _ = await accommodationService.AddRooms(typeInfo.RoomCategoryId, roomNames);
-        return StatusCode(201);
-    }
-
-    /// <summary>
-    /// Переименовывает комнату
-    /// </summary>
-    [MasterAuthorize(Permission.CanManageAccommodation)]
-    [HttpPost("~/{projectId}/rooms/editroom")]
-    public async Task<ActionResult> EditRoom(AccommodationRoomIdentification? room, string name)
-    {
-        if (room is null || !ModelState.IsValid)
-        {
-            return BadRequest();
+            return BadRequest(WrongProject);
         }
 
         try
         {
-            await accommodationService.RenameRoom(room, name);
-            return Ok();
+            return await client.AddRooms(request.TypeId, request.RoomNames);
         }
-        catch (AccommodationRoomNotFoundException)
+        catch (AccommodationTypeNotFoundException)
         {
-            return NotFound();
+            return NotFound(TypeNotFound);
         }
         catch (FieldRequiredException)
         {
-            return BadRequest();
+            return BadRequest("Укажите хотя бы один номер комнаты");
         }
     }
 
-    /// <summary>
-    /// Удаляет комнату
-    /// </summary>
-    [MasterAuthorize(Permission.CanManageAccommodation)]
-    [HttpDelete("~/{projectId}/rooms/deleteroom")]
-    public async Task<ActionResult> DeleteRoom(AccommodationRoomIdentification? roomId)
+    [HttpPost]
+    [RequireMaster(Permission.CanManageAccommodation)]
+    public async Task<ActionResult> RenameRoom(
+        [FromQuery] ProjectIdentification projectId,
+        [FromBody] RenameRoomRequest? request)
     {
-        // Проверки прав, активности проекта и принадлежности комнаты проекту делает сервис
-        // (ADR018, дефекты 1, 2, 4) — контроллеру остаётся отличить «неверный запрос» от «упало».
-        if (roomId is null || !ModelState.IsValid)
+        if (request is null || !ModelState.IsValid || request.RoomId.ProjectId != projectId)
         {
-            return BadRequest();
+            return BadRequest(WrongProject);
         }
 
         try
         {
-            await accommodationService.DeleteRoom(roomId);
+            await client.RenameRoom(request.RoomId, request.Name);
             return Ok();
         }
         catch (AccommodationRoomNotFoundException)
         {
-            return NotFound();
+            return NotFound(RoomNotFound);
+        }
+        catch (FieldRequiredException)
+        {
+            return BadRequest("Укажите название комнаты");
+        }
+    }
+
+    [HttpPost]
+    [RequireMaster(Permission.CanManageAccommodation)]
+    public async Task<ActionResult> DeleteRoom(
+        [FromQuery] ProjectIdentification projectId,
+        [FromBody] AccommodationRoomIdentification? roomId)
+    {
+        if (roomId is null || !ModelState.IsValid || roomId.ProjectId != projectId)
+        {
+            return BadRequest(WrongProject);
+        }
+
+        try
+        {
+            await client.DeleteRoom(roomId);
+            return Ok();
+        }
+        catch (AccommodationRoomNotFoundException)
+        {
+            return NotFound(RoomNotFound);
         }
         catch (RoomIsOccupiedException)
         {
-            return BadRequest();
+            return BadRequest("В комнате живут игроки — сначала выселите их");
+        }
+    }
+
+    [HttpPost]
+    [RequireMaster(Permission.CanSetPlayersAccommodations)]
+    public async Task<ActionResult> OccupyRoom(
+        [FromQuery] ProjectIdentification projectId,
+        [FromBody] OccupyRoomRequest? request)
+    {
+        if (request?.GroupIds is null
+            || !ModelState.IsValid
+            || request.RoomId.ProjectId != projectId
+            || request.GroupIds.Any(g => g.ProjectId != projectId))
+        {
+            return BadRequest(WrongProject);
+        }
+
+        if (request.GroupIds.Count == 0)
+        {
+            return BadRequest("Не выбрано, кого заселять");
+        }
+
+        try
+        {
+            await client.OccupyRoom(request.RoomId, request.GroupIds);
+            return Ok();
+        }
+        catch (AccommodationRoomNotFoundException)
+        {
+            return NotFound(RoomNotFound);
+        }
+        catch (AccommodationGroupNotFoundException)
+        {
+            return NotFound(GroupNotFound);
+        }
+        catch (JoinRpgInsufficientRoomSpaceException)
+        {
+            return BadRequest("В комнате не хватает мест");
+        }
+    }
+
+    [HttpPost]
+    [RequireMaster(Permission.CanSetPlayersAccommodations)]
+    public async Task<ActionResult> UnOccupyGroup(
+        [FromQuery] ProjectIdentification projectId,
+        [FromBody] AccommodationRequestIdentification? groupId)
+    {
+        if (groupId is null || !ModelState.IsValid || groupId.ProjectId != projectId)
+        {
+            return BadRequest(WrongProject);
+        }
+
+        try
+        {
+            await client.UnOccupyGroup(groupId);
+            return Ok();
+        }
+        catch (AccommodationGroupNotFoundException)
+        {
+            return NotFound(GroupNotFound);
+        }
+    }
+
+    [HttpPost]
+    [RequireMaster(Permission.CanSetPlayersAccommodations)]
+    public async Task<ActionResult> UnOccupyRoom(
+        [FromQuery] ProjectIdentification projectId,
+        [FromBody] AccommodationRoomIdentification? roomId)
+    {
+        if (roomId is null || !ModelState.IsValid || roomId.ProjectId != projectId)
+        {
+            return BadRequest(WrongProject);
+        }
+
+        try
+        {
+            await client.UnOccupyRoom(roomId);
+            return Ok();
+        }
+        catch (AccommodationRoomNotFoundException)
+        {
+            return NotFound(RoomNotFound);
+        }
+    }
+
+    [HttpPost]
+    [RequireMaster(Permission.CanSetPlayersAccommodations)]
+    public async Task<ActionResult> UnOccupyRoomType(
+        [FromQuery] ProjectIdentification projectId,
+        [FromBody] AccommodationTypeIdentification? typeId)
+    {
+        if (typeId is null || !ModelState.IsValid || typeId.ProjectId != projectId)
+        {
+            return BadRequest(WrongProject);
+        }
+
+        try
+        {
+            await client.UnOccupyRoomType(typeId);
+            return Ok();
+        }
+        catch (AccommodationTypeNotFoundException)
+        {
+            return NotFound(TypeNotFound);
         }
     }
 }

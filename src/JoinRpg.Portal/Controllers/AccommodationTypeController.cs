@@ -14,8 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers;
 
 /// <summary>
-/// Страницы раздела «Поселение»: отдают вью или редирект. Операции, которые вызывает скрипт
-/// <c>rooms.js</c> и которые отвечают кодами ответа, живут в
+/// Страницы раздела «Поселение»: отдают вью или редирект. Операции контрола расселения на
+/// странице «Комнаты», которые отвечают кодами ответа, живут в
 /// <see cref="WebApi.AccommodationRoomsController"/>.
 /// </summary>
 [MasterAuthorize()]
@@ -91,7 +91,7 @@ public class AccommodationTypeController(
     [HttpGet("~/{projectId}/rooms/{roomTypeId}/details")]
     public async Task<ActionResult> RoomTypeDetails(AccommodationTypeIdentification roomTypeId)
     {
-        var viewModel = await roomTypeRoomsViewService.GetRoomTypeRooms(roomTypeId);
+        var viewModel = await roomTypeRoomsViewService.GetRoomsOrDefault(roomTypeId);
         if (viewModel is null)
         {
             return NotFound($"Room type {roomTypeId} not found");
@@ -153,26 +153,5 @@ public class AccommodationTypeController(
         await accommodationService.UnOccupyAllRooms(projectId);
 
         return RedirectToAction("Index");
-    }
-
-    /// <summary>
-    /// Выселяет всех жильцов всех комнат данного типа проживания
-    /// </summary>
-    [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<ActionResult> UnOccupyRoomsByType(AccommodationTypeIdentification roomTypeId)
-    {
-        try
-        {
-            await accommodationService.UnOccupyRoomType(roomTypeId);
-        }
-        catch (AccommodationTypeNotFoundException)
-        {
-            return NotFound();
-        }
-
-        return RedirectToAction("RoomTypeDetails", "AccommodationType",
-            new { ProjectId = roomTypeId.ProjectId.Value, RoomTypeId = roomTypeId.AccommodationTypeId });
     }
 }

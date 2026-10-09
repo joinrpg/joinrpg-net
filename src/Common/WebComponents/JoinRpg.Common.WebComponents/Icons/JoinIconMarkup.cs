@@ -1,7 +1,6 @@
 using System.Net;
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 
 namespace JoinRpg.Common.WebComponents;
 
@@ -39,24 +38,6 @@ public static class JoinIconMarkup
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 ?.InformationalVersion
             ?? "0");
-
-    /// <summary>
-    /// Скрипт, объявляющий перечисленные иконки для функции <c>joinIcon</c> из join-obsolete-icons.js.
-    /// </summary>
-    /// <remarks>
-    /// Нужен только тем страницам, где остался старый скрипт, строящий разметку строками.
-    /// Иконки перечисляются явно, чтобы страница не тащила таблицу, которая ей не нужна.
-    /// </remarks>
-    /// <param name="icons">Иконки, которые понадобятся скриптам страницы.</param>
-    public static string BuildScript(params JoinIconType[] icons)
-    {
-        var symbols = icons.ToDictionary(
-            icon => icon.ToString(),
-            icon => JoinIconDefinitions.Get(icon).IconName);
-
-        return $"window.joinIconSprite={JsonSerializer.Serialize(SpriteUrl)};"
-            + $"window.joinIconSymbols={JsonSerializer.Serialize(symbols)};";
-    }
 
     /// <summary>
     /// Как отрисовать иконку.

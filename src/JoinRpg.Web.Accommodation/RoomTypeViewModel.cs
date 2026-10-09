@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using Microsoft.AspNetCore.Components;
 
@@ -42,12 +41,6 @@ public abstract class RoomTypeViewModelBase
     [DisplayName("Автозаполнение")]
     public bool IsAutoFilledAccommodation { get; private protected init; } = false;
 
-    public abstract int RoomsCount { get; }
-
-    [DisplayName("Общее количество мест")]
-    public int TotalCapacity
-        => RoomsCount * Capacity;
-
     [DisplayName("Название")]
     public string Name { get; set; }
 
@@ -89,116 +82,6 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
 {
     public string ProjectName { get; set; }
 
-
-    /// <summary>
-    /// List of rooms
-    /// </summary>
-    public IReadOnlyList<RoomViewModel> Rooms { get; }
-
-    public override int RoomsCount
-        => Rooms?.Count ?? 0;
-
-    /// <summary>
-    /// List of requests sent for this room type
-    /// </summary>
-    public IReadOnlyList<AccRequestViewModel> Requests { get; set; }
-
-    /// <summary>
-    /// List of requests not assigned to any room
-    /// </summary>
-    public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
-
-    /// <summary>
-    /// Страница комнат: комнаты и группы проживающих берутся из доменного агрегата плана
-    /// поселения (ADR018), настройки типа — из метаданных проекта (ADR015).
-    /// </summary>
-    /// <param name="plan">План категории комнат, из которой селится этот тип проживания</param>
-    /// <param name="typeId">Тип проживания, чью страницу показываем</param>
-    /// <param name="descriptionView">
-    /// Описание типа проживания, уже отрендеренное из Markdown вызывающей стороной
-    /// (рендерер markdown живёт на сервере, см. <see cref="RoomTypeViewModelBase.DescriptionView"/>).
-    /// </param>
-    /// <param name="participants">
-    /// Жильцы по идентификатору заявки. Денег в плане нет (ADR018, §5) — их считает вью-сервис
-    /// страницы одной общей выборкой персонажей.
-    /// </param>
-    /// <param name="currentUserId">
-    /// Пользователь, который смотрит страницу: по нему считаются права
-    /// <see cref="RoomTypeViewModelBase.CanManageRooms"/> и
-    /// <see cref="RoomTypeViewModelBase.CanAssignRooms"/>.
-    /// </param>
-    public RoomTypeViewModel(
-        RoomCategoryPlan plan,
-        AccommodationTypeIdentification typeId,
-        MarkupString descriptionView,
-        IReadOnlyDictionary<ClaimIdentification, RequestParticipantViewModel> participants,
-        UserIdentification currentUserId)
-        : this(plan.GetAccommodationType(typeId), descriptionView, currentUserId, plan.ProjectInfo)
-    {
-        // Creating a list of requests associated with this room type
-        Requests = [.. plan.Groups.Select(group => new AccRequestViewModel(
-            group,
-            [.. group.Subjects.Select(claimId => participants[claimId])]))];
-
-        // Нерасселённые группы: нулевой RoomId — это признак «комната не назначена»
-        // (см. AccRequestViewModel.RoomId).
-        var ua = Requests.Where(ar => ar.RoomId == 0).ToList();
-        ua.Sort((x, y) =>
-        {
-            var result = x.Persons - y.Persons;
-            if (result == 0)
-            {
-                result = x.FeeToPay - y.FeeToPay;
-            }
-
-            if (result == 0)
-            {
-                result = string.Compare(x.PersonsList, y.PersonsList, StringComparison.CurrentCultureIgnoreCase);
-            }
-
-            return result;
-        });
-        UnassignedRequests = ua;
-
-        // Creating a list of rooms contained in this room type
-        // Группы раскладываются по комнатам здесь, а не внутри RoomViewModel: вью-модели групп уже
-        // построены выше, и комната получает свои готовыми, в том же порядке, что и на странице.
-        var requestsByRoom = Requests.ToLookup(request => request.RoomId);
-        var rl = plan.Rooms
-            .Select(room => new RoomViewModel(
-                room,
-                typeId,
-                plan.RoomCapacity,
-                [.. requestsByRoom[room.Id.RoomId]],
-                CanManageRooms,
-                CanAssignRooms))
-            .ToList();
-        rl.Sort((x, y) =>
-        {
-            if (x.Occupancy == y.Occupancy)
-            {
-                if (int.TryParse(x.Name, out var xn) && int.TryParse(y.Name, out var yn))
-                {
-                    return xn - yn;
-                }
-
-                return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
-            }
-            if (x.Occupancy == x.Capacity)
-            {
-                return 1;
-            }
-
-            if (y.Occupancy == y.Capacity)
-            {
-                return -1;
-            }
-
-            return y.Occupancy - x.Occupancy;
-        });
-        Rooms = rl;
-    }
-
     /// <summary>
     /// Форма редактирования типа проживания: берёт настройку из метаданных проекта (ADR015).
     /// Комнаты и заявки в метаданные не входят и здесь не нужны — их показывает отдельная
@@ -231,8 +114,6 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         IsInfinite = typeInfo.IsInfinite;
         IsAutoFilledAccommodation = typeInfo.IsAutoFilledAccommodation;
         DescriptionHtml = descriptionView.Value;
-        Requests = [];
-        UnassignedRequests = [];
     }
 
     /// <summary>

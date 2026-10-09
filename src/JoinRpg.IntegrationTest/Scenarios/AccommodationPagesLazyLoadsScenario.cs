@@ -43,10 +43,10 @@ public class AccommodationPagesLazyLoadsScenario(SmokeProjectFixture fixture)
             document.DocumentNode.SelectSingleNode("//body")?.InnerText
             ?? throw new InvalidOperationException("Страница не содержит body"));
 
-        // Сами комнаты тоже должны отрисоваться: строка комнаты несёт атрибут roomId, по нему
-        // её находит rooms.js (имена атрибутов HtmlAgilityPack приводит к нижнему регистру).
-        // Пустая таблица означала бы, что страница собралась мимо плана поселения (ADR018).
-        var roomRows = document.DocumentNode.SelectNodes("//tr[@roomid]");
+        // Сами комнаты тоже должны отрисоваться: остров пререндерится на сервере, и строка комнаты
+        // несёт атрибут data-room-id. Пустая таблица означала бы, что страница собралась мимо
+        // плана поселения (ADR018).
+        var roomRows = document.DocumentNode.SelectNodes("//tr[@data-room-id]");
         roomRows.ShouldNotBeNull("На странице нет ни одной комнаты");
 
         // Первая ячейка строки — название комнаты.

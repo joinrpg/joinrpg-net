@@ -1,0 +1,52 @@
+@* Диалог «Добавление комнат» / «Изменение комнаты». *@
+<JoinFormDialog @ref="dialog"
+                TViewModel="RoomNameFormModel"
+                Caption="@(model.IsAdding ? "Добавление комнат" : "Изменение комнаты")"
+                FormName="RoomNameForm"
+                SubmitButtonPreset="@(model.IsAdding ? ButtonPreset.Add : ButtonPreset.Save)"
+                Model="model"
+                Width="600px"
+                MaxWidth="90%">
+    <FormRowFor For="@(() => model.Names)" InputId="rooms-room-name">
+        <JoinTextInput id="rooms-room-name" @bind-Value="model.Names" Immediate="true" />
+    </FormRowFor>
+    @if (model.IsAdding)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Info" Icon="JoinIconType.Info">
+            <p>Можно использовать списки и диапазоны номеров. Пробелы игнорируются.</p>
+            <p>Пример: <span style="font-family: monospace;">1А, 2Б,5-8, 12</span></p>
+        </JoinAlert>
+        <JoinAlert Variation="VariationStyleEnum.Info" Icon="JoinIconType.Info">
+            <p>
+                Обратите внимание, что при указании диапазона его границы должны быть
+                только целыми числами, при этом левая граница диапазона должна быть
+                строго меньше правой границы. Иначе диапазон не будет распознан.
+            </p>
+            <p><strong>Правильно:</strong> <span style="font-family: monospace;">5-8,205-210</span></p>
+            <p>
+                Неправильно: <span style="font-family: monospace;">D5-8,305-300</span>
+                (это будут <strong>две</strong> комнаты D5-8 и 305-300)
+            </p>
+        </JoinAlert>
+    }
+</JoinFormDialog>
+
+@code {
+    private JoinFormDialog<RoomNameFormModel> dialog = null!;
+    private RoomNameFormModel model = new(currentName: null);
+
+    /// <summary>
+    /// Спросить имя комнаты.
+    /// </summary>
+    /// <param name="name">Прежнее имя при переименовании; <c>null</c> — добавляем комнаты</param>
+    /// <returns>Введённое значение без крайних пробелов либо <c>null</c>, если пользователь передумал</returns>
+    public async Task<string?> ShowAsync(string? name)
+    {
+        // Новый экземпляр модели — новый EditContext у формы: сообщения прошлого показа не остаются.
+        model = new RoomNameFormModel(name);
+        StateHasChanged();
+
+        var result = await dialog.ShowModalAsync();
+        return result?.Names.Trim();
+    }
+}

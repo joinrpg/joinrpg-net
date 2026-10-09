@@ -5,10 +5,6 @@
     ViewBag.Title = "Поселение на игре «" + Model.ProjectName + "»";
 }
 
-@section Scripts {
-    <script src="~/Scripts/roomsMessages.js"></script>
-}
-
 <h2>@ViewBag.Title</h2>
 
 <div class="btn-group">
@@ -20,12 +16,10 @@
     }
     @if (Model.CanAssignRooms)
     {
-        @*<a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
-            <join-icon icon="Accommodation" /> Заселить всех</a>*@
         @* Выселение меняет состояние, поэтому это POST-форма, а не ссылка. Кнопка остаётся
            в btn-group, а форма прячется рядом: вложенная в группу форма ломает вёрстку BS3. *@
         <button type="button" class="btn btn-default"
-                onclick="if (ConfirmKickAll()) { document.getElementById('frmUnOccupyAll').submit(); }">
+                onclick="if (confirm('Вы точно уверены, что хотите выселить ВСЕХ участников из ВСЕХ комнат ВСЕХ типов?')) { document.getElementById('frmUnOccupyAll').submit(); }">
             <join-icon icon="EvictAll" /> Выселить всех
         </button>
     }

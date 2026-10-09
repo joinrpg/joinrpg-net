@@ -1,4 +1,5 @@
 using JoinRpg.Web.Accommodation;
+using JoinRpg.Web.Accommodation.Rooms;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.CharacterGroups.GroupReport;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
@@ -58,6 +59,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IAccommodationInviteClient, AccommodationInviteClient>()
                 .AddHttpClient<IAccommodationTypeClient, AccommodationInviteClient>()
                 .AddHttpClient<IRoomTypeEditClient, RoomTypeEditClient>()
+                .AddHttpClient<IAccommodationRoomsClient, AccommodationRoomsClient>()
                 .AddHttpClient<IClaimOperationClient, ClaimHttpClient>()
                 .AddHttpClient<IClaimListClient, ClaimHttpClient>()
                 .AddHttpClient<IUnifiedGridClient, ClaimHttpClient>()

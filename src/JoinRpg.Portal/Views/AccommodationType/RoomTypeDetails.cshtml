@@ -1,79 +1,18 @@
-﻿@using JoinRpg.Web.Models.Accommodation
-@model RoomTypeViewModel
+@using JoinRpg.Web.Accommodation.Rooms
+@model RoomTypeRoomsViewModel
 @{
-  ViewBag.Title = Model.ProjectName + ": тип поселения «" + Model.Name + "»";
+  ViewBag.Title = Model.ProjectName + ": тип поселения «" + Model.TypeName + "»";
 }
 
-@section Scripts {
-  @* rooms.js строит разметку строками, поэтому иконки ему нужно объявить заранее. *@
-  <script>@Html.Raw(JoinIconMarkup.BuildScript(JoinIconType.FeePaid))</script>
-  <script src="~/_content/JoinRpg.Common.WebComponents/join-obsolete-icons.js"></script>
-  <script src="~/Scripts/roomsMessages.js"></script>
-  <script src="~/Scripts/rooms.js"></script>
-  <script type="text/javascript">
-    @* following variables are declared in rooms.js *@
-    projectId = @Model.ProjectId;
-    roomTypeId = @Model.Id;
-    roomsCount = @Model.RoomsCount;
-    roomCapacity = @Model.Capacity;
-    roomsCapacity = @Model.TotalCapacity;
-    requestsNotAssigned = @Html.Raw(AccRequestJson.Serialize(Model.UnassignedRequests));
-    requestsAssignedCount = @(Model.Requests.Count - Model.UnassignedRequests.Count);
-  </script>
-}
 <h2>@ViewBag.Title</h2>
 <ul class="nav nav-tabs">
-  <li><a href="@Url.Action("Index", "AccommodationType", new {Model.ProjectId})"><join-icon icon="Back" /> Список типов поселения</a></li>
-  <li><a href="@Url.Action("EditRoomType", "AccommodationType", new {Model.ProjectId, RoomTypeId = Model.Id})">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
+  <li><a href="@Url.Action("Index", "AccommodationType", new { ProjectId = Model.TypeId.ProjectId.Value })"><join-icon icon="Back" /> Список типов поселения</a></li>
+  <li><a href="@Url.Action("EditRoomType", "AccommodationType", new { ProjectId = Model.TypeId.ProjectId.Value, RoomTypeId = Model.TypeId.AccommodationTypeId })">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
   <li class="active"><a href="#">Комнаты</a></li>
 </ul>
 
-
-<!-- Toolbar -->
-<div class="btn-group" style="margin-top: 1em;">
-  @if (Model.CanManageRooms)
-  {
-    <button id="bnAddRooms" type="button" onclick="AddRoom()" class="btn btn-default">
-      <join-icon icon="Add" /> Добавить&hellip;
-    </button>
-  }
-  @if (Model.CanAssignRooms)
-  {
-    <button id="bnPlaceAll" type="button" onclick="PlaceAll()" class="btn btn-default">
-      <join-icon icon="Accommodation" /> Заселить всех
-    </button>
-    @* Выселение меняет состояние, поэтому уходит POST-формой, а не переходом по ссылке. *@
-    <button id="bnKickAll" type="button" onclick="KickAll()" class="btn btn-default">
-      <join-icon icon="EvictAll" /> Выселить всех
-    </button>
-  }
-</div>
-@if (Model.CanAssignRooms)
-{
-  @* Форма вынесена из btn-group: вложенная форма ломает вёрстку группы кнопок BS3. *@
-  <form id="frmUnOccupyRoomsByType" method="post" asp-action="UnOccupyRoomsByType" asp-controller="AccommodationType"
-        asp-route-projectId="@Model.ProjectId" asp-route-roomTypeId="@Model.Id" hidden></form>
-}
-
-<!-- Not assigned requests -->
-<div id="availRequests" style="margin-top: 1em; display: @(Model.UnassignedRequests.Count > 0 ? "block" : "none")">
-  <h4>Нерасселенные участники</h4>
-  <div id="availRequestsList" class="list-group">
-    <div id="availRequestsListContainer">
-      @foreach (var req in Model.UnassignedRequests)
-      {
-        @await Html.PartialAsync("_RoomInhabitant", req)
-      }
-    </div>
-  </div>
-</div>
-
-@await Html.PartialAsync("_RoomsList", new RoomTypeRoomsListViewModel(Model))
+<component type="typeof(RoomTypeRoomsControl)" render-mode="WebAssemblyPrerendered" param-Model="Model" />
 
 <div>
-  @await Html.PartialAsync("_BackButton", Model.ProjectId)
+  @await Html.PartialAsync("_BackButton", Model.TypeId.ProjectId.Value)
 </div>
-
-@await Html.PartialAsync("_RoomEditDlg")
-
-@await Html.PartialAsync("_OccupationDlg")

@@ -1,0 +1,23 @@
+@* Бейдж оплаты группы проживающих: зелёный — оплачено всё, жёлтый и красный — показывают долг. *@
+<span class="badge acc-payment alert-@CssClass" title="@Title"><JoinIcon Icon="JoinIconType.FeePaid" /><span class="price-value price-RUR">@(-Group.FeeToPay)</span></span>
+
+@code {
+    [Parameter, EditorRequired]
+    public AccommodationGroupViewModel Group { get; set; } = null!;
+
+    private string CssClass => GetCssClass(Group.FeeToPay, Group.FeeTotal);
+
+    private string Title => Group.FeeToPay > 0
+        ? $"Не оплачено {Group.FeeToPay} из {Group.FeeTotal}"
+        : "Все оплачено полностью";
+
+    /// <summary>
+    /// Цвет бейджа. Формула перенесена со страницы на jQuery как была: «процент» здесь — доля
+    /// оставшегося долга, и ровно столько же, сколько раньше, групп получает каждый цвет.
+    /// </summary>
+    internal static string GetCssClass(int feeToPay, int feeTotal)
+    {
+        var percent = feeToPay == 0 ? 100 : (feeToPay == feeTotal || feeTotal == 0 ? 0 : 100 * feeToPay / feeTotal);
+        return percent == 100 ? "success" : (percent >= 25 ? "warning" : "danger");
+    }
+}

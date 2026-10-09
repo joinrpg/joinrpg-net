@@ -1,5 +1,6 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Web.Accommodation;
+using JoinRpg.Web.Accommodation.Rooms;
 using JoinRpg.Web.AdminTools;
 using JoinRpg.Web.AdminTools.Notifications;
 using JoinRpg.Web.CharacterGroups.GroupReport;
@@ -67,6 +68,7 @@ public static class Registration
         .AddScoped<IAccommodationTypeClient, Accommodation.AccommodationTypeViewService>()
         .AddScoped<IRoomTypeEditClient, Accommodation.RoomTypeEditViewService>()
         .AddScoped<Accommodation.RoomTypeRoomsViewService>()
+        .AddScoped<IAccommodationRoomsClient>(sp => sp.GetRequiredService<Accommodation.RoomTypeRoomsViewService>())
         .AddScoped<IClaimOperationClient, ClaimsViewService>()
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()

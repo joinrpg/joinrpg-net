@@ -264,10 +264,9 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
             token);
         create.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(create, "Приглашение не создалось"));
 
-        // Заселяем группу приглашающего в комнату — той же ручкой, которой это делает rooms.js.
-        var occupy = await client.PostWithTokenHeaderAsync(
-            seed.OccupyUrl(seed.RoomIds[0], seed.RequestIds[0]),
-            token);
+        // Заселяем группу приглашающего в комнату — той же ручкой, которой это делает страница комнат.
+        var occupy = await client.OccupyAsync(
+            token, seed.ProjectId, new AccommodationRoomIdentification(seed.ProjectId, seed.RoomIds[0]), seed.RequestId(0));
         occupy.StatusCode.ShouldBe(HttpStatusCode.OK, "Заселение приглашающего не прошло");
         (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(
             1,
@@ -630,35 +629,14 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
         /// <summary>Страница комнат типа проживания.</summary>
         public string RoomTypeDetailsUrl => $"{ProjectId.Value}/rooms/{RoomTypeId}/details";
 
-        /// <summary>Адрес заселения — ровно такой, какой собирает <c>rooms.js</c>.</summary>
-        public string OccupyUrl(int roomId, params int[] requestIds)
-            => $"{ProjectId.Value}/rooms/occupyroom?roomTypeId={RoomTypeId}&room={roomId}"
-                + $"&reqId={string.Join(',', requestIds)}";
-
         public Task<HttpClient> CreateClientAsync(JoinApplicationFactory factory)
             => TestUserProjectHelpers.CreateAuthenticatedClientAsync(
                 factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
                 OwnerEmail,
                 followsRedirects: false);
 
-        /// <summary>
-        /// Сколько человек живёт в комнате по данным страницы: атрибут <c>occupancy</c> у строки
-        /// комнаты. Именно его читает <c>rooms.js</c>, поэтому проверять состояние по странице
-        /// честнее, чем запросом в базу.
-        /// </summary>
-        public async Task<int> GetOccupancyAsync(HttpClient client, int roomId)
-        {
-            var response = await client.GetAsync(RoomTypeDetailsUrl);
-            response.StatusCode.ShouldBe(HttpStatusCode.OK, $"Страница {RoomTypeDetailsUrl} не открылась");
-
-            var document = await response.AsHtmlDocument();
-
-            // HtmlAgilityPack приводит имена атрибутов к нижнему регистру.
-            var row = document.DocumentNode.SelectSingleNode($"//tr[@roomid='{roomId}']")
-                ?? throw new InvalidOperationException(
-                    $"На странице {RoomTypeDetailsUrl} нет комнаты {roomId}");
-
-            return row.GetAttributeValue("occupancy", -1);
-        }
+        /// <summary>Сколько человек живёт в комнате по данным страницы комнат</summary>
+        public Task<int> GetOccupancyAsync(HttpClient client, int roomId)
+            => client.GetOccupancyAsync(RoomTypeDetailsUrl, roomId);
     }
 }
