@@ -25,6 +25,8 @@ internal class ProjectMetadataWriteRepository(MyDbContext ctx) : IProjectMetadat
             return ProjectInfo = ProjectMetadataRepository.CreateInfoFromProject(Project, projectId);
         }
 
+        public void Add(object entity) => _ = ctx.Set(entity.GetType()).Add(entity);
+
         public void Remove(object entity) => ctx.Set(entity.GetType()).Remove(entity);
     }
 }

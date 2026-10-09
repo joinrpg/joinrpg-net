@@ -16,7 +16,6 @@
   "POST /webapi/project-field-operations/Delete": 6,
   "POST /webapi/project-field-operations/DeleteUnusedVariants": 4,
   "POST /webapi/project-field-operations/DeleteVariant": 2,
-  "POST /x-game-api/{projectId}/characters": 1,
   "POST /{ProjectId}/claim/{ClaimId}/TransferClaimPayment": 5,
   "POST /{projectId}/forums/concealcomment": 2,
   "POST /{projectId}/forums/createcomment": 2,
