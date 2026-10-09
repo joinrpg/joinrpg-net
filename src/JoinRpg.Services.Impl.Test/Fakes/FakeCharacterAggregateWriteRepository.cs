@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
@@ -30,6 +31,37 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         var character = FindCharacter(mock, claim.GetCharacterId());
         return Task.FromResult<IClaimUpdateHandle>(
             new ClaimHandle(mock, character, claim));
+    }
+
+    /// <summary>
+    /// Имитация relationship fixup EF6 при <c>DetectChanges</c> для групп проживающих: сервисы
+    /// меняют состав группы ссылкой заявки (ключ и навигация вместе, ADR022 §4), а обратную
+    /// коллекцию <see cref="AccommodationRequest.Subjects"/> EF синхронизирует сам. Без этого
+    /// мок после выхода из группы держал бы заявку в двух группах сразу, и следующий план
+    /// поселения не построился бы. Источник истины — навигация заявки.
+    /// </summary>
+    internal static void DetectAccommodationChanges(MockedProject mock)
+    {
+        foreach (var request in mock.AccommodationRequests)
+        {
+            foreach (var subject in request.Subjects.Where(subject => subject.AccommodationRequest != request).ToList())
+            {
+                _ = request.Subjects.Remove(subject);
+            }
+        }
+
+        foreach (var claim in mock.Project.Claims)
+        {
+            if (claim.AccommodationRequest is { } request)
+            {
+                Handle.AddOnce(request.Subjects, claim);
+                claim.AccommodationRequest_Id = request.Id;
+            }
+            else
+            {
+                claim.AccommodationRequest_Id = null;
+            }
+        }
     }
 
     private static Character FindCharacter(MockedProject mock, CharacterIdentification characterId)
@@ -175,7 +207,7 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             }
         }
 
-        private static void AddOnce<T>(ICollection<T> collection, T entity)
+        internal static void AddOnce<T>(ICollection<T> collection, T entity)
         {
             if (!collection.Contains(entity))
             {
@@ -208,6 +240,25 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         public Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
             => Task.FromResult(mock.AccommodationRequests.SingleOrDefault(
                 request => request.Id == groupId.AccommodationRequestId));
+
+        public async Task<RoomCategoryPlan> LoadRoomCategoryPlan(AccommodationTypeIdentification typeId)
+        {
+            // Как и боевой: неизвестный тип — исключение метаданных, а не null.
+            _ = ProjectInfo.AccommodationSettings.GetTypeById(typeId);
+
+            var plan = await new FakeRoomCategoryPlanRepository(mock).GetPlanForTypeOrDefault(typeId)
+                ?? throw new InvalidOperationException($"Нет плана для типа {typeId}");
+
+            // Фейковый загрузчик строит план на mock.ProjectInfo. Хэндл взял тот же экземпляр при
+            // создании; если тест между ними пересобрал метаданные, план уже не на ProjectInfo
+            // хэндла — боевой код такого не допускает (ADR013), пусть и тест падает громко.
+            if (!ReferenceEquals(plan.ProjectInfo, ProjectInfo))
+            {
+                throw new InvalidOperationException("План построен не на ProjectInfo хэндла");
+            }
+
+            return plan;
+        }
 
         public Task<AccommodationInvite> LoadInvite(AccommodationInviteIdentification inviteId)
             => Task.FromResult(

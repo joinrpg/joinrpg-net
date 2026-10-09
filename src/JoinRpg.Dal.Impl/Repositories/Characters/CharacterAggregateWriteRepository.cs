@@ -1,4 +1,6 @@
+using JoinRpg.Dal.Impl.Repositories.Accommodation;
 using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
@@ -193,6 +195,20 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
             var groupIntId = groupId.AccommodationRequestId;
             return await AccommodationGroupQuery(groupId.ProjectId.Value)
                 .SingleOrDefaultAsync(request => request.Id == groupIntId);
+        }
+
+        /// <summary>
+        /// То же ядро, что у <see cref="RoomCategoryPlanRepository"/>, но на <see cref="ProjectInfo"/>
+        /// хэндла: иначе конструктор плана не признал бы типы проживания своими (ADR013). Запрос
+        /// без трекинга, поэтому трекаемые сущности мутации он не задевает.
+        /// </summary>
+        public async Task<RoomCategoryPlan> LoadRoomCategoryPlan(AccommodationTypeIdentification typeId)
+        {
+            // Категорию по типу знают только метаданные (ADR018, §2).
+            var type = ProjectInfo.AccommodationSettings.GetTypeById(typeId);
+            return await new RoomCategoryPlanLoader(ctx).LoadOneAsync(ProjectInfo, type.RoomCategoryId)
+                ?? throw new InvalidOperationException(
+                    $"Room category {type.RoomCategoryId} of accommodation type {typeId} is not found");
         }
 
         public async Task<AccommodationInvite> LoadInvite(AccommodationInviteIdentification inviteId)

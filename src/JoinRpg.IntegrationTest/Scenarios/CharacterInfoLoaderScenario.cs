@@ -144,7 +144,7 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
                     Capacity: 4,
                     IsPlayerSelectable: true));
 
-            _ = await sp.GetRequiredService<IClaimService>().SetAccommodationType(
+            await sp.GetRequiredService<IClaimService>().SetAccommodationType(
                 projectId.Value, claimId.ClaimId, typeId.AccommodationTypeId);
 
             return typeId;

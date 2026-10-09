@@ -71,15 +71,13 @@ public class DeleteAccommodationTypeScenario(JoinApplicationFactory factory)
         var requestIds = await factory.Services.RunAsAsync(ownerId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
-            var result = new List<AccommodationRequestIdentification>(claims.Count);
             foreach (var claimId in claims)
             {
-                AccommodationRequest request = await claimService.SetAccommodationType(
+                await claimService.SetAccommodationType(
                     projectId.Value, claimId.ClaimId, typeId.AccommodationTypeId);
-                result.Add(new AccommodationRequestIdentification(projectId, request.Id));
             }
 
-            return result;
+            return await AccommodationTestHelpers.GetAccommodationGroupIdsAsync(sp, claims);
         });
 
         // Первые двое съезжаются: приглашение и его приём. Третьему приглашение только отправлено.

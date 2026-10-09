@@ -465,20 +465,20 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 .First();
 
             var claimService = sp.GetRequiredService<IClaimService>();
-            var requestIds = new List<int>(claims.Count);
             foreach (var claimId in claims)
             {
-                var request = await claimService.SetAccommodationType(
+                await claimService.SetAccommodationType(
                     projectId.Value, claimId.ClaimId, seeded.RoomTypeId);
-                requestIds.Add(request.Id);
             }
+
+            var requestIds = await AccommodationTestHelpers.GetAccommodationGroupIdsAsync(sp, claims);
 
             // Часть жильцов расселена, часть — нет: страница показывает и комнаты с жильцами,
             // и список нерасселённых, а в отчёте по расселению встречаются обе строки.
             var placed = requestIds.SkipLast(1).ToList();
             await sp.GetRequiredService<IAccommodationService>().OccupyRoom(
                 new AccommodationRoomIdentification(projectId, roomId),
-                [.. placed.Select(id => new AccommodationRequestIdentification(projectId, id))]);
+                placed);
 
             return placed.Count;
         });

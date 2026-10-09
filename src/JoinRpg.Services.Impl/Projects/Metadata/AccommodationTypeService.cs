@@ -189,27 +189,26 @@ internal class AccommodationTypeService(
             accommodationTypeId,
             async ctx =>
             {
-                var group = ctx.Claim.AccommodationRequest;
-
                 // Заявку успели вывести из группы или перевести в другой тип между запросом
-                // списка и этой мутацией — делать нечего.
-                if (group is null || group.AccommodationTypeId != ctx.Request.AccommodationTypeId)
+                // списка и этой мутацией — делать нечего. Решается по снимку заявки (ADR022 §4),
+                // план тогда даже не грузится.
+                if (ctx.CharacterClaimInfo.AccommodationTypeId != ctx.Request)
                 {
                     ctx.NothingChanged();
                     return;
                 }
 
+                var ownGroup = await ctx.LoadOwnAccommodationGroup();
+
                 // Группу успели расселить после проверки занятости — удалять тип уже нельзя.
-                if (group.AccommodationId is not null)
+                if (ownGroup?.Group.RoomId is not null)
                 {
                     throw new AccommodationTypeIsOccupiedException(ctx.Request);
                 }
 
-                // Группа не расселена, значит уведомления о выезде из комнаты не будет.
-                _ = ClaimServiceImpl.ConsiderLeavingRoom(ctx, RoomOccupancyChangeKind.LeftRoom);
-
-                ctx.Claim.AccommodationRequest_Id = null;
-                ctx.Claim.AccommodationRequest = null;
+                // Группа не расселена, значит уведомления о выезде из комнаты не будет. Ссылку
+                // заявки на группу обнуляет сам ConsiderLeavingRoom, новой группы не заводим.
+                _ = ClaimServiceImpl.ConsiderLeavingRoom(ctx, ownGroup, RoomOccupancyChangeKind.LeftRoom);
 
                 await DeclineUnansweredInvites(ctx);
             });

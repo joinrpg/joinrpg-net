@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Interfaces;
@@ -31,8 +30,8 @@ internal sealed class FakeClaimService : IClaimService
     public Task SaveFieldsFromClaim(ClaimIdentification claimId, FieldLayerContainer fieldsToSet) => throw new NotSupportedException();
     public Task CheckInClaim(ClaimIdentification claimId, int money) => throw new NotSupportedException();
     public Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText) => throw new NotSupportedException();
-    public Task<AccommodationRequest> SetAccommodationType(int projectId, int claimId, int accommodationTypeId) => throw new NotSupportedException();
-    public Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId) => throw new NotSupportedException();
+    public Task SetAccommodationType(int projectId, int claimId, int accommodationTypeId) => throw new NotSupportedException();
+    public Task LeaveAccommodationGroupAsync(int projectId, int claimId) => throw new NotSupportedException();
     public Task ConcealComment(int projectId, int commentId, int commentDiscussionId) => throw new NotSupportedException();
     public Task AllowSensitiveData(ClaimIdentification projectId) => throw new NotSupportedException();
     public Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed) => throw new NotSupportedException();

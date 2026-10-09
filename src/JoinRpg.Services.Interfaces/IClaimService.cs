@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
@@ -41,19 +40,23 @@ public interface IClaimService
     Task CheckInClaim(ClaimIdentification claimId, int money);
     Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText);
 
-    Task<AccommodationRequest> SetAccommodationType(int projectId, int claimId, int accommodationTypeId);
+    /// <summary>
+    /// Переводит заявку в новую одноместную группу проживающих выбранного типа. Если тип уже такой —
+    /// ничего не делает.
+    /// </summary>
+    /// <remarks>
+    /// Результата нет (ADR022 §4): <c>Id</c> новой группы до сохранения равен нулю, а группу заявки
+    /// после операции даёт её доменный снимок — <c>CharacterClaimInfo.AccommodationGroupId</c>.
+    /// </remarks>
+    Task SetAccommodationType(int projectId, int claimId, int accommodationTypeId);
 
     /// <summary>
-    /// Excludes a claim from any accommodation group to a single occupation
+    /// Выводит заявку из группы проживающих в собственную одноместную группу того же типа. Если у
+    /// заявки нет типа проживания или она в группе одна — ничего не делает.
     /// </summary>
     /// <param name="projectId">Database Id of a project</param>
     /// <param name="claimId">Database Id of a claim</param>
-    /// <returns>
-    /// null if claim is not accommodated
-    /// <br />Existed accommodation request if there are no neighbours in accommodation.
-    /// <br />New accommodation request if claim was in accommodation group.
-    /// </returns>
-    Task<AccommodationRequest?> LeaveAccommodationGroupAsync(int projectId, int claimId);
+    Task LeaveAccommodationGroupAsync(int projectId, int claimId);
 
     Task ConcealComment(int projectId, int commentId, int commentDiscussionId);
     Task AllowSensitiveData(ClaimIdentification projectId);
