@@ -25,6 +25,10 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// <param name="CheckInDate">Когда игрока зарегистрировали на игре; <c>null</c>, если не регистрировали.</param>
 /// <param name="LastMasterCommentAt">Последний мастерский комментарий, включая невидимые игроку.</param>
 /// <param name="LastVisibleMasterCommentAt">Последний мастерский комментарий, видимый игроку.</param>
+/// <param name="CommentDiscussionId">
+/// Обсуждение заявки. Нужно, например, счётчику непрочитанных комментариев в списке заявок: сами
+/// комментарии агрегат не несёт (ADR013), но связать заявку с её обсуждением должен уметь.
+/// </param>
 /// <param name="Finance">
 /// Финансовые факты заявки: зафиксированный взнос, льгота, уплаченное, стоимость проживания,
 /// факт операций, ждущих модерации. Сгруппированы отдельным типом, потому что ими пользуются
@@ -68,6 +72,7 @@ public record class CharacterClaimInfo(
     DateTimeOffset? LastPlayerCommentAt,
     DateTimeOffset? LastMasterCommentAt,
     DateTimeOffset? LastVisibleMasterCommentAt,
+    CommentDiscussionId CommentDiscussionId,
     ClaimFinanceInfo Finance,
     AccommodationTypeIdentification? AccommodationTypeId,
     AccommodationGroupIdentification AccommodationGroupId,

@@ -449,6 +449,7 @@ public class MockedProject
             claim.LastPlayerCommentAt,
             claim.LastMasterCommentAt,
             claim.LastVisibleMasterCommentAt,
+            new CommentDiscussionId(claim.CommentDiscussionId),
             new ClaimFinanceInfo(
                 FixedFee: claim.CurrentFee,
                 PreferentialFeeUser: claim.PreferentialFeeUser,

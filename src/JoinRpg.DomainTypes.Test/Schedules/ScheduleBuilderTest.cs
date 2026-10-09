@@ -417,6 +417,7 @@ public class ScheduleBuilderTest
             LastPlayerCommentAt: null,
             LastMasterCommentAt: null,
             LastVisibleMasterCommentAt: null,
+            CommentDiscussionId: new CommentDiscussionId(1),
             Finance: new ClaimFinanceInfo(
                 FixedFee: null,
                 PreferentialFeeUser: false,

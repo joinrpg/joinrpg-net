@@ -125,6 +125,7 @@ public class CharacterInfoMapperTest
             LastPlayerCommentAt = lastPlayerCommentAt,
             LastMasterCommentAt = lastMasterCommentAt,
             LastVisibleMasterCommentAt = lastVisibleMasterCommentAt,
+            CommentDiscussionId = 0,
             CurrentFee = currentFee,
             PreferentialFeeUser = preferentialFeeUser,
             JsonData = jsonData,

@@ -91,6 +91,7 @@ internal static class CharacterInfoMapper
             row.LastPlayerCommentAt,
             row.LastMasterCommentAt,
             row.LastVisibleMasterCommentAt,
+            new CommentDiscussionId(row.CommentDiscussionId),
             new ClaimFinanceInfo(
                 row.CurrentFee,
                 row.PreferentialFeeUser,
