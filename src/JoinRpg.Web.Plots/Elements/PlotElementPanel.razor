@@ -20,6 +20,8 @@
             <PlotTodoBadge Todo="@Model.Todo" />
         }
         <span class="h4 @(Model.Status == PlotStatus.Deleted ? "s" : "")">@Model.ShortContent</span>
+    </Header>
+    <HeaderExtra>
         @if (Model.HasMasterAccess)
         {
             <span>
@@ -46,7 +48,7 @@
         {
             <div><b>Опубликованная версия вводной</b>.</div>
         }
-    </Header>
+    </HeaderExtra>
     <ChildContent>
         @if (Model.HasMasterAccess)
         {
