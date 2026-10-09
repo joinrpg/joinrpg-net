@@ -20,14 +20,12 @@ public class CheckInClaimModel : IProjectIdAware
     /// </param>
     public CheckInClaimModel(
         ClaimInfo claimInfo,
-        UserInfo currentUser,
         IReadOnlyCollection<PlotTextDto> plotElements,
         IClaimProblemValidator claimValidator,
         ICurrentUserAccessor currentUserAccessor
         )
     {
         ArgumentNullException.ThrowIfNull(claimInfo);
-        ArgumentNullException.ThrowIfNull(currentUser);
 
         var characterInfo = claimInfo.Character;
         var projectInfo = claimInfo.ProjectInfo;
@@ -49,7 +47,7 @@ public class CheckInClaimModel : IProjectIdAware
         Handouts = [.. plotElements.Select(e => new HandoutListItemViewModel(e))];
         ProblemFields = [.. Validator.FieldProblems.Select(frp => new NotFilledFieldViewModel(frp))];
 
-        CurrentUserFullName = currentUser.UserFullName.FullName ?? "";
+        CurrentUserFullName = currentUserAccessor.DisplayName.FullName ?? "";
     }
 
     public ClaimCheckInValidator Validator { get; }
