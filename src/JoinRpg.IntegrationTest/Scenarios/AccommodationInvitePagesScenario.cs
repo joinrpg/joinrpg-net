@@ -82,6 +82,28 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// видит игрок: у приглашающего уменьшается свободное место, а переехавший перестаёт быть
     /// доступной целью.
     /// </remarks>
+    /// <summary>
+    /// Без antiforgery-токена /webapi отвечает 400 с причиной, а не редиректом на страницу ошибки:
+    /// остров ходит через fetch, и редирект превратился бы в 200 — отказ выглядел бы успехом.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_WithoutAntiforgeryToken_IsRejectedWithReason()
+    {
+        var seed = await SeedAsync();
+        var client = await seed.CreateClientAsync(factory);
+        var sender = seed.Claims[0];
+        var receiverTarget = FindTarget(await GetTargetsAsync(client, sender), seed.GroupTarget(1));
+
+        var response = await client.PostAsync(
+            InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", receiverTarget.TargetId.ToString())),
+            content: null);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, await DescribeAsync(response, "Ожидался отказ antiforgery"));
+        (await response.Content.ReadAsStringAsync()).ShouldContain("Сессия устарела");
+        (await GetInvitesAsync(client, seed.Claims[1], InviteDirection.Incoming)).ShouldBeEmpty(
+            "Приглашение без токена не должно было создаться");
+    }
+
     [Fact]
     public async Task CreateAndAcceptInvite_RoundTrip()
     {
