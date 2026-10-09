@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Web.ProjectCommon;
@@ -100,7 +101,7 @@ public class PrintViewService(
         // печатают и на свободную роль, чтобы игрок на полигоне увидел цену.
         var feeDue = claim is null
             ? projectInfo.ProjectFinanceSettings.GetFeeForDate(DateTime.UtcNow, preferential: false)
-            : character.CalculateClaimBalance(claim, projectInfo).FeeDue;
+            : new ClaimInCharacter(character, claim).CalculateBalance().FeeDue;
 
         var accommodationType = claim?.AccommodationTypeId is { } typeId
             ? projectInfo.AccommodationSettings.GetTypeByIdOrDefault(typeId)

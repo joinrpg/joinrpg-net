@@ -1,5 +1,4 @@
 using JoinRpg.Common.WebComponents;
-using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -21,8 +20,7 @@ public static class ItemBuilder
     public static UgItemForCaptainViewModel? BuildItemForCaptain(
         CharacterInfo character,
         IReadOnlyCollection<CharacterClaimInfo> claims,
-        ICurrentUserAccessor currentUserId,
-        ProjectInfo projectInfo)
+        ICurrentUserAccessor currentUserId)
     {
         var accessArguments = AccessArgumentsFactory.Create(character, currentUserId) with { IsCapitan = true };
 
@@ -45,19 +43,16 @@ public static class ItemBuilder
 
         return new UgItemForCaptainViewModel(
             characterViewModel,
-            [.. claims.Select(claim => BuildClaimItem(character, claim, projectInfo, accessArguments))]
+            [.. claims.Select(claim => BuildClaimItem(new ClaimInCharacter(character, claim), accessArguments))]
             );
     }
 
-    private static UgClaimForCaptainViewModel BuildClaimItem(
-        CharacterInfo character,
-        CharacterClaimInfo claim,
-        ProjectInfo projectInfo,
-        AccessArguments accessArguments)
+    private static UgClaimForCaptainViewModel BuildClaimItem(ClaimInCharacter claimInCharacter, AccessArguments accessArguments)
     {
+        var claim = claimInCharacter.Claim;
         var lastModifiedAt = ClaimListBuilder.GetLastCommentTime(claim, accessArguments);
 
-        var respMaster = projectInfo.GetMasterById(claim.ResponsibleMasterId).UserInfo;
+        var respMaster = claimInCharacter.ProjectInfo.GetMasterById(claim.ResponsibleMasterId).UserInfo;
 
         return new UgClaimForCaptainViewModel(
             new UserLinkViewModel(claim.Player),
@@ -66,7 +61,7 @@ public static class ItemBuilder
             claim.CreateDate,
             claim.CheckInDate,
             new UserLinkViewModel(respMaster),
-            character.CalculateClaimBalance(claim, projectInfo),
+            claimInCharacter.CalculateBalance(),
             claim.ClaimId,
             claim.Player.DisplayName.FullName
             );

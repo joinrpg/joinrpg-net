@@ -51,7 +51,7 @@ public class ClaimBalanceOverCharacterInfoTest
             .CalculateClaimBalance(mock.ProjectInfo, OperationDate);
 
         var (character, claim) = MakeAggregate(currentFee, preferential, fieldsJson);
-        var actual = character.CalculateClaimBalance(claim, mock.ProjectInfo, OperationDate);
+        var actual = new ClaimInCharacter(character, claim).CalculateBalance(OperationDate);
 
         actual.ShouldBe(legacy);
     }
@@ -66,8 +66,8 @@ public class ClaimBalanceOverCharacterInfoTest
         var (withField, claimWithField) = MakeAggregate(currentFee: 1000, preferential: false, fieldsJson);
         var (without, claimWithout) = MakeAggregate(currentFee: 1000, preferential: false, fieldsJson: null);
 
-        withField.CalculateClaimBalance(claimWithField, mock.ProjectInfo, OperationDate).TotalFee
-            .ShouldBe(without.CalculateClaimBalance(claimWithout, mock.ProjectInfo, OperationDate).TotalFee + 250);
+        new ClaimInCharacter(withField, claimWithField).CalculateBalance(OperationDate).TotalFee
+            .ShouldBe(new ClaimInCharacter(without, claimWithout).CalculateBalance(OperationDate).TotalFee + 250);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class ClaimBalanceOverCharacterInfoTest
         var (character, claim) = MakeAggregate(
             currentFee: 1000, preferential: false, fieldsJson: null, feePaid: 300, accommodationFee: 150);
 
-        var balance = character.CalculateClaimBalance(claim, mock.ProjectInfo, OperationDate);
+        var balance = new ClaimInCharacter(character, claim).CalculateBalance(OperationDate);
 
         balance.FeePaid.ShouldBe(300);
         balance.TotalFee.ShouldBe(1000 + 150);
@@ -89,7 +89,7 @@ public class ClaimBalanceOverCharacterInfoTest
     {
         var (character, claim) = MakeAggregate(currentFee: null, preferential: false, fieldsJson: null);
 
-        var balance = character.CalculateClaimBalance(claim, mock.ProjectInfo, FeeStart.AddDays(-1));
+        var balance = new ClaimInCharacter(character, claim).CalculateBalance(FeeStart.AddDays(-1));
 
         balance.TotalFee.ShouldBe(0);
     }

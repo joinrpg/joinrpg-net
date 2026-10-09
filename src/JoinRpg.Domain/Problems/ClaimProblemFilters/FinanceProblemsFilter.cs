@@ -5,7 +5,7 @@ namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 /// <remarks>
 /// Баланс считается один раз на все четыре правила — доменным
-/// <see cref="ClaimBalanceExtensions.CalculateClaimBalance(JoinRpg.DomainTypes.Characters.CharacterInfo, JoinRpg.DomainTypes.Characters.Claims.CharacterClaimInfo, ProjectInfo, System.DateTime?)"/>,
+/// <see cref="ClaimBalanceExtensions.CalculateBalance(ClaimInCharacter, System.DateTime?)"/>,
 /// без обращения к EF. Раньше каждое правило дёргало <c>ClaimBalance()</c> / <c>ClaimTotalFee()</c>
 /// по отдельности, пересчитывая взнос за поля заново.
 /// </remarks>
@@ -19,7 +19,7 @@ internal class FinanceProblemsFilter : IClaimProblemFilter
         //   claim.ClaimBalance()                = сумма подтверждённых операций = balance.FeePaid
         //   claim.ClaimTotalFee(projectInfo)    = взнос + поля + проживание     = balance.TotalFee
         //   claim.ClaimPaidInFull(projectInfo)  = FeePaid >= TotalFee           = balance.FeeDue <= 0
-        var balance = context.Character.CalculateClaimBalance(claim, context.ProjectInfo);
+        var balance = context.ClaimInCharacter.CalculateBalance();
 
         if (claim.Finance.OperationsRequireModeration)
         {

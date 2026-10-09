@@ -41,7 +41,7 @@ public record class ClaimFinanceInfo(
     /// <summary>
     /// Баланс заявки. Взнос за поля приходит снаружи: слой полей живёт в
     /// <see cref="CharacterInfo"/>, а не здесь — см.
-    /// <see cref="ClaimBalanceExtensions.CalculateClaimBalance(CharacterInfo, CharacterClaimInfo, ProjectInfo, DateTime?)"/>.
+    /// <see cref="ClaimBalanceExtensions.CalculateBalance(ClaimInCharacter, DateTime?)"/>.
     /// </summary>
     public ClaimBalance CalculateBalance(int fieldsFee, ProjectInfo projectInfo, DateTime operationDate)
         => new(FeePaid, GetBaseFee(projectInfo, operationDate) + fieldsFee + AccommodationFee);

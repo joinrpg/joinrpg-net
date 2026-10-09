@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
@@ -55,10 +56,10 @@ public class RoomTypeRoomsViewService(
         var characters = await characterInfoRepository.GetCharacterInfosByClaims(claimIds);
 
         return characters
-            .SelectMany(character => character.Claims.Select(claim => (character, claim)))
-            .Where(x => claimIds.Contains(x.claim.ClaimId))
+            .SelectMany(character => character.Claims.Select(claim => new ClaimInCharacter(character, claim)))
+            .Where(claim => claimIds.Contains(claim.ClaimId))
             .ToDictionary(
-                x => x.claim.ClaimId,
-                x => new RequestParticipantViewModel(x.character, x.claim, plan.ProjectInfo));
+                claim => claim.ClaimId,
+                claim => new RequestParticipantViewModel(claim));
     }
 }

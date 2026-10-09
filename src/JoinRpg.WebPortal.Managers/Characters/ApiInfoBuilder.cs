@@ -44,7 +44,7 @@ public class ApiInfoBuilder
     public static CharacterPlayerInfo CreatePlayerInfo(ClaimInfo claim)
         => new(
             claim.Claim.PlayerId.Value,
-            claim.Character.CalculateClaimBalance(claim.Claim, claim.ProjectInfo).FeeDue <= 0,
+            claim.ClaimInCharacter.CalculateBalance().FeeDue <= 0,
             claim.Player.DisplayName.DisplayName,
             ToPlayerContacts(claim.Player));
 

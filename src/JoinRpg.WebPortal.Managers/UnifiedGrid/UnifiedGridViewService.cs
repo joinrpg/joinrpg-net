@@ -30,7 +30,7 @@ internal class UnifiedGridViewService(
         [
             .. characters
                 .Where(character => MatchesFilter(character, filter))
-                .Select(character => ItemBuilder.BuildItemForCaptain(character, SelectClaims(character, filter), currentUserAccessor, projectInfo))
+                .Select(character => ItemBuilder.BuildItemForCaptain(character, SelectClaims(character, filter), currentUserAccessor))
                 .WhereNotNull()
         ];
     }

@@ -108,9 +108,15 @@ burndown-метрикой) и удаляются, когда у них не ос
 | Сейчас | Станет |
 |---|---|
 | `character.CalculateClaimBalance(claim, projectInfo)` | `claim.CalculateBalance()` |
-| `character.GetFieldLayers(access, claimId)` | `claim.GetFieldLayers(access)` |
-| `AccessArgumentsFactory.Create(character, claim, user)` | `AccessArgumentsFactory.Create(claim, user)` |
-| `CharacterNavigationViewModel.HasAccessToClaim(claim, character, user)` | метод над `ClaimInCharacter` |
+| ~~`character.GetFieldLayers(access, claimId)`~~ | ~~`claim.GetFieldLayers(access)`~~ |
+| ~~`AccessArgumentsFactory.Create(character, claim, user)`~~ | ~~`AccessArgumentsFactory.Create(claim, user)`~~ |
+| ~~`CharacterNavigationViewModel.HasAccessToClaim(claim, character, user)`~~ | ~~метод над `ClaimInCharacter`~~ |
+
+Пересмотрено в шаге 5: из этого списка в боевом коде пара реально передавалась только в расчёт
+баланса. `GetFieldLayers` и `AccessArgumentsFactory.Create` с конкретной заявкой зовут лишь
+тесты и сам `CharacterInfo`, а `HasAccessToClaim` — приватный хелпер одного файла. Перегрузки
+без вызывающих не заводим. Старая сигнатура баланса не помечена `[Obsolete]`, а удалена: после
+перевода вызывающих у неё не осталось ни одного.
 
 На `ClaimInfo` переезжает то, чему нужен профиль: проблемы (`IClaimProblemValidator`,
 `IClaimProblemFilter`), `ClaimCheckInValidator`, `ApiInfoBuilder.CreatePlayerInfo`.
@@ -235,8 +241,8 @@ Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimIn
    на него переходит `ClaimServiceImpl.CheckInClaim`.
 4. **Утверждённые заявки пачкой.** `GetApprovedClaimInfos`; удаление копий `LoadPlayers` в
    сетке ролей, списке персонажей и API.
-5. **Методы пары.** Перегрузки баланса, `AccessArguments`, `GetFieldLayers` и навигации на
-   `ClaimInCharacter`; старые помечаются `[Obsolete]`.
+5. **Методы пары.** Баланс считается от `ClaimInCharacter` (`CalculateBalance()`), старая
+   сигнатура с лишним `ProjectInfo` удалена. Остальные перегрузки из §2 не понадобились.
 6. **Вьюмодели заявки.** `ClaimViewModel`, `SecondRoleViewModel`, `ClaimListBuilder` перестают
    читать через EF то, что есть в `ClaimInfo`. Вместе с `BuildItemForExport` на `ClaimInfo`
    переходит и выгрузка списка заявок: пока ей нужен только профиль, загружать ради неё ещё и

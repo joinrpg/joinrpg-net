@@ -148,7 +148,7 @@ public record class CharacterClaimInfo(
   производный скаляр «есть операции, ждущие решения мастера» — единственное, что нужно проблеме
   `FinanceModerationRequired`.
   Сам расчёт живёт на этой же группе: `ClaimFinanceInfo.CalculateBalance(fieldsFee, projectInfo,
-  operationDate)` возвращает `ClaimBalance`, а `ClaimBalanceExtensions.CalculateClaimBalance`
+  operationDate)` возвращает `ClaimBalance`, а `ClaimBalanceExtensions.CalculateBalance` (после ADR021 — над `ClaimInCharacter`)
   поверх агрегата только подставляет взнос за поля. `ClaimBalance` с `ClaimFinanceInfo` не
   объединяется: это результат расчёта, зависящий от даты, метаданных проекта и слоя полей, —
   маппер его заполнить не может, а зафиксировать «баланс на момент загрузки» в кешируемом на
