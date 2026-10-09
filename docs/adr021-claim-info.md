@@ -22,7 +22,7 @@
     `GetRequiredUserInfo` → `CheckInClaimModel`, а модель внутри снова строит `ClaimProblemContext`.
   - `XGameApi/CheckInController.PrepareClaimFoCheckIn`: грузит EF-`Claim` только ради
     идентификаторов, потом `CharacterInfo`, `GetClaimById` и `GetRequiredUserInfo`.
-  - `ClaimServiceImpl.CheckInClaim` и `MoveByMaster`:
+  - `ClaimServiceImpl.CheckInClaim` и `MoveByMaster` (до ADR021):
     `ctx.CharacterInfo + ctx.ClaimInfo + GetRequiredUserInfo(ctx.ClaimInfo.PlayerId)`.
   - `ClaimViewModel` (строка ~144) получает `CharacterInfo` и `UserInfo` отдельными параметрами
     рядом с EF-`Claim`. Контроллер (`ClaimController`) грузит их отдельными вызовами.
@@ -148,12 +148,18 @@ IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IR
 
 `IClaimUpdateHandle` вместо пары `CharacterInfo` + `ClaimInfo` отдаёт
 `ClaimInCharacter ClaimSnapshot` — снимок ДО, построенный из `CharacterInfo` хэндла.
-`ClaimMutationContext` отдаёт его наружу, а для операций, которым нужен профиль, добавляется
-`Task<ClaimInfo> LoadClaimInfo()`. Сейчас его вручную собирают `CheckInClaim` и `MoveByMaster`.
-Свойство `ctx.CharacterInfo` остаётся вычисляемым. Свойство `ctx.ClaimInfo` (и одноимённое в
-`IClaimUpdateHandle`) сейчас означает `CharacterClaimInfo`. Рядом с типом `ClaimInfo` это было бы
-двусмысленно, поэтому оно переименовывается в `ctx.CharacterClaimInfo` — механически, средствами IDE,
-отдельным коммитом.
+`ClaimMutationContext` принимает его вместо пары и передаёт его персонажа базовому
+`CharacterMutationContext` — второго параметра со снимком персонажа больше нет. Для операций, которым
+нужен профиль, добавляется `Task<ClaimInfo> LoadClaimInfo(IUserRepository)`: репозиторий приходит
+параметром, потому что сервисы берут репозитории из `IUnitOfWork`, а не из DI. Сейчас `ClaimInfo`
+вручную собирает `CheckInClaim`.
+
+`MoveByMaster` на `LoadClaimInfo` не переходит: ему нужен профиль игрока сам по себе, для правил
+переноса на *целевого* персонажа (`EnsureCanMoveClaim`), а не заявка вместе со своим персонажем.
+
+Свойство `ctx.ClaimInfo` (и одноимённое в `IClaimUpdateHandle`) означало `CharacterClaimInfo`.
+Рядом с типом `ClaimInfo` это было бы двусмысленно, поэтому оно переименовано в
+`CharacterClaimInfo` — механически, отдельным PR, и осталось сокращением для `ClaimSnapshot.Claim`.
 
 Профиль в хэндл **не** добавляется: ADR014 намеренно держит хэндл узким, и большинству мутаций
 профиль не нужен.
@@ -181,7 +187,7 @@ IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IR
    - check-in в Portal (`CheckInController.ShowCheckInForm`, `CheckInClaimModel`);
    - check-in в x-game-api (`PrepareClaimFoCheckIn` и соседнее действие, которое грузит EF-`Claim`
      только ради 404) — EF отсюда уходит полностью;
-   - `ClaimServiceImpl.CheckInClaim`, `MoveByMaster`.
+   - `ClaimServiceImpl.CheckInClaim`.
 2. **Список заявок и экспорт** — `ClaimListBuilder.BuildItem` перестаёт читать
    `claim.Character.CharacterName`, `claim.Player` и EF-баланс. `BuildItemForExport` берёт игрока
    из уже загруженного контекста, а `ClaimListController.LoadPlayers` удаляется.
@@ -225,8 +231,8 @@ IReadOnlyDictionary<CharacterIdentification, ClaimInfo> GetApprovedClaimInfos(IR
    не меняется.
 2. **Репозиторий.** `IClaimInfoRepository` вместо `ClaimProblemContextLoader`. На него
    переходят check-in в Portal и x-game-api и список заявок.
-3. **Сторона записи.** `IClaimUpdateHandle.ClaimSnapshot` и `ClaimMutationContext.LoadClaimInfo()`;
-   на него переходят `ClaimServiceImpl.CheckInClaim` и `MoveByMaster`.
+3. **Сторона записи.** `IClaimUpdateHandle.ClaimSnapshot` и `ClaimMutationContext.LoadClaimInfo(IUserRepository)`;
+   на него переходит `ClaimServiceImpl.CheckInClaim`.
 4. **Утверждённые заявки пачкой.** `GetApprovedClaimInfos`; удаление копий `LoadPlayers` в
    сетке ролей, списке персонажей и API.
 5. **Методы пары.** Перегрузки баланса, `AccessArguments`, `GetFieldLayers` и навигации на

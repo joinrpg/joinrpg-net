@@ -84,6 +84,10 @@ public class CharacterAggregateWriteRepositoryScenario(JoinApplicationFactory fa
         var claimInfoFromCharacter = handle.CharacterInfo.Claims.Single(c => c.ClaimId == claimId);
         ReferenceEquals(handle.CharacterClaimInfo, claimInfoFromCharacter).ShouldBeTrue();
 
+        // Снимок заявки собран над тем же агрегатом, что отдаёт хэндл (ADR021): персонаж в нём —
+        // не перечитанный заново, иначе его ProjectInfo был бы другим экземпляром.
+        ReferenceEquals(handle.ClaimSnapshot.Character, handle.CharacterInfo).ShouldBeTrue();
+
         // Трекаемые сущности соответствуют снимкам.
         handle.Claim.ClaimId.ShouldBe(claimId.ClaimId);
         handle.Character.CharacterId.ShouldBe(characterId.CharacterId);

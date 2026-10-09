@@ -14,23 +14,38 @@ namespace JoinRpg.Services.Impl.Claims;
 /// <see cref="CharacterMutationContext"/> и даёт доступ и к персонажу, и к его снимку.
 /// </summary>
 /// <param name="Claim">Трекаемая EF-сущность заявки; её и нужно мутировать.</param>
-/// <param name="CharacterClaimInfo">
-/// Доменный снимок заявки строго ДО изменения — тот же экземпляр, что лежит в
-/// <see cref="CharacterMutationContext.CharacterInfo"/>.<c>Claims</c>.
+/// <param name="ClaimSnapshot">
+/// Доменный снимок заявки в составе персонажа строго ДО изменения (ADR021). Его персонаж и есть
+/// <see cref="CharacterMutationContext.CharacterInfo"/> — отдельным параметром снимок персонажа не
+/// передаётся, чтобы их нельзя было передать несогласованными.
 /// </param>
 internal abstract record ClaimMutationContext(
     Claim Claim,
-    CharacterClaimInfo CharacterClaimInfo,
+    ClaimInCharacter ClaimSnapshot,
     Character Character,
-    CharacterInfo CharacterInfo,
     ProjectInfo ProjectInfo,
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
     IAggregateMutationScope Scope,
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper)
-    : CharacterMutationContext(Character, CharacterInfo, ProjectInfo, Now, CurrentUser, Scope, FieldSaveHelper)
+    : CharacterMutationContext(Character, ClaimSnapshot.Character, ProjectInfo, Now, CurrentUser, Scope, FieldSaveHelper)
 {
+    /// <summary>Доменный снимок самой заявки — сокращение для <c>ClaimSnapshot.Claim</c>.</summary>
+    public CharacterClaimInfo CharacterClaimInfo => ClaimSnapshot.Claim;
+
+    /// <summary>
+    /// Снимок заявки вместе с профилем игрока — для правил, которым нужен профиль (проблемы
+    /// заявки, регистрация, перенос).
+    /// </summary>
+    /// <remarks>
+    /// Профиль в хэндл агрегата не входит (ADR014 держит его узким), поэтому догружается здесь, по
+    /// требованию. Репозиторий приходит параметром: сервисы берут репозитории из
+    /// <c>IUnitOfWork</c>, а не из DI.
+    /// </remarks>
+    public async Task<ClaimInfo> LoadClaimInfo(IUserRepository userRepository)
+        => new(ClaimSnapshot, await userRepository.GetRequiredUserInfo(CharacterClaimInfo.PlayerId));
+
     /// <summary>
     /// Сюжеты, привязанные напрямую к персонажу, трекаемые тем же <c>DbContext</c>. Нужны созданию
     /// персонажа из слота.
@@ -187,9 +202,8 @@ internal abstract record ClaimMutationContext(
 /// </summary>
 internal sealed record ClaimMutationContext<TArgs>(
     Claim Claim,
-    CharacterClaimInfo CharacterClaimInfo,
+    ClaimInCharacter ClaimSnapshot,
     Character Character,
-    CharacterInfo CharacterInfo,
     ProjectInfo ProjectInfo,
     DateTime Now,
     ICurrentUserAccessor CurrentUser,
@@ -197,5 +211,5 @@ internal sealed record ClaimMutationContext<TArgs>(
     FieldSaveHelper FieldSaveHelper,
     CommentHelper CommentHelper,
     TArgs Request)
-    : ClaimMutationContext(Claim, CharacterClaimInfo, Character, CharacterInfo, ProjectInfo, Now, CurrentUser,
+    : ClaimMutationContext(Claim, ClaimSnapshot, Character, ProjectInfo, Now, CurrentUser,
         Scope, FieldSaveHelper, CommentHelper);
