@@ -9,6 +9,10 @@
         {
             @ItemTemplate(item)
         }
+        @if (Items.Count == 0 && EmptyContent is not null)
+        {
+            @EmptyContent
+        }
     </tbody>
 </table>
 
@@ -21,4 +25,11 @@
 
     [Parameter, EditorRequired]
     public IReadOnlyList<TItem> Items { get; set; } = default!;
+
+    /// <summary>
+    /// Что показать в теле таблицы, когда строк нет — обычно строку-заглушку
+    /// (<c>&lt;tr&gt;&lt;td colspan="…"&gt;…&lt;/td&gt;&lt;/tr&gt;</c>).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
 }
