@@ -1,0 +1,36 @@
+@*
+    Сворачиваемая панель на нативном <details>: раскрывает браузер, без JS Bootstrap.
+    Панели внутри JoinCollapsePanelGroup (или с одинаковым Group) образуют аккордеон — открыта
+    не больше одной (атрибут name у <details>).
+    Ссылка с якорем на Id раскрывает панель — это делает JoinRpg.Common.WebComponents.lib.module.js.
+*@
+<details class="@PanelClass join-collapse-panel" id="@Id" name="@(Group ?? ParentGroup?.EffectiveName)" open="@Open">
+    <summary class="panel-heading join-collapse-panel__heading">@Header</summary>
+    <div class="panel-body">@ChildContent</div>
+</details>
+
+@code {
+    /// <summary>Заголовок: всегда виден, клик по нему сворачивает и разворачивает панель.</summary>
+    [Parameter, EditorRequired] public RenderFragment Header { get; set; } = null!;
+
+    /// <summary>Содержимое, видное только в развёрнутой панели.</summary>
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>Развёрнута ли панель при отрисовке.</summary>
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>
+    /// Имя аккордеона, если панели не лежат в одной <see cref="JoinCollapsePanelGroup"/>.
+    /// Из панелей с одинаковым именем открыта не больше одной.
+    /// </summary>
+    [Parameter] public string? Group { get; set; }
+
+    /// <summary>Id панели — для ссылок с якорем, которые её раскрывают.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    [Parameter] public VariationStyleEnum? Variation { get; set; }
+
+    [CascadingParameter] private JoinCollapsePanelGroup? ParentGroup { get; set; }
+
+    private string PanelClass => BootstrapStyle.Build("panel", Variation, null);
+}

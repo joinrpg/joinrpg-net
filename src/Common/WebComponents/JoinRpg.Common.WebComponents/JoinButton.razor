@@ -118,6 +118,13 @@ else
     public string? Label { get; set; }
 
     /// <summary>
+    /// Содержимое кнопки вместо <see cref="Label"/> и <see cref="Icon"/> — когда подпись не строка
+    /// (например, дата из <see cref="EventTime"/>).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
     /// Icon to be rendered in normal and disabled states.
     /// </summary>
     [Parameter]
@@ -254,7 +261,7 @@ else
         }
 
         var presetContent = ButtonPresets.All[Preset];
-        NormalContent = FormatLabelLogged(Label, presetContent.Normal.Label, Icon, presetContent.Normal.Icon, "Normal");
+        NormalContent = ChildContent ?? FormatLabelLogged(Label, presetContent.Normal.Label, Icon, presetContent.Normal.Icon, "Normal");
         ProgressContent = FormatLabelLogged(ProgressLabel, presetContent.Progress.Label ?? Label, ProgressIcon, presetContent.Progress.Icon, "Progress");
         ActualStyle = Style ?? presetContent.Style;
         DialogCaption = Label?.Trim() ?? presetContent.Normal.Label ?? "Подтверждение";

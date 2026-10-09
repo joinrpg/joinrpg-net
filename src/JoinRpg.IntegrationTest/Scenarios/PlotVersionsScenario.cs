@@ -49,7 +49,7 @@ public class PlotVersionsScenario(JoinApplicationFactory factory) : IClassFixtur
     public async Task ShowElementVersion_LinksToNeighbourVersions()
     {
         // Без публикации: ссылка на предыдущую версию рисуется только когда опубликованной версии нет
-        // либо она не является предыдущей — см. условие в EditElementPartial.cshtml.
+        // либо она не является предыдущей — см. условие в PlotElementPanel.razor.
         var ctx = await SeedAsync(publishVersion: null);
 
         var middle = await GetPageAsync(ctx, VersionUrl(ctx, 1));

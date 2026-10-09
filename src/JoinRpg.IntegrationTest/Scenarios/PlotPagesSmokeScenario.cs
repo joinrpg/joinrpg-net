@@ -102,6 +102,59 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
     }
 
     /// <summary>
+    /// Вводные рисуются статическим компонентом PlotElementPanelList: свёрнутыми панелями одного
+    /// аккордеона, а остров с кнопками вводной внутри панели доезжает до страницы.
+    /// </summary>
+    [Fact]
+    public async Task Edit_RendersElementsAsAccordionPanelsWithIslands()
+    {
+        var context = await GetSeedAsync();
+        var seed = context.Seed;
+        var url = $"{context.ProjectId.Value}/plots/edit?plotFolderId={seed.PlotFolderId.PlotFolderId}";
+
+        var response = await context.MasterClient.GetAsync(url);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var document = await response.AsHtmlDocument();
+
+        var panels = seed.ElementIds
+            .Select(elementId => document.DocumentNode.SelectSingleNode($"//details[@id='panelPlotElement{elementId.PlotElementId}']")
+                ?? throw new InvalidOperationException($"На странице {url} нет панели вводной {elementId}"))
+            .ToList();
+
+        // Аккордеон — это общее непустое имя у всех панелей.
+        panels.Select(p => p.GetAttributeValue("name", "")).Distinct().ShouldHaveSingleItem().ShouldNotBeEmpty();
+
+        foreach (var (panel, elementId) in panels.Zip(seed.ElementIds))
+        {
+            panel.Attributes.Contains("open").ShouldBeFalse();
+            panel.SelectSingleNode("summary").ShouldNotBeNull();
+            panel.SelectNodes(".//comment()")
+                .ShouldNotBeNull($"В панели вводной {elementId} нет острова")
+                .ShouldContain(c => c.InnerHtml.Contains("PlotElementControls"));
+        }
+    }
+
+    /// <summary>Просмотр версии показывает одну вводную — сразу раскрытой и вне аккордеона.</summary>
+    [Fact]
+    public async Task ShowElementVersion_RendersOpenPanelWithoutAccordion()
+    {
+        var context = await GetSeedAsync();
+        var elementId = context.Seed.ElementIds[0];
+        var url = $"{context.ProjectId.Value}/plots/showElementVersion?plotFolderId={elementId.PlotFolderId.PlotFolderId}"
+            + $"&plotElementId={elementId.PlotElementId}&version=1";
+
+        var response = await context.MasterClient.GetAsync(url);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var document = await response.AsHtmlDocument();
+        var panel = document.DocumentNode.SelectSingleNode($"//details[@id='panelPlotElement{elementId.PlotElementId}']")
+            ?? throw new InvalidOperationException($"На странице {url} нет панели вводной");
+        panel.Attributes.Contains("open").ShouldBeTrue();
+        panel.Attributes.Contains("name").ShouldBeFalse();
+    }
+
+    /// <summary>
     /// Копирование раздатки должно открывать экран создания именно раздатки:
     /// иначе мастер копирует раздатку и молча получает обычную вводную.
     /// </summary>

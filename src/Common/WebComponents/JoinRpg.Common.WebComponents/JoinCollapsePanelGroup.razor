@@ -1,0 +1,20 @@
+@*
+    Аккордеон из JoinCollapsePanel: панели внутри группы получают общее имя через каскад,
+    поэтому открыта не больше одной.
+*@
+<div class="panel-group">
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>Имя аккордеона. Если не задано — своё, уникальное для группы.</summary>
+    [Parameter] public string? Name { get; set; }
+
+    internal string EffectiveName => Name ?? generatedName;
+
+    private readonly string generatedName = $"join-collapse-{Guid.NewGuid():N}";
+}

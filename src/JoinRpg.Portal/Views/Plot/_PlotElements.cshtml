@@ -1,11 +1,6 @@
 ﻿@using JoinRpg.Web.Models.Plot
+@using JoinRpg.Web.Plots.Elements
 @model  IEnumerable<PlotElementListItemViewModel>
-@if (Model.Any())
-{
-    <div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
-        @foreach (var item in Model)
-        {
-            @await Html.PartialAsync("EditElementPartial", item)
-        }
-    </div>
-}
+<component type="typeof(PlotElementPanelList)"
+           render-mode="Static"
+           param-Elements="@Model.Select(e => e.ToPanel()).ToList()" />

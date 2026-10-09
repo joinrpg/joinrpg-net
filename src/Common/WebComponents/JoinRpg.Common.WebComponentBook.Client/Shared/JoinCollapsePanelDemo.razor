@@ -1,0 +1,30 @@
+<h3>JoinCollapsePanel</h3>
+
+<h4>Аккордеон</h4>
+<p>
+    Панели внутри <code>JoinCollapsePanelGroup</code>: открыта не больше одной. Ссылки и кнопки в заголовке
+    панель не сворачивают — сворачивает клик по остальному заголовку.
+</p>
+<JoinCollapsePanelGroup>
+    <JoinCollapsePanel Open="true">
+        <Header><b>Первая</b> — открыта сразу</Header>
+        <ChildContent>Содержимое первой панели.</ChildContent>
+    </JoinCollapsePanel>
+    <JoinCollapsePanel>
+        <Header><b>Вторая</b> — <a href="https://joinrpg.ru" target="_blank">ссылка в заголовке</a></Header>
+        <ChildContent>Содержимое второй панели.</ChildContent>
+    </JoinCollapsePanel>
+    <JoinCollapsePanel>
+        <Header><b>Третья</b></Header>
+        <ChildContent>Содержимое третьей панели.</ChildContent>
+    </JoinCollapsePanel>
+</JoinCollapsePanelGroup>
+
+<h4>Независимые панели и варианты</h4>
+@foreach (var variation in new VariationStyleEnum?[] { null, VariationStyleEnum.Info, VariationStyleEnum.Warning })
+{
+    <JoinCollapsePanel Variation="@variation">
+        <Header>Variation = @(variation?.ToString() ?? "null")</Header>
+        <ChildContent>Разделитель заголовка и тела — цвета рамки панели.</ChildContent>
+    </JoinCollapsePanel>
+}

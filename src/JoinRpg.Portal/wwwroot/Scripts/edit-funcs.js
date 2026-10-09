@@ -15,11 +15,6 @@ jQuery("input[type=submit]").click(function () {
     return true;
 });
 
-var hash = window.location.hash.substr(1);
-if (hash) {
-    $("#" + hash).collapse('show');
-}
-
 $('.require-element-id')
     .on('show.bs.modal',
         function (event) {

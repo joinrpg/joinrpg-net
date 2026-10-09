@@ -113,7 +113,6 @@ public class PlotElementListItemViewModel : IProjectIdAware
         IsMasterOnly = element.IsMasterOnly;
         ShortContent = currentVersionText.Content.TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
 
-        HasPlotEditorAccess = accessArguments.HasPlotEditorAccess;
         HasMasterAccess = accessArguments.HasMasterAccess;
         HasEditAccess = accessArguments.HasEditAccess;
 
@@ -147,15 +146,12 @@ public class PlotElementListItemViewModel : IProjectIdAware
 
     public string ShortContent { get; }
 
-    [UIHint("EventTime")]
     public DateTime ModifiedDateTime { get; }
 
     public UserLinkViewModel? Author { get; }
 
-    [UIHint("EventTime")]
     public DateTime? PrevModifiedDateTime { get; }
 
-    [UIHint("EventTime")]
     public DateTime? NextModifiedDateTime { get; }
 
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
@@ -169,11 +165,9 @@ public class PlotElementListItemViewModel : IProjectIdAware
 
     public PlotElementTypeView ElementType { get; }
     public bool IsMasterOnly { get; }
-    public bool HasPlotEditorAccess { get; }
 
     public bool HasMasterAccess { get; }
     public bool HasEditAccess { get; }
-    public bool ShowMoveControl { get; }
     public int CurrentVersion { get; }
 
     public PlotVersionIdentification CurrentVersion2 { get; }
@@ -185,8 +179,28 @@ public class PlotElementListItemViewModel : IProjectIdAware
 
     public bool PrintMode { get; }
 
-    public bool ThisPublished => CurrentVersion == PublishedVersion;
-
     // Используется для упорядочивания
     public string[]? ItemsIds { get; }
+
+    public PlotElementPanelViewModel ToPanel() => new(
+        PlotElementIdentification,
+        Status,
+        ElementType,
+        IsMasterOnly,
+        ShortContent,
+        Content.ToHtmlString(),
+        TodoField,
+        Target,
+        AsUtc(ModifiedDateTime),
+        Author,
+        PrevModifiedDateTime is { } prev ? AsUtc(prev) : null,
+        NextModifiedDateTime is { } next ? AsUtc(next) : null,
+        CurrentVersion2,
+        PubishedVersion2,
+        HasMasterAccess,
+        HasEditAccess,
+        ItemsIds);
+
+    // Даты версий хранятся в UTC; шаблон EventTime сравнивал их с DateTime.UtcNow.
+    private static DateTimeOffset AsUtc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
 }
