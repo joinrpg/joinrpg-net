@@ -391,12 +391,12 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
-    /// Группа принимающего другого типа проживания: приём тип не сверяет, и вся группа переезжает
-    /// к приглашающему. Фиксирует прежнее поведение — приглашение могло быть создано, пока типы
-    /// совпадали, а группа принимающего могла лежать в другом плане поселения.
+    /// Группа принимающего другого типа проживания — тип разошёлся уже после создания приглашения
+    /// (создание тип сверяет). Приём отказывает так же, как создание: переезд в чужой тип означал бы
+    /// платить за один тип, а жить по другому. До исправления группа молча переезжала.
     /// </summary>
     [Fact]
-    public async Task AcceptInvite_ReceiverGroupOfOtherType_MovesWithoutTypeCheck()
+    public async Task AcceptInvite_ReceiverGroupOfOtherType_IsRefused()
     {
         var otherType = mock.CreateAccommodationType("Шатёр", capacity: 4);
         mock.ReInitProjectInfo();
@@ -407,13 +407,29 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         var receiverGroup = mock.CreateAccommodationRequest(otherType, receiver, neighbour);
         var invite = mock.CreateAccommodationInvite(sender, receiver);
 
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().AcceptAccommodationInvite(InviteId(invite)));
+
+        exception.Message.ShouldContain("другой тип проживания");
+        MembersOf(receiverGroup).ShouldBe([receiver.ClaimId, neighbour.ClaimId], ignoreOrder: true);
+        invite.IsAccepted.ShouldBe(InviteState.Unanswered);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Принимающий без типа проживания (одиночка) — сверять не с чем, он переезжает к приглашающему.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_ReceiverWithoutType_Moves()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
         await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
-        MembersOf(sender.AccommodationRequest!)
-            .ShouldBe([sender.ClaimId, receiver.ClaimId, neighbour.ClaimId], ignoreOrder: true);
-        mock.AccommodationRequests.ShouldNotContain(receiverGroup);
+        MembersOf(sender.AccommodationRequest!).ShouldBe([sender.ClaimId, receiver.ClaimId], ignoreOrder: true);
         invite.IsAccepted.ShouldBe(InviteState.Accepted);
-        SaveChangesCallCount.ShouldBe(1);
     }
 
     /// <summary>

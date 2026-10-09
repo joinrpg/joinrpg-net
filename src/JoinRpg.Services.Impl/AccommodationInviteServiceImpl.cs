@@ -291,11 +291,21 @@ internal class AccommodationInviteServiceImpl(
                         "Приглашённый уже живёт вместе с приглашающим.");
                 }
 
-                // Переезжает вся группа принимающего, а если группы у него нет — он один. Его группа
-                // может быть и другого типа (приём тип не сверяет), то есть лежать в другом плане.
-                var receiverGroup = ctx.CharacterClaimInfo.AccommodationTypeId is { } receiverTypeId
-                    ? (await LoadPlanForType(ctx, receiverTypeId, senderPlan))
-                        .GetGroupOrDefault(ctx.CharacterClaimInfo.AccommodationGroupId)
+                // Тип мог разойтись уже после того, как приглашение создали (создание тип сверяет):
+                // принимающий сменил тип проживания. Переезд в чужой тип означал бы платить за один
+                // тип, а жить по другому, поэтому приём отказывает — как и создание.
+                if (ctx.CharacterClaimInfo.AccommodationTypeId is { } receiverTypeId
+                    && receiverTypeId != senderGroup.AccommodationTypeId)
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(inviteId.ProjectId,
+                        "Принять приглашение нельзя: у вас выбран другой тип проживания.");
+                }
+
+                // Переезжает вся группа принимающего, а если группы у него нет — он один. Тип у неё
+                // тот же, что у приглашающего, значит и план тот же.
+                var receiverGroup = ctx.CharacterClaimInfo.AccommodationTypeId is not null
+                    ? senderPlan.GetGroupOrDefault(ctx.CharacterClaimInfo.AccommodationGroupId)
                     : null;
                 IReadOnlyCollection<ClaimIdentification> moving = receiverGroup?.Subjects ?? [ctx.CharacterClaimInfo.ClaimId];
 
