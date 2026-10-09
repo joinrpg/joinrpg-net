@@ -15,51 +15,64 @@ namespace JoinRpg.Web.Models.ClaimList;
 
 public static class ClaimListBuilder
 {
-    internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo,
-       IClaimProblemValidator claimValidator, ClaimInfo problemContext, Dictionary<int, int> unreadComments)
+    /// <param name="claim">
+    /// EF-заявка. Из неё читается только то, чего нет в агрегате (ADR021): последний комментарий
+    /// вместе с автором и обсуждение — для счётчика непрочитанного.
+    /// </param>
+    /// <param name="claimInfo">Та же заявка как доменный тип — всё остальное берётся отсюда.</param>
+    internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId,
+       IClaimProblemValidator claimValidator, ClaimInfo claimInfo, Dictionary<int, int> unreadComments)
     {
-        var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId, projectInfo);
-        var balance = claim.CalculateClaimBalance(projectInfo);
+        var accessArguments = AccessArgumentsFactory.Create(claimInfo, currentUserId.UserIdentificationOrDefault);
+        var balance = claimInfo.ClaimInCharacter.CalculateBalance();
         (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claim, accessArguments);
+        var characterClaim = claimInfo.Claim;
 
         return new ClaimListItemViewModel(
-            claim.Character.CharacterName,
-            new UserLinkViewModel(claim.Player.ToUserInfoHeader()),
-            projectInfo.ProjectName,
-            ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
+            claimInfo.Character.CharacterName,
+            new UserLinkViewModel(claimInfo.Player.ToUserInfoHeader()),
+            claimInfo.ProjectInfo.ProjectName,
+            ClaimStatusBuilders.CreateFullStatus(characterClaim, accessArguments),
             lastModifiedAt,
-            claim.CreateDate,
-            claim.CheckInDate,
-            new UserLinkViewModel(projectInfo.GetMasterById(new UserIdentification(claim.ResponsibleMasterUserId)).UserInfo),
+            characterClaim.CreateDate,
+            characterClaim.CheckInDate,
+            new UserLinkViewModel(claimInfo.ProjectInfo.GetMasterById(characterClaim.ResponsibleMasterId).UserInfo),
             FeePaid: balance.FeePaid,
             FeeDue: balance.FeeDue,
             TotalFee: balance.TotalFee,
             new UserLinkViewModel(lastModifiedBy),
-            claim.GetId(),
-            claimValidator.Validate(problemContext).Select(p => new ProblemViewModel(p)).ToList(),
+            claimInfo.ClaimId,
+            claimValidator.Validate(claimInfo).Select(p => new ProblemViewModel(p)).ToList(),
             unreadComments.GetValueOrDefault(claim.CommentDiscussionId),
-            claim.Player.FullName
+            GetPlayerFullName(claimInfo)
             );
     }
 
-    /// <param name="playerInfo">
-    /// Профиль игрока. Приходит параметром, загруженный пачкой на весь список: раньше выгрузка
-    /// читала паспорт и адрес прямо из <c>claim.Player.Extra</c>, то есть по ленивой навигации
-    /// EF-сущности на каждую строку.
+    /// <param name="claim">
+    /// EF-заявка. Из неё читается только то, чего нет в агрегате (ADR021): последний комментарий
+    /// вместе с автором.
+    /// </param>
+    /// <param name="claimInfo">
+    /// Та же заявка как доменный тип, загруженная пачкой на весь список. Профиль игрока тоже отсюда:
+    /// раньше выгрузка читала паспорт и адрес прямо из <c>claim.Player.Extra</c>, то есть по ленивой
+    /// навигации EF-сущности на каждую строку.
     /// </param>
     /// <param name="roomName">
     /// Комната группы заявки из плана поселения (ADR022), или <c>null</c>, если не расселена. Цепочка
     /// навигаций <c>AccommodationRequest.Accommodation</c> догружала бы комнату на каждую строку.
     /// </param>
     internal static ClaimListItemForExportViewModel BuildItemForExport(
-        Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo, UserInfo playerInfo, string? roomName)
+        Claim claim, ICurrentUserAccessor currentUserId, ClaimInfo claimInfo, string? roomName)
     {
-        var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId, projectInfo);
+        var accessArguments = AccessArgumentsFactory.Create(claimInfo, currentUserId.UserIdentificationOrDefault);
         (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claim, accessArguments);
-        var balance = claim.CalculateClaimBalance(projectInfo);
+        var balance = claimInfo.ClaimInCharacter.CalculateBalance();
+        var projectInfo = claimInfo.ProjectInfo;
+        var characterClaim = claimInfo.Claim;
+        var playerInfo = claimInfo.Player;
 
         string? PassportData, RegistrationAddress;
-        if (claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
+        if (characterClaim.PlayerAllowedSensitiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
         {
             PassportData = playerInfo.PassportData;
             RegistrationAddress = playerInfo.RegistrationAddress;
@@ -70,28 +83,37 @@ public static class ClaimListBuilder
         }
 
         return new ClaimListItemForExportViewModel(
-            claim.Character.CharacterName,
-            new UserLinkViewModel(claim.Player.ToUserInfoHeader()),
+            claimInfo.Character.CharacterName,
+            new UserLinkViewModel(playerInfo.ToUserInfoHeader()),
             projectInfo.ProjectName,
-            ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
+            ClaimStatusBuilders.CreateFullStatus(characterClaim, accessArguments),
             lastModifiedAt,
-            claim.CreateDate,
-            claim.CheckInDate,
-            new UserLinkViewModel(projectInfo.GetMasterById(new UserIdentification(claim.ResponsibleMasterUserId)).UserInfo),
+            characterClaim.CreateDate,
+            characterClaim.CheckInDate,
+            new UserLinkViewModel(projectInfo.GetMasterById(characterClaim.ResponsibleMasterId).UserInfo),
             FeePaid: balance.FeePaid,
             FeeDue: balance.FeeDue,
             TotalFee: balance.TotalFee,
             new UserLinkViewModel(lastModifiedBy),
-            claim.GetId(),
-            claim.GetAccommodationType(projectInfo)?.Name,
+            claimInfo.ClaimId,
+            characterClaim.AccommodationTypeId is { } accommodationTypeId
+                ? projectInfo.AccommodationSettings.GetTypeById(accommodationTypeId).Name
+                : null,
             roomName,
-            claim.PreferentialFeeUser,
+            characterClaim.Finance.PreferentialFeeUser,
             PassportData,
             RegistrationAddress,
-            claim.GetFields(projectInfo).ToDictionary(x => x.Field.Id, x => x.DisplayString),
+            claimInfo.ClaimInCharacter.GetAllFields().ToDictionary(x => x.Field.Id, x => x.DisplayString),
             playerInfo
             );
     }
+
+    /// <remarks>
+    /// <c>User.FullName</c> у EF-сущности для пользователя без ФИО отдаёт пустую строку, а
+    /// доменный <see cref="UserFullName.FullName"/> — <c>null</c>. Колонка в списке не nullable,
+    /// поэтому сохраняем прежнее поведение.
+    /// </remarks>
+    private static string GetPlayerFullName(ClaimInfo claimInfo) => claimInfo.Player.UserFullName.FullName ?? "";
 
     public static (DateTime At, UserInfoHeader By) GetLastComment(Claim claim, AccessArguments accessArguments)
     {

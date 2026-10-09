@@ -33,10 +33,10 @@ public class ClaimListViewModel : IOperationsAwareView
        string title,
        ProjectInfo projectInfo,
        IClaimProblemValidator claimValidator,
-       IReadOnlyDictionary<ClaimIdentification, ClaimInfo> problemContexts)
+       IReadOnlyDictionary<ClaimIdentification, ClaimInfo> claimInfos)
     {
         Items = claims
-          .Select(c => ClaimListBuilder.BuildItem(c, currentUserId, projectInfo, claimValidator, problemContexts[c.GetId()], unreadComments))
+          .Select(c => ClaimListBuilder.BuildItem(c, currentUserId, claimValidator, claimInfos[c.GetId()], unreadComments))
           .ToList();
         ClaimIds = claims.Select(c => c.GetId()).ToArray();
         CharacterIds = claims.Select(c => c.GetCharacterId()).ToArray();

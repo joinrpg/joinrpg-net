@@ -452,11 +452,14 @@ public class MockedProject
             new ClaimFinanceInfo(
                 FixedFee: claim.CurrentFee,
                 PreferentialFeeUser: claim.PreferentialFeeUser,
-                FeePaid: 0,
-                AccommodationFee: 0,
+                // Те же правила, что у боевого CharacterInfoMapper: иначе домен и EF разойдутся на моке.
+                FeePaid: claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount),
+                AccommodationFee: claim.AccommodationRequest is { } feeGroup
+                    ? projectInfo.AccommodationSettings.GetTypeById(
+                        new AccommodationTypeIdentification(projectInfo.ProjectId, feeGroup.AccommodationTypeId)).Cost
+                    : 0,
                 OperationsRequireModeration: claim.FinanceOperations.Any(fo => fo.RequireModeration)),
-            // Тип и группа — из EF-группы заявки, как их отдал бы маппер (ADR022). Стоимость
-            // проживания в Finance по-прежнему 0: тесты баланса задают её явно.
+            // Тип и группа — из EF-группы заявки, как их отдал бы маппер (ADR022).
             AccommodationTypeId: claim.AccommodationRequest is { } group
                 ? new AccommodationTypeIdentification(projectInfo.ProjectId, group.AccommodationTypeId)
                 : null,

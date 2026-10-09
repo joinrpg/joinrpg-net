@@ -128,6 +128,15 @@ public static class AccessArgumentsFactory
             IsCapitan: false);
     }
 
+    /// <summary>
+    /// Права пользователя на существующую заявку (ADR021): заявка уже лежит в агрегате персонажа.
+    /// </summary>
+    public static AccessArguments Create(ClaimInfo claim, UserIdentification? user)
+    {
+        ArgumentNullException.ThrowIfNull(claim);
+        return Create(claim.Character, claim.Claim, user);
+    }
+
     private static bool SamePlayerId(UserIdentification? left, UserIdentification? right)
     {
         return left != null && right != null && left.Equals(right);

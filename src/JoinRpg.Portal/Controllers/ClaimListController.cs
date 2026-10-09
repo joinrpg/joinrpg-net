@@ -7,7 +7,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -28,7 +27,6 @@ public class ClaimListController(
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository charGroupRepository,
     IClaimInfoRepository claimInfoRepository,
-    IUserRepository userRepository,
     ICurrentUserAccessor currentUserAccessor,
     IRoomCategoryPlanRepository roomCategoryPlanRepository
         ) : Common.JoinControllerGameBase
@@ -36,7 +34,7 @@ public class ClaimListController(
 
     #region implementation
 
-    /// <param name="problemContexts">
+    /// <param name="claimInfos">
     /// Уже загруженные <see cref="ClaimInfo"/>, если вызывающий строил их для отбора заявок. Иначе
     /// собираются здесь. Передавать стоит: иначе на страницах, которые сами фильтруют по
     /// проблемам, персонажи и профили грузились бы дважды.
@@ -47,21 +45,21 @@ public class ClaimListController(
         string title,
         IReadOnlyCollection<Claim> claims,
         ClaimStatusSpec claimStatusSpec,
-        IReadOnlyDictionary<ClaimIdentification, ClaimInfo>? problemContexts = null)
+        IReadOnlyDictionary<ClaimIdentification, ClaimInfo>? claimInfos = null)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
+        claimInfos ??= await LoadClaimInfos(claims);
 
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
-            var view = new ClaimListViewModel(currentUserAccessor, claims, unreadComments, title, projectInfo, claimValidator,
-                problemContexts ?? await LoadProblemContexts(claims));
+            var view = new ClaimListViewModel(currentUserAccessor, claims, unreadComments, title, projectInfo, claimValidator, claimInfos);
             return View("Index", view);
         }
         else
         {
-            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, projectInfo, await LoadPlayers(claims),
+            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, claimInfos,
                 await LoadRoomNames(projectInfo, claims));
 
             return
@@ -71,9 +69,10 @@ public class ClaimListController(
     }
 
     /// <summary>
-    /// <see cref="ClaimInfo"/> на весь список — для расчёта проблем, две выборки, а не по заявке.
+    /// <see cref="ClaimInfo"/> на весь список — заявки вместе с персонажами и профилями игроков,
+    /// две выборки, а не по заявке.
     /// </summary>
-    private Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> LoadProblemContexts(
+    private Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> LoadClaimInfos(
         IReadOnlyCollection<Claim> claims)
         => claimInfoRepository.GetClaimInfos([.. claims.Select(c => c.GetId())]);
 
@@ -102,26 +101,11 @@ public class ClaimListController(
             .ToDictionary(pair => pair.ClaimId, pair => pair.Room!.Name);
     }
 
-    /// <summary>
-    /// Профили игроков для выгрузки — одним запросом на весь список, а не по заявке.
-    /// </summary>
-    private async Task<IReadOnlyDictionary<UserIdentification, UserInfo>> LoadPlayers(IReadOnlyCollection<Claim> claims)
-    {
-        IReadOnlyCollection<UserIdentification> playerIds = [.. claims.Select(c => c.GetPlayerId()).Distinct()];
-
-        if (playerIds.Count == 0)
-        {
-            return new Dictionary<UserIdentification, UserInfo>();
-        }
-
-        return (await userRepository.GetRequiredUserInfos(playerIds)).ToDictionary(user => user.UserId);
-    }
-
     private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec,
-        IReadOnlyDictionary<ClaimIdentification, ClaimInfo>? problemContexts = null)
+        IReadOnlyDictionary<ClaimIdentification, ClaimInfo>? claimInfos = null)
     {
 
-        return await ___ShowMasterClaimList(projectId, export, title, claims, claimStatusSpec, problemContexts);
+        return await ___ShowMasterClaimList(projectId, export, title, claims, claimStatusSpec, claimInfos);
     }
 
     private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec)
@@ -147,10 +131,10 @@ public class ClaimListController(
     private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<ClaimInfo, bool> predicate)
     {
         var claims = await claimsRepository.GetClaimsForMaster(projectId, masterUserId, claimStatusSpec);
-        var problemContexts = await LoadProblemContexts(claims);
+        var claimInfos = await LoadClaimInfos(claims);
 
         return await ___ShowMasterClaimList(projectId, export, title,
-            [.. claims.Where(c => predicate(problemContexts[c.GetId()]))], claimStatusSpec, problemContexts);
+            [.. claims.Where(c => predicate(claimInfos[c.GetId()]))], claimStatusSpec, claimInfos);
 
     }
 
@@ -165,17 +149,18 @@ public class ClaimListController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroup.Id.ProjectId);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
+        var claimInfos = await LoadClaimInfos(claims);
 
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.Id.ProjectId.Value, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
             var view = new ClaimListForGroupViewModel(currentUserAccessor, claims, characterGroup, page, unreadComments, claimValidator,
-                await LoadProblemContexts(claims), projectInfo, title);
+                claimInfos, projectInfo, title);
             return View("ByGroup", view);
         }
         else
         {
-            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, projectInfo, await LoadPlayers(claims),
+            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, claimInfos,
                 await LoadRoomNames(projectInfo, claims));
             return
                     ExportWithCustomFrontend(view.Items, title, exportType.Value,
@@ -315,14 +300,16 @@ public class ClaimListController(
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> WaitingForFee(ProjectIdentification projectid, string export)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-
+        var loadedClaims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved);
+        // Отбор и строка списка считают баланс одним расчётом (ADR021): иначе при расхождении правил
+        // в «неоплаченных» оказалась бы строка с нулевым остатком.
+        var claimInfos = await LoadClaimInfos(loadedClaims);
         var claims =
-            (await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved))
-            .Where(claim => !claim.ClaimPaidInFull(projectInfo))
+            loadedClaims
+            .Where(claim => claimInfos[claim.GetId()].ClaimInCharacter.CalculateBalance().FeeDue > 0)
             .ToList();
 
-        return await ShowMasterClaimList(projectid, export, "Неоплаченные принятые заявки", claims, ClaimStatusSpec.Approved);
+        return await ShowMasterClaimList(projectid, export, "Неоплаченные принятые заявки", claims, ClaimStatusSpec.Approved, claimInfos);
     }
 
     [HttpGet, MasterAuthorize()]
@@ -331,25 +318,25 @@ public class ClaimListController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
         var playerEditableFields = projectInfo.UnsortedFields.Where(p => p.CanPlayerEdit).Select(c => c.Id).ToList();
         var loadedClaims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved);
-        var problemContexts = await LoadProblemContexts(loadedClaims);
+        var claimInfos = await LoadClaimInfos(loadedClaims);
         var claims =
             loadedClaims
-            .Where(claim => claimValidator.ValidateFieldsOnly(problemContexts[claim.GetId()], playerEditableFields).Any())
+            .Where(claim => claimValidator.ValidateFieldsOnly(claimInfos[claim.GetId()], playerEditableFields).Any())
             .ToList();
 
-        return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", claims, ClaimStatusSpec.Approved, problemContexts);
+        return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", claims, ClaimStatusSpec.Approved, claimInfos);
     }
 
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> Problems(ProjectIdentification projectId, string export)
     {
         var loadedClaims = await claimsRepository.GetClaims(projectId, ClaimStatusSpec.Any);
-        var problemContexts = await LoadProblemContexts(loadedClaims);
+        var claimInfos = await LoadClaimInfos(loadedClaims);
         var claims =
             loadedClaims
-            .Where(c => claimValidator.Validate(problemContexts[c.GetId()], ProblemSeverity.Warning).Any()).ToList();
+            .Where(c => claimValidator.Validate(claimInfos[c.GetId()], ProblemSeverity.Warning).Any()).ToList();
         return
-            await ShowMasterClaimList(projectId, export, "Проблемные заявки", claims, ClaimStatusSpec.Any, problemContexts);
+            await ShowMasterClaimList(projectId, export, "Проблемные заявки", claims, ClaimStatusSpec.Any, claimInfos);
     }
 
 
