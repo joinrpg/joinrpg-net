@@ -13,9 +13,11 @@ public static class ClaimExtensions
     /// <summary>
     /// Returns true when approval is blocked by other claims for character of the current claim
     /// </summary>
-    public static bool HasOtherClaimsForThisCharacter(this Claim claim)
+    public static bool HasOtherClaimsForThisCharacter(this ClaimInCharacter claim)
     {
-        if (claim.IsApproved)
+        ArgumentNullException.ThrowIfNull(claim);
+
+        if (claim.Claim.IsApproved)
         {
             return false;
         }
@@ -23,7 +25,7 @@ public static class ClaimExtensions
         {
             return false;
         }
-        return claim.Character.Claims.Any(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive());
+        return claim.Character.Claims.Any(c => c.PlayerId != claim.Claim.PlayerId && c.IsActive);
     }
 
     public static void EnsureStatus(this Claim claim, params ClaimStatus[] possibleStatus)

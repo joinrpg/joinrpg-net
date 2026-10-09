@@ -20,7 +20,6 @@ namespace JoinRpg.Portal.Controllers;
 public class CheckInController(
     IProjectService projectService,
     IClaimsRepository claimsRepository,
-    ICharacterInfoRepository characterInfoRepository,
     IClaimInfoRepository claimInfoRepository,
     IClaimService claimService,
     IUserRepository userRepository,
@@ -132,26 +131,18 @@ public class CheckInController(
 
     private async Task<ActionResult> ShowSecondRole(ProjectIdentification projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(new ClaimIdentification(projectId, claimId));
 
-        if (claim == null)
+        if (claimInfo is null)
         {
             return NotFound();
         }
-        if (claim.ClaimStatus != ClaimStatus.CheckedIn)
+        if (claimInfo.Claim.Status != ClaimStatus.CheckedIn)
         {
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
 
-        var playerUserInfo = await userRepository.GetRequiredUserInfo(claim.GetPlayerId());
-
-        return View(new SecondRoleViewModel(
-            claim,
-            await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId()),
-            currentUserAccessor,
-            projectInfo,
-            playerUserInfo));
+        return View(new SecondRoleViewModel(claimInfo, currentUserAccessor));
     }
 
     [ValidateAntiForgeryToken]
