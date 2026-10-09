@@ -57,16 +57,6 @@ public static class IdExtensions
     public static AccommodationRequestIdentification GetId(this AccommodationRequest group)
         => new(group.ProjectId, group.Id);
 
-    /// <summary>
-    /// Идентификаторы заявок, составляющих группу.
-    /// </summary>
-    /// <remarks>
-    /// Навигацию <c>Subjects</c> метод не грузит сам — вызывающий обязан обеспечить, что она
-    /// загружена (<c>Include</c> или трекаемый граф).
-    /// </remarks>
-    public static IReadOnlyCollection<ClaimIdentification> GetSubjectIds(this AccommodationRequest group)
-        => [.. group.Subjects.Select(GetId)];
-
     /// <summary>Идентификатор одобренной заявки персонажа, если она есть.</summary>
     public static ClaimIdentification? GetApprovedClaimIdOrDefault(this Character character)
         => ClaimIdentification.FromOptional(character.ProjectId, character.ApprovedClaimId);

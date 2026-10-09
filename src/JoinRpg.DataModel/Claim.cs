@@ -78,6 +78,7 @@ public class Claim : IProjectEntity, ILinkable, IFieldContainter
     public int? AccommodationRequest_Id { get; set; }
 
     [ForeignKey(nameof(AccommodationRequest_Id))]
+    [Obsolete("Нельзя использовать за пределами Dal.Impl (ADR022). Ссылка на группу — CharacterClaimInfo.AccommodationGroupId, тип — CharacterClaimInfo.AccommodationTypeId, комната и соседи — RoomCategoryPlan; менять состав — внешним ключом AccommodationRequest_Id.", DiagnosticId = "JOIN001")]
     public virtual AccommodationRequest? AccommodationRequest { get; set; }
 
     #region Finance

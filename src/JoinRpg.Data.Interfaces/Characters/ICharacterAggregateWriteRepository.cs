@@ -102,17 +102,6 @@ public interface IAggregateMutationScope
     Task<IReadOnlyCollection<AccommodationInvite>> LoadInvitesForClaim(ClaimIdentification claimId);
 
     /// <summary>
-    /// Группа проживающих (<c>AccommodationRequest</c>) указанной заявки — строка без связей, либо
-    /// <c>null</c>, если заявка ещё не выбрала тип проживания.
-    /// </summary>
-    /// <remarks>
-    /// Решения о группах принимаются по снимкам — <c>CharacterClaimInfo</c> и плану поселения
-    /// (ADR022 §4), — поэтому потребителей в сервисах больше нет; загрузчик удаляется следующим
-    /// шагом ADR022.
-    /// </remarks>
-    Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId);
-
-    /// <summary>
     /// Группа проживающих по её идентификатору — строка без связей, либо <c>null</c>, если такой
     /// группы в этом проекте нет.
     /// </summary>

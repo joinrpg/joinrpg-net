@@ -233,10 +233,6 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
                 [.. mock.AccommodationInvites.Where(
                     i => i.ToClaimId == claimId.ClaimId || i.FromClaimId == claimId.ClaimId)]);
 
-        public Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId)
-            => Task.FromResult(mock.AccommodationRequests.SingleOrDefault(
-                request => request.Subjects.Any(subject => subject.ClaimId == claimId.ClaimId)));
-
         public Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
             => Task.FromResult(mock.AccommodationRequests.SingleOrDefault(
                 request => request.Id == groupId.AccommodationRequestId));

@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <EmbeddedResourceUseDependentUponConvention>true</EmbeddedResourceUseDependentUponConvention>
+    <!-- JOIN001: EF-навигации, которые нельзя использовать за пределами DAL. DAL строит из них
+         доменные снимки, поэтому здесь предупреждение подавлено. Первыми так помечены навигации
+         группы проживающих (ADR022); помечать так можно любые навигации. -->
+
+    <NoWarn>$(NoWarn);JOIN001</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />

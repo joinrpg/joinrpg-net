@@ -588,7 +588,7 @@ public interface IAccommodationService
 | `AccommodationTypeController` (Occupy/UnOccupy/AddRoom/EditRoom/DeleteRoom) | `int`-параметры, `catch`-всё | типизированные id, доменные исключения |
 | `SmokeProjectFixture` (интеграционные тесты) | `AddRooms(projectId.Value, roomTypeId.AccommodationTypeId, "1,2")` | `AddRooms(projectInfo.AccommodationSettings.GetTypeById(roomTypeId).RoomCategoryId, ["1", "2"])` — строку разбирать больше нечем, сервис принимает готовые имена |
 | `AccommodationPrintController`, `AccomodationReportExporter` | `IAccommodationRepository.GetClaimAccommodationReport` | не меняются — это отчёт, плоские строки, агрегат ему не нужен |
-| `AccommodationInviteServiceImpl`, `ClaimAccommodationViewModel` | `AccommodationExtensions` поверх EF | ~~не меняются, см. §13~~ переводятся на этот план по [ADR022](adr022-accommodation-group.md) |
+| `AccommodationInviteServiceImpl`, `ClaimAccommodationViewModel` | `AccommodationExtensions` поверх EF | ~~не меняются, см. §13~~ ~~переводятся~~ переведены на этот план по [ADR022](adr022-accommodation-group.md): `ClaimAccommodationViewModel` — #5378, `AccommodationInviteServiceImpl` — #5381 |
 
 `IAccommodationRepository.GetRoomTypesForProject` (строки со счётчиками занятости для страницы
 «Типы проживания») остаётся: это сводка по всему проекту, и гонять ради неё полный план каждого
@@ -901,9 +901,10 @@ public interface IAccommodationService
 ==
 
 - **Сервисный слой поселения перестаёт торговать EF-сущностями.** После ADR015 и этого ADR
-  `JoinRpg.Domain/AccommodationExtensions.cs` остаётся только с частями, обслуживающими контур
+  `JoinRpg.Domain/AccommodationExtensions.cs` ~~остаётся только с частями, обслуживающими контур
   приглашений, карточку заявки и почту (`GetAllInhabitants`, `GetRoomFreeSpace(AccommodationRequest)`,
-  `GetClaimNeighbours`).
+  `GetClaimNeighbours`)~~ — эти части ушли по [ADR022](adr022-accommodation-group.md) (PR 4 и PR 8);
+  остался только `GetAccommodationType(Claim)` для легаси-финансов и типа в выгрузке заявок.
 - **Права на комнаты перестают быть свойством контроллера** — дефекты, живущие с #5017 в типах
   и до сих пор в комнатах, закрываются одинаково.
 - **Выселение типа становится атомарным**, выселение всего проекта — нет: оно остаётся циклом по

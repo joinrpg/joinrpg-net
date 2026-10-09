@@ -20,48 +20,4 @@ public static class AccommodationExtensions
             ? projectInfo.AccommodationSettings.GetTypeById(
                 new AccommodationTypeIdentification(projectInfo.ProjectId, request.AccommodationTypeId))
             : null;
-
-    public static IEnumerable<Claim> GetAllInhabitants(this ProjectAccommodation room) =>
-        room.Inhabitants.SelectMany(i => i.Subjects);
-
-    /// <summary>
-    /// Сколько ещё человек влезет к этой группе: если группа расселена — по её комнате, если нет —
-    /// по вместимости выбранного типа проживания.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Потребителей в production-коде больше нет: все сервисы записи, включая приём приглашения,
-    /// решают по плану поселения (ADR022 §4) — <c>RoomCategoryPlan.GetFreeSpaceForGroup</c>.
-    /// Остался ради собственных тестов и удаляется следующим шагом ADR022.
-    /// Свободное место в комнате для страницы комнат и для заселения считает доменный агрегат —
-    /// <c>RoomCategoryPlan.GetFreeSpace</c>.
-    /// </para>
-    /// <para>
-    /// Вместимость берётся из метаданных проекта (ADR015), а не из навигаций EF: внутри мутации
-    /// обращение к незагруженной навигации — скрытый запрос, чего ADR014 не допускает. Перегрузки
-    /// поверх навигаций нет намеренно: правило минимума по типам жильцов на ней дало бы ленивую
-    /// загрузку на каждую группу, а без него список приглашений и приём приглашения считали бы
-    /// свободное место по-разному.
-    /// </para>
-    /// </remarks>
-    public static int GetRoomFreeSpace(this AccommodationRequest accommodationRequest, ProjectInfo projectInfo)
-    {
-        if (accommodationRequest.Accommodation is ProjectAccommodation room)
-        {
-            // Правило свободного места ADR018: комнату ужимает тип каждой живущей в ней группы,
-            // а не тип комнаты — у комнаты его нет, она принадлежит категории (ADR020).
-            var limit = room.Inhabitants
-                .Select(group => Capacity(group.AccommodationTypeId))
-                .Append(Capacity(accommodationRequest.AccommodationTypeId))
-                .Min();
-            return limit - room.GetAllInhabitants().Count();
-        }
-
-        return Capacity(accommodationRequest.AccommodationTypeId) - accommodationRequest.Subjects.Count;
-
-        int Capacity(int accommodationTypeId)
-            => projectInfo.AccommodationSettings
-                .GetTypeById(new AccommodationTypeIdentification(projectInfo.ProjectId, accommodationTypeId))
-                .Capacity;
-    }
 }

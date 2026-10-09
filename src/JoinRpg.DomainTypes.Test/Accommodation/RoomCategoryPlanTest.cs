@@ -409,8 +409,8 @@ public class RoomCategoryPlanTest
                 AccommodationGroupIdentification.From(new AccommodationRequestIdentification(ProjectId, 99))));
     }
 
-    // Сценарии ниже повторяют AccommodationRoomFreeSpaceTest — тесты EF-расчёта, который этот метод
-    // заменяет: на непереполненных данных ответы обязаны совпадать.
+    // Сценарии ниже перенесены из тестов EF-расчёта AccommodationExtensions.GetRoomFreeSpace,
+    // который этот метод заменил и который удалён (ADR022): на непереполненных данных ответы те же.
 
     [Fact]
     public void GetFreeSpaceForGroup_PlacedGroup_CapacityMinusOccupancy()
