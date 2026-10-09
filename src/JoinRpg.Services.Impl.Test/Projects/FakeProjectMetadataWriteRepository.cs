@@ -36,6 +36,19 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
             return Task.FromResult(mock.ProjectInfo);
         }
 
+        public List<object> Added { get; } = [];
+
+        public void Add(object entity)
+        {
+            Added.Add(entity);
+            // Имитация relationship fixup EF6: реальный DbContext синхронно связывает добавленную
+            // сущность с уже загруженными navigation-коллекциями того же контекста.
+            if (entity is Character character && !mock.Project.Characters.Contains(character))
+            {
+                mock.Project.Characters.Add(character);
+            }
+        }
+
         public List<object> Removed { get; } = [];
 
         public void Remove(object entity)

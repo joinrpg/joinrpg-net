@@ -40,6 +40,13 @@ public interface IProjectMetadataUpdateHandle
     Task<ProjectInfo> Refresh();
 
     /// <summary>
+    /// Добавляет новую под-сущность проекта в тот же <c>DbContext</c>, через который потом
+    /// вызывается <c>SaveChanges</c>. Нужен там, где коллекция проекта в загрузку не входит:
+    /// добавление через навигацию (<c>Project.Characters.Add</c>) лениво догрузило бы её целиком (#4965).
+    /// </summary>
+    void Add(object entity);
+
+    /// <summary>
     /// Окончательно удаляет под-сущность проекта из того же <c>DbContext</c>, через который потом
     /// вызывается <c>SaveChanges</c>. Используется для permanent-delete (см. SmartDelete).
     /// </summary>
