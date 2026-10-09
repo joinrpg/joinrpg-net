@@ -62,6 +62,12 @@ public class RoomTypeEditScenario(JoinApplicationFactory factory) : IClassFixtur
         updated.Cost.ShouldBe(700);
         updated.Capacity.ShouldBe(5);
         updated.IsPlayerSelectable.ShouldBeFalse();
+
+        var rename = await client.PostAsJsonAsync(
+            $"webapi/room-type/RenameRoomCategory?projectId={projectId.Value}&roomCategoryId={updated.RoomCategoryId.RoomCategoryId}",
+            new RoomCategoryRenameViewModel { Name = "Поляна" });
+        rename.StatusCode.ShouldBe(HttpStatusCode.OK, await rename.Content.ReadAsStringAsync());
+        (await GetMetadataAsync(projectId)).AccommodationSettings.GetRoomCategoryById(updated.RoomCategoryId).Name.ShouldBe("Поляна");
     }
 
     [Fact]
@@ -113,6 +119,12 @@ public class RoomTypeEditScenario(JoinApplicationFactory factory) : IClassFixtur
             $"webapi/room-type/update?projectId={projectId.Value}&roomTypeId={typeId.AccommodationTypeId}",
             new RoomTypeEditViewModel { Name = "Переименовано", Capacity = 2 });
         ShouldBeDenied(update, "Изменение без права должно быть запрещено");
+
+        var categoryId = (await GetMetadataAsync(projectId)).AccommodationSettings.GetTypeById(typeId).RoomCategoryId;
+        var rename = await client.PostAsJsonAsync(
+            $"webapi/room-type/RenameRoomCategory?projectId={projectId.Value}&roomCategoryId={categoryId.RoomCategoryId}",
+            new RoomCategoryRenameViewModel { Name = "Чужая поляна" });
+        ShouldBeDenied(rename, "Переименование категории без права должно быть запрещено");
 
         var types = (await GetMetadataAsync(projectId)).AccommodationSettings.Types;
         types.ShouldHaveSingleItem().Name.ShouldBe("Палатка", "Без права ничего не должно было измениться");

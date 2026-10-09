@@ -23,7 +23,12 @@ internal class RoomTypeEditClient(HttpClient httpClient, CsrfTokenProvider csrfT
             $"webapi/room-type/update?projectId={roomTypeId.ProjectId.Value}&roomTypeId={roomTypeId.AccommodationTypeId}",
             model);
 
-    private async Task Post(string uri, RoomTypeEditViewModel model)
+    public Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, RoomCategoryRenameViewModel model)
+        => Post(
+            $"webapi/room-type/RenameRoomCategory?projectId={roomCategoryId.ProjectId.Value}&roomCategoryId={roomCategoryId.RoomCategoryId}",
+            model);
+
+    private async Task Post<TModel>(string uri, TModel model)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
         var response = await httpClient.PostAsJsonAsync(uri, model);

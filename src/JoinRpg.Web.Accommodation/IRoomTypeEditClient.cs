@@ -114,6 +114,20 @@ public interface IRoomTypeEditClient
 
     /// <summary>Сохранить изменения типа проживания</summary>
     Task UpdateRoomType(AccommodationTypeIdentification roomTypeId, RoomTypeEditViewModel model);
+
+    /// <summary>
+    /// Переименовать категорию комнат — для всех её типов сразу. Отдельно от
+    /// <see cref="UpdateRoomType"/>: имя категории — не параметр одного типа.
+    /// </summary>
+    Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, RoomCategoryRenameViewModel model);
+}
+
+/// <summary>Новое название категории комнат</summary>
+public class RoomCategoryRenameViewModel
+{
+    [Display(Name = "Название категории")]
+    [Required(ErrorMessage = "Укажите название категории")]
+    public string Name { get; set; } = "";
 }
 
 /// <summary>

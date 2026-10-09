@@ -67,12 +67,22 @@ else
                 {
                     <FormRow Label="Категория комнат">
                         <p class="form-control-static">
-                            @roomCategory.Name
-                            @if (roomCategory.TypeNames.Count > 0)
-                            {
-                                @* Пробел выражением: пробельный текст между тегами Blazor вырезает. *@
-                                @(" ")<span class="text-muted">(комнаты общие с: @string.Join(", ", roomCategory.TypeNames))</span>
-                            }
+                            <span class="roomtype-category">
+                                @roomCategory.Name
+                                @if (roomCategory.TypeNames.Count > 0)
+                                {
+                                    @* Пробел выражением: пробельный текст между тегами Blazor вырезает. *@
+                                    @(" ")<span class="text-muted">(комнаты общие с: @string.Join(", ", roomCategory.TypeNames))</span>
+                                }
+                            </span>
+                            @(" ")<JoinButton Label="Переименовать…"
+                                              Icon="JoinIconType.Edit"
+                                              Size="SizeStyleEnum.ExtraSmall"
+                                              Title="Название категории общее для всех её типов"
+                                              Disabled="@saving"
+                                              AutoProgress="false"
+                                              OnClick="@(_ => RenameCategory(roomCategory))"
+                                              data-action="rename-category" />
                         </p>
                     </FormRow>
                 }
@@ -103,6 +113,23 @@ else
             </FormHorizontal>
         </div>
     </EditForm>
+
+    @* Вне EditForm типа: у диалога своя форма, а вложенные формы HTML не допускает. *@
+    @if (model.RoomCategory is not null)
+    {
+        <JoinFormDialog @ref="renameDialog"
+                        TViewModel="RoomCategoryRenameViewModel"
+                        Caption="Переименование категории комнат"
+                        FormName="RoomCategoryRenameForm"
+                        SubmitButtonPreset="ButtonPreset.Save"
+                        Model="renameModel"
+                        Width="500px"
+                        MaxWidth="90%">
+            <FormRowFor For="@(() => renameModel.Name)">
+                <JoinTextInput id="roomtype-category-rename" @bind-Value="renameModel.Name" Immediate="true" />
+            </FormRowFor>
+        </JoinFormDialog>
+    }
 }
 
 @code {
@@ -121,6 +148,9 @@ else
     private string? errorMessage;
     private bool saving;
 
+    private JoinFormDialog<RoomCategoryRenameViewModel> renameDialog = null!;
+    private RoomCategoryRenameViewModel renameModel = new();
+
     private string ListUri => UriLocator.GetRoomTypesListUri(ProjectId).ToString();
 
     protected override async Task OnInitializedAsync()
@@ -130,6 +160,39 @@ else
 
     private static string CategoryTitle(RoomCategoryOptionViewModel category)
         => category.TypeNames.Count > 0 ? $"{category.Name} ({string.Join(", ", category.TypeNames)})" : category.Name;
+
+    private async Task RenameCategory(RoomCategoryOptionViewModel category)
+    {
+        // Новый экземпляр модели — новый EditContext у формы: сообщения прошлого показа не остаются.
+        renameModel = new RoomCategoryRenameViewModel { Name = category.Name };
+        StateHasChanged();
+        if (await renameDialog.ShowModalAsync() is not { } result)
+        {
+            return;
+        }
+
+        saving = true;
+        errorMessage = null;
+        // Обработчик уже отдавал управление (ждал диалог), и сам Blazor больше не перерисует форму
+        // до конца запроса: без этого кнопки остались бы активными, пока переименование в полёте.
+        StateHasChanged();
+        try
+        {
+            await Client.RenameRoomCategory(new RoomCategoryIdentification(ProjectId, category.Id), result);
+            model!.RoomCategory = category with { Name = result.Name.Trim() };
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Не удалось переименовать категорию комнат");
+            errorMessage = exception is InvalidOperationException
+                ? exception.Message
+                : "Не удалось переименовать категорию комнат. Попробуйте ещё раз.";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
 
     private async Task OnSave()
     {

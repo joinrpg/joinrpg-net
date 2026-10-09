@@ -157,6 +157,64 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
     }
 
     [Fact]
+    public async Task RenameRoomCategory_ChangesNameForAllItsTypes()
+    {
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        _ = mock.CreateAccommodationType("Люкс на одного", capacity: 1, roomCategory: lux.RoomCategory);
+        mock.ReInitProjectInfo();
+        var categoryId = new RoomCategoryIdentification(ProjectId, lux.RoomCategoryId);
+
+        await CreateService().RenameRoomCategory(categoryId, "Корпус А");
+
+        Result.AccommodationSettings.GetRoomCategoryById(categoryId).Name.ShouldBe("Корпус А");
+        Result.AccommodationSettings.Types.Select(type => type.Name).ShouldBe(["Люкс", "Люкс на одного"], ignoreOrder: true);
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RenameRoomCategory_WithoutPermission_Throws()
+    {
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        mock.ReInitProjectInfo();
+
+        await Should.ThrowAsync<NoAccessToProjectException>(() => CreateService(mock.Player.UserId)
+            .RenameRoomCategory(new RoomCategoryIdentification(ProjectId, lux.RoomCategoryId), "Корпус А"));
+
+        lux.RoomCategory.Name.ShouldBe("Люкс");
+    }
+
+    [Fact]
+    public async Task RenameRoomCategory_UnknownCategory_Throws()
+    {
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<RoomCategoryNotFoundException>(() => CreateService()
+            .RenameRoomCategory(new RoomCategoryIdentification(ProjectId, lux.RoomCategoryId + 100), "Корпус А"));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Ручное имя категории единственного типа переживает сохранение типа: связка «переименовывать
+    /// вместе» работает, только пока имена совпадают.
+    /// </summary>
+    [Fact]
+    public async Task RenamedCategory_KeepsNameWhenItsOnlyTypeIsUpdated()
+    {
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        mock.ReInitProjectInfo();
+        var categoryId = new RoomCategoryIdentification(ProjectId, lux.RoomCategoryId);
+
+        await CreateService().RenameRoomCategory(categoryId, "Корпус А");
+        await CreateService().UpdateAccommodationType(
+            new AccommodationTypeIdentification(ProjectId, lux.Id),
+            new AccommodationTypeRequest("Люкс на двоих", new MarkdownString(""), Cost: 0, Capacity: 2, IsPlayerSelectable: true));
+
+        Result.AccommodationSettings.GetRoomCategoryById(categoryId).Name.ShouldBe("Корпус А");
+    }
+
+    [Fact]
     public async Task CreateAccommodationType_WithoutPermission_Throws()
     {
         // Игрок (mock.Player) не входит в ACL проекта
