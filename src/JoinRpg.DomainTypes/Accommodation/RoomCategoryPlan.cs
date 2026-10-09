@@ -186,6 +186,16 @@ public record class RoomCategoryPlan
     /// </summary>
     public int TotalCapacity => Rooms.Count * RoomCapacity;
 
+    /// <summary>
+    /// Сколько ещё человек влезет в комнаты пула при нынешних жильцах: по каждой комнате —
+    /// её эффективная вместимость минус жильцы. Комната, которую «Люкс на одного» сделал полной,
+    /// свободных мест не даёт, хотя физически койка там есть (ADR018, правило свободного места).
+    /// </summary>
+    public int FreeCapacity => Rooms.Sum(room => Math.Max(0, GetEffectiveCapacity(room.Id) - room.Occupancy));
+
+    /// <summary>Сколько мест в пуле занято</summary>
+    public int Occupancy => Rooms.Sum(room => room.Occupancy);
+
     /// <summary>Комната по идентификатору</summary>
     /// <exception cref="AccommodationRoomNotFoundException">Комнаты с таким идентификатором нет в этом плане</exception>
     public RoomInfo GetRoom(AccommodationRoomIdentification roomId)

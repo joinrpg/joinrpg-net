@@ -37,7 +37,7 @@
         {
             <td class="price-value">
                 <div>@Model.Capacity &#x2715; ∞ = ∞</div>
-                @if (Model.Occupancy.Occupied == 0)
+                @if (Model.Occupancy.PoolOccupied == 0)
                 {
                     <div>Занято: нет</div>
                 }
@@ -45,13 +45,14 @@
                 {
                     <div>
                         Занято:
-                        <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
-                        &#x2715; <span title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip">@Model.Occupancy.FullyOccupiedRoomsCount</span>
+                        @* Не «вместимость × комнаты»: полную комнату может заполнить и тип с меньшей
+                           вместимостью (ADR020), так что выводим само число жильцов полных комнат. *@
+                        <span title="@RoomTypeListItemViewModel.FullyOccupiedSeatsTooltip">@Model.Occupancy.FullyOccupiedSeats</span>
                         @if (Model.Occupancy.PartialRoomsCount > 0)
                         {
                             <text>+ <span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Model.Occupancy.PartialOccupiedSeats</span></text>
                         }
-                        = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupancy.Occupied</span>
+                        = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupancy.PoolOccupied</span>
                     </div>
                 }
             </td>
@@ -67,7 +68,7 @@
                 {
                     <div>
                         Свободно:
-                        <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
+                        <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Occupancy.Capacity</span>
                         &#x2715; <span title="@RoomTypeListItemViewModel.FullyFreeRoomsTooltip">@Model.Occupancy.FullyFreeRoomsCount</span>
                         @if (Model.Occupancy.PartialRoomsCount > 0)
                         {
@@ -76,7 +77,7 @@
                         = <span title="@RoomTypeListItemViewModel.TotalFreeTooltip">@Model.Occupancy.FreeCapacity</span>
                     </div>
                 }
-                @if (Model.Occupancy.Occupied == 0)
+                @if (Model.Occupancy.PoolOccupied == 0)
                 {
                     <div>Занято: нет</div>
                 }
@@ -84,13 +85,14 @@
                 {
                     <div>
                         Занято:
-                        <span title="@RoomTypeListItemViewModel.CapacityTooltip">@Model.Capacity</span>
-                        &#x2715; <span title="@RoomTypeListItemViewModel.FullyOccupiedRoomsTooltip">@Model.Occupancy.FullyOccupiedRoomsCount</span>
+                        @* Не «вместимость × комнаты»: полную комнату может заполнить и тип с меньшей
+                           вместимостью (ADR020), так что выводим само число жильцов полных комнат. *@
+                        <span title="@RoomTypeListItemViewModel.FullyOccupiedSeatsTooltip">@Model.Occupancy.FullyOccupiedSeats</span>
                         @if (Model.Occupancy.PartialRoomsCount > 0)
                         {
                             <text>+ <span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Model.Occupancy.PartialOccupiedSeats</span></text>
                         }
-                        = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupancy.Occupied</span>
+                        = <span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Model.Occupancy.PoolOccupied</span>
                     </div>
                 }
             </td>

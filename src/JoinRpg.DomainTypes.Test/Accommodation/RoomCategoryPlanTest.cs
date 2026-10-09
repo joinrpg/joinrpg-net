@@ -353,6 +353,27 @@ public class RoomCategoryPlanTest
         plan.IsFull(RoomId(1)).ShouldBeFalse();
     }
 
+    /// <summary>
+    /// Свободные места пула — по эффективной вместимости: комната, которую «Люкс на одного»
+    /// сделал полной, мест не даёт, хотя физически в ней вторая койка.
+    /// </summary>
+    [Fact]
+    public void FreeCapacity_CountsEffectiveCapacityOfEachRoom()
+    {
+        var lux = MakeLux(capacity: 2);
+        var single = MakeLuxSingle(capacity: 1);
+        var project = MakeProject(lux, single);
+        var alone = MakeGroup(1, single, roomId: 1, persons: 1);
+        var pair = MakeGroup(2, lux, roomId: 2, persons: 1);
+
+        var plan = MakePlan(project, [lux, single], [MakeRoom(1, alone), MakeRoom(2, pair), MakeRoom(3)], [alone, pair]);
+
+        plan.Occupancy.ShouldBe(2);
+        plan.TotalCapacity.ShouldBe(6);
+        // 0 в комнате «на одного» + 1 рядом с парой + 2 в пустой
+        plan.FreeCapacity.ShouldBe(3);
+    }
+
     #endregion
 
     #region Группа заявки, свободное место для группы, соседи (ADR022)

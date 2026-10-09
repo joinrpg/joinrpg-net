@@ -85,44 +85,4 @@ public class AccommodationRepositoryImpl(MyDbContext ctx) : IAccommodationReposi
         ];
     }
 
-    public async Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(ProjectIdentification projectId)
-    {
-        var project = projectId.Value;
-
-        // Сам тип проживания из базы не читается: его настройки приходят из метаданных проекта
-        // (ADR015), поэтому запросу нужны только идентификатор и счётчики занятости. Комнаты —
-        // это комнаты категории типа (ADR020).
-        var rows = await ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == project)
-            .Select(x => new
-            {
-                x.Id,
-                // cast to int? required to correctly handle SQL-LINQ nullness
-                Occupied = x.RoomCategory.Rooms.Sum(room => room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count)) ?? 0,
-                RoomsCount = x.RoomCategory.Rooms.Count,
-                ApprovedClaims = x.Desirous.Sum(ar => (int?)ar.Subjects.Count) ?? 0,
-                FullyFreeRoomsCount = x.RoomCategory.Rooms.Count(room => (room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count) ?? 0) == 0),
-                // «Заполнена» — по правилу свободного места ADR018: предел комнаты задаёт тип каждой
-                // живущей в ней группы, а не тип, к которому комната относится (ADR020).
-                FullyOccupiedRoomsCount = x.RoomCategory.Rooms.Count(room =>
-                    room.Inhabitants.Any()
-                    && room.Inhabitants.Sum(ar => ar.Subjects.Count) >= room.Inhabitants.Min(ar => ar.AccommodationType.Capacity)),
-            })
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        // Типизированный идентификатор собирается уже в памяти: конструктор в дерево выражений
-        // EF6 не переводится.
-        return
-        [
-            .. rows.Select(row => new RoomTypeInfoRow()
-            {
-                RoomTypeId = new AccommodationTypeIdentification(projectId, row.Id),
-                Occupied = row.Occupied,
-                RoomsCount = row.RoomsCount,
-                ApprovedClaims = row.ApprovedClaims,
-                FullyFreeRoomsCount = row.FullyFreeRoomsCount,
-                FullyOccupiedRoomsCount = row.FullyOccupiedRoomsCount,
-            })
-        ];
-    }
 }
