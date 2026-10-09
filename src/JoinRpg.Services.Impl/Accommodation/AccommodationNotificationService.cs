@@ -95,9 +95,7 @@ internal class AccommodationNotificationService(
                 Initiator: model.Initiator,
                 Player: [claim.Player],
                 // Ответственный мастер на приглашения не подписан по определению, поэтому в расчёт
-                // его не отдаём вовсе: предикат всё равно отсеет его запись, а
-                // SubscribeCalculator.CreateForRespMaster по пути сделал бы Masters.Single(...) —
-                // и упал бы на заявке, чей ответственный мастер уже снят с проекта.
+                // его не отдаём вовсе: предикат всё равно отсеет его запись.
                 RespMasters: [],
                 Claims: [claim.ClaimId],
                 Characters: [claim.CharacterId],

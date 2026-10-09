@@ -66,4 +66,51 @@ public class ProjectInfoMastersTest
 
         project.GetMastersVisibleTo(First).Select(m => m.UserId).ShouldBe([First]);
     }
+
+    private static ProjectInfo BuildWithRemovedSecond(ProjectGroupTree? groupTree = null) => ProjectInfoFixture.Build(
+        groupTree: groupTree,
+        masters:
+        [
+            MakeMaster(First, isOwner: true),
+            MakeMaster(Second) with { Status = ProjectAclStatus.Removed },
+            MakeMaster(Hidden),
+        ]);
+
+    [Fact]
+    public void GetMasterById_FindsRemovedMaster()
+        => BuildWithRemovedSecond().GetMasterById(Second).UserId.ShouldBe(Second);
+
+    [Fact]
+    public void GetMasterById_Unknown_ThrowsWithMasterAndProject()
+    {
+        var exception = Should.Throw<KeyNotFoundException>(() => Build().GetMasterById(Stranger));
+
+        exception.Message.ShouldContain(Stranger.ToString());
+        exception.Message.ShouldContain(ProjectId.ToString());
+    }
+
+    [Fact]
+    public void GetActiveMasterOrDefault_RemovedMaster_IsNull()
+        => BuildWithRemovedSecond().GetActiveMasterOrDefault(Second).ShouldBeNull();
+
+    [Fact]
+    public void SelectResponsibleMaster_SkipsRuleOfRemovedMaster()
+    {
+        // Группа 3 вложена в 2: правило ближайшей группы (снятый мастер) пропускается, берётся правило группы 2.
+        var project = BuildWithRemovedSecond(MakeGroupTree(
+            new Dictionary<int, int[]> { [2] = [1], [3] = [2] },
+            responsibleMasterByGroup: new Dictionary<int, UserIdentification> { [2] = Hidden, [3] = Second }));
+
+        project.SelectResponsibleMaster([GroupId(3), GroupId(2), RootGroupId]).UserId.ShouldBe(Hidden);
+    }
+
+    [Fact]
+    public void SelectResponsibleMaster_OnlyRuleOfRemovedMaster_FallsBackToDefault()
+    {
+        var project = BuildWithRemovedSecond(MakeGroupTree(
+            new Dictionary<int, int[]> { [2] = [1] },
+            responsibleMasterByGroup: new Dictionary<int, UserIdentification> { [2] = Second }));
+
+        project.SelectResponsibleMaster([GroupId(2), RootGroupId]).UserId.ShouldBe(First);
+    }
 }

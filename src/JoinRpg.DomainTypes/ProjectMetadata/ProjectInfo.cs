@@ -162,9 +162,22 @@ public record class ProjectInfo
     public IReadOnlyCollection<ProjectMasterInfo> GetMastersVisibleTo(UserIdentification? viewer)
         => HasMasterAccess(viewer) ? Masters : [.. Masters.Where(m => m.IsPublic)];
 
-    public Permission[] GetMasterAccess(UserIdentification currentUser) => Masters.FirstOrDefault(m => m.UserId == currentUser)?.Permissions ?? [];
+    public Permission[] GetMasterAccess(UserIdentification currentUser) => GetActiveMasterOrDefault(currentUser)?.Permissions ?? [];
 
-    public ProjectMasterInfo GetMasterById(UserIdentification currentUser) => Masters.First(m => m.UserId == currentUser);
+    /// <summary>
+    /// Мастер для показа: ищется среди всех, включая бывших (<see cref="FormerMasters"/>), — у старой заявки
+    /// ответственным может остаться уже снятый мастер. Для прав и выбора ответственного —
+    /// <see cref="GetActiveMasterOrDefault"/>.
+    /// </summary>
+    public ProjectMasterInfo GetMasterById(UserIdentification userId)
+        => allMasters.FirstOrDefault(m => m.UserId == userId)
+            ?? throw new KeyNotFoundException($"Мастер {userId} не найден в проекте {ProjectId}");
+
+    /// <summary>
+    /// Действующий мастер проекта или <c>null</c>, если такого нет или он снят (ADR019, §2).
+    /// </summary>
+    public ProjectMasterInfo? GetActiveMasterOrDefault(UserIdentification userId)
+        => Masters.FirstOrDefault(m => m.UserId == userId);
 
     public ProjectMasterInfo GetDefaultResponsibleMaster()
         => Masters.FirstOrDefault(m => m.IsOwner)
@@ -251,13 +264,17 @@ public record class ProjectInfo
 
     public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
 
+    /// <summary>
+    /// Ответственный по правилам групп: мастер ближайшей группы, иначе мастер по умолчанию. Правило, чей мастер
+    /// уже снят с проекта, пропускается — новая заявка не должна достаться снятому мастеру.
+    /// </summary>
     public ProjectMasterInfo SelectResponsibleMaster(IEnumerable<CharacterGroupIdentification> allCharacterGroups)
     {
         foreach (var rule in GroupTree.ResponsibleMasterRules)
         {
-            if (allCharacterGroups.Contains(rule.Id))
+            if (allCharacterGroups.Contains(rule.Id) && GetActiveMasterOrDefault(rule.ResponsibleMasterId!) is { } master)
             {
-                return GetMasterById(rule.ResponsibleMasterId!);
+                return master;
             }
         }
 
