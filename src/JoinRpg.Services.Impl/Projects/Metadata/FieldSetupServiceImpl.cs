@@ -105,7 +105,9 @@ internal class FieldSetupServiceImpl(
                     ctx.Project.Details.CharacterDescription = null;
                 }
 
-                foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
+                var variants = field.DropdownValues.ToArray(); //Required, cause we modify fields inside.
+                LoadPlotTargetsOfSpecialGroups(ctx, variants, field.CharacterGroup);
+                foreach (var fieldValueVariant in variants)
                 {
                     DeleteFieldVariantValueImpl(ctx, fieldValueVariant);
                 }
@@ -164,6 +166,7 @@ internal class FieldSetupServiceImpl(
             ctx =>
             {
                 var value = GetFieldValue(ctx.Project, ctx.Request.projectFieldId, ctx.Request.valueId);
+                LoadPlotTargetsOfSpecialGroups(ctx, [value]);
                 DeleteFieldVariantValueImpl(ctx, value);
                 return value;
             });
@@ -182,6 +185,7 @@ internal class FieldSetupServiceImpl(
                 var unused = GetField(ctx.Project, ctx.Request).DropdownValues
                     .Where(v => v.IsActive && !v.WasEverUsed)
                     .ToList();
+                LoadPlotTargetsOfSpecialGroups(ctx, unused);
                 foreach (var value in unused)
                 {
                     DeleteFieldVariantValueImpl(ctx, value);
@@ -466,6 +470,20 @@ internal class FieldSetupServiceImpl(
 
     private static ProjectFieldDropdownValue GetFieldValue(Project project, int projectFieldId, int valueId)
         => GetField(project, projectFieldId).DropdownValues.Single(v => v.ProjectFieldDropdownValueId == valueId);
+
+    /// <summary>
+    /// Удаление значения решает, можно ли стереть его спецгруппу насовсем, по вводным этой группы.
+    /// В цикле по значениям это ленивая загрузка на каждое значение (#5269), поэтому вводные всех
+    /// спецгрупп грузим заранее одним запросом.
+    /// </summary>
+    private static void LoadPlotTargetsOfSpecialGroups(
+        ProjectMutationContext ctx,
+        IEnumerable<ProjectFieldDropdownValue> values,
+        CharacterGroup? fieldGroup = null)
+    {
+        CharacterGroup?[] groups = [.. values.Select(v => v.CharacterGroup), fieldGroup];
+        ctx.LoadPlotTargetsOfGroups([.. groups.OfType<CharacterGroup>()]);
+    }
 
     private static void DeleteFieldVariantValueImpl(ProjectMutationContext ctx, ProjectFieldDropdownValue value)
     {

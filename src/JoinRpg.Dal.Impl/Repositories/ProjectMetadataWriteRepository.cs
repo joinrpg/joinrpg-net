@@ -26,5 +26,22 @@ internal class ProjectMetadataWriteRepository(MyDbContext ctx) : IProjectMetadat
         }
 
         public void Remove(object entity) => ctx.Set(entity.GetType()).Remove(entity);
+
+        public void LoadPlotTargetsOfGroups(IReadOnlyCollection<CharacterGroup> groups)
+        {
+            var groupIds = groups.Select(g => g.CharacterGroupId).ToList();
+            if (groupIds.Count == 0)
+            {
+                return;
+            }
+
+            // Группы уже трекаются контекстом: запрос с Include не создаёт новых экземпляров, а
+            // заполняет коллекцию у существующих и помечает её загруженной — дальше обращение к
+            // DirectlyRelatedPlotElements в БД не ходит.
+            _ = ctx.Set<CharacterGroup>()
+                .Where(g => groupIds.Contains(g.CharacterGroupId))
+                .Include(g => g.DirectlyRelatedPlotElements)
+                .ToList();
+        }
     }
 }

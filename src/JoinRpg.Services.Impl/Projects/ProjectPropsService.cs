@@ -75,7 +75,7 @@ internal class ProjectPropsService(
                 _ = handle.ProjectInfo.EnsureProjectActive();
             }
 
-            var ctx = new ProjectMutationContext<TArgs>(handle.Project, handle.ProjectInfo, now, currentUserAccessor, arguments, handle.Remove);
+            var ctx = new ProjectMutationContext<TArgs>(handle.Project, handle.ProjectInfo, now, currentUserAccessor, arguments, handle);
             var result = action(ctx);
 
             await unitOfWork.SaveChangesAsync();
