@@ -1,23 +1,48 @@
 /*
-  Заголовок — это <summary>: по клику браузер сам раскрывает панель. Маркер ▸/▾ браузер рисует
-  у display: list-item, а normalize из Bootstrap 3 делает summary блоком — возвращаем.
+  <details> с одним <summary> стоит в строке заголовка рядом с HeaderExtra, поэтому оба —
+  inline-block. Маркер ▶/▼ рисуем сами: браузерный маркер есть только у display: list-item,
+  а он вынес бы HeaderExtra на следующую строку.
 */
-.join-collapse-panel__heading {
-  display: list-item;
+.join-collapse-panel__toggle {
+  display: inline-block;
+}
+
+.join-collapse-panel__summary {
+  display: inline-block;
   cursor: pointer;
+  list-style: none;
+}
+
+.join-collapse-panel__summary::-webkit-details-marker {
+  display: none;
+}
+
+.join-collapse-panel__summary::before {
+  content: "▶";
+  display: inline-block;
+  width: 1.4em;
+  font-size: 0.75em;
+}
+
+.join-collapse-panel__toggle[open] > .join-collapse-panel__summary::before {
+  content: "▼";
 }
 
 /*
+  Тело — сосед <details>, а не его содержимое: показываем его по атрибуту open.
   Разделитель заголовка и тела — нижняя граница заголовка; её цвет задаёт Bootstrap для варианта
   панели (.panel-default > .panel-heading и т. д.). У свёрнутой панели её нет: она слилась бы
-  с рамкой панели в двойную линию. Через border-color: inherit у тела не получится — в Chrome
-  содержимое <details> лежит в слоте ::details-content и наследует уже от него.
+  с рамкой панели в двойную линию.
 */
-.join-collapse-panel[open] > .join-collapse-panel__heading {
+.join-collapse-panel:not(:has(> .panel-heading > .join-collapse-panel__toggle[open])) > .join-collapse-panel__body {
+  display: none;
+}
+
+.join-collapse-panel:has(> .panel-heading > .join-collapse-panel__toggle[open]) > .panel-heading {
   border-bottom-width: 1px;
   border-bottom-style: solid;
 }
 
-.join-collapse-panel:not([open]) > .join-collapse-panel__heading {
+.join-collapse-panel:not(:has(> .panel-heading > .join-collapse-panel__toggle[open])) > .panel-heading {
   border-bottom-width: 0;
 }

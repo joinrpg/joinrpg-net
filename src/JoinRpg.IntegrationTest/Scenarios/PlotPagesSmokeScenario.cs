@@ -129,7 +129,12 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
         {
             panel.Attributes.Contains("open").ShouldBeFalse();
             panel.SelectSingleNode("summary").ShouldNotBeNull();
-            panel.SelectNodes(".//comment()")
+            // В summary — только название и значки: ссылки и кнопки там не дали бы свернуть панель
+            // и слились бы для скринридера в одну кнопку.
+            panel.SelectNodes("summary//a | summary//button").ShouldBeNull();
+            var panelBody = panel.SelectSingleNode("ancestor::div[contains(@class, 'join-collapse-panel')][1]/div[contains(@class, 'panel-body')]")
+                ?? throw new InvalidOperationException($"У панели вводной {elementId} нет тела");
+            panelBody.SelectNodes(".//comment()")
                 .ShouldNotBeNull($"В панели вводной {elementId} нет острова")
                 .ShouldContain(c => c.InnerHtml.Contains("PlotElementControls"));
         }

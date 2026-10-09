@@ -3,15 +3,27 @@
     Панели внутри JoinCollapsePanelGroup (или с одинаковым Group) образуют аккордеон — открыта
     не больше одной (атрибут name у <details>).
     Ссылка с якорем на Id раскрывает панель — это делает JoinRpg.Common.WebComponents.lib.module.js.
+
+    <details> держит только <summary> с Header: в summary нельзя класть ссылки и кнопки — для
+    скринридера это одна кнопка, а клик по ним не должен сворачивать панель. Они живут в HeaderExtra
+    рядом с summary, а тело — соседний блок, который CSS показывает по атрибуту open у <details>.
 *@
-<details class="@PanelClass join-collapse-panel" id="@Id" name="@(Group ?? ParentGroup?.EffectiveName)" open="@Open">
-    <summary class="panel-heading join-collapse-panel__heading">@Header</summary>
-    <div class="panel-body">@ChildContent</div>
-</details>
+<div class="@PanelClass join-collapse-panel">
+    <div class="panel-heading">
+        <details class="join-collapse-panel__toggle" id="@Id" name="@(Group ?? ParentGroup?.EffectiveName)" open="@Open">
+            <summary class="join-collapse-panel__summary" aria-controls="@bodyId">@Header</summary>
+        </details>
+        @HeaderExtra
+    </div>
+    <div class="panel-body join-collapse-panel__body" id="@bodyId">@ChildContent</div>
+</div>
 
 @code {
-    /// <summary>Заголовок: всегда виден, клик по нему сворачивает и разворачивает панель.</summary>
+    /// <summary>Заголовок: клик по нему сворачивает и разворачивает панель. Без ссылок и кнопок.</summary>
     [Parameter, EditorRequired] public RenderFragment Header { get; set; } = null!;
+
+    /// <summary>Остальная часть заголовка — видна всегда, панель не сворачивает: ссылки, кнопки, подробности.</summary>
+    [Parameter] public RenderFragment? HeaderExtra { get; set; }
 
     /// <summary>Содержимое, видное только в развёрнутой панели.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = null!;
@@ -33,4 +45,8 @@
     [CascadingParameter] private JoinCollapsePanelGroup? ParentGroup { get; set; }
 
     private string PanelClass => BootstrapStyle.Build("panel", Variation, null);
+
+    private readonly string generatedBodyId = $"join-collapse-{Guid.NewGuid():N}";
+
+    private string bodyId => Id is null ? generatedBodyId : $"{Id}-body";
 }

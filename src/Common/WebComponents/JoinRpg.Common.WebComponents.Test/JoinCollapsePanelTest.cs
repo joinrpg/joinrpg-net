@@ -5,7 +5,8 @@ namespace JoinRpg.Common.WebComponents.Test;
 
 /// <summary>
 /// Сворачивает и раскрывает панель браузер (нативный &lt;details&gt;), поэтому тест проверяет то,
-/// на что браузер опирается: заголовок — это summary, аккордеон — общий name, состояние — open.
+/// на что браузер опирается: заголовок — это summary, аккордеон — общий name, состояние — open,
+/// а ссылки и кнопки заголовка (HeaderExtra) лежат вне summary.
 /// </summary>
 public class JoinCollapsePanelTest
 {
@@ -14,7 +15,8 @@ public class JoinCollapsePanelTest
         Action<ComponentParameterCollectionBuilder<JoinCollapsePanel>>? configure = null)
         => ctx.Render<JoinCollapsePanel>(p =>
         {
-            p.Add(x => x.Header, "<a href=\"/x\">заголовок</a>");
+            p.Add(x => x.Header, "<b>заголовок</b>");
+            p.Add(x => x.HeaderExtra, "<a href=\"/x\">ссылка</a>");
             p.Add(x => x.ChildContent, "<p>содержимое</p>");
             configure?.Invoke(p);
         });
@@ -25,8 +27,27 @@ public class JoinCollapsePanelTest
         using var ctx = new BunitContext();
         var cut = Render(ctx);
 
-        cut.Find("details > summary a").TextContent.ShouldBe("заголовок");
-        cut.Find("details > summary ~ * p").TextContent.ShouldBe("содержимое");
+        cut.Find("details > summary b").TextContent.ShouldBe("заголовок");
+    }
+
+    [Fact]
+    public void HeaderExtra_IsOutsideSummary_SoLinksDoNotToggle()
+    {
+        using var ctx = new BunitContext();
+        var cut = Render(ctx);
+
+        cut.FindAll("summary a").ShouldBeEmpty();
+        cut.Find(".panel-heading > a").TextContent.ShouldBe("ссылка");
+    }
+
+    [Fact]
+    public void Summary_ControlsBody()
+    {
+        using var ctx = new BunitContext();
+        var cut = Render(ctx, p => p.Add(x => x.Id, "panelPlotElement42"));
+
+        var bodyId = cut.Find("summary").GetAttribute("aria-controls");
+        cut.Find($"#{bodyId} p").TextContent.ShouldBe("содержимое");
     }
 
     [Fact]

@@ -2,8 +2,9 @@
 
 <h4>Аккордеон</h4>
 <p>
-    Панели внутри <code>JoinCollapsePanelGroup</code>: открыта не больше одной. Ссылки и кнопки в заголовке
-    панель не сворачивают — сворачивает клик по остальному заголовку.
+    Панели внутри <code>JoinCollapsePanelGroup</code>: открыта не больше одной. Сворачивает клик по
+    <code>Header</code>; ссылки и кнопки заголовка кладутся в <code>HeaderExtra</code> — они видны всегда
+    и панель не сворачивают.
 </p>
 <JoinCollapsePanelGroup>
     <JoinCollapsePanel Open="true">
@@ -11,7 +12,8 @@
         <ChildContent>Содержимое первой панели.</ChildContent>
     </JoinCollapsePanel>
     <JoinCollapsePanel>
-        <Header><b>Вторая</b> — <a href="https://joinrpg.ru" target="_blank">ссылка в заголовке</a></Header>
+        <Header><b>Вторая</b></Header>
+        <HeaderExtra>— <a href="https://joinrpg.ru" target="_blank">ссылка в заголовке</a></HeaderExtra>
         <ChildContent>Содержимое второй панели.</ChildContent>
     </JoinCollapsePanel>
     <JoinCollapsePanel>
