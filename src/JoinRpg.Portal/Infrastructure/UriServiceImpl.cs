@@ -39,6 +39,7 @@ internal class UriServiceImpl(
     IUriLocator<ProjectFieldIdentification>,
     IUriLocator<ProjectFieldVariantIdentification>,
     IUriLocator<PaymentTypeIdentification>,
+    IUriLocator<ProjectMasterIdentification>,
     IUriLocator<FinanceOperationIdentification>,
     IUriLocator<ForumCommentIdentification>,
     IUriLocator<ProjectRolesListIdentification>,
@@ -192,6 +193,9 @@ internal class UriServiceImpl(
     public Uri GetUri(ProjectFieldVariantIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("EditValue", "GameField",
             new { ProjectId = target.ProjectId.Value, target.FieldId.ProjectFieldId, valueId = target.ProjectFieldVariantId }));
+
+    public Uri GetUri(ProjectMasterIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Acl", new { ProjectId = target.ProjectId.Value, userId = target.UserId }));
 
     public Uri GetUri(PaymentTypeIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("EditPaymentType", "Finances", new { ProjectId = target.ProjectId.Value, target.PaymentTypeId }));

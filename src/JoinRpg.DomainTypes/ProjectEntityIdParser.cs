@@ -32,6 +32,12 @@ public static class ProjectEntityIdParser
             return true;
         }
 
+        if (ProjectMasterIdentification.TryParse(value, null, out var master))
+        {
+            id = master;
+            return true;
+        }
+
         if (PaymentTypeIdentification.TryParse(value, null, out var pt))
         {
             id = pt;

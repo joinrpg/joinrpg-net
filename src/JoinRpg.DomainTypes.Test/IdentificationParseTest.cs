@@ -3,6 +3,7 @@ using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.DomainTypes.Test;
@@ -82,6 +83,18 @@ public class IdentificationParseTest
     {
         PlotFolderIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
         result.ShouldBe(new PlotFolderIdentification(new ProjectIdentification(1), 2));
+    }
+
+    // ProjectMasterIdentification — 2 листа: projectId, userId
+    [Theory]
+    [InlineData("ProjectMasterId(1-2)")]
+    [InlineData("ProjectMaster(1-2)")]
+    [InlineData("ProjectMasterIdentification(1-2)")]
+    [InlineData("1-2")]
+    public void ProjectMasterShouldParse(string val)
+    {
+        ProjectMasterIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(new ProjectMasterIdentification(new ProjectIdentification(1), 2));
     }
 
     // PaymentTypeIdentification — 2 листа: projectId, paymentTypeId

@@ -15,7 +15,8 @@ public interface IProjectAccessService
     /// <summary>
     /// Переставить мастера в списке сразу после <paramref name="afterUserId"/> (null — в начало), ADR019, §5.
     /// </summary>
-    Task MoveMasterAfter(ProjectIdentification projectId, UserIdentification userId, UserIdentification? afterUserId);
+    /// <returns>Действующие мастера в новом порядке — чтобы интерактивный список переставил строки без перезагрузки.</returns>
+    Task<IReadOnlyList<UserIdentification>> MoveMasterAfter(ProjectIdentification projectId, UserIdentification userId, UserIdentification? afterUserId);
 
     /// <summary>
     /// Записать как бывших мастеров (статус Removed, без прав) тех, у кого в проекте нет записи ACL.

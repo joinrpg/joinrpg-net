@@ -626,9 +626,10 @@ public class ProjectAccessServiceTest
         SetUpMastersForOrdering();
         var service = CreateService(mock.Master.UserId);
 
-        await service.MoveMasterAfter(ProjectId, new UserIdentification(mock.Master.UserId), new UserIdentification(60));
+        var returned = await service.MoveMasterAfter(ProjectId, new UserIdentification(mock.Master.UserId), new UserIdentification(60));
 
         OrderAfterSave().ShouldBe([new(50), new(60), new(mock.Master.UserId)]);
+        returned.ShouldBe(OrderAfterSave()); // новый порядок отдаётся вызывающему — по нему остров переставит строки
     }
 
     [Fact]
@@ -651,9 +652,10 @@ public class ProjectAccessServiceTest
         var before = mock.ProjectInfo.Masters.Select(m => m.UserId).ToArray();
         var service = CreateService(mock.Master.UserId);
 
-        await service.MoveMasterAfter(ProjectId, new UserIdentification(userId), new UserIdentification(afterUserId));
+        var returned = await service.MoveMasterAfter(ProjectId, new UserIdentification(userId), new UserIdentification(afterUserId));
 
         OrderAfterSave().ShouldBe(before);
+        returned.ShouldBe(before); // и без перестановки вызывающий получает текущий порядок
     }
 
     [Fact]
