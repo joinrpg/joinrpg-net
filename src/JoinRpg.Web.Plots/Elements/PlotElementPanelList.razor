@@ -1,0 +1,16 @@
+@* Вводные сюжета аккордеоном: раскрыта не больше одной. *@
+@if (Elements.Count == 0)
+{
+    return;
+}
+
+<JoinCollapsePanelGroup>
+    @foreach (var element in Elements)
+    {
+        <PlotElementPanel Model="element" />
+    }
+</JoinCollapsePanelGroup>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<PlotElementPanelViewModel> Elements { get; set; } = null!;
+}

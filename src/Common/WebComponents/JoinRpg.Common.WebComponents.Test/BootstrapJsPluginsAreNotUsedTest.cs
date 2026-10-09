@@ -23,7 +23,7 @@ public class BootstrapJsPluginsAreNotUsedTest
         "Выпадающее меню на JS Bootstrap — не используйте его в новом коде.";
 
     private const string Collapse =
-        "Раскрывающийся блок на JS Bootstrap — не используйте его в новом коде.";
+        "Раскрывающийся блок на JS Bootstrap — используйте JoinCollapsePanel / JoinCollapsePanelGroup.";
 
     private const string Modal =
         "Модальное окно Bootstrap — используйте JoinDialog / JoinMessageDialog / JoinFormDialog.";
@@ -45,14 +45,12 @@ public class BootstrapJsPluginsAreNotUsedTest
         new("data-toggle=\"collapse\"", Collapse,
             "src/JoinRpg.Portal/Views/Claim/Edit.cshtml",
             "src/JoinRpg.Portal/Views/Finances/Setup.cshtml",
-            "src/JoinRpg.Portal/Views/Plot/EditElementPartial.cshtml",
             "src/JoinRpg.Portal/Views/Shared/Components/Comment/Comment.cshtml",
             "src/JoinRpg.Portal/Views/Shared/Components/MainMenu/MainMenu.cshtml",
             "src/JoinRpg.Portal/Views/Shared/Components/ProjectMenu/MasterMenu.cshtml",
             "src/JoinRpg.Portal/Views/Shared/Components/ProjectMenu/PlayerMenu.cshtml"),
         new(".collapse(", Collapse,
-            ThisTest,
-            "src/JoinRpg.Portal/wwwroot/Scripts/edit-funcs.js"),
+            ThisTest),
         new(".bs.collapse", Collapse,
             ThisTest),
         new("data-toggle=\"modal\"", Modal,

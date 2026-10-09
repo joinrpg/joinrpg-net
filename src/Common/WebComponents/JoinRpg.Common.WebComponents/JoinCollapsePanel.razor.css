@@ -1,0 +1,23 @@
+/*
+  Заголовок — это <summary>: по клику браузер сам раскрывает панель. Маркер ▸/▾ браузер рисует
+  у display: list-item, а normalize из Bootstrap 3 делает summary блоком — возвращаем.
+*/
+.join-collapse-panel__heading {
+  display: list-item;
+  cursor: pointer;
+}
+
+/*
+  Разделитель заголовка и тела — нижняя граница заголовка; её цвет задаёт Bootstrap для варианта
+  панели (.panel-default > .panel-heading и т. д.). У свёрнутой панели её нет: она слилась бы
+  с рамкой панели в двойную линию. Через border-color: inherit у тела не получится — в Chrome
+  содержимое <details> лежит в слоте ::details-content и наследует уже от него.
+*/
+.join-collapse-panel[open] > .join-collapse-panel__heading {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+}
+
+.join-collapse-panel:not([open]) > .join-collapse-panel__heading {
+  border-bottom-width: 0;
+}

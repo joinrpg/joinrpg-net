@@ -1,4 +1,4 @@
-// Подсказки компонента Tooltip.razor.
+// Подсказки компонента Tooltip.razor и раскрытие JoinCollapsePanel.razor по якорю.
 //
 // Это JS-инициализатор Blazor: имя файла обязано совпадать с PackageId библиотеки, а сам файл
 // лежать в её wwwroot. Blazor импортирует такой модуль сам — и в Blazor Web App (Portal, IdPortal),
@@ -144,3 +144,27 @@ document.addEventListener('keydown', event => {
         hide();
     }
 });
+
+// Сворачиваемые панели JoinCollapsePanel.razor: ссылка с якорем на панель её раскрывает.
+// Браузер сам прокручивает к <details>, но открывать его по якорю на сам элемент не обязан.
+
+function openPanelFromHash() {
+    const id = decodeHash(location.hash.slice(1));
+    const target = id === '' ? null : document.getElementById(id);
+    if (target instanceof HTMLDetailsElement) {
+        target.open = true;
+    }
+}
+
+// Битый якорь (#50%) не должен ронять модуль: он ещё и JS-инициализатор Blazor, и исключение
+// при его выполнении не даёт стартовать WebAssembly-островам на странице.
+function decodeHash(hash) {
+    try {
+        return decodeURIComponent(hash);
+    } catch {
+        return hash;
+    }
+}
+
+openPanelFromHash();
+window.addEventListener('hashchange', openPanelFromHash);

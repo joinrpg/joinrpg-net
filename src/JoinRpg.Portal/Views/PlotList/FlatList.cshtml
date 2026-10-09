@@ -24,7 +24,9 @@
         <p>@Html.DisplayFor(modelItem => item.Summary)</p>
         @foreach (var e in elements)
         {
-            @await Html.PartialAsync("../Plot/EditElementPartial", e)
+            <component type="typeof(JoinRpg.Web.Plots.Elements.PlotElementPanel)"
+                       render-mode="Static"
+                       param-Model="@e.ToPanel()" />
         }
     </div>
 }

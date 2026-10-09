@@ -1,0 +1,124 @@
+@using JoinRpg.Common.WebComponents.ElementMoving
+@* Перенос из cshtml: пробелы между значками, датой, автором и кнопками — часть вёрстки. *@
+@preservewhitespace true
+@inject IPlotUriLocator PlotUriLocator
+
+@if (!Model.Visible)
+{
+    return;
+}
+
+<JoinCollapsePanel Id="@PlotElementAnchor.For(Model.ElementId)" Open="Open">
+    <Header>
+        @if (Model.HasMasterAccess)
+        {
+            <PlotStatusBadge Status="Model.Status" />
+        }
+        <PlotElementTypeBadge ElementType="Model.ElementType" IsMasterOnly="Model.IsMasterOnly" />
+        @if (Model.HasMasterAccess)
+        {
+            <PlotTodoBadge Todo="@Model.Todo" />
+        }
+        <span class="h4 @(Model.Status == PlotStatus.Deleted ? "s" : "")">@Model.ShortContent</span>
+        @if (Model.HasMasterAccess)
+        {
+            <span>
+                <b>Изменено: </b>
+                <EventTime Model="Model.ModifiedAt" />
+                @if (Model.Author is not null)
+                {
+                    <UserLink Model="Model.Author" />
+                }
+            </span>
+
+            @if (Model.SortItemIds is not null)
+            {
+                <JoinMoveControlNonInteractive Endpoint="@PlotUriLocator.GetReorderElementsUri(Model.ElementId.ProjectId).ToString()"
+                                               SelfId="@Model.ElementId.ToString()"
+                                               ItemIds="Model.SortItemIds" />
+            }
+        }
+        @if (!Model.IsMasterOnly)
+        {
+            <div><PlotTargetDisplay Target="Model.Target" /></div>
+        }
+        @if (Model.HasMasterAccess && Model.ThisPublished && Model.Status != PlotStatus.Completed)
+        {
+            <div><b>Опубликованная версия вводной</b>.</div>
+        }
+    </Header>
+    <ChildContent>
+        @if (Model.HasMasterAccess)
+        {
+            @if (Model.PublishedVersion is { } published && published.Version < Model.CurrentVersion.Version)
+            {
+                <JoinButton Link="@PlotUriLocator.GetVersionUri(published).ToString()" Size="SizeStyleEnum.Small" Title="Предыдущая версия (опубликованная)">
+                    <JoinIcon Icon="JoinIconType.GoToFirst" />
+                    <EventTime Model="Model.PrevModifiedAt" /> — опубликованная версия
+                </JoinButton>
+            }
+            @if (Model.PrevModifiedAt is not null
+                 && (Model.PublishedVersion is null || Model.PublishedVersion.Version != Model.CurrentVersion.Version - 1))
+            {
+                <JoinButton Link="@PlotUriLocator.GetVersionUri(Model.Version(Model.CurrentVersion.Version - 1)).ToString()" Size="SizeStyleEnum.Small" Title="Предыдущая версия">
+                    <JoinIcon Icon="JoinIconType.GoToPrev" />
+                    <EventTime Model="Model.PrevModifiedAt" />
+                </JoinButton>
+            }
+
+            <JoinButton Preset="ButtonPreset.Print" Label="Печать" Size="SizeStyleEnum.Small"
+                        Link="@PlotUriLocator.GetPrintVersionUri(Model.CurrentVersion).ToString()" />
+
+            @if (Model.NextModifiedAt is null)
+            {
+                <JoinButton Preset="ButtonPreset.Edit" Size="SizeStyleEnum.Small"
+                            Link="@PlotUriLocator.GetEditElementUri(Model.ElementId).ToString()" />
+            }
+
+            <PlotElementControls Model="Controls" @rendermode="ControlsRenderMode" />
+
+            <JoinButton Preset="ButtonPreset.Copy" Size="SizeStyleEnum.Small"
+                        Link="@PlotUriLocator.GetCopyElementUri(Model.ElementId).ToString()" />
+
+            @if (Model.NextModifiedAt is not null)
+            {
+                <JoinButton Link="@PlotUriLocator.GetVersionUri(Model.Version(Model.CurrentVersion.Version + 1)).ToString()" Size="SizeStyleEnum.Small" Title="Следующая версия">
+                    <EventTime Model="Model.NextModifiedAt" />
+                    <JoinIcon Icon="JoinIconType.GoToNext" />
+                </JoinButton>
+            }
+
+            <hr />
+            @if (!string.IsNullOrWhiteSpace(Model.Todo))
+            {
+                <p><JoinBadge Variation="VariationStyleEnum.Warning">TODO</JoinBadge> @Model.Todo</p>
+            }
+        }
+
+        <div class="@(Model.ThisPublished ? "" : "world-object-hidden")">
+            @((MarkupString)Model.Content)
+            @if (string.IsNullOrWhiteSpace(Model.Content))
+            {
+                <i>Вводная пуста</i>
+            }
+        </div>
+    </ChildContent>
+</JoinCollapsePanel>
+
+@code {
+    [Parameter, EditorRequired] public PlotElementPanelViewModel Model { get; set; } = null!;
+
+    /// <summary>Раскрыта ли вводная сразу.</summary>
+    [Parameter] public bool Open { get; set; }
+
+    // Кнопки публикации и удаления — остров на странице, которая сама рендерится статически.
+    private static readonly IComponentRenderMode ControlsRenderMode = new InteractiveWebAssemblyRenderMode(prerender: false);
+
+    private PlotElementControlsViewModel Controls => new(
+        Model.PublishedVersion,
+        Model.HasEditAccess,
+        Model.Status,
+        Model.ElementId,
+        Model.CurrentVersion,
+        CouldBePublished: !string.IsNullOrWhiteSpace(Model.Todo) && Model.Target.Any());
+}

@@ -1,8 +1,8 @@
-﻿@model JoinRpg.Web.Models.Plot.PlotElementListItemViewModel
+﻿@using JoinRpg.Web.Plots
+@model JoinRpg.Web.Models.Plot.PlotElementListItemViewModel
 
 @{
     ViewBag.Title = "Сюжет «" + Model.PlotFolderMasterTitle + "» — история";
-    ViewBag.PlotElementUncollapse = Model.PlotElementId;
 }
 
 @if (!Model.PrintMode){
@@ -11,4 +11,22 @@
 
   @Html.ActionLink("Назад к сюжету", "Edit", new {Model.ProjectId, Model.PlotFolderId}, null)
 }
-@await Html.PartialAsync("EditElementPartial", Model)
+@if (!Model.HasMasterAccess && Model.Status != PlotStatus.Completed)
+{
+    return;
+}
+@if (Model.PrintMode)
+{
+    @Model.Content
+    @if (Model.Content.IsNullOrWhiteSpace())
+    {
+        <i>Вводная пуста</i>
+    }
+}
+else
+{
+    <component type="typeof(JoinRpg.Web.Plots.Elements.PlotElementPanel)"
+               render-mode="Static"
+               param-Model="@Model.ToPanel()"
+               param-Open="true" />
+}
