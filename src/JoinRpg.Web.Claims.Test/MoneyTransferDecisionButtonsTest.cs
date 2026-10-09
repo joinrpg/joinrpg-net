@@ -64,6 +64,20 @@ public class MoneyTransferDecisionButtonsTest : BunitContext
 
         client.Declined.ShouldBe([TransferId]);
         client.Approved.ShouldBeEmpty();
+        Services.GetRequiredService<BunitNavigationManager>().History.ShouldHaveSingleItem()
+            .Options.ForceLoad.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ShouldShowServerRejectionReason()
+    {
+        client.FailWith = new InvalidOperationException("Этот перевод уже подтверждён или отклонён.");
+        var cut = RenderButtons();
+
+        await ClickAndConfirm(cut, "Отклонить");
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Этот перевод уже подтверждён или отклонён."));
+        Services.GetRequiredService<BunitNavigationManager>().History.ShouldBeEmpty();
     }
 
     [Fact]

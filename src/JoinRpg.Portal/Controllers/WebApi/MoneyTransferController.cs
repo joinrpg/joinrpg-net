@@ -1,3 +1,4 @@
+using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.Claims.Finance;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,26 @@ public class MoneyTransferController(IMoneyTransferClient client) : ControllerBa
 {
     [HttpPost]
     public async Task<ActionResult> Approve(ProjectIdentification projectId, [FromQuery] int transferId)
-    {
-        await client.Approve(new MoneyTransferIdentification(projectId, transferId));
-        return Ok();
-    }
+        => await WrongStatusToBadRequest(() => client.Approve(new MoneyTransferIdentification(projectId, transferId)));
 
     [HttpPost]
     public async Task<ActionResult> Decline(ProjectIdentification projectId, [FromQuery] int transferId)
+        => await WrongStatusToBadRequest(() => client.Decline(new MoneyTransferIdentification(projectId, transferId)));
+
+    /// <summary>
+    /// Перевод мог успеть обработать другой мастер — это штатный исход, а не 500-я.
+    /// </summary>
+    private async Task<ActionResult> WrongStatusToBadRequest(Func<Task> action)
     {
-        await client.Decline(new MoneyTransferIdentification(projectId, transferId));
+        try
+        {
+            await action();
+        }
+        catch (EntityWrongStatusException)
+        {
+            return BadRequest("Этот перевод уже подтверждён или отклонён. Обновите страницу.");
+        }
+
         return Ok();
     }
 }

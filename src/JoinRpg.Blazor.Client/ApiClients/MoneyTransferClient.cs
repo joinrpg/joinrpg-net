@@ -1,3 +1,4 @@
+using System.Net;
 using JoinRpg.Web.Claims.Finance;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
@@ -14,6 +15,13 @@ public class MoneyTransferClient(HttpClient httpClient, CsrfTokenProvider csrfTo
         var response = await httpClient.PostAsync(
             $"webapi/{transferId.ProjectId.Value}/money-transfer/{action}?transferId={transferId.MoneyTransferId}",
             content: null);
+
+        // Причина отказа приходит текстом, чтобы кнопки могли показать её мастеру
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            throw new InvalidOperationException(await response.Content.ReadAsStringAsync());
+        }
+
         _ = response.EnsureSuccessStatusCode();
     }
 }
