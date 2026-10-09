@@ -169,6 +169,7 @@ public class ClaimBalanceOverCharacterInfoTest
             LastPlayerCommentAt: null,
             LastMasterCommentAt: null,
             LastVisibleMasterCommentAt: null,
+            CommentDiscussionId: new CommentDiscussionId(300),
             Finance: new ClaimFinanceInfo(
                 FixedFee: currentFee,
                 PreferentialFeeUser: preferential,

@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
@@ -101,6 +102,10 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
             claim.AccommodationGroupId.ShouldBe(AccommodationGroupIdentification.From(claimId));
             // Финансовых операций по заявке пока нет — модерировать нечего.
             claim.Finance.OperationsRequireModeration.ShouldBeFalse();
+            // Обсуждение заявки — то же, что у EF-сущности: по нему считается непрочитанное в списке.
+            var entity = await scope.ServiceProvider.GetRequiredService<IClaimsRepository>().GetClaim(claimId);
+            claim.CommentDiscussionId.ShouldBe(new CommentDiscussionId(entity!.CommentDiscussionId));
+            claim.CommentDiscussionId.Value.ShouldBePositive();
         }
 
         // 5. Игрок просит льготный взнос. Это штатный сервисный путь, создающий операцию с

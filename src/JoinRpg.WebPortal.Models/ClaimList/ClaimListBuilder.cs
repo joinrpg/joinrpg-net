@@ -43,7 +43,7 @@ public static class ClaimListBuilder
             new UserLinkViewModel(lastModifiedBy),
             claimInfo.ClaimId,
             claimValidator.Validate(claimInfo).Select(p => new ProblemViewModel(p)).ToList(),
-            unreadComments.GetValueOrDefault(claim.CommentDiscussionId),
+            unreadComments.GetValueOrDefault(claimInfo.Claim.CommentDiscussionId.Value),
             GetPlayerFullName(claimInfo)
             );
     }

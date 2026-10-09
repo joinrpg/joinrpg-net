@@ -84,6 +84,7 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                     LastPlayerCommentAt = claim.LastPlayerCommentAt,
                     LastMasterCommentAt = claim.LastMasterCommentAt,
                     LastVisibleMasterCommentAt = claim.LastVisibleMasterCommentAt,
+                    CommentDiscussionId = claim.CommentDiscussionId,
                     CurrentFee = claim.CurrentFee,
                     PreferentialFeeUser = claim.PreferentialFeeUser,
                     JsonData = claim.JsonData,
