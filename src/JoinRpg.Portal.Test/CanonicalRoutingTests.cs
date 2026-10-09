@@ -27,6 +27,7 @@ public class CanonicalRoutingTests(IntegrationTestPortalFactory factory)
     [InlineData("{projectId}/plots/flatlist", typeof(PlotListController), nameof(PlotListController.FlatList))]
     [InlineData("{projectId}/plots/ready", typeof(PlotListController), nameof(PlotListController.Ready))]
     [InlineData("{projectId}/rooms/addroomtype", typeof(AccommodationTypeController), nameof(AccommodationTypeController.AddRoomType))]
+    [InlineData("{projectId}/rooms/{roomTypeId}/edit", typeof(AccommodationTypeController), nameof(AccommodationTypeController.EditRoomType))]
     // Адреса операций над комнатами собирает строкой rooms.js, поэтому они закреплены здесь:
     // код переехал в AccommodationRoomsController, а адреса остались прежними.
     [InlineData("{projectId}/rooms/occupyroom", typeof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController), nameof(JoinRpg.Portal.Controllers.WebApi.AccommodationRoomsController.OccupyRoom))]

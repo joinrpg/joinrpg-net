@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -13,7 +14,7 @@ public static class UriLocatorExtensions
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
         IUriLocator<CharacterGroupIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
-        IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator
+        IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
@@ -84,6 +85,9 @@ public static class UriLocatorExtensions
         Uri IScheduleUriLocator.GetFullScreenUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/schedule/full", UriKind.Relative);
 
+        Uri IAccommodationUriLocator.GetRoomTypesListUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/rooms", UriKind.Relative);
+
         Uri IProjectUriLocator.GetMyClaimUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/myclaim", UriKind.Relative);
 
@@ -143,6 +147,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IScheduleUriLocator>(locator)
             .AddSingleton<IProjectUriLocator>(locator)
             .AddSingleton<IPlotUriLocator>(locator)
+            .AddSingleton<IAccommodationUriLocator>(locator)
             ;
     }
 }

@@ -7,6 +7,7 @@ using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -26,6 +27,7 @@ internal class UriServiceImpl(
     ICharacterUriLocator,
     IScheduleUriLocator,
     IPlotUriLocator,
+    IAccommodationUriLocator,
     ICharacterGroupUriLocator,
     IProjectFieldUriLocator,
     IUriLocator<PlotFolderIdentification>,
@@ -139,6 +141,7 @@ internal class UriServiceImpl(
     Uri IScheduleUriLocator.GetScheduleUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "ShowSchedule", new { ProjectId = projectId.Value }));
     Uri IScheduleUriLocator.GetIcalUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Ical", "ShowSchedule", new { ProjectId = projectId.Value }));
     Uri IScheduleUriLocator.GetFullScreenUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("FullScreen", "ShowSchedule", new { ProjectId = projectId.Value }));
+    Uri IAccommodationUriLocator.GetRoomTypesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "AccommodationType", new { ProjectId = projectId.Value }));
     Uri IProjectUriLocator.GetCreatePlotUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Create", "Plot", new { ProjectId = projectId.Value }));
     public Uri GetUri(PlotFolderIdentification target) => GetUri(new Linkable(target));
     Uri IProjectUriLocator.GetRolesListUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "GameGroups", new { ProjectId = projectId.Value }));

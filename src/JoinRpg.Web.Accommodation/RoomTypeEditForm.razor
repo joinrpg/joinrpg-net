@@ -1,0 +1,109 @@
+@* Форма создания и изменения типа проживания. Режим задаёт RoomTypeId: null — создание. *@
+@using Microsoft.AspNetCore.Components.Forms
+@inject IRoomTypeEditClient Client
+@inject IAccommodationUriLocator UriLocator
+@inject NavigationManager NavigationManager
+@inject ILogger<RoomTypeEditForm> Logger
+
+@if (model is null)
+{
+    <JoinLoadingMessage />
+}
+else
+{
+    <EditForm Model="model" OnValidSubmit="OnSave">
+        <DataAnnotationsValidator />
+        @* Отступ от вкладок страницы изменения — как был у MVC-формы. *@
+        <div style="margin-top: 1em;">
+            <FormHorizontal>
+                @if (errorMessage is not null)
+                {
+                    <div class="text-danger">@errorMessage</div>
+                }
+
+                <FormRowFor For="@(() => model.Name)" InputId="roomtype-name">
+                    <JoinTextInput @bind-Value="model.Name" id="roomtype-name" />
+                </FormRowFor>
+
+                <FormRowFor For="@(() => model.Cost)" InputId="roomtype-cost">
+                    <InputNumber @bind-Value="model.Cost" class="form-control" id="roomtype-cost"
+                                 ParsingErrorMessage="Укажите цену за 1 место целым числом" />
+                </FormRowFor>
+
+                <FormRowFor For="@(() => model.Capacity)" InputId="roomtype-capacity">
+                    <InputNumber @bind-Value="model.Capacity" class="form-control" id="roomtype-capacity"
+                                 ParsingErrorMessage="Укажите количество мест в номере — целое число от 1 до 1000" />
+                </FormRowFor>
+
+                <FormRowFor For="@(() => model.IsPlayerSelectable)" InputId="roomtype-player-selectable">
+                    <CheckboxInput @bind-Value="model.IsPlayerSelectable" id="roomtype-player-selectable" />
+                </FormRowFor>
+
+                <FormRowFor For="@(() => model.Description)" InputId="roomtype-description">
+                    <JoinTextArea @bind-Value="model.Description" cols="100" id="roomtype-description" />
+                    <div class="help-block">Можно использовать <a href="https://commonmark.org/help/" target="_blank">MarkDown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>
+                </FormRowFor>
+
+                <FormRow Label="">
+                    <button type="submit" class="btn btn-success" disabled="@saving">@(RoomTypeId is null ? "Добавить" : "Сохранить")</button>
+                    <a href="@ListUri" class="btn btn-default">Назад к списку типов поселения</a>
+                </FormRow>
+            </FormHorizontal>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    /// <summary>
+    /// Изменяемый тип проживания. <c>null</c> — форма создания нового типа.
+    /// </summary>
+    [Parameter]
+    public AccommodationTypeIdentification? RoomTypeId { get; set; }
+
+    [PersistentState]
+    public RoomTypeEditViewModel? model { get; set; }
+
+    private string? errorMessage;
+    private bool saving;
+
+    private string ListUri => UriLocator.GetRoomTypesListUri(ProjectId).ToString();
+
+    protected override async Task OnInitializedAsync()
+    {
+        model ??= RoomTypeId is null ? new RoomTypeEditViewModel() : await Client.GetRoomType(RoomTypeId);
+    }
+
+    private async Task OnSave()
+    {
+        saving = true;
+        errorMessage = null;
+        try
+        {
+            if (RoomTypeId is null)
+            {
+                await Client.CreateRoomType(ProjectId, model!);
+            }
+            else
+            {
+                await Client.UpdateRoomType(RoomTypeId, model!);
+            }
+
+            // Список типов — MVC-страница, поэтому переход полной загрузкой.
+            NavigationManager.NavigateTo(ListUri, forceLoad: true);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Не удалось сохранить тип проживания");
+            errorMessage = exception is InvalidOperationException
+                ? exception.Message
+                : "Не удалось сохранить тип поселения. Попробуйте ещё раз.";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+}

@@ -2,6 +2,7 @@ using JoinRpg.Blazor.Client;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -173,6 +174,20 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         var server = call(factory.Services.GetRequiredService<IPlotUriLocator>());
         var client = call(_clientServices.GetRequiredService<IPlotUriLocator>());
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    /// <summary>
+    /// Сюда возвращается форма типа проживания после сохранения — путь закреплён по той же
+    /// причине, что у расписания: клиентская реализация задана строкой.
+    /// </summary>
+    [Fact]
+    public void AccommodationRoomTypesListLocatorsShouldAgree()
+    {
+        var server = factory.Services.GetRequiredService<IAccommodationUriLocator>().GetRoomTypesListUri(ProjectId);
+        var client = _clientServices.GetRequiredService<IAccommodationUriLocator>().GetRoomTypesListUri(ProjectId);
+
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+        NormalizePathAndQuery(server).ShouldBe($"/{ProjectId.Value}/rooms", StringCompareShould.IgnoreCase);
     }
 
     // Якорь тоже часть ссылки: GetElementInFolderUri без него не раскроет панель вводной.

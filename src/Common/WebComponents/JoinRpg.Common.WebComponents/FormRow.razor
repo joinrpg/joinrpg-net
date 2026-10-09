@@ -1,5 +1,5 @@
 ﻿<div class="form-group" @attributes="@InputAttributes">
-  <label class="control-label col-md-2">@Label</label>
+  <label class="control-label col-md-2" for="@InputId">@Label</label>
   <div class="col-md-10">
     @ChildContent
     @if (Description is not null)
@@ -18,6 +18,11 @@
     [Parameter] public string Label { get; set; } = null!;
     [Parameter] public RenderFragment? DescriptionFragment { get; set; } = null;
     [Parameter] public string? Description { get; set; } = null;
+
+    /// <summary>
+    /// id поля ввода, на которое ссылается подпись (<c>&lt;label for&gt;</c>): клик по подписи ставит в него фокус или переключает чекбокс.
+    /// </summary>
+    [Parameter] public string? InputId { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> InputAttributes { get; set; } = new();

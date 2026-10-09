@@ -1,9 +1,10 @@
-﻿@using JoinRpg.Web.Models.Accommodation
-@model RoomTypeViewModel
+@using JoinRpg.DomainTypes.ProjectMetadata
+@using JoinRpg.Web.Accommodation
+@model ProjectInfo
 @{
-    ViewBag.Title = Model.ProjectName + ": новый тип размещения";
-    ViewBag.ActionName = "Добавить";
-    ViewBag.IsNew = true;
+    ViewBag.Title = Model.ProjectName.Value + ": новый тип размещения";
 }
 <h2>@ViewBag.Title</h2>
-@await Html.PartialAsync("_RoomTypeEdit", Model)
+<component type="typeof(RoomTypeEditForm)"
+           render-mode="WebAssemblyPrerendered"
+           param-ProjectId="Model.ProjectId" />

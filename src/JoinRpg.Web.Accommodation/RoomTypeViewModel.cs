@@ -10,18 +10,7 @@ public abstract class RoomTypeViewModelBase
     public int Id { get; set; }
     public int ProjectId { get; set; }
 
-    /// <summary>
-    /// Разумный максимум мест в одном номере: больше похоже на опечатку, а не на настоящий номер.
-    /// </summary>
-    public const int MaxCapacity = 1000;
-
-    /// <summary>
-    /// Чем предзаполнена пустая форма: самый частый номер — двухместный.
-    /// </summary>
-    public const int DefaultCapacity = 2;
-
     [DisplayName("Количество мест в номере")]
-    [Range(1, MaxCapacity, ErrorMessage = "Укажите количество мест в номере — целое число от 1 до 1000")]
     public int Capacity { get; set; }
 
     /// <summary>
@@ -31,9 +20,9 @@ public abstract class RoomTypeViewModelBase
     /// </summary>
     /// <remarks>
     /// Сеттер закрыт: флаг ставят только конструкторы наследников из
-    /// <see cref="AccommodationTypeInfo"/>. Снаружи его поставить нельзя — в том числе биндингом
-    /// формы редактирования типа (<c>SaveRoomType</c> принимает эту вью-модель), чтобы
-    /// «не реализовано» не оказалось обойдено подобранным POST-ом.
+    /// <see cref="AccommodationTypeInfo"/>. Это вью-модель только для показа: форма
+    /// редактирования типа (<see cref="JoinRpg.Web.Accommodation.RoomTypeEditForm"/>) работает
+    /// со своей моделью, где нереализованных флагов нет вовсе.
     /// </remarks>
     [DisplayName("Бесконечное поселение")]
     public bool IsInfinite { get; private protected init; } = false;
@@ -60,7 +49,6 @@ public abstract class RoomTypeViewModelBase
         => RoomsCount * Capacity;
 
     [DisplayName("Название")]
-    [Required(ErrorMessage = "Укажите название типа поселения")]
     public string Name { get; set; }
 
     /// <summary>
@@ -90,7 +78,6 @@ public abstract class RoomTypeViewModelBase
     public MarkupString DescriptionView => new(DescriptionHtml);
 
     [DisplayName("Цена за 1 место")]
-    [Range(0, int.MaxValue, ErrorMessage = "Цена за 1 место не может быть отрицательной")]
     public int Cost { get; set; }
 
     public bool CanAssignRooms { get; set; }
@@ -100,9 +87,6 @@ public abstract class RoomTypeViewModelBase
 //todo I18n
 public class RoomTypeViewModel : RoomTypeViewModelBase
 {
-    [DisplayName("Описание"), UIHint("MarkdownString")]
-    public string DescriptionEditable { get; set; }
-
     public string ProjectName { get; set; }
 
 
@@ -246,28 +230,20 @@ public class RoomTypeViewModel : RoomTypeViewModelBase
         // показывать именно это значение, а не совпадающий с ним по случайности дефолт.
         IsInfinite = typeInfo.IsInfinite;
         IsAutoFilledAccommodation = typeInfo.IsAutoFilledAccommodation;
-        DescriptionEditable = typeInfo.Description.Value;
         DescriptionHtml = descriptionView.Value;
         Requests = [];
         UnassignedRequests = [];
     }
 
     /// <summary>
-    /// Пустая форма типа проживания. Права на странице считаются по текущему пользователю
+    /// Общая часть: проект и права на странице, которые считаются по текущему пользователю
     /// <paramref name="currentUserId"/>.
     /// </summary>
-    public RoomTypeViewModel(UserIdentification currentUserId, ProjectInfo projectInfo)
+    private RoomTypeViewModel(UserIdentification currentUserId, ProjectInfo projectInfo)
     {
-        // Пустая форма предзаполняется типовым двухместным номером: иначе в поле отрисуется 0
-        // (дефолт int), и первый же сабмит упирается в [Range] на Capacity.
-        Capacity = DefaultCapacity;
         ProjectName = projectInfo.ProjectName.Value;
         ProjectId = projectInfo.ProjectId.Value;
         CanManageRooms = projectInfo.HasMasterAccess(currentUserId, Permission.CanManageAccommodation);
         CanAssignRooms = projectInfo.HasMasterAccess(currentUserId, Permission.CanSetPlayersAccommodations);
-    }
-
-    public RoomTypeViewModel()
-    {
     }
 }

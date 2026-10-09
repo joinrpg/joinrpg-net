@@ -61,8 +61,8 @@ public class AccommodationTypeController(
     [HttpGet]
     public async Task<ActionResult> AddRoomType(int projectId)
     {
-        var pi = await projectMetadataRepository.GetProjectMetadata(new(projectId));
-        return View(new RoomTypeViewModel(currentUserAccessor.UserIdentification, pi));
+        // Форма — Blazor-остров RoomTypeEditForm, странице нужен только заголовок с названием проекта.
+        return View(await projectMetadataRepository.GetProjectMetadata(new(projectId)));
     }
 
     /// <summary>
@@ -98,53 +98,6 @@ public class AccommodationTypeController(
         }
 
         return View(viewModel);
-    }
-
-    /// <summary>
-    /// Saves room type.
-    /// If data are valid, redirects to Index
-    /// If not, returns to edit mode
-    /// </summary>
-    [MasterAuthorize(Permission.CanManageAccommodation)]
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<ActionResult> SaveRoomType(RoomTypeViewModel model)
-    {
-        var projectId = new ProjectIdentification(model.ProjectId);
-
-        if (!ModelState.IsValid)
-        {
-            // Model binding собирает модель пустым конструктором, так что название проекта и права
-            // в неё не приходят. Без них EditRoomType показал бы read-only обзор вместо формы,
-            // и мастер не увидел бы, что именно он заполнил неправильно.
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-            model.ProjectName = projectInfo.ProjectName.Value;
-            model.CanManageRooms = projectInfo.HasMasterAccess(
-                currentUserAccessor.UserIdentification, Permission.CanManageAccommodation);
-            model.CanAssignRooms = projectInfo.HasMasterAccess(
-                currentUserAccessor.UserIdentification, Permission.CanSetPlayersAccommodations);
-
-            return View(model.Id == 0 ? "AddRoomType" : "EditRoomType", model);
-        }
-
-        var request = new AccommodationTypeRequest(
-            model.Name,
-            new MarkdownString(model.DescriptionEditable ?? ""),
-            model.Cost,
-            model.Capacity,
-            model.IsPlayerSelectable);
-
-        if (model.Id == 0)
-        {
-            _ = await accommodationTypeService.CreateAccommodationType(projectId, request);
-        }
-        else
-        {
-            await accommodationTypeService.UpdateAccommodationType(
-                new AccommodationTypeIdentification(projectId, model.Id), request);
-        }
-
-        return RedirectToAction("Index", new { projectId = model.ProjectId });
     }
 
     /// <summary>
