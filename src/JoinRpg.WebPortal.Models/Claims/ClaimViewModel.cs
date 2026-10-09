@@ -94,7 +94,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     /// <param name="claim">
     /// EF-сущность той же заявки. Пока нужна тому, чего нет в агрегате (ADR021, шаг 6):
-    /// комментариям, взносу и типам оплаты, полям, ответственному мастеру как <see cref="User"/>,
+    /// комментариям, финансовым операциям, полям, ответственному мастеру как <see cref="User"/>,
     /// проживанию.
     /// </param>
     /// <param name="claimInfo">Заявка вместе с персонажем и профилем игрока (ADR021).</param>
@@ -172,8 +172,9 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         AccommodationEnabled = projectInfo.AccommodationSettings.Enabled;
 
-        // Тип и комната — из модели панели «Проживание», построенной по снимку заявки и плану (ADR022).
-        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserIdentification, projectInfo, externalPaymentUrlFactory,
+        // Разбивка взноса — по снимку заявки; тип и комната — из модели панели «Проживание»,
+        // построенной по снимку заявки и плану (ADR022).
+        ClaimFee = new ClaimFeeViewModel(claim, claimInfo.ClaimInCharacter, this, currentUser.UserIdentification, projectInfo, externalPaymentUrlFactory,
             accommodationModel);
 
         ParentGroups = new CharacterParentGroupsViewModel(characterInfo, HasMasterAccess);

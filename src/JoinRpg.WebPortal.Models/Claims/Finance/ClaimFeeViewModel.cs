@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Claims;
@@ -9,38 +10,57 @@ namespace JoinRpg.Web.Models;
 
 public class ClaimFeeViewModel
 {
+    /// <param name="claim">
+    /// EF-сущность той же заявки — пока нужна списку финансовых операций, подпискам и условиям
+    /// льготного взноса: их в снимке заявки нет (ADR013).
+    /// </param>
+    /// <param name="claimInCharacter">Снимок заявки, по нему считается разбивка взноса.</param>
     /// <param name="accommodation">
     /// Проживание заявки — тип и комната из снимка заявки и плана поселения (ADR022); <c>null</c>,
     /// если поселение в проекте выключено.
     /// </param>
     public ClaimFeeViewModel(
         Claim claim,
+        ClaimInCharacter claimInCharacter,
         ClaimViewModel model,
         UserIdentification currentUserId,
         ProjectInfo projectInfo,
         Func<string?, string?> externalPaymentUrlFactory,
         ClaimAccommodationViewModel? accommodation)
     {
+        ArgumentNullException.ThrowIfNull(claimInCharacter);
+
+        var now = DateTime.UtcNow;
+        var finance = claimInCharacter.Claim.Finance;
+        var feeBreakdown = claimInCharacter.CalculateFeeBreakdown(now);
+
         Status = model.Status;
 
         // Reading project fee info applicable for today
-        BaseFeeInfo = claim.CurrentFee == null ? projectInfo.ProjectFinanceSettings.GetFeeSettingForDate(DateTime.UtcNow) : null;
-        // Reading base fee of a claim
-        BaseFee = claim.BaseFee(projectInfo);
+        BaseFeeInfo = finance.FixedFee == null ? projectInfo.ProjectFinanceSettings.GetFeeSettingForDate(now) : null;
+        BaseFee = feeBreakdown.BaseFee;
         // Checks for base fee availability
-        HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
+        HasBaseFee = BaseFeeInfo != null || finance.FixedFee != null;
 
-        AccommodationFee = claim.ClaimAccommodationFee(projectInfo);
+        AccommodationFee = feeBreakdown.AccommodationFee;
         RoomType = accommodation?.AccommodationType?.Name ?? "";
         RoomName = accommodation?.RoomName;
 
-        FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
-        FieldsTotalFee = model.Fields.FieldsTotalFee;
+        FieldsFee = new()
+        {
+            [FieldBoundToViewModel.Character] = feeBreakdown.CharacterFields.Fee,
+            [FieldBoundToViewModel.Claim] = feeBreakdown.ClaimFields.Fee,
+        };
+        FieldsWithFeeCount = new()
+        {
+            [FieldBoundToViewModel.Character] = feeBreakdown.CharacterFields.FieldsWithFeeCount,
+            [FieldBoundToViewModel.Claim] = feeBreakdown.ClaimFields.FieldsWithFeeCount,
+        };
+        FieldsTotalFee = feeBreakdown.FieldsFee;
+        HasFieldsWithFee = feeBreakdown.HasFieldsWithFee;
 
-        HasFieldsWithFee = model.Fields.HasFieldsWithFee;
-        CurrentTotalFee = claim.ClaimTotalFee(projectInfo, FieldsTotalFee);
-        CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee, projectInfo);
-        FieldsFee = model.Fields.FieldsFee;
+        CurrentTotalFee = feeBreakdown.TotalFee;
+        CurrentFee = feeBreakdown.TotalFee;
 
         foreach (var s in Enum.GetValues<FinanceOperationState>())
         {
@@ -60,13 +80,13 @@ public class ClaimFeeViewModel
             .Select(pt => new PaymentTypeViewModel(pt))];
 
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
-        PreferentialFeeUser = claim.PreferentialFeeUser;
+        PreferentialFeeUser = finance.PreferentialFeeUser;
         PreferentialFeeConditions =
             ((MarkdownString?)claim.Project.Details.PreferentialFeeConditions).ToHtmlString();
         PreferentialFeeRequestEnabled = PreferentialFeeEnabled && !PreferentialFeeUser && Status.IsActive();
 
-        ClaimId = claim.ClaimId;
-        ProjectId = claim.ProjectId;
+        ClaimId = claimInCharacter.ClaimId.ClaimId;
+        ProjectId = claimInCharacter.ClaimId.ProjectId;
         FeeVariants = projectInfo.ProjectFinanceSettings.FeeSchedule
             .Select(f => f.Fee)
             .Append(CurrentFee)

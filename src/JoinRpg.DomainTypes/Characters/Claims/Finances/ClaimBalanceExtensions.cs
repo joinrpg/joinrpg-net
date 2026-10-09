@@ -1,27 +1,50 @@
+using JoinRpg.DomainTypes.ProjectMetadata;
+
 namespace JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 public static class ClaimBalanceExtensions
 {
     /// <summary>
-    /// Баланс заявки поверх доменного агрегата (ADR013) — без обращения к EF.
+    /// Разбивка взноса заявки поверх доменного агрегата (ADR013) — без обращения к EF.
     /// </summary>
     /// <remarks>
     /// Слагаемые те же, что в версии для EF-сущности <c>Claim</c>
     /// (<c>JoinRpg.Domain.FinanceExtensions</c>): базовый взнос (зафиксированный в заявке или
     /// взятый из расписания проекта на дату), взнос за поля, стоимость проживания.
     /// Кеша <c>Claim.FieldsFee</c> здесь нет — взнос за поля всегда считается заново.
-    /// Сама формула живёт в <see cref="ClaimFinanceInfo.CalculateBalance"/>, здесь только
-    /// подставляется взнос за поля: слой полей принадлежит персонажу, а не финансам заявки.
+    /// Поля берутся глазами самой заявки (<see cref="ClaimInCharacter.GetAllFields"/>), без
+    /// фильтрации по правам зрителя: сколько платить, не зависит от того, кто смотрит.
     /// Принимает заявку в составе персонажа (ADR021): метаданные проекта берутся из агрегата,
     /// а не отдельным параметром, который можно было бы передать несогласованным.
     /// </remarks>
+    public static ClaimFeeBreakdown CalculateFeeBreakdown(this ClaimInCharacter claim, DateTime? date = null)
+    {
+        ArgumentNullException.ThrowIfNull(claim);
+
+        var pricedFields = claim.GetAllFields().Where(field => field.Field.HasPrice).ToList();
+
+        return new ClaimFeeBreakdown(
+            claim.Claim.Finance.GetBaseFee(claim.ProjectInfo, date ?? DateTime.UtcNow),
+            Subtotal(FieldBoundTo.Character),
+            Subtotal(FieldBoundTo.Claim),
+            claim.Claim.Finance.AccommodationFee);
+
+        FieldsFeeSubtotal Subtotal(FieldBoundTo boundTo)
+        {
+            var fields = pricedFields.Where(field => field.Field.BoundTo == boundTo).ToList();
+            return new FieldsFeeSubtotal(fields.Sum(field => field.GetCurrentFee()), fields.Count);
+        }
+    }
+
+    /// <summary>
+    /// Баланс заявки поверх доменного агрегата (ADR013) — без обращения к EF. Итоговый взнос —
+    /// из <see cref="CalculateFeeBreakdown"/>.
+    /// </summary>
     public static ClaimBalance CalculateBalance(this ClaimInCharacter claim, DateTime? date = null)
     {
         ArgumentNullException.ThrowIfNull(claim);
 
-        var fieldsFee = claim.GetAllFields().Sum(field => field.GetCurrentFee());
-
-        return claim.Claim.Finance.CalculateBalance(fieldsFee, claim.ProjectInfo, date ?? DateTime.UtcNow);
+        return new ClaimBalance(claim.Claim.Finance.FeePaid, claim.CalculateFeeBreakdown(date).TotalFee);
     }
 
     /// <summary>
