@@ -87,4 +87,23 @@ public class JoinFormDialogTest
         // Содержимое формы создано один раз и не пересоздавалось при перерисовке
         EditContextProbe.Seen.ShouldHaveSingleItem().ShouldNotBeNull();
     }
+
+    /// <summary>
+    /// Закрытие диалога перерисовывает JoinDialog вместе с содержимым формы. Раньше форма к этому
+    /// моменту уже обнуляла свой EditContext, и EditForm падал при рендере.
+    /// </summary>
+    [Fact]
+    public async Task Submit_ClosesWithoutRenderFailure_AndReturnsModel()
+    {
+        using var ctx = new BunitContext();
+        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        var model = new FormModel { Value = "заполнено" };
+        var cut = RenderDialog(ctx, model);
+
+        var shown = cut.InvokeAsync(() => cut.Instance.ShowModalAsync());
+        await cut.FindAll(".join-dialog-footer button")[0].ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await cut.Find("dialog").TriggerEventAsync("onclose", EventArgs.Empty);
+
+        (await shown).ShouldBeSameAs(model);
+    }
 }
