@@ -101,6 +101,12 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
                     AddOnce(mock.Project.Characters, character);
                     break;
                 case Claim claim:
+                    // Id выдаёт БД при сохранении; без него снимок заявки не построить — заявка-одиночка
+                    // ссылается сама на себя положительным id (ADR022).
+                    if (claim.ClaimId == 0)
+                    {
+                        claim.ClaimId = mock.Project.Claims.Select(c => c.ClaimId).DefaultIfEmpty().Max() + 1;
+                    }
                     AddOnce(mock.Project.Claims, claim);
                     if (claim.Character is { } claimCharacter)
                     {
@@ -118,6 +124,12 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
                     }
                     break;
                 case AccommodationRequest request:
+                    // Как и у заявки: без Id снимок заявки из этой группы не построить (ADR022).
+                    if (request.Id == 0)
+                    {
+                        request.Id = mock.AccommodationRequests.Select(r => r.Id).DefaultIfEmpty().Max() + 1;
+                    }
+                    AddOnce(mock.AccommodationRequests, request);
                     // EF6 связывает жильцов с новой заявкой на поселение обратной навигацией.
                     foreach (var subject in request.Subjects)
                     {

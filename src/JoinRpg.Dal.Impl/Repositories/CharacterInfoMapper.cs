@@ -61,8 +61,15 @@ internal static class CharacterInfoMapper
             ? projectInfo.AccommodationSettings.GetTypeById(id).Cost
             : 0;
 
+        var claimId = new ClaimIdentification(projectInfo.ProjectId, row.ClaimId);
+
+        // Ссылка на группу обязательна (ADR022): заявка вне группы — сама себе одиночная группа.
+        var accommodationGroupId = row.AccommodationRequestId is { } requestId
+            ? AccommodationGroupIdentification.From(new AccommodationRequestIdentification(projectInfo.ProjectId, requestId))
+            : AccommodationGroupIdentification.From(claimId);
+
         return new(
-            new ClaimIdentification(projectInfo.ProjectId, row.ClaimId),
+            claimId,
             new UserInfoHeader(
                 new UserIdentification(row.PlayerUserId),
                 new UserDisplayName(
@@ -91,6 +98,7 @@ internal static class CharacterInfoMapper
                 accommodationFee,
                 row.FinanceOperationsRequireModeration),
             accommodationTypeId,
+            accommodationGroupId,
             row.PlayerAllowedSensitiveData,
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, row.JsonData));
     }

@@ -101,6 +101,7 @@ public class CharacterInfoMapperTest
         string? jsonData = null,
         int? feePaid = null,
         int? accommodationTypeId = null,
+        int? accommodationRequestId = null,
         bool financeOperationsRequireModeration = false,
         bool playerAllowedSensitiveData = false)
         => new()
@@ -129,6 +130,8 @@ public class CharacterInfoMapperTest
             JsonData = jsonData,
             FeePaid = feePaid,
             AccommodationTypeId = accommodationTypeId,
+            // Тип хранится только в строке группы, поэтому заявка с типом всегда в группе — как в БД.
+            AccommodationRequestId = accommodationRequestId ?? (accommodationTypeId is null ? null : 77),
             FinanceOperationsRequireModeration = financeOperationsRequireModeration,
             PlayerAllowedSensitiveData = playerAllowedSensitiveData,
         };
@@ -309,6 +312,35 @@ public class CharacterInfoMapperTest
         var result = CharacterInfoMapper.Map(row, ProjectInfo);
 
         result.Claims.Single().AccommodationTypeId.ShouldBeNull();
+    }
+
+    // 4в. Ссылка на группу проживающих (ADR022): обязательная — группа либо сама заявка-одиночка.
+
+    [Fact]
+    public void Map_ClaimInAccommodationGroup_ShouldReferenceGroup()
+    {
+        var accommodationType = _mock.CreateAccommodationType();
+        _mock.ReInitProjectInfo();
+
+        var row = MakeRow(claims:
+            [MakeClaimRow(claimId: 5, accommodationTypeId: accommodationType.Id, accommodationRequestId: 42)]);
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        var groupId = result.Claims.Single().AccommodationGroupId;
+        groupId.AsAccommodationRequestId().ShouldBe(new AccommodationRequestIdentification(ProjectId, 42));
+        groupId.AsClaimId().ShouldBeNull();
+    }
+
+    [Fact]
+    public void Map_ClaimWithoutAccommodationGroup_ShouldReferenceItself()
+    {
+        var row = MakeRow(claims: [MakeClaimRow(claimId: 5, accommodationTypeId: null)]);
+
+        var result = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        result.Claims.Single().AccommodationGroupId
+            .ShouldBe(AccommodationGroupIdentification.From(new ClaimIdentification(ProjectId, 5)));
     }
 
     // 5. Description == null и Description с null Contents -> пустая MarkdownString, без исключений.

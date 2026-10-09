@@ -335,6 +335,146 @@ public class RoomCategoryPlanTest
 
     #endregion
 
+    #region Группа заявки, свободное место для группы, соседи (ADR022)
+
+    [Fact]
+    public void GetGroupOrDefault_ReturnsGroupForGroupReference()
+    {
+        var lux = MakeLux();
+        var group = MakeGroup(1, lux);
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [], [group]);
+
+        plan.GetGroupOrDefault(AccommodationGroupIdentification.From(group.Id)).ShouldBe(group);
+    }
+
+    [Fact]
+    public void GetGroupOrDefault_ReturnsNullForSoloClaim()
+    {
+        var lux = MakeLux();
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [], []);
+
+        plan.GetGroupOrDefault(AccommodationGroupIdentification.From(new ClaimIdentification(ProjectId, 5)))
+            .ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetGroupOrDefault_ThrowsForGroupOutsidePlan()
+    {
+        var lux = MakeLux();
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [], []);
+
+        _ = Should.Throw<AccommodationGroupNotFoundException>(
+            () => plan.GetGroupOrDefault(
+                AccommodationGroupIdentification.From(new AccommodationRequestIdentification(ProjectId, 99))));
+    }
+
+    // Сценарии ниже повторяют AccommodationRoomFreeSpaceTest — тесты EF-расчёта, который этот метод
+    // заменяет: на непереполненных данных ответы обязаны совпадать.
+
+    [Fact]
+    public void GetFreeSpaceForGroup_PlacedGroup_CapacityMinusOccupancy()
+    {
+        var lux = MakeLux(capacity: 3);
+        var group = MakeGroup(1, lux, roomId: 1, persons: 1);
+        var plan = MakePlan(MakeProject(lux), [lux], 3, [MakeRoom(1, group)], [group]);
+
+        plan.GetFreeSpaceForGroup(group.Id).ShouldBe(2);
+    }
+
+    [Fact]
+    public void GetFreeSpaceForGroup_UnassignedGroup_CapacityOfOwnTypeMinusGroupSize()
+    {
+        var lux = MakeLux(capacity: 3);
+        var group = MakeGroup(1, lux, persons: 2);
+        var plan = MakePlan(MakeProject(lux), [lux], 3, [], [group]);
+
+        plan.GetFreeSpaceForGroup(group.Id).ShouldBe(1);
+    }
+
+    [Fact]
+    public void GetFreeSpaceForGroup_RoomWithSiblingTypeGroup_IsLimitedByItsCapacity()
+    {
+        // «Люкс на двоих», въехавший в трёхместный «Люкс», делает комнату двухместной — и для
+        // группы «Люкса» тоже.
+        var lux = MakeLux(capacity: 3);
+        var pair = MakeLuxSingle(capacity: 2);
+        var luxGroup = MakeGroup(1, lux, roomId: 1);
+        var pairGroup = MakeGroup(2, pair, roomId: 1);
+        var plan = MakePlan(
+            MakeProject(lux, pair), [lux, pair], 3, [MakeRoom(1, luxGroup, pairGroup)], [luxGroup, pairGroup]);
+
+        plan.GetFreeSpaceForGroup(luxGroup.Id).ShouldBe(0);
+    }
+
+    [Fact]
+    public void GetFreeSpaceForGroup_IsNeverNegative()
+    {
+        // Вместимость типа уменьшили после того, как группа сложилась: EF-расчёт давал здесь −1.
+        var lux = MakeLux(capacity: 2);
+        var placed = MakeGroup(1, lux, roomId: 1, persons: 3);
+        var unassigned = MakeGroup(2, lux, persons: 3);
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1, placed)], [placed, unassigned]);
+
+        plan.GetFreeSpaceForGroup(placed.Id).ShouldBe(0);
+        plan.GetFreeSpaceForGroup(unassigned.Id).ShouldBe(0);
+    }
+
+    [Fact]
+    public void GetNeighbours_PlacedGroup_AreAllRoomInhabitantsButSelf()
+    {
+        var lux = MakeLux(capacity: 4);
+        var mine = MakeGroup(1, lux, roomId: 1, persons: 2);
+        var other = MakeGroup(2, lux, roomId: 1, persons: 1);
+        var plan = MakePlan(MakeProject(lux), [lux], 4, [MakeRoom(1, mine, other)], [mine, other]);
+        var me = mine.Subjects.First();
+
+        plan.GetNeighbours(me).ShouldBe(
+            [.. mine.Subjects.Concat(other.Subjects).Where(id => id != me)], ignoreOrder: true);
+    }
+
+    [Fact]
+    public void GetNeighbours_UnassignedGroup_AreGroupMembersButSelf()
+    {
+        var lux = MakeLux(capacity: 4);
+        var mine = MakeGroup(1, lux, persons: 3);
+        var plan = MakePlan(MakeProject(lux), [lux], 4, [], [mine]);
+        var me = mine.Subjects.First();
+
+        plan.GetNeighbours(me).ShouldBe([.. mine.Subjects.Skip(1)], ignoreOrder: true);
+    }
+
+    [Fact]
+    public void GetFreeSpaceForGroup_EmptyUnassignedGroup_IsTypeCapacity()
+    {
+        // Группы без жильцов в БД встречаются.
+        var lux = MakeLux(capacity: 3);
+        var empty = MakeGroup(1, lux, persons: 0);
+        var plan = MakePlan(MakeProject(lux), [lux], 3, [], [empty]);
+
+        plan.GetFreeSpaceForGroup(empty.Id).ShouldBe(3);
+    }
+
+    [Fact]
+    public void GetNeighbours_AloneInRoom_IsEmpty()
+    {
+        var lux = MakeLux(capacity: 2);
+        var mine = MakeGroup(1, lux, roomId: 1);
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1, mine)], [mine]);
+
+        plan.GetNeighbours(mine.Subjects.Single()).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void GetNeighbours_ClaimOutsidePlan_IsEmpty()
+    {
+        var lux = MakeLux();
+        var plan = MakePlan(MakeProject(lux), [lux], 2, [], [MakeGroup(1, lux)]);
+
+        plan.GetNeighbours(new ClaimIdentification(ProjectId, 100500)).ShouldBeEmpty();
+    }
+
+    #endregion
+
     #region Поиск комнаты по заявке
 
     [Fact]

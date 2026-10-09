@@ -87,6 +87,12 @@ internal sealed class CharacterInfoClaimRow
     public required int? AccommodationTypeId { get; init; }
 
     /// <summary>
+    /// Группа проживающих (<c>Claim.AccommodationRequest_Id</c>); <c>null</c>, если заявка в группе
+    /// не состоит. Маппер превращает это в обязательную ссылку на группу (ADR022).
+    /// </summary>
+    public required int? AccommodationRequestId { get; init; }
+
+    /// <summary>
     /// Разрешение игрока показывать мастерам чувствительные данные. В БД колонка названа с
     /// опечаткой (<c>PlayerAllowedSenstiveData</c>), здесь и дальше в домене — правильно.
     /// </summary>

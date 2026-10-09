@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.Schedules;
@@ -423,6 +424,7 @@ public class ScheduleBuilderTest
                 AccommodationFee: 0,
                 OperationsRequireModeration: false),
             AccommodationTypeId: null,
+            AccommodationGroupId: AccommodationGroupIdentification.From(new ClaimIdentification(ProjectId, 1)),
             PlayerAllowedSensitiveData: false,
             new FieldLayerContainer(projectInfo, new Dictionary<int, string?>()));
 

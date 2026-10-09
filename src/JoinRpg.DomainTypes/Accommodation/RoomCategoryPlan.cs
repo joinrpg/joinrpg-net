@@ -207,6 +207,60 @@ public record class RoomCategoryPlan
             ? GetRoom(roomId)
             : null;
 
+    /// <summary>
+    /// Группа, на которую ссылается заявка (<c>CharacterClaimInfo.AccommodationGroupId</c>), или
+    /// <c>null</c>, если ссылка указывает на саму заявку — одиночку без типа, которой нет ни в одном
+    /// плане (ADR022).
+    /// </summary>
+    /// <exception cref="AccommodationGroupNotFoundException">
+    /// Ссылка указывает на группу, которой нет в этом плане: план взят не по типу группы.
+    /// </exception>
+    public AccommodationGroupInfo? GetGroupOrDefault(AccommodationGroupIdentification groupId)
+        => groupId.AsAccommodationRequestId() is { } requestId ? GetGroup(requestId) : null;
+
+    /// <summary>
+    /// Сколько ещё человек влезет к группе: у расселённой — по правилу свободного места её комнаты
+    /// (<see cref="GetFreeSpace"/>) под её типом, у нерасселённой — вместимость её типа минус состав.
+    /// </summary>
+    /// <remarks>
+    /// Это то, что спрашивает приглашение к совместному проживанию: переезжают к группе, а не в
+    /// комнату. Никогда не отрицательно — как и <see cref="GetFreeSpace"/>: переполненная комната или
+    /// разросшаяся сверх уменьшенной вместимости группа дают 0.
+    /// </remarks>
+    /// <exception cref="AccommodationGroupNotFoundException">Группы нет в этом плане</exception>
+    public int GetFreeSpaceForGroup(AccommodationRequestIdentification groupId)
+    {
+        var group = GetGroup(groupId);
+        if (group.RoomId is { } roomId)
+        {
+            return GetFreeSpace(roomId, group.AccommodationTypeId);
+        }
+
+        return Math.Max(0, GetAccommodationType(group.AccommodationTypeId).Capacity - group.SubjectsCount);
+    }
+
+    /// <summary>
+    /// Соседи заявки: все жильцы её комнаты, а если её группа ещё не расселена — состав группы.
+    /// Самой заявки в ответе нет. Пусто, если заявки нет в этом плане.
+    /// </summary>
+    /// <remarks>
+    /// Статусов заявок план не знает (ADR018 §5): отсеять, например, неутверждённых — дело
+    /// вызывающего, по пачке доменных снимков заявок.
+    /// </remarks>
+    public IReadOnlyCollection<ClaimIdentification> GetNeighbours(ClaimIdentification claimId)
+    {
+        if (!groupByClaim.TryGetValue(claimId, out var group))
+        {
+            return [];
+        }
+
+        var inhabitants = group.RoomId is { } roomId
+            ? GetRoom(roomId).Inhabitants.SelectMany(g => g.Subjects)
+            : group.Subjects;
+
+        return [.. inhabitants.Where(id => id != claimId)];
+    }
+
     /// <summary>Тип проживания, селящийся из этого пула</summary>
     /// <exception cref="AccommodationTypeNotFoundException">Тип проживания не селится из этого пула</exception>
     public AccommodationTypeInfo GetAccommodationType(AccommodationTypeIdentification typeId)
