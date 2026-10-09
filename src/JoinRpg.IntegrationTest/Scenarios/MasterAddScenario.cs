@@ -162,10 +162,10 @@ public class MasterAddScenario(JoinApplicationFactory factory) : IClassFixture<J
             Permissions = [],
         });
 
-        // Отказ атрибута авторизации, а не сервиса (тот дал бы 500): сейчас это редирект на AccessDenied.
-        response.Headers.Location?.ToString().ShouldContain("AccessDenied");
+        // Отказ атрибута авторизации, а не сервиса (тот дал бы 500).
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
         (await client.GetAsync(AccessUrl(projectId, "GetAddMaster") + $"?userId={newMasterId.Value}"))
-            .Headers.Location?.ToString().ShouldContain("AccessDenied");
+            .StatusCode.ShouldBe(HttpStatusCode.Forbidden);
         (await GetProjectInfo(projectId)).HasMasterAccess(newMasterId).ShouldBeFalse();
     }
 
