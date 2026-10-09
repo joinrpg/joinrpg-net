@@ -38,6 +38,11 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
 
         public List<object> Removed { get; } = [];
 
+        // Мок держит граф в памяти целиком — догружать нечего.
+        public void LoadPlotTargetsOfGroups(IReadOnlyCollection<CharacterGroup> groups)
+        {
+        }
+
         public void Remove(object entity)
         {
             Removed.Add(entity);

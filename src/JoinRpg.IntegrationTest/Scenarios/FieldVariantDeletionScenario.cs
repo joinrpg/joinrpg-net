@@ -1,7 +1,11 @@
+using System.Data.Entity;
 using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 
@@ -37,6 +41,11 @@ public class FieldVariantDeletionScenario(JoinApplicationFactory factory) : ICla
         var (fieldId, variantIds) = await SeedDropdownFieldAsync(masterId, projectId, "Поле для чистки");
         var (fieldToDeleteId, _) = await SeedDropdownFieldAsync(masterId, projectId, "Поле на удаление");
 
+        // Спецгруппа одного из значений стоит в таргетах вводной: такую группу стирать насовсем
+        // нельзя, только выключить. Вводные спецгрупп грузятся заранее пачкой, и без этой проверки
+        // недогруженная коллекция выглядела бы пустой — и группа со связями ушла бы из базы.
+        var targetedGroupId = await SeedPlotTargetingVariantGroupAsync(masterId, projectId, fieldId, variantIds[1]);
+
         var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), email);
 
         await PostAsync(client, projectId, "deletevariant", variantIds[0]);
@@ -48,7 +57,38 @@ public class FieldVariantDeletionScenario(JoinApplicationFactory factory) : ICla
             .GetProjectMetadata(projectId);
         projectInfo.GetFieldById(fieldId).SortedVariants.Where(v => v.IsActive).ShouldBeEmpty();
         projectInfo.UnsortedFields.ShouldNotContain(f => f.Id == fieldToDeleteId && f.IsActive);
+
+        var targetedGroup = await checkScope.ServiceProvider.GetRequiredService<MyDbContext>()
+            .Set<CharacterGroup>()
+            .Include(g => g.DirectlyRelatedPlotElements)
+            .SingleAsync(g => g.CharacterGroupId == targetedGroupId.CharacterGroupId);
+        targetedGroup.IsActive.ShouldBeFalse();
+        targetedGroup.DirectlyRelatedPlotElements.Count.ShouldBe(1);
     }
+
+    private async Task<CharacterGroupIdentification> SeedPlotTargetingVariantGroupAsync(
+        UserIdentification masterId,
+        ProjectIdentification projectId,
+        ProjectFieldIdentification fieldId,
+        ProjectFieldVariantIdentification variantId)
+        => await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            var groupId = projectInfo.GetFieldById(fieldId).SortedVariants.Single(v => v.Id == variantId).CharacterGroupId
+                ?? throw new InvalidOperationException("У значения выпадающего поля нет спецгруппы");
+
+            var plotService = sp.GetRequiredService<IPlotService>();
+            var folderId = await plotService.CreatePlotFolder(projectId, "Сюжет про значение поля", todo: "");
+            _ = await plotService.CreatePlotElement(
+                folderId,
+                content: "Вводная для всех, кто выбрал значение",
+                todoField: "",
+                targetGroups: [groupId],
+                targetChars: [],
+                elementType: PlotElementType.RegularPlot,
+                isMasterOnly: false);
+            return groupId;
+        });
 
     private static async Task PostAsync<T>(HttpClient client, ProjectIdentification projectId, string action, T body)
     {

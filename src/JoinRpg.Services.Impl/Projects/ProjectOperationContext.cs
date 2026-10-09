@@ -19,13 +19,22 @@ internal abstract record ProjectOperationContext(DateTimeOffset Now, ICurrentUse
 /// <param name="ProjectInfo">Снимок метаданных ДО изменения.</param>
 /// <param name="Now">Время выполнения операции</param>
 /// <param name="CurrentUser">Текущий пользователь</param>
-/// <param name="RemovePermanently">Окончательное удаление под-сущности из того же DbContext (см. <see cref="ProjectOperationContextExtensions.SmartDelete"/>).</param>
+/// <param name="Scope">Что операции разрешено делать с БД: удалить под-сущность, догрузить связи пачкой.</param>
 internal abstract record ProjectMutationContext(
     Project Project,
     ProjectInfo ProjectInfo,
     DateTimeOffset Now,
     ICurrentUserAccessor CurrentUser,
-    Action<object> RemovePermanently) : ProjectOperationContext(Now, CurrentUser);
+    IProjectMetadataMutationScope Scope) : ProjectOperationContext(Now, CurrentUser)
+{
+    /// <summary>
+    /// Окончательное удаление под-сущности из того же DbContext (см. <see cref="ProjectOperationContextExtensions.SmartDelete"/>).
+    /// </summary>
+    public void RemovePermanently(object entity) => Scope.Remove(entity);
+
+    /// <inheritdoc cref="IProjectMetadataMutationScope.LoadPlotTargetsOfGroups"/>
+    public void LoadPlotTargetsOfGroups(IReadOnlyCollection<CharacterGroup> groups) => Scope.LoadPlotTargetsOfGroups(groups);
+}
 
 /// <summary>
 /// Контекст изменения метаданных проекта с типизированными аргументами операции (<see cref="Request"/>).
@@ -36,8 +45,8 @@ internal sealed record ProjectMutationContext<TArgs>(
     DateTimeOffset Now,
     ICurrentUserAccessor CurrentUser,
     TArgs Request,
-    Action<object> RemovePermanently)
-    : ProjectMutationContext(Project, ProjectInfo, Now, CurrentUser, RemovePermanently);
+    IProjectMetadataMutationScope Scope)
+    : ProjectMutationContext(Project, ProjectInfo, Now, CurrentUser, Scope);
 
 /// <summary>
 /// Контекст создания нового проекта: существующего <see cref="Project"/>/<see cref="ProjectInfo"/>
