@@ -68,6 +68,12 @@ public static class ProjectEntityIdParser
             return true;
         }
 
+        if (MoneyTransferIdentification.TryParse(value, null, out var mt))
+        {
+            id = mt;
+            return true;
+        }
+
         if (PlotVersionIdentification.TryParse(value, null, out var pv))
         {
             id = pv;

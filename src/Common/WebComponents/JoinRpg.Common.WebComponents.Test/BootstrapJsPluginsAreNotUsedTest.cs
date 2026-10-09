@@ -59,8 +59,7 @@ public class BootstrapJsPluginsAreNotUsedTest
             "src/JoinRpg.Portal/Views/Finances/ClaimFinanceOperations/_FinanceOperationRowPartial.cshtml",
             "src/JoinRpg.Portal/Views/Finances/ClaimFinanceOperations/_RecurrentFunctionsPartial.cshtml",
             "src/JoinRpg.Portal/Views/Finances/Setup.cshtml",
-            "src/JoinRpg.Portal/Views/Finances/_PaymentTypesPartial.cshtml",
-            "src/JoinRpg.Portal/Views/Finances/_Transfers.cshtml"),
+            "src/JoinRpg.Portal/Views/Finances/_PaymentTypesPartial.cshtml"),
         new("data-dismiss=\"modal\"", Modal,
             "src/JoinRpg.Portal/Views/AccommodationType/_OccupationDlg.cshtml",
             "src/JoinRpg.Portal/Views/AccommodationType/_RoomEditDlg.cshtml",
@@ -68,9 +67,7 @@ public class BootstrapJsPluginsAreNotUsedTest
             "src/JoinRpg.Portal/Views/Finances/ClaimFinanceOperations/ClaimFinanceOperations.cshtml",
             "src/JoinRpg.Portal/Views/Finances/Setup.cshtml",
             "src/JoinRpg.Portal/Views/Finances/_AddPaymentTypeDialog.cshtml",
-            "src/JoinRpg.Portal/Views/Finances/_ApproveTransferDialog.cshtml",
             "src/JoinRpg.Portal/Views/Finances/_CancelRecurrentPaymentDialog.cshtml",
-            "src/JoinRpg.Portal/Views/Finances/_DeclineTransferDialog.cshtml",
             "src/JoinRpg.Portal/Views/Finances/_ForceRecurrentPaymentDialog.cshtml",
             "src/JoinRpg.Portal/Views/Finances/_PayOnlineDialog.cshtml",
             "src/JoinRpg.Portal/Views/Finances/_RefundPaymentDialog.cshtml",
@@ -83,8 +80,7 @@ public class BootstrapJsPluginsAreNotUsedTest
         new(".bs.modal", Modal,
             ThisTest,
             "src/JoinRpg.Portal/Views/Finances/Setup.cshtml",
-            "src/JoinRpg.Portal/Views/Finances/_TogglePaymentTypeDialog.cshtml",
-            "src/JoinRpg.Portal/wwwroot/Scripts/edit-funcs.js"),
+            "src/JoinRpg.Portal/Views/Finances/_TogglePaymentTypeDialog.cshtml"),
     ];
 
     private static readonly string[] ScannedExtensions = [".razor", ".cshtml", ".cs", ".js", ".html"];

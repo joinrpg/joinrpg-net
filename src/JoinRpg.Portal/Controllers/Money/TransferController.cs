@@ -14,8 +14,7 @@ namespace JoinRpg.Portal.Controllers.Money;
 public class TransferController(
     IProjectMetadataRepository projectMetadataRepository,
     IFinanceService financeService,
-    ICurrentUserAccessor currentUserAccessor,
-    ILogger<TransferController> logger
+    ICurrentUserAccessor currentUserAccessor
     ) : JoinControllerGameBase
 {
     [HttpGet]
@@ -83,39 +82,5 @@ public class TransferController(
     {
         viewModel.HasAdminAccess =
             project.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult> Approve(int projectId, int moneyTransferId)
-        => await ApproveRejectTransfer(new ApproveRejectTransferRequest()
-        {
-            Approved = true,
-            ProjectId = projectId,
-            MoneyTranferId = moneyTransferId,
-        });
-
-    [HttpPost]
-    public async Task<ActionResult> Decline(int projectId, int moneyTransferId)
-        => await ApproveRejectTransfer(new ApproveRejectTransferRequest()
-        {
-            Approved = false,
-            ProjectId = projectId,
-            MoneyTranferId = moneyTransferId,
-        });
-
-    private async Task<ActionResult> ApproveRejectTransfer(ApproveRejectTransferRequest request)
-    {
-        try
-        {
-            await financeService.MarkTransfer(request);
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Ошибка");
-            //TODO handle error
-            return RedirectToAction("MoneySummary", "Finances", new { request.ProjectId });
-        }
-
-        return RedirectToAction("MoneySummary", "Finances", new { request.ProjectId });
     }
 }

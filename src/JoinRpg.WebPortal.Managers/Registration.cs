@@ -6,6 +6,7 @@ using JoinRpg.Web.CharacterGroups.GroupReport;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Claims;
+using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Plots;
@@ -70,6 +71,7 @@ public static class Registration
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
+        .AddScoped<IMoneyTransferClient, MoneyTransferViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IUserLinkResolveClient, UserLinkResolveViewService>()
         .AddScoped<IMoveClient, MoveViewService>()
