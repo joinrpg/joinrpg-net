@@ -1,5 +1,4 @@
-@inject IProjectSettingsClient settingsClient
-@implements IDisposable
+@inherits ProjectSettingsPanelBase<ProjectContactsSettingsViewModel>
 
 @if (Model is null)
 {
@@ -15,7 +14,7 @@
 <JoinPanel>
     <Header>Настройки требований к контактам</Header>
     <Body>
-        <EditForm FormName="ProjectContractRequirementsSettings" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+        <EditForm FormName="ProjectContractRequirementsSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary />
                 <DataAnnotationsValidator />
@@ -55,56 +54,8 @@
 }
 
 @code {
-    private EditContext? editContext;
-    private bool success;
-    private bool formInvalid = true;
-    private ValidationMessageStore? messageStore;
+    protected override Task<ProjectContactsSettingsViewModel> LoadModel(ProjectIdentification projectId)
+        => SettingsClient.GetContactSettings(projectId);
 
-
-    [Parameter]
-    [SupplyParameterFromForm]
-    public ProjectContactsSettingsViewModel Model { get; set; } = null!;
-
-    [Parameter]
-    public ProjectIdentification ProjectId { get; set; } = null!;
-
-    protected override async Task OnInitializedAsync()
-    {
-        Model ??= await settingsClient.GetContactSettings(ProjectId);
-        editContext = new(Model);
-        editContext.OnFieldChanged += HandleFieldChanged;
-        messageStore = new(editContext);
-        formInvalid = !editContext.Validate();
-        StateHasChanged();
-    }
-
-    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
-    {
-        if (editContext is not null)
-        {
-            formInvalid = !editContext.Validate();
-            StateHasChanged();
-        }
-    }
-
-    private async Task HandleValidSubmit()
-    {
-        try
-        {
-            await settingsClient.SaveContactSettings(Model);
-            success = true;
-        }
-        catch
-        {
-            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
-        }
-    }
-
-    public void Dispose()
-    {
-        if (editContext is not null)
-        {
-            editContext.OnFieldChanged -= HandleFieldChanged;
-        }
-    }
+    protected override Task SaveModel(ProjectContactsSettingsViewModel model) => SettingsClient.SaveContactSettings(model);
 }

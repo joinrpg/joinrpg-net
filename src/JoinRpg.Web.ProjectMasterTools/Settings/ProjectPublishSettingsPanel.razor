@@ -1,5 +1,4 @@
-@inject IProjectSettingsClient settingsClient
-@implements IDisposable
+@inherits ProjectSettingsPanelBase<ProjectPublishSettingsViewModel>
 
 @if (success)
 {
@@ -14,7 +13,7 @@
             <JoinLoadingMessage />
             return;
         }
-        <EditForm FormName="ProjectPublishSettings" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+        <EditForm FormName="ProjectPublishSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary />
                 <DataAnnotationsValidator />
@@ -36,56 +35,8 @@
 </JoinPanel>
 
 @code {
-    private EditContext? editContext;
-    private bool success;
-    private bool formInvalid = true;
-    private ValidationMessageStore? messageStore;
+    protected override Task<ProjectPublishSettingsViewModel> LoadModel(ProjectIdentification projectId)
+        => SettingsClient.GetPublishSettings(projectId);
 
-
-    [Parameter]
-    [SupplyParameterFromForm]
-    public ProjectPublishSettingsViewModel Model { get; set; } = null!;
-
-    [Parameter]
-    public ProjectIdentification ProjectId { get; set; } = null!;
-
-    protected override async Task OnInitializedAsync()
-    {
-        Model ??= await settingsClient.GetPublishSettings(ProjectId);
-        editContext = new(Model);
-        editContext.OnFieldChanged += HandleFieldChanged;
-        messageStore = new(editContext);
-        formInvalid = !editContext.Validate();
-        StateHasChanged();
-    }
-
-    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
-    {
-        if (editContext is not null)
-        {
-            formInvalid = !editContext.Validate();
-            StateHasChanged();
-        }
-    }
-
-    private async Task HandleValidSubmit()
-    {
-        try
-        {
-            await settingsClient.SavePublishSettings(Model);
-            success = true;
-        }
-        catch
-        {
-            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при создании проекта");
-        }
-    }
-
-    public void Dispose()
-    {
-        if (editContext is not null)
-        {
-            editContext.OnFieldChanged -= HandleFieldChanged;
-        }
-    }
+    protected override Task SaveModel(ProjectPublishSettingsViewModel model) => SettingsClient.SavePublishSettings(model);
 }

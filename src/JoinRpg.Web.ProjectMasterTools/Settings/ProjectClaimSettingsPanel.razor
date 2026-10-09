@@ -1,6 +1,5 @@
 @using JoinRpg.Web.ProjectCommon
-@inject IProjectSettingsClient settingsClient
-@implements IDisposable
+@inherits ProjectSettingsPanelBase<ProjectClaimSettingsViewModel>
 
 @if (Model is null)
 {
@@ -16,7 +15,7 @@
 <JoinPanel>
     <Header>Настройки заявок</Header>
     <Body>
-        <EditForm FormName="ProjectClaimSettings" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+        <EditForm FormName="ProjectClaimSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary />
                 <DataAnnotationsValidator />
@@ -60,56 +59,8 @@
 }
 
 @code {
-    private EditContext? editContext;
-    private bool success;
-    private bool formInvalid = true;
-    private ValidationMessageStore? messageStore;
+    protected override Task<ProjectClaimSettingsViewModel> LoadModel(ProjectIdentification projectId)
+        => SettingsClient.GetClaimSettings(projectId);
 
-
-    [Parameter]
-    [SupplyParameterFromForm]
-    public ProjectClaimSettingsViewModel Model { get; set; } = null!;
-
-    [Parameter]
-    public ProjectIdentification ProjectId { get; set; } = null!;
-
-    protected override async Task OnInitializedAsync()
-    {
-        Model ??= await settingsClient.GetClaimSettings(ProjectId);
-        editContext = new(Model);
-        editContext.OnFieldChanged += HandleFieldChanged;
-        messageStore = new(editContext);
-        formInvalid = !editContext.Validate();
-        StateHasChanged();
-    }
-
-    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
-    {
-        if (editContext is not null)
-        {
-            formInvalid = !editContext.Validate();
-            StateHasChanged();
-        }
-    }
-
-    private async Task HandleValidSubmit()
-    {
-        try
-        {
-            await settingsClient.SaveClaimSettings(Model);
-            success = true;
-        }
-        catch
-        {
-            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
-        }
-    }
-
-    public void Dispose()
-    {
-        if (editContext is not null)
-        {
-            editContext.OnFieldChanged -= HandleFieldChanged;
-        }
-    }
+    protected override Task SaveModel(ProjectClaimSettingsViewModel model) => SettingsClient.SaveClaimSettings(model);
 }
