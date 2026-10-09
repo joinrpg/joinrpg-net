@@ -3,12 +3,14 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
+using JoinRpg.Web.Accommodation.Rooms;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
@@ -24,23 +26,23 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// <list type="bullet">
 /// <item><description>
 /// маршрутизация: заселение и выселение стали POST-only, раньше это были GET-ссылки. GET по тем же
-/// адресам должен отдавать 405, иначе переделка тихо откатится;
+/// адресам обслуживаться не должен, иначе переделка тихо откатится;
 /// </description></item>
 /// <item><description>
-/// antiforgery: глобальный <c>AutoValidateAntiforgeryTokenAttribute</c> закрывает и ajax-ручки, у
-/// которых нет своего атрибута. Без токена запрос не должен ничего менять;
+/// antiforgery: глобальный <c>AutoValidateAntiforgeryTokenAttribute</c> закрывает и ручки острова,
+/// у которых нет своего атрибута. Без токена запрос не должен ничего менять;
 /// </description></item>
 /// <item><description>
-/// привязка модели: <c>ProjectEntityIdModelBinder</c> склеивает голое число из query с проектом
-/// маршрута. Это и есть защита от дефекта 2 ADR018 — комнату чужого проекта подсунуть нельзя,
-/// причём проверить это можно только сквозным запросом;
+/// проект запроса: идентификаторы из тела сверяются с проектом из адреса. Это и есть защита от
+/// дефекта 2 ADR018 — комнату чужого проекта подсунуть нельзя, причём проверить это можно только
+/// сквозным запросом;
 /// </description></item>
 /// <item><description>
 /// раскладка доменных исключений по кодам ответа: переполнение — 400, ненайденное — 404;
 /// </description></item>
 /// <item><description>
-/// результат виден на странице: у строки комнаты меняется атрибут <c>occupancy</c>, по которому
-/// живёт <c>rooms.js</c>.
+/// результат виден на странице: у строки комнаты меняется счётчик «занято / вместимость» в
+/// пререндеренной разметке острова.
 /// </description></item>
 /// </list>
 /// Сид тут свой, не смоучный: смоук один на все свои сценарии и только читает, а мутации ломали бы
@@ -75,33 +77,22 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
         var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
 
         // Заселение двух заявок одной операцией: комната ровно по вместимости.
-        var occupy = await client.PostWithTokenHeaderAsync(
-            seed.OccupyUrl(seed.RoomIds[0], seed.RequestIds[0], seed.RequestIds[1]),
-            token);
+        var occupy = await client.OccupyAsync(token, seed.ProjectId, seed.Room(0), seed.Request(0), seed.Request(1));
         occupy.StatusCode.ShouldBe(HttpStatusCode.OK, "Заселение не прошло");
         (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(2);
 
         // Выселение одной группы: в комнате должен остаться второй жилец.
-        var unoccupyGroup = await client.PostWithTokenHeaderAsync(
-            seed.UnOccupyGroupUrl(seed.RequestIds[0]),
-            token);
+        var unoccupyGroup = await client.UnOccupyGroupAsync(token, seed.Request(0));
         unoccupyGroup.StatusCode.ShouldBe(HttpStatusCode.OK, "Выселение группы не прошло");
         (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(1);
 
-        // Выселение по типу проживания — обычная форма, поэтому успех это 302 на страницу комнат.
-        var unoccupyType = await client.PostFormAsync(
-            $"{seed.ProjectId.Value}/rooms/UnOccupyRoomsByType",
-            token,
-            ("roomTypeId", seed.RoomTypeId.ToString()));
-        unoccupyType.StatusCode.ShouldBe(
-            HttpStatusCode.Found,
-            $"Выселение по типу не прошло: {await unoccupyType.DescribeValidationErrorsAsync()}");
+        // Выселение по типу проживания: раньше это была форма страницы комнат, теперь ручка острова.
+        var unoccupyType = await client.UnOccupyRoomTypeAsync(token, seed.TypeId);
+        unoccupyType.StatusCode.ShouldBe(HttpStatusCode.OK, "Выселение по типу не прошло");
         (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(0);
 
         // Выселение по проекту: чтобы шаг что-то делал, сначала снова заселяем.
-        var occupyAgain = await client.PostWithTokenHeaderAsync(
-            seed.OccupyUrl(seed.RoomIds[1], seed.RequestIds[2]),
-            token);
+        var occupyAgain = await client.OccupyAsync(token, seed.ProjectId, seed.Room(1), seed.Request(2));
         occupyAgain.StatusCode.ShouldBe(HttpStatusCode.OK, "Повторное заселение не прошло");
         (await seed.GetOccupancyAsync(client, seed.RoomIds[1])).ShouldBe(1);
 
@@ -116,8 +107,67 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
     }
 
     /// <summary>
-    /// Отказы заселения: переполнение, пустой список групп и комната чужого проекта. Проверяется
-    /// именно раскладка по кодам ответа — её делает контроллер, а не сервис.
+    /// Управление комнатами и чтение модели острова: привязка типа из query, добавление по
+    /// списку, переименование, удаление по голому идентификатору в теле, освобождение комнаты.
+    /// </summary>
+    [Fact]
+    public async Task RoomManagement_RoundTrip()
+    {
+        var seed = await SeedAsync();
+        var client = await seed.CreateClientAsync(factory);
+        var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
+
+        // Модель острова: тип проживания приходит в query голым числом, проект берётся из адреса.
+        var initial = await ReadRoomsAsync(await client.GetRoomsAsync(seed.TypeId));
+        initial.Rooms.Select(r => r.RoomId.RoomId).ShouldBe(seed.RoomIds, ignoreOrder: true);
+        initial.UnassignedGroups.Count.ShouldBe(3);
+
+        // Добавление: строку «5-6» разбирает сервер, в ответ приходит новое состояние целиком.
+        var added = await ReadRoomsAsync(await client.AddRoomsAsync(token, seed.TypeId, "5-6"));
+        added.Rooms.Select(r => r.Name).ShouldBe(["1", "2", "5", "6"], ignoreOrder: true);
+        var newRoom = added.Rooms.Single(r => r.Name == "5").RoomId;
+
+        (await client.AddRoomsAsync(token, seed.TypeId, " , ")).StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest,
+            "Пустой список комнат должен давать 400");
+
+        // Переименование видно на странице комнат.
+        var rename = await client.RenameRoomAsync(token, newRoom, "Люкс");
+        rename.StatusCode.ShouldBe(HttpStatusCode.OK, "Переименование не прошло");
+        (await ReadRoomsAsync(await client.GetRoomsAsync(seed.TypeId))).Rooms
+            .Single(r => r.RoomId == newRoom).Name.ShouldBe("Люкс");
+
+        // Удаление: в теле — сам идентификатор комнаты, без обёртки.
+        var delete = await client.DeleteRoomAsync(token, newRoom);
+        delete.StatusCode.ShouldBe(HttpStatusCode.OK, "Удаление пустой комнаты не прошло");
+        (await ReadRoomsAsync(await client.GetRoomsAsync(seed.TypeId))).Rooms
+            .ShouldNotContain(r => r.RoomId == newRoom);
+        (await client.DeleteRoomAsync(token, newRoom)).StatusCode.ShouldBe(
+            HttpStatusCode.NotFound,
+            "Удалённой комнаты больше нет");
+
+        // Заселённую комнату удалить нельзя, а освободить — можно.
+        (await client.OccupyAsync(token, seed.ProjectId, seed.Room(0), seed.Request(0))).StatusCode
+            .ShouldBe(HttpStatusCode.OK, "Заселение не прошло");
+        (await client.DeleteRoomAsync(token, seed.Room(0))).StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest,
+            "Заселённую комнату удалять нельзя");
+
+        var evict = await client.UnOccupyRoomAsync(token, seed.Room(0));
+        evict.StatusCode.ShouldBe(HttpStatusCode.OK, "Освобождение комнаты не прошло");
+        (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(0);
+    }
+
+    private static async Task<RoomTypeRoomsViewModel> ReadRoomsAsync(HttpResponseMessage response)
+    {
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, $"Ручка {response.RequestMessage?.RequestUri} не ответила");
+        return await response.Content.ReadFromJsonAsync<RoomTypeRoomsViewModel>()
+            ?? throw new InvalidOperationException("Пустой ответ");
+    }
+
+    /// <summary>
+    /// Отказы заселения: переполнение, пустой список групп, комната и заявка чужого проекта.
+    /// Проверяется именно раскладка по кодам ответа — её делает контроллер, а не сервис.
     /// </summary>
     [Fact]
     public async Task OccupyRoom_Refusals()
@@ -127,48 +177,55 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
         var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
 
         // Три заявки в комнату на двоих: не влезает, сервис бросает JoinRpgInsufficientRoomSpaceException.
-        var overfull = await client.PostWithTokenHeaderAsync(
-            seed.OccupyUrl(seed.RoomIds[0], [.. seed.RequestIds]),
-            token);
+        var overfull = await client.OccupyAsync(
+            token, seed.ProjectId, seed.Room(0), seed.Request(0), seed.Request(1), seed.Request(2));
         overfull.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "Переполненная комната должна давать 400");
         (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(
             0,
             "Операция не влезла целиком — в комнату не должен въехать никто");
 
         // Пустой список групп до сервиса не доходит: это невалидный запрос.
-        var noGroups = await client.PostWithTokenHeaderAsync(
-            $"{seed.ProjectId.Value}/rooms/occupyroom?roomTypeId={seed.RoomTypeId}&room={seed.RoomIds[0]}&reqId=",
-            token);
+        var noGroups = await client.OccupyAsync(token, seed.ProjectId, seed.Room(0));
         noGroups.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "Заселение без групп должно давать 400");
 
-        // Комната из другого проекта: в query уезжает голое число, а проект берётся из маршрута,
-        // поэтому склеенный идентификатор указывает в пустоту (дефект 2 ADR018).
+        // Комната из другого проекта (дефект 2 ADR018). Полный идентификатор чужого проекта
+        // контроллер не принимает: проект в теле не совпал с проектом в адресе.
         var alien = await SeedAsync();
-        var alienRoom = await client.PostWithTokenHeaderAsync(
-            seed.OccupyUrl(alien.RoomIds[0], seed.RequestIds[0]),
-            token);
+        var alienRoom = await client.OccupyAsync(token, seed.ProjectId, alien.Room(0), seed.Request(0));
         alienRoom.StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest,
+            "Комнату чужого проекта нельзя подсунуть в запрос своего");
+
+        // А номер чужой комнаты, приклеенный к своему проекту, указывает в пустоту.
+        var splicedRoom = await client.OccupyAsync(
+            token, seed.ProjectId, new AccommodationRoomIdentification(seed.ProjectId, alien.RoomIds[0]), seed.Request(0));
+        splicedRoom.StatusCode.ShouldBe(
             HttpStatusCode.NotFound,
             "Комната чужого проекта не должна находиться по номеру");
 
-        // Заявка на проживание из чужого проекта — тоже 404, и по той же причине.
-        var alienRequest = await client.PostWithTokenHeaderAsync(
-            seed.OccupyUrl(seed.RoomIds[0], alien.RequestIds[0]),
-            token);
+        // Заявка на проживание из чужого проекта — по тем же двум причинам.
+        var alienRequest = await client.OccupyAsync(token, seed.ProjectId, seed.Room(0), alien.Request(0));
         alienRequest.StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest,
+            "Заявку на проживание чужого проекта нельзя подсунуть в запрос своего");
+
+        var splicedRequest = await client.OccupyAsync(
+            token, seed.ProjectId, seed.Room(0), new AccommodationRequestIdentification(seed.ProjectId, alien.RequestIds[0]));
+        splicedRequest.StatusCode.ShouldBe(
             HttpStatusCode.NotFound,
             "Заявка на проживание чужого проекта не должна находиться по номеру");
+
+        (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(0, "Отказы ничего не должны менять");
     }
 
     /// <summary>
     /// Без antiforgery-токена мутирующие ручки поселения не должны ничего менять.
     /// </summary>
     /// <remarks>
-    /// У <c>OccupyRoom</c> и <c>UnOccupyGroup</c> нет своего <c>[ValidateAntiForgeryToken]</c> —
+    /// У ручек острова нет своего <c>[ValidateAntiForgeryToken]</c> —
     /// их закрывает глобальный фильтр из <c>Startup</c>. Если фильтр однажды снимут, тест упадёт.
-    /// Отказ выглядит как 302 на <c>/error/antiforgery</c>: результат подменяет
-    /// <c>RedirectAntiforgeryValidationFailedResultFilter</c>, чтобы человек увидел объяснение, а
-    /// не пустой 400.
+    /// Для <c>/webapi</c> отказ — 400 с причиной текстом (её показывает остров), а не редирект на
+    /// страницу ошибки: редирект клиент острова прошёл бы до 200 и счёл бы операцию успешной (#5407).
     /// </remarks>
     [Fact]
     public async Task OccupyRoom_WithoutAntiforgeryToken_DoesNothing()
@@ -176,14 +233,13 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
         var seed = await SeedAsync();
         var client = await seed.CreateClientAsync(factory);
 
-        var response = await client.PostWithTokenHeaderAsync(
-            seed.OccupyUrl(seed.RoomIds[0], seed.RequestIds[0]),
-            antiforgeryToken: null);
+        var response = await client.OccupyAsync(
+            antiforgeryToken: null, seed.ProjectId, seed.Room(0), seed.Request(0));
 
         response.StatusCode.ShouldBe(
-            HttpStatusCode.Found,
+            HttpStatusCode.BadRequest,
             "Заселение без antiforgery-токена не должно приниматься");
-        response.Headers.Location?.ToString().ShouldBe("/error/antiforgery");
+        (await response.Content.ReadAsStringAsync()).ShouldContain("Сессия устарела");
         (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(0);
     }
 
@@ -199,18 +255,19 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
 
         foreach (var url in new[]
         {
-            seed.OccupyUrl(seed.RoomIds[0], seed.RequestIds[0]),
-            seed.UnOccupyGroupUrl(seed.RequestIds[0]),
-            $"{seed.ProjectId.Value}/rooms/UnOccupyRoomsByType?roomTypeId={seed.RoomTypeId}",
+            AccommodationRoomsApi.Url(seed.ProjectId, "OccupyRoom"),
+            AccommodationRoomsApi.Url(seed.ProjectId, "UnOccupyGroup"),
+            AccommodationRoomsApi.Url(seed.ProjectId, "UnOccupyRoom"),
+            AccommodationRoomsApi.Url(seed.ProjectId, "UnOccupyRoomType"),
             $"{seed.ProjectId.Value}/rooms/UnOccupyAll?projectId={seed.ProjectId.Value}",
         })
         {
             var response = await client.GetAsync(url);
 
-            // Именно 404, а не 405: GET-эндпоинта по этому адресу в портале нет вообще, и до
-            // экшена запрос не доходит. Важно, что не 200 и не редирект «сделано».
-            response.StatusCode.ShouldBe(
-                HttpStatusCode.NotFound,
+            // GET-эндпоинта по этому адресу нет, и до экшена запрос не доходит. Важно, что
+            // не 200 и не редирект «сделано».
+            response.StatusCode.ShouldBeOneOf(
+                [HttpStatusCode.NotFound, HttpStatusCode.MethodNotAllowed],
                 $"GET {url} не должен обслуживаться — операция меняет состояние");
         }
 
@@ -224,7 +281,7 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
     /// все остальные права у него есть.
     /// </summary>
     /// <remarks>
-    /// Право проверяется дважды — атрибутом <c>MasterAuthorize</c> на экшене и самим сервисом.
+    /// Право проверяется дважды — атрибутом <c>RequireMaster</c> на экшене и самим сервисом.
     /// Юнит-тест видит только вторую проверку; тут важно, что до сервиса дело не доходит и мастер
     /// получает редирект на страницу «нет доступа», а не 500.
     /// </remarks>
@@ -250,14 +307,10 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
         // не зависит от прав в проекте (на странице комнат кнопки выселения ему уже не покажут).
         var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
 
-        var response = await client.PostWithTokenHeaderAsync(
-            seed.OccupyUrl(seed.RoomIds[0], seed.RequestIds[0]),
-            token);
+        var response = await client.OccupyAsync(token, seed.ProjectId, seed.Room(0), seed.Request(0));
 
-        response.StatusCode.ShouldBe(HttpStatusCode.Redirect, "Мастеру без права должен уйти отказ");
-        response.Headers.Location?.ToString().ShouldContain(
-            "AccessDenied",
-            customMessage: "Отказ должен вести на страницу «нет доступа», а не на вход");
+        // webapi отвечает на отказ 403, а не редиректом на «нет доступа» (#5392).
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden, "Мастеру без права должен уйти отказ");
 
         // Ничего не изменилось — проверяем клиентом владельца, у которого страница открывается.
         var ownerClient = await seed.CreateClientAsync(factory);
@@ -405,13 +458,11 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
         /// <summary>Страница комнат типа проживания.</summary>
         public string RoomTypeDetailsUrl => $"{ProjectId.Value}/rooms/{RoomTypeId}/details";
 
-        /// <summary>Адрес заселения — ровно такой, какой собирает <c>rooms.js</c>.</summary>
-        public string OccupyUrl(int roomId, params int[] requestIds)
-            => $"{ProjectId.Value}/rooms/occupyroom?roomTypeId={RoomTypeId}&room={roomId}"
-                + $"&reqId={string.Join(',', requestIds)}";
+        public AccommodationTypeIdentification TypeId => new(ProjectId, RoomTypeId);
 
-        public string UnOccupyGroupUrl(int requestId)
-            => $"{ProjectId.Value}/rooms/unoccupyroom?roomTypeId={RoomTypeId}&reqId={requestId}";
+        public AccommodationRoomIdentification Room(int index) => new(ProjectId, RoomIds[index]);
+
+        public AccommodationRequestIdentification Request(int index) => new(ProjectId, RequestIds[index]);
 
         public Task<HttpClient> CreateClientAsync(JoinApplicationFactory factory)
             => TestUserProjectHelpers.CreateAuthenticatedClientAsync(
@@ -419,24 +470,8 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
                 OwnerEmail,
                 followsRedirects: false);
 
-        /// <summary>
-        /// Сколько человек живёт в комнате по данным страницы: атрибут <c>occupancy</c> у строки
-        /// комнаты. Именно его читает <c>rooms.js</c>, поэтому проверять состояние по странице
-        /// честнее, чем запросом в базу.
-        /// </summary>
-        public async Task<int> GetOccupancyAsync(HttpClient client, int roomId)
-        {
-            var response = await client.GetAsync(RoomTypeDetailsUrl);
-            response.StatusCode.ShouldBe(HttpStatusCode.OK, $"Страница {RoomTypeDetailsUrl} не открылась");
-
-            var document = await response.AsHtmlDocument();
-
-            // HtmlAgilityPack приводит имена атрибутов к нижнему регистру.
-            var row = document.DocumentNode.SelectSingleNode($"//tr[@roomid='{roomId}']")
-                ?? throw new InvalidOperationException(
-                    $"На странице {RoomTypeDetailsUrl} нет комнаты {roomId}");
-
-            return row.GetAttributeValue("occupancy", -1);
-        }
+        /// <summary>Сколько человек живёт в комнате по данным страницы комнат</summary>
+        public Task<int> GetOccupancyAsync(HttpClient client, int roomId)
+            => client.GetOccupancyAsync(RoomTypeDetailsUrl, roomId);
     }
 }

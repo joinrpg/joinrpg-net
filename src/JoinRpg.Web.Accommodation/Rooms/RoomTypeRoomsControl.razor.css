@@ -1,0 +1,84 @@
+/* Перенесено из site.css, где эти правила были привязаны к id разметки rooms.js. */
+
+.rooms-unassigned-list {
+    max-height: 200px;
+    overflow-y: scroll;
+    margin-bottom: 0;
+}
+
+.rooms-unassigned-columns {
+    column-count: 2;
+}
+
+@media screen and (max-width: 1300px) {
+    .rooms-unassigned-columns {
+        column-count: 1;
+    }
+}
+
+.rooms-unassigned-list ::deep .list-group-item {
+    padding: 0.2em 0.4em;
+}
+
+.rooms-rows ::deep .list-group-item {
+    padding: 0.2em 0;
+    border: none;
+    background: none;
+}
+
+.rooms-rows ::deep .list-group-item button.btn {
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+    width: 1.8em;
+    display: inline-block;
+}
+
+/* Оплачено всё — бейдж без суммы; есть долг — сумма без иконки. */
+.rooms-control ::deep .list-group-item .alert-success .price-value,
+.rooms-control ::deep .list-group-item .alert-warning .join-icon,
+.rooms-control ::deep .list-group-item .alert-danger .join-icon {
+    display: none;
+}
+
+.rooms-unassigned-list ::deep .list-group-item .acc-payment,
+.rooms-rows ::deep .list-group-item .acc-payment {
+    vertical-align: middle;
+    float: none;
+    margin: 0 0.3em;
+}
+
+.rooms-unassigned-list ::deep .list-group-item .acc-payment {
+    margin-left: 0;
+}
+
+.rooms-rows ::deep .list-group-item .acc-request {
+    vertical-align: middle;
+}
+
+.rooms-control ::deep .rooms-people-list {
+    max-height: 200px;
+    overflow-y: scroll;
+    margin: 1em 1em 0 1em;
+}
+
+.rooms-control ::deep .rooms-people-list .acc-payment {
+    float: left;
+    margin-right: 0.5em;
+}
+
+.rooms-control ::deep .rooms-people-list div.list-group-item {
+    cursor: pointer;
+    width: 100%;
+    padding: 0.3em 0.6em;
+}
+
+.rooms-control ::deep .rooms-people-list div.disabled {
+    cursor: not-allowed;
+}
+
+.rooms-control ::deep .rooms-people-list div.list-group-item span.join-ellipsis {
+    display: inline-block;
+    width: 90%;
+    vertical-align: middle;
+}

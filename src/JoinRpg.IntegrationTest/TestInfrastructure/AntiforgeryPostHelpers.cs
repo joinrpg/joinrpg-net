@@ -22,8 +22,9 @@ namespace JoinRpg.IntegrationTest.TestInfrastructure;
 /// </description></item>
 /// <item><description>
 /// ajax со страницы — заголовком <c>X-CSRF-TOKEN</c> (имя задано в
-/// <c>AuthenticationConfigurator</c>), тело при этом обычно пустое, а параметры лежат в query.
-/// Так ходит <c>rooms.js</c> (<see cref="PostWithTokenHeaderAsync"/>).
+/// <c>AuthenticationConfigurator</c>): тело либо пустое, а параметры лежат в query
+/// (<see cref="PostWithTokenHeaderAsync"/>), либо JSON — так ходят Blazor-острова
+/// (<see cref="PostJsonWithTokenHeaderAsync"/>).
 /// </description></item>
 /// </list>
 /// </remarks>
@@ -99,6 +100,31 @@ public static class AntiforgeryPostHelpers
             Content = new ByteArrayContent([]),
         };
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+
+        if (antiforgeryToken is not null)
+        {
+            request.Headers.Add(HeaderName, antiforgeryToken);
+        }
+
+        return client.SendAsync(request);
+    }
+
+    /// <summary>
+    /// Отправляет POST с JSON-телом, передавая токен заголовком — так ходят Blazor-острова.
+    /// </summary>
+    /// <param name="antiforgeryToken">
+    /// Токен; <c>null</c> — чтобы проверить, что ручка без токена запрос не принимает.
+    /// </param>
+    public static Task<HttpResponseMessage> PostJsonWithTokenHeaderAsync<TBody>(
+        this HttpClient client,
+        string postUrl,
+        TBody body,
+        string? antiforgeryToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, postUrl)
+        {
+            Content = System.Net.Http.Json.JsonContent.Create(body),
+        };
 
         if (antiforgeryToken is not null)
         {

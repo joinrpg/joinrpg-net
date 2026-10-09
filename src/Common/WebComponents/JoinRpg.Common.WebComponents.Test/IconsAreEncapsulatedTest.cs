@@ -30,10 +30,9 @@ public class IconsAreEncapsulatedTest
             "Крестик — это JoinIconType.Close, а не символ в разметке.",
             ThisTest),
         new("join-icons.svg",
-            "Адрес спрайта знают только JoinIconMarkup и join-obsolete-icons.js.",
+            "Адрес спрайта знает только JoinIconMarkup.",
             ThisTest,
             "src/Common/WebComponents/JoinRpg.Common.WebComponents/Icons/JoinIconMarkup.cs",
-            "src/Common/WebComponents/JoinRpg.Common.WebComponents/wwwroot/join-obsolete-icons.js",
             "src/Common/WebComponents/JoinRpg.Common.WebComponents.Test/JoinIconSpriteBuilder.cs"),
     ];
 

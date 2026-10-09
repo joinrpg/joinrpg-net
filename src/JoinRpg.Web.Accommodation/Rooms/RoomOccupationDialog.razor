@@ -1,0 +1,86 @@
+@* Диалог выбора групп для заселения в комнату. Предлагает только тех, кто влезает, и по мере выбора
+   выключает тех, кто уже не влезет вместе с выбранными. *@
+<JoinDialog @ref="dialog"
+            Caption="@caption"
+            Buttons="buttons"
+            DisableSumbit="@(selected.Count == 0)"
+            Width="600px"
+            MaxWidth="90%">
+    @if (room is not null)
+    {
+        <div class="row">
+            <label class="col-md-6" style="text-align: right;">Занято мест:</label>
+            <span class="col-md-6"><strong class="text-warning rooms-used-space">@(room.Occupancy + selected.Sum(g => g.Persons))</strong></span>
+        </div>
+        <div class="row">
+            <label class="col-md-6" style="text-align: right;">Свободно мест:</label>
+            <span class="col-md-6"><strong class="text-success rooms-free-space">@Board.GetFreeSpace(room, selected)</strong></span>
+        </div>
+        <div class="list-group rooms-people-list">
+            @foreach (var group in candidates)
+            {
+                var isSelected = selected.Contains(group);
+                var isDisabled = !isSelected && !Board.Fits(room, group, selected);
+                <div class="list-group-item @(isSelected ? "active" : "") @(isDisabled ? "disabled" : "")"
+                     data-group-id="@group.GroupId.AccommodationRequestId"
+                     @onclick="() => Toggle(group, isDisabled)">
+                    <span class="join-ellipsis"><AccommodationPaymentBadge Group="group" />@group.PersonsList</span>
+                    <span class="badge">@group.Persons</span>
+                </div>
+            }
+        </div>
+    }
+</JoinDialog>
+
+@code {
+    private const string OccupyButtonName = "occupy";
+
+    private static readonly IReadOnlyCollection<DialogButton> buttons =
+    [
+        new DialogButton(OccupyButtonName, "Заселить", style: VariationStyleEnum.Success),
+        new DialogButton(ButtonPreset.Cancel, label: "Отмена", cancel: true),
+    ];
+
+    [Parameter, EditorRequired]
+    public RoomsBoard Board { get; set; } = null!;
+
+    private JoinDialog dialog = null!;
+    private BoardRoom? room;
+    private string caption = "";
+    private List<AccommodationGroupViewModel> candidates = [];
+    private List<AccommodationGroupViewModel> selected = [];
+
+    /// <summary>
+    /// Спросить, кого заселить в комнату.
+    /// </summary>
+    /// <returns>Выбранные группы в порядке списка либо <c>null</c>, если пользователь передумал</returns>
+    public async Task<IReadOnlyList<AccommodationGroupViewModel>?> ShowAsync(BoardRoom targetRoom)
+    {
+        room = targetRoom;
+        caption = $"Выберите заявки для заселения в комнату {targetRoom.Name}";
+        selected = [];
+        candidates = [.. Board.Unassigned.Where(g => Board.Fits(targetRoom, g))];
+        StateHasChanged();
+
+        var result = await dialog.ShowModalAsync();
+        if (result != OccupyButtonName || selected.Count == 0)
+        {
+            return null;
+        }
+
+        return [.. candidates.Where(selected.Contains)];
+    }
+
+    private void Toggle(AccommodationGroupViewModel group, bool isDisabled)
+    {
+        if (isDisabled)
+        {
+            return;
+        }
+
+        if (!selected.Remove(group))
+        {
+            selected.Add(group);
+        }
+    }
+}

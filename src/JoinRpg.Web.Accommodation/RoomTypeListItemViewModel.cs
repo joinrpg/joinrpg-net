@@ -116,7 +116,10 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
     /// </summary>
     public RoomTypeOccupancySummary Occupancy { get; }
 
-    public override int RoomsCount => Occupancy.RoomsCount;
+    public int RoomsCount => Occupancy.RoomsCount;
+
+    [DisplayName("Общее количество мест")]
+    public int TotalCapacity => RoomsCount * Capacity;
 
     /// <param name="typeInfo">Настройки типа проживания из метаданных проекта (ADR015)</param>
     /// <param name="descriptionView">
