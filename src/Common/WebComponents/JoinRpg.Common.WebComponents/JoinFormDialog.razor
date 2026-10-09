@@ -59,6 +59,7 @@
 
     private JoinDialog dialogRef = default!;
     private EditContext? editContext;
+    private bool contextIsStale;
     private bool formInvalid;
 
     private IReadOnlyCollection<DialogButton> buttons = null!;
@@ -66,11 +67,10 @@
     public async Task<TViewModel?> ShowModalAsync()
     {
         var result = await dialogRef.ShowBoolModalAsync();
-        if (editContext is not null)
-        {
-            editContext.OnFieldChanged -= HandleFieldChanged;
-        }
-        editContext = null;
+        // Следующий показ начнётся с чистого EditContext (без сообщений прошлого раза). Обнулять
+        // его прямо здесь нельзя: закрытие диалога перерисовывает JoinDialog, тот рисует наше
+        // содержимое, и EditForm получил бы null — падение рендера.
+        contextIsStale = true;
         if (result)
         {
             return Model;
@@ -99,8 +99,9 @@
         buttons = [new DialogButton(SubmitButtonPreset), new DialogButton(ButtonPreset.Cancel, cancel: true)];
         // Новый EditContext заставляет EditForm пересоздать всё содержимое: поле, в которое
         // сейчас вводят, теряет фокус. Поэтому пересоздаём только при смене модели.
-        if (editContext is null || !ReferenceEquals(editContext.Model, Model))
+        if (editContext is null || contextIsStale || !ReferenceEquals(editContext.Model, Model))
         {
+            contextIsStale = false;
             if (editContext is not null)
             {
                 editContext.OnFieldChanged -= HandleFieldChanged;
