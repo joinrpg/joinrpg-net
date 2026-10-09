@@ -1,10 +1,26 @@
 <div class="@style">
-    @ChildContent
+    @if (Icon is { } icon)
+    {
+        <JoinIcon Icon="icon" />
+        <div>@ChildContent</div>
+    }
+    else
+    {
+        @ChildContent
+    }
 </div>
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.None;
 
-    private string style => BootstrapStyle.Build("alert", Variation, null);
+    /// <summary>
+    /// Иконка слева от текста. С ней алерт получает раскладку <c>.join.alert</c>: иконка и текст
+    /// в строку, иконка крупнее текста.
+    /// </summary>
+    [Parameter] public JoinIconType? Icon { get; set; }
+
+    private string style => Icon is null
+        ? BootstrapStyle.Build("alert", Variation, null)
+        : "join " + BootstrapStyle.Build("alert", Variation, null);
 }
