@@ -64,6 +64,24 @@ public class ApiInfoBuilder
                                                 player.Social.Telegram?.PrettyName?.Value);
     }
 
+    /// <summary>
+    /// Статус заявки во внешнем контракте. Отображение явное, а не приведением по числу:
+    /// доменный enum и enum контракта живут отдельно, и перестановка в одном не должна молча
+    /// менять смысл в другом.
+    /// </summary>
+    public static ClaimStatusEnum ToApiStatus(ClaimStatus status) => status switch
+    {
+        ClaimStatus.AddedByUser => ClaimStatusEnum.AddedByUser,
+        ClaimStatus.AddedByMaster => ClaimStatusEnum.AddedByMaster,
+        ClaimStatus.Approved => ClaimStatusEnum.Approved,
+        ClaimStatus.DeclinedByUser => ClaimStatusEnum.DeclinedByUser,
+        ClaimStatus.DeclinedByMaster => ClaimStatusEnum.DeclinedByMaster,
+        ClaimStatus.Discussed => ClaimStatusEnum.Discussed,
+        ClaimStatus.OnHold => ClaimStatusEnum.OnHold,
+        ClaimStatus.CheckedIn => ClaimStatusEnum.CheckedIn,
+        _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
+    };
+
     public static FieldValue ToFieldValue(FieldWithValue field)
     {
         return new FieldValue

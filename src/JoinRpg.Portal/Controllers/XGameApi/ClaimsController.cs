@@ -1,4 +1,4 @@
-using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.WebPortal.Managers.Characters;
 using JoinRpg.XGameApi.Contract;
@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-game-api/{projectId}/claims"), XGameMasterAuthorize()]
-public class ClaimsApiController(IClaimsRepository claimsRepository) : XGameApiController
+public class ClaimsApiController(IClaimInfoRepository claimInfoRepository) : XGameApiController
 {
     [HttpGet]
     [Route("{claimId}")]
@@ -16,11 +16,17 @@ public class ClaimsApiController(IClaimsRepository claimsRepository) : XGameApiC
     [ProducesDefaultResponseType]
     public async Task<ActionResult<ClaimDetails>> GetOne(int projectId, int claimId)
     {
-        var claim = await claimsRepository.GetClaimWithDetails(new ClaimIdentification(projectId, claimId));
-        if (claim is null)
+        // Доменный агрегат заявки вместе с профилем игрока (ADR021): контакты с EF-сущности
+        // User.Extra догружались лениво (#4965).
+        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(new ClaimIdentification(projectId, claimId));
+        if (claimInfo is null)
         {
             return NotFound();
         }
-        return new ClaimDetails(claim.ClaimId, claim.CharacterId, ApiInfoBuilder.ToPlayerContacts(claim.Player), (ClaimStatusEnum)claim.ClaimStatus);
+        return new ClaimDetails(
+            claimInfo.ClaimId.ClaimId,
+            claimInfo.Character.Id.CharacterId,
+            ApiInfoBuilder.ToPlayerContacts(claimInfo.Player),
+            ApiInfoBuilder.ToApiStatus(claimInfo.Claim.Status));
     }
 }
