@@ -32,7 +32,9 @@
                     <span class="control-label col-md-2"><b>История обновлений</b> </span>
                     <div class="col-md-10">
                         <div class="help-block">
-                            @await Html.PartialAsync("CreateUpdated", Model)
+                            <component type="typeof(JoinRpg.Web.ProjectCommon.CreateUpdatedMarks)"
+                                       render-mode="Static"
+                                       param-Model="Model.Marks" />
                         </div>
                     </div>
                 </div>

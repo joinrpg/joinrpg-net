@@ -8,6 +8,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Plot;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Characters;
 
@@ -47,7 +48,7 @@ public class CharacterParentGroupsViewModel
     }
 }
 
-public class CharacterDetailsViewModel : ICreatedUpdatedTracked
+public class CharacterDetailsViewModel
 {
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel ParentGroups { get; }
@@ -72,7 +73,8 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
         IReadOnlyCollection<PlotTextDto> plots,
         ILinkRenderer linkRenderer,
         ProjectInfo projectInfo,
-        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
+        CreateUpdateMarksInfo? marks)
     {
         // Ссылка на игрока строится поверх агрегата (ADR013): у варианта поверх EF-сущности внутри
         // лежит character.Project.Details.PublishPlot — ленивая загрузка на каждый заход (#4992).
@@ -94,14 +96,12 @@ public class CharacterDetailsViewModel : ICreatedUpdatedTracked
         Plot = new PlotDisplayViewModel(plots, currentUserId, characterInfo, linkRenderer);
 
         HasMasterAccess = accessArguments.MasterAccess;
-        CreatedAt = character.CreatedAt;
-        UpdatedAt = character.UpdatedAt;
-        CreatedBy = character.CreatedBy;
-        UpdatedBy = character.UpdatedBy;
+        Marks = marks?.ToViewModel();
     }
 
-    public DateTime CreatedAt { get; }
-    public User CreatedBy { get; }
-    public DateTime UpdatedAt { get; }
-    public User UpdatedBy { get; }
+    /// <summary>
+    /// Кто и когда создал и последним менял персонажа; показывается только мастерам, поэтому
+    /// остальным не загружается.
+    /// </summary>
+    public CreateUpdateMarksViewModel? Marks { get; }
 }

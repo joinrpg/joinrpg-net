@@ -17,7 +17,11 @@
                 @if (Model.HasMasterAccess)
                 {
                     <dt>История обновлений</dt>
-                    <dd>@await Html.PartialAsync("CreateUpdated", Model)</dd>
+                    <dd>
+                        <component type="typeof(JoinRpg.Web.ProjectCommon.CreateUpdatedMarks)"
+                                   render-mode="Static"
+                                   param-Model="Model.Marks" />
+                    </dd>
                     
                 }
                 <dt>Игрок</dt>
