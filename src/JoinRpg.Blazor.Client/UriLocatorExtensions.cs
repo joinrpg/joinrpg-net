@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Plots;
+using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.Schedule;
@@ -11,7 +13,7 @@ public static class UriLocatorExtensions
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
         IUriLocator<CharacterGroupIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
-        IScheduleUriLocator, IProjectUriLocator
+        IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
@@ -106,6 +108,25 @@ public static class UriLocatorExtensions
 
         Uri IProjectUriLocator.GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
             new($"/{projectId.Value}/print/CharacterList?CharacterIds={new CompressedIntList(characterIds)}", UriKind.Relative);
+
+        Uri IPlotUriLocator.GetElementInFolderUri(PlotElementIdentification elementId) =>
+            new($"/{elementId.ProjectId.Value}/plots/edit?PlotFolderId={elementId.PlotFolderId.PlotFolderId}#{PlotElementAnchor.For(elementId)}", UriKind.Relative);
+
+        // В PlotElementId(1620-17-230) только буквы, цифры, дефис и скобки — в query экранировать нечего (сервер тоже не экранирует).
+        Uri IPlotUriLocator.GetEditElementUri(PlotElementIdentification elementId) =>
+            new($"/{elementId.ProjectId.Value}/plots/EditElement?elementId={elementId}", UriKind.Relative);
+
+        Uri IPlotUriLocator.GetCopyElementUri(PlotElementIdentification elementId) =>
+            new($"/{elementId.ProjectId.Value}/plots/CreateElement?PlotFolderId={elementId.PlotFolderId.PlotFolderId}&copyFrom={elementId}", UriKind.Relative);
+
+        Uri IPlotUriLocator.GetVersionUri(PlotVersionIdentification versionId) =>
+            new($"/{versionId.ProjectId.Value}/plots/ShowElementVersion?PlotFolderId={versionId.PlotFolderId.PlotFolderId}&PlotElementId={versionId.PlotElementId.PlotElementId}&Version={versionId.Version}", UriKind.Relative);
+
+        Uri IPlotUriLocator.GetPrintVersionUri(PlotVersionIdentification versionId) =>
+            new($"/{versionId.ProjectId.Value}/plots/ShowElementVersion?PlotFolderId={versionId.PlotFolderId.PlotFolderId}&PlotElementId={versionId.PlotElementId.PlotElementId}&Version={versionId.Version}&PrintMode=True", UriKind.Relative);
+
+        Uri IPlotUriLocator.GetReorderElementsUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/plots/ReorderElements", UriKind.Relative);
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {
@@ -121,6 +142,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IProjectFieldUriLocator>(locator)
             .AddSingleton<IScheduleUriLocator>(locator)
             .AddSingleton<IProjectUriLocator>(locator)
+            .AddSingleton<IPlotUriLocator>(locator)
             ;
     }
 }
