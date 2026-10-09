@@ -94,6 +94,44 @@ public class ClaimBalanceOverCharacterInfoTest
         balance.TotalFee.ShouldBe(0);
     }
 
+    /// <summary>
+    /// Неутверждённая заявка не платит за непубличные поля персонажа: её игрок их не видит
+    /// (<c>CharacterFieldLayers.ForUnapprovedClaim</c>). Утверждённая — платит. Так считала
+    /// EF-версия, а доменная до исправления брала все поля персонажа.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void HiddenCharacterFieldFeeMatchesLegacyCalculation(bool approved)
+    {
+        var hiddenField = mock.AddField(field =>
+        {
+            field.FieldName = "Скрытое платное поле";
+            field.FieldType = ProjectFieldType.Checkbox;
+            field.Price = 300;
+            field.FieldBoundTo = FieldBoundTo.Character;
+            field.IsPublic = false;
+            field.CanPlayerView = false;
+        });
+
+        var character = mock.CreateCharacter("Со скрытым полем");
+        character.JsonData = $$"""{"{{hiddenField.Id.ProjectFieldId}}":"on"}""";
+        var claim = approved
+            ? mock.CreateApprovedClaim(character, mock.Player)
+            : mock.CreateClaim(character, mock.Player);
+        claim.FinanceOperations = [];
+
+        var legacy = claim.CalculateClaimBalance(mock.ProjectInfo, OperationDate);
+        var actual = new ClaimInCharacter(mock.GetCharacterInfo(character), claim.GetId()).CalculateBalance(OperationDate);
+
+        actual.ShouldBe(legacy);
+        // Страж от вырожденной проверки: утверждённая заявка за скрытое поле действительно платит.
+        if (approved)
+        {
+            actual.TotalFee.ShouldBeGreaterThanOrEqualTo(300);
+        }
+    }
+
     private Claim MakeLegacyClaim(int? currentFee, bool preferential, string? fieldsJson)
     {
         var character = mock.CreateCharacter("Легаси");

@@ -30,6 +30,22 @@ public record class ClaimInCharacter
 
     public ClaimIdentification ClaimId => Claim.ClaimId;
 
+    /// <summary>
+    /// Поля глазами самой заявки, без фильтрации по правам зрителя — для расчётов (взносы).
+    /// </summary>
+    /// <remarks>
+    /// Утверждённая заявка видит персонажа целиком. Неутверждённая — только его публичные поля
+    /// (<see cref="CharacterFieldLayers.ForUnapprovedClaim"/>): её игрок к персонажу доступа не
+    /// имеет, и платить за скрытые от него поля персонажа не должен. Так считала и EF-версия
+    /// (<c>Claim.GetFields</c>).
+    /// </remarks>
+    public IReadOnlyCollection<FieldWithValue> GetAllFields()
+        => Claim.IsApproved
+            ? Character.GetAllFields(ClaimId)
+            // AccessArguments.None здесь безвреден: GetAllFieldsForEdit прав не смотрит.
+            : CharacterFieldLayers.ForUnapprovedClaim(Claim.Fields, Character.CharacterFields, AccessArguments.None)
+                .GetAllFieldsForEdit();
+
     /// <exception cref="KeyNotFoundException">У персонажа нет такой заявки.</exception>
     public ClaimInCharacter(CharacterInfo character, ClaimIdentification claimId)
         : this(character, (character ?? throw new ArgumentNullException(nameof(character))).GetClaimById(claimId))

@@ -19,7 +19,7 @@ public static class ClaimBalanceExtensions
     {
         ArgumentNullException.ThrowIfNull(claim);
 
-        var fieldsFee = claim.Character.GetAllFields(claim.ClaimId).Sum(field => field.GetCurrentFee());
+        var fieldsFee = claim.GetAllFields().Sum(field => field.GetCurrentFee());
 
         return claim.Claim.Finance.CalculateBalance(fieldsFee, claim.ProjectInfo, date ?? DateTime.UtcNow);
     }
