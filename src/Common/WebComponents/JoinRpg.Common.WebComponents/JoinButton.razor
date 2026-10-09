@@ -5,13 +5,13 @@
 @if (Link is not null)
 {
   <Tooltip Title="@Title" TooltipContent="@TitleContent">
-        <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" @attributes="AdditionalAttributes">@LabelContent</a>
+        <a href="@Link" class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" aria-label="@AriaLabel" @attributes="AdditionalAttributes">@LabelContent</a>
   </Tooltip>
 }
 else
 {
   <Tooltip Title="@ActualTitle" TooltipContent="@TitleContent">
-    <button class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" @onclick="OnClickHappened" @attributes="AdditionalAttributes">@LabelContent</button>
+    <button class="@RenderedStyle" type="@ButtonType" disabled="@Disabled" aria-label="@AriaLabel" @onclick="OnClickHappened" @attributes="AdditionalAttributes">@LabelContent</button>
   </Tooltip>
 }
 @if (AutoConfirm)
@@ -191,8 +191,19 @@ else
 
     private RenderFragment LabelContent => InProgress ? ProgressContent : NormalContent;
 
+    /// <summary>
+    /// Подпись для скринридера. Подсказка <see cref="Tooltip"/> скрыта, пока на кнопку не навели,
+    /// а иконка помечена aria-hidden, поэтому у кнопки из одной иконки без этого нет имени.
+    /// У кнопки с видимым текстом подпись — сам текст, дублировать его <see cref="Title"/> не нужно.
+    /// </summary>
+    private string? AriaLabel => (InProgress ? ProgressIsIconOnly : NormalIsIconOnly) && !string.IsNullOrWhiteSpace(ActualTitle)
+        ? ActualTitle
+        : null;
+
     private RenderFragment NormalContent { get; set; } = null!;
     private RenderFragment ProgressContent { get; set; } = null!;
+    private bool NormalIsIconOnly { get; set; }
+    private bool ProgressIsIconOnly { get; set; }
     private VariationStyleEnum ActualStyle { get; set; }
     private string? DialogCaption { get; set; }
 
@@ -263,6 +274,8 @@ else
         var presetContent = ButtonPresets.All[Preset];
         NormalContent = ChildContent ?? FormatLabelLogged(Label, presetContent.Normal.Label, Icon, presetContent.Normal.Icon, "Normal");
         ProgressContent = FormatLabelLogged(ProgressLabel, presetContent.Progress.Label ?? Label, ProgressIcon, presetContent.Progress.Icon, "Progress");
+        NormalIsIconOnly = ChildContent is null && string.IsNullOrEmpty(ResolveLabel(Label, presetContent.Normal.Label));
+        ProgressIsIconOnly = string.IsNullOrEmpty(ResolveLabel(ProgressLabel, presetContent.Progress.Label ?? Label));
         ActualStyle = Style ?? presetContent.Style;
         DialogCaption = Label?.Trim() ?? presetContent.Normal.Label ?? "Подтверждение";
 
@@ -295,12 +308,14 @@ else
 
     internal static RenderFragment FormatLabel(string? customLabel, string? defaultLabel, JoinIconType? customIcon, JoinIconType? defaultIcon)
     {
-      return FormatLabel(customLabel?.Trim() ?? defaultLabel, customIcon ?? defaultIcon);
+      return FormatLabel(ResolveLabel(customLabel, defaultLabel), customIcon ?? defaultIcon);
     }
+
+    private static string? ResolveLabel(string? customLabel, string? defaultLabel) => customLabel?.Trim() ?? defaultLabel;
 
     private RenderFragment FormatLabelLogged(string? customLabel, string? defaultLabel, JoinIconType? customIcon, JoinIconType? defaultIcon, string state)
     {
-      var label = customLabel?.Trim() ?? defaultLabel;
+      var label = ResolveLabel(customLabel, defaultLabel);
       var icon = customIcon ?? defaultIcon;
       if (string.IsNullOrEmpty(label) && icon is null)
       {
