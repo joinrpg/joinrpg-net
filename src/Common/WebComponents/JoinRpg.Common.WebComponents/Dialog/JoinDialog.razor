@@ -134,7 +134,7 @@
     [Parameter]
     public bool DisableSumbit { get; set; } = false;
 
-    private IJSObjectReference _module = null!;
+    private Task<IJSObjectReference>? _moduleTask;
     private ElementReference _dialogRef;
 
     private string? _styles;
@@ -161,7 +161,7 @@
         _closing = false;
         _closingButton = null;
         _resultTaskSource = new TaskCompletionSource<string>();
-        _module.InvokeVoidAsync("showModal", _dialogRef);
+        _ = InvokeModuleAsync("showModal");
     }
 
     /// <summary>
@@ -209,7 +209,28 @@
     {
         if (_closing)
             return;
-        _module.InvokeVoidAsync("closeModal", _dialogRef);
+        _ = InvokeModuleAsync("closeModal");
+    }
+
+    /// <summary>
+    /// JS-модуль грузится лениво и один раз. Раньше он грузился в <see cref="OnAfterRenderAsync"/>
+    /// диалога, и открыть диалог из <c>OnAfterRenderAsync</c> родителя было нельзя: родитель
+    /// получает его раньше дочернего компонента, модуля ещё нет.
+    /// </summary>
+    private Task<IJSObjectReference> GetModuleAsync()
+        => _moduleTask ??= Js.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.Common.WebComponents/component-interop.js").AsTask();
+
+    private async Task InvokeModuleAsync(string identifier)
+    {
+        try
+        {
+            var module = await GetModuleAsync();
+            await module.InvokeVoidAsync(identifier, _dialogRef);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while calling dialog JS function {Identifier}", identifier);
+        }
     }
 
     protected virtual void CloseButtonClickHandler()
@@ -346,15 +367,15 @@
     {
         if (firstRender)
         {
-            _module = await Js.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.Common.WebComponents/component-interop.js");
+            _ = await GetModuleAsync();
         }
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (_module is not null)
+        if (_moduleTask is { IsCompletedSuccessfully: true } && _moduleTask.Result is { } module)
         {
-            await _module.DisposeAsync();
+            await module.DisposeAsync();
         }
     }
 
