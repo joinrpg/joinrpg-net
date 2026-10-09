@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Data.Interfaces.Characters;
@@ -22,4 +23,15 @@ public interface IClaimInfoRepository
     /// <exception cref="InvalidOperationException">Какой-то из заявок нет.</exception>
     /// <exception cref="ArgumentException">Заявки из разных проектов.</exception>
     Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds);
+
+    /// <summary>
+    /// Утверждённые заявки уже загруженных персонажей вместе с игроками — одним запросом профилей
+    /// на весь список.
+    /// </summary>
+    /// <remarks>
+    /// Персонаж без утверждённой заявки — нормальный случай, и в словарь он просто не попадает:
+    /// <see cref="ClaimInfo"/> с пустым игроком не бывает. Персонажи не перечитываются, поэтому
+    /// <see cref="ClaimInfo.Character"/> — тот же экземпляр, что пришёл на вход.
+    /// </remarks>
+    Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimInfos(IReadOnlyCollection<CharacterInfo> characters);
 }

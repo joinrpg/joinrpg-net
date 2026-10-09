@@ -1,5 +1,7 @@
 using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Dal.Impl.Repositories.Characters;
 
@@ -53,12 +55,41 @@ internal class ClaimInfoRepository(
                 claimId))
             .ToArray();
 
-        IReadOnlyCollection<UserIdentification> playerIds = [.. requested.Select(c => c.Claim.PlayerId).Distinct()];
-
-        var players = (await userRepository.GetRequiredUserInfos(playerIds)).ToDictionary(user => user.UserId);
+        var players = await LoadPlayers(requested);
 
         return requested.ToDictionary(
             claim => claim.ClaimId,
             claim => new ClaimInfo(claim, players[claim.Claim.PlayerId]));
+    }
+
+    public async Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimInfos(
+        IReadOnlyCollection<CharacterInfo> characters)
+    {
+        ArgumentNullException.ThrowIfNull(characters);
+
+        ClaimInCharacter[] approved = [..
+            characters
+                .DistinctBy(character => character.Id)
+                .Where(character => character.ApprovedClaim is not null)
+                .Select(character => new ClaimInCharacter(character, character.ApprovedClaim!))];
+
+        var players = await LoadPlayers(approved);
+
+        return approved.ToDictionary(
+            claim => claim.Character.Id,
+            claim => new ClaimInfo(claim, players[claim.Claim.PlayerId]));
+    }
+
+    /// <summary>Профили игроков заявок — одним запросом, а не по заявке.</summary>
+    private async Task<Dictionary<UserIdentification, UserInfo>> LoadPlayers(IReadOnlyCollection<ClaimInCharacter> claims)
+    {
+        IReadOnlyCollection<UserIdentification> playerIds = [.. claims.Select(c => c.Claim.PlayerId).Distinct()];
+
+        if (playerIds.Count == 0)
+        {
+            return [];
+        }
+
+        return (await userRepository.GetRequiredUserInfos(playerIds)).ToDictionary(user => user.UserId);
     }
 }

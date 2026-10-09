@@ -2,6 +2,7 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Claims;
@@ -12,13 +13,13 @@ namespace JoinRpg.Web.Models.Characters;
 
 public class CharacterListByGroupViewModel(UserIdentification currentUserId,
     IReadOnlyCollection<CharacterInfo> characters,
-    IReadOnlyDictionary<UserIdentification, UserInfo> players,
+    IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
     IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
     CharacterGroupFullInfo group,
     ProjectInfo projectInfo,
     ICharacterProblemValidator problemValidator) :
 
-    CharacterListViewModel(currentUserId, $"Персонажи — {group.Name}", characters, players, fieldUsers, projectInfo, problemValidator), IOperationsAwareView
+    CharacterListViewModel(currentUserId, $"Персонажи — {group.Name}", characters, approvedClaims, fieldUsers, projectInfo, problemValidator), IOperationsAwareView
 {
     public CharacterGroupDetailsViewModel GroupModel { get; } =
             new CharacterGroupDetailsViewModel(group,
@@ -31,9 +32,9 @@ public class CharacterListByGroupViewModel(UserIdentification currentUserId,
     string? IOperationsAwareView.InlineTitle => null;
 }
 
-/// <param name="players">
-/// Игроки утверждённых заявок, загруженные пачкой. Агрегат персонажа несёт только id игрока
-/// (ADR013), а грузить профили по одному — это N+1 запрос на каждой странице списка.
+/// <param name="approvedClaims">
+/// Утверждённые заявки вместе с игроками, загруженные пачкой (ADR021). Агрегат персонажа несёт
+/// только id игрока (ADR013), а грузить профили по одному — это N+1 запрос на каждой странице списка.
 /// </param>
 /// <param name="fieldUsers">
 /// Пользователи из полей-ссылок на пользователя (ADR017) — тоже пачкой на весь список.
@@ -42,7 +43,7 @@ public class CharacterListViewModel(
     UserIdentification currentUserId,
     string title,
     IReadOnlyCollection<CharacterInfo> characters,
-    IReadOnlyDictionary<UserIdentification, UserInfo> players,
+    IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
     IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
     ProjectInfo projectInfo,
     ICharacterProblemValidator problemValidator) : IOperationsAwareView
@@ -51,7 +52,7 @@ public class CharacterListViewModel(
             character =>
                 new CharacterListItemViewModel(character,
                     currentUserId,
-                    players,
+                    approvedClaims,
                     projectInfo, problemValidator)).ToArray();
     public int? ProjectId { get; } = projectInfo.ProjectId.Value;
     public IReadOnlyCollection<ClaimIdentification> ClaimIds { get; } = characters.Select(c => c.ApprovedClaimId).WhereNotNull().ToArray();
@@ -102,19 +103,19 @@ public class CharacterListItemViewModel : ILinkable
     public CharacterListItemViewModel(
         CharacterInfo character,
         UserIdentification currentUserId,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players,
+        IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         ProjectInfo projectInfo,
         ICharacterProblemValidator problemValidator)
     {
         ArgumentNullException.ThrowIfNull(character);
-        ArgumentNullException.ThrowIfNull(players);
+        ArgumentNullException.ThrowIfNull(approvedClaims);
 
         BusyStatus = character.GetBusyStatus();
 
         if (character.ApprovedClaim is { } approvedClaim)
         {
             ApprovedClaimId = approvedClaim.ClaimId.ClaimId;
-            Player = players.GetValueOrDefault(approvedClaim.PlayerId);
+            Player = approvedClaims.GetValueOrDefault(character.Id)?.Player;
         }
         else if (character.CharacterType == CharacterType.Slot)
         {

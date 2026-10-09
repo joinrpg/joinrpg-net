@@ -4,8 +4,10 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
@@ -135,6 +137,78 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
         anonPrivateResult!.HasAccess.ShouldBeFalse();
         anonPrivateResult.Grid.ShouldBeNull();
         anonPrivateResult.NoAccess.ShouldNotBeNull();
+    }
+
+    /// <summary>
+    /// Игрок утверждённой заявки доезжает до сетки ролей и списка персонажей через
+    /// <c>IClaimInfoRepository.GetApprovedClaimInfos</c> (ADR021). Юнит-тест билдера собирает
+    /// словарь сам, поэтому ошибку в репозитории (не тот ключ, потерянный отбор) ловит только этот.
+    /// </summary>
+    [Fact]
+    public async Task ApprovedClaimPlayer_IsShownInGridAndCharacterList()
+    {
+        UserIdentification masterId;
+        string email;
+        ProjectIdentification projectId;
+        UserIdentification playerId;
+        string playerEmail;
+        const string password = "Password123!";
+        using (var scope = factory.Services.CreateScope())
+        {
+            (masterId, email) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(
+                scope.ServiceProvider, password: password);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Проект с игроком в сетке");
+            (playerId, playerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        }
+
+        var (characterId, rolesListId) = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                projectId,
+                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
+
+            var characterId = await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [projectInfo.GroupTree.RootGroupId],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
+
+            var created = await sp.GetRequiredService<IProjectRolesListService>().CreateAsync(new ProjectRolesList(
+                new ProjectRolesListIdentification(projectId, -1),
+                "Все роли",
+                CharacterGroupId: null,
+                PublicMode: true,
+                Fields: [],
+                ContactsColumn: PlayerColumnMode.NameOnly,
+                GroupsColumn: ProjectRolesListVisibilityMode.None,
+                GroupsViewMode: RolesGridGroupsViewMode.Sections,
+                ShowRolesFilter: ShowRolesFilter.All));
+
+            return (characterId, created.ProjectRolesListId!);
+        });
+
+        var claimId = await factory.Services.RunAsAsync(playerId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<IClaimService>().AddClaimFromUser(
+                characterId, "Заявка", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
+        });
+        await factory.Services.RunAsAsync(masterId, sp => sp.GetRequiredService<IClaimService>().ApproveByMaster(claimId, "Принято"));
+
+        // Отображаемое имя игрока без ФИО — часть почты до «@».
+        var playerName = playerEmail.Split('@')[0];
+
+        var masterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), email, password);
+
+        var gridJson = await masterClient.GetStringAsync(
+            $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={rolesListId.ProjectRolesListId}");
+        gridJson.ShouldContain(playerName);
+
+        var listResponse = await masterClient.GetAsync($"{projectId.Value}/characters/withplayers");
+        listResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await listResponse.Content.ReadAsStringAsync()).ShouldContain(playerName);
     }
 
     [Fact]
