@@ -196,6 +196,26 @@ public class ProjectAccessServiceTest
     }
 
     [Fact]
+    public async Task GrantAccess_ToLastGranter_ForcesRightBackOn()
+    {
+        // Повторная выдача доступа действующему мастеру перезаписывает его права — как правка прав,
+        // и так же не может оставить проект без единого мастера с правом выдавать доступ.
+        var service = CreateService(mock.Master.UserId);
+
+        await service.GrantAccess(new GrantAccessRequest
+        {
+            ProjectId = ProjectId,
+            Role = new("Мастер"),
+            UserId = new UserIdentification(mock.Master.UserId),
+            Permissions = [Permission.CanManageClaims],
+        });
+
+        var acl = mock.Project.ProjectAcls.Single(a => a.UserId == mock.Master.UserId);
+        acl.CanGrantRights.ShouldBeTrue();
+        acl.CanManageClaims.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task RemoveAccess_SelfRemoval_WithoutCanGrantRights_Succeeds_AndCleansUpSubscriptions()
     {
         // mock.Master сохраняет CanGrantRights, так что «последний хранитель ключей» не пострадает

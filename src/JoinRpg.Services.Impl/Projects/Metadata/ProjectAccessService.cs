@@ -51,6 +51,7 @@ internal class ProjectAccessService(
                     acl.IsPublic = ctx.Request.IsPublic;
                 }
                 acl.SetPermissions(ctx.Request.Permissions);
+                KeepLastGranter(ctx.Project, acl);
             });
 
     public Task ChangeAccess(ChangeAccessRequest request)
@@ -68,11 +69,19 @@ internal class ProjectAccessService(
                     acl.Status = ProjectAclStatus.Active;
                 }
                 acl.SetPermissions(ctx.Request.Permissions);
-                if (ctx.Project.ProjectAcls.Where(a => a.IsActive).All(a => !a.CanGrantRights))
-                {
-                    acl.CanGrantRights = true; // последний с CanGrantRights не может снять его сам с себя
-                }
+                KeepLastGranter(ctx.Project, acl);
             });
+
+    /// <summary>
+    /// Последний с правом выдавать доступ не может его потерять: иначе в проекте некому будет назначать мастеров.
+    /// </summary>
+    private static void KeepLastGranter(Project project, ProjectAcl acl)
+    {
+        if (project.ProjectAcls.Where(a => a.IsActive).All(a => !a.CanGrantRights))
+        {
+            acl.CanGrantRights = true;
+        }
+    }
 
     public async Task RemoveAccess(ProjectIdentification projectId, UserIdentification userId, UserIdentification? newResponsibleMasterIdOrDefault)
     {
