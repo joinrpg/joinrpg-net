@@ -21,7 +21,7 @@ internal class SubscribeCalculator(
         AddUserInfoHeaderIfNotPresent(list, args.RespondingTo, SubscriptionReason.AnswerToYourComment);
         AddUserInfoHeaderIfNotPresent(list, args.Player, SubscriptionReason.Player);
 
-        AddIfPredicateAndNotAlreadyPresent(args.RespMasters.WhereNotNull().Select(id => CreateForRespMaster(projectInfo, id)), SubscriptionReason.ResponsibleMaster);
+        AddIfPredicateAndNotAlreadyPresent(args.RespMasters.WhereNotNull().Select(id => CreateForRespMaster(projectInfo, id)).WhereNotNull(), SubscriptionReason.ResponsibleMaster);
 
         var claim = await userSubscribeRepository.GetDirect(args.Claims);
         AddIfPredicateAndNotAlreadyPresent(claim, SubscriptionReason.SubscribedDirectMaster);
@@ -86,10 +86,18 @@ internal class SubscribeCalculator(
         }
     }
 
-    private static UserSubscribe CreateForRespMaster(ProjectInfo projectInfo, UserIdentification responsibleMasterUserId)
+    /// <summary>
+    /// Подписка ответственного мастера. Снятый с проекта мастер (ADR019) доступа к заявке не имеет —
+    /// ему не пишем, даже если у старой заявки он так и остался ответственным.
+    /// </summary>
+    private static UserSubscribe? CreateForRespMaster(ProjectInfo projectInfo, UserIdentification responsibleMasterUserId)
     {
+        if (projectInfo.GetActiveMasterOrDefault(responsibleMasterUserId) is not { } master)
+        {
+            return null;
+        }
         return new UserSubscribe(
-            projectInfo.Masters.Single(x => x.UserId == responsibleMasterUserId).UserInfo,
+            master.UserInfo,
             SubscriptionOptions.CreateAllSet() with { AccommodationInvitesChange = false });
     }
 }
