@@ -98,7 +98,6 @@ public class FinancesController(
 
         var viewModel = new MoneyInfoTotalViewModel(projectInfo,
             transfers,
-            uriService,
             operations,
             payments,
             currentUserAccessor,

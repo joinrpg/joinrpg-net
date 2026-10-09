@@ -1,16 +1,12 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Interfaces;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.Money;
 
 namespace JoinRpg.Web.Models;
 
 public class MoneyInfoTotalViewModel
 {
     public int ProjectId { get; }
-
-    public FinOperationListViewModel Operations { get; }
 
     public IReadOnlyCollection<MasterBalanceViewModel> Balance { get; }
 
@@ -20,15 +16,12 @@ public class MoneyInfoTotalViewModel
 
     public MoneyInfoTotalViewModel(ProjectInfo project,
         IReadOnlyCollection<MoneyTransfer> transfers,
-        IUriService urlHelper,
         IReadOnlyCollection<FinanceOperation> operations,
         PaymentTypeSummaryViewModel[] payments,
         ICurrentUserAccessor currentUserId,
         IReadOnlyCollection<UserInfo> masters)
     {
         ProjectId = project.ProjectId;
-
-        Operations = new FinOperationListViewModel(project.ProjectId, urlHelper, operations);
 
         Balance = MasterBalanceBuilder.ToMasterBalanceViewModels(masters, operations, transfers, project.ProjectId);
 
