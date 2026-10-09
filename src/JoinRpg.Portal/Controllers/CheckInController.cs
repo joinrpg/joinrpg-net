@@ -3,7 +3,6 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
@@ -22,6 +21,7 @@ public class CheckInController(
     IProjectService projectService,
     IClaimsRepository claimsRepository,
     ICharacterInfoRepository characterInfoRepository,
+    IClaimInfoRepository claimInfoRepository,
     IClaimService claimService,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
@@ -79,21 +79,20 @@ public class CheckInController(
     [HttpGet("~/{ProjectId}/claim/{ClaimId}/checkin")]
     public async Task<ActionResult> CheckIn(ClaimIdentification claimId)
     {
-        var characterInfo = await characterInfoRepository.GetCharacterInfoByClaimOrDefault(claimId);
+        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(claimId);
 
-        return characterInfo is null ? NotFound() : await ShowCheckInForm(characterInfo, claimId);
+        return claimInfo is null ? NotFound() : await ShowCheckInForm(claimInfo);
     }
 
-    private async Task<ActionResult> ShowCheckInForm(CharacterInfo characterInfo, ClaimIdentification claimId)
+    private async Task<ActionResult> ShowCheckInForm(ClaimInfo claimInfo)
     {
-        var characterId = characterInfo.Id;
+        var characterId = claimInfo.Character.Id;
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
         return View("CheckIn",
-            new CheckInClaimModel(claimId,
-            characterInfo,
+            new CheckInClaimModel(
+            claimInfo,
             await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification),
-            await userRepository.GetRequiredUserInfo(characterInfo.GetClaimById(claimId).PlayerId),
             handouts[characterId],
             claimValidator,
             currentUserAccessor
@@ -106,8 +105,8 @@ public class CheckInController(
         var claimIdentification = new ClaimIdentification(projectId, claimId);
         // Грузим заранее: нужен и для 404, и для того, чтобы показать ту же форму при ошибке
         // сохранения. Неудачная операция ничего не коммитит, поэтому снимок остаётся верным.
-        var characterInfo = await characterInfoRepository.GetCharacterInfoByClaimOrDefault(claimIdentification);
-        if (characterInfo is null)
+        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(claimIdentification);
+        if (claimInfo is null)
         {
             return NotFound();
         }
@@ -119,7 +118,7 @@ public class CheckInController(
         catch (Exception ex)
         {
             AddModelException(ex);
-            return await ShowCheckInForm(characterInfo, claimIdentification);
+            return await ShowCheckInForm(claimInfo);
         }
     }
 
