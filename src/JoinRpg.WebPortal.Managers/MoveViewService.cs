@@ -1,12 +1,17 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.ProjectCommon.ElementMoving;
 
 namespace JoinRpg.WebPortal.Managers;
 
-internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterGroupService characterGroupService, IPlotService plotService) : IMoveClient
+internal class MoveViewService(
+    IFieldSetupService fieldSetupService,
+    ICharacterGroupService characterGroupService,
+    IPlotService plotService,
+    IProjectAccessService projectAccessService) : IMoveClient
 {
     public async Task<string[]> MoveAfterAsync(string selfId, string parentId, string? moveAfterId)
     {
@@ -37,6 +42,10 @@ internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterG
                 when elementId.ProjectId == characterId.ProjectId
                     && (request.MoveAfterId is null or PlotElementIdentification)
                 => await MovePlotElementAsync(characterId, elementId, request.MoveAfterId as PlotElementIdentification),
+            { SelfId: ProjectMasterIdentification masterId, ParentId: ProjectIdentification projectId }
+                when masterId.ProjectId == projectId
+                    && (request.MoveAfterId is null or ProjectMasterIdentification)
+                => await MoveMasterAsync(projectId, masterId, request.MoveAfterId as ProjectMasterIdentification),
             _ => throw new ArgumentException(
                 $"Unsupported ID combination: selfId='{selfId}', parentId='{parentId}'"),
         };
@@ -75,6 +84,18 @@ internal class MoveViewService(IFieldSetupService fieldSetupService, ICharacterG
     {
         var sortedIds = await characterGroupService.MoveCharacterGroupAfter(parentGroupId, groupId, afterGroupId);
         return [.. sortedIds.Select(id => id.ToString())];
+    }
+
+    private async Task<string[]> MoveMasterAsync(
+        ProjectIdentification projectId,
+        ProjectMasterIdentification masterId,
+        ProjectMasterIdentification? afterId)
+    {
+        var sortedIds = await projectAccessService.MoveMasterAfter(
+            projectId,
+            new UserIdentification(masterId.UserId),
+            afterId is null ? null : new UserIdentification(afterId.UserId));
+        return [.. sortedIds.Select(userId => new ProjectMasterIdentification(projectId, userId.Value).ToString())];
     }
 
     private async Task<string[]> MovePlotElementAsync(

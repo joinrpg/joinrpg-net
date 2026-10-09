@@ -170,8 +170,8 @@ internal class ProjectAccessService(
                 acl.IsPublic = ctx.Request.IsPublic;
             });
 
-    public Task MoveMasterAfter(ProjectIdentification projectId, UserIdentification userId, UserIdentification? afterUserId)
-        => projectPropsService.ChangeProjectProperties(
+    public Task<IReadOnlyList<UserIdentification>> MoveMasterAfter(ProjectIdentification projectId, UserIdentification userId, UserIdentification? afterUserId)
+        => projectPropsService.ChangeProjectProperties<(UserIdentification UserId, UserIdentification? AfterUserId), IReadOnlyList<UserIdentification>>(
             projectId,
             Permission.CanGrantRights,
             ProjectActiveRequirement.AllowInactive,
@@ -180,21 +180,16 @@ internal class ProjectAccessService(
             {
                 // Порядок храним только по действующим: снятые в строке не нужны и выпадут при следующей перестановке.
                 var active = ctx.Project.ProjectAcls.Where(a => a.IsActive).ToList();
+                var order = VirtualOrderContainerFacade.Create(active, ctx.Project.Details.MastersOrdering);
                 // Страница могла устареть: мастера (или того, после кого ставим) уже сняли. Тогда двигать нечего.
-                if (active.SingleOrDefault(a => a.UserId == ctx.Request.UserId.Value) is not { } target)
-                {
-                    return;
-                }
                 ProjectAcl? after = null;
-                if (ctx.Request.AfterUserId is { } afterId
-                    && (after = active.SingleOrDefault(a => a.UserId == afterId.Value)) is null)
+                if (active.SingleOrDefault(a => a.UserId == ctx.Request.UserId.Value) is { } target
+                    && (ctx.Request.AfterUserId is not { } afterId
+                        || (after = active.SingleOrDefault(a => a.UserId == afterId.Value)) is not null))
                 {
-                    return;
+                    ctx.Project.Details.MastersOrdering = order.MoveAfter(target, after).GetStoredOrder();
                 }
-                ctx.Project.Details.MastersOrdering = VirtualOrderContainerFacade
-                    .Create(active, ctx.Project.Details.MastersOrdering)
-                    .MoveAfter(target, after)
-                    .GetStoredOrder();
+                return [.. order.OrderedItems.Select(a => new UserIdentification(a.UserId))];
             });
 
     public Task RegisterFormerMasters(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
