@@ -13,6 +13,13 @@
     <tr>
         <td>
             <div>@Model.Name</div>
+            @if (Model.SiblingTypeNames.Count > 0)
+            {
+                @* Комнаты у типов одной категории общие (ADR020): счётчики мест в строке — по категории. *@
+                <div class="text-muted small">
+                    Категория «@Model.RoomCategoryName», комнаты общие с: @string.Join(", ", Model.SiblingTypeNames)
+                </div>
+            }
             @if (Model.IsInfinite || !Model.IsPlayerSelectable || Model.IsAutoFilledAccommodation)
             {
                 <div style="margin-top: 0.3em;">

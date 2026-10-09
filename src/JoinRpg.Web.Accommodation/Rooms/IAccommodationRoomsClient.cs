@@ -15,6 +15,10 @@ namespace JoinRpg.Web.Accommodation.Rooms;
 /// Вместимость типа проживания, по которому куплена группа: она ограничивает всю комнату, куда
 /// группа въедет (ADR018, «Правило свободного места»).
 /// </param>
+/// <param name="TypeName">
+/// Название типа группы — только если из пула селится больше одного типа, иначе <c>null</c>:
+/// на странице единственного типа подпись была бы шумом.
+/// </param>
 /// <param name="Residents">Жильцы группы — их заявки: персонаж и игрок</param>
 /// <param name="FeeTotal">Сколько всего должна группа за участие</param>
 /// <param name="FeeToPay">Сколько группе осталось доплатить; переплата сюда не попадает — тогда ноль</param>
@@ -22,6 +26,7 @@ public record AccommodationGroupViewModel(
     AccommodationRequestIdentification GroupId,
     AccommodationTypeIdentification TypeId,
     int TypeCapacity,
+    string? TypeName,
     IReadOnlyList<ClaimLinkViewModel> Residents,
     int FeeTotal,
     int FeeToPay)
@@ -54,6 +59,9 @@ public record AccommodationRoomViewModel(
 /// <param name="TypeName">Название типа проживания — для заголовка страницы</param>
 /// <param name="TypeCapacity">Сколько человек селится в комнату по этому типу</param>
 /// <param name="RoomCapacity">Физическая вместимость комнаты пула (ADR018)</param>
+/// <param name="SiblingTypeNames">
+/// Другие типы проживания, которые селятся из тех же комнат (ADR020). Пусто — комнаты только у этого типа.
+/// </param>
 /// <param name="Rooms">Комнаты пула</param>
 /// <param name="UnassignedGroups">Группы, ещё не расселённые по комнатам</param>
 /// <param name="CanManageRooms">Право заводить, переименовывать и удалять комнаты</param>
@@ -64,6 +72,7 @@ public record RoomTypeRoomsViewModel(
     string TypeName,
     int TypeCapacity,
     int RoomCapacity,
+    IReadOnlyList<string> SiblingTypeNames,
     IReadOnlyList<AccommodationRoomViewModel> Rooms,
     IReadOnlyList<AccommodationGroupViewModel> UnassignedGroups,
     bool CanManageRooms,

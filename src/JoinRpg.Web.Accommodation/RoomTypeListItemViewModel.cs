@@ -121,6 +121,12 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
     [DisplayName("Общее количество мест")]
     public int TotalCapacity => RoomsCount * Capacity;
 
+    /// <summary>Категория комнат, из которой селится тип (ADR020)</summary>
+    public string RoomCategoryName { get; }
+
+    /// <summary>Другие типы той же категории — с ними у этого типа общие комнаты и счётчики мест</summary>
+    public IReadOnlyList<string> SiblingTypeNames { get; }
+
     /// <param name="typeInfo">Настройки типа проживания из метаданных проекта (ADR015)</param>
     /// <param name="descriptionView">
     /// Описание типа проживания, уже отрендеренное из Markdown вызывающей стороной
@@ -162,6 +168,12 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
         CanAssignRooms = projectInfo.HasMasterAccess(currentUserId, Permission.CanSetPlayersAccommodations);
 
         Occupancy = occupancy;
+
+        var settings = projectInfo.AccommodationSettings;
+        RoomCategoryName = settings.GetRoomCategoryById(typeInfo.RoomCategoryId).Name;
+        SiblingTypeNames = [.. settings.GetTypesOfCategory(typeInfo.RoomCategoryId)
+            .Where(type => type.Id != typeInfo.Id)
+            .Select(type => type.Name)];
     }
 
     // Подписи для tooltip-ов над отдельными цифрами формул в разметке (Index.cshtml, _RoomTypeDetails.cshtml)

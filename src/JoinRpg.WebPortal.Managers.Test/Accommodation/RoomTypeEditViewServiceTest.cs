@@ -50,9 +50,71 @@ public class RoomTypeEditViewServiceTest
             Description = "_Душно_",
         });
 
-        var (createdIn, request) = typeService.Created.ShouldHaveSingleItem();
+        var (createdIn, request, roomCategory) = typeService.Created.ShouldHaveSingleItem();
         createdIn.ShouldBe(projectId);
         request.ShouldBe(new AccommodationTypeRequest("Шатёр", new MarkdownString("_Душно_"), 500, 3, false));
+        // Название новой категории не задано — она получает имя типа.
+        roomCategory.ShouldBe(new NewRoomCategory("Шатёр"));
+    }
+
+    [Fact]
+    public async Task CreateRoomType_InExistingCategory_PassesIt()
+    {
+        var projectId = Mock.ProjectInfo.ProjectId;
+
+        await CreateService().CreateRoomType(projectId, new RoomTypeEditViewModel
+        {
+            Name = "Люкс на одного",
+            Capacity = 1,
+            RoomCategoryChoice = RoomCategoryChoice.Existing,
+            ExistingRoomCategoryId = 101,
+        });
+
+        typeService.Created.ShouldHaveSingleItem().RoomCategory
+            .ShouldBe(new ExistingRoomCategory(new RoomCategoryIdentification(projectId, 101)));
+    }
+
+    [Fact]
+    public async Task CreateRoomType_WithNamedNewCategory_PassesName()
+    {
+        await CreateService().CreateRoomType(Mock.ProjectInfo.ProjectId, new RoomTypeEditViewModel
+        {
+            Name = "Люкс с пятницы",
+            NewRoomCategoryName = " Люкс ",
+        });
+
+        typeService.Created.ShouldHaveSingleItem().RoomCategory.ShouldBe(new NewRoomCategory("Люкс"));
+    }
+
+    [Fact]
+    public async Task GetRoomType_ShowsCategoryWithSiblingTypes()
+    {
+        var lux = Mock.CreateAccommodationType("Люкс", capacity: 2);
+        // Сосед с тем же именем — всё равно сосед: отбор по Id, не по имени.
+        _ = Mock.CreateAccommodationType("Люкс", capacity: 1, roomCategory: lux.RoomCategory);
+        _ = Mock.CreateAccommodationType("Люкс на одного", capacity: 1, roomCategory: lux.RoomCategory);
+        Mock.ReInitProjectInfo();
+
+        var model = await CreateService().GetRoomType(new AccommodationTypeIdentification(Mock.ProjectInfo.ProjectId, lux.Id));
+
+        var category = model.RoomCategory.ShouldNotBeNull();
+        category.Name.ShouldBe("Люкс");
+        category.TypeNames.ShouldBe(["Люкс", "Люкс на одного"], ignoreOrder: true);
+        model.RoomCategories.ShouldBeEmpty("Список категорий нужен только форме создания");
+    }
+
+    [Fact]
+    public async Task GetNewRoomType_ListsProjectCategories()
+    {
+        _ = Mock.CreateAccommodationType("Палатка");
+        _ = Mock.CreateAccommodationType("Домик");
+        Mock.ReInitProjectInfo();
+
+        var model = await CreateService().GetNewRoomType(Mock.ProjectInfo.ProjectId);
+
+        model.RoomCategories.Select(c => c.Name).ShouldBe(["Домик", "Палатка"]);
+        model.RoomCategory.ShouldBeNull();
+        model.RoomCategoryChoice.ShouldBe(RoomCategoryChoice.New);
     }
 
     [Fact]
@@ -69,12 +131,15 @@ public class RoomTypeEditViewServiceTest
 
     private sealed class FakeAccommodationTypeService : IAccommodationTypeService
     {
-        public List<(ProjectIdentification ProjectId, AccommodationTypeRequest Request)> Created { get; } = [];
+        public List<(ProjectIdentification ProjectId, AccommodationTypeRequest Request, RoomCategorySelection? RoomCategory)> Created { get; } = [];
         public List<(AccommodationTypeIdentification TypeId, AccommodationTypeRequest Request)> Updated { get; } = [];
 
-        public Task<AccommodationTypeIdentification> CreateAccommodationType(ProjectIdentification projectId, AccommodationTypeRequest request)
+        public Task<AccommodationTypeIdentification> CreateAccommodationType(
+            ProjectIdentification projectId,
+            AccommodationTypeRequest request,
+            RoomCategorySelection? roomCategory = null)
         {
-            Created.Add((projectId, request));
+            Created.Add((projectId, request, roomCategory));
             return Task.FromResult(new AccommodationTypeIdentification(projectId, 1));
         }
 

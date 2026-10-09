@@ -119,11 +119,13 @@ internal static class RoomsModel
         int typeCapacity = 2,
         int typeId = 1,
         int feeTotal = 0,
-        int feeToPay = 0)
+        int feeToPay = 0,
+        string? typeName = null)
         => new(
             new AccommodationRequestIdentification(ProjectId, id),
             new AccommodationTypeIdentification(ProjectId, typeId),
             typeCapacity,
+            typeName,
             [.. Enumerable.Range(0, persons)
                 .Select(i => new ClaimLinkViewModel(
                     new ClaimIdentification(ProjectId, (id * 100) + i),
@@ -142,13 +144,15 @@ internal static class RoomsModel
         IReadOnlyList<AccommodationGroupViewModel>? unassigned = null,
         bool canManageRooms = true,
         bool canAssignRooms = true,
-        int capacity = 2)
+        int capacity = 2,
+        IReadOnlyList<string>? siblingTypeNames = null)
         => new(
             TypeId,
             "Проект",
             "Двушка",
             TypeCapacity: capacity,
             RoomCapacity: capacity,
+            siblingTypeNames ?? [],
             rooms ?? [],
             unassigned ?? [],
             canManageRooms,

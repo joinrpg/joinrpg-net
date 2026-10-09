@@ -41,7 +41,9 @@ internal static class RoomTypeRoomsViewModelBuilder
                 // Группы комнаты — в том же порядке, что в плане, как и раньше.
                 [.. plan.Groups.Where(g => g.RoomId == room.Id).Select(g => groups[g.Id])]))
             .ToList();
-        rooms.Sort((x, y) => CompareRooms(x, y, plan.RoomCapacity));
+        // Полная — по правилу свободного места: «Люкс на одного» заполняет двухместную комнату (ADR018).
+        var fullRooms = plan.Rooms.Where(room => room.IsOccupied && plan.IsFull(room.Id)).Select(room => room.Id).ToHashSet();
+        rooms.Sort((x, y) => CompareRooms(x, y, fullRooms));
 
         return new RoomTypeRoomsViewModel(
             typeId,
@@ -49,6 +51,7 @@ internal static class RoomTypeRoomsViewModelBuilder
             type.Name,
             type.Capacity,
             plan.RoomCapacity,
+            [.. plan.AccommodationTypes.Where(t => t.Id != typeId).Select(t => t.Name)],
             rooms,
             unassigned,
             CanManageRooms: projectInfo.HasMasterAccess(currentUserId, Permission.CanManageAccommodation),
@@ -62,10 +65,13 @@ internal static class RoomTypeRoomsViewModelBuilder
     {
         var members = group.Subjects.Select(claimId => residents[claimId]).ToList();
         var feeToPay = members.Sum(m => m.FeeDue);
+        var type = plan.GetAccommodationType(group.AccommodationTypeId);
         return new AccommodationGroupViewModel(
             group.Id,
             group.AccommodationTypeId,
-            plan.GetAccommodationType(group.AccommodationTypeId).Capacity,
+            type.Capacity,
+            // Подпись типа нужна, только когда комнаты общие у нескольких типов (ADR020).
+            plan.AccommodationTypes.Count > 1 ? type.Name : null,
             [.. members.Select(m => m.Resident)],
             FeeTotal: members.Sum(m => m.FeeTotal),
             // Переплата долгом не считается.
@@ -92,28 +98,35 @@ internal static class RoomTypeRoomsViewModelBuilder
     /// <summary>
     /// Комнаты: сначала самые населённые, заполненные — в конец; при равной занятости — по номеру.
     /// </summary>
-    private static int CompareRooms(AccommodationRoomViewModel x, AccommodationRoomViewModel y, int capacity)
+    private static int CompareRooms(
+        AccommodationRoomViewModel x,
+        AccommodationRoomViewModel y,
+        HashSet<AccommodationRoomIdentification> fullRooms)
     {
+        // Сначала полнота: в общем пуле одинаково занятые комнаты бывают и полной, и нет (ADR018).
+        var xFull = fullRooms.Contains(x.RoomId);
+        var yFull = fullRooms.Contains(y.RoomId);
+        if (xFull != yFull)
+        {
+            return xFull ? 1 : -1;
+        }
+
         var xOccupancy = x.Groups.Sum(g => g.Persons);
         var yOccupancy = y.Groups.Sum(g => g.Persons);
         if (xOccupancy == yOccupancy)
         {
-            if (int.TryParse(x.Name, out var xn) && int.TryParse(y.Name, out var yn))
+            // Числовые номера — по числу и раньше прочих: смешивать числовое и строковое сравнение
+            // нельзя, порядок «2 < 10 < 1а < 2» нетранзитивен.
+            var xIsNumber = int.TryParse(x.Name, out var xn);
+            var yIsNumber = int.TryParse(y.Name, out var yn);
+            if (xIsNumber != yIsNumber)
             {
-                return xn - yn;
+                return xIsNumber ? -1 : 1;
             }
 
-            return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
-        }
-
-        if (xOccupancy == capacity)
-        {
-            return 1;
-        }
-
-        if (yOccupancy == capacity)
-        {
-            return -1;
+            return xIsNumber
+                ? xn.CompareTo(yn)
+                : string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
         }
 
         return yOccupancy - xOccupancy;

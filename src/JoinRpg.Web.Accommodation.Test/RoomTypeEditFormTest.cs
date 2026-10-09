@@ -54,7 +54,9 @@ public class RoomTypeEditFormTest : BunitContext
 
         // У строки кнопок подпись пустая — ей и ссылаться не на что.
         var labels = cut.FindAll("label.control-label").Where(label => label.TextContent.Trim().Length > 0).ToList();
-        labels.Count.ShouldBe(5);
+        // Пять полей типа плюс «Категория комнат» (ADR020): id строки забирает поле имени новой категории —
+        // единственное поле строки из Common, радиокнопки и список его не забирают.
+        labels.Count.ShouldBe(6);
         foreach (var label in labels)
         {
             var target = label.GetAttribute("for");
@@ -84,6 +86,62 @@ public class RoomTypeEditFormTest : BunitContext
         created.Model.Capacity.ShouldBe(RoomTypeEditViewModel.DefaultCapacity);
         created.Model.Description.ShouldBe("**Тепло**");
         Services.GetRequiredService<BunitNavigationManager>().Uri.ShouldEndWith("/123/rooms");
+    }
+
+    /// <summary>Тип можно завести в существующей категории — тогда он делит её комнаты (ADR020).</summary>
+    [Fact]
+    public void CreateForm_InExistingCategory_PassesIt()
+    {
+        client.Categories = [new RoomCategoryOptionViewModel(101, "Люкс", ["Люкс"])];
+        var cut = RenderCreate();
+
+        cut.Find("input[type=text]").Change("Люкс на одного");
+        cut.Find("#roomtype-category-existing").Change("Existing");
+        cut.Find("#roomtype-category-id").Change("101");
+        cut.Find("form").Submit();
+
+        var created = client.Created.ShouldHaveSingleItem().Model;
+        created.RoomCategoryChoice.ShouldBe(RoomCategoryChoice.Existing);
+        created.ExistingRoomCategoryId.ShouldBe(101);
+    }
+
+    [Fact]
+    public void CreateForm_ExistingCategoryNotChosen_ShowsRussianError()
+    {
+        client.Categories = [new RoomCategoryOptionViewModel(101, "Люкс", ["Люкс"])];
+        var cut = RenderCreate();
+
+        cut.Find("input[type=text]").Change("Люкс на одного");
+        cut.Find("#roomtype-category-existing").Change("Existing");
+        cut.Find("form").Submit();
+
+        client.Created.ShouldBeEmpty();
+        cut.Markup.ShouldContain("Выберите категорию комнат или заведите новую");
+    }
+
+    [Fact]
+    public void CreateForm_WithoutCategories_OffersOnlyNewOne()
+    {
+        var cut = RenderCreate();
+
+        cut.FindAll("#roomtype-category-existing").ShouldBeEmpty();
+        cut.Find("#roomtype-category-new").HasAttribute("checked").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EditForm_ShowsCategoryReadOnly()
+    {
+        client.Existing = new RoomTypeEditViewModel
+        {
+            Name = "Люкс",
+            Capacity = 2,
+            RoomCategory = new RoomCategoryOptionViewModel(101, "Корпус А", ["Люкс на одного"]),
+        };
+
+        var cut = RenderEdit();
+
+        cut.FindAll("#roomtype-category-new").ShouldBeEmpty("Категорию существующего типа не меняют");
+        cut.Find("p.form-control-static").TextContent.Trim().ShouldBe("Корпус А (комнаты общие с: Люкс на одного)");
     }
 
     [Fact]
@@ -151,6 +209,12 @@ public class RoomTypeEditFormTest : BunitContext
             Loaded.Add(roomTypeId);
             return Task.FromResult(Existing);
         }
+
+        /// <summary>Категории проекта для пустой формы</summary>
+        public IReadOnlyList<RoomCategoryOptionViewModel> Categories { get; set; } = [];
+
+        public Task<RoomTypeEditViewModel> GetNewRoomType(ProjectIdentification projectId)
+            => Task.FromResult(new RoomTypeEditViewModel { RoomCategories = Categories });
 
         public Task CreateRoomType(ProjectIdentification projectId, RoomTypeEditViewModel model)
         {

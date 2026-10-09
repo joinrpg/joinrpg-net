@@ -47,6 +47,9 @@ public class RoomTypeEditControllerTest
         public Task<RoomTypeEditViewModel> GetRoomType(AccommodationTypeIdentification roomTypeId)
             => Task.FromResult(new RoomTypeEditViewModel());
 
+        public Task<RoomTypeEditViewModel> GetNewRoomType(ProjectIdentification projectId)
+            => Task.FromResult(new RoomTypeEditViewModel());
+
         public Task CreateRoomType(ProjectIdentification projectId, RoomTypeEditViewModel model)
         {
             CreatedIn = projectId;

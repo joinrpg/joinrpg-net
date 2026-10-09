@@ -14,6 +14,10 @@
                     data-action="kick" />
     }
     <AccommodationPaymentBadge Group="Group" />
+    @if (Group.TypeName is { } typeName)
+    {
+        <span class="label label-default acc-type">@typeName</span>
+    }
     <span class="acc-request">
         @foreach (var resident in Group.Residents)
         {

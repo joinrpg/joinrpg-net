@@ -17,13 +17,25 @@ internal class RoomTypeEditViewService(
     public async Task<RoomTypeEditViewModel> GetRoomType(AccommodationTypeIdentification roomTypeId)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(roomTypeId.ProjectId);
-        return RoomTypeEditViewModelBuilder.Build(projectInfo.AccommodationSettings.GetTypeById(roomTypeId));
+        return RoomTypeEditViewModelBuilder.Build(
+            projectInfo.AccommodationSettings.GetTypeById(roomTypeId),
+            projectInfo.AccommodationSettings);
+    }
+
+    public async Task<RoomTypeEditViewModel> GetNewRoomType(ProjectIdentification projectId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return new RoomTypeEditViewModel
+        {
+            RoomCategories = RoomTypeEditViewModelBuilder.BuildCategories(projectInfo.AccommodationSettings),
+        };
     }
 
     public async Task CreateRoomType(ProjectIdentification projectId, RoomTypeEditViewModel model)
         => _ = await accommodationTypeService.CreateAccommodationType(
             projectId,
-            RoomTypeEditViewModelBuilder.ToRequest(model));
+            RoomTypeEditViewModelBuilder.ToRequest(model),
+            RoomTypeEditViewModelBuilder.ToRoomCategorySelection(projectId, model));
 
     public Task UpdateRoomType(AccommodationTypeIdentification roomTypeId, RoomTypeEditViewModel model)
         => accommodationTypeService.UpdateAccommodationType(
@@ -36,14 +48,32 @@ internal class RoomTypeEditViewService(
 /// </summary>
 internal static class RoomTypeEditViewModelBuilder
 {
-    public static RoomTypeEditViewModel Build(AccommodationTypeInfo typeInfo) => new()
+    public static RoomTypeEditViewModel Build(AccommodationTypeInfo typeInfo, ProjectAccommodationSettings settings)
     {
-        Name = typeInfo.Name,
-        Cost = typeInfo.Cost,
-        Capacity = typeInfo.Capacity,
-        IsPlayerSelectable = typeInfo.IsPlayerSelectable,
-        Description = typeInfo.Description.Value,
-    };
+        var category = settings.GetRoomCategoryById(typeInfo.RoomCategoryId);
+        return new()
+        {
+            Name = typeInfo.Name,
+            Cost = typeInfo.Cost,
+            Capacity = typeInfo.Capacity,
+            IsPlayerSelectable = typeInfo.IsPlayerSelectable,
+            Description = typeInfo.Description.Value,
+            // Соседей отбираем по Id, а не по имени: имена типов не уникальны, а поле имени в форме
+            // меняется, пока мастер печатает.
+            RoomCategory = new RoomCategoryOptionViewModel(
+                category.Id.RoomCategoryId,
+                category.Name,
+                [.. settings.GetTypesOfCategory(category.Id).Where(type => type.Id != typeInfo.Id).Select(type => type.Name)]),
+        };
+    }
+
+    public static IReadOnlyList<RoomCategoryOptionViewModel> BuildCategories(ProjectAccommodationSettings settings)
+        => [.. settings.RoomCategories
+            .OrderBy(category => category.Name, StringComparer.CurrentCultureIgnoreCase)
+            .Select(category => new RoomCategoryOptionViewModel(
+                category.Id.RoomCategoryId,
+                category.Name,
+                [.. settings.GetTypesOfCategory(category.Id).Select(type => type.Name)]))];
 
     public static AccommodationTypeRequest ToRequest(RoomTypeEditViewModel model)
         => new(
@@ -52,4 +82,12 @@ internal static class RoomTypeEditViewModelBuilder
             model.Cost,
             model.Capacity,
             model.IsPlayerSelectable);
+
+    /// <summary>
+    /// Пустое название новой категории — категория получит имя типа.
+    /// </summary>
+    public static RoomCategorySelection ToRoomCategorySelection(ProjectIdentification projectId, RoomTypeEditViewModel model)
+        => model.RoomCategoryChoice == RoomCategoryChoice.Existing && model.ExistingRoomCategoryId is int categoryId
+            ? new ExistingRoomCategory(new RoomCategoryIdentification(projectId, categoryId))
+            : new NewRoomCategory(string.IsNullOrWhiteSpace(model.NewRoomCategoryName) ? model.Name : model.NewRoomCategoryName.Trim());
 }

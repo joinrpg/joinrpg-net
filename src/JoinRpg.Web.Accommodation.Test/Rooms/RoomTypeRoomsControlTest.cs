@@ -359,6 +359,21 @@ public class RoomTypeRoomsControlTest : BunitContext
         cut.Find(".rooms-message").TextContent.ShouldBeEmpty();
     }
 
+    [Fact]
+    public void SharedPool_ShowsSiblingsAndTypeLabels()
+    {
+        var cut = RenderControl(RoomsModel.Create(
+            rooms: [RoomsModel.Room(1, RoomsModel.Group(6, persons: 1, typeCapacity: 1, typeId: 2, typeName: "Люкс на одного"))],
+            unassigned: [RoomsModel.Group(5, persons: 1, typeName: "Двушка")],
+            siblingTypeNames: ["Люкс на одного"]));
+
+        cut.Find(".rooms-shared-pool").TextContent.ShouldContain("Комнаты общие с типами: Люкс на одного");
+        RoomRow(cut, 1).QuerySelector(".acc-type")!.TextContent.ShouldBe("Люкс на одного");
+        cut.Find(".rooms-unassigned .acc-type").TextContent.ShouldBe("Двушка");
+        // Жилец «на одного» занял двухместную комнату целиком (ADR018).
+        Occupancy(cut, 1).ShouldBe("1 / 1");
+    }
+
     private sealed class FakeUserUriLocator : IUriLocator<UserLinkViewModel>
     {
         public Uri GetUri(UserLinkViewModel target) => new($"https://example.com/user/{target.UserId?.Value}");

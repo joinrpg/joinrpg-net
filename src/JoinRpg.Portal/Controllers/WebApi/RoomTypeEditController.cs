@@ -22,6 +22,11 @@ public class RoomTypeEditController(IRoomTypeEditClient client) : ControllerBase
         [FromQuery] int roomTypeId)
         => await client.GetRoomType(new AccommodationTypeIdentification(projectId, roomTypeId));
 
+    [HttpGet]
+    [RequireMaster(Permission.CanManageAccommodation)]
+    public async Task<ActionResult<RoomTypeEditViewModel>> New([FromQuery] ProjectIdentification projectId)
+        => await client.GetNewRoomType(projectId);
+
     [HttpPost]
     [RequireMaster(Permission.CanManageAccommodation)]
     public async Task<ActionResult> Create(

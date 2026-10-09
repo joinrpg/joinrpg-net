@@ -3,6 +3,14 @@
 @inject ILogger<RoomTypeRoomsControl> Logger
 
 <div class="rooms-control">
+    @if (Model.SiblingTypeNames.Count > 0)
+    {
+        <p class="text-muted rooms-shared-pool" style="margin-top: 1em;">
+            Комнаты общие с типами: @string.Join(", ", Model.SiblingTypeNames). Здесь видны все комнаты
+            и все их жильцы; «Заселить всех» расселяет нерасселённых всех этих типов, а «Выселить всех»
+            выселяет только этот тип.
+        </p>
+    }
     <div style="margin-top: 1em;">
         <JoinButtonGroup>
             @if (Model.CanManageRooms)
@@ -46,7 +54,7 @@
             <ItemTemplate>
                 <tr @key="room.RoomId" data-room-id="@room.RoomId.RoomId">
                     <td class="rooms-room-name">@room.Name</td>
-                    <td class="rooms-room-occupancy">@($"{room.Occupancy} / {board.RoomCapacity}")</td>
+                    <td class="rooms-room-occupancy">@($"{room.Occupancy} / {board.GetEffectiveCapacity(room)}")</td>
                     <td>
                         @foreach (var group in room.Groups)
                         {
