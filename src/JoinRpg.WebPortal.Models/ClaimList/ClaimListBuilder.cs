@@ -47,8 +47,12 @@ public static class ClaimListBuilder
     /// читала паспорт и адрес прямо из <c>claim.Player.Extra</c>, то есть по ленивой навигации
     /// EF-сущности на каждую строку.
     /// </param>
+    /// <param name="roomName">
+    /// Комната группы заявки из плана поселения (ADR022), или <c>null</c>, если не расселена. Цепочка
+    /// навигаций <c>AccommodationRequest.Accommodation</c> догружала бы комнату на каждую строку.
+    /// </param>
     internal static ClaimListItemForExportViewModel BuildItemForExport(
-        Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo, UserInfo playerInfo)
+        Claim claim, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo, UserInfo playerInfo, string? roomName)
     {
         var accessArguments = AccessArgumentsFactory.Create(claim, currentUserId, projectInfo);
         (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claim, accessArguments);
@@ -80,7 +84,7 @@ public static class ClaimListBuilder
             new UserLinkViewModel(lastModifiedBy),
             claim.GetId(),
             claim.GetAccommodationType(projectInfo)?.Name,
-            claim.AccommodationRequest?.Accommodation?.Name,
+            roomName,
             claim.PreferentialFeeUser,
             PassportData,
             RegistrationAddress,

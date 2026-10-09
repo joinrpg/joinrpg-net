@@ -132,10 +132,11 @@ public class ClaimController(
 
         var characterInfo = await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId());
 
-        // Панель рисуется только у утверждённой заявки (Edit.cshtml) — у остальных план и соседей
-        // не грузим.
+        // Модель строится при любом статусе и даже при выключенном поселении, если тип выбран:
+        // панель рисуется только у утверждённой заявки (Edit.cshtml), но тип и комната из неё нужны
+        // и строке взноса за проживание, которая от флага поселения не зависит.
         var claimInfo = characterInfo.Claims.Single(c => c.ClaimId == claim.GetId());
-        var accommodationModel = projectInfo.AccommodationSettings.Enabled && claimInfo.IsApproved
+        var accommodationModel = projectInfo.AccommodationSettings.Enabled || claimInfo.AccommodationTypeId is not null
             ? await ShowAccommodationModel(claimInfo, projectInfo)
             : null;
 
@@ -178,7 +179,8 @@ public class ClaimController(
 
         var plan = await roomCategoryPlanRepository.GetPlanForTypeOrDefault(typeId)
             ?? throw new AccommodationTypeNotFoundException(typeId);
-        var neighbourIds = plan.GetNeighbours(claim.ClaimId);
+        // Соседи нужны только панели, а она рисуется у утверждённой заявки.
+        IReadOnlyCollection<ClaimIdentification> neighbourIds = claim.IsApproved ? plan.GetNeighbours(claim.ClaimId) : [];
         var neighbours = neighbourIds.Count == 0
             ? []
             : (await claimsRepository.GetClaimHeadersWithPlayer(neighbourIds)).Select(header => header.Player).ToArray();
