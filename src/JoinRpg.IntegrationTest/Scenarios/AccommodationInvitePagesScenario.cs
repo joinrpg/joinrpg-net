@@ -27,15 +27,15 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// ошибка в дереве выражений прошла бы все юнит-тесты, а упала бы в бою:
 /// <list type="bullet">
 /// <item><description>
-/// <c>CharacterAggregateWriteRepository.AccommodationGroupQuery</c> — в нём
-/// <c>Include(request =&gt; request.Accommodation!.Inhabitants.Select(group =&gt; group.Subjects))</c>,
-/// то есть ссылочная навигация → коллекция → коллекция. Такой <c>Include</c> EF6 проверяет только
-/// в рантайме;
+/// <c>CharacterAggregateWriteRepository.ClaimQuery</c> в роли загрузчика стороны приглашения:
+/// <c>LoadOtherClaim</c> отдаёт заявку вместе с трекаемой группой, по ним строится ссылка на группу
+/// (<c>LoadOtherClaimAccommodation</c>), и в эту же группу при приёме переезжают внешним ключом.
+/// Заявки, переезжающие вместе с принимающим, берутся из состава его группы, загруженного
+/// <c>Include(c =&gt; c.AccommodationRequest!.Subjects)</c>. И <c>LoadInvite</c>;
 /// </description></item>
 /// <item><description>
-/// три загрузчика поверх этого запроса: <c>LoadAccommodationGroupForClaim</c> (группа приглашающего
-/// при приёме и группа приглашаемой заявки), <c>LoadAccommodationGroup</c> (приглашение целой
-/// группы) и <c>LoadInvite</c>;
+/// решения по снимкам (ADR022 §4): план поселения внутри мутации
+/// (<c>IAggregateMutationScope.LoadRoomCategoryPlan</c>);
 /// </description></item>
 /// <item><description>
 /// <c>AccommodationInviteRepositoryImpl.GetInviteParticipants</c> — проекция в анонимный тип с
@@ -46,10 +46,9 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// <c>IClaimsRepository.GetApprovedClaimHeaders</c> и <c>GetApprovedClaimHeadersWithoutAccommodation</c>;
 /// </description></item>
 /// <item><description>
-/// ветка расчёта свободного места <b>по комнате</b>
-/// (<c>AccommodationExtensions.GetRoomFreeSpace(request, ProjectInfo)</c> при заполненном
-/// <c>Accommodation</c>) — единственный путь, который читает жильцов комнаты, то есть
-/// единственный, где вложенный <c>Include</c> выше вообще обязан был сработать.
+/// ветка расчёта свободного места <b>по комнате</b> (<c>RoomCategoryPlan.GetFreeSpaceForGroup</c>
+/// у расселённой группы) — при приёме, когда приглашающий уже заселён; жильцов комнаты план читает
+/// своей проекцией, без <c>Include</c>.
 /// </description></item>
 /// </list>
 /// Сид тут свой, не смоучный: смоук один на все свои сценарии и только читает, а приглашения
@@ -76,9 +75,9 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// </summary>
     /// <remarks>
     /// Сначала приглашается заявка, у которой тип проживания уже выбран: в списке целей такая
-    /// приходит заявкой на проживание (группой из одного человека), и создание идёт через
-    /// <c>LoadAccommodationGroup</c>. Потом — заявка вообще без типа проживания: это цель-заявка, и
-    /// у неё работает <c>LoadAccommodationGroupForClaim</c>. Результат наблюдается там же, где его
+    /// приходит заявкой на проживание (группой из одного человека), и создание находит её в плане
+    /// поселения приглашающего. Потом — заявка вообще без типа проживания: это цель-заявка, и у неё
+    /// работает ссылка чужой заявки на группу (<c>LoadOtherClaimAccommodation</c>). Результат наблюдается там же, где его
     /// видит игрок: у приглашающего уменьшается свободное место, а переехавший перестаёт быть
     /// доступной целью.
     /// </remarks>
@@ -179,7 +178,7 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// Приглашается не заявка, а сложившаяся группа соседей целиком.
     /// </summary>
     /// <remarks>
-    /// Это путь <c>LoadAccommodationGroup</c>: цель приглашения — заявка на проживание, в которой
+    /// Цель приглашения — заявка на проживание, в которой
     /// уже двое, и приглашение уходит каждому её участнику. Проверяется и то, чего нет у
     /// приглашения одной заявки: после приёма одним участником второе приглашение не остаётся
     /// висеть неотвеченным — его закрывает разбор приглашений переехавших.
@@ -243,9 +242,8 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// <remarks>
     /// Порядок шагов вынужденный: приглашать, когда кто-то расселён, запрещено
     /// (<c>EnsureCanInvite</c>), поэтому приглашение создаётся до заселения, а принимается уже
-    /// после. Только в этот момент <c>GetRoomFreeSpace(request, ProjectInfo)</c> уходит в ветку
-    /// комнаты и читает её жильцов — то есть только здесь работает вложенный
-    /// <c>Include(... Inhabitants.Select(group =&gt; group.Subjects))</c>. Результат виден на
+    /// после. Только в этот момент <c>RoomCategoryPlan.GetFreeSpaceForGroup</c> уходит в ветку
+    /// комнаты и считает место по её жильцам из плана поселения. Результат виден на
     /// странице комнат: приглашённый въехал к приглашающему.
     /// </remarks>
     [Fact]

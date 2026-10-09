@@ -289,6 +289,75 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         notificationService.Invites.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Приглашаемая группа другого типа проживания — отказ именно про тип. Группа другого типа
+    /// лежит в другом плане поселения (ADR022 §3), и искать её в плане приглашающего значило бы
+    /// получить «группа не найдена» вместо понятной причины.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_ToGroupOfOtherType_ThrowsAboutType()
+    {
+        var otherType = mock.CreateAccommodationType("Шатёр", capacity: 4);
+        mock.ReInitProjectInfo();
+
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var group = mock.CreateAccommodationRequest(otherType, CreateClaim("Сосед1"), CreateClaim("Сосед2"));
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(sender),
+                AccommodationGroupIdentification.From(RequestId(group))));
+
+        exception.Message.ShouldContain("такой же тип проживания");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// У приглашающего нет типа, а цель — группа. Плана приглашающего нет, поэтому группа цели
+    /// грузится по своему типу отдельно, — и отказ всё равно про отсутствие типа у приглашающего,
+    /// а не про саму группу.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_ToGroup_BySenderWithoutAccommodationType_ThrowsAboutMissingType()
+    {
+        var sender = CreateClaim("Приглашающий без типа проживания");
+        var group = mock.CreateAccommodationRequest(accommodationType, CreateClaim("Сосед1"), CreateClaim("Сосед2"));
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(group),
+                AccommodationGroupIdentification.From(RequestId(group))));
+
+        exception.Message.ShouldContain("не выбран тип проживания");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <inheritdoc cref="CreateInvite_ToGroupOfOtherType_ThrowsAboutType"/>
+    [Fact]
+    public async Task CreateInvite_ToClaimOfOtherType_ThrowsAboutType()
+    {
+        var otherType = mock.CreateAccommodationType("Шатёр", capacity: 4);
+        mock.ReInitProjectInfo();
+
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        _ = mock.CreateAccommodationRequest(otherType, receiver);
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(sender),
+                AccommodationGroupIdentification.From(receiver.GetId())));
+
+        exception.Message.ShouldContain("такой же тип проживания");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
     #endregion
 
     #region AcceptAccommodationInvite
@@ -308,8 +377,8 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
 
         await CreateService().AcceptAccommodationInvite(InviteId(invite));
 
-        sender.AccommodationRequest!.Subjects
-            .Select(claim => claim.ClaimId)
+        // Состав группы — по внешнему ключу заявок (ADR022 §4), а не по коллекции Subjects.
+        MembersOf(sender.AccommodationRequest!)
             .ShouldBe([sender.ClaimId, receiver.ClaimId, neighbour.ClaimId], ignoreOrder: true);
 
         // Обе стороны связи проставлены всем переезжающим, а не только принявшей заявке: до
@@ -319,6 +388,32 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             moved.AccommodationRequest.ShouldBe(sender.AccommodationRequest);
             moved.AccommodationRequest_Id.ShouldBe(sender.AccommodationRequest!.Id);
         }
+    }
+
+    /// <summary>
+    /// Группа принимающего другого типа проживания: приём тип не сверяет, и вся группа переезжает
+    /// к приглашающему. Фиксирует прежнее поведение — приглашение могло быть создано, пока типы
+    /// совпадали, а группа принимающего могла лежать в другом плане поселения.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_ReceiverGroupOfOtherType_MovesWithoutTypeCheck()
+    {
+        var otherType = mock.CreateAccommodationType("Шатёр", capacity: 4);
+        mock.ReInitProjectInfo();
+
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var neighbour = CreateClaim("Сосед приглашаемого");
+        var receiverGroup = mock.CreateAccommodationRequest(otherType, receiver, neighbour);
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
+
+        MembersOf(sender.AccommodationRequest!)
+            .ShouldBe([sender.ClaimId, receiver.ClaimId, neighbour.ClaimId], ignoreOrder: true);
+        mock.AccommodationRequests.ShouldNotContain(receiverGroup);
+        invite.IsAccepted.ShouldBe(InviteState.Accepted);
+        SaveChangesCallCount.ShouldBe(1);
     }
 
     /// <summary>
@@ -422,9 +517,8 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
         exception.Message.ShouldContain("не хватает мест");
         invite.IsAccepted.ShouldBe(InviteState.Unanswered);
         invite.ResolveDescription.ShouldBe(ResolveDescription.Unspecified);
-        senderRequest.Subjects.Select(claim => claim.ClaimId)
-            .ShouldBe([sender.ClaimId, senderNeighbour.ClaimId], ignoreOrder: true);
-        receiverRequest.Subjects.ShouldHaveSingleItem().ShouldBe(receiver);
+        MembersOf(senderRequest).ShouldBe([sender.ClaimId, senderNeighbour.ClaimId], ignoreOrder: true);
+        MembersOf(receiverRequest).ShouldHaveSingleItem().ShouldBe(receiver.ClaimId);
         mock.AccommodationRequests.ShouldContain(receiverRequest);
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
         notificationService.Invites.ShouldBeEmpty();
@@ -541,8 +635,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
 
         receiver.AccommodationRequest.ShouldBe(senderGroup);
         senderGroup.Accommodation.ShouldBe(room);
-        room.GetAllInhabitants().Select(claim => claim.ClaimId)
-            .ShouldBe([sender.ClaimId, receiver.ClaimId], ignoreOrder: true);
+        MembersOf(senderGroup).ShouldBe([sender.ClaimId, receiver.ClaimId], ignoreOrder: true);
         SaveChangesCallCount.ShouldBe(1);
     }
 
@@ -650,8 +743,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
 
         exception.Message.ShouldContain("уже живёт вместе");
         mock.AccommodationRequests.ShouldContain(commonGroup);
-        commonGroup.Subjects.Select(claim => claim.ClaimId)
-            .ShouldBe([first.ClaimId, second.ClaimId], ignoreOrder: true);
+        MembersOf(commonGroup).ShouldBe([first.ClaimId, second.ClaimId], ignoreOrder: true);
         SaveChangesCallCount.ShouldBe(0);
     }
 
@@ -838,6 +930,12 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     #endregion
+
+    /// <summary>Состав группы по внешнему ключу заявок — так его меняет сервис (ADR022 §4).</summary>
+    private IReadOnlyCollection<int> MembersOf(AccommodationRequest group)
+        => [.. mock.Project.Claims
+            .Where(claim => claim.AccommodationRequest_Id == group.Id)
+            .Select(claim => claim.ClaimId)];
 
     private AccommodationInvite CreateInviteBetweenNewClaims()
         => mock.CreateAccommodationInvite(

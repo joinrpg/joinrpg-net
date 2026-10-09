@@ -104,8 +104,9 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
             .Include(c => c.Player.Claims)
             .Include(c => c.CommentDiscussion.Comments)
             .Include(c => c.AccommodationRequest)
-            // Состав группы проживающих — иначе и приглашение, и выход из группы читали бы
-            // Subjects ленивым запросом из середины мутации.
+            // Группа проживающих с составом — «ручки» для записи (ADR022 §4): приём приглашения
+            // переселяет заявки из состава трекаемой группы принимающего, не загружая каждую
+            // отдельно.
             .Include(c => c.AccommodationRequest!.Subjects)
             .Include(c => c.FinanceOperations);
 
@@ -223,15 +224,12 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         }
 
         /// <summary>
-        /// Состав группы грузится явно: по нему считается, хватит ли в номере мест. Вместе с ним —
-        /// жильцы комнаты, если группа уже расселена: у расселённой группы свободное место считается
-        /// по комнате, а не по типу проживания. Вместимость при этом берётся из метаданных (ADR015),
-        /// поэтому навигация на тип проживания не нужна ни у группы, ни у комнаты.
+        /// Строка группы без связей. Решения о составе и свободном месте принимаются по плану
+        /// поселения (ADR022 §4), а от трекаемой группы приглашению нужны только её существование
+        /// и тип — поэтому ни состав, ни жильцы комнаты здесь не грузятся.
         /// </summary>
         private IQueryable<AccommodationRequest> AccommodationGroupQuery(int projectId)
             => ctx.Set<AccommodationRequest>()
-                .Include(request => request.Subjects)
-                .Include(request => request.Accommodation!.Inhabitants.Select(group => group.Subjects))
                 .Where(request => request.ProjectId == projectId);
     }
 

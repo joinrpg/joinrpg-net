@@ -77,22 +77,31 @@ internal abstract record ClaimMutationContext(
         => Scope.LoadInvite(inviteId);
 
     /// <summary>
-    /// Группа проживающих другой заявки вместе с составом, либо <c>null</c>, если та ещё не выбрала
-    /// тип проживания. Своя группа у заявки уже на руках — <c>Claim.AccommodationRequest</c>.
+    /// Трекаемая группа проживающих другой заявки вместе с составом, либо <c>null</c>, если та ещё
+    /// не выбрала тип проживания.
     /// </summary>
+    /// <remarks>
+    /// Решения о группах по ней не принимаются — для этого есть снимки (ADR022 §4):
+    /// <see cref="LoadOtherClaimAccommodation"/> и план поселения. Потребителей не осталось, загрузчик
+    /// удаляется следующим шагом ADR022.
+    /// </remarks>
     public Task<AccommodationRequest?> LoadAccommodationGroupForClaim(ClaimIdentification claimId)
         => Scope.LoadAccommodationGroupForClaim(claimId);
 
     /// <summary>
-    /// Группа проживающих по идентификатору вместе с составом, либо <c>null</c>, если такой группы
-    /// в проекте нет.
+    /// Трекаемая группа проживающих по идентификатору, либо <c>null</c>, если такой группы в проекте
+    /// нет.
     /// </summary>
+    /// <remarks>
+    /// Не источник решений (ADR022 §4): приглашение берёт отсюда только существование и тип группы,
+    /// которой нет в плане приглашающего, а решает по плану её типа.
+    /// </remarks>
     public Task<AccommodationRequest?> LoadAccommodationGroup(AccommodationRequestIdentification groupId)
         => Scope.LoadAccommodationGroup(groupId);
 
     /// <summary>
     /// План поселения категории, из которой селится тип проживания, — снимок ДО изменения на
-    /// <see cref="CharacterMutationContext.ProjectInfo"/> этой мутации. По нему, а не по навигациям
+    /// <c>ProjectInfo</c> этой мутации. По нему, а не по навигациям
     /// трекаемых сущностей, принимаются решения о группах (ADR022 §4).
     /// </summary>
     /// <exception cref="AccommodationTypeNotFoundException">Типа нет в этом проекте.</exception>
@@ -146,6 +155,48 @@ internal abstract record ClaimMutationContext(
     /// <exception cref="JoinRpgEntityNotFoundException">Заявки в этом проекте нет.</exception>
     public Task<Claim> LoadOtherClaim(ClaimIdentification claimId)
         => Scope.LoadOtherClaim(claimId);
+
+    /// <summary>
+    /// Другая заявка того же проекта — трекаемая сущность вместе с её ссылкой на группу
+    /// проживающих: тип и группа ровно в том виде, в каком их несёт
+    /// <see cref="CharacterClaimInfo"/> (ADR022 §2).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Ссылка строится из того, что приезжает с заявкой одним запросом, — её внешнего ключа и
+    /// включённой строки группы (<see cref="LoadOtherClaim"/> делает <c>Include</c>), — по тем же
+    /// правилам, что у маппера снимка: заявка без группы ссылается сама на себя. Полный снимок через
+    /// агрегат персонажа (<see cref="LoadOtherCharacter"/>) стоил бы ещё загрузки персонажа и
+    /// проекции его агрегата, а приглашению из него нужны только эти два поля.
+    /// </para>
+    /// <para>
+    /// Решения о самой группе по-прежнему принимаются по снимку — по плану поселения её типа
+    /// (ADR022 §4); навигация группы здесь служит только источником её типа и «ручкой» для записи.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="JoinRpgEntityNotFoundException">Заявки в этом проекте нет.</exception>
+    public async Task<(Claim Entity, AccommodationTypeIdentification? TypeId, AccommodationGroupIdentification GroupId)>
+        LoadOtherClaimAccommodation(ClaimIdentification claimId)
+    {
+        var claim = await LoadOtherClaim(claimId);
+
+        if (claim.AccommodationRequest_Id is not { } requestId)
+        {
+            return (claim, null, AccommodationGroupIdentification.From(claimId));
+        }
+
+        var group = claim.AccommodationRequest;
+        if (group is null || group.Id != requestId)
+        {
+            throw new InvalidOperationException(
+                $"Accommodation group {requestId} of claim {claimId} is not loaded with the claim");
+        }
+
+        return (
+            claim,
+            new AccommodationTypeIdentification(claimId.ProjectId, group.AccommodationTypeId),
+            AccommodationGroupIdentification.From(new AccommodationRequestIdentification(claimId.ProjectId, requestId)));
+    }
 
     /// <summary>
     /// Комментарии, созданные операцией, в порядке создания. Уведомления по ним сервис отправит

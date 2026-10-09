@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Mocks;
+using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
-using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 
 namespace JoinRpg.Services.Impl.Test;
 
@@ -8,65 +9,103 @@ namespace JoinRpg.Services.Impl.Test;
 /// Правила, по которым приглашение к совместному проживанию отклоняется.
 /// Раньше каждое из них молча возвращало <c>null</c>, и игрок не видел причины отказа.
 /// </summary>
+/// <remarks>
+/// Правила решают по доменным снимкам (ADR022 §4): группы — <see cref="AccommodationGroupInfo"/> из
+/// плана поселения, вместимость — из того же плана. Группы заводятся в моке как EF-строки, а снимки
+/// из них строит тот же фейковый загрузчик плана, что и у остальных тестов.
+/// </remarks>
 public class AccommodationInviteRulesTest
 {
-    private static readonly ProjectIdentification ProjectId = new(1);
+    private readonly MockedProject mock = new();
 
-    // Заявка отправителя; приглашаемые в тестах по умолчанию живут на других заявках (100+),
-    // чтобы не пересекаться с отправителем
-    private static readonly ClaimIdentification SenderClaimId = new(1, 999);
+    /// <summary>Тип проживания приглашающего; его вместимость тесты меняют до сборки плана.</summary>
+    private readonly ProjectAccommodationType defaultType;
+
+    /// <summary>Другой тип — селится из своей категории, то есть лежит в другом плане.</summary>
+    private readonly ProjectAccommodationType otherType;
 
     /// <summary>
-    /// Заявка на проживание. Вместимость сюда больше не кладётся: её проверка читает метаданные
-    /// проекта (ADR015), а не навигацию на тип проживания — см. <see cref="Settings"/>.
+    /// Заявки участников групп выдаются подряд, начиная со 100, — чтобы не пересекаться с
+    /// отправителем и чтобы ни одна заявка не оказалась в двух группах (план этого не допускает).
     /// </summary>
-    private static AccommodationRequest Request(
-        int accommodationTypeId = DefaultTypeId,
+    private int nextClaimId = 100;
+
+    public AccommodationInviteRulesTest()
+    {
+        mock.Project.Details.EnableAccommodation = true;
+        defaultType = mock.CreateAccommodationType("Домик", capacity: 4);
+        otherType = mock.CreateAccommodationType("Шатёр", capacity: 4);
+    }
+
+    // Заявка отправителя — первая в его группе.
+    private ClaimIdentification SenderClaimId => new(mock.ProjectInfo.ProjectId, 999);
+
+    /// <summary>Группа приглашающего: он сам и ещё <paramref name="subjectCount"/> − 1 соседей.</summary>
+    private AccommodationRequest SenderRequest(int subjectCount = 1, bool settled = false)
+        => Request(defaultType, subjectCount, settled, firstSubjectClaimId: SenderClaimId.ClaimId);
+
+    /// <summary>Группа цели приглашения.</summary>
+    private AccommodationRequest Request(
+        ProjectAccommodationType? type = null,
         int subjectCount = 1,
-        int? accommodationId = null,
-        int firstSubjectClaimId = 100)
-        => new()
+        bool settled = false,
+        int? firstSubjectClaimId = null)
+    {
+        var subjects = Enumerable.Range(0, subjectCount)
+            .Select(i => new Claim
+            {
+                ClaimId = i == 0 && firstSubjectClaimId is { } first ? first : nextClaimId++,
+                ProjectId = mock.Project.ProjectId,
+            })
+            .ToArray();
+
+        var request = mock.CreateAccommodationRequest(type ?? defaultType, subjects);
+        if (settled)
         {
-            ProjectId = ProjectId.Value,
-            AccommodationTypeId = accommodationTypeId,
-            AccommodationId = accommodationId,
-            Subjects = [.. Enumerable.Range(0, subjectCount).Select(i => new Claim { ClaimId = firstSubjectClaimId + i })],
-        };
+            _ = mock.CreateRoom(request);
+        }
+        return request;
+    }
 
-    private const int DefaultTypeId = 10;
+    /// <summary>
+    /// Снимок группы из плана поселения её собственного типа — так, как его получает сервис.
+    /// </summary>
+    private (RoomCategoryPlan Plan, AccommodationGroupInfo Group) Snapshot(AccommodationRequest request)
+    {
+        var plan = new FakeRoomCategoryPlanRepository(mock)
+            .GetPlanForTypeOrDefault(new AccommodationTypeIdentification(mock.ProjectInfo.ProjectId, request.AccommodationTypeId))
+            .GetAwaiter().GetResult()
+            ?? throw new InvalidOperationException("Нет плана для типа группы");
+        return (plan, plan.GetGroup(new AccommodationRequestIdentification(mock.ProjectInfo.ProjectId, request.Id)));
+    }
 
-    /// <summary>Метаданные проживания проекта с единственным типом известной вместимости.</summary>
-    private static ProjectAccommodationSettings Settings(int capacity)
-        => new(
-            Enabled: true,
-            Types:
-            [
-                new AccommodationTypeInfo(
-                    new AccommodationTypeIdentification(ProjectId, DefaultTypeId),
-                    new RoomCategoryIdentification(ProjectId, DefaultTypeId),
-                    Name: "Домик",
-                    Description: new MarkdownString(""),
-                    Cost: 0,
-                    Capacity: capacity,
-                    IsPlayerSelectable: true),
-            ],
-            RoomCategories: [new RoomCategoryInfo(new RoomCategoryIdentification(ProjectId, DefaultTypeId), "Домики")]);
-
-    private static void EnsureCanInvite(
+    private void EnsureCanInvite(
         AccommodationRequest? sender,
         AccommodationRequest? receiver,
         int newDwellersCount,
-        int? receiverClaimId = null,
+        ClaimIdentification? receiverClaimId = null,
         int capacity = 4)
-        => AccommodationInviteServiceImpl.EnsureCanInvite(
-            ProjectId, Settings(capacity), SenderClaimId, sender, receiver, newDwellersCount, receiverClaimId);
+    {
+        // Вместимость — из метаданных проекта (ADR015): план берёт типы из ProjectInfo, поэтому
+        // метаданные пересобираются после того, как тест задал вместимость.
+        defaultType.Capacity = capacity;
+        mock.ReInitProjectInfo();
+
+        AccommodationInviteServiceImpl.EnsureCanInvite(
+            mock.ProjectInfo.ProjectId,
+            SenderClaimId,
+            sender is null ? null : Snapshot(sender),
+            receiver is null ? null : Snapshot(receiver).Group,
+            newDwellersCount,
+            receiverClaimId);
+    }
 
     [Fact]
     public void ShouldRejectSelfInviteToOwnClaim()
     {
         var exception = Should.Throw<AccommodationInviteNotAllowedException>(
-            () => EnsureCanInvite(Request(), receiver: null, newDwellersCount: 1,
-                receiverClaimId: SenderClaimId.ClaimId));
+            () => EnsureCanInvite(SenderRequest(), receiver: null, newDwellersCount: 1,
+                receiverClaimId: SenderClaimId));
 
         exception.Message.ShouldContain("самого себя");
     }
@@ -74,12 +113,11 @@ public class AccommodationInviteRulesTest
     [Fact]
     public void ShouldRejectSelfInviteToOwnAccommodationRequest()
     {
-        // Приглашаем группу, в которую входит собственная заявка отправителя
+        // Приглашаем группу, в которую входит собственная заявка отправителя, — то есть его же группу
+        var ownGroup = SenderRequest(subjectCount: 2);
+
         var exception = Should.Throw<AccommodationInviteNotAllowedException>(
-            () => EnsureCanInvite(
-                Request(),
-                Request(subjectCount: 2, firstSubjectClaimId: SenderClaimId.ClaimId),
-                newDwellersCount: 2));
+            () => EnsureCanInvite(ownGroup, ownGroup, newDwellersCount: 2));
 
         exception.Message.ShouldContain("самого себя");
     }
@@ -87,7 +125,7 @@ public class AccommodationInviteRulesTest
     [Fact]
     public void ShouldAllowInviteIntoRoomWithFreeSpace()
     {
-        var act = () => EnsureCanInvite(Request(subjectCount: 1), Request(subjectCount: 1), newDwellersCount: 1);
+        var act = () => EnsureCanInvite(SenderRequest(subjectCount: 1), Request(subjectCount: 1), newDwellersCount: 1);
 
         act.ShouldNotThrow();
     }
@@ -96,7 +134,7 @@ public class AccommodationInviteRulesTest
     public void ShouldAllowInviteOfClaimWithoutAccommodationRequest()
     {
         // Приглашаемый ещё не выбрал тип проживания — заявки на проживание у него нет
-        var act = () => EnsureCanInvite(Request(subjectCount: 1), receiver: null, newDwellersCount: 1);
+        var act = () => EnsureCanInvite(SenderRequest(subjectCount: 1), receiver: null, newDwellersCount: 1);
 
         act.ShouldNotThrow();
     }
@@ -107,7 +145,7 @@ public class AccommodationInviteRulesTest
         var exception = Should.Throw<AccommodationInviteNotAllowedException>(
             () => EnsureCanInvite(sender: null, Request(), newDwellersCount: 1));
 
-        exception.ProjectId.ShouldBe(ProjectId);
+        exception.ProjectId.ShouldBe(mock.ProjectInfo.ProjectId);
         exception.Message.ShouldContain("не выбран тип проживания");
     }
 
@@ -115,7 +153,7 @@ public class AccommodationInviteRulesTest
     public void ShouldRejectWhenSenderIsAlreadySettledInRoom()
     {
         var exception = Should.Throw<AccommodationInviteNotAllowedException>(
-            () => EnsureCanInvite(Request(accommodationId: 55), Request(), newDwellersCount: 1));
+            () => EnsureCanInvite(SenderRequest(settled: true), Request(), newDwellersCount: 1));
 
         exception.Message.ShouldContain("уже расселён");
     }
@@ -124,7 +162,7 @@ public class AccommodationInviteRulesTest
     public void ShouldRejectWhenReceiverIsAlreadySettledInRoom()
     {
         var exception = Should.Throw<AccommodationInviteNotAllowedException>(
-            () => EnsureCanInvite(Request(), Request(accommodationId: 55), newDwellersCount: 1));
+            () => EnsureCanInvite(SenderRequest(), Request(settled: true), newDwellersCount: 1));
 
         exception.Message.ShouldContain("уже расселён");
     }
@@ -134,8 +172,8 @@ public class AccommodationInviteRulesTest
     {
         var exception = Should.Throw<AccommodationInviteNotAllowedException>(
             () => EnsureCanInvite(
-                Request(accommodationTypeId: 10),
-                Request(accommodationTypeId: 20),
+                SenderRequest(),
+                Request(otherType),
                 newDwellersCount: 1));
 
         exception.Message.ShouldContain("такой же тип проживания");
@@ -147,7 +185,7 @@ public class AccommodationInviteRulesTest
         // В номере на двоих уже живёт один, приглашаем двоих — не влезут
         var exception = Should.Throw<AccommodationInviteNotAllowedException>(
             () => EnsureCanInvite(
-                Request(subjectCount: 1),
+                SenderRequest(subjectCount: 1),
                 Request(subjectCount: 2),
                 newDwellersCount: 2,
                 capacity: 2));
@@ -159,7 +197,7 @@ public class AccommodationInviteRulesTest
     public void ShouldAllowInviteThatExactlyFillsTheRoom()
     {
         var act = () => EnsureCanInvite(
-            Request(subjectCount: 1),
+            SenderRequest(subjectCount: 1),
             Request(subjectCount: 2),
             newDwellersCount: 2,
             capacity: 3);
