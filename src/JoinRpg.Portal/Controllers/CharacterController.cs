@@ -63,15 +63,35 @@ public class CharacterController(
             ? await linkRendererFactory.Load(new ProjectIdentification(character.ProjectId))
             : JoinrpgMarkdownLinkRendererFactory.NoDirectives;
 
+        var characterInfo = await characterInfoRepository.GetCharacterInfo(character.GetId());
+
         return View("Details",
             new CharacterDetailsViewModel(currentUser,
                 character,
-                await characterInfoRepository.GetCharacterInfo(character.GetId()),
+                characterInfo,
                 plots,
                 linkRenderer,
                 projectInfo,
-                await userRepository.LoadFieldUserLinks(character, projectInfo)));
+                await userRepository.LoadFieldUserLinks(character, projectInfo),
+                // История обновлений видна только мастерам — остальным авторов не грузим.
+                accessArguments.MasterAccess ? await LoadMarks(characterInfo) : null));
     }
+
+    private Task<CreateUpdateMarksInfo> LoadMarks(CharacterInfo character)
+        => userRepository.LoadCreateUpdateMarks(character.CreatedAt, character.CreatedById, character.UpdatedAt, character.UpdatedById);
+
+    private async Task<EditCharacterViewModel> FillEditModel(
+        EditCharacterViewModel viewModel,
+        Character field,
+        CharacterInfo characterInfo,
+        ProjectInfo projectInfo)
+        => viewModel.Fill(
+            field,
+            characterInfo,
+            currentUser.UserIdentification,
+            projectInfo,
+            await userRepository.LoadFieldUserLinks(field, projectInfo),
+            await LoadMarks(characterInfo));
 
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(ProjectIdentification projectId, int characterId)
@@ -79,7 +99,7 @@ public class CharacterController(
         var field = await characterRepository.GetCharacterWithDetails(projectId, characterId);
         var characterInfo = await characterInfoRepository.GetCharacterInfo(new CharacterIdentification(projectId, characterId));
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        return View(new EditCharacterViewModel()
+        return View(await FillEditModel(new EditCharacterViewModel()
         {
             ProjectId = field.ProjectId,
             CharacterId = field.CharacterId,
@@ -87,7 +107,7 @@ public class CharacterController(
             CharacterTypeInfo = characterInfo.CharacterTypeInfo,
             Name = field.CharacterName,
             ParentCharacterGroupIds = [.. field.GetDirectNonSpecialGroupIds(projectInfo)],
-        }.Fill(field, characterInfo, currentUser.UserIdentification, projectInfo, await userRepository.LoadFieldUserLinks(field, projectInfo)));
+        }, field, characterInfo, projectInfo));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
@@ -107,7 +127,7 @@ public class CharacterController(
         {
             if (!ModelState.IsValid)
             {
-                return View(viewModel.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo, await userRepository.LoadFieldUserLinks(field, projectInfo)));
+                return View(await FillEditModel(viewModel, field, await characterInfoRepository.GetCharacterInfo(field.GetId()), projectInfo));
             }
 
             await characterService.EditCharacter(
@@ -124,7 +144,7 @@ public class CharacterController(
         catch (Exception exception)
         {
             AddModelException(exception);
-            return View(viewModel.Fill(field, await characterInfoRepository.GetCharacterInfo(field.GetId()), currentUser.UserIdentification, projectInfo, await userRepository.LoadFieldUserLinks(field, projectInfo)));
+            return View(await FillEditModel(viewModel, field, await characterInfoRepository.GetCharacterInfo(field.GetId()), projectInfo));
         }
     }
 

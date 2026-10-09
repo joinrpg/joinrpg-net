@@ -60,6 +60,21 @@ public interface IUserRepository
         return (await GetRequiredUserInfoHeaders([userId])).Single();
     }
 
+    /// <summary>
+    /// Отметки «создано/изменено» для доменного агрегата, который хранит только идентификаторы
+    /// авторов: заголовки обоих пользователей приезжают одним запросом.
+    /// </summary>
+    async Task<CreateUpdateMarksInfo> LoadCreateUpdateMarks(
+        DateTime createdAt,
+        UserIdentification createdById,
+        DateTime updatedAt,
+        UserIdentification updatedById)
+    {
+        var users = (await GetRequiredUserInfoHeaders([.. new[] { createdById, updatedById }.Distinct()]))
+            .ToDictionary(user => user.UserId);
+        return new CreateUpdateMarksInfo(createdAt, users[createdById], updatedAt, users[updatedById]);
+    }
+
     Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders();
 
     Task<UserIdentification?> FindByVk(string vkId);
