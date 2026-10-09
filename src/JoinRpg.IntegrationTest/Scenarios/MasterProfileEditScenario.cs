@@ -80,10 +80,10 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
             Permissions = [new() { Permission = Permission.CanGrantRights, Value = true }],
         });
 
-        // Отказ атрибута авторизации, а не сервиса (тот дал бы 500): сейчас это редирект на AccessDenied.
-        response.Headers.Location?.ToString().ShouldContain("AccessDenied");
+        // Отказ атрибута авторизации, а не сервиса (тот дал бы 500).
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
         (await client.GetAsync(AccessUrl(projectId, "GetPermissions") + $"?userId={masterId.Value}"))
-            .Headers.Location?.ToString().ShouldContain("AccessDenied");
+            .StatusCode.ShouldBe(HttpStatusCode.Forbidden);
         (await GetProjectInfo(projectId)).HasMasterAccess(masterId, Permission.CanGrantRights).ShouldBeFalse();
     }
 
@@ -111,6 +111,21 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
         projectInfo.HasMasterAccess(masterId, Permission.CanEditRoles).ShouldBeTrue();
         projectInfo.HasMasterAccess(masterId, Permission.CanManageClaims).ShouldBeFalse();
         (await GetProfile(projectId, masterId)).Role.Value.ShouldBe("Мастер");
+    }
+
+    [Fact]
+    public async Task Anonymous_WebApiUnauthorized_PageRedirectsToLogin()
+    {
+        var (projectId, ownerId, _, _) = await CreateProjectWithMaster();
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        // Островам нужен код, а не редирект на вход: fetch пошёл бы по нему и получил 200 со страницей.
+        (await client.GetAsync(ProfileUrl(projectId, "GetProfile") + $"?userId={ownerId.Value}"))
+            .StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        // Обычная страница по-прежнему уводит на вход.
+        var page = await client.GetAsync($"{projectId.Value}/masters/edit?userId={ownerId.Value}");
+        page.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        page.Headers.Location.ShouldNotBeNull().ToString().ShouldContain("login", Case.Insensitive);
     }
 
     [Fact]

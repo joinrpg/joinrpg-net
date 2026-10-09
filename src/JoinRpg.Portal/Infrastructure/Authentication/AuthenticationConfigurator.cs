@@ -55,13 +55,19 @@ internal static class AuthenticationConfigurator
 
     public static Action<CookieAuthenticationOptions> SetCookieOptions() => options =>
     {
-        options.Events.OnRedirectToAccessDenied =
-           options.Events.OnRedirectToLogin = OnCookieRedirect;
+        options.Events.OnRedirectToLogin = context => OnCookieRedirect(context, StatusCodes.Status401Unauthorized);
+        options.Events.OnRedirectToAccessDenied = context => OnCookieRedirect(context, StatusCodes.Status403Forbidden);
     };
 
-    private static Task OnCookieRedirect(RedirectContext<CookieAuthenticationOptions> context)
+    private static Task OnCookieRedirect(RedirectContext<CookieAuthenticationOptions> context, int apiStatusCode)
     {
-        // Тут не нужно различать ответ от API, потому что API сюда не приходят
+        // Острова Blazor ходят в /webapi через fetch, а он молча идёт по редиректу и получает 200 со страницей входа
+        // или «нет доступа» — отказ выглядел бы успехом. Поэтому API отвечаем кодом. Внешние API (x-api) — на JWT, не сюда.
+        if (context.Request.Path.IsInternalApiPath())
+        {
+            context.Response.StatusCode = apiStatusCode;
+            return Task.CompletedTask;
+        }
         if (context.HttpContext.Items.TryGetValue(DiscoverFilters.Constants.ProjectIdName, out var projectIdObj) && projectIdObj is int projectId)
         {
             context.Response.Redirect($"{context.RedirectUri}&projectId={projectId}");
