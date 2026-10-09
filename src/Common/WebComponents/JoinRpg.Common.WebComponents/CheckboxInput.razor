@@ -1,6 +1,6 @@
 ﻿@using System.Linq.Expressions
 <input type="hidden" name="@Name" value="@(internalValue ? "true" : "false" )" />
-<input type="checkbox" name="@Name" @onchange="UpdateValue" checked="@internalValue"/>
+<input type="checkbox" name="@Name" @onchange="UpdateValue" checked="@internalValue" @attributes="AdditionalAttributes"/>
 
 @code {
     [CascadingParameter]
@@ -18,6 +18,12 @@
     [Parameter]
     [Obsolete]
     public string Name { get; set; } = null!;
+
+    /// <summary>
+    /// Атрибуты видимого чекбокса (например, <c>id</c>, чтобы на него ссылалась подпись <c>&lt;label for&gt;</c>).
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     protected internal FieldIdentifier FieldIdentifier { get; set; }
 

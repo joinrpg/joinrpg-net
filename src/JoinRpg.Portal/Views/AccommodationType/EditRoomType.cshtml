@@ -1,9 +1,8 @@
-﻿@using JoinRpg.Web.Models.Accommodation
+﻿@using JoinRpg.Web.Accommodation
+@using JoinRpg.Web.Models.Accommodation
 @model RoomTypeViewModel
 @{
     ViewBag.Title = Model.ProjectName + ": тип поселения «" + Model.Name + "»";
-    ViewBag.ActionName = "Сохранить";
-    ViewBag.IsNew = false;
 }
 <h2>@ViewBag.Title</h2>
 <ul class="nav nav-tabs">
@@ -13,7 +12,10 @@
 </ul>
 @if (Model.CanManageRooms)
 {
-    <partial name="_RoomTypeEdit" model="Model" />
+    <component type="typeof(RoomTypeEditForm)"
+               render-mode="WebAssemblyPrerendered"
+               param-ProjectId="new ProjectIdentification(Model.ProjectId)"
+               param-RoomTypeId="new AccommodationTypeIdentification(Model.ProjectId, Model.Id)" />
 }
 else
 {

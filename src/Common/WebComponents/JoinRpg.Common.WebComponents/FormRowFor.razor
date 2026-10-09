@@ -4,7 +4,7 @@
   
 @typeparam T
 
-<FormRow @attributes="@InputAttributes" Label="@(For.AsPropertyAccess()?.GetDisplayName())">
+<FormRow @attributes="@InputAttributes" Label="@(For.AsPropertyAccess()?.GetDisplayName())" InputId="@InputId">
   @ChildContent
   @if (@description is not null)
   {
@@ -19,6 +19,9 @@
 @code {
     [Parameter] public Expression<Func<T>> For { get; set; } = null!;
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>id поля ввода, на которое ссылается подпись — см. <see cref="FormRow.InputId"/>.</summary>
+    [Parameter] public string? InputId { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> InputAttributes { get; set; } = new();

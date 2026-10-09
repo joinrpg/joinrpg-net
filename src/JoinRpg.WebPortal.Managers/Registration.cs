@@ -64,6 +64,7 @@ public static class Registration
         .AddScoped<Print.PrintViewService>()
         .AddScoped<IAccommodationInviteClient, Accommodation.AccommodationInviteViewService>()
         .AddScoped<IAccommodationTypeClient, Accommodation.AccommodationTypeViewService>()
+        .AddScoped<IRoomTypeEditClient, Accommodation.RoomTypeEditViewService>()
         .AddScoped<Accommodation.RoomTypeRoomsViewService>()
         .AddScoped<IClaimOperationClient, ClaimsViewService>()
         .AddScoped<IClaimListClient, ClaimsViewService>()

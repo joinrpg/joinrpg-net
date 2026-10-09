@@ -56,6 +56,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<ICheckInClient, CheckInClient>()
                 .AddHttpClient<IAccommodationInviteClient, AccommodationInviteClient>()
                 .AddHttpClient<IAccommodationTypeClient, AccommodationInviteClient>()
+                .AddHttpClient<IRoomTypeEditClient, RoomTypeEditClient>()
                 .AddHttpClient<IClaimOperationClient, ClaimHttpClient>()
                 .AddHttpClient<IClaimListClient, ClaimHttpClient>()
                 .AddHttpClient<IUnifiedGridClient, ClaimHttpClient>()
