@@ -15,15 +15,6 @@ jQuery("input[type=submit]").click(function () {
     return true;
 });
 
-$('.require-element-id')
-    .on('show.bs.modal',
-        function (event) {
-            var button = $(event.relatedTarget);
-            var id = button.data('element');
-            var modal = $(this);
-            modal.find('#elementId').val(id);
-        });
-
 function addAntiforgeryTokenBeforeSend(xhr) {
   xhr.setRequestHeader("X-CSRF-TOKEN",
     $('input:hidden[name="__RequestVerificationToken"]').val());

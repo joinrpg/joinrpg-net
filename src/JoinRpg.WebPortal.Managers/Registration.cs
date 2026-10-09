@@ -70,6 +70,7 @@ public static class Registration
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
+        .AddScoped<Web.Claims.Finance.IMoneyTransferClient, MoneyTransferViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IUserLinkResolveClient, UserLinkResolveViewService>()
         .AddScoped<IMoveClient, MoveViewService>()

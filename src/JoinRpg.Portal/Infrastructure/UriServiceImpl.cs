@@ -43,6 +43,7 @@ internal class UriServiceImpl(
     IUriLocator<PaymentTypeIdentification>,
     IUriLocator<ProjectMasterIdentification>,
     IUriLocator<FinanceOperationIdentification>,
+    IUriLocator<MoneyTransferIdentification>,
     IUriLocator<ForumCommentIdentification>,
     IUriLocator<ProjectRolesListIdentification>,
     IUriLocator<AccommodationTypeIdentification>,
@@ -206,6 +207,10 @@ internal class UriServiceImpl(
     public Uri GetUri(FinanceOperationIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ToFinanceOperation", "DiscussionRedirect",
             new { ProjectId = target.ProjectId.Value, target.FinanceOperationId }));
+
+    // Отдельной страницы у перевода нет — ведём на сводку по деньгам, где список переводов.
+    public Uri GetUri(MoneyTransferIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("MoneySummary", "Finances", new { ProjectId = target.ProjectId.Value }));
 
     public Uri GetUri(ForumCommentIdentification target) =>
         new(GetUri(target.ThreadId).AbsoluteUri + $"#comment{target.CommentId}");

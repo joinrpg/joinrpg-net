@@ -1,0 +1,46 @@
+@* Подтверждение и отклонение перевода денег. Раньше — окна _ApproveTransferDialog/_DeclineTransferDialog. *@
+@inject IMoneyTransferClient Client
+@inject NavigationManager NavigationManager
+
+@if (errorMessage is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+}
+
+<JoinButton Label="Подтвердить"
+            Icon="JoinIconType.Ok"
+            Style="VariationStyleEnum.Success"
+            Size="SizeStyleEnum.Small"
+            AutoConfirm="true"
+            AutoConfirmMessage="Подтвердить перевод денег?"
+            OnClick="@(args => Decide(args, Client.Approve))" />
+
+<JoinButton Label="Отклонить"
+            Icon="JoinIconType.Remove"
+            Style="VariationStyleEnum.Danger"
+            Size="SizeStyleEnum.Small"
+            AutoConfirm="true"
+            AutoConfirmMessage="Отклонить перевод денег?"
+            OnClick="@(args => Decide(args, Client.Decline))" />
+
+@code {
+    [Parameter, EditorRequired]
+    public MoneyTransferIdentification TransferId { get; set; } = null!;
+
+    private string? errorMessage;
+
+    private async Task Decide(ButtonClickEventArgs args, Func<MoneyTransferIdentification, Task> decision)
+    {
+        try
+        {
+            await decision(TransferId);
+            // Решение меняет статус перевода и балансы мастеров на странице, поэтому перезагружаем её целиком
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (Exception)
+        {
+            errorMessage = "Не удалось сохранить решение по переводу. Обновите страницу и попробуйте ещё раз.";
+            args.ExitProgressState = true;
+        }
+    }
+}

@@ -53,19 +53,9 @@
             <td>
                 @if (item.HasApproveAccess)
                 {
-                    <button type="button" class="btn btn-success btn-sm"
-                            data-toggle="modal"
-                            data-target="#approveTransfer"
-                            data-element="@item.Id">
-                        <join-icon icon="Ok" />Подтвердить
-                    </button>
-
-                    <button type="button" class="btn btn-danger btn-sm"
-                            data-toggle="modal"
-                            data-target="#rejectTransfer"
-                            data-element="@item.Id">
-                        <join-icon icon="Remove" />Отклонить
-                    </button>
+                    <component type="typeof(JoinRpg.Web.Claims.Finance.MoneyTransferDecisionButtons)"
+                               render-mode="WebAssemblyPrerendered"
+                               param-TransferId="new MoneyTransferIdentification(new ProjectIdentification(item.ProjectId), item.Id)" />
                 }
             </td>
             <td>
@@ -75,11 +65,3 @@
     }
 
 </table>
-
-@if (Model.Any())
-{
-
-    @await Html.PartialAsync("_ApproveTransferDialog", Model.First())
-    @await Html.PartialAsync("_DeclineTransferDialog", Model.First())
-
-}

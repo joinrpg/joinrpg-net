@@ -4,6 +4,7 @@ using JoinRpg.Web.CharacterGroups.GroupReport;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.CheckIn;
 using JoinRpg.Web.Claims;
+using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Plots;
@@ -67,6 +68,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IGroupReportClient, GroupReportClientImpl>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>()
                 .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>()
+                .AddHttpClient<IMoneyTransferClient, MoneyTransferClient>()
                 .AddHttpClient<IMoveClient, MoveClientImpl>()
                 .AddHttpClient<IUserLinkResolveClient, UserLinkResolveClientImpl>()
                 .AddHttpClient<IProjectFieldOperationsClient, ProjectFieldOperationsClientImpl>()
