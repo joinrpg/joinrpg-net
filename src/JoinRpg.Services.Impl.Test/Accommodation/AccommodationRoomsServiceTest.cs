@@ -25,7 +25,7 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
     }
 
     private RoomCategoryIdentification CategoryId
-        => new(ProjectId, roomType.Id);
+        => new(ProjectId, roomType.RoomCategoryId);
 
     [Fact]
     public async Task AddRooms_CreatesRoomsInCategory()
@@ -34,8 +34,8 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
 
         created.Count.ShouldBe(2);
         mock.Rooms.Select(room => room.Name).ShouldBe(["101", "102"]);
-        mock.Rooms.ShouldAllBe(room => room.AccommodationTypeId == roomType.Id);
-        mock.Rooms.ShouldAllBe(room => room.ProjectAccommodationType == roomType);
+        mock.Rooms.ShouldAllBe(room => room.RoomCategoryId == roomType.RoomCategoryId);
+        mock.Rooms.ShouldAllBe(room => room.RoomCategory == roomType.RoomCategory);
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
 

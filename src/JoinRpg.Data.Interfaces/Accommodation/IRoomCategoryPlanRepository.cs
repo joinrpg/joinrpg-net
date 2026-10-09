@@ -15,8 +15,8 @@ namespace JoinRpg.Data.Interfaces.Accommodation;
 public interface IRoomCategoryPlanRepository
 {
     /// <summary>
-    /// План пула, из которого селится данный тип проживания. Пока тип и категория не разделены,
-    /// это план одноимённой категории; после разделения один план будут возвращать несколько типов.
+    /// План пула, из которого селится данный тип проживания. Типы одной категории получают один
+    /// и тот же план (ADR020).
     /// </summary>
     Task<RoomCategoryPlan?> GetPlanForTypeOrDefault(AccommodationTypeIdentification typeId);
 

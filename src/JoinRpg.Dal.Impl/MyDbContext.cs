@@ -402,6 +402,14 @@ public class MyDbContext : DbContext, IUnitOfWork
             .WithMany().HasForeignKey(r => r.ProjectId).WillCascadeOnDelete(false);
         modelBuilder.Entity<ProjectAccommodation>().HasRequired(a => a.Project)
             .WithMany().HasForeignKey(a => a.ProjectId).WillCascadeOnDelete(false);
+        // Категория комнат (ADR020): комнаты удаляются вместе с ней, тип проживания — нет, а от
+        // проекта каскада нет, как и у соседних таблиц поселения.
+        modelBuilder.Entity<ProjectRoomCategory>().HasRequired(c => c.Project)
+            .WithMany(p => p.ProjectRoomCategories).HasForeignKey(c => c.ProjectId).WillCascadeOnDelete(false);
+        modelBuilder.Entity<ProjectAccommodation>().HasRequired(a => a.RoomCategory)
+            .WithMany(c => c.Rooms).HasForeignKey(a => a.RoomCategoryId).WillCascadeOnDelete(true);
+        modelBuilder.Entity<ProjectAccommodationType>().HasRequired(t => t.RoomCategory)
+            .WithMany(c => c.AccommodationTypes).HasForeignKey(t => t.RoomCategoryId).WillCascadeOnDelete(false);
 
         // Форум и отметки о прочтении.
         modelBuilder.Entity<ForumThread>().HasRequired(t => t.Project)

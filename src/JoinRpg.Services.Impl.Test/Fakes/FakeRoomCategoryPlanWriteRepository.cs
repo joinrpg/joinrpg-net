@@ -22,8 +22,8 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
         RoomCategoryPlanTracking tracking)
     {
         // Фильтр по проекту повторяет боевой запрос: категорию чужого проекта не найти.
-        var category = mock.AccommodationTypes.SingleOrDefault(
-                type => type.Id == categoryId.RoomCategoryId && type.ProjectId == categoryId.ProjectId.Value)
+        var category = mock.RoomCategories.SingleOrDefault(
+                c => c.Id == categoryId.RoomCategoryId && c.ProjectId == categoryId.ProjectId.Value)
             ?? throw new JoinRpgEntityNotFoundException(categoryId.RoomCategoryId, "room category");
 
         return Task.FromResult<IRoomCategoryPlanUpdateHandle>(new Handle(mock, projectInfo, category, tracking));
@@ -41,7 +41,7 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
 
         return LoadPlanForUpdate(
             projectInfo,
-            new RoomCategoryIdentification(roomId.ProjectId, room.AccommodationTypeId),
+            new RoomCategoryIdentification(roomId.ProjectId, room.RoomCategoryId),
             tracking);
     }
 
@@ -57,7 +57,7 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
         // Как и в бою: корень агрегата назван через группу — трекаемые группы нужны всегда.
         return LoadPlanForUpdate(
             projectInfo,
-            new RoomCategoryIdentification(groupId.ProjectId, group.AccommodationTypeId),
+            new RoomCategoryIdentification(groupId.ProjectId, group.AccommodationType.RoomCategoryId),
             RoomCategoryPlanTracking.WithGroups);
     }
 
@@ -68,7 +68,7 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
         public Handle(
             MockedProject mock,
             ProjectInfo projectInfo,
-            ProjectAccommodationType category,
+            ProjectRoomCategory category,
             RoomCategoryPlanTracking tracking)
         {
             this.mock = mock;
@@ -82,11 +82,12 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
             var categoryId = new RoomCategoryIdentification(projectId, category.Id);
 
             Rooms = mock.Rooms
-                .Where(room => room.AccommodationTypeId == category.Id)
+                .Where(room => room.RoomCategoryId == category.Id)
                 .ToDictionary(room => new AccommodationRoomIdentification(projectId, room.Id));
 
+            // Группа покупает тип, в пул она попадает через категорию своего типа (ADR020).
             var groups = mock.AccommodationRequests
-                .Where(group => group.AccommodationTypeId == category.Id)
+                .Where(group => group.AccommodationType.RoomCategoryId == category.Id)
                 .ToArray();
 
             // Трекаемыми группы отдаются только по запросу операции — ровно как в бою, где за
@@ -95,14 +96,14 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
                 ? groups.ToDictionary(group => new AccommodationRequestIdentification(projectId, group.Id))
                 : null;
 
-            Plan = BuildPlan(categoryId, ProjectInfo, category, Rooms.Values, groups);
+            Plan = BuildPlan(categoryId, ProjectInfo, Rooms.Values, groups);
         }
 
         public ProjectInfo ProjectInfo { get; }
 
         public RoomCategoryPlan Plan { get; }
 
-        public ProjectAccommodationType Category { get; }
+        public ProjectRoomCategory Category { get; }
 
         public IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> Rooms { get; }
 
@@ -133,14 +134,13 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
             if (entity is ProjectAccommodation room)
             {
                 _ = mock.Rooms.Remove(room);
-                _ = room.ProjectAccommodationType.ProjectAccommodations.Remove(room);
+                _ = room.RoomCategory.Rooms.Remove(room);
             }
         }
 
         private static RoomCategoryPlan BuildPlan(
             RoomCategoryIdentification categoryId,
             ProjectInfo projectInfo,
-            ProjectAccommodationType category,
             IEnumerable<ProjectAccommodation> rooms,
             IEnumerable<AccommodationRequest> groups)
         {
@@ -170,11 +170,9 @@ internal sealed class FakeRoomCategoryPlanWriteRepository(MockedProject mock) : 
 
             // Типы берутся из метаданных, а не пересобираются: конструктор плана проверяет
             // ссылочное равенство (ADR018, §3).
-            var types = projectInfo.AccommodationSettings.Types
-                .Where(type => type.RoomCategoryId == categoryId)
-                .ToArray();
+            var types = projectInfo.AccommodationSettings.GetTypesOfCategory(categoryId);
 
-            return new RoomCategoryPlan(categoryId, projectInfo, types, category.Capacity, roomInfos, groupInfos);
+            return new RoomCategoryPlan(categoryId, projectInfo, types, roomInfos, groupInfos);
         }
     }
 }

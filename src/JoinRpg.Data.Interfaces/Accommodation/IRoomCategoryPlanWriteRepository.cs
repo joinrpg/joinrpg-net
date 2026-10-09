@@ -109,11 +109,9 @@ public interface IRoomCategoryPlanUpdateHandle
     RoomCategoryPlan Plan { get; }
 
     /// <summary>
-    /// Трекаемый ряд категории комнат. Своей таблицы у категории пока нет, поэтому её ряд —
-    /// это <see cref="ProjectAccommodationType"/> (ADR018, «Задел на разделение», пункт 1).
-    /// Нужен созданию комнат: новая комната принадлежит категории.
+    /// Трекаемый ряд категории комнат. Нужен созданию комнат: новая комната принадлежит категории.
     /// </summary>
-    ProjectAccommodationType Category { get; }
+    ProjectRoomCategory Category { get; }
 
     /// <summary>Трекаемые комнаты пула по их идентификаторам.</summary>
     IReadOnlyDictionary<AccommodationRoomIdentification, ProjectAccommodation> Rooms { get; }

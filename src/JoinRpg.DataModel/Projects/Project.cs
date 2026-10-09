@@ -65,4 +65,7 @@ public class Project : IProjectEntity
     /// FK <c>ProjectAccommodationTypes.ProjectId</c> — новых колонок нет (ADR015).
     /// </summary>
     public virtual ICollection<ProjectAccommodationType> ProjectAccommodationTypes { get; set; }
+
+    /// <summary>Категории комнат проекта — пулы, из которых селятся типы проживания (ADR020)</summary>
+    public virtual ICollection<ProjectRoomCategory> ProjectRoomCategories { get; set; }
 }

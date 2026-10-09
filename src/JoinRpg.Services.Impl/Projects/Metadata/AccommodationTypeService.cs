@@ -34,13 +34,26 @@ internal class AccommodationTypeService(
             request,
             ctx =>
             {
+                // Каждый новый тип пока получает свою категорию комнат с тем же именем — выбор
+                // существующей категории появится вместе с формой (ADR020, PR 3).
+                var category = new ProjectRoomCategory
+                {
+                    ProjectId = ctx.Project.ProjectId,
+                    Project = ctx.Project,
+                    Name = ServiceValidation.Required(ctx.Request.Name),
+                    Rooms = [],
+                    AccommodationTypes = [],
+                };
+                ctx.Project.ProjectRoomCategories.Add(category);
+
                 var entity = new ProjectAccommodationType
                 {
                     ProjectId = ctx.Project.ProjectId,
                     Project = ctx.Project,
-                    ProjectAccommodations = [],
+                    RoomCategory = category,
                     Desirous = [],
                 };
+                category.AccommodationTypes.Add(entity);
                 Apply(
                     entity,
                     ctx.Request.Name,
@@ -68,6 +81,17 @@ internal class AccommodationTypeService(
             ctx =>
             {
                 var entity = ctx.GetAccommodationTypeForChange(ctx.Request.AccommodationTypeId);
+
+                // Категория, созданная вместе с типом, носит его имя (ADR020): пока имена совпадают,
+                // переименование типа переименовывает и её — иначе письма о заселении (они
+                // называют комнату по категории) остались бы со старым именем. Имя, которое
+                // мастер дал категории отдельно, не трогаем.
+                var category = ctx.Project.ProjectRoomCategories.Single(c => c.Id == entity.RoomCategoryId);
+                if (category.Name == entity.Name)
+                {
+                    category.Name = ServiceValidation.Required(ctx.Request.Request.Name);
+                }
+
                 Apply(
                     entity,
                     ctx.Request.Request.Name,
@@ -124,7 +148,20 @@ internal class AccommodationTypeService(
                     throw new AccommodationTypeIsOccupiedException(ctx.Request);
                 }
 
+                // Последний тип категории уносит её с собой, а её комнаты удаляет каскад БД —
+                // так же, как раньше удаление типа уносило его комнаты (ADR020, §4). Если у
+                // категории остались сестринские типы, комнаты остаются им.
+                var categoryId = entity.RoomCategoryId;
+                var isLastOfCategory = !ctx.Project.ProjectAccommodationTypes
+                    .Any(type => type.RoomCategoryId == categoryId && type.Id != entity.Id);
+                var category = ctx.Project.ProjectRoomCategories.Single(c => c.Id == categoryId);
+
                 ctx.RemovePermanently(entity);
+
+                if (isLastOfCategory)
+                {
+                    ctx.RemovePermanently(category);
+                }
             });
     }
 

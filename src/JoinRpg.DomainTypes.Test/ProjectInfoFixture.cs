@@ -45,7 +45,7 @@ internal static class ProjectInfoFixture
                 WarnOnOverPayment: true,
                 PaymentTypes: [],
                 FeeSchedule: feeSchedule ?? []),
-            accommodationSettings ?? new ProjectAccommodationSettings(false, []),
+            accommodationSettings ?? new ProjectAccommodationSettings(false, [], []),
             groupTree ?? new ProjectGroupTree(RootGroupId, new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()),
             masters ?? [MakeMaster(DefaultMasterId, isOwner: true)],
             mastersOrdering,
@@ -107,8 +107,17 @@ internal static class ProjectInfoFixture
     public static CharacterGroupIdentification GroupId(int id) => new(ProjectId, id);
 
     /// <summary>
-    /// Тип проживания для тестов. По умолчанию категория комнат совпадает с id типа — ровно так,
-    /// как их сегодня заполняет маппер метаданных, пока тип и категория не разделены (ADR018).
+    /// Включённое поселение с данными типами и категориями комнат, на которые эти типы ссылаются.
+    /// </summary>
+    public static ProjectAccommodationSettings MakeAccommodationSettings(params AccommodationTypeInfo[] types)
+        => new(
+            true,
+            types,
+            [.. types.Select(type => type.RoomCategoryId).Distinct()
+                .Select(id => new RoomCategoryInfo(id, $"Категория {id.RoomCategoryId}"))]);
+
+    /// <summary>
+    /// Тип проживания для тестов. По умолчанию категория комнат своя, с тем же номером, что и тип.
     /// </summary>
     public static AccommodationTypeInfo MakeAccommodationType(
         int typeId,

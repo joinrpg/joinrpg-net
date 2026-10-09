@@ -37,10 +37,9 @@ internal abstract record RoomCategoryPlanMutationContext(
         => RoomNotifications.Add(notification);
 
     /// <summary>
-    /// Трекаемый ряд категории комнат: сегодня это ряд типа проживания (ADR018, «Задел на
-    /// разделение», пункт 1). Нужен созданию комнат.
+    /// Трекаемый ряд категории комнат. Нужен созданию комнат.
     /// </summary>
-    public ProjectAccommodationType Category => Handle.Category;
+    public ProjectRoomCategory Category => Handle.Category;
 
     /// <summary>Добавляет сущность в тот же <c>DbContext</c>, через который идёт сохранение.</summary>
     public void AddEntity(object entity) => Handle.Add(entity);

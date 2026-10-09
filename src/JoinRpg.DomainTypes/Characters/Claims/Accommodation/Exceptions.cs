@@ -26,6 +26,17 @@ public class AccommodationTypeNotFoundException(AccommodationTypeIdentification 
 }
 
 /// <summary>
+/// В проекте нет категории комнат с таким идентификатором.
+/// </summary>
+public class RoomCategoryNotFoundException(RoomCategoryIdentification roomCategoryId)
+    : JoinRpgProjectException(
+        roomCategoryId.ProjectId,
+        $"Не найдена категория комнат с ID={roomCategoryId}")
+{
+    public RoomCategoryIdentification RoomCategoryId { get; } = roomCategoryId;
+}
+
+/// <summary>
 /// В плане поселения нет комнаты с таким идентификатором.
 /// </summary>
 public class AccommodationRoomNotFoundException(AccommodationRoomIdentification roomId)

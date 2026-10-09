@@ -50,6 +50,7 @@ erDiagram
     Projects ||--o{ PlotFolders : "сюжеты"
     Projects ||--o{ PaymentTypes : "типы оплаты"
     Projects ||--o{ ProjectAccommodationTypes : "поселение"
+    Projects ||--o{ ProjectRoomCategories : "категории комнат"
     Projects }o--o{ KogdaIgraGames : "привязка к КогдаИгре"
 
     Users ||--o{ ProjectAcls : "мастер в проектах"
@@ -72,7 +73,8 @@ erDiagram
     PlotElements }o--o{ CharacterGroups : "адресаты"
 
     ProjectFields ||--o{ ProjectFieldDropdownValues : "варианты"
-    ProjectAccommodationTypes ||--o{ ProjectAccommodations : "комнаты"
+    ProjectRoomCategories ||--o{ ProjectAccommodationTypes : "типы поселения"
+    ProjectRoomCategories ||--o{ ProjectAccommodations : "комнаты"
     AccommodationRequests }o--o| ProjectAccommodations : "размещение"
 ```
 
@@ -645,13 +647,20 @@ erDiagram
 
 ```mermaid
 erDiagram
+    ProjectRoomCategories {
+        int Id PK
+        int ProjectId FK
+        string Name "категория комнат, пул для типов поселения"
+    }
+
     ProjectAccommodationTypes {
         int Id PK
         int ProjectId FK
+        int RoomCategoryId FK "из какой категории селится"
         string Name
         string Description_Contents "markdown"
         int Cost
-        int Capacity "вместимость одной комнаты"
+        int Capacity "сколько селим в комнату по этому типу"
         bool IsPlayerSelectable
         bool IsInfinite "не реализовано"
         bool IsAutoFilledAccommodation "не реализовано"
@@ -660,7 +669,7 @@ erDiagram
     ProjectAccommodations {
         int Id PK
         int ProjectId FK
-        int AccommodationTypeId FK
+        int RoomCategoryId FK
         string Name "имя конкретной комнаты"
     }
 
@@ -681,7 +690,8 @@ erDiagram
         enum ResolveDescription "почему принято или отклонено"
     }
 
-    ProjectAccommodationTypes ||--o{ ProjectAccommodations : "комнаты"
+    ProjectRoomCategories ||--o{ ProjectAccommodationTypes : "типы поселения"
+    ProjectRoomCategories ||--o{ ProjectAccommodations : "комнаты"
     ProjectAccommodationTypes ||--o{ AccommodationRequests : "желающие"
     ProjectAccommodations |o--o{ AccommodationRequests : "жильцы"
     AccommodationRequests |o--o{ Claims : "Subjects, через Claims.AccommodationRequest_Id"
@@ -691,6 +701,10 @@ erDiagram
 Заявка на поселение — **групповая**: одна `AccommodationRequest` объединяет несколько
 `Claims` (связь идёт от заявки: `Claims.AccommodationRequest_Id`). `AccommodationInvites` —
 приглашения «поселись со мной», между заявками.
+
+Комнаты принадлежат **категории**, а не типу поселения ([ADR020](adr020-room-category-split.md)):
+из одной категории могут селиться несколько типов с разной ценой и вместимостью. Группа покупает
+тип, а живёт в комнате категории этого типа. Удаление категории каскадом удаляет её комнаты.
 
 ---
 

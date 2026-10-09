@@ -35,7 +35,7 @@ public class RoomCategoryPlanTest
 
     private static ProjectInfo MakeProject(params AccommodationTypeInfo[] types)
         => ProjectInfoFixture.Build(
-            accommodationSettings: new ProjectAccommodationSettings(true, types));
+            accommodationSettings: ProjectInfoFixture.MakeAccommodationSettings(types));
 
     private static AccommodationRoomIdentification RoomId(int id, ProjectIdentification? projectId = null)
         => new(projectId ?? ProjectId, id);
@@ -58,11 +58,10 @@ public class RoomCategoryPlanTest
     private static RoomCategoryPlan MakePlan(
         ProjectInfo projectInfo,
         IReadOnlyCollection<AccommodationTypeInfo> types,
-        int roomCapacity,
         IReadOnlyCollection<RoomInfo> rooms,
         IReadOnlyCollection<AccommodationGroupInfo> groups,
         RoomCategoryIdentification? id = null)
-        => new(id ?? CategoryId, projectInfo, types, roomCapacity, rooms, groups);
+        => new(id ?? CategoryId, projectInfo, types, rooms, groups);
 
     #region Инварианты конструктора
 
@@ -73,7 +72,7 @@ public class RoomCategoryPlanTest
         var project = MakeProject(lux);
 
         _ = Should.Throw<ArgumentException>(
-            () => MakePlan(project, [lux], 2, [], [], id: new RoomCategoryIdentification(OtherProjectId, CategoryIntId)));
+            () => MakePlan(project, [lux], [], [], id: new RoomCategoryIdentification(OtherProjectId, CategoryIntId)));
     }
 
     /// <summary>
@@ -86,7 +85,7 @@ public class RoomCategoryPlanTest
         var project = MakeProject(MakeLux());
         var copy = MakeLux();
 
-        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [copy], 2, [], []));
+        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [copy], [], []));
     }
 
     [Fact]
@@ -96,7 +95,28 @@ public class RoomCategoryPlanTest
         var alien = MakeLuxSingle();
         var project = MakeProject(lux);
 
-        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [alien], 2, [], []));
+        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [alien], [], []));
+    }
+
+    /// <summary>Тип, селящийся из другой категории, в план этой категории не входит (ADR020).</summary>
+    [Fact]
+    public void Ctor_ThrowsWhenTypeBelongsToAnotherCategory()
+    {
+        var lux = MakeLux();
+        var otherPool = MakeLuxSingle(roomCategoryId: SecondCategoryIntId);
+        var project = MakeProject(lux, otherPool);
+
+        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [lux, otherPool], [], []));
+    }
+
+    /// <summary>Пул без типов вмещает ноль, а не падает на пустом максимуме.</summary>
+    [Fact]
+    public void RoomCapacity_OfPoolWithoutTypes_IsZero()
+    {
+        var plan = MakePlan(MakeProject(), [], [MakeRoom(1)], []);
+
+        plan.RoomCapacity.ShouldBe(0);
+        plan.TotalCapacity.ShouldBe(0);
     }
 
     [Fact]
@@ -106,7 +126,7 @@ public class RoomCategoryPlanTest
         var project = MakeProject(lux);
         var alienRoom = new RoomInfo(RoomId(1, OtherProjectId), "Чужая", []);
 
-        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [lux], 2, [alienRoom], []));
+        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [lux], [alienRoom], []));
     }
 
     [Fact]
@@ -116,7 +136,7 @@ public class RoomCategoryPlanTest
         var project = MakeProject(lux);
         var alienGroup = MakeGroup(1, lux, projectId: OtherProjectId);
 
-        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [lux], 2, [], [alienGroup]));
+        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [lux], [], [alienGroup]));
     }
 
     [Fact]
@@ -128,7 +148,7 @@ public class RoomCategoryPlanTest
         // В плане только «Люкс», а группа куплена по «Люкс на одного»
         var group = MakeGroup(1, single);
 
-        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [lux], 2, [], [group]));
+        _ = Should.Throw<ArgumentException>(() => MakePlan(project, [lux], [], [group]));
     }
 
     [Fact]
@@ -139,7 +159,7 @@ public class RoomCategoryPlanTest
         var stranger = MakeGroup(7, lux, roomId: 1);
 
         _ = Should.Throw<ArgumentException>(
-            () => MakePlan(project, [lux], 2, [MakeRoom(1, stranger)], []));
+            () => MakePlan(project, [lux], [MakeRoom(1, stranger)], []));
     }
 
     [Fact]
@@ -150,7 +170,7 @@ public class RoomCategoryPlanTest
         var group = MakeGroup(1, lux, roomId: 1);
 
         _ = Should.Throw<ArgumentException>(
-            () => MakePlan(project, [lux], 2, [MakeRoom(1)], [group]));
+            () => MakePlan(project, [lux], [MakeRoom(1)], [group]));
     }
 
     [Fact]
@@ -161,7 +181,7 @@ public class RoomCategoryPlanTest
         var group = MakeGroup(1, lux, roomId: null);
 
         _ = Should.Throw<ArgumentException>(
-            () => MakePlan(project, [lux], 2, [MakeRoom(1, group)], [group]));
+            () => MakePlan(project, [lux], [MakeRoom(1, group)], [group]));
     }
 
     [Fact]
@@ -172,7 +192,7 @@ public class RoomCategoryPlanTest
         var group = MakeGroup(1, lux, roomId: 1);
 
         _ = Should.Throw<ArgumentException>(
-            () => MakePlan(project, [lux], 2, [MakeRoom(1, group), MakeRoom(2, group)], [group]));
+            () => MakePlan(project, [lux], [MakeRoom(1, group), MakeRoom(2, group)], [group]));
     }
 
     [Fact]
@@ -184,7 +204,7 @@ public class RoomCategoryPlanTest
         var group = MakeGroup(1, lux, roomId: 1);
 
         _ = Should.Throw<ArgumentException>(
-            () => MakePlan(project, [lux], 2, [MakeRoom(1), MakeRoom(2, group)], [group]));
+            () => MakePlan(project, [lux], [MakeRoom(1), MakeRoom(2, group)], [group]));
     }
 
     /// <summary>
@@ -198,7 +218,7 @@ public class RoomCategoryPlanTest
         var project = MakeProject(lux);
         var group = MakeGroup(1, lux, roomId: 1, persons: 5);
 
-        var plan = MakePlan(project, [lux], 2, [MakeRoom(1, group)], [group]);
+        var plan = MakePlan(project, [lux], [MakeRoom(1, group)], [group]);
 
         plan.GetRoom(RoomId(1)).Occupancy.ShouldBe(5);
         plan.IsFull(RoomId(1)).ShouldBeTrue();
@@ -218,7 +238,7 @@ public class RoomCategoryPlanTest
             new AccommodationRequestIdentification(ProjectId, 2), lux.Id, RoomId(2), [sharedClaim]);
 
         _ = Should.Throw<ArgumentException>(
-            () => MakePlan(project, [lux], 2, [MakeRoom(1, first), MakeRoom(2, second)], [first, second]));
+            () => MakePlan(project, [lux], [MakeRoom(1, first), MakeRoom(2, second)], [first, second]));
     }
 
     #endregion
@@ -232,7 +252,7 @@ public class RoomCategoryPlanTest
         var project = MakeProject(lux);
         var group = MakeGroup(1, lux, roomId: 1, persons: 3);
 
-        var plan = MakePlan(project, [lux], 4, [MakeRoom(1, group), MakeRoom(2)], [group]);
+        var plan = MakePlan(project, [lux], [MakeRoom(1, group), MakeRoom(2)], [group]);
 
         plan.GetEffectiveCapacity(RoomId(1)).ShouldBe(4);
         plan.GetFreeSpace(RoomId(1), lux.Id).ShouldBe(1);
@@ -252,7 +272,7 @@ public class RoomCategoryPlanTest
         var project = MakeProject(lux, single);
         var group = MakeGroup(1, single, roomId: 1, persons: 1);
 
-        var plan = MakePlan(project, [lux, single], roomCapacity: 2, [MakeRoom(1, group)], [group]);
+        var plan = MakePlan(project, [lux, single], [MakeRoom(1, group)], [group]);
 
         plan.GetEffectiveCapacity(RoomId(1)).ShouldBe(1);
         plan.IsFull(RoomId(1)).ShouldBeTrue();
@@ -261,9 +281,8 @@ public class RoomCategoryPlanTest
     }
 
     /// <summary>
-    /// План с двумя типами разной вместимости в одном пуле. Из БД такой план сегодня не
-    /// собирается — тип и категория ещё не разделены (ADR018, §2), — но из модели собираться
-    /// обязан, иначе задел на разделение фиктивен.
+    /// План с двумя типами разной вместимости в одном пуле (ADR020). Физическая вместимость пула —
+    /// наибольшая из вместимостей его типов.
     /// </summary>
     [Fact]
     public void TwoTypesInOnePool_WithDifferentCapacity()
@@ -272,9 +291,10 @@ public class RoomCategoryPlanTest
         var single = MakeLuxSingle(capacity: 2);
         var project = MakeProject(lux, single);
 
-        var plan = MakePlan(project, [lux, single], roomCapacity: 4, [MakeRoom(1), MakeRoom(2)], []);
+        var plan = MakePlan(project, [lux, single], [MakeRoom(1), MakeRoom(2)], []);
 
         plan.AccommodationTypes.Count.ShouldBe(2);
+        plan.RoomCapacity.ShouldBe(4);
         plan.TotalCapacity.ShouldBe(8);
 
         // Пустая комната: физический предел ужимается только продаваемой вместимостью типа
@@ -284,7 +304,7 @@ public class RoomCategoryPlanTest
 
         // Въехала группа «на двоих» — комната целиком ограничена её типом
         var group = MakeGroup(1, single, roomId: 1, persons: 2);
-        var occupied = MakePlan(project, [lux, single], 4, [MakeRoom(1, group), MakeRoom(2)], [group]);
+        var occupied = MakePlan(project, [lux, single], [MakeRoom(1, group), MakeRoom(2)], [group]);
 
         occupied.GetEffectiveCapacity(RoomId(1)).ShouldBe(2);
         occupied.IsFull(RoomId(1)).ShouldBeTrue();
@@ -299,7 +319,7 @@ public class RoomCategoryPlanTest
         var single = MakeLuxSingle(capacity: 1);
         var project = MakeProject(lux, single);
 
-        var plan = MakePlan(project, [lux, single], roomCapacity: 2, [MakeRoom(1), MakeRoom(2), MakeRoom(3)], []);
+        var plan = MakePlan(project, [lux, single], [MakeRoom(1), MakeRoom(2), MakeRoom(3)], []);
 
         // 3 комнаты по 2 места — независимо от того, сколько типов из них селится
         plan.TotalCapacity.ShouldBe(6);
@@ -313,7 +333,7 @@ public class RoomCategoryPlanTest
         var settled = MakeGroup(1, lux, roomId: 1, persons: 1);
         var waiting = MakeGroup(2, lux, persons: 2);
 
-        var plan = MakePlan(project, [lux], 2, [MakeRoom(1, settled)], [settled, waiting]);
+        var plan = MakePlan(project, [lux], [MakeRoom(1, settled)], [settled, waiting]);
 
         plan.UnassignedGroups.Select(g => g.Id).ShouldBe([waiting.Id]);
         plan.Groups.Count.ShouldBe(2);
@@ -327,7 +347,7 @@ public class RoomCategoryPlanTest
         var lux = MakeLux(capacity: 2);
         var project = MakeProject(lux);
 
-        var plan = MakePlan(project, [lux], 2, [MakeRoom(1)], []);
+        var plan = MakePlan(project, [lux], [MakeRoom(1)], []);
 
         plan.GetRoom(RoomId(1)).IsOccupied.ShouldBeFalse();
         plan.IsFull(RoomId(1)).ShouldBeFalse();
@@ -342,7 +362,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux();
         var group = MakeGroup(1, lux);
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [], [group]);
+        var plan = MakePlan(MakeProject(lux), [lux], [], [group]);
 
         plan.GetGroupOrDefault(AccommodationGroupIdentification.From(group.Id)).ShouldBe(group);
     }
@@ -351,7 +371,7 @@ public class RoomCategoryPlanTest
     public void GetGroupOrDefault_ReturnsNullForSoloClaim()
     {
         var lux = MakeLux();
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [], []);
+        var plan = MakePlan(MakeProject(lux), [lux], [], []);
 
         plan.GetGroupOrDefault(AccommodationGroupIdentification.From(new ClaimIdentification(ProjectId, 5)))
             .ShouldBeNull();
@@ -361,7 +381,7 @@ public class RoomCategoryPlanTest
     public void GetGroupOrDefault_ThrowsForGroupOutsidePlan()
     {
         var lux = MakeLux();
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [], []);
+        var plan = MakePlan(MakeProject(lux), [lux], [], []);
 
         _ = Should.Throw<AccommodationGroupNotFoundException>(
             () => plan.GetGroupOrDefault(
@@ -376,7 +396,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux(capacity: 3);
         var group = MakeGroup(1, lux, roomId: 1, persons: 1);
-        var plan = MakePlan(MakeProject(lux), [lux], 3, [MakeRoom(1, group)], [group]);
+        var plan = MakePlan(MakeProject(lux), [lux], [MakeRoom(1, group)], [group]);
 
         plan.GetFreeSpaceForGroup(group.Id).ShouldBe(2);
     }
@@ -386,7 +406,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux(capacity: 3);
         var group = MakeGroup(1, lux, persons: 2);
-        var plan = MakePlan(MakeProject(lux), [lux], 3, [], [group]);
+        var plan = MakePlan(MakeProject(lux), [lux], [], [group]);
 
         plan.GetFreeSpaceForGroup(group.Id).ShouldBe(1);
     }
@@ -401,7 +421,7 @@ public class RoomCategoryPlanTest
         var luxGroup = MakeGroup(1, lux, roomId: 1);
         var pairGroup = MakeGroup(2, pair, roomId: 1);
         var plan = MakePlan(
-            MakeProject(lux, pair), [lux, pair], 3, [MakeRoom(1, luxGroup, pairGroup)], [luxGroup, pairGroup]);
+            MakeProject(lux, pair), [lux, pair], [MakeRoom(1, luxGroup, pairGroup)], [luxGroup, pairGroup]);
 
         plan.GetFreeSpaceForGroup(luxGroup.Id).ShouldBe(0);
     }
@@ -413,7 +433,7 @@ public class RoomCategoryPlanTest
         var lux = MakeLux(capacity: 2);
         var placed = MakeGroup(1, lux, roomId: 1, persons: 3);
         var unassigned = MakeGroup(2, lux, persons: 3);
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1, placed)], [placed, unassigned]);
+        var plan = MakePlan(MakeProject(lux), [lux], [MakeRoom(1, placed)], [placed, unassigned]);
 
         plan.GetFreeSpaceForGroup(placed.Id).ShouldBe(0);
         plan.GetFreeSpaceForGroup(unassigned.Id).ShouldBe(0);
@@ -425,7 +445,7 @@ public class RoomCategoryPlanTest
         var lux = MakeLux(capacity: 4);
         var mine = MakeGroup(1, lux, roomId: 1, persons: 2);
         var other = MakeGroup(2, lux, roomId: 1, persons: 1);
-        var plan = MakePlan(MakeProject(lux), [lux], 4, [MakeRoom(1, mine, other)], [mine, other]);
+        var plan = MakePlan(MakeProject(lux), [lux], [MakeRoom(1, mine, other)], [mine, other]);
         var me = mine.Subjects.First();
 
         plan.GetNeighbours(me).ShouldBe(
@@ -437,7 +457,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux(capacity: 4);
         var mine = MakeGroup(1, lux, persons: 3);
-        var plan = MakePlan(MakeProject(lux), [lux], 4, [], [mine]);
+        var plan = MakePlan(MakeProject(lux), [lux], [], [mine]);
         var me = mine.Subjects.First();
 
         plan.GetNeighbours(me).ShouldBe([.. mine.Subjects.Skip(1)], ignoreOrder: true);
@@ -449,7 +469,7 @@ public class RoomCategoryPlanTest
         // Группы без жильцов в БД встречаются.
         var lux = MakeLux(capacity: 3);
         var empty = MakeGroup(1, lux, persons: 0);
-        var plan = MakePlan(MakeProject(lux), [lux], 3, [], [empty]);
+        var plan = MakePlan(MakeProject(lux), [lux], [], [empty]);
 
         plan.GetFreeSpaceForGroup(empty.Id).ShouldBe(3);
     }
@@ -459,7 +479,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux(capacity: 2);
         var mine = MakeGroup(1, lux, roomId: 1);
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1, mine)], [mine]);
+        var plan = MakePlan(MakeProject(lux), [lux], [MakeRoom(1, mine)], [mine]);
 
         plan.GetNeighbours(mine.Subjects.Single()).ShouldBeEmpty();
     }
@@ -468,7 +488,7 @@ public class RoomCategoryPlanTest
     public void GetNeighbours_ClaimOutsidePlan_IsEmpty()
     {
         var lux = MakeLux();
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [], [MakeGroup(1, lux)]);
+        var plan = MakePlan(MakeProject(lux), [lux], [], [MakeGroup(1, lux)]);
 
         plan.GetNeighbours(new ClaimIdentification(ProjectId, 100500)).ShouldBeEmpty();
     }
@@ -482,7 +502,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux();
         var placed = MakeGroup(1, lux, roomId: 1, persons: 2);
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1, placed), MakeRoom(2)], [placed]);
+        var plan = MakePlan(MakeProject(lux), [lux], [MakeRoom(1, placed), MakeRoom(2)], [placed]);
 
         // Любой из жильцов группы живёт в её комнате — не только первый.
         foreach (var claimId in placed.Subjects)
@@ -496,7 +516,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux();
         var unassigned = MakeGroup(1, lux, roomId: null);
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1)], [unassigned]);
+        var plan = MakePlan(MakeProject(lux), [lux], [MakeRoom(1)], [unassigned]);
 
         plan.FindRoomByClaim(unassigned.Subjects.Single()).ShouldBeNull();
     }
@@ -506,7 +526,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux();
         var placed = MakeGroup(1, lux, roomId: 1);
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [MakeRoom(1, placed)], [placed]);
+        var plan = MakePlan(MakeProject(lux), [lux], [MakeRoom(1, placed)], [placed]);
 
         plan.FindRoomByClaim(new ClaimIdentification(ProjectId, 100500)).ShouldBeNull();
     }
@@ -519,13 +539,12 @@ public class RoomCategoryPlanTest
         var project = MakeProject(lux, single);
 
         var inLux = MakeGroup(1, lux, roomId: 1, persons: 2);
-        var luxPlan = MakePlan(project, [lux], 2, [MakeRoom(1, inLux), MakeRoom(2)], [inLux]);
+        var luxPlan = MakePlan(project, [lux], [MakeRoom(1, inLux), MakeRoom(2)], [inLux]);
 
         var inSingle = MakeGroup(3, single, roomId: 3);
         var singlePlan = MakePlan(
             project,
             [single],
-            1,
             [MakeRoom(3, inSingle)],
             [inSingle],
             id: new RoomCategoryIdentification(ProjectId, SecondCategoryIntId));
@@ -545,7 +564,7 @@ public class RoomCategoryPlanTest
     public void GetRoom_ThrowsForUnknownRoom()
     {
         var lux = MakeLux();
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [], []);
+        var plan = MakePlan(MakeProject(lux), [lux], [], []);
 
         _ = Should.Throw<AccommodationRoomNotFoundException>(() => plan.GetRoom(RoomId(100500)));
     }
@@ -554,7 +573,7 @@ public class RoomCategoryPlanTest
     public void GetGroup_ThrowsForUnknownGroup()
     {
         var lux = MakeLux();
-        var plan = MakePlan(MakeProject(lux), [lux], 2, [], []);
+        var plan = MakePlan(MakeProject(lux), [lux], [], []);
 
         _ = Should.Throw<AccommodationGroupNotFoundException>(
             () => plan.GetGroup(new AccommodationRequestIdentification(ProjectId, 100500)));
@@ -565,7 +584,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux();
         var single = MakeLuxSingle();
-        var plan = MakePlan(MakeProject(lux, single), [lux], 2, [], []);
+        var plan = MakePlan(MakeProject(lux, single), [lux], [], []);
 
         _ = Should.Throw<AccommodationTypeNotFoundException>(() => plan.GetAccommodationType(single.Id));
     }
@@ -575,7 +594,7 @@ public class RoomCategoryPlanTest
     {
         var lux = MakeLux();
         var single = MakeLuxSingle();
-        var plan = MakePlan(MakeProject(lux, single), [lux], 2, [MakeRoom(1)], []);
+        var plan = MakePlan(MakeProject(lux, single), [lux], [MakeRoom(1)], []);
 
         _ = Should.Throw<AccommodationTypeNotFoundException>(() => plan.GetFreeSpace(RoomId(1), single.Id));
     }

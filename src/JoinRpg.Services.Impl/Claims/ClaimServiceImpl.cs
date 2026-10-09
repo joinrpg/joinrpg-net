@@ -722,9 +722,8 @@ internal class ClaimServiceImpl(
                 room.GetId(),
                 room.Name,
                 // Название категории сервис уведомлений возьмёт из метаданных: по навигации
-                // room.ProjectAccommodationType это была бы лишняя ленивая загрузка. Колонка комнаты
-                // хранит её категорию (ADR018, §2, пункт 1), а не тип проживания группы.
-                new RoomCategoryIdentification(claimId.ProjectId, room.AccommodationTypeId),
+                // room.RoomCategory это была бы лишняя ленивая загрузка.
+                new RoomCategoryIdentification(claimId.ProjectId, room.RoomCategoryId),
                 // Из текущего запроса, а не из ctx.Initiator: EF-сущность пользователя нужна была
                 // только легаси-письмам.
                 ctx.CurrentUser.ToUserInfoHeader(),

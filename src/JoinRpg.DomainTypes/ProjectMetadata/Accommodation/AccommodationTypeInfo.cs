@@ -8,9 +8,8 @@ namespace JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 /// </summary>
 /// <param name="Id">Идентификатор типа проживания</param>
 /// <param name="RoomCategoryId">
-/// Категория комнат (пул), из которого селится этот тип проживания. Единственный способ узнать
-/// пул по типу проживания — конвертации идентификаторов в домене нет (ADR018, «Задел на
-/// разделение»).
+/// Категория комнат (пул), из которой селится этот тип проживания. Единственный способ узнать
+/// пул по типу проживания — конвертации идентификаторов в домене нет (ADR018, §2; ADR020).
 /// </param>
 /// <param name="Name">Название типа, как его видит игрок</param>
 /// <param name="Description">Описание типа проживания</param>
@@ -56,14 +55,35 @@ public record AccommodationTypeInfo(
 }
 
 /// <summary>
-/// Настройки проживания проекта: включён ли модуль и какие типы проживания заведены.
+/// Категория комнат — пул, из которого селятся один или несколько типов проживания (ADR020).
+/// Настройка мастера, как и сам тип; комнаты в метаданные не входят — это оперативные данные
+/// <c>RoomCategoryPlan</c>.
+/// </summary>
+/// <param name="Id">Идентификатор категории</param>
+/// <param name="Name">Название категории, как его видит мастер</param>
+public record RoomCategoryInfo(RoomCategoryIdentification Id, string Name);
+
+/// <summary>
+/// Настройки проживания проекта: включён ли модуль, какие типы проживания и категории комнат заведены.
 /// </summary>
 /// <param name="Enabled">Включён ли модуль проживания в проекте</param>
 /// <param name="Types">Все типы проживания проекта</param>
+/// <param name="RoomCategories">Все категории комнат проекта</param>
 public record ProjectAccommodationSettings(
     bool Enabled,
-    IReadOnlyCollection<AccommodationTypeInfo> Types)
+    IReadOnlyCollection<AccommodationTypeInfo> Types,
+    IReadOnlyCollection<RoomCategoryInfo> RoomCategories)
 {
+    /// <summary>Категория комнат по идентификатору</summary>
+    /// <exception cref="RoomCategoryNotFoundException">Категории с таким идентификатором нет</exception>
+    public RoomCategoryInfo GetRoomCategoryById(RoomCategoryIdentification id)
+        => RoomCategories.SingleOrDefault(c => c.Id == id)
+            ?? throw new RoomCategoryNotFoundException(id);
+
+    /// <summary>Типы проживания, селящиеся из данной категории комнат</summary>
+    public IReadOnlyCollection<AccommodationTypeInfo> GetTypesOfCategory(RoomCategoryIdentification id)
+        => [.. Types.Where(t => t.RoomCategoryId == id)];
+
     /// <summary>Тип проживания по идентификатору</summary>
     /// <exception cref="AccommodationTypeNotFoundException">Типа проживания с таким идентификатором нет</exception>
     public AccommodationTypeInfo GetTypeById(AccommodationTypeIdentification id)

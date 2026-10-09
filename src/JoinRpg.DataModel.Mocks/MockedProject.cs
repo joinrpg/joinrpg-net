@@ -145,6 +145,7 @@ public class MockedProject
             KogdaIgraGames = [],
             ProjectRolesLists = [],
             ProjectAccommodationTypes = [],
+            ProjectRoomCategories = [],
         };
 
         // Навигационные свойства ACL заполняем, как это сделал бы реальный запрос с Include:
@@ -556,13 +557,39 @@ public class MockedProject
     /// </summary>
     public ICollection<ProjectAccommodationType> AccommodationTypes => Project.ProjectAccommodationTypes;
 
-    /// <summary>Тип поселения проекта (палатка, домик, номер…).</summary>
+    /// <summary>Категории комнат проекта (ADR020).</summary>
+    public ICollection<ProjectRoomCategory> RoomCategories => Project.ProjectRoomCategories;
+
+    /// <summary>Категория комнат — пул, из которого селятся типы проживания (ADR020).</summary>
+    public ProjectRoomCategory CreateRoomCategory(string name = "Категория")
+    {
+        var category = new ProjectRoomCategory
+        {
+            // Номера с запасом, чтобы в тестах id категории не совпадал с id типа случайно:
+            // иначе тест прошёл бы и на коде, путающем одно с другим.
+            Id = RoomCategories.Select(c => c.Id).DefaultIfEmpty(100).Max() + 1,
+            Project = Project,
+            ProjectId = Project.ProjectId,
+            Name = name,
+            Rooms = [],
+            AccommodationTypes = [],
+        };
+        RoomCategories.Add(category);
+        return category;
+    }
+
+    /// <summary>
+    /// Тип поселения проекта (палатка, домик, номер…). Без <paramref name="roomCategory"/>
+    /// получает собственную категорию комнат с тем же именем.
+    /// </summary>
     public ProjectAccommodationType CreateAccommodationType(
         string name = "Палатка",
         int capacity = 4,
         int cost = 0,
-        bool isPlayerSelectable = true)
+        bool isPlayerSelectable = true,
+        ProjectRoomCategory? roomCategory = null)
     {
+        roomCategory ??= CreateRoomCategory(name);
         var accommodationType = new ProjectAccommodationType
         {
             Id = AccommodationTypes.Count + 1,
@@ -572,9 +599,11 @@ public class MockedProject
             Capacity = capacity,
             Cost = cost,
             IsPlayerSelectable = isPlayerSelectable,
-            ProjectAccommodations = [],
+            RoomCategory = roomCategory,
+            RoomCategoryId = roomCategory.Id,
             Desirous = [],
         };
+        roomCategory.AccommodationTypes.Add(accommodationType);
         AccommodationTypes.Add(accommodationType);
         // ReInitProjectInfo намеренно не зовём: он подменяет экземпляр ProjectInfo, а тесты
         // поселения создают типы уже после того, как заведены поля и персонажи, привязанные
@@ -627,20 +656,21 @@ public class MockedProject
         return room;
     }
 
-    /// <summary>Пустая комната выбранного типа поселения.</summary>
+    /// <summary>Пустая комната в категории выбранного типа поселения.</summary>
     public ProjectAccommodation CreateEmptyRoom(ProjectAccommodationType accommodationType, string name = "Комната")
     {
+        var category = accommodationType.RoomCategory;
         var room = new ProjectAccommodation
         {
             Id = Rooms.Count + 1,
             Name = name,
             Project = Project,
             ProjectId = Project.ProjectId,
-            ProjectAccommodationType = accommodationType,
-            AccommodationTypeId = accommodationType.Id,
+            RoomCategory = category,
+            RoomCategoryId = category.Id,
             Inhabitants = [],
         };
-        accommodationType.ProjectAccommodations.Add(room);
+        category.Rooms.Add(room);
         Rooms.Add(room);
         return room;
     }
