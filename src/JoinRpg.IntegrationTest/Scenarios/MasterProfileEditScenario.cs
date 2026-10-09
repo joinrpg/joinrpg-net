@@ -129,6 +129,24 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
     }
 
     [Fact]
+    public async Task EditPage_CardReason_CoMasterOnlyForActiveMaster()
+    {
+        var (projectId, ownerId, masterId, _) = await CreateProjectWithMaster();
+        var client = await Login(owners[projectId]);
+        var editUrl = $"{projectId.Value}/masters/edit?userId={masterId.Value}";
+
+        (await ReadDecoded(await client.GetAsync(editUrl))).ShouldContain("Со-мастер");
+
+        await factory.Services.RunAsAsync(ownerId, sp =>
+            sp.GetRequiredService<IProjectAccessService>().RemoveAccess(projectId, masterId, newResponsibleMasterId: null));
+
+        // Снятый мастер — уже не со-мастер: карточка не должна это утверждать.
+        var page = await ReadDecoded(await client.GetAsync(editUrl));
+        page.ShouldContain("Мастер снят с проекта");
+        page.ShouldNotContain("Со-мастер");
+    }
+
+    [Fact]
     public async Task Granter_EditsOwnProfile_InArchivedProject()
     {
         // Права в архиве не меняются (ChangeAccess требует активный проект), а профиль — «титры» игры — правится.

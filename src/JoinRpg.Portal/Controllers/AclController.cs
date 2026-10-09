@@ -148,12 +148,15 @@ public class AclController(
         if (model is null)
         {
             // Бывший мастер: страница правки — это его возврат в проект, только с правом выдавать доступ (ADR019, §1).
-            if (!canGrantRights || projectInfo.FormerMasters.SingleOrDefault(m => m.UserId == userId) is not { } former)
+            if (!canGrantRights
+                || !projectInfo.FormerMasters.Any(m => m.UserId == userId)
+                || await userRepository.GetUserInfo(userId) is not { } formerUser)
             {
                 return null;
             }
-            var claims = await claimRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
-            model = new AclViewModel(former, claims.Count, projectInfo) { IsFormerMaster = true };
+            // Карточка — как на странице добавления: причина доступа к профилю считается по проекту,
+            // и снятый мастер в ней уже не «Со-мастер».
+            model = new AclViewModel(projectInfo, formerUser, currentUserAccessor) { IsFormerMaster = true };
         }
         // Права меняются только в активном проекте (ChangeAccess — MustBeActive), профиль — и в архиве: это «титры» игры.
         model.CanEditPermissions = canGrantRights && projectInfo.IsActive;
