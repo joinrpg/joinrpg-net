@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
@@ -22,7 +23,7 @@ namespace JoinRpg.Portal.Controllers;
 public class AccommodationTypeController(
     IAccommodationService accommodationService,
     IAccommodationTypeService accommodationTypeService,
-    IAccommodationRepository accommodationRepository,
+    IRoomCategoryPlanRepository roomCategoryPlanRepository,
     IClaimsRepository claimsRepository,
     IProjectMetadataRepository projectMetadataRepository,
     RoomTypeRoomsViewService roomTypeRoomsViewService,
@@ -47,7 +48,7 @@ public class AccommodationTypeController(
         }
 
         return View(new AccommodationListViewModel(project,
-            await accommodationRepository.GetRoomTypesForProject(projectId),
+            await roomCategoryPlanRepository.GetAllPlans(projectId),
             await claimsRepository.GetClaimsForRoomType(projectId, ClaimStatusSpec.Active, roomTypeId: null),
             await claimsRepository.GetUnsettledAccommodationClaims(projectId),
             currentUserAccessor));

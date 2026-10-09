@@ -1,6 +1,6 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 
@@ -35,7 +35,11 @@ public class AccommodationListViewModel
 
     public UnassignedClaimsRowViewModel UnassignedClaims { get; set; }
 
-    /// <param name="roomTypes">Оперативная сводка занятости по типам проживания</param>
+    /// <param name="plans">
+    /// Планы всех категорий комнат проекта (ADR018): из них считаются и комнатные счётчики пула,
+    /// и занятость каждого типа. Комнаты у типов одной категории общие (ADR020), поэтому итоги
+    /// страницы складываются по категориям, а не по типам.
+    /// </param>
     /// <param name="claimsWithoutRoomType">Активные заявки, в которых тип проживания не выбран</param>
     /// <param name="unsettledClaims">
     /// Заявки, выбравшие тип проживания, но ещё не расселённые по комнатам: по ним считается, сколько
@@ -43,7 +47,7 @@ public class AccommodationListViewModel
     /// EF-графу заявки, а <see cref="RoomTypeListItemViewModel"/> на EF не смотрит.
     /// </param>
     public AccommodationListViewModel(ProjectInfo project,
-        IReadOnlyCollection<RoomTypeInfoRow> roomTypes,
+        IReadOnlyCollection<RoomCategoryPlan> plans,
         IReadOnlyCollection<Claim> claimsWithoutRoomType,
         IReadOnlyCollection<Claim> unsettledClaims,
         ICurrentUserAccessor userId)
@@ -59,32 +63,26 @@ public class AccommodationListViewModel
                 group => group.Key,
                 group => AccommodationClaimCounters.CountPaid(group, project));
 
-        RoomTypes = [.. roomTypes.Select(row =>
-        {
-            // Тип проживания — настройка проекта, он уже есть в метаданных (ADR015).
-            var typeInfo = project.AccommodationSettings.GetTypeById(row.RoomTypeId);
-            return new RoomTypeListItemViewModel(
-                typeInfo,
-                // Markdown рендерится здесь, на сервере: вью-модель лежит в браузерной библиотеке
-                // JoinRpg.Web.Accommodation и рендерера markdown не видит.
-                typeInfo.Description.ToHtmlString(),
-                new RoomTypeOccupancySummary(
-                    typeInfo.Capacity,
-                    row.Occupied,
-                    row.RoomsCount,
-                    row.ApprovedClaims,
-                    row.FullyFreeRoomsCount,
-                    row.FullyOccupiedRoomsCount,
-                    paidByRoomType.GetValueOrDefault(row.RoomTypeId.AccommodationTypeId)),
-                userId.UserIdentification,
-                project);
-        })];
+        var planByCategory = plans.ToDictionary(plan => plan.Id);
+
+        // Тип проживания — настройка проекта, он уже есть в метаданных (ADR015).
+        RoomTypes = [.. project.AccommodationSettings.Types.Select(typeInfo => new RoomTypeListItemViewModel(
+            typeInfo,
+            // Markdown рендерится здесь, на сервере: вью-модель лежит в браузерной библиотеке
+            // JoinRpg.Web.Accommodation и рендерера markdown не видит.
+            typeInfo.Description.ToHtmlString(),
+            RoomTypeOccupancySummary.FromPlan(
+                planByCategory[typeInfo.RoomCategoryId],
+                typeInfo.Id,
+                paidByRoomType.GetValueOrDefault(typeInfo.Id.AccommodationTypeId)),
+            userId.UserIdentification,
+            project))];
 
         IsInfinite = RoomTypes.Any(rt => rt.IsInfinite);
 
         var allInfinite = RoomTypes.All(rt => rt.IsInfinite);
-        TotalCapacity = allInfinite ? (int?)null : RoomTypes.Sum(rt => rt.TotalCapacity);
-        FreeCapacity = allInfinite ? (int?)null : RoomTypes.Sum(rt => rt.Occupancy.FreeCapacity);
+        TotalCapacity = allInfinite ? (int?)null : plans.Sum(plan => plan.TotalCapacity);
+        FreeCapacity = allInfinite ? (int?)null : plans.Sum(plan => plan.FreeCapacity);
 
         TotalOccupied = RoomTypes.Sum(x => x.Occupancy.Occupied);
 
