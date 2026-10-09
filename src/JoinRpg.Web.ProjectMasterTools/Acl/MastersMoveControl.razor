@@ -1,0 +1,25 @@
+@* Перестановка мастера (ADR019, §5) — JoinMoveControl через общий API перестановки.
+   Таблица мастеров — MVC-страница, поэтому после перестановки она перезагружается (AutoRefresh). *@
+
+<JoinMoveControl TItem="MasterMoveItemViewModel" Items="items" Self="self" SkipGroup="true" AutoRefresh="true" />
+
+@code {
+    private List<MasterMoveItemViewModel> items = [];
+    private MasterMoveItemViewModel self = null!;
+
+    /// <summary>Все действующие мастера в текущем порядке.</summary>
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyCollection<MasterMoveItemViewModel> Masters { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectMasterIdentification Self { get; set; } = null!;
+
+    protected override void OnParametersSet()
+    {
+        // Копия: JoinMoveControl переставляет элементы в переданном списке.
+        items = [.. Masters];
+        self = items.Single(i => i.MasterId == Self);
+    }
+}

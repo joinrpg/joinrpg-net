@@ -22,6 +22,9 @@ public class AclViewModel
     public int ClaimsCount { get; }
 
     public int UserId { get; }
+
+    /// <summary>Мастер в проекте как сущность — для перестановки (ADR019, §5).</summary>
+    public ProjectMasterIdentification MasterId => new(new ProjectIdentification(ProjectId), UserId);
     public PermissionBadgeViewModel[] Badges { get; }
 
     // Профиль мастера (ADR019, §4) — для таблицы мастеров. Правится на странице мастера.
