@@ -28,6 +28,7 @@ public class ClaimController(
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterInfoRepository characterInfoRepository,
+    IClaimInfoRepository claimInfoRepository,
     IUserRepository UserRepository,
     IPaymentsService paymentsService,
     IProjectMetadataRepository projectMetadataRepository,
@@ -128,29 +129,25 @@ public class ClaimController(
         var plots = await characterPlotViewService.GetPlotsForCharacter(new CharacterIdentification(claim.ProjectId, claim.CharacterId));
 
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(claim.ProjectId));
-
-        var characterInfo = await characterInfoRepository.GetCharacterInfo(claim.GetCharacterId());
+        // Заявка уже найдена через EF, так что промах здесь — рассинхрон, а не 404.
+        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(claim.GetId())
+            ?? throw new InvalidOperationException($"Claim {claim.GetId()} is not found in character aggregate");
+        var projectInfo = claimInfo.ProjectInfo;
 
         // Модель строится при любом статусе и даже при выключенном поселении, если тип выбран:
         // панель рисуется только у утверждённой заявки (Edit.cshtml), но тип и комната из неё нужны
         // и строке взноса за проживание, которая от флага поселения не зависит.
-        var claimInfo = characterInfo.Claims.Single(c => c.ClaimId == claim.GetId());
-        var accommodationModel = projectInfo.AccommodationSettings.Enabled || claimInfo.AccommodationTypeId is not null
-            ? await ShowAccommodationModel(claimInfo, projectInfo)
+        var accommodationModel = projectInfo.AccommodationSettings.Enabled || claimInfo.Claim.AccommodationTypeId is not null
+            ? await ShowAccommodationModel(claimInfo.Claim, projectInfo)
             : null;
-
-        var userInfo = await UserRepository.GetRequiredUserInfo(new UserIdentification(claim.PlayerUserId));
 
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
-            characterInfo,
+            claimInfo,
             plots,
-            projectInfo,
             claimValidator,
             paymentsService.GetExternalPaymentUrl,
             accommodationModel,
-            userInfo,
             plots.Count > 0
                 ? await linkRendererFactory.Load(new ProjectIdentification(claim.ProjectId))
                 : JoinrpgMarkdownLinkRendererFactory.NoDirectives,

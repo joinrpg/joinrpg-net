@@ -213,6 +213,22 @@ Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimIn
    - EF-`Claim` в этих вьюмоделях остаётся ради комментариев, финансовых операций и
      `ClaimAccommodationViewModel`. В `CharacterClaimInfo` их нет, и этот ADR их туда не добавляет.
 
+   Сделано в шаге 6 (страница заявки и «вторая роль»). `ClaimViewModel` принимает `ClaimInfo`
+   вместо отдельных `CharacterInfo`, `UserInfo` и `ProjectInfo`, контроллер грузит его одним
+   `GetClaimInfoOrDefault`. С агрегата теперь читаются: имя проекта, персонаж (id, `IsActive`,
+   `AutoCreated`, группы), другая утверждённая заявка, статус с правами, ответственный мастер (id и для показа — через `GetMasterById`),
+   согласие на чувствительные данные, флаги проекта (активность, регистрация, проживание) и
+   «утвердить мешают чужие заявки на персонажа» — `HasOtherClaimsForThisCharacter` переехал на
+   `ClaimInCharacter`, EF-версия удалена. `SecondRoleViewModel` от EF-`Claim` освободился целиком:
+   ответственный мастер берётся из `ProjectInfo.GetMasterById` — снять мастера, за которым числятся
+   заявки, нельзя, так что он всегда среди действующих.
+
+   На EF в `ClaimViewModel` осталось:
+   - комментарии, взнос (`ClaimFeeViewModel`), типы оплаты, поля (`CustomFieldsViewModel`),
+     проживание (`CanChangeAccommodation`) и `Claim.HasAccess` — по причинам выше;
+   - число других заявок игрока: это заявки на других персонажей, в агрегате их нет, а
+     `UserInfo.ActiveClaims` не включает заявки «на паузе», которые здесь считаются.
+
 Что сознательно НЕ делаем:
 ==
 

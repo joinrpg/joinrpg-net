@@ -5,7 +5,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
-using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
@@ -56,7 +55,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public UserIdentification ResponsibleMasterId { get; set; } = null!;
 
     [Display(Name = "Ответственный мастер"), ReadOnly(true)]
-    public User ResponsibleMaster { get; set; }
+    public UserLinkViewModel ResponsibleMaster { get; }
 
     [ReadOnly(true)]
     public bool HasOtherApprovedClaim { get; }
@@ -96,19 +95,36 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public string? PassportData { get; }
     public string? RegistrationAddress { get; }
 
+    /// <param name="claim">
+    /// EF-сущность той же заявки. Пока нужна тому, чего нет в агрегате (ADR021, шаг 6):
+    /// комментариям, взносу и типам оплаты, полям, ответственному мастеру как <see cref="User"/>,
+    /// проживанию и подсчёту других заявок игрока.
+    /// </param>
+    /// <param name="claimInfo">Заявка вместе с персонажем и профилем игрока (ADR021).</param>
     public ClaimViewModel(ICurrentUserAccessor currentUser,
         Claim claim,
-      CharacterInfo characterInfo,
+      ClaimInfo claimInfo,
       IReadOnlyCollection<PlotTextDto> plotElements,
-      ProjectInfo projectInfo,
       IClaimProblemValidator problemValidator,
       Func<string?, string?> externalPaymentUrlFactory,
       ClaimAccommodationViewModel? accommodationModel,
-      UserInfo playerInfo,
       ILinkRenderer linkRenderer,
       IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
     {
-        ClaimIdentification = claim.GetId();
+        ArgumentNullException.ThrowIfNull(claim);
+        ArgumentNullException.ThrowIfNull(claimInfo);
+        if (claim.GetId() != claimInfo.ClaimId)
+        {
+            throw new ArgumentException(
+                $"Claim entity {claim.GetId()} does not match claim info {claimInfo.ClaimId}", nameof(claimInfo));
+        }
+
+        var projectInfo = claimInfo.ProjectInfo;
+        var characterInfo = claimInfo.Character;
+        var claimData = claimInfo.Claim;
+        var playerInfo = claimInfo.Player;
+
+        ClaimIdentification = claimInfo.ClaimId;
         AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
         CommentDiscussionId = claim.CommentDiscussionId;
         RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId, projectInfo);
@@ -117,43 +133,46 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             Permission.CanManageClaims,
             ExtraAccessReason.ResponsibleMaster);
         CanChangeRooms = claim.CanChangeAccommodation(currentUser.UserIdentificationOrDefault);
-        IsMyClaim = claim.PlayerUserId == currentUser.UserId;
+        IsMyClaim = claimData.PlayerId == currentUser.UserIdentificationOrDefault;
         Player = claim.Player;
         PlayerLink = new UserLinkViewModel(playerInfo.ToUserInfoHeader());
-        ProjectName = claim.Project.ProjectName;
-        Status = ClaimStatusBuilders.CreateFullStatus(claim, AccessArgumentsFactory.Create(claim, currentUser, projectInfo));
-        CharacterId = claim.CharacterId;
-        CharacterActive = claim.Character.IsActive;
-        CharacterAutoCreated = claim.Character.AutoCreated;
+        ProjectName = projectInfo.ProjectName.Value;
+        Status = ClaimStatusBuilders.CreateFullStatus(
+            claimData,
+            AccessArgumentsFactory.Create(characterInfo, claimData, currentUser.UserIdentificationOrDefault));
+        CharacterId = characterInfo.Id.CharacterId;
+        CharacterActive = characterInfo.IsActive;
+        CharacterAutoCreated = characterInfo.AutoCreated;
 
-        HasBlockingOtherClaimsForThisCharacter = claim.HasOtherClaimsForThisCharacter();
-        HasOtherApprovedClaim = claim.Character.ApprovedClaim is not null && claim.Character.ApprovedClaim != claim;
+        HasBlockingOtherClaimsForThisCharacter = claimInfo.ClaimInCharacter.HasOtherClaimsForThisCharacter();
+        HasOtherApprovedClaim = characterInfo.ApprovedClaimId is not null && characterInfo.ApprovedClaimId != claimInfo.ClaimId;
+        // Другие заявки игрока в проекте — это заявки на других персонажей, их нет ни в агрегате
+        // персонажа, ни в профиле (UserInfo.ActiveClaims не включает заявки «на паузе»,
+        // а здесь считаются все неотклонённые). Поэтому пока через EF.
         OtherClaimsFromThisPlayerCount =
-            OtherClaimsFromThisPlayerCount =
-                claim.IsApproved || !projectInfo.ClaimSettings.StrictlyOneCharacter
+                claimData.IsApproved || !projectInfo.ClaimSettings.StrictlyOneCharacter
                     ? 0
                     : claim.OtherPendingClaimsForThisPlayer().Count();
 
-        ResponsibleMasterId = new UserIdentification(claim.ResponsibleMasterUserId);
-        ResponsibleMaster = claim.ResponsibleMasterUser;
+        ResponsibleMasterId = claimData.ResponsibleMasterId;
+        ResponsibleMaster = new UserLinkViewModel(projectInfo.GetMasterById(claimData.ResponsibleMasterId).UserInfo);
         Fields = new CustomFieldsViewModel(currentUser.UserId, claim, projectInfo, fieldUsers);
         Navigation =
             CharacterNavigationViewModel.FromClaim(characterInfo,
-                claim.GetId(),
+                claimInfo.ClaimId,
                 currentUser.UserIdentification,
                 CharacterNavigationPage.Claim);
-        var problemContext = new ClaimInfo(new ClaimInCharacter(characterInfo, claim.GetId()), playerInfo);
-        Problems = problemValidator.Validate(problemContext).Select(p => new ProblemViewModel(p)).ToList();
+        Problems = problemValidator.Validate(claimInfo).Select(p => new ProblemViewModel(p)).ToList();
         // playerInfo уже прочитан репозиторием одним запросом. Старый claim.GetUserInfo() лез
         // по навигациям EF-сущности игрока (Extra, Auth, Allrpg, ExternalLogins, Claims, ProjectAcls),
         // а на ProjectAcls ещё и дёргал .Project по одному на проект — до 48 догрузок за запрос (#4960).
         PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUser);
-        ProjectActive = claim.Project.Active;
-        CheckInStarted = claim.Project.Details.CheckInProgress;
-        CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
-        Validator = new ClaimCheckInValidator(problemContext, problemValidator);
+        ProjectActive = projectInfo.IsActive;
+        CheckInStarted = projectInfo.ProjectCheckInSettings.InProgress;
+        CheckInModuleEnabled = projectInfo.ProjectCheckInSettings.CheckInModuleEnabled;
+        Validator = new ClaimCheckInValidator(claimInfo, problemValidator);
 
-        AccommodationEnabled = claim.Project.Details.EnableAccommodation;
+        AccommodationEnabled = projectInfo.AccommodationSettings.Enabled;
 
         if (claim.HasAccess(currentUser.UserId, Permission.CanManageMoney, ExtraAccessReason.Player))
         {
@@ -172,7 +191,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory,
             accommodationModel);
 
-        ParentGroups = new CharacterParentGroupsViewModel(claim.Character, HasMasterAccess, projectInfo);
+        ParentGroups = new CharacterParentGroupsViewModel(characterInfo, HasMasterAccess);
 
         Plot = new PlotDisplayViewModel(plotElements,
             currentUser,
@@ -181,7 +200,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         AccommodationModel = accommodationModel;
 
         SensitiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
-        HasSensitiveDataAccess = claim.PlayerAllowedSenstiveData && SensitiveDataRequired;
+        HasSensitiveDataAccess = claimData.PlayerAllowedSensitiveData && SensitiveDataRequired;
         if (HasSensitiveDataAccess)
         {
             // Берём из уже загруженного playerInfo, а не по ленивой навигации claim.Player.Extra:
