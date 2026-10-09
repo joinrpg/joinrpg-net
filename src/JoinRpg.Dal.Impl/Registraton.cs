@@ -44,7 +44,6 @@ public static class Registraton
             .AddTransient<IClaimsRepository, ClaimsRepositoryImpl>()
             .AddTransient<IAccommodationInviteRepository, AccommodationInviteRepositoryImpl>()
             .AddTransient<IAccommodationRepository, AccommodationRepositoryImpl>()
-            .AddTransient<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl>()
             .AddTransient<IRoomCategoryPlanRepository, RoomCategoryPlanRepository>()
             // IRoomCategoryPlanWriteRepository здесь НЕ регистрируется намеренно (ADR018), по той
             // же причине, что и ICharacterAggregateWriteRepository выше. Единственный способ его

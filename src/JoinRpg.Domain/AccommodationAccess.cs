@@ -33,6 +33,49 @@ public static class AccommodationAccess
             GetExtraAccessReason(claim.ClaimStatus));
 
     /// <summary>
+    /// Может ли <paramref name="userId"/> менять проживание по заявке — по доменным снимкам, без
+    /// EF-графа проекта. Правило то же, что у перегрузки над <see cref="Claim"/>.
+    /// </summary>
+    public static bool CanChangeAccommodation(
+        this ClaimInCharacter claimInCharacter,
+        [NotNullWhen(true)] UserIdentification? userId)
+    {
+        ArgumentNullException.ThrowIfNull(claimInCharacter);
+
+        if (userId is null)
+        {
+            return false;
+        }
+
+        var claim = claimInCharacter.Claim;
+        if (GetExtraAccessReason(claim.Status) == ExtraAccessReason.PlayerOrResponsible
+            && (claim.PlayerId == userId || claim.ResponsibleMasterId == userId))
+        {
+            return true;
+        }
+
+        return claimInCharacter.Character.ProjectInfo.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
+    }
+
+    /// <summary>
+    /// Проверить по доменным снимкам, что <paramref name="userId"/> может менять проживание по заявке,
+    /// иначе бросить отказ.
+    /// </summary>
+    /// <exception cref="NoAccessToProjectException">Менять проживание по этой заявке нельзя</exception>
+    public static ClaimInCharacter RequestAccommodationChangeAccess(
+        this ClaimInCharacter claimInCharacter,
+        UserIdentification? userId)
+    {
+        if (!claimInCharacter.CanChangeAccommodation(userId))
+        {
+            throw new NoAccessToProjectException(
+                claimInCharacter.Character.ProjectInfo, userId?.Value, Permission.CanSetPlayersAccommodations);
+        }
+
+        return claimInCharacter;
+    }
+
+    /// <summary>
     /// Проверить, что <paramref name="userId"/> может менять проживание по заявке, иначе бросить отказ.
     /// </summary>
     /// <exception cref="NoAccessToProjectException">Менять проживание по этой заявке нельзя</exception>

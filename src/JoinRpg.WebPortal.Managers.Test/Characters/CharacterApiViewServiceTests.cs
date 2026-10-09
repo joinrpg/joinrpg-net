@@ -120,6 +120,7 @@ public class CharacterApiViewServiceTests
     private sealed class ThrowingClaimInfoRepository : IClaimInfoRepository
     {
         public Task<ClaimInfo?> GetClaimInfoOrDefault(ClaimIdentification claimId) => throw new NotImplementedException();
+        public Task<ClaimInCharacter?> GetClaimInCharacterOrDefault(ClaimIdentification claimId) => throw new NotImplementedException();
         public Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds) => throw new NotImplementedException();
         public Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimInfos(IReadOnlyCollection<CharacterInfo> characters) => throw new NotImplementedException();
     }

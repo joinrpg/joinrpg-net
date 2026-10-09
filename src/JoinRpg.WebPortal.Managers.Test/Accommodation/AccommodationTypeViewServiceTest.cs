@@ -26,8 +26,8 @@ public class AccommodationTypeViewServiceTest
 
     private AccommodationTypeViewService CreateService(int userId)
         => new(
-            new FakeClaimsRepository(Mock),
-            new FakeProjectMetadataRepository(Mock),
+            new FakeClaimInfoRepository(Mock),
+            new FakeRoomCategoryPlanRepository(Mock),
             // GetAccommodationTypes не обращается к IClaimService — если обратится, тест упадёт,
             // и это ровно то поведение, которое здесь нужно.
             claimService: null!,
@@ -82,9 +82,40 @@ public class AccommodationTypeViewServiceTest
     {
         // Смена типа игроку на такой заявке откажет, значит и диалог ему не отдаём (#5261)
         Claim.ClaimStatus = status;
+        // Неутверждённая заявка не может числиться утверждённой у персонажа — иначе снимок
+        // CharacterInfo справедливо отвергнет такое состояние.
+        if (status != ClaimStatus.CheckedIn)
+        {
+            Mock.Character.ApprovedClaimId = null;
+        }
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
             () => CreateService(Mock.Player.UserId).GetAccommodationTypes(ClaimId));
+    }
+
+    [Fact]
+    public async Task WithoutType_NoRoomAndNoNeighbours()
+    {
+        _ = CreateType("Палатка", isPlayerSelectable: true);
+
+        var result = await CreateService(Mock.Master.UserId).GetAccommodationTypes(ClaimId);
+
+        result.SelectedTypeId.ShouldBeNull();
+        result.RoomAssigned.ShouldBeFalse();
+        result.HasNeighbours.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task PlacedGroupWithNeighbour_RoomAssignedAndHasNeighbours()
+    {
+        var type = CreateType("Палатка", isPlayerSelectable: true);
+        var neighbour = Mock.CreateApprovedClaim(Mock.CreateCharacter("Сосед"), Mock.Player);
+        _ = Mock.CreateRoom(Mock.CreateAccommodationRequest(type, Claim, neighbour));
+
+        var result = await CreateService(Mock.Master.UserId).GetAccommodationTypes(ClaimId);
+
+        result.RoomAssigned.ShouldBeTrue();
+        result.HasNeighbours.ShouldBeTrue();
     }
 
     [Fact]

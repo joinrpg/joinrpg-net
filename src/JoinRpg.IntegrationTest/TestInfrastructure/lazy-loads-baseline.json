@@ -1,7 +1,4 @@
 {
-  "GET /webapi/AccommodationInvite/GetAccommodationTypes": 3,
-  "GET /webapi/AccommodationInvite/GetInviteTargets": 4,
-  "GET /webapi/AccommodationInvite/GetInvites": 1,
   "GET /x-game-api/{projectId}/claims/{claimId}": 1,
   "GET /{ProjectId}/claim/{ClaimId}/Edit": 19,
   "GET /{ProjectId}/claim/{ClaimId}/TransferClaimPayment": 1,
@@ -14,7 +11,6 @@
   "GET /{projectId}/money/MoneySummary": 5,
   "GET /{projectId}/money/Operations": 5,
   "POST /error/{HttpStatusCode:int?}": 1,
-  "POST /webapi/AccommodationInvite/CreateInvite": 3,
   "POST /webapi/project-field-operations/Delete": 6,
   "POST /webapi/project-field-operations/DeleteUnusedVariants": 4,
   "POST /webapi/project-field-operations/DeleteVariant": 2,

@@ -67,12 +67,6 @@ public static class IdExtensions
     public static IReadOnlyCollection<ClaimIdentification> GetSubjectIds(this AccommodationRequest group)
         => [.. group.Subjects.Select(GetId)];
 
-    /// <summary>Идентификатор типа проживания, выбранного в заявке, если он выбран.</summary>
-    public static AccommodationTypeIdentification? GetAccommodationTypeIdOrDefault(this Claim claim)
-        => claim.AccommodationRequest is AccommodationRequest request
-            ? new AccommodationTypeIdentification(claim.ProjectId, request.AccommodationTypeId)
-            : null;
-
     /// <summary>Идентификатор одобренной заявки персонажа, если она есть.</summary>
     public static ClaimIdentification? GetApprovedClaimIdOrDefault(this Character character)
         => ClaimIdentification.FromOptional(character.ProjectId, character.ApprovedClaimId);

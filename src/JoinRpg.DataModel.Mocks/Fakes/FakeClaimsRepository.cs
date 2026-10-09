@@ -1,6 +1,8 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.DataModel.Extensions;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims;
 
@@ -51,6 +53,25 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
     public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds)
         => Task.FromResult<IReadOnlyCollection<ClaimWithPlayer>>(
             [.. Headers.Where(header => claimIds.Contains(header.ClaimId)).Reverse()]);
+    /// <remarks>В отличие от <see cref="Headers"/>, выводится из мока: здесь важен статус заявки.</remarks>
+    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId)
+        => Task.FromResult<IReadOnlyCollection<ClaimWithPlayer>>(
+            [.. mock.Project.Claims
+                .Where(claim => claim.ClaimStatus == ClaimStatus.Approved && claim.AccommodationRequest_Id == null)
+                .Select(ToHeader)]);
+
+    /// <summary>Заголовок заявки из мока — так его собрал бы настоящий репозиторий.</summary>
+    public static ClaimWithPlayer ToHeader(Claim claim)
+        => new()
+        {
+            ClaimId = claim.GetId(),
+            CharacterName = claim.Character.CharacterName,
+            Player = claim.Player.ToUserInfoHeader(),
+            ExtraNicknames = null,
+            ResponsibleMasterUserId = new UserIdentification(claim.ResponsibleMasterUserId),
+            CharacterId = new CharacterIdentification(claim.ProjectId, claim.CharacterId),
+        };
+
     public Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec) => throw new NotSupportedException();

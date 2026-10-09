@@ -43,6 +43,10 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// фильтром по проекту; через него проходит каждый ответ на приглашение;
 /// </description></item>
 /// <item><description>
+/// список целей приглашения (ADR022): загрузчик плана поселения и запросы заголовков
+/// <c>IClaimsRepository.GetApprovedClaimHeaders</c> и <c>GetApprovedClaimHeadersWithoutAccommodation</c>;
+/// </description></item>
+/// <item><description>
 /// ветка расчёта свободного места <b>по комнате</b>
 /// (<c>AccommodationExtensions.GetRoomFreeSpace(request, ProjectInfo)</c> при заполненном
 /// <c>Accommodation</c>) — единственный путь, который читает жильцов комнаты, то есть
@@ -451,7 +455,7 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// </summary>
     /// <remarks>
     /// Заявки именно утверждённые: список потенциальных соседей собирается только из утверждённых
-    /// (<c>GetClaimsWithSameAccommodationTypeToInvite</c>, <c>GetClaimsWithOutAccommodationRequest</c>),
+    /// (<c>IClaimsRepository.GetApprovedClaimHeaders</c>, <c>GetApprovedClaimHeadersWithoutAccommodation</c>),
     /// и на неутверждённых ручка целей вернула бы пустой список — приглашать было бы некого.
     /// Четвёртая заявка без типа проживания нужна для второго вида цели: приглашение заявки, у
     /// которой группы ещё нет.

@@ -46,6 +46,15 @@ public interface IClaimsRepository : IDisposable
     /// </remarks>
     Task<IReadOnlyCollection<Claim>> GetUnsettledAccommodationClaims(ProjectIdentification projectId);
 
+    /// <summary>
+    /// Заявки проекта ровно в статусе <see cref="ClaimStatus.Approved"/>, не состоящие ни в одной
+    /// группе проживающих, — кандидаты «ещё не выбрал тип проживания» для виджета приглашений.
+    /// </summary>
+    /// <remarks>
+    /// Плана поселения для них нет: без типа заявка не попадает ни в один план (ADR022 §3).
+    /// </remarks>
+    Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId);
+
     Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
 
 }

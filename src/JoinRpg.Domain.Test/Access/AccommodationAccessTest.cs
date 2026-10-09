@@ -24,7 +24,7 @@ public class AccommodationAccessTest
     {
         var claim = CreateClaim(status);
 
-        claim.CanChangeAccommodation(new UserIdentification(mock.Player.UserId)).ShouldBe(expected);
+        CanChange(claim, new UserIdentification(mock.Player.UserId)).ShouldBe(expected);
     }
 
     [Theory]
@@ -38,7 +38,7 @@ public class AccommodationAccessTest
         claim.ResponsibleMasterUser = master;
         claim.ResponsibleMasterUserId = master.UserId;
 
-        claim.CanChangeAccommodation(new UserIdentification(master.UserId)).ShouldBe(expected);
+        CanChange(claim, new UserIdentification(master.UserId)).ShouldBe(expected);
     }
 
     [Theory]
@@ -50,7 +50,7 @@ public class AccommodationAccessTest
         var claim = CreateClaim(status);
         var master = mock.CreateMaster();
 
-        claim.CanChangeAccommodation(new UserIdentification(master.UserId)).ShouldBeTrue();
+        CanChange(claim, new UserIdentification(master.UserId)).ShouldBeTrue();
     }
 
     [Fact]
@@ -59,31 +59,52 @@ public class AccommodationAccessTest
         var claim = CreateClaim(ClaimStatus.Approved);
         var master = CreateMasterWithoutAccommodationPermission();
 
-        claim.CanChangeAccommodation(new UserIdentification(master.UserId)).ShouldBeFalse();
+        CanChange(claim, new UserIdentification(master.UserId)).ShouldBeFalse();
     }
 
     [Fact]
     public void Stranger_CannotChange()
-        => CreateClaim(ClaimStatus.Approved).CanChangeAccommodation(Stranger).ShouldBeFalse();
+        => CanChange(CreateClaim(ClaimStatus.Approved), Stranger).ShouldBeFalse();
 
     [Fact]
     public void Anonymous_CannotChange()
-        => CreateClaim(ClaimStatus.Approved).CanChangeAccommodation(null).ShouldBeFalse();
+        => CanChange(CreateClaim(ClaimStatus.Approved), null).ShouldBeFalse();
 
     [Fact]
     public void RequestAccess_WhenDenied_Throws()
     {
         var claim = CreateClaim(ClaimStatus.CheckedIn);
+        var player = new UserIdentification(mock.Player.UserId);
 
-        _ = Should.Throw<NoAccessToProjectException>(
-            () => claim.RequestAccommodationChangeAccess(new UserIdentification(mock.Player.UserId)));
+        _ = Should.Throw<NoAccessToProjectException>(() => claim.RequestAccommodationChangeAccess(player));
+        _ = Should.Throw<NoAccessToProjectException>(() => Snapshot(claim).RequestAccommodationChangeAccess(player));
     }
 
     private Claim CreateClaim(ClaimStatus status)
     {
         var claim = mock.CreateClaim(mock.Character, mock.Player);
         claim.ClaimStatus = status;
+        // Иначе снимок персонажа справедливо отвергнет утверждённую заявку, не отмеченную у персонажа.
+        mock.Character.ApprovedClaimId = status is ClaimStatus.Approved or ClaimStatus.CheckedIn ? claim.ClaimId : null;
         return claim;
+    }
+
+    /// <summary>Снимок той же заявки — метаданные перечитываются, чтобы увидеть новых мастеров.</summary>
+    private ClaimInCharacter Snapshot(Claim claim)
+    {
+        mock.ReInitProjectInfo();
+        return new ClaimInCharacter(mock.GetCharacterInfo(mock.Character), claim.GetId());
+    }
+
+    /// <summary>
+    /// Решение по снимку (ADR022) — и сверка с перегрузкой над EF-заявкой: правило одно, и
+    /// кнопки на странице заявки обязаны совпадать с тем, что разрешит операция.
+    /// </summary>
+    private bool CanChange(Claim claim, UserIdentification? user)
+    {
+        var viaSnapshot = Snapshot(claim).CanChangeAccommodation(user);
+        claim.CanChangeAccommodation(user).ShouldBe(viaSnapshot);
+        return viaSnapshot;
     }
 
     private User CreateMasterWithoutAccommodationPermission()

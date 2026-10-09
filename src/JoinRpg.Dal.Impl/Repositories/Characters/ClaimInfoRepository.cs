@@ -18,16 +18,14 @@ internal class ClaimInfoRepository(
     IUserRepository userRepository) : IClaimInfoRepository
 {
     public async Task<ClaimInfo?> GetClaimInfoOrDefault(ClaimIdentification claimId)
-    {
-        var character = await characterInfoRepository.GetCharacterInfoByClaimOrDefault(claimId);
-        if (character is null)
-        {
-            return null;
-        }
+        => await GetClaimInCharacterOrDefault(claimId) is { } claim
+            ? new ClaimInfo(claim, await userRepository.GetRequiredUserInfo(claim.Claim.PlayerId))
+            : null;
 
-        var claim = new ClaimInCharacter(character, claimId);
-        return new ClaimInfo(claim, await userRepository.GetRequiredUserInfo(claim.Claim.PlayerId));
-    }
+    public async Task<ClaimInCharacter?> GetClaimInCharacterOrDefault(ClaimIdentification claimId)
+        => await characterInfoRepository.GetCharacterInfoByClaimOrDefault(claimId) is { } character
+            ? new ClaimInCharacter(character, claimId)
+            : null;
 
     public async Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(
         IReadOnlyCollection<ClaimIdentification> claimIds)

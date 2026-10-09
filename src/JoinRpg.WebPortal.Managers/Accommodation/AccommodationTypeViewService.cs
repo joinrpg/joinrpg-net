@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.Accommodation;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Interfaces;
@@ -15,23 +16,32 @@ namespace JoinRpg.WebPortal.Managers.Accommodation;
 /// жила в ClaimAccommodationViewModel, а разметка — в Views/Claim/_ClaimAccommodationTypeChange.cshtml.
 /// </summary>
 internal class AccommodationTypeViewService(
-    IClaimsRepository claimsRepository,
-    IProjectMetadataRepository projectMetadataRepository,
+    IClaimInfoRepository claimInfoRepository,
+    IRoomCategoryPlanRepository roomCategoryPlanRepository,
     IClaimService claimService,
     ICurrentUserAccessor currentUserAccessor)
     : IAccommodationTypeClient
 {
     public async Task<AccommodationTypeChoiceViewModel> GetAccommodationTypes(ClaimIdentification claimId)
     {
+        // Тип и группа — из доменного снимка заявки, комната и соседи — из плана поселения (ADR022).
+        var claimInCharacter = await claimInfoRepository.GetClaimInCharacterOrDefault(claimId)
+            ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(ClaimIdentification));
+        var projectInfo = claimInCharacter.Character.ProjectInfo;
+
         // Варианты нужны только диалогу смены типа, поэтому доступ как у самой смены (#5261)
-        var claim = (await claimsRepository.GetClaim(claimId))
-            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
+        var claimInfo = claimInCharacter
+            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault)
+            .Claim;
 
-        var request = claim.AccommodationRequest;
-        var hasMasterAccess = claim.HasMasterAccess(currentUserAccessor);
+        var hasMasterAccess = projectInfo.HasMasterAccess(currentUserAccessor);
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
-        var selectedTypeId = claim.GetAccommodationTypeIdOrDefault();
+        var selectedTypeId = claimInfo.AccommodationTypeId;
+        var group = selectedTypeId is null
+            ? null
+            : (await roomCategoryPlanRepository.GetPlanForTypeOrDefault(selectedTypeId)
+                ?? throw new AccommodationTypeNotFoundException(selectedTypeId))
+                .GetGroupOrDefault(claimInfo.AccommodationGroupId);
 
         // Мастеру показываем всё, игроку — только помеченное как выбираемое, плюс то, что у него уже стоит.
         // Готовый ProjectAccommodationSettings.PlayerSelectableTypes здесь не подходит: к нему всё равно
@@ -46,8 +56,8 @@ internal class AccommodationTypeViewService(
         return new AccommodationTypeChoiceViewModel(
             types,
             selectedTypeId,
-            RoomAssigned: request?.Accommodation != null,
-            HasNeighbours: request?.Subjects.Count > 1);
+            RoomAssigned: group?.RoomId is not null,
+            HasNeighbours: group?.SubjectsCount > 1);
     }
 
     public async Task SetAccommodationType(ClaimIdentification claimId, AccommodationTypeIdentification typeId)

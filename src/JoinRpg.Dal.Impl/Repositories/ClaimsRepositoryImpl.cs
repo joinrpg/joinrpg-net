@@ -69,6 +69,11 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         return await GetHeadersByPredicate(projectId, claim => idList.Contains(claim.ClaimId));
     }
 
+    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId)
+        => await GetHeadersByPredicate(
+            projectId,
+            claim => claim.ClaimStatus == ClaimStatus.Approved && claim.AccommodationRequest_Id == null);
+
     public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId)
     {
         if (roomTypeId != null)
