@@ -127,13 +127,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         }
 
         var now = DateTime.UtcNow;
-        var characterGroups = await ProjectRepository.LoadGroups(targetGroups);
-
-        if (characterGroups.Count != targetGroups.Distinct().Count())
-        {
-            var missing = string.Join(", ", targetGroups.Select(g => g.CharacterGroupId).Except(characterGroups.Select(cg => cg.CharacterGroupId)));
-            throw new Exception($"Groups {missing} doesn't belong to project");
-        }
+        var characterGroups = await LoadTargetGroups(plotFolderId.ProjectId, targetGroups);
         var plotElement = new PlotElement()
         {
             CreatedDateTime = now,
@@ -248,15 +242,25 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         plotElement.PlotFolder.ModifiedDateTime = Now;
     }
 
-    private async Task UpdateElementTarget(IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElement plotElement)
+    /// <summary>
+    /// Загружает группы, на которые нацелен сюжет, и убеждается, что все они есть в проекте.
+    /// </summary>
+    private async Task<IList<CharacterGroup>> LoadTargetGroups(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> targetGroups)
     {
         var characterGroups = await ProjectRepository.LoadGroups(targetGroups);
 
-        if (characterGroups.Count != targetGroups.Distinct().Count())
+        var loadedIds = characterGroups.Select(cg => cg.CharacterGroupId).ToHashSet();
+        var missing = targetGroups.Distinct().Where(g => !loadedIds.Contains(g.CharacterGroupId)).ToArray();
+        if (missing.Length != 0)
         {
-            var missing = string.Join(", ", targetGroups.Select(x => x.CharacterGroupId).Except(characterGroups.Select(cg => cg.CharacterGroupId)));
-            throw new Exception($"Groups {missing} doesn't belong to project");
+            throw new CharacterGroupsNotFoundException(projectId, missing);
         }
+        return characterGroups;
+    }
+
+    private async Task UpdateElementTarget(IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElement plotElement)
+    {
+        var characterGroups = await LoadTargetGroups(new ProjectIdentification(plotElement.ProjectId), targetGroups);
         plotElement.TargetGroups.AssignLinksList(characterGroups);
         plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(targetChars));
     }

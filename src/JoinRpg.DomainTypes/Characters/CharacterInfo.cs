@@ -202,9 +202,7 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
     {
         if (HasActiveClaims && target.CharacterType != CharacterTypeInfo.CharacterType)
         {
-            // TODO: заменить на типизированное исключение. Сейчас сохраняем ровно то, что бросал
-            // CharacterServiceImpl до миграции, — см. раздел «что сознательно не чиним» в ADR014.
-            throw new Exception("Can't change type of character with active claims");
+            throw new CharacterTypeChangeWithActiveClaimsException(Id);
         }
     }
 

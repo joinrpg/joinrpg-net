@@ -1,5 +1,6 @@
 using System.Data.Entity.Validation;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using Microsoft.AspNetCore.Mvc;
 
@@ -79,6 +80,13 @@ public abstract class JoinMvcControllerBase : Controller
                 return;
             case JoinRpgSlotLimitedException _:
                 ModelState.AddModelError("", "Не удалось принять заявку: свободные места на эту роль закончились");
+                return;
+            case CharacterTypeChangeWithActiveClaimsException _:
+                ModelState.AddModelError("", "Нельзя менять тип персонажа, пока на него есть активные заявки");
+                return;
+            case CharacterGroupsNotFoundException notFound:
+                ModelState.AddModelError("",
+                    $"Группы не найдены в проекте (возможно, удалены): {string.Join(", ", notFound.GroupIds.Select(g => g.CharacterGroupId))}");
                 return;
             case OnlyOneApprovedClaimException _:
                 ModelState.AddModelError("", "Заявка не принята: у игрока уже есть одобренная заявка на другого персонажа в этом проекте");
