@@ -1,18 +1,17 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
-/// <summary>
-/// Use this ctor if need to export claims from different projects
-/// </summary>
 /// <param name="currentUserId"></param>
-/// <param name="claimPair"></param>
-/// <param name="players">
-/// Профили игроков, загруженные пачкой на весь список (<c>IUserRepository.GetRequiredUserInfos</c>).
+/// <param name="claims">EF-заявки — только ради того, чего нет в агрегате (последний комментарий).</param>
+/// <param name="claimInfos">
+/// Те же заявки как <see cref="ClaimInfo"/>, загруженные пачкой на весь список
+/// (<c>IClaimInfoRepository.GetClaimInfos</c>), — вместе с персонажами и профилями игроков.
 /// Выгрузка показывает контакты игрока, а читать их по ленивым навигациям EF на каждую строку —
 /// это N+1.
 /// </param>
@@ -21,28 +20,17 @@ namespace JoinRpg.Web.Models.ClaimList;
 /// </param>
 public class ClaimListForExportViewModel(
     ICurrentUserAccessor currentUserId,
-    IReadOnlyCollection<(Claim Claim, ProjectInfo ProjectInfo)> claimPair,
-    IReadOnlyDictionary<UserIdentification, UserInfo> players,
+    IReadOnlyCollection<Claim> claims,
+    IReadOnlyDictionary<ClaimIdentification, ClaimInfo> claimInfos,
     IReadOnlyDictionary<ClaimIdentification, string> roomNames)
 {
-    public IEnumerable<ClaimListItemForExportViewModel> Items { get; } = claimPair
+    public IEnumerable<ClaimListItemForExportViewModel> Items { get; } = claims
           .Select(c => ClaimListBuilder.BuildItemForExport(
-              c.Claim,
+              c,
               currentUserId,
-              c.ProjectInfo,
-              players[c.Claim.GetPlayerId()],
-              roomNames.GetValueOrDefault(c.Claim.GetId())))
+              claimInfos[c.GetId()],
+              roomNames.GetValueOrDefault(c.GetId())))
           .ToList();
-
-    public ClaimListForExportViewModel(
-        ICurrentUserAccessor currentUserId,
-        IReadOnlyCollection<Claim> claims,
-        ProjectInfo projectInfo,
-        IReadOnlyDictionary<UserIdentification, UserInfo> players,
-        IReadOnlyDictionary<ClaimIdentification, string> roomNames)
-        : this(currentUserId, [.. claims.Select(c => (c, projectInfo))], players, roomNames)
-    {
-    }
 }
 public record class ClaimListItemForExportViewModel(
     [property: Display(Name = "Имя")] string Name,

@@ -139,7 +139,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         ProjectName = projectInfo.ProjectName.Value;
         Status = ClaimStatusBuilders.CreateFullStatus(
             claimData,
-            AccessArgumentsFactory.Create(characterInfo, claimData, currentUser.UserIdentificationOrDefault));
+            AccessArgumentsFactory.Create(claimInfo, currentUser.UserIdentificationOrDefault));
         CharacterId = characterInfo.Id.CharacterId;
         CharacterActive = characterInfo.IsActive;
         CharacterAutoCreated = characterInfo.AutoCreated;
