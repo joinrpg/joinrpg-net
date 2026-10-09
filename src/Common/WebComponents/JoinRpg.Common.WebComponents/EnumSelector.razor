@@ -1,6 +1,6 @@
 @typeparam TValue where TValue:struct, Enum
 @inject ILogger<EnumSelector<TValue>> logger
-<select
+<select id="@inputId"
         name="@Name"
         @onchange="UpdateSelected">
   @foreach (var enumValue in Enum.GetValues<TValue>())
@@ -30,6 +30,11 @@
     [Parameter]
     public string Name { get; set; } = null!;
 
+    [CascadingParameter]
+    private FormRowLabelTarget? LabelTarget { get; set; }
+
+    private string? inputId;
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -45,6 +50,7 @@
     {
         base.OnParametersSet();
         name = Name ?? fieldIdentifier.FieldName;
+        inputId = LabelTarget?.Claim(this);
     }
 
     private async Task UpdateSelected(ChangeEventArgs eventArgs)

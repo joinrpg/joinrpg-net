@@ -21,26 +21,26 @@ else
                     <div class="text-danger">@errorMessage</div>
                 }
 
-                <FormRowFor For="@(() => model.Name)" InputId="roomtype-name">
-                    <JoinTextInput @bind-Value="model.Name" id="roomtype-name" />
+                <FormRowFor For="@(() => model.Name)">
+                    <JoinTextInput @bind-Value="model.Name" />
                 </FormRowFor>
 
-                <FormRowFor For="@(() => model.Cost)" InputId="roomtype-cost">
-                    <InputNumber @bind-Value="model.Cost" class="form-control" id="roomtype-cost"
-                                 ParsingErrorMessage="Укажите цену за 1 место целым числом" />
+                <FormRowFor For="@(() => model.Cost)">
+                    <JoinInputNumber @bind-Value="model.Cost"
+                                     ParsingErrorMessage="Укажите цену за 1 место целым числом" />
                 </FormRowFor>
 
-                <FormRowFor For="@(() => model.Capacity)" InputId="roomtype-capacity">
-                    <InputNumber @bind-Value="model.Capacity" class="form-control" id="roomtype-capacity"
-                                 ParsingErrorMessage="Укажите количество мест в номере — целое число от 1 до 1000" />
+                <FormRowFor For="@(() => model.Capacity)">
+                    <JoinInputNumber @bind-Value="model.Capacity"
+                                     ParsingErrorMessage="Укажите количество мест в номере — целое число от 1 до 1000" />
                 </FormRowFor>
 
-                <FormRowFor For="@(() => model.IsPlayerSelectable)" InputId="roomtype-player-selectable">
-                    <CheckboxInput @bind-Value="model.IsPlayerSelectable" id="roomtype-player-selectable" />
+                <FormRowFor For="@(() => model.IsPlayerSelectable)">
+                    <CheckboxInput @bind-Value="model.IsPlayerSelectable" />
                 </FormRowFor>
 
-                <FormRowFor For="@(() => model.Description)" InputId="roomtype-description">
-                    <JoinTextArea @bind-Value="model.Description" cols="100" id="roomtype-description" />
+                <FormRowFor For="@(() => model.Description)">
+                    <JoinTextArea @bind-Value="model.Description" cols="100" />
                     <div class="help-block">Можно использовать <a href="https://commonmark.org/help/" target="_blank">MarkDown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>
                 </FormRowFor>
 

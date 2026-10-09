@@ -4,7 +4,7 @@
 <EditForm Model="_model" OnValidSubmit="OnAdd">
     <FormHorizontal>
         <FormRow Label="Название">
-            <InputText @bind-Value="_model.Name" />
+            <JoinTextInput @bind-Value="_model.Name" />
             <ValidationMessage For="@(() => _model.Name)" />
         </FormRow>
         <FormRow Label="Публичный режим">

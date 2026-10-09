@@ -1,11 +1,11 @@
 @using System.Linq.Expressions
 @if (Immediate)
 {
-    <input type="text" name="@FieldIdentifier.FieldName" value="@internalValue" @oninput="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @oninput="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
 }
 else
 {
-    <input type="text" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @onchange="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
 }
 
 @code {
@@ -34,13 +34,18 @@ else
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    [CascadingParameter]
+    private FormRowLabelTarget? LabelTarget { get; set; }
+
     private FieldIdentifier FieldIdentifier { get; set; }
 
     private string internalValue = "";
+    private string? inputId;
 
     protected override void OnParametersSet()
     {
         internalValue = Value;
+        inputId = LabelTarget?.Claim(this, FormRowLabelTarget.ExplicitId(AdditionalAttributes));
         if (ValueExpression is not null)
         {
             FieldIdentifier = FieldIdentifier.Create(ValueExpression);

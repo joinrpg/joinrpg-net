@@ -1,4 +1,4 @@
-﻿<input type="number" class="form-control" @onchange="UpdateValue" name="@Name" value="@Value" min="@Min" max="@Max"/>
+﻿<input type="number" id="@inputId" class="form-control" @onchange="UpdateValue" name="@Name" value="@Value" min="@Min" max="@Max"/>
 
   @code {
       [Parameter]
@@ -15,6 +15,13 @@
 
       [Parameter]
       public int? Max { get; set; }
+
+      [CascadingParameter]
+      private FormRowLabelTarget? LabelTarget { get; set; }
+
+      private string? inputId;
+
+      protected override void OnParametersSet() => inputId = LabelTarget?.Claim(this);
 
       private async Task UpdateValue(ChangeEventArgs eventArgs)
       {

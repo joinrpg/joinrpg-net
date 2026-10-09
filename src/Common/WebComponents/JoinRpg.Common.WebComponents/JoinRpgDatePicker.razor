@@ -1,4 +1,4 @@
-<input type="date" class="form-control" style="max-width: 10em" @onchange="UpdateValue" name="@Name" value="@Format(Value)" min="@Format(Min)" max="@Format(Max)" />
+<input type="date" id="@inputId" class="form-control" style="max-width: 10em" @onchange="UpdateValue" name="@Name" value="@Format(Value)" min="@Format(Min)" max="@Format(Max)" />
 
 @code {
     private const string IsoDateFormat = "yyyy-MM-dd";
@@ -17,6 +17,13 @@
 
     [Parameter]
     public DateOnly? Max { get; set; }
+
+    [CascadingParameter]
+    private FormRowLabelTarget? LabelTarget { get; set; }
+
+    private string? inputId;
+
+    protected override void OnParametersSet() => inputId = LabelTarget?.Claim(this);
 
     private static string? Format(DateOnly? date) => date?.ToString(IsoDateFormat, System.Globalization.CultureInfo.InvariantCulture);
 

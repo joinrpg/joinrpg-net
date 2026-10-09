@@ -40,6 +40,11 @@
         Id = Name ?? Random.Shared.NextInt64().ToString();
       }
 
+      [CascadingParameter]
+      private FormRowLabelTarget? LabelTarget { get; set; }
+
+      protected override void OnParametersSet() => LabelTarget?.Claim(this, Id);
+
       private async Task UpdateValue(ChangeEventArgs eventArgs)
       {
         var value = eventArgs.Value?.ToString();

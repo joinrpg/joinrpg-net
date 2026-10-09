@@ -1,7 +1,9 @@
 ﻿<div class="form-group" @attributes="@InputAttributes">
-  <label class="control-label col-md-2" for="@InputId">@Label</label>
+  <label class="control-label col-md-2" for="@labelTarget.InputId">@Label</label>
   <div class="col-md-10">
-    @ChildContent
+    <CascadingValue Value="labelTarget" IsFixed="true">
+      @ChildContent
+    </CascadingValue>
     @if (Description is not null)
     {
       <div class="help-block">@Description</div>
@@ -20,10 +22,15 @@
     [Parameter] public string? Description { get; set; } = null;
 
     /// <summary>
-    /// id поля ввода, на которое ссылается подпись (<c>&lt;label for&gt;</c>): клик по подписи ставит в него фокус или переключает чекбокс.
+    /// Имя поля — часть сгенерированного id поля ввода, чтобы его было легче узнать в разметке.
+    /// Связь подписи с полем от него не зависит — см. <see cref="FormRowLabelTarget"/>.
     /// </summary>
-    [Parameter] public string? InputId { get; set; }
+    [Parameter] public string? FieldName { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> InputAttributes { get; set; } = new();
+
+    private FormRowLabelTarget labelTarget = null!;
+
+    protected override void OnInitialized() => labelTarget = new FormRowLabelTarget(FieldName, StateHasChanged);
 }

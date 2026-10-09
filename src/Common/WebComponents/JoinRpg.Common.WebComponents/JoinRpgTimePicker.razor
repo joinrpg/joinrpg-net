@@ -1,4 +1,4 @@
-<input type="time" class="form-control" style="max-width: 8em" @onchange="UpdateValue" name="@Name" value="@Format(Value)" />
+<input type="time" id="@inputId" class="form-control" style="max-width: 8em" @onchange="UpdateValue" name="@Name" value="@Format(Value)" />
 
 @code {
     private const string IsoTimeFormat = "HH:mm";
@@ -14,6 +14,13 @@
 
     [Parameter, EditorRequired]
     public string Name { get; set; } = null!;
+
+    [CascadingParameter]
+    private FormRowLabelTarget? LabelTarget { get; set; }
+
+    private string? inputId;
+
+    protected override void OnParametersSet() => inputId = LabelTarget?.Claim(this);
 
     private static string? Format(TimeOnly? time) => time?.ToString(IsoTimeFormat, System.Globalization.CultureInfo.InvariantCulture);
 
