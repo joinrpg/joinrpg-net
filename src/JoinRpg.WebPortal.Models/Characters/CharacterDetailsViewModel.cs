@@ -73,7 +73,8 @@ public class CharacterDetailsViewModel
         IReadOnlyCollection<PlotTextDto> plots,
         ILinkRenderer linkRenderer,
         ProjectInfo projectInfo,
-        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
+        CreateUpdateMarksInfo? marks)
     {
         // Ссылка на игрока строится поверх агрегата (ADR013): PublishPlot берётся из ProjectInfo,
         // без ленивой загрузки ProjectDetails (#4992).
@@ -95,9 +96,12 @@ public class CharacterDetailsViewModel
         Plot = new PlotDisplayViewModel(plots, currentUserId, characterInfo, linkRenderer);
 
         HasMasterAccess = accessArguments.MasterAccess;
-        Marks = character.ToCreateUpdateMarksViewModel();
+        Marks = marks?.ToViewModel();
     }
 
-    /// <summary>Кто и когда создал и последним менял персонажа.</summary>
-    public CreateUpdateMarksViewModel Marks { get; }
+    /// <summary>
+    /// Кто и когда создал и последним менял персонажа; показывается только мастерам, поэтому
+    /// остальным не загружается.
+    /// </summary>
+    public CreateUpdateMarksViewModel? Marks { get; }
 }

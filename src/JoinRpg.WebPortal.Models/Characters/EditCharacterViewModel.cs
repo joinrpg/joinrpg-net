@@ -30,7 +30,8 @@ public class EditCharacterViewModel : CharacterViewModelBase
         CharacterInfo characterInfo,
         UserIdentification currentUserId,
         ProjectInfo projectInfo,
-        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
+        IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
+        CreateUpdateMarksInfo marks)
     {
         Navigation = CharacterNavigationViewModel.FromCharacter(characterInfo,
             CharacterNavigationPage.Editing,
@@ -43,7 +44,7 @@ public class EditCharacterViewModel : CharacterViewModelBase
 
         CharacterTypeInfo = field.ToCharacterTypeInfo();
 
-        Marks = field.ToCreateUpdateMarksViewModel();
+        Marks = marks.ToViewModel();
 
         IsDefaultTemplate = projectInfo.ClaimSettings.DefaultTemplate?.CharacterId == field.CharacterId;
 
