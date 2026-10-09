@@ -25,10 +25,8 @@ else
       {
         <option value="" selected="@(SelectedValues.Length == 0)">@EmptyText</option>
       }
-      @foreach (var item in Items)
+      @foreach (var (key, val) in options)
       {
-        var key = KeySelector(item);
-        var val = ToListItem(item);
         var selected = SelectedValues.Contains(key);
         <option
                 data-tokens="@($"{val.Text} {val.ExtraSearch}")"
@@ -58,6 +56,46 @@ else
     private ElementReference selectRef;
     private IJSObjectReference? module;
     private bool selectInitialized;
+
+    private (TKey Key, TypedSelectListItem<TKey> Item)[] options = [];
+    private SelectSnapshot? renderedSnapshot;
+    private bool needsRefresh;
+
+    /// <summary>
+    /// То, что bootstrap-select вычитывает из разметки. Родитель передаёт новые лямбды и массивы при каждой своей
+    /// перерисовке, поэтому сравниваем не ссылки на параметры, а получившиеся пункты.
+    /// </summary>
+    private sealed record SelectSnapshot(
+        (TKey Key, TypedSelectListItem<TKey> Item)[] Options,
+        TKey[] SelectedValues,
+        bool Multiple,
+        bool AllowEmpty,
+        string EmptyText,
+        string? Width)
+    {
+      public bool Equals(SelectSnapshot? other)
+        => other is not null
+           && Options.SequenceEqual(other.Options)
+           && SelectedValues.SequenceEqual(other.SelectedValues)
+           && Multiple == other.Multiple
+           && AllowEmpty == other.AllowEmpty
+           && EmptyText == other.EmptyText
+           && Width == other.Width;
+
+      public override int GetHashCode() => Options.Length;
+    }
+
+    protected override void OnParametersSet()
+    {
+      options = Items is null ? [] : [.. Items.Select(item => (KeySelector(item), ToListItem(item)))];
+      var snapshot = Items is null ? null : new SelectSnapshot(options, SelectedValues, Multiple, AllowEmpty, EmptyText, Width);
+      if (!Equals(snapshot, renderedSnapshot))
+      {
+        // selectpicker('refresh') над сотнями <option> дорог — зовём его, только если разметка select действительно поменялась.
+        needsRefresh = true;
+        renderedSnapshot = snapshot;
+      }
+    }
 
     private async Task OnSelectionChangedAsync(ChangeEventArgs eventArgs)
     {
@@ -94,12 +132,15 @@ else
 
       if (!selectInitialized)
       {
-        await module!.InvokeVoidAsync("initBootstrapSelect", selectRef, SelectedValues.Select(v => v.ToString()).ToArray());
+        // Флаги ставим до await: пока идёт инициализация, может прийти следующий рендер, и он не должен инициализировать повторно.
         selectInitialized = true;
+        needsRefresh = false;
+        await module.InvokeVoidAsync("initBootstrapSelect", selectRef, SelectedValues.Select(v => v.ToString()).ToArray());
       }
-      else
+      else if (needsRefresh)
       {
-        await module!.InvokeVoidAsync("refreshBootstrapSelect", selectRef);
+        needsRefresh = false;
+        await module.InvokeVoidAsync("refreshBootstrapSelect", selectRef);
       }
     }
 
