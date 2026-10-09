@@ -92,7 +92,6 @@ public class CheckInController(
         return View("CheckIn",
             new CheckInClaimModel(
             claimInfo,
-            await userRepository.GetRequiredUserInfo(currentUserAccessor.UserIdentification),
             handouts[characterId],
             claimValidator,
             currentUserAccessor
