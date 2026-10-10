@@ -28,7 +28,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     {
         return await Ctx
           .ClaimSet
-          .Include(c => c.AccommodationRequest)
           .Include(c => c.Player.Extra)
           .Include(c => c.FinanceOperations)
           .Include(c => c.Character)
@@ -131,7 +130,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             Ctx.ClaimSet.Include(c => c.CommentDiscussion.Comments.Select(com => com.Finance))
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.Author))
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
-              .Include(c => c.AccommodationRequest)
               .Include(c => c.Character)
               .SingleOrDefaultAsync(e => e.ClaimId == claimId.ClaimId && e.ProjectId == claimId.ProjectId.Value);
     }
@@ -232,7 +230,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
         return await Ctx
           .ClaimSet
-          .Include(c => c.AccommodationRequest)
           .Include(c => c.Player)
           .Include(c => c.FinanceOperations)
           .Include(c => c.Character)

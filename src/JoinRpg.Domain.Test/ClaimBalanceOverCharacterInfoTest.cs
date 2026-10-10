@@ -9,9 +9,8 @@ using JoinRpg.DomainTypes.Characters.Claims.Finances;
 namespace JoinRpg.Domain.Test;
 
 /// <summary>
-/// Расчёт взноса поверх доменного агрегата (ADR013) должен совпадать с расчётом поверх EF-сущности
-/// <see cref="Claim"/>. Тесты сравнивают две реализации на одних и тех же данных: пока старая жива,
-/// это единственное место, где расхождение будет видно.
+/// Расчёт взноса поверх доменного агрегата (ADR013). Прежний расчёт поверх EF-сущности
+/// <see cref="Claim"/> удалён (#5419); ожидаемые суммы — те, что он давал на тех же данных.
 /// </summary>
 public class ClaimBalanceOverCharacterInfoTest
 {
@@ -36,31 +35,27 @@ public class ClaimBalanceOverCharacterInfoTest
     }
 
     [Theory]
-    // (зафиксированный взнос, льготник, включено ли платное поле)
-    [InlineData(null, false, false)]
-    [InlineData(null, false, true)]
-    [InlineData(null, true, false)]
-    [InlineData(null, true, true)]
-    [InlineData(777, false, false)]
-    [InlineData(777, true, true)]
-    public void BalanceShouldMatchLegacyCalculation(int? currentFee, bool preferential, bool fieldSet)
+    // (зафиксированный взнос, льготник, включено ли платное поле, итоговый взнос)
+    [InlineData(null, false, false, 1000)]
+    [InlineData(null, false, true, 1000 + 250)]
+    [InlineData(null, true, false, 400)]
+    [InlineData(null, true, true, 400 + 250)]
+    [InlineData(777, false, false, 777)]
+    [InlineData(777, true, true, 777 + 250)]
+    public void BalanceSumsBaseFeeAndFields(int? currentFee, bool preferential, bool fieldSet, int expectedTotal)
     {
         var fieldsJson = fieldSet ? $$"""{"{{pricedField.Id.ProjectFieldId}}":"on"}""" : null;
-
-        var legacy = MakeLegacyClaim(currentFee, preferential, fieldsJson)
-            .CalculateClaimBalance(mock.ProjectInfo, OperationDate);
 
         var (character, claim) = MakeAggregate(currentFee, preferential, fieldsJson);
         var actual = new ClaimInCharacter(character, claim).CalculateBalance(OperationDate);
 
-        actual.ShouldBe(legacy);
+        actual.ShouldBe(new ClaimBalance(FeePaid: 0, TotalFee: expectedTotal));
     }
 
     [Fact]
     public void PricedFieldIsActuallyCounted()
     {
-        // Страж от вырожденной проверки выше: если бы взнос за поле всегда считался нулём,
-        // BalanceShouldMatchLegacyCalculation прошёл бы, ничего не проверив.
+        // Взнос за поле — разница между заявками, а не абсолютная сумма из расписания.
         var fieldsJson = $$"""{"{{pricedField.Id.ProjectFieldId}}":"on"}""";
 
         var (withField, claimWithField) = MakeAggregate(currentFee: 1000, preferential: false, fieldsJson);
@@ -122,7 +117,6 @@ public class ClaimBalanceOverCharacterInfoTest
         breakdown.HasFieldsWithFee.ShouldBeTrue();
         breakdown.TotalFee.ShouldBe(1000 + 250 + 70);
         breakdown.TotalFee.ShouldBe(claimInCharacter.CalculateBalance(OperationDate).TotalFee);
-        breakdown.TotalFee.ShouldBe(claim.CalculateClaimBalance(mock.ProjectInfo, OperationDate).TotalFee);
     }
 
     [Fact]
@@ -162,9 +156,9 @@ public class ClaimBalanceOverCharacterInfoTest
     /// EF-версия, а доменная до исправления брала все поля персонажа.
     /// </summary>
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void HiddenCharacterFieldFeeMatchesLegacyCalculation(bool approved)
+    [InlineData(false, 1000)]
+    [InlineData(true, 1000 + 300)]
+    public void HiddenCharacterFieldIsPaidOnlyByApprovedClaim(bool approved, int expectedTotal)
     {
         var hiddenField = mock.AddField(field =>
         {
@@ -183,26 +177,9 @@ public class ClaimBalanceOverCharacterInfoTest
             : mock.CreateClaim(character, mock.Player);
         claim.FinanceOperations = [];
 
-        var legacy = claim.CalculateClaimBalance(mock.ProjectInfo, OperationDate);
         var actual = new ClaimInCharacter(mock.GetCharacterInfo(character), claim.GetId()).CalculateBalance(OperationDate);
 
-        actual.ShouldBe(legacy);
-        // Страж от вырожденной проверки: утверждённая заявка за скрытое поле действительно платит.
-        if (approved)
-        {
-            actual.TotalFee.ShouldBeGreaterThanOrEqualTo(300);
-        }
-    }
-
-    private Claim MakeLegacyClaim(int? currentFee, bool preferential, string? fieldsJson)
-    {
-        var character = mock.CreateCharacter("Легаси");
-        var claim = mock.CreateApprovedClaim(character, mock.Player);
-        claim.CurrentFee = currentFee;
-        claim.PreferentialFeeUser = preferential;
-        claim.FinanceOperations = [];
-        claim.JsonData = fieldsJson!;
-        return claim;
+        actual.TotalFee.ShouldBe(expectedTotal);
     }
 
     private (CharacterInfo Character, CharacterClaimInfo Claim) MakeAggregate(

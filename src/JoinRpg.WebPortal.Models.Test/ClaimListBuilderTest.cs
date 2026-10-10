@@ -105,10 +105,10 @@ public class ClaimListBuilderTest
         result.FieldValues.ShouldBe(legacy);
         result.FieldValues[Mock.CharacterFieldInfo.Id].ShouldBe(approved ? "секрет персонажа" : "");
 
-        var legacyBalance = claim.CalculateClaimBalance(Mock.ProjectInfo);
-        result.TotalFee.ShouldBe(legacyBalance.TotalFee);
-        result.FeeDue.ShouldBe(legacyBalance.FeeDue);
-        result.FeePaid.ShouldBe(legacyBalance.FeePaid);
+        var balance = claimInfo.ClaimInCharacter.CalculateBalance();
+        result.TotalFee.ShouldBe(balance.TotalFee);
+        result.FeeDue.ShouldBe(balance.FeeDue);
+        result.FeePaid.ShouldBe(balance.FeePaid);
     }
 
     // EF-версия списка отдавала пустую строку, если у игрока нет ФИО, а доменный
