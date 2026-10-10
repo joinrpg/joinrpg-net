@@ -56,6 +56,23 @@ public class ProjectShouldBeActiveAttributeTest
     }
 
     [Fact]
+    public async Task OnActionExecutionAsync_BlockedProject_ShouldThrowProjectBlockedException()
+    {
+        var mock = new MockedProject();
+        mock.Project.IsBlocked = true;
+        mock.ReInitProjectInfo();
+        var httpContext = CreateHttpContext(mock.ProjectInfo);
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        var context = new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object?>(), new object());
+
+        var filter = new ProjectShouldBeActiveAttribute();
+
+        await Should.ThrowAsync<ProjectBlockedException>(() =>
+            filter.OnActionExecutionAsync(context, () =>
+                Task.FromResult(new ActionExecutedContext(actionContext, new List<IFilterMetadata>(), new object()))));
+    }
+
+    [Fact]
     public async Task OnPageHandlerExecutionAsync_ActiveProject_ShouldNotThrow()
     {
         var mock = new MockedProject();

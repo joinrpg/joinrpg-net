@@ -52,6 +52,7 @@ public class ClaimForbiddenReasonTest
             [
                 AddClaimForbideReason.ProjectNotActive,
                 AddClaimForbideReason.ProjectClaimsClosed,
+                AddClaimForbideReason.ProjectBlocked,
             ],
             ignoreOrder: true);
     }

@@ -375,10 +375,5 @@ internal class CharacterPropsService(
                 arguments));
 
     private static void EnsureActiveIfRequired(ProjectInfo projectInfo, ProjectActiveRequirement activeRequirement)
-    {
-        if (activeRequirement == ProjectActiveRequirement.MustBeActive)
-        {
-            _ = projectInfo.EnsureProjectActive();
-        }
-    }
+        => activeRequirement.EnsureSatisfiedBy(projectInfo);
 }

@@ -62,7 +62,11 @@ public record class ProjectInfo
     public ProjectCheckInSettings ProjectCheckInSettings { get; }
 
     public ProjectLifecycleStatus ProjectStatus { get; }
-    public bool IsActive => ProjectStatus != ProjectLifecycleStatus.Archived;
+    /// <summary>Проект можно менять обычными операциями. Для вопросов чтения — <see cref="IsArchived"/> (ADR023).</summary>
+    public bool IsActive => ProjectStatus.AllowsChanges();
+
+    /// <summary>Проект в архиве.</summary>
+    public bool IsArchived => ProjectStatus.IsArchived();
 
     public DateOnly CreateDate { get; }
 
@@ -279,7 +283,18 @@ public record class ProjectInfo
     public ProjectRolesList? GetRolesListByIdOrDefault(ProjectRolesListIdentification id)
         => ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id);
 
-    public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
+    /// <summary>
+    /// Для операций, допустимых и в архиве (комментарии и т. п.): запрещает только заблокированный проект (ADR023).
+    /// </summary>
+    public ProjectInfo EnsureNotBlocked()
+        => ProjectStatus == ProjectLifecycleStatus.Blocked ? throw new ProjectBlockedException(ProjectId) : this;
+
+    public ProjectInfo EnsureProjectActive() => ProjectStatus switch
+    {
+        ProjectLifecycleStatus.Blocked => throw new ProjectBlockedException(ProjectId),
+        _ when !IsActive => throw new ProjectDeactivatedException(ProjectId),
+        _ => this,
+    };
 
     /// <summary>
     /// Ответственный по правилам групп: мастер ближайшей группы, иначе мастер по умолчанию. Правило, чей мастер

@@ -30,9 +30,6 @@ public class ProjectShouldBeActiveAttribute : ActionFilterAttribute, IAsyncPageF
 
         var projectMetadataRepository = httpContext.RequestServices.GetRequiredService<IProjectMetadataRepository>();
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        if (!projectInfo.IsActive)
-        {
-            throw new ProjectDeactivatedException(projectId);
-        }
+        _ = projectInfo.EnsureProjectActive();
     }
 }

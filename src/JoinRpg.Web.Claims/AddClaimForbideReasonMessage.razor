@@ -6,6 +6,9 @@
     case AddClaimForbideReason.ProjectNotActive:
         <JoinAlert Variation="VariationStyleEnum.Warning">Проект находится в архиве, отослать новую заявку невозможно.</JoinAlert>
         break;
+    case AddClaimForbideReason.ProjectBlocked:
+        <JoinAlert Variation="VariationStyleEnum.Warning">Проект заблокирован на время восстановления данных, отослать новую заявку невозможно.</JoinAlert>
+        break;
     case AddClaimForbideReason.ProjectClaimsClosed:
         <JoinAlert Variation="VariationStyleEnum.Warning">Заявки на проект закрыты, отослать заявку невозможно.</JoinAlert>
         break;

@@ -28,14 +28,16 @@ internal static class ProjectLoaderCommon
          .SingleOrDefaultAsync(p => p.ProjectId == project);
     }
 
-    public static ProjectLifecycleStatus CreateStatus(bool active, bool isAcceptingClaims)
+    public static ProjectLifecycleStatus CreateStatus(bool active, bool isAcceptingClaims, bool isBlocked)
     {
-        return (active, isAcceptingClaims) switch
+        return (active, isAcceptingClaims, isBlocked) switch
         {
-            (true, false) => ProjectLifecycleStatus.ActiveClaimsClosed,
-            (true, true) => ProjectLifecycleStatus.ActiveClaimsOpen,
-            (false, false) => ProjectLifecycleStatus.Archived,
-            (false, true) => throw new InvalidOperationException()
+            // Блокировка не трогает Active/IsAcceptingClaims: после снятия проект возвращается как был (ADR023).
+            (true, _, true) => ProjectLifecycleStatus.Blocked,
+            (true, false, false) => ProjectLifecycleStatus.ActiveClaimsClosed,
+            (true, true, false) => ProjectLifecycleStatus.ActiveClaimsOpen,
+            (false, false, false) => ProjectLifecycleStatus.Archived,
+            (false, true, _) or (false, _, true) => throw new InvalidOperationException()
         };
     }
 }
