@@ -117,13 +117,6 @@ public static class FinanceExtensions
         => claim.GetAccommodationType(projectInfo)?.Cost ?? 0;
 
     /// <summary>
-    /// Returns how many money left to pay
-    /// </summary>
-    [Obsolete("CalculateClaimBalance")]
-    public static int ClaimFeeDue(this Claim claim, ProjectInfo projectInfo)
-        => claim.ClaimTotalFee(projectInfo) - claim.ClaimBalance();
-
-    /// <summary>
     /// Баланс заявки поверх EF-сущности.
     /// </summary>
     /// <remarks>
