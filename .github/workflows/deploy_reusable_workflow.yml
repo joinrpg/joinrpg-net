@@ -178,9 +178,14 @@ jobs:
           #https://github.com/kubernetes/kubernetes/blob/v1.24.0/staging/src/k8s.io/kubectl/pkg/util/prune/prune.go
 
 
+          #core/v1/Endpoints намеренно нет в списке: v1 Endpoints deprecated в k8s 1.33+,
+          #и его перечисление на каждом деплое печатало deprecation-warning в лог.
+          #Своих Endpoints/EndpointSlice мы не применяем: их создаёт контроллер под наши Service,
+          #и удаляются они каскадно вместе с Service (ownerReferences), а не через prune.
+          #Если когда-нибудь положим в manifests/ ручной EndpointSlice (например, сервис без селектора) —
+          #тогда и добавить сюда discovery.k8s.io/v1/EndpointSlice, иначе он не будет вычищаться.
           KUBECTL_PRUNE_WHITELIST="\
           --prune-allowlist=core/v1/ConfigMap \
-          --prune-allowlist=core/v1/Endpoints \
           --prune-allowlist=core/v1/PersistentVolumeClaim \
           --prune-allowlist=core/v1/Pod \
           --prune-allowlist=core/v1/ReplicationController \
