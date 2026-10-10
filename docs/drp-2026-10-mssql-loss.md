@@ -71,8 +71,8 @@
       MSSQL; ingress-nginx (ingress class `nginx`, как в старом); namespace `prod`.
 - [ ] Сеть: кластер видит Container Registry и Postgres-кластер `joinrpg-prod`.
 - [ ] GitHub, окружение prod: секрет `KUBECONFIG` — на новый кластер.
-- [ ] MSSQL в кластере — StatefulSet с постоянным диском, **регулярные бэкапы** в Object Storage
-      с первого дня (PR с манифестами, [подробнее](#mssql-в-кластере)).
+- [ ] MSSQL в кластере — вручную или в отдельном репозитории (не здесь); **регулярные бэкапы**
+      с первого дня ([подробнее](#mssql-в-кластере)).
 - [ ] Логи подов — в Monium; проверить, что поля Serilog (`RequestPath`, `ProjectId`,
       `LoggedUser`, `ActionName`) доезжают. Обновить скилл `prod-logs`.
 - [ ] TLS-сертификаты для боевых и служебных доменов — cert-manager или Yandex Certificate
