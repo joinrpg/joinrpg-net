@@ -1,0 +1,4 @@
+@using JoinRpg.Common.WebInfrastructure
+@using Microsoft.Extensions.Options
+@inject IOptions<SiteBannerOptions> SiteBannerOptions
+<component type="typeof(SiteBanner)" param-Text="@SiteBannerOptions.Value.Text" render-mode="Static" />

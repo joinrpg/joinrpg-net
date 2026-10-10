@@ -1,0 +1,102 @@
+@* Глобальное объявление над содержимым страницы. Текст — простой, без разметки:
+   Blazor его экранирует, так что конфиг не может внедрить HTML. Адреса http(s)://
+   превращаются в ссылки. *@
+@if (!string.IsNullOrWhiteSpace(Text))
+{
+    <div class="site-banner">
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            @foreach (var (text, link) in SplitLinks(Text))
+            {
+                if (link is not null)
+                {
+                    <a href="@link">@text</a>
+                }
+                else
+                {
+                    @text
+                }
+            }
+        </JoinAlert>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Текст объявления. Пустой или из одних пробелов — ничего не выводится.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    // Знаки, которыми в тексте обычно заканчивается предложение или скобка после адреса, —
+    // в ссылку их не включаем.
+    private const string TrailingPunctuation = ".,;:!?)»\"'";
+
+    /// <summary>
+    /// Режет текст на куски: слово, в котором есть http:// или https:// и которое разбирается как
+    /// абсолютный адрес, становится ссылкой (с этого места до конца слова), остальное — текстом.
+    /// </summary>
+    private static IEnumerable<(string Text, Uri? Link)> SplitLinks(string text)
+    {
+        var plainStart = 0;
+        var position = 0;
+        while (position < text.Length)
+        {
+            if (char.IsWhiteSpace(text[position]))
+            {
+                position++;
+                continue;
+            }
+
+            var wordEnd = position;
+            while (wordEnd < text.Length && !char.IsWhiteSpace(text[wordEnd]))
+            {
+                wordEnd++;
+            }
+
+            var linkStart = FindLinkStart(text, position, wordEnd);
+            if (linkStart >= 0)
+            {
+                var linkEnd = wordEnd;
+                while (linkEnd > linkStart && TrailingPunctuation.Contains(text[linkEnd - 1]))
+                {
+                    linkEnd--;
+                }
+
+                var candidate = text[linkStart..linkEnd];
+                if (Uri.TryCreate(candidate, UriKind.Absolute, out var uri)
+                    && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+                    && uri.Host.Length > 0)
+                {
+                    if (linkStart > plainStart)
+                    {
+                        yield return (text[plainStart..linkStart], null);
+                    }
+                    yield return (candidate, uri);
+                    plainStart = linkEnd;
+                }
+            }
+
+            position = wordEnd;
+        }
+
+        if (plainStart < text.Length)
+        {
+            yield return (text[plainStart..], null);
+        }
+    }
+
+    // Адрес может стоять не в начале слова: «(https://joinrpg.ru)».
+    private static int FindLinkStart(string text, int wordStart, int wordEnd)
+    {
+        var word = text.AsSpan(wordStart, wordEnd - wordStart);
+        var https = word.IndexOf("https://", StringComparison.OrdinalIgnoreCase);
+        var http = word.IndexOf("http://", StringComparison.OrdinalIgnoreCase);
+        var index = (https, http) switch
+        {
+            (< 0, < 0) => -1,
+            (< 0, _) => http,
+            (_, < 0) => https,
+            _ => Math.Min(https, http),
+        };
+        return index < 0 ? -1 : wordStart + index;
+    }
+}
