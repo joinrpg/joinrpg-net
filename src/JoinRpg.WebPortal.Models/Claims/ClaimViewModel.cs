@@ -174,7 +174,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         // Разбивка взноса — по снимку заявки; тип и комната — из модели панели «Проживание»,
         // построенной по снимку заявки и плану (ADR022).
-        ClaimFee = new ClaimFeeViewModel(claim, claimInfo.ClaimInCharacter, this, currentUser.UserIdentification, projectInfo, externalPaymentUrlFactory,
+        ClaimFee = new ClaimFeeViewModel(claim, claimInfo.ClaimInCharacter, currentUser.UserIdentification, externalPaymentUrlFactory,
             accommodationModel);
 
         ParentGroups = new CharacterParentGroupsViewModel(characterInfo, HasMasterAccess);

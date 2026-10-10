@@ -3,7 +3,6 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Markdown;
-using JoinRpg.Web.Claims;
 using JoinRpg.Web.Models.Accommodation;
 
 namespace JoinRpg.Web.Models;
@@ -14,7 +13,10 @@ public class ClaimFeeViewModel
     /// EF-сущность той же заявки — пока нужна списку финансовых операций, подпискам и условиям
     /// льготного взноса: их в снимке заявки нет (ADR013).
     /// </param>
-    /// <param name="claimInCharacter">Снимок заявки, по нему считается разбивка взноса.</param>
+    /// <param name="claimInCharacter">
+    /// Снимок заявки: по нему считается разбивка взноса, из него же берутся метаданные проекта,
+    /// статус заявки и её игрок.
+    /// </param>
     /// <param name="accommodation">
     /// Проживание заявки — тип и комната из снимка заявки и плана поселения (ADR022); <c>null</c>,
     /// если поселение в проекте выключено.
@@ -22,17 +24,16 @@ public class ClaimFeeViewModel
     public ClaimFeeViewModel(
         Claim claim,
         ClaimInCharacter claimInCharacter,
-        ClaimViewModel model,
-        UserIdentification currentUserId,
-        ProjectInfo projectInfo,
+        UserIdentification currentUser,
         Func<string?, string?> externalPaymentUrlFactory,
         ClaimAccommodationViewModel? accommodation)
     {
         ArgumentNullException.ThrowIfNull(claimInCharacter);
 
+        var projectInfo = claimInCharacter.ProjectInfo;
+        var claimData = claimInCharacter.Claim;
+        var isMyClaim = claimData.PlayerId == currentUser;
         var feeBreakdown = claimInCharacter.CalculateFeeBreakdown();
-
-        Status = model.Status;
 
         BaseFeeInfo = feeBreakdown.BaseFeeSetting;
         BaseFee = feeBreakdown.BaseFee;
@@ -68,18 +69,18 @@ public class ClaimFeeViewModel
             Balance[fo.State] += fo.MoneyAmount;
         }
 
-        HasMasterAccess = projectInfo.HasMasterAccess(currentUserId);
-        HasFeeAdminAccess = projectInfo.HasMasterAccess(currentUserId, Permission.CanManageMoney);
+        HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
+        HasFeeAdminAccess = projectInfo.HasMasterAccess(currentUser, Permission.CanManageMoney);
 
         PaymentTypes = [.. projectInfo
-            .GetAvailablePaymentTypesForUser(currentUserId, new UserIdentification(claim.PlayerUserId))
+            .GetAvailablePaymentTypesForUser(currentUser, claimData.PlayerId)
             .Select(pt => new PaymentTypeViewModel(pt))];
 
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
-        PreferentialFeeUser = claimInCharacter.Claim.Finance.PreferentialFeeUser;
+        PreferentialFeeUser = claimData.Finance.PreferentialFeeUser;
         PreferentialFeeConditions =
             ((MarkdownString?)claim.Project.Details.PreferentialFeeConditions).ToHtmlString();
-        PreferentialFeeRequestEnabled = PreferentialFeeEnabled && !PreferentialFeeUser && Status.IsActive();
+        PreferentialFeeRequestEnabled = PreferentialFeeEnabled && !PreferentialFeeUser && claimData.IsActive;
 
         ClaimId = claimInCharacter.ClaimId.ClaimId;
         ProjectId = claimInCharacter.ClaimId.ProjectId;
@@ -91,20 +92,20 @@ public class ClaimFeeViewModel
             .ToList();
         FinanceOperations = claim.FinanceOperations
             .Select(
-                fo => new FinanceOperationViewModel(claim, fo, model.HasMasterAccess, model.IsMyClaim)
+                fo => new FinanceOperationViewModel(claim, fo, HasMasterAccess, isMyClaim)
                 {
                     ExternalUrl = HasFeeAdminAccess ? externalPaymentUrlFactory(fo.BankDetails?.BankOperationKey) : null
                 });
         VisibleFinanceOperations = FinanceOperations
             .Where(fo => fo.IsVisible);
 
-        ShowOnlinePaymentControls = PaymentTypes.OnlinePaymentsEnabled() && model.IsMyClaim;
+        ShowOnlinePaymentControls = PaymentTypes.OnlinePaymentsEnabled() && isMyClaim;
         HasSubmittablePaymentTypes = PaymentTypes.Any(pt => pt.TypeKind is PaymentTypeKindViewModel.Custom or PaymentTypeKindViewModel.Cash);
 
         // Determining payment status
         PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
 
-        ShowRecurrentPaymentControls = PaymentTypes.RecurrentPaymentsEnabled() && model.IsMyClaim;
+        ShowRecurrentPaymentControls = PaymentTypes.RecurrentPaymentsEnabled() && isMyClaim;
         RecurrentPayments = claim.RecurrentPayments
             .Select(e => new RecurrentPaymentViewModel(this, e))
             .OrderBy(static e => e.CreatedAt)
@@ -115,11 +116,6 @@ public class ClaimFeeViewModel
             && RecurrentPayments.Any(rp => rp.Status is RecurrentPaymentStatusViewModel.Active
                 || (HasFeeAdminAccess && rp.Status is RecurrentPaymentStatusViewModel.Created or RecurrentPaymentStatusViewModel.Cancelling));
     }
-
-    /// <summary>
-    /// Claim status taken from claim view model
-    /// </summary>
-    public ClaimFullStatusView Status { get; }
 
     /// <summary>
     /// Claim fee taken from project settings or defined manually
