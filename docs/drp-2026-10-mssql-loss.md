@@ -252,6 +252,32 @@ IdPortal и ingress. Миграция и старт подов идут одни
   поколений и проверкой восстановления. Без этого повторим аварию.
 - **Ресурсы и диск.** Узел под MSSQL с запасом памяти; диск network-ssd с запасом под рост.
 
+### Конфигурация DRP-инструментов
+
+Решение 2026-10-11, для всех консольных инструментов восстановления (#5465, #5479, оболочки
+проектов и следующие). Конфигурация — `Microsoft.Extensions.Configuration`, слои по возрастанию
+приоритета:
+
+1. **Факты инцидента — в репозитории**, `drp.appsettings.json` рядом с инструментами:
+   `Drp:LostAt` (2026-10-07T22:30:49Z), после восстановления бэкапа — `Drp:BackupMax:Users`,
+   `Drp:BackupMax:Projects` и т.п. Не секреты, одинаковы для всех запусков — инструменты не
+   разойдутся в параметрах.
+2. **Строки подключения — user-secrets** с общим `UserSecretsId` `joinrpg-drp`: настраиваются
+   один раз на машине админа, вне репозитория. Ключи как в Portal:
+   `ConnectionStrings:DefaultConnection` (MSSQL через `joindb.tsarevs.ru`),
+   `ConnectionStrings:Notifications` (Postgres `joinrpg-prod-notifications`).
+   ```
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<...>" --id joinrpg-drp
+   dotnet user-secrets set "ConnectionStrings:Notifications" "<...>" --id joinrpg-drp
+   ```
+3. **Переменные окружения** с префиксом `DRP_` (`DRP_ConnectionStrings__DefaultConnection`).
+4. **Аргументы командной строки** — режимы (`--apply`) и разовые переопределения.
+
+Отчёты с ПДн — в `Drp:ReportDir` вне репозитория (по умолчанию
+`%LOCALAPPDATA%\joinrpg-drpeports`). Общий код сборки конфигурации — в одном маленьком проекте,
+который подключают все инструменты. SQL-скрипты (`reseed-identities.sql`) — вне этого подхода:
+параметры в самом скрипте, подключение — аргументами `sqlcmd`.
+
 ### Внешний доступ к MSSQL
 
 Скрипты фазы 3 (сдвиг счётчиков, миграции) и инструменты фазы 4 (#5465, #5479, оболочки
