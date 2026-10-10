@@ -1,4 +1,4 @@
-@* Бейдж оплаты группы проживающих: зелёный — оплачено всё, жёлтый и красный — показывают долг. *@
+@* Бейдж оплаты группы проживающих: зелёный — оплачено всё, жёлтый — оплачено от 25%, красный — меньше. *@
 <span class="badge acc-payment alert-@CssClass" title="@Title"><JoinIcon Icon="JoinIconType.FeePaid" /><span class="price-value price-RUR">@(-Group.FeeToPay)</span></span>
 
 @code {
@@ -12,12 +12,21 @@
         : "Все оплачено полностью";
 
     /// <summary>
-    /// Цвет бейджа. Формула перенесена со страницы на jQuery как была: «процент» здесь — доля
-    /// оставшегося долга, и ровно столько же, сколько раньше, групп получает каждый цвет.
+    /// Цвет бейджа по доле оплаченного: зелёный — оплачено всё (в том числе бесплатное проживание),
+    /// жёлтый — оплачено 25% и больше, но не всё, красный — оплачено меньше 25% или ничего.
     /// </summary>
     internal static string GetCssClass(int feeToPay, int feeTotal)
     {
-        var percent = feeToPay == 0 ? 100 : (feeToPay == feeTotal || feeTotal == 0 ? 0 : 100 * feeToPay / feeTotal);
-        return percent == 100 ? "success" : (percent >= 25 ? "warning" : "danger");
+        if (feeToPay <= 0)
+        {
+            return "success";
+        }
+        if (feeTotal <= 0)
+        {
+            // Долг при нулевой стоимости быть не должен, но делить на ноль не будем.
+            return "danger";
+        }
+        var paidPercent = 100 * (feeTotal - feeToPay) / feeTotal;
+        return paidPercent >= 25 ? "warning" : "danger";
     }
 }
