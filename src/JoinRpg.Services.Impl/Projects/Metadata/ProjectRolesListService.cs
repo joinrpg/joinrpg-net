@@ -19,7 +19,7 @@ internal class ProjectRolesListService(
         var entity = await projectPropsService.ChangeProjectProperties(
             modelId.ProjectId,
             Permission.CanManageClaims,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // сетки ролей не восстанавливают (ADR023)
             model,
             ctx =>
             {
@@ -55,7 +55,7 @@ internal class ProjectRolesListService(
         var entity = await projectPropsService.ChangeProjectProperties(
             modelId.ProjectId,
             Permission.CanManageClaims,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // сетки ролей не восстанавливают (ADR023)
             model,
             ctx =>
             {
@@ -75,7 +75,7 @@ internal class ProjectRolesListService(
         await projectPropsService.ChangeProjectProperties(
             id.ProjectId,
             Permission.CanManageClaims,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // сетки ролей не восстанавливают (ADR023)
             id,
             ctx =>
             {
@@ -100,7 +100,7 @@ internal class ProjectRolesListService(
         await projectPropsService.ChangeProjectProperties(
             id.ProjectId,
             Permission.CanManageClaims,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // сетки ролей не восстанавливают (ADR023)
             id,
             ctx =>
             {

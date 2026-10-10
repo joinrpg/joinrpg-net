@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace JoinRpg.Portal.Pages.GamePages;
 
 [RequireMaster(Permission.CanEditRoles)]
-[ProjectShouldBeActive]
+[ProjectShouldNotBeArchived] // сетки ролей правят и в заблокированном проекте (ADR023)
 public class ProjectRolesListEditModel : PageModel
 {
     private readonly IProjectRolesListClient _client;

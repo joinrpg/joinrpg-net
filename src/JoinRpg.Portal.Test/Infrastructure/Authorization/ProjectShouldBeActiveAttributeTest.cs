@@ -104,6 +104,50 @@ public class ProjectShouldBeActiveAttributeTest
                 Task.FromResult(new PageHandlerExecutedContext(pageContext, new List<IFilterMetadata>(), new HandlerMethodDescriptor(), new object()))));
     }
 
+    public enum TestProjectState { Active, Archived, Blocked }
+
+    // ADR023: какой атрибут в каком статусе пропускает экшен. null — пропускает.
+    [Theory]
+    [InlineData(nameof(ProjectShouldBeActiveAttribute), TestProjectState.Active, null)]
+    [InlineData(nameof(ProjectShouldBeActiveAttribute), TestProjectState.Archived, typeof(ProjectDeactivatedException))]
+    [InlineData(nameof(ProjectShouldBeActiveAttribute), TestProjectState.Blocked, typeof(ProjectBlockedException))]
+    [InlineData(nameof(ProjectShouldNotBeArchivedAttribute), TestProjectState.Active, null)]
+    [InlineData(nameof(ProjectShouldNotBeArchivedAttribute), TestProjectState.Archived, typeof(ProjectDeactivatedException))]
+    [InlineData(nameof(ProjectShouldNotBeArchivedAttribute), TestProjectState.Blocked, null)]
+    public async Task Attribute_MatchesProjectState(string attributeName, TestProjectState state, Type? expectedException)
+    {
+        var mock = new MockedProject();
+        switch (state)
+        {
+            case TestProjectState.Archived:
+                mock.Project.Active = false;
+                mock.Project.IsAcceptingClaims = false;
+                break;
+            case TestProjectState.Blocked:
+                mock.Project.IsBlocked = true;
+                break;
+        }
+        mock.ReInitProjectInfo();
+        var httpContext = CreateHttpContext(mock.ProjectInfo);
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        var context = new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object?>(), new object());
+        ProjectStatusFilterAttribute filter = attributeName == nameof(ProjectShouldBeActiveAttribute)
+            ? new ProjectShouldBeActiveAttribute()
+            : new ProjectShouldNotBeArchivedAttribute();
+
+        var act = () => filter.OnActionExecutionAsync(context, () =>
+            Task.FromResult(new ActionExecutedContext(actionContext, new List<IFilterMetadata>(), new object())));
+
+        if (expectedException is null)
+        {
+            await act();
+        }
+        else
+        {
+            (await Should.ThrowAsync<ProjectDeactivatedException>(act)).GetType().ShouldBe(expectedException);
+        }
+    }
+
     private class TestServiceProvider : IServiceProvider
     {
         private readonly Dictionary<Type, object> services = new();

@@ -15,6 +15,8 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
                 .AsExpandable()
                 .Where(fo => fo.State != FinanceOperationState.Declined && fo.State != FinanceOperationState.Approved)
                 .Where(fo => fo.OperationType == FinanceOperationType.Online)
+                // Платежи заблокированного проекта (ADR023) сверяют с провайдером при восстановлении.
+                .Where(fo => !fo.Project.IsBlocked)
                 .ApplyPaginationEf(pagination, x => x.CommentId)
                 .Select(fo => new { fo.ProjectId, fo.ClaimId, fo.CommentId });
 

@@ -14,7 +14,9 @@ internal static class ProjectRolesListViewModelBuilder
     {
         var items = domainItems.Select(item => BuildListItem(item, characterGroups, projectInfo.DefaultRolesListId)).ToList();
 
-        var hasEditAccess = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentification);
+        // Не HasEditRolesAccess: сетки ролей правят и в заблокированном проекте — их не восстанавливают (ADR023).
+        var hasEditAccess = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentification, Permission.CanEditRoles)
+            && !projectInfo.IsArchived;
 
         return new ProjectRolesListViewModel(items, hasEditAccess);
     }
