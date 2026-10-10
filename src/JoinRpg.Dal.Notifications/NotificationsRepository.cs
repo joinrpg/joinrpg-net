@@ -89,28 +89,45 @@ internal class NotificationsRepository(
 
     private async Task<TargetedNotificationMessageForRecipient?> InternalSelectNextNotificationAsync(SelectMessageData data, CancellationToken cancellationToken)
     {
-        var candidate = await dbContext.NotificationMessageChannels
-            .FromSqlRaw(lockRequestSql, data.Channel, NotificationMessageStatus.Queued)
-            .Include(static e => e.NotificationMessage)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (candidate is null)
+        while (true)
         {
-            // No messages left
-            return null;
+            var candidate = await dbContext.NotificationMessageChannels
+                .FromSqlRaw(lockRequestSql, data.Channel, NotificationMessageStatus.Queued)
+                .Include(static e => e.NotificationMessage)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (candidate is null)
+            {
+                // No messages left
+                return null;
+            }
+
+            var dto = TryCreateTargetedNotificationMessageDto(candidate);
+
+            if (dto is null)
+            {
+                // Битую строку не отправить никогда. Если просто бросить исключение, транзакция откатится,
+                // строка останется в очереди и будет выбираться снова, останавливая весь канал (#5466).
+                await SetStatus(
+                    candidate.NotificationMessageId,
+                    candidate.Channel,
+                    from: candidate.NotificationMessageStatus,
+                    to: NotificationMessageStatus.Failed);
+                continue;
+            }
+
+            await SetStatus(
+                candidate.NotificationMessageId,
+                candidate.Channel,
+                from: candidate.NotificationMessageStatus,
+                to: NotificationMessageStatus.Sending,
+                attempts: candidate.Attempts + 1);
+
+            successRaceCounter.Add(1);
+
+            return dto;
         }
-
-        await SetStatus(
-            candidate.NotificationMessageId,
-            candidate.Channel,
-            from: candidate.NotificationMessageStatus,
-            to: NotificationMessageStatus.Sending,
-            attempts: candidate.Attempts + 1);
-
-        successRaceCounter.Add(1);
-
-        return CreateTargetedNotificationMessageDto(candidate);
     }
 
     Task<TargetedNotificationMessageForRecipient?> INotificationRepository.SelectNextNotificationForSending(NotificationChannel channel)
@@ -121,7 +138,7 @@ internal class NotificationsRepository(
             (_, _) => Task.FromResult(false));
     }
 
-    private TargetedNotificationMessageForRecipient CreateTargetedNotificationMessageDto(NotificationMessageChannel candidate)
+    private TargetedNotificationMessageForRecipient? TryCreateTargetedNotificationMessageDto(NotificationMessageChannel candidate)
     {
         try
         {
@@ -133,8 +150,8 @@ internal class NotificationsRepository(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to parse NotificationMessageChannel record from DB {notificationMessageChannelId}", candidate.NotificationMessageChannelId);
-            throw;
+            logger.LogError(e, "Failed to parse NotificationMessageChannel record from DB {notificationMessageChannelId}, marking it as failed", candidate.NotificationMessageChannelId);
+            return null;
         }
     }
 

@@ -44,7 +44,7 @@ public record NotificationAddress
         }
         else if (Channel == NotificationChannel.Telegram)
         {
-            InternalValue = TelegramChatId.Parse(channelSpeficValue, provider: null);
+            InternalValue = ParseTelegramChatId(channelSpeficValue);
         }
         else if (Channel == NotificationChannel.ShowInUi)
         {
@@ -54,6 +54,23 @@ public record NotificationAddress
         {
             throw new ArgumentOutOfRangeException(nameof(notificationChannel));
         }
+    }
+
+    private static TelegramChatId ParseTelegramChatId(string value)
+    {
+        if (TelegramChatId.TryParse(value, provider: null, out var chatId))
+        {
+            return chatId;
+        }
+
+        // До #4642 в очередь писали старый TelegramId: Telegram(<id>) или Telegram(<id>, @<name>).
+        // Такие строки могли остаться в очереди, их тоже надо уметь прочитать (#5466).
+        if (TelegramSocialLink.TryParse(value, provider: null, out var legacyLink) && legacyLink.ChatId is not null)
+        {
+            return legacyLink.ChatId;
+        }
+
+        throw new ArgumentException($"Could not parse Telegram address \"{value}\".", nameof(value));
     }
 
     public Email AsEmail()
