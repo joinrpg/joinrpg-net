@@ -1,0 +1,54 @@
+# Служебные домены для проверки приложений при восстановлении после потери БД (DRP, #5459):
+# пока joinrpg.ru и id.joinrpg.ru закрыты заглушкой, Portal и IdPortal доступны здесь.
+# Боевые ingress (joinrpg-portal, joinrpg-idportal) и их сертификаты не трогаем.
+# Чтобы убрать — удалить этот файл из resources в kustomization.yaml: деплой удалит
+# ingress прунингом по метке managed-by-kustomize-prod.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: joinrpg-portal-service-domain
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - joinrpg.tsarevs.ru
+      secretName: joinrpg-tsarevs-ru-tls
+  rules:
+    - host: joinrpg.tsarevs.ru
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: joinrpg-portal
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: joinrpg-idportal-service-domain
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - id.joinrpg.tsarevs.ru
+      secretName: id-joinrpg-tsarevs-ru-tls
+  rules:
+    - host: id.joinrpg.tsarevs.ru
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: joinrpg-idportal
+                port:
+                  number: 80
