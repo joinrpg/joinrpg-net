@@ -63,7 +63,8 @@ public class RoomTypeEditFormTest : BunitContext
                 .TagName.ShouldBeOneOf("INPUT", "TEXTAREA");
         }
 
-        cut.Find("#roomtype-player-selectable").GetAttribute("type").ShouldBe("checkbox");
+        var checkboxId = cut.Find("input[type=checkbox]").Id;
+        labels.ShouldContain(label => label.GetAttribute("for") == checkboxId);
     }
 
     [Fact]

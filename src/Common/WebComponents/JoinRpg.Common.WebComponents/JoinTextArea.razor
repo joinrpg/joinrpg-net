@@ -2,7 +2,7 @@
 @inject IJSRuntime JSRuntime
 
 <div style="position: relative; display: block;">
-    <textarea @ref="textareaRef" name="@FieldIdentifier.FieldName" rows="@Rows"
+    <textarea @ref="textareaRef" id="@inputId" name="@FieldIdentifier.FieldName" rows="@Rows"
               class="form-control" placeholder="@Placeholder"
               readonly="@ReadOnly"
               style="@(HasCopyButton ? "padding-right: 24px;" : null)"
@@ -49,9 +49,16 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    [CascadingParameter]
+    private FormRowLabelTarget? LabelTarget { get; set; }
+
     private FieldIdentifier FieldIdentifier { get; set; }
     private string internalValue = "";
     private ElementReference textareaRef;
+    private string? inputId;
+
+    protected override void OnParametersSet()
+        => inputId = LabelTarget?.Claim(this, FormRowLabelTarget.ExplicitId(AdditionalAttributes));
 
     protected override void OnInitialized()
     {
