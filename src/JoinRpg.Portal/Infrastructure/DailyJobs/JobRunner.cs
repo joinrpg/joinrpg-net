@@ -23,6 +23,7 @@ internal class JobRunner<TJob>(IVirtualUsersService virtualUsersService, IImpers
 
     public string Name => typeof(TJob).Name;
     public string FullName => typeof(TJob).FullName!;
+    public Type JobType => typeof(TJob);
 }
 
 public interface IJobRunner
@@ -30,4 +31,5 @@ public interface IJobRunner
     Task RunJob(IServiceScope serviceScope, CancellationToken cancellationToken);
     string Name { get; }
     string FullName { get; }
+    Type JobType { get; }
 }

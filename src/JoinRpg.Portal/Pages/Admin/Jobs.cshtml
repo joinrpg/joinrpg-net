@@ -1,16 +1,30 @@
 @page
 @model JoinRpg.Portal.Pages.Admin.JobsModel
 <h3>Джобы</h3>
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
 @foreach (var job in Model.Jobs)
 {
     <div class="panel panel-default">
-    <div class="panel-heading">@job.Name</div>
+    <div class="panel-heading">
+        @job.Name
+        @if (job.IsDisabledByConfig)
+        {
+            <span class="label label-warning">Выключена в конфигурации</span>
+        }
+    </div>
     <div class="panel-body">
+            @if (job.IsDisabledByConfig)
+            {
+                <p class="text-muted">Джоба указана в настройке <code>DailyJobs:Disabled</code>: она не запускается ни по расписанию, ни вручную.</p>
+            }
             <form method="post">
                     @Html.Hidden("name", job.Name)
                     @Html.AntiForgeryToken()
 
-                            <input type="submit" value="Запустить джобу" class="btn btn-success" />
+                            <input type="submit" value="Запустить джобу" class="btn btn-success" disabled="@job.IsDisabledByConfig" />
             </form>
             <component type="typeof(JoinRpg.Web.AdminTools.Jobs.JobLogsLink)" param-JobName="@job.FullName" render-mode="Static" />
     </div>
