@@ -232,7 +232,9 @@ character-агрегат, комнату — план. Меняется толь
 ### Что осталось открытым
 
 - **`AccommodationExtensions.GetAccommodationType(Claim)` на навигации**: через него идут
-  легаси-финансы (`FinanceExtensions.ClaimAccommodationFee`) и тип в выгрузке заявок
+  легаси-финансы (`FinanceExtensions.ClaimAccommodationFee` — под `CalculateClaimBalance`,
+  `ClaimFeeDue`, `UpdateClaimFeeIfRequired`; разбивка взноса на странице заявки, `ClaimFeeViewModel`,
+  с #5397 считается по снимку — `ClaimInCharacter.CalculateFeeBreakdown`) и тип в выгрузке заявок
   (`ClaimListBuilder.BuildItemForExport`), а `ClaimsRepositoryImpl` держит ради них `Include` группы.
   Счётчик `JOIN001` этих мест не видит — навигацию прячет расширение. Финансы уходят с переводом на
   `CharacterInfo` (§5), выгрузка — с шагом 6 ADR021. Фиксация взноса (`UpdateClaimFeeIfRequired`)

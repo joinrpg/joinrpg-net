@@ -29,14 +29,8 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns base fee (taken from project settings or claim's property CurrentFee)
     /// </summary>
-    public static int BaseFee(this Claim claim, ProjectInfo projectInfo, DateTime? operationDate = null)
+    private static int BaseFee(this Claim claim, ProjectInfo projectInfo, DateTime? operationDate = null)
         => claim.CurrentFee ?? claim.ProjectFeeForDate(projectInfo, operationDate);
-
-    /// <summary>
-    /// Returns actual fee for a claim (as a sum of claim fee and fields fee) using current date
-    /// </summary>
-    public static int ClaimCurrentFee(this Claim claim, int? fieldsFee, ProjectInfo projectInfo)
-        => claim.ClaimCurrentFee(DateTime.UtcNow, fieldsFee, projectInfo);
 
     /// <summary>
     /// Returns actual fee for a claim (as a sum of claim fee and fields fee)
@@ -114,7 +108,7 @@ public static class FinanceExtensions
     /// <summary>
     /// Returns accommodation fee
     /// </summary>
-    public static int ClaimAccommodationFee(this Claim claim, ProjectInfo projectInfo)
+    private static int ClaimAccommodationFee(this Claim claim, ProjectInfo projectInfo)
         => claim.GetAccommodationType(projectInfo)?.Cost ?? 0;
 
     /// <summary>

@@ -242,7 +242,8 @@ Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimIn
    заявки, нельзя, так что он всегда среди действующих.
 
    На EF в `ClaimViewModel` осталось:
-   - комментарии, взнос (`ClaimFeeViewModel`), типы оплаты, поля (`CustomFieldsViewModel`),
+   - комментарии, финансовые операции и подписки (`ClaimFeeViewModel`; разбивку взноса он с #5397
+     считает по снимку — `ClaimInCharacter.CalculateFeeBreakdown`), типы оплаты, поля (`CustomFieldsViewModel`),
      проживание (`CanChangeAccommodation`) и `Claim.HasAccess` — по причинам выше;
    - число других заявок игрока: это заявки на других персонажей, в агрегате их нет, а
      `UserInfo.ActiveClaims` не включает заявки «на паузе», которые здесь считаются.

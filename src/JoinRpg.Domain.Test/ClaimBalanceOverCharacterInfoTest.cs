@@ -85,13 +85,75 @@ public class ClaimBalanceOverCharacterInfoTest
     }
 
     [Fact]
+    public void FeeBreakdownSplitsFieldsByBoundAndAddsUpToBalance()
+    {
+        var claimField = mock.AddField(field =>
+        {
+            field.FieldName = "Платное поле заявки";
+            field.FieldType = ProjectFieldType.Checkbox;
+            field.Price = 70;
+            field.FieldBoundTo = FieldBoundTo.Claim;
+        });
+        // Платное, но не отмеченное: в сумму не входит, но платным полем считается.
+        mock.AddField(field =>
+        {
+            field.FieldName = "Неотмеченное платное поле заявки";
+            field.FieldType = ProjectFieldType.Checkbox;
+            field.Price = 30;
+            field.FieldBoundTo = FieldBoundTo.Claim;
+        });
+
+        var character = mock.CreateCharacter("С платными полями");
+        character.JsonData = $$"""{"{{pricedField.Id.ProjectFieldId}}":"on"}""";
+        var claim = mock.CreateApprovedClaim(character, mock.Player);
+        claim.CurrentFee = 1000;
+        claim.JsonData = $$"""{"{{claimField.Id.ProjectFieldId}}":"on"}""";
+        claim.FinanceOperations = [];
+
+        var claimInCharacter = new ClaimInCharacter(mock.GetCharacterInfo(character), claim.GetId());
+        var breakdown = claimInCharacter.CalculateFeeBreakdown(OperationDate);
+
+        breakdown.BaseFee.ShouldBe(1000);
+        breakdown.IsBaseFeeFixed.ShouldBeTrue();
+        breakdown.BaseFeeSetting.ShouldBeNull();
+        breakdown.HasBaseFee.ShouldBeTrue();
+        breakdown.CharacterFields.ShouldBe(new FieldsFeeSubtotal(Fee: 250, FieldsWithFeeCount: 1));
+        breakdown.ClaimFields.ShouldBe(new FieldsFeeSubtotal(Fee: 70, FieldsWithFeeCount: 2));
+        breakdown.HasFieldsWithFee.ShouldBeTrue();
+        breakdown.TotalFee.ShouldBe(1000 + 250 + 70);
+        breakdown.TotalFee.ShouldBe(claimInCharacter.CalculateBalance(OperationDate).TotalFee);
+        breakdown.TotalFee.ShouldBe(claim.CalculateClaimBalance(mock.ProjectInfo, OperationDate).TotalFee);
+    }
+
+    [Fact]
+    public void FeeBreakdownTakesBaseFeeFromScheduleAndAccommodationFromSnapshot()
+    {
+        var (character, claim) = MakeAggregate(
+            currentFee: null, preferential: true, fieldsJson: null, accommodationFee: 150);
+
+        var breakdown = new ClaimInCharacter(character, claim).CalculateFeeBreakdown(OperationDate);
+
+        breakdown.BaseFee.ShouldBe(400);
+        breakdown.IsBaseFeeFixed.ShouldBeFalse();
+        breakdown.BaseFeeSetting.ShouldNotBeNull().StartDate.ShouldBe(FeeStart);
+        breakdown.HasBaseFee.ShouldBeTrue();
+        breakdown.AccommodationFee.ShouldBe(150);
+        breakdown.HasFieldsWithFee.ShouldBeTrue(); // платное поле проекта есть, хоть и не отмечено
+        breakdown.FieldsFee.ShouldBe(0);
+        breakdown.TotalFee.ShouldBe(400 + 150);
+    }
+
+    [Fact]
     public void BeforeFeeScheduleStartsBaseFeeIsZero()
     {
         var (character, claim) = MakeAggregate(currentFee: null, preferential: false, fieldsJson: null);
 
-        var balance = new ClaimInCharacter(character, claim).CalculateBalance(FeeStart.AddDays(-1));
+        var claimInCharacter = new ClaimInCharacter(character, claim);
+        var balance = claimInCharacter.CalculateBalance(FeeStart.AddDays(-1));
 
         balance.TotalFee.ShouldBe(0);
+        // Строки «Взнос» на странице заявки тогда нет вовсе.
+        claimInCharacter.CalculateFeeBreakdown(FeeStart.AddDays(-1)).HasBaseFee.ShouldBeFalse();
     }
 
     /// <summary>

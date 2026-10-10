@@ -5,8 +5,8 @@ namespace JoinRpg.DomainTypes.Characters.Claims.Finances;
 /// <summary>
 /// Финансовые факты заявки — часть <see cref="CharacterClaimInfo"/> (ADR013). Только то, что
 /// лежит в БД, без расчётов: производные величины (итоговый взнос, остаток) считает
-/// <see cref="CalculateBalance"/>, потому что для них нужны метаданные проекта, дата операции
-/// и слой полей, которых здесь нет.
+/// <see cref="ClaimBalanceExtensions.CalculateFeeBreakdown(ClaimInCharacter, DateTime?)"/>,
+/// потому что для них нужны метаданные проекта, дата операции и слой полей, которых здесь нет.
 /// </summary>
 /// <param name="FixedFee">
 /// Базовый взнос, зафиксированный для заявки (колонка <c>Claims.CurrentFee</c>). <c>null</c> —
@@ -37,12 +37,4 @@ public record class ClaimFinanceInfo(
         return FixedFee
             ?? projectInfo.ProjectFinanceSettings.GetFeeForDate(operationDate, PreferentialFeeUser);
     }
-
-    /// <summary>
-    /// Баланс заявки. Взнос за поля приходит снаружи: слой полей живёт в
-    /// <see cref="CharacterInfo"/>, а не здесь — см.
-    /// <see cref="ClaimBalanceExtensions.CalculateBalance(ClaimInCharacter, DateTime?)"/>.
-    /// </summary>
-    public ClaimBalance CalculateBalance(int fieldsFee, ProjectInfo projectInfo, DateTime operationDate)
-        => new(FeePaid, GetBaseFee(projectInfo, operationDate) + fieldsFee + AccommodationFee);
 }
