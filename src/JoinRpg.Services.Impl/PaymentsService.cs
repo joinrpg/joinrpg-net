@@ -93,11 +93,12 @@ internal class PaymentsService(
     /// Фиксирует взнос по заявке, если она оплачена полностью. Решение — по доменному снимку
     /// заявки (<see cref="FinanceExtensions.UpdateClaimFeeIfRequired"/>).
     /// </summary>
-    private async Task UpdateClaimFeeIfRequired(Claim claim)
+    private async Task UpdateClaimFeeIfRequired(Claim claim, FinanceOperation approved)
     {
         var snapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claim.GetId())
             ?? throw new JoinRpgEntityNotFoundException(claim.ClaimId, nameof(Claim));
-        claim.UpdateClaimFeeIfRequired(snapshot, Now);
+        // Снимок читается из БД, где операция ещё не подтверждена, — её сумму добавляем сами.
+        claim.UpdateClaimFeeIfRequired(snapshot, Now, paymentAdded: approved.MoneyAmount);
     }
 
     // TODO: We have to reimagine how we get payment purpose
@@ -674,7 +675,7 @@ internal class PaymentsService(
 
                 if (fo.Approved)
                 {
-                    await UpdateClaimFeeIfRequired(claim);
+                    await UpdateClaimFeeIfRequired(claim, fo);
                 }
 
                 paymentNotification = PaymentNotification.Refund;
@@ -699,7 +700,7 @@ internal class PaymentsService(
                         recurrentPayment.Status = RecurrentPaymentStatus.Active;
                     }
 
-                    await UpdateClaimFeeIfRequired(claim);
+                    await UpdateClaimFeeIfRequired(claim, fo);
 
                     paymentNotification = fo.RecurrentPaymentId.HasValue
                         ? PaymentNotification.RecurrentCharge

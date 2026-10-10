@@ -115,6 +115,24 @@ public class FinanceOperationsImplTest : ClaimServiceTestBase
         SaveChangesCallCount.ShouldBe(0);
     }
 
+    [Theory]
+    // Мастер принимает взнос — платёж подтверждён и закрывает взнос. Игрок только заявляет платёж:
+    // до подтверждения он не считается.
+    [InlineData(false, 1000)]
+    [InlineData(true, null)]
+    public async Task FeeAcceptedOperation_FullPayment_FixesFeeOnlyWhenApproved(bool byPlayer, int? expectedFee)
+    {
+        mock.Project.ProjectFeeSettings.Add(
+            new ProjectFeeSetting { StartDate = new DateTime(2026, 01, 01), Fee = 1000, PreferentialFee = 400 });
+        var claim = CreateClaim();
+        var paymentType = mock.CreateCashPaymentType();
+
+        await CreateService(byPlayer ? mock.Player.UserId : null)
+            .FeeAcceptedOperation(Request(claim, paymentType, 1000));
+
+        claim.CurrentFee.ShouldBe(expectedFee);
+    }
+
     #endregion
 
     #region RequireFeeAccess

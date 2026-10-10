@@ -19,14 +19,32 @@ public static class ClaimBalanceExtensions
     {
         ArgumentNullException.ThrowIfNull(claim);
 
-        return claim.Claim.Finance.CalculateBalance(claim.GetFieldsFee(), claim.ProjectInfo, date ?? DateTime.UtcNow);
+        var fieldsFee = claim.GetAllFields().Sum(field => field.GetCurrentFee());
+
+        return claim.Claim.Finance.CalculateBalance(fieldsFee, claim.ProjectInfo, date ?? DateTime.UtcNow);
     }
 
-    /// <summary>Взнос за поля заявки — по полям глазами самой заявки.</summary>
-    public static int GetFieldsFee(this ClaimInCharacter claim)
+    /// <summary>
+    /// Базовый взнос, который пора зафиксировать за заявкой, или <c>null</c>, если фиксировать
+    /// нечего: у проекта нет расписания взносов, взнос уже зафиксирован или заявка оплачена не полностью.
+    /// </summary>
+    /// <remarks>
+    /// Полнота оплаты сверяется с взносом на день раньше даты операции: платёж, внесённый в день
+    /// подорожания, засчитывается по старой цене. Фиксируется же цена на дату операции.
+    /// </remarks>
+    public static int? GetFeeToFix(this ClaimInCharacter claim, DateTime operationDate)
     {
         ArgumentNullException.ThrowIfNull(claim);
 
-        return claim.GetAllFields().Sum(field => field.GetCurrentFee());
+        var finance = claim.Claim.Finance;
+
+        if (!claim.ProjectInfo.ProjectFinanceSettings.FeeSchedule.Any()
+            || finance.FixedFee is not null
+            || claim.CalculateBalance(operationDate.AddDays(-1)).FeeDue > 0)
+        {
+            return null;
+        }
+
+        return finance.GetBaseFee(claim.ProjectInfo, operationDate);
     }
 }

@@ -338,7 +338,7 @@ internal class ClaimServiceImpl(
                         {
                             ctx.Claim.PreferentialFeeUser = true;
                         }
-                        ctx.Claim.UpdateClaimFeeIfRequired(ctx.ClaimSnapshot, finance.OperationDate);
+                        ctx.Claim.UpdateClaimFeeIfRequired(ctx.ClaimSnapshot, finance.OperationDate, paymentAdded: finance.MoneyAmount);
                         extraAction = CommentExtraAction.ApproveFinance;
                         break;
                     case FinanceOperationAction.Decline:

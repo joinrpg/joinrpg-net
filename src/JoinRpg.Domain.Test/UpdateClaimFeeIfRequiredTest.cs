@@ -7,7 +7,7 @@ namespace JoinRpg.Domain.Test;
 
 /// <summary>
 /// Фиксация взноса по полностью оплаченной заявке: решение принимается по доменному снимку
-/// (ADR022), а то, что меняет сама финансовая операция, — берётся с трекаемой сущности.
+/// (ADR022), снятому до операции, плюс сумма, которую добавила сама операция.
 /// </summary>
 public class UpdateClaimFeeIfRequiredTest
 {
@@ -34,33 +34,33 @@ public class UpdateClaimFeeIfRequiredTest
 
     private ClaimInCharacter Snapshot() => new(mock.GetCharacterInfo(claim.Character), claim.GetId());
 
-    private void Pay(int money)
-        => claim.FinanceOperations.Add(new FinanceOperation
-        {
-            MoneyAmount = money,
-            State = FinanceOperationState.Approved,
-            OperationType = FinanceOperationType.Submit,
-        });
-
     [Fact]
     public void AccommodationCostIsPartOfFullPayment()
     {
-        var snapshot = Snapshot();
-        Pay(1000);
-
-        claim.UpdateClaimFeeIfRequired(snapshot, new DateTime(2026, 3, 15));
+        claim.UpdateClaimFeeIfRequired(Snapshot(), new DateTime(2026, 3, 15), paymentAdded: 1000);
 
         claim.CurrentFee.ShouldBeNull();
     }
 
     [Fact]
-    public void PaymentAddedAfterSnapshotFixesFee()
+    public void PaymentOfOperationFixesFee()
     {
-        // Снимок снят до операции и о новом платеже не знает: уплаченное берётся с сущности.
-        var snapshot = Snapshot();
-        Pay(1000 + 300);
+        claim.UpdateClaimFeeIfRequired(Snapshot(), new DateTime(2026, 3, 15), paymentAdded: 1000 + 300);
 
-        claim.UpdateClaimFeeIfRequired(snapshot, new DateTime(2026, 3, 15));
+        claim.CurrentFee.ShouldBe(1000);
+    }
+
+    [Fact]
+    public void PaymentAlreadyInSnapshotCounts()
+    {
+        claim.FinanceOperations.Add(new FinanceOperation
+        {
+            MoneyAmount = 1000,
+            State = FinanceOperationState.Approved,
+            OperationType = FinanceOperationType.Submit,
+        });
+
+        claim.UpdateClaimFeeIfRequired(Snapshot(), new DateTime(2026, 3, 15), paymentAdded: 300);
 
         claim.CurrentFee.ShouldBe(1000);
     }
@@ -68,10 +68,7 @@ public class UpdateClaimFeeIfRequiredTest
     [Fact]
     public void PaymentOnRiseDayIsCheckedAgainstOldFee()
     {
-        var snapshot = Snapshot();
-        Pay(1000 + 300);
-
-        claim.UpdateClaimFeeIfRequired(snapshot, FeeRise);
+        claim.UpdateClaimFeeIfRequired(Snapshot(), FeeRise, paymentAdded: 1000 + 300);
 
         // Полнота оплаты — по цене накануне, фиксируется цена на дату операции.
         claim.CurrentFee.ShouldBe(1500);
@@ -82,9 +79,8 @@ public class UpdateClaimFeeIfRequiredTest
     {
         var snapshot = Snapshot();
         claim.PreferentialFeeUser = true;
-        Pay(400 + 300);
 
-        claim.UpdateClaimFeeIfRequired(snapshot, new DateTime(2026, 3, 15));
+        claim.UpdateClaimFeeIfRequired(snapshot, new DateTime(2026, 3, 15), paymentAdded: 400 + 300);
 
         claim.CurrentFee.ShouldBe(400);
     }
@@ -93,10 +89,8 @@ public class UpdateClaimFeeIfRequiredTest
     public void AlreadyFixedFeeIsNotChanged()
     {
         claim.CurrentFee = 700;
-        var snapshot = Snapshot();
-        Pay(5000);
 
-        claim.UpdateClaimFeeIfRequired(snapshot, new DateTime(2026, 3, 15));
+        claim.UpdateClaimFeeIfRequired(Snapshot(), new DateTime(2026, 3, 15), paymentAdded: 5000);
 
         claim.CurrentFee.ShouldBe(700);
     }
@@ -108,6 +102,6 @@ public class UpdateClaimFeeIfRequiredTest
         var foreign = new ClaimInCharacter(mock.GetCharacterInfo(other.Character), other.GetId());
 
         _ = Should.Throw<ArgumentException>(
-            () => claim.UpdateClaimFeeIfRequired(foreign, new DateTime(2026, 3, 15)));
+            () => claim.UpdateClaimFeeIfRequired(foreign, new DateTime(2026, 3, 15), paymentAdded: 0));
     }
 }

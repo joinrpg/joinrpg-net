@@ -96,19 +96,17 @@ internal class FinanceOperationsImpl(
 
                 ctx.Claim.FinanceOperations.Add(financeOperation);
 
-                ctx.Claim.UpdateClaimFeeIfRequired(ctx.ClaimSnapshot, ctx.Request.OperationDate);
+                ctx.Claim.UpdateClaimFeeIfRequired(ctx.ClaimSnapshot, ctx.Request.OperationDate, paymentAdded: 0);
             });
 
     /// <inheritdoc />
     /// <remarks>
     /// <b>Намеренно не мигрирован на <c>ICharacterPropsService</c></b> (ADR014, список рисков):
-    /// метод делает <b>два</b> <c>SaveChangesAsync</c>, и это не небрежность. Финоперация заявки-получателя
-    /// создаётся с проставленным <c>ClaimId</c>, но не добавляется в <c>claimTo.FinanceOperations</c> —
-    /// навигацию связывает relationship fixup при сохранении. Поэтому
-    /// <see cref="FinanceExtensions.UpdateClaimFeeIfRequired"/> обязан считаться <b>после</b> первого
-    /// сохранения, иначе новый платёж в баланс не попадёт и взнос зафиксируется неверно.
-    /// <c>ChangeClaim</c> же даёт ровно одно сохранение, а мутируются здесь две заявки сразу.
-    /// Перевод требует отдельного решения — см. отчёт по PR.
+    /// мутируются две заявки сразу, а <c>ChangeClaim</c> работает с одним агрегатом. Перевод
+    /// требует отдельного решения.
+    /// Взнос получателя фиксируется по его снимку, снятому до перевода, плюс сумма перевода
+    /// (<see cref="FinanceExtensions.UpdateClaimFeeIfRequired"/>), поэтому relationship fixup
+    /// новой финоперации ждать не нужно и сохранение одно.
     /// </remarks>
     public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
     {
@@ -172,12 +170,10 @@ internal class FinanceOperationsImpl(
             State = FinanceOperationState.Approved,
         };
 
-        await UnitOfWork.SaveChangesAsync();
-
         // Trying to fix fee in destination claim
         var claimToSnapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claimTo.GetId())
             ?? throw new JoinRpgEntityNotFoundException(request.ToClaimId, nameof(Claim));
-        claimTo.UpdateClaimFeeIfRequired(claimToSnapshot, Now);
+        claimTo.UpdateClaimFeeIfRequired(claimToSnapshot, Now, paymentAdded: request.Money);
 
         await UnitOfWork.SaveChangesAsync();
 

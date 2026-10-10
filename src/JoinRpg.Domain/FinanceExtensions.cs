@@ -118,6 +118,13 @@ public static class FinanceExtensions
         => claim.GetAccommodationType(projectInfo)?.Cost ?? 0;
 
     /// <summary>
+    /// Returns how many money left to pay
+    /// </summary>
+    [Obsolete("CalculateClaimBalance")]
+    public static int ClaimFeeDue(this Claim claim, ProjectInfo projectInfo)
+        => claim.ClaimTotalFee(projectInfo) - claim.ClaimBalance();
+
+    /// <summary>
     /// Баланс заявки поверх EF-сущности.
     /// </summary>
     /// <remarks>
@@ -143,19 +150,26 @@ public static class FinanceExtensions
 
     /// <summary>
     /// Фиксирует за заявкой базовый взнос, если она оплачена полностью
-    /// (<see cref="ClaimFinanceInfo.GetFeeToFix"/>).
+    /// (<see cref="ClaimBalanceExtensions.GetFeeToFix"/>).
     /// </summary>
     /// <param name="claim">Трекаемая EF-сущность заявки, которую мутирует операция.</param>
-    /// <param name="snapshot">Доменный снимок той же заявки (ADR021).</param>
+    /// <param name="snapshot">Доменный снимок той же заявки (ADR021), снятый до операции.</param>
     /// <param name="operationDate">Дата финансовой операции.</param>
+    /// <param name="paymentAdded">
+    /// На сколько операция меняет сумму подтверждённых платежей: подтверждённый платёж или
+    /// возврат, 0 — если деньги не двигались. В снимке этой суммы ещё нет.
+    /// </param>
     /// <remarks>
-    /// Снимок снят до операции, поэтому то, что операция как раз меняет, — подтверждённые
-    /// платежи, льгота, зафиксированный взнос — берётся с трекаемой сущности. Остальное (взнос за
-    /// поля, стоимость проживания) — из снимка: операции с деньгами их не трогают, а в EF-графе
-    /// стоимость проживания пришлось бы доставать через навигацию группы проживающих (ADR022).
+    /// Уплаченное — из снимка плюс то, что добавила операция; взнос за поля и стоимость
+    /// проживания — из снимка (ADR022, без навигации группы проживающих). Льгота и
+    /// зафиксированный взнос — скаляры трекаемой сущности: их операция может поменять сама.
     /// </remarks>
     /// <exception cref="ArgumentException">Снимок от другой заявки.</exception>
-    public static void UpdateClaimFeeIfRequired(this Claim claim, ClaimInCharacter snapshot, DateTime operationDate)
+    public static void UpdateClaimFeeIfRequired(
+        this Claim claim,
+        ClaimInCharacter snapshot,
+        DateTime operationDate,
+        int paymentAdded)
     {
         ArgumentNullException.ThrowIfNull(claim);
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -166,20 +180,15 @@ public static class FinanceExtensions
                 $"Snapshot of claim {snapshot.ClaimId} does not match claim {claim.GetId()}", nameof(snapshot));
         }
 
-        // Те же условия проверит GetFeeToFix, но здесь они отсекают ленивую загрузку платежей.
-        if (claim.CurrentFee is not null || !snapshot.ProjectInfo.ProjectFinanceSettings.FeeSchedule.Any())
-        {
-            return;
-        }
-
         var finance = snapshot.Claim.Finance with
         {
             FixedFee = claim.CurrentFee,
             PreferentialFeeUser = claim.PreferentialFeeUser,
-            FeePaid = claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount),
+            FeePaid = snapshot.Claim.Finance.FeePaid + paymentAdded,
         };
+        var changed = new ClaimInCharacter(snapshot.Character, snapshot.Claim with { Finance = finance });
 
-        if (finance.GetFeeToFix(snapshot.GetFieldsFee(), snapshot.ProjectInfo, operationDate) is int fee)
+        if (changed.GetFeeToFix(operationDate) is int fee)
         {
             claim.CurrentFee = fee;
         }

@@ -115,6 +115,9 @@ internal static class ClaimFinanceOperations
 
         ctx.Claim.FinanceOperations.Add(financeOperation);
 
-        ctx.Claim.UpdateClaimFeeIfRequired(ctx.ClaimSnapshot, operationDate);
+        ctx.Claim.UpdateClaimFeeIfRequired(
+            ctx.ClaimSnapshot,
+            operationDate,
+            paymentAdded: state == FinanceOperationState.Approved ? money : 0);
     }
 }
