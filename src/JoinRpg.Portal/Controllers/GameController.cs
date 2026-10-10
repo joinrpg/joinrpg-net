@@ -78,7 +78,7 @@ public class GameController(
             ProjectId = projectId.Value,
             ProjectName = project.ProjectName,
             OriginalName = project.ProjectName,
-            Active = project.IsActive,
+            Active = !project.IsArchived,
             EnableAccomodation = project.AccommodationSettings.Enabled,
         });
     }

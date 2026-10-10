@@ -97,7 +97,7 @@
                         <li>@Html.ActionLink("Готовые", "Ready", "PlotList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Одним списком", "FlatList", "PlotList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Одним списком — доделать", "FlatListUnready", "PlotList", new { Model.ProjectId }, null)</li>
-                        @if (Model.ProjectStatus != ProjectLifecycleStatus.Archived)
+                        @if (Model.ProjectStatus.AllowsChanges())
                         {
                             <li>
                                 <a asp-controller="Plot" asp-action="CreateElement" asp-route-projectId="@Model.ProjectId"><join-icon icon="Add" />Добавить вводную</a>
@@ -116,11 +116,14 @@
                         <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li><a asp-page="/GamePages/GroupReportAllView" asp-route-projectid="@Model.ProjectId">Сводный отчет</a></li>
-                        <li asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
-                            <a asp-page="/GamePages/InvitePlayer" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
-                                Пригласить игрока
-                            </a>
-                        </li>
+                        @if (Model.ProjectStatus.AllowsChanges())
+                        {
+                            <li asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
+                                <a asp-page="/GamePages/InvitePlayer" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
+                                    Пригласить игрока
+                                </a>
+                            </li>
+                        }
                         @if (Model.BigGroups.Any())
                         {
                             <li role="separator" class="dropdown-header">По группам:</li>

@@ -157,8 +157,9 @@ public class AclController(
             // и снятый мастер в ней уже не «Со-мастер».
             model = new AclViewModel(projectInfo, formerUser, currentUserAccessor) { IsFormerMaster = true };
         }
-        // Права меняются только в активном проекте (ChangeAccess — MustBeActive), профиль — и в архиве: это «титры» игры.
-        model.CanEditPermissions = canGrantRights && projectInfo.IsActive;
+        // Права меняются в активном и заблокированном проекте (ChangeAccess — AllowBlocked, ADR023),
+        // профиль — и в архиве: это «титры» игры.
+        model.CanEditPermissions = canGrantRights && !projectInfo.IsArchived;
         if (!canGrantRights && userId != currentUserAccessor.UserIdentificationOrDefault)
         {
             _ = NoAccesToProjectView(projectInfo, currentUserAccessor); // бросает NoAccessToProjectException

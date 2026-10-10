@@ -16,7 +16,8 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             ProjectStatus = project.ProjectStatus,
             AutoAcceptClaims = project.ClaimSettings.AutoAcceptClaims,
             DefaultTemplateCharacterId = project.ClaimSettings.DefaultTemplate,
-            IsAcceptingClaims = project.ProjectStatus == ProjectLifecycleStatus.ActiveClaimsOpen,
+            // Из флага, а не из статуса: у заблокированного проекта он сохраняется до снятия блокировки (ADR023).
+            IsAcceptingClaims = project.ClaimSettings.IsAcceptingClaims,
             IsPublicProject = project.ClaimSettings.IsPublicProject,
             StrictlyOneCharacter = project.ClaimSettings.StrictlyOneCharacter,
         };

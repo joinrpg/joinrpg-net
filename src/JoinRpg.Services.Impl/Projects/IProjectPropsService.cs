@@ -4,16 +4,47 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Services.Impl.Projects;
 
 /// <summary>
-/// Допустимость операции над неактивным (архивным) проектом. Задаётся явно в сигнатуре —
-/// как правило операция над неактивным проектом недопустима.
+/// Допустимость операции над проектом, который нельзя менять обычным образом (архивным), — ADR023.
+/// Задаётся явно в сигнатуре — как правило такая операция недопустима.
 /// </summary>
 internal enum ProjectActiveRequirement
 {
     /// <summary>Операция допустима только над активным проектом (обычный случай).</summary>
     MustBeActive,
 
-    /// <summary>Операция явно допустима и над неактивным проектом (например, публикация/закрытие).</summary>
-    AllowInactive,
+    /// <summary>Операция явно допустима и над архивным проектом (например, публикация, комментарии).</summary>
+    AllowArchived,
+
+    /// <summary>
+    /// Операция явно допустима и над заблокированным проектом, но не над архивным: выдача прав мастерам,
+    /// снятие блокировки, закрытие, инструменты восстановления.
+    /// </summary>
+    AllowBlocked,
+
+    /// <summary>Операция допустима и над архивным, и над заблокированным проектом (например, профиль мастера).</summary>
+    AllowArchivedOrBlocked,
+}
+
+internal static class ProjectActiveRequirementExtensions
+{
+    /// <summary>
+    /// Бросает <see cref="ProjectDeactivatedException"/> (для заблокированного —
+    /// <see cref="ProjectBlockedException"/>), если операция с таким требованием недопустима при статусе проекта.
+    /// </summary>
+    public static void EnsureSatisfiedBy(this ProjectActiveRequirement requirement, ProjectInfo projectInfo)
+    {
+        var allowed = projectInfo.ProjectStatus switch
+        {
+            ProjectLifecycleStatus.Archived => requirement is ProjectActiveRequirement.AllowArchived or ProjectActiveRequirement.AllowArchivedOrBlocked,
+            ProjectLifecycleStatus.Blocked => requirement is ProjectActiveRequirement.AllowBlocked or ProjectActiveRequirement.AllowArchivedOrBlocked,
+            ProjectLifecycleStatus.ActiveClaimsOpen or ProjectLifecycleStatus.ActiveClaimsClosed => true,
+            _ => throw new ArgumentOutOfRangeException(nameof(projectInfo)),
+        };
+        if (!allowed)
+        {
+            _ = projectInfo.EnsureProjectActive();
+        }
+    }
 }
 
 /// <summary>
