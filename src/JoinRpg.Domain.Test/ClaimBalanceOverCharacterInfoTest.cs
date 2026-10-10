@@ -114,6 +114,9 @@ public class ClaimBalanceOverCharacterInfoTest
         var breakdown = claimInCharacter.CalculateFeeBreakdown(OperationDate);
 
         breakdown.BaseFee.ShouldBe(1000);
+        breakdown.IsBaseFeeFixed.ShouldBeTrue();
+        breakdown.BaseFeeSetting.ShouldBeNull();
+        breakdown.HasBaseFee.ShouldBeTrue();
         breakdown.CharacterFields.ShouldBe(new FieldsFeeSubtotal(Fee: 250, FieldsWithFeeCount: 1));
         breakdown.ClaimFields.ShouldBe(new FieldsFeeSubtotal(Fee: 70, FieldsWithFeeCount: 2));
         breakdown.HasFieldsWithFee.ShouldBeTrue();
@@ -131,6 +134,9 @@ public class ClaimBalanceOverCharacterInfoTest
         var breakdown = new ClaimInCharacter(character, claim).CalculateFeeBreakdown(OperationDate);
 
         breakdown.BaseFee.ShouldBe(400);
+        breakdown.IsBaseFeeFixed.ShouldBeFalse();
+        breakdown.BaseFeeSetting.ShouldNotBeNull().StartDate.ShouldBe(FeeStart);
+        breakdown.HasBaseFee.ShouldBeTrue();
         breakdown.AccommodationFee.ShouldBe(150);
         breakdown.HasFieldsWithFee.ShouldBeTrue(); // платное поле проекта есть, хоть и не отмечено
         breakdown.FieldsFee.ShouldBe(0);
@@ -142,9 +148,12 @@ public class ClaimBalanceOverCharacterInfoTest
     {
         var (character, claim) = MakeAggregate(currentFee: null, preferential: false, fieldsJson: null);
 
-        var balance = new ClaimInCharacter(character, claim).CalculateBalance(FeeStart.AddDays(-1));
+        var claimInCharacter = new ClaimInCharacter(character, claim);
+        var balance = claimInCharacter.CalculateBalance(FeeStart.AddDays(-1));
 
         balance.TotalFee.ShouldBe(0);
+        // Строки «Взнос» на странице заявки тогда нет вовсе.
+        claimInCharacter.CalculateFeeBreakdown(FeeStart.AddDays(-1)).HasBaseFee.ShouldBeFalse();
     }
 
     /// <summary>

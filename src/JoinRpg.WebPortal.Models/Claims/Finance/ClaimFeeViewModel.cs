@@ -30,17 +30,13 @@ public class ClaimFeeViewModel
     {
         ArgumentNullException.ThrowIfNull(claimInCharacter);
 
-        var now = DateTime.UtcNow;
-        var finance = claimInCharacter.Claim.Finance;
-        var feeBreakdown = claimInCharacter.CalculateFeeBreakdown(now);
+        var feeBreakdown = claimInCharacter.CalculateFeeBreakdown();
 
         Status = model.Status;
 
-        // Reading project fee info applicable for today
-        BaseFeeInfo = finance.FixedFee == null ? projectInfo.ProjectFinanceSettings.GetFeeSettingForDate(now) : null;
+        BaseFeeInfo = feeBreakdown.BaseFeeSetting;
         BaseFee = feeBreakdown.BaseFee;
-        // Checks for base fee availability
-        HasBaseFee = BaseFeeInfo != null || finance.FixedFee != null;
+        HasBaseFee = feeBreakdown.HasBaseFee;
 
         AccommodationFee = feeBreakdown.AccommodationFee;
         RoomType = accommodation?.AccommodationType?.Name ?? "";
@@ -80,7 +76,7 @@ public class ClaimFeeViewModel
             .Select(pt => new PaymentTypeViewModel(pt))];
 
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
-        PreferentialFeeUser = finance.PreferentialFeeUser;
+        PreferentialFeeUser = claimInCharacter.Claim.Finance.PreferentialFeeUser;
         PreferentialFeeConditions =
             ((MarkdownString?)claim.Project.Details.PreferentialFeeConditions).ToHtmlString();
         PreferentialFeeRequestEnabled = PreferentialFeeEnabled && !PreferentialFeeUser && Status.IsActive();

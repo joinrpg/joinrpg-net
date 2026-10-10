@@ -21,13 +21,19 @@ public static class ClaimBalanceExtensions
     {
         ArgumentNullException.ThrowIfNull(claim);
 
+        var operationDate = date ?? DateTime.UtcNow;
+        var finance = claim.Claim.Finance;
         var pricedFields = claim.GetAllFields().Where(field => field.Field.HasPrice).ToList();
 
         return new ClaimFeeBreakdown(
-            claim.Claim.Finance.GetBaseFee(claim.ProjectInfo, date ?? DateTime.UtcNow),
+            finance.GetBaseFee(claim.ProjectInfo, operationDate),
+            IsBaseFeeFixed: finance.FixedFee is not null,
+            BaseFeeSetting: finance.FixedFee is null
+                ? claim.ProjectInfo.ProjectFinanceSettings.GetFeeSettingForDate(operationDate)
+                : null,
             Subtotal(FieldBoundTo.Character),
             Subtotal(FieldBoundTo.Claim),
-            claim.Claim.Finance.AccommodationFee);
+            finance.AccommodationFee);
 
         FieldsFeeSubtotal Subtotal(FieldBoundTo boundTo)
         {
