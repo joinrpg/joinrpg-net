@@ -121,5 +121,5 @@ _Заполняется: какие события пишут уведомлен
 
 | PR | Что | Фаза | Статус |
 |---|---|---|---|
-| — | Этот план | — | открыт |
-| — | Сдвиг IDENTITY-счётчиков (`scripts/incident-restore/reseed-identities.sql`) | 1 | готовится |
+| #5459 | Этот план | — | открыт, draft до конца работ |
+| #5460 | Сдвиг IDENTITY-счётчиков (`scripts/incident-restore/reseed-identities.sql`) | 1 | на ревью |
