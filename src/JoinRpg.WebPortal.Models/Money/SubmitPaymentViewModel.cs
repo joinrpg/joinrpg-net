@@ -10,7 +10,7 @@ public class SubmitPaymentViewModel : PaymentViewModelBase
     public SubmitPaymentViewModel(ClaimViewModel claim) : base(claim)
     {
         ActionName = "Отметить взнос";
-        PaymentTypes = claim.PaymentTypes.GetUserSelectablePaymentTypes();
+        PaymentTypes = claim.ClaimFee.PaymentTypes.GetUserSelectablePaymentTypes();
         CommentText = "Сдан взнос";
     }
 }

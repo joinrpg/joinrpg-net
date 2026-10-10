@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Web.Models;
 
@@ -9,19 +9,15 @@ public class PaymentTypeViewModel : PaymentTypeViewModelBase
     public PaymentTypeKindViewModel TypeKind { get; set; }
     public int UserId { get; set; }
 
-    [ReadOnly(true)]
-    public User User { get; }
-
     public PaymentTypeViewModel() { }
 
-    public PaymentTypeViewModel(PaymentType source)
+    public PaymentTypeViewModel(PaymentTypeInfo source)
     {
-        PaymentTypeId = source.PaymentTypeId;
+        PaymentTypeId = source.PaymentTypeId.PaymentTypeId;
         IsDefault = source.IsDefault;
         TypeKind = (PaymentTypeKindViewModel)source.TypeKind;
-        Name = source.GetDisplayName();
-        ProjectId = source.ProjectId;
-        UserId = source.UserId;
-        User = source.User;
+        Name = source.TypeKind.GetDisplayName(source.User, source.Name);
+        ProjectId = source.PaymentTypeId.ProjectId;
+        UserId = source.User.UserId.Value;
     }
 }

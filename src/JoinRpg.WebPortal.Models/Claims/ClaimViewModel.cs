@@ -74,15 +74,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public ClaimFeeViewModel ClaimFee { get; set; }
 
     [ReadOnly(true)]
-    public IEnumerable<PaymentTypeViewModel> PaymentTypes { get; }
-
-    /// <summary>
-    /// Returns true if project is active and there are any payment method available
-    /// </summary>
-    public bool IsPaymentsEnabled
-        => (PaymentTypes?.Any() ?? false) && ProjectActive;
-
-    [ReadOnly(true)]
     public IEnumerable<ProblemViewModel> Problems { get; }
 
     public UserProfileDetailsViewModel PlayerDetails { get; set; }
@@ -181,19 +172,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         AccommodationEnabled = projectInfo.AccommodationSettings.Enabled;
 
-        if (claim.HasAccess(currentUser.UserId, Permission.CanManageMoney, ExtraAccessReason.Player))
-        {
-            // Finance admins can create any payment.
-            // User also can create any payment, but it will be moderated
-            PaymentTypes = claim.Project.ActivePaymentTypes.Select(pt => new PaymentTypeViewModel(pt));
-        }
-        else
-        {
-            // All other masters can create payments only from a user to himself
-            PaymentTypes = claim.Project.ActivePaymentTypes
-                .Where(pt => pt.UserId == currentUser.UserId)
-                .Select(pt => new PaymentTypeViewModel(pt));
-        }
         // Тип и комната — из модели панели «Проживание», построенной по снимку заявки и плану (ADR022).
         ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory,
             accommodationModel);

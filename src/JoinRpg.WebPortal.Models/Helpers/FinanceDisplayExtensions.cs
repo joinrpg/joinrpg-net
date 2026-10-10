@@ -51,18 +51,4 @@ public static class FinanceDisplayExtensions
         return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
     }
 
-    /// <summary>
-    /// Returns display name for the payment type view model
-    /// </summary>
-    public static string GetDisplayName(this PaymentTypeViewModel paymentType)
-    {
-        if (paymentType == null)
-        {
-            throw new ArgumentNullException(nameof(paymentType));
-        }
-
-        return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
-
-    }
-
 }
