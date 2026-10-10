@@ -142,9 +142,10 @@ character-агрегат, комнату — план. Меняется толь
   коде она ставится только в `Accepted`, на снимке прода от 2026-05-08 все 5401 строка —
   `Accepted`, а единственное чтение (`GetInviteTargets`) фильтрует по этому же значению. Удаление
   колонки — изменение DataModel, отдельное согласование.
-- **Легаси-финансы поверх EF** (`Claim.ClaimAccommodationFee` через
+- ~~**Легаси-финансы поверх EF** (`Claim.ClaimAccommodationFee` через
   `AccommodationExtensions.GetAccommodationType(Claim)`) остаются на навигации и уходят вместе с
-  переводом финансов на `CharacterInfo`. `[Obsolete]` из ~~PR 7~~ PR 8 их пометит — это и есть счётчик.
+  переводом финансов на `CharacterInfo`. `[Obsolete]` из ~~PR 7~~ PR 8 их пометит — это и есть счётчик.~~
+  Удалены в #5419, см. «Что осталось открытым».
 - **Приглашения** (`AccommodationInvite`) остаются EF-сущностями; здесь меняется только то, как
   сервис приглашений читает группы.
 - **Отчёт по поселению** (`GetClaimAccommodationReport`) — плоские строки, агрегат ему не нужен.
@@ -231,16 +232,13 @@ character-агрегат, комнату — план. Меняется толь
 
 ### Что осталось открытым
 
-- **`AccommodationExtensions.GetAccommodationType(Claim)` на навигации**: через него идут
-  легаси-финансы (`FinanceExtensions.ClaimAccommodationFee` — под `CalculateClaimBalance`,
-  `ClaimFeeDue`, `UpdateClaimFeeIfRequired`; разбивка взноса на странице заявки, `ClaimFeeViewModel`,
-  с #5397 считается по снимку — `ClaimInCharacter.CalculateFeeBreakdown`) и тип в выгрузке заявок
-  (`ClaimListBuilder.BuildItemForExport`), а `ClaimsRepositoryImpl` держит ради них `Include` группы.
-  Счётчик `JOIN001` этих мест не видит — навигацию прячет расширение. Финансы уходят с переводом на
-  `CharacterInfo` (§5), выгрузка — с шагом 6 ADR021. Фиксация взноса (`UpdateClaimFeeIfRequired`)
-  уже решает по снимку (#5419), сводка `/rooms` — тоже, целиком (#5416, #5450); на
-  EF-расчёте осталась разбивка взноса на странице заявки (`ClaimFeeViewModel`, #5397) — после неё
-  расширение удаляется.
+- ~~**`AccommodationExtensions.GetAccommodationType(Claim)` на навигации**: через него шли
+  легаси-финансы (`FinanceExtensions.ClaimAccommodationFee` под `CalculateClaimBalance`) и тип
+  в выгрузке заявок, а `ClaimsRepositoryImpl` держал ради них `Include` группы.~~ Закрыто #5419:
+  фиксация взноса решает по снимку, сводка `/rooms` — тоже (#5416, #5450), разбивка взноса на
+  странице заявки — `ClaimInCharacter.CalculateFeeBreakdown` (#5397). Расширение, EF-расчёт взноса
+  (`CalculateClaimBalance`, `ClaimTotalFee`, `ClaimAccommodationFee`) и `Include` группы в
+  выборках заявок удалены. Суммы оплат по EF-операциям (`ClaimBalance()`, `GetPaymentSum()`) — #5467.
 - ~~**`AccommodationListViewModel`** — тип группы по-прежнему навигацией
   `Claim.AccommodationRequest` (в PR 5 не вошёл, см. §6).~~ Сделано в #5416: нерасселённые группы и
   их тип — из планов (`RoomCategoryPlan.UnassignedGroups`), баланс — по снимкам персонажей
