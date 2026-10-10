@@ -15,6 +15,10 @@
                     }
                     <ProjectLink Model="project" />
                 </h4>
+                @if (project.Status == ProjectLifecycleStatus.Blocked)
+                {
+                    <div class="text-warning" title="Проект заблокирован на время восстановления данных">Заблокирован</div>
+                }
                 <div class="btn-group">
                     @if (project.IsMaster)
                     {

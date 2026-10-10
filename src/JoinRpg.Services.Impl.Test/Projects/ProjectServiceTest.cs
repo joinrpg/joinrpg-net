@@ -160,6 +160,60 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         notifications.Queued.ShouldHaveSingleItem();
     }
 
+    // ADR023: закрытие заблокированного проекта — конец восстановления, флаг блокировки сбрасывается.
+    [Fact]
+    public async Task CloseProject_Blocked_ArchivesAndClearsBlock()
+    {
+        mock.Project.IsBlocked = true;
+
+        await CreateService().CloseProject(ProjectId, publishPlot: false);
+
+        Result.ProjectStatus.ShouldBe(ProjectLifecycleStatus.Archived);
+        mock.Project.IsBlocked.ShouldBeFalse();
+        notifications.Queued.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task UnblockProject_ActiveProject_DoesNothing()
+    {
+        await CreateService().UnblockProject(ProjectId);
+
+        Result.ProjectStatus.ShouldBe(ProjectLifecycleStatus.ActiveClaimsOpen);
+        notifications.Queued.ShouldBeEmpty();
+    }
+
+    // ADR023: после снятия блокировки проект — как был, включая открытый приём заявок. Писем нет.
+    [Fact]
+    public async Task UnblockProject_RestoresPreviousStatus()
+    {
+        mock.Project.IsBlocked = true;
+
+        await CreateService().UnblockProject(ProjectId);
+
+        mock.Project.IsBlocked.ShouldBeFalse();
+        Result.ProjectStatus.ShouldBe(ProjectLifecycleStatus.ActiveClaimsOpen);
+        notifications.Queued.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task UnblockProject_Archived_Throws()
+    {
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+
+        await Should.ThrowAsync<ProjectDeactivatedException>(() => CreateService().UnblockProject(ProjectId));
+    }
+
+    [Fact]
+    public async Task CloseProjectAsStale_Blocked_Throws()
+    {
+        mock.Project.IsBlocked = true;
+        var service = CreateService(currentUserId: mock.Player.UserId, isAdmin: true);
+
+        await Should.ThrowAsync<ProjectBlockedException>(() => service.CloseProjectAsStale(ProjectId, new DateOnly(2020, 1, 1)));
+        mock.Project.Active.ShouldBeTrue();
+    }
+
     [Fact]
     public async Task CloseProjectAsStale_DeactivatesAndNotifies()
     {

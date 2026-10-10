@@ -1,0 +1,38 @@
+@model JoinRpg.Web.Models.UnblockProjectViewModel
+
+@{
+    ViewBag.Title = "Снятие блокировки проекта " + Model.OriginalName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+@if (!Model.IsBlocked)
+{
+    <p>
+        Проект не заблокирован, снимать нечего. @Html.ActionLink("Вернуться к проекту", "Details", new { Model.ProjectId })
+    </p>
+    return;
+}
+
+<p>
+    Проект заблокирован на время восстановления данных. Команда JoinRpg работает над восстановлением.
+    Если восстанавливать проект не нужно, @Html.ActionLink("закройте", "Close", new { Model.ProjectId }) его.
+    Если новых данных восстанавливать больше не нужно и вы хотите разблокировать работу и/или восстановить всё вручную,
+    нажмите кнопку «Разблокировать». После этого проект снова станет активным, как до блокировки — игроки смогут подавать
+    заявки, если вы их откроете, а мастера менять персонажей, заявки и настройки.
+    <br /> <b>Заблокировать проект снова нельзя</b>.
+</p>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ProjectId)
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            <div class="col-md-10">
+                <input type="submit" value="Разблокировать" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+}

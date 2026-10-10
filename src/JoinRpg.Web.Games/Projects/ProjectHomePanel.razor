@@ -24,6 +24,13 @@
 {
     <JoinAlert Variation="VariationStyleEnum.Warning"><JoinIcon Icon="JoinIconType.Closed" />&nbsp; Проект <strong>закрыт</strong></JoinAlert>
 }
+@if (Model.Status == ProjectLifecycleStatus.Blocked)
+{
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+        Проект <strong>заблокирован</strong> на время восстановления данных: менять в нём сейчас ничего нельзя.
+        Когда восстановление закончится, мастер снимет блокировку в настройках проекта или закроет проект.
+    </JoinAlert>
+}
 
 @foreach (var ki in Model.KogdaIgras.OrderByDescending(ki => ki.End))
 {
