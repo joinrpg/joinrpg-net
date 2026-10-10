@@ -1,4 +1,4 @@
-namespace JoinRpg.Domain;
+namespace JoinRpg.DomainTypes.Characters.Claims.Finances;
 
 /// <summary>
 /// Describes current payment status

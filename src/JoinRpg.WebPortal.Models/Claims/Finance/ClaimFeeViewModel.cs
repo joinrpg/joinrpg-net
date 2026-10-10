@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Markdown;
@@ -103,7 +102,7 @@ public class ClaimFeeViewModel
         HasSubmittablePaymentTypes = PaymentTypes.Any(pt => pt.TypeKind is PaymentTypeKindViewModel.Custom or PaymentTypeKindViewModel.Cash);
 
         // Determining payment status
-        PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
+        PaymentStatus = new ClaimBalance(FeePaid: CurrentBalance, TotalFee: CurrentTotalFee).PaymentStatus;
 
         ShowRecurrentPaymentControls = PaymentTypes.RecurrentPaymentsEnabled() && isMyClaim;
         RecurrentPayments = claim.RecurrentPayments
