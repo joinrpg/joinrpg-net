@@ -83,6 +83,20 @@
       очередь идут «забыли пароль» и подтверждение email.
 - [ ] Каналы в статусе `Sending` (зависли при аварии) не подхватятся никогда — посмотреть,
       сколько их, решить отдельно.
+- [ ] Проверить «ядовитые» Telegram-строки в очереди: формат до 2026-08-26
+      `Telegram(<id>, @<name>)` текущий парсер не понимает. Одна такая строка в `queued`
+      останавливает весь Telegram-канал: транзакция выборки откатывается, строка не переходит в
+      `failed`, через ~3 суток воркер выключается до рестарта. Посчитать:
+      ```sql
+      SELECT ch."NotificationMessageStatus", count(*)
+      FROM "NotificationMessageChannels" ch
+      WHERE ch."Channel" = 'telegram'
+        AND ch."ChannelSpecificValue" NOT LIKE 'TelegramChatId(%'
+        AND ch."ChannelSpecificValue" LIKE '%,%'
+      GROUP BY 1;
+      ```
+      Найденные `queued`/`sending` перевести в `failed` до разморозки очереди. Не связано с
+      аварией — дефект с выкатки #4642, на проде мог уже стопорить Telegram.
 - [ ] Заблокировать ежедневные джобы (база `joinrpg-daily-job`) —
       `scripts/incident-restore/block-daily-jobs.sql` (#5462): строки «уже выполнено» в
       `DailyJobRuns` на 30 дней (конфиг-флага выключения нет); снятие —
