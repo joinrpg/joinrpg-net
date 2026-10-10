@@ -90,22 +90,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         }
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetUnsettledAccommodationClaims(ProjectIdentification projectId)
-    {
-        var project = projectId.Value;
-
-        return await Ctx.ClaimSet
-            // Тип проживания нужен расчёту взноса (FinanceExtensions.ClaimAccommodationFee): без
-            // Include он догружался бы лениво на каждую заявку.
-            .Include(c => c.AccommodationRequest!.AccommodationType)
-            .Include(c => c.FinanceOperations)
-            .Include(c => c.Character)
-            .Where(claim => claim.ProjectId == project
-                && claim.AccommodationRequest != null
-                && claim.AccommodationRequest.AccommodationId == null)
-            .ToListAsync();
-    }
-
     private async Task<Claim?> GetClaimImpl(Expression<Func<Claim, bool>> predicate)
     {
         return
