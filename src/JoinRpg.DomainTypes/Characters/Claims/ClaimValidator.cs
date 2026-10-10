@@ -215,6 +215,34 @@ public static class ClaimValidator
             movedClaim,
             projectInfo);
 
+    /// <summary>
+    /// Можно ли вернуть заявку в работу — из листа ожидания или из отклонённых.
+    /// </summary>
+    /// <remarks>
+    /// Заявка «на паузе» не считается конкурентом для <see cref="ProjectClaimSettings.StrictlyOneCharacter"/>:
+    /// она не мешает подать или утвердить другую заявку того же игрока. Поэтому правило стоит на выходе
+    /// из паузы — вернуть такую заявку в работу при уже утверждённой другой нельзя. Иначе у игрока
+    /// оказалось бы две живые заявки в проекте, где разрешён только один персонаж. Отклонённой заявки
+    /// это касается точно так же.
+    /// </remarks>
+    /// <param name="userInfo">Игрок, которому принадлежит восстанавливаемая заявка.</param>
+    public static bool CanRestoreClaim(UserClaimInfo restoredClaim, UserInfo userInfo, ProjectInfo projectInfo)
+        => !(projectInfo.ClaimSettings.StrictlyOneCharacter
+            && HasOtherApprovedClaim(userInfo, projectInfo, restoredClaim));
+
+    /// <summary>
+    /// Бросает исключение, если заявку нельзя вернуть в работу.
+    /// </summary>
+    /// <inheritdoc cref="CanRestoreClaim" path="/remarks"/>
+    /// <inheritdoc cref="CanRestoreClaim" path="/param"/>
+    public static void EnsureCanRestoreClaim(UserClaimInfo restoredClaim, UserInfo userInfo, ProjectInfo projectInfo)
+    {
+        if (!CanRestoreClaim(restoredClaim, userInfo, projectInfo))
+        {
+            throw new OnlyOneApprovedClaimException();
+        }
+    }
+
     /// <inheritdoc cref="EnsureCanAddClaim(IClaimTarget, UserInfo, ProjectInfo, ClaimOperation)" />
     public static void EnsureCanAddClaim(
         CharacterInfo character, UserInfo userInfo, ClaimOperation operation)

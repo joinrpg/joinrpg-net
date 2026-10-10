@@ -54,7 +54,7 @@ public class JoinMvcControllerBaseTest
 
         controller.ModelState.IsValid.ShouldBeFalse();
         var error = controller.ModelState[""]!.Errors.ShouldHaveSingleItem();
-        error.ErrorMessage.ShouldBe("Заявка не принята: у игрока уже есть одобренная заявка на другого персонажа в этом проекте");
+        error.ErrorMessage.ShouldBe("Действие невозможно: у игрока уже есть принятая заявка на другого персонажа, а в этом проекте можно играть только одного");
         logger.ErrorCount.ShouldBe(0);
     }
 

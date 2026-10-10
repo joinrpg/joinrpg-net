@@ -89,7 +89,7 @@ public abstract class JoinMvcControllerBase : Controller
                     $"Группы не найдены в проекте (возможно, удалены): {string.Join(", ", notFound.GroupIds.Select(g => g.CharacterGroupId))}");
                 return;
             case OnlyOneApprovedClaimException _:
-                ModelState.AddModelError("", "Заявка не принята: у игрока уже есть одобренная заявка на другого персонажа в этом проекте");
+                ModelState.AddModelError("", "Действие невозможно: у игрока уже есть принятая заявка на другого персонажа, а в этом проекте можно играть только одного");
                 return;
             default:
 

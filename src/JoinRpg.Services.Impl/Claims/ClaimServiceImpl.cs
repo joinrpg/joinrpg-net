@@ -428,7 +428,9 @@ internal class ClaimServiceImpl(
         {
             // Читает claim.Player.Claims — навигацию, которую write-хэндл грузит явно
             // (Include(c => c.Player.Claims)). Без неё список молча оказался бы пуст.
-            foreach (var otherClaim in ctx.Claim.OtherPendingClaimsForThisPlayer())
+            // Заявки «на паузе» остаются в листе ожидания: вернуть их в работу при утверждённой
+            // заявке не даст ClaimValidator.EnsureCanRestoreClaim.
+            foreach (var otherClaim in ctx.Claim.OtherActiveClaimsForThisPlayer())
             {
                 ctx.ChangeStatus(otherClaim, ClaimStatus.DeclinedByMaster);
 
@@ -963,6 +965,16 @@ internal class ClaimServiceImpl(
             {
                 var oldCharacterId = ctx.Claim.GetCharacterId(); // Сохраняем на случай если он изменится
                 var (character, _) = await ctx.LoadOtherCharacter(ctx.Request.CharacterId);
+
+                if (ctx.ProjectInfo.ClaimSettings.StrictlyOneCharacter)
+                {
+                    // Профиль игрока нужен только этому правилу — без StrictlyOneCharacter его не грузим.
+                    var userInfo = await UserRepository.GetRequiredUserInfo(ctx.CharacterClaimInfo.PlayerId);
+                    ClaimValidator.EnsureCanRestoreClaim(
+                        new UserClaimInfo(ctx.CharacterClaimInfo.ClaimId, ctx.CharacterClaimInfo.Status),
+                        userInfo,
+                        ctx.ProjectInfo);
+                }
 
                 ctx.ChangeStatus(ctx.Claim, ClaimStatus.AddedByMaster);
                 ctx.Claim.ClaimDenialStatus = null;
