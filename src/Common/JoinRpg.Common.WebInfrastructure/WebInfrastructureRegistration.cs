@@ -22,6 +22,8 @@ public static class WebInfrastructureRegistration
 
         services.AddJoinHealthChecks();
 
+        services.AddOptions<SiteBannerOptions>().BindConfiguration(SiteBannerOptions.SectionName);
+
         services
             .AddScoped(typeof(PerRequestCache<,>))
             .AddSingleton(typeof(SingletonCache<,>))
