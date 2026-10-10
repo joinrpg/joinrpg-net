@@ -2,10 +2,11 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Characters;
 
-public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTracked
+public class EditCharacterViewModel : CharacterViewModelBase
 {
     public int CharacterId { get; set; }
 
@@ -42,25 +43,14 @@ public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTra
 
         CharacterTypeInfo = field.ToCharacterTypeInfo();
 
-        CreatedAt = field.CreatedAt;
-        UpdatedAt = field.UpdatedAt;
-        CreatedBy = field.CreatedBy;
-        UpdatedBy = field.UpdatedBy;
+        Marks = field.ToCreateUpdateMarksViewModel();
 
         IsDefaultTemplate = projectInfo.ClaimSettings.DefaultTemplate?.CharacterId == field.CharacterId;
 
         return this;
     }
 
+    /// <summary>Кто и когда создал и последним менял персонажа.</summary>
     [ReadOnly(true)]
-    public DateTime CreatedAt { get; private set; }
-
-    [ReadOnly(true)]
-    public User CreatedBy { get; private set; } = null!;
-
-    [ReadOnly(true)]
-    public DateTime UpdatedAt { get; private set; }
-
-    [ReadOnly(true)]
-    public User UpdatedBy { get; private set; } = null!;
+    public CreateUpdateMarksViewModel Marks { get; private set; } = null!;
 }
