@@ -202,8 +202,13 @@ internal sealed class LostProjectAnalyzer(
     internal static (string? Name, IReadOnlyList<NameVariant> Variants, bool Conflict) ChooseName(IReadOnlyCollection<ProjectNotification> notifications)
     {
         var rowsByName = new Dictionary<string, Dictionary<HeaderKind, int>>(StringComparer.Ordinal);
-        void AddRows(string name, HeaderKind kind, int count)
+        var lastSeenByName = new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal);
+        void AddRows(string name, HeaderKind kind, int count, DateTimeOffset lastSeen)
         {
+            if (!lastSeenByName.TryGetValue(name, out var known) || known < lastSeen)
+            {
+                lastSeenByName[name] = lastSeen;
+            }
             if (!rowsByName.TryGetValue(name, out var byKind))
             {
                 byKind = [];
@@ -216,29 +221,29 @@ internal sealed class LostProjectAnalyzer(
             .Select(n => (Name: ProjectHeaderParser.TryParseAdminNewProject(n.Header), n.CreatedAt))
             .Where(x => x.Name is not null)
             .GroupBy(x => x.Name!, StringComparer.Ordinal)
-            .Select(g => (Name: g.Key, Count: g.Count(), First: g.Min(x => x.CreatedAt)))
+            .Select(g => (Name: g.Key, Count: g.Count(), First: g.Min(x => x.CreatedAt), Last: g.Max(x => x.CreatedAt)))
             .OrderByDescending(x => x.Count)
             .ThenBy(x => x.First)
             .ToList();
-        foreach (var (adminName, count, _) in adminNames)
+        foreach (var (adminName, count, _, last) in adminNames)
         {
-            AddRows(adminName, HeaderKind.AdminNewProject, count);
+            AddRows(adminName, HeaderKind.AdminNewProject, count, last);
         }
 
         // Одинаковые заголовки (одно событие многим получателям) — одно свидетельство.
         var headerGroups = notifications
             .Where(n => ProjectHeaderParser.TryParseAdminNewProject(n.Header) is null)
             .GroupBy(n => (n.Header, MayBeMassMail: ProjectHeaderParser.MayBeMassMail(n.CreatedAt, ReferencesProject(n.EntityReference))))
-            .Select(g => (Candidates: ProjectHeaderParser.GetNameCandidates(g.Key.Header, g.Key.MayBeMassMail), Count: g.Count()))
+            .Select(g => (Candidates: ProjectHeaderParser.GetNameCandidates(g.Key.Header, g.Key.MayBeMassMail), Count: g.Count(), Last: g.Max(n => n.CreatedAt)))
             .Where(g => g.Candidates.Count > 0)
             .ToList();
 
         var support = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var (groupCandidates, count) in headerGroups)
+        foreach (var (groupCandidates, count, last) in headerGroups)
         {
             foreach (var (candidate, kind) in groupCandidates)
             {
-                AddRows(candidate, kind, count);
+                AddRows(candidate, kind, count, last);
             }
             foreach (var candidate in groupCandidates.Select(c => c.Name).Distinct(StringComparer.Ordinal))
             {
@@ -246,11 +251,13 @@ internal sealed class LostProjectAnalyzer(
             }
         }
 
-        // Больше заголовков → больше строк → короче (при «: » в имени персонажа короткий вариант — название проекта).
+        // Больше заголовков → больше строк → длина. Ничья между несколькими разными заголовками
+        // («Дюна: Пробуждение: Пол, …» и «Дюна: Пробуждение: Лето, …») значит, что «: » скорее
+        // в названии проекта — берём длинный вариант. Один заголовок ничего не говорит — берём короткий.
         IOrderedEnumerable<string> Rank(IEnumerable<string> names) => names
             .OrderByDescending(n => support.GetValueOrDefault(n))
             .ThenByDescending(n => rowsByName[n].Values.Sum())
-            .ThenBy(n => n.Length)
+            .ThenBy(n => support.GetValueOrDefault(n) > 1 ? -n.Length : n.Length)
             .ThenBy(n => n, StringComparer.Ordinal);
 
         var topSupport = support.Count == 0 ? 0 : support.Values.Max();
@@ -280,7 +287,7 @@ internal sealed class LostProjectAnalyzer(
 
         var variants = variantNames
             .Distinct(StringComparer.Ordinal)
-            .Select(n => new NameVariant(n, rowsByName[n]))
+            .Select(n => new NameVariant(n, rowsByName[n], lastSeenByName[n]))
             .OrderBy(v => v.Name == chosen ? 0 : 1)
             .ThenByDescending(v => v.Notifications)
             .ToList();

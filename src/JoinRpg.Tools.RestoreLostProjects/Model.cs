@@ -6,7 +6,7 @@ namespace JoinRpg.Tools.RestoreLostProjects;
 /// </summary>
 /// <param name="EntityReference">Значение EntityReference как есть.</param>
 /// <param name="MasterInitiated">Вторая строка тела «Заявка … мастером …» — инициатор действует как мастер.</param>
-/// <param name="NewClaim">В теле «**Новая заявка**» — получатели такого уведомления мастера.</param>
+/// <param name="NewClaim">«**Новая заявка**», поданная игроком, — получатели такого уведомления мастера.</param>
 /// <param name="AdminBody">Тело, только у уведомления админам о новом проекте.</param>
 internal record ProjectNotification(
     string EntityReference,
@@ -57,9 +57,10 @@ internal enum HeaderKind
 }
 
 /// <summary>
-/// Вариант названия проекта и сколько уведомлений каждого вида его подтверждают.
+/// Вариант названия проекта, сколько уведомлений каждого вида его подтверждают и когда последнее —
+/// при переименовании по этой дате видно, какое название текущее.
 /// </summary>
-internal record NameVariant(string Name, IReadOnlyDictionary<HeaderKind, int> NotificationsByKind)
+internal record NameVariant(string Name, IReadOnlyDictionary<HeaderKind, int> NotificationsByKind, DateTimeOffset LastSeen)
 {
     public int Notifications => NotificationsByKind.Values.Sum();
 }

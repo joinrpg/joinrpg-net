@@ -57,9 +57,15 @@ internal sealed class NotificationsSource(string connectionString, DateTimeOffse
 
     /// <summary>
     /// Уведомления по заданным EntityReference. Тело целиком не тащим: признаки мастера считаются
-    /// в SQL (формат — ClaimNotificationTextBuilder: вторая строка «Заявка … мастером …», тип действия
-    /// жирным), тело нужно только у уведомления админам — ради привязки к КогдаИгре.
+    /// в SQL, тело нужно только у уведомления админам — ради привязки к КогдаИгре.
     /// </summary>
+    /// <remarks>
+    /// Формат — ClaimNotificationTextBuilder: строка 2 «Заявка {персонаж} игрока {игрок} {действие}
+    /// мастером {имя}» или «… игроком», строка 4 — тип действия жирным. Строки сверяются целиком, а не
+    /// поиском по телу: дальше идёт свободный текст комментария. «Новая заявка» засчитывает получателей
+    /// мастерами, только если заявку подал игрок: заявку, оформленную мастером на игрока
+    /// (MasterVisibleChange), получает и сам игрок.
+    /// </remarks>
     public async Task<IReadOnlyList<ProjectNotification>> GetNotifications(IReadOnlyCollection<string> entityReferences, CancellationToken ct)
     {
         if (entityReferences.Count == 0)
@@ -69,8 +75,10 @@ internal sealed class NotificationsSource(string connectionString, DateTimeOffse
 
         const string sql = $"""
             SELECT "EntityReference", "Header", "InitiatorUserId", "RecipientUserId", "CreatedAt",
-                   split_part("Body", E'\n', 2) LIKE 'Заявка % мастером %',
-                   strpos("Body", '**Новая заявка**') > 0,
+                   rtrim(split_part("Body", E'\n', 2), E'\r') LIKE 'Заявка % мастером %'
+                       AND rtrim(split_part("Body", E'\n', 2), E'\r') NOT LIKE '% игроком',
+                   rtrim(split_part("Body", E'\n', 4), E'\r') = '**Новая заявка**'
+                       AND rtrim(split_part("Body", E'\n', 2), E'\r') LIKE '% игроком',
                    CASE WHEN {AdminHeaderCondition} THEN "Body" END
             FROM "Notifications"
             WHERE "EntityReference" = ANY(@refs) AND "CreatedAt" < @lostAt
