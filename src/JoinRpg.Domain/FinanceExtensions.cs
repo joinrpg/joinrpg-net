@@ -1,4 +1,5 @@
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Domain;
 
@@ -140,21 +141,49 @@ public static class FinanceExtensions
     public static int ClaimBalance(this Claim claim)
         => claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
 
-    [Obsolete("CalculateClaimBalance")]
-    public static bool ClaimPaidInFull(this Claim claim, ProjectInfo projectInfo)
-        => claim.ClaimBalance() >= claim.ClaimTotalFee(projectInfo);
-
-    private static bool ClaimPaidInFull(this Claim claim, DateTime operationDate, ProjectInfo projectInfo)
-        => claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate.AddDays(-1), null, projectInfo);
-
-    public static void UpdateClaimFeeIfRequired(this Claim claim, DateTime operationDate, ProjectInfo projectInfo)
+    /// <summary>
+    /// Фиксирует за заявкой базовый взнос, если она оплачена полностью
+    /// (<see cref="ClaimBalanceExtensions.GetFeeToFix"/>).
+    /// </summary>
+    /// <param name="claim">Трекаемая EF-сущность заявки, которую мутирует операция.</param>
+    /// <param name="snapshot">Доменный снимок той же заявки (ADR021), снятый до операции.</param>
+    /// <param name="operationDate">Дата финансовой операции.</param>
+    /// <param name="paymentAdded">
+    /// На сколько операция меняет сумму подтверждённых платежей: подтверждённый платёж или
+    /// возврат, 0 — если деньги не двигались. В снимке этой суммы ещё нет.
+    /// </param>
+    /// <remarks>
+    /// Уплаченное — из снимка плюс то, что добавила операция; взнос за поля и стоимость
+    /// проживания — из снимка (ADR022, без навигации группы проживающих). Льгота и
+    /// зафиксированный взнос — скаляры трекаемой сущности: их операция может поменять сама.
+    /// </remarks>
+    /// <exception cref="ArgumentException">Снимок от другой заявки.</exception>
+    public static void UpdateClaimFeeIfRequired(
+        this Claim claim,
+        ClaimInCharacter snapshot,
+        DateTime operationDate,
+        int paymentAdded)
     {
-        if (projectInfo.ProjectFinanceSettings.FeeSchedule.Any() //If project has fee 
-            && claim.CurrentFee == null //and fee not already fixed for claim
-            && claim.ClaimPaidInFull(operationDate, projectInfo) //and current fee is payed in full
-        )
+        ArgumentNullException.ThrowIfNull(claim);
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        if (claim.GetId() != snapshot.ClaimId)
         {
-            claim.CurrentFee = claim.ProjectFeeForDate(projectInfo, operationDate); //fix fee for claim
+            throw new ArgumentException(
+                $"Snapshot of claim {snapshot.ClaimId} does not match claim {claim.GetId()}", nameof(snapshot));
+        }
+
+        var finance = snapshot.Claim.Finance with
+        {
+            FixedFee = claim.CurrentFee,
+            PreferentialFeeUser = claim.PreferentialFeeUser,
+            FeePaid = snapshot.Claim.Finance.FeePaid + paymentAdded,
+        };
+        var changed = new ClaimInCharacter(snapshot.Character, snapshot.Claim with { Finance = finance });
+
+        if (changed.GetFeeToFix(operationDate) is int fee)
+        {
+            claim.CurrentFee = fee;
         }
     }
 
