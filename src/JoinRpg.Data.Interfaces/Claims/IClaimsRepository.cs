@@ -43,6 +43,16 @@ public interface IClaimsRepository : IDisposable
     /// </remarks>
     Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId);
 
+    /// <summary>
+    /// Идентификаторы активных заявок проекта (<see cref="ClaimStatusSpec.Active"/>), не состоящих
+    /// ни в одной группе проживающих, — строка «без типа проживания» сводки «Поселение».
+    /// </summary>
+    /// <remarks>
+    /// Только идентификаторы: баланс считается по снимкам персонажей (ADR013), которые вызывающий
+    /// грузит одной выборкой <c>ICharacterInfoRepository.GetCharacterInfosByClaims</c>.
+    /// </remarks>
+    Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId);
+
     Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
 
 }

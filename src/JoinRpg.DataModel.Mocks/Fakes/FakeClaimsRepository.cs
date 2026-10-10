@@ -60,6 +60,8 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
                 .Where(claim => claim.ClaimStatus == ClaimStatus.Approved && claim.AccommodationRequest_Id == null)
                 .Select(ToHeader)]);
 
+    public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
+
     /// <summary>Заголовок заявки из мока — так его собрал бы настоящий репозиторий.</summary>
     public static ClaimWithPlayer ToHeader(Claim claim)
         => new()

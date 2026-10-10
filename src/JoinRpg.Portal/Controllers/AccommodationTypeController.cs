@@ -2,7 +2,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
-using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -51,19 +50,20 @@ public class AccommodationTypeController(
 
         var plans = await roomCategoryPlanRepository.GetAllPlans(projectId);
 
-        // Нерасселённые — по планам, их взносы — по снимкам персонажей одной выборкой на страницу (ADR022).
-        var unsettledClaimIds = plans
+        // Нерасселённые — по планам, заявки без типа проживания — отдельной выборкой идентификаторов;
+        // взносы и тех, и других — по снимкам персонажей одной выборкой на страницу (ADR013, ADR022).
+        var claimIdsWithoutRoomType = await claimsRepository.GetActiveClaimIdsWithoutAccommodation(projectId);
+        var claimIds = plans
             .SelectMany(plan => plan.UnassignedGroups)
             .SelectMany(group => group.Subjects)
+            .Concat(claimIdsWithoutRoomType)
             .ToList();
-        var unsettledCharacters = unsettledClaimIds.Count == 0
-            ? []
-            : await characterInfoRepository.GetCharacterInfosByClaims(unsettledClaimIds);
+        var characters = await characterInfoRepository.GetCharacterInfosByClaims(claimIds);
 
         return View(new AccommodationListViewModel(project,
             plans,
-            await claimsRepository.GetClaimsForRoomType(projectId, ClaimStatusSpec.Active, roomTypeId: null),
-            unsettledCharacters,
+            claimIdsWithoutRoomType,
+            characters,
             currentUserAccessor));
     }
 
