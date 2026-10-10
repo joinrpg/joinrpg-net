@@ -1,5 +1,5 @@
+@inherits SettingsPanelBase<ProjectTimeZoneSettingsViewModel>
 @inject IProjectSettingsClient settingsClient
-@implements IDisposable
 
 @if (Model is null)
 {
@@ -15,7 +15,7 @@
 <JoinPanel>
     <Header>Часовой пояс</Header>
     <Body>
-        <EditForm FormName="ProjectTimeZoneSettings" EditContext="@editContext" OnValidSubmit="HandleValidSubmit">
+        <EditForm FormName="ProjectTimeZoneSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary />
                 <DataAnnotationsValidator />
@@ -38,56 +38,10 @@
 }
 
 @code {
-    private EditContext? editContext;
-    private bool success;
-    private bool formInvalid = true;
-    private ValidationMessageStore? messageStore;
-
-    [Parameter]
-    [SupplyParameterFromForm]
-    public ProjectTimeZoneSettingsViewModel Model { get; set; } = null!;
-
     [Parameter]
     public ProjectIdentification ProjectId { get; set; } = null!;
 
-    protected override async Task OnInitializedAsync()
-    {
-        Model ??= await settingsClient.GetTimeZoneSettings(ProjectId);
-        editContext = new(Model);
-        editContext.OnFieldChanged += HandleFieldChanged;
-        messageStore = new(editContext);
-        formInvalid = !editContext.Validate();
-        StateHasChanged();
-    }
+    protected override Task<ProjectTimeZoneSettingsViewModel> LoadModel() => settingsClient.GetTimeZoneSettings(ProjectId);
 
-    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
-    {
-        if (editContext is not null)
-        {
-            success = false;
-            formInvalid = !editContext.Validate();
-            StateHasChanged();
-        }
-    }
-
-    private async Task HandleValidSubmit()
-    {
-        try
-        {
-            await settingsClient.SaveTimeZoneSettings(Model);
-            success = true;
-        }
-        catch
-        {
-            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
-        }
-    }
-
-    public void Dispose()
-    {
-        if (editContext is not null)
-        {
-            editContext.OnFieldChanged -= HandleFieldChanged;
-        }
-    }
+    protected override Task SaveModel(ProjectTimeZoneSettingsViewModel model) => settingsClient.SaveTimeZoneSettings(model);
 }
