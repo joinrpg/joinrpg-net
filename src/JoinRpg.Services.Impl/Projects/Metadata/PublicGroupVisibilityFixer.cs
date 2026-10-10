@@ -24,7 +24,7 @@ internal class PublicGroupVisibilityFixer(IProjectPropsService projectPropsServi
     /// либо у него есть другой публичный путь, которого мы не трогаем.
     /// </para>
     /// <para>
-    /// <see cref="ProjectActiveRequirement.AllowInactive"/>: 215 из 244 нарушений на проде живут
+    /// <see cref="ProjectActiveRequirement.AllowArchived"/>: 215 из 244 нарушений на проде живут
     /// в архивных проектах. Их метаданные никто не редактирует, но публичный JSON ролей у них
     /// отдаётся, поэтому чинить надо и их.
     /// </para>
@@ -33,7 +33,7 @@ internal class PublicGroupVisibilityFixer(IProjectPropsService projectPropsServi
         => await projectPropsService.ChangeProjectProperties(
             projectId,
             Permission.CanEditRoles,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             projectId,
             ctx =>
             {
