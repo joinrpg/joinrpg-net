@@ -1,4 +1,5 @@
-@inherits ProjectSettingsPanelBase<ProjectContactsSettingsViewModel>
+@inherits SettingsPanelBase<ProjectContactsSettingsViewModel>
+@inject IProjectSettingsClient settingsClient
 
 @if (Model is null)
 {
@@ -54,8 +55,10 @@
 }
 
 @code {
-    protected override Task<ProjectContactsSettingsViewModel> LoadModel(ProjectIdentification projectId)
-        => SettingsClient.GetContactSettings(projectId);
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
 
-    protected override Task SaveModel(ProjectContactsSettingsViewModel model) => SettingsClient.SaveContactSettings(model);
+    protected override Task<ProjectContactsSettingsViewModel> LoadModel() => settingsClient.GetContactSettings(ProjectId);
+
+    protected override Task SaveModel(ProjectContactsSettingsViewModel model) => settingsClient.SaveContactSettings(model);
 }

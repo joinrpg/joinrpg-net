@@ -1,5 +1,6 @@
 @using JoinRpg.Web.ProjectCommon
-@inherits ProjectSettingsPanelBase<ProjectClaimSettingsViewModel>
+@inherits SettingsPanelBase<ProjectClaimSettingsViewModel>
+@inject IProjectSettingsClient settingsClient
 
 @if (Model is null)
 {
@@ -59,8 +60,10 @@
 }
 
 @code {
-    protected override Task<ProjectClaimSettingsViewModel> LoadModel(ProjectIdentification projectId)
-        => SettingsClient.GetClaimSettings(projectId);
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
 
-    protected override Task SaveModel(ProjectClaimSettingsViewModel model) => SettingsClient.SaveClaimSettings(model);
+    protected override Task<ProjectClaimSettingsViewModel> LoadModel() => settingsClient.GetClaimSettings(ProjectId);
+
+    protected override Task SaveModel(ProjectClaimSettingsViewModel model) => settingsClient.SaveClaimSettings(model);
 }

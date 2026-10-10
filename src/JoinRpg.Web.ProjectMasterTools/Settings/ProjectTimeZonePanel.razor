@@ -1,4 +1,5 @@
-@inherits ProjectSettingsPanelBase<ProjectTimeZoneSettingsViewModel>
+@inherits SettingsPanelBase<ProjectTimeZoneSettingsViewModel>
+@inject IProjectSettingsClient settingsClient
 
 @if (Model is null)
 {
@@ -37,8 +38,10 @@
 }
 
 @code {
-    protected override Task<ProjectTimeZoneSettingsViewModel> LoadModel(ProjectIdentification projectId)
-        => SettingsClient.GetTimeZoneSettings(projectId);
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
 
-    protected override Task SaveModel(ProjectTimeZoneSettingsViewModel model) => SettingsClient.SaveTimeZoneSettings(model);
+    protected override Task<ProjectTimeZoneSettingsViewModel> LoadModel() => settingsClient.GetTimeZoneSettings(ProjectId);
+
+    protected override Task SaveModel(ProjectTimeZoneSettingsViewModel model) => settingsClient.SaveTimeZoneSettings(model);
 }
