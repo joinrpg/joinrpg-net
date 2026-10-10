@@ -89,7 +89,8 @@ internal static class ReportWriter
     private static string DescribeVariant(NameVariant variant)
         => variant.Name + " (" + string.Join(", ", variant.NotificationsByKind
             .OrderBy(k => k.Key)
-            .Select(k => $"{DescribeKind(k.Key)}: {Number(k.Value)}")) + ")";
+            .Select(k => $"{DescribeKind(k.Key)}: {Number(k.Value)}"))
+            + $", последнее {variant.LastSeen.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)})";
 
     private static string DescribeKind(HeaderKind kind) => kind switch
     {

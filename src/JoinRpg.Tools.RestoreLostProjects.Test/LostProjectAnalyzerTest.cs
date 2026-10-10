@@ -102,6 +102,30 @@ public class LostProjectAnalyzerTest
     }
 
     [Fact]
+    public void ClaimsOnlyWithColonInProjectNamePickLongVariant()
+    {
+        var report = AnalyzeSingle(
+            Notification("ClaimId(1001-1)", "Дюна: Пробуждение: Пол, игрок Иван"),
+            Notification("ClaimId(1001-2)", "Дюна: Пробуждение: Лето, игрок Пётр"));
+
+        // Оба варианта объясняют оба заголовка — это ничья, но «: » скорее в названии проекта.
+        report.Name.ShouldBe("Дюна: Пробуждение");
+        report.Flags.HasFlag(ProjectFlags.NameConflict).ShouldBeTrue();
+        report.NameVariants.Select(v => v.Name).ShouldBe(["Дюна: Пробуждение", "Дюна"]);
+    }
+
+    [Fact]
+    public void RenamedVariantsCarryLastSeen()
+    {
+        var report = AnalyzeSingle(
+            Notification("ClaimId(1001-1)", "Дюна: Пол, игрок Иван", at: Day1),
+            Notification("ClaimId(1001-2)", "Арракис: Пол, игрок Иван", at: Day3));
+
+        report.NameVariants.Single(v => v.Name == "Дюна").LastSeen.ShouldBe(Day1);
+        report.NameVariants.Single(v => v.Name == "Арракис").LastSeen.ShouldBe(Day3);
+    }
+
+    [Fact]
     public void ColonInCharacterNameDoesNotStealProjectName()
     {
         var report = AnalyzeSingle(

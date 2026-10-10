@@ -65,7 +65,7 @@ public class OptionsAndReportTest
         var report = new LostProjectReport(
             1001,
             "=Дюна; \"Пробуждение\"",
-            [new NameVariant("=Дюна; \"Пробуждение\"", new Dictionary<HeaderKind, int> { [HeaderKind.Claim] = 3, [HeaderKind.AdminNewProject] = 1 })],
+            [new NameVariant("=Дюна; \"Пробуждение\"", new Dictionary<HeaderKind, int> { [HeaderKind.Claim] = 3, [HeaderKind.AdminNewProject] = 1 }, new DateTimeOffset(2026, 8, 30, 12, 0, 0, TimeSpan.Zero))],
             2001,
             "master@example.com",
             CreatorMethod.Presumed,
@@ -84,7 +84,7 @@ public class OptionsAndReportTest
 
         lines[0].ShouldStartWith("ProjectId;Название;");
         lines[1].ShouldBe(
-            "1001;\"'=Дюна; \"\"Пробуждение\"\"\";\"'=Дюна; \"\"Пробуждение\"\" (админам о новом проекте: 1, заявки: 3)\";"
+            "1001;\"'=Дюна; \"\"Пробуждение\"\"\";\"'=Дюна; \"\"Пробуждение\"\" (админам о новом проекте: 1, заявки: 3, последнее 2026-08-30)\";"
             + "2001;master@example.com;предположительно;2002 (4 свид., с 2026-07-01);"
             + "2026-06-01 12:00:00;2026-09-01 12:00:00;4;0;;;/game/77/;;конфликт названий, создатель отсутствует в MSSQL");
     }
