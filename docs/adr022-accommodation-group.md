@@ -238,16 +238,18 @@ character-агрегат, комнату — план. Меняется толь
   (`ClaimListBuilder.BuildItemForExport`), а `ClaimsRepositoryImpl` держит ради них `Include` группы.
   Счётчик `JOIN001` этих мест не видит — навигацию прячет расширение. Финансы уходят с переводом на
   `CharacterInfo` (§5), выгрузка — с шагом 6 ADR021. Фиксация взноса (`UpdateClaimFeeIfRequired`)
-  уже решает по снимку (#5419), оплаты нерасселённых в сводке `/rooms` — тоже (#5416); на
+  уже решает по снимку (#5419), сводка `/rooms` — тоже, целиком (#5416, #5450); на
   EF-расчёте осталась разбивка взноса на странице заявки (`ClaimFeeViewModel`, #5397) — после неё
   расширение удаляется.
 - ~~**`AccommodationListViewModel`** — тип группы по-прежнему навигацией
   `Claim.AccommodationRequest` (в PR 5 не вошёл, см. §6).~~ Сделано в #5416: нерасселённые группы и
   их тип — из планов (`RoomCategoryPlan.UnassignedGroups`), баланс — по снимкам персонажей
   (`ClaimInCharacter.CalculateBalance`), загруженным одной выборкой `GetCharacterInfosByClaims`.
-  `IClaimsRepository.GetUnsettledAccommodationClaims` удалён. Строка «без типа проживания»
-  по-прежнему считает оплату по EF-заявкам (`GetClaimsForRoomType`) — к навигации группы это
-  отношения не имеет.
+  `IClaimsRepository.GetUnsettledAccommodationClaims` удалён. Строка «без типа проживания» —
+  тоже по снимкам (#5450): идентификаторы активных заявок без группы отдаёт
+  `IClaimsRepository.GetActiveClaimIdsWithoutAccommodation`, их персонажи грузятся той же выборкой
+  `GetCharacterInfosByClaims`, что и нерасселённые. EF-заявок и `CalculateClaimBalance` на странице
+  больше нет.
 - **Трекаемая группа в сервисах записи**: `ClaimServiceImpl` (выход из группы, новая группа
   одиночки), `AccommodationInviteServiceImpl` (переезд, сверка трекаемого состава со снимком),
   `ClaimMutationContext.LoadOtherClaimAccommodation` (§4) — решений по ним не принимают, но

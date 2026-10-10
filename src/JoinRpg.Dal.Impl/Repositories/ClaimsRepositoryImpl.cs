@@ -74,6 +74,22 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             projectId,
             claim => claim.ClaimStatus == ClaimStatus.Approved && claim.AccommodationRequest_Id == null);
 
+    public async Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId)
+    {
+        var predicate = PredicateBuilder.New<Claim>()
+            .And(ClaimPredicates.GetForProject(projectId))
+            .And(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active))
+            .And(claim => claim.AccommodationRequest_Id == null);
+
+        var ids = await Ctx.ClaimSet
+            .AsExpandable()
+            .Where(predicate)
+            .Select(claim => claim.ClaimId)
+            .ToListAsync();
+
+        return [.. ids.Select(id => new ClaimIdentification(projectId, id))];
+    }
+
     public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId)
     {
         if (roomTypeId != null)
