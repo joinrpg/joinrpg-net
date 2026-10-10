@@ -175,8 +175,9 @@ IdPortal — раз в 30 минут. Cookie пользователя, кото�
       подтверждения регистрации), логи IdPortal — для сверки.
 - [ ] Проверить, что email не занят в майской базе: поиск по email — `SingleOrDefault`,
       дубликат email ломает вход, «забыл пароль» и вход через ВК для обоих.
-- [ ] Создать заготовки с прежним id — `src/JoinRpg.Tools.RestoreLostUsers` (#5465), при
-      остановленных Portal и IdPortal, с `--lost-at 2026-10-07T22:30:49Z`; сначала dry-run и
+- [ ] Создать заготовки с прежним id — `src/JoinRpg.Tools.RestoreLostUsers` (#5465), с
+      `--lost-at 2026-10-07T22:30:49Z`; на время `--apply` поды Portal и IdPortal остановить
+      (`kubectl scale deployment --replicas=0`, потом вернуть) — транзакция блокирует `Users`; сначала dry-run и
       разбор CSV-отчёта (ПДн — только локально), потом `--apply`. Строки в `Users`,
       `UserAuthDetails`, `UserExtras`. `EmailConfirmed = 1` — адрес пришёл из доставленных
       писем. `AspNetSecurityStamp` — случайный GUID: все потерянные пользователи входят заново
