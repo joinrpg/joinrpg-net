@@ -1,5 +1,3 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
@@ -23,20 +21,6 @@ public class ApiInfoBuilder
             .OrderBy(group => group.CharacterGroupId)];
     }
 
-    public static CharacterPlayerInfo? CreatePlayerInfo(Claim? claim, ProjectInfo projectInfo)
-    {
-        if (claim is null)
-        {
-            return null;
-        }
-        return new CharacterPlayerInfo(
-                                    claim.PlayerUserId,
-                                    claim.ClaimFeeDue(projectInfo) <= 0,
-                                    claim.Player.ExtractDisplayName().DisplayName,
-                                    ToPlayerContacts(claim.Player)
-                                    );
-    }
-
     /// <summary>
     /// Сведения об игроке поверх утверждённой заявки (ADR021): профиль игрока приходит внутри
     /// <see cref="ClaimInfo"/>, загруженный пачкой через <c>IClaimInfoRepository</c>.
@@ -47,13 +31,6 @@ public class ApiInfoBuilder
             claim.ClaimInCharacter.CalculateBalance().FeeDue <= 0,
             claim.Player.DisplayName.DisplayName,
             ToPlayerContacts(claim.Player));
-
-    public static PlayerContacts ToPlayerContacts(User player)
-    {
-        return new PlayerContacts(player.Email, player.Extra?.PhoneNumber,
-                                                player.Extra?.VkVerified == true ? player.Extra?.Vk : null,
-                                                player.Extra?.Telegram);
-    }
 
     public static PlayerContacts ToPlayerContacts(UserInfo player)
     {
