@@ -173,7 +173,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         AccommodationEnabled = projectInfo.AccommodationSettings.Enabled;
 
         // Тип и комната — из модели панели «Проживание», построенной по снимку заявки и плану (ADR022).
-        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId, projectInfo, externalPaymentUrlFactory,
+        ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserIdentification, projectInfo, externalPaymentUrlFactory,
             accommodationModel);
 
         ParentGroups = new CharacterParentGroupsViewModel(characterInfo, HasMasterAccess);
