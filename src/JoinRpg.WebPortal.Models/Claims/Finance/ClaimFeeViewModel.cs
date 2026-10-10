@@ -16,7 +16,7 @@ public class ClaimFeeViewModel
     public ClaimFeeViewModel(
         Claim claim,
         ClaimViewModel model,
-        int currentUserId,
+        UserIdentification currentUserId,
         ProjectInfo projectInfo,
         Func<string?, string?> externalPaymentUrlFactory,
         ClaimAccommodationViewModel? accommodation)
@@ -52,11 +52,11 @@ public class ClaimFeeViewModel
             Balance[fo.State] += fo.MoneyAmount;
         }
 
-        HasMasterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
-        HasFeeAdminAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney);
+        HasMasterAccess = projectInfo.HasMasterAccess(currentUserId);
+        HasFeeAdminAccess = projectInfo.HasMasterAccess(currentUserId, Permission.CanManageMoney);
 
         PaymentTypes = [.. projectInfo
-            .GetAvailablePaymentTypesForUser(new UserIdentification(currentUserId), new UserIdentification(claim.PlayerUserId))
+            .GetAvailablePaymentTypesForUser(currentUserId, new UserIdentification(claim.PlayerUserId))
             .Select(pt => new PaymentTypeViewModel(pt))];
 
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
