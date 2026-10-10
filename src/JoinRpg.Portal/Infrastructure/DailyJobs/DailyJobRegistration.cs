@@ -10,6 +10,8 @@ public static class DailyJobRegistration
     public static void AddJoinDailyJob(this IJoinServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
         services.AddDailyJobsDal(configuration, environment);
+        _ = services.AddOptions<DailyJobsOptions>().BindConfiguration(DailyJobsOptions.SectionName);
+        _ = services.AddHostedService<DailyJobsOptionsCheck>();
         //TODO invent way to construct every implementation of IDailyJob
         _ = services
             .AddDailyJob<UpdatePaymentStatusJob>()
