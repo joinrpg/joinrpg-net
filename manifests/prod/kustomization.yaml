@@ -1,5 +1,6 @@
 resources:
   - ../base
+  - service-domain-ingress.yaml # DRP #5459: служебные домены на время восстановления
 
 namespace: prod
 
