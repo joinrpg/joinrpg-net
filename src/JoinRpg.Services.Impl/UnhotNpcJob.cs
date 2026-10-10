@@ -11,7 +11,7 @@ internal class UnhotNpcJob(IUnitOfWork unitOfWork, ILogger<UnhotNpcJob> logger) 
     public async Task RunOnce(CancellationToken cancellationToken)
     {
         var projectIds = await unitOfWork.GetDbSet<Character>()
-            .Where(c => c.CharacterType == CharacterType.NonPlayer && c.IsHot)
+            .Where(c => c.CharacterType == CharacterType.NonPlayer && c.IsHot && !c.Project.IsBlocked)
             .Select(c => c.ProjectId)
             .Distinct()
             .OrderBy(id => id)
@@ -29,7 +29,9 @@ internal class UnhotNpcJob(IUnitOfWork unitOfWork, ILogger<UnhotNpcJob> logger) 
         }
 
         var updated = await unitOfWork.ExecuteSqlCommandAsync(
-            "UPDATE dbo.Characters SET IsHot = 0 WHERE CharacterType = 1 AND IsHot = 1");
+            // Заблокированные проекты (ADR023) не трогаем.
+            "UPDATE dbo.Characters SET IsHot = 0 WHERE CharacterType = 1 AND IsHot = 1"
+            + " AND ProjectId NOT IN (SELECT ProjectId FROM dbo.Projects WHERE IsBlocked = 1)");
 
         logger.LogInformation("Сброшен флаг IsHot у {Count} NPC-персонажей в {ProjectCount} играх",
             updated, projectIds.Count);

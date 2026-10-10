@@ -1,6 +1,10 @@
 <JoinButtonGroup>
     <JoinButton Preset="ButtonPreset.Setup" Link="@FieldsLink" Label="Настройки полей" />
     <JoinButton Preset="ButtonPreset.Setup" Link="@CheckinSetupLink" Label="Настройки регистрации" />
+    @if (Blocked)
+    {
+        <JoinButton Preset="ButtonPreset.Setup" Link="@UnblockLink" Label="Снять блокировку" />
+    }
     @if (Active)
     {
         <JoinButton Preset="ButtonPreset.Delete" Link="@CloseLink" Label="Закрыть проект" />
@@ -14,11 +18,16 @@
 
     [Parameter]
     [EditorRequired]
-    public bool Active { get; set; } 
+    public bool Active { get; set; }
+
+    /// <summary>Заблокирован на время восстановления данных (ADR023).</summary>
+    [Parameter]
+    public bool Blocked { get; set; }
 
     public string FieldsLink => $"/{ProjectId.Value}/fields";
     public string CheckinSetupLink => $"/{ProjectId.Value}/checkin/setup";
     public string CloseLink => $"/{ProjectId.Value}/close";
+    public string UnblockLink => $"/{ProjectId.Value}/unblock";
 
 
 }

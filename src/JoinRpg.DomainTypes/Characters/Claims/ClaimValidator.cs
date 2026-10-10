@@ -187,6 +187,7 @@ public static class ClaimValidator
             ProjectLifecycleStatus.ActiveClaimsOpen => null,
             ProjectLifecycleStatus.Archived => AddClaimForbideReason.ProjectNotActive,
             ProjectLifecycleStatus.ActiveClaimsClosed => AddClaimForbideReason.ProjectClaimsClosed,
+            ProjectLifecycleStatus.Blocked => AddClaimForbideReason.ProjectBlocked,
             _ => throw new NotImplementedException(),
         };
 
@@ -273,6 +274,7 @@ public static class ClaimValidator
         throw reason.Kind switch
         {
             AddClaimForbideReason.ProjectNotActive => new ProjectDeactivatedException(projectInfo.ProjectId),
+            AddClaimForbideReason.ProjectBlocked => new ProjectBlockedException(projectInfo.ProjectId),
 
             AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted
                 or AddClaimForbideReason.Busy or AddClaimForbideReason.Npc or AddClaimForbideReason.CharacterInactive

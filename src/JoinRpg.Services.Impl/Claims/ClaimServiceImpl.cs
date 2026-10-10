@@ -248,7 +248,7 @@ internal class ClaimServiceImpl(
     /// отдельная операция, <see cref="ModerateFinanceOperation"/>.
     /// </summary>
     /// <remarks>
-    /// Единственная claim-операция с <see cref="ProjectActiveRequirement.AllowInactive"/>: по ADR014
+    /// Единственная claim-операция с <see cref="ProjectActiveRequirement.AllowArchived"/>: по ADR014
     /// комментирование в архивном проекте остаётся разрешённым — обсуждение игры продолжается после
     /// её конца, и форма комментария в UI намеренно не спрятана.
     /// </remarks>
@@ -256,7 +256,7 @@ internal class ClaimServiceImpl(
         => characterPropsService.ChangeClaim(
             claimId,
             ClaimAccessRequirement.MasterOrPlayer,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             (ParentCommentId: parentCommentId,
                 IsVisibleToPlayer: isVisibleToPlayer,
                 CommentText: commentText),
@@ -302,7 +302,7 @@ internal class ClaimServiceImpl(
         => characterPropsService.ChangeClaim(
             claimId,
             ClaimAccessRequirement.AnyMaster,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             (ParentCommentId: parentCommentId,
                 CommentText: commentText,
                 FinanceAction: financeAction),
@@ -1061,7 +1061,7 @@ internal class ClaimServiceImpl(
     /// отметку на форуме.
     /// </para>
     /// <para>
-    /// По требованиям ADR014 это <c>AllowInactive</c> (отметка «прочитано» — по смыслу чтение), и
+    /// По требованиям ADR014 это <c>AllowArchived</c> (отметка «прочитано» — по смыслу чтение), и
     /// именно так метод себя и ведёт: проверки активности здесь нет. Отсутствие проверки доступа —
     /// известная дыра из списка «что сознательно не чиним».
     /// </para>
@@ -1073,6 +1073,13 @@ internal class ClaimServiceImpl(
     /// </remarks>
     public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
     {
+        // Отметку прочтения пишет просмотр заявки, поэтому в заблокированном проекте (ADR023) не бросаем,
+        // а молча не пишем: просмотр должен работать, а строки в проекте на восстановлении — не появляться.
+        if ((await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).ProjectStatus == ProjectLifecycleStatus.Blocked)
+        {
+            return;
+        }
+
         var currentUserId = currentUserAccessor.UserId;
         var watermarks =
           unitOfWork.GetDbSet<ReadCommentWatermark>()
@@ -1193,7 +1200,7 @@ internal class ClaimServiceImpl(
     /// требовать здесь <c>ClaimIdentification</c> было бы неправдой о предметной области.
     /// </para>
     /// <para>
-    /// По ADR014 это <c>AllowInactive</c>: модерация должна работать всюду, где работает
+    /// По ADR014 это <c>AllowArchived</c>: модерация должна работать всюду, где работает
     /// комментирование, а комментирование в архивном проекте разрешено. Проверки активности здесь
     /// нет — то есть требование уже выполнено.
     /// </para>
@@ -1216,7 +1223,8 @@ internal class ClaimServiceImpl(
         }
 
         // Права — по ProjectInfo, а не по comment.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        // Скрывать комментарии можно и в архиве (ADR014), но не в заблокированном проекте (ADR023).
+        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).EnsureNotBlocked();
 
         if (projectInfo.HasMasterAccess(currentUserAccessor) && !childComments.Any() &&
             comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)

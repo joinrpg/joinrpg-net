@@ -17,6 +17,7 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
 
     public async Task RemoveSubscribe(RemoveSubscribeRequest request)
     {
+        await EnsureProjectNotBlocked(new ProjectIdentification(request.ProjectId));
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
 
         var direct =
@@ -34,6 +35,7 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
 
     public async Task SubscribeClaimToUser(ClaimIdentification claimId)
     {
+        await EnsureProjectNotBlocked(claimId.ProjectId);
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
         _ = (await ClaimsRepository.GetClaim(claimId)).RequestAccess(CurrentUserId);
         _ = user.Subscriptions.Add(
@@ -44,6 +46,7 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
 
     public async Task UnsubscribeClaimToUser(ClaimIdentification claimId)
     {
+        await EnsureProjectNotBlocked(claimId.ProjectId);
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
         _ = (await ClaimsRepository.GetClaim(claimId)).RequestAccess(CurrentUserId);
         var subscription = user.Subscriptions.FirstOrDefault(s =>
@@ -57,6 +60,7 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
 
     public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
     {
+        await EnsureProjectNotBlocked(request.CharacterGroupId.ProjectId);
         var characterGroup = await ProjectRepository.GetGroupAsync(request.CharacterGroupId)
             ?? throw new JoinRpgEntityNotFoundException(request.CharacterGroupId.CharacterGroupId, nameof(CharacterGroup));
 
@@ -99,6 +103,9 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
         await UnitOfWork.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Часть снятия мастера, которое разрешено и в заблокированном проекте (ADR023), поэтому блокировку не проверяет.
+    /// </summary>
     public async Task RemoveAllSubscriptions(ProjectIdentification projectId, UserIdentification userId)
     {
         if (userId != currentUserAccessor.UserIdentification && !IsCurrentUserAdmin)
@@ -111,4 +118,8 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
             UnitOfWork.GetDbSet<UserSubscription>().Where(x => x.UserId == userId.Value && x.ProjectId == projectId.Value));
         await UnitOfWork.SaveChangesAsync();
     }
+
+    /// <summary>Подписки в заблокированном проекте не меняются (ADR023). Архив здесь не проверялся и раньше.</summary>
+    private async Task EnsureProjectNotBlocked(ProjectIdentification projectId)
+        => _ = (await projectMetadataRepository.GetProjectMetadata(projectId)).EnsureNotBlocked();
 }

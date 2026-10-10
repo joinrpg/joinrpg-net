@@ -32,8 +32,8 @@ public record class ClaimForbiddenReason(
 
     private static ClaimForbiddenReason Create(AddClaimForbideReason kind) => kind switch
     {
-        // Проект в архиве — не поможет никто и ничто.
-        AddClaimForbideReason.ProjectNotActive
+        // Проект в архиве или заблокирован на время восстановления — не поможет никто и ничто.
+        AddClaimForbideReason.ProjectNotActive or AddClaimForbideReason.ProjectBlocked
             => new(kind, MasterCanOverride: false, ProblemSeverity.Fatal),
 
         // Приём заявок закрыт: игроку тут делать нечего, но мастер вправе позвать игрока сам.

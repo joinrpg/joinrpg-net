@@ -182,6 +182,11 @@ internal class KogdaIgraSyncService(
             kogdaIgraIdentifications = [];
         }
         var project = await unitOfWork.GetProjectRepository().GetProjectAsync(projectId);
+        if (project.IsBlocked)
+        {
+            // ADR023: заблокированный проект не меняет никто, включая админа. Архив здесь не проверялся и раньше.
+            throw new DomainTypes.ProjectMetadata.ProjectBlockedException(projectId);
+        }
         var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(kogdaIgraIdentifications);
         project.KogdaIgraGames.AssignLinksList(games);
         project.Details.DisableKogdaIgraMapping = DisableKogdaIgraMapping;

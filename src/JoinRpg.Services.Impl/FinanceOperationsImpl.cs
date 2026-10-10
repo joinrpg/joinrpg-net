@@ -114,6 +114,7 @@ internal class FinanceOperationsImpl(
         var (claimFrom, projectInfo) = await LoadClaimAsMaster(
             new ClaimIdentification(request.ProjectId, request.ClaimId),
             Permission.CanManageMoney);
+        _ = projectInfo.EnsureNotBlocked(); // ADR023; архив здесь не проверялся и раньше
 
         // Loading destination claim
         var (claimTo, _) = await LoadClaimAsMaster(new ClaimIdentification(request.ProjectId, request.ToClaimId));
@@ -210,6 +211,9 @@ internal class FinanceOperationsImpl(
 
     public async Task CreateTransfer(CreateTransferRequest request)
     {
+        // ADR023; архив здесь не проверялся и раньше.
+        _ = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(request.ProjectId))).EnsureNotBlocked();
+
         var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
 
         _ = project.RequestMasterAccess(CurrentUserId);
@@ -272,6 +276,8 @@ internal class FinanceOperationsImpl(
 
     public async Task MarkTransfer(ApproveRejectTransferRequest request)
     {
+        _ = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(request.ProjectId))).EnsureNotBlocked();
+
         var moneyTransfer = await UnitOfWork.GetDbSet<MoneyTransfer>()
             .Include(transfer => transfer.Project)
             .Include(transfer => transfer.Sender)
