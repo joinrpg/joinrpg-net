@@ -48,7 +48,7 @@ internal sealed class MainDatabase(string connectionString)
     {
         const string insertSql = """
             INSERT INTO dbo.Users (UserId, BornName, FatherName, SurName, UserName, Email, PasswordHash, PrefferedName, VerifiedProfileFlag, SelectedAvatarId)
-            SELECT @id, NULL, NULL, NULL, @email, @email, NULL, @name, 0, NULL
+            SELECT @id, NULL, NULL, NULL, @email, @email, NULL, NULL, 0, NULL
             WHERE NOT EXISTS (
                 SELECT 1 FROM dbo.Users WITH (UPDLOCK, HOLDLOCK)
                 WHERE UserId = @id OR Email = @email OR UserName = @email);
@@ -81,7 +81,6 @@ internal sealed class MainDatabase(string connectionString)
                 await using var command = new SqlCommand(insertSql, connection, transaction);
                 command.Parameters.Add("@id", SqlDbType.Int).Value = user.UserId;
                 command.Parameters.Add("@email", SqlDbType.NVarChar, -1).Value = user.Email;
-                command.Parameters.Add("@name", SqlDbType.NVarChar, -1).Value = (object?)user.PrefferedName ?? DBNull.Value;
                 command.Parameters.Add("@registerDate", SqlDbType.DateTime).Value = user.RegisterDateUtc;
                 command.Parameters.Add("@securityStamp", SqlDbType.NVarChar, -1).Value = user.SecurityStamp;
 

@@ -76,13 +76,11 @@ internal class LostUserPlanner(IReadOnlyCollection<ExistingUser> existingUsers, 
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
         var (telegramChatId, telegramUserName) = ParseTelegram(details?.LatestTelegramValue);
-        var name = details is null ? null : GreetingNameParser.ChooseName(details.Greetings, activity.UserId, email);
 
         LostUserDecision Make(DecisionKind kind, int? conflictingUserId = null) => new(
             activity.UserId,
             kind,
             email ?? emailValue,
-            name,
             telegramChatId,
             telegramUserName,
             activity.FirstSeen,

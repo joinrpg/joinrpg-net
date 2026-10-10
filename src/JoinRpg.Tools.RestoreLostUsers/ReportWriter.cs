@@ -11,7 +11,7 @@ internal static class ReportWriter
 {
     private static readonly string[] Header =
     [
-        "UserId", "Решение", "Причина", "Email", "Имя", "TelegramChatId", "TelegramUserName",
+        "UserId", "Решение", "Причина", "Email","TelegramChatId", "TelegramUserName",
         "ПерваяАктивность", "ПоследняяАктивность", "КакПолучатель", "КакИнициатор", "КонфликтующийUserId", "ВсеEmail",
     ];
 
@@ -27,7 +27,6 @@ internal static class ReportWriter
                 d.Kind.ToString(),
                 d.Reason,
                 UserText(d.Email),
-                UserText(d.Name),
                 d.TelegramChatId?.ToString(CultureInfo.InvariantCulture),
                 UserText(d.TelegramUserName),
                 d.FirstSeen.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),

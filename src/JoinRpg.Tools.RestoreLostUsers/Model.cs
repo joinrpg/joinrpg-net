@@ -11,25 +11,18 @@ internal record NotificationUserActivity(
     int AsInitiator);
 
 /// <summary>
-/// Первая строка тела уведомления, адресованного пользователю (приветствие «Добрый день, имя!»),
-/// и сколько раз она встречалась.
-/// </summary>
-internal record GreetingLine(string FirstLine, int Count, DateTimeOffset LastSeen);
-
-/// <summary>
 /// Значение ChannelSpecificValue (как есть) и когда по нему последний раз слали уведомление.
 /// </summary>
 internal record ChannelValue(string Value, DateTimeOffset LastSentAt);
 
 /// <summary>
 /// Подробности из базы уведомлений по одному пользователю: все адреса почты, куда ему слали уведомления,
-/// последний Telegram (значение ChannelSpecificValue как есть) и приветствия из тел уведомлений.
+/// и последний Telegram (значение ChannelSpecificValue как есть).
 /// </summary>
 internal record NotificationUserDetails(
     int UserId,
     IReadOnlyCollection<ChannelValue> EmailValues,
-    string? LatestTelegramValue,
-    IReadOnlyCollection<GreetingLine> Greetings);
+    string? LatestTelegramValue);
 
 /// <summary>
 /// Пользователь, который уже есть в основной БД (MSSQL).
@@ -72,7 +65,6 @@ internal record LostUserDecision(
     int UserId,
     DecisionKind Kind,
     string? Email,
-    string? Name,
     long? TelegramChatId,
     string? TelegramUserName,
     DateTimeOffset FirstSeen,
