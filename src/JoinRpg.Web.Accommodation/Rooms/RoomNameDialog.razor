@@ -7,7 +7,7 @@
                 Model="model"
                 Width="600px"
                 MaxWidth="90%">
-    <FormRowFor For="@(() => model.Names)" InputId="rooms-room-name">
+    <FormRowFor For="@(() => model.Names)">
         <JoinTextInput id="rooms-room-name" @bind-Value="model.Names" Immediate="true" />
     </FormRowFor>
     @if (model.IsAdding)
