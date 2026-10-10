@@ -55,6 +55,11 @@ public class ClaimFeeViewModel
         HasMasterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
         HasFeeAdminAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney);
 
+        PaymentTypes = GetAvailablePaymentTypes(
+            projectInfo,
+            new UserIdentification(currentUserId),
+            canUseAnyPaymentType: HasFeeAdminAccess || model.IsMyClaim);
+
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
         PreferentialFeeUser = claim.PreferentialFeeUser;
         PreferentialFeeConditions =
@@ -78,13 +83,13 @@ public class ClaimFeeViewModel
         VisibleFinanceOperations = FinanceOperations
             .Where(fo => fo.IsVisible);
 
-        ShowOnlinePaymentControls = model.PaymentTypes.OnlinePaymentsEnabled() && currentUserId == claim.PlayerUserId;
-        HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.TypeKind is PaymentTypeKindViewModel.Custom or PaymentTypeKindViewModel.Cash);
+        ShowOnlinePaymentControls = PaymentTypes.OnlinePaymentsEnabled() && model.IsMyClaim;
+        HasSubmittablePaymentTypes = PaymentTypes.Any(pt => pt.TypeKind is PaymentTypeKindViewModel.Custom or PaymentTypeKindViewModel.Cash);
 
         // Determining payment status
         PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
 
-        ShowRecurrentPaymentControls = model.PaymentTypes.RecurrentPaymentsEnabled() && currentUserId == claim.PlayerUserId;
+        ShowRecurrentPaymentControls = PaymentTypes.RecurrentPaymentsEnabled() && model.IsMyClaim;
         RecurrentPayments = claim.RecurrentPayments
             .Select(e => new RecurrentPaymentViewModel(this, e))
             .OrderBy(static e => e.CreatedAt)
@@ -199,6 +204,27 @@ public class ClaimFeeViewModel
     /// List of finance operations to be displayed in payments list
     /// </summary>
     public IEnumerable<FinanceOperationViewModel> VisibleFinanceOperations { get; }
+
+    /// <summary>
+    /// Способы оплаты, которые текущий пользователь может выбрать в этой заявке.
+    /// </summary>
+    public IReadOnlyCollection<PaymentTypeViewModel> PaymentTypes { get; }
+
+    /// <summary>
+    /// Включённые способы оплаты проекта, доступные пользователю в заявке.
+    /// </summary>
+    /// <param name="canUseAnyPaymentType">
+    /// Финансовый мастер проекта или сам игрок заявки: им доступны все способы (оплата игрока уйдёт
+    /// на модерацию). Прочим мастерам — только их собственные: они отмечают деньги, полученные лично.
+    /// </param>
+    public static IReadOnlyCollection<PaymentTypeViewModel> GetAvailablePaymentTypes(
+        ProjectInfo projectInfo,
+        UserIdentification currentUserId,
+        bool canUseAnyPaymentType)
+        => [.. projectInfo.ProjectFinanceSettings.PaymentTypes
+            .Where(pt => pt.Enabled)
+            .Where(pt => canUseAnyPaymentType || pt.User.UserId == currentUserId)
+            .Select(pt => new PaymentTypeViewModel(pt))];
 
     /// <summary>
     /// true if online payment enabled
