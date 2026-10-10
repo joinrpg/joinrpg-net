@@ -70,10 +70,7 @@ internal class ProjectPropsService(
                 _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, permission);
             }
 
-            if (activeRequirement == ProjectActiveRequirement.MustBeActive)
-            {
-                _ = handle.ProjectInfo.EnsureProjectActive();
-            }
+            activeRequirement.EnsureSatisfiedBy(handle.ProjectInfo);
 
             var ctx = new ProjectMutationContext<TArgs>(handle.Project, handle.ProjectInfo, now, currentUserAccessor, arguments, handle.Remove);
             var result = action(ctx);

@@ -10,9 +10,10 @@ internal static class ProjectPredicates
     {
         return status switch
         {
-            ProjectLifecycleStatus.ActiveClaimsClosed => project => project.Active && !project.IsAcceptingClaims,
-            ProjectLifecycleStatus.ActiveClaimsOpen => project => project.Active && project.IsAcceptingClaims,
+            ProjectLifecycleStatus.ActiveClaimsClosed => project => project.Active && !project.IsAcceptingClaims && !project.IsBlocked,
+            ProjectLifecycleStatus.ActiveClaimsOpen => project => project.Active && project.IsAcceptingClaims && !project.IsBlocked,
             ProjectLifecycleStatus.Archived => project => !project.Active,
+            ProjectLifecycleStatus.Blocked => project => project.Active && project.IsBlocked,
             _ => throw new NotImplementedException(),
         };
     }

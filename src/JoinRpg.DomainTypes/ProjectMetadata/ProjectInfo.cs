@@ -283,7 +283,12 @@ public record class ProjectInfo
     public ProjectRolesList? GetRolesListByIdOrDefault(ProjectRolesListIdentification id)
         => ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id);
 
-    public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
+    public ProjectInfo EnsureProjectActive() => ProjectStatus switch
+    {
+        ProjectLifecycleStatus.Blocked => throw new ProjectBlockedException(ProjectId),
+        _ when !IsActive => throw new ProjectDeactivatedException(ProjectId),
+        _ => this,
+    };
 
     /// <summary>
     /// Ответственный по правилам групп: мастер ближайшей группы, иначе мастер по умолчанию. Правило, чей мастер

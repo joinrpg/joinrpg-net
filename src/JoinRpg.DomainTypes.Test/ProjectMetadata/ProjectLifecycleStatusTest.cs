@@ -14,6 +14,7 @@ public class ProjectLifecycleStatusTest
         { ProjectLifecycleStatus.ActiveClaimsOpen, false, true },
         { ProjectLifecycleStatus.ActiveClaimsClosed, false, true },
         { ProjectLifecycleStatus.Archived, true, false },
+        { ProjectLifecycleStatus.Blocked, false, false },
     };
 
     [Theory]

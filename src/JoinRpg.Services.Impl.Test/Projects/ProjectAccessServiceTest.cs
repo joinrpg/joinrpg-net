@@ -82,6 +82,43 @@ public class ProjectAccessServiceTest
         metadataRepository.LastPrimed.ShouldNotBeNull();
     }
 
+    // ADR023: в заблокированном проекте мастеров добавляют, чтобы было кому восстанавливать данные.
+    [Fact]
+    public async Task GrantAccess_BlockedProject_Succeeds()
+    {
+        mock.Project.IsBlocked = true;
+        var service = CreateService(mock.Master.UserId);
+
+        await service.GrantAccess(new GrantAccessRequest
+        {
+            ProjectId = ProjectId,
+            Role = new("Мастер"),
+            UserId = new UserIdentification(50),
+            Permissions = [Permission.CanManageClaims],
+        });
+
+        mock.Project.ProjectAcls.Single(a => a.UserId == 50).Status.ShouldBe(ProjectAclStatus.Active);
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task GrantAccess_ArchivedProject_Throws()
+    {
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<ProjectDeactivatedException>(() => service.GrantAccess(new GrantAccessRequest
+        {
+            ProjectId = ProjectId,
+            Role = new("Мастер"),
+            UserId = new UserIdentification(50),
+            Permissions = [Permission.CanManageClaims],
+        }));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
     [Fact]
     public async Task GrantAccess_NewUser_PopulatesAclUser_AndProjectInfoRefreshesWithoutError()
     {

@@ -20,7 +20,8 @@ internal class ProjectAccessService(
         => projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanGrantRights,
-            ProjectActiveRequirement.MustBeActive,
+            // В заблокированном проекте мастеров добавляют, чтобы было кому восстанавливать (ADR023).
+            ProjectActiveRequirement.AllowBlocked,
             request,
             ctx =>
             {
@@ -58,7 +59,7 @@ internal class ProjectAccessService(
         => projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanGrantRights,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked,
             request,
             ctx =>
             {
@@ -114,7 +115,7 @@ internal class ProjectAccessService(
         await projectPropsService.ChangeProjectProperties(
             projectId,
             requiredPermission,
-            ProjectActiveRequirement.AllowArchived,
+            ProjectActiveRequirement.AllowArchivedOrBlocked,
             (UserId: userId, NewResponsible: newResponsibleMasterIdOrDefault),
             ctx =>
             {
@@ -158,7 +159,7 @@ internal class ProjectAccessService(
             // Свой профиль мастер правит сам, чужой — с правом выдавать доступ (ADR019, §7).
             request.UserId == currentUserAccessor.UserIdentificationOrDefault ? Permission.None : Permission.CanGrantRights,
             // Страница мастеров архивной игры — её «титры», их правят и после игры.
-            ProjectActiveRequirement.AllowArchived,
+            ProjectActiveRequirement.AllowArchivedOrBlocked,
             request,
             ctx =>
             {
@@ -174,7 +175,7 @@ internal class ProjectAccessService(
         => projectPropsService.ChangeProjectProperties<(UserIdentification UserId, UserIdentification? AfterUserId), IReadOnlyList<UserIdentification>>(
             projectId,
             Permission.CanGrantRights,
-            ProjectActiveRequirement.AllowArchived,
+            ProjectActiveRequirement.AllowArchivedOrBlocked,
             (UserId: userId, AfterUserId: afterUserId),
             ctx =>
             {
@@ -196,7 +197,7 @@ internal class ProjectAccessService(
         => projectPropsService.ChangeProjectProperties(
             projectId,
             Permission.CanGrantRights, // джоба работает под роботом-админом, admin-bypass срабатывает сам
-            ProjectActiveRequirement.AllowArchived, // почти все такие проекты в архиве
+            ProjectActiveRequirement.AllowArchivedOrBlocked, // почти все такие проекты в архиве
             userIds,
             ctx =>
             {

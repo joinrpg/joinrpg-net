@@ -139,10 +139,7 @@ internal class AccommodationPropsService(
                 _ = handle.ProjectInfo.RequestMasterAccess(currentUserAccessor, requiredPermission);
             }
 
-            if (activeRequirement == ProjectActiveRequirement.MustBeActive)
-            {
-                _ = handle.ProjectInfo.EnsureProjectActive();
-            }
+            activeRequirement.EnsureSatisfiedBy(handle.ProjectInfo);
 
             var ctx = new RoomCategoryPlanMutationContext<TArgs>(
                 handle.Plan, handle, now, currentUserAccessor, arguments);

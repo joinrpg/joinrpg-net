@@ -43,7 +43,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             [.. project.ProjectFeeSettings.Select(
                     fee => new ProjectFeeSettingInfo(fee.StartDate, fee.Fee, fee.PreferentialFee, fee.ProjectFeeSettingId))]);
 
-        ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims);
+        ProjectLifecycleStatus status = ProjectLoaderCommon.CreateStatus(project.Active, project.IsAcceptingClaims, project.IsBlocked);
 
         var timeZone = TimeZoneInfo.FindSystemTimeZoneById(project.Details.TimeZoneId);
 
