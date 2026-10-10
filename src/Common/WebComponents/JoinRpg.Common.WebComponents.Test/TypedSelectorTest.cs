@@ -53,4 +53,48 @@ public class TypedSelectorTest
         options[0].TextContent.ShouldBe("Первый");
         options[0].HasAttribute("disabled").ShouldBeFalse();
     }
+
+    private static BunitJSModuleInterop SetupInteractive(BunitContext ctx)
+    {
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        var module = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+        _ = module.SetupVoid("initBootstrapSelect", _ => true);
+        _ = module.SetupVoid("refreshBootstrapSelect", _ => true);
+        return module;
+    }
+
+    /// <summary>
+    /// Родитель при каждой своей перерисовке передаёт новые лямбды и массивы. Если пункты от этого не поменялись,
+    /// дорогой selectpicker('refresh') звать не нужно (#5250).
+    /// </summary>
+    [Fact]
+    public void ParentRerenderWithSameContent_DoesNotRefresh()
+    {
+        using var ctx = new BunitContext();
+        var module = SetupInteractive(ctx);
+        var cut = Render(ctx);
+        cut.WaitForAssertion(() => module.Invocations["initBootstrapSelect"].ShouldHaveSingleItem());
+
+        cut.Render(p => p
+            .Add(x => x.Items, [.. Items])
+            .Add(x => x.KeySelector, (Item item) => item.Id)
+            .Add(x => x.ToListItem, (Item item) => TypedSelectList.CreateItem(item.Id, item.Label, Disabled: item.Disabled))
+            .Add(x => x.SelectedValues, []));
+
+        module.Invocations["refreshBootstrapSelect"].ShouldBeEmpty();
+        module.Invocations["initBootstrapSelect"].ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void SelectedValuesChanged_Refreshes()
+    {
+        using var ctx = new BunitContext();
+        var module = SetupInteractive(ctx);
+        var cut = Render(ctx);
+        cut.WaitForAssertion(() => module.Invocations["initBootstrapSelect"].ShouldHaveSingleItem());
+
+        cut.Render(p => p.Add(x => x.SelectedValues, [1]));
+
+        module.Invocations["refreshBootstrapSelect"].ShouldHaveSingleItem();
+    }
 }
