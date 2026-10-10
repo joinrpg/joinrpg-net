@@ -132,8 +132,29 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             .Concat(transfers.Select(t => new { t.ProjectId, UserId = t.CreatedById }))
             .Concat(transfers.Select(t => new { t.ProjectId, UserId = t.ChangedById }));
 
+        // 4. Авторство персонажей и групп: кто создал и кто последним менял. Админы правят чужие проекты
+        //    через admin-bypass (ADR009), а робот джоб — тоже админ, поэтому админов здесь не берём.
+        var admins = Ctx.Set<UserAuthDetails>().Where(auth => auth.IsAdmin);
+
+        //    Группы пишут только операции с мастерским доступом.
+        var groups = Ctx.Set<CharacterGroup>();
+        var fromGroups =
+            groups.Select(g => new { g.ProjectId, UserId = g.CreatedById })
+            .Concat(groups.Select(g => new { g.ProjectId, UserId = g.UpdatedById }))
+            .Where(trace => !admins.Any(auth => auth.UserId == trace.UserId));
+
+        //    Персонажа штатно пишет и игрок: создание персонажа из слота при принятии заявки, правка полей
+        //    в заявке, отзыв заявки. Исключаем любого, у кого есть заявка в проекте, а не только на этого
+        //    персонажа: заявку переносят на другого персонажа, а авторство на старом остаётся.
+        var characters = Ctx.Set<Character>();
+        var fromCharacters =
+            characters.Select(c => new { c.ProjectId, UserId = c.CreatedById })
+            .Concat(characters.Select(c => new { c.ProjectId, UserId = c.UpdatedById }))
+            .Where(trace => !admins.Any(auth => auth.UserId == trace.UserId))
+            .Where(trace => !Ctx.ClaimSet.Any(claim => claim.ProjectId == trace.ProjectId && claim.PlayerUserId == trace.UserId));
+
         var query =
-            (from trace in fromComments.Concat(fromPaymentTypes).Concat(fromTransfers)
+            (from trace in fromComments.Concat(fromPaymentTypes).Concat(fromTransfers).Concat(fromGroups).Concat(fromCharacters)
              where !Ctx.Set<ProjectAcl>().Any(acl => acl.ProjectId == trace.ProjectId && acl.UserId == trace.UserId)
              select trace)
             .Distinct();

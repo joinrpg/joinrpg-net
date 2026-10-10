@@ -172,6 +172,94 @@ public class FormerMastersBackfillScenario(JoinApplicationFactory factory) : ICl
         candidates.ShouldBe([cashierId, senderId], ignoreOrder: true);
     }
 
+    [Fact]
+    public async Task CharacterAndGroupAuthors_AreCandidates_PlayerFromSlotIsNot()
+    {
+        // Мастер мог только заводить персонажей и группы — без комментариев и денег. Но персонажа штатно
+        // создаёт и игрок: при принятии заявки на слот автор нового персонажа — он.
+        UserIdentification ownerId, characterAuthorId, groupAuthorId, playerId;
+        ProjectIdentification projectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            ownerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
+            characterAuthorId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            groupAuthorId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            playerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+        }
+
+        var slotId = await factory.Services.RunAsAsync(ownerId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                projectId,
+                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
+            foreach (var masterId in new[] { characterAuthorId, groupAuthorId })
+            {
+                await sp.GetRequiredService<IProjectAccessService>().GrantAccess(new GrantAccessRequest
+                {
+                    ProjectId = projectId,
+                    UserId = masterId,
+                    Role = "Мастер",
+                    Permissions = [Permission.CanEditRoles],
+                });
+            }
+            return await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [],
+                new CharacterTypeInfo(CharacterType.Slot, IsHot: false, SlotLimit: 3, SlotName: "Стражник", CharacterVisibility.Public),
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
+        });
+
+        _ = await factory.Services.RunAsAsync(characterAuthorId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [],
+                new CharacterTypeInfo(CharacterType.NonPlayer, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
+        });
+
+        _ = await factory.Services.RunAsAsync(groupAuthorId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<ICharacterGroupService>().AddCharacterGroup(
+                projectId,
+                "Группа бывшего мастера",
+                isPublic: true,
+                parentCharacterGroupIds: [projectInfo.GroupTree.RootGroupId],
+                description: "");
+        });
+
+        var claimId = await factory.Services.RunAsAsync(playerId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<IClaimService>().AddClaimFromUser(
+                slotId, "Хочу в стражники", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
+        });
+        await factory.Services.RunAsAsync(ownerId, sp =>
+            sp.GetRequiredService<IClaimService>().ApproveByMaster(claimId, "Принят"));
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            // Предусловие: персонаж из слота записан на игрока.
+            db.ClaimSet.Where(c => c.ClaimId == claimId.ClaimId).Select(c => c.Character.CreatedById).Single()
+                .ShouldBe(playerId.Value);
+
+            // Так снимали мастеров до ADR019 — физическим удалением строки.
+            var set = db.Set<ProjectAcl>();
+            _ = set.RemoveRange(set.Where(a => a.ProjectId == projectId.Value
+                && (a.UserId == characterAuthorId.Value || a.UserId == groupAuthorId.Value)));
+            _ = await db.SaveChangesAsync();
+        }
+
+        var candidates = await GetCandidatesOfProject(projectId);
+
+        candidates.ShouldBe([characterAuthorId, groupAuthorId], ignoreOrder: true);
+    }
+
     private async Task<UserIdentification[]> GetCandidatesOfProject(ProjectIdentification projectId)
     {
         using var scope = factory.Services.CreateScope();
