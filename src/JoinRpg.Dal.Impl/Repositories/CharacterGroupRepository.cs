@@ -88,6 +88,8 @@ internal class CharacterGroupRepository(
         // на которой обрывается цепочка, а лишние проекты в списке безвредны — их отсеет правило.
         var projectIds = await ctx.Set<CharacterGroup>()
             .Where(child => child.IsActive && child.IsPublic && !child.IsRoot)
+            // Заблокированные проекты (ADR023) починщик не трогает — он упал бы на проверке активности.
+            .Where(child => !child.Project.IsBlocked)
             .Where(child => !ctx.Set<CharacterGroup>().Any(parent =>
                 parent.ProjectId == child.ProjectId
                 && parent.IsActive

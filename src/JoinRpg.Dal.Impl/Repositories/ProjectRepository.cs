@@ -94,7 +94,8 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         var allQuery =
             from project in AllProjects
             join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
-            where update.LastUpdated < inActiveSince && project.Active
+            // Заблокированный проект (ADR023) не заброшен: его восстанавливают, джоба закрытия его не трогает.
+            where update.LastUpdated < inActiveSince && project.Active && !project.IsBlocked
             orderby update.LastUpdated ascending
             select new ProjectWithUpdateDateDto
             {

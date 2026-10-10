@@ -283,6 +283,12 @@ public record class ProjectInfo
     public ProjectRolesList? GetRolesListByIdOrDefault(ProjectRolesListIdentification id)
         => ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id);
 
+    /// <summary>
+    /// Для операций, допустимых и в архиве (комментарии и т. п.): запрещает только заблокированный проект (ADR023).
+    /// </summary>
+    public ProjectInfo EnsureNotBlocked()
+        => ProjectStatus == ProjectLifecycleStatus.Blocked ? throw new ProjectBlockedException(ProjectId) : this;
+
     public ProjectInfo EnsureProjectActive() => ProjectStatus switch
     {
         ProjectLifecycleStatus.Blocked => throw new ProjectBlockedException(ProjectId),

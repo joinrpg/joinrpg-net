@@ -27,9 +27,9 @@ public class EnsureRolesListsJob(
 
     private async Task AddAllRolesListToProjectsWithoutAnyList(CancellationToken cancellationToken)
     {
-        // Активные проекты.
+        // Активные проекты; заблокированные (ADR023) менять нельзя.
         var activeProjectIds = await unitOfWork.GetDbSet<Project>()
-            .Where(p => p.Active)
+            .Where(p => p.Active && !p.IsBlocked)
             .Select(p => p.ProjectId)
             .ToListAsync(cancellationToken);
 
@@ -70,7 +70,7 @@ public class EnsureRolesListsJob(
     {
         // Активные проекты, у которых есть хотя бы одна активная горячая роль.
         var candidateProjectIds = await unitOfWork.GetDbSet<Character>()
-            .Where(c => c.IsHot && c.IsActive && c.Project.Active)
+            .Where(c => c.IsHot && c.IsActive && c.Project.Active && !c.Project.IsBlocked)
             .Select(c => c.ProjectId)
             .Distinct()
             .ToListAsync(cancellationToken);
