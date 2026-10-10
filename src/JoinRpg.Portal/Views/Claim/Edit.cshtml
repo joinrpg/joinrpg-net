@@ -310,12 +310,12 @@ new { Model.ProjectId, Model.Player.UserId }, null).
             <div class="panel-heading">Восстановление заявки</div>
             <div class="panel-body">
 
-                @if (Model.OtherClaimsFromThisPlayerCount > 0)
+                @if (Model.RestoreBlockedByOtherApprovedClaim)
                 {
                     <div class="alert alert-danger">
-                        Этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
+                        У этого игрока уже принята @Html.ActionLink("другая заявка", "ForPlayer", "ClaimList",
                    new { Model.ProjectId, Model.Player.UserId }, null)
-                        Отклоните другие заявки, прежде чем восстанавливать эту.
+                        на этот проект, а в нём можно играть только одного персонажа. Отклоните её, прежде чем восстанавливать эту.
                     </div>
                 }
                 else

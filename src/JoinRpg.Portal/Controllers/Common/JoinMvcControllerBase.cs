@@ -81,7 +81,7 @@ public abstract class JoinMvcControllerBase : Controller
                 ModelState.AddModelError("", "Не удалось принять заявку: свободные места на эту роль закончились");
                 return;
             case OnlyOneApprovedClaimException _:
-                ModelState.AddModelError("", "Заявка не принята: у игрока уже есть одобренная заявка на другого персонажа в этом проекте");
+                ModelState.AddModelError("", "Действие невозможно: у игрока уже есть принятая заявка на другого персонажа, а в этом проекте можно играть только одного");
                 return;
             default:
 

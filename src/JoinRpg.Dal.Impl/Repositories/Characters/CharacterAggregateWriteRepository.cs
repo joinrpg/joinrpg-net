@@ -90,7 +90,7 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
     /// (ср. <c>ClaimsRepositoryImpl.GetClaimImpl</c>, который часть из них тянет лениво).
     /// </summary>
     /// <remarks>
-    /// <para><c>Player.Claims</c> — иначе <c>OtherPendingClaimsForThisPlayer</c> вернёт пусто
+    /// <para><c>Player.Claims</c> — иначе <c>OtherActiveClaimsForThisPlayer</c> вернёт пусто
     /// и автоотклонение при <c>StrictlyOneCharacter</c> тихо исчезнет.</para>
     /// <para><c>CommentDiscussion.Comments</c> — иначе не найти родительский комментарий
     /// и сломается финансовая модерация.</para>

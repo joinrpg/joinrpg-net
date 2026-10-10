@@ -7,8 +7,12 @@ namespace JoinRpg.Domain;
 public static class ClaimExtensions
 {
 
-    public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim)
-        => claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsPending && c.ProjectId == claim.ProjectId);
+    /// <summary>
+    /// Другие активные заявки того же игрока в этом проекте. Заявки «на паузе» не входят: конкурентом
+    /// для <c>StrictlyOneCharacter</c> они не считаются (#5395).
+    /// </summary>
+    public static IEnumerable<Claim> OtherActiveClaimsForThisPlayer(this Claim claim)
+        => claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.ClaimStatus.IsActive() && c.ProjectId == claim.ProjectId);
 
     /// <summary>
     /// Returns true when approval is blocked by other claims for character of the current claim

@@ -372,6 +372,58 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SentNotifications.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// При <c>StrictlyOneCharacter</c> заявку из листа ожидания нельзя вернуть в работу, если у
+    /// игрока уже утверждена другая (#5395).
+    /// </summary>
+    [Fact]
+    public async Task RestoreByMaster_OnHoldWhenPlayerHasApprovedClaim_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.OnHold);
+        _ = mock.CreateApprovedClaim(mock.CreateCharacter("Петя"), mock.Player);
+        mock.ReInitProjectInfo();
+        mock.ProjectInfo.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
+
+        _ = await Should.ThrowAsync<OnlyOneApprovedClaimException>(
+            () => CreateService().RestoreByMaster(claim.GetId(), "вернём", claim.Character.GetId()));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.OnHold);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Отклонённой заявки правило касается так же, как заявки «на паузе».
+    /// </summary>
+    [Fact]
+    public async Task RestoreByMaster_DeclinedWhenPlayerHasApprovedClaim_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.DeclinedByMaster);
+        _ = mock.CreateApprovedClaim(mock.CreateCharacter("Петя"), mock.Player);
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<OnlyOneApprovedClaimException>(
+            () => CreateService().RestoreByMaster(claim.GetId(), "вернём", claim.Character.GetId()));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.DeclinedByMaster);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Неутверждённая заявка того же игрока восстановлению не мешает.
+    /// </summary>
+    [Fact]
+    public async Task RestoreByMaster_WhenPlayerHasOnlyUnapprovedClaim_Restores()
+    {
+        var claim = CreateClaim(ClaimStatus.OnHold);
+        _ = CreateClaim(ClaimStatus.AddedByUser, "Петя");
+
+        await CreateService().RestoreByMaster(claim.GetId(), "вернём", claim.Character.GetId());
+
+        claim.ClaimStatus.ShouldNotBe(ClaimStatus.OnHold);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
     [Fact]
     public async Task RestoreByMaster_ByPlayer_Throws_AndDoesNotSave()
     {
@@ -461,6 +513,23 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SentNotifications.Count.ShouldBe(2);
         SentNotifications[0].ShouldBeOfType<ClaimSimpleChangedNotification>().ClaimId.ShouldBe(claim.GetId());
         SentNotifications[1].ShouldBeOfType<ClaimSimpleChangedNotification>().ClaimId.ShouldBe(otherClaim.GetId());
+    }
+
+    /// <summary>
+    /// Заявка «на паузе» не конкурент утверждаемой (#5395): она остаётся в листе ожидания.
+    /// </summary>
+    [Fact]
+    public async Task ApproveByMaster_WithStrictlyOneCharacter_KeepsOnHoldClaimsOfSamePlayer()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var onHoldClaim = CreateClaim(ClaimStatus.OnHold, "Петя");
+        mock.ProjectInfo.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
+
+        await CreateService().ApproveByMaster(claim.GetId(), "принято");
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        onHoldClaim.ClaimStatus.ShouldBe(ClaimStatus.OnHold);
+        SentNotifications.Count.ShouldBe(1);
     }
 
     [Fact]

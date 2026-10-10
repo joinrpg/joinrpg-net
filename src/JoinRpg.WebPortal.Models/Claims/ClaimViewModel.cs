@@ -46,6 +46,12 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public bool HasBlockingOtherClaimsForThisCharacter { get; }
     public int OtherClaimsFromThisPlayerCount { get; }
 
+    /// <summary>
+    /// Восстановить заявку нельзя: у игрока уже принята другая, а проект разрешает только одного
+    /// персонажа. То же правило, что проверяет сервер (<see cref="ClaimValidator.EnsureCanRestoreClaim"/>).
+    /// </summary>
+    public bool RestoreBlockedByOtherApprovedClaim { get; }
+
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel ParentGroups { get; set; }
 
@@ -98,7 +104,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     /// <param name="claim">
     /// EF-сущность той же заявки. Пока нужна тому, чего нет в агрегате (ADR021, шаг 6):
     /// комментариям, взносу и типам оплаты, полям, ответственному мастеру как <see cref="User"/>,
-    /// проживанию и подсчёту других заявок игрока.
+    /// проживанию.
     /// </param>
     /// <param name="claimInfo">Заявка вместе с персонажем и профилем игрока (ADR021).</param>
     public ClaimViewModel(ICurrentUserAccessor currentUser,
@@ -146,13 +152,14 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         HasBlockingOtherClaimsForThisCharacter = claimInfo.ClaimInCharacter.HasOtherClaimsForThisCharacter();
         HasOtherApprovedClaim = characterInfo.ApprovedClaimId is not null && characterInfo.ApprovedClaimId != claimInfo.ClaimId;
-        // Другие заявки игрока в проекте — это заявки на других персонажей, их нет ни в агрегате
-        // персонажа, ни в профиле (UserInfo.ActiveClaims не включает заявки «на паузе»,
-        // а здесь считаются все неотклонённые). Поэтому пока через EF.
+        // Заявки «на паузе» не считаются: конкурентом для StrictlyOneCharacter они не являются,
+        // вернуть такую заявку в работу при утверждённой другой не даст ClaimValidator.EnsureCanRestoreClaim.
         OtherClaimsFromThisPlayerCount =
                 claimData.IsApproved || !projectInfo.ClaimSettings.StrictlyOneCharacter
                     ? 0
-                    : claim.OtherPendingClaimsForThisPlayer().Count();
+                    : playerInfo.ActiveClaims.Count(c => c.ProjectId == projectInfo.ProjectId && c.ClaimId != claimInfo.ClaimId);
+        RestoreBlockedByOtherApprovedClaim =
+            !ClaimValidator.CanRestoreClaim(new UserClaimInfo(claimInfo.ClaimId, claimData.Status), playerInfo, projectInfo);
 
         ResponsibleMasterId = claimData.ResponsibleMasterId;
         ResponsibleMaster = new UserLinkViewModel(projectInfo.GetMasterById(claimData.ResponsibleMasterId).UserInfo);

@@ -94,6 +94,42 @@ public class OnlyOneCharacterRuleTest
             .ShouldContain(AddClaimForbideReason.OnlyOneCharacter);
     }
 
+    /// <summary>
+    /// Заявка «на паузе» не конкурент утверждённой (#5395), поэтому вернуть её в работу, пока у
+    /// игрока есть другая утверждённая заявка, нельзя.
+    /// </summary>
+    [Fact]
+    public void OnHoldClaimCantBeRestoredWhenAnotherIsApproved()
+    {
+        var onHold = new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 100), ClaimStatus.OnHold);
+        var userInfo = WithClaims(
+            new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 999), ClaimStatus.Approved));
+
+        _ = Should.Throw<OnlyOneApprovedClaimException>(
+            () => ClaimValidator.EnsureCanRestoreClaim(onHold, userInfo, Mock.ProjectInfo));
+    }
+
+    [Fact]
+    public void OnHoldClaimCanBeRestoredWhenAnotherIsNotApproved()
+    {
+        var onHold = new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 100), ClaimStatus.OnHold);
+        var userInfo = WithClaims(
+            new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 999), ClaimStatus.AddedByUser));
+
+        Should.NotThrow(() => ClaimValidator.EnsureCanRestoreClaim(onHold, userInfo, Mock.ProjectInfo));
+    }
+
+    [Fact]
+    public void RestoreIsAllowedWhenSettingOff()
+    {
+        var projectInfo = Mock.ProjectInfo.WithAllowManyClaims(strictlyOneCharacter: false);
+        var onHold = new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 100), ClaimStatus.OnHold);
+        var userInfo = WithClaims(
+            new UserClaimInfo(ClaimIn(Mock.ProjectInfo.ProjectId, 999), ClaimStatus.Approved));
+
+        Should.NotThrow(() => ClaimValidator.EnsureCanRestoreClaim(onHold, userInfo, projectInfo));
+    }
+
     [Fact]
     public void SettingOffDisablesRule()
     {
