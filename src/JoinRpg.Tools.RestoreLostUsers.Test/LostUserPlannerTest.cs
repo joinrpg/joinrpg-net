@@ -22,10 +22,10 @@ public class LostUserPlannerTest
     private static NotificationUserActivity Activity(int id, int asRecipient = 1, int asInitiator = 0)
         => new(id, Day1, Day2, asRecipient, asInitiator);
 
-    private static NotificationUserDetails Details(int id, string? email, string? telegram = null)
-        => new(id, email is null ? [] : [new ChannelValue($"Email({email})", Day2)], telegram);
+    private static NotificationUserDetails Details(int id, string? email, string? telegram = null, params GreetingLine[] greetings)
+        => new(id, email is null ? [] : [new ChannelValue($"Email({email})", Day2)], telegram, greetings);
 
-    private static NotificationUserDetails Emails(int id, params ChannelValue[] emails) => new(id, emails, null);
+    private static NotificationUserDetails Emails(int id, params ChannelValue[] emails) => new(id, emails, null, []);
 
     private static LostUserDecision PlanSingle(NotificationUserActivity activity, NotificationUserDetails? details)
     {
@@ -228,4 +228,14 @@ public class LostUserPlannerTest
     [InlineData("garbage")]
     public void UnparsableTelegramIsIgnored(string? value)
         => LostUserPlanner.ParseTelegram(value).ShouldBe((null, null));
+
+    [Fact]
+    public void NameIsTakenFromGreetings()
+    {
+        var decision = PlanSingle(
+            Activity(1010),
+            Details(1010, "name@example.com", null, new GreetingLine("Добрый день, Иван Петров!", 3, Day2)));
+
+        decision.Name.ShouldBe("Иван Петров");
+    }
 }

@@ -54,13 +54,15 @@ internal sealed class NotificationsSource(string connectionString, DateTimeOffse
 
         var emails = await GetEmailValues(connection, ids, ct);
         var telegrams = await GetLatestTelegramValues(connection, ids, ct);
+        var greetings = await GetGreetings(connection, ids, ct);
 
         return ids.ToDictionary(
             id => id,
             id => new NotificationUserDetails(
                 id,
                 emails.TryGetValue(id, out var emailList) ? emailList : [],
-                telegrams.GetValueOrDefault(id)));
+                telegrams.GetValueOrDefault(id),
+                greetings.TryGetValue(id, out var greetingList) ? greetingList : []));
     }
 
     private async Task<Dictionary<int, List<ChannelValue>>> GetEmailValues(NpgsqlConnection connection, int[] ids, CancellationToken ct)
@@ -102,6 +104,30 @@ internal sealed class NotificationsSource(string connectionString, DateTimeOffse
         while (await reader.ReadAsync(ct))
         {
             result[reader.GetInt32(0)] = reader.GetString(1);
+        }
+        return result;
+    }
+
+    private async Task<Dictionary<int, List<GreetingLine>>> GetGreetings(NpgsqlConnection connection, int[] ids, CancellationToken ct)
+    {
+        const string sql = """
+            SELECT "RecipientUserId", split_part("Body", E'\n', 1) AS first_line, COUNT(*), MAX("CreatedAt")
+            FROM "Notifications"
+            WHERE "RecipientUserId" = ANY(@ids) AND "Body" LIKE @prefix AND "CreatedAt" < @lostAt
+            GROUP BY 1, 2
+            """;
+
+        await using var command = CreateCommand(sql, connection);
+        _ = command.Parameters.AddWithValue("ids", ids);
+        _ = command.Parameters.AddWithValue("prefix", GreetingNameParser.GreetingPrefix + "%");
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        var result = new Dictionary<int, List<GreetingLine>>();
+        while (await reader.ReadAsync(ct))
+        {
+            GetOrAdd(result, reader.GetInt32(0)).Add(new GreetingLine(
+                reader.GetString(1).TrimEnd('\r'),
+                checked((int)reader.GetInt64(2)),
+                reader.GetFieldValue<DateTimeOffset>(3)));
         }
         return result;
     }

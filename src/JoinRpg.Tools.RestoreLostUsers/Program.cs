@@ -132,7 +132,7 @@ internal static class Program
         var toCreate = decisions.Where(d => d.Kind == DecisionKind.Create).ToList();
         if (toCreate.Count > 0)
         {
-            Console.WriteLine($"  из них с Telegram: {toCreate.Count(d => d.TelegramChatId is not null)} (Telegram не восстанавливается, только в отчёте)");
+            Console.WriteLine($"  из них с именем из приветствий: {toCreate.Count(d => d.Name is not null)}, с Telegram: {toCreate.Count(d => d.TelegramChatId is not null)} (Telegram не восстанавливается, только в отчёте)");
         }
         Console.WriteLine();
     }

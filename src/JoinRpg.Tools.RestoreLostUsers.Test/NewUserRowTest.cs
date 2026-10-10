@@ -6,6 +6,7 @@ public class NewUserRowTest
         UserId: 1001,
         kind,
         email,
+        Name: "Иван",
         TelegramChatId: null,
         TelegramUserName: null,
         FirstSeen: new DateTimeOffset(2026, 6, 1, 15, 0, 0, TimeSpan.FromHours(3)),
@@ -31,9 +32,9 @@ public class NewUserRowTest
     }
 
     [Fact]
-    public void CopiesIdAndEmail()
+    public void CopiesIdEmailAndName()
         => NewUserRow.From(Decision(), Guid.Empty).ShouldBe(
-            new NewUserRow(1001, "lost@example.com", new DateTime(2026, 6, 1, 12, 0, 0), Guid.Empty.ToString()));
+            new NewUserRow(1001, "lost@example.com", "Иван", new DateTime(2026, 6, 1, 12, 0, 0), Guid.Empty.ToString()));
 
     [Fact]
     public void RefusesDecisionOtherThanCreate()
