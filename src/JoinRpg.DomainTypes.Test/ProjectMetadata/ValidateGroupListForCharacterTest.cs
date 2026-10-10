@@ -36,6 +36,20 @@ public class ValidateGroupListForCharacterTest
             () => TreeWithRegularGroup().ValidateGroupListForCharacter([alienGroupId]));
     }
 
+    /// <summary>
+    /// Группы нет в дереве проекта. До #4968 летело нетипизированное <see cref="Exception"/>,
+    /// и пользователь получал 500 вместо внятного сообщения.
+    /// </summary>
+    [Fact]
+    public void ShouldRejectGroupsMissingFromTree()
+    {
+        var ex = Should.Throw<CharacterGroupsNotFoundException>(
+            () => TreeWithRegularGroup().ValidateGroupListForCharacter([GroupId(2), GroupId(100500)]));
+
+        ex.GroupIds.ShouldBe([GroupId(100500)]);
+        ex.ProjectId.ShouldBe(ProjectId);
+    }
+
     [Fact]
     public void ShouldRejectSpecialGroupWhenProjectAllowsToSetGroups()
     {

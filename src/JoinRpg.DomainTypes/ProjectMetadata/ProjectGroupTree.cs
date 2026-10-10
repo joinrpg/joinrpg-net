@@ -308,8 +308,7 @@ public sealed class ProjectGroupTree
 
         if (missing.Length != 0)
         {
-            var missingIds = string.Join(", ", missing.Select(m => m.CharacterGroupId));
-            throw new Exception($"Groups {missingIds} doesn't belong to project");
+            throw new CharacterGroupsNotFoundException(RootGroupId.ProjectId, missing);
         }
 
         if (ensureNotSpecial && groupIds.FirstOrDefault(id => GetGroupById(id).IsSpecial) is { } specialGroupId)

@@ -190,7 +190,7 @@ public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
         var npc = new CharacterTypeInfo(
             CharacterType.NonPlayer, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public);
 
-        await Should.ThrowAsync<Exception>(
+        await Should.ThrowAsync<CharacterTypeChangeWithActiveClaimsException>(
             () => CreateService().EditCharacter(EditRequest(character, npc)));
 
         SaveChangesCallCount.ShouldBe(0);
@@ -295,7 +295,7 @@ public class CharacterServiceImplTest : Claims.ClaimServiceTestBase
         mock.CreateClaim(character, mock.Player);
         mock.ReInitProjectInfo();
 
-        await Should.ThrowAsync<Exception>(
+        await Should.ThrowAsync<CharacterHasActiveClaimsException>(
             () => CreateService().DeleteCharacter(new DeleteCharacterRequest(character.GetId())));
 
         character.IsActive.ShouldBeTrue();

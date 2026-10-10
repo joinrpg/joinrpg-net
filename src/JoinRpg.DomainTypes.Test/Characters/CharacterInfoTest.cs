@@ -526,10 +526,10 @@ public class CharacterInfoTest
             characterTypeInfo: MakeTypeInfo(CharacterType.Player),
             claims: [MakeClaim(projectInfo, 1, ClaimStatus.Discussed)]);
 
-        var ex = Should.Throw<Exception>(
+        var ex = Should.Throw<CharacterTypeChangeWithActiveClaimsException>(
             () => character.EnsureCanChangeTypeTo(MakeTypeInfo(CharacterType.NonPlayer)));
 
-        ex.Message.ShouldBe("Can't change type of character with active claims");
+        ex.CharacterId.ShouldBe(character.Id);
     }
 
     [Fact]

@@ -81,3 +81,14 @@ public class FieldUserNotFoundException(ProjectFieldIdentification fieldId, stri
     public ProjectFieldIdentification FieldId { get; } = fieldId;
     public UserIdentification UserId { get; } = userId;
 }
+
+/// <summary>
+/// В операцию переданы группы, которых нет в проекте: удалены или вовсе из другого проекта.
+/// </summary>
+public class CharacterGroupsNotFoundException(
+    ProjectIdentification projectId,
+    IReadOnlyCollection<CharacterGroupIdentification> groupIds)
+    : JoinRpgProjectException(projectId, $"Groups {string.Join(", ", groupIds.Select(g => g.CharacterGroupId))} doesn't belong to project")
+{
+    public IReadOnlyCollection<CharacterGroupIdentification> GroupIds { get; } = groupIds;
+}

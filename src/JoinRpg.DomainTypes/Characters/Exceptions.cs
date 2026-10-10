@@ -29,3 +29,13 @@ public class SpecialCharacterGroupNotAllowedException(CharacterGroupIdentificati
 {
     public CharacterGroupIdentification GroupId { get; } = groupId;
 }
+
+/// <summary>
+/// Тип персонажа нельзя менять, пока на него есть активные заявки:
+/// см. <see cref="CharacterInfo.EnsureCanChangeTypeTo"/>.
+/// </summary>
+public class CharacterTypeChangeWithActiveClaimsException(CharacterIdentification characterId)
+    : JoinRpgProjectException(characterId.ProjectId, $"Can't change type of character {characterId}, because it has active claims")
+{
+    public CharacterIdentification CharacterId { get; } = characterId;
+}
