@@ -41,6 +41,9 @@ internal class RoomTypeEditViewService(
         => accommodationTypeService.UpdateAccommodationType(
             roomTypeId,
             RoomTypeEditViewModelBuilder.ToRequest(model));
+
+    public Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, RoomCategoryRenameViewModel model)
+        => accommodationTypeService.RenameRoomCategory(roomCategoryId, model.Name.Trim());
 }
 
 /// <summary>

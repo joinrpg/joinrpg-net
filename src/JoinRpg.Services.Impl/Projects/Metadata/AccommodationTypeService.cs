@@ -68,6 +68,19 @@ internal class AccommodationTypeService(
         return entity.GetId();
     }
 
+    /// <inheritdoc />
+    public Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, string name)
+        => projectPropsService.ChangeProjectProperties(
+            roomCategoryId.ProjectId,
+            Permission.CanManageAccommodation,
+            ProjectActiveRequirement.MustBeActive,
+            (RoomCategoryId: roomCategoryId, Name: name),
+            ctx =>
+            {
+                var category = GetRoomCategoryForChange(ctx, ctx.Request.RoomCategoryId);
+                category.Name = ServiceValidation.Required(ctx.Request.Name);
+            });
+
     private static ProjectRoomCategory CreateRoomCategory(ProjectMutationContext ctx, string name)
     {
         var category = new ProjectRoomCategory

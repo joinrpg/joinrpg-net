@@ -53,6 +53,12 @@ public interface IAccommodationTypeService
         AccommodationTypeRequest request);
 
     /// <summary>
+    /// Переименовывает категорию комнат — для всех её типов сразу (ADR020).
+    /// </summary>
+    /// <exception cref="RoomCategoryNotFoundException">Категории в проекте нет</exception>
+    Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, string name);
+
+    /// <summary>
     /// Удаляет тип проживания. Последний тип категории удаляет и её вместе с комнатами; если у
     /// категории есть другие типы, комнаты остаются им (ADR020).
     /// </summary>

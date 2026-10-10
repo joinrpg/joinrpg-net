@@ -27,6 +27,18 @@ public class RoomTypeEditControllerTest
     }
 
     [Fact]
+    public async Task RenameRoomCategoryGluesCategoryWithAuthorizedProject()
+    {
+        var client = new FakeClient();
+        var controller = new RoomTypeEditController(client);
+
+        var result = await controller.RenameRoomCategory(ProjectId, 12, new RoomCategoryRenameViewModel { Name = "Корпус А" });
+
+        _ = result.ShouldBeOfType<OkResult>();
+        client.RenamedId.ShouldBe(new RoomCategoryIdentification(ProjectId, 12));
+    }
+
+    [Fact]
     public async Task InvalidModelIsRejectedWithMessages()
     {
         var client = new FakeClient();
@@ -59,6 +71,14 @@ public class RoomTypeEditControllerTest
         public Task UpdateRoomType(AccommodationTypeIdentification roomTypeId, RoomTypeEditViewModel model)
         {
             UpdatedId = roomTypeId;
+            return Task.CompletedTask;
+        }
+
+        public RoomCategoryIdentification? RenamedId { get; private set; }
+
+        public Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, RoomCategoryRenameViewModel model)
+        {
+            RenamedId = roomCategoryId;
             return Task.CompletedTask;
         }
     }

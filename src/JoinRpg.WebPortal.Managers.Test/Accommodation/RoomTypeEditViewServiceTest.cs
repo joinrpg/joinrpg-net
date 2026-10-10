@@ -129,6 +129,16 @@ public class RoomTypeEditViewServiceTest
         request.ShouldBe(new AccommodationTypeRequest("Домик", new MarkdownString(""), 0, 4, true));
     }
 
+    [Fact]
+    public async Task RenameRoomCategory_TrimsName()
+    {
+        var categoryId = new RoomCategoryIdentification(Mock.ProjectInfo.ProjectId, 101);
+
+        await CreateService().RenameRoomCategory(categoryId, new RoomCategoryRenameViewModel { Name = "  Корпус А " });
+
+        typeService.Renamed.ShouldHaveSingleItem().ShouldBe((categoryId, "Корпус А"));
+    }
+
     private sealed class FakeAccommodationTypeService : IAccommodationTypeService
     {
         public List<(ProjectIdentification ProjectId, AccommodationTypeRequest Request, RoomCategorySelection? RoomCategory)> Created { get; } = [];
@@ -146,6 +156,14 @@ public class RoomTypeEditViewServiceTest
         public Task UpdateAccommodationType(AccommodationTypeIdentification accommodationTypeId, AccommodationTypeRequest request)
         {
             Updated.Add((accommodationTypeId, request));
+            return Task.CompletedTask;
+        }
+
+        public List<(RoomCategoryIdentification Id, string Name)> Renamed { get; } = [];
+
+        public Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, string name)
+        {
+            Renamed.Add((roomCategoryId, name));
             return Task.CompletedTask;
         }
 

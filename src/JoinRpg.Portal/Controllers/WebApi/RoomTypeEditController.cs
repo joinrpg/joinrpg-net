@@ -5,10 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers.WebApi;
 
 /// <summary>
-/// Ручки острова <see cref="RoomTypeEditForm"/>: чтение, создание и изменение типа проживания.
+/// Ручки острова <see cref="RoomTypeEditForm"/>: чтение, создание и изменение типа проживания,
+/// переименование его категории комнат.
 /// </summary>
 /// <remarks>
-/// Номер типа приходит голым числом и склеивается с проектом из query — тем самым, по которому
+/// Номер типа (и категории) приходит голым числом и склеивается с проектом из query — тем самым, по которому
 /// проверены права. Так тип чужого проекта подсунуть нельзя.
 /// </remarks>
 [Route("/webapi/room-type/[action]")]
@@ -55,6 +56,22 @@ public class RoomTypeEditController(IRoomTypeEditClient client) : ControllerBase
         }
 
         await client.UpdateRoomType(new AccommodationTypeIdentification(projectId, roomTypeId), model);
+        return Ok();
+    }
+
+    [HttpPost]
+    [RequireMaster(Permission.CanManageAccommodation)]
+    public async Task<ActionResult> RenameRoomCategory(
+        [FromQuery] ProjectIdentification projectId,
+        [FromQuery] int roomCategoryId,
+        [FromBody] RoomCategoryRenameViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationErrors();
+        }
+
+        await client.RenameRoomCategory(new RoomCategoryIdentification(projectId, roomCategoryId), model);
         return Ok();
     }
 

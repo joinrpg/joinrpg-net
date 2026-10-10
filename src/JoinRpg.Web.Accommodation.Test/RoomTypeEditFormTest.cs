@@ -141,7 +141,79 @@ public class RoomTypeEditFormTest : BunitContext
         var cut = RenderEdit();
 
         cut.FindAll("#roomtype-category-new").ShouldBeEmpty("Категорию существующего типа не меняют");
-        cut.Find("p.form-control-static").TextContent.Trim().ShouldBe("Корпус А (комнаты общие с: Люкс на одного)");
+        cut.Find(".roomtype-category").TextContent.Trim().ShouldBe("Корпус А (комнаты общие с: Люкс на одного)");
+    }
+
+    [Fact]
+    public async Task EditForm_RenamesCategoryInDialog()
+    {
+        client.Existing = new RoomTypeEditViewModel
+        {
+            Name = "Люкс",
+            Capacity = 2,
+            RoomCategory = new RoomCategoryOptionViewModel(101, "Корпус А", ["Люкс на одного"]),
+        };
+        var cut = RenderEdit();
+
+        cut.Find("[data-action='rename-category']").Click();
+        var input = cut.Find("#roomtype-category-rename");
+        input.GetAttribute("value").ShouldBe("Корпус А");
+        input.Input("Корпус Б");
+        await cut.FindAll(".join-dialog-footer button").Single(b => b.TextContent.Contains("Сохранить"))
+            .ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await cut.Find("dialog").TriggerEventAsync("onclose", EventArgs.Empty);
+
+        cut.WaitForAssertion(() => client.Renamed.ShouldHaveSingleItem()
+            .ShouldBe((new RoomCategoryIdentification(ProjectId, 101), "Корпус Б")));
+        cut.WaitForAssertion(() => cut.Find(".roomtype-category").TextContent.Trim().ShouldBe("Корпус Б (комнаты общие с: Люкс на одного)"));
+        client.Updated.ShouldBeEmpty("Переименование категории не сохраняет тип");
+    }
+
+    private IRenderedComponent<RoomTypeEditForm> RenderEditInSharedCategory()
+    {
+        client.Existing = new RoomTypeEditViewModel
+        {
+            Name = "Люкс",
+            Capacity = 2,
+            RoomCategory = new RoomCategoryOptionViewModel(101, "Корпус А", ["Люкс на одного"]),
+        };
+        return RenderEdit();
+    }
+
+    private static async Task SubmitRename(IRenderedComponent<RoomTypeEditForm> cut, string name)
+    {
+        cut.Find("[data-action='rename-category']").Click();
+        cut.Find("#roomtype-category-rename").Input(name);
+        await cut.FindAll(".join-dialog-footer button").Single(b => b.TextContent.Contains("Сохранить"))
+            .ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await cut.Find("dialog").TriggerEventAsync("onclose", EventArgs.Empty);
+    }
+
+    [Fact]
+    public async Task EditForm_RenameInFlight_DisablesSave()
+    {
+        var pending = new TaskCompletionSource();
+        client.PendingRename = pending.Task;
+        var cut = RenderEditInSharedCategory();
+
+        await SubmitRename(cut, "Корпус Б");
+
+        // Пока переименование не вернулось, тип сохранить нельзя: иначе запросы гонятся друг с другом.
+        cut.WaitForAssertion(() => cut.Find("button[type=submit]").HasAttribute("disabled").ShouldBeTrue());
+        pending.SetResult();
+        cut.WaitForAssertion(() => cut.Find("button[type=submit]").HasAttribute("disabled").ShouldBeFalse());
+    }
+
+    [Fact]
+    public async Task EditForm_RenameFailure_KeepsNameAndShowsError()
+    {
+        client.Error = new InvalidOperationException("Укажите название категории");
+        var cut = RenderEditInSharedCategory();
+
+        await SubmitRename(cut, "Корпус Б");
+
+        cut.WaitForAssertion(() => cut.Find(".text-danger").TextContent.ShouldBe("Укажите название категории"));
+        cut.Find(".roomtype-category").TextContent.ShouldContain("Корпус А");
     }
 
     [Fact]
@@ -234,6 +306,21 @@ public class RoomTypeEditFormTest : BunitContext
             }
             Updated.Add((roomTypeId, model));
             return Task.CompletedTask;
+        }
+
+        public List<(RoomCategoryIdentification Id, string Name)> Renamed { get; } = [];
+
+        /// <summary>Не завершён — переименование «в полёте»</summary>
+        public Task? PendingRename { get; set; }
+
+        public Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, RoomCategoryRenameViewModel model)
+        {
+            if (Error is not null)
+            {
+                return Task.FromException(Error);
+            }
+            Renamed.Add((roomCategoryId, model.Name));
+            return PendingRename ?? Task.CompletedTask;
         }
     }
 }
