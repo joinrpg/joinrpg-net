@@ -1,6 +1,9 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Accommodation;
+using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 
@@ -41,15 +44,15 @@ public class AccommodationListViewModel
     /// страницы складываются по категориям, а не по типам.
     /// </param>
     /// <param name="claimsWithoutRoomType">Активные заявки, в которых тип проживания не выбран</param>
-    /// <param name="unsettledClaims">
-    /// Заявки, выбравшие тип проживания, но ещё не расселённые по комнатам: по ним считается, сколько
-    /// нерасселённых оплачено. Баланс считается здесь, а не в строке таблицы: расчёт идёт по
-    /// EF-графу заявки, а <see cref="RoomTypeListItemViewModel"/> на EF не смотрит.
+    /// <param name="unsettledCharacters">
+    /// Снимки персонажей (ADR013), на которых поданы заявки из нерасселённых групп планов: по ним
+    /// считается, сколько нерасселённых оплачено. Какие заявки нерасселённые и какого они типа —
+    /// решает план (ADR022), а не навигация группы; лишние заявки этих персонажей не считаются.
     /// </param>
     public AccommodationListViewModel(ProjectInfo project,
         IReadOnlyCollection<RoomCategoryPlan> plans,
         IReadOnlyCollection<Claim> claimsWithoutRoomType,
-        IReadOnlyCollection<Claim> unsettledClaims,
+        IReadOnlyCollection<CharacterInfo> unsettledCharacters,
         ICurrentUserAccessor userId)
     {
         ProjectId = project.ProjectId;
@@ -57,11 +60,7 @@ public class AccommodationListViewModel
         CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
         CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
 
-        var paidByRoomType = unsettledClaims
-            .GroupBy(claim => claim.AccommodationRequest!.AccommodationTypeId)
-            .ToDictionary(
-                group => group.Key,
-                group => AccommodationClaimCounters.CountPaid(group, project));
+        var paidByRoomType = AccommodationClaimCounters.CountUnsettledPaid(plans, unsettledCharacters);
 
         var planByCategory = plans.ToDictionary(plan => plan.Id);
 
@@ -74,7 +73,7 @@ public class AccommodationListViewModel
             RoomTypeOccupancySummary.FromPlan(
                 planByCategory[typeInfo.RoomCategoryId],
                 typeInfo.Id,
-                paidByRoomType.GetValueOrDefault(typeInfo.Id.AccommodationTypeId)),
+                paidByRoomType.GetValueOrDefault(typeInfo.Id)),
             userId.UserIdentification,
             project))];
 
@@ -123,12 +122,37 @@ public class UnassignedClaimsRowViewModel
 /// Подсчёт оплаченных заявок для страницы «Поселение».
 /// </summary>
 /// <remarks>
-/// Баланс считается по EF-графу заявки (<c>FinanceExtensions.CalculateClaimBalance</c>, помечен
-/// <c>[Obsolete]</c>). Замена — расчёт поверх агрегата персонажа (ADR013), как это уже сделано на
-/// странице комнат; до тех пор страница «Поселение» держит EF-сущности.
+/// Нерасселённые считаются по доменным снимкам (ADR013, ADR022), как и на странице комнат.
+/// Строка заявок без типа проживания пока считает по EF-графу заявки
+/// (<c>FinanceExtensions.CalculateClaimBalance</c>, помечен <c>[Obsolete]</c>).
 /// </remarks>
 internal static class AccommodationClaimCounters
 {
     public static int CountPaid(IEnumerable<Claim> claims, ProjectInfo projectInfo)
         => claims.Count(claim => claim.CalculateClaimBalance(projectInfo).IsPaid);
+
+    /// <summary>
+    /// Сколько заявок нерасселённых групп оплачено полностью — по типам проживания групп.
+    /// </summary>
+    /// <remarks>
+    /// Состав и тип группы берутся из плана, взнос (с проживанием — <c>ClaimFinanceInfo.AccommodationFee</c>)
+    /// — из снимка заявки. Заявка, снимка которой нет среди <paramref name="characters"/>, не считается.
+    /// </remarks>
+    public static IReadOnlyDictionary<AccommodationTypeIdentification, int> CountUnsettledPaid(
+        IEnumerable<RoomCategoryPlan> plans,
+        IEnumerable<CharacterInfo> characters)
+    {
+        var claims = characters
+            .SelectMany(character => character.Claims.Select(claim => new ClaimInCharacter(character, claim)))
+            .ToDictionary(claim => claim.ClaimId);
+
+        return plans
+            .SelectMany(plan => plan.UnassignedGroups)
+            .GroupBy(group => group.AccommodationTypeId)
+            .ToDictionary(
+                byType => byType.Key,
+                byType => byType
+                    .SelectMany(group => group.Subjects)
+                    .Count(claimId => claims.TryGetValue(claimId, out var claim) && claim.CalculateBalance().IsPaid));
+    }
 }

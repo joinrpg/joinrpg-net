@@ -35,18 +35,6 @@ public interface IClaimsRepository : IDisposable
     Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId);
 
     /// <summary>
-    /// Заявки проекта, у которых тип проживания выбран, а комната ещё не назначена
-    /// («нерасселённые»), вместе с данными для расчёта баланса.
-    /// </summary>
-    /// <remarks>
-    /// Фильтра по статусу нет намеренно — ровно так же считала страница «Поселение», когда обходила
-    /// <c>ProjectAccommodationType.Desirous</c>: отклонённая заявка выбывает из группы проживания
-    /// сама (<c>ClaimServiceImpl.ConsiderLeavingRoom</c>), так что фильтр ничего бы не изменил, а
-    /// заявке «на удержании» место в номере по-прежнему числится.
-    /// </remarks>
-    Task<IReadOnlyCollection<Claim>> GetUnsettledAccommodationClaims(ProjectIdentification projectId);
-
-    /// <summary>
     /// Заявки проекта ровно в статусе <see cref="ClaimStatus.Approved"/>, не состоящие ни в одной
     /// группе проживающих, — кандидаты «ещё не выбрал тип проживания» для виджета приглашений.
     /// </summary>

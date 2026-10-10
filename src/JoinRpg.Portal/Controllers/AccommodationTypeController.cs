@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Accommodation;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
@@ -25,6 +26,7 @@ public class AccommodationTypeController(
     IAccommodationTypeService accommodationTypeService,
     IRoomCategoryPlanRepository roomCategoryPlanRepository,
     IClaimsRepository claimsRepository,
+    ICharacterInfoRepository characterInfoRepository,
     IProjectMetadataRepository projectMetadataRepository,
     RoomTypeRoomsViewService roomTypeRoomsViewService,
     ICurrentUserAccessor currentUserAccessor) : Common.JoinControllerGameBase
@@ -47,10 +49,21 @@ public class AccommodationTypeController(
             return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
         }
 
+        var plans = await roomCategoryPlanRepository.GetAllPlans(projectId);
+
+        // Нерасселённые — по планам, их взносы — по снимкам персонажей одной выборкой на страницу (ADR022).
+        var unsettledClaimIds = plans
+            .SelectMany(plan => plan.UnassignedGroups)
+            .SelectMany(group => group.Subjects)
+            .ToList();
+        var unsettledCharacters = unsettledClaimIds.Count == 0
+            ? []
+            : await characterInfoRepository.GetCharacterInfosByClaims(unsettledClaimIds);
+
         return View(new AccommodationListViewModel(project,
-            await roomCategoryPlanRepository.GetAllPlans(projectId),
+            plans,
             await claimsRepository.GetClaimsForRoomType(projectId, ClaimStatusSpec.Active, roomTypeId: null),
-            await claimsRepository.GetUnsettledAccommodationClaims(projectId),
+            unsettledCharacters,
             currentUserAccessor));
     }
 
