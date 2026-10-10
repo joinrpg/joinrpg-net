@@ -14,7 +14,9 @@ public static class DailyJobRegistration
         _ = services
             .AddDailyJob<UpdatePaymentStatusJob>()
             ;
-        services.AddDailyJob<PerformRecurrentPaymentMidnightJob>();
+        // PerformRecurrentPaymentMidnightJob намеренно не регистрируется (DRP #5459): она никогда не работала,
+        // а после восстановления из старого бэкапа могла бы повторно списать деньги. Без регистрации её нет
+        // ни в расписании, ни на /Admin/Jobs. Код джобы и рекуррентных платежей сохранён.
         services.AddDailyJob<EnsureRolesListsJob>();
     }
 }
