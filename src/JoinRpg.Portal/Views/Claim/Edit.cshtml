@@ -223,138 +223,142 @@
                        param-SensitiveDataRequired="Model.SensitiveDataRequired" />
         }
 
-        <div class="panel panel-default collapse" id="approveClaimActionPanel">
+        @* Панели мастерских действий — при тех же условиях, что и кнопки, которые их раскрывают. *@
+        @if (Model.CanManageThisClaim && Model.ProjectActive)
+        {
+            <div class="panel panel-default collapse" id="approveClaimActionPanel">
 
-            <div class="panel-heading">Принятие заявки</div>
-            <div class="panel-body">
-                @if (Model.HasBlockingOtherClaimsForThisCharacter)
-                {
-                    <div class="alert alert-danger">
-                        Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @Html.ActionLink("заявки от других игроков", "Details", "Character",
-new { Model.CharacterId, Model.ProjectId }, null)
-                        или переведите их на другого персонажа или в группу.
-                    </div>
-                }
-                else
-                {
-                    if (Model.OtherClaimsFromThisPlayerCount > 0)
+                <div class="panel-heading">Принятие заявки</div>
+                <div class="panel-body">
+                    @if (Model.HasBlockingOtherClaimsForThisCharacter)
                     {
-                        <div class="alert alert-warning">
-                            Также этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-new { Model.ProjectId, Model.Player.UserId }, null).
-                            Если принять эту заявку, другие автоматически будут отклонены.
+                        <div class="alert alert-danger">
+                            Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @Html.ActionLink("заявки от других игроков", "Details", "Character",
+    new { Model.CharacterId, Model.ProjectId }, null)
+                            или переведите их на другого персонажа или в группу.
                         </div>
                     }
-                    <form asp-action="ApproveByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-                        @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
-               {
-                 ActionName = "Принять заявку",
-                 CommentText = "Добро пожаловать"
-               })
-                        <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
-                    </form>
-                }
-            </div>
-        </div>
-
-        <div class="panel panel-default collapse" id="holdClaimActionPanel">
-
-            <div class="panel-heading">Перенос заявки в лист ожидания</div>
-            <div class="panel-body">
-                <div class="alert alert-info">
-                    Заявка в листе ожидания ждет освобождения какой-то роли или другого события.
-                </div>
-                <form asp-action="OnHoldByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-                    @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
-            {
-            ActionName = "В лист ожидания"
-            })
-                </form>
-            </div>
-        </div>
-
-        <div class="panel panel-default collapse" id="declineClaimActionPanel">
-
-            <div class="panel-heading">Отклонение заявки</div>
-            <div class="panel-body">
-                <form asp-action="DeclineByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-
-                    @await Html.PartialAsync("MasterDenialOperationPartial", new MasterDenialOperationViewModel
-            {
-            ClaimStatus = Model.Status.ClaimStatus,
-            CharacterAutoCreated = Model.CharacterAutoCreated,
-            ActionName = "Отклонить заявку"
-            })
-                </form>
-            </div>
-        </div>
-
-        <div class="panel panel-default collapse" id="moveClaimActionPanel">
-            <div class="panel-heading">Перемещение заявки</div>
-            <div class="panel-body">
-
-                <form asp-action="Move" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-
-                    @await Html.PartialAsync("MoveClaimOperationPartial", new MoveClaimOperationViewModel
-            {
-              IsAlreadyAccepted = Model.Status.IsAlreadyApproved(),
-              ProjectId = Model.ProjectId,
-              CurrentCharacterId = Model.CharacterId,
-              CanAcceptAfter = Model.CanManageThisClaim && Model.ProjectActive && Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready,
-            })
-                </form>
-            </div>
-        </div>
-
-        <div class="panel panel-default collapse" id="restoreClaimActionPanel">
-            <div class="panel-heading">Восстановление заявки</div>
-            <div class="panel-body">
-
-                @if (Model.RestoreBlockedByOtherApprovedClaim)
-                {
-                    <div class="alert alert-danger">
-                        У этого игрока уже принята @Html.ActionLink("другая заявка", "ForPlayer", "ClaimList",
-                   new { Model.ProjectId, Model.Player.UserId }, null)
-                        на этот проект, а в нём можно играть только одного персонажа. Отклоните её, прежде чем восстанавливать эту.
-                    </div>
-                }
-                else
-                {
-                    <form asp-action="RestoreByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-
-                        @if (Model.HasOtherApprovedClaim)
+                    else
+                    {
+                        if (Model.OtherClaimsFromThisPlayerCount > 0)
                         {
                             <div class="alert alert-warning">
-                                На этого персонажа есть другие утвержденные @Html.ActionLink("заявки от других игроков", "Details", "Character",
-new { Model.CharacterId, Model.ProjectId }, null)
-                                Вам необходимо выбрать, куда перенести эту заявку.
+                                Также этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
+    new { Model.ProjectId, Model.Player.UserId }, null).
+                                Если принять эту заявку, другие автоматически будут отклонены.
                             </div>
-                            @* RestoreByMaster переводит заявку в AddedByMaster, так что она не утверждена и слоты допустимы. *@
-                            @(await Html.RenderComponentAsync<AvailClaimTargets>(RenderMode.WebAssembly, new {
-                                ProjectId = new ProjectIdentification(Model.ProjectId),
-                                CurrentCharacterId = new CharacterIdentification(Model.ProjectId, Model.CharacterId),
-                                ClaimIsApproved = false,
-                            }))
                         }
-                        else
-                        {
-                            if (Model.CharacterActive == false)
-                            {
-                                <div class="alert alert-info">
-                                    Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
-                                </div>
-                            }
-                            @Html.HiddenFor(model => model.CharacterId)
-                        }
-                        @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
-              {
-              ActionName = "Восстановить заявку"
-              })
-                    </form>
-                }
-
+                        <form asp-action="ApproveByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+                            @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+                   {
+                     ActionName = "Принять заявку",
+                     CommentText = "Добро пожаловать"
+                   })
+                            <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
+                        </form>
+                    }
+                </div>
             </div>
-        </div>
+
+            <div class="panel panel-default collapse" id="holdClaimActionPanel">
+
+                <div class="panel-heading">Перенос заявки в лист ожидания</div>
+                <div class="panel-body">
+                    <div class="alert alert-info">
+                        Заявка в листе ожидания ждет освобождения какой-то роли или другого события.
+                    </div>
+                    <form asp-action="OnHoldByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+                        @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+                {
+                ActionName = "В лист ожидания"
+                })
+                    </form>
+                </div>
+            </div>
+
+            <div class="panel panel-default collapse" id="declineClaimActionPanel">
+
+                <div class="panel-heading">Отклонение заявки</div>
+                <div class="panel-body">
+                    <form asp-action="DeclineByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+
+                        @await Html.PartialAsync("MasterDenialOperationPartial", new MasterDenialOperationViewModel
+                {
+                ClaimStatus = Model.Status.ClaimStatus,
+                CharacterAutoCreated = Model.CharacterAutoCreated,
+                ActionName = "Отклонить заявку"
+                })
+                    </form>
+                </div>
+            </div>
+
+            <div class="panel panel-default collapse" id="moveClaimActionPanel">
+                <div class="panel-heading">Перемещение заявки</div>
+                <div class="panel-body">
+
+                    <form asp-action="Move" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+
+                        @await Html.PartialAsync("MoveClaimOperationPartial", new MoveClaimOperationViewModel
+                {
+                  IsAlreadyAccepted = Model.Status.IsAlreadyApproved(),
+                  ProjectId = Model.ProjectId,
+                  CurrentCharacterId = Model.CharacterId,
+                  CanAcceptAfter = Model.CanManageThisClaim && Model.ProjectActive && Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready,
+                })
+                    </form>
+                </div>
+            </div>
+
+            <div class="panel panel-default collapse" id="restoreClaimActionPanel">
+                <div class="panel-heading">Восстановление заявки</div>
+                <div class="panel-body">
+
+                    @if (Model.RestoreBlockedByOtherApprovedClaim)
+                    {
+                        <div class="alert alert-danger">
+                            У этого игрока уже принята @Html.ActionLink("другая заявка", "ForPlayer", "ClaimList",
+                       new { Model.ProjectId, Model.Player.UserId }, null)
+                            на этот проект, а в нём можно играть только одного персонажа. Отклоните её, прежде чем восстанавливать эту.
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-action="RestoreByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+
+                            @if (Model.HasOtherApprovedClaim)
+                            {
+                                <div class="alert alert-warning">
+                                    На этого персонажа есть другие утвержденные @Html.ActionLink("заявки от других игроков", "Details", "Character",
+    new { Model.CharacterId, Model.ProjectId }, null)
+                                    Вам необходимо выбрать, куда перенести эту заявку.
+                                </div>
+                                @* RestoreByMaster переводит заявку в AddedByMaster, так что она не утверждена и слоты допустимы. *@
+                                @(await Html.RenderComponentAsync<AvailClaimTargets>(RenderMode.WebAssembly, new {
+                                    ProjectId = new ProjectIdentification(Model.ProjectId),
+                                    CurrentCharacterId = new CharacterIdentification(Model.ProjectId, Model.CharacterId),
+                                    ClaimIsApproved = false,
+                                }))
+                            }
+                            else
+                            {
+                                if (Model.CharacterActive == false)
+                                {
+                                    <div class="alert alert-info">
+                                        Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
+                                    </div>
+                                }
+                                @Html.HiddenFor(model => model.CharacterId)
+                            }
+                            @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+                  {
+                  ActionName = "Восстановить заявку"
+                  })
+                        </form>
+                    }
+
+                </div>
+            </div>
+        }
     </div>
 
     @if (Model.ClaimFee.HasSubmittablePaymentTypes)
