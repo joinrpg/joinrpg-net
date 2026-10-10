@@ -55,10 +55,9 @@ public class ClaimFeeViewModel
         HasMasterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
         HasFeeAdminAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney);
 
-        PaymentTypes = GetAvailablePaymentTypes(
-            projectInfo,
-            new UserIdentification(currentUserId),
-            canUseAnyPaymentType: HasFeeAdminAccess || model.IsMyClaim);
+        PaymentTypes = [.. projectInfo
+            .GetAvailablePaymentTypesForUser(new UserIdentification(currentUserId), new UserIdentification(claim.PlayerUserId))
+            .Select(pt => new PaymentTypeViewModel(pt))];
 
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
         PreferentialFeeUser = claim.PreferentialFeeUser;
@@ -209,22 +208,6 @@ public class ClaimFeeViewModel
     /// Способы оплаты, которые текущий пользователь может выбрать в этой заявке.
     /// </summary>
     public IReadOnlyCollection<PaymentTypeViewModel> PaymentTypes { get; }
-
-    /// <summary>
-    /// Включённые способы оплаты проекта, доступные пользователю в заявке.
-    /// </summary>
-    /// <param name="canUseAnyPaymentType">
-    /// Финансовый мастер проекта или сам игрок заявки: им доступны все способы (оплата игрока уйдёт
-    /// на модерацию). Прочим мастерам — только их собственные: они отмечают деньги, полученные лично.
-    /// </param>
-    public static IReadOnlyCollection<PaymentTypeViewModel> GetAvailablePaymentTypes(
-        ProjectInfo projectInfo,
-        UserIdentification currentUserId,
-        bool canUseAnyPaymentType)
-        => [.. projectInfo.ProjectFinanceSettings.PaymentTypes
-            .Where(pt => pt.Enabled)
-            .Where(pt => canUseAnyPaymentType || pt.User.UserId == currentUserId)
-            .Select(pt => new PaymentTypeViewModel(pt))];
 
     /// <summary>
     /// true if online payment enabled

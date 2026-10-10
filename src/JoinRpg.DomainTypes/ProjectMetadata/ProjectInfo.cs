@@ -156,6 +156,23 @@ public record class ProjectInfo
     }
 
     /// <summary>
+    /// Включённые способы оплаты, которыми пользователь может отметить оплату по заявке игрока.
+    /// </summary>
+    /// <remarks>
+    /// Финансовому мастеру проекта и самому игроку заявки доступны все способы (оплата игрока уйдёт
+    /// на модерацию). Прочим мастерам — только их собственные: они отмечают деньги, полученные лично.
+    /// </remarks>
+    public IReadOnlyCollection<PaymentTypeInfo> GetAvailablePaymentTypesForUser(
+        UserIdentification userId,
+        UserIdentification claimPlayerId)
+    {
+        var canUseAnyPaymentType = userId == claimPlayerId || HasMasterAccess(userId, Permission.CanManageMoney);
+        return [.. ProjectFinanceSettings.PaymentTypes
+            .Where(pt => pt.Enabled)
+            .Where(pt => canUseAnyPaymentType || pt.User.UserId == userId)];
+    }
+
+    /// <summary>
     /// Мастера, которых можно показать этому пользователю (ADR019, §3): мастеру проекта — все действующие,
     /// остальным, включая анонима, — только публичные. Порядок — как в <see cref="Masters"/>.
     /// </summary>
