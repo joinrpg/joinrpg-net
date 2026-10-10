@@ -11,6 +11,10 @@ internal class RoomTypeEditClient(HttpClient httpClient, CsrfTokenProvider csrfT
             $"webapi/room-type/get?projectId={roomTypeId.ProjectId.Value}&roomTypeId={roomTypeId.AccommodationTypeId}")
             ?? throw new Exception("Couldn't get result from server");
 
+    public async Task<RoomTypeEditViewModel> GetNewRoomType(ProjectIdentification projectId)
+        => await httpClient.GetFromJsonAsync<RoomTypeEditViewModel>($"webapi/room-type/new?projectId={projectId.Value}")
+            ?? throw new Exception("Couldn't get result from server");
+
     public Task CreateRoomType(ProjectIdentification projectId, RoomTypeEditViewModel model)
         => Post($"webapi/room-type/create?projectId={projectId.Value}", model);
 

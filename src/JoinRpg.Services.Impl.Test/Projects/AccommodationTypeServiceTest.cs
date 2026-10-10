@@ -85,6 +85,77 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
         created.RoomCategoryId.ShouldBe(category.Id);
     }
 
+    /// <summary>Тип, созданный в существующей категории, делит её комнаты с её типами (ADR020).</summary>
+    [Fact]
+    public async Task CreateAccommodationType_InExistingCategory_SharesIt()
+    {
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        mock.ReInitProjectInfo();
+        var luxCategoryId = new RoomCategoryIdentification(ProjectId, lux.RoomCategoryId);
+
+        await CreateService().CreateAccommodationType(
+            ProjectId,
+            new AccommodationTypeRequest("Люкс на одного", new MarkdownString(""), Cost: 0, Capacity: 1, IsPlayerSelectable: true),
+            new ExistingRoomCategory(luxCategoryId));
+
+        Result.AccommodationSettings.RoomCategories.ShouldHaveSingleItem().Id.ShouldBe(luxCategoryId);
+        Result.AccommodationSettings.GetTypesOfCategory(luxCategoryId).Select(type => type.Name)
+            .ShouldBe(["Люкс", "Люкс на одного"], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task CreateAccommodationType_WithNewNamedCategory_UsesThatName()
+    {
+        await CreateService().CreateAccommodationType(
+            ProjectId,
+            new AccommodationTypeRequest("Люкс с пятницы", new MarkdownString(""), Cost: 0, Capacity: 2, IsPlayerSelectable: true),
+            new NewRoomCategory("Люкс"));
+
+        Result.AccommodationSettings.RoomCategories.ShouldHaveSingleItem().Name.ShouldBe("Люкс");
+    }
+
+    [Fact]
+    public async Task CreateAccommodationType_InUnknownCategory_Throws()
+    {
+        _ = await Should.ThrowAsync<RoomCategoryNotFoundException>(() => CreateService().CreateAccommodationType(
+            ProjectId,
+            new AccommodationTypeRequest("Домик", new MarkdownString(""), Cost: 0, Capacity: 1, IsPlayerSelectable: true),
+            new ExistingRoomCategory(new RoomCategoryIdentification(ProjectId, 100500))));
+
+        mock.AccommodationTypes.ShouldBeEmpty();
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task CreateAccommodationType_InCategoryOfAnotherProject_Throws()
+    {
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        mock.ReInitProjectInfo();
+
+        // Число категории то же, проект другой — категорию чужого проекта не найти.
+        _ = await Should.ThrowAsync<RoomCategoryNotFoundException>(() => CreateService().CreateAccommodationType(
+            ProjectId,
+            new AccommodationTypeRequest("Люкс на одного", new MarkdownString(""), Cost: 0, Capacity: 1, IsPlayerSelectable: true),
+            new ExistingRoomCategory(new RoomCategoryIdentification(new ProjectIdentification(ProjectId.Value + 1), lux.RoomCategoryId))));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>У общей категории имя своё, переименование одного из её типов его не трогает.</summary>
+    [Fact]
+    public async Task UpdateAccommodationType_InSharedCategory_KeepsCategoryName()
+    {
+        var lux = mock.CreateAccommodationType("Люкс", capacity: 2);
+        _ = mock.CreateAccommodationType("Люкс на одного", capacity: 1, roomCategory: lux.RoomCategory);
+        mock.ReInitProjectInfo();
+
+        await CreateService().UpdateAccommodationType(
+            new AccommodationTypeIdentification(ProjectId, lux.Id),
+            new AccommodationTypeRequest("Люкс на двоих", new MarkdownString(""), Cost: 0, Capacity: 2, IsPlayerSelectable: true));
+
+        Result.AccommodationSettings.RoomCategories.ShouldHaveSingleItem().Name.ShouldBe("Люкс");
+    }
+
     [Fact]
     public async Task CreateAccommodationType_WithoutPermission_Throws()
     {

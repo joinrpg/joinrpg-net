@@ -25,48 +25,72 @@ internal class AccommodationTypeService(
     /// <inheritdoc />
     public async Task<AccommodationTypeIdentification> CreateAccommodationType(
         ProjectIdentification projectId,
-        AccommodationTypeRequest request)
+        AccommodationTypeRequest request,
+        RoomCategorySelection? roomCategory = null)
     {
         var entity = await projectPropsService.ChangeProjectProperties(
             projectId,
             Permission.CanManageAccommodation,
             ProjectActiveRequirement.MustBeActive,
-            request,
+            (Request: request, RoomCategory: roomCategory ?? new NewRoomCategory(request.Name)),
             ctx =>
             {
-                // Каждый новый тип пока получает свою категорию комнат с тем же именем — выбор
-                // существующей категории появится вместе с формой (ADR020, PR 3).
-                var category = new ProjectRoomCategory
+                var category = ctx.Request.RoomCategory switch
                 {
-                    ProjectId = ctx.Project.ProjectId,
-                    Project = ctx.Project,
-                    Name = ServiceValidation.Required(ctx.Request.Name),
-                    Rooms = [],
-                    AccommodationTypes = [],
+                    ExistingRoomCategory existing => GetRoomCategoryForChange(ctx, existing.Id),
+                    NewRoomCategory created => CreateRoomCategory(ctx, created.Name),
+                    _ => throw new ArgumentOutOfRangeException(nameof(roomCategory)),
                 };
-                ctx.Project.ProjectRoomCategories.Add(category);
 
                 var entity = new ProjectAccommodationType
                 {
                     ProjectId = ctx.Project.ProjectId,
                     Project = ctx.Project,
                     RoomCategory = category,
+                    // У новой категории Id ещё нет (0) — его проставит EF при сохранении по навигации.
+                    RoomCategoryId = category.Id,
                     Desirous = [],
                 };
-                category.AccommodationTypes.Add(entity);
+                // Коллекцию типов категории не трогаем: у существующей категории она не загружена,
+                // и обращение к ней — ленивая загрузка. Связь держат навигация и RoomCategoryId.
                 Apply(
                     entity,
-                    ctx.Request.Name,
-                    ctx.Request.Description,
-                    ctx.Request.Cost,
-                    ctx.Request.Capacity,
-                    ctx.Request.IsPlayerSelectable);
+                    ctx.Request.Request.Name,
+                    ctx.Request.Request.Description,
+                    ctx.Request.Request.Cost,
+                    ctx.Request.Request.Capacity,
+                    ctx.Request.Request.IsPlayerSelectable);
                 ctx.Project.ProjectAccommodationTypes.Add(entity);
                 return entity;
             });
 
         // Id генерируется базой при SaveChanges — читаем уже после возврата из props-сервиса.
         return entity.GetId();
+    }
+
+    private static ProjectRoomCategory CreateRoomCategory(ProjectMutationContext ctx, string name)
+    {
+        var category = new ProjectRoomCategory
+        {
+            ProjectId = ctx.Project.ProjectId,
+            Project = ctx.Project,
+            Name = ServiceValidation.Required(name),
+            Rooms = [],
+            AccommodationTypes = [],
+        };
+        ctx.Project.ProjectRoomCategories.Add(category);
+        return category;
+    }
+
+    private static ProjectRoomCategory GetRoomCategoryForChange(ProjectMutationContext ctx, RoomCategoryIdentification id)
+    {
+        // Категория чужого проекта сюда не попадёт: ищем только среди категорий этого проекта.
+        if (id.ProjectId != ctx.ProjectInfo.ProjectId)
+        {
+            throw new RoomCategoryNotFoundException(id);
+        }
+        return ctx.Project.ProjectRoomCategories.SingleOrDefault(c => c.Id == id.RoomCategoryId)
+            ?? throw new RoomCategoryNotFoundException(id);
     }
 
     /// <inheritdoc />
@@ -85,9 +109,11 @@ internal class AccommodationTypeService(
                 // Категория, созданная вместе с типом, носит его имя (ADR020): пока имена совпадают,
                 // переименование типа переименовывает и её — иначе письма о заселении (они
                 // называют комнату по категории) остались бы со старым именем. Имя, которое
-                // мастер дал категории отдельно, не трогаем.
+                // мастер дал категории отдельно, не трогаем, и общую с другими типами — тоже.
                 var category = ctx.Project.ProjectRoomCategories.Single(c => c.Id == entity.RoomCategoryId);
-                if (category.Name == entity.Name)
+                var isOnlyTypeOfCategory = !ctx.Project.ProjectAccommodationTypes
+                    .Any(type => type.RoomCategoryId == entity.RoomCategoryId && type.Id != entity.Id);
+                if (isOnlyTypeOfCategory && category.Name == entity.Name)
                 {
                     category.Name = ServiceValidation.Required(ctx.Request.Request.Name);
                 }

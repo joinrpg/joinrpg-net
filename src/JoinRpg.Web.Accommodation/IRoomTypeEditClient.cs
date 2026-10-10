@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Accommodation;
 /// (бесконечное поселение, автозаполнение) здесь нет: в форме они не показываются, а сервис их
 /// не принимает (см. <c>AccommodationTypeInfo.IsInfinite</c>).
 /// </remarks>
-public class RoomTypeEditViewModel
+public class RoomTypeEditViewModel : IValidatableObject
 {
     /// <summary>
     /// Разумный максимум мест в одном номере: больше похоже на опечатку, а не на настоящий номер.
@@ -45,7 +45,54 @@ public class RoomTypeEditViewModel
     /// </summary>
     [Display(Name = "Описание")]
     public string Description { get; set; } = "";
+
+    /// <summary>
+    /// Новая категория комнат или существующая — выбирается только при создании типа (ADR020):
+    /// перенос типа в другую категорию означал бы переселение его жильцов.
+    /// </summary>
+    [Display(Name = "Категория комнат")]
+    public RoomCategoryChoice RoomCategoryChoice { get; set; } = RoomCategoryChoice.New;
+
+    /// <summary>Название новой категории; пустое — категория получит имя типа</summary>
+    [Display(Name = "Название новой категории")]
+    public string? NewRoomCategoryName { get; set; }
+
+    [Display(Name = "Категория")]
+    public int? ExistingRoomCategoryId { get; set; }
+
+    /// <summary>Категории проекта — справочно, для выбора существующей</summary>
+    public IReadOnlyList<RoomCategoryOptionViewModel> RoomCategories { get; set; } = [];
+
+    /// <summary>
+    /// Категория уже созданного типа — справочно; при создании <c>null</c>. Её
+    /// <see cref="RoomCategoryOptionViewModel.TypeNames"/> — только соседние типы, без самого изменяемого.
+    /// </summary>
+    public RoomCategoryOptionViewModel? RoomCategory { get; set; }
+
+    /// <inheritdoc />
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (RoomCategoryChoice == RoomCategoryChoice.Existing && ExistingRoomCategoryId is null)
+        {
+            yield return new ValidationResult(
+                "Выберите категорию комнат или заведите новую",
+                [nameof(ExistingRoomCategoryId)]);
+        }
+    }
 }
+
+/// <summary>Как выбрать категорию комнат для нового типа проживания (ADR020)</summary>
+public enum RoomCategoryChoice
+{
+    New,
+    Existing,
+}
+
+/// <summary>Категория комнат в форме типа проживания</summary>
+/// <param name="Id">Номер категории в проекте</param>
+/// <param name="Name">Название категории</param>
+/// <param name="TypeNames">Типы проживания, которые уже селятся из этой категории</param>
+public record RoomCategoryOptionViewModel(int Id, string Name, IReadOnlyList<string> TypeNames);
 
 /// <summary>
 /// Создание и изменение типа проживания мастером.
@@ -58,6 +105,9 @@ public interface IRoomTypeEditClient
 {
     /// <summary>Текущие параметры типа проживания для формы изменения</summary>
     Task<RoomTypeEditViewModel> GetRoomType(AccommodationTypeIdentification roomTypeId);
+
+    /// <summary>Пустая форма нового типа — со списком категорий комнат проекта</summary>
+    Task<RoomTypeEditViewModel> GetNewRoomType(ProjectIdentification projectId);
 
     /// <summary>Создать тип проживания</summary>
     Task CreateRoomType(ProjectIdentification projectId, RoomTypeEditViewModel model);

@@ -25,6 +25,58 @@ else
                     <JoinTextInput @bind-Value="model.Name" />
                 </FormRowFor>
 
+                @if (RoomTypeId is null)
+                {
+                    @* Категория выбирается один раз, при создании: перенос типа в другую категорию
+                       означал бы переселение его жильцов (ADR020, §4). *@
+                    <FormRowFor For="@(() => model.RoomCategoryChoice)">
+                        <InputRadioGroup @bind-Value="model.RoomCategoryChoice">
+                            <div class="radio">
+                                <label>
+                                    <InputRadio Value="RoomCategoryChoice.New" id="roomtype-category-new" />
+                                    Новая категория комнат
+                                </label>
+                            </div>
+                            <div style="margin-left: 20px;">
+                                <JoinTextInput @bind-Value="model.NewRoomCategoryName"
+                                               placeholder="Название категории (если пусто — как у типа)" />
+                            </div>
+                            @if (model.RoomCategories.Count > 0)
+                            {
+                                <div class="radio">
+                                    <label>
+                                        <InputRadio Value="RoomCategoryChoice.Existing" id="roomtype-category-existing" />
+                                        Существующая категория — комнаты будут общими с её типами
+                                    </label>
+                                </div>
+                                <div style="margin-left: 20px;">
+                                    <InputSelect @bind-Value="model.ExistingRoomCategoryId" class="form-control" id="roomtype-category-id">
+                                        <option value="">— выберите категорию —</option>
+                                        @foreach (var category in model.RoomCategories)
+                                        {
+                                            <option value="@category.Id">@CategoryTitle(category)</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => model.ExistingRoomCategoryId)" />
+                                </div>
+                            }
+                        </InputRadioGroup>
+                    </FormRowFor>
+                }
+                else if (model.RoomCategory is { } roomCategory)
+                {
+                    <FormRow Label="Категория комнат">
+                        <p class="form-control-static">
+                            @roomCategory.Name
+                            @if (roomCategory.TypeNames.Count > 0)
+                            {
+                                @* Пробел выражением: пробельный текст между тегами Blazor вырезает. *@
+                                @(" ")<span class="text-muted">(комнаты общие с: @string.Join(", ", roomCategory.TypeNames))</span>
+                            }
+                        </p>
+                    </FormRow>
+                }
+
                 <FormRowFor For="@(() => model.Cost)">
                     <JoinInputNumber @bind-Value="model.Cost"
                                      ParsingErrorMessage="Укажите цену за 1 место целым числом" />
@@ -73,8 +125,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        model ??= RoomTypeId is null ? new RoomTypeEditViewModel() : await Client.GetRoomType(RoomTypeId);
+        model ??= RoomTypeId is null ? await Client.GetNewRoomType(ProjectId) : await Client.GetRoomType(RoomTypeId);
     }
+
+    private static string CategoryTitle(RoomCategoryOptionViewModel category)
+        => category.TypeNames.Count > 0 ? $"{category.Name} ({string.Join(", ", category.TypeNames)})" : category.Name;
 
     private async Task OnSave()
     {

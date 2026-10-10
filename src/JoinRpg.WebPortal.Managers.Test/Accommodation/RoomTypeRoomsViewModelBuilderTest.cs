@@ -95,6 +95,19 @@ public class RoomTypeRoomsViewModelBuilderTest
     }
 
     [Fact]
+    public void EqualOccupancy_NumbersFirstThenOtherNames()
+    {
+        var type = CreateType("Двушка", capacity: 2);
+        var rooms = new[] { "1а", "10", "2", "Б" }
+            .Select((name, i) => new RoomInfo(RoomId(i + 1), name, []))
+            .ToArray();
+
+        var model = Build([type], rooms, []);
+
+        model.Rooms.Select(r => r.Name).ShouldBe(["2", "10", "1а", "Б"]);
+    }
+
+    [Fact]
     public void GroupFeesAreSummedAndOverpaymentIsNotDebt()
     {
         var type = CreateType("Шатёр", capacity: 4);
@@ -127,5 +140,54 @@ public class RoomTypeRoomsViewModelBuilderTest
         var groupModel = model.UnassignedGroups.ShouldHaveSingleItem();
         groupModel.TypeId.ShouldBe(single.Id);
         groupModel.TypeCapacity.ShouldBe(1);
+    }
+
+    [Fact]
+    public void SharedPool_LabelsGroupsWithTypeAndListsSiblings()
+    {
+        var lux = CreateType("Люкс", capacity: 2);
+        var single = CreateType("Люкс на одного", capacity: 1, mock.RoomCategories.Single());
+        lux = mock.ProjectInfo.AccommodationSettings.GetTypeById(lux.Id);
+        var own = Group(lux, 1, null, ("А", 0, 0));
+        var sibling = Group(single, 2, null, ("Б", 0, 0));
+
+        var model = Build([lux, single], [], [own, sibling]);
+
+        model.SiblingTypeNames.ShouldBe(["Люкс на одного"]);
+        model.UnassignedGroups.Single(g => g.GroupId == own.Id).TypeName.ShouldBe("Люкс");
+        model.UnassignedGroups.Single(g => g.GroupId == sibling.Id).TypeName.ShouldBe("Люкс на одного");
+    }
+
+    [Fact]
+    public void SingleTypePool_HasNoTypeLabels()
+    {
+        var type = CreateType("Двушка", capacity: 2);
+        var group = Group(type, 1, null, ("А", 0, 0));
+
+        var model = Build([type], [], [group]);
+
+        model.SiblingTypeNames.ShouldBeEmpty();
+        model.UnassignedGroups.ShouldHaveSingleItem().TypeName.ShouldBeNull();
+    }
+
+    [Fact]
+    public void RoomFilledBySmallerType_IsSortedAsFull()
+    {
+        // ADR018: «Люкс на одного» делает двухместную комнату полной, и она уходит в конец списка,
+        // хотя физически одна койка там свободна.
+        var lux = CreateType("Люкс", capacity: 2);
+        var single = CreateType("Люкс на одного", capacity: 1, mock.RoomCategories.Single());
+        lux = mock.ProjectInfo.AccommodationSettings.GetTypeById(lux.Id);
+        var loner = Group(single, 1, RoomId(1), ("А", 0, 0));
+        var half = Group(lux, 2, RoomId(2), ("Б", 0, 0));
+        var rooms = new[]
+        {
+            new RoomInfo(RoomId(1), "1", [loner]),
+            new RoomInfo(RoomId(2), "2", [half]),
+        };
+
+        var model = Build([lux, single], rooms, [loner, half]);
+
+        model.Rooms.Select(r => r.Name).ShouldBe(["2", "1"]);
     }
 }
