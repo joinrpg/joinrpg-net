@@ -332,7 +332,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         var kiGames = x.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull().ToList();
         return new ProjectShortInfo(
                     new(x.ProjectId),
-                    ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
+                    ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims, x.IsBlocked),
                     x.PublishPlot,
                     new(x.ProjectName),
                     x.ActiveClaimsCount,
@@ -357,6 +357,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
             IsAcceptingClaims = project.IsAcceptingClaims,
             PublishPlot = project.Details.PublishPlot,
             Active = project.Active,
+            IsBlocked = project.IsBlocked,
             LastUpdated = update.LastUpdated,
             ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
             KogdaIgraGames = project.KogdaIgraGames.Where(x => x.Active),
@@ -380,6 +381,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
                         project.IsAcceptingClaims,
                         project.Details.PublishPlot,
                         project.Active,
+                        project.IsBlocked,
                         IAmMaster = masterPredicate.Compile()(project),
                         HasMyClaims = claimPredicate.Compile()(project),
                         ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
@@ -391,7 +393,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
         return [.. result.Select(x => new ProjectPersonalizedInfo(
             new(x.ProjectId),
-            ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims),
+            ProjectLoaderCommon.CreateStatus(x.Active, x.IsAcceptingClaims, x.IsBlocked),
             x.PublishPlot,
             new(x.ProjectName),
             x.ActiveClaimsCount,
@@ -425,6 +427,7 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         public required bool IsAcceptingClaims { get; set; }
         public required bool PublishPlot { get; set; }
         public required bool Active { get; set; }
+        public required bool IsBlocked { get; set; }
         public required DateTime LastUpdated { get; set; }
         public required int ActiveClaimsCount { get; set; }
         public required IEnumerable<KogdaIgraGame> KogdaIgraGames { get; set; }

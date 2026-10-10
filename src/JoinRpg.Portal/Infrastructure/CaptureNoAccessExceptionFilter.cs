@@ -38,6 +38,7 @@ public class CaptureNoAccessExceptionFilter(IProjectMetadataRepository projectMe
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
             };
             viewResult.ViewData[Constants.ProjectIdName] = projectDeactivatedException.ProjectId.Value;
+            viewResult.ViewData["ProjectBlocked"] = projectDeactivatedException is ProjectBlockedException;
             filterContext.Result = viewResult;
         }
     }

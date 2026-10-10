@@ -11,6 +11,12 @@ public abstract class JoinRpgProjectException(ProjectIdentification projectId, s
 public class ProjectDeactivatedException(ProjectIdentification projectId)
     : JoinRpgProjectException(projectId, "This operation can\'t be performed on deactivated project.");
 
+/// <summary>
+/// Проект заблокирован на время восстановления данных (ADR023). Наследник <see cref="ProjectDeactivatedException"/>:
+/// всё, что ловит «проект неактивен», ловит и это, а страница ошибки показывает свой текст.
+/// </summary>
+public class ProjectBlockedException(ProjectIdentification projectId) : ProjectDeactivatedException(projectId);
+
 public class MasterHasResponsibleException(ProjectIdentification projectId, UserIdentification userId)
     : JoinRpgProjectException(projectId, "Cannot remove master that has groups attached to it.")
 {

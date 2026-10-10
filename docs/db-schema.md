@@ -96,6 +96,7 @@ erDiagram
         datetime CreatedDate
         bool Active
         bool IsAcceptingClaims
+        bool IsBlocked "заблокирован на время восстановления данных, ADR023"
         datetime CharacterTreeModifiedAt "obsolete, заменяется версией метаданных"
     }
 
