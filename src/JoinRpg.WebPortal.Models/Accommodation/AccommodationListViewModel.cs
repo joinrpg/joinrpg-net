@@ -130,10 +130,5 @@ public class UnassignedClaimsRowViewModel
 internal static class AccommodationClaimCounters
 {
     public static int CountPaid(IEnumerable<Claim> claims, ProjectInfo projectInfo)
-        => claims.Count(claim =>
-        {
-            var balance = claim.CalculateClaimBalance(projectInfo);
-            var status = FinanceExtensions.GetClaimPaymentStatus(balance.TotalFee, balance.FeePaid);
-            return status is ClaimPaymentStatus.Paid or ClaimPaymentStatus.Overpaid;
-        });
+        => claims.Count(claim => claim.CalculateClaimBalance(projectInfo).IsPaid);
 }

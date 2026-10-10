@@ -52,29 +52,6 @@ public static class FinanceExtensions
     }
 
     /// <summary>
-    /// Returns claim payment status from total fee and money balance
-    /// </summary>
-    public static ClaimPaymentStatus GetClaimPaymentStatus(int totalFee, int balance)
-    {
-        if (totalFee < balance)
-        {
-            return ClaimPaymentStatus.Overpaid;
-        }
-        else if (totalFee == balance)
-        {
-            return ClaimPaymentStatus.Paid;
-        }
-        else if (balance > 0)
-        {
-            return ClaimPaymentStatus.MoreToPay;
-        }
-        else
-        {
-            return ClaimPaymentStatus.NotPaid;
-        }
-    }
-
-    /// <summary>
     /// Returns total sum of all money flow operations
     /// </summary>
     public static int GetPaymentSum(this Claim claim)
