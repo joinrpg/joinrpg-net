@@ -53,8 +53,11 @@ internal static class Program
             .Select(u => u.UserId)
             .ToHashSet();
 
-        var adminUserIds = await notifications.GetAdminUserIds(ct);
-        Console.WriteLine($"Уведомления: получателей уведомлений админам {adminUserIds.Count}.");
+        // MSSQL знает админов на момент бэкапа, уведомления админам — назначенных позже (с 2026-08-23).
+        var mssqlAdmins = await mainDb.GetAdminUserIds(ct);
+        var notifiedAdmins = await notifications.GetAdminUserIds(ct);
+        var adminUserIds = mssqlAdmins.Union(notifiedAdmins).ToHashSet();
+        Console.WriteLine($"Админы: в MSSQL {mssqlAdmins.Count}, получателей уведомлений админам {notifiedAdmins.Count}, всего {adminUserIds.Count}.");
 
         var analyzer = new LostProjectAnalyzer(projects, users, virtualUserIds, adminUserIds, options.BackupMaxProjectId);
 

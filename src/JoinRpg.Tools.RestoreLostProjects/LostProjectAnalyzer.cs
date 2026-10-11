@@ -10,7 +10,7 @@ namespace JoinRpg.Tools.RestoreLostProjects;
 /// <param name="existingProjects">Проекты в восстановленной MSSQL: id → название.</param>
 /// <param name="existingUsers">Пользователи в MSSQL — чтобы сверить создателя и разрешить email из логов.</param>
 /// <param name="virtualUserIds">Робот и пользователь онлайн-платежей — не мастера.</param>
-/// <param name="adminUserIds">Получатели уведомлений админам — их действия в проекте не говорят, что они мастера.</param>
+/// <param name="adminUserIds">Админы (IsAdmin в MSSQL и получатели уведомлений админам) — их действия в проекте не говорят, что они мастера.</param>
 /// <param name="backupMaxProjectId">MAX(ProjectId) сразу после восстановления бэкапа.</param>
 internal sealed class LostProjectAnalyzer(
     IReadOnlyDictionary<int, string> existingProjects,

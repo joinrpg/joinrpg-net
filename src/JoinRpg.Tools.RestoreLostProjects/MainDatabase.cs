@@ -36,6 +36,22 @@ internal sealed class MainDatabase(string connectionString)
         return result;
     }
 
+    /// <summary>
+    /// Админы по восстановленной базе — то есть на момент бэкапа.
+    /// </summary>
+    public async Task<IReadOnlySet<int>> GetAdminUserIds(CancellationToken ct)
+    {
+        await using var connection = await Open(ct);
+        await using var command = new SqlCommand("SELECT UserId FROM dbo.UserAuthDetails WHERE IsAdmin = 1", connection);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        var result = new HashSet<int>();
+        while (await reader.ReadAsync(ct))
+        {
+            _ = result.Add(reader.GetInt32(0));
+        }
+        return result;
+    }
+
     private async Task<SqlConnection> Open(CancellationToken ct)
     {
         var connection = new SqlConnection(connectionString);
