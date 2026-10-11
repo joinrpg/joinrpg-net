@@ -58,7 +58,33 @@ public class MidnightJobBackgroundServiceTest
             provider,
             NullLogger<MidnightJobBackgroundService<SampleJob>>.Instance,
             new FakeLifetime(),
-            options);
+            options,
+            TimeProvider.System);
+    }
+
+    [Fact]
+    public void NextRunIsNextUtcMidnightPlusDelayAndJitter()
+    {
+        var now = new DateTimeOffset(2026, 5, 15, 13, 0, 0, TimeSpan.Zero);
+
+        var (dayOfRun, startAt) = MidnightJobBackgroundService<SampleJob>.GetNextRun(now, TimeSpan.FromHours(9), TimeSpan.FromSeconds(2));
+
+        dayOfRun.ShouldBe(new DateOnly(2026, 5, 16));
+        startAt.ShouldBe(new DateTimeOffset(2026, 5, 16, 9, 0, 2, TimeSpan.Zero));
+    }
+
+    [Theory]
+    [InlineData(3)] // Москва: местная дата уже сменилась, UTC — ещё нет
+    [InlineData(-5)] // западнее UTC: местная дата отстаёт от UTC
+    public void DayOfRunDoesNotDependOnLocalOffset(int offsetHours)
+    {
+        var utcNow = new DateTimeOffset(2026, 5, 15, 22, 30, 0, TimeSpan.Zero);
+        var localNow = utcNow.ToOffset(TimeSpan.FromHours(offsetHours));
+
+        var (dayOfRun, startAt) = MidnightJobBackgroundService<SampleJob>.GetNextRun(localNow, delay: null, TimeSpan.Zero);
+
+        dayOfRun.ShouldBe(new DateOnly(2026, 5, 16));
+        startAt.ShouldBe(new DateTimeOffset(2026, 5, 16, 0, 0, 5, TimeSpan.Zero));
     }
 
     [Fact]
