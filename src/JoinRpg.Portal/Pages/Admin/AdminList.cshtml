@@ -1,0 +1,12 @@
+@page "/admin/admins"
+@model JoinRpg.Portal.Pages.Admin.AdminListModel
+@{
+    ViewBag.Title = "Администраторы";
+}
+<h3>@ViewBag.Title</h3>
+<ul>
+    @foreach (var admin in Model.Admins)
+    {
+        <li><component type="typeof(UserLink)" param-Model="@admin" render-mode="Static" /></li>
+    }
+</ul>
