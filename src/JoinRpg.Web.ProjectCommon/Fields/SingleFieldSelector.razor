@@ -1,0 +1,33 @@
+<FieldSelector
+  ProjectId="@ProjectId"
+  SelectedFieldIds="@selectedIds"
+  SelectedFieldIdsChanged="HandleSelectedChanged"
+  Multiple="false"
+  AllowEmpty="@AllowEmpty"
+  EmptyText="@EmptyText"
+  FieldType="@FieldType"
+  BoundTo="@BoundTo"
+  />
+
+@code {
+    [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+    [Parameter] public ProjectFieldIdentification? SelectedFieldId { get; set; }
+    [Parameter] public EventCallback<ProjectFieldIdentification?> SelectedFieldIdChanged { get; set; }
+    [Parameter] public bool AllowEmpty { get; set; } = false;
+    [Parameter] public string EmptyText { get; set; } = "(нет)";
+    /// <inheritdoc cref="FieldSelector.FieldType"/>
+    [Parameter] public ProjectFieldType? FieldType { get; set; }
+    /// <inheritdoc cref="FieldSelector.BoundTo"/>
+    [Parameter] public FieldBoundTo? BoundTo { get; set; }
+
+    private ProjectFieldIdentification[] selectedIds = [];
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        selectedIds = SelectedFieldId is null ? [] : [SelectedFieldId];
+    }
+
+    private async Task HandleSelectedChanged(ProjectFieldIdentification[] values)
+        => await SelectedFieldIdChanged.InvokeAsync(values.Length == 0 ? null : values.Single());
+}

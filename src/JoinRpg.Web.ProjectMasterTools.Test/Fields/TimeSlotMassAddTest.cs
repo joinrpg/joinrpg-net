@@ -119,5 +119,7 @@ public class TimeSlotMassAddTest : BunitContext
         public Task SortTimeSlotsByStartTime(ProjectFieldIdentification fieldId) => throw new NotSupportedException();
         public Task SortVariantsByLabel(ProjectFieldIdentification fieldId) => throw new NotSupportedException();
         public Task CreateVariants(FieldValuesMassAddRequest request) => throw new NotSupportedException();
+        public Task<ProjectFieldSettingsViewModel> GetFieldSettings(ProjectIdentification projectId) => throw new NotSupportedException();
+        public Task SaveFieldSettings(ProjectFieldSettingsViewModel model) => throw new NotSupportedException();
     }
 }

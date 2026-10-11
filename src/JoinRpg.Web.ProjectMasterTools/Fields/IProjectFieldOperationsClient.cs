@@ -9,4 +9,6 @@ public interface IProjectFieldOperationsClient
     Task SortTimeSlotsByStartTime(ProjectFieldIdentification fieldId);
     Task SortVariantsByLabel(ProjectFieldIdentification fieldId);
     Task CreateVariants(FieldValuesMassAddRequest request);
+    Task<ProjectFieldSettingsViewModel> GetFieldSettings(ProjectIdentification projectId);
+    Task SaveFieldSettings(ProjectFieldSettingsViewModel model);
 }

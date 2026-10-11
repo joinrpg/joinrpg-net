@@ -1,0 +1,52 @@
+@using JoinRpg.Web.ProjectCommon.Fields
+@inherits SettingsPanelBase<ProjectFieldSettingsViewModel>
+@inject IProjectFieldOperationsClient fieldOperationsClient
+
+@if (Model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+<EditForm FormName="ProjectFieldSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+    <FormHorizontal>
+        <ValidationSummary />
+        <DataAnnotationsValidator />
+
+        <FormRowFor For="@(() => Model.NameField)">
+            <SingleFieldSelector ProjectId="Model.ProjectId"
+                                 @bind-SelectedFieldId="Model.NameField"
+                                 FieldType="ProjectFieldType.String"
+                                 BoundTo="FieldBoundTo.Character"
+                                 AllowEmpty="true"
+                                 EmptyText="Имя персонажа берется из имени игрока" />
+        </FormRowFor>
+
+        <FormRowFor For="@(() => Model.DescriptionField)">
+            <SingleFieldSelector ProjectId="Model.ProjectId"
+                                 @bind-SelectedFieldId="Model.DescriptionField"
+                                 FieldType="ProjectFieldType.Text"
+                                 BoundTo="FieldBoundTo.Character"
+                                 AllowEmpty="true"
+                                 EmptyText="Нет поля с описанием персонажа" />
+        </FormRowFor>
+
+        <FormRow>
+            <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
+        </FormRow>
+    </FormHorizontal>
+</EditForm>
+
+@if (success)
+{
+    <JoinAlert Variation="VariationStyleEnum.Success">Настройки полей сохранены</JoinAlert>
+}
+
+@code {
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    protected override Task<ProjectFieldSettingsViewModel> LoadModel() => fieldOperationsClient.GetFieldSettings(ProjectId);
+
+    protected override Task SaveModel(ProjectFieldSettingsViewModel model) => fieldOperationsClient.SaveFieldSettings(model);
+}
