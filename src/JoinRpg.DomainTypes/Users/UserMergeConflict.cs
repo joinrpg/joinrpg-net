@@ -1,3 +1,5 @@
+using JoinRpg.Helpers;
+
 namespace JoinRpg.DomainTypes.Users;
 
 /// <summary>
@@ -58,3 +60,13 @@ public record UserMergePreview(
 /// Сколько всего переедет с поглощаемого аккаунта — чтобы админ видел масштаб до подтверждения.
 /// </summary>
 public record UserMergeSecondaryStats(int Claims, int Comments, int MasterProjects);
+
+/// <summary>
+/// Слияние запрошено, хотя предпросмотр нашёл конфликты. Интерфейс до такого не доводит — это
+/// гонка (данные поменялись после предпросмотра) или обход интерфейса.
+/// </summary>
+public class UserMergeConflictException(UserMergePreview preview)
+    : JoinRpgBaseException($"Нельзя слить {preview.SecondaryUserId} в {preview.PrimaryUserId}: конфликтов {preview.Conflicts.Count}")
+{
+    public UserMergePreview Preview { get; } = preview;
+}
