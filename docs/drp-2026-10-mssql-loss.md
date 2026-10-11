@@ -193,7 +193,9 @@
       (`Active = 1`, `IsBlocked = 1`; `Active = 0` + `IsBlocked = 1` недопустимо — загрузка метаданных
       падает) — доменным созданием проекта с подменой счётчика ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491), PR [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509), [подробнее](#оболочки-проектов)). Запуск:
       `dotnet run --project src/JoinRpg.Tools.RestoreProjectShells -- --input <проверенный CSV> [--apply]`.
-- [ ] Вернуть счётчик `Projects` — повторный прогон `reseed-identities.sql`.
+- [ ] Повторный dry-run `RestoreProjectShells` — по всем строкам «да» «уже создан» (`AlreadyExists`).
+- [ ] Вернуть счётчик `Projects` — повторный прогон `reseed-identities.sql` с `@Apply = 1`; ожидается
+      `Restore [dbo].[Projects]: <id> -> 20000`.
 
 **Старт приложений за заглушкой**
 
