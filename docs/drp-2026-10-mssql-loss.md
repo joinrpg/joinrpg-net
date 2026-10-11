@@ -156,8 +156,10 @@
 
 **Конфиг** (`manifests/prod`, уходит одним деплоем с новым секретом в конце фазы 4)
 
-- [ ] 🟢 Выключить джобы ([#5470](https://github.com/joinrpg/joinrpg-net/issues/5470)): `DailyJobs__Disabled__0=ProjectPerformCloseJob`,
-      `__1=AdvertisementJob`, `__2=UpdatePaymentStatusJob` ([почему](#опасные-джобы)).
+- [ ] 🟢 Выключить джобы ([#5470](https://github.com/joinrpg/joinrpg-net/issues/5470)): `DailyJobs__Disabled__0=AdvertisementJob`,
+      `__1=UpdatePaymentStatusJob` ([почему](#опасные-джобы)). `ProjectPerformCloseJob` выключать
+      не нужно: заблокированные проекты он не выбирает ([#5482](https://github.com/joinrpg/joinrpg-net/issues/5482)), а майские блокируются в фазе 4
+      до старта подов.
 - [ ] 🟢 Баннер: `SiteBanner__Text` ([#5463](https://github.com/joinrpg/joinrpg-net/issues/5463)).
 - [x] ~~Рекуррентные платежи~~ — джоба выключена в коде ([#5464](https://github.com/joinrpg/joinrpg-net/issues/5464)).
 - [x] ~~MCP~~ — игнорируем, им никто не пользовался.
@@ -178,12 +180,14 @@
 
 **Проекты** (нужен статус «Заблокирован», [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473))
 
-- [ ] 🟡 Заблокировать все активные проекты майской базы — скрипт `scripts/incident-restore/block-projects.sql`
-      (PR 4 ADR023, [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473); статус влит, скрипта пока нет).
+- [ ] 🟢 Заблокировать все активные проекты майской базы (после миграций — колонка
+      `IsBlocked` появляется миграцией `AddProjectIsBlocked`, [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480)):
+      `UPDATE dbo.Projects SET IsBlocked = 1 WHERE Active = 1;`
 - [ ] 🟡 Список проектов, созданных после мая, — CSV на ручную проверку: id, название, создатель,
       источники ([#5479](https://github.com/joinrpg/joinrpg-net/issues/5479), PR [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485), [подробнее](#список-новых-проектов)).
-- [ ] 🟡 Оболочки этих проектов с прежним id, создателем и статусом «Заблокирован» — доменным
-      созданием проекта с подменой счётчика ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491), [подробнее](#оболочки-проектов)).
+- [ ] 🟡 Оболочки этих проектов с прежним id, создателем и статусом «Заблокирован»
+      (`Active = 1`, `IsBlocked = 1`; `Active = 0` + `IsBlocked = 1` недопустимо — загрузка метаданных
+      падает) — доменным созданием проекта с подменой счётчика ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491), [подробнее](#оболочки-проектов)).
 - [ ] Вернуть счётчик `Projects` — повторный прогон `reseed-identities.sql`.
 
 **Старт приложений за заглушкой**
@@ -210,11 +214,12 @@
 
 ### Фаза 6. 🚧 Открыть `joinrpg.ru`
 
-- [ ] На `joinrpg.tsarevs.ru`: снятие блокировки и закрытие заблокированного проекта, плашка и метки
-      ([#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) в браузере не проверялся).
-- [ ] На `joinrpg.tsarevs.ru`: заблокированный проект (плашка, изменения запрещены), оболочка
-      нового проекта, регистрация нового проекта, `/Admin/Jobs`.
-- [ ] Убрать `ProjectPerformCloseJob` из `DailyJobs__Disabled__*` (после [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473)).
+- [ ] На `joinrpg.tsarevs.ru` — блокировка ([#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) к этому моменту влит; в браузере ещё не
+      проверялся): заблокированный проект показывает плашку; изменение даёт страницу «Проект
+      заблокирован»; мастер может добавить мастера и править сетки ролей; «Снять блокировку»
+      (`/{projectId}/unblock`, кнопка в настройках) возвращает проект как был; «Закрыть» из
+      блокировки — в архив.
+- [ ] На `joinrpg.tsarevs.ru`: оболочка нового проекта, регистрация нового проекта, `/Admin/Jobs`.
 - [ ] Выключить заглушку для `joinrpg.ru`.
 
 ### Фазы 7–9 — по каждому проекту
@@ -267,8 +272,9 @@
 
 - [ ] Заблокированных проектов не осталось.
 - [ ] Отозвать временные `GRANT ALTER` на таблицы восстановления у логина приложения (фазы 7–9).
-- [ ] Включить джобы: `UpdatePaymentStatusJob` — после сверки с платёжным провайдером,
-      остальные — убрать из `DailyJobs__Disabled__*`.
+- [ ] Включить джобы: убрать из `DailyJobs__Disabled__*`. `UpdatePaymentStatusJob` заблокированные
+      проекты пропускает — включать, когда готова сверка с платёжным провайдером, независимо от
+      блокировок.
 - [ ] Снять баннер.
 - [ ] Убрать ingress служебных доменов из `manifests/prod` (деплой удалит их прунингом), TLS-секреты
       удалить вручную: `kubectl delete secret joinrpg-tsarevs-ru-tls id-joinrpg-tsarevs-ru-tls -n prod`.
@@ -411,8 +417,9 @@ Let's Encrypt в новом кластере (план инженеров). Дл
 ### Опасные джобы
 
 - `ProjectPerformCloseJob` — по майским датам все проекты «давно не обновлялись»: разошлёт
-  «проект скоро закроется» и **закроет** проекты. После [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) заблокированные проекты
-  игнорирует, поэтому включается в фазе 6.
+  «проект скоро закроется» и **закроет** проекты. Заблокированные проекты не выбирает
+  (`GetStaleProjects` фильтрует `IsBlocked`, [#5482](https://github.com/joinrpg/joinrpg-net/issues/5482)), поэтому выключать его не нужно — при
+  условии, что майские проекты заблокированы до старта подов (фаза 4).
 - `AdvertisementJob` — опубликует в Telegram-канал роли по майским данным.
 - `UpdatePaymentStatusJob` — опросит банк по майским незавершённым операциям и разошлёт письма
   об оплате.
@@ -560,6 +567,12 @@ IdPortal открывается раньше Portal: вход, «забыл па
   `CanChangeProjectProperties` или админ. Восстановление идёт только в заблокированном проекте —
   разблокировка последний шаг по проекту.
 - Джобы заблокированные проекты не выбирают (кроме `EnsureRolesListsJob` и разовых починок).
+- **Для текста мастерам:** в заблокированном проекте можно добавлять и убирать мастеров, править
+  сетки ролей и привязку к КогдаИгре, настраивать поля, снять блокировку или закрыть проект (мастер
+  с правом менять свойства проекта и админ). Нельзя всё остальное, включая комментарии, форум,
+  оплаты и подписки.
+- Инструменты восстановления вызывают `ChangeProjectProperties` / `ChangeClaim` с
+  `ProjectActiveRequirement.AllowBlocked`.
 - Открыто в [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473): дата последнего обновления при снятии блокировки — иначе
   `ProjectPerformCloseJob` сочтёт восстановленный проект давно не обновлявшимся (майские даты).
 
@@ -654,6 +667,10 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` (ingress) | 2 | влит |
 | [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | на ревью, замечания учтены, CI зелёный |
 | issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | заведён, есть открытые вопросы |
+| [#5478](https://github.com/joinrpg/joinrpg-net/issues/5478) | ADR023, PR 0: «не в архиве» и «можно менять» у статуса проекта | 4 | влит |
+| [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480) | ADR023, PR 1: `Project.IsBlocked`, статус «Заблокирован», запрет изменений | 4 | влит |
+| [#5482](https://github.com/joinrpg/joinrpg-net/issues/5482) | ADR023, PR 2: проверки в сервисах, фильтры джоб | 4 | влит |
+| [#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) | ADR023, PR 3: снятие блокировки, закрытие, плашка, метки | 6 | на ревью, CI зелёный |
 | issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | заведён |
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | заведён |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
