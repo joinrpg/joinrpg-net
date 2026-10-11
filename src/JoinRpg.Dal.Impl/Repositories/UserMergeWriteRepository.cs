@@ -1,4 +1,8 @@
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.SqlServer;
+using System.Text.Json;
 using JoinRpg.Data.Write.Interfaces;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Users;
 
 namespace JoinRpg.Dal.Impl.Repositories;
@@ -39,6 +43,8 @@ internal class UserMergeWriteRepository(MyDbContext ctx) : IUserMergeWriteReposi
         {
             await Execute(reference, $"UPDATE [{reference.Table}] SET [{reference.Column}] = @p0 WHERE [{reference.Column}] = @p1");
         }
+
+        await ReplaceInUserLinkFields(primary, secondary, affected);
 
         // UK (UserId, Provider): привязка основного побеждает, такая же у поглощаемого удаляется.
         await Execute(UserReferences.ExternalLogins, """
@@ -102,6 +108,81 @@ internal class UserMergeWriteRepository(MyDbContext ctx) : IUserMergeWriteReposi
 
         transaction.Commit();
         return affected;
+    }
+
+    /// <summary>
+    /// Значения полей «ссылка на пользователя» (ADR017) лежат id внутри <c>JsonData</c>, FK на них нет.
+    /// </summary>
+    private async Task ReplaceInUserLinkFields(
+        UserIdentification primary, UserIdentification secondary, Dictionary<string, int> affected)
+    {
+        var userLinkTypes = Enum.GetValues<ProjectFieldType>().Where(t => t.IsUserLink()).ToArray();
+        var fields = await ctx.Set<ProjectField>()
+            .Where(f => userLinkTypes.Contains(f.FieldType))
+            .Select(f => new { f.ProjectId, f.ProjectFieldId })
+            .ToListAsync();
+        if (fields.Count == 0)
+        {
+            return;
+        }
+        var fieldsByProject = fields
+            .GroupBy(f => f.ProjectId)
+            .ToDictionary(g => g.Key, g => (IReadOnlySet<int>)g.Select(f => f.ProjectFieldId).ToHashSet());
+        var projectIds = fieldsByProject.Keys.ToList();
+
+        // Грубый фильтр на стороне БД, точно разбирает UserLinkFieldRewriter. Простой LIKE '%id%' для
+        // маленьких id совпал бы почти с любой строкой: STJ пишет кириллицу escape-последовательностями
+        // вида «обратная косая, u, 0435» (буква «е»). Слева от id в значении стоит кавычка или запятая, а не шестнадцатеричная цифра.
+        var pattern = $"%[^0-9A-Fa-f]{secondary.Value}[^0-9]%";
+
+        var characters = await ctx.Set<Character>()
+            .Where(c => projectIds.Contains(c.ProjectId) && SqlFunctions.PatIndex(pattern, c.JsonData) > 0)
+            .Select(c => new JsonDataRow { Id = c.CharacterId, ProjectId = c.ProjectId, JsonData = c.JsonData })
+            .ToListAsync();
+        await Rewrite(characters, "Characters", "CharacterId");
+
+        var claims = await ctx.ClaimSet
+            .Where(c => projectIds.Contains(c.ProjectId) && SqlFunctions.PatIndex(pattern, c.JsonData) > 0)
+            .Select(c => new JsonDataRow { Id = c.ClaimId, ProjectId = c.ProjectId, JsonData = c.JsonData })
+            .ToListAsync();
+        await Rewrite(claims, "Claims", "ClaimId");
+
+        async Task Rewrite(List<JsonDataRow> rows, string table, string idColumn)
+        {
+            foreach (var row in rows)
+            {
+                string? json;
+                try
+                {
+                    json = UserLinkFieldRewriter.Replace(row.JsonData, fieldsByProject[row.ProjectId], secondary, primary);
+                }
+                catch (JsonException ex)
+                {
+                    throw new InvalidOperationException($"Битый JsonData в {table}.{idColumn} = {row.Id}, слияние невозможно", ex);
+                }
+                if (json is null)
+                {
+                    continue;
+                }
+
+                // Строку не блокировали при чтении: если мастер успел её сохранить, не перетираем его правку,
+                // а откатываем слияние целиком — админ просто повторит.
+                var updated = await ctx.Database.ExecuteSqlCommandAsync(
+                    $"UPDATE [{table}] SET [JsonData] = @p0 WHERE [{idColumn}] = @p1 AND [JsonData] = @p2", json, row.Id, row.JsonData);
+                if (updated != 1)
+                {
+                    throw new DbUpdateConcurrencyException($"{table}.{idColumn} = {row.Id} изменился во время слияния пользователей");
+                }
+                affected[$"{table}.JsonData"] = affected.GetValueOrDefault($"{table}.JsonData") + 1;
+            }
+        }
+    }
+
+    private class JsonDataRow
+    {
+        public int Id { get; init; }
+        public int ProjectId { get; init; }
+        public string JsonData { get; init; } = null!;
     }
 }
 
