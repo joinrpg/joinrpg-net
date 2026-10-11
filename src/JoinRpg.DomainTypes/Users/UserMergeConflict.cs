@@ -34,6 +34,13 @@ public abstract record UserMergeConflict
     /// <summary>Аккаунты переводили деньги друг другу — после слияния отправитель совпал бы с получателем.</summary>
     public sealed record MoneyTransfersBetween(ProjectIdentification ProjectId) : UserMergeConflict;
 
+    /// <summary>
+    /// В базе есть заблокированный проект (ADR023) — идёт восстановление данных. Пока оно не
+    /// закончено, сливать нельзя никого: восстановление может вставить строки со ссылкой на уже
+    /// удалённого поглощаемого.
+    /// </summary>
+    public sealed record BlockedProject(ProjectIdentification ProjectId) : UserMergeConflict;
+
     /// <summary>Оба аккаунта — капитаны одной группы.</summary>
     public sealed record BothCaptains(CharacterGroupIdentification CharacterGroupId) : UserMergeConflict;
 }
