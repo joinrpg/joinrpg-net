@@ -47,6 +47,58 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
             ctx, loader, project, projectInfo, character, characterInfo, claim, claimInfo);
     }
 
+    public async Task<bool> InsertRestoredClaimShell(RestoredClaimShell shell)
+    {
+        // Одним батчем и своей транзакцией: обсуждение получает обычный id, заявка — заданный.
+        // Проверка занятости — внутри транзакции с блокировкой диапазона, чтобы два одновременных
+        // восстановления одной заявки не столкнулись на первичном ключе. Персонаж обязан быть из того
+        // же проекта: внешний ключ этого не проверяет, а заявку на чужом персонаже потом не загрузить.
+        // IDENTITY_INSERT действует на сессию, поэтому выключается и при ошибке.
+        const string sql = """
+            SET XACT_ABORT ON;
+            BEGIN TRY
+                BEGIN TRANSACTION;
+                IF EXISTS (SELECT 1 FROM dbo.Claims WITH (UPDLOCK, HOLDLOCK) WHERE ClaimId = @p0)
+                BEGIN
+                    COMMIT TRANSACTION;
+                    SELECT 0;
+                    RETURN;
+                END;
+                IF NOT EXISTS (SELECT 1 FROM dbo.Characters WHERE CharacterId = @p2 AND ProjectId = @p1)
+                    THROW 50000, N'Character is not in the claim project', 1;
+                INSERT INTO dbo.CommentDiscussions (ProjectId) VALUES (@p1);
+                DECLARE @discussionId int = CAST(SCOPE_IDENTITY() AS int);
+                SET IDENTITY_INSERT dbo.Claims ON;
+                INSERT INTO dbo.Claims (ClaimId, ProjectId, CharacterId, PlayerUserId, ResponsibleMasterUserId,
+                    ClaimStatus, CommentDiscussionId, CreateDate, PlayerAcceptedDate, LastUpdateDateTime,
+                    PreferentialFeeUser, PlayerAllowedSenstiveData)
+                VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @discussionId, @p6, @p6, @p6, 0, 0);
+                SET IDENTITY_INSERT dbo.Claims OFF;
+                COMMIT TRANSACTION;
+                SELECT 1;
+            END TRY
+            BEGIN CATCH
+                IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                SET IDENTITY_INSERT dbo.Claims OFF;
+                THROW;
+            END CATCH;
+            """;
+
+        var inserted = await ctx.Database.SqlQuery<int>(
+                sql,
+                shell.ClaimId.ClaimId,
+                shell.ClaimId.ProjectId.Value,
+                shell.CharacterId.CharacterId,
+                shell.PlayerId.Value,
+                shell.ResponsibleMasterId.Value,
+                (int)ClaimStatus.AddedByMaster,
+                shell.CreatedAt)
+            .SingleAsync();
+        return inserted == 1;
+    }
+
+    public Task<bool> IsClaimIdTaken(int claimId) => ctx.Set<Claim>().AnyAsync(c => c.ClaimId == claimId);
+
     private async Task<(Project, ProjectInfo)> LoadProject(ProjectIdentification projectId)
     {
         var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false)

@@ -25,6 +25,34 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             new Handle(mock, character));
     }
 
+    /// <summary>Мок — один проект, поэтому «в любом проекте» значит «в этом».</summary>
+    public Task<bool> IsClaimIdTaken(int claimId) => Task.FromResult(mock.Project.Claims.Any(c => c.ClaimId == claimId));
+
+    /// <summary>
+    /// Оболочка заявки так же, как в бою: «предложена», с пустым обсуждением, с заданным id.
+    /// </summary>
+    public Task<bool> InsertRestoredClaimShell(RestoredClaimShell shell)
+    {
+        if (mock.Project.Claims.Any(c => c.ClaimId == shell.ClaimId.ClaimId))
+        {
+            return Task.FromResult(false);
+        }
+
+        var character = FindCharacter(mock, shell.CharacterId);
+        var player = mock.TryGetUser(shell.PlayerId.Value)
+            ?? throw new JoinRpgEntityNotFoundException(shell.PlayerId.Value, "user");
+        var claim = mock.CreateClaim(character, player);
+        claim.ClaimId = shell.ClaimId.ClaimId;
+        claim.ClaimStatus = ClaimStatus.AddedByMaster;
+        claim.ResponsibleMasterUserId = shell.ResponsibleMasterId.Value;
+        claim.ResponsibleMasterUser = mock.TryGetUser(shell.ResponsibleMasterId.Value)
+            ?? throw new JoinRpgEntityNotFoundException(shell.ResponsibleMasterId.Value, "user");
+        claim.CreateDate = shell.CreatedAt;
+        claim.PlayerAcceptedDate = shell.CreatedAt;
+        claim.LastUpdateDateTime = shell.CreatedAt;
+        return Task.FromResult(true);
+    }
+
     public Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId)
     {
         var claim = FindClaim(mock, claimId);

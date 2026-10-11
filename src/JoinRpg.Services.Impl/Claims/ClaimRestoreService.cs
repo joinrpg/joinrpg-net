@@ -1,4 +1,7 @@
+using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Characters;
@@ -25,9 +28,137 @@ namespace JoinRpg.Services.Impl.Claims;
 /// совпал с прежним, не меняются. Вернуть взнос «по умолчанию» (null) нельзя: null значит «не менять».
 /// </para>
 /// </remarks>
-internal class ClaimRestoreService(ICharacterPropsService characterPropsService) : IClaimRestoreService
+internal class ClaimRestoreService(
+    ICharacterPropsService characterPropsService,
+    IUnitOfWork unitOfWork,
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor) : IClaimRestoreService
 {
     public Task ApplyRestoredState(ClaimIdentification claimId, RestoredClaimTarget target)
+        => ApplyCore(claimId, target, isCreation: false);
+
+    /// <remarks>
+    /// Три шага без общей транзакции: у сервиса и у <see cref="ICharacterPropsService"/> разные
+    /// <c>DbContext</c> (<c>MyDbContext</c> транзиентный). Вместо неё — повторяемость: оборвись на
+    /// любом шаге, повторный предпросмотр найдёт созданного персонажа по имени, а вставленную оболочку
+    /// предложит «изменить».
+    /// </remarks>
+    public async Task<CharacterIdentification> RestoreLostClaim(LostClaimToRestore request)
+    {
+        // Всё, что можно проверить, — до первой записи: после неё неудача оставит персонажа или оболочку.
+        var projectId = request.ClaimId.ProjectId;
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        EnsureProjectBlocked(projectInfo);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+        _ = EnsureMaster(projectInfo, request.ResponsibleMaster);
+        if (request.Target.ResponsibleMaster is { } targetMaster)
+        {
+            _ = EnsureMaster(projectInfo, targetMaster);
+        }
+        _ = await unitOfWork.GetUsersRepository().GetRequiredUserInfo(request.Player);
+
+        var now = DateTime.UtcNow;
+        EnsureRestoredDate(request.CreatedAt, now);
+        if (request.Target.StatusChangedAt is { } statusChangedAt)
+        {
+            EnsureRestoredDate(statusChangedAt, now);
+        }
+
+        if (request.Target.Character is not null)
+        {
+            // Персонаж новой заявки задаётся только Character/NewCharacterName — иначе их два.
+            throw new ArgumentException("Персонаж новой заявки задаётся только Character или NewCharacterName", nameof(request));
+        }
+
+        var writeRepository = unitOfWork.GetCharacterAggregateWriteRepository();
+        if (await writeRepository.IsClaimIdTaken(request.ClaimId.ClaimId))
+        {
+            // TODO[Localize]
+            throw new JoinValidationException($"Заявка с номером {request.ClaimId.ClaimId} уже есть в базе.");
+        }
+
+        if (request.Character is { } existingCharacter)
+        {
+            if (existingCharacter.ProjectId != projectId)
+            {
+                throw new ArgumentException($"Персонаж {existingCharacter} из другого проекта", nameof(request));
+            }
+            // Загрузка агрегата заодно проверяет, что персонаж в этом проекте есть.
+            var handle = await writeRepository.LoadCharacterForUpdate(existingCharacter);
+            if (request.Target.Status is ClaimStatus.Approved or ClaimStatus.CheckedIn)
+            {
+                EnsureCanBeApprovedOn(handle.CharacterInfo, request.ClaimId);
+            }
+        }
+        else if (string.IsNullOrWhiteSpace(request.NewCharacterName))
+        {
+            // TODO[Localize]
+            throw new JoinValidationException("Не задано имя персонажа.");
+        }
+
+        var characterId = request.Character
+            ?? await CreateCharacter(projectId, request.NewCharacterName!);
+
+        var inserted = await unitOfWork.GetCharacterAggregateWriteRepository().InsertRestoredClaimShell(new RestoredClaimShell(
+            request.ClaimId, characterId, request.Player, request.ResponsibleMaster, request.CreatedAt.UtcDateTime));
+        if (!inserted)
+        {
+            // TODO[Localize]
+            throw new JoinValidationException($"Заявка {request.ClaimId.ClaimId} уже есть в базе.");
+        }
+
+        await ApplyCore(request.ClaimId, request.Target, isCreation: true);
+        return characterId;
+    }
+
+    /// <summary>
+    /// Персонаж игрока в корневой группе: групп в уведомлениях нет, разложит мастер. Скрытый — какой
+    /// была видимость, неизвестно, а скрытый ничего не раскроет до того, как мастер разберётся.
+    /// </summary>
+    private async Task<CharacterIdentification> CreateCharacter(ProjectIdentification projectId, string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            // TODO[Localize]
+            throw new JoinValidationException("Не задано имя персонажа.");
+        }
+
+        var character = await characterPropsService.CreateCharacter(
+            projectId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.AllowBlocked,
+            name,
+            ctx =>
+            {
+                var character = new Character
+                {
+                    ProjectId = ctx.ProjectInfo.ProjectId.Value,
+                    Project = ctx.Project,
+                };
+
+                ctx.SetCharacterSettings(character, new CharacterTypeInfo(
+                    CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Private));
+
+                // Имя — значением поля-имени, если оно в проекте есть; иначе SaveFields имени не пишет.
+                var nameField = ctx.ProjectInfo.CharacterNameField;
+                var fields = nameField is null
+                    ? FieldLayerContainer.Empty(ctx.ProjectInfo)
+                    : new FieldLayerContainer(ctx.ProjectInfo, new Dictionary<int, string?> { [nameField.Id.ProjectFieldId] = ctx.Request });
+
+                _ = ctx.SaveFields(character, fields, [ctx.ProjectInfo.GroupTree.RootGroupId]);
+
+                if (nameField is null)
+                {
+                    character.CharacterName = ctx.Request;
+                }
+
+                return character;
+            });
+
+        return new CharacterIdentification(projectId, character.CharacterId);
+    }
+
+    private Task ApplyCore(ClaimIdentification claimId, RestoredClaimTarget target, bool isCreation)
         => characterPropsService.ChangeClaimAsync(
             claimId,
             ClaimAccessRequirement.ManageClaims,
@@ -58,13 +189,11 @@ internal class ClaimRestoreService(ICharacterPropsService characterPropsService)
                 UserIdentification? responsible = ctx.Request.ResponsibleMaster is { } masterId && masterId != claimSnapshot.ResponsibleMasterId
                     ? masterId
                     : null;
-                var responsibleMaster = responsible is null ? null : ctx.ProjectInfo.Masters.SingleOrDefault(m => m.UserId == responsible)
-                    // TODO[Localize]
-                    ?? throw new JoinValidationException($"Ответственный {responsible} не мастер проекта. Сначала восстановите ему доступ.");
+                var responsibleMaster = responsible is null ? null : EnsureMaster(ctx.ProjectInfo, responsible);
 
                 var fee = ctx.Request.ManualFee is { } f && f != ctx.Claim.CurrentFee ? f : (int?)null;
 
-                if (!moved && status is null && responsible is null && fee is null)
+                if (!isCreation && !moved && status is null && responsible is null && fee is null)
                 {
                     ctx.NothingChanged();
                     return;
@@ -91,7 +220,8 @@ internal class ClaimRestoreService(ICharacterPropsService characterPropsService)
                     changes.Add($"статус — {GetStatusName(newStatus)}");
                 }
 
-                if (moved || status is not null)
+                // Новая заявка тоже: она может прийти на удалённого в бэкапе персонажа.
+                if (isCreation || moved || status is not null)
                 {
                     SyncCharacters(ctx, oldCharacter, newCharacter);
                 }
@@ -109,10 +239,28 @@ internal class ClaimRestoreService(ICharacterPropsService characterPropsService)
                 }
 
                 // TODO[Localize]
+                var header = isCreation
+                    ? "Заявка восстановлена по уведомлениям после потери данных"
+                    : "Восстановлено по уведомлениям после потери данных";
                 _ = ctx.AddHistoryRecordWithoutNotification(
-                    "Восстановлено по уведомлениям после потери данных: " + string.Join(", ", changes) + ".",
+                    changes.Count == 0 ? header + "." : header + ": " + string.Join(", ", changes) + ".",
                     CommentExtraAction.RestoredFromNotifications);
             });
+
+    /// <summary>Дата из уведомлений: не из будущего и не «пустая» (ниже — переполнение <c>datetime</c>).</summary>
+    private static void EnsureRestoredDate(DateTimeOffset at, DateTime now)
+    {
+        OperationDateValidation.CheckOperationDate(at.UtcDateTime, now);
+        if (at.Year < 2000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(at), at, "Слишком ранняя дата для восстановленной заявки");
+        }
+    }
+
+    private static ProjectMasterInfo EnsureMaster(ProjectInfo projectInfo, UserIdentification userId)
+        => projectInfo.Masters.SingleOrDefault(m => m.UserId == userId)
+            // TODO[Localize]
+            ?? throw new JoinValidationException($"Ответственный {userId} не мастер проекта. Сначала восстановите ему доступ.");
 
     /// <summary>
     /// Принятой заявка может стать только на персонаже, у которого нет другой принятой заявки (инвариант
