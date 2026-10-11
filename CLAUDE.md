@@ -47,6 +47,10 @@ dotnet format --verify-no-changes --severity warn         # Проверка (CI
 git commit --edit -m "предложенное сообщение коммита"
 ```
 
+Исключение — большие задачи, которые ведутся стеком PR по скиллу big-task: там коммиты делаются
+автономно через `-m`/`-F` без редактора. Сообщение пользователь правит при мердже (PR вливаются
+squash'ем), а правки по ревью идут `--amend --no-edit`.
+
 ### Ребейз: upstream, а не origin
 
 `origin` — личный форк (`leotsarev/joinrpg-net`), основной репозиторий — `upstream` (`joinrpg/joinrpg-net`).
