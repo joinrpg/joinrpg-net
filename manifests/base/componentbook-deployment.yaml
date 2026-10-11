@@ -31,8 +31,6 @@ spec:
                   - joinrpg-componentbook
               topologyKey: kubernetes.io/hostname
             weight: 100
-      imagePullSecrets:
-      - name: selectel-cr-pull
       containers:
       - name: joinrpg-componentbook
         image: joinrpg-componentbook

@@ -13,18 +13,18 @@ on:
         type: string
 env:
   APP_NAME: joinrpg-portal
-  APP_IMAGE_ID: "joinrpg/joinrpg-portal"
+  APP_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-portal"
 
   MIGRATOR_NAME: joinrpg-dal-migrate
-  MIGRATOR_IMAGE_ID: "joinrpg/joinrpg-dal-migrate"
+  MIGRATOR_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-dal-migrate"
 
   IDPORTAL_NAME: joinrpg-idportal
-  IDPORTAL_IMAGE_ID: "joinrpg/joinrpg-idportal"
+  IDPORTAL_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-idportal"
 
   COMPONENTBOOK_NAME: joinrpg-componentbook
-  COMPONENTBOOK_IMAGE_ID: "joinrpg/joinrpg-componentbook"
+  COMPONENTBOOK_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-componentbook"
 
-  REGISTRY_HOST: cr.selcloud.ru
+  REGISTRY_HOST: cr.yandex
 
 jobs:
   deploy:
@@ -37,13 +37,11 @@ jobs:
     runs-on: ubuntu-24.04
     permissions: read-all
     steps:
-      - name: Log in to Selectel Container Registry
+      - name: Log in to Yandex Container Registry
         id: login-cr
-        uses: docker/login-action@v3
+        uses: yc-actions/yc-cr-login@v3
         with:
-            registry: cr.selcloud.ru
-            username: ${{ secrets.SELECTEL_CR_PULL_USERNAME }}
-            password: ${{ secrets.SELECTEL_CR_PULL_PASSWORD }}
+            yc-sa-json-credentials: ${{ secrets.YANDEX_CR_SA_KEY_JSON }}
 
       - name: Check images existence and fill images related env vars
         id: check_existence
@@ -94,21 +92,6 @@ jobs:
           file_name_prod: './manifests/${{ inputs.environment }}/joinrpg-main.secret.env'
           file_name_dev: './manifests/${{ inputs.environment }}/joinrpg-main.secret.env'
 
-      # Без set -x: в лог не должны попасть ни логин с паролем, ни их base64
-      - name: Generate image pull secret for Selectel Container Registry
-        env:
-          PULL_USERNAME: ${{ secrets.SELECTEL_CR_PULL_USERNAME }}
-          PULL_PASSWORD: ${{ secrets.SELECTEL_CR_PULL_PASSWORD }}
-        run: |
-            set -euo pipefail
-            if [ -z "${PULL_USERNAME}" ] || [ -z "${PULL_PASSWORD}" ]; then
-              echo "::error::SELECTEL_CR_PULL_USERNAME or SELECTEL_CR_PULL_PASSWORD secret is not set"
-              exit 1
-            fi
-            PULL_AUTH=$(printf '%s:%s' "${PULL_USERNAME}" "${PULL_PASSWORD}" | base64 -w0)
-            echo "::add-mask::${PULL_AUTH}"
-            printf '{"auths":{"%s":{"auth":"%s"}}}' "${REGISTRY_HOST}" "${PULL_AUTH}" > ./manifests/${ENVIRONMENT}/selectel-cr-pull.dockerconfigjson
-
       - name: Generate environment manifests
         run: |
             set -x
@@ -119,11 +102,6 @@ jobs:
               envs:
               - joinrpg-main.secret.env
               behavior: replace
-
-            - name: selectel-cr-pull
-              type: kubernetes.io/dockerconfigjson
-              files:
-              - .dockerconfigjson=selectel-cr-pull.dockerconfigjson
 
             images:
             - name: ${APP_NAME}
@@ -156,8 +134,8 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
 
-          #Add new generated secrets (app settings and image pull secret), replace old migration job
-          &"kubectl" "--%" "replace --force --save-config -f ./kustomize_output/v1_secret_joinrpg-main-* -f ./kustomize_output/v1_secret_selectel-cr-pull-* -f ./kustomize_output/batch_v1_job_joinrpg-dal-migrate.yaml -n $env:ENVIRONMENT"
+          #Add new generated secret, replace old migration job
+          &"kubectl" "--%" "replace --force --save-config -f ./kustomize_output/v1_secret_joinrpg-main-* -f ./kustomize_output/batch_v1_job_joinrpg-dal-migrate.yaml -n $env:ENVIRONMENT"
           if ($LastExitCode -ne 0) {exit $LastExitCode}
 
           Write-Output "Waiting for job/joinrpg-dal-migrate to be completed or failed..."

@@ -7,8 +7,6 @@ spec:
   activeDeadlineSeconds: 300
   template:
     spec:
-      imagePullSecrets:
-        - name: selectel-cr-pull
       containers:
         - name: joinrpg-dal-migrate
           envFrom:
