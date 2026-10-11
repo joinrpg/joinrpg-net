@@ -1,4 +1,5 @@
 using JoinRpg.Data.Write.Interfaces.Notifications;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Notifications.Senders;
@@ -68,6 +69,8 @@ public class NotificationDashboardManagerTests
         public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths() => Task.FromResult(queueLengths);
 
         public Task InsertNotifications(NotificationMessageCreateDto[] notifications) => throw new NotImplementedException();
+
+        public Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore) => throw new NotImplementedException();
 
         public Task<TargetedNotificationMessageForRecipient?> SelectNextNotificationForSending(NotificationChannel channel) => throw new NotImplementedException();
 

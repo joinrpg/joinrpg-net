@@ -4,6 +4,7 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Impl.Migrations;
 using JoinRpg.Data.Write.Interfaces.Notifications;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.IdPortal.OAuthServer;
 using JoinRpg.IdPortal.OAuthServer.Cimd;
@@ -215,6 +216,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
 
         public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
             => Task.FromResult<IReadOnlyDictionary<NotificationChannel, int>>(new Dictionary<NotificationChannel, int>());
+
+        public Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore)
+            => Task.FromResult<IReadOnlyCollection<NotificationMessageForRecipient>>([]);
     }
 
     private sealed class NullNotificationService : INotificationService

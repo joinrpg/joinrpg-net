@@ -2,6 +2,7 @@ using System.Diagnostics.Metrics;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.CommonEfCore;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Interfaces;
 using LinqKit;
 using Microsoft.EntityFrameworkCore.Query;
@@ -238,5 +239,40 @@ internal class NotificationsRepository(
             .ToListAsync();
 
         return counts.ToDictionary(x => x.Channel, x => x.Count);
+    }
+
+    public async Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore)
+    {
+        var (claimPrefix, commentPrefix, financePrefix) = GetClaimReferencePrefixes(projectId);
+        // Npgsql пишет в timestamptz только DateTimeOffset со смещением 0.
+        var cutoff = createdBefore.ToUniversalTime();
+
+        // StartsWith → LIKE 'ClaimId(12-%': идёт по индексу на EntityReference (text_pattern_ops).
+        var result = await dbContext.Notifications
+            .AsNoTracking()
+            .Where(m => m.EntityReference!.StartsWith(claimPrefix)
+                || m.EntityReference!.StartsWith(commentPrefix)
+                || m.EntityReference!.StartsWith(financePrefix))
+            .Where(m => m.CreatedAt < cutoff)
+            .OrderBy(m => m.CreatedAt)
+            .ThenBy(m => m.NotificationMessageId)
+            .ToListAsync();
+
+        return [.. result.Select(CreateNotificationMessageDto)];
+    }
+
+    /// <summary>
+    /// Префиксы ссылок на заявки проекта: «ClaimId(12-», «ClaimCommentId(12-», «FinanceOperationId(12-».
+    /// Берутся из ToString() самих идентификаторов, чтобы не разойтись с форматом.
+    /// </summary>
+    internal static (string Claim, string Comment, string Finance) GetClaimReferencePrefixes(ProjectIdentification projectId)
+    {
+        var claim = new ClaimIdentification(projectId, 0);
+        return (
+            UpToFirstDash(claim.ToString()),
+            UpToFirstDash(new ClaimCommentIdentification(claim, 0).ToString()),
+            UpToFirstDash(new FinanceOperationIdentification(projectId, 0, 0).ToString()));
+
+        static string UpToFirstDash(string reference) => reference[..(reference.IndexOf('-') + 1)];
     }
 }
