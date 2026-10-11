@@ -64,6 +64,13 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
     {
         await hostApplicationLifetime.WaitForAppStartup(stoppingToken);
 
+        if (!IsSenderEnabled())
+        {
+            // Завершаемся штатно: OperationCanceledException не от stoppingToken хост считает падением службы и останавливается целиком.
+            logger.LogInformation("Отправка SenderJobService<{senderJobName}> отключена, джоба не запускается", JobName);
+            return;
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
             using var activity = SenderServiceActivityHolder.ActivitySource.StartActivity($"Iteration of {JobName}");
@@ -116,6 +123,12 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
         }
     }
 
+    private bool IsSenderEnabled()
+    {
+        using var scope = serviceProvider.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<TSender>().Enabled;
+    }
+
     private async Task RunIteration(CancellationToken stoppingToken)
     {
         using var scope = serviceProvider.CreateScope();
@@ -142,12 +155,6 @@ internal class SenderJobService<TSender>(IServiceProvider serviceProvider,
             {
                 var sender = scope.ServiceProvider.GetRequiredService<TSender>();
                 stoppingToken.ThrowIfCancellationRequested();
-
-                if (!sender.Enabled)
-                {
-                    logger.LogInformation("Отправка SenderJobService<{senderJobName}> отключена", JobName);
-                    throw new OperationCanceledException("Выключаем");
-                }
 
                 sendingResult = await sender.SendAsync(nextMessage, stoppingToken);
             }
