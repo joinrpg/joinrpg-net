@@ -4,8 +4,8 @@
     <UserSecretsId>aspnet-JoinRpg.Portal-D30D89A6-2652-4339-953B-C703F29AE5C7</UserSecretsId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
-    <ContainerRegistry>cr.yandex</ContainerRegistry>
-    <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-portal</ContainerRepository>
+    <ContainerRegistry>cr.selcloud.ru</ContainerRegistry>
+    <ContainerRepository>joinrpg/joinrpg-portal</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
   </PropertyGroup>
