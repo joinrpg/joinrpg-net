@@ -16,6 +16,9 @@ public abstract record UserMergeConflict
     /// <summary>Служебный пользователь (робот, платежи) — его сливать нельзя.</summary>
     public sealed record VirtualUser(UserIdentification UserId) : UserMergeConflict;
 
+    /// <summary>Поглощаемый — сам админ, который сливает: удалять собственный аккаунт этим инструментом нельзя.</summary>
+    public sealed record SecondaryIsCurrentUser : UserMergeConflict;
+
     /// <summary>Оба аккаунта есть среди мастеров (в том числе бывших) одного проекта.</summary>
     public sealed record BothMasters(ProjectIdentification ProjectId) : UserMergeConflict;
 

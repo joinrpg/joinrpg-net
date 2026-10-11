@@ -52,6 +52,7 @@ internal class UserMergeViewService(
     {
         UserMergeConflict.SameUser => new(UserMergeConflictKind.SameUser, null, null, null),
         UserMergeConflict.VirtualUser => new(UserMergeConflictKind.VirtualUser, null, null, null),
+        UserMergeConflict.SecondaryIsCurrentUser => new(UserMergeConflictKind.SecondaryIsCurrentUser, null, null, null),
         UserMergeConflict.BothMasters c => new(UserMergeConflictKind.BothMasters, await Project(c.ProjectId), null, null),
         UserMergeConflict.BothClaimedCharacter c => new(
             UserMergeConflictKind.BothClaimedCharacter, await Project(c.CharacterId.ProjectId), await Character(c.CharacterId), null),

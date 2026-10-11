@@ -5,6 +5,9 @@
     case UserMergeConflictKind.SameUser:
         <span>это один и тот же аккаунт</span>
         break;
+    case UserMergeConflictKind.SecondaryIsCurrentUser:
+        <span>поглощаемый аккаунт — ваш собственный: удалить его этим инструментом нельзя, попросите другого админа</span>
+        break;
     case UserMergeConflictKind.VirtualUser:
         <span>служебный аккаунт (робот или платежи) объединять нельзя</span>
         break;

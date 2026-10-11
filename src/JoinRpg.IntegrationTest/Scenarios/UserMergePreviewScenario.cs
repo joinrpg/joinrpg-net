@@ -41,7 +41,18 @@ public class UserMergePreviewScenario(JoinApplicationFactory factory) : IClassFi
 
         var preview = await GetPreview(a, a);
 
-        preview.Conflicts.ShouldBe([new UserMergeConflict.SameUser()]);
+        // Предпросмотр идёт от имени A, поэтому заодно это и «поглощаемый — вы сами».
+        preview.Conflicts.ShouldBe([new UserMergeConflict.SameUser(), new UserMergeConflict.SecondaryIsCurrentUser()]);
+    }
+
+    [Fact]
+    public async Task SecondaryIsCurrentAdmin_Conflict()
+    {
+        var (a, b) = await CreateUsers();
+
+        var preview = await factory.Services.RunAsAsync(b, sp => sp.GetRequiredService<IUserMergeService>().GetPreview(a, b), isAdmin: true);
+
+        preview.Conflicts.ShouldBe([new UserMergeConflict.SecondaryIsCurrentUser()]);
     }
 
     [Fact]
