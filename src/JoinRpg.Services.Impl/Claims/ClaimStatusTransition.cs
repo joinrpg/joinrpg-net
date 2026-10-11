@@ -54,6 +54,26 @@ internal static class ClaimStatusTransition
     }
 
     /// <summary>
+    /// Восстанавливает статус, который у заявки уже был, — по базе уведомлений после потери основной
+    /// БД (DRP, #5481). Таблица переходов не проверяется: это не новое решение мастера, а повтор
+    /// случившегося, и промежуточных шагов восстановление не знает. Отметка даты — время события
+    /// <paramref name="at"/>, а не время восстановления.
+    /// </summary>
+    public static void RestoreStatus(this ClaimMutationContext ctx, ClaimStatus target, DateTime at)
+    {
+        ctx.CheckOperationDate(at);
+
+        if (target != ClaimStatus.DeclinedByMaster)
+        {
+            // Причина отказа есть только у отклонённой мастером; при отказе её уведомления не знают.
+            ctx.Claim.ClaimDenialStatus = null;
+        }
+        ctx.Claim.ClaimStatus = target;
+        StampDate(ctx.Claim, target, at);
+        ctx.Claim.LastUpdateDateTime = ctx.Now;
+    }
+
+    /// <summary>
     /// Перенос <c>ClaimServiceImpl.SetDiscussed</c>: любое действие по заявке выводит её из
     /// «приглашена»/«подана» в «обсуждается», если отвечает противоположная сторона.
     /// </summary>

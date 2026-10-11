@@ -22,4 +22,10 @@ public enum CommentExtraAction
     TransferTo = 17,
     TransferFrom = 18,
     InvitationAcceptedByPlayer = 19,
+
+    /// <summary>
+    /// Состояние заявки восстановлено по базе уведомлений после потери основной БД (DRP, #5481).
+    /// Запись в истории без уведомления.
+    /// </summary>
+    RestoredFromNotifications = 20,
 }
