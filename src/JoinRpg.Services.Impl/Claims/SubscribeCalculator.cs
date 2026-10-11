@@ -59,14 +59,19 @@ internal class SubscribeCalculator(
 
         //TODO В форумах есть подписка, но она никогда не ставится, соответственно использовать ее тоже пока не надо
 
-        AddUserInfoHeaderIfNotPresent(list, args.RespondingTo, SubscriptionReason.AnswerToYourComment);
-
+        IReadOnlyCollection<UserInfoHeader> players = [];
         if (args.IsVisibleToPlayer)
         {
             var claims = await claimsRepository.GetClaimHeadersWithPlayer([.. projectInfo.GroupTree.GetChildGroupIdsIncludingThis(args.Groups)], ClaimStatusSpec.Approved);
-
-            AddUserInfoHeaderIfNotPresent(list, claims.Select(c => c.Player), SubscriptionReason.Forum);
+            players = [.. claims.Select(c => c.Player)];
         }
+
+        // Ответ уходит автору, только если сообщение ему видно — так же, как доступ к теме в ForumServiceImpl:
+        // мастеру проекта или игроку группы. Ушедший из группы игрок или снятый мастер его не получат.
+        var canSee = players.Concat(args.Masters).Select(u => u.UserId).ToHashSet();
+        AddUserInfoHeaderIfNotPresent(list, args.RespondingTo.Where(author => canSee.Contains(author.UserId)), SubscriptionReason.AnswerToYourComment);
+
+        AddUserInfoHeaderIfNotPresent(list, players, SubscriptionReason.Forum);
 
         AddUserInfoHeaderIfNotPresent(list, args.Masters, SubscriptionReason.MasterOfGame);
 
