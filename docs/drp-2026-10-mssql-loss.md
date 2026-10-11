@@ -658,11 +658,11 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | заведён |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
 | issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | заведён |
-| [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | #5481: выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
-| [#5501](https://github.com/joinrpg/joinrpg-net/issues/5501) | `FinanceOperationIdentification` с вложенным `ClaimIdentification` (по ревью #5496) | 7 | влит |
-| [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496) | #5481: разбор уведомлений в события и состояние заявки | 7 | на ревью |
-| [#5499](https://github.com/joinrpg/joinrpg-net/issues/5499) | #5481: восстановление состояния заявки — «изменить» | 7 | на ревью |
-| [#5502](https://github.com/joinrpg/joinrpg-net/issues/5502) | #5481: потерянная заявка с прежним id — «создать» | 7 | draft |
-| [#5503](https://github.com/joinrpg/joinrpg-net/issues/5503) | #5481: план восстановления — одно действие на заявку | 7 | draft |
-| — | #5481: страница мастера | 7 | в работе |
+| [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
+| [#5501](https://github.com/joinrpg/joinrpg-net/issues/5501) | `FinanceOperationIdentification` с вложенным `ClaimIdentification` (по ревью [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496)) | 7 | влит |
+| [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): разбор уведомлений в события и состояние заявки | 7 | на ревью |
+| [#5499](https://github.com/joinrpg/joinrpg-net/issues/5499) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): восстановление состояния заявки — «изменить» | 7 | на ревью |
+| [#5502](https://github.com/joinrpg/joinrpg-net/issues/5502) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): потерянная заявка с прежним id — «создать» | 7 | draft |
+| [#5503](https://github.com/joinrpg/joinrpg-net/issues/5503) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): план восстановления — одно действие на заявку | 7 | draft |
+| — | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): страница мастера | 7 | в работе |
 | issue [#5489](https://github.com/joinrpg/joinrpg-net/issues/5489) | ~~Пользователи, зарегистрированные в последние сутки до аварии~~ | 4 | закрыт: не делаем |
