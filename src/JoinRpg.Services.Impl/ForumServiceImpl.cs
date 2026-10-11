@@ -53,7 +53,8 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
                 new ForumCommentIdentification(comment.ProjectId, forumThread.ForumThreadId, comment.CommentId),
                 currentUserAccessor.ToUserInfoHeader(),
                 new MarkdownDbValue(commentText),
-                header
+                header,
+                IsVisibleToPlayer: forumThread.IsVisibleToPlayer && comment.IsVisibleToPlayer
                 );
 
             await forumNotificationService.SendNotification(email);
@@ -74,7 +75,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
             Now,
             commentText,
             projectInfo,
-            GetOperationType(!isVisibleToPlayer, projectInfo));
+            GetOperationType(!visibleToPlayerUpdated, projectInfo));
 
         comment.Parent = parentComment;
 
@@ -85,6 +86,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
                 currentUserAccessor.ToUserInfoHeader(),
                 new MarkdownDbValue(commentText),
                 forumThread.Header,
+                IsVisibleToPlayer: forumThread.IsVisibleToPlayer && comment.IsVisibleToPlayer,
                 ParentCommentAuthor: parentComment?.Author.ToUserInfoHeader()
                 );
 
