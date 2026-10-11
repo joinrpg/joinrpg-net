@@ -181,6 +181,7 @@ internal class KogdaIgraSyncService(
         {
             kogdaIgraIdentifications = [];
         }
+        // Привязка к КогдаИгре разрешена и в заблокированном проекте (ADR023): её не восстанавливают.
         var project = await unitOfWork.GetProjectRepository().GetProjectAsync(projectId);
         var games = await unitOfWork.GetKogdaIgraRepository().GetByIds(kogdaIgraIdentifications);
         project.KogdaIgraGames.AssignLinksList(games);

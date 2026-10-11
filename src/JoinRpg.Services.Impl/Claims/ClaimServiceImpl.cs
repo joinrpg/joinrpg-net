@@ -1073,6 +1073,13 @@ internal class ClaimServiceImpl(
     /// </remarks>
     public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
     {
+        // Отметку прочтения пишет просмотр заявки, поэтому в заблокированном проекте (ADR023) не бросаем,
+        // а молча не пишем: просмотр должен работать, а строки в проекте на восстановлении — не появляться.
+        if ((await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).ProjectStatus == ProjectLifecycleStatus.Blocked)
+        {
+            return;
+        }
+
         var currentUserId = currentUserAccessor.UserId;
         var watermarks =
           unitOfWork.GetDbSet<ReadCommentWatermark>()
@@ -1216,7 +1223,8 @@ internal class ClaimServiceImpl(
         }
 
         // Права — по ProjectInfo, а не по comment.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        // Скрывать комментарии можно и в архиве (ADR014), но не в заблокированном проекте (ADR023).
+        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).EnsureNotBlocked();
 
         if (projectInfo.HasMasterAccess(currentUserAccessor) && !childComments.Any() &&
             comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)

@@ -100,6 +100,23 @@ public class ProjectRolesListViewModelBuilderTests
         result.HasEditAccess.ShouldBeFalse();
     }
 
+    // ADR023: сетки ролей не восстанавливают, поэтому в заблокированном проекте их правят как обычно.
+    [Fact]
+    public void Build_ProjectBlocked_ReturnsTrue()
+    {
+        _currentUserAccessor.UserIdentification = new UserIdentification(2);
+        var mock = new MockedProject();
+        mock.Project.IsBlocked = true;
+        mock.ReInitProjectInfo();
+
+        var result = ProjectRolesListViewModelBuilder.Build(
+            Array.Empty<ProjectRolesList>(),
+            mock.ProjectInfo,
+            _currentUserAccessor);
+
+        result.HasEditAccess.ShouldBeTrue();
+    }
+
     [Fact]
     public void Build_WithCharacterGroupNames_MapsGroupName()
     {

@@ -83,8 +83,16 @@ internal class PaymentsService(
     private BankApi GetApi(int projectId, int claimId)
         => new(clientFactory, GetApiConfiguration(projectId, claimId), logger);
 
+    /// <summary>
+    /// Платежи в заблокированном проекте запрещены целиком (ADR023): и новые, и обновление статуса
+    /// уже начатых — их сверяют с платёжным провайдером при восстановлении. Архив здесь не проверялся и раньше.
+    /// </summary>
+    private async Task EnsureProjectNotBlocked(int projectId)
+        => _ = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).EnsureNotBlocked();
+
     private async Task<Claim> GetClaimAsync(int projectId, int claimId)
     {
+        await EnsureProjectNotBlocked(projectId);
         var claim = await UnitOfWork.GetClaimsRepository().GetClaim(new(projectId, claimId));
         return claim ?? throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
     }
@@ -482,6 +490,8 @@ internal class PaymentsService(
 
     private async Task<FinanceOperation> LoadFinanceOperationAsync(int projectId, int claimId, int operationId)
     {
+        await EnsureProjectNotBlocked(projectId);
+
         // Loading finance operation
         FinanceOperation fo = await UnitOfWork.GetDbSet<FinanceOperation>()
             .Include(e => e.Claim)
@@ -515,6 +525,7 @@ internal class PaymentsService(
 
     private async Task<FinanceOperation?> LoadLastUnapprovedFinanceOperationAsync(int projectId, int claimId)
     {
+        await EnsureProjectNotBlocked(projectId);
         const int pageSize = 5;
 
         // Грязный чит
@@ -823,12 +834,16 @@ internal class PaymentsService(
     }
 
     public async Task<FinanceOperationState> UpdateFinanceOperationAsync(FinanceOperation fo)
-        => await UpdateFinanceOperationAsync(UnitOfWork.GetDbSet<FinanceOperation>().Attach(fo), paymentInfo: null);
+    {
+        await EnsureProjectNotBlocked(fo.ProjectId);
+        return await UpdateFinanceOperationAsync(UnitOfWork.GetDbSet<FinanceOperation>().Attach(fo), paymentInfo: null);
+    }
 
     /// <inheritdoc />
     public async Task<bool?> CancelRecurrentPaymentAsync(int projectId, int claimId, int recurrentPaymentId)
     {
         logger.LogInformation("Trying to cancel recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
+        await EnsureProjectNotBlocked(projectId);
 
         var recurrentPayment = await UnitOfWork.GetDbSet<RecurrentPayment>()
             .Where(rp => rp.ClaimId == claimId && rp.ProjectId == projectId && rp.RecurrentPaymentId == recurrentPaymentId)
@@ -932,6 +947,7 @@ internal class PaymentsService(
     private async Task<FinanceOperation?> InternalPerformRecurrentPaymentAsync(RecurrentPayment recurrentPayment, int? amount, bool internalCall = false)
     {
         logger.LogInformation("Trying to perform recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPayment.RecurrentPaymentId, recurrentPayment.ClaimId, recurrentPayment.ProjectId);
+        await EnsureProjectNotBlocked(recurrentPayment.ProjectId);
 
         if (!internalCall)
         {
@@ -1148,21 +1164,24 @@ internal class PaymentsService(
             .OrderBy(rp => rp.RecurrentPaymentId)
             .Take(pageSize)
             .Where(rp => rp.RecurrentPaymentId > afterId);
+        // Заблокированный проект (ADR023) — ни в списании, ни в отмене: подписки разберут при восстановлении.
         switch (activityStatus)
         {
             case true:
                 query = query.Where(
                     rp => rp.Status == RecurrentPaymentStatus.Active
                           && rp.Project.Active
+                          && !rp.Project.IsBlocked
                           && (rp.Claim.ClaimStatus == ClaimStatus.Approved || rp.Claim.ClaimStatus == ClaimStatus.CheckedIn)
                           && rp.PaymentType.IsActive);
                 break;
             case false:
                 query = query.Where(
-                    rp => rp.Status != RecurrentPaymentStatus.Active
-                          || !rp.PaymentType.IsActive
-                          || !(rp.Claim.ClaimStatus == ClaimStatus.Approved || rp.Claim.ClaimStatus == ClaimStatus.CheckedIn)
-                          || !rp.Project.Active);
+                    rp => !rp.Project.IsBlocked
+                          && (rp.Status != RecurrentPaymentStatus.Active
+                              || !rp.PaymentType.IsActive
+                              || !(rp.Claim.ClaimStatus == ClaimStatus.Approved || rp.Claim.ClaimStatus == ClaimStatus.CheckedIn)
+                              || !rp.Project.Active));
                 break;
         }
 
