@@ -1,4 +1,5 @@
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Claims;
@@ -46,5 +47,32 @@ public class SubscribeCalculatorTest
         mock.ReInitProjectInfo();
 
         (await GetRecepients(new UserIdentification(removed.UserId))).ShouldBeEmpty();
+    }
+
+    private Task<IReadOnlyCollection<NotificationRecepient>> GetForumRecepients(bool isVisibleToPlayer)
+    {
+        _ = mock.CreateApprovedClaim(mock.Character, mock.Player);
+        var claimsRepository = new FakeClaimsRepository(mock);
+        var calculator = new SubscribeCalculator(new FakeUserSubscribeRepository(), new FakeCharacterInfoRepository(mock), claimsRepository);
+        return calculator.GetRecepients(
+            new ForumCalculateArgs(
+                Initiator: mock.Master.ToUserInfoHeader(),
+                Groups: [mock.Project.RootGroup.GetId()],
+                RespondingTo: [],
+                Masters: [],
+                IsVisibleToPlayer: isVisibleToPlayer),
+            mock.ProjectInfo);
+    }
+
+    [Fact]
+    public async Task VisibleForumMessage_IsSentToPlayers()
+    {
+        (await GetForumRecepients(isVisibleToPlayer: true)).ShouldContain(r => r.UserId.Value == mock.Player.UserId && r.SubscriptionReason == SubscriptionReason.Forum);
+    }
+
+    [Fact]
+    public async Task HiddenForumMessage_IsNotSentToPlayers()
+    {
+        (await GetForumRecepients(isVisibleToPlayer: false)).ShouldNotContain(r => r.UserId.Value == mock.Player.UserId);
     }
 }

@@ -32,7 +32,8 @@ $@"Добрый день, %recepient.name%
             Initiator: model.Initiator,
             Groups: [forumThread.CharacterGroupId],
             Masters: [.. projectInfo.Masters.Select(x => x.UserInfo)],
-            RespondingTo: []
+            RespondingTo: [],
+            IsVisibleToPlayer: model.IsVisibleToPlayer
             );
 
         await notificationService.QueueNotification(new NotificationEvent(

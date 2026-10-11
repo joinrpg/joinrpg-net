@@ -61,9 +61,12 @@ internal class SubscribeCalculator(
 
         AddUserInfoHeaderIfNotPresent(list, args.RespondingTo, SubscriptionReason.AnswerToYourComment);
 
-        var claims = await claimsRepository.GetClaimHeadersWithPlayer([.. projectInfo.GroupTree.GetChildGroupIdsIncludingThis(args.Groups)], ClaimStatusSpec.Approved);
+        if (args.IsVisibleToPlayer)
+        {
+            var claims = await claimsRepository.GetClaimHeadersWithPlayer([.. projectInfo.GroupTree.GetChildGroupIdsIncludingThis(args.Groups)], ClaimStatusSpec.Approved);
 
-        AddUserInfoHeaderIfNotPresent(list, claims.Select(c => c.Player), SubscriptionReason.Forum);
+            AddUserInfoHeaderIfNotPresent(list, claims.Select(c => c.Player), SubscriptionReason.Forum);
+        }
 
         AddUserInfoHeaderIfNotPresent(list, args.Masters, SubscriptionReason.MasterOfGame);
 
@@ -114,9 +117,12 @@ internal record SubscribeCalculateArgs
      UserInfoHeader?[] RespondingTo
      );
 
+/// <param name="IsVisibleToPlayer">Сообщение видно игрокам. Если нет — игроков групп в получатели
+/// не добавляем.</param>
 internal record ForumCalculateArgs
     (UserInfoHeader Initiator,
      IReadOnlyCollection<CharacterGroupIdentification> Groups,
      IReadOnlyCollection<UserInfoHeader> RespondingTo,
-     IReadOnlyCollection<UserInfoHeader> Masters
+     IReadOnlyCollection<UserInfoHeader> Masters,
+     bool IsVisibleToPlayer
      );
