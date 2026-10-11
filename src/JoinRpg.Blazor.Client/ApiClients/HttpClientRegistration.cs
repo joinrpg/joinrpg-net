@@ -74,6 +74,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IMoveClient, MoveClientImpl>()
                 .AddHttpClient<IUserLinkResolveClient, UserLinkResolveClientImpl>()
                 .AddHttpClient<IProjectFieldOperationsClient, ProjectFieldOperationsClientImpl>()
-                .AddHttpClient<IUserAdminClient, UserAdminHttpClient>();
+                .AddHttpClient<IUserAdminClient, UserAdminHttpClient>()
+                .AddHttpClient<JoinRpg.Web.AdminTools.UserMerge.IUserMergeClient, UserMergeHttpClient>();
     }
 }

@@ -1,0 +1,8 @@
+@page "/admin/user-merge"
+@using JoinRpg.Web.AdminTools.UserMerge
+@model JoinRpg.Portal.Pages.Admin.UserMergeModel
+@{
+    ViewBag.Title = "Объединение аккаунтов";
+}
+
+@(await Html.RenderComponentAsync<UserMergePanel>(RenderMode.WebAssembly))
