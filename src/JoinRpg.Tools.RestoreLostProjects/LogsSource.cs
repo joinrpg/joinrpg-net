@@ -12,6 +12,9 @@ namespace JoinRpg.Tools.RestoreLostProjects;
 /// <remarks>
 /// Одна и та же запись может лежать в нескольких файлах выгрузки (сырые окна и объединённый файл),
 /// поэтому записи с одинаковым <c>uid</c> (он есть у каждой записи yc logging read) считаются один раз.
+/// Учитываются только ответы ниже 400: запрос с ошибкой (404 на чужой или несуществующий id, отказ
+/// в доступе) ничего в проекте не менял и не говорит ни о проекте, ни о его создателе. 302 — обычный
+/// исход успешного POST. Запись без StatusCode учитывается.
 /// </remarks>
 internal static class LogsSource
 {
@@ -23,7 +26,7 @@ internal static class LogsSource
         {
             await foreach (var element in ReadElements(path, ct))
             {
-                if (Parse(element) is not { } entry || entry.Timestamp >= lostAt)
+                if (Parse(element) is not { } entry || entry.Timestamp >= lostAt || entry.StatusCode >= 400)
                 {
                     continue;
                 }
@@ -94,7 +97,8 @@ internal static class LogsSource
             GetString(payload, "LoggedUser"),
             GetString(payload, "RequestPath"),
             GetString(payload, "ActionName"),
-            ParseTimestamp(GetString(payload, "@timestamp") ?? GetString(element, "timestamp")));
+            ParseTimestamp(GetString(payload, "@timestamp") ?? GetString(element, "timestamp")),
+            Get(payload, "StatusCode") is { ValueKind: JsonValueKind.Number } status && status.TryGetInt32(out var code) ? code : null);
         return entry.ProjectId is null && entry.RequestPath is null ? null : entry;
     }
 
