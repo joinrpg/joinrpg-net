@@ -124,6 +124,14 @@
                                 </a>
                             </li>
                         }
+                        @if (Model.ProjectStatus == ProjectLifecycleStatus.Blocked)
+                        {
+                            <li asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
+                                <a asp-page="/GamePages/ClaimRestore" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
+                                    Восстановление заявок из уведомлений
+                                </a>
+                            </li>
+                        }
                         @if (Model.BigGroups.Any())
                         {
                             <li role="separator" class="dropdown-header">По группам:</li>

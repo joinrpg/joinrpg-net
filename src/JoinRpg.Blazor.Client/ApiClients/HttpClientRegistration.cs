@@ -16,6 +16,7 @@ using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.Acl;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
+using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using JoinRpg.Web.ProjectMasterTools.Fields;
 using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
@@ -70,6 +71,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IGroupReportClient, GroupReportClientImpl>()
                 .AddHttpClient<IResponsibleMasterRuleClient, ResponsibleMasterRuleClient>()
                 .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>()
+                .AddHttpClient<IClaimRestoreClient, ClaimRestoreClient>()
                 .AddHttpClient<IMoneyTransferClient, MoneyTransferClient>()
                 .AddHttpClient<IMoveClient, MoveClientImpl>()
                 .AddHttpClient<IUserLinkResolveClient, UserLinkResolveClientImpl>()

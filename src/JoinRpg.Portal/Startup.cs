@@ -33,6 +33,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Notifications;
 using JoinRpg.Services.Notifications.Senders;
 using JoinRpg.WebPortal.Managers;
+using JoinRpg.WebPortal.Managers.Drp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -53,6 +54,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .Configure<JoinRpgHostNamesOptions>(Configuration.GetSection("JoinRpgHostNames"))
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<DonateOptions>(Configuration.GetSection("Donate"))
+            .Configure<DrpOptions>(Configuration.GetSection("Drp"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
 
         services.AddOptions<PostboxOptions>().BindConfiguration("Postbox");
