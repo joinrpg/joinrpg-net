@@ -185,7 +185,7 @@
       `UPDATE dbo.Projects SET IsBlocked = 1 WHERE Active = 1;`
 - [ ] 🟢 Список проектов, созданных после мая, — CSV на ручную проверку: id, название, создатель,
       источники ([#5479](https://github.com/joinrpg/joinrpg-net/issues/5479), PR [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485), [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504), [подробнее](#список-новых-проектов)).
-- [ ] 🟡 Оболочки этих проектов с прежним id, создателем и статусом «Заблокирован»
+- [ ] 🟢 Оболочки этих проектов с прежним id, создателем и статусом «Заблокирован»
       (`Active = 1`, `IsBlocked = 1`; `Active = 0` + `IsBlocked = 1` недопустимо — загрузка метаданных
       падает) — доменным созданием проекта с подменой счётчика ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491), PR [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509), [подробнее](#оболочки-проектов)). Запуск:
       `dotnet run --project src/JoinRpg.Tools.RestoreProjectShells -- --input <проверенный CSV> [--apply]`.
@@ -215,8 +215,7 @@
 
 ### Фаза 6. 🚧 Открыть `joinrpg.ru`
 
-- [ ] На `joinrpg.tsarevs.ru` — блокировка ([#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) к этому моменту влит; в браузере ещё не
-      проверялся): заблокированный проект показывает плашку; изменение даёт страницу «Проект
+- [ ] На `joinrpg.tsarevs.ru` — блокировка ([#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) влит; в браузере ещё не проверялся): заблокированный проект показывает плашку; изменение даёт страницу «Проект
       заблокирован»; мастер может добавить мастера и править сетки ролей; «Снять блокировку»
       (`/{projectId}/unblock`, кнопка в настройках) возвращает проект как был; «Закрыть» из
       блокировки — в архив.
@@ -685,15 +684,15 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` (ingress) | 2 | влит |
 | [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | влит |
 | [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504) | RestoreLostProjects — в логах только ответы ниже 400 | 4 | влит |
-| issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | заведён, есть открытые вопросы |
+| issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | закрыт |
 | [#5478](https://github.com/joinrpg/joinrpg-net/issues/5478) | ADR023, PR 0: «не в архиве» и «можно менять» у статуса проекта | 4 | влит |
 | [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480) | ADR023, PR 1: `Project.IsBlocked`, статус «Заблокирован», запрет изменений | 4 | влит |
 | [#5482](https://github.com/joinrpg/joinrpg-net/issues/5482) | ADR023, PR 2: проверки в сервисах, фильтры джоб | 4 | влит |
-| [#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) | ADR023, PR 3: снятие блокировки, закрытие, плашка, метки | 6 | на ревью, CI зелёный |
-| [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508) | ADR023: настройка полей в заблокированном проекте; требование к инструментам про дату обновления | 7 | на ревью |
+| [#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) | ADR023, PR 3: снятие блокировки, закрытие, плашка, метки | 6 | влит |
+| [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508) | ADR023: настройка полей в заблокированном проекте; требование к инструментам про дату обновления | 7 | влит |
 | issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | закрыт |
-| issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | заведён |
-| [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | на ревью |
+| issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | закрыт |
+| [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
 | issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | заведён |
 | [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
