@@ -32,7 +32,7 @@ internal class ClaimNotificationService(
             Claims: [claim.ClaimId],
             Characters: [claim.CharacterId, model.AnotherCharacterId],
             Finance: [model.PaymentOwner],
-            RespondingTo: [model.ParentCommentAuthor]
+            RespondingTo: [GetVisibleParentCommentAuthor(model, projectInfo)]
             );
 
 
@@ -71,6 +71,23 @@ internal class ClaimNotificationService(
             await subscribeCalculator.GetRecepients(args, projectInfo),
             virtualUsersService.PaymentsUser.GetId()
             ));
+    }
+
+    /// <summary>
+    /// Автор комментария, на который отвечают, — если ответ ему виден. Скрытый от игрока ответ
+    /// мастера на комментарий игрока не должен уходить игроку уведомлением.
+    /// </summary>
+    private static UserInfoHeader? GetVisibleParentCommentAuthor(ClaimSimpleChangedNotification model, ProjectInfo projectInfo)
+    {
+        if (model.ParentCommentAuthor is not { } author)
+        {
+            return null;
+        }
+        if (model.ClaimOperationType == ClaimOperationType.MasterSecretChange && !projectInfo.HasMasterAccess(author.UserId))
+        {
+            return null;
+        }
+        return author;
     }
 
     internal static Func<SubscriptionOptions, bool> GetSubscribePredicate(CommentExtraAction? commentExtraAction)
