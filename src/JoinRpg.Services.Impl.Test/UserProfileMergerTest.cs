@@ -27,8 +27,9 @@ public class UserProfileMergerTest
         secondary.Extra.Gender = Gender.Male;
         secondary.Extra.BirthDate = new DateTime(1990, 1, 1);
 
-        UserProfileMerger.MergeInto(primary, secondary);
+        var taken = UserProfileMerger.MergeInto(primary, secondary);
 
+        taken.ShouldBe(["Имя", "Фамилия", "Пол", "Телефон", "Telegram", "Дата рождения"], ignoreOrder: true);
         primary.BornName.ShouldBe("Пётр");
         primary.SurName.ShouldBe("Петров");
         primary.Extra.PhoneNumber.ShouldBe("+7 222");

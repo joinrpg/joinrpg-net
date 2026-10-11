@@ -83,6 +83,7 @@ public static class Services
             .AddTransient<IAdminNotificationService, AdminNotificationServiceImpl>()
             .AddTransient<UserFieldValidator>()
             .AddTransient<IUserMergeService, UserMergeService>()
+            .AddTransient<UserMergeNotifier>()
             ;
     }
 
