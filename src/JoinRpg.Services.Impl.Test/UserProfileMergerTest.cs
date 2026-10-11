@@ -54,6 +54,26 @@ public class UserProfileMergerTest
         primary.Extra.VkVerified.ShouldBeFalse();
     }
 
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)] // у основного свой ВК-логин — ВК поглощаемого через вход уже не подтвердить
+    public void VkFromSecondary_VerifiedOnlyWithoutPrimaryVkLogin(bool primaryHasVkLogin, bool expectedVerified)
+    {
+        var primary = CreateUser(1);
+        if (primaryHasVkLogin)
+        {
+            primary.ExternalLogins.Add(new UserExternalLogin { UserId = 1, Provider = UserExternalLogin.VkProvider, Key = "1" });
+        }
+        var secondary = CreateUser(2);
+        secondary.Extra.Vk = "id2";
+        secondary.Extra.VkVerified = true;
+
+        UserProfileMerger.MergeInto(primary, secondary);
+
+        primary.Extra.Vk.ShouldBe("id2");
+        primary.Extra.VkVerified.ShouldBe(expectedVerified);
+    }
+
     [Fact]
     public void MissingPrimaryExtra_CreatedFromSecondary()
     {
