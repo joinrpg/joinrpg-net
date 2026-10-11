@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Drp;
 
@@ -15,7 +16,8 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
 {
     private static readonly DateTimeOffset StatusChangedAt = new(2026, 9, 15, 12, 30, 0, TimeSpan.FromHours(3));
 
-    private ClaimRestoreService CreateService(int? currentUserId = null) => new(CreatePropsService(currentUserId));
+    private ClaimRestoreService CreateService(int? currentUserId = null)
+        => new(CreatePropsService(currentUserId), unitOfWork, metadataRepository, CreateCurrentUser(currentUserId));
 
     private void BlockProject()
     {
@@ -313,5 +315,258 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
         SaveChangesCallCount.ShouldBe(0);
+    }
+
+    // --- Восстановление потерянной заявки (её нет в восстановленной базе) ---
+
+    private const int LostClaimId = 500;
+
+    private static readonly DateTimeOffset LostClaimCreatedAt = new(2026, 6, 1, 10, 0, 0, TimeSpan.FromHours(3));
+
+    private LostClaimToRestore LostClaim(
+        CharacterIdentification? character = null,
+        string? newCharacterName = "Потерянный",
+        UserIdentification? responsibleMaster = null,
+        RestoredClaimTarget? target = null)
+        => new(
+            new ClaimIdentification(ProjectId, LostClaimId),
+            character,
+            newCharacterName,
+            new UserIdentification(mock.Player.UserId),
+            responsibleMaster ?? new UserIdentification(mock.Master.UserId),
+            LostClaimCreatedAt,
+            target ?? Target());
+
+    private Claim LostClaimInMock => mock.Project.Claims.Single(c => c.ClaimId == LostClaimId);
+
+    [Fact]
+    public async Task RestoreLostClaim_ApprovedOnCharacterWithOtherApprovedClaim_FailsBeforeWriting()
+    {
+        var character = mock.CreateCharacter("Занятый");
+        _ = mock.CreateApprovedClaim(character, mock.CreateMaster("Другой игрок"));
+        BlockProject();
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreLostClaim(LostClaim(
+                character: character.GetId(), newCharacterName: null,
+                target: Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt))));
+
+        mock.Project.Claims.ShouldNotContain(c => c.ClaimId == LostClaimId);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_CharacterFromOtherProject_Throws()
+    {
+        BlockProject();
+        var charactersCount = mock.Project.Characters.Count;
+
+        _ = await Should.ThrowAsync<ArgumentException>(
+            () => CreateService().RestoreLostClaim(LostClaim(character: new CharacterIdentification(new ProjectIdentification(9999), 1), newCharacterName: null)));
+
+        mock.Project.Claims.ShouldNotContain(c => c.ClaimId == LostClaimId);
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_TargetCharacter_Throws()
+    {
+        var other = mock.CreateCharacter("Другой");
+        BlockProject();
+        var charactersCount = mock.Project.Characters.Count;
+
+        _ = await Should.ThrowAsync<ArgumentException>(
+            () => CreateService().RestoreLostClaim(LostClaim(target: Target(character: other.GetId()))));
+
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_CreatedInFuture_Throws()
+    {
+        BlockProject();
+        var charactersCount = mock.Project.Characters.Count;
+        var request = LostClaim() with { CreatedAt = DateTimeOffset.UtcNow.AddDays(10) };
+
+        _ = await Should.ThrowAsync<CannotPerformOperationInFuture>(() => CreateService().RestoreLostClaim(request));
+
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+    }
+
+    /// <summary>
+    /// Поле-имя персонажа в проекте: тогда имя нового персонажа пишется его значением.
+    /// </summary>
+    private ProjectFieldInfo AddCharacterNameField()
+    {
+        var info = mock.AddField(f =>
+        {
+            f.FieldName = "Имя персонажа";
+            f.FieldType = ProjectFieldType.String;
+            f.FieldBoundTo = FieldBoundTo.Character;
+            f.CanPlayerView = true;
+        });
+        mock.Project.Details.CharacterNameField = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == info.Id.ProjectFieldId);
+        mock.ReInitProjectInfo();
+        return mock.ProjectInfo.CharacterNameField.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_NewCharacter_CreatesHiddenPlayerCharacterInRootGroup()
+    {
+        BlockProject();
+        var charactersBefore = mock.Project.Characters.ToList();
+
+        await CreateService().RestoreLostClaim(LostClaim(newCharacterName: "Потерянный"));
+
+        var created = mock.Project.Characters.Except(charactersBefore).ShouldHaveSingleItem();
+        created.CharacterType.ShouldBe(CharacterType.Player);
+        created.ParentCharacterGroupIds.ShouldBe([mock.Project.CharacterGroups.Single(g => g.IsRoot).CharacterGroupId]);
+        created.IsPublic.ShouldBeFalse();
+        created.CharacterName.ShouldBe("Потерянный");
+
+        var claim = LostClaimInMock;
+        claim.CharacterId.ShouldBe(created.CharacterId);
+        claim.PlayerUserId.ShouldBe(mock.Player.UserId);
+        claim.ResponsibleMasterUserId.ShouldBe(mock.Master.UserId);
+        claim.CreateDate.ShouldBe(LostClaimCreatedAt.UtcDateTime);
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByMaster);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_NewCharacter_NameGoesToNameField_WhenProjectHasIt()
+    {
+        var nameField = AddCharacterNameField();
+        BlockProject();
+        var charactersBefore = mock.Project.Characters.ToList();
+
+        await CreateService().RestoreLostClaim(LostClaim(newCharacterName: "Потерянный"));
+
+        var created = mock.Project.Characters.Except(charactersBefore).ShouldHaveSingleItem();
+        created.CharacterName.ShouldBe("Потерянный");
+        mock.GetCharacterInfo(created).CharacterFields.GetValue(mock.ProjectInfo.GetFieldById(nameField.Id)).ShouldBe("Потерянный");
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_ExistingCharacter_IsUsed_AndNoCharacterCreated()
+    {
+        var character = mock.CreateCharacter("Вася");
+        BlockProject();
+        var charactersCount = mock.Project.Characters.Count;
+
+        await CreateService().RestoreLostClaim(LostClaim(character: character.GetId(), newCharacterName: null));
+
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+        LostClaimInMock.CharacterId.ShouldBe(character.CharacterId);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_AppliesTargetStatus()
+    {
+        var character = mock.CreateCharacter("Вася");
+        BlockProject();
+
+        await CreateService().RestoreLostClaim(LostClaim(
+            character: character.GetId(),
+            target: Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt)));
+
+        var claim = LostClaimInMock;
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        claim.MasterAcceptedDate.ShouldBe(StatusChangedAt.UtcDateTime);
+        character.ApprovedClaimId.ShouldBe(LostClaimId);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_EmptyTarget_StillWritesSingleHiddenHistoryRecord_WithoutNotifications()
+    {
+        BlockProject();
+
+        await CreateService().RestoreLostClaim(LostClaim());
+
+        var claim = LostClaimInMock;
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByMaster);
+        var comment = claim.CommentDiscussion.Comments.ShouldHaveSingleItem();
+        comment.ExtraAction.ShouldBe(CommentExtraAction.RestoredFromNotifications);
+        comment.IsVisibleToPlayer.ShouldBeFalse();
+        claimNotifications.Sent.ShouldBeEmpty();
+        SentInOrder.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_WithTarget_WritesSingleHiddenHistoryRecord_WithoutNotifications()
+    {
+        BlockProject();
+
+        await CreateService().RestoreLostClaim(LostClaim(
+            target: Target(status: ClaimStatus.Discussed, statusChangedAt: StatusChangedAt, manualFee: 700)));
+
+        var comment = LostClaimInMock.CommentDiscussion.Comments.ShouldHaveSingleItem();
+        comment.ExtraAction.ShouldBe(CommentExtraAction.RestoredFromNotifications);
+        comment.IsVisibleToPlayer.ShouldBeFalse();
+        claimNotifications.Sent.ShouldBeEmpty();
+        SentInOrder.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_ClaimAlreadyExists_Throws_AndNoCharacterCreated()
+    {
+        var existing = CreateClaim(ClaimStatus.Discussed);
+        var charactersCount = mock.Project.Characters.Count;
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreLostClaim(LostClaim() with { ClaimId = existing.GetId() }));
+
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_ActiveProject_Throws_AndNothingIsCreated()
+    {
+        var charactersCount = mock.Project.Characters.Count;
+
+        _ = await Should.ThrowAsync<JoinValidationException>(() => CreateService().RestoreLostClaim(LostClaim()));
+
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+        mock.Project.Claims.ShouldNotContain(c => c.ClaimId == LostClaimId);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task RestoreLostClaim_NoCharacterAndNoName_Throws(string? name)
+    {
+        BlockProject();
+        var charactersCount = mock.Project.Characters.Count;
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreLostClaim(LostClaim(character: null, newCharacterName: name)));
+
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+        mock.Project.Claims.ShouldNotContain(c => c.ClaimId == LostClaimId);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_ResponsibleNotAMaster_Throws()
+    {
+        BlockProject();
+        var charactersCount = mock.Project.Characters.Count;
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreLostClaim(LostClaim(responsibleMaster: new UserIdentification(mock.Player.UserId))));
+
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+        mock.Project.Claims.ShouldNotContain(c => c.ClaimId == LostClaimId);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_Player_HasNoAccess()
+    {
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).RestoreLostClaim(LostClaim()));
+
+        mock.Project.Claims.ShouldNotContain(c => c.ClaimId == LostClaimId);
     }
 }

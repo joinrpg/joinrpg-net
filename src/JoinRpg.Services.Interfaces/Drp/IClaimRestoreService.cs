@@ -28,4 +28,32 @@ public interface IClaimRestoreService
     /// вызов с тем же состоянием ничего не меняет и в историю не пишет.
     /// </summary>
     Task ApplyRestoredState(ClaimIdentification claimId, RestoredClaimTarget target);
+
+    /// <summary>
+    /// Создаёт заявку, которой нет в восстановленной базе, <b>с прежним идентификатором</b> — на него
+    /// ссылаются уведомления, письма и выгрузки — и приводит её к состоянию на момент аварии.
+    /// </summary>
+    /// <returns>
+    /// Персонаж заявки — найденный или созданный: следующие потерянные заявки на того же нового
+    /// персонажа надо подавать уже на него, а не создавать второго.
+    /// </returns>
+    Task<CharacterIdentification> RestoreLostClaim(LostClaimToRestore claim);
 }
+
+/// <summary>
+/// Потерянная заявка: подана после бэкапа, в восстановленной базе её нет.
+/// </summary>
+/// <param name="ClaimId">Прежний идентификатор из уведомлений.</param>
+/// <param name="Character">
+/// Персонаж из восстановленной базы, на которого была заявка, либо null — тогда создаётся новый
+/// персонаж игрока с именем <paramref name="NewCharacterName"/> в корневой группе.
+/// </param>
+/// <param name="CreatedAt">Когда заявка была подана — первое событие по ней.</param>
+public record LostClaimToRestore(
+    ClaimIdentification ClaimId,
+    CharacterIdentification? Character,
+    string? NewCharacterName,
+    UserIdentification Player,
+    UserIdentification ResponsibleMaster,
+    DateTimeOffset CreatedAt,
+    RestoredClaimTarget Target);

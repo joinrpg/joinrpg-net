@@ -38,7 +38,35 @@ public interface ICharacterAggregateWriteRepository
     /// <param name="claimId">Заявка, которая будет изменена.</param>
     /// <exception cref="JoinRpgEntityNotFoundException">Заявка или её персонаж не найдены.</exception>
     Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId);
+
+    /// <summary>
+    /// Вставляет «оболочку» заявки с заданным идентификатором — для восстановления потерянной
+    /// заявки по уведомлениям (DRP, #5481): на её прежний id ссылаются уведомления, письма и выгрузки,
+    /// а EF6 значение IDENTITY-колонки не вставляет. Оболочка — заявка в статусе «предложена» со своим
+    /// обсуждением и без полей; наполняет её дальше обычная операция над заявкой.
+    /// </summary>
+    /// <remarks>
+    /// Выполняется сразу, своей транзакцией, мимо <c>SaveChanges</c>. Значение ниже текущего счётчика
+    /// IDENTITY его не двигает, поэтому параллельно создаваемым заявкам не мешает.
+    /// </remarks>
+    /// <returns><c>false</c>, если заявка с таким идентификатором уже есть (в любом проекте).</returns>
+    Task<bool> InsertRestoredClaimShell(RestoredClaimShell shell);
+
+    /// <summary>
+    /// Занят ли идентификатор заявки в <b>любом</b> проекте — идентификаторы заявок общие на всю базу.
+    /// </summary>
+    Task<bool> IsClaimIdTaken(int claimId);
 }
+
+/// <summary>
+/// Минимум, без которого строки заявки нет: персонаж, игрок, ответственный мастер и дата подачи.
+/// </summary>
+public record RestoredClaimShell(
+    ClaimIdentification ClaimId,
+    CharacterIdentification CharacterId,
+    UserIdentification PlayerId,
+    UserIdentification ResponsibleMasterId,
+    DateTime CreatedAt);
 
 /// <summary>
 /// Согласованная тройка: трекаемый <see cref="Character"/>, <see cref="ProjectInfo"/> и
