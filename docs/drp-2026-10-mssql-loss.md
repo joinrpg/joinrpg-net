@@ -13,12 +13,13 @@
   считаем моментом аварии.
 - Последний доступный бэкап MSSQL — **май 2026**. Всё, что создано и изменено с мая по
   7 октября, в нём отсутствует: почти весь сезон.
-- Postgres-кластер `joinrpg-prod` цел: база уведомлений (`Notifications`), база IdPortal, ключи
-  Data Protection, журнал ежедневных джоб. Ночные бэкапы кластера хранятся 60 дней.
-- Postgres восстановлен из последнего актуального бэкапа в новый кластер `joinrpg-new`
-  (`c9qg3f27vleg34u1f1lr`, Yandex Cloud, 2026-10-10) — с ним работают приложения и инструменты
-  восстановления. `joinrpg-prod` — исходник, не трогаем.
-- Новый k8s-кластер — в **Selectel**.
+- Postgres-кластер `joinrpg-prod` (Yandex Cloud) цел: база уведомлений (`Notifications`), база
+  IdPortal, ключи Data Protection, журнал ежедневных джоб. Восстановлен из последнего актуального
+  бэкапа в `joinrpg-new` (`c9qg3f27vleg34u1f1lr`, 2026-10-10), с него снят `pg_dump`
+  (2026-10-11). `joinrpg-prod` — исходник, не трогаем.
+- **Всё разворачивается заново в Selectel**: k8s, MSSQL, Managed PostgreSQL (из дампа), S3,
+  DNS, балансировщик, сертификаты, логи. Инфраструктуру ведут инженеры по
+  [своему плану](https://docs.google.com/document/d/1b8lPIU475HqAW12Q9crq0tnxvZNhBplq7Ek7eXh3N2U/edit?tab=t.0); в этом плане — то, что от неё нужно приложению, и правки в репозитории.
 - Сайт не запущен.
 
 ## Источники данных
@@ -67,35 +68,47 @@
       проекта (фаза 7), в поддержку — только если не справятся (в выгрузках ПДн). Игрокам — не
       удалять письма.
 
-### Фаза 1. Инфраструктура
+### Фаза 1. Инфраструктура в Selectel
 
-Кластер Kubernetes потерян вместе с MSSQL. Новый — в Selectel; Postgres (`joinrpg-new`) и
-Container Registry остаются в Yandex Cloud ([подробнее](#кластер-в-selectel)).
+Ведут инженеры по [своему плану](https://docs.google.com/document/d/1b8lPIU475HqAW12Q9crq0tnxvZNhBplq7Ek7eXh3N2U/edit?tab=t.0) — пункты оттуда здесь не дублируем. От нас — что нужно
+приложению и что меняется в репозитории ([подробнее](#инфраструктура-в-selectel)).
 
-- [ ] Кластер Kubernetes в Selectel: группа узлов под Portal, IdPortal, ComponentBook и MSSQL;
-      ingress-nginx (ingress class `nginx`, как в старом); namespace `prod`.
-- [ ] Образы из Yandex Container Registry: `imagePullSecret` с ключом сервисного аккаунта.
-- [ ] Postgres: поды Selectel ходят в `joinrpg-new` по публичному хосту с SSL; исходящие адреса
-      кластера Selectel — в разрешённые у `joinrpg-new`. Строки подключения `DataProtection`,
-      `DailyJob`, `Notifications`, IdPortal — на `joinrpg-new`.
-- [ ] GitHub, окружение prod: секрет `KUBECONFIG` — на новый кластер.
-- [ ] MSSQL в кластере — вручную или в отдельном репозитории (не здесь); **регулярные бэкапы**
-      с первого дня ([подробнее](#mssql-в-кластере)).
-- [ ] Внешний доступ к MSSQL: служебный домен `joindb.tsarevs.ru` (TCP 1433) + DNS-запись,
-      с ограничением по IP, как было раньше — для скриптов и инструментов восстановления с машины
-      админа ([подробнее](#внешний-доступ-к-mssql)).
-- [ ] Логи подов — в Monium (из Selectel — агентом с ключом сервисного аккаунта Yandex Cloud); проверить, что поля Serilog (`RequestPath`, `ProjectId`,
-      `LoggedUser`, `ActionName`) доезжают. Обновить скилл `prod-logs`.
-- [ ] TLS-сертификаты для боевых и служебных доменов — cert-manager или Yandex Certificate
-      Manager ([варианты](#сертификаты)).
+**Нужно от инфраструктуры**
+
+- [ ] Кластер k8s, namespace `joinrpg-prod`; ingress-nginx (ingress class `nginx`, как в старом)
+      или его замена — тогда править манифесты.
+- [ ] Автовыдача сертификатов Let's Encrypt для боевых и служебных доменов.
+- [ ] MSSQL Express (ВМ или в кубере — решают инженеры), **регулярные бэкапы** с первого дня
+      ([подробнее](#mssql-в-кластере)).
+- [ ] Внешний доступ к MSSQL: `joindb.tsarevs.ru` (TCP 1433), только с разрешённых IP, как было
+      раньше ([подробнее](#внешний-доступ-к-mssql)).
+- [ ] Managed PostgreSQL, в него — дамп `joinrpg-new` от 2026-10-11 (все прод-базы).
+- [ ] S3 (аватары и прочие файлы) перенесён.
+- [ ] Облачные логи: stdout подов, разделение по namespace.
+- [ ] Хранение секретов и доставка их в кубер — решение инженеров; от него зависит, откуда
+      деплой берёт строки подключения (сейчас — GitHub-секреты `KUBESECRET_*`).
+- [ ] Отправка почты: сейчас Yandex Postbox — решить, оставляем ли его из Selectel или меняем
+      (через почту идут «забыл пароль» и подтверждение email — без неё фазы 4–5 не проверить).
+
+**🛠 Правки в репозитории**
+
+- [ ] Деплой (`deploy_reusable_workflow.yml`, `manifests/prod`): namespace `joinrpg-prod`
+      вместо `prod` (сейчас имя окружения = папка манифестов = namespace = метка прунинга);
+      `KUBECONFIG` нового кластера; реестр образов (сейчас `cr.yandex`).
+- [ ] Строки подключения: Postgres (`DataProtection`, `DailyJob`, `Notifications`, IdPortal) —
+      на новый Managed PostgreSQL; S3 — на новый.
+- [ ] Логи: формат severity в `CustomJsonFormatter` (`level`) заточен под Yandex Cloud Logging —
+      привести к формату новых облачных логов. Обновить скилл `prod-logs`.
 
 ### Фаза 2. 🚧 Заглушка на обоих доменах, служебные домены
 
-- [ ] Включить заглушку для `joinrpg.ru` и `id.joinrpg.ru` на балансировщике нового кластера —
+- [ ] Включить заглушку для `joinrpg.ru` и `id.joinrpg.ru` (статическая заглушка — план
+      инженеров) —
       **до** того, как в секрете `joinrpg-main` появится новая база ([деплой](#деплой)). Ответ 503
       с `Retry-After`.
-- [ ] DNS: боевые домены (`joinrpg.ru`, `www.joinrpg.ru`, `id.joinrpg.ru`,
-      `components.joinrpg.ru`) — на адрес нового балансировщика.
+- [ ] DNS (зоны уже переносятся в Selectel — план инженеров): боевые домены (`joinrpg.ru`,
+      `www.joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru`) — на адрес нового
+      балансировщика.
 - [ ] DNS: завести записи `joinrpg.tsarevs.ru` и `id.joinrpg.tsarevs.ru` на тот же адрес, что
       боевые, мимо заглушки. **До** деплоя из фазы 4 — иначе cert-manager не выпустит
       сертификаты.
@@ -125,8 +138,8 @@ Container Registry остаются в Yandex Cloud ([подробнее](#кл�
 
 - [x] ~~Заморозить очередь уведомлений~~ — очередь пуста (проверено 2026-10-10), до старта
       писать в неё некому ([подробнее](#очередь-уведомлений)).
-- [ ] Перед деплоем ещё раз убедиться, что `queued` в `joinrpg-prod-notifications` кластера
-      `joinrpg-new` пуст (проверено 2026-10-10).
+- [ ] Перед деплоем ещё раз убедиться, что `queued` в `joinrpg-prod-notifications` нового
+      Managed PostgreSQL пуст (в `joinrpg-new` проверено 2026-10-10).
 - [x] ~~Ядовитые Telegram-строки в очереди~~ — исправлено #5468.
 
 **Конфиг** (`manifests/prod`, уходит одним деплоем с новым секретом в конце фазы 4)
@@ -250,23 +263,29 @@ IdPortal и ingress. Миграция и старт подов идут одни
 Пока секрет смотрит в потерянную базу, деплой падает на миграции и манифесты не применяет —
 поэтому изменения конфига в `manifests/prod` вступят в силу только деплоем с новым секретом.
 
-### Кластер в Selectel
+### Инфраструктура в Selectel
 
-Новый k8s-кластер — в Selectel, остальное остаётся в Yandex Cloud: Postgres `joinrpg-new`,
-Container Registry, Monium, Postbox, Lockbox (если используется). Отсюда:
+Всё разворачивается заново в Selectel по [плану инженеров](https://docs.google.com/document/d/1b8lPIU475HqAW12Q9crq0tnxvZNhBplq7Ek7eXh3N2U/edit?tab=t.0): k8s (зона ru-6, 3 узла
+4 CPU / 8 ГБ, namespace вида `joinrpg-prod`), балансировщик, Let's Encrypt, статическая
+заглушка, MSSQL, Managed PostgreSQL, S3, DNS (зоны переносятся с Яндекса), облачные логи,
+хранение секретов. Что это значит для репозитория:
 
-- **Образы** — `imagePullSecret` для `cr.yandex` с ключом сервисного аккаунта (роль на pull).
-- **Postgres** — между облаками по публичному хосту (`c-c9qg3f27vleg34u1f1lr.rw.mdb.yandexcloud.net:6432`),
-  только SSL, в `joinrpg-new` разрешены исходящие адреса Selectel. Задержка между облаками —
-  проверить, что Portal укладывается (запросов к Postgres немного: уведомления, ключи, джобы).
-- **Логи** — агент сбора логов в Selectel пишет в Monium с ключом сервисного аккаунта.
-- **Сертификаты** — Yandex Certificate Manager синхронизировать в кластер Selectel сложнее,
-  cert-manager в самом кластере — естественнее.
+- **Namespace.** Сейчас деплой использует имя окружения (`prod`) сразу как папку манифестов,
+  namespace и метку прунинга `managed-by-kustomize-prod`. Под `joinrpg-prod` это надо развести.
+- **Реестр образов.** Деплой логинится в Yandex Container Registry (`cr.yandex`,
+  `YANDEX_CR_SA_KEY_JSON`). Если реестр тоже переезжает — менять сборку и деплой; если нет —
+  кластеру нужен `imagePullSecret`.
+- **Логи.** `CustomJsonFormatter` пишет severity в поле `level` в расчёте на Yandex Cloud
+  Logging; под новые облачные логи — поправить.
+- **Почта.** Yandex Postbox; без отправки писем не проверить «забыл пароль».
+- **Сертификаты** — автовыдача Let's Encrypt в кластере (cert-manager или аналог). Аннотации
+  `cert-manager.io/cluster-issuer` в ingress (включая служебные домены, #5474) — сверить с
+  выбранным механизмом.
 
 ### MSSQL в кластере
 
-Вместо потерянного managed-экземпляра — MSSQL внутри нового кластера: StatefulSet, постоянный
-диск, образ `mcr.microsoft.com/mssql/server` не старше версии, из которой снят бэкап (локально
+Вместо потерянного managed-экземпляра — MSSQL в Selectel (на ВМ или в кубере — решают
+инженеры), образ `mcr.microsoft.com/mssql/server` не старше версии, из которой снят бэкап (локально
 используем 2019), редакция Express (решение 2026-10-10; лимит 10 ГБ на базу).
 
 - **Бэкапы.** CronJob с `BACKUP DATABASE` и выгрузкой в Object Storage, с хранением нескольких
@@ -310,7 +329,7 @@ Container Registry, Monium, Postbox, Lockbox (если используется)
 2. **Строки подключения — user-secrets** с общим `UserSecretsId` `joinrpg-drp`: настраиваются
    один раз на машине админа, вне репозитория. Ключи как в Portal:
    `ConnectionStrings:DefaultConnection` (MSSQL через `joindb.tsarevs.ru`),
-   `ConnectionStrings:Notifications` (база `joinrpg-prod-notifications` кластера `joinrpg-new`).
+   `ConnectionStrings:Notifications` (база `joinrpg-prod-notifications` в новом Managed PostgreSQL).
    ```
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<...>" --id joinrpg-drp
    dotnet user-secrets set "ConnectionStrings:Notifications" "<...>" --id joinrpg-drp
@@ -334,16 +353,10 @@ TCP-проброс ingress-nginx. Доступ — только с разреш�
 
 ### Сертификаты
 
-Старые TLS-секреты потеряны вместе с кластером, сертификаты выпускаются заново. Варианты:
-
-- **cert-manager** в новом кластере, как было (`letsencrypt-prod`, HTTP-01): манифесты ingress не
-  меняются. Нужно, чтобы DNS уже смотрел на новый балансировщик, а заглушка пропускала
-  `/.well-known/acme-challenge/`. Лимиты Let's Encrypt на повторный выпуск для того же набора
-  имён — учитывать при экспериментах.
-- **Yandex Certificate Manager**: управляемые сертификаты Let's Encrypt с проверкой через DNS
-  (заглушка не мешает), автопродление. В кластер — через синхронизацию в секрет k8s; как
-  именно (External Secrets и т.п.) — проверить по документации Yandex Cloud. Тогда аннотации
-  cert-manager в ingress (`cert-manager.io/cluster-issuer`) убрать.
+Старые TLS-секреты потеряны вместе с кластером, сертификаты выпускаются заново — автовыдачей
+Let's Encrypt в новом кластере (план инженеров). Для HTTP-01 DNS уже должен смотреть на новый
+балансировщик, а заглушка — пропускать `/.well-known/acme-challenge/`. Лимиты Let's Encrypt на
+повторный выпуск для того же набора имён — учитывать при экспериментах.
 
 ### Сдвиг счётчиков
 
