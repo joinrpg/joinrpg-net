@@ -31,6 +31,8 @@ spec:
                   - joinrpg-portal
               topologyKey: kubernetes.io/hostname
             weight: 100
+      imagePullSecrets:
+      - name: selectel-cr-pull
       containers:
       - name: joinrpg-portal
         envFrom:
