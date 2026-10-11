@@ -101,41 +101,52 @@ jobs:
       with:
         yc-sa-json-credentials: ${{ secrets.YANDEX_CR_SA_KEY_JSON }}
 
-    - name: Publish & push portal
+    # SDK собирает образы в локальный docker, а пушит docker push: при прямом пуше из SDK
+    # Selectel возвращает в Location внутренний адрес (*.craas-service.svc) и загрузка слоёв падает.
+    - name: Build portal image
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${APP_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
 
-    # TODO: убрать, когда деплой переедет на Selectel
-    - name: Publish & push portal to Yandex
-      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${APP_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} -p:ContainerRegistry=cr.yandex -p:ContainerRepository=crp3fr717nr1rn78qeij/joinrpg-portal
-
-    - name: Publish & push migrator
+    - name: Build migrator image
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
 
-    # TODO: убрать, когда деплой переедет на Selectel
-    - name: Publish & push migrator to Yandex
-      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${MIGRATOR_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} -p:ContainerRegistry=cr.yandex -p:ContainerRepository=crp3fr717nr1rn78qeij/joinrpg-dal-migrate
-
-    - name: Publish & push id portal
+    - name: Build id portal image
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
 
-    # TODO: убрать, когда деплой переедет на Selectel
-    - name: Publish & push id portal to Yandex
-      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} -p:ContainerRegistry=cr.yandex -p:ContainerRepository=crp3fr717nr1rn78qeij/joinrpg-idportal
-
-    - name: Publish & push component book
+    - name: Build component book image
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
       run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${COMPONENTBOOK_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
 
-    # TODO: убрать, когда деплой переедет на Selectel
-    - name: Publish & push component book to Yandex
+    - name: Push images to Selectel
       if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
-      run: dotnet publish --no-restore --os linux --arch x64 -c Release /t:PublishContainer ${COMPONENTBOOK_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }} -p:ContainerRegistry=cr.yandex -p:ContainerRepository=crp3fr717nr1rn78qeij/joinrpg-componentbook
+      env:
+        TARGET_PREFIX: cr.selcloud.ru/joinrpg
+        IMAGE_NAMES: joinrpg-portal joinrpg-dal-migrate joinrpg-idportal joinrpg-componentbook
+      run: |
+        set -euo pipefail
+        for name in ${IMAGE_NAMES}; do
+          for tag in latest ${{ env.CALCULATED_VERSION }}; do
+            docker tag joinrpg/${name}:${tag} ${TARGET_PREFIX}/${name}:${tag}
+            docker push --quiet ${TARGET_PREFIX}/${name}:${tag}
+          done
+        done
+
+    # TODO: убрать, когда деплой переедет на Selectel
+    - name: Push images to Yandex
+      if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+      env:
+        TARGET_PREFIX: cr.yandex/crp3fr717nr1rn78qeij
+        IMAGE_NAMES: joinrpg-portal joinrpg-dal-migrate joinrpg-idportal joinrpg-componentbook
+      run: |
+        set -euo pipefail
+        for name in ${IMAGE_NAMES}; do
+          for tag in latest ${{ env.CALCULATED_VERSION }}; do
+            docker tag joinrpg/${name}:${tag} ${TARGET_PREFIX}/${name}:${tag}
+            docker push --quiet ${TARGET_PREFIX}/${name}:${tag}
+          done
+        done
 
   report:
     runs-on: ubuntu-24.04

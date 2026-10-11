@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
-    <ContainerRegistry>cr.selcloud.ru</ContainerRegistry>
     <ContainerRepository>joinrpg/joinrpg-componentbook</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <!-- ReferenceTrimmer не видит, что ссылка на Client нужна UseBlazorFrameworkFiles() для копирования wwwroot/_framework при публикации, т.к. нет прямого использования типов Client -->
