@@ -474,6 +474,42 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
         character.ApprovedClaimId.ShouldBe(LostClaimId);
     }
 
+    /// <summary>
+    /// Восстановленные строки несут исторические даты, а дата последнего обновления проекта — максимум по
+    /// заявкам, комментариям и т.п. Если её не поднять, после снятия блокировки проект сочтут давно
+    /// не обновлявшимся и <c>ProjectPerformCloseJob</c> его закроет (требование в #5481, ADR023).
+    /// </summary>
+    [Fact]
+    public async Task RestoreLostClaim_BumpsLastUpdateToNow_DespiteHistoricalDates()
+    {
+        var character = mock.CreateCharacter("Вася");
+        BlockProject();
+        var before = DateTime.UtcNow;
+
+        await CreateService().RestoreLostClaim(LostClaim(
+            character: character.GetId(),
+            target: Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt)));
+
+        var claim = LostClaimInMock;
+        claim.CreateDate.ShouldBe(LostClaimCreatedAt.UtcDateTime);
+        claim.LastUpdateDateTime.ShouldBeGreaterThanOrEqualTo(before);
+        RestoreComments(claim).ShouldHaveSingleItem().LastEditTime.ShouldBeGreaterThanOrEqualTo(before);
+    }
+
+    [Fact]
+    public async Task ApplyRestoredState_BumpsLastUpdateToNow_DespiteHistoricalStatusDate()
+    {
+        var claim = CreateClaim(ClaimStatus.Discussed);
+        claim.LastUpdateDateTime = new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc);
+        var before = DateTime.UtcNow;
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+
+        claim.MasterAcceptedDate.ShouldBe(StatusChangedAt.UtcDateTime);
+        claim.LastUpdateDateTime.ShouldBeGreaterThanOrEqualTo(before);
+        RestoreComments(claim).ShouldHaveSingleItem().LastEditTime.ShouldBeGreaterThanOrEqualTo(before);
+    }
+
     [Fact]
     public async Task RestoreLostClaim_EmptyTarget_StillWritesSingleHiddenHistoryRecord_WithoutNotifications()
     {
