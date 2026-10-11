@@ -271,7 +271,7 @@ internal class NotificationsRepository(
         return (
             UpToFirstDash(claim.ToString()),
             UpToFirstDash(new ClaimCommentIdentification(claim, 0).ToString()),
-            UpToFirstDash(new FinanceOperationIdentification(projectId, 0, 0).ToString()));
+            UpToFirstDash(new FinanceOperationIdentification(claim, 0).ToString()));
 
         static string UpToFirstDash(string reference) => reference[..(reference.IndexOf('-') + 1)];
     }

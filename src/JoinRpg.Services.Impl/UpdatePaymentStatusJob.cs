@@ -22,7 +22,7 @@ public class UpdatePaymentStatusJob(IPaymentsService paymentsService, ILogger<Up
 
         foreach (var operationId in unfinishedOperations)
         {
-            var state = await paymentsService.UpdateClaimPaymentAsync(operationId.ProjectId, operationId.ClaimId, operationId.FinanceOperationId);
+            var state = await paymentsService.UpdateClaimPaymentAsync(operationId.ProjectId, operationId.ClaimId.ClaimId, operationId.FinanceOperationId);
             results[state]++;
         }
 
