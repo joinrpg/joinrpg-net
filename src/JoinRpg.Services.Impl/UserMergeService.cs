@@ -87,6 +87,12 @@ internal class UserMergeService(
             yield return new UserMergeConflict.SameUser();
         }
 
+        // Иначе сессия админа после слияния укажет на удалённого пользователя.
+        if (secondary == currentUserAccessor.UserIdentification)
+        {
+            yield return new UserMergeConflict.SecondaryIsCurrentUser();
+        }
+
         UserIdentification[] virtualUsers =
             [new(virtualUsersService.RobotUser.UserId), new(virtualUsersService.PaymentsUser.UserId)];
         foreach (var userId in new[] { primary, secondary }.Distinct().Where(virtualUsers.Contains))

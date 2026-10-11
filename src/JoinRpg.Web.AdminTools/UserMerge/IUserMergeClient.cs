@@ -47,4 +47,5 @@ public enum UserMergeConflictKind
     MoneyTransfersBetween,
     BothCaptains,
     BlockedProject,
+    SecondaryIsCurrentUser,
 }
