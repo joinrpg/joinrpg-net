@@ -35,6 +35,12 @@ public interface IUnitOfWork : IDisposable
     /// </summary>
     IRoomCategoryPlanWriteRepository GetRoomCategoryPlanWriteRepository();
 
+    /// <summary>
+    /// Репозиторий записи слияния пользователей (ADR024). Доступен только отсюда по той же
+    /// причине, что и репозитории агрегатов выше.
+    /// </summary>
+    IUserMergeWriteRepository GetUserMergeWriteRepository();
+
     IClaimsRepository GetClaimsRepository();
     IPlotRepository GetPlotRepository();
     IForumRepository GetForumRepository();
