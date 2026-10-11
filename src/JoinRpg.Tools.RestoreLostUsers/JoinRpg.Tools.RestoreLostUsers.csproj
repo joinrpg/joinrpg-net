@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Общий для всех DRP-инструментов (DrpConfiguration.UserSecretsId): строки подключения задаются один раз. -->
+    <UserSecretsId>joinrpg-drp</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
+    <ProjectReference Include="..\JoinRpg.Tools.Drp.Common\JoinRpg.Tools.Drp.Common.csproj" />
+  </ItemGroup>
+</Project>
