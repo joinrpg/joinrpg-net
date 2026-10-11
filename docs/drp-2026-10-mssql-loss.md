@@ -13,8 +13,12 @@
   считаем моментом аварии.
 - Последний доступный бэкап MSSQL — **май 2026**. Всё, что создано и изменено с мая по
   7 октября, в нём отсутствует: почти весь сезон.
-- Postgres-кластер цел: база уведомлений (`Notifications`), база IdPortal, ключи
+- Postgres-кластер `joinrpg-prod` цел: база уведомлений (`Notifications`), база IdPortal, ключи
   Data Protection, журнал ежедневных джоб. Ночные бэкапы кластера хранятся 60 дней.
+- Postgres восстановлен из последнего актуального бэкапа в новый кластер `joinrpg-new`
+  (`c9qg3f27vleg34u1f1lr`, Yandex Cloud, 2026-10-10) — с ним работают приложения и инструменты
+  восстановления. `joinrpg-prod` — исходник, не трогаем.
+- Новый k8s-кластер — в **Selectel**.
 - Сайт не запущен.
 
 ## Источники данных
@@ -65,19 +69,22 @@
 
 ### Фаза 1. Инфраструктура
 
-Кластер Kubernetes потерян вместе с MSSQL. Managed-ресурсы вне кластера (Postgres-кластер
-`joinrpg-prod`, Container Registry) целы — проверить.
+Кластер Kubernetes потерян вместе с MSSQL. Новый — в Selectel; Postgres (`joinrpg-new`) и
+Container Registry остаются в Yandex Cloud ([подробнее](#кластер-в-selectel)).
 
-- [ ] Кластер Yandex Managed Kubernetes: группа узлов под Portal, IdPortal, ComponentBook и
-      MSSQL; ingress-nginx (ingress class `nginx`, как в старом); namespace `prod`.
-- [ ] Сеть: кластер видит Container Registry и Postgres-кластер `joinrpg-prod`.
+- [ ] Кластер Kubernetes в Selectel: группа узлов под Portal, IdPortal, ComponentBook и MSSQL;
+      ingress-nginx (ingress class `nginx`, как в старом); namespace `prod`.
+- [ ] Образы из Yandex Container Registry: `imagePullSecret` с ключом сервисного аккаунта.
+- [ ] Postgres: поды Selectel ходят в `joinrpg-new` по публичному хосту с SSL; исходящие адреса
+      кластера Selectel — в разрешённые у `joinrpg-new`. Строки подключения `DataProtection`,
+      `DailyJob`, `Notifications`, IdPortal — на `joinrpg-new`.
 - [ ] GitHub, окружение prod: секрет `KUBECONFIG` — на новый кластер.
 - [ ] MSSQL в кластере — вручную или в отдельном репозитории (не здесь); **регулярные бэкапы**
       с первого дня ([подробнее](#mssql-в-кластере)).
 - [ ] Внешний доступ к MSSQL: служебный домен `joindb.tsarevs.ru` (TCP 1433) + DNS-запись,
       с ограничением по IP, как было раньше — для скриптов и инструментов восстановления с машины
       админа ([подробнее](#внешний-доступ-к-mssql)).
-- [ ] Логи подов — в Monium; проверить, что поля Serilog (`RequestPath`, `ProjectId`,
+- [ ] Логи подов — в Monium (из Selectel — агентом с ключом сервисного аккаунта Yandex Cloud); проверить, что поля Serilog (`RequestPath`, `ProjectId`,
       `LoggedUser`, `ActionName`) доезжают. Обновить скилл `prod-logs`.
 - [ ] TLS-сертификаты для боевых и служебных доменов — cert-manager или Yandex Certificate
       Manager ([варианты](#сертификаты)).
@@ -118,7 +125,8 @@
 
 - [x] ~~Заморозить очередь уведомлений~~ — очередь пуста (проверено 2026-10-10), до старта
       писать в неё некому ([подробнее](#очередь-уведомлений)).
-- [ ] Перед деплоем ещё раз убедиться, что `queued` в `joinrpg-prod-notifications` пуст.
+- [ ] Перед деплоем ещё раз убедиться, что `queued` в `joinrpg-prod-notifications` кластера
+      `joinrpg-new` пуст (проверено 2026-10-10).
 - [x] ~~Ядовитые Telegram-строки в очереди~~ — исправлено #5468.
 
 **Конфиг** (`manifests/prod`, уходит одним деплоем с новым секретом в конце фазы 4)
@@ -242,6 +250,19 @@ IdPortal и ingress. Миграция и старт подов идут одни
 Пока секрет смотрит в потерянную базу, деплой падает на миграции и манифесты не применяет —
 поэтому изменения конфига в `manifests/prod` вступят в силу только деплоем с новым секретом.
 
+### Кластер в Selectel
+
+Новый k8s-кластер — в Selectel, остальное остаётся в Yandex Cloud: Postgres `joinrpg-new`,
+Container Registry, Monium, Postbox, Lockbox (если используется). Отсюда:
+
+- **Образы** — `imagePullSecret` для `cr.yandex` с ключом сервисного аккаунта (роль на pull).
+- **Postgres** — между облаками по публичному хосту (`c-c9qg3f27vleg34u1f1lr.rw.mdb.yandexcloud.net:6432`),
+  только SSL, в `joinrpg-new` разрешены исходящие адреса Selectel. Задержка между облаками —
+  проверить, что Portal укладывается (запросов к Postgres немного: уведомления, ключи, джобы).
+- **Логи** — агент сбора логов в Selectel пишет в Monium с ключом сервисного аккаунта.
+- **Сертификаты** — Yandex Certificate Manager синхронизировать в кластер Selectel сложнее,
+  cert-manager в самом кластере — естественнее.
+
 ### MSSQL в кластере
 
 Вместо потерянного managed-экземпляра — MSSQL внутри нового кластера: StatefulSet, постоянный
@@ -289,7 +310,7 @@ IdPortal и ingress. Миграция и старт подов идут одни
 2. **Строки подключения — user-secrets** с общим `UserSecretsId` `joinrpg-drp`: настраиваются
    один раз на машине админа, вне репозитория. Ключи как в Portal:
    `ConnectionStrings:DefaultConnection` (MSSQL через `joindb.tsarevs.ru`),
-   `ConnectionStrings:Notifications` (Postgres `joinrpg-prod-notifications`).
+   `ConnectionStrings:Notifications` (база `joinrpg-prod-notifications` кластера `joinrpg-new`).
    ```
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<...>" --id joinrpg-drp
    dotnet user-secrets set "ConnectionStrings:Notifications" "<...>" --id joinrpg-drp
