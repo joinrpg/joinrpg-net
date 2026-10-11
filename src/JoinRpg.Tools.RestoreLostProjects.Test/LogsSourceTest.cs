@@ -22,7 +22,8 @@ public class LogsSourceTest
                 "ProjectId": 1535,
                 "LoggedUser": "master@example.com",
                 "RequestPath": "/1535/character/14311/edit",
-                "ActionName": "JoinRpg.Portal.Controllers.CharacterController.Edit (JoinRpg.Portal)"
+                "ActionName": "JoinRpg.Portal.Controllers.CharacterController.Edit (JoinRpg.Portal)",
+                "StatusCode": 302
               }
             }
             """);
@@ -32,7 +33,8 @@ public class LogsSourceTest
             "master@example.com",
             "/1535/character/14311/edit",
             "JoinRpg.Portal.Controllers.CharacterController.Edit (JoinRpg.Portal)",
-            new DateTimeOffset(2026, 10, 1, 10, 0, 0, 123, TimeSpan.Zero)));
+            new DateTimeOffset(2026, 10, 1, 10, 0, 0, 123, TimeSpan.Zero),
+            302));
     }
 
     [Fact]
@@ -57,6 +59,33 @@ public class LogsSourceTest
     {
         using var document = JsonDocument.Parse(json);
         LogsSource.ParseProjectId(document.RootElement).ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task OnlyResponsesBelow400AreCounted()
+    {
+        string[] records =
+        [
+            """{"uid": "1", "json_payload": {"ProjectId": 1001, "StatusCode": 200}}""",
+            """{"uid": "2", "json_payload": {"ProjectId": 1002, "StatusCode": 302}}""",
+            """{"uid": "3", "json_payload": {"ProjectId": 1003, "StatusCode": 400}}""",
+            """{"uid": "4", "json_payload": {"ProjectId": 1004, "StatusCode": 404}}""",
+            """{"uid": "5", "json_payload": {"ProjectId": 1005, "StatusCode": 500}}""",
+            """{"uid": "6", "json_payload": {"ProjectId": 1006}}""",
+        ];
+        var path = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllTextAsync(path, string.Join("\n", records));
+
+            var entries = await LogsSource.Read([path], LostAt, CancellationToken.None);
+
+            entries.Select(e => e.ProjectId).ShouldBe([1001, 1002, 1006]);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     [Fact]

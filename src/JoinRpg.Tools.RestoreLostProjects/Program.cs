@@ -66,7 +66,7 @@ internal static class Program
         Console.WriteLine($"Уведомления: строк по интересным проектам {rows.Count}.");
 
         var logs = await LogsSource.Read(options.LogPaths, options.LostAt, ct);
-        Console.WriteLine($"Логи: файлов {options.LogPaths.Count}, записей с проектом или путём (без повторов по uid) {logs.Count}.");
+        Console.WriteLine($"Логи: файлов {options.LogPaths.Count}, записей с проектом или путём (ответ ниже 400, без повторов по uid) {logs.Count}.");
 
         var report = analyzer.Analyze(rows, logs);
 

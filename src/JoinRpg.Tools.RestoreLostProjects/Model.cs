@@ -26,7 +26,8 @@ internal record LogEntry(
     string? LoggedUser,
     string? RequestPath,
     string? ActionName,
-    DateTimeOffset? Timestamp);
+    DateTimeOffset? Timestamp,
+    int? StatusCode = null);
 
 /// <summary>
 /// Пользователь, который уже есть в основной БД (MSSQL).
