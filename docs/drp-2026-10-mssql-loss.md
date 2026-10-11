@@ -693,7 +693,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508) | ADR023: настройка полей в заблокированном проекте; требование к инструментам про дату обновления | 7 | на ревью |
 | issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | закрыт |
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | заведён |
-| [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue #5491) | 4 | на ревью |
+| [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | на ревью |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
 | issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | заведён |
 | [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
