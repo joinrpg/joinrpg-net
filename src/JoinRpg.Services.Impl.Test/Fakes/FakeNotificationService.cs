@@ -14,9 +14,13 @@ internal sealed class FakeNotificationService : INotificationService
         return Task.CompletedTask;
     }
 
+    /// <summary>Каналы прямых уведомлений — в том же порядке, что и <see cref="Queued"/> для них.</summary>
+    public List<NotificationChannel> DirectChannels { get; } = [];
+
     public Task QueueDirectNotification(NotificationEvent notificationMessage, NotificationChannel directChannel)
     {
         Queued.Add(notificationMessage);
+        DirectChannels.Add(directChannel);
         return Task.CompletedTask;
     }
 }

@@ -8,12 +8,16 @@ namespace JoinRpg.Services.Impl;
 /// </summary>
 public static class UserProfileMerger
 {
-    public static void MergeInto(User primary, User secondary)
+    /// <returns>Названия полей, взятых у поглощаемого, — для отчёта админам.</returns>
+    public static IReadOnlyList<string> MergeInto(User primary, User secondary)
     {
-        primary.BornName = Pick(primary.BornName, secondary.BornName);
-        primary.FatherName = Pick(primary.FatherName, secondary.FatherName);
-        primary.SurName = Pick(primary.SurName, secondary.SurName);
-        primary.PrefferedName = Pick(primary.PrefferedName, secondary.PrefferedName);
+        var taken = new List<string>();
+
+        // TODO[Localize] названия полей для отчёта
+        primary.BornName = Pick(taken, "Имя", primary.BornName, secondary.BornName);
+        primary.FatherName = Pick(taken, "Отчество", primary.FatherName, secondary.FatherName);
+        primary.SurName = Pick(taken, "Фамилия", primary.SurName, secondary.SurName);
+        primary.PrefferedName = Pick(taken, "Отображаемое имя", primary.PrefferedName, secondary.PrefferedName);
 
         MergeAuth(primary.Auth, secondary.Auth);
 
@@ -26,7 +30,7 @@ public static class UserProfileMerger
                 SocialNetworksAccess = secondary.Extra.SocialNetworksAccess,
                 EnableTelegramPlayerDigestNotification = secondary.Extra.EnableTelegramPlayerDigestNotification,
             };
-            MergeExtra(primary.Extra, secondary.Extra);
+            MergeExtra(taken, primary.Extra, secondary.Extra);
         }
 
         if (secondary.Allrpg?.Sid is not null && primary.Allrpg?.Sid is null)
@@ -34,7 +38,10 @@ public static class UserProfileMerger
             primary.Allrpg ??= new AllrpgUserDetails { UserId = primary.UserId };
             primary.Allrpg.Sid = secondary.Allrpg.Sid;
             primary.Allrpg.JsonProfile = secondary.Allrpg.JsonProfile;
+            taken.Add("Профиль allrpg");
         }
+
+        return taken;
     }
 
     private static void MergeAuth(UserAuthDetails primary, UserAuthDetails secondary)
@@ -52,44 +59,48 @@ public static class UserProfileMerger
         primary.AspNetSecurityStamp = Guid.NewGuid().ToString();
     }
 
-    private static void MergeExtra(UserExtra primary, UserExtra secondary)
+    private static void MergeExtra(List<string> taken, UserExtra primary, UserExtra secondary)
     {
-        if (primary.Gender == Gender.Unknown)
+        if (primary.Gender == Gender.Unknown && secondary.Gender != Gender.Unknown)
         {
             primary.Gender = secondary.Gender;
+            taken.Add("Пол");
         }
-        primary.PhoneNumber = Pick(primary.PhoneNumber, secondary.PhoneNumber)!;
-        primary.Nicknames = Pick(primary.Nicknames, secondary.Nicknames)!;
-        primary.GroupNames = Pick(primary.GroupNames, secondary.GroupNames)!;
+        primary.PhoneNumber = Pick(taken, "Телефон", primary.PhoneNumber, secondary.PhoneNumber)!;
+        primary.Nicknames = Pick(taken, "Ники", primary.Nicknames, secondary.Nicknames)!;
+        primary.GroupNames = Pick(taken, "Команды", primary.GroupNames, secondary.GroupNames)!;
 
-        var contactsTaken = false;
+        var takenBeforeContacts = taken.Count;
         if (string.IsNullOrWhiteSpace(primary.Vk) && !string.IsNullOrWhiteSpace(secondary.Vk))
         {
             primary.Vk = secondary.Vk;
             primary.VkVerified = secondary.VkVerified;
-            contactsTaken = true;
+            taken.Add("ВКонтакте");
         }
-        if (string.IsNullOrWhiteSpace(primary.Livejournal) && !string.IsNullOrWhiteSpace(secondary.Livejournal))
-        {
-            primary.Livejournal = secondary.Livejournal;
-            contactsTaken = true;
-        }
-        if (string.IsNullOrWhiteSpace(primary.Telegram) && !string.IsNullOrWhiteSpace(secondary.Telegram))
-        {
-            primary.Telegram = secondary.Telegram;
-            contactsTaken = true;
-        }
+        primary.Livejournal = Pick(taken, "ЖЖ", primary.Livejournal, secondary.Livejournal);
+        primary.Telegram = Pick(taken, "Telegram", primary.Telegram, secondary.Telegram);
         // Контакты, которые поглощаемый скрывал от игроков, не должны стать публичными.
-        if (contactsTaken && secondary.SocialNetworksAccess < primary.SocialNetworksAccess)
+        if (taken.Count > takenBeforeContacts && secondary.SocialNetworksAccess < primary.SocialNetworksAccess)
         {
             primary.SocialNetworksAccess = secondary.SocialNetworksAccess;
         }
 
-        primary.BirthDate ??= secondary.BirthDate;
-        primary.PassportData = Pick(primary.PassportData, secondary.PassportData);
-        primary.RegistrationAddress = Pick(primary.RegistrationAddress, secondary.RegistrationAddress);
+        if (primary.BirthDate is null && secondary.BirthDate is not null)
+        {
+            primary.BirthDate = secondary.BirthDate;
+            taken.Add("Дата рождения");
+        }
+        primary.PassportData = Pick(taken, "Паспортные данные", primary.PassportData, secondary.PassportData);
+        primary.RegistrationAddress = Pick(taken, "Адрес регистрации", primary.RegistrationAddress, secondary.RegistrationAddress);
     }
 
-    private static string? Pick(string? primary, string? secondary)
-        => string.IsNullOrWhiteSpace(primary) ? secondary : primary;
+    private static string? Pick(List<string> taken, string label, string? primary, string? secondary)
+    {
+        if (string.IsNullOrWhiteSpace(primary) && !string.IsNullOrWhiteSpace(secondary))
+        {
+            taken.Add(label);
+            return secondary;
+        }
+        return primary;
+    }
 }
