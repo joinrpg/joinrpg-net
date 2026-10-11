@@ -42,8 +42,8 @@ jobs:
         uses: docker/login-action@v3
         with:
             registry: cr.selcloud.ru
-            username: ${{ secrets.SELECTEL_CR_USERNAME }}
-            password: ${{ secrets.SELECTEL_CR_PASSWORD }}
+            username: ${{ secrets.SELECTEL_CR_PULL_USERNAME }}
+            password: ${{ secrets.SELECTEL_CR_PULL_PASSWORD }}
 
       - name: Check images existence and fill images related env vars
         id: check_existence
@@ -101,6 +101,10 @@ jobs:
           PULL_PASSWORD: ${{ secrets.SELECTEL_CR_PULL_PASSWORD }}
         run: |
             set -euo pipefail
+            if [ -z "${PULL_USERNAME}" ] || [ -z "${PULL_PASSWORD}" ]; then
+              echo "::error::SELECTEL_CR_PULL_USERNAME or SELECTEL_CR_PULL_PASSWORD secret is not set"
+              exit 1
+            fi
             PULL_AUTH=$(printf '%s:%s' "${PULL_USERNAME}" "${PULL_PASSWORD}" | base64 -w0)
             echo "::add-mask::${PULL_AUTH}"
             printf '{"auths":{"%s":{"auth":"%s"}}}' "${REGISTRY_HOST}" "${PULL_AUTH}" > ./manifests/${ENVIRONMENT}/selectel-cr-pull.dockerconfigjson
