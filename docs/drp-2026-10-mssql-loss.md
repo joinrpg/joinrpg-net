@@ -183,8 +183,8 @@
 - [ ] 🟢 Заблокировать все активные проекты майской базы (после миграций — колонка
       `IsBlocked` появляется миграцией `AddProjectIsBlocked`, [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480)):
       `UPDATE dbo.Projects SET IsBlocked = 1 WHERE Active = 1;`
-- [ ] 🟡 Список проектов, созданных после мая, — CSV на ручную проверку: id, название, создатель,
-      источники ([#5479](https://github.com/joinrpg/joinrpg-net/issues/5479), PR [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485), [подробнее](#список-новых-проектов)).
+- [ ] 🟢 Список проектов, созданных после мая, — CSV на ручную проверку: id, название, создатель,
+      источники ([#5479](https://github.com/joinrpg/joinrpg-net/issues/5479), PR [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485), [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504), [подробнее](#список-новых-проектов)).
 - [ ] 🟡 Оболочки этих проектов с прежним id, создателем и статусом «Заблокирован»
       (`Active = 1`, `IsBlocked = 1`; `Active = 0` + `IsBlocked = 1` недопустимо — загрузка метаданных
       падает) — доменным созданием проекта с подменой счётчика ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491), [подробнее](#оболочки-проектов)).
@@ -372,7 +372,11 @@ IdPortal и ingress. Миграция и старт подов идут одни
    ```
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<...>" --id joinrpg-drp
    dotnet user-secrets set "ConnectionStrings:Notifications" "<...>" --id joinrpg-drp
+   dotnet user-secrets set "Drp:K8sLogs" "<путь>\k8s-prod-mutations-merged.json" --id joinrpg-drp
    ```
+   `Drp:K8sLogs` — сохранённые логи k8s (файл или каталог выгрузки; повторы по `uid` отбрасываются),
+   **обязателен** для `RestoreLostProjects`: путь у каждого свой, поэтому — в user-secrets, а не в
+   репозиторий. Можно также `DRP_Drp__K8sLogs` или `--logs`.
 3. **Переменные окружения** с префиксом `DRP_` (`DRP_ConnectionStrings__DefaultConnection`).
 4. **Аргументы командной строки** — режимы (`--apply`) и разовые переопределения.
 
@@ -452,7 +456,14 @@ prod, мимо заглушки на балансировщике, без авт
     источника нет).
   - Для созданных раньше: название — из заголовков уведомлений по заявкам («{Проект}: …»),
     создатель — предположительно, самый ранний мастер по уведомлениям; подтверждает мастер.
-- **Логи k8s** (2026-09-10 — 2026-10-07): `ProjectId` и `LoggedUser` мутирующих запросов — сверка.
+- **Логи k8s** (2026-09-10 — 2026-10-07) — **обязательный вход**: сверка и единственный источник
+  для проектов, созданных после бэкапа базы уведомлений (2026-10-06 ~22:45 UTC). Учитываются только
+  ответы ниже 400. Для проекта, которого нет в уведомлениях: создатель — самый ранний `LoggedUser`
+  с мутацией в проекте («предположительно (по логам)»), пометка «только по логам», названия нет.
+- Админы (не считаются создателями) — только по MSSQL (`UserAuthDetails.IsAdmin`).
+- Результат — CSV с колонкой «Создавать» (да/нет) для ручной проверки; контракт формата —
+  `LostProjectsCsv` / `DrpCsv` в `JoinRpg.Tools.Drp.Common`, его читает инструмент оболочек
+  ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)).
 
 Проекты без уведомлений и без активности в последний месяц не найдём — данных в них, скорее
 всего, почти не было.
@@ -671,14 +682,15 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5468](https://github.com/joinrpg/joinrpg-net/issues/5468) | Старый Telegram-адрес в очереди не останавливает канал (закрывает issue [#5466](https://github.com/joinrpg/joinrpg-net/issues/5466)) | 3 | влит |
 | [#5470](https://github.com/joinrpg/joinrpg-net/issues/5470) | Выключение ежедневных джоб через конфиг `DailyJobs:Disabled` | 3 | влит |
 | [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` (ingress) | 2 | влит |
-| [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | на ревью, замечания учтены, CI зелёный |
+| [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | влит |
+| [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504) | RestoreLostProjects — в логах только ответы ниже 400 | 4 | влит |
 | issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | заведён, есть открытые вопросы |
 | [#5478](https://github.com/joinrpg/joinrpg-net/issues/5478) | ADR023, PR 0: «не в архиве» и «можно менять» у статуса проекта | 4 | влит |
 | [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480) | ADR023, PR 1: `Project.IsBlocked`, статус «Заблокирован», запрет изменений | 4 | влит |
 | [#5482](https://github.com/joinrpg/joinrpg-net/issues/5482) | ADR023, PR 2: проверки в сервисах, фильтры джоб | 4 | влит |
 | [#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) | ADR023, PR 3: снятие блокировки, закрытие, плашка, метки | 6 | на ревью, CI зелёный |
 | [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508) | ADR023: настройка полей в заблокированном проекте; требование к инструментам про дату обновления | 7 | на ревью |
-| issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | заведён |
+| issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | закрыт |
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | заведён |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
 | issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | заведён |
