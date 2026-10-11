@@ -53,7 +53,7 @@ internal static class ReportWriter
         var result = new List<string>();
         if (flags.HasFlag(ProjectFlags.OnlyInLogs))
         {
-            result.Add("только в логах");
+            result.Add("только по логам");
         }
         if (flags.HasFlag(ProjectFlags.NameConflict))
         {

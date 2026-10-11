@@ -10,7 +10,7 @@ namespace JoinRpg.Tools.RestoreLostProjects;
 /// <param name="existingProjects">Проекты в восстановленной MSSQL: id → название.</param>
 /// <param name="existingUsers">Пользователи в MSSQL — чтобы сверить создателя и разрешить email из логов.</param>
 /// <param name="virtualUserIds">Робот и пользователь онлайн-платежей — не мастера.</param>
-/// <param name="adminUserIds">Админы (IsAdmin в MSSQL и получатели уведомлений админам) — их действия в проекте не говорят, что они мастера.</param>
+/// <param name="adminUserIds">Админы (IsAdmin в MSSQL) — их действия в проекте не говорят, что они мастера.</param>
 /// <param name="backupMaxProjectId">MAX(ProjectId) сразу после восстановления бэкапа.</param>
 internal sealed class LostProjectAnalyzer(
     IReadOnlyDictionary<int, string> existingProjects,
@@ -134,7 +134,8 @@ internal sealed class LostProjectAnalyzer(
         }
 
         var candidates = GetCreatorCandidates(notifications);
-        var logCandidates = candidates.Count == 0 ? GetCreatorCandidatesFromLogs(logs) : [];
+        // По логам — только для проектов, которых нет в уведомлениях (созданы после бэкапа базы уведомлений).
+        var logCandidates = flags.HasFlag(ProjectFlags.OnlyInLogs) ? GetCreatorCandidatesFromLogs(logs) : [];
         int? creatorId;
         CreatorMethod method;
         IReadOnlyList<CreatorCandidate> otherCandidates;
@@ -344,8 +345,8 @@ internal sealed class LostProjectAnalyzer(
     }
 
     /// <summary>
-    /// Кандидаты в создатели по логам — когда уведомления ничего не дали (например, проект создан
-    /// после бэкапа базы уведомлений 2026-10-06 и виден только в логах). Выгрузка — только мутирующие
+    /// Кандидаты в создатели по логам — только для проекта, которого нет в уведомлениях (создан после
+    /// бэкапа базы уведомлений 2026-10-06 и виден только в логах). Выгрузка — только мутирующие
     /// запросы, так что каждый пользователь с запросом в проект что-то в нём менял; самый ранний —
     /// первым. Email переводится в id через MSSQL, неизвестные адреса кандидатами не становятся
     /// (они видны в «ПользователиВЛогах»). Админы и виртуальные пользователи не считаются.

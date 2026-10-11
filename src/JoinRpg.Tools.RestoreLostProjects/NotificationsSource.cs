@@ -35,27 +35,6 @@ internal sealed class NotificationsSource(string connectionString, DateTimeOffse
     }
 
     /// <summary>
-    /// Получатели уведомлений админам о новом проекте — то есть админы.
-    /// </summary>
-    public async Task<IReadOnlySet<int>> GetAdminUserIds(CancellationToken ct)
-    {
-        const string sql = $"""
-            SELECT DISTINCT "RecipientUserId" FROM "Notifications"
-            WHERE {AdminHeaderCondition} AND "CreatedAt" < @lostAt
-            """;
-
-        await using var connection = await Open(ct);
-        await using var command = CreateCommand(sql, connection);
-        await using var reader = await command.ExecuteReaderAsync(ct);
-        var result = new HashSet<int>();
-        while (await reader.ReadAsync(ct))
-        {
-            _ = result.Add(reader.GetInt32(0));
-        }
-        return result;
-    }
-
-    /// <summary>
     /// Уведомления по заданным EntityReference. Тело целиком не тащим: признаки мастера считаются
     /// в SQL, тело нужно только у уведомления админам — ради привязки к КогдаИгре.
     /// </summary>

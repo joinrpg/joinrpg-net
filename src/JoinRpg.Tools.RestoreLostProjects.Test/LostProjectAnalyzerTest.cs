@@ -315,6 +315,17 @@ public class LostProjectAnalyzerTest
     }
 
     [Fact]
+    public void LogsGiveCreatorOnlyForProjectsMissingInNotifications()
+    {
+        var report = CreateAnalyzer().Analyze(
+            [Notification("ClaimCommentId(1001-1-2)", "Дюна: Пол, игрок Иван", PlayerId, MasterId, Day1)],
+            [new LogEntry(1001, "master@example.com", "/1001/claim/1", null, Day1)]).ShouldHaveSingleItem();
+
+        report.CreatorMethod.ShouldBe(CreatorMethod.NotFound);
+        report.Flags.HasFlag(ProjectFlags.OnlyInLogs).ShouldBeFalse();
+    }
+
+    [Fact]
     public void NotificationEvidenceBeatsLogs()
     {
         var report = CreateAnalyzer().Analyze(

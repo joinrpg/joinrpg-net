@@ -53,11 +53,8 @@ internal static class Program
             .Select(u => u.UserId)
             .ToHashSet();
 
-        // MSSQL знает админов на момент бэкапа, уведомления админам — назначенных позже (с 2026-08-23).
-        var mssqlAdmins = await mainDb.GetAdminUserIds(ct);
-        var notifiedAdmins = await notifications.GetAdminUserIds(ct);
-        var adminUserIds = mssqlAdmins.Union(notifiedAdmins).ToHashSet();
-        Console.WriteLine($"Админы: в MSSQL {mssqlAdmins.Count}, получателей уведомлений админам {notifiedAdmins.Count}, всего {adminUserIds.Count}.");
+        var adminUserIds = await mainDb.GetAdminUserIds(ct);
+        Console.WriteLine($"MSSQL: админов {adminUserIds.Count}.");
 
         var analyzer = new LostProjectAnalyzer(projects, users, virtualUserIds, adminUserIds, options.BackupMaxProjectId);
 
@@ -102,7 +99,7 @@ internal static class Program
         Console.WriteLine($"  противоречие (id не выше максимума, но проекта нет в MSSQL): {Count(p => Has(p, ProjectFlags.IdNotAboveBackupMax))}");
         Console.WriteLine($"  название: найдено {Count(p => p.Name is not null)}, конфликт {Count(p => Has(p, ProjectFlags.NameConflict))}");
         Console.WriteLine($"  создатель: точно {Count(p => p.CreatorMethod == CreatorMethod.Exact)}, предположительно {Count(p => p.CreatorMethod == CreatorMethod.Presumed)}, по логам {Count(p => p.CreatorMethod == CreatorMethod.PresumedFromLogs)}, не найден {Count(p => p.CreatorMethod == CreatorMethod.NotFound)}, нет в MSSQL {Count(p => Has(p, ProjectFlags.CreatorMissingInMssql))}");
-        Console.WriteLine($"  только в логах (без уведомлений): {Count(p => Has(p, ProjectFlags.OnlyInLogs))}");
+        Console.WriteLine($"  только по логам (без уведомлений): {Count(p => Has(p, ProjectFlags.OnlyInLogs))}");
         Console.WriteLine($"  с привязкой к КогдаИгре: {Count(p => p.KogdaIgra is not null)}");
         Console.WriteLine();
     }
