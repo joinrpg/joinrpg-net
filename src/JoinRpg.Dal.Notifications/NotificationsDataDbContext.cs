@@ -19,6 +19,17 @@ public class NotificationsDataDbContext(DbContextOptions<NotificationsDataDbCont
         optionsBuilder.ConfigureWarnings(b => b.Ignore(CoreEventId.FirstWithoutOrderByAndFilterWarning));
     }
 
+    /// <inheritdoc />
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Выборка уведомлений проекта по префиксу ссылки (LIKE 'ClaimId(12-%'). text_pattern_ops — чтобы
+        // префиксный LIKE шёл по индексу при любой collation базы. Таблица большая и живая — строим без блокировки.
+        _ = modelBuilder.Entity<NotificationMessage>()
+            .HasIndex(m => m.EntityReference)
+            .HasOperators("text_pattern_ops")
+            .IsCreatedConcurrently();
+    }
+
     internal DbSet<NotificationMessage> Notifications { get; set; } = null!;
 
     internal DbSet<NotificationMessageChannel> NotificationMessageChannels { get; set; } = null!;

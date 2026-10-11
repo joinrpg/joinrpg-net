@@ -1,4 +1,5 @@
 using JoinRpg.Data.Write.Interfaces.Notifications;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces;
 
@@ -50,5 +51,7 @@ internal sealed class FakeNotificationRepository : INotificationRepository
     public Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination)
         => throw new NotSupportedException();
 
-    public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths() => throw new NotSupportedException();
+    public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths() => throw new NotSupportedException();
+
+    public Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore) => throw new NotSupportedException();
 }

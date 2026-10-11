@@ -1,5 +1,6 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Write.Interfaces.Notifications;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces;
 
@@ -30,4 +31,7 @@ internal class NullNotificationRepository : INotificationRepository
 
     public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
         => Task.FromResult<IReadOnlyDictionary<NotificationChannel, int>>(new Dictionary<NotificationChannel, int>());
+
+    public Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore)
+        => Task.FromResult<IReadOnlyCollection<NotificationMessageForRecipient>>([]);
 }

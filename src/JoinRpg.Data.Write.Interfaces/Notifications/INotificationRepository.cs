@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces;
 
@@ -35,6 +36,17 @@ public interface INotificationRepository
     /// Returns the number of queued messages per channel.
     /// </summary>
     Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths();
+
+    /// <summary>
+    /// Все уведомления по заявкам проекта (сама заявка, её комментарии, финансовые операции), созданные до
+    /// <paramref name="createdBefore"/>, — строка на каждого получателя, по возрастанию времени.
+    /// Для восстановления заявок после потери основной БД (DRP, #5481).
+    /// </summary>
+    /// <remarks>
+    /// Ссылки ищутся в нынешнем формате (<c>ClaimId(12-345)</c>), он пишется с 2026-04-01. Более старые
+    /// уведомления (<c>ClaimId(345, 12)</c> и т.п.) сюда не попадут — для бэкапа от мая они и не нужны.
+    /// </remarks>
+    Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore);
 }
 
 public record NotificationMessageCreateDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationAddress> Channels);

@@ -70,6 +70,7 @@
     <Project Path="src/JoinRpg.BlobStorage.Test/JoinRpg.BlobStorage.Test.csproj" />
     <Project Path="src/JoinRpg.CommonUI.Models.Test/JoinRpg.CommonUI.Models.Test.csproj" />
     <Project Path="src/JoinRpg.Dal.Impl.Test/JoinRpg.Dal.Impl.Test.csproj" />
+    <Project Path="src/JoinRpg.Dal.Notifications.Test/JoinRpg.Dal.Notifications.Test.csproj" />
     <Project Path="src/JoinRpg.DataModel.Mocks/JoinRpg.DataModel.Mocks.csproj" />
     <Project Path="src/JoinRpg.Domain.Test/JoinRpg.Domain.Test.csproj" />
     <Project Path="src/JoinRpg.DomainTypes.Test/JoinRpg.DomainTypes.Test.csproj" />
