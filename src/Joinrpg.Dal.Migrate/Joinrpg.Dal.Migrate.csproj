@@ -3,7 +3,6 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>JoinRpg.Dal.Migrate</RootNamespace>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
-    <ContainerRegistry>cr.selcloud.ru</ContainerRegistry>
     <ContainerRepository>joinrpg/joinrpg-dal-migrate</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <!-- Content root = текущий каталог, а appsettings.json лежит здесь. Без этого «dotnet run» с ключом project
