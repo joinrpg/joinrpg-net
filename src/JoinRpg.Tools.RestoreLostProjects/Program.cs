@@ -94,7 +94,7 @@ internal static class Program
         bool Has(LostProjectReport p, ProjectFlags flag) => p.Flags.HasFlag(flag);
 
         Console.WriteLine();
-        Console.WriteLine($"Проектов в отчёте: {report.Count}.");
+        Console.WriteLine($"Проектов в отчёте: {report.Count}, из них «{LostProjectsCsv.Create}: {LostProjectsCsv.Yes}» по умолчанию: {Count(ReportWriter.CreateByDefault)}.");
         Console.WriteLine($"  id выше майского максимума: {Count(p => !Has(p, ProjectFlags.IdNotAboveBackupMax))}, из них уже есть в MSSQL: {Count(p => Has(p, ProjectFlags.AlreadyInMssql))}");
         Console.WriteLine($"  противоречие (id не выше максимума, но проекта нет в MSSQL): {Count(p => Has(p, ProjectFlags.IdNotAboveBackupMax))}");
         Console.WriteLine($"  название: найдено {Count(p => p.Name is not null)}, конфликт {Count(p => Has(p, ProjectFlags.NameConflict))}");

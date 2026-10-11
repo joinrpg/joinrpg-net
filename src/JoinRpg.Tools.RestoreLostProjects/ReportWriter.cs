@@ -1,52 +1,60 @@
 using System.Globalization;
-using System.Text;
+using JoinRpg.Tools.Drp.Common;
+using static JoinRpg.Tools.Drp.Common.DrpCsv;
 
 namespace JoinRpg.Tools.RestoreLostProjects;
 
 /// <summary>
-/// CSV-отчёт, строка на проект. Содержит персональные данные (заголовки уведомлений, email) — хранить
-/// только локально. Разделитель «;» и BOM — чтобы Excel с русской локалью открыл файл без мастера импорта.
+/// CSV-отчёт, строка на проект. Формат и имена колонок — контракт <see cref="LostProjectsCsv"/>:
+/// после ручной проверки отчёт читает инструмент оболочек проектов (#5491). Содержит персональные
+/// данные (заголовки уведомлений, email) — хранить только локально.
 /// </summary>
 internal static class ReportWriter
 {
-    private static readonly string[] Header =
-    [
-        "ProjectId", "Название", "ВариантыНазвания", "СоздательId", "СоздательEmail", "СпособОпределения",
-        "ДругиеКандидаты", "ПерваяАктивность", "ПоследняяАктивность", "Уведомлений", "ЗапросовВЛогах",
-        "ПользователиВЛогах", "СоздательВЛогах", "КогдаИгра", "НазваниеВMssql", "Пометки",
-    ];
+    /// <summary>
+    /// С этими пометками оболочку по умолчанию не создаём: проект уже есть или id противоречит бэкапу,
+    /// создателя нет, или нет названия (проект только по логам) — вслепую создавать не стоит.
+    /// Конфликт названий не мешает: выбранное название человек проверит.
+    /// </summary>
+    private const ProjectFlags BlockingFlags = ProjectFlags.IdNotAboveBackupMax | ProjectFlags.AlreadyInMssql
+        | ProjectFlags.CreatorNotFound | ProjectFlags.CreatorMissingInMssql | ProjectFlags.OnlyInLogs | ProjectFlags.NameNotFound;
 
-    public static string Build(IEnumerable<LostProjectReport> projects)
+    internal static bool CreateByDefault(LostProjectReport p)
+        => (p.Flags & BlockingFlags) == 0 && p.CreatorUserId is not null && p.Name is not null;
+
+    public static IEnumerable<IReadOnlyList<string?>> BuildRows(IEnumerable<LostProjectReport> projects)
     {
-        var sb = new StringBuilder();
-        AppendRow(sb, Header);
+        yield return LostProjectsCsv.Columns;
         foreach (var p in projects)
         {
-            AppendRow(sb,
-            [
-                Number(p.ProjectId),
-                UserText(p.Name),
-                UserText(string.Join(" | ", p.NameVariants.Select(DescribeVariant))),
-                p.CreatorUserId is int creator ? Number(creator) : null,
-                UserText(p.CreatorEmail),
-                DescribeMethod(p.CreatorMethod),
-                string.Join(", ", p.OtherCreatorCandidates.Select(DescribeCandidate)),
-                Time(p.FirstActivity),
-                Time(p.LastActivity),
-                Number(p.Notifications),
-                Number(p.LogRequests),
-                UserText(string.Join(", ", p.LogUsers)),
-                p.CreatorInLogs switch { true => "да", false => "нет", null => null },
-                p.KogdaIgra?.ToString(),
-                UserText(p.MssqlName),
-                DescribeFlags(p.Flags),
-            ]);
+            var row = new Dictionary<string, string?>
+            {
+                [LostProjectsCsv.ProjectId] = Number(p.ProjectId),
+                [LostProjectsCsv.Create] = CreateByDefault(p) ? LostProjectsCsv.Yes : LostProjectsCsv.No,
+                [LostProjectsCsv.Name] = UserText(p.Name),
+                [LostProjectsCsv.NameVariants] = UserText(string.Join(" | ", p.NameVariants.Select(DescribeVariant))),
+                [LostProjectsCsv.CreatorUserId] = p.CreatorUserId is int creator ? Number(creator) : null,
+                [LostProjectsCsv.CreatorEmail] = UserText(p.CreatorEmail),
+                [LostProjectsCsv.CreatorMethod] = DescribeMethod(p.CreatorMethod),
+                [LostProjectsCsv.OtherCandidates] = string.Join(", ", p.OtherCreatorCandidates.Select(DescribeCandidate)),
+                [LostProjectsCsv.FirstActivity] = Time(p.FirstActivity),
+                [LostProjectsCsv.LastActivity] = Time(p.LastActivity),
+                [LostProjectsCsv.Notifications] = Number(p.Notifications),
+                [LostProjectsCsv.LogRequests] = Number(p.LogRequests),
+                [LostProjectsCsv.LogUsers] = UserText(string.Join(", ", p.LogUsers)),
+                [LostProjectsCsv.CreatorInLogs] = p.CreatorInLogs switch { true => "да", false => "нет", null => null },
+                [LostProjectsCsv.KogdaIgra] = p.KogdaIgra?.ToString(),
+                [LostProjectsCsv.MssqlName] = UserText(p.MssqlName),
+                [LostProjectsCsv.Flags] = DescribeFlags(p.Flags),
+            };
+            yield return [.. LostProjectsCsv.Columns.Select(c => row[c])];
         }
-        return sb.ToString();
     }
 
+    public static string Build(IEnumerable<LostProjectReport> projects) => Format(BuildRows(projects));
+
     public static Task Write(string path, IEnumerable<LostProjectReport> projects, CancellationToken ct)
-        => File.WriteAllTextAsync(path, Build(projects), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true), ct);
+        => WriteFile(path, BuildRows(projects), ct);
 
     internal static string DescribeFlags(ProjectFlags flags)
     {
@@ -117,36 +125,4 @@ internal static class ReportWriter
 
     private static string? Time(DateTimeOffset? value)
         => value?.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-
-    private static void AppendRow(StringBuilder sb, string?[] values)
-    {
-        for (var i = 0; i < values.Length; i++)
-        {
-            if (i > 0)
-            {
-                _ = sb.Append(';');
-            }
-            _ = sb.Append(Escape(values[i]));
-        }
-        _ = sb.Append("\r\n");
-    }
-
-    /// <summary>
-    /// Текст, который ввёл пользователь (название, адрес): Excel исполняет ячейку, начинающуюся с =, +, -, @
-    /// (а также с табуляции или перевода строки перед ними), как формулу, поэтому такие значения
-    /// экранируем апострофом.
-    /// </summary>
-    internal static string? UserText(string? value)
-        => value is { Length: > 0 } && value[0] is '=' or '+' or '-' or '@' or '\t' or '\r' ? "'" + value : value;
-
-    internal static string Escape(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return "";
-        }
-        return value.IndexOfAny([';', '"', '\r', '\n']) >= 0
-            ? "\"" + value.Replace("\"", "\"\"") + "\""
-            : value;
-    }
 }

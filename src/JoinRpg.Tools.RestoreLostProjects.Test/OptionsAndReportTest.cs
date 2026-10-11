@@ -135,10 +135,53 @@ public sealed class OptionsAndReportTest : IDisposable
 
         var lines = ReportWriter.Build([report]).Split("\r\n");
 
-        lines[0].ShouldStartWith("ProjectId;Название;");
+        lines[0].ShouldStartWith("ProjectId;Создавать;Название;");
         lines[1].ShouldBe(
-            "1001;\"'=Дюна; \"\"Пробуждение\"\"\";\"'=Дюна; \"\"Пробуждение\"\" (админам о новом проекте: 1, заявки: 3, последнее 2026-08-30)\";"
+            "1001;нет;\"'=Дюна; \"\"Пробуждение\"\"\";\"'=Дюна; \"\"Пробуждение\"\" (админам о новом проекте: 1, заявки: 3, последнее 2026-08-30)\";"
             + "2001;master@example.com;предположительно;2002 (4 свид., с 2026-07-01);"
             + "2026-06-01 12:00:00;2026-09-01 12:00:00;4;0;;;/game/77/;;конфликт названий, создатель отсутствует в MSSQL");
+    }
+
+    private static LostProjectReport Project(int id, string? name, int? creator, ProjectFlags flags = ProjectFlags.None)
+        => new(id, name, [], creator, null, creator is null ? CreatorMethod.NotFound : CreatorMethod.Exact, [],
+            null, null, 1, 0, [], null, null, null, flags);
+
+    // ProjectFlags внутренний, а метод теории публичный — флаги передаём числом.
+    [Theory]
+    [InlineData((int)ProjectFlags.None, true)]
+    [InlineData((int)ProjectFlags.NameConflict, true)]
+    [InlineData((int)ProjectFlags.IdNotAboveBackupMax, false)]
+    [InlineData((int)ProjectFlags.AlreadyInMssql, false)]
+    [InlineData((int)ProjectFlags.CreatorMissingInMssql, false)]
+    [InlineData((int)ProjectFlags.OnlyInLogs, false)]
+    public void CreateByDefaultDependsOnFlags(int flags, bool expected)
+        => ReportWriter.CreateByDefault(Project(1001, "Дюна", 2001, (ProjectFlags)flags)).ShouldBe(expected);
+
+    [Fact]
+    public void NoCreatorOrNoNameMeansDoNotCreate()
+    {
+        ReportWriter.CreateByDefault(Project(1001, "Дюна", null, ProjectFlags.CreatorNotFound)).ShouldBeFalse();
+        ReportWriter.CreateByDefault(Project(1001, null, 2001, ProjectFlags.NameNotFound)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task WrittenReportIsReadBackByContract()
+    {
+        _ = Directory.CreateDirectory(dir);
+        LostProjectReport[] projects =
+        [
+            Project(1001, "=Дюна; \"Пробуждение\"\nвторая строка", 2001),
+            Project(1002, null, null, ProjectFlags.OnlyInLogs | ProjectFlags.NameNotFound | ProjectFlags.CreatorNotFound),
+        ];
+
+        await ReportWriter.Write(ReportFile, projects, CancellationToken.None);
+        var rows = await LostProjectsCsv.Read(ReportFile, CancellationToken.None);
+
+        File.ReadAllBytes(ReportFile).Take(3).ShouldBe(DrpCsv.Encoding.GetPreamble());
+        rows.Select(r => (r.ProjectId, r.Create, r.Name, r.CreatorUserId)).ShouldBe(
+        [
+            (1001, true, "=Дюна; \"Пробуждение\"\nвторая строка", (int?)2001),
+            (1002, false, null, null),
+        ]);
     }
 }
