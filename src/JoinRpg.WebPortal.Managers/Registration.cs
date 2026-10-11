@@ -18,6 +18,7 @@ using JoinRpg.Web.ProjectCommon.KogdaIgra;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.Acl;
 using JoinRpg.Web.ProjectMasterTools.CaptainRules;
+using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using JoinRpg.Web.ProjectMasterTools.Fields;
 using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using JoinRpg.Web.ProjectMasterTools.ResponsibleMaster;
@@ -73,6 +74,7 @@ public static class Registration
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
+        .AddScoped<IClaimRestoreClient, Drp.ClaimRestoreViewService>()
         .AddScoped<IMoneyTransferClient, MoneyTransferViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IUserLinkResolveClient, UserLinkResolveViewService>()

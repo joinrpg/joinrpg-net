@@ -1,0 +1,10 @@
+@page "/{projectId:int}/claims/restore-from-notifications"
+@using JoinRpg.Web.ProjectMasterTools.ClaimRestore
+
+@model JoinRpg.Portal.Pages.GamePages.ClaimRestoreModel
+
+@{
+    ViewData["Title"] = "Восстановление заявок из уведомлений";
+}
+
+@(await Html.RenderComponentAsync<ClaimRestorePanel>(RenderMode.WebAssembly, new { Model.ProjectId }))
