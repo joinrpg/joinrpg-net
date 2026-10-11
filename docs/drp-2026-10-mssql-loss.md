@@ -235,7 +235,7 @@
 
 По каждому проекту:
 
-- [ ] Мастер заводит поля проекта заново (в блокировке разрешено — решение 2026-10-11, [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473)).
+- [ ] Мастер заводит поля проекта заново (в блокировке разрешено — решение 2026-10-11, [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508)).
 - [ ] Фазы 7–9 по проекту.
 - [ ] Снять блокировку с проекта (или закрыть его) — последний шаг.
 
@@ -573,8 +573,14 @@ IdPortal открывается раньше Portal: вход, «забыл па
   оплаты и подписки.
 - Инструменты восстановления вызывают `ChangeProjectProperties` / `ChangeClaim` с
   `ProjectActiveRequirement.AllowBlocked`.
-- Открыто в [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473): дата последнего обновления при снятии блокировки — иначе
-  `ProjectPerformCloseJob` сочтёт восстановленный проект давно не обновлявшимся (майские даты).
+- **Дата последнего обновления** при снятии блокировки не трогается (решение 2026-10-11, ADR023).
+  Поэтому **инструменты восстановления обязаны обновить её сами**: дату проекта считает
+  `ProjectRepository.GetProjectWithLastUpdateQuery` как максимум из `Comment.LastEditTime`,
+  `Character.UpdatedAt`, `CharacterGroup.UpdatedAt`, `Claim.LastUpdateDateTime`, дат сюжетов и т.п. —
+  достаточно, чтобы хоть одна восстановленная строка получила текущее время (естественно —
+  `Claim.LastUpdateDateTime` заявок, затронутых восстановлением). Иначе после снятия блокировки
+  `ProjectPerformCloseJob` сочтёт проект давно не обновлявшимся (майские даты) и закроет его.
+  Проект, разблокированный без восстановления, закроется штатно — так и задумано.
 
 ## Каталог уведомлений
 
@@ -671,6 +677,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480) | ADR023, PR 1: `Project.IsBlocked`, статус «Заблокирован», запрет изменений | 4 | влит |
 | [#5482](https://github.com/joinrpg/joinrpg-net/issues/5482) | ADR023, PR 2: проверки в сервисах, фильтры джоб | 4 | влит |
 | [#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) | ADR023, PR 3: снятие блокировки, закрытие, плашка, метки | 6 | на ревью, CI зелёный |
+| [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508) | ADR023: настройка полей в заблокированном проекте; требование к инструментам про дату обновления | 7 | на ревью |
 | issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | заведён |
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | заведён |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
