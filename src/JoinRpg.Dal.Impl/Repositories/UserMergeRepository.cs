@@ -68,6 +68,14 @@ internal class UserMergeRepository(MyDbContext ctx) : IUserMergeRepository
             .ToListAsync();
         conflicts.AddRange(bothCaptains.Select(k => new UserMergeConflict.BothCaptains(new(new(k.ProjectId), k.CharacterGroupId))));
 
+        // Не только проекты с данными этих аккаунтов: восстановление ещё может их туда вставить (ADR024).
+        var blockedProjects = await ctx.ProjectsSet
+            .Where(ProjectPredicates.Status(ProjectLifecycleStatus.Blocked))
+            .Select(p => p.ProjectId)
+            .OrderBy(p => p)
+            .ToListAsync();
+        conflicts.AddRange(blockedProjects.Select(p => new UserMergeConflict.BlockedProject(new(p))));
+
         var primaryProviders = ctx.Set<UserExternalLogin>().Where(l => l.UserId == a).Select(l => l.Provider);
         var droppedProviders = await ctx.Set<UserExternalLogin>()
             .Where(l => l.UserId == b && primaryProviders.Contains(l.Provider))
