@@ -5,6 +5,6 @@ namespace JoinRpg.DomainTypes;
 
 [method: JsonConstructor]
 [TypedEntityId]
-public partial record class FinanceOperationIdentification(ProjectIdentification ProjectId, int ClaimId, int FinanceOperationId) : IProjectEntityId
+public partial record class FinanceOperationIdentification(ClaimIdentification ClaimId, int FinanceOperationId) : IProjectEntityId
 {
 }

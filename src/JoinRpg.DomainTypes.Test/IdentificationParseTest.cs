@@ -142,7 +142,19 @@ public class IdentificationParseTest
     public void FinanceOperationShouldParse(string val)
     {
         FinanceOperationIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
-        result.ShouldBe(new FinanceOperationIdentification(new ProjectIdentification(1), 2, 3));
+        result.ShouldBe(new FinanceOperationIdentification(new ClaimIdentification(new ProjectIdentification(1), 2), 3));
+    }
+
+    // Строковая форма хранится в базе уведомлений (EntityReference) — менять её нельзя.
+    [Fact]
+    public void FinanceOperationStringFormShouldBeStable()
+    {
+        var id = new FinanceOperationIdentification(new ClaimIdentification(new ProjectIdentification(1), 2), 3);
+        id.ToString().ShouldBe("FinanceOperationId(1-2-3)");
+        FinanceOperationIdentification.TryParse(id.ToString(), provider: null, out var parsed).ShouldBeTrue();
+        parsed.ShouldBe(id);
+        parsed.ProjectId.ShouldBe(new ProjectIdentification(1));
+        JsonSerializer.Serialize(id).ShouldBe("\"FinanceOperationId(1-2-3)\"");
     }
 
     // ForumCommentIdentification — 3 листа: projectId, threadId, commentId

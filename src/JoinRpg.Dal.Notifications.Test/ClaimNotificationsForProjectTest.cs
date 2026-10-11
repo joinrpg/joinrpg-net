@@ -46,7 +46,7 @@ public class ClaimNotificationsForProjectTest : IAsyncLifetime
         INotificationRepository repository = new NotificationsRepository(context, NullLogger<NotificationsRepository>.Instance);
 
         await repository.InsertNotifications([
-            Notification("finance", new FinanceOperationIdentification(Project, 5, 9), LostAt.AddDays(-1)),
+            Notification("finance", new FinanceOperationIdentification(Claim, 9), LostAt.AddDays(-1)),
             Notification("claim", Claim, LostAt.AddDays(-3)),
             Notification("comment", new ClaimCommentIdentification(Claim, 7), LostAt.AddDays(-2)),
             // Проект 12 начинается с той же цифры — префикс «ClaimId(1-» его ловить не должен.
@@ -62,7 +62,7 @@ public class ClaimNotificationsForProjectTest : IAsyncLifetime
         result.Select(m => m.EntityReference).ShouldBe<IProjectEntityId?>([
             Claim,
             new ClaimCommentIdentification(Claim, 7),
-            new FinanceOperationIdentification(Project, 5, 9),
+            new FinanceOperationIdentification(Claim, 9),
         ]);
     }
 
