@@ -612,7 +612,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5468](https://github.com/joinrpg/joinrpg-net/issues/5468) | Старый Telegram-адрес в очереди не останавливает канал (закрывает issue [#5466](https://github.com/joinrpg/joinrpg-net/issues/5466)) | 3 | влит |
 | [#5470](https://github.com/joinrpg/joinrpg-net/issues/5470) | Выключение ежедневных джоб через конфиг `DailyJobs:Disabled` | 3 | влит |
 | [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` (ingress) | 2 | влит |
-| [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | на ревью, замечания в комментарии |
+| [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | на ревью, замечания учтены, CI зелёный |
 | issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | заведён, есть открытые вопросы |
 | issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | заведён |
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | заведён |
