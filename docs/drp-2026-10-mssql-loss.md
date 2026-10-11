@@ -145,6 +145,10 @@
       подключения к ней (или разовый job в кластере). Секрет пока **не трогаем** — поды
       поднимаются только в конце фазы 4 ([почему](#деплой)).
 - [ ] Сдвиг счётчиков ещё раз.
+- [ ] Право на `IDENTITY_INSERT` у логина приложения: проверить **под ним**
+      `SELECT HAS_PERMS_BY_NAME('dbo.Claims', 'OBJECT', 'ALTER')` (и для `Comments`,
+      `CharacterGroups`, `Characters`); если нет — `GRANT ALTER ON dbo.<таблица> TO <логин>` на
+      время восстановления (фазы 7–9) ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492)).
 
 **Postgres** (после ручного бэкапа кластера)
 
@@ -225,15 +229,6 @@
 ### Фазы 7–9 — по каждому проекту
 
 Внутри заблокированного проекта, в темпе мастеров ([блокировка](#блокировка-проектов)).
-
-Один раз до начала, на весь сервер:
-
-- [ ] Право на `IDENTITY_INSERT` у логина приложения: проверить **под ним**
-      `SELECT HAS_PERMS_BY_NAME('dbo.Claims', 'OBJECT', 'ALTER')` (и для `Comments`,
-      `CharacterGroups`, `Characters`); если нет — `GRANT ALTER ON dbo.<таблица> TO <логин>` на
-      время восстановления ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492)).
-
-По каждому проекту:
 
 - [ ] Мастер заводит поля проекта заново (в блокировке разрешено — решение 2026-10-11, [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508)).
 - [ ] Фазы 7–9 по проекту.
