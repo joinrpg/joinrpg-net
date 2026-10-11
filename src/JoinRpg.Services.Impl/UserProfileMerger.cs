@@ -30,7 +30,8 @@ public static class UserProfileMerger
                 SocialNetworksAccess = secondary.Extra.SocialNetworksAccess,
                 EnableTelegramPlayerDigestNotification = secondary.Extra.EnableTelegramPlayerDigestNotification,
             };
-            MergeExtra(taken, primary.Extra, secondary.Extra);
+            var primaryHasVkLogin = primary.ExternalLogins.Any(l => l.Provider == UserExternalLogin.VkProvider);
+            MergeExtra(taken, primary.Extra, secondary.Extra, primaryHasVkLogin);
         }
 
         if (secondary.Allrpg?.Sid is not null && primary.Allrpg?.Sid is null)
@@ -59,7 +60,7 @@ public static class UserProfileMerger
         primary.AspNetSecurityStamp = Guid.NewGuid().ToString();
     }
 
-    private static void MergeExtra(List<string> taken, UserExtra primary, UserExtra secondary)
+    private static void MergeExtra(List<string> taken, UserExtra primary, UserExtra secondary, bool primaryHasVkLogin)
     {
         if (primary.Gender == Gender.Unknown && secondary.Gender != Gender.Unknown)
         {
@@ -74,7 +75,9 @@ public static class UserProfileMerger
         if (string.IsNullOrWhiteSpace(primary.Vk) && !string.IsNullOrWhiteSpace(secondary.Vk))
         {
             primary.Vk = secondary.Vk;
-            primary.VkVerified = secondary.VkVerified;
+            // Подтверждённым ВК поглощаемого считается, только если у основного нет своего ВК-логина:
+            // при слиянии остаётся логин основного, и войти через ВК поглощаемого будет нельзя.
+            primary.VkVerified = secondary.VkVerified && !primaryHasVkLogin;
             taken.Add("ВКонтакте");
         }
         primary.Livejournal = Pick(taken, "ЖЖ", primary.Livejournal, secondary.Livejournal);
