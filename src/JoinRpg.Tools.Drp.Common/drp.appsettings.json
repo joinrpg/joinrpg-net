@@ -5,11 +5,15 @@
     // Момент аварии: уведомления начиная с него не учитываются. Только с часовым поясом.
     "LostAt": "2026-10-07T22:30:49Z",
     // Максимальные id в восстановленном бэкапе, по таблицам. Заполнить сразу после восстановления:
-    // SELECT MAX(UserId) FROM dbo.Users
+    // SELECT MAX(UserId) FROM dbo.Users; SELECT MAX(ProjectId) FROM dbo.Projects
+    // (до создания оболочек проектов — после них максимум вырастет).
     "BackupMax": {
-      "Users": null
+      "Users": null,
+      "Projects": null
     },
     // Каталог отчётов с персональными данными. Пусто — %LOCALAPPDATA%\joinrpg-drp\reports.
-    "ReportDir": null
+    "ReportDir": null,
+    // Сохранённые логи k8s (файл или каталог выгрузки yc logging read --format json). Пусто — без логов.
+    "K8sLogs": null
   }
 }

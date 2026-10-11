@@ -1,4 +1,5 @@
-using System.Globalization;
+using JoinRpg.Tools.Drp.Common;
+using Microsoft.Extensions.Configuration;
 
 namespace JoinRpg.Tools.RestoreLostProjects;
 
@@ -10,91 +11,87 @@ internal record Options(
     string ReportPath,
     IReadOnlyList<string> LogPaths)
 {
-    // Те же переменные, что у RestoreLostUsers: инструменты запускаются подряд с одной машины.
-    public const string MssqlEnvironmentVariable = "RESTORE_MSSQL";
-    public const string NotificationsEnvironmentVariable = "RESTORE_NOTIFICATIONS";
+    public const string ToolName = "restore-lost-projects";
+    public const string BackupMaxOption = "--backup-max-project-id";
+    public const string LogsOption = "--logs";
 
-    public const string Usage = $"""
+    /// <summary>
+    /// Сохранённые логи k8s: файл или каталог выгрузки. Необязательно. Путь на машине админа,
+    /// поэтому в drp.appsettings.json по умолчанию пусто.
+    /// </summary>
+    public const string LogsKey = "Drp:K8sLogs";
+
+    private static readonly string[] LogExtensions = [".json", ".ndjson", ".jsonl"];
+
+    public static readonly IReadOnlyDictionary<string, string> CommandLineOptions = new Dictionary<string, string>
+    {
+        [BackupMaxOption] = DrpKeys.BackupMax("Projects"),
+        [LogsOption] = LogsKey,
+    };
+
+    public static readonly IReadOnlyCollection<string> CommandLineFlags = [];
+
+    public static string Usage => $"""
         Составляет список проектов, созданных после бэкапа основной БД, по базе уведомлений и логам.
         Ничего не пишет ни в одну базу — только CSV-отчёт для ручной проверки.
 
-        Параметры:
-          --mssql <строка>                  строка подключения к основной БД (MSSQL), или переменная {MssqlEnvironmentVariable}
-          --notifications <строка>          строка подключения к базе уведомлений (Postgres), или переменная {NotificationsEnvironmentVariable}
-          --backup-max-project-id <число>   максимальный ProjectId в восстановленном бэкапе (SELECT MAX(ProjectId) FROM Projects
-                                            сразу после восстановления; после создания оболочек он вырастет)
-          --lost-at <RFC 3339>              момент аварии, например 2026-10-07T22:30:49Z; более поздние уведомления не учитываются
-          --report <путь>                   куда записать CSV-отчёт (содержит персональные данные)
-          --logs <путь>                     необязательно, можно несколько раз: сохранённые логи k8s
+        Параметры (все необязательны):
+          --lost-at <RFC 3339>              переопределить момент аварии (Drp:LostAt), например 2026-10-07T22:30:49Z
+          {BackupMaxOption} <число>   переопределить максимальный ProjectId бэкапа (Drp:BackupMax:Projects)
+          {LogsOption} <путь>                     сохранённые логи k8s ({LogsKey}): файл или каталог с файлами {string.Join(", ", LogExtensions)}
                                             (yc logging read --format json — массив или объект на строку)
+          --report <путь>                   записать отчёт сюда, а не в Drp:ReportDir
+
+        {DrpConfiguration.SourcesHelp}
         """;
 
-    // Только с явным часовым поясом: момент без пояса молча истолковался бы по часам машины.
-    private static readonly string[] LostAtFormats =
-    [
-        "yyyy-MM-dd'T'HH:mm:ss.FFFFFFF'Z'",
-        "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFzzz",
-    ];
-
     /// <summary>
-    /// Разбирает аргументы командной строки. Строки подключения можно передать через переменные окружения,
-    /// чтобы пароли не попадали в историю команд.
+    /// Собирает параметры из конфигурации. Если чего-то не хватает, бросает
+    /// <see cref="DrpConfigurationException"/> со всеми ошибками сразу.
     /// </summary>
-    /// <returns>Параметры или текст ошибки.</returns>
-    public static (Options? Options, string? Error) Parse(IReadOnlyList<string> args, Func<string, string?> getEnvironmentVariable)
+    public static Options FromConfiguration(IConfiguration configuration, DateTimeOffset startedAt)
     {
-        string? mssql = null, notifications = null, backupMax = null, lostAtText = null, report = null;
-        var logs = new List<string>();
+        var settings = new DrpSettings(configuration);
+        var mssql = settings.ConnectionString(DrpKeys.MainConnectionName, "основная БД, MSSQL");
+        var notifications = settings.ConnectionString(DrpKeys.NotificationsConnectionName, "база уведомлений, Postgres");
+        var backupMax = settings.BackupMax("Projects", BackupMaxOption);
+        var lostAt = settings.LostAt();
+        var (logPaths, logsError) = ResolveLogPaths(configuration[LogsKey]);
+        var reportPath = settings.ReportPath(ToolName, startedAt);
 
-        for (var i = 0; i < args.Count; i++)
+        var errors = settings.Errors.ToList();
+        if (logsError is not null)
         {
-            switch (args[i])
-            {
-                case "--mssql" or "--notifications" or "--backup-max-project-id" or "--lost-at" or "--report" or "--logs":
-                    if (i + 1 >= args.Count)
-                    {
-                        return (null, $"Не задано значение параметра {args[i]}");
-                    }
-                    var value = args[++i];
-                    switch (args[i - 1])
-                    {
-                        case "--mssql": mssql = value; break;
-                        case "--notifications": notifications = value; break;
-                        case "--backup-max-project-id": backupMax = value; break;
-                        case "--lost-at": lostAtText = value; break;
-                        case "--report": report = value; break;
-                        case "--logs": logs.Add(value); break;
-                    }
-                    break;
-                default:
-                    return (null, $"Неизвестный параметр {args[i]}");
-            }
+            errors.Add(logsError);
         }
+        if (errors.Count > 0)
+        {
+            throw new DrpConfigurationException(errors);
+        }
+        return new Options(mssql, notifications, backupMax, lostAt, reportPath, logPaths);
+    }
 
-        mssql ??= getEnvironmentVariable(MssqlEnvironmentVariable);
-        notifications ??= getEnvironmentVariable(NotificationsEnvironmentVariable);
-
-        if (string.IsNullOrWhiteSpace(mssql))
+    private static (IReadOnlyList<string> Paths, string? Error) ResolveLogPaths(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
         {
-            return (null, "Не задана строка подключения к MSSQL (--mssql)");
+            return ([], null);
         }
-        if (string.IsNullOrWhiteSpace(notifications))
+        if (File.Exists(value))
         {
-            return (null, "Не задана строка подключения к базе уведомлений (--notifications)");
+            return ([Path.GetFullPath(value)], null);
         }
-        if (!int.TryParse(backupMax, NumberStyles.None, CultureInfo.InvariantCulture, out var backupMaxProjectId) || backupMaxProjectId <= 0)
+        if (Directory.Exists(value))
         {
-            return (null, "Не задан или некорректен --backup-max-project-id");
+            var files = Directory.EnumerateFiles(value, "*", SearchOption.AllDirectories)
+                .Where(f => LogExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
+                .Select(Path.GetFullPath)
+                .Order(StringComparer.Ordinal)
+                .ToList();
+            return files.Count > 0
+                ? (files, null)
+                : ([], $"В каталоге логов {LogsKey} = «{value}» нет файлов {string.Join(", ", LogExtensions)}.");
         }
-        if (!DateTimeOffset.TryParseExact(lostAtText, LostAtFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var lostAt))
-        {
-            return (null, "Не задан или некорректен --lost-at (нужен момент с часовым поясом, например 2026-10-07T22:30:49Z)");
-        }
-        if (string.IsNullOrWhiteSpace(report))
-        {
-            return (null, "Не задан путь к отчёту (--report)");
-        }
-
-        return (new Options(mssql, notifications, backupMaxProjectId, lostAt, report, logs), null);
+        return ([], $"Не найден файл или каталог логов {LogsKey} = «{value}».");
     }
 }

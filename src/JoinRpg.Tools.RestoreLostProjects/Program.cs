@@ -1,4 +1,5 @@
 using System.Globalization;
+using JoinRpg.Tools.Drp.Common;
 
 namespace JoinRpg.Tools.RestoreLostProjects;
 
@@ -12,13 +13,20 @@ internal static class Program
 {
     private static async Task<int> Main(string[] args)
     {
-        var (options, error) = Options.Parse(args, Environment.GetEnvironmentVariable);
-        if (options is null)
+        var (commandLine, error) = DrpCommandLine.Parse(args, Options.CommandLineOptions, Options.CommandLineFlags);
+        if (commandLine is null)
         {
-            Console.Error.WriteLine(error);
-            Console.Error.WriteLine();
-            Console.Error.WriteLine(Options.Usage);
-            return 2;
+            return PrintErrors([error!]);
+        }
+
+        Options options;
+        try
+        {
+            options = Options.FromConfiguration(DrpConfiguration.Build(commandLine), DateTimeOffset.UtcNow);
+        }
+        catch (DrpConfigurationException e)
+        {
+            return PrintErrors(e.Errors);
         }
 
         using var cts = new CancellationTokenSource();
@@ -32,13 +40,13 @@ internal static class Program
         var mainDb = new MainDatabase(options.MssqlConnectionString);
         var notifications = new NotificationsSource(options.NotificationsConnectionString, options.LostAt);
 
-        Console.WriteLine($"Момент аварии (параметр): {options.LostAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)} UTC; более поздние уведомления и записи логов не учитываются.");
+        Console.WriteLine($"Момент аварии ({DrpKeys.LostAt}):{options.LostAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)} UTC; более поздние уведомления и записи логов не учитываются.");
 
         var projects = await mainDb.GetProjects(ct);
         var users = await mainDb.GetUsers(ct);
         var currentMax = projects.Count == 0 ? 0 : projects.Keys.Max();
         Console.WriteLine($"MSSQL: проектов {projects.Count}, максимальный ProjectId {currentMax}; пользователей {users.Count}.");
-        Console.WriteLine($"Максимальный ProjectId бэкапа (параметр): {options.BackupMaxProjectId}.");
+        Console.WriteLine($"Максимальный ProjectId бэкапа ({DrpKeys.BackupMax("Projects")}): {options.BackupMaxProjectId}.");
 
         var virtualUserIds = users
             .Where(u => MainDatabase.VirtualUserEmails.Contains(u.Email, StringComparer.OrdinalIgnoreCase))
@@ -65,16 +73,27 @@ internal static class Program
         }
         else
         {
-            Console.WriteLine("Логи не переданы (--logs) — сверки с логами не будет.");
+            Console.WriteLine($"Логи не заданы ({Options.LogsKey} или {Options.LogsOption}) — сверки с логами не будет.");
         }
 
         var report = analyzer.Analyze(rows, logs);
 
         await ReportWriter.Write(options.ReportPath, report, ct);
-        Console.WriteLine($"Отчёт записан: {Path.GetFullPath(options.ReportPath)} (содержит персональные данные, не публиковать).");
+        Console.WriteLine($"Отчёт записан: {options.ReportPath} (содержит персональные данные, не публиковать).");
 
         PrintSummary(report);
         return 0;
+    }
+
+    private static int PrintErrors(IEnumerable<string> errors)
+    {
+        foreach (var error in errors)
+        {
+            Console.Error.WriteLine(error);
+        }
+        Console.Error.WriteLine();
+        Console.Error.WriteLine(Options.Usage);
+        return 2;
     }
 
     private static void PrintSummary(IReadOnlyList<LostProjectReport> report)

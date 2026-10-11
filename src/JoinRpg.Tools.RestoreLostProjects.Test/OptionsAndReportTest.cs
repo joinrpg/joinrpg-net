@@ -1,63 +1,107 @@
+using JoinRpg.Tools.Drp.Common;
+using Microsoft.Extensions.Configuration;
+
 namespace JoinRpg.Tools.RestoreLostProjects.Test;
 
-public class OptionsAndReportTest
+public sealed class OptionsAndReportTest : IDisposable
 {
-    private const string LostAtText = "2026-10-07T22:30:49Z";
     private static readonly DateTimeOffset LostAt = new(2026, 10, 7, 22, 30, 49, TimeSpan.Zero);
+    private static readonly DateTimeOffset StartedAt = new(2026, 10, 11, 12, 0, 0, TimeSpan.Zero);
 
-    private static string? NoEnvironment(string _) => null;
+    // Свой каталог на экземпляр теста: ReportPath создаёт каталог, тест его удаляет.
+    private readonly string dir = Path.Combine(Path.GetTempPath(), "drp-projects-test-" + Guid.NewGuid().ToString("N"));
 
-    private static string[] Args(params string[] extra)
-        => ["--mssql", "ms", "--notifications", "pg", "--backup-max-project-id", "3500", "--lost-at", LostAtText, "--report", "r.csv", .. extra];
+    private string ReportFile => Path.Combine(dir, "r.csv");
+
+    public void Dispose()
+    {
+        if (Directory.Exists(dir))
+        {
+            Directory.Delete(dir, recursive: true);
+        }
+    }
+
+    private Dictionary<string, string?> Complete() => new()
+    {
+        ["ConnectionStrings:DefaultConnection"] = "ms",
+        ["ConnectionStrings:Notifications"] = "pg",
+        [DrpKeys.LostAt] = "2026-10-07T22:30:49Z",
+        [DrpKeys.BackupMax("Projects")] = "3500",
+        [DrpKeys.ReportPath] = ReportFile,
+    };
+
+    private static Options FromConfiguration(Dictionary<string, string?> values)
+        => Options.FromConfiguration(new ConfigurationBuilder().AddInMemoryCollection(values).Build(), StartedAt);
 
     [Fact]
-    public void ParsesAllOptions()
+    public void ReadsAllOptionsFromConfiguration()
     {
-        var (options, error) = Options.Parse(Args("--logs", "a.json", "--logs", "b.json"), NoEnvironment);
+        var options = FromConfiguration(Complete());
 
-        error.ShouldBeNull();
-        options.ShouldNotBeNull();
         options.MssqlConnectionString.ShouldBe("ms");
         options.NotificationsConnectionString.ShouldBe("pg");
         options.BackupMaxProjectId.ShouldBe(3500);
         options.LostAt.ShouldBe(LostAt);
-        options.ReportPath.ShouldBe("r.csv");
-        options.LogPaths.ShouldBe(["a.json", "b.json"]);
+        options.ReportPath.ShouldBe(Path.GetFullPath(ReportFile));
+        options.LogPaths.ShouldBeEmpty();
     }
 
     [Fact]
-    public void LogsAreOptional() => Options.Parse(Args(), NoEnvironment).Options!.LogPaths.ShouldBeEmpty();
+    public void LogsFromSingleFile()
+    {
+        var values = Complete();
+        _ = Directory.CreateDirectory(dir);
+        var file = Path.Combine(dir, "k8s.json");
+        File.WriteAllText(file, "[]");
+        values[Options.LogsKey] = file;
+
+        FromConfiguration(values).LogPaths.ShouldBe([file]);
+    }
 
     [Fact]
-    public void ConnectionStringsFromEnvironment()
+    public void LogsFromDirectoryTakeJsonFilesRecursively()
     {
-        var env = new Dictionary<string, string>
-        {
-            [Options.MssqlEnvironmentVariable] = "ms",
-            [Options.NotificationsEnvironmentVariable] = "pg",
-        };
+        var values = Complete();
+        var logs = Path.Combine(dir, "logs");
+        _ = Directory.CreateDirectory(Path.Combine(logs, "portal"));
+        File.WriteAllText(Path.Combine(logs, "b.ndjson"), "");
+        File.WriteAllText(Path.Combine(logs, "portal", "a.json"), "");
+        File.WriteAllText(Path.Combine(logs, "readme.txt"), "");
+        values[Options.LogsKey] = logs;
 
-        var (options, _) = Options.Parse(["--backup-max-project-id", "1", "--lost-at", LostAtText, "--report", "r.csv"], env.GetValueOrDefault);
-
-        options.ShouldNotBeNull();
-        options.MssqlConnectionString.ShouldBe("ms");
-        options.NotificationsConnectionString.ShouldBe("pg");
+        FromConfiguration(values).LogPaths.Select(Path.GetFileName).ShouldBe(["b.ndjson", "a.json"], ignoreOrder: true);
     }
 
-    [Theory]
-    [InlineData("--mssql", "ms", "--notifications", "pg", "--lost-at", LostAtText, "--report", "r.csv")]
-    [InlineData("--mssql", "ms", "--notifications", "pg", "--backup-max-project-id", "-5", "--lost-at", LostAtText, "--report", "r.csv")]
-    [InlineData("--mssql", "ms", "--notifications", "pg", "--backup-max-project-id", "1", "--lost-at", LostAtText)]
-    [InlineData("--mssql", "ms", "--notifications", "pg", "--backup-max-project-id", "1", "--lost-at", "2026-10-07T22:30:49", "--report", "r.csv")]
-    [InlineData("--mssql", "ms", "--notifications", "pg", "--backup-max-project-id", "1", "--lost-at", LostAtText, "--report", "r.csv", "--apply")]
-    [InlineData("--mssql", "ms", "--notifications", "pg", "--backup-max-project-id", "1", "--lost-at", LostAtText, "--report", "r.csv", "--logs")]
-    public void RejectsInvalidArguments(params string[] args)
+    [Fact]
+    public void ReportsEveryMissingKeyIncludingLogs()
     {
-        var (options, error) = Options.Parse(args, NoEnvironment);
+        var values = Complete();
+        _ = values.Remove("ConnectionStrings:Notifications");
+        values[DrpKeys.BackupMax("Projects")] = "";
+        values[Options.LogsKey] = Path.Combine(dir, "нет-такого");
 
-        options.ShouldBeNull();
-        error.ShouldNotBeNullOrEmpty();
+        var exception = Should.Throw<DrpConfigurationException>(() => FromConfiguration(values));
+
+        exception.Errors.Count.ShouldBe(3);
+        exception.Errors.ShouldContain(e => e.Contains("ConnectionStrings:Notifications"));
+        exception.Errors.ShouldContain(e => e.Contains(Options.BackupMaxOption));
+        exception.Errors.ShouldContain(e => e.Contains(Options.LogsKey));
     }
+
+    [Fact]
+    public void CommandLineKnowsToolOptions()
+    {
+        var (commandLine, error) = DrpCommandLine.Parse(
+            [Options.BackupMaxOption, "3501", Options.LogsOption, "logs"], Options.CommandLineOptions, Options.CommandLineFlags);
+
+        error.ShouldBeNull();
+        commandLine!.Overrides[DrpKeys.BackupMax("Projects")].ShouldBe("3501");
+        commandLine.Overrides[Options.LogsKey].ShouldBe("logs");
+    }
+
+    [Fact]
+    public void CommandLineHasNoApplyFlag()
+        => DrpCommandLine.Parse(["--apply"], Options.CommandLineOptions, Options.CommandLineFlags).Error.ShouldNotBeNull();
 
     [Fact]
     public void ReportEscapesAndProtectsFromFormulas()
