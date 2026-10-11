@@ -59,7 +59,9 @@
 
 ### Фаза 0. Сохранить источники
 
-- [x] Выгрузить логи k8s и почты локально (2026-10-10).
+- [x] Выгрузить логи k8s и почты локально (2026-10-10); копия у @leotsarev в
+      `backups/joinrpg-logs` (2026-10-11), главное — `k8s-prod-mutations-merged.json`,
+      `mail-merged.json`.
 - [x] (2026-10-11) Ручной бэкап Postgres: `pg_dump` всех прод-баз кластера `joinrpg-new`
       (`c9qg3f27vleg34u1f1lr`) — локально у @leotsarev, `backups/joinrpg-new/2026-10-11_0828`
       (+ zip). Dev-базы не сняты (нет паролей).
