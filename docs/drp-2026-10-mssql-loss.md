@@ -53,8 +53,9 @@
 ### Фаза 0. Сохранить источники
 
 - [x] Выгрузить логи k8s и почты локально (2026-10-10).
-- [ ] Ручной бэкап Postgres-кластера `joinrpg-prod`:
-      `yc managed-postgresql cluster backup c9qp3gog1foo3l69g9gs`.
+- [x] (2026-10-11) Ручной бэкап Postgres: `pg_dump` всех прод-баз кластера `joinrpg-new`
+      (`c9qg3f27vleg34u1f1lr`) — локально у @leotsarev, `backups/joinrpg-new/2026-10-11_0828`
+      (+ zip). Dev-базы не сняты (нет паролей).
 - [ ] Тикет в поддержку облака про бэкап MSSQL —
       [BC622830](https://center.yandex.cloud/support/tickets/BC622830), ждём ответа. Если бэкап
       есть — **весь план пересматривается**.
