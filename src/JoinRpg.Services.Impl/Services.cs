@@ -80,6 +80,7 @@ public static class Services
             .AddTransient<SubscribeCalculator>()
             .AddTransient<IAdminNotificationService, AdminNotificationServiceImpl>()
             .AddTransient<UserFieldValidator>()
+            .AddTransient<IUserMergeService, UserMergeService>()
             ;
     }
 
