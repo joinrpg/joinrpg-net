@@ -38,6 +38,13 @@ public class AddClaimValidationRulesTest
     }
 
     [Fact]
+    public void CantSendClaimIfProjectBlocked()
+    {
+        var projectInfo = Mock.ProjectInfo.WithChangedStatus(ProjectLifecycleStatus.Blocked);
+        ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.ProjectBlocked, projectInfo);
+    }
+
+    [Fact]
     public void CantSendClaimIfNoSlotsChar()
     {
         Mock.Character.CharacterType = CharacterType.Slot;

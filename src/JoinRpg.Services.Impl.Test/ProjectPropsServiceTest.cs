@@ -135,6 +135,57 @@ public class ProjectPropsServiceTest
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
 
+    public enum TestProjectState { Active, Archived, Blocked }
+
+    // Таблица из ADR023: при каком статусе какое требование пропускает операцию.
+    [Theory]
+    [InlineData(TestProjectState.Active, nameof(ProjectActiveRequirement.MustBeActive), true)]
+    [InlineData(TestProjectState.Active, nameof(ProjectActiveRequirement.AllowArchived), true)]
+    [InlineData(TestProjectState.Active, nameof(ProjectActiveRequirement.AllowBlocked), true)]
+    [InlineData(TestProjectState.Active, nameof(ProjectActiveRequirement.AllowArchivedOrBlocked), true)]
+    [InlineData(TestProjectState.Archived, nameof(ProjectActiveRequirement.MustBeActive), false)]
+    [InlineData(TestProjectState.Archived, nameof(ProjectActiveRequirement.AllowArchived), true)]
+    [InlineData(TestProjectState.Archived, nameof(ProjectActiveRequirement.AllowBlocked), false)]
+    [InlineData(TestProjectState.Archived, nameof(ProjectActiveRequirement.AllowArchivedOrBlocked), true)]
+    [InlineData(TestProjectState.Blocked, nameof(ProjectActiveRequirement.MustBeActive), false)]
+    [InlineData(TestProjectState.Blocked, nameof(ProjectActiveRequirement.AllowArchived), false)]
+    [InlineData(TestProjectState.Blocked, nameof(ProjectActiveRequirement.AllowBlocked), true)]
+    [InlineData(TestProjectState.Blocked, nameof(ProjectActiveRequirement.AllowArchivedOrBlocked), true)]
+    public async Task ActiveRequirement_MatchesProjectState(TestProjectState state, string requirementName, bool allowed)
+    {
+        var requirement = Enum.Parse<ProjectActiveRequirement>(requirementName);
+        switch (state)
+        {
+            case TestProjectState.Archived:
+                mock.Project.Active = false;
+                mock.Project.IsAcceptingClaims = false;
+                break;
+            case TestProjectState.Blocked:
+                mock.Project.IsBlocked = true;
+                break;
+        }
+        var service = CreateService(mock.Master.UserId);
+
+        var change = () => service.ChangeProjectProperties(
+            ProjectId,
+            Permission.CanChangeProjectProperties,
+            requirement,
+            true,
+            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
+
+        if (allowed)
+        {
+            await change();
+            unitOfWork.SaveChangesCallCount.ShouldBe(1);
+        }
+        else
+        {
+            var exception = await Should.ThrowAsync<ProjectDeactivatedException>(change);
+            (exception is ProjectBlockedException).ShouldBe(state == TestProjectState.Blocked);
+            unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        }
+    }
+
     [Fact]
     public async Task ChangeProjectProperties_StartsActivityTaggedWithCallingOperationName()
     {

@@ -18,6 +18,12 @@ public class Project : IProjectEntity
 
     public bool IsAcceptingClaims { get; set; }
 
+    /// <summary>
+    /// Проект заблокирован на время восстановления данных (ADR023). Ставится только у активного проекта,
+    /// <see cref="Active"/> и <see cref="IsAcceptingClaims"/> при этом не меняются.
+    /// </summary>
+    public bool IsBlocked { get; set; }
+
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; }
 
     public virtual ICollection<ForumThread> ForumThreads { get; set; }

@@ -42,6 +42,8 @@ public enum AddClaimForbideReason
     VkontakteMissing,
     PassportMissing,
     RegistrationAddressMissing,
+    /// <summary>Проект заблокирован на время восстановления данных (ADR023).</summary>
+    ProjectBlocked,
 }
 
 // Более широкий вариант статуса, подразумевает комбинацию нескольких статусов.

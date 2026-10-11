@@ -5,6 +5,11 @@ public enum ProjectLifecycleStatus
     ActiveClaimsClosed,
     ActiveClaimsOpen,
     Archived,
+
+    /// <summary>
+    /// Заблокирован на время восстановления данных (ADR023): менять нельзя, показывать — как активный.
+    /// </summary>
+    Blocked,
 }
 
 /// <summary>
