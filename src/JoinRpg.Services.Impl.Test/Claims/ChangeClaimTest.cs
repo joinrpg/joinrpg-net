@@ -267,7 +267,7 @@ public class ChangeClaimTest : ClaimServiceTestBase
     /// отметка «прочитано» и платёжные колбэки (ADR014).
     /// </summary>
     [Fact]
-    public async Task ArchivedProject_AllowInactive_Works()
+    public async Task ArchivedProject_AllowArchived_Works()
     {
         var claimId = CreateClaim();
         mock.Project.Active = false;
@@ -277,7 +277,7 @@ public class ChangeClaimTest : ClaimServiceTestBase
         await CreatePropsService().ChangeClaim(
             claimId,
             ClaimAccessRequirement.AnyMaster,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             0,
             ctx => { });
 

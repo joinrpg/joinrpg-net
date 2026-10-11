@@ -108,7 +108,7 @@ internal class ProjectService(
     async Task IProjectService.SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
-            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowInactive,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowArchived,
             (cloneSettings, publishEnabled),
             ctx =>
             {

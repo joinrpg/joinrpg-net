@@ -62,7 +62,11 @@ public record class ProjectInfo
     public ProjectCheckInSettings ProjectCheckInSettings { get; }
 
     public ProjectLifecycleStatus ProjectStatus { get; }
-    public bool IsActive => ProjectStatus != ProjectLifecycleStatus.Archived;
+    /// <summary>Проект можно менять обычными операциями. Для вопросов чтения — <see cref="IsArchived"/> (ADR023).</summary>
+    public bool IsActive => ProjectStatus.AllowsChanges();
+
+    /// <summary>Проект в архиве.</summary>
+    public bool IsArchived => ProjectStatus.IsArchived();
 
     public DateOnly CreateDate { get; }
 

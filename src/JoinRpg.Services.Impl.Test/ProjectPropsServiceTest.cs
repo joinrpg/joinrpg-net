@@ -36,7 +36,7 @@ public class ProjectPropsServiceTest
         await service.ChangeProjectProperties(
             ProjectId,
             Permission.CanChangeProjectProperties,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             true,
             ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
 
@@ -57,7 +57,7 @@ public class ProjectPropsServiceTest
         var result = await service.ChangeProjectProperties(
             ProjectId,
             Permission.CanChangeProjectProperties,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             true,
             ctx =>
             {
@@ -77,7 +77,7 @@ public class ProjectPropsServiceTest
         await Should.ThrowAsync<NoAccessToProjectException>(() => service.ChangeProjectProperties(
             ProjectId,
             Permission.CanChangeProjectProperties,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             true,
             ctx => ctx.Project.Details.EnableAccommodation = ctx.Request));
 
@@ -93,7 +93,7 @@ public class ProjectPropsServiceTest
         await service.ChangeProjectProperties(
             ProjectId,
             Permission.CanChangeProjectProperties,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             true,
             ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
 
@@ -118,7 +118,7 @@ public class ProjectPropsServiceTest
     }
 
     [Fact]
-    public async Task InactiveProject_AllowInactive_Succeeds()
+    public async Task InactiveProject_AllowArchived_Succeeds()
     {
         mock.Project.Active = false;
         mock.Project.IsAcceptingClaims = false;
@@ -127,7 +127,7 @@ public class ProjectPropsServiceTest
         await service.ChangeProjectProperties(
             ProjectId,
             Permission.CanChangeProjectProperties,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             true,
             ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
 
@@ -164,7 +164,7 @@ public class ProjectPropsServiceTest
         await service.ChangeProjectProperties(
             ProjectId,
             Permission.CanChangeProjectProperties,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             true,
             ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
 

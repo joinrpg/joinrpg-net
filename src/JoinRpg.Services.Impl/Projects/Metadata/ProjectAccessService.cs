@@ -114,7 +114,7 @@ internal class ProjectAccessService(
         await projectPropsService.ChangeProjectProperties(
             projectId,
             requiredPermission,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             (UserId: userId, NewResponsible: newResponsibleMasterIdOrDefault),
             ctx =>
             {
@@ -158,7 +158,7 @@ internal class ProjectAccessService(
             // Свой профиль мастер правит сам, чужой — с правом выдавать доступ (ADR019, §7).
             request.UserId == currentUserAccessor.UserIdentificationOrDefault ? Permission.None : Permission.CanGrantRights,
             // Страница мастеров архивной игры — её «титры», их правят и после игры.
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             request,
             ctx =>
             {
@@ -174,7 +174,7 @@ internal class ProjectAccessService(
         => projectPropsService.ChangeProjectProperties<(UserIdentification UserId, UserIdentification? AfterUserId), IReadOnlyList<UserIdentification>>(
             projectId,
             Permission.CanGrantRights,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             (UserId: userId, AfterUserId: afterUserId),
             ctx =>
             {
@@ -196,7 +196,7 @@ internal class ProjectAccessService(
         => projectPropsService.ChangeProjectProperties(
             projectId,
             Permission.CanGrantRights, // джоба работает под роботом-админом, admin-bypass срабатывает сам
-            ProjectActiveRequirement.AllowInactive, // почти все такие проекты в архиве
+            ProjectActiveRequirement.AllowArchived, // почти все такие проекты в архиве
             userIds,
             ctx =>
             {
