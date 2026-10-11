@@ -1567,6 +1567,35 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SentRoomNotifications.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Отвеченные приглашения — история: отклонение заявки не переписывает их в «отклонено из-за
+    /// отмены заявки» и не шлёт второй стороне уведомление по давно решённому приглашению (#5452).
+    /// </summary>
+    [Fact]
+    public async Task DeclineByMaster_WithAnsweredInvites_KeepsThemAndSendsNoNotification()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var acceptedNeighbour = CreateClaim(ClaimStatus.AddedByUser, "Принявший");
+        var declinedNeighbour = CreateClaim(ClaimStatus.AddedByUser, "Отказавший");
+
+        var accepted = mock.CreateAccommodationInvite(claim, acceptedNeighbour);
+        accepted.IsAccepted = InviteState.Accepted;
+        accepted.ResolveDescription = ResolveDescription.Accepted;
+
+        var declined = mock.CreateAccommodationInvite(declinedNeighbour, claim);
+        declined.IsAccepted = InviteState.Declined;
+        declined.ResolveDescription = ResolveDescription.Declined;
+
+        await CreateService().DeclineByMaster(
+            claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
+
+        accepted.IsAccepted.ShouldBe(InviteState.Accepted);
+        accepted.ResolveDescription.ShouldBe(ResolveDescription.Accepted);
+        declined.IsAccepted.ShouldBe(InviteState.Declined);
+        declined.ResolveDescription.ShouldBe(ResolveDescription.Declined);
+        SentInviteNotifications.ShouldBeEmpty();
+    }
+
     #endregion
 
     #region SetAccommodationType

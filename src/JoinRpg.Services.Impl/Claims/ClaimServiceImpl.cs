@@ -634,7 +634,7 @@ internal class ClaimServiceImpl(
                     DeleteCharacter(ctx);
                 }
 
-                await DeclineAllClaimInvites(ctx);
+                await DeclineUnansweredClaimInvites(ctx);
 
                 _ = ctx.AddComment(
                     ctx.Request.CommentText,
@@ -774,16 +774,23 @@ internal class ClaimServiceImpl(
     }
 
     /// <summary>
-    /// Отклоняет все приглашения к совместному проживанию, в которых участвует заявка, и ставит
-    /// уведомление остальным участникам в очередь.
+    /// Отклоняет неотвеченные приглашения к совместному проживанию, в которых участвует заявка, и
+    /// ставит уведомление остальным участникам в очередь.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Уже отвеченные приглашения — история, их не трогаем: иначе принятое приглашение выглядело бы
+    /// отклонённым из-за отмены заявки, а второй стороне ушло бы уведомление по давно решённому
+    /// приглашению (#5452). Так же поступает удаление типа проживания.
+    /// </para>
+    /// <para>
     /// Раньше это делал <c>AccommodationInviteServiceImpl.DeclineAllClaimInvites</c> на собственном
     /// <c>DbContext</c> и собственным <c>SaveChanges</c> — приглашения коммитились независимо от
     /// внешней операции. Теперь и запрос, и мутация идут через контекст, значит уезжают в то же
     /// единственное сохранение (ADR014).
+    /// </para>
     /// </remarks>
-    private static async Task DeclineAllClaimInvites(ClaimMutationContext ctx)
+    private static async Task DeclineUnansweredClaimInvites(ClaimMutationContext ctx)
     {
         var invites = await ctx.LoadInvitesForClaim();
         if (invites.Count == 0)
@@ -794,6 +801,11 @@ internal class ClaimServiceImpl(
         var recipients = new List<Claim>();
         foreach (var invite in invites)
         {
+            if (invite.IsAccepted != InviteState.Unanswered)
+            {
+                continue;
+            }
+
             invite.IsAccepted = InviteState.Declined;
             invite.ResolveDescription = ResolveDescription.ClaimCanceled;
 
@@ -939,7 +951,7 @@ internal class ClaimServiceImpl(
                 // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
                 ctx.Claim.PlayerAllowedSenstiveData = false;
 
-                await DeclineAllClaimInvites(ctx);
+                await DeclineUnansweredClaimInvites(ctx);
 
                 var roomNotification = await CommonClaimDecline(ctx);
 

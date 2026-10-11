@@ -92,7 +92,8 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
     }
 
     // Снятие всех приглашений заявки больше не живёт в этом сервисе: его делает claim-контур
-    // (приватный ClaimServiceImpl.DeclineAllClaimInvites поверх ctx.LoadInvitesForClaim), и покрыт
+    // (приватный ClaimServiceImpl.DeclineUnansweredClaimInvites поверх ctx.LoadInvitesForClaim), и покрыт
     // он там же — DeclineByMaster_WithInvites_*, DeclineByPlayer_WithInvites_DeclinesThem,
-    // DeclineByMaster_WithoutInvites_SendsNoInviteNotification в ClaimServiceImplTest.
+    // DeclineByMaster_WithoutInvites_SendsNoInviteNotification,
+    // DeclineByMaster_WithAnsweredInvites_KeepsThemAndSendsNoNotification в ClaimServiceImplTest.
 }
