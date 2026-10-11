@@ -1,0 +1,117 @@
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace JoinRpg.Web.ProjectCommon.Test;
+
+/// <summary>
+/// Пункт «новый персонаж» в <see cref="SingleCharacterSelector"/>: по умолчанию его нет,
+/// а когда он включён, его выбор означает <see cref="SingleCharacterSelector.SelectedCharacterId"/> == null.
+/// </summary>
+public class SingleCharacterSelectorTest
+{
+    private const string NewCharacterText = "Новый персонаж";
+    private static readonly ProjectIdentification ProjectId = new(1);
+    private static readonly CharacterIdentification FirstId = new(ProjectId, 10);
+
+    private sealed class StubCharactersClient : ICharactersClient
+    {
+        public Task<List<CharacterDto>> GetCharacters(ProjectIdentification projectId, CharacterListType listType = CharacterListType.All)
+            => Task.FromResult<List<CharacterDto>>(
+            [
+                new CharacterDto(new CharacterIdentification(projectId, 10), "Первый", "", IsPublic: true),
+                new CharacterDto(new CharacterIdentification(projectId, 20), "Второй", "", IsPublic: true),
+            ]);
+    }
+
+    private static BunitContext CreateStaticContext()
+    {
+        var ctx = new BunitContext();
+        ctx.Services.AddSingleton<ICharactersClient>(new StubCharactersClient());
+        // Non-interactive: TypedSelector не пытается импортировать JS-модуль bootstrap-select.
+        ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        return ctx;
+    }
+
+    private static (BunitContext Context, BunitJSModuleInterop Module) CreateInteractiveContext()
+    {
+        var ctx = new BunitContext();
+        ctx.Services.AddSingleton<ICharactersClient>(new StubCharactersClient());
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        var module = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+        _ = module.SetupVoid("initBootstrapSelect", _ => true);
+        _ = module.SetupVoid("refreshBootstrapSelect", _ => true);
+        return (ctx, module);
+    }
+
+    [Fact]
+    public void ByDefault_NoNewCharacterOption()
+    {
+        using var ctx = CreateStaticContext();
+
+        var cut = ctx.Render<SingleCharacterSelector>(p => p.Add(x => x.ProjectId, ProjectId));
+
+        var options = cut.FindAll("option");
+        options.Count.ShouldBe(2);
+        cut.Markup.ShouldNotContain(NewCharacterText);
+    }
+
+    [Fact]
+    public void WithText_NewCharacterOptionGoesFirstAndIsSelectedWhenNoCharacter()
+    {
+        using var ctx = CreateStaticContext();
+
+        var cut = ctx.Render<SingleCharacterSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.NewCharacterOptionText, NewCharacterText));
+
+        var options = cut.FindAll("option");
+        options.Count.ShouldBe(3);
+        options[0].TextContent.ShouldBe(NewCharacterText);
+        options[0].GetAttribute("value").ShouldBe("");
+        options[0].HasAttribute("selected").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void WithTextAndSelectedCharacter_NewCharacterOptionIsNotSelected()
+    {
+        using var ctx = CreateStaticContext();
+
+        var cut = ctx.Render<SingleCharacterSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.SelectedCharacterId, FirstId)
+            .Add(x => x.NewCharacterOptionText, NewCharacterText));
+
+        var options = cut.FindAll("option");
+        options[0].HasAttribute("selected").ShouldBeFalse();
+        options[1].HasAttribute("selected").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ChoosingNewCharacterThenCharacter_ReportsNullThenId()
+    {
+        var (ctx, module) = CreateInteractiveContext();
+        using var _ = ctx;
+        var reported = new List<CharacterIdentification?>();
+
+        var cut = ctx.Render<SingleCharacterSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.SelectedCharacterId, FirstId)
+            .Add(x => x.SelectedCharacterIdChanged, (CharacterIdentification? id) => reported.Add(id))
+            .Add(x => x.NewCharacterOptionText, NewCharacterText));
+        cut.WaitForAssertion(() => module.Invocations["initBootstrapSelect"].ShouldHaveSingleItem());
+
+        var firstValue = cut.FindAll("option")[1].GetAttribute("value")!;
+
+        var getSelected = module.Setup<List<string>>("getSelectedValues", _ => true);
+        getSelected.SetResult([""]);
+        cut.Find("select").Change("");
+
+        reported.ShouldBe([null]);
+
+        getSelected = module.Setup<List<string>>("getSelectedValues", _ => true);
+        getSelected.SetResult([firstValue]);
+        cut.Find("select").Change(firstValue);
+
+        reported.ShouldBe([null, FirstId]);
+    }
+}
