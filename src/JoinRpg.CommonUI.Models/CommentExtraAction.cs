@@ -63,4 +63,7 @@ public enum CommentExtraAction
 
     [Display(Name = "Приглашение принято игроком", ShortName = "принята")]
     InvitationAcceptedByPlayer,
+
+    [Display(Name = "Восстановлено из уведомлений", ShortName = "восстановлена из уведомлений")]
+    RestoredFromNotifications,
 }

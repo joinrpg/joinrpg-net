@@ -235,6 +235,19 @@ internal abstract record ClaimMutationContext(
     }
 
     /// <summary>
+    /// Скрытая от игрока запись в истории заявки <b>без уведомления</b>. Нужна восстановлению из
+    /// уведомлений (DRP, #5481): восстановление не шлёт писем, но в истории отмечается. Уведомление
+    /// помощник строит всегда — здесь его просто не ставят в очередь, как и у комментария к онлайн-оплате
+    /// в <c>PaymentsService</c>.
+    /// </summary>
+    public Comment AddHistoryRecordWithoutNotification(string text, CommentExtraAction extraAction)
+    {
+        var (comment, _) = CommentHelper.CreateClaimCommentWithNotification(
+            text, Claim, ProjectInfo, extraAction, ClaimOperationType.MasterSecretChange, Now);
+        return comment;
+    }
+
+    /// <summary>
     /// Запрещает операции, датированные будущим.
     /// </summary>
     public void CheckOperationDate(DateTime operationDate)

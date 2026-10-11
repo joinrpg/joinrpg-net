@@ -9,6 +9,7 @@ using JoinRpg.Services.Impl.Projects.Metadata;
 using JoinRpg.Services.Impl.Projects.Stale;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces.Avatars;
+using JoinRpg.Services.Interfaces.Drp;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
@@ -72,6 +73,7 @@ public static class Services
             .AddTransient<CommentHelper>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
             .AddTransient<IClaimNotificationService, ClaimNotificationService>()
+            .AddTransient<IClaimRestoreService, ClaimRestoreService>()
             .AddTransient<IAccommodationNotificationService, AccommodationNotificationService>()
             .AddTransient<AccommodationNotificationTextBuilder>()
             .AddTransient<ForumNotificationService>()
