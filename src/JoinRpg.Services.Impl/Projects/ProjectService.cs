@@ -45,12 +45,13 @@ internal class ProjectService(
     public async Task CloseProject(ProjectIdentification projectId, bool publishPlot)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
-            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked,
             publishPlot,
             ctx =>
             {
                 ctx.Project.Active = false;
                 ctx.Project.IsAcceptingClaims = false;
+                ctx.Project.IsBlocked = false;
                 ctx.Project.Details.PublishPlot = ctx.Request;
             });
 
@@ -61,6 +62,12 @@ internal class ProjectService(
             Initiator = new UserIdentification(currentUserAccessor.UserId),
         });
     }
+
+    public Task UnblockProject(ProjectIdentification projectId)
+        => projectPropsService.ChangeProjectProperties(projectId,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked,
+            projectId,
+            ctx => ctx.Project.IsBlocked = false);
 
     public async Task CloseProjectAsStale(ProjectIdentification projectId, DateOnly lastActiveDate)
     {

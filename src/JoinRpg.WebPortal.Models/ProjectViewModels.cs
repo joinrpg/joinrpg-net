@@ -32,6 +32,20 @@ public class EditProjectViewModel
     public bool EnableAccomodation { get; set; }
 
     public bool Active { get; set; }
+
+    /// <summary>Заблокирован на время восстановления данных (ADR023).</summary>
+    public bool Blocked { get; set; }
+}
+
+public class UnblockProjectViewModel
+{
+    public int ProjectId { get; set; }
+
+    [ReadOnly(true)]
+    public string OriginalName { get; set; } = "";
+
+    [ReadOnly(true)]
+    public bool IsBlocked { get; set; }
 }
 
 public class CloseProjectViewModel

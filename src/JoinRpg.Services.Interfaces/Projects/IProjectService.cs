@@ -4,7 +4,14 @@ public interface IProjectService
 {
     Task EditProject(EditProjectRequest request);
 
+    /// <summary>Закрыть проект (в архив). Заблокированный тоже можно — это конец восстановления (ADR023).</summary>
     Task CloseProject(ProjectIdentification projectId, bool publishPlot);
+
+    /// <summary>
+    /// Снять блокировку восстановления (ADR023): проект возвращается в состояние до блокировки.
+    /// Для незаблокированного проекта ничего не делает.
+    /// </summary>
+    Task UnblockProject(ProjectIdentification projectId);
 
     Task CloseProjectAsStale(ProjectIdentification projectId, DateOnly lastActiveDate);
 
