@@ -44,6 +44,7 @@
     <Project Path="src/JoinRpg.DomainTypes/JoinRpg.DomainTypes.csproj" />
     <Project Path="src/JoinRpg.Integrations.KogdaIgra/JoinRpg.Integrations.KogdaIgra.csproj" />
     <Project Path="src/JoinRpg.Services.Advertisement/JoinRpg.Services.Advertisement.csproj" />
+    <Project Path="src/JoinRpg.Services.Drp/JoinRpg.Services.Drp.csproj" />
     <Project Path="src/JoinRpg.Services.Export/JoinRpg.Services.Export.csproj" />
     <Project Path="src/JoinRpg.Services.Impl/JoinRpg.Services.Impl.csproj" />
     <Project Path="src/JoinRpg.Services.Interfaces/JoinRpg.Services.Interfaces.csproj" />
@@ -82,6 +83,7 @@
     <Project Path="src/JoinRpg.Mcp.Test/JoinRpg.Mcp.Test.csproj" />
     <Project Path="src/JoinRpg.Portal.Test/JoinRpg.Portal.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Advertisement.Test/JoinRpg.Services.Advertisement.Test.csproj" />
+    <Project Path="src/JoinRpg.Services.Drp.Test/JoinRpg.Services.Drp.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Export.Test/JoinRpg.Services.Export.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Impl.Test/JoinRpg.Services.Impl.Test.csproj" />
     <Project Path="src/JoinRpg.Services.Notifications.Test/JoinRpg.Services.Notifications.Test.csproj" />

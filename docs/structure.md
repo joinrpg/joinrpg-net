@@ -56,6 +56,7 @@
 - `JoinRpg.Services.Impl` — реализация бизнес-логики. Проверять права самостоятельно, не доверять входным данным. Инкапсулировать операции чтения (кроме выборки по первичному ключу) внутри репозиториев
 - ~~`JoinRpg.Services.Email`~~ — удалён: все уведомления мигрировали в `JoinRpg.Services.Notifications`.
   Одноимённый namespace ещё жив внутри `JoinRpg.Services.Impl` (`MassProjectEmailService`)
+- `JoinRpg.Services.Drp` — временный код восстановления после потери основной БД ([DRP-план](https://github.com/joinrpg/joinrpg-net/pull/5459)): разбор базы уведомлений в события по заявкам. Удаляется, когда восстановление закончено
 - `JoinRpg.Services.Export` — экспорт в .xlsx (ClosedXML). Не знает ничего о специфике JoinRpg — универсальный компонент.
 - `JoinRpg.Services.Notifications` — оркестровка многоканальных уведомлений
 - `JoinRpg.Integrations.KogdaIgra` — бизнес-логика синхронизации с KogdaIgra
