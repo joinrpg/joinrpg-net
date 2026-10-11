@@ -1,0 +1,163 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+@inject IUserMergeClient Client
+
+<JoinPanel>
+    <Header>Объединение аккаунтов</Header>
+    <Body>
+        <p>
+            Всё, что связано с поглощаемым аккаунтом — заявки, комментарии, мастерство в проектах, вход через соцсети, —
+            переходит к основному, а поглощаемый аккаунт удаляется. <b>Отменить объединение нельзя.</b>
+            Обоим аккаунтам уйдёт письмо.
+        </p>
+        <p class="text-muted">
+            Если аккаунты пересекаются — например, оба были мастерами одного проекта или подали заявки на одного персонажа, —
+            объединить их нельзя, пока это не разберут. Часть пересечений не снять вовсе: бывший мастер остаётся в истории
+            проекта, кассы и переводы денег не удаляются, в архивном проекте ничего не поменять. Такие пары этот
+            инструмент не объединит — их разбирают вручную в базе.
+        </p>
+
+        @if (errorMessage is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+        }
+        @if (mergedInto is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">
+                Аккаунты объединены. Основной аккаунт: <UserLink Model="mergedInto" />
+            </JoinAlert>
+        }
+
+        @* Пока идёт запрос, менять аккаунты нельзя: иначе ответ лёг бы на уже другие поля. *@
+        <fieldset class="form-horizontal" disabled="@(loading || merging)">
+            <div class="form-group">
+                <label class="control-label col-md-3">Основной аккаунт (остаётся)</label>
+                <div class="col-md-9">
+                    <JoinUserLinkEditor Values="primaryLinks" ValuesChanged="@(v => { primaryLinks = v; ResetPreview(); })" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-3">Поглощаемый аккаунт (удаляется)</label>
+                <div class="col-md-9">
+                    <JoinUserLinkEditor Values="secondaryLinks" ValuesChanged="@(v => { secondaryLinks = v; ResetPreview(); })" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                    <JoinButton Label="Проверить" Disabled="@(!BothSelected || merging)" OnClick="LoadPreview" InProgress="loading" AutoProgress="false" />
+                </div>
+            </div>
+        </fieldset>
+
+        @if (preview is not null)
+        {
+            <h4>Что произойдёт</h4>
+            <p>
+                <UserLink Model="preview.Secondary.User" /> (@preview.Secondary.Email) будет удалён, всё его — у
+                <UserLink Model="preview.Primary.User" /> (@preview.Primary.Email).
+            </p>
+
+            @if (preview.Conflicts.Count > 0)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Danger">
+                    <p>Объединить нельзя:</p>
+                    <ul>
+                        @foreach (var conflict in preview.Conflicts)
+                        {
+                            <li><UserMergeConflictItem Conflict="conflict" /></li>
+                        }
+                    </ul>
+                </JoinAlert>
+            }
+            else
+            {
+                <ul>
+                    <li>Заявок: @preview.SecondaryClaims</li>
+                    <li>Комментариев: @preview.SecondaryComments</li>
+                    <li>Проектов, где был мастером: @preview.SecondaryMasterProjects</li>
+                </ul>
+                @if (preview.DroppedLoginProviders.Count > 0)
+                {
+                    <JoinAlert Variation="VariationStyleEnum.Warning">
+                        Соцсети @string.Join(", ", preview.DroppedLoginProviders) привязаны к обоим аккаунтам. Останется привязка
+                        основного, вход через соцсеть поглощаемого перестанет работать.
+                    </JoinAlert>
+                }
+
+                <div class="form-inline">
+                    <label>
+                        Для подтверждения введите номер поглощаемого аккаунта (@preview.Secondary.User.UserId?.Value):
+                        <input class="form-control" @bind="confirmation" @bind:event="oninput" />
+                    </label>
+                    <JoinButton Label="Объединить" Style="VariationStyleEnum.Danger"
+                                Disabled="@(confirmation?.Trim() != preview.Secondary.User.UserId?.Value.ToString())"
+                                OnClick="Merge" InProgress="merging" AutoProgress="false" />
+                </div>
+            }
+        }
+    </Body>
+</JoinPanel>
+
+@code {
+    private List<string> primaryLinks = [];
+    private List<string> secondaryLinks = [];
+    private UserMergePreviewViewModel? preview;
+    private UserLinkViewModel? mergedInto;
+    private string? errorMessage;
+    private string? confirmation;
+    private bool loading;
+    private bool merging;
+
+    private bool BothSelected => primaryLinks.Any(l => !string.IsNullOrWhiteSpace(l)) && secondaryLinks.Any(l => !string.IsNullOrWhiteSpace(l));
+
+    private void ResetPreview()
+    {
+        preview = null;
+        confirmation = null;
+        errorMessage = null;
+    }
+
+    private async Task LoadPreview()
+    {
+        ResetPreview();
+        mergedInto = null;
+        loading = true;
+        try
+        {
+            preview = await Client.GetPreview(primaryLinks.First(), secondaryLinks.First());
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task Merge()
+    {
+        if (preview is not { Primary.User: { UserId: { } primary } primaryUser, Secondary.User.UserId: { } secondary })
+        {
+            return;
+        }
+        merging = true;
+        errorMessage = null;
+        try
+        {
+            await Client.Merge(primary, secondary);
+            mergedInto = primaryUser;
+            preview = null;
+            secondaryLinks = [];
+        }
+        catch (Exception ex)
+        {
+            // Ответ мог потеряться уже после коммита (таймаут, обрыв) — повторная проверка покажет, что вышло.
+            errorMessage = $"{ex.Message} Проверьте результат кнопкой «Проверить»: если поглощаемый аккаунт не найден, объединение прошло.";
+        }
+        finally
+        {
+            merging = false;
+        }
+    }
+}

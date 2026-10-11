@@ -79,6 +79,7 @@ public static class Registration
         .AddScoped<IMoveClient, MoveViewService>()
         .AddScoped<IProjectFieldOperationsClient, Fields.ProjectFieldOperationsViewService>()
         .AddScoped<INotificationDashboardClient, AdminTools.NotificationDashboardManager>()
+        .AddScoped<JoinRpg.Web.AdminTools.UserMerge.IUserMergeClient, AdminTools.UserMergeViewService>()
         .AddScoped<ICharacterApiViewService, CharacterApiViewService>()
         .AddScoped<IProjectApiViewService, ProjectApiViewService>()
         .AddScoped<ISearchApiViewService, SearchApiViewService>()
