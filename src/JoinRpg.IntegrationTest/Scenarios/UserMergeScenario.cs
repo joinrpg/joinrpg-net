@@ -167,6 +167,59 @@ public class UserMergeScenario(JoinApplicationFactory factory) : IClassFixture<J
     }
 
     [Fact]
+    public async Task Merge_RewritesUserLinkFields()
+    {
+        // Значения полей ADR017 — id внутри JsonData, без FK: без отдельной правки остались бы висячими.
+        var a = await CreateUser();
+        var b = await CreateUser();
+        var masterId = await CreateUser();
+        var projectId = await CreateProject(masterId);
+        var single = await AddUserField(masterId, projectId, ProjectFieldType.UserLink);
+        var multi = await AddUserField(masterId, projectId, ProjectFieldType.MultiUserLink);
+        var characterId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [],
+                new CharacterTypeInfo(CharacterType.NonPlayer, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?>
+                {
+                    [single.ProjectFieldId] = b.Value.ToString(),
+                    [multi.ProjectFieldId] = $"{a.Value},{b.Value}",
+                })));
+        });
+
+        // Поле, привязанное к заявке, — значение лежит в Claims.JsonData. Пишем напрямую: игроку
+        // поле недоступно, а путь сохранения тут не проверяется.
+        var claimField = await AddUserField(masterId, projectId, ProjectFieldType.UserLink, FieldBoundTo.Claim);
+        var playerCharacter = await AddCharacter(masterId, projectId);
+        var claimId = await AddClaim(await CreateUser(), playerCharacter);
+        await WithDb(db => db.Database.ExecuteSqlCommand(
+            "UPDATE [Claims] SET [JsonData] = @p0 WHERE [ClaimId] = @p1",
+            System.Text.Json.JsonSerializer.Serialize(new Dictionary<int, string?>
+            {
+                [claimField.ProjectFieldId] = b.Value.ToString(),
+                [single.ProjectFieldId] = "Текст с цифрами 123",
+            }),
+            claimId.ClaimId));
+
+        await Merge(a, b);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+        var values = Parse(db.Set<Character>().Single(c => c.CharacterId == characterId.CharacterId).JsonData);
+        values[single.ProjectFieldId].ShouldBe(a.Value.ToString());
+        values[multi.ProjectFieldId].ShouldBe(a.Value.ToString());
+
+        var claimValues = Parse(db.ClaimSet.Single(c => c.ClaimId == claimId.ClaimId).JsonData);
+        claimValues[claimField.ProjectFieldId].ShouldBe(a.Value.ToString());
+        claimValues[single.ProjectFieldId].ShouldBe("Текст с цифрами 123");
+
+        static Dictionary<int, string?> Parse(string json) => System.Text.Json.JsonSerializer.Deserialize<Dictionary<int, string?>>(json)!;
+    }
+
+    [Fact]
     public async Task Merge_WithConflict_Refused_NothingChanged()
     {
         var a = await CreateUser();
@@ -231,6 +284,26 @@ public class UserMergeScenario(JoinApplicationFactory factory) : IClassFixture<J
         });
         return projectId;
     }
+
+    private Task<ProjectFieldIdentification> AddUserField(
+        UserIdentification masterId, ProjectIdentification projectId, ProjectFieldType type, FieldBoundTo boundTo = FieldBoundTo.Character)
+        => factory.Services.RunAsAsync(masterId, sp => sp.GetRequiredService<IFieldSetupService>().AddField(new CreateFieldRequest(
+            projectId,
+            type,
+            $"Поле {type}",
+            fieldHint: "",
+            canPlayerEdit: false,
+            canPlayerView: true,
+            isPublic: true,
+            boundTo,
+            MandatoryStatus.Optional,
+            showForGroups: [],
+            validForNpc: boundTo == FieldBoundTo.Character, // у поля заявки NPC не бывает
+            includeInPrint: false,
+            showForUnapprovedClaims: true,
+            price: 0,
+            masterFieldHint: "",
+            programmaticValue: null)));
 
     private Task<CharacterIdentification> AddCharacter(UserIdentification masterId, ProjectIdentification projectId)
         => factory.Services.RunAsAsync(masterId, async sp =>
