@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- Общий для всех DRP-инструментов (DrpConfiguration.UserSecretsId): строки подключения задаются один раз. -->
+    <UserSecretsId>joinrpg-drp</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Доменное создание проекта: DI портала поднимается так же, как в JoinRpg.Tools.SeedTestUsers. -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Portal\JoinRpg.Portal.csproj" />
+    <ProjectReference Include="..\JoinRpg.Tools.Drp.Common\JoinRpg.Tools.Drp.Common.csproj" />
+  </ItemGroup>
+</Project>

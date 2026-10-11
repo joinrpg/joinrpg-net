@@ -13,8 +13,23 @@ internal class ProjectService(
 {
     /// <param name="ownerRole">Роль создателя проекта на странице мастеров (ADR019).</param>
     public Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom, string ownerRole)
+        => AddProject(projectName, rootCharacterGroupName, cloneFrom, ownerRole, isBlocked: false);
+
+    // TODO[Localize]
+    public async Task<ProjectIdentification> AddRestoredProjectShell(ProjectName projectName)
+    {
+        var project = await AddProject(
+            projectName,
+            rootCharacterGroupName: "Все роли",
+            cloneFrom: null,
+            ownerRole: CreateProjectService.GetOwnerRole(ProjectTypeDto.Larp),
+            isBlocked: true);
+        return new ProjectIdentification(project.ProjectId);
+    }
+
+    private Task<Project> AddProject(ProjectName projectName, string rootCharacterGroupName, ProjectIdentification? cloneFrom, string ownerRole, bool isBlocked)
         => projectPropsService.CreateProject(
-            (projectName, rootCharacterGroupName, cloneFrom, ownerRole),
+            (projectName, rootCharacterGroupName, cloneFrom, ownerRole, isBlocked),
             ctx =>
             {
                 var rootGroup = new CharacterGroup()
@@ -31,6 +46,7 @@ internal class ProjectService(
                 {
                     Active = true,
                     IsAcceptingClaims = false,
+                    IsBlocked = ctx.Request.isBlocked,
                     CreatedDate = ctx.Now.UtcDateTime,
                     ProjectName = ctx.Request.projectName,
                     CharacterGroups = [rootGroup,],
