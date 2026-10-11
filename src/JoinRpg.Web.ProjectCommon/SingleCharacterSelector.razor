@@ -5,7 +5,8 @@
   SelectedCharactersChanged="HandleSelectedChanged"
   Multiple="false"
   ListType="@ListType"
-  AllowEmpty="@AllowEmpty"
+  AllowEmpty="@(AllowEmpty || NewCharacterOptionText is not null)"
+  EmptyText="@(NewCharacterOptionText ?? "(нет)")"
   ExcludeCharacterIds="@ExcludeCharacterIds"
   />
 
@@ -21,6 +22,14 @@
     [Parameter] public bool AllowEmpty { get; set; } = false;
     [Parameter] public CharacterIdentification[] ExcludeCharacterIds { get; set; } = [];
 
+    /// <summary>
+    /// Текст пункта «новый персонаж». null (по умолчанию) — такого пункта нет.
+    /// Если задан, первым пунктом списка идёт вариант с этим текстом; он занимает место пустого пункта
+    /// (<see cref="AllowEmpty"/> тогда не нужен), и <see cref="SelectedCharacterId"/> == null означает
+    /// «выбран новый персонаж».
+    /// </summary>
+    [Parameter] public string? NewCharacterOptionText { get; set; }
+
     private CharacterIdentification[] selectedIds = [];
 
     protected override void OnParametersSet()
@@ -33,6 +42,11 @@
         else if (SelectedCharacter is not null)
         {
             selectedIds = [SelectedCharacter.CharacterId ];
+        }
+        else
+        {
+            // Родитель сбросил выбор (пустой пункт или «новый персонаж») — не держим прежний id.
+            selectedIds = [];
         }
     }
 
