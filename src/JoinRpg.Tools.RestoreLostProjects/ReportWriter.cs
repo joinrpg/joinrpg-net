@@ -51,6 +51,10 @@ internal static class ReportWriter
     internal static string DescribeFlags(ProjectFlags flags)
     {
         var result = new List<string>();
+        if (flags.HasFlag(ProjectFlags.OnlyInLogs))
+        {
+            result.Add("только в логах");
+        }
         if (flags.HasFlag(ProjectFlags.NameConflict))
         {
             result.Add("конфликт названий");
@@ -82,6 +86,7 @@ internal static class ReportWriter
     {
         CreatorMethod.Exact => "точно",
         CreatorMethod.Presumed => "предположительно",
+        CreatorMethod.PresumedFromLogs => "предположительно (по логам)",
         CreatorMethod.NotFound => "не найден",
         _ => throw new ArgumentOutOfRangeException(nameof(method)),
     };

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using JoinRpg.DomainTypes;
 
 namespace JoinRpg.Tools.RestoreLostProjects;
 
@@ -8,19 +9,29 @@ namespace JoinRpg.Tools.RestoreLostProjects;
 /// Сохранённые логи k8s (выгрузка <c>yc logging read --format json</c>). Принимает и JSON-массив,
 /// и по объекту на строку. Поля Serilog ищутся в <c>json_payload</c>, а если его нет — в самой записи.
 /// </summary>
+/// <remarks>
+/// Одна и та же запись может лежать в нескольких файлах выгрузки (сырые окна и объединённый файл),
+/// поэтому записи с одинаковым <c>uid</c> (он есть у каждой записи yc logging read) считаются один раз.
+/// </remarks>
 internal static class LogsSource
 {
     public static async Task<IReadOnlyList<LogEntry>> Read(IEnumerable<string> paths, DateTimeOffset lostAt, CancellationToken ct)
     {
         var result = new List<LogEntry>();
+        var seenUids = new HashSet<string>(StringComparer.Ordinal);
         foreach (var path in paths)
         {
             await foreach (var element in ReadElements(path, ct))
             {
-                if (Parse(element) is { } entry && !(entry.Timestamp >= lostAt))
+                if (Parse(element) is not { } entry || entry.Timestamp >= lostAt)
                 {
-                    result.Add(entry);
+                    continue;
                 }
+                if (element.ValueKind == JsonValueKind.Object && GetString(element, "uid") is { } uid && !seenUids.Add(uid))
+                {
+                    continue;
+                }
+                result.Add(entry);
             }
         }
         return result;
@@ -88,25 +99,19 @@ internal static class LogsSource
     }
 
     /// <summary>
-    /// ProjectId бывает числом (1535), строкой с числом и строкой вида «Project(158)» / «ProjectId(158)».
+    /// ProjectId бывает числом (1535 — в логе запроса) и строкой «Project(158)» (в scope-полях);
+    /// строку разбирает доменный ProjectIdentification.
     /// </summary>
     internal static int? ParseProjectId(JsonElement? value)
     {
-        switch (value)
+        var id = value switch
         {
-            case { ValueKind: JsonValueKind.Number } number:
-                return number.TryGetInt32(out var id) && id > 0 ? id : null;
-            case { ValueKind: JsonValueKind.String } str:
-                var text = str.GetString().AsSpan().Trim();
-                var open = text.IndexOf('(');
-                if (open >= 0 && text.EndsWith(")"))
-                {
-                    text = text[(open + 1)..^1];
-                }
-                return int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out var parsed) && parsed > 0 ? parsed : null;
-            default:
-                return null;
-        }
+            { ValueKind: JsonValueKind.Number } number => number.TryGetInt32(out var n) ? n : (int?)null,
+            { ValueKind: JsonValueKind.String } str
+                => ProjectIdentification.TryParse(str.GetString(), null, out var project) ? project.Value : null,
+            _ => null,
+        };
+        return id > 0 ? id : null;
     }
 
     private static DateTimeOffset? ParseTimestamp(string? value)

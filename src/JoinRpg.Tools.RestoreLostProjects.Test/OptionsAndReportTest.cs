@@ -21,14 +21,22 @@ public sealed class OptionsAndReportTest : IDisposable
         }
     }
 
-    private Dictionary<string, string?> Complete() => new()
+    private string LogsFile => Path.Combine(dir, "k8s-prod-mutations-merged.json");
+
+    private Dictionary<string, string?> Complete()
     {
-        ["ConnectionStrings:DefaultConnection"] = "ms",
-        ["ConnectionStrings:Notifications"] = "pg",
-        [DrpKeys.LostAt] = "2026-10-07T22:30:49Z",
-        [DrpKeys.BackupMax("Projects")] = "3500",
-        [DrpKeys.ReportPath] = ReportFile,
-    };
+        _ = Directory.CreateDirectory(dir);
+        File.WriteAllText(LogsFile, "[]");
+        return new()
+        {
+            ["ConnectionStrings:DefaultConnection"] = "ms",
+            ["ConnectionStrings:Notifications"] = "pg",
+            [DrpKeys.LostAt] = "2026-10-07T22:30:49Z",
+            [DrpKeys.BackupMax("Projects")] = "3500",
+            [DrpKeys.ReportPath] = ReportFile,
+            [Options.LogsKey] = LogsFile,
+        };
+    }
 
     private static Options FromConfiguration(Dictionary<string, string?> values)
         => Options.FromConfiguration(new ConfigurationBuilder().AddInMemoryCollection(values).Build(), StartedAt);
@@ -43,19 +51,20 @@ public sealed class OptionsAndReportTest : IDisposable
         options.BackupMaxProjectId.ShouldBe(3500);
         options.LostAt.ShouldBe(LostAt);
         options.ReportPath.ShouldBe(Path.GetFullPath(ReportFile));
-        options.LogPaths.ShouldBeEmpty();
+        options.LogPaths.ShouldBe([Path.GetFullPath(LogsFile)]);
     }
 
-    [Fact]
-    public void LogsFromSingleFile()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void LogsAreRequired(string? value)
     {
         var values = Complete();
-        _ = Directory.CreateDirectory(dir);
-        var file = Path.Combine(dir, "k8s.json");
-        File.WriteAllText(file, "[]");
-        values[Options.LogsKey] = file;
+        values[Options.LogsKey] = value;
 
-        FromConfiguration(values).LogPaths.ShouldBe([file]);
+        var exception = Should.Throw<DrpConfigurationException>(() => FromConfiguration(values));
+
+        exception.Errors.ShouldHaveSingleItem().ShouldContain(Options.LogsKey);
     }
 
     [Fact]

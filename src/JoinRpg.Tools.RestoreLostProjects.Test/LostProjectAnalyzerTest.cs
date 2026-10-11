@@ -282,9 +282,48 @@ public class LostProjectAnalyzerTest
         var onlyInLogs = reports[1];
         onlyInLogs.Notifications.ShouldBe(0);
         onlyInLogs.LogUsers.ShouldBe(["unknown@example.com (1, нет в MSSQL)"]);
+        onlyInLogs.Flags.HasFlag(ProjectFlags.OnlyInLogs).ShouldBeTrue();
         onlyInLogs.Flags.HasFlag(ProjectFlags.NameNotFound).ShouldBeTrue();
+        // Адреса нет в MSSQL — id не узнать, создатель не найден.
         onlyInLogs.Flags.HasFlag(ProjectFlags.CreatorNotFound).ShouldBeTrue();
         onlyInLogs.CreatorInLogs.ShouldBeNull();
+
+        dune.Flags.HasFlag(ProjectFlags.OnlyInLogs).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ProjectOnlyInLogsGetsEarliestLoggedUserAsCreator()
+    {
+        LogEntry[] logs =
+        [
+            new(1003, "admin@example.com", "/1003/setup", null, Day1),
+            new(1003, "master2@example.com", "/1003/claim/1", null, Day3),
+            new(1003, "master@example.com", "/1003/character/add", null, Day2),
+            new(1003, "master@example.com", "/1003/field/add", null, Day3),
+            new(1003, "player@example.com", null, null, null),
+        ];
+
+        var report = CreateAnalyzer().Analyze([], logs).ShouldHaveSingleItem();
+
+        report.Flags.HasFlag(ProjectFlags.OnlyInLogs).ShouldBeTrue();
+        report.CreatorUserId.ShouldBe(MasterId);
+        report.CreatorMethod.ShouldBe(CreatorMethod.PresumedFromLogs);
+        // Админ раньше всех, но не считается; запись без времени в кандидаты не идёт.
+        report.OtherCreatorCandidates.ShouldBe([new CreatorCandidate(SecondMasterId, 1, Day3)]);
+        report.CreatorInLogs.ShouldBe(true);
+        report.Flags.HasFlag(ProjectFlags.CreatorNotFound).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void NotificationEvidenceBeatsLogs()
+    {
+        var report = CreateAnalyzer().Analyze(
+            [Notification("ClaimCommentId(1001-1-1)", "Дюна: Пол, игрок Иван", PlayerId, SecondMasterId, Day3, newClaim: true)],
+            [new LogEntry(1001, "master@example.com", "/1001/claim/1", null, Day1)]).ShouldHaveSingleItem();
+
+        report.CreatorUserId.ShouldBe(SecondMasterId);
+        report.CreatorMethod.ShouldBe(CreatorMethod.Presumed);
+        report.CreatorInLogs.ShouldBe(false);
     }
 
     [Fact]

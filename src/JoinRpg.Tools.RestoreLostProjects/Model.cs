@@ -79,6 +79,8 @@ internal enum CreatorMethod
     Exact,
     /// <summary>Самый ранний мастер по уведомлениям проекта.</summary>
     Presumed,
+    /// <summary>Самый ранний пользователь с мутирующим запросом в проект по логам k8s.</summary>
+    PresumedFromLogs,
 }
 
 /// <summary>
@@ -110,6 +112,8 @@ internal enum ProjectFlags
     IdNotAboveBackupMax = 16,
     /// <summary>Проект с этим id уже есть в MSSQL (например, оболочка из прошлого прогона).</summary>
     AlreadyInMssql = 32,
+    /// <summary>Проект найден только по логам: уведомлений нет, названия нет (тел запросов в логах нет).</summary>
+    OnlyInLogs = 64,
 }
 
 /// <summary>

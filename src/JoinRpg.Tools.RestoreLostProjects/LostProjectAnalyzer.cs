@@ -128,7 +128,13 @@ internal sealed class LostProjectAnalyzer(
             flags |= ProjectFlags.NameConflict;
         }
 
+        if (notifications.Count == 0 && logs.Count > 0)
+        {
+            flags |= ProjectFlags.OnlyInLogs;
+        }
+
         var candidates = GetCreatorCandidates(notifications);
+        var logCandidates = candidates.Count == 0 ? GetCreatorCandidatesFromLogs(logs) : [];
         int? creatorId;
         CreatorMethod method;
         IReadOnlyList<CreatorCandidate> otherCandidates;
@@ -143,6 +149,12 @@ internal sealed class LostProjectAnalyzer(
             creatorId = candidates[0].UserId;
             method = CreatorMethod.Presumed;
             otherCandidates = [.. candidates.Skip(1)];
+        }
+        else if (logCandidates.Count > 0)
+        {
+            creatorId = logCandidates[0].UserId;
+            method = CreatorMethod.PresumedFromLogs;
+            otherCandidates = [.. logCandidates.Skip(1)];
         }
         else
         {
@@ -330,6 +342,24 @@ internal sealed class LostProjectAnalyzer(
             .ThenByDescending(c => c.Evidence)
             .ThenBy(c => c.UserId)];
     }
+
+    /// <summary>
+    /// Кандидаты в создатели по логам — когда уведомления ничего не дали (например, проект создан
+    /// после бэкапа базы уведомлений 2026-10-06 и виден только в логах). Выгрузка — только мутирующие
+    /// запросы, так что каждый пользователь с запросом в проект что-то в нём менял; самый ранний —
+    /// первым. Email переводится в id через MSSQL, неизвестные адреса кандидатами не становятся
+    /// (они видны в «ПользователиВЛогах»). Админы и виртуальные пользователи не считаются.
+    /// </summary>
+    internal IReadOnlyList<CreatorCandidate> GetCreatorCandidatesFromLogs(IEnumerable<LogEntry> logs)
+        => [.. logs
+            .Where(e => e.Timestamp is not null && !string.IsNullOrWhiteSpace(e.LoggedUser))
+            .Select(e => (UserId: userIdsByEmail.TryGetValue(e.LoggedUser!.Trim(), out var id) ? id : (int?)null, At: e.Timestamp!.Value))
+            .Where(e => e.UserId is int id && !adminUserIds.Contains(id) && !virtualUserIds.Contains(id))
+            .GroupBy(e => e.UserId!.Value)
+            .Select(g => new CreatorCandidate(g.Key, g.Count(), g.Min(e => e.At)))
+            .OrderBy(c => c.FirstSeen)
+            .ThenByDescending(c => c.Evidence)
+            .ThenBy(c => c.UserId)];
 
     /// <summary>
     /// Привязка к КогдаИгре из тела уведомления админам (AdminNotificationServiceImpl.DescribeLinkedGame).

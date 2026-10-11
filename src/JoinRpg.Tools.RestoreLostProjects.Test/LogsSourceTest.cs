@@ -49,7 +49,7 @@ public class LogsSourceTest
     [InlineData("1535", 1535)]
     [InlineData("\"1535\"", 1535)]
     [InlineData("\"Project(158)\"", 158)]
-    [InlineData("\"ProjectId(158)\"", 158)]
+    [InlineData("\"ProjectIdentification(158)\"", 158)]
     [InlineData("\"abc\"", null)]
     [InlineData("0", null)]
     [InlineData("null", null)]
@@ -57,6 +57,30 @@ public class LogsSourceTest
     {
         using var document = JsonDocument.Parse(json);
         LogsSource.ParseProjectId(document.RootElement).ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task SameRecordInSeveralFilesCountsOnce()
+    {
+        // Сырое окно и объединённый файл выгрузки содержат одни и те же записи.
+        const string record = """{"uid": "a1", "timestamp": "2026-10-01T10:00:00Z", "json_payload": {"ProjectId": 1001}}""";
+        const string other = """{"uid": "b2", "timestamp": "2026-10-01T11:00:00Z", "json_payload": {"ProjectId": 1001}}""";
+        var window = Path.GetTempFileName();
+        var merged = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllTextAsync(window, record + "\n");
+            await File.WriteAllTextAsync(merged, "[" + record + "," + other + "]");
+
+            var entries = await LogsSource.Read([window, merged], LostAt, CancellationToken.None);
+
+            entries.Count.ShouldBe(2);
+        }
+        finally
+        {
+            File.Delete(window);
+            File.Delete(merged);
+        }
     }
 
     [Fact]

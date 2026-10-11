@@ -16,8 +16,9 @@ internal record Options(
     public const string LogsOption = "--logs";
 
     /// <summary>
-    /// Сохранённые логи k8s: файл или каталог выгрузки. Необязательно. Путь на машине админа,
-    /// поэтому в drp.appsettings.json по умолчанию пусто.
+    /// Сохранённые логи k8s: файл или каталог выгрузки. Обязательно: база уведомлений восстановлена
+    /// из бэкапа 2026-10-06 ~22:45 UTC, и проекты за последние сутки до аварии есть только в логах.
+    /// Путь на машине админа — в user-secrets или DRP_*, в drp.appsettings.json пусто.
     /// </summary>
     public const string LogsKey = "Drp:K8sLogs";
 
@@ -35,10 +36,15 @@ internal record Options(
         Составляет список проектов, созданных после бэкапа основной БД, по базе уведомлений и логам.
         Ничего не пишет ни в одну базу — только CSV-отчёт для ручной проверки.
 
-        Параметры (все необязательны):
-          --lost-at <RFC 3339>              переопределить момент аварии (Drp:LostAt), например 2026-10-07T22:30:49Z
-          {BackupMaxOption} <число>   переопределить максимальный ProjectId бэкапа (Drp:BackupMax:Projects)
-          {LogsOption} <путь>                     сохранённые логи k8s ({LogsKey}): файл или каталог с файлами {string.Join(", ", LogExtensions)}
+        Логи k8s обязательны ({LogsKey}): проекты за последние сутки до аварии есть только в них.
+        Задайте путь в user-secrets: dotnet user-secrets set --id {DrpConfiguration.UserSecretsId} "{LogsKey}" "<путь>"
+        или переменной {DrpConfiguration.EnvironmentPrefix}{LogsKey.Replace(":", "__")}.
+
+        Параметры (все необязательны, переопределяют настройки):
+          --lost-at <RFC 3339>              момент аварии (Drp:LostAt), например 2026-10-07T22:30:49Z
+          {BackupMaxOption} <число>   максимальный ProjectId бэкапа (Drp:BackupMax:Projects)
+          {LogsOption} <путь>                     логи k8s ({LogsKey}): файл (лучше k8s-prod-mutations-merged.json) или каталог
+                                            с файлами {string.Join(", ", LogExtensions)}; повторы записей по uid отбрасываются
                                             (yc logging read --format json — массив или объект на строку)
           --report <путь>                   записать отчёт сюда, а не в Drp:ReportDir
 
@@ -75,7 +81,10 @@ internal record Options(
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return ([], null);
+            return ([],
+                $"Не заданы логи k8s {LogsKey}: база уведомлений восстановлена из бэкапа 2026-10-06, и проекты за последние сутки до аварии есть только в логах. "
+                + $"Задайте путь: dotnet user-secrets set --id {DrpConfiguration.UserSecretsId} \"{LogsKey}\" \"<путь>\" "
+                + $"или переменной окружения {DrpConfiguration.EnvironmentPrefix}{LogsKey.Replace(":", "__")} (или передайте {LogsOption}).");
         }
         if (File.Exists(value))
         {

@@ -65,16 +65,8 @@ internal static class Program
         var rows = await notifications.GetNotifications(references, ct);
         Console.WriteLine($"Уведомления: строк по интересным проектам {rows.Count}.");
 
-        IReadOnlyList<LogEntry>? logs = null;
-        if (options.LogPaths.Count > 0)
-        {
-            logs = await LogsSource.Read(options.LogPaths, options.LostAt, ct);
-            Console.WriteLine($"Логи: файлов {options.LogPaths.Count}, записей с проектом или путём {logs.Count}.");
-        }
-        else
-        {
-            Console.WriteLine($"Логи не заданы ({Options.LogsKey} или {Options.LogsOption}) — сверки с логами не будет.");
-        }
+        var logs = await LogsSource.Read(options.LogPaths, options.LostAt, ct);
+        Console.WriteLine($"Логи: файлов {options.LogPaths.Count}, записей с проектом или путём (без повторов по uid) {logs.Count}.");
 
         var report = analyzer.Analyze(rows, logs);
 
@@ -106,8 +98,8 @@ internal static class Program
         Console.WriteLine($"  id выше майского максимума: {Count(p => !Has(p, ProjectFlags.IdNotAboveBackupMax))}, из них уже есть в MSSQL: {Count(p => Has(p, ProjectFlags.AlreadyInMssql))}");
         Console.WriteLine($"  противоречие (id не выше максимума, но проекта нет в MSSQL): {Count(p => Has(p, ProjectFlags.IdNotAboveBackupMax))}");
         Console.WriteLine($"  название: найдено {Count(p => p.Name is not null)}, конфликт {Count(p => Has(p, ProjectFlags.NameConflict))}");
-        Console.WriteLine($"  создатель: точно {Count(p => p.CreatorMethod == CreatorMethod.Exact)}, предположительно {Count(p => p.CreatorMethod == CreatorMethod.Presumed)}, не найден {Count(p => p.CreatorMethod == CreatorMethod.NotFound)}, нет в MSSQL {Count(p => Has(p, ProjectFlags.CreatorMissingInMssql))}");
-        Console.WriteLine($"  только в логах (без уведомлений): {Count(p => p.Notifications == 0)}");
+        Console.WriteLine($"  создатель: точно {Count(p => p.CreatorMethod == CreatorMethod.Exact)}, предположительно {Count(p => p.CreatorMethod == CreatorMethod.Presumed)}, по логам {Count(p => p.CreatorMethod == CreatorMethod.PresumedFromLogs)}, не найден {Count(p => p.CreatorMethod == CreatorMethod.NotFound)}, нет в MSSQL {Count(p => Has(p, ProjectFlags.CreatorMissingInMssql))}");
+        Console.WriteLine($"  только в логах (без уведомлений): {Count(p => Has(p, ProjectFlags.OnlyInLogs))}");
         Console.WriteLine($"  с привязкой к КогдаИгре: {Count(p => p.KogdaIgra is not null)}");
         Console.WriteLine();
     }
