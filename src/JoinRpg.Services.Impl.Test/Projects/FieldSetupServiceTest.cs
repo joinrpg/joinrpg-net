@@ -108,6 +108,19 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
 
+    // ADR023: поля заводят заново до загрузки выгрузки, поэтому их настройка в блокировке разрешена.
+    [Fact]
+    public async Task AddField_OnBlockedProject_Succeeds()
+    {
+        mock.Project.IsBlocked = true;
+        var service = CreateService(mock.Master.UserId);
+
+        _ = await service.AddField(CreateFieldRequest(name: "Поле при восстановлении"));
+
+        mock.Project.ProjectFields.ShouldContain(f => f.FieldName == "Поле при восстановлении");
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
     /// <summary>
     /// Специальных полей расписания — время, место, ведущий (#4512) — в проекте не больше одного
     /// каждого типа.
