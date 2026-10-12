@@ -673,7 +673,11 @@ public class ClaimController(
                 });
         }
 
-        return View("PaymentTransfer", new PaymentTransferViewModel(claim));
+        // Заявка уже найдена через EF, так что промах здесь — рассинхрон, а не 404.
+        var snapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claim.GetId())
+            ?? throw new InvalidOperationException($"Claim {claim.GetId()} is not found in character aggregate");
+
+        return View("PaymentTransfer", new PaymentTransferViewModel(snapshot));
     }
 
     private async Task<ActionResult> RedirectToDefaultTemplate(int projectid)
