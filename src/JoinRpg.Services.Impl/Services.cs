@@ -54,6 +54,7 @@ public static class Services
             .AddDailyJob<ProjectPerformCloseJob>()
             .AddDailyJob<BastiliaGamesSyncDailyJob>()
 #pragma warning disable CS0618 // Разовые починки данных, возвращены для восстановления майского бекапа
+            .AddDailyJob<AvatarCachedUriToKeyJob>()
             .AddDailyJob<UnhotNpcJob>()
             .AddDailyJob<HidePublicGroupsUnderPrivateJob>()
             .AddDailyJob<FormerMastersBackfillJob>()

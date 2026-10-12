@@ -34,7 +34,8 @@ public class UserAvatar
     public string? ProviderId { get; set; }
 
     /// <summary>
-    /// Cached Uri in storage
+    /// Ключ объекта в хранилище аватарок (публичный адрес строит IAvatarUriResolver).
+    /// У старых записей, ещё не переведённых джобой, — полный адрес
     /// </summary>
     public string? CachedUri { get; set; } = null!;
 

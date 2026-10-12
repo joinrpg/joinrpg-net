@@ -12,7 +12,7 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
 {
     private readonly S3StorageOptions options = options.Value;
 
-    public async Task<Uri?> StoreAvatar(Uri remoteUri, CancellationToken ct = default)
+    public async Task<string?> StoreAvatar(Uri remoteUri, CancellationToken ct = default)
     {
         try
         {
@@ -53,13 +53,11 @@ internal class S3AvatarStorageService(AvatarDownloader avatarDownloader,
                     logger.LogError(s3exception, "Проблема при загрузке аватара {avatarUri} в S3 хранилище (Type={s3errorType}, Code={s3errorCode}: {message}", remoteUri, s3exception.ErrorType, s3exception.ErrorCode, s3exception.Message);
                     throw;
                 }
-                var uri = new Uri($"{options.Endpoint}/{options.BucketName}/{avatarName}");
-
                 logger.LogInformation(
-                    "Avatar uploaded to {cachedAvatarUri}",
-                    uri);
+                    "Avatar uploaded to {cachedAvatarKey}",
+                    avatarName);
 
-                return uri;
+                return avatarName;
             }
         }
         catch (AvatarDownloadException exception)

@@ -211,7 +211,7 @@ public class UserServiceImpl(
 
     private async Task<UserAvatar> UploadNewAvatar(Uri avatarUri, User user, string providerId, CancellationToken ct)
     {
-        var cachedUri = await avatarStorageService.StoreAvatar(avatarUri, ct);
+        var cachedKey = await avatarStorageService.StoreAvatar(avatarUri, ct);
 
         var userAvatar = new UserAvatar()
         {
@@ -219,7 +219,7 @@ public class UserServiceImpl(
             IsActive = true,
             ProviderId = providerId,
             OriginalUri = avatarUri.AbsoluteUri,
-            CachedUri = cachedUri?.AbsoluteUri,
+            CachedUri = cachedKey,
             User = user,
         };
         return userAvatar;
@@ -357,11 +357,11 @@ public class UserServiceImpl(
             throw new JoinRpgEntityNotFoundException(avatarIdentification, "userAvatar");
         }
 
-        var cachedUri = await avatarStorageService.StoreAvatar(new Uri(avatar.OriginalUri), ct);
+        var cachedKey = await avatarStorageService.StoreAvatar(new Uri(avatar.OriginalUri), ct);
 
-        avatar.CachedUri = cachedUri?.AbsoluteUri;
+        avatar.CachedUri = cachedKey;
 
-        logger.LogInformation("Recache of {avatarId} for user({userId}) completed to {cachedAvatarUri}", avatarIdentification, userId, cachedUri);
+        logger.LogInformation("Recache of {avatarId} for user({userId}) completed to {cachedAvatarKey}", avatarIdentification, userId, cachedKey);
 
         await UnitOfWork.SaveChangesAsync();
     }

@@ -10,6 +10,6 @@ public interface IAvatarStorageService
     /// </summary>
     /// <param name="remoteUri"></param>
     /// <param name="ct"></param>
-    /// <returns>Uri of new permanent storage</returns>
-    Task<Uri?> StoreAvatar(Uri remoteUri, CancellationToken ct = default);
+    /// <returns>Key of the object in permanent storage. Public address is built by <see cref="IAvatarUriResolver"/></returns>
+    Task<string?> StoreAvatar(Uri remoteUri, CancellationToken ct = default);
 }
