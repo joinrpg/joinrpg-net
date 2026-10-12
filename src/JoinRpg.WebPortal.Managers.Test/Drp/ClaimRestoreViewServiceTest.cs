@@ -1,10 +1,7 @@
 using JoinRpg.Common.WebComponents;
-using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.Notifications;
-using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces.Drp;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
@@ -48,7 +45,7 @@ public class ClaimRestoreViewServiceTest
 
         model.UnavailableReason.ShouldBe(ClaimRestoreUnavailableReason.ProjectNotBlocked);
         model.Rows.ShouldBeEmpty();
-        notifications.Requested.ShouldBeNull();
+        notifications.GetClaimNotificationsForProjectCalls.ShouldBeEmpty();
     }
 
     [Fact]
@@ -60,7 +57,7 @@ public class ClaimRestoreViewServiceTest
 
         model.UnavailableReason.ShouldBe(ClaimRestoreUnavailableReason.NoAccess);
         model.Rows.ShouldBeEmpty();
-        notifications.Requested.ShouldBeNull();
+        notifications.GetClaimNotificationsForProjectCalls.ShouldBeEmpty();
     }
 
     [Fact]
@@ -73,7 +70,7 @@ public class ClaimRestoreViewServiceTest
         model.UnavailableReason.ShouldBeNull();
         model.Rows.ShouldBeEmpty();
         model.Masters.ShouldContain(m => m.UserId == new UserIdentification(mock.Master.UserId));
-        notifications.Requested.ShouldBe((ProjectId, LostAt));
+        notifications.GetClaimNotificationsForProjectCalls.ShouldHaveSingleItem().ShouldBe((ProjectId, LostAt));
     }
 
     [Fact]
@@ -187,28 +184,4 @@ public class ClaimRestoreViewServiceTest
         public Task<UserIdentification> ResolveAsync(string userLink) => Task.FromResult(new UserIdentification(int.Parse(userLink)));
     }
 
-    private sealed class FakeNotificationRepository : INotificationRepository
-    {
-        public (ProjectIdentification ProjectId, DateTimeOffset CreatedBefore)? Requested { get; private set; }
-
-        public Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore)
-        {
-            Requested = (projectId, createdBefore);
-            return Task.FromResult<IReadOnlyCollection<NotificationMessageForRecipient>>([]);
-        }
-
-        public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths() => throw new NotSupportedException();
-
-        public Task InsertNotifications(NotificationMessageCreateDto[] notifications) => throw new NotSupportedException();
-
-        public Task<TargetedNotificationMessageForRecipient?> SelectNextNotificationForSending(NotificationChannel channel) => throw new NotSupportedException();
-
-        public Task MarkSendingSucceeded(NotificationId id, NotificationChannel channel) => throw new NotSupportedException();
-
-        public Task MarkSendingFailed(NotificationId id, NotificationChannel channel) => throw new NotSupportedException();
-
-        public Task MarkEnqueued(NotificationId id, NotificationChannel channel, DateTimeOffset sendAfter, int? attempts = null) => throw new NotSupportedException();
-
-        public Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination) => throw new NotSupportedException();
-    }
 }
