@@ -101,17 +101,16 @@ jobs:
         dotnet publish --no-restore --os linux --arch x64 -c Release ${IDPORTAL_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
         dotnet publish --no-restore --os linux --arch x64 -c Release ${COMPONENTBOOK_PROJECT} -p:Version=${{ env.CALCULATED_VERSION }}
 
-  #Publishing implies write api privileges and can't be run on PRs
+  # Образы публикуются только с master и тегов: ручной запуск с другой ветки не должен перезаписать latest.
+  # PR и merge queue сюда тоже не попадают — их ref не master и не тег.
+  # В registry логинимся секретами, GITHUB_TOKEN нужен только на чтение.
   publish:
     name: Publish images
-    if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
+    if: github.ref == 'refs/heads/master' || github.ref_type == 'tag'
     needs: [format, test]
     runs-on: ubuntu-24.04
     permissions:
-      packages: write
-      checks: write
-      actions: write
-      statuses: write
+      contents: read
 
     steps:
     - *checkout-full
