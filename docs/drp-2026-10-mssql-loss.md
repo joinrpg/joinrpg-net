@@ -88,8 +88,9 @@
 - [ ] Внешний доступ к MSSQL: `joindb.tsarevs.ru` (TCP 1433), только с разрешённых IP, как было
       раньше ([подробнее](#внешний-доступ-к-mssql)).
 - [ ] Managed PostgreSQL, в него — дамп `joinrpg-new` от 2026-10-11 (все прод-базы).
-- [ ] S3 (аватары и прочие файлы) перенесён; бакет аватарок отдаётся по `https://avatars.joinrpg.ru/<объект>`
-      (свой домен + TLS) ([подробнее](#аватарки)).
+- [ ] S3 (аватары и прочие файлы) перенесён **с теми же ключами** (имя объекта в корне бакета); бакет
+      аватарок отдаётся по `https://avatars.joinrpg.ru/<ключ>` (свой домен + TLS)
+      ([подробнее](#аватарки)).
 - [ ] Облачные логи: stdout подов, разделение по namespace.
 - [ ] Хранение секретов и доставка их в кубер — решение инженеров; от него зависит, откуда
       деплой берёт строки подключения (сейчас — GitHub-секреты `KUBESECRET_*`).
@@ -103,9 +104,10 @@
       `KUBECONFIG` нового кластера; реестр образов (сейчас `cr.yandex`).
 - [ ] Строки подключения: Postgres (`DataProtection`, `DailyJob`, `Notifications`, IdPortal) —
       на новый Managed PostgreSQL; S3 — на новый.
-- [ ] 🟡 Аватарки: публичный адрес новых загрузок — от `avatars.joinrpg.ru`, а не
-      `{Endpoint}/{BucketName}` (`S3AvatarStorageService`); ключ `S3BlobStorage:PublicBaseUrl`, Portal и
-      IdPortal ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)).
+- [ ] 🟡 Аватарки ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)): сначала [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) — адрес из настройки
+      `S3BlobStorage:PublicBaseUrl`, терпимое чтение и подмена домена у старых полных адресов; потом,
+      **только после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод**, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — в базе ключ объекта вместо адреса,
+      старые адреса переводит джоба `AvatarCachedUriToKeyJob`.
 - [ ] ⚪ Логи: формат severity в `CustomJsonFormatter` (`level`) заточен под Yandex Cloud Logging —
       привести к формату новых облачных логов. Обновить скилл `prod-logs`.
 
@@ -149,11 +151,8 @@
       подключения к ней (или разовый job в кластере). Секрет пока **не трогаем** — поды
       поднимаются только в конце фазы 4 ([почему](#деплой)).
 - [ ] Сдвиг счётчиков ещё раз.
-- [ ] Адреса аватарок в базе — на `avatars.joinrpg.ru`: сначала посмотреть, какие префиксы есть
-      (`SELECT LEFT(CachedUri, 60), COUNT(*) FROM dbo.UserAvatars GROUP BY LEFT(CachedUri, 60)`),
-      потом `UPDATE dbo.UserAvatars SET CachedUri = REPLACE(CachedUri,
-      'https://s3.yandexcloud.net/<бакет>/', 'https://avatars.joinrpg.ru/')`. Без этого аватарки не
-      показываются ([подробнее](#аватарки)).
+- [x] ~~Адреса аватарок в базе — `REPLACE` префикса~~ — не нужен: [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) сам подменяет домен у
+      старых адресов, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) переводит их в ключи джобой.
 - [ ] Право на `IDENTITY_INSERT` у логина приложения: проверить **под ним**
       `SELECT HAS_PERMS_BY_NAME('dbo.Claims', 'OBJECT', 'ALTER')` (и для `Comments`,
       `CharacterGroups`, `Characters`); если нет — `GRANT ALTER ON dbo.<таблица> TO <логин>` на
@@ -173,6 +172,8 @@
       `__1=UpdatePaymentStatusJob` ([почему](#опасные-джобы)). `ProjectPerformCloseJob` выключать
       не нужно: заблокированные проекты он не выбирает ([#5482](https://github.com/joinrpg/joinrpg-net/issues/5482)), а майские блокируются в фазе 4
       до старта подов.
+- [ ] Аватарки: `S3BlobStorage__PublicBaseUrl` = `https://avatars.joinrpg.ru` — **и Portal, и
+      IdPortal** (без него IdPortal молча отдаёт аватарку провайдера); dev — `https://avatars.dev.joinrpg.ru`.
 - [ ] 🟢 Баннер: `SiteBanner__Text` ([#5463](https://github.com/joinrpg/joinrpg-net/issues/5463)).
 - [x] ~~Рекуррентные платежи~~ — джоба выключена в коде ([#5464](https://github.com/joinrpg/joinrpg-net/issues/5464)).
 - [x] ~~MCP~~ — игнорируем, им никто не пользовался.
@@ -286,6 +287,8 @@
       проекты пропускает — включать, когда готова сверка с платёжным провайдером, независимо от
       блокировок.
 - [ ] Снять баннер.
+- [ ] Старый бакет аватарок в Yandex Cloud — выключить (можно сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с
+      `PublicBaseUrl`). Временную джобу `AvatarCachedUriToKeyJob` ([#5532](https://github.com/joinrpg/joinrpg-net/issues/5532)) — убрать после отработки.
 - [ ] Убрать ingress служебных доменов из `manifests/prod` (деплой удалит их прунингом), TLS-секреты
       удалить вручную: `kubectl delete secret joinrpg-tsarevs-ru-tls id-joinrpg-tsarevs-ru-tls -n prod`.
 - [ ] DNS: удалить записи `joinrpg.tsarevs.ru` и `id.joinrpg.tsarevs.ru` — после деплоя, который
@@ -334,16 +337,20 @@ IdPortal и ingress. Миграция и старт подов идут одни
 ### Аватарки
 
 Загруженная аватарка хранит адрес в `dbo.UserAvatars.CachedUri` (у внешних — ещё `OriginalUri`,
-адрес соцсети). `S3AvatarStorageService` собирает его как `{S3BlobStorage:Endpoint}/{BucketName}/{имя}`,
-поэтому в базе сейчас `https://s3.yandexcloud.net/<бакет>/…` — после переезда S3 в Selectel эти
-адреса не работают. Нужно три вещи:
+адрес соцсети). Сейчас там полный адрес Yandex S3 (`{Endpoint}/{BucketName}/<ключ>`), после
+переезда S3 в Selectel он не работает. Решение [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526):
 
-1. **Бакет** в Selectel отдаёт объекты по `https://avatars.joinrpg.ru/<имя>` (свой домен, TLS) —
-   инфраструктура, вместе с переносом S3.
-2. **База** — `REPLACE` префикса в `CachedUri` (фаза 3), после проверки, какие префиксы реально есть.
-3. **Код** — для новых загрузок адрес строится от публичного адреса (новый ключ в
-   `S3BlobStorage`), а не от `Endpoint`; `Endpoint` остаётся адресом API S3. Настройки S3 есть и у
-   Portal, и у IdPortal.
+1. **[#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) — терпимое чтение.** Публичный адрес — `S3BlobStorage:PublicBaseUrl` + ключ; у старых
+   полных адресов домен подменяется на лету. Новый домен работает сразу с выкаткой [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) и
+   настройкой `S3BlobStorage__PublicBaseUrl` в Portal и IdPortal — SQL по базе не нужен.
+2. **[#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — ключ вместо адреса.** Новые аватарки пишутся ключом объекта, временная джоба
+   `AvatarCachedUriToKeyJob` переводит старые адреса в ключи. Вливать **только после** того, как
+   [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на проде: старый код падает на записях-ключах. После отработки джобы откат ниже
+   [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) ломает аватарки.
+3. **Бакет** в Selectel: объекты с теми же ключами (в корне), домен `avatars.joinrpg.ru` + TLS —
+   инфраструктура.
+
+Старый бакет Yandex можно выключать сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с настройкой.
 
 ### MSSQL в кластере
 
@@ -719,6 +726,8 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
 | issue [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526) | Публичный адрес аватарок — `avatars.joinrpg.ru` | 1 | заведён |
+| [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) | Аватарки: адрес из `PublicBaseUrl`, терпимое чтение (PR 1 [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526)) | 1 | на ревью |
+| issue [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) | Аватарки: ключ вместо адреса, джоба — **после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530)** | 1 | заведён, ждёт [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) |
 | issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | закрыт: ветка «нет выгрузки»; выгрузка — [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) |
 | issue [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) | Загрузка выгрузки мастера на странице восстановления | 7 | заведён |
 | [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
