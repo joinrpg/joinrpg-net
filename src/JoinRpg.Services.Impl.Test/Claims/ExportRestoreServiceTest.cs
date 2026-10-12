@@ -6,6 +6,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Drp;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Services.Impl.Test.Claims;
 
@@ -18,10 +19,12 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
     private ExportRestoreService CreateService(int? currentUserId = null)
         => new(
             CreatePropsService(currentUserId),
+            unitOfWork,
             metadataRepository,
             CreateCurrentUser(currentUserId),
             CreateFieldSetupService(currentUserId),
-            CreateUserFieldValidator());
+            CreateUserFieldValidator(),
+            NullLogger<ExportRestoreService>.Instance);
 
     private void BlockProject()
     {
@@ -463,6 +466,319 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
                 claim.GetId(), new Dictionary<ProjectFieldIdentification, string?> { [foreignField] = "значение" }));
 
         SaveChangesCallCount.ShouldBe(0);
+    }
+
+    #endregion
+
+    #region RestoreLostGroup
+
+    /// <summary>Потерянный id — ниже счётчика мока, но не занятый.</summary>
+    private const int LostId = 500;
+
+    private CharacterGroupIdentification LostGroupId => new(ProjectId, LostId);
+
+    private CharacterGroup? FindGroup(int id) => mock.Project.CharacterGroups.SingleOrDefault(g => g.CharacterGroupId == id);
+
+    private int RootGroupId => mock.Project.CharacterGroups.Single(g => g.IsRoot).CharacterGroupId;
+
+    [Fact]
+    public async Task LostGroup_ActiveProject_Throws_AndNothingIsInserted()
+    {
+        _ = await Should.ThrowAsync<JoinValidationException>(() => CreateService().RestoreLostGroup(LostGroupId, "Потерянная"));
+
+        FindGroup(LostId).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task LostGroup_ByPlayer_Throws_AndNothingIsInserted()
+    {
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).RestoreLostGroup(LostGroupId, "Потерянная"));
+
+        FindGroup(LostId).ShouldBeNull();
+    }
+
+    /// <summary>Мастер проекта, которому не дали права редактировать персонажей и группы.</summary>
+    private User CreateMasterWithoutEditRoles()
+    {
+        var master = mock.CreateMaster();
+        mock.Project.ProjectAcls.Single(a => a.UserId == master.UserId).CanEditRoles = false;
+        return master;
+    }
+
+    [Fact]
+    public async Task LostGroup_MasterWithoutCanEditRoles_Throws_AndNothingIsInserted()
+    {
+        var master = CreateMasterWithoutEditRoles();
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(master.UserId).RestoreLostGroup(LostGroupId, "Потерянная"));
+
+        FindGroup(LostId).ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task LostGroup_EmptyName_Throws_AndNothingIsInserted(string name)
+    {
+        BlockProject();
+
+        _ = await Should.ThrowAsync<JoinValidationException>(() => CreateService().RestoreLostGroup(LostGroupId, name));
+
+        FindGroup(LostId).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task LostGroup_IsInsertedPrivate_UnderRoot_WithGivenId()
+    {
+        BlockProject();
+        var before = DateTime.UtcNow;
+
+        await CreateService().RestoreLostGroup(LostGroupId, "Потерянная");
+
+        var group = FindGroup(LostId).ShouldNotBeNull();
+        group.CharacterGroupName.ShouldBe("Потерянная");
+        group.IsPublic.ShouldBeFalse();
+        group.IsActive.ShouldBeTrue();
+        group.IsSpecial.ShouldBeFalse();
+        group.IsRoot.ShouldBeFalse();
+        group.ParentCharacterGroupIds.ShouldBe([RootGroupId]);
+        group.CreatedById.ShouldBe(mock.Master.UserId);
+        group.UpdatedAt.ShouldBeGreaterThanOrEqualTo(before);
+        SentInOrder.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task LostGroup_ExistingInProject_DoesNothing()
+    {
+        BlockProject();
+        var existing = mock.Group;
+        var nameBefore = existing.CharacterGroupName;
+        var countBefore = mock.Project.CharacterGroups.Count;
+
+        await CreateService().RestoreLostGroup(new CharacterGroupIdentification(ProjectId, existing.CharacterGroupId), "Другое имя");
+
+        existing.CharacterGroupName.ShouldBe(nameBefore);
+        mock.Project.CharacterGroups.Count.ShouldBe(countBefore);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task LostGroup_RepeatedCall_DoesNothing()
+    {
+        BlockProject();
+        await CreateService().RestoreLostGroup(LostGroupId, "Потерянная");
+        var countAfterFirst = mock.Project.CharacterGroups.Count;
+
+        await CreateService().RestoreLostGroup(LostGroupId, "Потерянная");
+
+        mock.Project.CharacterGroups.Count.ShouldBe(countAfterFirst);
+    }
+
+    [Fact]
+    public async Task LostGroup_IdNotBelowIdentity_Throws()
+    {
+        BlockProject();
+        var id = Projects.FakeProjectMetadataWriteRepository.GroupIdentityCurrent;
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreLostGroup(new CharacterGroupIdentification(ProjectId, id), "Будущая"));
+
+        FindGroup(id).ShouldBeNull();
+    }
+
+    #endregion
+
+    #region RestoreLostCharacter
+
+    private CharacterIdentification LostCharacterId => new(ProjectId, LostId);
+
+    private Character? FindCharacter(int id) => mock.Project.Characters.SingleOrDefault(c => c.CharacterId == id);
+
+    private static RestoredCharacterTarget EmptyTarget => new(null, null);
+
+    [Fact]
+    public async Task LostCharacter_ActiveProject_Throws_AndNothingIsInserted()
+    {
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget));
+
+        FindCharacter(LostId).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task LostCharacter_ByPlayer_Throws_AndNothingIsInserted()
+    {
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget));
+
+        FindCharacter(LostId).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task LostCharacter_MasterWithoutCanEditRoles_Throws_AndNothingIsInserted()
+    {
+        var master = CreateMasterWithoutEditRoles();
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(master.UserId).RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget));
+
+        FindCharacter(LostId).ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task LostCharacter_EmptyName_Throws_AndNothingIsInserted(string name)
+    {
+        BlockProject();
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreLostCharacter(LostCharacterId, name, EmptyTarget));
+
+        FindCharacter(LostId).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task LostCharacter_ExistingWithoutNameField_KeepsName()
+    {
+        var field = AddCharacterField("Поле");
+        BlockProject();
+        mock.ProjectInfo.CharacterNameField.ShouldBeNull();
+        var nameBefore = mock.Character.CharacterName;
+
+        await CreateService().RestoreLostCharacter(
+            mock.Character.GetId(), "Другое имя", new RestoredCharacterTarget(null, Fields((field, "из выгрузки"))));
+
+        mock.Character.CharacterName.ShouldBe(nameBefore);
+        GetCharacterValue(mock.Character, field).ShouldBe("из выгрузки");
+    }
+
+    [Fact]
+    public async Task LostCharacter_ClaimField_ThrowsBeforeInserting()
+    {
+        var claimField = AddCharacterField("Поле заявки", boundTo: FieldBoundTo.Claim);
+        BlockProject();
+
+        _ = await Should.ThrowAsync<ArgumentException>(
+            () => CreateService().RestoreLostCharacter(
+                LostCharacterId, "Потерянный", new RestoredCharacterTarget(null, Fields((claimField, "значение")))));
+
+        FindCharacter(LostId).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task LostCharacter_IsInsertedHiddenPlayer_WithFieldsAndGroups()
+    {
+        var field = AddCharacterField("Поле");
+        BlockProject();
+        var before = DateTime.UtcNow;
+
+        await CreateService().RestoreLostCharacter(
+            LostCharacterId,
+            "Потерянный",
+            new RestoredCharacterTarget(
+                [new CharacterGroupIdentification(ProjectId, mock.Group.CharacterGroupId)],
+                Fields((field, "из выгрузки"))));
+
+        var character = FindCharacter(LostId).ShouldNotBeNull();
+        character.CharacterName.ShouldBe("Потерянный");
+        character.CharacterType.ShouldBe(CharacterType.Player);
+        character.IsPublic.ShouldBeFalse();
+        character.IsActive.ShouldBeTrue();
+        character.ParentCharacterGroupIds.ShouldBe([mock.Group.CharacterGroupId]);
+        GetCharacterValue(character, field).ShouldBe("из выгрузки");
+        character.UpdatedAt.ShouldBeGreaterThanOrEqualTo(before);
+        SentInOrder.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task LostCharacter_NoFields_StaysInRootGroup()
+    {
+        BlockProject();
+
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget);
+
+        var character = FindCharacter(LostId).ShouldNotBeNull();
+        character.CharacterName.ShouldBe("Потерянный");
+        character.ParentCharacterGroupIds.ShouldBe([RootGroupId]);
+    }
+
+    [Fact]
+    public async Task LostCharacter_NameGoesToNameField_WhenProjectHasIt()
+    {
+        var nameField = AddCharacterField("Имя персонажа");
+        mock.Project.Details.CharacterNameField = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == nameField.Id.ProjectFieldId);
+        BlockProject();
+
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget);
+
+        var character = FindCharacter(LostId).ShouldNotBeNull();
+        character.CharacterName.ShouldBe("Потерянный");
+        GetCharacterValue(character, nameField).ShouldBe("Потерянный");
+    }
+
+    [Fact]
+    public async Task LostCharacter_InRestoredGroup_GroupIsVisibleInSameScope()
+    {
+        BlockProject();
+        var service = CreateService();
+
+        await service.RestoreLostGroup(LostGroupId, "Потерянная");
+        await service.RestoreLostCharacter(LostCharacterId, "Потерянный", new RestoredCharacterTarget([LostGroupId], null));
+
+        FindCharacter(LostId).ShouldNotBeNull().ParentCharacterGroupIds.ShouldBe([LostId]);
+    }
+
+    [Fact]
+    public async Task LostCharacter_ExistingInProject_IsChanged_NotInserted()
+    {
+        var field = AddCharacterField("Поле");
+        BlockProject();
+        var countBefore = mock.Project.Characters.Count;
+
+        await CreateService().RestoreLostCharacter(
+            mock.Character.GetId(), "Другое имя", new RestoredCharacterTarget(null, Fields((field, "из выгрузки"))));
+
+        mock.Project.Characters.Count.ShouldBe(countBefore);
+        GetCharacterValue(mock.Character, field).ShouldBe("из выгрузки");
+    }
+
+    [Fact]
+    public async Task LostCharacter_RepeatedCall_ChangesNothing()
+    {
+        var field = AddCharacterField("Поле");
+        BlockProject();
+        var target = new RestoredCharacterTarget(
+            [new CharacterGroupIdentification(ProjectId, mock.Group.CharacterGroupId)],
+            Fields((field, "из выгрузки")));
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", target);
+        var countAfterFirst = mock.Project.Characters.Count;
+        var savesAfterFirst = SaveChangesCallCount;
+
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", target);
+
+        mock.Project.Characters.Count.ShouldBe(countAfterFirst);
+        SaveChangesCallCount.ShouldBe(savesAfterFirst);
+    }
+
+    [Fact]
+    public async Task LostCharacter_IdNotBelowIdentity_Throws()
+    {
+        BlockProject();
+        var id = Fakes.FakeCharacterAggregateWriteRepository.CharacterIdentityCurrent;
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreLostCharacter(new CharacterIdentification(ProjectId, id), "Будущий", EmptyTarget));
+
+        FindCharacter(id).ShouldBeNull();
     }
 
     #endregion

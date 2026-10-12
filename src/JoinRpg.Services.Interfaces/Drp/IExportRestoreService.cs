@@ -46,4 +46,42 @@ public interface IExportRestoreService
     Task ApplyRestoredClaimFields(
         ClaimIdentification claimId,
         IReadOnlyDictionary<ProjectFieldIdentification, string?> fields);
+
+    /// <summary>
+    /// Возвращает потерянную группу с прежним идентификатором: непубличную (видимость в выгрузке не
+    /// известна — скрытая ничего не раскроет), прямо под корневой группой. Если группа с таким id в этом
+    /// проекте уже есть — ничего не делает.
+    /// </summary>
+    /// <remarks>
+    /// Группы восстанавливаются раньше персонажей: персонаж ссылается на них. Метаданные проекта после
+    /// вставки перечитываются, поэтому новая группа видна последующему <see cref="RestoreLostCharacter"/>
+    /// и <see cref="ApplyRestoredCharacter"/> и в том же запросе.
+    /// </remarks>
+    /// <exception cref="JoinValidationException">
+    /// Id занят группой другого проекта или не ниже счётчика (такого id база не выдавала — это не
+    /// потерянная группа).
+    /// </exception>
+    Task RestoreLostGroup(CharacterGroupIdentification groupId, string name);
+
+    /// <summary>
+    /// Возвращает потерянного персонажа с прежним идентификатором и приводит его к состоянию по
+    /// выгрузке. Новый персонаж — скрытый персонаж игрока в корневой группе (как при восстановлении
+    /// заявки), дальше — как <see cref="ApplyRestoredCharacter"/>. Если персонаж с таким id в этом
+    /// проекте уже есть — только <see cref="ApplyRestoredCharacter"/>.
+    /// </summary>
+    /// <param name="characterId">Прежний идентификатор персонажа.</param>
+    /// <param name="name">
+    /// Имя персонажа. Если в проекте настроено поле-имя, имя пишется его значением (если значения этого
+    /// поля нет в <paramref name="target"/>; если есть — главнее оно); иначе — самим именем персонажа,
+    /// и тогда у уже существующего персонажа имя не меняется.
+    /// </param>
+    /// <param name="target">Состояние по выгрузке, как у <see cref="ApplyRestoredCharacter"/>.</param>
+    /// <remarks>
+    /// Вставка и наполнение — без общей транзакции, но повторяемы: повтор после сбоя между ними найдёт
+    /// вставленного персонажа и доведёт его до состояния по выгрузке.
+    /// </remarks>
+    /// <exception cref="JoinValidationException">
+    /// Id занят персонажем другого проекта или не ниже счётчика.
+    /// </exception>
+    Task RestoreLostCharacter(CharacterIdentification characterId, string name, RestoredCharacterTarget target);
 }

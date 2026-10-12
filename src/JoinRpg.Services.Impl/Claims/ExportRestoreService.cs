@@ -1,3 +1,5 @@
+using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
@@ -24,27 +26,154 @@ namespace JoinRpg.Services.Impl.Claims;
 /// полей: сохранение может посчитать поле изменённым, не изменив записанного (и наоборот). Если снимки
 /// равны, присвоения откатываются — трекаемые сущности остаются такими, какими были загружены.
 /// </para>
+/// <para>
+/// Потерянные группы и персонажи возвращаются с прежними id «оболочками» (вставка мимо EF, см.
+/// <see cref="IProjectMetadataWriteRepository.InsertRestoredCharacterGroupShell"/> и
+/// <see cref="ICharacterAggregateWriteRepository.InsertRestoredCharacterShell"/>). Оболочка — ровно то, что
+/// дало бы доменное создание без полей, поэтому дальнейшее наполнение доменной операцией приводит к тому же,
+/// что доменное создание с этими полями (кроме значений по умолчанию — их восстановление не придумывает).
+/// </para>
 /// </remarks>
 internal class ExportRestoreService(
     ICharacterPropsService characterPropsService,
+    IUnitOfWork unitOfWork,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
     IFieldSetupService fieldSetupService,
-    UserFieldValidator userFieldValidator) : IExportRestoreService
+    UserFieldValidator userFieldValidator,
+    ILogger<ExportRestoreService> logger) : IExportRestoreService
 {
+    public async Task RestoreLostGroup(CharacterGroupIdentification groupId, string name)
+    {
+        var projectId = groupId.ProjectId;
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        EnsureProjectBlocked(projectInfo);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanEditRoles);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            // TODO[Localize]
+            throw new JoinValidationException("Не задано название группы.");
+        }
+
+        if (projectInfo.GroupTree.Contains(groupId))
+        {
+            return;
+        }
+
+        var result = await unitOfWork.GetProjectMetadataWriteRepository().InsertRestoredCharacterGroupShell(
+            new RestoredCharacterGroupShell(
+                groupId, projectInfo.GroupTree.RootGroupId, name, currentUserAccessor.UserIdentification, DateTime.UtcNow));
+        // TODO[Localize]
+        EnsureShellInserted(result, $"Группа {groupId.CharacterGroupId}");
+        if (result == RestoredShellInsertResult.Inserted)
+        {
+            logger.LogInformation(
+                "Восстановлена потерянная группа {characterGroupId} в проекте {projectId} пользователем {userId}",
+                groupId.CharacterGroupId,
+                projectId.Value,
+                currentUserAccessor.UserId);
+        }
+
+        // Вставка шла мимо EF и кеша метаданных проекта (он живёт весь запрос): перечитываем, чтобы
+        // новую группу видели следующие операции этого же запроса (её персонажи, проверки групп).
+        _ = await projectMetadataRepository.GetProjectMetadata(projectId, ignoreCache: true);
+    }
+
+    /// <remarks>
+    /// Два шага без общей транзакции (вставка оболочки идёт мимо <c>SaveChanges</c>, наполнение — обычной
+    /// операцией над персонажем). Вместо неё — повторяемость: оборвись между шагами, повтор найдёт
+    /// оболочку («уже есть») и доведёт её до состояния по выгрузке.
+    /// </remarks>
+    public async Task RestoreLostCharacter(CharacterIdentification characterId, string name, RestoredCharacterTarget target)
+    {
+        // Всё, что можно проверить, — до вставки: после неё неудача оставит оболочку.
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
+        EnsureProjectBlocked(projectInfo);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanEditRoles);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            // TODO[Localize]
+            throw new JoinValidationException("Не задано имя персонажа.");
+        }
+
+        var withName = WithName(projectInfo, target, name);
+        var fields = ToCharacterLayer(projectInfo, withName.Fields, nameof(target));
+        if (withName.Groups is { } groups)
+        {
+            _ = projectInfo.GroupTree.ValidateGroupListForCharacter(groups);
+        }
+        await userFieldValidator.ValidateUserFields(fields);
+
+        // Описание — как его пишет сохранение полей: при настроенном поле описания пустое — "", иначе не задано.
+        var description = projectInfo.CharacterDescriptionField is null ? null : "";
+        var result = await unitOfWork.GetCharacterAggregateWriteRepository().InsertRestoredCharacterShell(
+            new RestoredCharacterShell(
+                characterId,
+                projectInfo.GroupTree.RootGroupId,
+                name,
+                description,
+                currentUserAccessor.UserIdentification,
+                DateTime.UtcNow));
+        // TODO[Localize]
+        EnsureShellInserted(result, $"Персонаж {characterId.CharacterId}");
+        if (result == RestoredShellInsertResult.Inserted)
+        {
+            logger.LogInformation(
+                "Восстановлен потерянный персонаж {characterId} в проекте {projectId} пользователем {userId}",
+                characterId.CharacterId,
+                characterId.ProjectId.Value,
+                currentUserAccessor.UserId);
+        }
+
+        await ApplyRestoredCharacter(characterId, withName);
+    }
+
+    /// <summary>
+    /// Имя — значением поля-имени, если оно в проекте есть (как <c>ClaimRestoreService.CreateCharacter</c>):
+    /// иначе сохранение полей заменило бы имя на «CHAR{id}». Значение этого поля из выгрузки главнее.
+    /// Без поля-имени имя уже записано в оболочку.
+    /// </summary>
+    private static RestoredCharacterTarget WithName(ProjectInfo projectInfo, RestoredCharacterTarget target, string name)
+    {
+        if (projectInfo.CharacterNameField is not { } nameField
+            || (target.Fields?.ContainsKey(nameField.Id) ?? false))
+        {
+            return target;
+        }
+
+        var fields = new Dictionary<ProjectFieldIdentification, string?>(target.Fields ?? new Dictionary<ProjectFieldIdentification, string?>())
+        {
+            [nameField.Id] = name,
+        };
+        return target with { Fields = fields };
+    }
+
+    private static void EnsureShellInserted(RestoredShellInsertResult result, string what)
+    {
+        switch (result)
+        {
+            case RestoredShellInsertResult.Inserted:
+            case RestoredShellInsertResult.AlreadyExists:
+                return;
+            case RestoredShellInsertResult.TakenInOtherProject:
+                // TODO[Localize]
+                throw new JoinValidationException($"{what}: этот номер в базе занят другим проектом.");
+            case RestoredShellInsertResult.NotLostId:
+                // TODO[Localize]
+                throw new JoinValidationException(
+                    $"{what}: номер не ниже текущего значения счётчика базы — это не потерянная запись. Проверьте выгрузку.");
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result), result, null);
+        }
+    }
+
     public async Task ApplyRestoredCharacter(CharacterIdentification characterId, RestoredCharacterTarget target)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
         EnsureProjectBlocked(projectInfo);
         _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanEditRoles);
 
-        var fields = target.Fields is null
-            ? FieldLayerContainer.Empty(projectInfo)
-            : new FieldLayerContainer(projectInfo, target.Fields);
-        if (fields.LayerData.Keys.FirstOrDefault(id => projectInfo.GetFieldById(id).BoundTo == FieldBoundTo.Claim) is { } claimFieldId)
-        {
-            throw new ArgumentException($"Поле {claimFieldId} — поле заявки, а не персонажа", nameof(target));
-        }
+        var fields = ToCharacterLayer(projectInfo, target.Fields, nameof(target));
 
         await userFieldValidator.ValidateUserFields(fields);
         await fieldSetupService.MarkFieldsUsedIfNotUsedYet(fields);
@@ -196,6 +325,24 @@ internal class ExportRestoreService(
             character.Description = Description;
             character.ParentCharacterGroupIds = ParentCharacterGroupIds;
         }
+    }
+
+    /// <summary>
+    /// Слой полей персонажа из словаря выгрузки; поле заявки — ошибка.
+    /// </summary>
+    private static FieldLayerContainer ToCharacterLayer(
+        ProjectInfo projectInfo,
+        IReadOnlyDictionary<ProjectFieldIdentification, string?>? fields,
+        string paramName)
+    {
+        var layer = fields is null
+            ? FieldLayerContainer.Empty(projectInfo)
+            : new FieldLayerContainer(projectInfo, fields);
+        if (layer.LayerData.Keys.FirstOrDefault(id => projectInfo.GetFieldById(id).BoundTo == FieldBoundTo.Claim) is { } claimFieldId)
+        {
+            throw new ArgumentException($"Поле {claimFieldId} — поле заявки, а не персонажа", paramName);
+        }
+        return layer;
     }
 
     private static void EnsureProjectBlocked(ProjectInfo projectInfo)

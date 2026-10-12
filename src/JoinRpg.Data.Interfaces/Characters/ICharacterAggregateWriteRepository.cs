@@ -56,7 +56,38 @@ public interface ICharacterAggregateWriteRepository
     /// Занят ли идентификатор заявки в <b>любом</b> проекте — идентификаторы заявок общие на всю базу.
     /// </summary>
     Task<bool> IsClaimIdTaken(int claimId);
+
+    /// <summary>
+    /// Вставляет «оболочку» персонажа с заданным идентификатором — для восстановления потерянного
+    /// персонажа из выгрузки мастера (DRP, #5529). Оболочка — то, что дало бы доменное создание
+    /// персонажа без полей: активный скрытый (<c>CharacterVisibility.Private</c>) персонаж игрока
+    /// (<c>CharacterType.Player</c>) в корневой группе, без заявок, с пустым набором полей; порядок
+    /// персонажей в корневой группе не меняется. Наполняет её дальше обычная операция над персонажем.
+    /// </summary>
+    /// <remarks>
+    /// Выполняется сразу, своей транзакцией, мимо <c>SaveChanges</c>. Вставляется только id ниже
+    /// текущего счётчика IDENTITY — такая вставка его не двигает.
+    /// </remarks>
+    Task<RestoredShellInsertResult> InsertRestoredCharacterShell(RestoredCharacterShell shell);
 }
+
+/// <summary>
+/// Минимум, без которого строки персонажа нет.
+/// </summary>
+/// <param name="RootGroupId">Корневая группа проекта — единственная группа оболочки.</param>
+/// <param name="CharacterName">Имя персонажа (как его записало бы сохранение полей).</param>
+/// <param name="Description">
+/// Описание: <c>null</c> — не задано (в проекте нет поля описания), пустая строка — пустое описание,
+/// как его пишет сохранение полей при настроенном поле описания.
+/// </param>
+/// <param name="CreatedAt">Время создания и изменения (UTC) — восстановленный персонаж поднимает дату обновления проекта.</param>
+public record RestoredCharacterShell(
+    CharacterIdentification CharacterId,
+    CharacterGroupIdentification RootGroupId,
+    string CharacterName,
+    string? Description,
+    UserIdentification CreatedBy,
+    DateTime CreatedAt);
 
 /// <summary>
 /// Минимум, без которого строки заявки нет: персонаж, игрок, ответственный мастер и дата подачи.

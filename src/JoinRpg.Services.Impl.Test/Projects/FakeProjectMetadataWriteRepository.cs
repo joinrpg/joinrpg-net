@@ -15,6 +15,36 @@ internal sealed class FakeProjectMetadataWriteRepository(MockedProject mock) : I
     public Task<IProjectMetadataUpdateHandle> LoadProjectForUpdate(ProjectIdentification projectId)
         => Task.FromResult<IProjectMetadataUpdateHandle>(new Handle(mock));
 
+    /// <summary>
+    /// Счётчик IDENTITY групп в моке: id не ниже него — «не потерянный» (как <c>IDENT_CURRENT</c> в бою).
+    /// </summary>
+    internal const int GroupIdentityCurrent = 100_000;
+
+    /// <summary>Оболочка группы так же, как в бою. Мок — один проект, «занят другим проектом» не бывает.</summary>
+    public Task<RestoredShellInsertResult> InsertRestoredCharacterGroupShell(RestoredCharacterGroupShell shell)
+    {
+        if (mock.Project.CharacterGroups.Any(g => g.CharacterGroupId == shell.CharacterGroupId.CharacterGroupId))
+        {
+            return Task.FromResult(RestoredShellInsertResult.AlreadyExists);
+        }
+        if (shell.CharacterGroupId.CharacterGroupId >= GroupIdentityCurrent)
+        {
+            return Task.FromResult(RestoredShellInsertResult.NotLostId);
+        }
+
+        var group = mock.CreateCharacterGroup();
+        group.CharacterGroupId = shell.CharacterGroupId.CharacterGroupId;
+        group.CharacterGroupName = shell.Name;
+        group.IsPublic = false;
+        group.Description = new MarkdownDbValue("");
+        group.ParentCharacterGroupIds = [shell.RootGroupId.CharacterGroupId];
+        group.CreatedAt = group.UpdatedAt = shell.CreatedAt;
+        group.CreatedById = group.UpdatedById = shell.CreatedBy.Value;
+        // Строка уже в «базе»: следующее чтение метаданных её видит.
+        mock.ReInitProjectInfo();
+        return Task.FromResult(RestoredShellInsertResult.Inserted);
+    }
+
     private sealed class Handle : IProjectMetadataUpdateHandle
     {
         private readonly MockedProject mock;
