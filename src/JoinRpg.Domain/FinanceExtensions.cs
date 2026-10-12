@@ -6,21 +6,6 @@ namespace JoinRpg.Domain;
 public static class FinanceExtensions
 {
     /// <summary>
-    /// Returns total sum of all money flow operations
-    /// </summary>
-    public static int GetPaymentSum(this Claim claim)
-        => claim.FinanceOperations
-            .Where(fo => fo.Approved && fo.MoneyFlowOperation)
-            .Sum(fo => fo.MoneyAmount);
-
-    /// <summary>
-    /// Returns sum of all approved finance operations
-    /// </summary>
-    [Obsolete("Используйте ClaimFinanceInfo.FeePaid из снимка заявки (ADR013), см. #5467")]
-    public static int ClaimBalance(this Claim claim)
-        => claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
-
-    /// <summary>
     /// Фиксирует за заявкой базовый взнос, если она оплачена полностью
     /// (<see cref="ClaimBalanceExtensions.GetFeeToFix"/>).
     /// </summary>

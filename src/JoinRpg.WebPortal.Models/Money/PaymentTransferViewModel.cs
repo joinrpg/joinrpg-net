@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models;
@@ -51,7 +50,9 @@ public class PaymentTransferViewModel : AddCommentViewModel
 
     public PaymentTransferViewModel() { }
 
-    public PaymentTransferViewModel(Claim claim) : base()
+    /// <param name="claim">Заявка-источник перевода.</param>
+    /// <param name="finance">Финансы той же заявки из снимка (ADR013): доступно столько, сколько уплачено.</param>
+    public PaymentTransferViewModel(Claim claim, ClaimFinanceInfo finance) : base()
     {
         OperationDate = DateTime.UtcNow;
         ActionName = "Перевести";
@@ -59,6 +60,6 @@ public class PaymentTransferViewModel : AddCommentViewModel
         ClaimName = claim.Character.CharacterName;
         ProjectId = claim.ProjectId;
         CommentDiscussionId = claim.CommentDiscussionId;
-        MaxMoney = claim.GetPaymentSum();
+        MaxMoney = finance.FeePaid;
     }
 }

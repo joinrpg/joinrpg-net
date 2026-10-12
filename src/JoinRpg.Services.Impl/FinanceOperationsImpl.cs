@@ -119,9 +119,12 @@ internal class FinanceOperationsImpl(
         // Loading destination claim
         var (claimTo, _) = await LoadClaimAsMaster(new ClaimIdentification(request.ProjectId, request.ToClaimId));
 
-        // Checking money amount
-        var availableMoney = claimFrom.GetPaymentSum();
-        if (availableMoney < request.Money)
+        // Checking money amount. Уплаченное — из снимка (ADR013): FeePaid считает все подтверждённые
+        // операции, но не движущие деньги операции (запрос льготы) всегда нулевые, так что это то же
+        // самое, что сумма подтверждённых денежных операций.
+        var claimFromSnapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claimFrom.GetId())
+            ?? throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
+        if (claimFromSnapshot.Claim.Finance.FeePaid < request.Money)
         {
             throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Character.CharacterName} to perform transfer");
         }
