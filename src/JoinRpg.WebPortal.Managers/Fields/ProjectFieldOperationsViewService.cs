@@ -1,9 +1,12 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectMasterTools.Fields;
 
 namespace JoinRpg.WebPortal.Managers.Fields;
 
-internal class ProjectFieldOperationsViewService(IFieldSetupService fieldSetupService) : IProjectFieldOperationsClient
+internal class ProjectFieldOperationsViewService(
+    IFieldSetupService fieldSetupService,
+    IProjectMetadataRepository projectMetadataRepository) : IProjectFieldOperationsClient
 {
     public async Task Delete(ProjectFieldIdentification fieldId)
         => await fieldSetupService.DeleteField(fieldId.ProjectId.Value, fieldId.ProjectFieldId);
@@ -35,4 +38,23 @@ internal class ProjectFieldOperationsViewService(IFieldSetupService fieldSetupSe
 
     public async Task CreateVariants(FieldValuesMassAddRequest request)
         => await fieldSetupService.CreateFieldValueVariants(request.FieldId, request.ValuesToAdd);
+
+    public async Task<ProjectFieldSettingsViewModel> GetFieldSettings(ProjectIdentification projectId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return new ProjectFieldSettingsViewModel()
+        {
+            ProjectId = projectId,
+            NameField = projectInfo.CharacterNameField?.Id,
+            DescriptionField = projectInfo.CharacterDescriptionField?.Id,
+        };
+    }
+
+    public async Task SaveFieldSettings(ProjectFieldSettingsViewModel model)
+        => await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest()
+        {
+            ProjectId = model.ProjectId,
+            NameField = model.NameField,
+            DescriptionField = model.DescriptionField,
+        });
 }

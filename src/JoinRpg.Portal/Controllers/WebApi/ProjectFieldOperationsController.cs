@@ -115,4 +115,22 @@ public class ProjectFieldOperationsController(
         await fieldOperationsClient.CreateVariants(request);
         return Ok();
     }
+
+    [HttpGet]
+    public async Task<ActionResult<ProjectFieldSettingsViewModel>> GetFieldSettings([FromQuery] ProjectIdentification projectId)
+        => Ok(await fieldOperationsClient.GetFieldSettings(projectId));
+
+    [HttpPost]
+    public async Task<ActionResult> SaveFieldSettings([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldSettingsViewModel model)
+    {
+        if (model.ProjectId != projectId
+            || model.NameField is not null && model.NameField.ProjectId != projectId
+            || model.DescriptionField is not null && model.DescriptionField.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+
+        await fieldOperationsClient.SaveFieldSettings(model);
+        return Ok();
+    }
 }

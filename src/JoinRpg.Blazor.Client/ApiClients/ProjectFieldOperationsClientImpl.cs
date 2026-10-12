@@ -125,4 +125,26 @@ internal class ProjectFieldOperationsClientImpl(
             throw;
         }
     }
+
+    public async Task<ProjectFieldSettingsViewModel> GetFieldSettings(ProjectIdentification projectId)
+        => await httpClient.GetFromJsonAsync<ProjectFieldSettingsViewModel>(
+            $"webapi/project-field-operations/getfieldsettings?projectId={projectId.Value}")
+           ?? throw new Exception("Couldn't get result from server");
+
+    public async Task SaveFieldSettings(ProjectFieldSettingsViewModel model)
+    {
+        try
+        {
+            await csrfTokenProvider.SetCsrfToken(httpClient);
+            var response = await httpClient.PostAsJsonAsync(
+                $"webapi/project-field-operations/savefieldsettings?projectId={model.ProjectId.Value}",
+                model);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error during field settings save");
+            throw;
+        }
+    }
 }
