@@ -103,9 +103,9 @@
       `KUBECONFIG` нового кластера; реестр образов (сейчас `cr.yandex`).
 - [ ] Строки подключения: Postgres (`DataProtection`, `DailyJob`, `Notifications`, IdPortal) —
       на новый Managed PostgreSQL; S3 — на новый.
-- [ ] ⚪ Аватарки: публичный адрес новых загрузок — от `avatars.joinrpg.ru`, а не
-      `{Endpoint}/{BucketName}` (`S3AvatarStorageService`); новый ключ конфигурации, Portal и IdPortal
-      ([подробнее](#аватарки)).
+- [ ] 🟡 Аватарки: публичный адрес новых загрузок — от `avatars.joinrpg.ru`, а не
+      `{Endpoint}/{BucketName}` (`S3AvatarStorageService`); ключ `S3BlobStorage:PublicBaseUrl`, Portal и
+      IdPortal ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)).
 - [ ] ⚪ Логи: формат severity в `CustomJsonFormatter` (`level`) заточен под Yandex Cloud Logging —
       привести к формату новых облачных логов. Обновить скилл `prod-logs`.
 
@@ -716,6 +716,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | закрыт |
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
+| issue [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526) | Публичный адрес аватарок — `avatars.joinrpg.ru` | 1 | заведён |
 | issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | заведён |
 | [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
 | [#5501](https://github.com/joinrpg/joinrpg-net/issues/5501) | `FinanceOperationIdentification` с вложенным `ClaimIdentification` (по ревью [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496)) | 7 | влит |
