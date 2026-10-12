@@ -28,4 +28,10 @@ public enum CommentExtraAction
     /// Запись в истории без уведомления.
     /// </summary>
     RestoredFromNotifications = 20,
+
+    /// <summary>
+    /// Поля заявки восстановлены из выгрузки мастера после потери основной БД (DRP, #5529).
+    /// Запись в истории без уведомления.
+    /// </summary>
+    RestoredFromExport = 21,
 }

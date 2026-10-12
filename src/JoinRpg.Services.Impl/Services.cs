@@ -74,6 +74,7 @@ public static class Services
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
             .AddTransient<IClaimNotificationService, ClaimNotificationService>()
             .AddTransient<IClaimRestoreService, ClaimRestoreService>()
+            .AddTransient<IExportRestoreService, ExportRestoreService>()
             .AddTransient<IAccommodationNotificationService, AccommodationNotificationService>()
             .AddTransient<AccommodationNotificationTextBuilder>()
             .AddTransient<ForumNotificationService>()

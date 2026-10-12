@@ -109,9 +109,11 @@ internal class ClaimNotificationService(
             or CommentExtraAction.NewClaim or CommentExtraAction.InvitationAcceptedByPlayer
                 => s => s.ClaimStatusChange,
             null => s => s.Comments,
-            // Восстановление из уведомлений пишет в историю без уведомления (DRP-план, принцип 3) и сюда
-            // не доходит; подписка — как у прочих изменений заявки, чтобы таблица оставалась полной.
-            CommentExtraAction.RestoredFromNotifications => s => s.ClaimStatusChange,
+            // Восстановление из уведомлений и из выгрузки пишет в историю без уведомления (DRP-план,
+            // принцип 3) и сюда не доходит; подписка — как у прочих изменений заявки, чтобы таблица
+            // оставалась полной.
+            CommentExtraAction.RestoredFromNotifications or CommentExtraAction.RestoredFromExport
+                => s => s.ClaimStatusChange,
             _ => throw new ArgumentOutOfRangeException(nameof(commentExtraAction), commentExtraAction, "Неожиданное значение")
         };
     }

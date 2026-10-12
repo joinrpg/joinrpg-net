@@ -83,7 +83,12 @@ public sealed class FieldWithValue
     /// <summary>
     /// Нормализует значение перед присваиванием полю. Для полей с вариантами проверяет корректность идентификаторов вариантов.
     /// </summary>
-    public string? NormalizeValueBeforeAssign(string? toAssign)
+    /// <param name="toAssign">Присваиваемое значение.</param>
+    /// <param name="allowInactiveVariants">
+    /// Разрешить неактивные варианты, даже если их нет в текущем значении (восстановление, DRP, #5529) —
+    /// см. <see cref="ProjectFieldInfo.ValidateVariantList"/>.
+    /// </param>
+    public string? NormalizeValueBeforeAssign(string? toAssign, bool allowInactiveVariants = false)
     {
         var normalized = Field.Type switch
         {
@@ -97,7 +102,7 @@ public sealed class FieldWithValue
         {
             var newIds = normalized.ParseToIntList();
             var existingIds = Value?.ParseToIntList() ?? [];
-            Field.ValidateVariantList(newIds, existingIds);
+            Field.ValidateVariantList(newIds, existingIds, allowInactiveVariants);
         }
 
         if (normalized is not null && Field.Type.IsUserLink())

@@ -20,6 +20,12 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     protected AccessArguments AccessArguments { get; } = characterFieldLayers.AccessArguments;
 
     /// <summary>
+    /// Режим сохранения. Задаётся инициализатором, а не параметром конструктора: от него зависят
+    /// только обязательность и значения по умолчанию — это решает сама база, наследникам он не нужен.
+    /// </summary>
+    public FieldSaveMode Mode { get; init; } = FieldSaveMode.Normal;
+
+    /// <summary>
     /// Персонаж, по которому внутри сохранения считается доступность полей (обязательность и
     /// генерация значений по умолчанию). <c>null</c> — «персонажа нет»: тогда доступны только поля
     /// без ограничения по группам.
@@ -113,9 +119,13 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
             EnsureEditAccess(field);
 
-            var normalizedValue = field.NormalizeValueBeforeAssign(valueToSet.Value);
+            // Восстановление возвращает выбранный когда-то вариант, даже если его с тех пор выключили.
+            var normalizedValue = field.NormalizeValueBeforeAssign(
+                valueToSet.Value,
+                allowInactiveVariants: Mode == FieldSaveMode.Restore);
 
-            if (normalizedValue is null && FieldIsMandatory(field))
+            // Восстановление пишет значения как были: пустое обязательное поле там не ошибка.
+            if (normalizedValue is null && Mode != FieldSaveMode.Restore && FieldIsMandatory(field))
             {
                 ThrowRequiredField(field);
                 return;
@@ -141,7 +151,11 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
         AssignValues(fieldsToSet, fields);
 
-        GenerateDefaultValues(fields);
+        // Значений по умолчанию у восстановленных данных не было — не придумываем их.
+        if (Mode != FieldSaveMode.Restore)
+        {
+            GenerateDefaultValues(fields);
+        }
 
         var (character, claimFields) = BuildResult(Layer(fields.Values));
         return new FieldSaveResult(UpdatedFields.Values, character, claimFields);

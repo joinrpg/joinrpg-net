@@ -46,12 +46,14 @@ internal abstract record CharacterOperationContext(
     /// (<see cref="ProjectGroupTree.ValidateGroupListForCharacter"/>). <c>null</c> — операция группы
     /// не меняет. Спецгруппы сюда не передаются: их пересчитывает само сохранение по значениям полей.
     /// </param>
+    /// <param name="mode">Режим сохранения; задаёт его только восстановление (DRP, #5529).</param>
     /// <returns>Изменившиеся поля.</returns>
     protected IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFieldsCore(
         Character character,
         FieldLayerContainer fieldsToSet,
-        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
-        => FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, character, fieldsToSet, ProjectInfo, regularGroupIds);
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null,
+        FieldSaveMode mode = FieldSaveMode.Normal)
+        => FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, character, fieldsToSet, ProjectInfo, regularGroupIds, mode);
 
     /// <summary>
     /// То же, но через заявку: персонаж берётся из неё, а выбор стратегии в
@@ -63,11 +65,13 @@ internal abstract record CharacterOperationContext(
     /// слоем нужно ради побочных эффектов — генерации значений по умолчанию, переноса значений
     /// заявка→персонаж и пересчёта спецгрупп.
     /// </param>
+    /// <param name="mode">Режим сохранения; задаёт его только восстановление (DRP, #5529).</param>
     /// <returns>Изменившиеся поля.</returns>
     protected IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFieldsCore(
         Claim claim,
-        FieldLayerContainer fieldsToSet)
-        => FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, claim, fieldsToSet, ProjectInfo);
+        FieldLayerContainer fieldsToSet,
+        FieldSaveMode mode = FieldSaveMode.Normal)
+        => FieldSaveHelper.SaveCharacterFields(CurrentUser.UserId, claim, fieldsToSet, ProjectInfo, mode);
 }
 
 /// <summary>
@@ -93,11 +97,22 @@ internal abstract record CharacterMutationContext(
     /// <summary>Окончательно удаляет сущность из того же <c>DbContext</c>.</summary>
     public void RemoveEntity(object entity) => Scope.Remove(entity);
 
-    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Character, FieldLayerContainer, IReadOnlyCollection{CharacterGroupIdentification})"/>
+    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Character, FieldLayerContainer, IReadOnlyCollection{CharacterGroupIdentification}, FieldSaveMode)" path="/summary|/param[@name!='mode']|/returns"/>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(
         FieldLayerContainer fieldsToSet,
         IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
         => SaveFieldsCore(Character, fieldsToSet, regularGroupIds);
+
+    /// <summary>
+    /// То же, но в режиме восстановления (<see cref="FieldSaveMode.Restore"/>, DRP, #5529): значения
+    /// записываются как были — без проверки обязательности и без значений по умолчанию. Права на поле и
+    /// проверка значений остаются.
+    /// </summary>
+    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Character, FieldLayerContainer, IReadOnlyCollection{CharacterGroupIdentification}, FieldSaveMode)" path="/param[@name='fieldsToSet']|/param[@name='regularGroupIds']|/returns"/>
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveRestoredFields(
+        FieldLayerContainer fieldsToSet,
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
+        => SaveFieldsCore(Character, fieldsToSet, regularGroupIds, FieldSaveMode.Restore);
 }
 
 /// <summary>
@@ -126,7 +141,7 @@ internal abstract record CharacterCreationContext(
     FieldSaveHelper FieldSaveHelper)
     : CharacterOperationContext(ProjectInfo, Now, CurrentUser, FieldSaveHelper)
 {
-    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Character, FieldLayerContainer, IReadOnlyCollection{CharacterGroupIdentification})"/>
+    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Character, FieldLayerContainer, IReadOnlyCollection{CharacterGroupIdentification}, FieldSaveMode)" path="/summary|/param[@name!='mode']|/returns"/>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(
         Character character,
         FieldLayerContainer fieldsToSet,
