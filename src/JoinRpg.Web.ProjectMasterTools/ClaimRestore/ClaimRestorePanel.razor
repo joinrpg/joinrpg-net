@@ -285,7 +285,9 @@
         var r = row.Row;
         if (r.Action == ClaimRestoreActionView.Create)
         {
+            @* Проект заблокирован, так что списки *ForMaster пусты; план ищет только среди активных. *@
             <SingleCharacterSelector ProjectId="@ProjectId"
+                                     ListType="CharacterListType.Active"
                                      SelectedCharacterId="@row.Character"
                                      SelectedCharacterIdChanged="@(id => OnCreateCharacterChanged(row, id))"
                                      NewCharacterOptionText="Новый персонаж" />

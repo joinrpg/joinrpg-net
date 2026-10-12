@@ -55,6 +55,7 @@ public class CharacterListViewService(
         {
             CharacterListType.All => true,
             CharacterListType.AllTemplates => character.IsActive && isSlot,
+            CharacterListType.Active => character.IsActive,
             CharacterListType.AvailableForMaster => IsAvailableForMaster(character, project),
             CharacterListType.AvailableNonSlotsForMaster => !isSlot && IsAvailableForMaster(character, project),
             CharacterListType.AvailableTemplatesForMaster => isSlot && IsAvailableForMaster(character, project),
