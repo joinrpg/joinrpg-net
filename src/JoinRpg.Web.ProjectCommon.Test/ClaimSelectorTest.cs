@@ -66,6 +66,7 @@ public class ClaimSelectorTest
         var module = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
         module.SetupVoid("initBootstrapSelect", _ => true).SetVoidResult();
         module.SetupVoid("refreshBootstrapSelect", _ => true).SetVoidResult();
+        module.SetupVoid("destroyBootstrapSelect", _ => true).SetVoidResult();
         module.Setup<List<string>>("getSelectedValues", _ => true).SetResult([SecondClaimId.ToString()]);
 
         ClaimIdentification? changedId = null;

@@ -60,7 +60,43 @@ public class TypedSelectorTest
         var module = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
         _ = module.SetupVoid("initBootstrapSelect", _ => true);
         _ = module.SetupVoid("refreshBootstrapSelect", _ => true);
+        module.SetupVoid("destroyBootstrapSelect", _ => true).SetVoidResult();
         return module;
+    }
+
+    /// <summary>
+    /// bootstrap-select оборачивает &lt;select&gt; в свой div с кнопкой, а Blazor при удалении компонента убирает
+    /// только &lt;select&gt;. Без destroy обёртка оставалась на странице до перезагрузки (DRP, #5481).
+    /// </summary>
+    [Fact]
+    public async Task RemovedAfterInit_DestroysPickerOnSameSelect()
+    {
+        using var ctx = new BunitContext();
+        var module = SetupInteractive(ctx);
+        var cut = Render(ctx);
+        cut.WaitForAssertion(() => module.Invocations["initBootstrapSelect"].ShouldHaveSingleItem());
+        var initializedSelect = module.Invocations["initBootstrapSelect"].Single().Arguments[0];
+
+        await ctx.DisposeComponentsAsync();
+
+        var destroy = module.Invocations["destroyBootstrapSelect"].ShouldHaveSingleItem();
+        destroy.Arguments[0].ShouldBe(initializedSelect);
+    }
+
+    /// <summary>Пока пункты не загружены, &lt;select&gt; не рендерился и bootstrap-select нечего разбирать.</summary>
+    [Fact]
+    public async Task RemovedBeforeItemsLoaded_DoesNotDestroy()
+    {
+        using var ctx = new BunitContext();
+        var module = SetupInteractive(ctx);
+        _ = ctx.Render<TypedSelector<int, Item>>(p => p
+            .Add(x => x.Items, null)
+            .Add(x => x.KeySelector, (Item item) => item.Id)
+            .Add(x => x.ToListItem, (Item item) => TypedSelectList.CreateItem(item.Id, item.Label)));
+
+        await ctx.DisposeComponentsAsync();
+
+        module.Invocations["destroyBootstrapSelect"].ShouldBeEmpty();
     }
 
     /// <summary>

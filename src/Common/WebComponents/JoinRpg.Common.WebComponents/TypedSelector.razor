@@ -146,9 +146,23 @@ else
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-      if (module is not null)
+      if (module is null)
       {
+        return; // Prerender-проход или JS-модуль так и не импортирован — bootstrap-select не инициализировался.
+      }
+      try
+      {
+        if (selectInitialized)
+        {
+          // bootstrap-select обернул <select> в свой div с кнопкой; Blazor удалит только <select>,
+          // поэтому обёртку убираем сами — иначе кнопка останется на странице до перезагрузки.
+          await module.InvokeVoidAsync("destroyBootstrapSelect", selectRef);
+        }
         await module.DisposeAsync();
+      }
+      catch (JSDisconnectedException)
+      {
+        // Соединение с браузером уже разорвано (страницу закрыли) — убирать на клиенте нечего.
       }
     }
 

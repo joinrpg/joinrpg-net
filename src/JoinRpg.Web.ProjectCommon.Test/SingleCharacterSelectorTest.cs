@@ -40,6 +40,7 @@ public class SingleCharacterSelectorTest
         var module = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
         _ = module.SetupVoid("initBootstrapSelect", _ => true);
         _ = module.SetupVoid("refreshBootstrapSelect", _ => true);
+        module.SetupVoid("destroyBootstrapSelect", _ => true).SetVoidResult();
         return (ctx, module);
     }
 
