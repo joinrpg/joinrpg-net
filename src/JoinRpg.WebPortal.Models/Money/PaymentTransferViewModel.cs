@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models;
@@ -50,16 +50,15 @@ public class PaymentTransferViewModel : AddCommentViewModel
 
     public PaymentTransferViewModel() { }
 
-    /// <param name="claim">Заявка-источник перевода.</param>
-    /// <param name="finance">Финансы той же заявки из снимка (ADR013): доступно столько, сколько уплачено.</param>
-    public PaymentTransferViewModel(Claim claim, ClaimFinanceInfo finance) : base()
+    /// <param name="claim">Снимок заявки-источника (ADR013): доступно столько, сколько уплачено.</param>
+    public PaymentTransferViewModel(ClaimInCharacter claim) : base()
     {
         OperationDate = DateTime.UtcNow;
         ActionName = "Перевести";
-        ClaimId = claim.ClaimId;
+        ClaimId = claim.ClaimId.ClaimId;
         ClaimName = claim.Character.CharacterName;
-        ProjectId = claim.ProjectId;
-        CommentDiscussionId = claim.CommentDiscussionId;
-        MaxMoney = finance.FeePaid;
+        ProjectId = claim.ClaimId.ProjectId.Value;
+        CommentDiscussionId = claim.Claim.CommentDiscussionId.Value;
+        MaxMoney = claim.Claim.Finance.FeePaid;
     }
 }

@@ -677,7 +677,7 @@ public class ClaimController(
         var snapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claim.GetId())
             ?? throw new InvalidOperationException($"Claim {claim.GetId()} is not found in character aggregate");
 
-        return View("PaymentTransfer", new PaymentTransferViewModel(claim, snapshot.Claim.Finance));
+        return View("PaymentTransfer", new PaymentTransferViewModel(snapshot));
     }
 
     private async Task<ActionResult> RedirectToDefaultTemplate(int projectid)
