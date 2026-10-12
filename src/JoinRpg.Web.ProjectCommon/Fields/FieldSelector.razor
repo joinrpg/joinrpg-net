@@ -15,6 +15,11 @@
 
 @code {
     [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+    /// <summary>
+    /// Выбранные поля. В списке только активные поля проекта: неактивное поле отсюда не отображается выбранным
+    /// (пункта для него нет), но и не выкидывается, пока пользователь не изменит выбор. После любого изменения
+    /// в <see cref="SelectedFieldIdsChanged"/> приходят только видимые в списке поля.
+    /// </summary>
     [Parameter] public ProjectFieldIdentification[] SelectedFieldIds { get; set; } = [];
     [Parameter] public EventCallback<ProjectFieldIdentification[]> SelectedFieldIdsChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = true;

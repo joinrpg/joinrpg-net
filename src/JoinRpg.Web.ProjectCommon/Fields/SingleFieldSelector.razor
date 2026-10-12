@@ -11,6 +11,10 @@
 
 @code {
     [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+    /// <summary>
+    /// Выбранное поле. Неактивное поле в списке не показывается, поэтому ни один пункт не будет отмечен,
+    /// но значение остаётся прежним, пока пользователь не выберет другое (см. <see cref="FieldSelector.SelectedFieldIds"/>).
+    /// </summary>
     [Parameter] public ProjectFieldIdentification? SelectedFieldId { get; set; }
     [Parameter] public EventCallback<ProjectFieldIdentification?> SelectedFieldIdChanged { get; set; }
     [Parameter] public bool AllowEmpty { get; set; } = false;
