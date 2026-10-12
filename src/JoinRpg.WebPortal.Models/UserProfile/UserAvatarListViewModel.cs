@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
+using JoinRpg.Services.Interfaces.Avatars;
 
 namespace JoinRpg.Web.Models.UserProfile;
 
@@ -7,12 +8,12 @@ namespace JoinRpg.Web.Models.UserProfile;
 public record UserAvatarListViewModel
     (IReadOnlyList<UserAvatarListItemViewModel> Avatars, string Email, int UserId)
 {
-    public UserAvatarListViewModel(User user) : this(
+    public UserAvatarListViewModel(User user, IAvatarUriResolver avatarUriResolver) : this(
         Avatars:
             user
                 .Avatars
                 .Where(a => a.IsActive)
-                .Select(ua => new UserAvatarListItemViewModel(ua)).ToList(),
+                .Select(ua => new UserAvatarListItemViewModel(ua, avatarUriResolver)).ToList(),
         Email: user.Email,
         UserId: user.UserId
         )
@@ -27,9 +28,9 @@ public record UserAvatarListItemViewModel(
     bool Selected,
     string Source)
 {
-    public UserAvatarListItemViewModel(UserAvatar ua) : this(
+    public UserAvatarListItemViewModel(UserAvatar ua, IAvatarUriResolver avatarUriResolver) : this(
             new AvatarIdentification(ua.UserAvatarId),
-            new Uri(ua.CachedUri ?? ua.OriginalUri),
+            avatarUriResolver.GetAvatarUri(ua.CachedUri, ua.OriginalUri),
             ua.User.SelectedAvatar == ua,
             GetSourceLabel(ua)
         )
