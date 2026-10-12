@@ -4,11 +4,10 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Impl.Migrations;
 using JoinRpg.Data.Write.Interfaces.Notifications;
-using JoinRpg.DomainTypes;
+using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.IdPortal.OAuthServer;
 using JoinRpg.IdPortal.OAuthServer.Cimd;
-using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.AspNetCore.DataProtection;
@@ -179,7 +178,7 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
             services.AddSingleton<IAccountEmailService<JoinIdentityUser>>(CaptureEmail);
 
             services.RemoveAll<INotificationRepository>();
-            services.AddTransient<INotificationRepository, NullNotificationRepository>();
+            services.AddSingleton<INotificationRepository>(FakeNotificationRepository.CreateNullObject());
 
             services.RemoveAll<INotificationService>();
             services.AddTransient<INotificationService, NullNotificationService>();
@@ -194,31 +193,6 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
         });
 
         _ = builder.UseTestServer();
-    }
-
-    private sealed class NullNotificationRepository : INotificationRepository
-    {
-        public Task InsertNotifications(NotificationMessageCreateDto[] notifications) => Task.CompletedTask;
-
-        public Task<TargetedNotificationMessageForRecipient?> SelectNextNotificationForSending(NotificationChannel channel)
-            => Task.FromResult<TargetedNotificationMessageForRecipient?>(null);
-
-        public Task MarkSendingSucceeded(NotificationId id, NotificationChannel channel) => Task.CompletedTask;
-
-        public Task MarkSendingFailed(NotificationId id, NotificationChannel channel) => Task.CompletedTask;
-
-        public Task MarkEnqueued(NotificationId id, NotificationChannel channel, DateTimeOffset sendAfter, int? attempts = null)
-            => Task.CompletedTask;
-
-        public Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(
-            UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination)
-            => Task.FromResult<IReadOnlyCollection<NotificationHistoryDto>>([]);
-
-        public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
-            => Task.FromResult<IReadOnlyDictionary<NotificationChannel, int>>(new Dictionary<NotificationChannel, int>());
-
-        public Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore)
-            => Task.FromResult<IReadOnlyCollection<NotificationMessageForRecipient>>([]);
     }
 
     private sealed class NullNotificationService : INotificationService
