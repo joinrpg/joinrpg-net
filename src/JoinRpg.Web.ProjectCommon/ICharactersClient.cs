@@ -29,6 +29,13 @@ public enum CharacterListType
 
     /// <summary>Только слоты, куда мастер может создать заявку.</summary>
     AvailableTemplatesForMaster,
+
+    /// <summary>
+    /// Все активные персонажи проекта, любого типа, без проверки доступности для заявки. В отличие
+    /// от <see cref="All"/>, без удалённых. Нужен, например, при восстановлении заявок из
+    /// уведомлений: проект там заблокирован, и списки <c>*ForMaster</c> пусты.
+    /// </summary>
+    Active,
 }
 
 public static class CharacterListTypeExtensions

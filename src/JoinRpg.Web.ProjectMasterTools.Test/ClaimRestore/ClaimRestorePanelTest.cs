@@ -20,11 +20,12 @@ public class ClaimRestorePanelTest : BunitContext
     private static readonly UserLinkViewModel Player = new(new UserIdentification(10), "Игрок", ViewMode.Show);
 
     private readonly FakeClient client = new();
+    private readonly FakeCharactersClient charactersClient = new();
     private readonly BunitJSModuleInterop selectModule;
 
     public ClaimRestorePanelTest()
     {
-        Services.AddSingleton<ICharactersClient>(new FakeCharactersClient());
+        Services.AddSingleton<ICharactersClient>(charactersClient);
         Services.AddSingleton<IClaimRestoreClient>(client);
         Services.AddSingleton<IUriLocator<ClaimIdentification>>(new FakeLocator());
         Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeLocator());
@@ -222,6 +223,10 @@ public class ClaimRestorePanelTest : BunitContext
         options[0].HasAttribute("selected").ShouldBeTrue();
         cut.Markup.ShouldContain("подходят по имени");
         cut.FindAll("input[placeholder='Имя нового персонажа']").ShouldHaveSingleItem();
+        // План ищет персонажей только среди активных — и выбор должен предлагать только их,
+        // иначе удалённые тёзки появляются вторым экземпляром.
+        charactersClient.RequestedListTypes.ShouldAllBe(t => t == CharacterListType.Active);
+        charactersClient.RequestedListTypes.ShouldNotBeEmpty();
 
         var twinValue = options.Single(o => o.TextContent.Contains("Близнец")).GetAttribute("value")!;
         selectModule.Setup<List<string>>("getSelectedValues", _ => true).SetResult([twinValue]);
@@ -240,12 +245,17 @@ public class ClaimRestorePanelTest : BunitContext
 
     private sealed class FakeCharactersClient : ICharactersClient
     {
+        public List<CharacterListType> RequestedListTypes { get; } = [];
+
         public Task<List<CharacterDto>> GetCharacters(ProjectIdentification projectId, CharacterListType listType = CharacterListType.All)
-            => Task.FromResult<List<CharacterDto>>(
+        {
+            RequestedListTypes.Add(listType);
+            return Task.FromResult<List<CharacterDto>>(
             [
                 new CharacterDto(Hero, "Новый", "", IsPublic: true),
                 new CharacterDto(Twin, "Новый (Близнец)", "", IsPublic: true),
             ]);
+        }
     }
 
     private sealed class FakeLocator : IUriLocator<ClaimIdentification>, IUriLocator<UserLinkViewModel>, ICharacterUriLocator
