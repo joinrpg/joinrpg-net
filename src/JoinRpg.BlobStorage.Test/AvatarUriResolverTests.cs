@@ -35,12 +35,21 @@ public class AvatarUriResolverTests
     }
 
     [Fact]
-    public void LegacyAbsoluteUriIsReturnedAsIs()
+    public void LegacyAbsoluteUriIsMovedToPublicBaseUrl()
     {
         var options = new S3StorageOptions { PublicBaseUrl = "https://avatars.joinrpg.ru" };
 
-        AvatarUriResolver.Resolve(options, "https://storage.yandexcloud.net/bucket/ABCDEF.jpg", Original)
-            .ShouldBe(new Uri("https://storage.yandexcloud.net/bucket/ABCDEF.jpg"));
+        AvatarUriResolver.Resolve(options, "https://s3.yandexcloud.net/bucket/ABCDEF.jpg", Original)
+            .ShouldBe(new Uri("https://avatars.joinrpg.ru/ABCDEF.jpg"));
+    }
+
+    [Fact]
+    public void LegacyAbsoluteUriIsReturnedAsIsWithoutPublicBaseUrl()
+    {
+        var options = new S3StorageOptions { Endpoint = "https://s3.example", BucketName = "bucket" };
+
+        AvatarUriResolver.Resolve(options, "https://s3.yandexcloud.net/bucket/ABCDEF.jpg", Original)
+            .ShouldBe(new Uri("https://s3.yandexcloud.net/bucket/ABCDEF.jpg"));
     }
 
     [Theory]

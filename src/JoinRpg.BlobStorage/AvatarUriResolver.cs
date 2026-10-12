@@ -16,7 +16,14 @@ internal class AvatarUriResolver(IOptions<S3StorageOptions> options) : IAvatarUr
         // Старые записи (до перевода джобой) хранят полный адрес
         if (Uri.TryCreate(cachedUri, UriKind.Absolute, out var absolute))
         {
-            return absolute;
+            // TODO[#5532]: временная подмена домена — ключ из старого адреса отдаём с нового публичного адреса.
+            // Убрать, когда джоба переведёт все записи в ключи.
+            var legacyKey = absolute.Segments[^1];
+            if (string.IsNullOrWhiteSpace(options.PublicBaseUrl) || legacyKey == "/")
+            {
+                return absolute;
+            }
+            cachedUri = legacyKey;
         }
 
         if (GetPublicBase(options) is not string publicBase)
