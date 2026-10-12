@@ -249,14 +249,16 @@
 
 ### Фаза 7. Персонажи и заявки
 
-Один инструмент на странице «Восстановление» заблокированного проекта ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)): выгрузка мастера
+Одна страница «Восстановление» заблокированного проекта ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529)): выгрузка мастера
 (если есть) + уведомления → единый предпросмотр → применение. По каждому атрибуту побеждает
 более свежее значение ([подробнее](#слияние-выгрузки-и-уведомлений)).
 
 - [ ] Спросить у мастера выгрузки персонажей и заявок и любые свои копии (таблицы, документы).
-- [ ] 🟡 Загрузить выгрузки с датой (если есть) — сверка с базой и уведомлениями, предпросмотр.
-- [ ] 🟡 Применить: группы, персонажи с полями, заявки (игрок, статус, ответственный, взнос) — с
-      прежними id.
+- [ ] 🟢 Восстановление из уведомлений — страница `/{projectId}/claims/restore-from-notifications`
+      ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5506](https://github.com/joinrpg/joinrpg-net/issues/5506)): персонажи и заявки (создать / изменить; игрок, статус, ответственный,
+      взнос), заявки с прежними id.
+- [ ] 🟡 Загрузка выгрузки мастера (xlsx/csv) с датой на той же странице — слияние с уведомлениями:
+      группы и персонажи с прежними id, значения полей ([#5529](https://github.com/joinrpg/joinrpg-net/issues/5529)).
 - [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
       мастерские — мастер из своих материалов.
 
@@ -717,12 +719,15 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
 | issue [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526) | Публичный адрес аватарок — `avatars.joinrpg.ru` | 1 | заведён |
-| issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | заведён |
+| issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | закрыт: ветка «нет выгрузки»; выгрузка — [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) |
+| issue [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) | Загрузка выгрузки мастера на странице восстановления | 7 | заведён |
 | [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
 | [#5501](https://github.com/joinrpg/joinrpg-net/issues/5501) | `FinanceOperationIdentification` с вложенным `ClaimIdentification` (по ревью [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496)) | 7 | влит |
-| [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): разбор уведомлений в события и состояние заявки | 7 | на ревью |
-| [#5499](https://github.com/joinrpg/joinrpg-net/issues/5499) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): восстановление состояния заявки — «изменить» | 7 | на ревью |
-| [#5502](https://github.com/joinrpg/joinrpg-net/issues/5502) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): потерянная заявка с прежним id — «создать» | 7 | draft |
-| [#5503](https://github.com/joinrpg/joinrpg-net/issues/5503) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): план восстановления — одно действие на заявку | 7 | draft |
-| — | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): страница мастера | 7 | в работе |
+| [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): разбор уведомлений в события и состояние заявки | 7 | влит |
+| [#5499](https://github.com/joinrpg/joinrpg-net/issues/5499) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): восстановление состояния заявки — «изменить» | 7 | влит |
+| [#5502](https://github.com/joinrpg/joinrpg-net/issues/5502) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): потерянная заявка с прежним id — «создать» | 7 | влит |
+| [#5503](https://github.com/joinrpg/joinrpg-net/issues/5503) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): план восстановления — одно действие на заявку | 7 | влит |
+| [#5506](https://github.com/joinrpg/joinrpg-net/issues/5506) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): страница мастера «Восстановление заявок из уведомлений» | 7 | влит |
+| [#5512](https://github.com/joinrpg/joinrpg-net/issues/5512) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): вариант «Новый персонаж» в выборе персонажа | 7 | влит |
+| [#5511](https://github.com/joinrpg/joinrpg-net/issues/5511) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): тест — восстановление поднимает дату обновления проекта | 7 | влит |
 | issue [#5489](https://github.com/joinrpg/joinrpg-net/issues/5489) | ~~Пользователи, зарегистрированные в последние сутки до аварии~~ | 4 | закрыт: не делаем |
