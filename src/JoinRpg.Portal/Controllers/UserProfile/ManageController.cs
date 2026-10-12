@@ -25,7 +25,8 @@ public class ManageController(
     ICurrentUserAccessor currentUserAccessor,
     ExternalLoginProfileExtractor externalLoginProfileExtractor,
     ILogger<ManageController> logger,
-    IAvatarService avatarService
+    IAvatarService avatarService,
+    IAvatarUriResolver avatarUriResolver
         ) : Common.JoinMvcControllerBase
 {
     public IUserRepository UserRepository { get; } = userRepository;
@@ -229,7 +230,7 @@ public class ManageController(
             SocialLoginStatus = userInfo.GetSocialLogins().ToList(),
             Email = user.Email,
             HasPassword = user.PasswordHash != null,
-            Avatars = new UserAvatarListViewModel(user),
+            Avatars = new UserAvatarListViewModel(user, avatarUriResolver),
             Message = message,
             ConflictingAccountUrl = conflictUserId is null ? null : Url.Action("Details", "User", new { userId = conflictUserId }),
             TelegramBotName = options.Value.BotName,
