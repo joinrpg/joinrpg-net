@@ -1,9 +1,23 @@
 <!-- markdownlint-disable MD033 -->
 # Как добавить новую среду
 
-1. [Скриптом](../scripts/create-new-environment.ps1) создать k8s namespace и сервисную учетку с правами на namespace
+1. Создать k8s namespace и сервисную учетку с правами на namespace
 
-    `./scripts/create-new-environment.ps1 joinrpg-new-env`
+    ```bash
+    NS=joinrpg-new-env
+    kubectl create namespace $NS
+    kubectl -n $NS create serviceaccount github-actions-$NS
+    kubectl -n $NS create rolebinding github-actions-$NS --clusterrole=admin --serviceaccount=$NS:github-actions-$NS
+    kubectl -n $NS apply -f - <<EOF
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: github-actions-$NS-secret
+      annotations:
+        kubernetes.io/service-account.name: github-actions-$NS
+    type: kubernetes.io/service-account-token
+    EOF
+    ```
 
     ( :exclamation: Название среды везде должно быть в lowercase. Неймспейс в кластере — `joinrpg-<среда>`, так его вычисляет deploy workflow)
 
