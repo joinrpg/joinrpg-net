@@ -21,6 +21,8 @@
 
     ( :exclamation: Название среды везде должно быть в lowercase. Неймспейс в кластере — `joinrpg-<среда>`, так его вычисляет deploy workflow)
 
+    Образы тянутся из Selectel Container Registry через секрет `craas-auth`, его в неймспейсы кладёт интеграция кластера с Container Registry. Проверить, что секрет появился в новом неймспейсе: `kubectl -n $NS get secret craas-auth`.
+
 2. Создать kustomize overlay для среды
 
     `cp -r manifests/dev manifests/new-env`
