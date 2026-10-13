@@ -128,7 +128,7 @@
                         {
                             <li asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
                                 <a asp-page="/GamePages/ClaimRestore" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.Permissions.Contains(Permission.CanManageClaims)">
-                                    Восстановление заявок из уведомлений
+                                    Восстановление проекта
                                 </a>
                             </li>
                         }

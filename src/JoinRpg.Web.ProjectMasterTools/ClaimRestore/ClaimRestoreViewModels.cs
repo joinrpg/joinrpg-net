@@ -95,7 +95,17 @@ public record ClaimRestoreRowViewModel(
     int? ManualFee,
     DateTimeOffset FirstActivity,
     DateTimeOffset LastActivity,
-    IReadOnlyList<ClaimRestoreWarningView> Warnings);
+    IReadOnlyList<ClaimRestoreWarningView> Warnings)
+{
+    /// <summary>Применять ли строку, если мастер ничего не выбрал.</summary>
+    public bool ApplyByDefault { get; init; } = true;
+
+    /// <summary>Источники спорных атрибутов — для показа расхождений и выбора другого значения.</summary>
+    public ClaimRestoreAttributesView? Attributes { get; init; }
+
+    /// <summary>Меняемые атрибуты, которые по умолчанию не применяются (их, похоже, правили руками).</summary>
+    public IReadOnlyList<ClaimRestoreAttributeKindView> AttributesNotByDefault { get; init; } = [];
+}
 
 /// <summary>План восстановления заявок проекта. Строки — в порядке применения.</summary>
 /// <param name="UnavailableReason">Не null — восстановление недоступно, строк нет.</param>
@@ -105,7 +115,28 @@ public record ClaimRestorePlanViewModel(
     DateTimeOffset BackupTakenAt,
     DateTimeOffset LostAt,
     IReadOnlyList<ClaimRestoreRowViewModel> Rows,
-    IReadOnlyList<ClaimRestoreMasterOption> Masters);
+    IReadOnlyList<ClaimRestoreMasterOption> Masters)
+{
+    /// <summary>
+    /// Можно ли применять группы и персонажей (право «редактировать роли»). Без него эти разделы видны,
+    /// но не применяются.
+    /// </summary>
+    public bool CanEditRoles { get; init; }
+
+    /// <summary>Сопоставление колонок каждой выгрузки — от старой к новой.</summary>
+    public IReadOnlyList<MasterExportPlanInfoView> Exports { get; init; } = [];
+
+    public IReadOnlyList<GroupRestoreRowViewModel> Groups { get; init; } = [];
+
+    public IReadOnlyList<CharacterRestoreRowViewModel> CharacterCreations { get; init; } = [];
+
+    /// <summary>Изменения существующих персонажей — только те, где есть что менять.</summary>
+    public IReadOnlyList<CharacterRestoreRowViewModel> CharacterChanges { get; init; } = [];
+
+    public IReadOnlyList<ClaimFieldsRestoreRowViewModel> ClaimFields { get; init; } = [];
+
+    public IReadOnlyList<ProjectRestoreNoteView> Notes { get; init; } = [];
+}
 
 /// <summary>Применить одну строку плана — с правками мастера.</summary>
 /// <param name="Character">Создать: существующий персонаж; null — новый с именем <paramref name="NewCharacterName"/>. Изменить: куда переместить.</param>

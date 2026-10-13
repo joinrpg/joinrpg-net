@@ -4,7 +4,7 @@
 @model JoinRpg.Portal.Pages.GamePages.ClaimRestoreModel
 
 @{
-    ViewData["Title"] = "Восстановление заявок из уведомлений";
+    ViewData["Title"] = "Восстановление проекта";
 }
 
 @(await Html.RenderComponentAsync<ClaimRestorePanel>(RenderMode.WebAssembly, new { Model.ProjectId }))

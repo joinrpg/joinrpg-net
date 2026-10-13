@@ -1,3 +1,5 @@
+using JoinRpg.Web.Claims;
+
 namespace JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 
 /// <summary>
@@ -9,18 +11,46 @@ public class ClaimRestoreRowEditor
     public ClaimRestoreRowEditor(ClaimRestoreRowViewModel row)
     {
         Row = row;
-        Character = row.Character?.CharacterId;
+        // Атрибуты, которые, похоже, правили руками после восстановления, по умолчанию не меняем.
+        bool ByDefault(ClaimRestoreAttributeKindView kind) => !row.AttributesNotByDefault.Contains(kind);
+        Character = ByDefault(ClaimRestoreAttributeKindView.Character) ? row.Character?.CharacterId : null;
         NewCharacterName = row.CharacterName?.Trim() ?? "";
         Player = row.Player?.UserId;
         ManualPlayer = row.Action == ClaimRestoreActionView.Create && Player is null && row.PlayerCandidates.Count == 0;
-        ResponsibleMaster = row.ResponsibleMaster;
-        // Строки с пометками мастер проверяет сам — по умолчанию не отмечены.
-        Selected = CanApply && BlockingProblem is null && row.Warnings.Count == 0;
+        ResponsibleMaster = ByDefault(ClaimRestoreAttributeKindView.ResponsibleMaster) ? row.ResponsibleMaster : null;
+        Status = ByDefault(ClaimRestoreAttributeKindView.Status) ? row.Status : null;
+        ApplyFee = row.ManualFee is not null && ByDefault(ClaimRestoreAttributeKindView.ManualFee);
+        // Строки с пометками мастер проверяет сам — по умолчанию не отмечены. «Правили руками» решается
+        // по атрибутам выше, остальное в строке применяется.
+        Selected = CanApply && BlockingProblem is null && row.ApplyByDefault
+            && row.Warnings.All(w => w == ClaimRestoreWarningView.ChangedAfterRestore);
     }
 
     public ClaimRestoreRowViewModel Row { get; }
 
     public bool Selected { get; set; }
+
+    /// <summary>Статус после применения; для «изменить» null — не менять.</summary>
+    public ClaimStatusView? Status { get; set; }
+
+    /// <summary>Ставить ли ручной взнос из плана.</summary>
+    public bool ApplyFee { get; set; }
+
+    /// <summary>
+    /// Статус после применения будет тем, на который рассчитан план полей заявки: плановое изменение
+    /// статуса не снято и не заменено другим.
+    /// </summary>
+    public bool AppliesPlannedStatus => Row.Status is null || Status == Row.Status;
+
+    /// <summary>Статусы из разных источников — можно выбрать не самый свежий.</summary>
+    public IReadOnlyList<RestoreSourcedValueView<ClaimStatusView>> StatusOptions
+        => Row.Attributes?.Status is { } status ? [status.Chosen, .. status.Alternatives] : [];
+
+    /// <summary>С какого момента статус такой: у выбранного варианта — его время.</summary>
+    private DateTimeOffset? StatusChangedAt
+        => Status is null ? null
+            : Status == Row.Status ? Row.StatusChangedAt
+            : StatusOptions.FirstOrDefault(o => o.Value == Status)?.At ?? Row.StatusChangedAt;
 
     /// <summary>
     /// Создать: существующий персонаж; null — новый с именем <see cref="NewCharacterName"/> (так же
@@ -61,6 +91,10 @@ public class ClaimRestoreRowEditor
     {
         get
         {
+            if (NothingToChange)
+            {
+                return "Не выбрано ни одного изменения";
+            }
             if (Row.Action != ClaimRestoreActionView.Create)
             {
                 return null;
@@ -107,13 +141,14 @@ public class ClaimRestoreRowEditor
                 NewCharacter && character is null ? name : null,
                 ManualPlayer ? null : Player,
                 ManualPlayer ? PlayerLink : null,
-                Row.Status,
-                Row.StatusChangedAt,
+                Status,
+                StatusChangedAt,
                 ResponsibleMaster,
-                Row.ManualFee,
+                ApplyFee ? Row.ManualFee : null,
                 Row.FirstActivity);
         }
 
+        var status = Status == Row.CurrentStatus ? null : Status;
         return new ClaimRestoreApplyRequest(
             Row.ClaimId,
             Row.Action,
@@ -121,12 +156,18 @@ public class ClaimRestoreRowEditor
             NewCharacterName: null,
             Player: null,
             PlayerLink: null,
-            Row.Status,
-            Row.StatusChangedAt,
+            status,
+            status is null ? null : StatusChangedAt,
             ResponsibleMaster,
-            Row.ManualFee,
+            ApplyFee ? Row.ManualFee : null,
             Row.FirstActivity);
     }
+
+    /// <summary>В строке «изменить» не осталось ни одного изменения.</summary>
+    private bool NothingToChange
+        => Row.Action == ClaimRestoreActionView.Change
+            && Character is null && ResponsibleMaster is null && !ApplyFee
+            && (Status is null || Status == Row.CurrentStatus);
 
     /// <summary>
     /// Переносит из строки прежнего плана результат применения и — если строка не применилась
@@ -155,6 +196,8 @@ public class ClaimRestoreRowEditor
         ManualPlayer = previous.ManualPlayer;
         PlayerLinks = [.. previous.PlayerLinks];
         ResponsibleMaster = previous.ResponsibleMaster;
+        Status = previous.Status;
+        ApplyFee = previous.ApplyFee && Row.ManualFee is not null;
     }
 
     /// <summary>Имя нового персонажа, которого создаст эта строка, — чтобы запомнить его после применения.</summary>
