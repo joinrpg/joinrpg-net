@@ -1,7 +1,7 @@
 resources:
   - ../base
 
-namespace: dev
+namespace: joinrpg-dev
 
 commonLabels:
   managed-by-kustomize-dev: "true" #Careful. Contains name of the environment, used for kubectl apply --prune

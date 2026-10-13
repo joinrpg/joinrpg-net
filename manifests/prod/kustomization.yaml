@@ -2,7 +2,7 @@ resources:
   - ../base
   - service-domain-ingress.yaml # DRP #5459: служебные домены на время восстановления
 
-namespace: prod
+namespace: joinrpg-prod
 
 commonLabels:
   managed-by-kustomize-prod: "true" #Careful. Contains name of the environment, used for kubectl apply --prune

@@ -34,6 +34,7 @@ jobs:
     name: deploy
     env:
       ENVIRONMENT: ${{ inputs.environment }}
+      NAMESPACE: joinrpg-${{ inputs.environment }}
     runs-on: ubuntu-24.04
     permissions: read-all
     steps:
@@ -76,11 +77,13 @@ jobs:
         with:
           version: v1.31.0
 
-      - name: Set kubeconfig
+      - name: Set kube context
         uses: azure/k8s-set-context@v5
         with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG }}
+          method: service-account
+          k8s-url: ${{ vars.SELECTEL_K8S_SERVER }}
+          # YAML объекта Secret сервис-аккаунта: kubectl -n kube-system get secret <sa>-token -o yaml
+          k8s-secret: ${{ secrets.SELECTEL_DEPLOY_SA_SECRET }}
 
       - name: Turn github secrets to .env file
         uses: shine1594/secrets-to-env-action@v1.7.0
@@ -135,7 +138,7 @@ jobs:
           $ErrorActionPreference = 'Stop'
 
           #Add new generated secret, replace old migration job
-          &"kubectl" "--%" "replace --force --save-config -f ./kustomize_output/v1_secret_joinrpg-main-* -f ./kustomize_output/batch_v1_job_joinrpg-dal-migrate.yaml -n $env:ENVIRONMENT"
+          &"kubectl" "--%" "replace --force --save-config -f ./kustomize_output/v1_secret_joinrpg-main-* -f ./kustomize_output/batch_v1_job_joinrpg-dal-migrate.yaml -n $env:NAMESPACE"
           if ($LastExitCode -ne 0) {exit $LastExitCode}
 
           Write-Output "Waiting for job/joinrpg-dal-migrate to be completed or failed..."
@@ -143,7 +146,7 @@ jobs:
           #Keep waiting while job is not completed or failed
           while ($true){
 
-            $status = &"kubectl" "--%" "get job joinrpg-dal-migrate -n $env:ENVIRONMENT -o json" | ConvertFrom-Json
+            $status = &"kubectl" "--%" "get job joinrpg-dal-migrate -n $env:NAMESPACE -o json" | ConvertFrom-Json
             if ($LastExitCode -ne 0) {exit $LastExitCode}
             $conditions = $status.status.conditions
             if ($conditions) {
@@ -154,7 +157,7 @@ jobs:
                 }
                 elseif ($condition.type -eq "Failed" -and $condition.status -eq "True") {
                    Write-Output "Migration has failed. Migration's job pod info:"
-                   &"kubectl" "--%"  "get pods -n $env:ENVIRONMENT --selector=job-name=joinrpg-dal-migrate -o=yaml"
+                   &"kubectl" "--%"  "get pods -n $env:NAMESPACE --selector=job-name=joinrpg-dal-migrate -o=yaml"
                    exit 1
                 }
               }
@@ -162,10 +165,10 @@ jobs:
 
 
             #Check last event for error. Must throw an error if, for instance, namespace CPU quota was exceeded
-            $LastEventForJob = &"kubectl" "--%" "get events -n $env:ENVIRONMENT --sort-by=.metadata.creationTimestamp --field-selector involvedObject.kind=Job,involvedObject.name=joinrpg-dal-migrate -o jsonpath='{.items[-1:].message}'"
+            $LastEventForJob = &"kubectl" "--%" "get events -n $env:NAMESPACE --sort-by=.metadata.creationTimestamp --field-selector involvedObject.kind=Job,involvedObject.name=joinrpg-dal-migrate -o jsonpath='{.items[-1:].message}'"
             if ($LastEventForJob -imatch "^'Error .*") { throw $LastEventForJob }
 
-            &"kubectl" "--%" "logs -n $env:ENVIRONMENT --follow job/joinrpg-dal-migrate"
+            &"kubectl" "--%" "logs -n $env:NAMESPACE --follow job/joinrpg-dal-migrate"
             Start-Sleep 3
           }
         shell: pwsh
@@ -195,7 +198,7 @@ jobs:
           --prune-allowlist=apps/v1/StatefulSet
           "
 
-          kubectl apply -f ./kustomize_output --prune -l managed-by-kustomize-${ENVIRONMENT}=true --namespace ${ENVIRONMENT} $KUBECTL_PRUNE_WHITELIST
-          kubectl rollout status deployment/${APP_NAME} --namespace ${ENVIRONMENT}
-          kubectl rollout status deployment/${IDPORTAL_NAME} --namespace ${ENVIRONMENT}
-          kubectl rollout status deployment/${COMPONENTBOOK_NAME} --namespace ${ENVIRONMENT}
+          kubectl apply -f ./kustomize_output --prune -l managed-by-kustomize-${ENVIRONMENT}=true --namespace ${NAMESPACE} $KUBECTL_PRUNE_WHITELIST
+          kubectl rollout status deployment/${APP_NAME} --namespace ${NAMESPACE}
+          kubectl rollout status deployment/${IDPORTAL_NAME} --namespace ${NAMESPACE}
+          kubectl rollout status deployment/${COMPONENTBOOK_NAME} --namespace ${NAMESPACE}
