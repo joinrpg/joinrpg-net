@@ -258,6 +258,8 @@ public class MasterExportParserTest
 
         result.ProjectId.ShouldBe(12);
         result.Warnings.ShouldContain(MasterExportWarning.ProjectIdMismatch);
+        // Помечена только строка со ссылкой в чужой проект.
+        result.Rows.Select(r => r.Warnings.Contains(MasterExportWarning.ProjectIdMismatch)).ShouldBe([false, false, true]);
     }
 
     [Fact]

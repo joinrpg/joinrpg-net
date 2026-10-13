@@ -50,7 +50,10 @@ public record MasterExportRow(
 /// <summary>Что в выгрузке разобралось не полностью. Разбор при этом продолжается.</summary>
 public enum MasterExportWarning
 {
-    /// <summary>Ссылки ведут в разные проекты; <see cref="ParsedMasterExport.ProjectId"/> — самый частый из них.</summary>
+    /// <summary>
+    /// Ссылки ведут в разные проекты; <see cref="ParsedMasterExport.ProjectId"/> — самый частый из них.
+    /// У строки — ссылка на неё саму или на её группы ведёт не в <see cref="ParsedMasterExport.ProjectId"/>.
+    /// </summary>
     ProjectIdMismatch,
 
     /// <summary>Число имён в «Группы» не совпало с числом ссылок в «Входит в группы» (например, « | » в имени группы).</summary>

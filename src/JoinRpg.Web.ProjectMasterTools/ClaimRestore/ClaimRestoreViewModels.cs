@@ -48,6 +48,12 @@ public enum ClaimRestoreWarningView
 
     [Display(Name = "Подачи после бэкапа не видно — проверьте, та ли это заявка")]
     LostClaimNotSubmittedAfterBackup,
+
+    [Display(Name = "Изменено после восстановления — проверьте, не ручная ли это правка")]
+    ChangedAfterRestore,
+
+    [Display(Name = "Итоговый взнос в выгрузке меньше ручного взноса")]
+    TotalFeeMismatch,
 }
 
 /// <summary>Почему восстановление недоступно.</summary>
