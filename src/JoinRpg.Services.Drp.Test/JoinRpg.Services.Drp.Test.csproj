@@ -2,6 +2,12 @@
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Services.Drp\JoinRpg.Services.Drp.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />
+    <!-- Круговые тесты разбора выгрузок мастера: настоящие экспортёры и бэкенды выгрузки. -->
+    <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
+    <ProjectReference Include="..\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj" />
+    <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
+    <!-- Сверка словаря статусов разбора с Display у ClaimStatusView. -->
+    <ProjectReference Include="..\JoinRpg.Web.Claims\JoinRpg.Web.Claims.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
