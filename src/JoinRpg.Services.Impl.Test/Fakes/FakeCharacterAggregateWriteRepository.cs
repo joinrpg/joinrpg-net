@@ -53,6 +53,39 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         return Task.FromResult(true);
     }
 
+    /// <summary>
+    /// Счётчик IDENTITY персонажей в моке: id не ниже него — «не потерянный» (как <c>IDENT_CURRENT</c> в бою).
+    /// </summary>
+    internal const int CharacterIdentityCurrent = 100_000;
+
+    /// <summary>
+    /// Оболочка персонажа так же, как в бою: скрытый активный персонаж игрока в корневой группе.
+    /// Мок — один проект, поэтому «занят другим проектом» не бывает.
+    /// </summary>
+    public Task<RestoredShellInsertResult> InsertRestoredCharacterShell(RestoredCharacterShell shell)
+    {
+        if (mock.Project.Characters.Any(c => c.CharacterId == shell.CharacterId.CharacterId))
+        {
+            return Task.FromResult(RestoredShellInsertResult.AlreadyExists);
+        }
+        if (shell.CharacterId.CharacterId >= CharacterIdentityCurrent)
+        {
+            return Task.FromResult(RestoredShellInsertResult.NotLostId);
+        }
+
+        var character = mock.CreateCharacter(shell.CharacterName);
+        character.CharacterId = shell.CharacterId.CharacterId;
+        character.CharacterType = CharacterType.Player;
+        character.IsPublic = false;
+        character.HidePlayerForCharacter = true;
+        character.JsonData = "{}";
+        character.Description = new MarkdownDbValue(shell.Description);
+        character.ParentCharacterGroupIds = [shell.RootGroupId.CharacterGroupId];
+        character.CreatedAt = character.UpdatedAt = shell.CreatedAt;
+        character.CreatedById = character.UpdatedById = shell.CreatedBy.Value;
+        return Task.FromResult(RestoredShellInsertResult.Inserted);
+    }
+
     public Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId)
     {
         var claim = FindClaim(mock, claimId);
