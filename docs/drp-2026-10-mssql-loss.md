@@ -96,8 +96,8 @@
       в GitHub-секрет `SELECTEL_DEPLOY_SA_SECRET` (environment `prod`, `dev`), адрес API — в
       переменную `SELECTEL_K8S_SERVER`; интеграция кластера с Container Registry (секрет
       `craas-auth` в namespace, создавать namespace до её включения).
-- [ ] Хранение секретов и доставка их в кубер — решение инженеров; от него зависит, откуда
-      деплой берёт строки подключения (сейчас — GitHub-секреты `KUBESECRET_*`).
+- [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
+      секрет `joinrpg-main`.
 - [ ] Отправка почты: сейчас Yandex Postbox — решить, оставляем ли его из Selectel или меняем
       (через почту идут «забыл пароль» и подтверждение email — без неё фазы 4–5 не проверить).
 
@@ -329,7 +329,7 @@ IdPortal и ingress. Миграция и старт подов идут одни
 Всё разворачивается заново в Selectel по [плану инженеров](https://docs.google.com/document/d/1b8lPIU475HqAW12Q9crq0tnxvZNhBplq7Ek7eXh3N2U/edit?tab=t.0): k8s (зона ru-6, 3 узла
 4 CPU / 8 ГБ, namespace вида `joinrpg-prod`), балансировщик, Let's Encrypt, статическая
 заглушка, MSSQL, Managed PostgreSQL, S3, DNS (зоны переносятся с Яндекса), облачные логи,
-хранение секретов. Что это значит для репозитория:
+хранение секретов (решено: остаются GitHub-секреты `KUBESECRET_*`). Что это значит для репозитория:
 
 - **Деплой** ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)). Kubeconfig Selectel протухает с ротацией сертификатов раз в 30 дней,
   поэтому CI ходит токеном сервис-аккаунта. Namespace — `joinrpg-<среда>`; имя GitHub
