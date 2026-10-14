@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleEmailV2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
   </ItemGroup>
 
   <ItemGroup>
