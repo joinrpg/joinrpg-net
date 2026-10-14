@@ -5,6 +5,10 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" />
     <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
