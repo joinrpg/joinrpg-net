@@ -32,7 +32,7 @@
 | База уведомлений (Postgres) | тексты уведомлений, получатель и инициатор (id пользователя), ссылка на сущность, время, email / Telegram получателя | до 2026-10-06 ~22:45 UTC (последний бэкап) | последних ~суток до аварии нет; значений полей нет — см. [каталог](#каталог-уведомлений) |
 | Логи k8s (Cloud Logging) | все POST/DELETE портала и IdPortal: путь с id, пользователь, проект, код ответа | 2026-09-10 — 2026-10-07 | тел запросов нет; сохранены локально, в облаке ретенция 30 дней |
 | Логи почты (Cloud Logging) | адресат, тема письма, статус доставки | 2026-10-03 — 2026-10-07 | сохранены локально |
-| Выгрузки у мастеров (xlsx/csv) | персонажи, заявки, финансы: id в ссылках, значения полей, контакты игроков | на момент выгрузки | значения полей — отображаемый текст; Excel режет ячейку на 32767 символах, CSV — переводы строк |
+| Выгрузки у мастеров (xlsx/csv) | персонажи, заявки, финансы: id в ссылках, значения полей, контакты игроков | на момент выгрузки | значения полей — отображаемый текст; Excel режет ячейку на 32767 символах; инструмент берёт только xlsx — CSV пересохранить в Excel |
 | Платёжный провайдер | онлайн-оплаты | весь период | — |
 | Почта и Telegram участников | копии уведомлений | весь период | только по запросу у людей |
 
@@ -80,7 +80,7 @@
 
 **Нужно от инфраструктуры**
 
-- [ ] Кластер k8s, namespace `joinrpg-prod`; ingress-nginx (ingress class `nginx`, как в старом)
+- [ ] Кластер k8s, namespace `joinrpg-prod` и `joinrpg-dev`; ingress-nginx (ingress class `nginx`, как в старом)
       или его замена — тогда править манифесты.
 - [ ] Автовыдача сертификатов Let's Encrypt для боевых и служебных доменов.
 - [ ] MSSQL Express (ВМ или в кубере — решают инженеры), **регулярные бэкапы** с первого дня
@@ -92,6 +92,10 @@
       аватарок отдаётся по `https://avatars.joinrpg.ru/<ключ>` (свой домен + TLS)
       ([подробнее](#аватарки)).
 - [ ] Облачные логи: stdout подов, разделение по namespace.
+- [ ] Для деплоя из CI ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)): сервис-аккаунт с правами на оба namespace, его Secret —
+      в GitHub-секрет `SELECTEL_DEPLOY_SA_SECRET` (environment `prod`, `dev`), адрес API — в
+      переменную `SELECTEL_K8S_SERVER`; интеграция кластера с Container Registry (секрет
+      `craas-auth` в namespace, создавать namespace до её включения).
 - [ ] Хранение секретов и доставка их в кубер — решение инженеров; от него зависит, откуда
       деплой берёт строки подключения (сейчас — GitHub-секреты `KUBESECRET_*`).
 - [ ] Отправка почты: сейчас Yandex Postbox — решить, оставляем ли его из Selectel или меняем
@@ -99,12 +103,15 @@
 
 **Правки в репозитории**
 
-- [ ] ⚪ Деплой (`deploy_reusable_workflow.yml`, `manifests/prod`): namespace `joinrpg-prod`
-      вместо `prod` (сейчас имя окружения = папка манифестов = namespace = метка прунинга);
-      `KUBECONFIG` нового кластера; реестр образов (сейчас `cr.yandex`).
+- [ ] 🟡 Деплой в Selectel ([#5540](https://github.com/joinrpg/joinrpg-net/issues/5540), PR [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) — на ревью): токен сервис-аккаунта вместо
+      `KUBECONFIG`, namespace `joinrpg-prod`/`joinrpg-dev`, образы из `cr.selcloud.ru`
+      (`imagePullSecrets: craas-auth`). Автодеплой dev выключен до первого зелёного деплоя —
+      вернуть [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) (фаза 10).
+- [ ] ⚪ Лимит тела запроса на ingress портала (`proxy-body-size`, порядка 200m): у nginx по
+      умолчанию 1 МБ — загрузка выгрузок мастера в фазе 7 получит 413 ([#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
 - [ ] Строки подключения: Postgres (`DataProtection`, `DailyJob`, `Notifications`, IdPortal) —
       на новый Managed PostgreSQL; S3 — на новый.
-- [ ] 🟡 Аватарки ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)): сначала [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) — адрес из настройки
+- [ ] 🟡 Аватарки ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)): сначала [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) (🟢 влит) — адрес из настройки
       `S3BlobStorage:PublicBaseUrl`, терпимое чтение и подмена домена у старых полных адресов; потом,
       **только после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод**, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — в базе ключ объекта вместо адреса,
       старые адреса переводит джоба `AvatarCachedUriToKeyJob`.
@@ -258,8 +265,9 @@
 - [ ] 🟢 Восстановление из уведомлений — страница `/{projectId}/claims/restore-from-notifications`
       ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5506](https://github.com/joinrpg/joinrpg-net/issues/5506)): персонажи и заявки (создать / изменить; игрок, статус, ответственный,
       взнос), заявки с прежними id.
-- [ ] 🟡 Загрузка выгрузки мастера (xlsx/csv) с датой на той же странице — слияние с уведомлениями:
-      группы и персонажи с прежними id, значения полей ([#5529](https://github.com/joinrpg/joinrpg-net/issues/5529)).
+- [ ] 🟢 Загрузка выгрузок мастера (только xlsx, до 30 МБ) с датой на той же странице — слияние с
+      уведомлениями: группы и персонажи с прежними id, значения полей ([#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), [#5534](https://github.com/joinrpg/joinrpg-net/issues/5534)–[#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
+      Ответственного нового персонажа назначить руками после применения.
 - [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
       мастерские — мастер из своих материалов.
 
@@ -287,6 +295,7 @@
       проекты пропускает — включать, когда готова сверка с платёжным провайдером, независимо от
       блокировок.
 - [ ] Снять баннер.
+- [ ] Вернуть автодеплой dev ([#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)).
 - [ ] Старый бакет аватарок в Yandex Cloud — выключить (можно сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с
       `PublicBaseUrl`). Временную джобу `AvatarCachedUriToKeyJob` ([#5532](https://github.com/joinrpg/joinrpg-net/issues/5532)) — убрать после отработки.
 - [ ] Убрать ingress служебных доменов из `manifests/prod` (деплой удалит их прунингом), TLS-секреты
@@ -322,11 +331,13 @@ IdPortal и ingress. Миграция и старт подов идут одни
 заглушка, MSSQL, Managed PostgreSQL, S3, DNS (зоны переносятся с Яндекса), облачные логи,
 хранение секретов. Что это значит для репозитория:
 
-- **Namespace.** Сейчас деплой использует имя окружения (`prod`) сразу как папку манифестов,
-  namespace и метку прунинга `managed-by-kustomize-prod`. Под `joinrpg-prod` это надо развести.
-- **Реестр образов.** Деплой логинится в Yandex Container Registry (`cr.yandex`,
-  `YANDEX_CR_SA_KEY_JSON`). Если реестр тоже переезжает — менять сборку и деплой; если нет —
-  кластеру нужен `imagePullSecret`.
+- **Деплой** ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)). Kubeconfig Selectel протухает с ротацией сертификатов раз в 30 дней,
+  поэтому CI ходит токеном сервис-аккаунта. Namespace — `joinrpg-<среда>`; имя GitHub
+  environment, папка манифестов и метка прунинга остались `prod`/`dev`. Только ручной деплой,
+  автодеплой dev вернуть [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542).
+- **Реестр образов** — Selectel Container Registry (`cr.selcloud.ru`), пуш уже идёт; поды тянут
+  образы через секрет `craas-auth` от интеграции кластера с реестром.
+- **Лимит тела** на ingress портала: выгрузки мастера (до 30 МБ) не пройдут в дефолтный 1 МБ nginx.
 - **Логи.** `CustomJsonFormatter` пишет severity в поле `level` в расчёте на Yandex Cloud
   Logging; под новые облачные логи — поправить.
 - **Почта.** Yandex Postbox; без отправки писем не проверить «забыл пароль».
@@ -726,10 +737,19 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
 | issue [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526) | Публичный адрес аватарок — `avatars.joinrpg.ru` | 1 | заведён |
-| [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) | Аватарки: адрес из `PublicBaseUrl`, терпимое чтение (PR 1 [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526)) | 1 | на ревью |
-| issue [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) | Аватарки: ключ вместо адреса, джоба — **после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530)** | 1 | заведён, ждёт [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) |
+| [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) | Аватарки: адрес из `PublicBaseUrl`, терпимое чтение (PR 1 [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526)) | 1 | влит |
+| issue [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) | Аватарки: ключ вместо адреса, джоба — **после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530)** | 1 | ждёт выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод |
 | issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | закрыт: ветка «нет выгрузки»; выгрузка — [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) |
-| issue [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) | Загрузка выгрузки мастера на странице восстановления | 7 | заведён |
+| issue [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) | Загрузка выгрузки мастера на странице восстановления | 7 | закрыт |
+| [#5536](https://github.com/joinrpg/joinrpg-net/issues/5536) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 1: разбор выгрузок xlsx | 7 | влит |
+| [#5534](https://github.com/joinrpg/joinrpg-net/issues/5534) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 2: сопоставление колонок с полями проекта | 7 | влит |
+| [#5535](https://github.com/joinrpg/joinrpg-net/issues/5535) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 3: режим восстановления полей, применение к персонажу и заявке | 7 | влит |
+| [#5537](https://github.com/joinrpg/joinrpg-net/issues/5537) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 4: группы и персонажи с прежними id | 7 | влит |
+| [#5538](https://github.com/joinrpg/joinrpg-net/issues/5538) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 5: планировщик слияния выгрузок с уведомлениями | 7 | влит |
+| [#5539](https://github.com/joinrpg/joinrpg-net/issues/5539) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 6: страница «Восстановление проекта» с загрузкой выгрузок | 7 | влит |
+| issue [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540) | Деплой в Selectel: токен сервис-аккаунта вместо `KUBECONFIG` | 1 | заведён |
+| [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) | Деплой через сервис-аккаунт Selectel, namespace `joinrpg-prod`/`joinrpg-dev` (Closes [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540)) | 1 | на ревью |
+| issue [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) | Вернуть автодеплой после переезда | 10 | заведён |
 | [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
 | [#5501](https://github.com/joinrpg/joinrpg-net/issues/5501) | `FinanceOperationIdentification` с вложенным `ClaimIdentification` (по ревью [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496)) | 7 | влит |
 | [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): разбор уведомлений в события и состояние заявки | 7 | влит |
