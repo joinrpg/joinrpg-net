@@ -2,6 +2,7 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.Services.Drp;
 using JoinRpg.Services.Drp.ClaimNotifications;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
@@ -14,7 +15,11 @@ namespace JoinRpg.WebPortal.Managers.Drp;
 /// </summary>
 internal static class ClaimRestorePlanBuilder
 {
-    /// <summary>Вход планировщика по событиям из уведомлений и всем персонажам проекта (включая удалённых).</summary>
+    /// <summary>
+    /// Вход планировщика по событиям из уведомлений и всем персонажам проекта (включая удалённых).
+    /// Слои полей, обычные группы и даты изменения нужны только плану по выгрузкам (#5529), но берутся
+    /// из тех же агрегатов — без лишних запросов.
+    /// </summary>
     public static ClaimRestoreSource BuildSource(
         ProjectInfo projectInfo,
         IReadOnlyCollection<ClaimNotificationEvent> events,
@@ -27,7 +32,12 @@ internal static class ClaimRestorePlanBuilder
                 c.CharacterName,
                 c.IsActive,
                 IsSlot: c.CharacterType == CharacterType.Slot,
-                DefaultResponsibleMaster: c.ResponsibleMasterId))
+                DefaultResponsibleMaster: c.ResponsibleMasterId)
+            {
+                Groups = [.. c.DirectGroupIds.Where(g => projectInfo.GroupTree.GetGroupByIdOrDefault(g)?.GroupType == CharacterGroupType.Regular)],
+                FieldLayer = CharacterLayer(projectInfo, c.CharacterFields),
+                UpdatedAt = AsUtc(c.UpdatedAt),
+            })
             .ToList();
 
         var claims = characters
@@ -37,7 +47,12 @@ internal static class ClaimRestorePlanBuilder
                 claim.Player.UserId,
                 claim.Status,
                 claim.ResponsibleMasterId,
-                claim.Finance.FixedFee)))
+                claim.Finance.FixedFee)
+            {
+                // Слой заявки как есть (Claim.JsonData): поля заявки и предложения игрока.
+                FieldLayer = claim.Fields,
+                LastUpdated = AsUtc(claim.LastUpdateDateTime),
+            }))
             .ToList();
 
         var masters = projectInfo.Masters
@@ -53,6 +68,15 @@ internal static class ClaimRestorePlanBuilder
             backupTakenAt);
     }
 
+    /// <summary>Слой персонажа без полей заявки — как его ждёт <see cref="ExistingCharacterInfo.FieldLayer"/>.</summary>
+    private static FieldLayerContainer CharacterLayer(ProjectInfo projectInfo, FieldLayerContainer layer)
+        => new(projectInfo, layer.LayerData
+            .Where(f => f.Value.Field.BoundTo == FieldBoundTo.Character)
+            .ToDictionary(f => f.Key, f => f.Value));
+
+    /// <summary>Даты изменения в базе хранятся в UTC.</summary>
+    private static DateTimeOffset AsUtc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
+
     /// <summary>Пользователи, имена которых нужны для показа плана.</summary>
     public static IReadOnlyCollection<UserIdentification> UsersToShow(IEnumerable<ClaimRestorePlanRow> plan)
         => [.. plan
@@ -65,9 +89,14 @@ internal static class ClaimRestorePlanBuilder
         ClaimRestoreSource source,
         IReadOnlyList<ClaimRestorePlanRow> plan,
         IReadOnlyCollection<UserInfoHeader> users,
-        DrpOptions options)
+        DrpOptions options,
+        IReadOnlyDictionary<CharacterIdentification, string>? plannedCharacterNames = null)
     {
-        var characters = source.Characters.ToDictionary(c => c.CharacterId);
+        var characters = source.Characters.ToDictionary(c => c.CharacterId, c => c.Name);
+        foreach (var (id, name) in plannedCharacterNames ?? new Dictionary<CharacterIdentification, string>())
+        {
+            _ = characters.TryAdd(id, name);
+        }
         var claims = source.Claims.ToDictionary(c => c.ClaimId);
         var usersById = users.ToDictionary(u => u.UserId);
         var masters = MastersFor(projectInfo);
@@ -77,7 +106,7 @@ internal static class ClaimRestorePlanBuilder
         var masterIds = masters.Select(m => m.UserId).ToHashSet();
 
         ClaimRestoreCharacterOption? ToCharacter(CharacterIdentification? id)
-            => id is null ? null : new ClaimRestoreCharacterOption(id, characters.TryGetValue(id, out var c) ? c.Name : id.CharacterId.ToString());
+            => id is null ? null : new ClaimRestoreCharacterOption(id, characters.TryGetValue(id, out var name) ? name : id.CharacterId.ToString());
 
         UserLinkViewModel ToUser(UserIdentification id)
             => usersById.TryGetValue(id, out var user)
@@ -105,7 +134,12 @@ internal static class ClaimRestorePlanBuilder
                 row.ManualFee,
                 row.FirstActivity,
                 row.LastActivity,
-                Warnings: [.. row.Warnings.Select(ToWarningView)]);
+                Warnings: [.. row.Warnings.Select(ToWarningView)])
+            {
+                ApplyByDefault = row.ApplyByDefault,
+                Attributes = ToAttributesView(row.Attributes),
+                AttributesNotByDefault = [.. row.AttributesNotByDefault.Select(ToAttributeKindView)],
+            };
         }).ToList();
 
         return new ClaimRestorePlanViewModel(
@@ -136,7 +170,7 @@ internal static class ClaimRestorePlanBuilder
         _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
     };
 
-    private static ClaimRestoreWarningView ToWarningView(ClaimRestoreWarning warning) => warning switch
+    internal static ClaimRestoreWarningView ToWarningView(ClaimRestoreWarning warning) => warning switch
     {
         ClaimRestoreWarning.PlayerNotFound => ClaimRestoreWarningView.PlayerNotFound,
         ClaimRestoreWarning.PlayerAmbiguous => ClaimRestoreWarningView.PlayerAmbiguous,
@@ -152,4 +186,39 @@ internal static class ClaimRestorePlanBuilder
         ClaimRestoreWarning.TotalFeeMismatch => ClaimRestoreWarningView.TotalFeeMismatch,
         _ => throw new ArgumentOutOfRangeException(nameof(warning), warning, null),
     };
+
+    internal static ClaimRestoreAttributeKindView ToAttributeKindView(ClaimRestoreAttributeKind kind) => kind switch
+    {
+        ClaimRestoreAttributeKind.Status => ClaimRestoreAttributeKindView.Status,
+        ClaimRestoreAttributeKind.ResponsibleMaster => ClaimRestoreAttributeKindView.ResponsibleMaster,
+        ClaimRestoreAttributeKind.Character => ClaimRestoreAttributeKindView.Character,
+        ClaimRestoreAttributeKind.ManualFee => ClaimRestoreAttributeKindView.ManualFee,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+    };
+
+    internal static RestoreSourceKindView ToSourceView(RestoreSourceKind source) => source switch
+    {
+        RestoreSourceKind.Database => RestoreSourceKindView.Database,
+        RestoreSourceKind.Export => RestoreSourceKindView.Export,
+        RestoreSourceKind.Notification => RestoreSourceKindView.Notification,
+        _ => throw new ArgumentOutOfRangeException(nameof(source), source, null),
+    };
+
+    private static ClaimRestoreAttributesView? ToAttributesView(ClaimRestoreAttributes? attributes)
+        => attributes is null
+            ? null
+            : new ClaimRestoreAttributesView(
+                ToAttributeView(attributes.Status, s => (ClaimStatusView)s),
+                ToAttributeView(attributes.ResponsibleMaster, u => u),
+                ToAttributeView(attributes.CharacterName, n => n));
+
+    private static RestoreAttributeView<TView>? ToAttributeView<T, TView>(RestoreAttribute<T>? attribute, Func<T, TView> map)
+    {
+        if (attribute is null)
+        {
+            return null;
+        }
+        RestoreSourcedValueView<TView> ToValue(RestoreSourcedValue<T> value) => new(map(value.Value), ToSourceView(value.Source), value.At);
+        return new RestoreAttributeView<TView>(ToValue(attribute.Chosen), [.. attribute.Alternatives.Select(ToValue)]);
+    }
 }
