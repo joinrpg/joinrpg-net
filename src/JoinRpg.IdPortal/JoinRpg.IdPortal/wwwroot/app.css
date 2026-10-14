@@ -2,6 +2,11 @@ h1:focus {
     outline: none;
 }
 
+/* Шрифт Roboto с собственного сервера (см. _content/JoinRpg.Common.WebComponents/css/roboto.css) */
+:root {
+    --bs-body-font-family: 'Roboto', system-ui, sans-serif;
+}
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
