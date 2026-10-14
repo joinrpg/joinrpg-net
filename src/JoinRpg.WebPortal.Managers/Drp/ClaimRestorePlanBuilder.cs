@@ -148,6 +148,8 @@ internal static class ClaimRestorePlanBuilder
         ClaimRestoreWarning.ApprovedOnSlot => ClaimRestoreWarningView.ApprovedOnSlot,
         ClaimRestoreWarning.StatusUnknown => ClaimRestoreWarningView.StatusUnknown,
         ClaimRestoreWarning.LostClaimNotSubmittedAfterBackup => ClaimRestoreWarningView.LostClaimNotSubmittedAfterBackup,
+        ClaimRestoreWarning.ChangedAfterRestore => ClaimRestoreWarningView.ChangedAfterRestore,
+        ClaimRestoreWarning.TotalFeeMismatch => ClaimRestoreWarningView.TotalFeeMismatch,
         _ => throw new ArgumentOutOfRangeException(nameof(warning), warning, null),
     };
 }

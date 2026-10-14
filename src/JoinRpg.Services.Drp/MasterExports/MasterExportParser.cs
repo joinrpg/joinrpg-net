@@ -111,10 +111,14 @@ public static class MasterExportParser
         var projectIds = new List<int>();
         var mainProjectIds = new List<int>();
         var rows = new List<MasterExportRow>();
+        // Проекты из ссылок каждой строки — чтобы пометить строки со ссылками в чужой проект.
+        var rowProjectIds = new List<List<int>>();
 
         foreach (var row in table.Rows)
         {
             var rowWarnings = new List<MasterExportWarning>();
+            var thisRowProjectIds = new List<int>();
+            rowProjectIds.Add(thisRowProjectIds);
 
             var link = LinkOf(row[linkColumn]);
             if (link?.Kind != linkKind)
@@ -125,10 +129,11 @@ public static class MasterExportParser
             else
             {
                 mainProjectIds.Add(link.ProjectId);
-                projectIds.Add(link.ProjectId);
+                thisRowProjectIds.Add(link.ProjectId);
             }
 
-            var groups = ReadGroups(row, groupLinksColumn, groupNamesColumn, projectIds, rowWarnings);
+            var groups = ReadGroups(row, groupLinksColumn, groupNamesColumn, thisRowProjectIds, rowWarnings);
+            projectIds.AddRange(thisRowProjectIds);
 
             string? Text(int? column) => column is { } c && !string.IsNullOrWhiteSpace(row[c].Text) ? row[c].Text.Trim() : null;
 
@@ -178,11 +183,22 @@ public static class MasterExportParser
             .Where(g => g.Count() > 1)
             .Select(g => g.Key)
             .ToHashSet();
-        rows = [.. rows.Select(r =>
+        var projectId = mainProjectIds
+            .GroupBy(id => id)
+            .OrderByDescending(g => g.Count())
+            .First().Key;
+
+        rows = [.. rows.Select((r, i) =>
         {
-            var rowWarnings = duplicateIds.Contains(r.CharacterId ?? r.ClaimId)
-                ? r.Warnings.Append(MasterExportWarning.DuplicateEntityId)
-                : r.Warnings;
+            IEnumerable<MasterExportWarning> rowWarnings = r.Warnings;
+            if (duplicateIds.Contains(r.CharacterId ?? r.ClaimId))
+            {
+                rowWarnings = rowWarnings.Append(MasterExportWarning.DuplicateEntityId);
+            }
+            if (rowProjectIds[i].Any(id => id != projectId))
+            {
+                rowWarnings = rowWarnings.Append(MasterExportWarning.ProjectIdMismatch);
+            }
             return r with { Warnings = [.. rowWarnings.Distinct()] };
         })];
 
@@ -191,11 +207,6 @@ public static class MasterExportParser
             warnings.Add(MasterExportWarning.ProjectIdMismatch);
         }
         warnings.AddRange(rows.SelectMany(r => r.Warnings));
-
-        var projectId = mainProjectIds
-            .GroupBy(id => id)
-            .OrderByDescending(g => g.Count())
-            .First().Key;
 
         return new ParsedMasterExport(
             kind,

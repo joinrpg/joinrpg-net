@@ -1,4 +1,7 @@
+using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Notifications;
+using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.Services.Drp.MasterExports;
 using static JoinRpg.Services.Drp.Test.ClaimNotificationFactory;
 
 namespace JoinRpg.Services.Drp.Test;
@@ -17,17 +20,37 @@ public class ClaimRestorePlannerTest
     private static ExistingClaimInfo ExistingClaim(ExistingCharacterInfo character, ClaimStatus status, int? fee = null)
         => new(Claim, character.CharacterId, Player.UserId, status, Master.UserId, fee);
 
+    private static readonly ProjectInfo AnyProject = new MockedProject().ProjectInfo;
+
+    /// <summary>
+    /// Каждый сценарий заодно прогоняется через <see cref="ProjectRestorePlanner"/> без выгрузок: его строки
+    /// заявок должны совпадать с <see cref="ClaimRestorePlanner"/> (#5529).
+    /// </summary>
     private static IReadOnlyList<ClaimRestorePlanRow> Plan(
         IEnumerable<ExistingClaimInfo> claims,
         IEnumerable<ExistingCharacterInfo> characters,
         params IEnumerable<NotificationMessageForRecipient>[] rows)
-        => ClaimRestorePlanner.Plan(new ClaimRestoreSource(
+    {
+        var source = new ClaimRestoreSource(
             ClaimNotificationParser.Parse(rows.SelectMany(r => r)),
             [.. claims],
             [.. characters],
             [new ProjectMasterName(Master.UserId, Master.DisplayName.DisplayName), new ProjectMasterName(OtherMaster.UserId, OtherMaster.DisplayName.DisplayName)],
             ProjectDefaultMaster,
-            BackupAt));
+            BackupAt);
+        var plan = ClaimRestorePlanner.Plan(source);
+
+        var projectPlan = ProjectRestorePlanner.Plan(new ProjectRestoreSource(
+            AnyProject, source, [], [], new Dictionary<string, UserIdentification>(), LostAt: BackupAt.AddYears(1)));
+        projectPlan.Claims.Select(Projection).ShouldBe(plan.Select(Projection));
+
+        return plan;
+    }
+
+    private static string Projection(ClaimRestorePlanRow r) => string.Join(" | ",
+        r.ClaimId, r.Action, r.CharacterName, r.Character, string.Join(",", r.CharacterCandidates), r.Player,
+        string.Join(",", r.PlayerCandidates), r.Status, r.StatusChangedAt, r.ResponsibleMaster, r.ManualFee,
+        r.FirstActivity, r.LastActivity, string.Join(",", r.Warnings), r.ApplyByDefault);
 
     [Fact]
     public void LostClaimOnExistingCharacter()
@@ -82,6 +105,36 @@ public class ClaimRestorePlannerTest
 
         row.Status.ShouldBeNull();
         row.Warnings.ShouldContain(ClaimRestoreWarning.StatusUnknown);
+    }
+
+    /// <summary>
+    /// Задокументированное различие: <see cref="ClaimRestorePlanner.Plan(ClaimRestoreSource)"/> не знает момента
+    /// аварии и правку после восстановления не распознаёт, а <see cref="ProjectRestorePlanner"/> — распознаёт.
+    /// </summary>
+    [Fact]
+    public void OnlyProjectPlannerRecognizesChangeAfterLoss()
+    {
+        var lostAt = BackupAt.AddYears(1);
+        var source = new ClaimRestoreSource(
+            ClaimNotificationParser.Parse(ClaimChange(Day(1), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Гамлет")),
+            [ExistingClaim(Hamlet, ClaimStatus.OnHold) with { LastUpdated = lostAt.AddDays(1) }],
+            [Hamlet],
+            [new ProjectMasterName(Master.UserId, Master.DisplayName.DisplayName)],
+            ProjectDefaultMaster,
+            BackupAt);
+
+        var claimRow = ClaimRestorePlanner.Plan(source).ShouldHaveSingleItem();
+        claimRow.Action.ShouldBe(ClaimRestoreAction.Change);
+        claimRow.ApplyByDefault.ShouldBeTrue();
+        claimRow.Warnings.ShouldNotContain(ClaimRestoreWarning.ChangedAfterRestore);
+
+        var projectRow = ProjectRestorePlanner.Plan(new ProjectRestoreSource(
+            AnyProject, source, [], [], new Dictionary<string, UserIdentification>(), lostAt)).Claims.ShouldHaveSingleItem();
+        projectRow.Action.ShouldBe(ClaimRestoreAction.Change);
+        projectRow.Status.ShouldBe(claimRow.Status);
+        projectRow.AttributesNotByDefault.ShouldBe([ClaimRestoreAttributeKind.Status]);
+        projectRow.ApplyByDefault.ShouldBeFalse();
+        projectRow.Warnings.ShouldContain(ClaimRestoreWarning.ChangedAfterRestore);
     }
 
     [Fact]
