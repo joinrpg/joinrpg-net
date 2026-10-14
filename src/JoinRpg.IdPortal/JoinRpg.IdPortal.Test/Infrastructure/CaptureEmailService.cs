@@ -7,6 +7,7 @@ public class CaptureEmailService : IAccountEmailService<JoinIdentityUser>
 {
     public string? LastResetPasswordUrl { get; private set; }
     public string? LastConfirmEmailUrl { get; private set; }
+    public List<string> PasswordChangedEmails { get; } = [];
 
     public Task ResetPasswordEmail(JoinIdentityUser user, string callbackUrl)
     {
@@ -17,6 +18,15 @@ public class CaptureEmailService : IAccountEmailService<JoinIdentityUser>
     public Task ConfirmEmail(JoinIdentityUser user, string callbackUrl)
     {
         LastConfirmEmailUrl = callbackUrl;
+        return Task.CompletedTask;
+    }
+
+    public Task PasswordChangedEmail(JoinIdentityUser user)
+    {
+        lock (PasswordChangedEmails)
+        {
+            PasswordChangedEmails.Add(user.UserName);
+        }
         return Task.CompletedTask;
     }
 }

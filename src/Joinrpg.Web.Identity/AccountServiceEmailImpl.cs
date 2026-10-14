@@ -39,6 +39,19 @@ internal class AccountServiceEmailImpl(INotificationService messageService, IVir
         return SendAccountNotification(user, text, "Регистрация на JoinRpg.Ru");
     }
 
+    public Task PasswordChangedEmail(JoinIdentityUser user)
+    {
+        var text = @"Добрый день, %recepient.name%!
+
+Пароль от вашего аккаунта на сайте JoinRpg.Ru только что был изменён или установлен.
+
+Если это сделали вы, ничего делать не нужно.
+
+Если вы не меняли пароль, срочно восстановите его через форму «Забыли пароль?» на странице входа и напишите нам на support@joinrpg.ru.
+";
+        return SendAccountNotification(user, text, "Пароль на JoinRpg.Ru изменён");
+    }
+
     private Task SendAccountNotification(JoinIdentityUser user, string text, string header)
     {
         var notification = new NotificationEvent(NotificationClass.UserAccount,

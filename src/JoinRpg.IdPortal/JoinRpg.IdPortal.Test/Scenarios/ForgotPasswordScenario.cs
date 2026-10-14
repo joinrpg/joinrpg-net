@@ -69,6 +69,9 @@ public class ForgotPasswordScenario(IdPortalApplicationFactory factory)
         resetResponse.StatusCode.ShouldBe(HttpStatusCode.Found);
         resetResponse.Headers.Location?.ToString().ShouldContain("ResetPasswordConfirmation");
 
+        // Пользователю ушло письмо «ваш пароль был изменён» (#1092)
+        factory.CaptureEmail.PasswordChangedEmails.ShouldContain(IdPortalApplicationFactory.TestResetUserEmail);
+
         // Step 3: Login with new password should succeed
         var loginClient = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = true });
         var loginPage = await loginClient.GetAsync("/Account/Login");
