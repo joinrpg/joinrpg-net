@@ -82,7 +82,8 @@ public class ExternalLoginProfileExtractorRemoveLoginTest
             new UpperInvariantLookupNormalizer(),
             new IdentityErrorDescriber(),
             services: null!,
-            NullLogger<JoinUserManager>.Instance);
+            NullLogger<JoinUserManager>.Instance,
+            new CaptureAccountEmailService());
         var userService = new FakeUserService();
         return (
             new ExternalLoginProfileExtractor(userService, userManager, NullLogger<ExternalLoginProfileExtractor>.Instance),
