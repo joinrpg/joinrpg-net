@@ -66,4 +66,7 @@ public enum CommentExtraAction
 
     [Display(Name = "Восстановлено из уведомлений", ShortName = "восстановлена из уведомлений")]
     RestoredFromNotifications,
+
+    [Display(Name = "Восстановлено из выгрузки", ShortName = "восстановлена из выгрузки")]
+    RestoredFromExport,
 }

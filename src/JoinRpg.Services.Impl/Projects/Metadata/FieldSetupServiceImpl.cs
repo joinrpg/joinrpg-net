@@ -206,7 +206,9 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             fields.ProjectInfo.ProjectId,
             requiredPermission: null,
-            ProjectActiveRequirement.MustBeActive,
+            // значения полей пишет восстановление из выгрузки (ADR023, DRP #5529); обычные сохранения
+            // в заблокированном проекте всё равно отказывают — их операции требуют MustBeActive
+            ProjectActiveRequirement.AllowBlocked,
             usage,
             ctx =>
             {

@@ -16,11 +16,13 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     /// <param name="fieldsToSet">
     /// Поля, которые надо изменить, — дельта, а не полный слой. Пустой слой — не менять ничего.
     /// </param>
+    /// <param name="mode">Режим сохранения; обычные операции его не задают.</param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
         Claim claim,
         FieldLayerContainer fieldsToSet,
-        ProjectInfo projectInfo)
+        ProjectInfo projectInfo,
+        FieldSaveMode mode = FieldSaveMode.Normal)
     {
         ArgumentNullException.ThrowIfNull(claim);
         ArgumentNullException.ThrowIfNull(fieldsToSet);
@@ -32,7 +34,8 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
             claim,
             fieldsToSet,
             projectInfo,
-            regularGroupIds: null);
+            regularGroupIds: null,
+            mode);
     }
 
     /// <summary>
@@ -48,12 +51,14 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
     /// меняет, берутся текущие. Спецгруппы сюда не передаются никогда: их вычисляет само сохранение
     /// по значениям полей.
     /// </param>
+    /// <param name="mode">Режим сохранения; обычные операции его не задают.</param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
         int currentUserId,
         Character character,
         FieldLayerContainer fieldsToSet,
         ProjectInfo projectInfo,
-        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null)
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds = null,
+        FieldSaveMode mode = FieldSaveMode.Normal)
     {
         ArgumentNullException.ThrowIfNull(character);
         ArgumentNullException.ThrowIfNull(fieldsToSet);
@@ -64,7 +69,8 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
             character.ApprovedClaim,
             fieldsToSet,
             projectInfo,
-            regularGroupIds);
+            regularGroupIds,
+            mode);
     }
 
     private IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFieldsImpl(
@@ -73,14 +79,16 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         Claim? claim,
         FieldLayerContainer fieldsToSet,
         ProjectInfo projectInfo,
-        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds)
+        IReadOnlyCollection<CharacterGroupIdentification>? regularGroupIds,
+        FieldSaveMode mode)
     {
         var strategy = CreateStrategy(
             currentUserId,
             character,
             claim,
             projectInfo,
-            regularGroupIds ?? [.. character.GetDirectNonSpecialGroupIds(projectInfo)]);
+            regularGroupIds ?? [.. character.GetDirectNonSpecialGroupIds(projectInfo)],
+            mode);
 
         logger.LogDebug("Selected saving strategy as {strategyName}", strategy.GetType().Name);
 
@@ -125,13 +133,14 @@ public class FieldSaveHelper(IFieldDefaultValueGenerator generator, ILogger<Fiel
         Character character,
         Claim? claim,
         ProjectInfo projectInfo,
-        IReadOnlyCollection<CharacterGroupIdentification> regularGroupIds)
+        IReadOnlyCollection<CharacterGroupIdentification> regularGroupIds,
+        FieldSaveMode mode)
     {
         return claim switch
         {
-            null => new SaveToCharacterOnlyStrategy(character, currentUserId, generator, projectInfo, regularGroupIds),
-            { IsApproved: true } => new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator, projectInfo, regularGroupIds),
-            { IsApproved: false } => new SaveToClaimOnlyStrategy(claim, currentUserId, generator, projectInfo),
+            null => new SaveToCharacterOnlyStrategy(character, currentUserId, generator, projectInfo, regularGroupIds) { Mode = mode },
+            { IsApproved: true } => new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator, projectInfo, regularGroupIds) { Mode = mode },
+            { IsApproved: false } => new SaveToClaimOnlyStrategy(claim, currentUserId, generator, projectInfo) { Mode = mode },
         };
     }
 }

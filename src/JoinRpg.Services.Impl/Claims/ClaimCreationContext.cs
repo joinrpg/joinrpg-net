@@ -84,7 +84,7 @@ internal abstract record ClaimCreationContext(
     /// </summary>
     public UserIdentification ResponsibleMasterByProjectRules() => CharacterInfo.ResponsibleMasterId;
 
-    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Claim, FieldLayerContainer)"/>
+    /// <inheritdoc cref="CharacterOperationContext.SaveFieldsCore(Claim, FieldLayerContainer, FieldSaveMode)" path="/summary|/returns"/>
     /// <param name="claim">Заявка, через которую сохраняются поля.</param>
     /// <param name="fieldsToSet">Значения полей, заполненные при подаче.</param>
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveFields(
