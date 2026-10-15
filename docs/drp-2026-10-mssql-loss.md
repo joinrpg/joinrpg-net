@@ -145,11 +145,11 @@
 **MSSQL**
 
 - [x] (2026-10-15) Майский бэкап (`.bacpac`) импортирован в новый MSSQL.
-- [x] (2026-10-15) Майские максимумы: Users 78808, Projects 1622 — в `Drp:BackupMax:*` ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562), на ревью).
+- [x] (2026-10-15) Майские максимумы: Users 78808, Projects 1622 — в `Drp:BackupMax:*` ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562)).
 - [x] (2026-10-15) Момент майского бэкапа: `Drp:BackupTakenAt` = 2026-05-08T12:58:51Z (`Origin.xml`,
-      `Operation/Start`; `End` не заполнен) — в `appsettings.json` Portal ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562), на ревью).
+      `Operation/Start`; `End` не заполнен) — в `appsettings.json` Portal ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562)).
 - [x] (2026-10-15) Максимумы по базе уведомлений в `@Known` скрипта сдвига: Users 84473, Comments
-      644590 ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562), на ревью). Ожидаемые счётчики — 112 000 и 784 000.
+      644590 ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562)). Ожидаемые счётчики — 112 000 и 784 000.
 - [x] (2026-10-15) 🟢 Сдвиг счётчиков — `scripts/incident-restore/reseed-identities.sql` ([#5460](https://github.com/joinrpg/joinrpg-net/issues/5460)): `@Apply = 0`,
       проверить план, `@Apply = 1`. `Comments` обязательно ([почему](#сдвиг-счётчиков)).
 - [x] (2026-10-15) Миграции вручную на новую базу: `dotnet run --project src/Joinrpg.Dal.Migrate` со строкой
@@ -761,7 +761,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | закрыт |
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | в работе |
-| [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | на ревью |
+| [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | влит |
 | issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | заведён |
 | [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | на ревью |
 | [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | на ревью |
