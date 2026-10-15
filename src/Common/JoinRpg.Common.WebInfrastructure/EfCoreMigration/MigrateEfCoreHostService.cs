@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Common.WebInfrastructure.EfCoreMigration;
@@ -12,13 +14,27 @@ internal class MigrateEfCoreHostService<TContext>(
 
     private static readonly TimeSpan MigrationCommandTimeout = TimeSpan.FromMinutes(15);
 
-    public async Task MigrateAsync(CancellationToken ct)
+    public string Name => contextName;
+
+    public async Task CheckConnectionAsync(CancellationToken ct)
     {
         if (dbContext.Database.HasPendingModelChanges())
         {
             throw new InvalidOperationException($"There are pending changes in model {contextName}");
         }
 
+        // Не CanConnectAsync: тот глотает исключение, и в логе не будет причины.
+        // ExistsAsync открывает подключение и падает с настоящей ошибкой (кривая строка, хост, пароль),
+        // а отсутствие самой базы — не ошибка: MigrateAsync её создаст.
+        var databaseCreator = dbContext.GetService<IRelationalDatabaseCreator>();
+        if (!await databaseCreator.ExistsAsync(ct))
+        {
+            logger.LogWarning("Database for {DbContextName} does not exist yet, it will be created.", contextName);
+        }
+    }
+
+    public async Task MigrateAsync(CancellationToken ct)
+    {
         var lastAppliedMigration = (await dbContext.Database.GetAppliedMigrationsAsync(ct)).LastOrDefault();
         if (lastAppliedMigration is null)
         {
