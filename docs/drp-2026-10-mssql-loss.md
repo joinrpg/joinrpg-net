@@ -277,10 +277,9 @@
 
 ### Фаза 8. Обсуждения
 
-- [ ] 🟡 Импорт комментариев к заявкам из базы уведомлений как восстановленных, с прежними id
+- [ ] 🟢 Импорт комментариев к заявкам из базы уведомлений как восстановленных, с прежними id
       (у комментариев с 2026-06-06 id есть в `ClaimCommentId`; у более ранних id нет — новые; [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492)):
-      блок на той же странице «Восстановление проекта», после заявок. PR [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557), [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) — на
-      ревью, [#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) — draft поверх них.
+      блок на той же странице «Восстановление проекта», после заявок ([#5557](https://github.com/joinrpg/joinrpg-net/issues/5557)–[#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) влиты).
 - [ ] Комментарии с пометкой «видимость под вопросом» — мастеру проверить видимость руками.
       Обсуждение восстанавливается плоским (родитель в уведомлениях не хранится).
 
@@ -763,12 +762,12 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | закрыт |
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | закрыт |
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
-| issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | в работе |
+| issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | закрыт |
 | [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | влит |
 | issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | заведён |
-| [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | на ревью |
-| [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | на ревью |
-| [#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 3: блок восстановления комментариев на странице | 8 | draft, ждёт PR 1–2 |
+| [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | влит |
+| [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | влит |
+| [#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 3: блок восстановления комментариев на странице | 8 | влит |
 | issue [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526) | Публичный адрес аватарок — `avatars.joinrpg.ru` | 1 | заведён |
 | [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) | Аватарки: адрес из `PublicBaseUrl`, терпимое чтение (PR 1 [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526)) | 1 | влит |
 | issue [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) | Аватарки: ключ вместо адреса, джоба — **после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530)** | 1 | ждёт выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод |
