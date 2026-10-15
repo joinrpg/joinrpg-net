@@ -43,6 +43,14 @@ public interface IProjectFinanceSettingsService
     Task CreatePaymentType(CreatePaymentTypeRequest request);
 
     /// <summary>
+    /// Тип оплаты «наличными» мастера для восстановления ручных финансовых операций по уведомлениям
+    /// (DRP, #5561): типы, заведённые после бэкапа, потеряны вместе с базой. Только в заблокированном
+    /// проекте (ADR023), право — на деньги проекта, <paramref name="owner"/> обязан быть мастером. Если
+    /// у мастера наличный тип уже есть (в том числе выключенный), возвращает его, ничего не создавая.
+    /// </summary>
+    Task<PaymentTypeIdentification> CreateRestoredCashPaymentType(ProjectIdentification projectId, UserIdentification owner);
+
+    /// <summary>
     /// Включает или выключает тип оплаты. Выключение — всегда soft-delete
     /// (<c>PaymentType.IsActive = false</c>), физически тип оплаты не удаляется.
     /// </summary>

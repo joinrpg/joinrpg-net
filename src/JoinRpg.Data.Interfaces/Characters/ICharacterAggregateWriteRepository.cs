@@ -3,6 +3,8 @@ using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Data.Interfaces.Characters;
 
@@ -92,6 +94,25 @@ public interface ICharacterAggregateWriteRepository
     /// </remarks>
     /// <exception cref="JoinRpgEntityNotFoundException">Заявки нет в указанном проекте; ничего не вставлено.</exception>
     Task<RestoredCommentInsertResult> InsertRestoredClaimComment(RestoredClaimCommentRow comment);
+
+    /// <summary>
+    /// Вставляет восстановленную ручную финансовую операцию (взнос или возврат) — для восстановления
+    /// по уведомлениям (DRP, #5561). Строки — те же, что пишет доменный приём взноса (<c>AcceptFee</c>):
+    /// комментарий, его текст и финансовая операция с тем же идентификатором, но с датами и автором из
+    /// уведомления и, если он известен, с прежним идентификатором. Заявку (взнос, отметки, дату
+    /// обновления) не трогает — это дело операции над заявкой.
+    /// </summary>
+    /// <remarks>
+    /// Выполняется сразу, одной своей транзакцией, мимо <c>SaveChanges</c>. Прежний идентификатор
+    /// вставляется только ниже текущего счётчика IDENTITY комментариев — такая вставка его не двигает.
+    /// Без идентификатора повтор узнаётся по операции в обсуждении заявки: тот же автор, тот же вид
+    /// операции и сумма, время — в пределах минуты.
+    /// </remarks>
+    /// <returns>
+    /// Исход и идентификатор: вставленной или уже бывшей операции, а при конфликте — запрошенный.
+    /// </returns>
+    /// <exception cref="JoinRpgEntityNotFoundException">Заявки нет в указанном проекте; ничего не вставлено.</exception>
+    Task<RestoredFinanceOperationInsert> InsertRestoredFinanceOperation(RestoredFinanceOperationRow operation);
 }
 
 /// <summary>
@@ -99,6 +120,9 @@ public interface ICharacterAggregateWriteRepository
 /// </summary>
 /// <param name="CommentId">Прежний идентификатор либо <c>null</c> — тогда комментарий получит новый.</param>
 /// <param name="CreatedAt">Время создания (UTC); им же ставится время правки.</param>
+/// <param name="ParentCommentId">
+/// Родительский комментарий того же обсуждения — у решения по финансовой операции это сама операция.
+/// </param>
 public record RestoredClaimCommentRow(
     ClaimIdentification ClaimId,
     int? CommentId,
@@ -107,7 +131,40 @@ public record RestoredClaimCommentRow(
     bool IsVisibleToPlayer,
     CommentExtraAction? ExtraAction,
     DateTime CreatedAt,
+    string Text,
+    int? ParentCommentId = null);
+
+/// <summary>
+/// Строка восстановленной ручной финансовой операции. Комментарий операции видим игроку, его действие —
+/// по виду операции (<c>PaidFee</c>/<c>RefundFee</c>), как у доменного приёма взноса.
+/// </summary>
+/// <param name="OperationId">
+/// Прежний идентификатор (он же идентификатор комментария) либо <c>null</c> — тогда операция получит новый.
+/// </param>
+/// <param name="OperationType">Только <c>Submit</c> или <c>Refund</c>.</param>
+/// <param name="MoneyAmount">Со знаком: у возврата — отрицательная.</param>
+/// <param name="CreatedAt">Время создания (UTC) — комментария и операции.</param>
+/// <param name="ChangedAt">Время последнего изменения операции (UTC) — решения по ней или создания.</param>
+/// <param name="OperationDate">Дата операции — полночь без часового пояса, как её пишет форма приёма взноса.</param>
+public record RestoredFinanceOperationRow(
+    ClaimIdentification ClaimId,
+    int? OperationId,
+    UserIdentification AuthorId,
+    bool IsCommentByPlayer,
+    FinanceOperationType OperationType,
+    int MoneyAmount,
+    PaymentTypeIdentification PaymentTypeId,
+    FinanceOperationState State,
+    DateTime CreatedAt,
+    DateTime ChangedAt,
+    DateTime OperationDate,
     string Text);
+
+/// <summary>Исход вставки восстановленной финансовой операции.</summary>
+/// <param name="OperationId">
+/// Идентификатор вставленной или уже бывшей операции; при конфликте — запрошенный.
+/// </param>
+public record RestoredFinanceOperationInsert(RestoredCommentInsertResult Result, int OperationId);
 
 /// <summary>
 /// Минимум, без которого строки персонажа нет.

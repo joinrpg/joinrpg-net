@@ -6,6 +6,7 @@ using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.Services.Impl.Test.Fakes;
@@ -106,7 +107,13 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
                 c => c.ClaimId == comment.ClaimId.ClaimId && c.ProjectId == comment.ClaimId.ProjectId.Value)
             ?? throw new JoinRpgEntityNotFoundException(comment.ClaimId.ClaimId, "claim");
         var discussion = claim.CommentDiscussion;
-        var allComments = mock.Project.Claims.SelectMany(c => c.CommentDiscussion.Comments).ToList();
+        var allComments = AllClaimComments();
+        Comment? parent = null;
+        if (comment.ParentCommentId is { } parentId)
+        {
+            parent = discussion.Comments.SingleOrDefault(c => c.CommentId == parentId)
+                ?? throw new InvalidOperationException($"Родителя {parentId} нет в обсуждении заявки {comment.ClaimId}");
+        }
 
         int commentId;
         if (comment.CommentId is { } id)
@@ -131,10 +138,104 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             {
                 return Task.FromResult(RestoredCommentInsertResult.AlreadyExists);
             }
-            commentId = Math.Max(CommentIdentityCurrent, allComments.Select(c => c.CommentId).DefaultIfEmpty().Max()) + 1;
+            commentId = NextCommentId(allComments);
         }
 
-        discussion.Comments.Add(new Comment
+        var inserted = NewComment(discussion, commentId, comment.AuthorId, comment.IsCommentByPlayer, comment.IsVisibleToPlayer,
+            comment.ExtraAction, comment.CreatedAt, comment.Text);
+        inserted.ParentCommentId = parent?.CommentId;
+        inserted.Parent = parent;
+        return Task.FromResult(RestoredCommentInsertResult.Inserted);
+    }
+
+    /// <summary>
+    /// Восстановленная финансовая операция так же, как в бою: прежний id «уже есть», только если это
+    /// операция этого обсуждения; повтор без id — операция того же автора, вида и суммы в пределах минуты.
+    /// </summary>
+    public Task<RestoredFinanceOperationInsert> InsertRestoredFinanceOperation(RestoredFinanceOperationRow operation)
+    {
+        var claim = mock.Project.Claims.SingleOrDefault(
+                c => c.ClaimId == operation.ClaimId.ClaimId && c.ProjectId == operation.ClaimId.ProjectId.Value)
+            ?? throw new JoinRpgEntityNotFoundException(operation.ClaimId.ClaimId, "claim");
+        var paymentType = mock.Project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == operation.PaymentTypeId.PaymentTypeId
+                && operation.PaymentTypeId.ProjectId == operation.ClaimId.ProjectId)
+            ?? throw new InvalidOperationException($"Типа оплаты {operation.PaymentTypeId} нет в проекте");
+        var extraAction = operation.OperationType switch
+        {
+            FinanceOperationType.Submit => CommentExtraAction.PaidFee,
+            FinanceOperationType.Refund => CommentExtraAction.RefundFee,
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation.OperationType, null),
+        };
+        var discussion = claim.CommentDiscussion;
+        var allComments = AllClaimComments();
+
+        int commentId;
+        if (operation.OperationId is { } id)
+        {
+            if (allComments.FirstOrDefault(c => c.CommentId == id) is { } existing)
+            {
+                return Task.FromResult(new RestoredFinanceOperationInsert(
+                    discussion.Comments.Contains(existing) && existing.Finance is not null
+                        ? RestoredCommentInsertResult.AlreadyExists
+                        : RestoredCommentInsertResult.TakenElsewhere,
+                    id));
+            }
+            if (id <= 0 || id >= CommentIdentityCurrent)
+            {
+                return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.NotLostId, id));
+            }
+            commentId = id;
+        }
+        else
+        {
+            if (discussion.Comments
+                    .Where(c => c.AuthorUserId == operation.AuthorId.Value
+                        && c.Finance is { } f && f.OperationType == operation.OperationType && f.MoneyAmount == operation.MoneyAmount
+                        && (c.CreatedAt - operation.CreatedAt).Duration() <= TimeSpan.FromMinutes(1))
+                    .OrderBy(c => (c.CreatedAt - operation.CreatedAt).Duration())
+                    .ThenBy(c => c.CommentId)
+                    .FirstOrDefault() is { } same)
+            {
+                return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.AlreadyExists, same.CommentId));
+            }
+            commentId = NextCommentId(allComments);
+        }
+
+        var comment = NewComment(discussion, commentId, operation.AuthorId, operation.IsCommentByPlayer, isVisibleToPlayer: true,
+            extraAction, operation.CreatedAt, operation.Text);
+        var finance = new FinanceOperation
+        {
+            CommentId = commentId,
+            Comment = comment,
+            ProjectId = claim.ProjectId,
+            Project = mock.Project,
+            ClaimId = claim.ClaimId,
+            Claim = claim,
+            MoneyAmount = operation.MoneyAmount,
+            PaymentTypeId = paymentType.PaymentTypeId,
+            PaymentType = paymentType,
+            Created = operation.CreatedAt,
+            Changed = operation.ChangedAt,
+            OperationDate = operation.OperationDate,
+            State = operation.State,
+            OperationType = operation.OperationType,
+        };
+        comment.Finance = finance;
+        claim.FinanceOperations ??= [];
+        claim.FinanceOperations.Add(finance);
+        return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.Inserted, commentId));
+    }
+
+    private List<Comment> AllClaimComments() => [.. mock.Project.Claims.SelectMany(c => c.CommentDiscussion.Comments)];
+
+    /// <summary>Новый id комментария — выше счётчика, как выдала бы IDENTITY.</summary>
+    private static int NextCommentId(List<Comment> allComments)
+        => Math.Max(CommentIdentityCurrent, allComments.Select(c => c.CommentId).DefaultIfEmpty().Max()) + 1;
+
+    private Comment NewComment(CommentDiscussion discussion, int commentId, UserIdentification authorId, bool isCommentByPlayer,
+        bool isVisibleToPlayer, CommentExtraAction? extraAction, DateTime createdAt, string text)
+    {
+        var comment = new Comment
         {
             CommentId = commentId,
             ProjectId = discussion.ProjectId,
@@ -142,17 +243,18 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             CommentDiscussionId = discussion.CommentDiscussionId,
             Discussion = discussion,
             ParentCommentId = null,
-            Author = mock.TryGetUser(comment.AuthorId.Value)
-                ?? throw new JoinRpgEntityNotFoundException(comment.AuthorId.Value, "user"),
-            AuthorUserId = comment.AuthorId.Value,
-            CommentText = new CommentText { CommentId = commentId, Text = new MarkdownDbValue(comment.Text) },
-            IsCommentByPlayer = comment.IsCommentByPlayer,
-            IsVisibleToPlayer = comment.IsVisibleToPlayer,
-            ExtraAction = comment.ExtraAction,
-            CreatedAt = comment.CreatedAt,
-            LastEditTime = comment.CreatedAt,
-        });
-        return Task.FromResult(RestoredCommentInsertResult.Inserted);
+            Author = mock.TryGetUser(authorId.Value)
+                ?? throw new JoinRpgEntityNotFoundException(authorId.Value, "user"),
+            AuthorUserId = authorId.Value,
+            CommentText = new CommentText { CommentId = commentId, Text = new MarkdownDbValue(text) },
+            IsCommentByPlayer = isCommentByPlayer,
+            IsVisibleToPlayer = isVisibleToPlayer,
+            ExtraAction = extraAction,
+            CreatedAt = createdAt,
+            LastEditTime = createdAt,
+        };
+        discussion.Comments.Add(comment);
+        return comment;
     }
 
     public Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId)

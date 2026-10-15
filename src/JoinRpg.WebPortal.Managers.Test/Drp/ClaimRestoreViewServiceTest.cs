@@ -389,6 +389,10 @@ public class ClaimRestoreViewServiceTest
 
         public Task<RestoredCommentsResult> RestoreClaimComments(ClaimIdentification claimId, IReadOnlyList<RestoredClaimComment> comments)
             => throw new NotSupportedException();
+
+        public Task<RestoredFinanceResult> RestoreFinanceOperations(ClaimIdentification claimId,
+            IReadOnlyList<RestoredFinanceOperation> operations, IReadOnlyList<RestoredFinanceModeration> moderations)
+            => throw new NotSupportedException();
     }
 
     private sealed class FakeUserLinkResolver : IUserLinkResolver

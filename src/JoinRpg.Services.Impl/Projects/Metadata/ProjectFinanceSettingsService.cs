@@ -35,7 +35,7 @@ internal class ProjectFinanceSettingsService(
 
                     // Cash payment could be only one
                     if (ctx.Request.TypeKind == PaymentTypeKind.Cash
-                        && paymentTypes.Any(pt => pt.User.UserId == ctx.Request.TargetMasterId && pt.TypeKind == PaymentTypeKind.Cash))
+                        && FindCashPaymentType(ctx.ProjectInfo, ctx.Request.TargetMasterId!) is not null)
                     {
                         throw new JoinRpgInvalidUserException($@"Payment of type ${ctx.Request.TypeKind.GetDisplayName()} is already created for the user ${ctx.Request.TargetMasterId}");
                     }
@@ -65,6 +65,52 @@ internal class ProjectFinanceSettingsService(
 
                 ctx.Project.PaymentTypes.Add(result);
             });
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Вид — только Cash: у него нет имени, которое пришлось бы выдумывать, а «один наличный тип на
+    /// мастера» — то же правило, что у <see cref="CreatePaymentType"/>. Создать тип в заблокированном
+    /// проекте обычным путём нельзя: настройки финансов там закрыты (ADR023).
+    /// </remarks>
+    public async Task<PaymentTypeIdentification> CreateRestoredCashPaymentType(ProjectIdentification projectId, UserIdentification owner)
+    {
+        var paymentType = await projectPropsService.ChangeProjectProperties(
+            projectId,
+            Permission.CanManageMoney,
+            ProjectActiveRequirement.AllowBlocked,
+            owner,
+            ctx =>
+            {
+                if (ctx.ProjectInfo.ProjectStatus != ProjectLifecycleStatus.Blocked)
+                {
+                    // TODO[Localize]
+                    throw new JoinValidationException("Восстановление из уведомлений доступно только в заблокированном проекте.");
+                }
+                _ = ctx.ProjectInfo.RequestMasterAccess(ctx.Request);
+
+                if (FindCashPaymentType(ctx.ProjectInfo, ctx.Request) is { } existing)
+                {
+                    return ctx.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == existing.PaymentTypeId.PaymentTypeId);
+                }
+
+                var created = new PaymentType(PaymentTypeKind.Cash, ctx.ProjectInfo.ProjectId.Value, ctx.Request.Value);
+                ctx.Project.PaymentTypes.Add(created);
+                return created;
+            });
+
+        // Id нового типа выдаёт база при сохранении.
+        return new PaymentTypeIdentification(projectId, paymentType.PaymentTypeId);
+    }
+
+    /// <summary>
+    /// Наличный тип оплаты мастера, в том числе выключенный. Не <c>GetCashPaymentType</c>: тот падает,
+    /// если таких типов несколько, а в старых данных это бывает; тогда предпочитается включённый.
+    /// </summary>
+    private static PaymentTypeInfo? FindCashPaymentType(ProjectInfo projectInfo, UserIdentification masterId)
+        => projectInfo.ProjectFinanceSettings.PaymentTypes
+            .Where(pt => pt.User.UserId == masterId && pt.TypeKind == PaymentTypeKind.Cash)
+            .OrderByDescending(pt => pt.Enabled)
+            .FirstOrDefault();
 
     /// <inheritdoc />
     public Task TogglePaymentActiveness(PaymentTypeIdentification paymentTypeId)

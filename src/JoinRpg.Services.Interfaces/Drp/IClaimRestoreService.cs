@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Services.Interfaces.Drp;
 
@@ -47,6 +48,125 @@ public interface IClaimRestoreService
     /// комментариями ничего не вставляет и в историю не пишет.
     /// </summary>
     Task<RestoredCommentsResult> RestoreClaimComments(ClaimIdentification claimId, IReadOnlyList<RestoredClaimComment> comments);
+
+    /// <summary>
+    /// Возвращает в заявку ручные финансовые операции (взносы и возвраты на типы оплаты Cash/Custom) и
+    /// решения мастеров по ним, которые есть только в уведомлениях (DRP, #5561), — с прежними
+    /// идентификаторами, авторами и датами, без уведомлений. Решение по операции, которая уже есть в базе
+    /// и ждёт его, переводит её в итоговое состояние. Взнос фиксируется, как при обычной оплате,
+    /// отметки заявки о последних комментариях подтягиваются к восстановленным, дата обновления заявки
+    /// (а с ней и проекта) становится текущей, в историю заявки пишется одна запись. Повторный вызов с
+    /// тем же входом ничего не вставляет, не меняет и в историю не пишет.
+    /// </summary>
+    /// <remarks>
+    /// Все проверки входа — до первой записи: неверный вход не оставляет ничего вставленным.
+    /// </remarks>
+    Task<RestoredFinanceResult> RestoreFinanceOperations(
+        ClaimIdentification claimId,
+        IReadOnlyList<RestoredFinanceOperation> operations,
+        IReadOnlyList<RestoredFinanceModeration> moderations);
+}
+
+/// <summary>
+/// Ручная финансовая операция заявки, восстановленная по уведомлению.
+/// </summary>
+/// <param name="OperationId">
+/// Прежний идентификатор (он же идентификатор комментария операции) либо <c>null</c>: до 2026-06-06 id в
+/// уведомлениях не было — такая операция получит новый id, а повтор узнаётся по автору, виду, сумме и
+/// времени (в пределах минуты).
+/// </param>
+/// <param name="Author">Инициатор: мастер, принявший деньги, или игрок, сообщивший об оплате.</param>
+/// <param name="Type">Только <see cref="FinanceOperationType.Submit"/> или <see cref="FinanceOperationType.Refund"/>.</param>
+/// <param name="Money">Со знаком, как в базе: взнос — положительная, возврат — отрицательная.</param>
+/// <param name="PaymentType">Неонлайн-тип оплаты (Cash/Custom) этого проекта; может быть и выключенным.</param>
+/// <param name="State">
+/// Итоговое состояние; решение по этой операции обязано с ним совпадать. Если операция уже была в базе в
+/// ожидании решения (прошлый прогон без решения), решение переведёт её. Возврат — только
+/// <see cref="FinanceOperationState.Approved"/>, как у доменного возврата.
+/// </param>
+/// <param name="CreatedAt">Время операции; по нему же ставится дата операции (в часовом поясе проекта).</param>
+/// <param name="ChangedAt">Время решения по операции, а без решения — <paramref name="CreatedAt"/>.</param>
+public record RestoredFinanceOperation(
+    int? OperationId,
+    UserIdentification Author,
+    bool IsCommentByPlayer,
+    FinanceOperationType Type,
+    int Money,
+    PaymentTypeIdentification PaymentType,
+    FinanceOperationState State,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset ChangedAt,
+    string Text);
+
+/// <summary>
+/// Решение мастера по финансовой операции («подтверждена»/«отклонена»), восстановленное по уведомлению.
+/// Вставляется комментарием-ответом на операцию. Родитель задаётся не более чем одним способом; без
+/// родителя — решение, которое не удалось связать с операцией (не найдена, неоднозначно, запрос льготы
+/// есть только в уведомлениях): оно вставляется комментарием без родителя и ничьё состояние не меняет.
+/// </summary>
+/// <param name="CommentId">Прежний идентификатор комментария решения либо <c>null</c> — получит новый.</param>
+/// <param name="Author">Мастер, принявший решение.</param>
+/// <param name="Approved"><c>true</c> — подтверждена, <c>false</c> — отклонена.</param>
+/// <param name="ParentOperationId">
+/// Операция с известным id: уже есть в заявке либо восстанавливается этим же вызовом. Уже бывшая в базе —
+/// только заявленный платёж (Submit) или запрос льготного взноса. Если это платёж, который был в базе до
+/// вызова и ждёт решения, решение переводит его в итоговое состояние; у запроса льготного взноса
+/// восстанавливается только комментарий. У операции, вставляемой этим вызовом, состояние обязано
+/// совпадать с решением.
+/// </param>
+/// <param name="ParentRestoredIndex">Индекс в списке операций вызова — для восстанавливаемой операции без id.</param>
+public record RestoredFinanceModeration(
+    int? CommentId,
+    UserIdentification Author,
+    bool Approved,
+    DateTimeOffset CreatedAt,
+    string Text,
+    int? ParentOperationId,
+    int? ParentRestoredIndex);
+
+/// <summary>Исход восстановления одной операции или одного решения.</summary>
+public enum RestoredFinanceEntryStatus
+{
+    /// <summary>Вставлено этим вызовом.</summary>
+    Inserted,
+
+    /// <summary>Уже было в заявке (повтор) — ничего не сделано.</summary>
+    AlreadyExisted,
+
+    /// <summary>Прежний id занят другим комментарием (другой заявки, форума, без операции) — пропущено.</summary>
+    TakenElsewhere,
+
+    /// <summary>Прежний id не ниже текущего счётчика — это не потерянный id; пропущено.</summary>
+    NotLostId,
+
+    /// <summary>Решение пропущено: его операция не восстановлена из-за конфликта.</summary>
+    ParentNotRestored,
+}
+
+/// <summary>Исход восстановления одной операции или одного решения.</summary>
+/// <param name="Id">
+/// У операции — вставленный (в том числе новый — для операции без прежнего id) или уже бывший, а при
+/// конфликте — запрошенный. У решения — прежний из входа (<c>null</c>, если его не было).
+/// </param>
+public record RestoredFinanceEntry(RestoredFinanceEntryStatus Status, int? Id)
+{
+    /// <summary>Запись теперь есть в заявке — вставлена или уже была.</summary>
+    public bool IsPresent => Status is RestoredFinanceEntryStatus.Inserted or RestoredFinanceEntryStatus.AlreadyExisted;
+}
+
+/// <summary>
+/// Итог восстановления финансовых операций заявки: исход по каждой записи — в порядке входных списков.
+/// </summary>
+public record RestoredFinanceResult(IReadOnlyList<RestoredFinanceEntry> Operations, IReadOnlyList<RestoredFinanceEntry> Moderations)
+{
+    /// <summary>Сколько записей (операций и решений) вставлено.</summary>
+    public int Inserted => Operations.Concat(Moderations).Count(e => e.Status == RestoredFinanceEntryStatus.Inserted);
+
+    /// <summary>Сколько записей уже было в заявке.</summary>
+    public int AlreadyExisted => Operations.Concat(Moderations).Count(e => e.Status == RestoredFinanceEntryStatus.AlreadyExisted);
+
+    /// <summary>Сколько записей пропущено из-за конфликта.</summary>
+    public int Conflicts => Operations.Concat(Moderations).Count(e => !e.IsPresent);
 }
 
 /// <summary>

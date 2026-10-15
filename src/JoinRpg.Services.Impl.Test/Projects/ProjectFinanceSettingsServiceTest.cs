@@ -224,6 +224,73 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
                 Name = null,
             }));
 
+    private void BlockProject()
+    {
+        mock.Project.IsBlocked = true;
+        mock.ReInitProjectInfo();
+    }
+
+    [Fact]
+    public async Task CreateRestoredCashPaymentType_InBlockedProject_CreatesCashForOwner()
+    {
+        BlockProject();
+
+        var result = await CreateService().CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Master.UserId));
+
+        var paymentType = FinanceSettings.PaymentTypes.ShouldHaveSingleItem();
+        paymentType.TypeKind.ShouldBe(PaymentTypeKind.Cash);
+        paymentType.Enabled.ShouldBeTrue();
+        paymentType.User.UserId.ShouldBe(new UserIdentification(mock.Master.UserId));
+        result.ShouldBe(paymentType.PaymentTypeId);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateRestoredCashPaymentType_ExistingCash_IsReturnedEvenIfDisabled(bool isActive)
+    {
+        var existing = AddPaymentType(PaymentTypeKind.Cash, isActive);
+        BlockProject();
+
+        var result = await CreateService().CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Master.UserId));
+
+        result.ShouldBe(PaymentTypeId(existing));
+        mock.Project.PaymentTypes.ShouldHaveSingleItem().IsActive.ShouldBe(isActive);
+    }
+
+    [Fact]
+    public async Task CreateRestoredCashPaymentType_ActiveProject_Throws()
+    {
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Master.UserId)));
+
+        mock.Project.PaymentTypes.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateRestoredCashPaymentType_OwnerNotAMaster_Throws()
+    {
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService().CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Player.UserId)));
+
+        mock.Project.PaymentTypes.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateRestoredCashPaymentType_WithoutManageMoneyPermission_Throws()
+    {
+        var restorer = mock.CreateMaster("Мастер без денег");
+        mock.Project.ProjectAcls.Single(a => a.UserId == restorer.UserId).CanManageMoney = false;
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(currentUserId: restorer.UserId).CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Master.UserId)));
+
+        mock.Project.PaymentTypes.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task EditCustomPaymentTypeShouldAppearInProjectInfo()
     {
