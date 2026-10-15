@@ -105,6 +105,7 @@ public static class MasterExportParser
         var playerColumn = Find(MasterExportColumn.PlayerDisplayName);
         var statusColumn = Find(MasterExportColumn.ClaimStatus);
         var totalFeeColumn = Find(MasterExportColumn.TotalFee);
+        var feePaidColumn = Find(MasterExportColumn.FeePaid);
         var createdColumn = Find(MasterExportColumn.CreatedAt);
         var updatedColumn = Find(MasterExportColumn.UpdatedAt);
 
@@ -167,6 +168,7 @@ public static class MasterExportParser
                 PlayerDisplayName: Text(playerColumn),
                 status,
                 TotalFee: ReadInt(row, totalFeeColumn, rowWarnings),
+                FeePaid: ReadInt(row, feePaidColumn, rowWarnings),
                 ClaimCreatedAt: ReadDate(row, createdColumn, rowWarnings),
                 ClaimUpdatedAt: ReadDate(row, updatedColumn, rowWarnings),
                 otherCells)

@@ -940,7 +940,7 @@
                                 }
                                 @foreach (var warning in r.Warnings)
                                 {
-                                    <div class="text-warning">@warning.GetDisplayName()</div>
+                                    <div class="text-warning">@ClaimWarningText(r, warning)</div>
                                 }
                             </td>
                         </tr>
@@ -949,6 +949,11 @@
             </table>
         </div>
     };
+
+    private static string ClaimWarningText(ClaimRestoreRowViewModel row, ClaimRestoreWarningView warning)
+        => warning == ClaimRestoreWarningView.FeePaidMismatch && row.FeePaidMismatch is { } paid
+            ? $"Уплачено в выгрузке ({paid.Exported}) не совпадает с оплатами в базе ({paid.InDatabase})"
+            : warning.GetDisplayName();
 
     private static string Format(DateTimeOffset value) => value.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
 

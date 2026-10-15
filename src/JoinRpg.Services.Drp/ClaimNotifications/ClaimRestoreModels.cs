@@ -26,6 +26,12 @@ public record ExistingClaimInfo(
     /// (<see cref="ClaimRestoreWarning.ChangedAfterRestore"/>).
     /// </summary>
     public DateTimeOffset LastUpdated { get; init; } = DateTimeOffset.MinValue;
+
+    /// <summary>
+    /// Сумма одобренных оплат заявки в базе — для сверки с «Уплачено» из выгрузки
+    /// (<see cref="ClaimRestoreWarning.FeePaidMismatch"/>).
+    /// </summary>
+    public int FeePaid { get; init; }
 }
 
 /// <summary>Персонаж в восстановленной базе.</summary>
@@ -138,7 +144,17 @@ public enum ClaimRestoreWarning
     /// взнос не меняли. Ручной взнос из выгрузки план не ставит — проверить вручную.
     /// </summary>
     TotalFeeMismatch,
+
+    /// <summary>
+    /// «Уплачено» в выгрузке заявок свежее бэкапа не совпадает с суммой одобренных оплат в базе (у заявки,
+    /// которой нет в базе, оплат нет). Оплаты план не восстанавливает — это подсказка, где суммы не сходятся
+    /// (<see cref="ClaimRestorePlanRow.FeePaidMismatch"/>).
+    /// </summary>
+    FeePaidMismatch,
 }
+
+/// <summary>Расхождение уплаченного: «Уплачено» в выгрузке и сумма одобренных оплат в базе.</summary>
+public record FeePaidMismatch(int Exported, int InDatabase);
 
 /// <summary>Меняемый атрибут заявки.</summary>
 public enum ClaimRestoreAttributeKind
@@ -195,6 +211,9 @@ public record ClaimRestorePlanRow(
     /// (<see cref="ClaimRestoreWarning.ChangedAfterRestore"/>). Остальные изменения строки применяются.
     /// </summary>
     public IReadOnlyCollection<ClaimRestoreAttributeKind> AttributesNotByDefault { get; init; } = [];
+
+    /// <summary>Суммы при <see cref="ClaimRestoreWarning.FeePaidMismatch"/>; null — совпали или сверять не с чем.</summary>
+    public FeePaidMismatch? FeePaidMismatch { get; init; }
 
     /// <summary>
     /// Создание, которое нельзя применить без решения мастера: не выбран игрок, персонаж неоднозначен

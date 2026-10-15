@@ -52,6 +52,8 @@ internal static class ClaimRestorePlanBuilder
                 // Слой заявки как есть (Claim.JsonData): поля заявки и предложения игрока.
                 FieldLayer = claim.Fields,
                 LastUpdated = AsUtc(claim.LastUpdateDateTime),
+                // Уже посчитано при чтении агрегата (сумма одобренных операций) — без отдельного запроса.
+                FeePaid = claim.Finance.FeePaid,
             }))
             .ToList();
 
@@ -139,6 +141,9 @@ internal static class ClaimRestorePlanBuilder
                 ApplyByDefault = row.ApplyByDefault,
                 Attributes = ToAttributesView(row.Attributes),
                 AttributesNotByDefault = [.. row.AttributesNotByDefault.Select(ToAttributeKindView)],
+                FeePaidMismatch = row.FeePaidMismatch is { } paid
+                    ? new ClaimRestoreFeePaidMismatchView(paid.Exported, paid.InDatabase)
+                    : null,
             };
         }).ToList();
 
@@ -184,6 +189,7 @@ internal static class ClaimRestorePlanBuilder
         ClaimRestoreWarning.LostClaimNotSubmittedAfterBackup => ClaimRestoreWarningView.LostClaimNotSubmittedAfterBackup,
         ClaimRestoreWarning.ChangedAfterRestore => ClaimRestoreWarningView.ChangedAfterRestore,
         ClaimRestoreWarning.TotalFeeMismatch => ClaimRestoreWarningView.TotalFeeMismatch,
+        ClaimRestoreWarning.FeePaidMismatch => ClaimRestoreWarningView.FeePaidMismatch,
         _ => throw new ArgumentOutOfRangeException(nameof(warning), warning, null),
     };
 

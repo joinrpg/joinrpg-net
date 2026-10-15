@@ -187,6 +187,7 @@ public class ClaimRestoreViewServiceTest
                 PlayerDisplayName: null,
                 Status: null,
                 TotalFee: null,
+                FeePaid: null,
                 ClaimCreatedAt: null,
                 ClaimUpdatedAt: null,
                 OtherCells: [])],

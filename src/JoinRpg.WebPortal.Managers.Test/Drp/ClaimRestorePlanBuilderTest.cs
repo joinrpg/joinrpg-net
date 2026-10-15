@@ -1,7 +1,9 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Services.Drp.ClaimNotifications;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
@@ -53,10 +55,42 @@ public class ClaimRestorePlanBuilderTest
         existing.ResponsibleMaster.ShouldBe(MasterId);
         existing.Status.ShouldBe(ClaimStatus.AddedByUser);
         existing.ManualFee.ShouldBe(1500);
+        existing.FeePaid.ShouldBe(0);
 
         source.DefaultResponsibleMaster.ShouldBe(MasterId);
         source.Masters.ShouldContain(m => m.UserId == MasterId);
         source.BackupTakenAt.ShouldBe(BackupTakenAt);
+    }
+
+    [Fact]
+    public void BuildSource_FeePaidIsSumOfApprovedOperations()
+    {
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.FinanceOperations.Add(new FinanceOperation { MoneyAmount = 1000, State = FinanceOperationState.Approved, OperationType = FinanceOperationType.Submit });
+        claim.FinanceOperations.Add(new FinanceOperation { MoneyAmount = 300, State = FinanceOperationState.Approved, OperationType = FinanceOperationType.Online });
+        claim.FinanceOperations.Add(new FinanceOperation { MoneyAmount = 700, State = FinanceOperationState.Proposed, OperationType = FinanceOperationType.Submit });
+
+        BuildSource().Claims.ShouldHaveSingleItem().FeePaid.ShouldBe(1300);
+    }
+
+    [Fact]
+    public void Build_FeePaidMismatch_KeepsBothSums()
+    {
+        var row = new ClaimRestorePlanRow(
+            new ClaimIdentification(ProjectId, 999),
+            ClaimRestoreAction.Nothing,
+            null, null, [], null, [], null, null, null, null, BackupTakenAt, BackupTakenAt,
+            [ClaimRestoreWarning.FeePaidMismatch])
+        {
+            FeePaidMismatch = new FeePaidMismatch(Exported: 1500, InDatabase: 1000),
+        };
+        var matched = row with { ClaimId = new ClaimIdentification(ProjectId, 998), Warnings = [], FeePaidMismatch = null };
+
+        var model = ClaimRestorePlanBuilder.Build(mock.ProjectInfo, BuildSource(), [row, matched], [], Options);
+
+        model.Rows[0].Warnings.ShouldBe([ClaimRestoreWarningView.FeePaidMismatch]);
+        model.Rows[0].FeePaidMismatch.ShouldBe(new ClaimRestoreFeePaidMismatchView(Exported: 1500, InDatabase: 1000));
+        model.Rows[1].FeePaidMismatch.ShouldBeNull();
     }
 
     [Fact]

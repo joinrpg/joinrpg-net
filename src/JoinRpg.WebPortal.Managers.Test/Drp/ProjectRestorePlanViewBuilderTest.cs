@@ -103,6 +103,7 @@ public class ProjectRestorePlanViewBuilderTest
                 PlayerDisplayName: "Игрок",
                 Status: ClaimStatus.Approved,
                 TotalFee: 1500,
+                FeePaid: 1000,
                 ClaimCreatedAt: At.AddDays(-3),
                 ClaimUpdatedAt: At.AddDays(-1),
                 OtherCells: [new MasterExportCell("Легенда", "Длинный текст", Truncated: true), new MasterExportCell("Возраст", "", false)])
@@ -116,6 +117,7 @@ public class ProjectRestorePlanViewBuilderTest
         JsonSerializer.Serialize(restored).ShouldBe(JsonSerializer.Serialize(export));
         var row = restored.Rows.ShouldHaveSingleItem();
         row.Warnings.ShouldBe([MasterExportWarning.TruncatedValues]);
+        row.FeePaid.ShouldBe(1000);
         row.ClaimCreatedAt.ShouldBe(At.AddDays(-3));
         row.ClaimCreatedAt!.Value.Offset.ShouldBe(TimeSpan.FromHours(3));
         row.OtherCells[0].Truncated.ShouldBeTrue();
