@@ -103,7 +103,7 @@
 
 **Правки в репозитории**
 
-- [ ] 🟡 Деплой в Selectel ([#5540](https://github.com/joinrpg/joinrpg-net/issues/5540), PR [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) — на ревью): токен сервис-аккаунта вместо
+- [ ] 🟢 Деплой в Selectel ([#5540](https://github.com/joinrpg/joinrpg-net/issues/5540), PR [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) влит 2026-10-15): токен сервис-аккаунта вместо
       `KUBECONFIG`, namespace `joinrpg-prod`/`joinrpg-dev`, образы из `cr.selcloud.ru`
       (`imagePullSecrets: craas-auth`). Автодеплой dev выключен до первого зелёного деплоя —
       вернуть [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) (фаза 10).
@@ -274,7 +274,11 @@
 ### Фаза 8. Обсуждения
 
 - [ ] 🟡 Импорт комментариев к заявкам из базы уведомлений как восстановленных, с прежними id
-      (у комментариев с 2026-06-06 id есть в `ClaimCommentId`; у более ранних id нет — новые; [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492))
+      (у комментариев с 2026-06-06 id есть в `ClaimCommentId`; у более ранних id нет — новые; [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492)):
+      блок на той же странице «Восстановление проекта», после заявок. PR [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557), [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) — на
+      ревью, [#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) — draft поверх них.
+- [ ] Комментарии с пометкой «видимость под вопросом» — мастеру проверить видимость руками.
+      Обсуждение восстанавливается плоским (родитель в уведомлениях не хранится).
 
 ### Фаза 9. Финансы
 
@@ -735,7 +739,10 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | закрыт |
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | закрыт |
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
-| issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | заведён |
+| issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | в работе |
+| [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | на ревью |
+| [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | на ревью |
+| [#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 3: блок восстановления комментариев на странице | 8 | draft, ждёт PR 1–2 |
 | issue [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526) | Публичный адрес аватарок — `avatars.joinrpg.ru` | 1 | заведён |
 | [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) | Аватарки: адрес из `PublicBaseUrl`, терпимое чтение (PR 1 [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526)) | 1 | влит |
 | issue [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) | Аватарки: ключ вместо адреса, джоба — **после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530)** | 1 | ждёт выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод |
@@ -747,8 +754,8 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5537](https://github.com/joinrpg/joinrpg-net/issues/5537) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 4: группы и персонажи с прежними id | 7 | влит |
 | [#5538](https://github.com/joinrpg/joinrpg-net/issues/5538) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 5: планировщик слияния выгрузок с уведомлениями | 7 | влит |
 | [#5539](https://github.com/joinrpg/joinrpg-net/issues/5539) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 6: страница «Восстановление проекта» с загрузкой выгрузок | 7 | влит |
-| issue [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540) | Деплой в Selectel: токен сервис-аккаунта вместо `KUBECONFIG` | 1 | заведён |
-| [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) | Деплой через сервис-аккаунт Selectel, namespace `joinrpg-prod`/`joinrpg-dev` (Closes [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540)) | 1 | на ревью |
+| issue [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540) | Деплой в Selectel: токен сервис-аккаунта вместо `KUBECONFIG` | 1 | закрыт |
+| [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) | Деплой через сервис-аккаунт Selectel, namespace `joinrpg-prod`/`joinrpg-dev` (Closes [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540)) | 1 | влит |
 | issue [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) | Вернуть автодеплой после переезда | 10 | заведён |
 | [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
 | [#5501](https://github.com/joinrpg/joinrpg-net/issues/5501) | `FinanceOperationIdentification` с вложенным `ClaimIdentification` (по ревью [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496)) | 7 | влит |
