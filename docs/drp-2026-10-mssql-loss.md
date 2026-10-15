@@ -130,8 +130,9 @@
 - [ ] DNS: почтовые записи `joinrpg.ru` (SPF, DKIM, DMARC, проверка домена у почтового
       провайдера — Postbox или новый) перенесены в новую зону; без них письма уйдут в спам или не
       отправятся.
-- [ ] DNS: завести записи `joinrpg.tsarevs.ru` и `id.joinrpg.tsarevs.ru` на тот же адрес, что
-      боевые, мимо заглушки. **До** деплоя из фазы 4 — иначе cert-manager не выпустит
+- [ ] DNS: завести записи `joinrpg.tsarevs.ru` и `id.joinrpg.tsarevs.ru` на балансировщик
+      176.53.231.74, мимо заглушки — PR [joinrpg-infrastructure#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2)
+      на ревью, после мерджа `terraform apply` в `05-dns`. **До** деплоя из фазы 4 — иначе cert-manager не выпустит
       сертификаты.
 - [x] (2026-10-10) PR с ingress служебных доменов ([#5474](https://github.com/joinrpg/joinrpg-net/issues/5474)) влит. Ingress и сертификаты появятся с первым
       успешным деплоем (фаза 4).
