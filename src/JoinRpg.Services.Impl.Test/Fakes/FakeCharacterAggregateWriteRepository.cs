@@ -28,6 +28,9 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
     /// <summary>Мок — один проект, поэтому «в любом проекте» значит «в этом».</summary>
     public Task<bool> IsClaimIdTaken(int claimId) => Task.FromResult(mock.Project.Claims.Any(c => c.ClaimId == claimId));
 
+    public Task<bool> ClaimExists(ClaimIdentification claimId)
+        => Task.FromResult(mock.Project.Claims.Any(c => c.ClaimId == claimId.ClaimId && c.ProjectId == claimId.ProjectId.Value));
+
     /// <summary>
     /// Оболочка заявки так же, как в бою: «предложена», с пустым обсуждением, с заданным id.
     /// </summary>
@@ -84,6 +87,72 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         character.CreatedAt = character.UpdatedAt = shell.CreatedAt;
         character.CreatedById = character.UpdatedById = shell.CreatedBy.Value;
         return Task.FromResult(RestoredShellInsertResult.Inserted);
+    }
+
+    /// <summary>
+    /// Счётчик IDENTITY комментариев в моке: id не ниже него — «не потерянный» (как <c>IDENT_CURRENT</c> в бою),
+    /// а комментарий без id получает новый — выше счётчика.
+    /// </summary>
+    internal const int CommentIdentityCurrent = 100_000;
+
+    /// <summary>
+    /// Восстановленный комментарий так же, как в бою: занятость id решает обсуждение заявки, повтор
+    /// без id узнаётся по автору, времени и тексту (побайтно). Обсуждения в моке не сохранены (id -1),
+    /// поэтому «своё» обсуждение — тот же объект, а не тот же id.
+    /// </summary>
+    public Task<RestoredCommentInsertResult> InsertRestoredClaimComment(RestoredClaimCommentRow comment)
+    {
+        var claim = mock.Project.Claims.SingleOrDefault(
+                c => c.ClaimId == comment.ClaimId.ClaimId && c.ProjectId == comment.ClaimId.ProjectId.Value)
+            ?? throw new JoinRpgEntityNotFoundException(comment.ClaimId.ClaimId, "claim");
+        var discussion = claim.CommentDiscussion;
+        var allComments = mock.Project.Claims.SelectMany(c => c.CommentDiscussion.Comments).ToList();
+
+        int commentId;
+        if (comment.CommentId is { } id)
+        {
+            if (allComments.FirstOrDefault(c => c.CommentId == id) is { } existing)
+            {
+                return Task.FromResult(discussion.Comments.Contains(existing)
+                    ? RestoredCommentInsertResult.AlreadyExists
+                    : RestoredCommentInsertResult.TakenElsewhere);
+            }
+            if (id <= 0 || id >= CommentIdentityCurrent)
+            {
+                return Task.FromResult(RestoredCommentInsertResult.NotLostId);
+            }
+            commentId = id;
+        }
+        else
+        {
+            if (discussion.Comments.Any(c => c.AuthorUserId == comment.AuthorId.Value
+                && c.CreatedAt == comment.CreatedAt
+                && string.Equals(c.CommentText.Text.Contents, comment.Text, StringComparison.Ordinal)))
+            {
+                return Task.FromResult(RestoredCommentInsertResult.AlreadyExists);
+            }
+            commentId = Math.Max(CommentIdentityCurrent, allComments.Select(c => c.CommentId).DefaultIfEmpty().Max()) + 1;
+        }
+
+        discussion.Comments.Add(new Comment
+        {
+            CommentId = commentId,
+            ProjectId = discussion.ProjectId,
+            Project = mock.Project,
+            CommentDiscussionId = discussion.CommentDiscussionId,
+            Discussion = discussion,
+            ParentCommentId = null,
+            Author = mock.TryGetUser(comment.AuthorId.Value)
+                ?? throw new JoinRpgEntityNotFoundException(comment.AuthorId.Value, "user"),
+            AuthorUserId = comment.AuthorId.Value,
+            CommentText = new CommentText { CommentId = commentId, Text = new MarkdownDbValue(comment.Text) },
+            IsCommentByPlayer = comment.IsCommentByPlayer,
+            IsVisibleToPlayer = comment.IsVisibleToPlayer,
+            ExtraAction = comment.ExtraAction,
+            CreatedAt = comment.CreatedAt,
+            LastEditTime = comment.CreatedAt,
+        });
+        return Task.FromResult(RestoredCommentInsertResult.Inserted);
     }
 
     public Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId)

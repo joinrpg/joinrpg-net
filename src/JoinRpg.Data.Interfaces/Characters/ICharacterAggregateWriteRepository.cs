@@ -58,6 +58,12 @@ public interface ICharacterAggregateWriteRepository
     Task<bool> IsClaimIdTaken(int claimId);
 
     /// <summary>
+    /// Есть ли заявка в своём проекте — лёгкая проверка без загрузки агрегата, чтобы отказать до
+    /// первой записи мимо <c>SaveChanges</c>.
+    /// </summary>
+    Task<bool> ClaimExists(ClaimIdentification claimId);
+
+    /// <summary>
     /// Вставляет «оболочку» персонажа с заданным идентификатором — для восстановления потерянного
     /// персонажа из выгрузки мастера (DRP, #5529). Оболочка — то, что дало бы доменное создание
     /// персонажа без полей: активный скрытый (<c>CharacterVisibility.Private</c>) персонаж игрока
@@ -69,7 +75,39 @@ public interface ICharacterAggregateWriteRepository
     /// текущего счётчика IDENTITY — такая вставка его не двигает.
     /// </remarks>
     Task<RestoredShellInsertResult> InsertRestoredCharacterShell(RestoredCharacterShell shell);
+
+    /// <summary>
+    /// Вставляет восстановленный комментарий к заявке — для восстановления переписки по уведомлениям
+    /// (DRP, #5492). Строки — те же, что пишет доменное добавление комментария, но с датой и автором из
+    /// уведомления и, если он известен, с прежним идентификатором: на него ссылаются уведомления и
+    /// письма. Заявку (её отметки о последних комментариях, дату обновления) не трогает — это дело
+    /// операции над заявкой.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Выполняется сразу, своей транзакцией, мимо <c>SaveChanges</c>. Прежний идентификатор вставляется
+    /// только ниже текущего счётчика IDENTITY — такая вставка его не двигает. Без идентификатора повтор
+    /// узнаётся по автору, времени (с точностью колонки <c>datetime</c>) и тексту в обсуждении заявки.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="JoinRpgEntityNotFoundException">Заявки нет в указанном проекте; ничего не вставлено.</exception>
+    Task<RestoredCommentInsertResult> InsertRestoredClaimComment(RestoredClaimCommentRow comment);
 }
+
+/// <summary>
+/// Строка восстановленного комментария к заявке.
+/// </summary>
+/// <param name="CommentId">Прежний идентификатор либо <c>null</c> — тогда комментарий получит новый.</param>
+/// <param name="CreatedAt">Время создания (UTC); им же ставится время правки.</param>
+public record RestoredClaimCommentRow(
+    ClaimIdentification ClaimId,
+    int? CommentId,
+    UserIdentification AuthorId,
+    bool IsCommentByPlayer,
+    bool IsVisibleToPlayer,
+    CommentExtraAction? ExtraAction,
+    DateTime CreatedAt,
+    string Text);
 
 /// <summary>
 /// Минимум, без которого строки персонажа нет.

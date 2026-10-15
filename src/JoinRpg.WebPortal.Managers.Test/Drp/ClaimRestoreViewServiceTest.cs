@@ -380,6 +380,9 @@ public class ClaimRestoreViewServiceTest
             Lost.Add(claim);
             return Task.FromResult(claim.Character ?? new CharacterIdentification(claim.ClaimId.ProjectId, 12345));
         }
+
+        public Task<RestoredCommentsResult> RestoreClaimComments(ClaimIdentification claimId, IReadOnlyList<RestoredClaimComment> comments)
+            => throw new NotSupportedException();
     }
 
     private sealed class FakeUserLinkResolver : IUserLinkResolver

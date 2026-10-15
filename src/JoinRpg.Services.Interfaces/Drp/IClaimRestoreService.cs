@@ -38,7 +38,45 @@ public interface IClaimRestoreService
     /// персонажа надо подавать уже на него, а не создавать второго.
     /// </returns>
     Task<CharacterIdentification> RestoreLostClaim(LostClaimToRestore claim);
+
+    /// <summary>
+    /// Возвращает в обсуждение заявки комментарии, которые есть только в уведомлениях (DRP, #5492), —
+    /// с прежними идентификаторами, авторами и датами, без уведомлений. Отметки заявки о последних
+    /// комментариях подтягиваются к восстановленным, дата обновления заявки (а с ней и проекта)
+    /// становится текущей, в историю заявки пишется одна запись. Повторный вызов с теми же
+    /// комментариями ничего не вставляет и в историю не пишет.
+    /// </summary>
+    Task<RestoredCommentsResult> RestoreClaimComments(ClaimIdentification claimId, IReadOnlyList<RestoredClaimComment> comments);
 }
+
+/// <summary>
+/// Комментарий к заявке, восстановленный по уведомлению.
+/// </summary>
+/// <param name="CommentId">
+/// Прежний идентификатор либо <c>null</c>: до 2026-06-06 id комментария в уведомлениях не было — такой
+/// комментарий получит новый id, а повтор узнаётся по автору, времени и тексту.
+/// </param>
+/// <param name="Author">Автор; обязан быть существующим пользователем.</param>
+/// <param name="CreatedAt">Когда комментарий был написан; не из будущего.</param>
+public record RestoredClaimComment(
+    int? CommentId,
+    UserIdentification Author,
+    bool IsCommentByPlayer,
+    bool IsVisibleToPlayer,
+    CommentExtraAction? ExtraAction,
+    DateTimeOffset CreatedAt,
+    string Text);
+
+/// <summary>
+/// Итог восстановления комментариев заявки.
+/// </summary>
+/// <param name="Inserted">Сколько комментариев вставлено.</param>
+/// <param name="AlreadyExisted">Сколько уже было в обсуждении этой заявки (повтор).</param>
+/// <param name="Conflicts">
+/// Прежние id, которые вставить нельзя: заняты комментарием другого обсуждения либо не потерянные
+/// (не ниже текущего счётчика). Такие комментарии пропущены.
+/// </param>
+public record RestoredCommentsResult(int Inserted, int AlreadyExisted, IReadOnlyList<int> Conflicts);
 
 /// <summary>
 /// Потерянная заявка: подана после бэкапа, в восстановленной базе её нет.

@@ -111,6 +111,163 @@ internal class ClaimRestoreService(
         return characterId;
     }
 
+    /// <remarks>
+    /// <para>
+    /// Каждый комментарий вставляется своим батчем, а отметки заявки ставит потом операция над
+    /// заявкой; общей транзакции нет (см. <see cref="RestoreLostClaim"/>). Вместо неё — повторяемость:
+    /// оборвись посередине, повтор узнает вставленные комментарии и всё равно подтянет отметки заявки
+    /// по всем переданным, но запись в истории напишет, только если что-то вставил сам.
+    /// </para>
+    /// <para>
+    /// Отметки о последних комментариях — максимум из прежних и восстановленных. Запись в истории
+    /// ставит восстановителя последним комментировавшим мастером «сейчас»; здесь это сломало бы фильтр
+    /// «без ответа», поэтому мастерские отметки после неё возвращаются к вычисленным. Дату обновления
+    /// заявки ставит текущей: сами комментарии несут исторические даты, а дату обновления проекта надо
+    /// поднять (ADR023).
+    /// </para>
+    /// </remarks>
+    public async Task<RestoredCommentsResult> RestoreClaimComments(ClaimIdentification claimId, IReadOnlyList<RestoredClaimComment> comments)
+    {
+        // Всё, что можно проверить, — до первой записи.
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claimId.ProjectId);
+        EnsureProjectBlocked(projectInfo);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageClaims);
+
+        var now = DateTime.UtcNow;
+        foreach (var comment in comments)
+        {
+            EnsureRestoredDate(comment.CreatedAt, now);
+            if (comment.IsCommentByPlayer && !comment.IsVisibleToPlayer)
+            {
+                throw new ArgumentException($"Комментарий игрока {comment.CommentId} не может быть скрыт от игрока", nameof(comments));
+            }
+            // Как Comment.Validate: пустым бывает только комментарий с действием.
+            if (comment.ExtraAction is null && string.IsNullOrWhiteSpace(comment.Text))
+            {
+                throw new ArgumentException($"Пустой комментарий {comment.CommentId} без действия", nameof(comments));
+            }
+        }
+        if (comments.Where(c => c.CommentId is not null).GroupBy(c => c.CommentId).FirstOrDefault(g => g.Count() > 1) is { } duplicate)
+        {
+            throw new ArgumentException($"Комментарий {duplicate.Key} передан дважды", nameof(comments));
+        }
+        _ = await unitOfWork.GetUsersRepository().GetRequiredUserInfoHeaders([.. comments.Select(c => c.Author).Distinct()]);
+
+        var writeRepository = unitOfWork.GetCharacterAggregateWriteRepository();
+        if (!await writeRepository.ClaimExists(claimId))
+        {
+            throw new JoinRpgEntityNotFoundException(claimId.ClaimId, "claim");
+        }
+
+        if (comments.Count == 0)
+        {
+            return new RestoredCommentsResult(0, 0, []);
+        }
+
+        var present = new List<RestoredClaimComment>();
+        var inserted = 0;
+        var conflicts = new List<int>();
+        foreach (var comment in comments)
+        {
+            var result = await writeRepository.InsertRestoredClaimComment(new RestoredClaimCommentRow(
+                claimId,
+                comment.CommentId,
+                comment.Author,
+                comment.IsCommentByPlayer,
+                comment.IsVisibleToPlayer,
+                comment.ExtraAction,
+                comment.CreatedAt.UtcDateTime,
+                comment.Text));
+            switch (result)
+            {
+                case RestoredCommentInsertResult.Inserted:
+                    inserted++;
+                    present.Add(comment);
+                    break;
+                case RestoredCommentInsertResult.AlreadyExists:
+                    present.Add(comment);
+                    break;
+                case RestoredCommentInsertResult.TakenElsewhere:
+                case RestoredCommentInsertResult.NotLostId:
+                    conflicts.Add(comment.CommentId!.Value);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(comments), result, null);
+            }
+        }
+
+        if (present.Count > 0)
+        {
+            await ApplyRestoredComments(claimId, new RestoredCommentsToApply(present, inserted));
+        }
+
+        return new RestoredCommentsResult(inserted, present.Count - inserted, conflicts);
+    }
+
+    /// <param name="Comments">Комментарии, которые теперь есть в обсуждении, — вставленные и уже бывшие.</param>
+    /// <param name="Inserted">Сколько из них вставлено этим вызовом.</param>
+    private sealed record RestoredCommentsToApply(IReadOnlyList<RestoredClaimComment> Comments, int Inserted);
+
+    private Task ApplyRestoredComments(ClaimIdentification claimId, RestoredCommentsToApply request)
+        => characterPropsService.ChangeClaim(
+            claimId,
+            ClaimAccessRequirement.ManageClaims,
+            ProjectActiveRequirement.AllowBlocked,
+            request,
+            ctx =>
+            {
+                EnsureProjectBlocked(ctx.ProjectInfo);
+                var claim = ctx.Claim;
+
+                // 1. Решения — по значениям до операции.
+                var comments = ctx.Request.Comments;
+                var playerAt = Later(
+                    claim.LastPlayerCommentAt,
+                    comments.Where(c => c.IsCommentByPlayer).Select(c => (DateTimeOffset?)c.CreatedAt.ToUniversalTime()).Max());
+                var (masterAt, masterBy) = LatestMaster(
+                    claim.LastMasterCommentAt, claim.LastMasterCommentBy_Id, comments.Where(c => !c.IsCommentByPlayer));
+                var (visibleAt, visibleBy) = LatestMaster(
+                    claim.LastVisibleMasterCommentAt, claim.LastVisibleMasterCommentBy_Id, comments.Where(c => !c.IsCommentByPlayer && c.IsVisibleToPlayer));
+
+                if (ctx.Request.Inserted == 0
+                    && playerAt == claim.LastPlayerCommentAt
+                    && masterAt == claim.LastMasterCommentAt && masterBy == claim.LastMasterCommentBy_Id
+                    && visibleAt == claim.LastVisibleMasterCommentAt && visibleBy == claim.LastVisibleMasterCommentBy_Id)
+                {
+                    ctx.NothingChanged();
+                    return;
+                }
+
+                // 2. Мутации.
+                if (ctx.Request.Inserted > 0)
+                {
+                    // TODO[Localize]
+                    _ = ctx.AddHistoryRecordWithoutNotification(
+                        $"Восстановлено комментариев из уведомлений: {ctx.Request.Inserted}",
+                        CommentExtraAction.RestoredFromNotifications);
+                }
+
+                // После записи в истории: она поставила восстановителя последним мастером «сейчас».
+                claim.LastPlayerCommentAt = playerAt;
+                claim.LastMasterCommentAt = masterAt;
+                claim.LastMasterCommentBy_Id = masterBy;
+                claim.LastVisibleMasterCommentAt = visibleAt;
+                claim.LastVisibleMasterCommentBy_Id = visibleBy;
+                claim.LastUpdateDateTime = ctx.Now;
+            });
+
+    private static DateTimeOffset? Later(DateTimeOffset? before, DateTimeOffset? restored)
+        => restored is { } r && (before is null || r > before) ? r : before;
+
+    /// <summary>Отметка «последний мастерский комментарий»: прежняя либо самый поздний восстановленный, если он позже.</summary>
+    private static (DateTimeOffset? At, int? By) LatestMaster(DateTimeOffset? beforeAt, int? beforeBy, IEnumerable<RestoredClaimComment> comments)
+    {
+        var latest = comments.MaxBy(c => c.CreatedAt);
+        return latest is not null && (beforeAt is null || latest.CreatedAt > beforeAt)
+            ? (latest.CreatedAt.ToUniversalTime(), latest.Author.Value)
+            : (beforeAt, beforeBy);
+    }
+
     /// <summary>
     /// Персонаж игрока в корневой группе: групп в уведомлениях нет, разложит мастер. Скрытый — какой
     /// была видимость, неизвестно, а скрытый ничего не раскроет до того, как мастер разберётся.
