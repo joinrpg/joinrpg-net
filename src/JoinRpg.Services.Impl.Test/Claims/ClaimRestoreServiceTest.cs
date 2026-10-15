@@ -1,3 +1,5 @@
+using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
@@ -604,5 +606,300 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
             () => CreateService(mock.Player.UserId).RestoreLostClaim(LostClaim()));
 
         mock.Project.Claims.ShouldNotContain(c => c.ClaimId == LostClaimId);
+    }
+
+    // --- Восстановление комментариев к заявке (#5492) ---
+
+    private static readonly DateTimeOffset BackupAt = new(2026, 5, 20, 12, 0, 0, TimeSpan.FromHours(3));
+    private static readonly DateTimeOffset PlayerWroteAt = new(2026, 7, 1, 10, 0, 0, TimeSpan.FromHours(3));
+    private static readonly DateTimeOffset MasterAnsweredAt = new(2026, 7, 2, 10, 0, 0, TimeSpan.FromHours(3));
+    private static readonly DateTimeOffset MasterNotedAt = new(2026, 7, 3, 10, 0, 0, TimeSpan.FromHours(3));
+
+    private static RestoredClaimComment RestoredComment(
+        int? commentId, User author, bool byPlayer, bool visible, DateTimeOffset at, string text)
+        => new(commentId, new UserIdentification(author.UserId), byPlayer, visible, ExtraAction: null, at, text);
+
+    /// <summary>
+    /// Заявка с отметками на момент бэкапа и восстановитель — отдельный мастер, чтобы его не спутать с
+    /// авторами восстановленных комментариев.
+    /// </summary>
+    private (Claim Claim, User Restorer, User OtherMaster) CreateClaimForComments()
+    {
+        var restorer = mock.CreateMaster("Восстановитель");
+        var otherMaster = mock.CreateMaster("Другой мастер");
+        var claim = CreateClaim(ClaimStatus.Discussed);
+        claim.LastPlayerCommentAt = BackupAt;
+        claim.LastMasterCommentAt = BackupAt;
+        claim.LastMasterCommentBy_Id = mock.Master.UserId;
+        claim.LastVisibleMasterCommentAt = BackupAt;
+        claim.LastVisibleMasterCommentBy_Id = mock.Master.UserId;
+        claim.LastUpdateDateTime = BackupAt.UtcDateTime;
+        return (claim, restorer, otherMaster);
+    }
+
+    private List<RestoredClaimComment> Correspondence(User otherMaster) =>
+    [
+        RestoredComment(500, mock.Player, byPlayer: true, visible: true, PlayerWroteAt, "Можно {другую} роль?"),
+        RestoredComment(501, otherMaster, byPlayer: false, visible: true, MasterAnsweredAt, "Можно"),
+        // До 2026-06-06 id в уведомлениях не было.
+        RestoredComment(null, mock.Master, byPlayer: false, visible: false, MasterNotedAt, "Заметка для своих"),
+    ];
+
+    private static List<Comment> NonHistoryComments(Claim claim)
+        => [.. claim.CommentDiscussion.Comments.Where(c => c.ExtraAction != CommentExtraAction.RestoredFromNotifications)];
+
+    [Fact]
+    public async Task RestoreComments_InsertsWithIds_WritesHistory_AndDenormalizes()
+    {
+        var (claim, restorer, otherMaster) = CreateClaimForComments();
+        var before = DateTime.UtcNow;
+
+        var result = await CreateService(restorer.UserId).RestoreClaimComments(claim.GetId(), Correspondence(otherMaster));
+
+        result.ShouldBe(new RestoredCommentsResult(3, 0, []), new RestoredCommentsResultComparer());
+        var restored = NonHistoryComments(claim);
+        restored.Select(c => c.CommentId).Take(2).ShouldBe([500, 501]);
+        restored[2].CommentId.ShouldBeGreaterThan(FakeCharacterAggregateWriteRepository.CommentIdentityCurrent);
+        restored[0].CommentText.Text.Contents.ShouldBe("Можно {другую} роль?");
+        restored[0].CreatedAt.ShouldBe(PlayerWroteAt.UtcDateTime);
+        restored[1].AuthorUserId.ShouldBe(otherMaster.UserId);
+
+        var history = RestoreComments(claim).ShouldHaveSingleItem();
+        history.CommentText.Text.Contents.ShouldBe("Восстановлено комментариев из уведомлений: 3");
+        history.IsVisibleToPlayer.ShouldBeFalse();
+        history.AuthorUserId.ShouldBe(restorer.UserId);
+
+        // Отметки — по восстановленным, а не «восстановитель, сейчас»: иначе сломается фильтр «без ответа».
+        claim.LastPlayerCommentAt.ShouldBe(PlayerWroteAt);
+        claim.LastMasterCommentAt.ShouldBe(MasterNotedAt);
+        claim.LastMasterCommentBy_Id.ShouldBe(mock.Master.UserId);
+        claim.LastVisibleMasterCommentAt.ShouldBe(MasterAnsweredAt);
+        claim.LastVisibleMasterCommentBy_Id.ShouldBe(otherMaster.UserId);
+
+        // Дата обновления заявки (а с ней и проекта) — сейчас, хотя комментарии исторические (ADR023).
+        claim.LastUpdateDateTime.ShouldBeGreaterThanOrEqualTo(before);
+
+        claimNotifications.Sent.ShouldBeEmpty();
+        SentInOrder.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreComments_LaterMarksBeforeOperation_AreKept()
+    {
+        var (claim, restorer, otherMaster) = CreateClaimForComments();
+        var later = new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero);
+        claim.LastPlayerCommentAt = later;
+        claim.LastMasterCommentAt = later;
+        claim.LastVisibleMasterCommentAt = later;
+
+        _ = await CreateService(restorer.UserId).RestoreClaimComments(claim.GetId(), Correspondence(otherMaster));
+
+        claim.LastPlayerCommentAt.ShouldBe(later);
+        claim.LastMasterCommentAt.ShouldBe(later);
+        claim.LastMasterCommentBy_Id.ShouldBe(mock.Master.UserId);
+        claim.LastVisibleMasterCommentAt.ShouldBe(later);
+        claim.LastVisibleMasterCommentBy_Id.ShouldBe(mock.Master.UserId);
+    }
+
+    [Fact]
+    public async Task RestoreComments_Repeat_DoesNothing()
+    {
+        var (claim, restorer, otherMaster) = CreateClaimForComments();
+        _ = await CreateService(restorer.UserId).RestoreClaimComments(claim.GetId(), Correspondence(otherMaster));
+        var commentsCount = claim.CommentDiscussion.Comments.Count;
+        var updatedAt = claim.LastUpdateDateTime;
+
+        var result = await CreateService(restorer.UserId).RestoreClaimComments(claim.GetId(), Correspondence(otherMaster));
+
+        result.ShouldBe(new RestoredCommentsResult(0, 3, []), new RestoredCommentsResultComparer());
+        claim.CommentDiscussion.Comments.Count.ShouldBe(commentsCount);
+        RestoreComments(claim).ShouldHaveSingleItem();
+        claim.LastUpdateDateTime.ShouldBe(updatedAt);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreComments_AfterInterruptedRun_FixesMarksWithoutHistory()
+    {
+        // Прошлый вызов вставил комментарии и оборвался до операции над заявкой.
+        var (claim, restorer, otherMaster) = CreateClaimForComments();
+        foreach (var comment in Correspondence(otherMaster))
+        {
+            _ = await WriteRepository.InsertRestoredClaimComment(new RestoredClaimCommentRow(
+                claim.GetId(), comment.CommentId, comment.Author, comment.IsCommentByPlayer, comment.IsVisibleToPlayer,
+                comment.ExtraAction, comment.CreatedAt.UtcDateTime, comment.Text));
+        }
+        var before = DateTime.UtcNow;
+
+        var result = await CreateService(restorer.UserId).RestoreClaimComments(claim.GetId(), Correspondence(otherMaster));
+
+        result.ShouldBe(new RestoredCommentsResult(0, 3, []), new RestoredCommentsResultComparer());
+        RestoreComments(claim).ShouldBeEmpty();
+        claim.LastMasterCommentAt.ShouldBe(MasterNotedAt);
+        claim.LastUpdateDateTime.ShouldBeGreaterThanOrEqualTo(before);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreComments_ConflictingIds_AreReported_AndSkipped()
+    {
+        var (claim, restorer, _) = CreateClaimForComments();
+        var otherClaim = mock.CreateClaim(mock.CreateCharacter("Петя"), mock.Player);
+        var foreign = mock.CreateComment(otherClaim, "Чужой комментарий");
+        foreign.CommentId = 600;
+        var notLost = FakeCharacterAggregateWriteRepository.CommentIdentityCurrent + 5;
+
+        var result = await CreateService(restorer.UserId).RestoreClaimComments(claim.GetId(),
+        [
+            RestoredComment(600, mock.Player, byPlayer: true, visible: true, PlayerWroteAt, "Занятый id"),
+            RestoredComment(notLost, mock.Player, byPlayer: true, visible: true, PlayerWroteAt, "Id выше счётчика"),
+        ]);
+
+        result.ShouldBe(new RestoredCommentsResult(0, 0, [600, notLost]), new RestoredCommentsResultComparer());
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        claim.LastPlayerCommentAt.ShouldBe(BackupAt);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreComments_ActiveProject_Throws_AndNothingIsInserted()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var claim = mock.CreateClaim(character, mock.Player);
+        var otherMaster = mock.CreateMaster("Другой мастер");
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().RestoreClaimComments(claim.GetId(), Correspondence(otherMaster)));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreComments_Player_HasNoAccess()
+    {
+        var (claim, _, otherMaster) = CreateClaimForComments();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).RestoreClaimComments(claim.GetId(), Correspondence(otherMaster)));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreComments_DateInFuture_Throws_AndNothingIsInserted()
+    {
+        var (claim, _, otherMaster) = CreateClaimForComments();
+        var comments = Correspondence(otherMaster);
+        comments.Add(RestoredComment(502, mock.Player, byPlayer: true, visible: true, DateTimeOffset.UtcNow.AddDays(10), "Из будущего"));
+
+        _ = await Should.ThrowAsync<CannotPerformOperationInFuture>(
+            () => CreateService().RestoreClaimComments(claim.GetId(), comments));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RestoreComments_HiddenPlayerComment_Throws_AndNothingIsInserted()
+    {
+        var (claim, _, otherMaster) = CreateClaimForComments();
+        var comments = Correspondence(otherMaster);
+        comments.Add(RestoredComment(502, mock.Player, byPlayer: true, visible: false, PlayerWroteAt, "Скрытый от себя"));
+
+        _ = await Should.ThrowAsync<ArgumentException>(() => CreateService().RestoreClaimComments(claim.GetId(), comments));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task RestoreComments_EmptyTextWithoutAction_Throws_AndNothingIsInserted(string text)
+    {
+        var (claim, _, otherMaster) = CreateClaimForComments();
+        var comments = Correspondence(otherMaster);
+        comments.Add(RestoredComment(502, mock.Master, byPlayer: false, visible: true, MasterAnsweredAt, text));
+
+        _ = await Should.ThrowAsync<ArgumentException>(() => CreateService().RestoreClaimComments(claim.GetId(), comments));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RestoreComments_EmptyTextWithAction_IsInserted()
+    {
+        var (claim, restorer, _) = CreateClaimForComments();
+
+        var result = await CreateService(restorer.UserId).RestoreClaimComments(claim.GetId(),
+            [RestoredComment(502, mock.Master, byPlayer: false, visible: true, MasterAnsweredAt, "") with { ExtraAction = CommentExtraAction.ChangeResponsible }]);
+
+        result.Inserted.ShouldBe(1);
+        NonHistoryComments(claim).ShouldHaveSingleItem().ExtraAction.ShouldBe(CommentExtraAction.ChangeResponsible);
+    }
+
+    [Fact]
+    public async Task RestoreComments_DuplicateId_Throws_AndNothingIsInserted()
+    {
+        var (claim, _, otherMaster) = CreateClaimForComments();
+        var comments = Correspondence(otherMaster);
+        comments.Add(RestoredComment(500, mock.Player, byPlayer: true, visible: true, PlayerWroteAt, "Тот же id"));
+
+        _ = await Should.ThrowAsync<ArgumentException>(() => CreateService().RestoreClaimComments(claim.GetId(), comments));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RestoreComments_ClaimFromOtherProjectOrMissing_Throws_AndNothingIsInserted()
+    {
+        var (claim, _, otherMaster) = CreateClaimForComments();
+
+        _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
+            () => CreateService().RestoreClaimComments(new ClaimIdentification(ProjectId, 100500), Correspondence(otherMaster)));
+
+        mock.Project.Claims.ShouldAllBe(c => c.CommentDiscussion.Comments.Count == 0);
+        SaveChangesCallCount.ShouldBe(0);
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RestoreComments_EmptyList_DoesNothing()
+    {
+        var (claim, restorer, _) = CreateClaimForComments();
+
+        var result = await CreateService(restorer.UserId).RestoreClaimComments(claim.GetId(), []);
+
+        result.ShouldBe(new RestoredCommentsResult(0, 0, []), new RestoredCommentsResultComparer());
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        claim.LastUpdateDateTime.ShouldBe(BackupAt.UtcDateTime);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreComments_UnknownAuthor_Throws_AndNothingIsInserted()
+    {
+        var (claim, _, otherMaster) = CreateClaimForComments();
+        var comments = Correspondence(otherMaster);
+        comments.Add(new RestoredClaimComment(502, new UserIdentification(100500), false, true, null, PlayerWroteAt, "Кто это?"));
+
+        _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
+            () => CreateService().RestoreClaimComments(claim.GetId(), comments));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+    }
+
+    /// <summary>Записи сравнивают списки по ссылке — здесь нужно по содержимому.</summary>
+    private sealed class RestoredCommentsResultComparer : IEqualityComparer<RestoredCommentsResult>
+    {
+        public bool Equals(RestoredCommentsResult? x, RestoredCommentsResult? y)
+            => x is not null && y is not null
+                && x.Inserted == y.Inserted && x.AlreadyExisted == y.AlreadyExisted
+                && x.Conflicts.SequenceEqual(y.Conflicts);
+
+        public int GetHashCode(RestoredCommentsResult obj) => HashCode.Combine(obj.Inserted, obj.AlreadyExisted);
     }
 }

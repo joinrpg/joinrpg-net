@@ -99,6 +99,13 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
 
     public Task<bool> IsClaimIdTaken(int claimId) => ctx.Set<Claim>().AnyAsync(c => c.ClaimId == claimId);
 
+    public Task<bool> ClaimExists(ClaimIdentification claimId)
+    {
+        var claimIntId = claimId.ClaimId;
+        var projectIntId = claimId.ProjectId.Value;
+        return ctx.Set<Claim>().AnyAsync(c => c.ClaimId == claimIntId && c.ProjectId == projectIntId);
+    }
+
     public Task<RestoredShellInsertResult> InsertRestoredCharacterShell(RestoredCharacterShell shell)
     {
         if (shell.CharacterId.ProjectId != shell.RootGroupId.ProjectId)
@@ -138,6 +145,101 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
             shell.CreatedAt,
             shell.CreatedBy.Value,
             EmptyFieldsJson);
+    }
+
+    public async Task<RestoredCommentInsertResult> InsertRestoredClaimComment(RestoredClaimCommentRow comment)
+    {
+        // Отдельный батч, а не RestoredShellInsert: занятость id здесь решает обсуждение, а не проект,
+        // проверки корневой группы нет, а без id — обычная вставка с поиском повтора.
+        // Одним батчем и своей транзакцией; проверки занятости — с блокировкой диапазона, чтобы два
+        // одновременных восстановления одного комментария не вставили его дважды. Колонки — как у
+        // доменного создания (CommentHelper.CreateCommentForDiscussion): без родителя, время правки
+        // равно времени создания. Повтор без id узнаётся по автору, времени и тексту; текст сравнивается
+        // побайтно, а не по сортировке базы, нечувствительной к регистру. Текст и прочее — параметрами:
+        // EF6 прогоняет текст команды через string.Format, фигурные скобки markdown его сломали бы.
+        // IDENTITY_INSERT действует на сессию, поэтому выключается и при ошибке.
+        // Время приводится к типу колонки (datetime, шаг ~3 мс) один раз: и пишется, и сравнивается при
+        // поиске повтора одно и то же значение, как бы провайдер ни типизировал параметр.
+        if (!await ClaimExists(comment.ClaimId))
+        {
+            // То же исключение, что у загрузки заявки; THROW в батче — только на гонку с удалением.
+            throw new JoinRpgEntityNotFoundException(comment.ClaimId.ClaimId, "claim");
+        }
+
+        var sql = $"""
+            SET XACT_ABORT ON;
+            BEGIN TRY
+                BEGIN TRANSACTION;
+                DECLARE @createdAt datetime = @p7;
+                DECLARE @discussionId int;
+                SELECT @discussionId = CommentDiscussionId FROM dbo.Claims WHERE ClaimId = @p0 AND ProjectId = @p1;
+                IF @discussionId IS NULL
+                    THROW 50000, N'Claim is not found in the project', 1;
+                DECLARE @commentId int = @p2;
+                IF @commentId IS NOT NULL
+                BEGIN
+                    DECLARE @existingDiscussionId int;
+                    SELECT @existingDiscussionId = CommentDiscussionId FROM dbo.Comments WITH (UPDLOCK, HOLDLOCK) WHERE CommentId = @commentId;
+                    IF @existingDiscussionId IS NOT NULL
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT CASE WHEN @existingDiscussionId = @discussionId THEN {(int)RestoredCommentInsertResult.AlreadyExists} ELSE {(int)RestoredCommentInsertResult.TakenElsewhere} END;
+                        RETURN;
+                    END;
+                    IF @commentId <= 0 OR @commentId >= ISNULL(IDENT_CURRENT('dbo.Comments'), 0)
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT {(int)RestoredCommentInsertResult.NotLostId};
+                        RETURN;
+                    END;
+                    SET IDENTITY_INSERT dbo.Comments ON;
+                    INSERT INTO dbo.Comments (CommentId, ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
+                        LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
+                    VALUES (@commentId, @p1, @discussionId, NULL, @createdAt, @createdAt, @p3, @p4, @p5, @p6);
+                    SET IDENTITY_INSERT dbo.Comments OFF;
+                END
+                ELSE
+                BEGIN
+                    IF EXISTS (
+                        SELECT 1
+                        FROM dbo.Comments c WITH (UPDLOCK, HOLDLOCK)
+                        JOIN dbo.CommentTexts t ON t.CommentId = c.CommentId
+                        WHERE c.CommentDiscussionId = @discussionId AND c.AuthorUserId = @p3 AND c.CreatedTime = @createdAt
+                            AND CAST(t.Text_Contents AS varbinary(max)) = CAST(@p8 AS varbinary(max)))
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT {(int)RestoredCommentInsertResult.AlreadyExists};
+                        RETURN;
+                    END;
+                    INSERT INTO dbo.Comments (ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
+                        LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
+                    VALUES (@p1, @discussionId, NULL, @createdAt, @createdAt, @p3, @p4, @p5, @p6);
+                    SET @commentId = CAST(SCOPE_IDENTITY() AS int);
+                END;
+                INSERT INTO dbo.CommentTexts (CommentId, Text_Contents) VALUES (@commentId, @p8);
+                COMMIT TRANSACTION;
+                SELECT {(int)RestoredCommentInsertResult.Inserted};
+            END TRY
+            BEGIN CATCH
+                IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                SET IDENTITY_INSERT dbo.Comments OFF;
+                THROW;
+            END CATCH;
+            """;
+
+        var result = await ctx.Database.SqlQuery<int>(
+                sql,
+                comment.ClaimId.ClaimId,
+                comment.ClaimId.ProjectId.Value,
+                (object?)comment.CommentId ?? DBNull.Value,
+                comment.AuthorId.Value,
+                comment.IsCommentByPlayer,
+                comment.IsVisibleToPlayer,
+                comment.ExtraAction is { } extraAction ? (object)(int)extraAction : DBNull.Value,
+                comment.CreatedAt,
+                comment.Text)
+            .SingleAsync();
+        return (RestoredCommentInsertResult)result;
     }
 
     /// <summary>Пустой набор полей — так его сериализует сохранение полей (<c>SerializeFields</c>).</summary>
