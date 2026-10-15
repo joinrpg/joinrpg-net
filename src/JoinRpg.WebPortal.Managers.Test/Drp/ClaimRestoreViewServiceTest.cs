@@ -362,6 +362,12 @@ public class ClaimRestoreViewServiceTest
             Emails.AddRange(emails);
             return Task.FromResult<IReadOnlyDictionary<string, UserIdentification>>(new Dictionary<string, UserIdentification>());
         }
+
+        public Task<ClaimCommentsRestoreLookup> GetClaimCommentsForRestore(ProjectIdentification projectId, IReadOnlyCollection<int> notifiedCommentIds, DateTimeOffset textsSince)
+            => throw new NotSupportedException();
+
+        public Task<ClaimCommentsRestoreLookup> GetClaimCommentsForRestore(ClaimIdentification claimId, IReadOnlyCollection<int> notifiedCommentIds, DateTimeOffset textsSince)
+            => throw new NotSupportedException();
     }
 
     private sealed class FakeClaimRestoreService : IClaimRestoreService

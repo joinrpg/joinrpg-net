@@ -47,6 +47,12 @@ public interface INotificationRepository
     /// уведомления (<c>ClaimId(345, 12)</c> и т.п.) сюда не попадут — для бэкапа от мая они и не нужны.
     /// </remarks>
     Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore);
+
+    /// <summary>
+    /// То же, что <see cref="GetClaimNotificationsForProject"/>, но по одной заявке: сама заявка, её комментарии
+    /// и финансовые операции. Для восстановления комментариев одной заявки (DRP, #5492).
+    /// </summary>
+    Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForClaim(ClaimIdentification claimId, DateTimeOffset createdBefore);
 }
 
 public record NotificationMessageCreateDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationAddress> Channels);

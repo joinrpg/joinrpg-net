@@ -266,6 +266,117 @@ public class RestoredClaimCommentsScenario(JoinApplicationFactory factory)
         (await GetProjectLastUpdatedAsync(masterId, projectId)).ShouldBeGreaterThanOrEqualTo(DateOnly.FromDateTime(resumeBefore));
     }
 
+    /// <summary>
+    /// Чтение для плана восстановления (<see cref="IProjectRestoreLookupRepository.GetClaimCommentsForRestore(ProjectIdentification, IReadOnlyCollection{int}, DateTimeOffset)"/>):
+    /// свои комментарии не заняты, чужие — заняты, время — UTC, тексты — только свежие, а комментарий
+    /// без строки CommentTexts не теряется (иначе его id сочли бы занятым чужим).
+    /// </summary>
+    [Fact]
+    public async Task RestoreLookup_ReadsOwnCommentsAndTakenIds()
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectId;
+        ProjectIdentification otherProjectId;
+        UserIdentification playerId;
+        UserIdentification otherPlayerId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId);
+            otherProjectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId);
+            playerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            otherPlayerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+        }
+
+        var claimId = await AddClaim(playerId, await AddCharacter(masterId, projectId));
+        var neighbourClaimId = await AddClaim(otherPlayerId, await AddCharacter(masterId, projectId));
+        var foreignClaimId = await AddClaim(playerId, await AddCharacter(masterId, otherProjectId));
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var claimService = sp.GetRequiredService<IClaimService>();
+            await claimService.AddComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Свежий");
+            await claimService.AddComment(claimId, parentCommentId: null, isVisibleToPlayer: false, "Старый");
+            await claimService.AddComment(neighbourClaimId, parentCommentId: null, isVisibleToPlayer: true, "Соседняя заявка");
+            await claimService.AddComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
+        });
+
+        var freshAt = new DateTime(2026, 7, 2, 10, 0, 0, DateTimeKind.Utc);
+        var oldAt = BackupAt.AddDays(-10);
+        int freshId, oldId, noTextId, neighbourId, foreignId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            var discussionId = await GetDiscussionIdAsync(db, claimId);
+            int LastIdByText(string text) => db.Set<Comment>().Where(c => c.CommentText.Text.Contents == text).Max(c => c.CommentId);
+            freshId = LastIdByText("Свежий");
+            oldId = LastIdByText("Старый");
+            neighbourId = LastIdByText("Соседняя заявка");
+            foreignId = LastIdByText("Другой проект");
+            _ = await db.Database.ExecuteSqlCommandAsync(
+                "UPDATE dbo.Comments SET CreatedTime = @p1 WHERE CommentId = @p0; UPDATE dbo.Comments SET CreatedTime = @p3 WHERE CommentId = @p2;",
+                freshId, freshAt, oldId, oldAt);
+            // Комментарий без строки CommentTexts — связь объявлена обязательной, INNER JOIN бы его потерял.
+            noTextId = await db.Database.SqlQuery<int>(
+                    """
+                    SET NOCOUNT ON;
+                    INSERT INTO dbo.Comments (ProjectId, CommentDiscussionId, CreatedTime, LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer)
+                    VALUES (@p0, @p1, @p2, @p2, @p3, 0, 1);
+                    SELECT CAST(SCOPE_IDENTITY() AS int);
+                    """,
+                    projectId.Value, discussionId, freshAt, masterId.Value)
+                .SingleAsync();
+        }
+
+        const int missingId = int.MaxValue - 1;
+        int[] notified = [freshId, oldId, noTextId, neighbourId, foreignId, missingId];
+        var textsSince = new DateTimeOffset(BackupAt).AddMinutes(-1);
+
+        var (byProject, byClaim) = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var repository = sp.GetRequiredService<IProjectRestoreLookupRepository>();
+            return (await repository.GetClaimCommentsForRestore(projectId, notified, textsSince),
+                await repository.GetClaimCommentsForRestore(claimId, notified, textsSince));
+        });
+
+        // По проекту: обе заявки, соседний комментарий свой, занят только комментарий другого проекта.
+        byProject.Claims.Select(c => c.ClaimId).ShouldBe([claimId, neighbourClaimId], ignoreOrder: true);
+        byProject.Claims.Single(c => c.ClaimId == claimId).Player.ShouldBe(playerId);
+        byProject.TakenCommentIds.ShouldBe([foreignId]);
+        byProject.Comments.Select(c => c.CommentId).ShouldContain(noTextId);
+        var fresh = byProject.Comments.Single(c => c.CommentId == freshId);
+        fresh.ClaimId.ShouldBe(claimId);
+        fresh.Author.ShouldBe(masterId);
+        fresh.CreatedAt.Offset.ShouldBe(TimeSpan.Zero);
+        fresh.CreatedAt.ShouldBe(new DateTimeOffset(freshAt));
+        fresh.Text.ShouldBe("Свежий");
+        fresh.IsVisibleToPlayer.ShouldBeTrue();
+        // Старше бэкапа — текст не нужен и не грузится.
+        byProject.Comments.Single(c => c.CommentId == oldId).Text.ShouldBeNull();
+        byProject.Comments.Single(c => c.CommentId == noTextId).Text.ShouldBeNull();
+        byProject.Comments.ShouldContain(c => c.CommentId == neighbourId && c.ClaimId == neighbourClaimId);
+
+        // По заявке: только она, а комментарий соседней заявки — уже занятый номер.
+        byClaim.Claims.ShouldHaveSingleItem().ClaimId.ShouldBe(claimId);
+        byClaim.Comments.ShouldAllBe(c => c.ClaimId == claimId);
+        byClaim.Comments.Select(c => c.CommentId).ShouldContain(noTextId);
+        byClaim.TakenCommentIds.ShouldBe([neighbourId, foreignId], ignoreOrder: true);
+    }
+
+    private Task<CharacterIdentification> AddCharacter(UserIdentification masterId, ProjectIdentification projectId)
+        => factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                projectId,
+                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
+            return await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
+        });
+
     private Task<ClaimIdentification> AddClaim(UserIdentification playerId, CharacterIdentification characterId)
         => factory.Services.RunAsAsync(playerId, async sp =>
         {

@@ -8,3 +8,6 @@
 }
 
 @(await Html.RenderComponentAsync<ClaimRestorePanel>(RenderMode.WebAssembly, new { Model.ProjectId }))
+
+@* Комментарии к заявкам (DRP, #5492) — после заявок: восстанавливать их можно только в существующие заявки. *@
+@(await Html.RenderComponentAsync<CommentRestorePanel>(RenderMode.WebAssembly, new { Model.ProjectId }))
