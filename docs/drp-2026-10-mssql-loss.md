@@ -131,19 +131,19 @@
 - [ ] DNS (зоны уже переносятся в Selectel — план инженеров): боевые домены (`joinrpg.ru`,
       `www.joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru`) — на адрес нового
       балансировщика.
-- [ ] DNS: `components.joinrpg.ru` и dev-хосты (`dev.joinrpg.ru`, `devid.joinrpg.ru`,
+- [x] (2026-10-16) DNS: `components.joinrpg.ru` и dev-хосты (`dev.joinrpg.ru`, `devid.joinrpg.ru`,
       `dev-components.joinrpg.ru`) — на 176.53.231.74: PR
       [joinrpg-infrastructure#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) на ревью.
 - [ ] DNS: почтовые записи `joinrpg.ru` (SPF, DKIM, DMARC, проверка домена у почтового
       провайдера — Postbox или новый) перенесены в новую зону; без них письма уйдут в спам или не
       отправятся.
-- [ ] DNS: `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` и для dev `dev.joinrpg.tsarevs.ru`,
+- [x] (2026-10-16) DNS: `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` и для dev `dev.joinrpg.tsarevs.ru`,
       `dev.id.joinrpg.tsarevs.ru` — на балансировщик 176.53.231.74, мимо заглушки: PR
       [joinrpg-infrastructure#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) на ревью,
       после мерджа `terraform apply` в `05-dns`. **До** деплоя из фазы 4.
 - [ ] TLS на Gateway `infra/main` покрывает все четыре служебных хоста (манифесты — Gateway API,
       `HTTPRoute`, без cert-manager в репозитории; Gateway — в инфраструктуре).
-- [ ] Маршруты служебных доменов dev — PR [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) на ревью.
+- [x] Маршруты служебных доменов dev — [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) влит.
 - [x] (2026-10-10) PR с маршрутами служебных доменов prod ([#5474](https://github.com/joinrpg/joinrpg-net/issues/5474)) влит. Маршруты появятся с первым
       успешным деплоем (фаза 4).
 
@@ -183,15 +183,15 @@
 
 **Конфиг** (`manifests/prod`, уходит одним деплоем с новым секретом в конце фазы 4)
 
-Джобы, адрес аватарок и баннер — PR [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) на ревью; влить **до** деплоя с новым секретом.
+Джобы, S3, адрес аватарок и баннер — [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) влит 2026-10-15.
 
-- [ ] 🟢 Выключить джобы ([#5470](https://github.com/joinrpg/joinrpg-net/issues/5470)): `DailyJobs__Disabled__0=AdvertisementJob`,
+- [x] (2026-10-15) 🟢 Выключить джобы ([#5470](https://github.com/joinrpg/joinrpg-net/issues/5470)): `DailyJobs__Disabled__0=AdvertisementJob`,
       `__1=UpdatePaymentStatusJob` ([почему](#опасные-джобы)). `ProjectPerformCloseJob` выключать
       не нужно: заблокированные проекты он не выбирает ([#5482](https://github.com/joinrpg/joinrpg-net/issues/5482)), а майские блокируются в фазе 4
       до старта подов.
-- [ ] Аватарки: `S3BlobStorage__PublicBaseUrl` = `https://avatars.joinrpg.ru` — **и Portal, и
+- [x] (2026-10-15) Аватарки: `S3BlobStorage__PublicBaseUrl` = `https://avatars.joinrpg.ru` — **и Portal, и
       IdPortal** (без него IdPortal молча отдаёт аватарку провайдера); dev — `https://avatars.dev.joinrpg.ru`.
-- [ ] 🟢 Баннер: `SiteBanner__Text` ([#5463](https://github.com/joinrpg/joinrpg-net/issues/5463)).
+- [x] (2026-10-15) 🟢 Баннер: `SiteBanner__Text` ([#5463](https://github.com/joinrpg/joinrpg-net/issues/5463)).
 - [x] ~~Рекуррентные платежи~~ — джоба выключена в коде ([#5464](https://github.com/joinrpg/joinrpg-net/issues/5464)).
 - [x] ~~MCP~~ — игнорируем, им никто не пользовался.
 
@@ -307,8 +307,11 @@
 - [x] ~~Установка взноса вручную~~ — уже восстанавливается в фазе 7 ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)).
 - [ ] 🟡 Ручные оплаты и возвраты из уведомлений, с прежними id — консольный инструмент
       `RestoreManualFinance` ([#5561](https://github.com/joinrpg/joinrpg-net/issues/5561)): dry-run → CSV (ПДн — локально) → проверить предложенный тип
-      оплаты → `--apply`. По всем заблокированным проектам сразу, после фазы 7.
-- [ ] Проекты без типа оплаты (оболочки, типы заведены после мая) — решение в [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561).
+      оплаты → `--apply`. По всем заблокированным проектам сразу, после фазы 7. Влиты [#5568](https://github.com/joinrpg/joinrpg-net/issues/5568),
+      [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569), [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567); инструмент — [#5571](https://github.com/joinrpg/joinrpg-net/issues/5571) (draft, последний).
+- [x] ~~Проекты без типа оплаты~~ — решено 2026-10-15: инструмент создаёт тип Cash на мастера по
+      подтверждению в CSV (`cash:<userId>`).
+- [ ] Сверка «Уплачено» из выгрузки мастера с оплатами в базе — [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567) влит.
 
 ### Фаза 10. Возврат в штатный режим
 
@@ -761,9 +764,9 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5468](https://github.com/joinrpg/joinrpg-net/issues/5468) | Старый Telegram-адрес в очереди не останавливает канал (закрывает issue [#5466](https://github.com/joinrpg/joinrpg-net/issues/5466)) | 3 | влит |
 | [#5470](https://github.com/joinrpg/joinrpg-net/issues/5470) | Выключение ежедневных джоб через конфиг `DailyJobs:Disabled` | 3 | влит |
 | [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` | 2 | влит |
-| [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) | Служебные домены dev: `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` | 2 | на ревью |
-| [infra#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) | DNS служебных доменов prod и dev (terraform) | 2 | на ревью |
-| [infra#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) | DNS dev-хостов и `components.joinrpg.ru` на Selectel (terraform) | 2 | на ревью |
+| [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) | Служебные домены dev: `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` | 2 | влит |
+| [infra#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) | DNS служебных доменов prod и dev (terraform) | 2 | влит, apply сделан |
+| [infra#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) | DNS dev-хостов и `components.joinrpg.ru` на Selectel (terraform) | 2 | влит, apply сделан |
 | [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | влит |
 | [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504) | RestoreLostProjects — в логах только ответы ниже 400 | 4 | влит |
 | issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | закрыт |
@@ -777,9 +780,13 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | закрыт |
 | [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | влит |
-| [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566) | Конфиг dev: S3 Selectel, `PublicBaseUrl` = `avatars.dev.joinrpg.ru` | 1 | на ревью |
-| [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) | Конфиг прода: выключенные джобы, S3 Selectel (`Endpoint`, `PublicBaseUrl`), баннер | 3 | на ревью |
-| issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | заведён |
+| [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566) | Конфиг dev: S3 Selectel, `PublicBaseUrl` = `avatars.dev.joinrpg.ru` | 1 | влит |
+| [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) | Конфиг прода: выключенные джобы, S3 Selectel (`Endpoint`, `PublicBaseUrl`), баннер | 3 | влит |
+| issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | в работе |
+| [#5568](https://github.com/joinrpg/joinrpg-net/issues/5568) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 1: планировщик ручных финансовых операций | 9 | влит |
+| [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 2: вставка операций с прежними id | 9 | влит |
+| [#5571](https://github.com/joinrpg/joinrpg-net/issues/5571) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 3: консольный инструмент `RestoreManualFinance` | 9 | draft |
+| [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 4: сверка «Уплачено» из выгрузки с оплатами | 9 | влит |
 | [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | влит |
 | [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | влит |
 | [#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 3: блок восстановления комментариев на странице | 8 | влит |
