@@ -292,5 +292,9 @@ public class CommentRestoreViewServiceTest
         public Task ApplyRestoredState(ClaimIdentification claimId, RestoredClaimTarget target) => throw new NotSupportedException();
 
         public Task<CharacterIdentification> RestoreLostClaim(LostClaimToRestore claim) => throw new NotSupportedException();
+
+        public Task<RestoredFinanceResult> RestoreFinanceOperations(ClaimIdentification claimId,
+            IReadOnlyList<RestoredFinanceOperation> operations, IReadOnlyList<RestoredFinanceModeration> moderations)
+            => throw new NotSupportedException();
     }
 }

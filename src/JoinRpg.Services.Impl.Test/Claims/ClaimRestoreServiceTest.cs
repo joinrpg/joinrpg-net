@@ -4,7 +4,9 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Impl.Claims;
 using JoinRpg.Services.Interfaces.Drp;
 
@@ -890,6 +892,602 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
             () => CreateService().RestoreClaimComments(claim.GetId(), comments));
 
         claim.CommentDiscussion.Comments.ShouldBeEmpty();
+    }
+
+    // --- Восстановление ручных финансовых операций (#5561) ---
+
+    // 22:30 UTC — в Москве (часовой пояс проекта) уже следующий день.
+    private static readonly DateTimeOffset MasterAcceptedAt = new(2026, 7, 1, 22, 30, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset PlayerPaidAt = new(2026, 7, 5, 10, 0, 0, TimeSpan.FromHours(3));
+    private static readonly DateTimeOffset ModeratedAt = new(2026, 7, 6, 10, 0, 0, TimeSpan.FromHours(3));
+    private static readonly DateTimeOffset RefundedAt = new(2026, 7, 10, 10, 0, 0, TimeSpan.FromHours(3));
+
+    /// <summary>
+    /// Заявка с отметками на момент бэкапа, наличный тип оплаты мастера и восстановитель — отдельный
+    /// мастер, чтобы его не спутать с авторами восстановленного.
+    /// </summary>
+    private (Claim Claim, User Restorer, User OtherMaster, PaymentType Cash) CreateClaimForFinance()
+    {
+        var cash = mock.CreateCashPaymentType(mock.Master);
+        var (claim, restorer, otherMaster) = CreateClaimForComments();
+        return (claim, restorer, otherMaster, cash);
+    }
+
+    private PaymentTypeIdentification PaymentTypeId(PaymentType paymentType) => new(ProjectId, paymentType.PaymentTypeId);
+
+    private RestoredFinanceOperation Operation(
+        int? id, User author, bool byPlayer, PaymentType paymentType, int money, FinanceOperationState state,
+        DateTimeOffset at, DateTimeOffset? changedAt = null, string text = "Оплата")
+        => new(id, new UserIdentification(author.UserId), byPlayer,
+            money > 0 ? FinanceOperationType.Submit : FinanceOperationType.Refund,
+            money, PaymentTypeId(paymentType), state, at, changedAt ?? at, text);
+
+    private static RestoredFinanceModeration Moderation(
+        int? id, User author, bool approved, DateTimeOffset at, int? parentOperationId = null, int? parentRestoredIndex = null)
+        => new(id, new UserIdentification(author.UserId), approved, at, approved ? "Пришло" : "Не пришло", parentOperationId, parentRestoredIndex);
+
+    /// <summary>Операция, которая уже есть в базе: комментарий с финансовой операцией.</summary>
+    private FinanceOperation AddExistingOperation(
+        Claim claim, int id, FinanceOperationType type, int money, FinanceOperationState state, PaymentType? paymentType)
+    {
+        var comment = mock.CreateComment(claim, "Оплатил", extraAction: CommentExtraAction.PaidFee);
+        comment.CommentId = id;
+        var operation = new FinanceOperation
+        {
+            CommentId = id,
+            Comment = comment,
+            ProjectId = claim.ProjectId,
+            ClaimId = claim.ClaimId,
+            Claim = claim,
+            MoneyAmount = money,
+            PaymentTypeId = paymentType?.PaymentTypeId,
+            PaymentType = paymentType,
+            OperationType = type,
+            State = state,
+            Created = BackupAt.UtcDateTime,
+            Changed = BackupAt.UtcDateTime,
+            OperationDate = BackupAt.UtcDateTime.Date,
+        };
+        comment.Finance = operation;
+        claim.FinanceOperations.Add(operation);
+        return operation;
+    }
+
+    private void AddFeeSetting(DateTime startDate, int fee)
+    {
+        mock.Project.ProjectFeeSettings.Add(new ProjectFeeSetting { StartDate = startDate, Fee = fee });
+        mock.ReInitProjectInfo();
+    }
+
+    [Fact]
+    public async Task RestoreFinance_InsertsWithIds_LikeAcceptFee_WritesHistory_AndDenormalizes()
+    {
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+        var before = DateTime.UtcNow;
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(),
+        [
+            Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt, text: "Принял {наличными}"),
+            // До 2026-06-06 id в уведомлениях не было; игрок сообщил об оплате, мастер подтвердил.
+            Operation(null, mock.Player, byPlayer: true, cash, 500, FinanceOperationState.Approved, PlayerPaidAt, ModeratedAt),
+            Operation(602, mock.Master, byPlayer: false, cash, -200, FinanceOperationState.Approved, RefundedAt),
+        ],
+        [Moderation(601, otherMaster, approved: true, ModeratedAt, parentRestoredIndex: 1)]);
+
+        result.Operations.ShouldAllBe(e => e.Status == RestoredFinanceEntryStatus.Inserted);
+        result.Operations[0].Id.ShouldBe(600);
+        result.Operations[1].Id!.Value.ShouldBeGreaterThan(FakeCharacterAggregateWriteRepository.CommentIdentityCurrent);
+        result.Operations[2].Id.ShouldBe(602);
+        result.Moderations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.Inserted, 601)]);
+        result.Inserted.ShouldBe(4);
+
+        var accepted = claim.FinanceOperations.Single(f => f.CommentId == 600);
+        accepted.OperationType.ShouldBe(FinanceOperationType.Submit);
+        accepted.MoneyAmount.ShouldBe(1000);
+        accepted.State.ShouldBe(FinanceOperationState.Approved);
+        accepted.PaymentTypeId.ShouldBe(cash.PaymentTypeId);
+        accepted.Created.ShouldBe(MasterAcceptedAt.UtcDateTime);
+        accepted.Changed.ShouldBe(MasterAcceptedAt.UtcDateTime);
+        // Как у формы приёма взноса: полночь дня без часового пояса; день — в часовом поясе проекта.
+        accepted.OperationDate.ShouldBe(new DateTime(2026, 7, 2));
+        accepted.OperationDate.Kind.ShouldBe(DateTimeKind.Unspecified);
+        accepted.Comment.ExtraAction.ShouldBe(CommentExtraAction.PaidFee);
+        accepted.Comment.IsVisibleToPlayer.ShouldBeTrue();
+        accepted.Comment.IsCommentByPlayer.ShouldBeFalse();
+        accepted.Comment.AuthorUserId.ShouldBe(mock.Master.UserId);
+        accepted.Comment.CommentText.Text.Contents.ShouldBe("Принял {наличными}");
+
+        var reported = claim.FinanceOperations.Single(f => f.CommentId == result.Operations[1].Id);
+        reported.Changed.ShouldBe(ModeratedAt.UtcDateTime);
+        reported.Comment.IsCommentByPlayer.ShouldBeTrue();
+        reported.Comment.AuthorUserId.ShouldBe(mock.Player.UserId);
+
+        var refund = claim.FinanceOperations.Single(f => f.CommentId == 602);
+        refund.OperationType.ShouldBe(FinanceOperationType.Refund);
+        refund.MoneyAmount.ShouldBe(-200);
+        refund.Comment.ExtraAction.ShouldBe(CommentExtraAction.RefundFee);
+
+        var moderation = claim.CommentDiscussion.Comments.Single(c => c.CommentId == 601);
+        moderation.ParentCommentId.ShouldBe(reported.CommentId);
+        moderation.ExtraAction.ShouldBe(CommentExtraAction.ApproveFinance);
+        moderation.IsVisibleToPlayer.ShouldBeTrue();
+        moderation.IsCommentByPlayer.ShouldBeFalse();
+        moderation.AuthorUserId.ShouldBe(otherMaster.UserId);
+        moderation.CreatedAt.ShouldBe(ModeratedAt.UtcDateTime);
+
+        var history = RestoreComments(claim).ShouldHaveSingleItem();
+        history.CommentText.Text.Contents.ShouldBe("Восстановлено финансовых операций из уведомлений: 3, решений по ним: 1");
+        history.IsVisibleToPlayer.ShouldBeFalse();
+        history.AuthorUserId.ShouldBe(restorer.UserId);
+
+        // Отметки — по восстановленным (все видимы игроку), а не «восстановитель, сейчас».
+        claim.LastPlayerCommentAt.ShouldBe(PlayerPaidAt);
+        claim.LastMasterCommentAt.ShouldBe(RefundedAt);
+        claim.LastMasterCommentBy_Id.ShouldBe(mock.Master.UserId);
+        claim.LastVisibleMasterCommentAt.ShouldBe(RefundedAt);
+        claim.LastVisibleMasterCommentBy_Id.ShouldBe(mock.Master.UserId);
+
+        // Дата обновления заявки (а с ней и проекта) — сейчас, хотя операции исторические (ADR023).
+        claim.LastUpdateDateTime.ShouldBeGreaterThanOrEqualTo(before);
+
+        claimNotifications.Sent.ShouldBeEmpty();
+        SentInOrder.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_Repeat_DoesNothing()
+    {
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+        List<RestoredFinanceOperation> operations =
+        [
+            Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt),
+            Operation(null, mock.Player, byPlayer: true, cash, 500, FinanceOperationState.Declined, PlayerPaidAt, ModeratedAt),
+        ];
+        List<RestoredFinanceModeration> moderations = [Moderation(null, otherMaster, approved: false, ModeratedAt, parentRestoredIndex: 1)];
+        var first = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), operations, moderations);
+        var commentsCount = claim.CommentDiscussion.Comments.Count;
+        var updatedAt = claim.LastUpdateDateTime;
+
+        var repeat = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), operations, moderations);
+
+        repeat.Operations.ShouldAllBe(e => e.Status == RestoredFinanceEntryStatus.AlreadyExisted);
+        // Операция без id узнана и отдана под тем же id, что получила в первый раз.
+        repeat.Operations.Select(e => e.Id).ShouldBe(first.Operations.Select(e => e.Id));
+        repeat.Moderations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.AlreadyExisted, null)]);
+        repeat.Inserted.ShouldBe(0);
+        claim.CommentDiscussion.Comments.Count.ShouldBe(commentsCount);
+        claim.FinanceOperations.Count.ShouldBe(2);
+        RestoreComments(claim).ShouldHaveSingleItem();
+        claim.LastUpdateDateTime.ShouldBe(updatedAt);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData(true, FinanceOperationState.Approved, 1000)]
+    [InlineData(false, FinanceOperationState.Declined, null)]
+    public async Task RestoreFinance_ModerationOfExistingProposedOperation_SetsStateAndFixesFee(
+        bool approved, FinanceOperationState expectedState, int? expectedFee)
+    {
+        AddFeeSetting(new DateTime(2026, 1, 1), 1000);
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+        var existing = AddExistingOperation(claim, 700, FinanceOperationType.Submit, 1000, FinanceOperationState.Proposed, cash);
+        var before = DateTime.UtcNow;
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [],
+            [Moderation(null, otherMaster, approved, ModeratedAt, parentOperationId: 700)]);
+
+        result.Moderations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.Inserted, null)]);
+        existing.State.ShouldBe(expectedState);
+        existing.Changed.ShouldBe(ModeratedAt.UtcDateTime);
+        claim.CurrentFee.ShouldBe(expectedFee);
+        var moderation = NonHistoryComments(claim).Single(c => c.ParentCommentId == 700);
+        moderation.ExtraAction.ShouldBe(approved ? CommentExtraAction.ApproveFinance : CommentExtraAction.RejectFinance);
+        RestoreComments(claim).ShouldHaveSingleItem().CommentText.Text.Contents
+            .ShouldBe("Восстановлено финансовых операций из уведомлений: 0, решений по ним: 1");
+        claim.LastVisibleMasterCommentAt.ShouldBe(ModeratedAt);
+        claim.LastVisibleMasterCommentBy_Id.ShouldBe(otherMaster.UserId);
+        claim.LastUpdateDateTime.ShouldBeGreaterThanOrEqualTo(before);
+        claimNotifications.Sent.ShouldBeEmpty();
+
+        // Повтор: решение узнано, состояние уже итоговое — ничего не меняется.
+        var repeat = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [],
+            [Moderation(null, otherMaster, approved, ModeratedAt, parentOperationId: 700)]);
+        repeat.Moderations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.AlreadyExisted, null)]);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_ModerationWithoutParent_IsInsertedAsPlainComment_AndChangesNoState()
+    {
+        // Решение, которое не удалось связать с операцией: рядом ждёт решения платёж, но его не трогаем.
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+        var waiting = AddExistingOperation(claim, 700, FinanceOperationType.Submit, 1000, FinanceOperationState.Proposed, cash);
+        RestoredFinanceModeration[] moderations =
+        [
+            Moderation(701, otherMaster, approved: true, ModeratedAt),
+            Moderation(null, otherMaster, approved: false, ModeratedAt.AddHours(1)),
+        ];
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [], moderations);
+
+        result.Moderations.ShouldBe(
+        [
+            new RestoredFinanceEntry(RestoredFinanceEntryStatus.Inserted, 701),
+            new RestoredFinanceEntry(RestoredFinanceEntryStatus.Inserted, null),
+        ]);
+        var approve = claim.CommentDiscussion.Comments.Single(c => c.CommentId == 701);
+        approve.ParentCommentId.ShouldBeNull();
+        approve.ExtraAction.ShouldBe(CommentExtraAction.ApproveFinance);
+        approve.IsVisibleToPlayer.ShouldBeTrue();
+        var reject = NonHistoryComments(claim).Single(c => c.ExtraAction == CommentExtraAction.RejectFinance);
+        reject.ParentCommentId.ShouldBeNull();
+        waiting.State.ShouldBe(FinanceOperationState.Proposed);
+        waiting.Changed.ShouldBe(BackupAt.UtcDateTime);
+        RestoreComments(claim).ShouldHaveSingleItem().CommentText.Text.Contents
+            .ShouldBe("Восстановлено финансовых операций из уведомлений: 0, решений по ним: 2");
+        claim.LastVisibleMasterCommentAt.ShouldBe(ModeratedAt.AddHours(1));
+        SaveChangesCallCount.ShouldBe(1);
+
+        var repeat = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [], moderations);
+
+        repeat.Moderations.ShouldAllBe(e => e.Status == RestoredFinanceEntryStatus.AlreadyExisted);
+        waiting.State.ShouldBe(FinanceOperationState.Proposed);
+        RestoreComments(claim).ShouldHaveSingleItem();
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_ModerationOfPreferentialFeeRequest_OnlyAddsComment()
+    {
+        var (claim, restorer, otherMaster, _) = CreateClaimForFinance();
+        var request = AddExistingOperation(claim, 700, FinanceOperationType.PreferentialFeeRequest, 0, FinanceOperationState.Proposed, paymentType: null);
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [],
+            [Moderation(701, otherMaster, approved: true, ModeratedAt, parentOperationId: 700)]);
+
+        result.Moderations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.Inserted, 701)]);
+        request.State.ShouldBe(FinanceOperationState.Proposed);
+        claim.PreferentialFeeUser.ShouldBeFalse();
+        claim.CommentDiscussion.Comments.Single(c => c.CommentId == 701).ParentCommentId.ShouldBe(700);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_ModerationOfRestoredOperation_WithOtherState_Throws_AndNothingIsInserted()
+    {
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+
+        // Решение «подтверждена» при итоговом состоянии «ждёт решения» — вход противоречив.
+        await ShouldRejectFinance<ArgumentException>(claim, restorer.UserId,
+            [Operation(600, mock.Player, byPlayer: true, cash, 500, FinanceOperationState.Proposed, PlayerPaidAt)],
+            [Moderation(601, otherMaster, approved: true, ModeratedAt, parentOperationId: 600)]);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RestoreFinance_RepeatWithDecision_AfterRunWithoutIt_ApprovesOperation(bool withId)
+    {
+        // Первый прогон: игрок сообщил об оплате, решения ещё не нашли. Второй: решение нашлось.
+        AddFeeSetting(new DateTime(2026, 1, 1), 1000);
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+        var proposed = Operation(withId ? 600 : null, mock.Player, byPlayer: true, cash, 1000, FinanceOperationState.Proposed, PlayerPaidAt);
+        var first = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [proposed], []);
+        var operationId = first.Operations.ShouldHaveSingleItem().Id!.Value;
+        claim.CurrentFee.ShouldBeNull();
+
+        var repeat = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(),
+            [proposed with { State = FinanceOperationState.Approved, ChangedAt = ModeratedAt }],
+            [withId
+                ? Moderation(601, otherMaster, approved: true, ModeratedAt, parentOperationId: 600)
+                : Moderation(null, otherMaster, approved: true, ModeratedAt, parentRestoredIndex: 0)]);
+
+        repeat.Operations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.AlreadyExisted, operationId)]);
+        repeat.Moderations.ShouldHaveSingleItem().Status.ShouldBe(RestoredFinanceEntryStatus.Inserted);
+        var operation = claim.FinanceOperations.ShouldHaveSingleItem();
+        operation.State.ShouldBe(FinanceOperationState.Approved);
+        operation.Changed.ShouldBe(ModeratedAt.UtcDateTime);
+        claim.CurrentFee.ShouldBe(1000);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_ModerationOfExistingOnlineOperation_Throws_AndNothingIsInserted()
+    {
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+        var online = AddExistingOperation(claim, 700, FinanceOperationType.Online, 1000, FinanceOperationState.Proposed, cash);
+        var commentsBefore = claim.CommentDiscussion.Comments.Count;
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [],
+                [Moderation(null, otherMaster, approved: true, ModeratedAt, parentOperationId: 700)]));
+
+        online.State.ShouldBe(FinanceOperationState.Proposed);
+        claim.CommentDiscussion.Comments.Count.ShouldBe(commentsBefore);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_TwoSameOperationsWithoutId_AreOneRow()
+    {
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+        var operation = Operation(null, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt);
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [operation, operation], []);
+
+        result.Operations[0].Status.ShouldBe(RestoredFinanceEntryStatus.Inserted);
+        result.Operations[1].ShouldBe(new RestoredFinanceEntry(RestoredFinanceEntryStatus.AlreadyExisted, result.Operations[0].Id));
+        claim.FinanceOperations.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task RestoreFinance_FixesFee_ByPaymentsInDateOrder()
+    {
+        // Взнос подорожал до того, как оплачен полностью: закрыт он только сентябрьским платежом, по новой
+        // цене. Без порядка дат июльский платёж «увидел» бы всю сумму и зафиксировал старую цену.
+        AddFeeSetting(new DateTime(2026, 1, 1), 1000);
+        AddFeeSetting(new DateTime(2026, 8, 1), 2000);
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+
+        _ = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(),
+        [
+            Operation(null, mock.Master, byPlayer: false, cash, 1500, FinanceOperationState.Approved, new DateTimeOffset(2026, 9, 1, 10, 0, 0, TimeSpan.Zero)),
+            Operation(null, mock.Master, byPlayer: false, cash, 500, FinanceOperationState.Approved, new DateTimeOffset(2026, 7, 1, 10, 0, 0, TimeSpan.Zero)),
+        ], []);
+
+        claim.CurrentFee.ShouldBe(2000);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_ProposedPayment_DoesNotFixFee()
+    {
+        AddFeeSetting(new DateTime(2026, 1, 1), 1000);
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+
+        _ = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(),
+            [Operation(600, mock.Player, byPlayer: true, cash, 1000, FinanceOperationState.Proposed, PlayerPaidAt)], []);
+
+        claim.CurrentFee.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RestoreFinance_AfterInterruptedRun_FixesFeeAndMarksWithoutHistory()
+    {
+        // Прошлый вызов вставил операцию и оборвался до операции над заявкой.
+        AddFeeSetting(new DateTime(2026, 1, 1), 1000);
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+        var operation = Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt);
+        _ = await WriteRepository.InsertRestoredFinanceOperation(new RestoredFinanceOperationRow(
+            claim.GetId(), 600, operation.Author, false, FinanceOperationType.Submit, 1000, operation.PaymentType,
+            FinanceOperationState.Approved, MasterAcceptedAt.UtcDateTime, MasterAcceptedAt.UtcDateTime, new DateTime(2026, 7, 2), "Оплата"));
+        var before = DateTime.UtcNow;
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [operation], []);
+
+        result.Operations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.AlreadyExisted, 600)]);
+        RestoreComments(claim).ShouldBeEmpty();
+        claim.CurrentFee.ShouldBe(1000);
+        claim.LastMasterCommentAt.ShouldBe(MasterAcceptedAt);
+        claim.LastUpdateDateTime.ShouldBeGreaterThanOrEqualTo(before);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_ConflictingIds_AreReported_AndTheirModerationsSkipped()
+    {
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+        var otherClaim = mock.CreateClaim(mock.CreateCharacter("Петя"), mock.Player);
+        mock.CreateComment(otherClaim, "Чужой комментарий").CommentId = 650;
+        var notLost = FakeCharacterAggregateWriteRepository.CommentIdentityCurrent + 5;
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(),
+        [
+            Operation(650, mock.Player, byPlayer: true, cash, 500, FinanceOperationState.Approved, PlayerPaidAt, ModeratedAt),
+            Operation(notLost, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt),
+        ],
+        [Moderation(null, otherMaster, approved: true, ModeratedAt, parentOperationId: 650)]);
+
+        result.Operations.ShouldBe(
+        [
+            new RestoredFinanceEntry(RestoredFinanceEntryStatus.TakenElsewhere, 650),
+            new RestoredFinanceEntry(RestoredFinanceEntryStatus.NotLostId, notLost),
+        ]);
+        result.Moderations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.ParentNotRestored, null)]);
+        result.Conflicts.ShouldBe(3);
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        claim.FinanceOperations.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_InactivePaymentType_IsAllowed()
+    {
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+        cash.IsActive = false;
+        mock.ReInitProjectInfo();
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(),
+            [Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt)], []);
+
+        result.Inserted.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_MasterWithoutClaimsPermission_ButWithMoney_CanRestore()
+    {
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+        mock.Project.ProjectAcls.Single(a => a.UserId == restorer.UserId).CanManageClaims = false;
+        mock.ReInitProjectInfo();
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(),
+            [Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt)], []);
+
+        result.Inserted.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_MasterWithoutMoneyPermission_HasNoAccess()
+    {
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+        mock.Project.ProjectAcls.Single(a => a.UserId == restorer.UserId).CanManageMoney = false;
+        mock.ReInitProjectInfo();
+
+        await ShouldRejectFinance<NoAccessToProjectException>(claim, restorer.UserId,
+            [Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt)], []);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_Player_HasNoAccess()
+    {
+        var (claim, _, _, cash) = CreateClaimForFinance();
+
+        await ShouldRejectFinance<NoAccessToProjectException>(claim, mock.Player.UserId,
+            [Operation(600, mock.Player, byPlayer: true, cash, 1000, FinanceOperationState.Proposed, PlayerPaidAt)], []);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_ActiveProject_Throws_AndNothingIsInserted()
+    {
+        var cash = mock.CreateCashPaymentType(mock.Master);
+        var claim = mock.CreateClaim(mock.CreateCharacter("Вася"), mock.Player);
+        mock.ReInitProjectInfo();
+
+        await ShouldRejectFinance<JoinValidationException>(claim, null,
+            [Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt)], []);
+    }
+
+    public static TheoryData<string> InvalidOperations => ["знак взноса", "знак возврата", "нулевая сумма", "неподтверждённый возврат",
+        "изменена раньше создания", "из будущего", "перевод", "дубль id", "неизвестный автор"];
+
+    [Theory]
+    [MemberData(nameof(InvalidOperations))]
+    public async Task RestoreFinance_InvalidOperation_Throws_AndNothingIsInserted(string kind)
+    {
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+        var valid = Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt);
+        var (invalid, expected) = kind switch
+        {
+            "знак взноса" => (valid with { OperationId = 601, Money = -1000 }, typeof(ArgumentException)),
+            "знак возврата" => (valid with { OperationId = 601, Type = FinanceOperationType.Refund, Money = 1000 }, typeof(ArgumentException)),
+            "нулевая сумма" => (valid with { OperationId = 601, Money = 0 }, typeof(ArgumentException)),
+            "неподтверждённый возврат" => (valid with { OperationId = 601, Type = FinanceOperationType.Refund, Money = -100, State = FinanceOperationState.Proposed }, typeof(ArgumentException)),
+            "изменена раньше создания" => (valid with { OperationId = 601, ChangedAt = MasterAcceptedAt.AddDays(-1) }, typeof(ArgumentException)),
+            "из будущего" => (valid with { OperationId = 601, CreatedAt = DateTimeOffset.UtcNow.AddDays(10), ChangedAt = DateTimeOffset.UtcNow.AddDays(10) }, typeof(CannotPerformOperationInFuture)),
+            "перевод" => (valid with { OperationId = 601, Type = FinanceOperationType.TransferFrom }, typeof(ArgumentException)),
+            "дубль id" => (valid, typeof(ArgumentException)),
+            "неизвестный автор" => (valid with { OperationId = 601, Author = new UserIdentification(100500) }, typeof(JoinRpgEntityNotFoundException)),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+
+        var exception = await Should.ThrowAsync<Exception>(
+            () => CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [valid, invalid], []));
+
+        exception.GetType().ShouldBe(expected);
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        claim.FinanceOperations.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_OnlinePaymentType_Throws()
+    {
+        var (claim, restorer, _, _) = CreateClaimForFinance();
+        var online = new PaymentType(PaymentTypeKind.Online, mock.Project.ProjectId, mock.Master.UserId)
+        {
+            PaymentTypeId = mock.Project.PaymentTypes.Count + 1,
+            Project = mock.Project,
+            User = mock.Master,
+            Operations = [],
+        };
+        mock.Project.PaymentTypes.Add(online);
+        mock.ReInitProjectInfo();
+
+        await ShouldRejectFinance<ArgumentException>(claim, restorer.UserId,
+            [Operation(600, mock.Player, byPlayer: true, online, 1000, FinanceOperationState.Approved, PlayerPaidAt)], []);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_UnknownPaymentType_Throws()
+    {
+        var (claim, restorer, _, cash) = CreateClaimForFinance();
+        var operation = Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt);
+
+        await ShouldRejectFinance<JoinValidationException>(claim, restorer.UserId,
+            [operation with { PaymentType = new PaymentTypeIdentification(ProjectId, 100500) }], []);
+    }
+
+    public static TheoryData<string> InvalidModerations => ["без родителя из будущего", "оба родителя", "индекс вне списка", "индекс операции с id",
+        "чужая операция", "раньше операции", "дубль id"];
+
+    [Theory]
+    [MemberData(nameof(InvalidModerations))]
+    public async Task RestoreFinance_InvalidModeration_Throws_AndNothingIsInserted(string kind)
+    {
+        var (claim, restorer, otherMaster, cash) = CreateClaimForFinance();
+        var otherClaim = mock.CreateClaim(mock.CreateCharacter("Петя"), mock.Player);
+        _ = AddExistingOperation(otherClaim, 650, FinanceOperationType.Submit, 100, FinanceOperationState.Proposed, cash);
+        RestoredFinanceOperation[] operations =
+        [
+            Operation(600, mock.Player, byPlayer: true, cash, 500, FinanceOperationState.Approved, PlayerPaidAt, ModeratedAt),
+            Operation(null, mock.Player, byPlayer: true, cash, 700, FinanceOperationState.Approved, PlayerPaidAt, ModeratedAt),
+        ];
+        var (moderation, expected) = kind switch
+        {
+            "без родителя из будущего" => (Moderation(601, otherMaster, true, DateTimeOffset.UtcNow.AddDays(10)), typeof(CannotPerformOperationInFuture)),
+            "оба родителя" => (Moderation(601, otherMaster, true, ModeratedAt, parentOperationId: 600, parentRestoredIndex: 1), typeof(ArgumentException)),
+            "индекс вне списка" => (Moderation(601, otherMaster, true, ModeratedAt, parentRestoredIndex: 2), typeof(ArgumentException)),
+            "индекс операции с id" => (Moderation(601, otherMaster, true, ModeratedAt, parentRestoredIndex: 0), typeof(ArgumentException)),
+            "чужая операция" => (Moderation(601, otherMaster, true, ModeratedAt, parentOperationId: 650), typeof(JoinValidationException)),
+            "раньше операции" => (Moderation(601, otherMaster, true, PlayerPaidAt.AddDays(-1), parentOperationId: 600), typeof(ArgumentException)),
+            "дубль id" => (Moderation(600, otherMaster, true, ModeratedAt, parentRestoredIndex: 1), typeof(ArgumentException)),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+
+        var exception = await Should.ThrowAsync<Exception>(
+            () => CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), operations, [moderation]));
+
+        exception.GetType().ShouldBe(expected);
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        claim.FinanceOperations.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_ClaimMissing_Throws()
+    {
+        var (_, restorer, _, cash) = CreateClaimForFinance();
+
+        _ = await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
+            () => CreateService(restorer.UserId).RestoreFinanceOperations(new ClaimIdentification(ProjectId, 100500),
+                [Operation(600, mock.Master, byPlayer: false, cash, 1000, FinanceOperationState.Approved, MasterAcceptedAt)], []));
+
+        mock.Project.Claims.ShouldAllBe(c => c.FinanceOperations.Count == 0);
+    }
+
+    [Fact]
+    public async Task RestoreFinance_EmptyInput_DoesNothing()
+    {
+        var (claim, restorer, _, _) = CreateClaimForFinance();
+
+        var result = await CreateService(restorer.UserId).RestoreFinanceOperations(claim.GetId(), [], []);
+
+        result.Operations.ShouldBeEmpty();
+        result.Moderations.ShouldBeEmpty();
+        claim.LastUpdateDateTime.ShouldBe(BackupAt.UtcDateTime);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    private async Task ShouldRejectFinance<TException>(
+        Claim claim, int? currentUserId, IReadOnlyList<RestoredFinanceOperation> operations, IReadOnlyList<RestoredFinanceModeration> moderations)
+        where TException : Exception
+    {
+        _ = await Should.ThrowAsync<TException>(
+            () => CreateService(currentUserId).RestoreFinanceOperations(claim.GetId(), operations, moderations));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        claim.FinanceOperations.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
     }
 
     /// <summary>Записи сравнивают списки по ссылке — здесь нужно по содержимому.</summary>
