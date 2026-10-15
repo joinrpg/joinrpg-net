@@ -146,11 +146,8 @@
 
 - [x] (2026-10-15) Майский бэкап (`.bacpac`) импортирован в новый MSSQL.
 - [x] (2026-10-15) Майские максимумы: Users 78808, Projects 1622 — в `Drp:BackupMax:*` ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562), на ревью).
-- [ ] Точный момент майского бэкапа — в конфиг Portal `Drp__BackupTakenAt` (`manifests/prod`): по нему
-      страница восстановления заявок отделяет события, уже учтённые в бэкапе ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)).
-      Взять из `Origin.xml` внутри `.bacpac`: `Operation/Start` (с часовым поясом — перевести в UTC),
-      сверить с последними датами в данных ([как](#момент-бэкапа)).
-      Сейчас в `appsettings.json` заглушка 2026-05-08T00:00:00Z ([почему важно](#момент-бэкапа)).
+- [x] (2026-10-15) Момент майского бэкапа: `Drp:BackupTakenAt` = 2026-05-08T12:58:51Z (`Origin.xml`,
+      `Operation/Start`; `End` не заполнен) — в `appsettings.json` Portal ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562), на ревью).
 - [ ] Максимальные id пользователей и комментариев по базе уведомлений — в `@Known` скрипта
       сдвига (SQL и заготовки строк — в самом скрипте; проекты, персонажи, заявки, группы там
       уже есть).
@@ -573,8 +570,8 @@ id персонажей. Правило — по каждому атрибуту
 `Start` — тогда события внутри окна экспорта переиграются, а не потеряются; инструменты
 восстановления повтор переносят. Сверка по данным: `MAX(Comments.CreatedTime)` и
 `MAX(Claims.LastUpdateDateTime)` в восстановленной базе должны быть не позже `End` и рядом со
-`Start`. Имя логического файла локальной копии (`joinrpg-prod-2026-05-08-15-58`) намекает на
-2026-05-08 15:58.
+`Start`. Фактически (2026-10-15): `Start` = 2026-05-08T15:58:51+03:00 (12:58:51Z), `End` в
+`Origin.xml` не заполнен — сверка по `MAX(...)` остаётся единственной проверкой верхней границы.
 
 ### Ручные финансовые операции
 
@@ -762,7 +759,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | закрыт |
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | в работе |
-| [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Майские максимумы id в `drp.appsettings.json` | 3 | на ревью |
+| [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt` | 3 | на ревью |
 | issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | заведён |
 | [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | на ревью |
 | [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | на ревью |
