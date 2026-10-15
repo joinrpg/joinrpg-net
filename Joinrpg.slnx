@@ -31,6 +31,7 @@
     <Project Path="src/JoinRpg.Tools.Drp.Common/JoinRpg.Tools.Drp.Common.csproj" />
     <Project Path="src/JoinRpg.Tools.RestoreLostProjects/JoinRpg.Tools.RestoreLostProjects.csproj" />
     <Project Path="src/JoinRpg.Tools.RestoreLostUsers/JoinRpg.Tools.RestoreLostUsers.csproj" />
+    <Project Path="src/JoinRpg.Tools.RestoreManualFinance/JoinRpg.Tools.RestoreManualFinance.csproj" />
     <Project Path="src/JoinRpg.Tools.SeedTestUsers/JoinRpg.Tools.SeedTestUsers.csproj" />
   </Folder>
   <Folder Name="/IdPortal/">
@@ -95,6 +96,7 @@
     <Project Path="src/JoinRpg.Tools.Drp.Common.Test/JoinRpg.Tools.Drp.Common.Test.csproj" />
     <Project Path="src/JoinRpg.Tools.RestoreLostProjects.Test/JoinRpg.Tools.RestoreLostProjects.Test.csproj" />
     <Project Path="src/JoinRpg.Tools.RestoreLostUsers.Test/JoinRpg.Tools.RestoreLostUsers.Test.csproj" />
+    <Project Path="src/JoinRpg.Tools.RestoreManualFinance.Test/JoinRpg.Tools.RestoreManualFinance.Test.csproj" />
     <Project Path="src/JoinRpg.Web.CharacterGroups.Test/JoinRpg.Web.CharacterGroups.Test.csproj" Id="b5cb2aae-df4c-4a0c-9a0c-30be2c4840f6" />
     <Project Path="src/JoinRpg.Web.Accommodation.Test/JoinRpg.Web.Accommodation.Test.csproj" />
     <Project Path="src/JoinRpg.Web.Claims.Test/JoinRpg.Web.Claims.Test.csproj" />

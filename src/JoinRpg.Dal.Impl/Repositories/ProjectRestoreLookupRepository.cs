@@ -1,4 +1,6 @@
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Dal.Impl.Repositories;
 
@@ -65,6 +67,89 @@ internal class ProjectRestoreLookupRepository(MyDbContext ctx) : IProjectRestore
     public Task<ClaimCommentsRestoreLookup> GetClaimCommentsForRestore(
         ClaimIdentification claimId, IReadOnlyCollection<int> notifiedCommentIds, DateTimeOffset textsSince)
         => GetClaimCommentsForRestore(claimId.ProjectId, claimId.ClaimId, notifiedCommentIds, textsSince);
+
+    public async Task<ClaimFinanceRestoreLookup> GetClaimFinanceForRestore(ProjectIdentification projectId, IReadOnlyCollection<int> notifiedCommentIds)
+    {
+        var projectIntId = projectId.Value;
+        var claims = ctx.Set<Claim>().Where(c => c.ProjectId == projectIntId);
+
+        var claimIds = await claims.Select(c => c.ClaimId).ToListAsync();
+
+        var operationRows = await ctx.Set<FinanceOperation>()
+            .Where(f => f.ProjectId == projectIntId)
+            .Select(f => new { f.CommentId, f.ClaimId, f.OperationType, f.State, f.MoneyAmount, f.Created })
+            .ToListAsync();
+
+        // Обсуждение заявки — по CommentDiscussionId, как в GetClaimCommentsForRestore.
+        var commentRows = await (
+            from claim in claims
+            join comment in ctx.Set<Comment>() on claim.CommentDiscussionId equals comment.CommentDiscussionId
+            where comment.ExtraAction == CommentExtraAction.PaidFee
+                || comment.ExtraAction == CommentExtraAction.RefundFee
+                || comment.ExtraAction == CommentExtraAction.ApproveFinance
+                || comment.ExtraAction == CommentExtraAction.RejectFinance
+            select new { claim.ClaimId, comment.CommentId, comment.AuthorUserId, comment.CreatedAt, comment.ExtraAction })
+            .ToListAsync();
+
+        // Свои операции и финансовые комментарии заняты «правильно» — в базу спрашиваем только про остальные id.
+        var ownIds = operationRows.Select(f => f.CommentId).Concat(commentRows.Select(c => c.CommentId)).ToHashSet();
+        // Пачками: EF6 разворачивает Contains в IN со всеми значениями — на тысячах id запрос раздувается.
+        var taken = new List<int>();
+        foreach (var chunk in notifiedCommentIds.Where(id => !ownIds.Contains(id)).Distinct().Chunk(1000))
+        {
+            taken.AddRange(await ctx.Set<Comment>()
+                .Where(c => chunk.Contains(c.CommentId))
+                .Select(c => c.CommentId)
+                .ToListAsync());
+        }
+
+        var paymentTypeRows = await ctx.Set<PaymentType>()
+            .Where(p => p.ProjectId == projectIntId)
+            .Select(p => new { p.PaymentTypeId, p.TypeKind, p.UserId, p.IsActive, p.Name })
+            .ToListAsync();
+
+        var masterRows = await ctx.Set<ProjectAcl>()
+            .Where(a => a.ProjectId == projectIntId && a.CanManageMoney && a.Status == ProjectAclStatus.Active)
+            .Select(a => new { a.UserId, a.IsOwner })
+            .ToListAsync();
+
+        // EF6 отдаёт DateTime с Kind=Unspecified, а хранится UTC.
+        static DateTimeOffset Utc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
+
+        return new ClaimFinanceRestoreLookup(
+            [.. claimIds.Select(id => new ClaimIdentification(projectId, id))],
+            [.. operationRows.Select(f => new ClaimFinanceOperationForRestore(
+                f.CommentId,
+                new ClaimIdentification(projectId, f.ClaimId),
+                f.OperationType,
+                f.State,
+                f.MoneyAmount,
+                Utc(f.Created)))],
+            [.. commentRows.Select(c => new ClaimFinanceCommentForRestore(
+                c.CommentId,
+                new ClaimIdentification(projectId, c.ClaimId),
+                new UserIdentification(c.AuthorUserId),
+                Utc(c.CreatedAt),
+                c.ExtraAction!.Value))],
+            taken,
+            [.. paymentTypeRows.Select(p => new PaymentTypeForRestore(
+                new PaymentTypeIdentification(projectId, p.PaymentTypeId),
+                p.TypeKind,
+                new UserIdentification(p.UserId),
+                p.IsActive,
+                p.Name))],
+            [.. masterRows.Select(a => new MoneyMasterForRestore(new UserIdentification(a.UserId), a.IsOwner))]);
+    }
+
+    public async Task<IReadOnlyList<ProjectIdentification>> GetBlockedProjects()
+    {
+        var ids = await ctx.Set<Project>()
+            .Where(ProjectPredicates.Status(ProjectLifecycleStatus.Blocked))
+            .Select(p => p.ProjectId)
+            .OrderBy(id => id)
+            .ToListAsync();
+        return [.. ids.Select(id => new ProjectIdentification(id))];
+    }
 
     private async Task<ClaimCommentsRestoreLookup> GetClaimCommentsForRestore(
         ProjectIdentification projectId, int? claimId, IReadOnlyCollection<int> notifiedCommentIds, DateTimeOffset textsSince)

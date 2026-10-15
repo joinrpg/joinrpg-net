@@ -6,6 +6,10 @@ namespace JoinRpg.Tools.Drp.Common;
 public static class DrpKeys
 {
     public const string LostAt = "Drp:LostAt";
+
+    /// <summary>Момент бэкапа, из которого восстановлена основная БД: события до него в ней уже есть.</summary>
+    public const string BackupTakenAt = "Drp:BackupTakenAt";
+
     public const string ReportDir = "Drp:ReportDir";
 
     /// <summary>Полный путь к отчёту — только разовое переопределение из командной строки (--report).</summary>

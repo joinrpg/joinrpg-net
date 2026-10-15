@@ -41,17 +41,23 @@ public sealed class DrpSettings(IConfiguration configuration)
         return value;
     }
 
-    public DateTimeOffset LostAt()
+    public DateTimeOffset LostAt() => Moment(DrpKeys.LostAt, "момент аварии", "--lost-at", "2026-10-07T22:30:49Z");
+
+    /// <param name="commandLineOption">Параметр командной строки, которым можно переопределить значение.</param>
+    public DateTimeOffset BackupTakenAt(string commandLineOption)
+        => Moment(DrpKeys.BackupTakenAt, "момент бэкапа", commandLineOption, "2026-05-08T12:58:51Z");
+
+    private DateTimeOffset Moment(string key, string description, string commandLineOption, string example)
     {
-        var value = configuration[DrpKeys.LostAt];
+        var value = configuration[key];
         if (string.IsNullOrWhiteSpace(value))
         {
-            errors.Add($"Не задан момент аварии {DrpKeys.LostAt} (в {DrpConfiguration.SettingsFileName} или --lost-at).");
+            errors.Add($"Не задан {description} {key} (в {DrpConfiguration.SettingsFileName} или {commandLineOption}).");
             return default;
         }
         if (!TryParseMoment(value, out var moment))
         {
-            errors.Add($"Некорректен момент аварии {DrpKeys.LostAt} = «{value}»: нужен RFC 3339 с часовым поясом, например 2026-10-07T22:30:49Z.");
+            errors.Add($"Некорректен {description} {key} = «{value}»: нужен RFC 3339 с часовым поясом, например {example}.");
             return default;
         }
         return moment;

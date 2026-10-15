@@ -275,6 +275,11 @@ public class CommentRestoreViewServiceTest
 
         public Task<IReadOnlyDictionary<string, UserIdentification>> FindUsersByEmails(IReadOnlyCollection<string> emails)
             => throw new NotSupportedException();
+
+        public Task<ClaimFinanceRestoreLookup> GetClaimFinanceForRestore(ProjectIdentification projectId, IReadOnlyCollection<int> notifiedCommentIds)
+            => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ProjectIdentification>> GetBlockedProjects() => throw new NotSupportedException();
     }
 
     private sealed class FakeClaimRestoreService : IClaimRestoreService

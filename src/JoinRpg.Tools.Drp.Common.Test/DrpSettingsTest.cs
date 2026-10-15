@@ -90,6 +90,20 @@ public class DrpSettingsTest
         settings.Errors.ShouldHaveSingleItem().ShouldContain(DrpKeys.LostAt);
     }
 
+    [Theory]
+    [InlineData(null, "Не задан")]
+    [InlineData("2026-05-08T12:58:51", "часовым поясом")]
+    public void MissingOrInvalidBackupTakenAtIsError(string? value, string message)
+    {
+        var settings = Settings((DrpKeys.BackupTakenAt, value));
+
+        _ = settings.BackupTakenAt("--backup-taken-at");
+
+        var error = settings.Errors.ShouldHaveSingleItem();
+        error.ShouldContain(DrpKeys.BackupTakenAt);
+        error.ShouldContain(message);
+    }
+
     [Fact]
     public void ReportGoesToReportDirWithStartTimeInName()
     {
