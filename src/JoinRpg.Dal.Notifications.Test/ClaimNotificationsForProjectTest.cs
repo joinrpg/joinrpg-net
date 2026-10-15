@@ -67,6 +67,30 @@ public class ClaimNotificationsForProjectTest : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ForClaim_ReturnsOnlyThisClaimNotNumbersStartingTheSame()
+    {
+        await using var context = CreateContext();
+        INotificationRepository repository = new NotificationsRepository(context, NullLogger<NotificationsRepository>.Instance);
+        // Заявка 50 начинается с той же цифры, что и 5 — ни «ClaimId(1-5», ни «ClaimCommentId(1-5» её ловить не должны.
+        var sibling = new ClaimIdentification(Project, 50);
+
+        await repository.InsertNotifications([
+            Notification("finance", new FinanceOperationIdentification(Claim, 9), LostAt.AddDays(-1)),
+            Notification("claim", Claim, LostAt.AddDays(-3)),
+            Notification("comment", new ClaimCommentIdentification(Claim, 7), LostAt.AddDays(-2)),
+            Notification("sibling claim", sibling, LostAt.AddDays(-2)),
+            Notification("sibling comment", new ClaimCommentIdentification(sibling, 8), LostAt.AddDays(-2)),
+            Notification("sibling finance", new FinanceOperationIdentification(sibling, 10), LostAt.AddDays(-2)),
+            Notification("other project", new ClaimIdentification(new ProjectIdentification(12), 5), LostAt.AddDays(-2)),
+            Notification("after loss", new ClaimCommentIdentification(Claim, 11), LostAt.AddSeconds(1)),
+        ]);
+
+        var result = await repository.GetClaimNotificationsForClaim(Claim, LostAt);
+
+        result.Select(m => m.Header).ShouldBe(["claim", "comment", "finance"]);
+    }
+
+    [Fact]
     public async Task CutoffInLocalOffsetIsExclusive()
     {
         await using var context = CreateContext();

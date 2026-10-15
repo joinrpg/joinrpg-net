@@ -2,6 +2,8 @@ using System.Collections.Concurrent;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Interfaces;
 
@@ -13,8 +15,8 @@ namespace JoinRpg.DataModel.Mocks.Fakes;
 /// <remarks>
 /// <para>
 /// Для тестов отправки в неё кладут сообщения через <see cref="Enqueue"/> и смотрят, какие пометки
-/// статуса поставил отправщик. Чтение уведомлений проекта отдаёт пустой список и записывает,
-/// о чём спросили. Всё ненастроенное бросает <see cref="NotSupportedException"/> намеренно — чтобы
+/// статуса поставил отправщик. Чтение уведомлений проекта отдаёт добавленные через
+/// <see cref="AddClaimNotification"/> (по умолчанию — ничего) и записывает, о чём спросили. Всё ненастроенное бросает <see cref="NotSupportedException"/> намеренно — чтобы
 /// поход за незапланированными данными был виден в тесте, а не подменялся пустышкой.
 /// </para>
 /// <para>
@@ -30,6 +32,8 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
     private readonly ConcurrentQueue<(NotificationId Id, NotificationChannel Channel)> markSendingFailedCalls = new();
     private readonly ConcurrentQueue<(NotificationId Id, NotificationChannel Channel)> markSendingSucceededCalls = new();
     private readonly ConcurrentQueue<(ProjectIdentification ProjectId, DateTimeOffset CreatedBefore)> getClaimNotificationsForProjectCalls = new();
+    private readonly ConcurrentQueue<NotificationMessageForRecipient> claimNotifications = new();
+    private readonly ConcurrentQueue<(ClaimIdentification ClaimId, DateTimeOffset CreatedBefore)> getClaimNotificationsForClaimCalls = new();
 
     private bool isNullObject;
 
@@ -90,9 +94,30 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
     public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
         => Task.FromResult(queueLengths ?? throw new NotSupportedException());
 
+    /// <summary>Добавляет уведомление по заявке — его отдаст <see cref="GetClaimNotificationsForProject"/>.</summary>
+    public void AddClaimNotification(NotificationMessageForRecipient notification) => claimNotifications.Enqueue(notification);
+
     public Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore)
     {
         getClaimNotificationsForProjectCalls.Enqueue((projectId, createdBefore));
-        return Task.FromResult<IReadOnlyCollection<NotificationMessageForRecipient>>([]);
+        return Task.FromResult<IReadOnlyCollection<NotificationMessageForRecipient>>(
+            [.. claimNotifications.Where(n => n.EntityReference?.ProjectId == projectId && n.CreatedAt < createdBefore)]);
     }
+
+    public IReadOnlyCollection<(ClaimIdentification ClaimId, DateTimeOffset CreatedBefore)> GetClaimNotificationsForClaimCalls => getClaimNotificationsForClaimCalls;
+
+    public Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForClaim(ClaimIdentification claimId, DateTimeOffset createdBefore)
+    {
+        getClaimNotificationsForClaimCalls.Enqueue((claimId, createdBefore));
+        return Task.FromResult<IReadOnlyCollection<NotificationMessageForRecipient>>(
+            [.. claimNotifications.Where(n => ClaimOf(n.EntityReference) == claimId && n.CreatedAt < createdBefore)]);
+    }
+
+    private static ClaimIdentification? ClaimOf(IProjectEntityId? reference) => reference switch
+    {
+        ClaimIdentification claim => claim,
+        ClaimCommentIdentification comment => comment.ClaimId,
+        FinanceOperationIdentification operation => operation.ClaimId,
+        _ => null,
+    };
 }

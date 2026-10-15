@@ -75,6 +75,7 @@ public static class Registration
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
         .AddScoped<IClaimRestoreClient, Drp.ClaimRestoreViewService>()
+        .AddScoped<ICommentRestoreClient, Drp.CommentRestoreViewService>()
         .AddScoped<IMoneyTransferClient, MoneyTransferViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IUserLinkResolveClient, UserLinkResolveViewService>()

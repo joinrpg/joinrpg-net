@@ -261,6 +261,40 @@ internal class NotificationsRepository(
         return [.. result.Select(CreateNotificationMessageDto)];
     }
 
+    public async Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForClaim(ClaimIdentification claimId, DateTimeOffset createdBefore)
+    {
+        var (claimReference, commentPrefix, financePrefix) = GetSingleClaimReferences(claimId);
+        var cutoff = createdBefore.ToUniversalTime();
+
+        // Сама заявка — точным совпадением (иначе «ClaimId(1-5» поймала бы заявку 50), остальное — префиксом
+        // с завершающим «-» по тому же индексу.
+        var result = await dbContext.Notifications
+            .AsNoTracking()
+            .Where(m => m.EntityReference == claimReference
+                || m.EntityReference!.StartsWith(commentPrefix)
+                || m.EntityReference!.StartsWith(financePrefix))
+            .Where(m => m.CreatedAt < cutoff)
+            .OrderBy(m => m.CreatedAt)
+            .ThenBy(m => m.NotificationMessageId)
+            .ToListAsync();
+
+        return [.. result.Select(CreateNotificationMessageDto)];
+    }
+
+    /// <summary>
+    /// Ссылки одной заявки: «ClaimId(12-345)» целиком, префиксы «ClaimCommentId(12-345-» и «FinanceOperationId(12-345-».
+    /// Берутся из ToString() самих идентификаторов, чтобы не разойтись с форматом.
+    /// </summary>
+    internal static (string Claim, string CommentPrefix, string FinancePrefix) GetSingleClaimReferences(ClaimIdentification claimId)
+    {
+        return (
+            claimId.ToString(),
+            UpToLastDash(new ClaimCommentIdentification(claimId, 0).ToString()),
+            UpToLastDash(new FinanceOperationIdentification(claimId, 0).ToString()));
+
+        static string UpToLastDash(string reference) => reference[..(reference.LastIndexOf('-') + 1)];
+    }
+
     /// <summary>
     /// Префиксы ссылок на заявки проекта: «ClaimId(12-», «ClaimCommentId(12-», «FinanceOperationId(12-».
     /// Берутся из ToString() самих идентификаторов, чтобы не разойтись с форматом.
