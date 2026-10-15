@@ -99,10 +99,12 @@
       в GitHub-секрет `SELECTEL_DEPLOY_SA_SECRET` (environment `prod`, `dev`), адрес API — в
       переменную `SELECTEL_K8S_SERVER`; интеграция кластера с Container Registry (секрет
       `craas-auth` в namespace, создавать namespace до её включения).
-- [ ] Dev: базу **не восстанавливаем** (решение 2026-10-15) — пустой MSSQL, схему создаст
-      job миграций при деплое. В GitHub-окружении `dev` обновить `KUBESECRET_CONNECTIONSTRINGS__*`
-      и `KUBESECRET_S3BLOBSTORAGE__*` (сейчас Yandex); `S3BlobStorage__Endpoint` и `PublicBaseUrl`
-      (`avatars.dev.joinrpg.ru`) в `manifests/dev/.env` — PR [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566) на ревью.
+- [ ] Dev ([подробнее](#dev-в-selectel)): базу **не восстанавливаем** (решение 2026-10-15) —
+      пустой MSSQL, схему создаёт job миграций. Секреты `dev` обновлены (строки подключения, ключи
+      S3), конфиг — [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566). Деплой в `joinrpg-dev` прошёл (2026-10-15 22:03Z), поды стартуют,
+      **но запросы до них не доходят** — разбор маршрутизации (HTTPRoute / Gateway `infra/main`).
+- [ ] Dev после того, как откроется: регистрация, админ вручную (`UserAuthDetails.IsAdmin`),
+      загрузка аватарки, удалить старый `KUBECONFIG` из окружения `dev`.
 - [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
       секрет `joinrpg-main`.
 - [ ] Отправка почты: сейчас Yandex Postbox — решить, оставляем ли его из Selectel или меняем
@@ -382,6 +384,17 @@ IdPortal и ingress. Миграция и старт подов идут одни
 - **Почта.** Yandex Postbox; без отправки писем не проверить «забыл пароль».
 - **Маршрутизация** — Gateway API: приложения публикуются `HTTPRoute` с `parentRefs: infra/main`,
   TLS и сертификаты — на Gateway в инфраструктуре; в репозитории ни Ingress, ни cert-manager.
+
+### Dev в Selectel
+
+База dev не восстанавливается: пустой MSSQL и пустые базы Postgres, схему создаёт job миграций
+при деплое. Окружение `Staging`: первый вошедший **не** становится админом — назначить вручную.
+reCAPTCHA на dev выключена секретом `KUBESECRET_RECAPTCHA__PUBLICKEY` = `_` (капча включена,
+только если оба ключа заданы и не `_`; имя поля — `PublicKey`/`PrivateKey`, без подчёркивания).
+Тишина в логах подов = до них не дошло ни одного запроса: каждый запрос, кроме проверок здоровья,
+пишется на уровне Information. Проверять по шагам: `port-forward` к поду в обход Gateway → статус
+`HTTPRoute` (`Accepted`, `ResolvedRefs`) → листенеры и `allowedRoutes` Gateway `infra/main` →
+`curl -sv` снаружи.
 
 ### Аватарки
 
