@@ -98,8 +98,8 @@
       `craas-auth` в namespace, создавать namespace до её включения).
 - [ ] Dev: базу **не восстанавливаем** (решение 2026-10-15) — пустой MSSQL, схему создаст
       job миграций при деплое. В GitHub-окружении `dev` обновить `KUBESECRET_CONNECTIONSTRINGS__*`
-      и `KUBESECRET_S3BLOBSTORAGE__*` (сейчас Yandex); в `manifests/dev/.env` —
-      `S3BlobStorage__Endpoint` (и `PublicBaseUrl`, когда будет `avatars.dev.joinrpg.ru`).
+      и `KUBESECRET_S3BLOBSTORAGE__*` (сейчас Yandex); `S3BlobStorage__Endpoint` и `PublicBaseUrl`
+      (`avatars.dev.joinrpg.ru`) в `manifests/dev/.env` — PR [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566) на ревью.
 - [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
       секрет `joinrpg-main`.
 - [ ] Отправка почты: сейчас Yandex Postbox — решить, оставляем ли его из Selectel или меняем
@@ -777,6 +777,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | закрыт |
 | [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | влит |
+| [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566) | Конфиг dev: S3 Selectel, `PublicBaseUrl` = `avatars.dev.joinrpg.ru` | 1 | на ревью |
 | [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) | Конфиг прода: выключенные джобы, S3 Selectel (`Endpoint`, `PublicBaseUrl`), баннер | 3 | на ревью |
 | issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | заведён |
 | [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | влит |
