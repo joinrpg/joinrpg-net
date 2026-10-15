@@ -13,36 +13,24 @@ configMapGenerator:
 
 patchesJson6902:
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-portal
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: dev.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: dev.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: dev-joinrpg-ru-tls
 
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-idportal
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: devid.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: devid.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: devid-joinrpg-ru-tls
 
   - target:
       group: apps
@@ -84,20 +72,14 @@ patchesJson6902:
         value: 0
 
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-componentbook
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: dev-components.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: dev-components.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: dev-components-joinrpg-ru-tls
 
   - target:
       group: policy

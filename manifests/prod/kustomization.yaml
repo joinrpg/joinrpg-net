@@ -1,6 +1,7 @@
 resources:
   - ../base
   - service-domain-ingress.yaml # DRP #5459: служебные домены на время восстановления
+  - www-redirect-httproute.yaml
 
 namespace: joinrpg-prod
 
@@ -14,45 +15,25 @@ configMapGenerator:
 
 patchesJson6902:
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-portal
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: joinrpg.ru
-      - op: add
-        path: /spec/tls/0/hosts/1
-        value: www.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: joinrpg-ru-tls
-      - op: add
-        path: "/metadata/annotations/nginx.ingress.kubernetes.io~1from-to-www-redirect"
-        value: true
-  
+      # www.joinrpg.ru редиректится на joinrpg.ru отдельным маршрутом — www-redirect-httproute.yaml
+
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-idportal
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: id.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: id.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: id-joinrpg-ru-tls
-      - op: add
-        path: "/metadata/annotations/nginx.ingress.kubernetes.io~1from-to-www-redirect"
-        value: true
 
   - target:
       group: apps
@@ -100,17 +81,11 @@ patchesJson6902:
         value: 1
 
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-componentbook
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: components.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: components.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: components-joinrpg-ru-tls

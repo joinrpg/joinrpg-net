@@ -29,6 +29,11 @@
 
     (cкопировать с dev, внутри поменять всё специфичное для среды ручками)
 
+    Входящий трафик идёт через Gateway API: overlay патчит `spec/hostnames` у HTTPRoute
+    (`joinrpg-portal`, `joinrpg-idportal`, `joinrpg-componentbook`), маршруты цепляются к Gateway
+    `main` в неймспейсе `infra`. TLS-терминация и сертификаты — на этом Gateway, не в манифестах
+    приложения: новые хосты нужно добавить в его листенеры/сертификаты, иначе маршрут не заработает.
+
 3. Создать Deployment workflow для среды
 
     `cp .github/workflows/deploy_dev.yml .github/workflows/deploy_new-env.yml`
