@@ -150,9 +150,9 @@
       `Operation/Start`; `End` не заполнен) — в `appsettings.json` Portal ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562), на ревью).
 - [x] (2026-10-15) Максимумы по базе уведомлений в `@Known` скрипта сдвига: Users 84473, Comments
       644590 ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562), на ревью). Ожидаемые счётчики — 112 000 и 784 000.
-- [ ] 🟢 Сдвиг счётчиков — `scripts/incident-restore/reseed-identities.sql` ([#5460](https://github.com/joinrpg/joinrpg-net/issues/5460)): `@Apply = 0`,
+- [x] (2026-10-15) 🟢 Сдвиг счётчиков — `scripts/incident-restore/reseed-identities.sql` ([#5460](https://github.com/joinrpg/joinrpg-net/issues/5460)): `@Apply = 0`,
       проверить план, `@Apply = 1`. `Comments` обязательно ([почему](#сдвиг-счётчиков)).
-- [ ] Миграции вручную на новую базу: `dotnet run --project src/Joinrpg.Dal.Migrate` со строкой
+- [x] (2026-10-15) Миграции вручную на новую базу: `dotnet run --project src/Joinrpg.Dal.Migrate` со строкой
       подключения к ней (или разовый job в кластере). Секрет пока **не трогаем** — поды
       поднимаются только в конце фазы 4 ([почему](#деплой)).
 - [ ] Сдвиг счётчиков ещё раз.
