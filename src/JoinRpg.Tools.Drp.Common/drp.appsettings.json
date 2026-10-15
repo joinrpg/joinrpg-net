@@ -8,8 +8,8 @@
     // SELECT MAX(UserId) FROM dbo.Users; SELECT MAX(ProjectId) FROM dbo.Projects
     // (до создания оболочек проектов — после них максимум вырастет).
     "BackupMax": {
-      "Users": null,
-      "Projects": null
+      "Users": 78808,
+      "Projects": 1622
     },
     // Каталог отчётов с персональными данными. Пусто — %LOCALAPPDATA%\joinrpg-drp\reports.
     "ReportDir": null,
