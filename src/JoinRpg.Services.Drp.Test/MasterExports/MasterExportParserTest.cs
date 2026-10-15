@@ -56,6 +56,7 @@ public class MasterExportParserTest
         row.CharacterId.ShouldBeNull();
         row.Status.ShouldBe(ClaimStatus.Approved);
         row.TotalFee.ShouldBe(1500);
+        row.FeePaid.ShouldBe(1000);
         row.ClaimCreatedAt.ShouldBe(new DateTimeOffset(2025, 10, 1, 7, 30, 0, TimeSpan.Zero));
         row.ClaimUpdatedAt.ShouldBe(new DateTimeOffset(2025, 10, 2, 8, 0, 0, TimeSpan.Zero));
         row.ResponsibleMasterName.ShouldBe("Главный мастер");
@@ -85,6 +86,34 @@ public class MasterExportParserTest
         row.PlayerDisplayName.ShouldBe("Вася");
         row.PlayerEmail.ShouldBe("vasya@example.com");
         row.Other("Рост").ShouldBe("190");
+    }
+
+    [Theory]
+    [InlineData("2 500", 2500)]
+    [InlineData("2 500", 2500)]
+    [InlineData("", null)]
+    public void FeePaid_ResavedAsText_Parsed(string text, int? expected)
+    {
+        // Пересохранённый Excel мог превратить число в текст с разделителями тысяч — как и «Итого взнос».
+        var row = ClaimRow(1, "Принята");
+        row[8] = text;
+
+        var result = Parse(Xlsx(ClaimHeaders(), row)).Rows.ShouldHaveSingleItem();
+
+        result.FeePaid.ShouldBe(expected);
+        result.Warnings.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FeePaid_NotANumber_SkippedWithWarning()
+    {
+        var row = ClaimRow(1, "Принята");
+        row[8] = "много";
+
+        var result = Parse(Xlsx(ClaimHeaders(), row)).Rows.ShouldHaveSingleItem();
+
+        result.FeePaid.ShouldBeNull();
+        result.Warnings.ShouldBe([MasterExportWarning.InvalidValue]);
     }
 
     [Theory]

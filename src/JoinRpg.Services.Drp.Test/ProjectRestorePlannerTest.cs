@@ -49,10 +49,10 @@ public class ProjectRestorePlannerTest
 
     private static MasterExportRow CharacterRow(int id, string name, (int Id, string Name)[] groups, string strength = "", string? playerEmail = null)
         => new(id, id, null, name, [.. groups.Select(g => new MasterExportGroupRef(g.Id, g.Name))], Master.DisplayName.DisplayName,
-            playerEmail, null, null, null, null, null, [new MasterExportCell("Сила", strength, false)]);
+            playerEmail, null, null, null, null, null, null, [new MasterExportCell("Сила", strength, false)]);
 
-    private static MasterExportRow ClaimRow(int id, string characterName, ClaimStatus status, string? playerEmail = PlayerEmail, string wishes = "", string strength = "", int? totalFee = null)
-        => new(id, null, id, characterName, [], Master.DisplayName.DisplayName, playerEmail, null, status, totalFee, null, null,
+    private static MasterExportRow ClaimRow(int id, string characterName, ClaimStatus status, string? playerEmail = PlayerEmail, string wishes = "", string strength = "", int? totalFee = null, int? feePaid = null)
+        => new(id, null, id, characterName, [], Master.DisplayName.DisplayName, playerEmail, null, status, totalFee, feePaid, null, null,
             [new MasterExportCell("Пожелания", wishes, false), new MasterExportCell("Сила", strength, false)]);
 
     private DatedMasterExport CharacterExport(DateTimeOffset at, params MasterExportRow[] rows)
@@ -389,11 +389,12 @@ public class ProjectRestorePlannerTest
         row.Warnings.ShouldContain(ProjectRestoreWarning.ExportOlderThanBackup);
     }
 
-    private ExistingClaimInfo DbClaim(int id, int characterId, ClaimStatus status, int? fee = null, string? wishesValue = null, DateTimeOffset? lastUpdated = null)
+    private ExistingClaimInfo DbClaim(int id, int characterId, ClaimStatus status, int? fee = null, string? wishesValue = null, DateTimeOffset? lastUpdated = null, int feePaid = 0)
         => new(ClaimId(id), CharacterId(characterId), Player.UserId, status, Master.UserId, fee)
         {
             FieldLayer = Layer((wishes, wishesValue)),
             LastUpdated = lastUpdated ?? BackupAt.AddDays(-1),
+            FeePaid = feePaid,
         };
 
     private static readonly DateTimeOffset MayExport = BackupAt.AddDays(10);
@@ -599,6 +600,55 @@ public class ProjectRestorePlannerTest
             claims: [DbClaim(3000, 101, ClaimStatus.Approved, fee: 2000)]);
 
         plan.Claims.ShouldHaveSingleItem().Warnings.Contains(ClaimRestoreWarning.TotalFeeMismatch).ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData(1000, 1000, false)]
+    [InlineData(1000, 600, true)]
+    [InlineData(0, 600, true)]
+    [InlineData(null, 600, false)]
+    public void FeePaidOfExistingClaimComparedWithDatabase(int? exportedPaid, int paidInDatabase, bool expected)
+    {
+        var plan = Plan(
+            [ClaimExport(Day(5), ClaimRow(3000, "Гамлет", ClaimStatus.Approved, feePaid: exportedPaid))],
+            characters: [DbCharacter(101, "Гамлет")],
+            claims: [DbClaim(3000, 101, ClaimStatus.Approved, feePaid: paidInDatabase)]);
+
+        var row = plan.Claims.ShouldHaveSingleItem();
+        row.Warnings.Contains(ClaimRestoreWarning.FeePaidMismatch).ShouldBe(expected);
+        row.FeePaidMismatch.ShouldBe(expected ? new FeePaidMismatch(exportedPaid!.Value, paidInDatabase) : null);
+    }
+
+    [Fact]
+    public void FeePaidOfExistingClaimNotComparedWithExportOlderThanBackup()
+    {
+        // Оплаты между выгрузкой и бэкапом в базе есть, а в выгрузке — нет: расхождение было бы ложным.
+        var plan = Plan(
+            [ClaimExport(BackupAt.AddDays(-5), ClaimRow(3000, "Гамлет", ClaimStatus.AddedByUser, feePaid: 600))],
+            characters: [DbCharacter(101, "Гамлет")],
+            claims: [DbClaim(3000, 101, ClaimStatus.AddedByUser, feePaid: 1000)],
+            notifications: [ClaimChange(Day(4), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Гамлет", claimId: ClaimId(3000))]);
+
+        var row = plan.Claims.ShouldHaveSingleItem();
+        row.Status.ShouldBe(ClaimStatus.Approved);
+        row.Warnings.ShouldNotContain(ClaimRestoreWarning.FeePaidMismatch);
+        row.FeePaidMismatch.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(1000, true)]
+    [InlineData(0, false)]
+    [InlineData(null, false)]
+    public void LostClaimWithFeePaidInExportIsMarked(int? exportedPaid, bool expected)
+    {
+        var plan = Plan(
+            [ClaimExport(Day(5), ClaimRow(3000, "Гамлет", ClaimStatus.Approved, feePaid: exportedPaid))],
+            characters: [DbCharacter(101, "Гамлет")]);
+
+        var row = plan.Claims.ShouldHaveSingleItem();
+        row.Action.ShouldBe(ClaimRestoreAction.Create);
+        row.Warnings.Contains(ClaimRestoreWarning.FeePaidMismatch).ShouldBe(expected);
+        row.FeePaidMismatch.ShouldBe(expected ? new FeePaidMismatch(exportedPaid!.Value, 0) : null);
     }
 
     [Fact]

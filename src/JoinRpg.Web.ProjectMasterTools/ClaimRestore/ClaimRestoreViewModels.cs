@@ -54,7 +54,14 @@ public enum ClaimRestoreWarningView
 
     [Display(Name = "Итоговый взнос в выгрузке меньше ручного взноса")]
     TotalFeeMismatch,
+
+    /// <summary>Суммы — в <see cref="ClaimRestoreRowViewModel.FeePaidMismatch"/>.</summary>
+    [Display(Name = "Уплачено в выгрузке не совпадает с оплатами в базе")]
+    FeePaidMismatch,
 }
+
+/// <summary>Расхождение уплаченного: «Уплачено» в выгрузке и сумма одобренных оплат в базе.</summary>
+public record ClaimRestoreFeePaidMismatchView(int Exported, int InDatabase);
 
 /// <summary>Почему восстановление недоступно.</summary>
 public enum ClaimRestoreUnavailableReason
@@ -105,6 +112,9 @@ public record ClaimRestoreRowViewModel(
 
     /// <summary>Меняемые атрибуты, которые по умолчанию не применяются (их, похоже, правили руками).</summary>
     public IReadOnlyList<ClaimRestoreAttributeKindView> AttributesNotByDefault { get; init; } = [];
+
+    /// <summary>Суммы при <see cref="ClaimRestoreWarningView.FeePaidMismatch"/>; null — совпали или сверять не с чем.</summary>
+    public ClaimRestoreFeePaidMismatchView? FeePaidMismatch { get; init; }
 }
 
 /// <summary>План восстановления заявок проекта. Строки — в порядке применения.</summary>

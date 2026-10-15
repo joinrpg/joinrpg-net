@@ -353,6 +353,21 @@ public class ClaimRestorePanelTest : BunitContext
     }
 
     [Fact]
+    public void FeePaidMismatch_ShowsBothSums()
+    {
+        client.Plans.Enqueue(Plan(
+            Row(1, ClaimRestoreActionView.Nothing, "Гамлет") with
+            {
+                Warnings = [ClaimRestoreWarningView.FeePaidMismatch],
+                FeePaidMismatch = new ClaimRestoreFeePaidMismatchView(Exported: 1500, InDatabase: 1000),
+            }));
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        cut.Find("table.restore-claims").TextContent.ShouldContain("Уплачено в выгрузке (1500) не совпадает с оплатами в базе (1000)");
+    }
+
+    [Fact]
     public void RowsWithNothingToDo_NotCounted()
     {
         client.Plans.Enqueue(Plan(

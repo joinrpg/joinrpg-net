@@ -234,6 +234,8 @@ public static class ClaimRestorePlanner
 
         var manualFee = fullState?.ManualFee;
         CheckTotalFee(row, manualFee, state, warnings);
+        // Заявки в базе нет — и оплат по ней нет.
+        var feePaidMismatch = CheckFeePaid(row, feePaidInDatabase: 0, warnings);
 
         if ((row.ClaimCreatedAt ?? exported.ExportedAt) < p.BackupTakenAt)
         {
@@ -258,6 +260,7 @@ public static class ClaimRestorePlanner
             warnings)
         {
             Attributes = BuildAttributes(p, null, null, exported, exportResponsible, state, eventResponsible),
+            FeePaidMismatch = feePaidMismatch,
         };
     }
 
@@ -371,6 +374,7 @@ public static class ClaimRestorePlanner
             : null;
         int? feeChange = feeState?.ManualFee is { } fee && fee != existing.ManualFee ? fee : null;
         CheckTotalFee(row, feeChange ?? existing.ManualFee, state, warnings);
+        var feePaidMismatch = CheckFeePaid(row, existing.FeePaid, warnings);
 
         var changed = moveTo is not null || status is not null || responsibleChange is not null || feeChange is not null;
 
@@ -392,6 +396,7 @@ public static class ClaimRestorePlanner
             warnings)
         {
             Attributes = BuildAttributes(p, existing, current?.Name, exported, exportResponsible, state, eventResponsible),
+            FeePaidMismatch = feePaidMismatch,
         };
     }
 
@@ -556,6 +561,21 @@ public static class ClaimRestorePlanner
         {
             warnings.Add(ClaimRestoreWarning.TotalFeeMismatch);
         }
+    }
+
+    /// <summary>
+    /// «Уплачено» из выгрузки против суммы одобренных оплат в базе. Только подсказка: оплаты план не трогает,
+    /// а после выгрузки могли прийти новые. Заявку из базы сверяем только с выгрузкой свежее бэкапа — в более
+    /// старой не видно оплат между ней и бэкапом, и расхождение было бы ложным.
+    /// </summary>
+    private static FeePaidMismatch? CheckFeePaid(MasterExportRow row, int feePaidInDatabase, List<ClaimRestoreWarning> warnings)
+    {
+        if (row.FeePaid is not { } exported || exported == feePaidInDatabase)
+        {
+            return null;
+        }
+        warnings.Add(ClaimRestoreWarning.FeePaidMismatch);
+        return new FeePaidMismatch(exported, feePaidInDatabase);
     }
 
     private static (DateTimeOffset First, DateTimeOffset Last) Activity(ExportedClaimSnapshot exported, IEnumerable<ClaimNotificationEvent> events)

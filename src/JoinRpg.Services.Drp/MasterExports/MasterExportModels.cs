@@ -27,6 +27,7 @@ public record MasterExportCell(string Header, string Value, bool Truncated);
 /// <param name="CharacterId">Из ссылки на персонажа; есть только в выгрузке персонажей.</param>
 /// <param name="ClaimId">Из ссылки на заявку; есть только в выгрузке заявок.</param>
 /// <param name="Name">Имя персонажа.</param>
+/// <param name="FeePaid">«Уплачено» — сумма одобренных оплат на момент выгрузки; есть только в выгрузке заявок.</param>
 /// <param name="OtherCells">Все колонки, не распознанные как системные, — кандидаты в поля проекта. Пустые тоже.</param>
 public record MasterExportRow(
     int RowNumber,
@@ -39,6 +40,7 @@ public record MasterExportRow(
     string? PlayerDisplayName,
     ClaimStatus? Status,
     int? TotalFee,
+    int? FeePaid,
     DateTimeOffset? ClaimCreatedAt,
     DateTimeOffset? ClaimUpdatedAt,
     IReadOnlyList<MasterExportCell> OtherCells)

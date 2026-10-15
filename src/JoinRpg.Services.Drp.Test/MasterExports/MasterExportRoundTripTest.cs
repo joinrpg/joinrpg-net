@@ -170,6 +170,7 @@ public class MasterExportRoundTripTest
         approved.Name.ShouldBe(approvedCharacter.CharacterName);
         approved.Status.ShouldBe(ClaimStatus.Approved);
         approved.TotalFee.ShouldBe(0);
+        approved.FeePaid.ShouldBe(0);
         approved.ResponsibleMasterName.ShouldBe("Master");
         approved.PlayerEmail.ShouldBe("player@example.com");
         approved.PlayerDisplayName.ShouldBe("Player");
