@@ -369,6 +369,11 @@ public class ClaimRestoreViewServiceTest
 
         public Task<ClaimCommentsRestoreLookup> GetClaimCommentsForRestore(ClaimIdentification claimId, IReadOnlyCollection<int> notifiedCommentIds, DateTimeOffset textsSince)
             => throw new NotSupportedException();
+
+        public Task<ClaimFinanceRestoreLookup> GetClaimFinanceForRestore(ProjectIdentification projectId, IReadOnlyCollection<int> notifiedCommentIds)
+            => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ProjectIdentification>> GetBlockedProjects() => throw new NotSupportedException();
     }
 
     private sealed class FakeClaimRestoreService : IClaimRestoreService

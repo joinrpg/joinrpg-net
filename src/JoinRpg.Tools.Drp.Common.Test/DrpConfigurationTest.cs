@@ -23,6 +23,15 @@ public class DrpConfigurationTest
     }
 
     [Fact]
+    public void SettingsFileHasBackupTakenAtLikePortal()
+    {
+        var settings = new DrpSettings(DrpConfiguration.Build(CommandLine(), includeMachineSources: false));
+
+        settings.BackupTakenAt("--backup-taken-at").ShouldBe(new DateTimeOffset(2026, 5, 8, 12, 58, 51, TimeSpan.Zero));
+        settings.Errors.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void SettingsFileDeclaresBackupMaxForUsers()
         => DrpConfiguration.Build(CommandLine(), includeMachineSources: false)
             .GetSection("Drp:BackupMax").GetChildren().Select(c => c.Key).ShouldContain("Users");

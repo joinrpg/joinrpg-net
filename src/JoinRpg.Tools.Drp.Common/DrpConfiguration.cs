@@ -42,7 +42,7 @@ public static class DrpConfiguration
     /// </summary>
     public static string SourcesHelp => $"""
         Настройки (по возрастанию приоритета):
-          {SettingsFileName,-30} факты инцидента: Drp:LostAt, Drp:BackupMax:<таблица>, Drp:ReportDir (в репозитории)
+          {SettingsFileName,-30} факты инцидента: Drp:LostAt, Drp:BackupTakenAt, Drp:BackupMax:<таблица>, Drp:ReportDir (в репозитории)
           {"user-secrets " + UserSecretsId,-30} строки подключения ConnectionStrings:{DrpKeys.MainConnectionName} (MSSQL) и ConnectionStrings:{DrpKeys.NotificationsConnectionName} (Postgres):
           {"",-30} dotnet user-secrets set --id {UserSecretsId} "ConnectionStrings:{DrpKeys.MainConnectionName}" "<строка>"
           {"переменные " + EnvironmentPrefix + "*",-30} например {EnvironmentPrefix}ConnectionStrings__{DrpKeys.MainConnectionName}
