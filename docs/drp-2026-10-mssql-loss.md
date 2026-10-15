@@ -127,6 +127,9 @@
 - [ ] DNS (зоны уже переносятся в Selectel — план инженеров): боевые домены (`joinrpg.ru`,
       `www.joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru`) — на адрес нового
       балансировщика.
+- [ ] DNS: `components.joinrpg.ru` и dev-хосты (`dev.joinrpg.ru`, `devid.joinrpg.ru`,
+      `dev-components.joinrpg.ru`) — на 176.53.231.74: PR
+      [joinrpg-infrastructure#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) на ревью.
 - [ ] DNS: почтовые записи `joinrpg.ru` (SPF, DKIM, DMARC, проверка домена у почтового
       провайдера — Postbox или новый) перенесены в новую зону; без них письма уйдут в спам или не
       отправятся.
@@ -756,6 +759,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` | 2 | влит |
 | [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) | Служебные домены dev: `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` | 2 | на ревью |
 | [infra#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) | DNS служебных доменов prod и dev (terraform) | 2 | на ревью |
+| [infra#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) | DNS dev-хостов и `components.joinrpg.ru` на Selectel (terraform) | 2 | на ревью |
 | [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | влит |
 | [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504) | RestoreLostProjects — в логах только ответы ниже 400 | 4 | влит |
 | issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | закрыт |
