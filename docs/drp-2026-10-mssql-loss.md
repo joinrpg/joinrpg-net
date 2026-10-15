@@ -155,10 +155,10 @@
 - [x] (2026-10-15) Миграции вручную на новую базу: `dotnet run --project src/Joinrpg.Dal.Migrate` со строкой
       подключения к ней (или разовый job в кластере). Секрет пока **не трогаем** — поды
       поднимаются только в конце фазы 4 ([почему](#деплой)).
-- [ ] Сдвиг счётчиков ещё раз.
+- [x] (2026-10-15) Сдвиг счётчиков ещё раз.
 - [x] ~~Адреса аватарок в базе — `REPLACE` префикса~~ — не нужен: [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) сам подменяет домен у
       старых адресов, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) переводит их в ключи джобой.
-- [ ] Право на `IDENTITY_INSERT` у логина приложения: проверить **под ним**
+- [x] (2026-10-15) Право на `IDENTITY_INSERT` у логина приложения: проверить **под ним**
       `SELECT HAS_PERMS_BY_NAME('dbo.Claims', 'OBJECT', 'ALTER')` (и для `Comments`,
       `CharacterGroups`, `Characters`); если нет — `GRANT ALTER ON dbo.<таблица> TO <логин>` на
       время восстановления (фазы 7–9) ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492)).
