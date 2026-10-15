@@ -91,6 +91,9 @@
 - [ ] S3 (аватары и прочие файлы) перенесён **с теми же ключами** (имя объекта в корне бакета); бакет
       аватарок отдаётся по `https://avatars.joinrpg.ru/<ключ>` (свой домен + TLS)
       ([подробнее](#аватарки)).
+      DNS: `avatars.joinrpg.ru` (бакет `joinrpg-prod-avatars`) и `avatars.dev.joinrpg.ru`
+      (`joinrpg-dev-avatars`) — CNAME на `access.ru-6.storage.selcloud.ru`; на 2026-10-16
+      `avatars.joinrpg.ru` ещё не резолвится.
 - [ ] Облачные логи: stdout подов, разделение по namespace.
 - [ ] Для деплоя из CI ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)): сервис-аккаунт с правами на оба namespace, его Secret —
       в GitHub-секрет `SELECTEL_DEPLOY_SA_SECRET` (environment `prod`, `dev`), адрес API — в
@@ -107,7 +110,7 @@
 
 **Правки в репозитории**
 
-- [ ] 🟢 Деплой в Selectel ([#5540](https://github.com/joinrpg/joinrpg-net/issues/5540), PR [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) влит 2026-10-15): токен сервис-аккаунта вместо
+- [x] 🟢 Деплой в Selectel ([#5540](https://github.com/joinrpg/joinrpg-net/issues/5540), PR [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) влит 2026-10-15): токен сервис-аккаунта вместо
       `KUBECONFIG`, namespace `joinrpg-prod`/`joinrpg-dev`, образы из `cr.selcloud.ru`
       (`imagePullSecrets: craas-auth`). Автодеплой dev выключен до первого зелёного деплоя —
       вернуть [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) (фаза 10).
@@ -127,13 +130,13 @@
 - [ ] Включить заглушку для `joinrpg.ru` и `id.joinrpg.ru` (статическая заглушка — план
       инженеров) —
       **до** того, как в секрете `joinrpg-main` появится новая база ([деплой](#деплой)). Ответ 503
-      с `Retry-After`.
-- [ ] DNS (зоны уже переносятся в Selectel — план инженеров): боевые домены (`joinrpg.ru`,
-      `www.joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru`) — на адрес нового
-      балансировщика.
+      с `Retry-After`. 2026-10-16: заглушка отдаётся на `joinrpg.ru` и `id.joinrpg.ru`, но с кодом
+      200, а не 503.
+- [ ] DNS боевых доменов на 176.53.231.74: `joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru` —
+      готово (2026-10-16); **`www.joinrpg.ru` в зоне нет — не резолвится**.
 - [x] (2026-10-16) DNS: `components.joinrpg.ru` и dev-хосты (`dev.joinrpg.ru`, `devid.joinrpg.ru`,
       `dev-components.joinrpg.ru`) — на 176.53.231.74: PR
-      [joinrpg-infrastructure#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) на ревью.
+      [joinrpg-infrastructure#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3).
 - [ ] DNS: почтовые записи `joinrpg.ru` (SPF, DKIM, DMARC, проверка домена у почтового
       провайдера — Postbox или новый) перенесены в новую зону; без них письма уйдут в спам или не
       отправятся.
