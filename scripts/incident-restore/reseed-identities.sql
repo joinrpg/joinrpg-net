@@ -58,7 +58,6 @@ INSERT INTO @Known (TableName, MaxSeenId, TargetSeed) VALUES
     (N'dbo.CharacterGroups', 44388, 100000);
 
 -- Пользователи и комментарии — из базы уведомлений (Postgres, joinrpg-prod-notifications).
--- Пока не вписаны, для них работает грубая оценка (текущий * 3, не меньше текущий + 1 млн).
 -- Пользователи:
 --   SELECT max(greatest("RecipientUserId", "InitiatorUserId")) FROM "Notifications"
 --   WHERE "CreatedAt" < '2026-10-07T22:30:49Z';
@@ -67,9 +66,10 @@ INSERT INTO @Known (TableName, MaxSeenId, TargetSeed) VALUES
 --   FROM "Notifications"
 --   WHERE "EntityReference" LIKE 'ClaimCommentId(%' OR "EntityReference" LIKE 'FinanceOperationId(%'
 --      OR "EntityReference" LIKE 'ForumCommentId(%';
--- INSERT INTO @Known (TableName, MaxSeenId, TargetSeed) VALUES
---     (N'dbo.Users', <max>, NULL),
---     (N'dbo.Comments', <max>, NULL);
+-- Значения сняты 2026-10-15 с новой Managed PostgreSQL (дамп joinrpg-new).
+INSERT INTO @Known (TableName, MaxSeenId, TargetSeed) VALUES
+    (N'dbo.Users', 84473, NULL),
+    (N'dbo.Comments', 644590, NULL);
 
 -- Журнал уже сделанных сдвигов (если скрипт уже применялся к этой базе).
 DECLARE @Logged TABLE (TableName sysname PRIMARY KEY, LoggedSeed bigint NOT NULL);
