@@ -48,11 +48,20 @@ internal class MigrationsLauncher(
 
         try
         {
-            var migrators = scope.ServiceProvider.GetServices<IMigratorService>();
+            var migrators = scope.ServiceProvider.GetServices<IMigratorService>().ToArray();
+
+            // Сначала проверяем все базы и только потом мигрируем: иначе ошибка в строке подключения
+            // к последней базе всплывает, когда первые уже мигрированы.
             foreach (var migrator in migrators)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await ExecuteMigrator(migrator, migrator.GetType().Name, cancellationToken);
+                await RunMigratorStep(migrator, "Checking connection", migrator.CheckConnectionAsync, cancellationToken);
+            }
+
+            foreach (var migrator in migrators)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await RunMigratorStep(migrator, "Migrating", migrator.MigrateAsync, cancellationToken);
             }
         }
         catch (OperationCanceledException)
@@ -72,20 +81,21 @@ internal class MigrationsLauncher(
         }
     }
 
-    private async Task ExecuteMigrator(
+    private async Task RunMigratorStep(
         IMigratorService migrator,
-        string migratorName,
+        string stepName,
+        Func<CancellationToken, Task> step,
         CancellationToken cancellationToken)
     {
         try
         {
-            using var loggingScope = logger.BeginScope("Migration of {migrator}", migratorName);
-            logger.LogInformation("Launching migrator {MigratorName}", migratorName);
-            await migrator.MigrateAsync(cancellationToken);
+            using var loggingScope = logger.BeginScope("Migration of {migrator}", migrator.Name);
+            logger.LogInformation("{MigratorStep} {MigratorName}", stepName, migrator.Name);
+            await step(cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            logger.LogError(ex, "Error executing migrator {MigratorName}", migratorName);
+            logger.LogError(ex, "{MigratorStep} {MigratorName} failed", stepName, migrator.Name);
             Environment.ExitCode = MigrationInterruptedErrorCode;
             throw;
         }
