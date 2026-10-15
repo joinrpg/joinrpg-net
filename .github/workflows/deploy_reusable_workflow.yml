@@ -13,18 +13,19 @@ on:
         type: string
 env:
   APP_NAME: joinrpg-portal
-  APP_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-portal"
+  APP_IMAGE_ID: "joinrpg/joinrpg-portal"
 
   MIGRATOR_NAME: joinrpg-dal-migrate
-  MIGRATOR_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-dal-migrate"
+  MIGRATOR_IMAGE_ID: "joinrpg/joinrpg-dal-migrate"
 
   IDPORTAL_NAME: joinrpg-idportal
-  IDPORTAL_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-idportal"
+  IDPORTAL_IMAGE_ID: "joinrpg/joinrpg-idportal"
 
   COMPONENTBOOK_NAME: joinrpg-componentbook
-  COMPONENTBOOK_IMAGE_ID: "crp3fr717nr1rn78qeij/joinrpg-componentbook"
+  COMPONENTBOOK_IMAGE_ID: "joinrpg/joinrpg-componentbook"
 
-  REGISTRY_HOST: cr.yandex
+  # Кластер тянет образы через секрет craas-auth (интеграция кластера с Container Registry)
+  REGISTRY_HOST: cr.selcloud.ru
 
 jobs:
   deploy:
@@ -34,14 +35,17 @@ jobs:
     name: deploy
     env:
       ENVIRONMENT: ${{ inputs.environment }}
+      NAMESPACE: joinrpg-${{ inputs.environment }}
     runs-on: ubuntu-24.04
     permissions: read-all
     steps:
-      - name: Log in to Yandex Container Registry
-        id: login-cr
-        uses: yc-actions/yc-cr-login@v3
+      - name: Log in to Selectel Container Registry
+        id: login-cr-selectel
+        uses: docker/login-action@v4
         with:
-            yc-sa-json-credentials: ${{ secrets.YANDEX_CR_SA_KEY_JSON }}
+          registry: cr.selcloud.ru
+          username: ${{ secrets.SELECTEL_CR_USERNAME }}
+          password: ${{ secrets.SELECTEL_CR_PASSWORD }}
 
       - name: Check images existence and fill images related env vars
         id: check_existence
@@ -74,13 +78,15 @@ jobs:
       - name: Install kubectl
         uses: azure/setup-kubectl@v5
         with:
-          version: v1.31.0
+          version: v1.35.9
 
-      - name: Set kubeconfig
+      - name: Set kube context
         uses: azure/k8s-set-context@v5
         with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG }}
+          method: service-account
+          k8s-url: ${{ vars.SELECTEL_K8S_SERVER }}
+          # YAML объекта Secret сервис-аккаунта: kubectl -n kube-system get secret <sa>-token -o yaml
+          k8s-secret: ${{ secrets.SELECTEL_DEPLOY_SA_SECRET }}
 
       - name: Turn github secrets to .env file
         uses: shine1594/secrets-to-env-action@v1.7.0
@@ -135,7 +141,7 @@ jobs:
           $ErrorActionPreference = 'Stop'
 
           #Add new generated secret, replace old migration job
-          &"kubectl" "--%" "replace --force --save-config -f ./kustomize_output/v1_secret_joinrpg-main-* -f ./kustomize_output/batch_v1_job_joinrpg-dal-migrate.yaml -n $env:ENVIRONMENT"
+          &"kubectl" "--%" "replace --force --save-config -f ./kustomize_output/v1_secret_joinrpg-main-* -f ./kustomize_output/batch_v1_job_joinrpg-dal-migrate.yaml -n $env:NAMESPACE"
           if ($LastExitCode -ne 0) {exit $LastExitCode}
 
           Write-Output "Waiting for job/joinrpg-dal-migrate to be completed or failed..."
@@ -143,7 +149,7 @@ jobs:
           #Keep waiting while job is not completed or failed
           while ($true){
 
-            $status = &"kubectl" "--%" "get job joinrpg-dal-migrate -n $env:ENVIRONMENT -o json" | ConvertFrom-Json
+            $status = &"kubectl" "--%" "get job joinrpg-dal-migrate -n $env:NAMESPACE -o json" | ConvertFrom-Json
             if ($LastExitCode -ne 0) {exit $LastExitCode}
             $conditions = $status.status.conditions
             if ($conditions) {
@@ -154,7 +160,7 @@ jobs:
                 }
                 elseif ($condition.type -eq "Failed" -and $condition.status -eq "True") {
                    Write-Output "Migration has failed. Migration's job pod info:"
-                   &"kubectl" "--%"  "get pods -n $env:ENVIRONMENT --selector=job-name=joinrpg-dal-migrate -o=yaml"
+                   &"kubectl" "--%"  "get pods -n $env:NAMESPACE --selector=job-name=joinrpg-dal-migrate -o=yaml"
                    exit 1
                 }
               }
@@ -162,10 +168,10 @@ jobs:
 
 
             #Check last event for error. Must throw an error if, for instance, namespace CPU quota was exceeded
-            $LastEventForJob = &"kubectl" "--%" "get events -n $env:ENVIRONMENT --sort-by=.metadata.creationTimestamp --field-selector involvedObject.kind=Job,involvedObject.name=joinrpg-dal-migrate -o jsonpath='{.items[-1:].message}'"
+            $LastEventForJob = &"kubectl" "--%" "get events -n $env:NAMESPACE --sort-by=.metadata.creationTimestamp --field-selector involvedObject.kind=Job,involvedObject.name=joinrpg-dal-migrate -o jsonpath='{.items[-1:].message}'"
             if ($LastEventForJob -imatch "^'Error .*") { throw $LastEventForJob }
 
-            &"kubectl" "--%" "logs -n $env:ENVIRONMENT --follow job/joinrpg-dal-migrate"
+            &"kubectl" "--%" "logs -n $env:NAMESPACE --follow job/joinrpg-dal-migrate"
             Start-Sleep 3
           }
         shell: pwsh
@@ -178,7 +184,7 @@ jobs:
           #https://github.com/kubernetes/kubernetes/blob/v1.24.0/staging/src/k8s.io/kubectl/pkg/util/prune/prune.go
 
 
-          KUBECTL_PRUNE_WHITELIST="\
+          KUBECTL_PRUNE_ALLOWLIST="\
           --prune-allowlist=core/v1/ConfigMap \
           --prune-allowlist=core/v1/Endpoints \
           --prune-allowlist=core/v1/PersistentVolumeClaim \
@@ -188,14 +194,14 @@ jobs:
           --prune-allowlist=core/v1/Service \
           --prune-allowlist=batch/v1/Job \
           --prune-allowlist=batch/v1/CronJob \
-          --prune-allowlist=networking.k8s.io/v1/Ingress \
+          --prune-allowlist=gateway.networking.k8s.io/v1/HTTPRoute \
           --prune-allowlist=apps/v1/DaemonSet \
           --prune-allowlist=apps/v1/Deployment \
           --prune-allowlist=apps/v1/ReplicaSet \
           --prune-allowlist=apps/v1/StatefulSet
           "
 
-          kubectl apply -f ./kustomize_output --prune -l managed-by-kustomize-${ENVIRONMENT}=true --namespace ${ENVIRONMENT} $KUBECTL_PRUNE_WHITELIST
-          kubectl rollout status deployment/${APP_NAME} --namespace ${ENVIRONMENT}
-          kubectl rollout status deployment/${IDPORTAL_NAME} --namespace ${ENVIRONMENT}
-          kubectl rollout status deployment/${COMPONENTBOOK_NAME} --namespace ${ENVIRONMENT}
+          kubectl apply -f ./kustomize_output --prune -l managed-by-kustomize-${ENVIRONMENT}=true --namespace ${NAMESPACE} $KUBECTL_PRUNE_ALLOWLIST
+          kubectl rollout status deployment/${APP_NAME} --namespace ${NAMESPACE}
+          kubectl rollout status deployment/${IDPORTAL_NAME} --namespace ${NAMESPACE}
+          kubectl rollout status deployment/${COMPONENTBOOK_NAME} --namespace ${NAMESPACE}
