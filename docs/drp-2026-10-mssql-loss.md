@@ -293,7 +293,11 @@
 **Ручные операции** (типы оплаты Cash / Custom) — у провайдера их нет, только из уведомлений
 ([подробнее](#ручные-финансовые-операции)).
 
-- [ ] ⚪ Ручные оплаты и возвраты, установка взноса вручную — из уведомлений, с прежними id.
+- [x] ~~Установка взноса вручную~~ — уже восстанавливается в фазе 7 ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)).
+- [ ] 🟡 Ручные оплаты и возвраты из уведомлений, с прежними id — консольный инструмент
+      `RestoreManualFinance` ([#5561](https://github.com/joinrpg/joinrpg-net/issues/5561)): dry-run → CSV (ПДн — локально) → проверить предложенный тип
+      оплаты → `--apply`. По всем заблокированным проектам сразу, после фазы 7.
+- [ ] Проекты без типа оплаты (оболочки, типы заведены после мая) — решение в [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561).
 
 ### Фаза 10. Возврат в штатный режим
 
@@ -750,6 +754,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | закрыт |
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | в работе |
+| issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | заведён |
 | [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | на ревью |
 | [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | на ревью |
 | [#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 3: блок восстановления комментариев на странице | 8 | draft, ждёт PR 1–2 |
