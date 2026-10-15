@@ -176,7 +176,7 @@
 
 **Конфиг** (`manifests/prod`, уходит одним деплоем с новым секретом в конце фазы 4)
 
-Джобы и адрес аватарок — PR [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) на ревью; влить **до** деплоя с новым секретом.
+Джобы, адрес аватарок и баннер — PR [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) на ревью; влить **до** деплоя с новым секретом.
 
 - [ ] 🟢 Выключить джобы ([#5470](https://github.com/joinrpg/joinrpg-net/issues/5470)): `DailyJobs__Disabled__0=AdvertisementJob`,
       `__1=UpdatePaymentStatusJob` ([почему](#опасные-джобы)). `ProjectPerformCloseJob` выключать
@@ -769,7 +769,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | закрыт |
 | [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | влит |
-| [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) | Конфиг прода: выключенные джобы, `S3BlobStorage__PublicBaseUrl` | 3 | на ревью |
+| [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) | Конфиг прода: выключенные джобы, `S3BlobStorage__PublicBaseUrl`, баннер | 3 | на ревью |
 | issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | заведён |
 | [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | влит |
 | [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | влит |
