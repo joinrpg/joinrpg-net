@@ -208,12 +208,15 @@
 - [x] (2026-10-15, 119 проектов) 🟢 Заблокировать все активные проекты майской базы (после миграций — колонка
       `IsBlocked` появляется миграцией `AddProjectIsBlocked`, [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480)):
       `UPDATE dbo.Projects SET IsBlocked = 1 WHERE Active = 1;`
-- [ ] 🟢 Список проектов, созданных после мая, — CSV на ручную проверку: id, название, создатель,
+- [x] (2026-10-15, 84 проекта, «да» — 77) 🟢 Список проектов, созданных после мая, — CSV на ручную проверку: id, название, создатель,
       источники ([#5479](https://github.com/joinrpg/joinrpg-net/issues/5479), PR [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485), [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504), [подробнее](#список-новых-проектов)).
-- [ ] 🟢 Оболочки этих проектов с прежним id, создателем и статусом «Заблокирован»
+- [x] (2026-10-15) 🟢 Оболочки этих проектов с прежним id, создателем и статусом «Заблокирован»
       (`Active = 1`, `IsBlocked = 1`; `Active = 0` + `IsBlocked = 1` недопустимо — загрузка метаданных
       падает) — доменным созданием проекта с подменой счётчика ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491), PR [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509), [подробнее](#оболочки-проектов)). Запуск:
       `dotnet run --project src/JoinRpg.Tools.RestoreProjectShells -- --input <проверенный CSV> [--apply]`.
+      Создано 77 (1623–1713). Пропущены при проверке 7: 1624, 1636, 1653, 1665, 1666, 1695, 1714 —
+      если создавать, то **до старта подов** (подмена счётчика безопасна только без работающих
+      приложений).
 - [ ] Повторный dry-run `RestoreProjectShells` — по всем строкам «да» «уже создан» (`AlreadyExists`).
 - [ ] Вернуть счётчик `Projects` — повторный прогон `reseed-identities.sql` с `@Apply = 1`; ожидается
       `Restore [dbo].[Projects]: <id> -> 20000`.
