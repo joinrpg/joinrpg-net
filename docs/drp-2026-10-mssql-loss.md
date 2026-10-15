@@ -130,11 +130,14 @@
 - [ ] DNS: почтовые записи `joinrpg.ru` (SPF, DKIM, DMARC, проверка домена у почтового
       провайдера — Postbox или новый) перенесены в новую зону; без них письма уйдут в спам или не
       отправятся.
-- [ ] DNS: завести записи `joinrpg.tsarevs.ru` и `id.joinrpg.tsarevs.ru` на балансировщик
-      176.53.231.74, мимо заглушки — PR [joinrpg-infrastructure#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2)
-      на ревью, после мерджа `terraform apply` в `05-dns`. **До** деплоя из фазы 4 — иначе cert-manager не выпустит
-      сертификаты.
-- [x] (2026-10-10) PR с ingress служебных доменов ([#5474](https://github.com/joinrpg/joinrpg-net/issues/5474)) влит. Ingress и сертификаты появятся с первым
+- [ ] DNS: `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` и для dev `dev.joinrpg.tsarevs.ru`,
+      `dev.id.joinrpg.tsarevs.ru` — на балансировщик 176.53.231.74, мимо заглушки: PR
+      [joinrpg-infrastructure#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) на ревью,
+      после мерджа `terraform apply` в `05-dns`. **До** деплоя из фазы 4.
+- [ ] TLS на Gateway `infra/main` покрывает все четыре служебных хоста (манифесты — Gateway API,
+      `HTTPRoute`, без cert-manager в репозитории; Gateway — в инфраструктуре).
+- [ ] Маршруты служебных доменов dev — PR [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) на ревью.
+- [x] (2026-10-10) PR с маршрутами служебных доменов prod ([#5474](https://github.com/joinrpg/joinrpg-net/issues/5474)) влит. Маршруты появятся с первым
       успешным деплоем (фаза 4).
 
 ### Фаза 3. Поднять базу
@@ -346,9 +349,8 @@ IdPortal и ingress. Миграция и старт подов идут одни
 - **Логи.** `CustomJsonFormatter` пишет severity в поле `level` в расчёте на Yandex Cloud
   Logging; под новые облачные логи — поправить.
 - **Почта.** Yandex Postbox; без отправки писем не проверить «забыл пароль».
-- **Сертификаты** — автовыдача Let's Encrypt в кластере (cert-manager или аналог). Аннотации
-  `cert-manager.io/cluster-issuer` в ingress (включая служебные домены, [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474)) — сверить с
-  выбранным механизмом.
+- **Маршрутизация** — Gateway API: приложения публикуются `HTTPRoute` с `parentRefs: infra/main`,
+  TLS и сертификаты — на Gateway в инфраструктуре; в репозитории ни Ingress, ни cert-manager.
 
 ### Аватарки
 
@@ -482,8 +484,8 @@ Let's Encrypt в новом кластере (план инженеров). Дл
 
 ### Служебные домены
 
-`joinrpg.tsarevs.ru` → Portal, `id.joinrpg.tsarevs.ru` → IdPortal: отдельные ingress только в
-prod, мимо заглушки на балансировщике, без авторизации на уровне ingress. Нужны, чтобы проверять приложения,
+`joinrpg.tsarevs.ru` → Portal, `id.joinrpg.tsarevs.ru` → IdPortal: отдельные маршруты (`HTTPRoute`); для dev
+то же — `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` ([#5560](https://github.com/joinrpg/joinrpg-net/issues/5560)), мимо заглушки на балансировщике, без авторизации на уровне ingress. Нужны, чтобы проверять приложения,
 пока боевые домены под заглушкой. Ссылки, которые приложения строят на боевые хосты
 (`JoinRpgHostNames`), ведут на заглушку — проверяем сами страницы, а не переходы. Это касается и
 ссылок в письмах: проверяем, что письмо пришло, а не переход по ссылке. Вход через ВК на
@@ -733,7 +735,9 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5465](https://github.com/joinrpg/joinrpg-net/issues/5465) | Инструмент восстановления потерянных пользователей | 4 | влит |
 | [#5468](https://github.com/joinrpg/joinrpg-net/issues/5468) | Старый Telegram-адрес в очереди не останавливает канал (закрывает issue [#5466](https://github.com/joinrpg/joinrpg-net/issues/5466)) | 3 | влит |
 | [#5470](https://github.com/joinrpg/joinrpg-net/issues/5470) | Выключение ежедневных джоб через конфиг `DailyJobs:Disabled` | 3 | влит |
-| [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` (ingress) | 2 | влит |
+| [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` | 2 | влит |
+| [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) | Служебные домены dev: `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` | 2 | на ревью |
+| [infra#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) | DNS служебных доменов prod и dev (terraform) | 2 | на ревью |
 | [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | влит |
 | [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504) | RestoreLostProjects — в логах только ответы ниже 400 | 4 | влит |
 | issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | закрыт |
