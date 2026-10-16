@@ -24,6 +24,16 @@ services.AddJoinWebPlatform(
 );
 ```
 
+Если у приложения одна база, ключи Data Protection можно хранить в его собственном DbContext — тогда отдельная строка подключения `DataProtection` не нужна. Контекст реализует `IDataProtectionKeyContext` (таблица `DataProtectionKeys` появится в его миграциях) и регистрируется как обычно через `AddJoinEfCoreDbContext`:
+
+```csharp
+services.AddJoinWebPlatform<MyDbContext>(
+    environment: Environment,
+    appName: "MyApp.Name",
+    telemetryServiceNames: ["MyApp.ActivitySourceName"]
+);
+```
+
 Опционально — конфигурация имён хостов JoinRpg (нужна, если приложение использует `JoinRpgHostNamesOptions`):
 
 ```csharp
@@ -122,7 +132,7 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 | Компонент | Класс/Метод | Описание |
 |-----------|-------------|----------|
 | **Логирование** | `UseJoinSerilog()`, `UseJoinRequestLogging()` | Serilog с обогащением (пользователь, трассировка, YC-уровни), JSON/text форматтеры, фильтрация health check запросов |
-| **Data Protection** | `AddJoinDataProtection()` (вызывается из `AddJoinWebPlatform`) | Хранение ключей шифрования в PostgreSQL для работы в нескольких репликах |
+| **Data Protection** | `AddJoinDataProtection()` (вызывается из `AddJoinWebPlatform`) | Хранение ключей шифрования в PostgreSQL для работы в нескольких репликах: в отдельной базе или в DbContext приложения (`AddJoinDataProtection<T>()`) |
 | **OpenTelemetry** | `AddJoinOpenTelemetry()` (вызывается из `AddJoinWebPlatform`) | Distributed tracing + метрики, Prometheus endpoint `/metrics` |
 | **Кеширование** | `PerRequestCache<K,V>`, `SingletonCache<K,V>` | Per-request scoped кеш и singleton-кеш с фабрикой значений |
 | **Health Checks** | `MapJoinHealthChecks()` | Эндпойнты `/health` (полный), `/health/ready` (тег `ready`), `/health/live` (всегда OK) |
@@ -168,7 +178,7 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 
 | Ключ | Обязателен | Описание |
 |------|------------|----------|
-| `DataProtection` | Да | Строка подключения PostgreSQL для хранения ключей Data Protection |
+| `DataProtection` | Да, кроме `AddJoinWebPlatform<TKeysContext>` | Строка подключения PostgreSQL для хранения ключей Data Protection |
 | Любой другой | По необходимости | Строки подключения для каждого DbContext, зарегистрированного через `AddJoinEfCoreDbContext` |
 
 #### Logging
