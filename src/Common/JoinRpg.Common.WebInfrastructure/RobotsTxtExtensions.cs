@@ -35,11 +35,6 @@ public class RobotsTxtOptions
 public static class RobotsTxtExtensions
 {
     /// <summary>
-    /// Эндпойнты, которые заводит сама веб-инфраструктура: health-чеки и Prometheus-метрики.
-    /// </summary>
-    private static readonly string[] InfrastructurePaths = ["/health", "/metrics"];
-
-    /// <summary>
     /// Отдаёт /robots.txt. Без него каждый заход поискового робота оставляет в логах 404.
     /// Вызывается из <c>WebInfrastructureRegistration.AddJoinWebPlatform</c> (всех перегрузок).
     /// </summary>
@@ -67,7 +62,7 @@ public static class RobotsTxtExtensions
             return builder.ToString();
         }
 
-        foreach (var path in InfrastructurePaths.Concat(options.DisallowedPaths))
+        foreach (var path in InfrastructureEndpoints.PathPrefixes.Concat(options.DisallowedPaths))
         {
             _ = builder.Append("Disallow: ").Append(path).Append('\n');
         }

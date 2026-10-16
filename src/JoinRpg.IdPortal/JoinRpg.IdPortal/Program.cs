@@ -6,8 +6,6 @@ using Microsoft.Extensions.Options;
 
 var app = WebApplication.CreateBuilder(args).ConfigureServices().Build();
 
-app.UseForwardedHeaders();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

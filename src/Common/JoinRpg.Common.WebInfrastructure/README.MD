@@ -100,7 +100,7 @@ app.MapAuthEndpoints();
 ### 4. Middleware pipeline
 
 ```csharp
-app.UseForwardedHeaders();           // Должен быть первым — обрабатывает X-Forwarded-* заголовки
+// UseForwardedHeaders() вызывать не нужно — AddJoinWebPlatform сам ставит его в начало конвейера
 app.UseOpenTelemetryPrometheusScrapingEndpoint();  // Эндпойнт /metrics
 app.UseJoinRequestLogging();         // Логирование HTTP-запросов через Serilog
 
@@ -130,7 +130,8 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 | **Кеширование** | `PerRequestCache<K,V>`, `SingletonCache<K,V>` | Per-request scoped кеш и singleton-кеш с фабрикой значений |
 | **Health Checks** | `MapJoinHealthChecks()` | Эндпойнты `/health` (полный), `/health/ready` (тег `ready`), `/health/live` (всегда OK) |
 | **robots.txt** | `AddJoinRobotsTxt()` (вызывается из `AddJoinWebPlatform`) | `/robots.txt` первым middleware конвейера (до логирования). Настройки — секция `RobotsTxt`, см. ниже |
-| **Forwarded Headers** | `UseForwardedHeaders()` / `ConfigureForwardedHeaders()` | Обработка X-Forwarded-Proto и X-Forwarded-For от reverse proxy |
+| **Forwarded Headers** | `ConfigureForwardedHeaders()` (вызывается из `AddJoinWebPlatform`) | Обработка X-Forwarded-Proto и X-Forwarded-For от reverse proxy первым middleware конвейера. Метрика `joinrpg.http.requests.private_network` (meter `JoinRpg.WebInfrastructure`) считает запросы с внутренних адресов — признак неправильной настройки |
+| **HTTPS** | вызывается из `AddJoinWebPlatform` | Редирект http → https (307, вне Development на порт 443) сразу после Forwarded Headers, кроме `/health*` и `/metrics`; HSTS вне Development (пока `max-age` 1 день) |
 | **DbContext** | `AddJoinEfCoreDbContext<T>()` | PostgreSQL + EntityFramework.Exceptions + health check для каждого контекста |
 | **Миграции** | `RegisterMigrator<T>()` | Регистрация DbContext + `IMigratorService` для применения миграций |
 | **Логин через id.joinrpg.ru** | `AddJoinRpgAuthentication<T>()`, `MapAuthEndpoints()`, `IJoinUserLoginHandler` | OpenIddict client (authorization code flow), cookie-схема, эндпойнты `/login`, `/signin-joinrpg`, `/logout` |
