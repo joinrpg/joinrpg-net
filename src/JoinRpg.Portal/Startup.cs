@@ -37,6 +37,7 @@ using JoinRpg.WebPortal.Managers.Drp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal;
 
@@ -56,6 +57,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             .Configure<DonateOptions>(Configuration.GetSection("Donate"))
             .Configure<DrpOptions>(Configuration.GetSection("Drp"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
+
+        services.AddOptions<RobotsTxtOptions>()
+            .Configure<IOptions<JoinRpgHostNamesOptions>>((robots, hostNames) =>
+            {
+                robots.MainHost ??= hostNames.Value.MainHost;
+                robots.DisallowedPaths.AddRange(["/x-api", "/x-game-api", "/webapi", "/swagger", "/openapi", "/mcp"]);
+            });
 
         services.AddOptions<PostboxOptions>().BindConfiguration("Postbox");
         services.AddOptions<BastiliaRatingOptions>().BindConfiguration("BastiliaRating");

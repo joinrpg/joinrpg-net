@@ -3,6 +3,9 @@ using JoinRpg.Common.WebInfrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddJoinHealthChecks();
+// Каталог компонентов для разработчиков — в поиск не пускаем. Без robots.txt запрос уходил бы
+// в SPA-фоллбэк и отдавал index.html
+_ = builder.Services.AddJoinRobotsTxt().Configure(robots => robots.DisallowAll = true);
 builder.Services.ConfigureForwardedHeaders();
 builder.Host.UseJoinSerilog("ComponentBook");
 

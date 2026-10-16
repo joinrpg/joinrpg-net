@@ -38,6 +38,9 @@ public static class Startup
 
         builder.Services.AddOptions<OAuthServerOptions>().BindConfiguration("OAuthServer");
 
+        // Портал аккаунтов — только вход и профиль, в поиске ему делать нечего
+        builder.Services.AddOptions<RobotsTxtOptions>().Configure(robots => robots.DisallowAll = true);
+
         builder.Services.AddJoinExternalLogins(builder.Configuration.GetSection("Authentication"));
 
         builder.Services.AddJoinWebPlatform(builder.Configuration,
