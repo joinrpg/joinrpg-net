@@ -103,6 +103,9 @@
       пустой MSSQL, схему создаёт job миграций. Секреты `dev` обновлены (строки подключения, ключи
       S3), конфиг — [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566). Деплой в `joinrpg-dev` прошёл (2026-10-15 22:03Z), поды стартуют,
       **но запросы до них не доходят** — разбор маршрутизации (HTTPRoute / Gateway `infra/main`).
+      Мигратор на пустой базе теперь создаёт виртуальных пользователей ([#5576](https://github.com/joinrpg/joinrpg-net/issues/5576)) и проверяет
+      подключение ко всем базам до первой миграции ([#5570](https://github.com/joinrpg/joinrpg-net/issues/5570)); автодеплой dev вернулся ([#5575](https://github.com/joinrpg/joinrpg-net/issues/5575)),
+      2026-10-16 06:07Z прошёл.
 - [ ] Dev после того, как откроется: регистрация, админ вручную (`UserAuthDetails.IsAdmin`),
       загрузка аватарки, удалить старый `KUBECONFIG` из окружения `dev`.
 - [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
@@ -114,8 +117,7 @@
 
 - [x] 🟢 Деплой в Selectel ([#5540](https://github.com/joinrpg/joinrpg-net/issues/5540), PR [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) влит 2026-10-15): токен сервис-аккаунта вместо
       `KUBECONFIG`, namespace `joinrpg-prod`/`joinrpg-dev`, образы из `cr.selcloud.ru`
-      (`imagePullSecrets: craas-auth`). Автодеплой dev выключен до первого зелёного деплоя —
-      вернуть [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) (фаза 10).
+      (`imagePullSecrets: craas-auth`). Автодеплой dev вернул [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) (Closes [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)).
 - [ ] ⚪ Лимит тела запроса на ingress портала (`proxy-body-size`, порядка 200m): у nginx по
       умолчанию 1 МБ — загрузка выгрузок мастера в фазе 7 получит 413 ([#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
 - [ ] Строки подключения: Postgres (`DataProtection`, `DailyJob`, `Notifications`, IdPortal) —
@@ -310,10 +312,10 @@
 ([подробнее](#ручные-финансовые-операции)).
 
 - [x] ~~Установка взноса вручную~~ — уже восстанавливается в фазе 7 ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)).
-- [ ] 🟡 Ручные оплаты и возвраты из уведомлений, с прежними id — консольный инструмент
+- [ ] 🟢 Ручные оплаты и возвраты из уведомлений, с прежними id — консольный инструмент
       `RestoreManualFinance` ([#5561](https://github.com/joinrpg/joinrpg-net/issues/5561)): dry-run → CSV (ПДн — локально) → проверить предложенный тип
-      оплаты → `--apply`. По всем заблокированным проектам сразу, после фазы 7. Влиты [#5568](https://github.com/joinrpg/joinrpg-net/issues/5568),
-      [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569), [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567); инструмент — [#5571](https://github.com/joinrpg/joinrpg-net/issues/5571) (draft, последний).
+      оплаты → `--apply`. По всем заблокированным проектам сразу, после фазы 7. Всё влито ([#5568](https://github.com/joinrpg/joinrpg-net/issues/5568),
+      [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569), [#5571](https://github.com/joinrpg/joinrpg-net/issues/5571), [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567)), issue закрыт 2026-10-15; осталось запустить.
 - [x] ~~Проекты без типа оплаты~~ — решено 2026-10-15: инструмент создаёт тип Cash на мастера по
       подтверждению в CSV (`cash:<userId>`).
 - [ ] Сверка «Уплачено» из выгрузки мастера с оплатами в базе — [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567) влит.
@@ -326,7 +328,7 @@
       проекты пропускает — включать, когда готова сверка с платёжным провайдером, независимо от
       блокировок.
 - [ ] Снять баннер.
-- [ ] Вернуть автодеплой dev ([#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)).
+- [x] ~~Вернуть автодеплой dev~~ — [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) влит 2026-10-16.
 - [ ] Старый бакет аватарок в Yandex Cloud — выключить (можно сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с
       `PublicBaseUrl`). Временную джобу `AvatarCachedUriToKeyJob` ([#5532](https://github.com/joinrpg/joinrpg-net/issues/5532)) — убрать после отработки.
 - [ ] Убрать ingress служебных доменов из `manifests/prod` (деплой удалит их прунингом), TLS-секреты
@@ -374,8 +376,8 @@ IdPortal и ingress. Миграция и старт подов идут одни
 
 - **Деплой** ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)). Kubeconfig Selectel протухает с ротацией сертификатов раз в 30 дней,
   поэтому CI ходит токеном сервис-аккаунта. Namespace — `joinrpg-<среда>`; имя GitHub
-  environment, папка манифестов и метка прунинга остались `prod`/`dev`. Только ручной деплой,
-  автодеплой dev вернуть [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542).
+  environment, папка манифестов и метка прунинга остались `prod`/`dev`. Прод — ручной деплой,
+  dev — автодеплой после сборки master ([#5575](https://github.com/joinrpg/joinrpg-net/issues/5575)).
 - **Реестр образов** — Selectel Container Registry (`cr.selcloud.ru`), пуш уже идёт; поды тянут
   образы через секрет `craas-auth` от интеграции кластера с реестром.
 - **Лимит тела** на ingress портала: выгрузки мастера (до 30 МБ) не пройдут в дефолтный 1 МБ nginx.
@@ -798,10 +800,10 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | влит |
 | [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566) | Конфиг dev: S3 Selectel, `PublicBaseUrl` = `avatars.dev.joinrpg.ru` | 1 | влит |
 | [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) | Конфиг прода: выключенные джобы, S3 Selectel (`Endpoint`, `PublicBaseUrl`), баннер | 3 | влит |
-| issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | в работе |
+| issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | закрыт |
 | [#5568](https://github.com/joinrpg/joinrpg-net/issues/5568) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 1: планировщик ручных финансовых операций | 9 | влит |
 | [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 2: вставка операций с прежними id | 9 | влит |
-| [#5571](https://github.com/joinrpg/joinrpg-net/issues/5571) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 3: консольный инструмент `RestoreManualFinance` | 9 | draft |
+| [#5571](https://github.com/joinrpg/joinrpg-net/issues/5571) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 3: консольный инструмент `RestoreManualFinance` | 9 | влит |
 | [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 4: сверка «Уплачено» из выгрузки с оплатами | 9 | влит |
 | [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | влит |
 | [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | влит |
@@ -819,7 +821,10 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5539](https://github.com/joinrpg/joinrpg-net/issues/5539) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 6: страница «Восстановление проекта» с загрузкой выгрузок | 7 | влит |
 | issue [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540) | Деплой в Selectel: токен сервис-аккаунта вместо `KUBECONFIG` | 1 | закрыт |
 | [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) | Деплой через сервис-аккаунт Selectel, namespace `joinrpg-prod`/`joinrpg-dev` (Closes [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540)) | 1 | влит |
-| issue [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) | Вернуть автодеплой после переезда | 10 | заведён |
+| issue [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) | Вернуть автодеплой после переезда | 1 | закрыт |
+| [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) | Автодеплой dev после сборки master (Closes [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)) | 1 | влит |
+| [#5570](https://github.com/joinrpg/joinrpg-net/issues/5570) | Мигратор проверяет подключение ко всем базам до первой миграции | 1 | влит |
+| [#5576](https://github.com/joinrpg/joinrpg-net/issues/5576) | Мигратор запускает Seed: виртуальные пользователи на пустой базе | 1 | влит |
 | [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
 | [#5501](https://github.com/joinrpg/joinrpg-net/issues/5501) | `FinanceOperationIdentification` с вложенным `ClaimIdentification` (по ревью [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496)) | 7 | влит |
 | [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): разбор уведомлений в события и состояние заявки | 7 | влит |
