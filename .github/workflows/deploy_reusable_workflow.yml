@@ -37,7 +37,9 @@ jobs:
       ENVIRONMENT: ${{ inputs.environment }}
       NAMESPACE: joinrpg-${{ inputs.environment }}
     runs-on: ubuntu-24.04
-    permissions: read-all
+    # GITHUB_TOKEN нужен только для checkout: в registry и кластер ходим секретами.
+    permissions:
+      contents: read
     steps:
       - name: Log in to Selectel Container Registry
         id: login-cr-selectel

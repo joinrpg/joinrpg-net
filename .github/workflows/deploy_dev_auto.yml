@@ -1,0 +1,23 @@
+name: Deploy to dev automatically after build
+on:
+  workflow_run:
+    workflows: [Build and publish]
+    types: [completed]
+    branches: [master]
+
+concurrency:
+  group: development
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Только push в master: «Build and publish» идёт и на PR, а у PR из форка head_branch тоже может быть master.
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'master' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/deploy_reusable_workflow.yml
+    with:
+      deployVersion: latest 
+      environment: dev
+      environment_url: https://dev.joinrpg.ru
+    secrets: inherit
