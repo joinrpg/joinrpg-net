@@ -131,8 +131,8 @@
       `S3BlobStorage:PublicBaseUrl`, терпимое чтение и подмена домена у старых полных адресов; потом,
       **только после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод**, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — в базе ключ объекта вместо адреса,
       старые адреса переводит джоба `AvatarCachedUriToKeyJob`.
-- [ ] ⚪ Логи: формат severity в `CustomJsonFormatter` (`level`) заточен под Yandex Cloud Logging —
-      привести к формату новых облачных логов. Обновить скилл `prod-logs`.
+- [x] ~~Логи: формат severity в `CustomJsonFormatter`~~ — в логах Selectel распознаётся (2026-10-16);
+      скиллы чтения логов — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582), отложено (фаза 10).
 
 ### Фаза 2. 🚧 Заглушка на обоих доменах, служебные домены
 
@@ -334,6 +334,7 @@
       проекты пропускает — включать, когда готова сверка с платёжным провайдером, независимо от
       блокировок.
 - [ ] Снять баннер.
+- [ ] Скиллы чтения логов и прод-БД под Selectel — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582) (отложено).
 - [x] ~~Вернуть автодеплой dev~~ — [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) влит 2026-10-16.
 - [ ] Старый бакет аватарок в Yandex Cloud — выключить (можно сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с
       `PublicBaseUrl`). Временную джобу `AvatarCachedUriToKeyJob` ([#5532](https://github.com/joinrpg/joinrpg-net/issues/5532)) — убрать после отработки.
@@ -387,8 +388,8 @@ IdPortal и ingress. Миграция и старт подов идут одни
 - **Реестр образов** — Selectel Container Registry (`cr.selcloud.ru`), пуш уже идёт; поды тянут
   образы через секрет `craas-auth` от интеграции кластера с реестром.
 - **Лимит тела** на ingress портала: выгрузки мастера (до 30 МБ) не пройдут в дефолтный 1 МБ nginx.
-- **Логи.** `CustomJsonFormatter` пишет severity в поле `level` в расчёте на Yandex Cloud
-  Logging; под новые облачные логи — поправить.
+- **Логи.** Severity из `CustomJsonFormatter` (`level`) в логах Selectel распознаётся. Скиллы
+  `prod-logs`, `monitor-release`, `prod-db-readonly` смотрят в Yandex — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582).
 - **Почта.** Yandex Postbox, из Selectel работает (проверено на dev 2026-10-16).
 - **Адреса баз.** Изнутри кластера: MSSQL — `192.168.0.2`, Postgres —
   `master.4b8029b8-1433-4452-b2e3-e171e7212ec6.c.dbaas.selcloud.ru` (Managed PostgreSQL). Снаружи,
@@ -831,6 +832,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540) | Деплой в Selectel: токен сервис-аккаунта вместо `KUBECONFIG` | 1 | закрыт |
 | [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) | Деплой через сервис-аккаунт Selectel, namespace `joinrpg-prod`/`joinrpg-dev` (Closes [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540)) | 1 | влит |
 | issue [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) | Вернуть автодеплой после переезда | 1 | закрыт |
+| issue [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582) | Скиллы `prod-logs`, `monitor-release`, `prod-db-readonly` — под Selectel | 10 | отложено |
 | [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) | Автодеплой dev после сборки master (Closes [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)) | 1 | влит |
 | [#5570](https://github.com/joinrpg/joinrpg-net/issues/5570) | Мигратор проверяет подключение ко всем базам до первой миграции | 1 | влит |
 | [#5576](https://github.com/joinrpg/joinrpg-net/issues/5576) | Мигратор запускает Seed: виртуальные пользователи на пустой базе | 1 | влит |
