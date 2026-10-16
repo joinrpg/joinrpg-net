@@ -43,7 +43,7 @@ public class AclController(
 
     /// <summary>
     /// Список мастеров виден всем, включая анонимов, — как на главной странице проекта (ADR019).
-    /// Права, заявки и управление — только мастерам и админу.
+    /// Права, заявки и управление — только мастерам проекта; админ сайта, не мастер проекта, видит публичную часть.
     /// </summary>
     [AllowAnonymous]
     [HttpGet]
@@ -52,15 +52,17 @@ public class AclController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var profiles = await masterProfileRepository.GetMasterProfiles(projectId);
 
-        if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault) && !currentUserAccessor.IsAdmin)
+        if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))
         {
-            var viewer = currentUserAccessor.UserIdentificationOrDefault;
-            // Markdown рендерим только тем, кого покажем: непубличные всё равно отбросятся.
-            var visible = projectInfo.GetMastersVisibleTo(viewer).Select(m => m.UserId).ToHashSet();
+            var viewerId = currentUserAccessor.UserIdentificationOrDefault;
+            // Markdown и пользователей грузим только тех, кого покажем: непубличные всё равно отбросятся.
+            var visible = projectInfo.GetMastersVisibleTo(viewerId).Select(m => m.UserId).ToHashSet();
             var publicProfiles = profiles.Where(p => visible.Contains(p.UserId)).ToDictionary(
                 p => p.UserId,
                 p => new ProjectMasterProfileViewModel(p.Role.Value, p.Description is null ? null : p.Description.ToHtmlString()));
-            return View("PublicIndex", ProjectMastersViewModel.Build(projectInfo, viewer, publicProfiles));
+            var users = (await userRepository.GetUserInfos([.. visible])).ToDictionary(u => u.UserId);
+            var viewer = viewerId is null ? null : await userRepository.GetUserInfo(viewerId);
+            return View("PublicIndex", ProjectMastersViewModel.Build(projectInfo, viewer, publicProfiles, users));
         }
 
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);

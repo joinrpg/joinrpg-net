@@ -37,7 +37,6 @@ public class MastersListViewModel
 
         MoveItems = [.. Masters.Select(m => new MasterMoveItemViewModel(m.MasterId, m.UserDetails.User.DisplayName, m.Role))];
 
-        // Админ, который не мастер проекта, тоже видит эту страницу — его в списке нет.
         CanCurrentUserGrantRights = Masters.SingleOrDefault(acl => acl.UserId == currentUser.UserId)?.CanGrantRights ?? false;
 
         AnyoneElseCanGrantRights = Masters.Any(x => x.CanGrantRights && x.UserId != currentUser.UserId);

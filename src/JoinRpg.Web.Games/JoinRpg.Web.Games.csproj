@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Web.Claims\JoinRpg.Web.Claims.csproj" />
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.UserProfile\JoinRpg.Web.UserProfile.csproj" />
   </ItemGroup>
 
 </Project>
