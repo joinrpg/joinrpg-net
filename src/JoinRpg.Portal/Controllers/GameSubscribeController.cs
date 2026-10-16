@@ -4,9 +4,9 @@ using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Subscribe;
 using JoinRpg.Web.ProjectMasterTools.Subscribe;
+using JoinRpg.Web.UserProfile;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;

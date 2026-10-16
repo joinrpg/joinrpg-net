@@ -1,4 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.Web.UserProfile;
 
 namespace JoinRpg.WebPortal.Models.Test;
 

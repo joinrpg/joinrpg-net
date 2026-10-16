@@ -6,6 +6,7 @@ using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
+using JoinRpg.Web.UserProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

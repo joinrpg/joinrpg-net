@@ -1,5 +1,4 @@
 using JoinRpg.Interfaces;
-using JoinRpg.Web.Models;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Masters;
 
@@ -42,7 +41,7 @@ public class AclViewModel
     // For Add/Edit pages: needs full User entity for detailed profile display
     public AclViewModel(ProjectInfo projectInfo, UserInfo targetUser, ICurrentUserAccessor currentUserAccessor)
     {
-        UserDetails = new UserProfileDetailsViewModel(targetUser, projectInfo, currentUserAccessor);
+        UserDetails = new UserProfileDetailsViewModel(targetUser, projectInfo, currentUserAccessor.IsAdmin);
         ProjectId = projectInfo.ProjectId;
         ProjectName = projectInfo.ProjectName;
         UserId = targetUser.UserId;
