@@ -26,6 +26,7 @@ public static class OpenTelemetryRegistration
             {
                 metrics
                     .AddMeter(serviceName)
+                    .AddMeter(WebInfrastructureMetrics.MeterName)
                     // Metrics provides by ASP.NET Core in .NET 8
                     .AddMeter("Microsoft.AspNetCore.Hosting")
                     .AddPrometheusExporter();

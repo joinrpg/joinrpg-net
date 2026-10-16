@@ -183,8 +183,6 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
         app.MapStaticAssets().ShortCircuit();
         app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
-        _ = app.UseForwardedHeaders();
-
         _ = app.UseRequestLocalization(options =>
           {
               options.DefaultRequestCulture = new RequestCulture("ru-RU");
