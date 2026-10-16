@@ -31,6 +31,7 @@ public static class BlobStorageRegistration
             .AddTransient<S3AvatarStorageService>()
             .AddTransient<StubAvatarStorageService>()
             .AddSingleton<IAvatarUriResolver, AvatarUriResolver>()
+            .AddSingleton<S3UploadHealth>()
             .AddSingleton<IAmazonS3>(sp => CreateS3Client(sp.GetRequiredService<IOptions<S3StorageOptions>>().Value));
 
 
