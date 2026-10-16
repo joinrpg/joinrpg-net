@@ -120,8 +120,9 @@
       (`imagePullSecrets: craas-auth`). Автодеплой dev вернул [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) (Closes [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)).
 - [ ] ⚪ Лимит тела запроса на ingress портала (`proxy-body-size`, порядка 200m): у nginx по
       умолчанию 1 МБ — загрузка выгрузок мастера в фазе 7 получит 413 ([#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
-- [ ] Строки подключения: Postgres (`DataProtection`, `DailyJob`, `Notifications`, IdPortal) —
-      на новый Managed PostgreSQL; S3 — на новый.
+- [x] (2026-10-16) Строки подключения prod: MSSQL и Postgres (`DataProtection`, `DailyJob`,
+      `Notifications`, IdPortal) — на новые, внутренними адресами кластера ([подробнее](#инфраструктура-в-selectel)).
+- [ ] Секреты S3 prod: `KUBESECRET_S3BLOBSTORAGE__ACCESSKEY`, `__SECRETKEY`, `__BUCKETNAME` = `joinrpg-prod-avatars`.
 - [ ] 🟡 Аватарки ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)): сначала [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) (🟢 влит) — адрес из настройки
       `S3BlobStorage:PublicBaseUrl`, терпимое чтение и подмена домена у старых полных адресов; потом,
       **только после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод**, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — в базе ключ объекта вместо адреса,
@@ -240,7 +241,7 @@
 
 **Старт приложений за заглушкой**
 
-- [ ] Строку подключения к новой базе — в GitHub-секрет окружения prod
+- [ ] (строки подключения обновлены 2026-10-16) Строку подключения к новой базе — в GitHub-секрет окружения prod
       `KUBESECRET_ConnectionStrings__DefaultConnection` (из него собирается секрет
       `joinrpg-main`), деплой вместе с конфигом из
       фазы 3. Миграции уже накатаны, job ничего не делает; деплой поднимает поды и ingress
@@ -385,6 +386,9 @@ IdPortal и ingress. Миграция и старт подов идут одни
 - **Логи.** `CustomJsonFormatter` пишет severity в поле `level` в расчёте на Yandex Cloud
   Logging; под новые облачные логи — поправить.
 - **Почта.** Yandex Postbox, из Selectel работает (проверено на dev 2026-10-16).
+- **Адреса баз.** Изнутри кластера: MSSQL — `192.168.0.2`, Postgres —
+  `master.4b8029b8-1433-4452-b2e3-e171e7212ec6.c.dbaas.selcloud.ru` (Managed PostgreSQL). Снаружи,
+  для инструментов с машины админа, — `joindb.tsarevs.ru:1433` и `psql.tsarevs.ru:5433`.
 - **Маршрутизация** — Gateway API: приложения публикуются `HTTPRoute` с `parentRefs: infra/main`,
   TLS и сертификаты — на Gateway в инфраструктуре; в репозитории ни Ingress, ни cert-manager.
 
