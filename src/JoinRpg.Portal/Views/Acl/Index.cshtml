@@ -30,7 +30,7 @@
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.UserDetails)
+                @* Роль — над карточкой: под ней из-за отступа панели подпись читается как начало следующей строки. *@
                 <div>
                     <b>@item.Role</b>
                     @if (!item.IsPublic)
@@ -38,6 +38,7 @@
                         <span class="label label-default" title="Непубличного мастера видят только мастера проекта">скрыт от игроков</span>
                     }
                 </div>
+                <component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@item.UserDetails" />
             </td>
             <td class="hidden-xs">
                 @foreach (var badge in item.Badges.Take(item.Badges.Length / 2))

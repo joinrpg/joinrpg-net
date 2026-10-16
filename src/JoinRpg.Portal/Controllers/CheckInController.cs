@@ -6,6 +6,7 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -26,7 +27,8 @@ public class CheckInController(
     IProjectMetadataRepository projectMetadataRepository,
     IClaimProblemValidator claimValidator,
     CharacterPlotViewService characterPlotViewService,
-    ICurrentUserAccessor currentUserAccessor
+    ICurrentUserAccessor currentUserAccessor,
+    UserProfileAvatars profileAvatars
         ) : JoinControllerGameBase
 {
     [HttpGet]
@@ -88,13 +90,14 @@ public class CheckInController(
         var characterId = claimInfo.Character.Id;
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
-        return View("CheckIn",
-            new CheckInClaimModel(
+        var model = new CheckInClaimModel(
             claimInfo,
             handouts[characterId],
             claimValidator,
             currentUserAccessor
-          ));
+          );
+        await profileAvatars.Fill(model.PlayerDetails);
+        return View("CheckIn", model);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -142,7 +145,9 @@ public class CheckInController(
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
 
-        return View(new SecondRoleViewModel(claimInfo, currentUserAccessor));
+        var model = new SecondRoleViewModel(claimInfo, currentUserAccessor);
+        await profileAvatars.Fill(model.PlayerDetails);
+        return View(model);
     }
 
     [ValidateAntiForgeryToken]

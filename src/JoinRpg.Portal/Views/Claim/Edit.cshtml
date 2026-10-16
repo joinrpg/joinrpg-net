@@ -55,7 +55,7 @@
                     data-toggle="popover"
                     title="Контакты"
                     data-html="true"
-                    data-content='@Html.DisplayFor(model => model.PlayerDetails)'>
+                    data-content='@(await Html.RenderComponentAsync<UserProfilePanel>(RenderMode.Static, new { Model = Model.PlayerDetails }))'>
                         контакты
                     </button>
                 </dd>

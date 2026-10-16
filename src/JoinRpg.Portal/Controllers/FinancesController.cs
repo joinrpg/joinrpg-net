@@ -4,6 +4,7 @@ using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
+using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -27,7 +28,8 @@ public class FinancesController(
     IVirtualUsersService vpu,
     ICurrentUserAccessor currentUserAccessor,
     ILogger<FinancesController> logger,
-    IProjectMetadataRepository projectMetadataRepository
+    IProjectMetadataRepository projectMetadataRepository,
+    UserProfileAvatars profileAvatars
         ) : JoinControllerGameBase
 {
     protected readonly IUserRepository UserRepository = userRepository;
@@ -327,6 +329,7 @@ public class FinancesController(
             payments,
             currentUserAccessor,
             projectInfo);
+        await profileAvatars.Fill(viewModel.UserDetails);
         return View(viewModel);
     }
 }

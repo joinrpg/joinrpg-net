@@ -11,7 +11,7 @@
 <div class="container">
     
   <div style="display:flex; flex-wrap:wrap; align-items:flex-start; gap:1em">
-    <partial name="_UserDetailsPanel" model="@Model.Details"/>
+    <component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@Model.Details" />
 
     @if (Model.ProjectsToAdd.Any())
     {

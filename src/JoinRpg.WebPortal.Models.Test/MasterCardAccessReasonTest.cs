@@ -3,6 +3,7 @@ using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Models.Masters;
+using JoinRpg.Web.UserProfile;
 
 namespace JoinRpg.WebPortal.Models.Test;
 

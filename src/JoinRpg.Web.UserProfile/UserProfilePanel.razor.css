@@ -1,0 +1,20 @@
+.profile-panel {
+    max-width: 400px;
+}
+
+/* Аватарка слева, имя и контакты справа. */
+.profile-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.profile-avatar {
+    flex: none;
+}
+
+/* Без overflow: hidden: контакты не переносятся (nowrap), и в узком popover заявки
+   длинный email должен быть виден целиком. */
+.profile-details {
+    min-width: 0;
+}
