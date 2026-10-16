@@ -5,7 +5,7 @@ namespace JoinRpg.Common.WebInfrastructure;
 
 public class HealthCheckMetricsPublisher : IHealthCheckPublisher
 {
-    private static readonly Meter meter = new("JoinRpg");
+    private static readonly Meter meter = new(WebInfrastructureMetrics.MeterName);
     private static readonly Histogram<double> healthCheckDuration = meter.CreateHistogram<double>(
         "healthcheck.duration",
         "seconds",

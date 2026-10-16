@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace JoinRpg.Common.WebInfrastructure;
 
@@ -17,5 +19,53 @@ public static class ForwardedHeadersExtensions
             // It will allow IP-spoofing, if Kestrel is directly exposed to end user
             // But it should never happen anyway (we always should be under at least one proxy)
         });
+    }
+
+    /// <summary>
+    /// Настраивает ForwardedHeaders и сам включает их в начало конвейера (через <see cref="IStartupFilter"/>),
+    /// приложению вызывать <c>UseForwardedHeaders()</c> не нужно.
+    /// Вызывается из <c>WebInfrastructureRegistration.AddJoinWebPlatform</c> (всех перегрузок).
+    /// </summary>
+    /// <remarks>
+    /// Сразу за ForwardedHeaders считается метрика <see cref="PrivateNetworkRequestMetrics"/> —
+    /// она ловит неправильную настройку ForwardedHeaders.
+    /// </remarks>
+    internal static IServiceCollection AddJoinForwardedHeaders(this IServiceCollection services)
+    {
+        _ = services.ConfigureForwardedHeaders();
+        services.TryAddSingleton<PrivateNetworkRequestMetrics>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, ForwardedHeadersStartupFilter>());
+        return services;
+    }
+
+    private sealed class ForwardedHeadersStartupFilter(PrivateNetworkRequestMetrics privateNetworkMetrics) : IStartupFilter
+    {
+        /// <summary>
+        /// Ключ в <see cref="HttpContext.Items"/>: был ли в запросе X-Forwarded-For до ForwardedHeadersMiddleware.
+        /// </summary>
+        /// <remarks>
+        /// После middleware по заголовкам это надёжно не восстановить: обработанный X-Forwarded-For удаляется,
+        /// а X-Original-For ставится, только если у соединения был адрес (в TestServer его нет).
+        /// </remarks>
+        private static readonly object HadForwardedForKey = new();
+
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
+        {
+            _ = app.Use((context, nextMiddleware) =>
+            {
+                context.Items[HadForwardedForKey] = context.Request.Headers.ContainsKey(ForwardedHeadersDefaults.XForwardedForHeaderName);
+                return nextMiddleware(context);
+            });
+
+            _ = app.UseForwardedHeaders();
+
+            _ = app.Use((context, nextMiddleware) =>
+            {
+                privateNetworkMetrics.Record(context, hadForwardedFor: context.Items[HadForwardedForKey] is true);
+                return nextMiddleware(context);
+            });
+
+            next(app);
+        };
     }
 }
