@@ -102,15 +102,19 @@
 - [x] (2026-10-16) Dev ([подробнее](#dev-в-selectel)): базу **не восстанавливаем** (решение 2026-10-15) —
       пустой MSSQL, схему создаёт job миграций. Секреты `dev` обновлены (строки подключения, ключи
       S3), конфиг — [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566). Деплой в `joinrpg-dev` прошёл (2026-10-15 22:03Z), сайт
-      открывается, почта работает (проверено 2026-10-16).
+      открывается по HTTP, почта работает (проверено 2026-10-16).
       Мигратор на пустой базе теперь создаёт виртуальных пользователей ([#5576](https://github.com/joinrpg/joinrpg-net/issues/5576)) и проверяет
       подключение ко всем базам до первой миграции ([#5570](https://github.com/joinrpg/joinrpg-net/issues/5570)); автодеплой dev вернулся ([#5575](https://github.com/joinrpg/joinrpg-net/issues/5575)),
       2026-10-16 06:07Z прошёл.
+- [ ] Dev: HTTPS — на Gateway `infra/main` (Traefik) нет HTTPS-слушателей и перенаправления
+      HTTP → HTTPS для dev-имён (`dev.joinrpg.ru`, `devid.joinrpg.ru`, `dev-components.joinrpg.ru`,
+      `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru`): отдаётся `TRAEFIK DEFAULT CERT` и 404.
+      Запрос инженерам 2026-10-16.
 - [ ] Dev: админ вручную (`UserAuthDetails.IsAdmin`), загрузка аватарки. Старый `KUBECONFIG` из
       окружения `dev` удалён (2026-10-16); в `prod` — удалить после первого деплоя прода.
 - [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
       секрет `joinrpg-main`.
-- [x] (2026-10-16) Отправка почты: Yandex Postbox из Selectel работает (проверено на dev, прежние
+- [x] (2026-10-16) Отправка почты: пока остаётся Yandex Postbox — из Selectel работает (проверено на dev, прежние
       ключи) — оставляем.
 
 **Правки в репозитории**
