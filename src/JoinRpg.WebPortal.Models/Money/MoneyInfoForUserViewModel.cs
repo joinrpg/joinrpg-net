@@ -14,7 +14,7 @@ public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transf
     ICurrentUserAccessor currentUserId,
     ProjectInfo projectInfo)
 {
-    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(master, projectInfo, currentUserId);
+    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(master, projectInfo, currentUserId.IsAdmin);
     public int ProjectId { get; } = projectInfo.ProjectId;
     public IReadOnlyCollection<MoneyTransferListItemViewModel> Transfers { get; } = transfers
             .OrderBy(f => f.Id)

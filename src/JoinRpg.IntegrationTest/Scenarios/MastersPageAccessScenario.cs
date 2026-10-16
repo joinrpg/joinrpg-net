@@ -19,7 +19,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
     public async Task Anonymous_SeesMastersList_WithoutManagement()
     {
         using var scope = factory.Services.CreateScope();
-        var (ownerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
         var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
 
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
@@ -28,13 +28,15 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         html.ShouldContain("class=\"join-user\"");
         html.ShouldNotContain(MasterOnlyMarker);
+        // Контакты — по правилам профиля: аноним email мастера не видит.
+        html.ShouldNotContain(ownerEmail);
     }
 
     [Fact]
     public async Task AuthenticatedNonMaster_SeesMastersList_WithoutManagement()
     {
         using var scope = factory.Services.CreateScope();
-        var (ownerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
         var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
         var (_, playerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
 
@@ -47,6 +49,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         html.ShouldContain("class=\"join-user\"");
         html.ShouldNotContain(MasterOnlyMarker);
+        html.ShouldNotContain(ownerEmail);
     }
 
     [Fact]
@@ -67,12 +70,12 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
     }
 
     [Fact]
-    public async Task AdminNotMaster_SeesManagement()
+    public async Task AdminNotMaster_SeesPublicPageWithContacts()
     {
-        // Регрессия: админ сайта, не будучи мастером проекта, проходил авторизацию и падал на
-        // Masters.Single(текущий пользователь) в MastersListViewModel.
+        // Админ сайта, не будучи мастером проекта, видит публичную страницу, а не мастерскую таблицу.
+        // Контакты мастеров — как в их профилях: админу видны.
         using var scope = factory.Services.CreateScope();
-        var (ownerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
         var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
         var (_, adminEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
 
@@ -88,7 +91,8 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         var html = await GetMastersPage(client, projectId);
 
-        html.ShouldContain(MasterOnlyMarker);
+        html.ShouldNotContain(MasterOnlyMarker);
+        html.ShouldContain(ownerEmail);
     }
 
     [Theory]

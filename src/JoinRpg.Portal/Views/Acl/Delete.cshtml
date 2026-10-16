@@ -14,8 +14,8 @@
 
 <h3>@header</h3>
 
-<partial name="_UserDetailsPanel" model="@Model.InnerModel.UserDetails" />
-<hr class="col-md-12" />
+<component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@Model.InnerModel.UserDetails" />
+<hr />
 
 <div class="form-horizontal">
 

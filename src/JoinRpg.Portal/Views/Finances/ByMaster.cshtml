@@ -9,7 +9,7 @@
 <h2>@ViewBag.Title</h2>
 
 
-@Html.DisplayFor(model => model.UserDetails)
+<component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@Model.UserDetails" />
 
 <h3>Итого</h3>
 
