@@ -89,6 +89,8 @@ public class ForwardedHeadersPipelineTest
     private static Task<HttpContext> Send(WebApplication app, string path, string? remoteIp = null, string? forwardedFor = null)
         => app.GetTestServer().SendAsync(context =>
         {
+            // https, чтобы запрос не завернул редирект на https и дошёл до приложения
+            context.Request.Scheme = "https";
             context.Request.Path = path;
             if (remoteIp is not null)
             {
@@ -104,7 +106,7 @@ public class ForwardedHeadersPipelineTest
     {
         var builder = WebApplication.CreateBuilder();
         _ = builder.WebHost.UseTestServer();
-        _ = builder.Services.AddJoinForwardedHeaders();
+        _ = builder.Services.AddJoinForwardedHeaders(builder.Environment);
 
         var app = builder.Build();
         _ = app.Use((context, next) =>
