@@ -42,6 +42,8 @@ public static class WebInfrastructureRegistration
 
         services.AddJoinHealthChecks();
 
+        _ = services.AddJoinRobotsTxt();
+
         services.AddOptions<SiteBannerOptions>().BindConfiguration(SiteBannerOptions.SectionName);
 
         services
