@@ -99,19 +99,18 @@
       в GitHub-секрет `SELECTEL_DEPLOY_SA_SECRET` (environment `prod`, `dev`), адрес API — в
       переменную `SELECTEL_K8S_SERVER`; интеграция кластера с Container Registry (секрет
       `craas-auth` в namespace, создавать namespace до её включения).
-- [ ] Dev ([подробнее](#dev-в-selectel)): базу **не восстанавливаем** (решение 2026-10-15) —
+- [x] (2026-10-16) Dev ([подробнее](#dev-в-selectel)): базу **не восстанавливаем** (решение 2026-10-15) —
       пустой MSSQL, схему создаёт job миграций. Секреты `dev` обновлены (строки подключения, ключи
-      S3), конфиг — [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566). Деплой в `joinrpg-dev` прошёл (2026-10-15 22:03Z), поды стартуют,
-      **но запросы до них не доходят** — разбор маршрутизации (HTTPRoute / Gateway `infra/main`).
+      S3), конфиг — [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566). Деплой в `joinrpg-dev` прошёл (2026-10-15 22:03Z), сайт
+      открывается, почта работает (проверено 2026-10-16).
       Мигратор на пустой базе теперь создаёт виртуальных пользователей ([#5576](https://github.com/joinrpg/joinrpg-net/issues/5576)) и проверяет
       подключение ко всем базам до первой миграции ([#5570](https://github.com/joinrpg/joinrpg-net/issues/5570)); автодеплой dev вернулся ([#5575](https://github.com/joinrpg/joinrpg-net/issues/5575)),
       2026-10-16 06:07Z прошёл.
-- [ ] Dev после того, как откроется: регистрация, админ вручную (`UserAuthDetails.IsAdmin`),
-      загрузка аватарки, удалить старый `KUBECONFIG` из окружения `dev`.
+- [ ] Dev: админ вручную (`UserAuthDetails.IsAdmin`), загрузка аватарки, удалить старый `KUBECONFIG` из окружения `dev`.
 - [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
       секрет `joinrpg-main`.
-- [ ] Отправка почты: сейчас Yandex Postbox — решить, оставляем ли его из Selectel или меняем
-      (через почту идут «забыл пароль» и подтверждение email — без неё фазы 4–5 не проверить).
+- [x] (2026-10-16) Отправка почты: Yandex Postbox из Selectel работает (проверено на dev, прежние
+      ключи) — оставляем.
 
 **Правки в репозитории**
 
@@ -383,7 +382,7 @@ IdPortal и ingress. Миграция и старт подов идут одни
 - **Лимит тела** на ingress портала: выгрузки мастера (до 30 МБ) не пройдут в дефолтный 1 МБ nginx.
 - **Логи.** `CustomJsonFormatter` пишет severity в поле `level` в расчёте на Yandex Cloud
   Logging; под новые облачные логи — поправить.
-- **Почта.** Yandex Postbox; без отправки писем не проверить «забыл пароль».
+- **Почта.** Yandex Postbox, из Selectel работает (проверено на dev 2026-10-16).
 - **Маршрутизация** — Gateway API: приложения публикуются `HTTPRoute` с `parentRefs: infra/main`,
   TLS и сертификаты — на Gateway в инфраструктуре; в репозитории ни Ingress, ни cert-manager.
 
