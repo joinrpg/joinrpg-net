@@ -28,7 +28,8 @@ public class MastersListViewModel
         Masters = [.. projectInfo.Masters.Select(master => new AclViewModel(
             master,
             claims.SingleOrDefault(c => c.MasterId == master.UserId.Value)?.ClaimCount ?? 0,
-            projectInfo)
+            projectInfo,
+            currentUser.UserIdentificationOrDefault)
         {
             Role = profiles.SingleOrDefault(p => p.UserId == master.UserId)?.Role.Value ?? "",
             IsPublic = master.IsPublic,

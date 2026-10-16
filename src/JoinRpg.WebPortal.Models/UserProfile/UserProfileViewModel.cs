@@ -89,10 +89,13 @@ public class UserProfileDetailsViewModel
     public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject, ICurrentUserAccessor currentUserAccessor)
     : this(user, user.GetAccess(currentProject), currentUserAccessor.IsAdmin) { }
 
-    public UserProfileDetailsViewModel(UserInfoHeader user)
+    /// <summary>
+    /// Карточка мастера проекта: для текущего пользователя — его собственный профиль, для остальных — со-мастер.
+    /// </summary>
+    public UserProfileDetailsViewModel(UserInfoHeader user, UserIdentification? currentUserId)
     {
         User = new UserLinkViewModel(user);
-        Reason = AccessReasonView.CoMaster;
+        Reason = user.UserId == currentUserId ? AccessReasonView.ItsMe : AccessReasonView.CoMaster;
     }
 
     private UserProfileDetailsViewModel(UserInfo user, UserProfileAccessReason accessReason, bool viewAsAdmin)

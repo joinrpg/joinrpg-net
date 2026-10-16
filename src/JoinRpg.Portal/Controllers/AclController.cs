@@ -188,6 +188,6 @@ public class AclController(
             return null;
         }
         var claims = await claimRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
-        return new AclViewModel(master, claims.Count, projectInfo);
+        return new AclViewModel(master, claims.Count, projectInfo, currentUserAccessor.UserIdentificationOrDefault);
     }
 }
