@@ -4,20 +4,12 @@
 
 ## Подключение
 
-### 1. Настройка хоста (Program.cs)
+### 1. Регистрация сервисов (Program.cs)
 
-Настройте Serilog как провайдер логирования, передав имя приложения:
-
-```csharp
-builder.Host.UseJoinSerilog("MyApp.Name");
-```
-
-### 2. Регистрация сервисов
+Метод над `WebApplicationBuilder` регистрирует сервисы платформы и заодно подключает Serilog (`UseJoinSerilog`) с тем же именем приложения:
 
 ```csharp
-services.AddJoinWebPlatform(
-    configuration: Configuration,
-    environment: Environment,
+builder.AddJoinWebPlatform(
     appName: "MyApp.Name",
     dataProtectionConnectionStringName: "DataProtection",
     telemetryServiceNames: ["MyApp.ActivitySourceName"]
@@ -27,12 +19,13 @@ services.AddJoinWebPlatform(
 Если у приложения одна база, ключи Data Protection можно хранить в его собственном DbContext — тогда отдельная строка подключения `DataProtection` не нужна. Контекст реализует `IDataProtectionKeyContext` (таблица `DataProtectionKeys` появится в его миграциях) и регистрируется как обычно через `AddJoinEfCoreDbContext`:
 
 ```csharp
-services.AddJoinWebPlatform<MyDbContext>(
-    environment: Environment,
+builder.AddJoinWebPlatform<MyDbContext>(
     appName: "MyApp.Name",
     telemetryServiceNames: ["MyApp.ActivitySourceName"]
 );
 ```
+
+Если `WebApplicationBuilder` под рукой нет (класс `Startup`), есть те же методы над `IServiceCollection` — им конфигурацию и окружение передают явно, а Serilog подключают отдельно: `builder.Host.UseJoinSerilog("MyApp.Name")`.
 
 Опционально — конфигурация имён хостов JoinRpg (нужна, если приложение использует `JoinRpgHostNamesOptions`):
 
@@ -42,7 +35,7 @@ services.Configure<JoinRpgHostNamesOptions>(
 );
 ```
 
-### 3. Подключение DbContext (если нужно)
+### 2. Подключение DbContext (если нужно)
 
 Регистрация DbContext с PostgreSQL и health check:
 
@@ -62,7 +55,7 @@ services.RegisterMigrator<MyDbContext>(
 );
 ```
 
-### 4. Логин через id.joinrpg.ru (OpenIddict client)
+### 3. Логин через id.joinrpg.ru (OpenIddict client)
 
 Для сателлитных сайтов, авторизующих пользователей через id.joinrpg.ru (authorization code flow):
 
@@ -104,7 +97,7 @@ app.MapAuthEndpoints();
 
 Получить id пользователя из текущего `ClaimsPrincipal`: `user.GetJoinrpgUserId()`.
 
-### 5. Middleware pipeline
+### 4. Middleware pipeline
 
 ```csharp
 app.UseForwardedHeaders();           // Должен быть первым — обрабатывает X-Forwarded-* заголовки
@@ -116,7 +109,7 @@ app.UseJoinRequestLogging();         // Логирование HTTP-запрос
 app.MapJoinHealthChecks();           // Эндпойнты /health, /health/ready, /health/live
 ```
 
-### 6. MVC/Razor Pages фильтры (опционально)
+### 5. MVC/Razor Pages фильтры (опционально)
 
 Для обогащения логов данными из MVC/Razor Pages контекста:
 
