@@ -10,6 +10,10 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
+// Маршрутизация — до логирования запросов: эндпойнты с ShortCircuit() замыкаются
+// прямо в EndpointRoutingMiddleware и не попадают в лог (как в Portal и IdPortal).
+app.UseRouting();
+
 app.UseJoinRequestLogging();
 
 if (app.Environment.IsDevelopment())
@@ -19,8 +23,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
-
-app.UseRouting();
 
 app.MapJoinHealthChecks();
 
