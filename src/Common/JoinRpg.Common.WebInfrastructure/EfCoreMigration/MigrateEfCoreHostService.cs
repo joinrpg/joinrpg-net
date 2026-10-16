@@ -54,7 +54,7 @@ internal class MigrateEfCoreHostService<TContext>(
         if (pendingMigrations.Length > 0)
         {
             logger.LogInformation("Pending migrations are:\n{PendingMigrations}", string.Join("\n", pendingMigrations));
-            // Как у EF6-мигратора (JoinMigrationsConfig): построение индекса на большой живой таблице
+            // Как у EF6-мигратора (MigrateMyDbContextService): построение индекса на большой живой таблице
             // не укладывается в стандартные 30 секунд.
             dbContext.Database.SetCommandTimeout(MigrationCommandTimeout);
             await dbContext.Database.MigrateAsync(ct);

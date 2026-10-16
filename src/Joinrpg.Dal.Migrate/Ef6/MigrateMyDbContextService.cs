@@ -1,8 +1,10 @@
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Migrations;
 using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
 using JoinRpg.Common.WebInfrastructure.EfCoreMigration;
 using JoinRpg.Dal.Impl;
+using JoinRpg.Dal.Impl.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -45,7 +47,13 @@ internal class MigrateMyDbContextService(
         // TODO mask connection string from logs;
         // logger.LogInformation("Discovered connection string {connectionString}", connectionString);
 
-        var migrator = new MigratorLoggingDecorator(new DbMigrator(new JoinMigrationsConfig(connectionString)), new MigrationsLoggerILoggerAdapter(logger));
+        // Конфигурация та же, что у тестов и EF6 CLI: в ней Seed, создающий виртуальных пользователей.
+        var config = new Configuration
+        {
+            TargetDatabase = new DbConnectionInfo(connectionString, "System.Data.SqlClient"),
+            CommandTimeout = 900,  // seconds
+        };
+        var migrator = new MigratorLoggingDecorator(new DbMigrator(config), new MigrationsLoggerILoggerAdapter(logger));
         logger.LogInformation("Migrator created.");
 
         ct.ThrowIfCancellationRequested();
@@ -76,14 +84,16 @@ internal class MigrateMyDbContextService(
         if (pendingMigrations.Length > 0)
         {
             logger.LogInformation("Pending migrations are:\n{PendingMigrations}", string.Join("\n", pendingMigrations));
-            migrator.Update(); // TODO: pass migration name from command line to allow reverts
-            // TODO: seed method not running here, need to fix
-            logger.LogInformation("The primary database has been successfully migrated.");
         }
         else
         {
-            logger.LogInformation("No migrations were applied. The database is already up to date.");
+            logger.LogInformation("No pending migrations. The database schema is already up to date.");
         }
+
+        // Update() зовём и без новых миграций: он же запускает идемпотентный Seed,
+        // так что виртуальные пользователи появятся и в базе, мигрированной раньше без них.
+        migrator.Update(); // TODO: pass migration name from command line to allow reverts
+        logger.LogInformation("The primary database has been successfully migrated and seeded.");
 
         return Task.CompletedTask;
     }
