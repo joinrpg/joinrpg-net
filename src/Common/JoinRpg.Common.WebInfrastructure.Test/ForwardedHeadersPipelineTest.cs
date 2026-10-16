@@ -44,9 +44,19 @@ public class ForwardedHeadersPipelineTest
         await using var app = await StartApp();
         using var metrics = new MetricsRecorder(app);
 
-        _ = await Send(app, "/", remoteIp: "10.0.0.5");
+        // Прямое обращение на под по IP в обход Gateway
+        _ = await Send(app, "/", remoteIp: "10.0.0.5", host: "10.0.0.9:8080");
 
-        metrics.Measurements.ShouldBe(["false"]);
+        var tags = metrics.Measurements.ShouldHaveSingleItem();
+        tags.ShouldBe(new Dictionary<string, string?>
+        {
+            [PrivateNetworkRequestMetrics.ForwardedTagName] = "false",
+            [PrivateNetworkRequestMetrics.ClientSubnetTagName] = "10.0.0.0/24",
+            [PrivateNetworkRequestMetrics.XffCountTagName] = "0",
+            [PrivateNetworkRequestMetrics.XfpTagName] = "none",
+            [PrivateNetworkRequestMetrics.HostKindTagName] = "ip",
+            [PrivateNetworkRequestMetrics.SchemeTagName] = "http",
+        }, ignoreOrder: true);
     }
 
     [Fact]
@@ -56,9 +66,47 @@ public class ForwardedHeadersPipelineTest
         using var metrics = new MetricsRecorder(app);
 
         // Два прокси, а ForwardLimit = 1: берём адрес внутреннего прокси
-        _ = await Send(app, "/", remoteIp: "10.0.0.5", forwardedFor: "8.8.8.8, 10.0.0.7");
+        _ = await Send(app, "/", remoteIp: "10.0.0.5", forwardedFor: "8.8.8.8, 10.0.7.7", forwardedProto: "https", host: "joinrpg.ru");
 
-        metrics.Measurements.ShouldBe(["true"]);
+        var tags = metrics.Measurements.ShouldHaveSingleItem();
+        tags.ShouldBe(new Dictionary<string, string?>
+        {
+            [PrivateNetworkRequestMetrics.ForwardedTagName] = "true",
+            [PrivateNetworkRequestMetrics.ClientSubnetTagName] = "10.0.7.0/24",
+            [PrivateNetworkRequestMetrics.XffCountTagName] = "2",
+            [PrivateNetworkRequestMetrics.XfpTagName] = "https",
+            [PrivateNetworkRequestMetrics.HostKindTagName] = "name",
+            [PrivateNetworkRequestMetrics.SchemeTagName] = "https",
+        }, ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task ForwardedForWithoutProtoIsVisibleInTags()
+    {
+        await using var app = await StartApp();
+        using var metrics = new MetricsRecorder(app);
+
+        // Прокси во внутренней сети пересылает адрес соседнего прокси и не ставит X-Forwarded-Proto
+        _ = await Send(app, "/", remoteIp: "10.0.0.5", forwardedFor: "10.0.7.7", host: "joinrpg.ru");
+
+        var tags = metrics.Measurements.ShouldHaveSingleItem();
+        tags[PrivateNetworkRequestMetrics.XffCountTagName].ShouldBe("1");
+        tags[PrivateNetworkRequestMetrics.XfpTagName].ShouldBe("none");
+        tags[PrivateNetworkRequestMetrics.ClientSubnetTagName].ShouldBe("10.0.7.0/24");
+        tags[PrivateNetworkRequestMetrics.SchemeTagName].ShouldBe("http");
+    }
+
+    [Fact]
+    public async Task ForwardedProtoIsAppliedToScheme()
+    {
+        await using var app = await StartApp();
+        using var metrics = new MetricsRecorder(app);
+
+        _ = await Send(app, "/", remoteIp: "10.0.0.5", forwardedFor: "10.0.7.7", forwardedProto: "https", host: "joinrpg.ru");
+
+        var tags = metrics.Measurements.ShouldHaveSingleItem();
+        tags[PrivateNetworkRequestMetrics.XfpTagName].ShouldBe("https");
+        tags[PrivateNetworkRequestMetrics.SchemeTagName].ShouldBe("https");
     }
 
     [Theory]
@@ -86,10 +134,24 @@ public class ForwardedHeadersPipelineTest
         metrics.Measurements.ShouldBeEmpty();
     }
 
-    private static Task<HttpContext> Send(WebApplication app, string path, string? remoteIp = null, string? forwardedFor = null)
+    private static Task<HttpContext> Send(
+        WebApplication app,
+        string path,
+        string? remoteIp = null,
+        string? forwardedFor = null,
+        string? forwardedProto = null,
+        string? host = null)
         => app.GetTestServer().SendAsync(context =>
         {
             context.Request.Path = path;
+            if (host is not null)
+            {
+                context.Request.Host = new HostString(host);
+            }
+            if (forwardedProto is not null)
+            {
+                context.Request.Headers["X-Forwarded-Proto"] = forwardedProto;
+            }
             if (remoteIp is not null)
             {
                 context.Connection.RemoteIpAddress = IPAddress.Parse(remoteIp);
@@ -123,7 +185,7 @@ public class ForwardedHeadersPipelineTest
     private sealed class MetricsRecorder : IDisposable
     {
         private readonly MeterListener listener = new();
-        private readonly List<string?> measurements = [];
+        private readonly List<IReadOnlyDictionary<string, string?>> measurements = [];
 
         public MetricsRecorder(WebApplication app)
         {
@@ -140,21 +202,20 @@ public class ForwardedHeadersPipelineTest
             listener.SetMeasurementEventCallback<long>((_, value, tags, _) =>
             {
                 value.ShouldBe(1);
+                var recorded = new Dictionary<string, string?>();
                 foreach (var tag in tags)
                 {
-                    if (tag.Key == PrivateNetworkRequestMetrics.ForwardedTagName)
-                    {
-                        lock (measurements)
-                        {
-                            measurements.Add(tag.Value as string);
-                        }
-                    }
+                    recorded[tag.Key] = tag.Value as string;
+                }
+                lock (measurements)
+                {
+                    measurements.Add(recorded);
                 }
             });
             listener.Start();
         }
 
-        public IReadOnlyList<string?> Measurements
+        public IReadOnlyList<IReadOnlyDictionary<string, string?>> Measurements
         {
             get
             {

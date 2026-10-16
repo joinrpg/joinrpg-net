@@ -41,19 +41,16 @@ public static class ForwardedHeadersExtensions
     private sealed class ForwardedHeadersStartupFilter(PrivateNetworkRequestMetrics privateNetworkMetrics) : IStartupFilter
     {
         /// <summary>
-        /// Ключ в <see cref="HttpContext.Items"/>: был ли в запросе X-Forwarded-For до ForwardedHeadersMiddleware.
+        /// Ключ в <see cref="HttpContext.Items"/>: заголовки X-Forwarded-* до ForwardedHeadersMiddleware
+        /// (<see cref="IncomingForwardedHeaders"/>).
         /// </summary>
-        /// <remarks>
-        /// После middleware по заголовкам это надёжно не восстановить: обработанный X-Forwarded-For удаляется,
-        /// а X-Original-For ставится, только если у соединения был адрес (в TestServer его нет).
-        /// </remarks>
-        private static readonly object HadForwardedForKey = new();
+        private static readonly object IncomingForwardedHeadersKey = new();
 
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
         {
             _ = app.Use((context, nextMiddleware) =>
             {
-                context.Items[HadForwardedForKey] = context.Request.Headers.ContainsKey(ForwardedHeadersDefaults.XForwardedForHeaderName);
+                context.Items[IncomingForwardedHeadersKey] = IncomingForwardedHeaders.Capture(context.Request);
                 return nextMiddleware(context);
             });
 
@@ -61,7 +58,8 @@ public static class ForwardedHeadersExtensions
 
             _ = app.Use((context, nextMiddleware) =>
             {
-                privateNetworkMetrics.Record(context, hadForwardedFor: context.Items[HadForwardedForKey] is true);
+                var incoming = context.Items[IncomingForwardedHeadersKey] as IncomingForwardedHeaders? ?? IncomingForwardedHeaders.None;
+                privateNetworkMetrics.Record(context, incoming);
                 return nextMiddleware(context);
             });
 
