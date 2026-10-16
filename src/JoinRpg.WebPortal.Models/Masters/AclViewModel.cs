@@ -50,9 +50,9 @@ public class AclViewModel
     }
 
     // For master list and manage pages
-    public AclViewModel(ProjectMasterInfo master, int claimsCount, ProjectInfo projectInfo)
+    public AclViewModel(ProjectMasterInfo master, int claimsCount, ProjectInfo projectInfo, UserIdentification? currentUserId)
     {
-        UserDetails = new UserProfileDetailsViewModel(master.UserInfo);
+        UserDetails = new UserProfileDetailsViewModel(master.UserInfo, currentUserId);
         UserId = master.UserId.Value;
         ProjectId = projectInfo.ProjectId;
         ProjectName = projectInfo.ProjectName;

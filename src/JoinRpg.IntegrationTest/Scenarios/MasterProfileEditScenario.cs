@@ -147,6 +147,17 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
     }
 
     [Fact]
+    public async Task EditPage_OwnCard_IsMyProfile()
+    {
+        var (projectId, ownerId, _, _) = await CreateProjectWithMaster();
+        var client = await Login(owners[projectId]);
+
+        var page = await ReadDecoded(await client.GetAsync($"{projectId.Value}/masters/edit?userId={ownerId.Value}"));
+        page.ShouldContain("Это мой профиль");
+        page.ShouldNotContain("Со-мастер");
+    }
+
+    [Fact]
     public async Task Granter_EditsOwnProfile_InArchivedProject()
     {
         // Права в архиве не меняются (ChangeAccess требует активный проект), а профиль — «титры» игры — правится.
