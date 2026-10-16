@@ -28,6 +28,32 @@ public static class WebInfrastructureRegistration
         services.AddJoinWebPlatformCore(environment, appName, telemetryServiceNames);
     }
 
+    /// <summary>
+    /// То же, что <see cref="AddJoinWebPlatform(IServiceCollection, IConfiguration, IWebHostEnvironment, string, string, IEnumerable{string})"/>,
+    /// но конфигурация и окружение берутся из <paramref name="builder"/>.
+    /// Заодно подключает Serilog через <see cref="LoggingExtensions.UseJoinSerilog"/> с тем же <paramref name="appName"/>.
+    /// </summary>
+    public static void AddJoinWebPlatform(this WebApplicationBuilder builder,
+       string appName, string dataProtectionConnectionStringName, IEnumerable<string> telemetryServiceNames)
+    {
+        _ = builder.Host.UseJoinSerilog(appName);
+        builder.Services.AddJoinWebPlatform(builder.Configuration, builder.Environment, appName,
+            dataProtectionConnectionStringName, telemetryServiceNames);
+    }
+
+    /// <summary>
+    /// То же, что <see cref="AddJoinWebPlatform{TKeysContext}(IServiceCollection, IWebHostEnvironment, string, IEnumerable{string})"/>,
+    /// но окружение берётся из <paramref name="builder"/>.
+    /// Заодно подключает Serilog через <see cref="LoggingExtensions.UseJoinSerilog"/> с тем же <paramref name="appName"/>.
+    /// </summary>
+    public static void AddJoinWebPlatform<TKeysContext>(this WebApplicationBuilder builder,
+       string appName, IEnumerable<string> telemetryServiceNames)
+        where TKeysContext : DbContext, IDataProtectionKeyContext
+    {
+        _ = builder.Host.UseJoinSerilog(appName);
+        builder.Services.AddJoinWebPlatform<TKeysContext>(builder.Environment, appName, telemetryServiceNames);
+    }
+
     private static void AddJoinWebPlatformCore(this IServiceCollection services,
        IWebHostEnvironment environment, string appName, IEnumerable<string> telemetryServiceNames)
     {

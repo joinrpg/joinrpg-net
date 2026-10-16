@@ -41,7 +41,7 @@ public static class RobotsTxtExtensions
 
     /// <summary>
     /// Отдаёт /robots.txt. Без него каждый заход поискового робота оставляет в логах 404.
-    /// Вызывается из <see cref="WebInfrastructureRegistration.AddJoinWebPlatform"/>.
+    /// Вызывается из <c>WebInfrastructureRegistration.AddJoinWebPlatform</c> (всех перегрузок).
     /// </summary>
     /// <remarks>
     /// Ответ отдаёт middleware в самом начале конвейера (через <see cref="IStartupFilter"/>):
