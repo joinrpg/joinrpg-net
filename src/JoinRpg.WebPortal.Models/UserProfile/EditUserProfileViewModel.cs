@@ -1,5 +1,4 @@
 using JoinRpg.Web.Models.UserProfile;
-using JoinRpg.Web.UserProfile;
 
 namespace JoinRpg.Web.Models;
 

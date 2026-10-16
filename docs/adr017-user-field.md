@@ -173,7 +173,7 @@ public static Task<IReadOnlyDictionary<UserIdentification, UserInfoHeader>> Load
 | Уведомления | рендера значений полей нет: он был закомментирован в `EmailServiceImpl`, удалённом вместе с легаси-каналом писем (`git show 01d1e7ca0:src/JoinRpg.Services.Email/EmailServiceImpl.cs`); учесть при его возврате |
 
 Показ только через `UserLinkViewModel` — не случайность. Рядом лежит
-`UserProfileDetailsViewModel(user, currentProject, currentUserAccessor)`, который отдаёт email,
+`UserProfileDetailsViewModel(user, currentProject, viewAsAdmin)` (`JoinRpg.Web.UserProfile`), который отдаёт email,
 телефон и соцсети; если взять его «чтобы красиво», контракт §6 сломается молча.
 
 Пользователь, которого удалили или который не нашёлся, рисуется как «пользователь удалён» и

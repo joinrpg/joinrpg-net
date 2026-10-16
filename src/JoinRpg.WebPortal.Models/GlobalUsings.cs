@@ -8,3 +8,4 @@ global using JoinRpg.DomainTypes.ProjectMetadata;
 global using JoinRpg.DomainTypes.Users;
 global using JoinRpg.Web.Models.CommonTypes;
 global using JoinRpg.Web.ProjectCommon.Fields;
+global using JoinRpg.Web.UserProfile;

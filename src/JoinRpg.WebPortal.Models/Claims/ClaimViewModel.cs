@@ -164,7 +164,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         // playerInfo уже прочитан репозиторием одним запросом. Старый claim.GetUserInfo() лез
         // по навигациям EF-сущности игрока (Extra, Auth, Allrpg, ExternalLogins, Claims, ProjectAcls),
         // а на ProjectAcls ещё и дёргал .Project по одному на проект — до 48 догрузок за запрос (#4960).
-        PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUser);
+        PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUser.IsAdmin);
         ProjectActive = projectInfo.IsActive;
         CheckInStarted = projectInfo.ProjectCheckInSettings.InProgress;
         CheckInModuleEnabled = projectInfo.ProjectCheckInSettings.CheckInModuleEnabled;

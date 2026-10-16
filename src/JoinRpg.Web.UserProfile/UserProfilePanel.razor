@@ -1,0 +1,104 @@
+@using JoinRpg.Common.PrimitiveTypes
+@using JoinRpg.Common.WebComponents
+@inject IUserAvatarSource AvatarSource
+@preservewhitespace true
+
+<div class="panel panel-default" style="max-width:400px">
+    <div class="panel-body">
+        <table>
+            <tr>
+                @if (avatar is not null)
+                {
+                    <td style="vertical-align: top;padding-right:5px">
+                        <JoinAvatar Uri="avatar.Uri" Size="avatar.Size" />
+                    </td>
+                }
+                <td>
+                    <UserLink Model="Model.User" />
+                    @if (!string.IsNullOrWhiteSpace(Model.FullName))
+                    {
+                        <br /> @Model.FullName
+                    }
+                    @if (Model.Email is not null)
+                    {
+                        <br /><EmailLink Contact="Model.Email" />
+                        @if (!Model.EmailConfirmed && Model.ViewAsAdmin)
+                        {
+                            <JoinIcon Icon="JoinIconType.Info" Title="Email не подтвержден" />
+                        }
+                    }
+                    @if (Model.PhoneNumber is not null)
+                    {
+                        <br /><PhoneLink Contact="Model.PhoneNumber" />
+                    }
+                    @if (Model.AgeMarker is not null)
+                    {
+                        <br /><span>@Model.AgeMarker</span>
+                    }
+                    @if (Model.ViewAsAdmin && !Model.HasPassword)
+                    {
+                        <br />
+                        <span>Нет пароля</span>
+                        <JoinIcon Icon="JoinIconType.Info" Title="У пользователя не задан пароль" />
+                    }
+                    @if (Model.Telegram?.PrettyName is not null)
+                    {
+                        <br /><TelegramLink Contact="Model.Telegram" />
+                    }
+                    @if (Model.Livejournal is not null)
+                    {
+                        <br /><LiveJournalLink Contact="Model.Livejournal" />
+                    }
+                    @if (Model.Vk is not null)
+                    {
+                        <br /><VkLink Contact="Model.Vk" />
+                    }
+                    @if (Model.AllrpgId is not null and not 0)
+                    {
+                        <br />
+                        <a href="https://www.allrpg.info/people/@Model.AllrpgId/">Профиль на allrpg</a>
+                    }
+                    @if (!Model.HasSocialAccess)
+                    {
+                        <p>Игрок предпочитает сохранять анонимность.</p>
+                    }
+                </td>
+            </tr>
+        </table>
+    </div>
+    @if (Model.Reason != AccessReasonView.NoAccess)
+    {
+        <div class="panel-footer" title="Почему я вижу этот профиль?">
+            @ReasonText
+            @if (Model.IsMine)
+            {
+                <text>[ <a href="/manage/setupprofile">Настроить</a> ]</text>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public UserProfileDetailsViewModel Model { get; set; } = null!;
+
+    private AvatarInfo? avatar;
+
+    private string ReasonText => Model.Reason switch
+    {
+        AccessReasonView.ItsMe => "Это мой профиль",
+        AccessReasonView.Master => "Есть заявка на мою игру",
+        AccessReasonView.CoMaster => "Со-мастер",
+        AccessReasonView.Administrator => "Я вижу все, т.к. администратор сайта",
+        _ => throw new ArgumentOutOfRangeException(nameof(Model.Reason), Model.Reason, null),
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // У скрытого пользователя UserId нет, аватарку грузить не по кому.
+        avatar = Model.User.UserId is { } userId
+            ? await AvatarSource.GetAvatar(userId, Model.Avatar, recommendedSize: 64)
+            : null;
+    }
+}
