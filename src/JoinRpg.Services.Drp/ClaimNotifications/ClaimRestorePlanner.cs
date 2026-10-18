@@ -98,7 +98,7 @@ public static class ClaimRestorePlanner
     /// Момент аварии здесь неизвестен, поэтому «правил руками после восстановления»
     /// (<see cref="ClaimRestoreWarning.ChangedAfterRestore"/>) не распознаётся: всё, что расходится
     /// с уведомлениями, применяется по умолчанию. <see cref="ProjectRestorePlanner"/> без выгрузок даёт те же
-    /// строки, но распознаёт правки (по <see cref="ExistingClaimInfo.LastUpdated"/> позже аварии) — новая
+    /// строки, но распознаёт правки (по <see cref="ExistingClaimInfo.LastChangedNotByRestore"/> позже аварии) — новая
     /// страница восстановления (#5529) зовёт его.
     /// </remarks>
     /// <returns>
@@ -408,9 +408,11 @@ public static class ClaimRestorePlanner
     }
 
     /// <summary>
-    /// «Правил руками после восстановления» без журнала применений. Заявка менялась после аварии — это мог
-    /// сделать и сам инструмент (применив прошлый план по более старой выгрузке). Поэтому правкой считается,
-    /// только меняемый планом атрибут, значение которого в базе не совпадает ни с одной загруженной выгрузкой
+    /// «Правил руками после восстановления». Признак правки — комментарий после аварии, написанный не
+    /// инструментом восстановления (<see cref="ExistingClaimInfo.LastChangedNotByRestore"/>, #5619): дату
+    /// изменения заявки поднимают и сами инструменты, так что по ней правку не отличить. Но и при таком
+    /// комментарии атрибут мог поставить инструмент (применив прошлый план по более старой выгрузке), а
+    /// комментарий — просто реплика. Поэтому правкой считается только меняемый планом атрибут, значение которого в базе не совпадает ни с одной загруженной выгрузкой
     /// этой заявки, ни с состоянием по уведомлениям от какой-либо базы отсчёта (бэкапа или любой из выгрузок):
     /// совпадение значит, что его поставил инструмент. Ручной взнос виден только в уведомлениях, и они
     /// полны, поэтому расхождение по непустому взносу после аварии — всегда правка. Решение — по атрибуту
@@ -423,7 +425,8 @@ public static class ClaimRestorePlanner
         IReadOnlyList<ExportedClaimSnapshot> snapshots,
         IReadOnlyCollection<ClaimNotificationEvent> events)
     {
-        if (row.Action != ClaimRestoreAction.Change || p.Exports.LostAt is not { } lost || existing.LastUpdated <= lost)
+        if (row.Action != ClaimRestoreAction.Change || p.Exports.LostAt is not { } lost
+            || existing.LastChangedNotByRestore is not { } changed || changed <= lost)
         {
             return row;
         }

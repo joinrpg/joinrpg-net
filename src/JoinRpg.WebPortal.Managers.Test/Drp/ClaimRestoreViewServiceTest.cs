@@ -373,6 +373,11 @@ public class ClaimRestoreViewServiceTest
         public Task<ClaimFinanceRestoreLookup> GetClaimFinanceForRestore(ProjectIdentification projectId, IReadOnlyCollection<int> notifiedCommentIds)
             => throw new NotSupportedException();
 
+        public Dictionary<ClaimIdentification, DateTimeOffset> CommentedNotByRestore { get; } = [];
+
+        public Task<IReadOnlyDictionary<ClaimIdentification, DateTimeOffset>> GetClaimsCommentedNotByRestoreSince(ProjectIdentification projectId, DateTimeOffset since)
+            => Task.FromResult<IReadOnlyDictionary<ClaimIdentification, DateTimeOffset>>(CommentedNotByRestore);
+
         public Task<IReadOnlyList<ProjectIdentification>> GetBlockedProjects() => throw new NotSupportedException();
     }
 

@@ -18,7 +18,8 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// <summary>
 /// Чтение для плана восстановления ручных финансовых операций (DRP, #5561) на настоящем SQL Server:
 /// <see cref="IProjectRestoreLookupRepository.GetClaimFinanceForRestore"/> и
-/// <see cref="IProjectRestoreLookupRepository.GetBlockedProjects"/>.
+/// <see cref="IProjectRestoreLookupRepository.GetBlockedProjects"/>; заодно — признак ручной правки заявок
+/// для страницы восстановления проекта (#5619).
 /// </summary>
 public class ClaimFinanceRestoreLookupScenario(JoinApplicationFactory factory)
     : IClassFixture<JoinApplicationFactory>
@@ -126,6 +127,84 @@ public class ClaimFinanceRestoreLookupScenario(JoinApplicationFactory factory)
         lookup.PaymentTypes.ShouldAllBe(p => p.PaymentTypeId.ProjectId == projectId);
 
         lookup.MoneyMasters.ShouldBe([new MoneyMasterForRestore(masterId, IsOwner: true)]);
+    }
+
+    /// <summary>
+    /// <see cref="IProjectRestoreLookupRepository.GetClaimsCommentedNotByRestoreSince"/> (#5619): считаются
+    /// комментарии мастера и игрока позже момента, записи инструментов восстановления и более ранние — нет.
+    /// </summary>
+    [Fact]
+    public async Task CommentedNotByRestore_SkipsRestoreRecordsAndEarlierComments()
+    {
+        UserIdentification masterId, playerId;
+        ProjectIdentification projectId, otherProjectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId);
+            otherProjectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId);
+            playerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+        }
+
+        var byMasterClaimId = await AddClaim(playerId, await AddCharacter(masterId, projectId));
+        var byPlayerClaimId = await AddClaim(playerId, await AddCharacter(masterId, projectId));
+        var byToolsClaimId = await AddClaim(playerId, await AddCharacter(masterId, projectId));
+        var foreignClaimId = await AddClaim(playerId, await AddCharacter(masterId, otherProjectId));
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var claimService = sp.GetRequiredService<IClaimService>();
+            await claimService.AddComment(byMasterClaimId, parentCommentId: null, isVisibleToPlayer: true, "Мастер");
+            await claimService.AddComment(byMasterClaimId, parentCommentId: null, isVisibleToPlayer: true, "Мастер, инструмент");
+            await claimService.AddComment(byToolsClaimId, parentCommentId: null, isVisibleToPlayer: true, "Уведомления");
+            await claimService.AddComment(byToolsClaimId, parentCommentId: null, isVisibleToPlayer: true, "Выгрузка");
+            await claimService.AddComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
+        });
+        await factory.Services.RunAsAsync(playerId, sp => sp.GetRequiredService<IClaimService>()
+            .AddComment(byPlayerClaimId, parentCommentId: null, isVisibleToPlayer: true, "Игрок"));
+
+        var since = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var masterAt = since.AddDays(1);
+        var playerAt = since.AddDays(2);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            int[] discussionIds = [.. await db.Set<Claim>()
+                .Where(c => c.ProjectId == projectId.Value || c.ProjectId == otherProjectId.Value)
+                .Select(c => c.CommentDiscussionId)
+                .ToListAsync()];
+            // Комментарии при подаче заявки — до аварии.
+            foreach (var discussionId in discussionIds)
+            {
+                _ = await db.Database.ExecuteSqlCommandAsync(
+                    "UPDATE dbo.Comments SET CreatedTime = @p1 WHERE CommentDiscussionId = @p0", discussionId, since.AddDays(-10));
+            }
+            async Task Set(string text, DateTime at, CommentExtraAction? action = null)
+            {
+                var commentId = await db.Set<Comment>().Where(c => c.CommentText.Text.Contents == text && discussionIds.Contains(c.CommentDiscussionId))
+                    .Select(c => c.CommentId).SingleAsync();
+                _ = await db.Database.ExecuteSqlCommandAsync("UPDATE dbo.Comments SET CreatedTime = @p1 WHERE CommentId = @p0", commentId, at);
+                if (action is { } extraAction)
+                {
+                    _ = await db.Database.ExecuteSqlCommandAsync("UPDATE dbo.Comments SET ExtraAction = @p1 WHERE CommentId = @p0", commentId, (int)extraAction);
+                }
+            }
+            await Set("Мастер", masterAt);
+            // Запись инструмента позже ручной — время ручной не перебивает.
+            await Set("Мастер, инструмент", since.AddDays(5), CommentExtraAction.RestoredFromNotifications);
+            await Set("Игрок", playerAt);
+            await Set("Уведомления", since.AddDays(3), CommentExtraAction.RestoredFromNotifications);
+            await Set("Выгрузка", since.AddDays(4), CommentExtraAction.RestoredFromExport);
+            await Set("Другой проект", since.AddDays(1));
+        }
+
+        var commented = await factory.Services.RunAsAsync(masterId, sp => sp.GetRequiredService<IProjectRestoreLookupRepository>()
+            .GetClaimsCommentedNotByRestoreSince(projectId, new DateTimeOffset(since)));
+
+        commented.Keys.ShouldBe([byMasterClaimId, byPlayerClaimId], ignoreOrder: true);
+        commented[byMasterClaimId].ShouldBe(new DateTimeOffset(masterAt));
+        commented[byMasterClaimId].Offset.ShouldBe(TimeSpan.Zero);
+        commented[byPlayerClaimId].ShouldBe(new DateTimeOffset(playerAt));
     }
 
     private Task<PaymentTypeIdentification> CreateCash(UserIdentification masterId, ProjectIdentification projectId)

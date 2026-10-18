@@ -22,10 +22,20 @@ public record ExistingClaimInfo(
     public FieldLayerContainer? FieldLayer { get; init; }
 
     /// <summary>
-    /// Когда заявка последний раз менялась. Позже аварии — возможно, её правили руками после восстановления
-    /// (<see cref="ClaimRestoreWarning.ChangedAfterRestore"/>).
+    /// Когда заявка последний раз менялась. Позже аварии — возможно, её поля правили руками после восстановления
+    /// (<see cref="MasterExports.ProjectRestoreWarning.ChangedAfterRestore"/>). Дату поднимают и сами инструменты
+    /// восстановления, поэтому для статуса, ответственного, персонажа и взноса смотреть
+    /// <see cref="LastChangedNotByRestore"/>.
     /// </summary>
     public DateTimeOffset LastUpdated { get; init; } = DateTimeOffset.MinValue;
+
+    /// <summary>
+    /// Последний комментарий в обсуждении заявки, написанный не инструментом восстановления (#5619). Любая
+    /// ручная правка статуса, ответственного, персонажа или взноса пишет комментарий, поэтому позже аварии —
+    /// заявку, возможно, правили руками после восстановления (<see cref="ClaimRestoreWarning.ChangedAfterRestore"/>).
+    /// null — таких комментариев после аварии нет (или они не запрошены).
+    /// </summary>
+    public DateTimeOffset? LastChangedNotByRestore { get; init; }
 
     /// <summary>
     /// Сумма одобренных оплат заявки в базе — для сверки с «Уплачено» из выгрузки

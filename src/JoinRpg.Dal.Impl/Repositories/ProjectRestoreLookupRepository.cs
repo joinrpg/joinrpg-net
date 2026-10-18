@@ -141,6 +141,30 @@ internal class ProjectRestoreLookupRepository(MyDbContext ctx) : IProjectRestore
             [.. masterRows.Select(a => new MoneyMasterForRestore(new UserIdentification(a.UserId), a.IsOwner))]);
     }
 
+    public async Task<IReadOnlyDictionary<ClaimIdentification, DateTimeOffset>> GetClaimsCommentedNotByRestoreSince(ProjectIdentification projectId, DateTimeOffset since)
+    {
+        var projectIntId = projectId.Value;
+        var sinceUtc = since.UtcDateTime;
+
+        // Обсуждение заявки — по CommentDiscussionId, как в GetClaimCommentsForRestore.
+        var rows = await (
+            from claim in ctx.Set<Claim>()
+            where claim.ProjectId == projectIntId
+            join comment in ctx.Set<Comment>() on claim.CommentDiscussionId equals comment.CommentDiscussionId
+            where comment.CreatedAt > sinceUtc
+                && (comment.ExtraAction == null
+                    || (comment.ExtraAction != CommentExtraAction.RestoredFromNotifications
+                        && comment.ExtraAction != CommentExtraAction.RestoredFromExport))
+            group comment by claim.ClaimId into g
+            select new { ClaimId = g.Key, LastAt = g.Max(c => c.CreatedAt) })
+            .ToListAsync();
+
+        // EF6 отдаёт DateTime с Kind=Unspecified, а хранится UTC.
+        return rows.ToDictionary(
+            r => new ClaimIdentification(projectId, r.ClaimId),
+            r => new DateTimeOffset(DateTime.SpecifyKind(r.LastAt, DateTimeKind.Utc)));
+    }
+
     public async Task<IReadOnlyList<ProjectIdentification>> GetBlockedProjects()
     {
         var ids = await ctx.Set<Project>()
