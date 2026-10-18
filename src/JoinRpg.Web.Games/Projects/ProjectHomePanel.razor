@@ -46,18 +46,6 @@
   </JoinPanel>
 }
 
-<JoinPanel>
-  <Header>Мастера</Header>
-  <Body>
-        <ul class="join-users-h">
-            @foreach (var master in Model.Masters)
-            {
-                <li><UserLink Model="master" /></li>
-            }
-        </ul>
-  </Body>
-</JoinPanel>
-
 @code {
     [Parameter]
     [EditorRequired]
