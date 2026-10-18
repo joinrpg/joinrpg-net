@@ -73,6 +73,23 @@ public class HttpsRedirectionPipelineTest
         response.Headers.Contains("Strict-Transport-Security").ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task DisabledSwitchTurnsOffRedirectAndHsts()
+    {
+        await using var app = await StartApp(Environments.Production, enabled: false);
+        using var client = CreateClient(app);
+
+        var httpResponse = await client.GetAsync("/project/1");
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/project/1");
+        request.Headers.Host = PublicHost;
+        request.Headers.Add("X-Forwarded-Proto", "https");
+        var httpsResponse = await client.SendAsync(request);
+
+        httpResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        httpsResponse.Headers.Contains("Strict-Transport-Security").ShouldBeFalse();
+    }
+
     private static HttpClient CreateClient(WebApplication app)
     {
         var client = app.GetTestClient();
@@ -80,10 +97,14 @@ public class HttpsRedirectionPipelineTest
         return client;
     }
 
-    private static async Task<WebApplication> StartApp(string environmentName)
+    private static async Task<WebApplication> StartApp(string environmentName, bool? enabled = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = environmentName });
         _ = builder.WebHost.UseTestServer();
+        if (enabled is { } value)
+        {
+            builder.Configuration[$"{JoinHttpsRedirectionOptions.SectionName}:{nameof(JoinHttpsRedirectionOptions.Enabled)}"] = value.ToString();
+        }
         _ = builder.Services.AddJoinForwardedHeaders(builder.Environment);
 
         var app = builder.Build();

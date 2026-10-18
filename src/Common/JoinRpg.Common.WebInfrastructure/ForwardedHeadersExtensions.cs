@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Common.WebInfrastructure;
 
@@ -40,12 +41,14 @@ public static class ForwardedHeadersExtensions
     /// <para>
     /// Затем — редирект http → https (307) и HSTS (вне Development). Схему запроса знаем из X-Forwarded-Proto,
     /// поэтому редирект стоит после ForwardedHeaders. Служебные пути (/health*, /metrics) не редиректятся:
-    /// kubelet и Prometheus ходят на под по http.
+    /// kubelet и Prometheus ходят на под по http. Отключается настройкой <see cref="JoinHttpsRedirectionOptions.Enabled"/>.
     /// </para>
     /// </remarks>
     internal static IServiceCollection AddJoinForwardedHeaders(this IServiceCollection services, IWebHostEnvironment environment)
     {
         _ = services.ConfigureForwardedHeaders();
+
+        _ = services.AddOptions<JoinHttpsRedirectionOptions>().BindConfiguration(JoinHttpsRedirectionOptions.SectionName);
 
         _ = services.AddHttpsRedirection(options =>
         {
@@ -72,7 +75,8 @@ public static class ForwardedHeadersExtensions
 
     private sealed class ForwardedHeadersStartupFilter(
         PrivateNetworkRequestMetrics privateNetworkMetrics,
-        IWebHostEnvironment environment) : IStartupFilter
+        IWebHostEnvironment environment,
+        IOptions<JoinHttpsRedirectionOptions> httpsRedirectionOptions) : IStartupFilter
     {
         /// <summary>
         /// Ключ в <see cref="HttpContext.Items"/>: заголовки X-Forwarded-* до ForwardedHeadersMiddleware
@@ -97,13 +101,16 @@ public static class ForwardedHeadersExtensions
                 return nextMiddleware(context);
             });
 
-            _ = app.UseWhen(
-                context => !InfrastructureEndpoints.IsInfrastructurePath(context.Request.Path),
-                branch => branch.UseHttpsRedirection());
-
-            if (!environment.IsDevelopment())
+            if (httpsRedirectionOptions.Value.Enabled)
             {
-                _ = app.UseHsts();
+                _ = app.UseWhen(
+                    context => !InfrastructureEndpoints.IsInfrastructurePath(context.Request.Path),
+                    branch => branch.UseHttpsRedirection());
+
+                if (!environment.IsDevelopment())
+                {
+                    _ = app.UseHsts();
+                }
             }
 
             next(app);
