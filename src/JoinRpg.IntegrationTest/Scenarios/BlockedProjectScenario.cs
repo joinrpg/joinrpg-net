@@ -10,6 +10,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
+using JoinRpg.Services.Interfaces.Projects;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 
@@ -174,6 +175,29 @@ public class BlockedProjectScenario(JoinApplicationFactory factory) : IClassFixt
         {
             var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
             projectInfo.HasMasterAccess(newMasterId, Permission.CanManageClaims).ShouldBeTrue();
+        });
+    }
+
+    [Fact]
+    public async Task Master_SetsUpAccommodation_InBlockedProject()
+    {
+        var (masterId, projectId) = await CreateMasterAndProject();
+        await factory.Services.RunAsAsync(masterId, sp =>
+            sp.GetRequiredService<IProjectService>().SetAccommodationSettings(projectId, enableAccommodation: true));
+        await BlockProject(projectId);
+
+        // Типы поселения и комнаты после мая потеряны — мастер заводит их заново до снятия блокировки (ADR023).
+        var typeId = await factory.Services.RunAsAsync(masterId, sp =>
+            sp.GetRequiredService<IAccommodationTypeService>().CreateAccommodationType(
+                projectId,
+                new AccommodationTypeRequest("Палатка в блокировке", new MarkdownString(""), Cost: 0, Capacity: 2, IsPlayerSelectable: true)));
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            var categoryId = projectInfo.AccommodationSettings.GetTypeById(typeId).RoomCategoryId;
+            var rooms = await sp.GetRequiredService<IAccommodationService>().AddRooms(categoryId, ["101"]);
+            _ = rooms.ShouldHaveSingleItem();
         });
     }
 

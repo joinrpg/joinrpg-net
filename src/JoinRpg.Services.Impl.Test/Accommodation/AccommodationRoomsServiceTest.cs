@@ -185,4 +185,20 @@ public class AccommodationRoomsServiceTest : AccommodationServiceTestBase
         mock.Rooms.ShouldHaveSingleItem();
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
+
+    // ADR023: комнаты — настройка проекта, их заводят заново до снятия блокировки.
+    [Fact]
+    public async Task AddRenameDeleteRooms_InBlockedProject_Succeed()
+    {
+        var renamed = mock.CreateEmptyRoom(roomType, "101");
+        var deleted = mock.CreateEmptyRoom(roomType, "102");
+        BlockProject();
+
+        await CreateService().RenameRoom(renamed.GetId(), "103");
+        await CreateService().DeleteRoom(deleted.GetId());
+        _ = await CreateService().AddRooms(CategoryId, ["104"]);
+
+        mock.Rooms.Select(room => room.Name).ShouldBe(["103", "104"], ignoreOrder: true);
+        unitOfWork.SaveChangesCallCount.ShouldBe(3);
+    }
 }

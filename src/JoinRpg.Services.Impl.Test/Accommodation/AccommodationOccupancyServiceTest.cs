@@ -96,6 +96,21 @@ public class AccommodationOccupancyServiceTest : AccommodationServiceTestBase
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
 
+    /// <summary>Заселение — действие с заявками, в блокировке оно запрещено и после того, как комнаты разрешили (ADR023).</summary>
+    [Fact]
+    public async Task OccupyRoom_InBlockedProject_Throws()
+    {
+        var group = CreateGroup(tent);
+        var room = mock.CreateEmptyRoom(tent, "101");
+        BlockProject();
+
+        _ = await Should.ThrowAsync<ProjectBlockedException>(
+            () => CreateService().OccupyRoom(room.GetId(), [group.GetId()]));
+
+        group.AccommodationId.ShouldBeNull();
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
     /// <summary>
     /// Дефект 5 ADR018: комната грузилась по <c>(ProjectId, RoomId)</c>, группа — по
     /// <c>(ProjectId, Id)</c>, и заявку на палатку можно было поселить в гостиничный номер.
