@@ -314,7 +314,7 @@
 - [ ] 🟢 Загрузка выгрузок мастера (только xlsx, до 30 МБ) с датой на той же странице — слияние с
       уведомлениями: группы и персонажи с прежними id, значения полей ([#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), [#5534](https://github.com/joinrpg/joinrpg-net/issues/5534)–[#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
       Ответственного нового персонажа назначить руками после применения.
-- [ ] Ложная пометка «Изменено после восстановления» у заявок, которые трогал только инструмент — [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619).
+- [ ] 🟡 Ложная пометка «Изменено после восстановления» у заявок, которые трогал только инструмент — [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619).
 - [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
       мастерские — мастер из своих материалов.
 
@@ -336,7 +336,7 @@
 ([подробнее](#ручные-финансовые-операции)).
 
 - [x] ~~Установка взноса вручную~~ — уже восстанавливается в фазе 7 ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)).
-- [ ] Ручные оплаты и возвраты — **мастер сам, блоком «Ручные оплаты» на странице «Восстановление проекта»**
+- [ ] 🟡 Ручные оплаты и возвраты — **мастер сам, блоком «Ручные оплаты» на странице «Восстановление проекта»**
       ([#5631](https://github.com/joinrpg/joinrpg-net/issues/5631), решение 2026-10-19): тип оплаты выбирает мастер, «Наличные на меня» — кнопкой; после блока заявок,
       до разблокировки. Готовое под него: планировщик [#5568](https://github.com/joinrpg/joinrpg-net/issues/5568), доменная операция [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569) (уже требует блокировку
       и `CanManageMoney`), сверка «Уплачено» [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567). Причина: консольный инструмент ждал запуска разом по всем
@@ -828,9 +828,9 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
 | [#5632](https://github.com/joinrpg/joinrpg-net/issues/5632) | Страница снятия блокировки: предупреждение про ручные оплаты | 9 | открыт |
 | [docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296) | Инструкция: ручные оплаты — блоком «Ручные оплаты», только в блокировке | 9 | открыт, мерджить с выкаткой #5631 |
-| issue [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631) | Блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | заведён |
+| issue [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631) | Блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | в работе (другой агент) |
 | issue [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) | Настройки поселения, типов оплаты, групп и правил в заблокированном проекте | 7 | заведён |
-| issue [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619) | Ложная пометка «Изменено после восстановления» у заявок | 7 | заведён |
+| issue [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619) | Ложная пометка «Изменено после восстановления» у заявок | 7 | в работе (другой агент) |
 | issue [docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290) | Инструкция для мастеров на docs.joinrpg.ru | 6 | заведён |
 | issue [infra#6](https://github.com/joinrpg/joinrpg-infrastructure/issues/6) | Убрать DNAME на апексе `joinrpg.ru` (остаток хостинга в Yandex Object Storage) | 2 | заведён |
 | [infra#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) | DNS dev-хостов и `components.joinrpg.ru` на Selectel (terraform) | 2 | влит, apply сделан |
