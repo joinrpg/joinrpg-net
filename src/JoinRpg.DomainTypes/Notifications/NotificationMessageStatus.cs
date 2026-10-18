@@ -1,4 +1,4 @@
-namespace JoinRpg.Dal.Notifications;
+namespace JoinRpg.DomainTypes.Notifications;
 
 /// <summary>
 /// Describes possible states of a message.
