@@ -336,10 +336,17 @@
 ([подробнее](#ручные-финансовые-операции)).
 
 - [x] ~~Установка взноса вручную~~ — уже восстанавливается в фазе 7 ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)).
-- [ ] 🟢 Ручные оплаты и возвраты из уведомлений, с прежними id — консольный инструмент
-      `RestoreManualFinance` ([#5561](https://github.com/joinrpg/joinrpg-net/issues/5561)): dry-run → CSV (ПДн — локально) → проверить предложенный тип
-      оплаты → `--apply`. По всем заблокированным проектам сразу, после фазы 7. Всё влито ([#5568](https://github.com/joinrpg/joinrpg-net/issues/5568),
-      [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569), [#5571](https://github.com/joinrpg/joinrpg-net/issues/5571), [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567)), issue закрыт 2026-10-15; осталось запустить.
+- [ ] Ручные оплаты и возвраты — **мастер сам, блоком «Ручные оплаты» на странице «Восстановление проекта»**
+      ([#5631](https://github.com/joinrpg/joinrpg-net/issues/5631), решение 2026-10-19): тип оплаты выбирает мастер, «Наличные на меня» — кнопкой; после блока заявок,
+      до разблокировки. Готовое под него: планировщик [#5568](https://github.com/joinrpg/joinrpg-net/issues/5568), доменная операция [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569) (уже требует блокировку
+      и `CanManageMoney`), сверка «Уплачено» [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567). Причина: консольный инструмент ждал запуска разом по всем
+      проектам, а мастера разблокируют в своём темпе — после разблокировки оплаты не вернуть.
+- [ ] Желательно раньше [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631): финансовые настройки в блокировке — [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), п. 2 (свои типы оплаты, не только «наличные»).
+- [ ] Пока блока нет — предупреждение «не снимайте блокировку, пока не восстановлены ручные оплаты» на странице
+      снятия блокировки и в инструкции для мастеров (в работе).
+- [ ] Запасной путь — консольный `RestoreManualFinance` ([#5571](https://github.com/joinrpg/joinrpg-net/issues/5571); dry-run → CSV, ПДн локально → `--apply`) для
+      проектов, где мастера не восстанавливают сами. Разблокированный раньше времени проект — вернуть блокировку SQL-ом
+      (`UPDATE dbo.Projects SET IsBlocked = 1 WHERE ProjectId = …`), восстановить, разблокировать (так сделано с 1612, 2026-10-19).
 - [x] ~~Проекты без типа оплаты~~ — решено 2026-10-15: инструмент создаёт тип Cash на мастера по
       подтверждению в CSV (`cash:<userId>`).
 - [ ] Сверка «Уплачено» из выгрузки мастера с оплатами в базе — [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567) влит.
@@ -819,6 +826,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5612](https://github.com/joinrpg/joinrpg-net/issues/5612) | Ссылка из отказа в заявке — на `#for-players` (после docs#293) | 6 | открыт |
 | [#5607](https://github.com/joinrpg/joinrpg-net/issues/5607) | Баннер: ссылка на инструкцию для мастеров на docs.joinrpg.ru | 6 | открыт |
 | issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
+| issue [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631) | Блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | заведён |
 | issue [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) | Настройки поселения, типов оплаты, групп и правил в заблокированном проекте | 7 | заведён |
 | issue [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619) | Ложная пометка «Изменено после восстановления» у заявок | 7 | заведён |
 | issue [docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290) | Инструкция для мастеров на docs.joinrpg.ru | 6 | заведён |
