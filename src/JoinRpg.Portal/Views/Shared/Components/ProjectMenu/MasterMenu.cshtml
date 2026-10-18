@@ -175,7 +175,7 @@
                         <li>@Html.ActionLink("Распечатки", "Index", "Print", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Форумы", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Поля персонажа / заявки", "Index", "GameField", new { Model.ProjectId }, null)</li>
-                        <li>@Html.ActionLink("Мастера", "Index", "Acl", new { Model.ProjectId }, null)</li>
+                        <li>@Html.ActionLink("Мастера", "Manage", "Acl", new { Model.ProjectId }, null)</li>
                         <li><a asp-page="/GamePages/ResponsibleMasterRules" asp-route-projectId="@Model.ProjectId">
                                 Настройки ответственных
                             </a></li>

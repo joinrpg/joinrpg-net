@@ -14,5 +14,5 @@
 <component type="typeof(AddMasterPanel)" render-mode="WebAssembly"
            param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
            param-UserId="@(new UserIdentification(Model.UserId))"
-           param-MastersUrl="@Url.Action("Index", new { Model.ProjectId })"
+           param-MastersUrl="@Url.Action("Manage", new { Model.ProjectId })"
            param-UserProfileUrl="@Url.Action("Details", "User", new { userId = Model.UserId })" />
