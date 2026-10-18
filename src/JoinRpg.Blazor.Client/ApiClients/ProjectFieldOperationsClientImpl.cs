@@ -139,9 +139,9 @@ internal class ProjectFieldOperationsClientImpl(
             var response = await httpClient.PostAsJsonAsync(
                 $"webapi/project-field-operations/savefieldsettings?projectId={model.ProjectId.Value}",
                 model);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during field settings save");
             throw;
