@@ -144,7 +144,7 @@
       с `Retry-After`. 2026-10-16: заглушка отдаётся на `joinrpg.ru` и `id.joinrpg.ru`, но с кодом
       200, а не 503.
 - [ ] DNS боевых доменов на 176.53.231.74: `joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru` —
-      готово (2026-10-16); **`www.joinrpg.ru` в зоне нет — не резолвится** (на 2026-10-18 тоже).
+      готово (2026-10-16); **`www.joinrpg.ru` в зоне нет — не резолвится** (на 2026-10-18 тоже) — запись в PR [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5).
       У `components.joinrpg.ru` на Gateway нет сертификата (`TRAEFIK DEFAULT CERT`).
 - [x] (2026-10-16) DNS: `components.joinrpg.ru` и dev-хосты (`dev.joinrpg.ru`, `devid.joinrpg.ru`,
       `dev-components.joinrpg.ru`) — на 176.53.231.74: PR
@@ -153,7 +153,7 @@
       провайдера — Postbox или новый) перенесены в новую зону; без них письма уйдут в спам или не
       отправятся. 2026-10-18: SPF, DMARC, верификации в зоне есть, но **SPF-записей две**
       (`include:_spf.yandexcloud.net` и `redirect=_spf.yandex.net`) — по RFC 7208 это PermError,
-      SPF не проходит; слить в одну: `v=spf1 include:_spf.yandexcloud.net include:_spf.yandex.net ~all`.
+      SPF не проходит; слить в одну: `v=spf1 include:_spf.yandexcloud.net include:_spf.yandex.net ~all` — PR [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5).
 - [x] (2026-10-16) DNS: `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` и для dev `dev.joinrpg.tsarevs.ru`,
       `dev.id.joinrpg.tsarevs.ru` — на балансировщик 176.53.231.74, мимо заглушки: PR
       [joinrpg-infrastructure#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) на ревью,
@@ -799,6 +799,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` | 2 | влит |
 | [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) | Служебные домены dev: `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` | 2 | влит |
 | [infra#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) | DNS служебных доменов prod и dev (terraform) | 2 | влит, apply сделан |
+| [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5) | Зона `joinrpg.ru`: одна SPF-запись, битая `yandex-verification`, `www.joinrpg.ru` (terraform) | 2 | на ревью, после мерджа — apply |
 | [infra#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) | DNS dev-хостов и `components.joinrpg.ru` на Selectel (terraform) | 2 | влит, apply сделан |
 | [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | влит |
 | [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504) | RestoreLostProjects — в логах только ответы ниже 400 | 4 | влит |
