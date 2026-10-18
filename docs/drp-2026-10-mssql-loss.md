@@ -127,8 +127,8 @@
       умолчанию 1 МБ — загрузка выгрузок мастера в фазе 7 получит 413 ([#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
 - [x] (2026-10-16) Строки подключения prod: MSSQL и Postgres (`DataProtection`, `DailyJob`,
       `Notifications`, IdPortal) — на новые, внутренними адресами кластера ([подробнее](#инфраструктура-в-selectel)).
-- [ ] Секреты S3 prod: `__ACCESSKEY`, `__SECRETKEY` обновлены 2026-10-16; **`KUBESECRET_S3BLOBSTORAGE__BUCKETNAME`
-      не менялся с 2022** — проверить, что там `joinrpg-prod-avatars`.
+- [x] (2026-10-18) Секреты S3 prod: `__ACCESSKEY`, `__SECRETKEY` обновлены 2026-10-16;
+      `__BUCKETNAME` = `joinrpg-prod-avatars` (проверено).
 - [ ] 🟡 Аватарки ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)): сначала [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) (🟢 влит) — адрес из настройки
       `S3BlobStorage:PublicBaseUrl`, терпимое чтение и подмена домена у старых полных адресов; потом,
       **только после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод**, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — в базе ключ объекта вместо адреса,
