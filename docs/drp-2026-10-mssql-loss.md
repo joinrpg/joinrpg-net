@@ -827,7 +827,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5607](https://github.com/joinrpg/joinrpg-net/issues/5607) | Баннер: ссылка на инструкцию для мастеров на docs.joinrpg.ru | 6 | открыт |
 | issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
 | [#5632](https://github.com/joinrpg/joinrpg-net/issues/5632) | Страница снятия блокировки: предупреждение про ручные оплаты | 9 | открыт |
-| [docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296) | Инструкция: ручные оплаты только в заблокированном проекте | 9 | открыт |
+| [docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296) | Инструкция: ручные оплаты — блоком «Ручные оплаты», только в блокировке | 9 | открыт, мерджить с выкаткой #5631 |
 | issue [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631) | Блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | заведён |
 | issue [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) | Настройки поселения, типов оплаты, групп и правил в заблокированном проекте | 7 | заведён |
 | issue [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619) | Ложная пометка «Изменено после восстановления» у заявок | 7 | заведён |
