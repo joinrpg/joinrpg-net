@@ -2,17 +2,19 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.ClaimList;
+using JoinRpg.Web.UserProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
 public class UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor, YandexLogLink yandexLogLink,
-    IProjectRepository projectRepository, IClaimsRepository claimsRepository) : Common.JoinMvcControllerBase()
+    IProjectRepository projectRepository, IClaimsRepository claimsRepository, UserProfileAvatars profileAvatars) : Common.JoinMvcControllerBase()
 {
     [HttpGet("user/{userId:int}")]
     [AllowAnonymous]
@@ -53,6 +55,7 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             Details = new UserProfileDetailsViewModel(user, currentUser),
             Admin = currentUserAccessor.IsAdmin ? new UserAdminOperationsViewModel(yandexLogLink.GetLinkForUser(user.Email)) : null,
         };
+        await profileAvatars.Fill(userProfileViewModel.Details);
 
         if (currentUser != null)
         {

@@ -10,6 +10,7 @@ using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.ProjectCommon.Fields;
 using JoinRpg.Web.ProjectMasterTools.Settings;
+using JoinRpg.Web.UserProfile;
 using MoreLinq;
 
 namespace JoinRpg.WebPortal.Models.Test;

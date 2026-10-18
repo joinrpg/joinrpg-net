@@ -6,7 +6,7 @@
 
 <h2>Выпуск второй ролью</h2>
 @await Html.PartialAsync("CharacterNavigation", Model.Navigation)
-@Html.DisplayFor(model => model.PlayerDetails)
+<component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@Model.PlayerDetails" />
 <dl>
   <dt>@Html.LabelFor(model => model.Master)</dt>
   <dd>@Html.DisplayFor(model => model.Master)</dd>
