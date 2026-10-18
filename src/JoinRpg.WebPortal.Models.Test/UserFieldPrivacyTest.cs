@@ -81,7 +81,7 @@ public class UserFieldPrivacyTest
         var mock = new MockedProject();
         MentionField(mock, MentionedUser.UserId);
 
-        MentionedUser.GetAccess(mock.ProjectInfo).ShouldBe(UserProfileAccessReason.NoAccess);
+        MentionedUser.GetAccess(mock.ProjectInfo, mock.MasterInfo.UserId).ShouldBe(UserProfileAccessReason.NoAccess);
     }
 
     /// <summary>
