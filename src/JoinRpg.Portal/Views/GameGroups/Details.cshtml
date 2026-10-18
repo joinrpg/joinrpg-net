@@ -20,7 +20,7 @@
                 <div class="panel-heading">
                     <div class="btn-group" role="group">
 
-                        @if (!Model.IsSpecial && Model.ShowEditControls && !Model.IsRootGroup)
+                        @if (!Model.IsSpecial && Model.ShowEditGroupControls && !Model.IsRootGroup)
                         {
                             <a type="button" class="btn btn-default" href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
                                 <join-icon icon="Tools" title="настроить" /> настроить
@@ -44,6 +44,9 @@
                             <a class="btn btn-default" href="@Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}, null)">
                                 <join-icon icon="Add" /> добавить персонажа
                             </a>
+                        }
+                        @if (!Model.IsSpecial && Model.ShowEditGroupControls)
+                        {
                             <a class="btn btn-default" href="@Url.Action("AddGroup", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
                                 <join-icon icon="Add" /> добавить подгруппу
                             </a>

@@ -225,6 +225,41 @@ public class BlockedProjectScenario(JoinApplicationFactory factory) : IClassFixt
         });
     }
 
+    [Fact]
+    public async Task Master_SetsUpGroups_ButCantDeleteGroup_InBlockedProject()
+    {
+        var (masterId, projectId) = await CreateMasterAndProject();
+        await BlockProject(projectId);
+
+        // Иерархию и видимость групп после мая мастер расставляет до снятия блокировки (ADR023).
+        var (parentId, childId) = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            var service = sp.GetRequiredService<ICharacterGroupService>();
+            var root = projectInfo.GroupTree.RootGroupId;
+            var parent = await service.AddCharacterGroup(projectId, "Родитель в блокировке", isPublic: true, [root], "");
+            var child = await service.AddCharacterGroup(projectId, "Восстановленная группа", isPublic: false, [root], "");
+            return (parent, child);
+        });
+
+        await factory.Services.RunAsAsync(masterId, sp =>
+            sp.GetRequiredService<ICharacterGroupService>().EditCharacterGroup(
+                childId, "Восстановленная группа", isPublic: true, [parentId], "Описание"));
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            var child = projectInfo.GroupTree.GetGroupById(childId);
+            child.IsPublic.ShouldBeTrue();
+            child.DirectParentGroupIds.ShouldBe([parentId]);
+        });
+
+        // Удаление перевешивает персонажей — правка персонажей в блокировке запрещена.
+        await factory.Services.RunAsAsync(masterId, async sp =>
+            _ = await Should.ThrowAsync<ProjectBlockedException>(() =>
+                sp.GetRequiredService<ICharacterGroupService>().DeleteCharacterGroup(childId)));
+    }
+
     private async Task<(UserIdentification masterId, ProjectIdentification projectId)> CreateMasterAndProject()
     {
         using var scope = factory.Services.CreateScope();

@@ -215,6 +215,14 @@ public record class ProjectInfo
         return HasMasterAccess(userId, Permission.CanEditRoles) && IsActive;
     }
 
+    /// <summary>
+    /// Можно ли настраивать группы персонажей (создание, правка, порядок). В отличие от
+    /// <see cref="HasEditRolesAccess"/>, разрешено и в заблокированном проекте: группы заводят заново
+    /// при восстановлении (ADR023). Удаление группы перевешивает персонажей, поэтому для него — <see cref="HasEditRolesAccess"/>.
+    /// </summary>
+    public bool HasEditGroupsAccess(UserIdentification? userId)
+        => HasMasterAccess(userId, Permission.CanEditRoles) && !IsArchived;
+
     // For tests
     internal ProjectInfo WithAddedField(ProjectFieldInfo field)
     {

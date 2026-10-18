@@ -16,7 +16,7 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
         var group = await projectPropsService.ChangeProjectProperties(
             projectId,
             Permission.CanEditRoles,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (name, isPublic, parentCharacterGroupIds, description),
             ctx =>
             {
@@ -55,7 +55,7 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
         await projectPropsService.ChangeProjectProperties(
             characterGroupId.ProjectId,
             Permission.CanEditRoles,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (characterGroupId, name, isPublic, parentCharacterGroupIds, description),
             ctx =>
             {
@@ -91,6 +91,8 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
         await projectPropsService.ChangeProjectProperties(
             characterGroupId.ProjectId,
             Permission.CanEditRoles,
+            // Не AllowBlocked, в отличие от остальных операций с группами: удаление перевешивает персонажей
+            // и подгруппы, лежавшие только в этой группе, а правка персонажей в блокировке запрещена (ADR023).
             ProjectActiveRequirement.MustBeActive,
             characterGroupId,
             ctx =>
@@ -136,7 +138,7 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
         return await projectPropsService.ChangeProjectProperties(
             parentCharacterGroupId.ProjectId,
             Permission.CanEditRoles,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (parentCharacterGroupId, characterId, afterCharacterId),
             ctx =>
             {
@@ -159,7 +161,7 @@ internal class CharacterGroupService(IProjectPropsService projectPropsService) :
         return await projectPropsService.ChangeProjectProperties(
             parentCharacterGroupId.ProjectId,
             Permission.CanEditRoles,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (parentCharacterGroupId, characterGroupId, afterCharacterGroupId),
             ctx =>
             {

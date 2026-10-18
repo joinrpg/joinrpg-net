@@ -94,7 +94,7 @@ public class GameGroupsController(
 
     [HttpGet, Authorize]
     [MasterAuthorize(Permission.CanEditRoles)]
-    [ProjectShouldBeActive]
+    [ProjectShouldNotBeArchived] // группы настраивают и в заблокированном проекте (ADR023)
     public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
         CharacterGroupIdentification charGroupId = new(new(projectId), characterGroupId);
@@ -123,7 +123,7 @@ public class GameGroupsController(
     }
 
 
-    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles), ProjectShouldBeActive]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles), ProjectShouldNotBeArchived]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
         ProjectIdentification projectId = new(viewModel.ProjectId);
@@ -203,7 +203,7 @@ public class GameGroupsController(
 
     [HttpGet]
     [MasterAuthorize(Permission.CanEditRoles)]
-    [ProjectShouldBeActive]
+    [ProjectShouldNotBeArchived] // группы настраивают и в заблокированном проекте (ADR023)
     public async Task<ActionResult> AddGroup(ProjectIdentification projectid, int charactergroupid)
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
@@ -223,7 +223,7 @@ public class GameGroupsController(
     [HttpPost]
     [MasterAuthorize(Permission.CanEditRoles)]
     [ValidateAntiForgeryToken]
-    [ProjectShouldBeActive]
+    [ProjectShouldNotBeArchived]
     public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
         ProjectIdentification projectId = new(viewModel.ProjectId);
