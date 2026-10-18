@@ -1,0 +1,10 @@
+@page "/admin/notifications/log"
+@model JoinRpg.Portal.Pages.Admin.NotificationLogModel
+@{
+    ViewBag.Title = "Лог уведомлений";
+}
+<h3>@ViewBag.Title</h3>
+<p><a asp-page="NotificationDashboard">← Статус уведомлений</a></p>
+<component type="typeof(JoinRpg.Web.AdminTools.Notifications.NotificationLog)" render-mode="Static"
+           param-Recipient="Model.UserId is null ? null : new UserIdentification(Model.UserId.Value)"
+           param-Channel="Model.Channel" />

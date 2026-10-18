@@ -61,6 +61,7 @@ internal static class SmokeExpectations
         ["admin/hot-roles"] = "админка сайта, смоук ходит под мастером проекта",
         ["admin/kogda-igra-sync"] = "админка сайта, смоук ходит под мастером проекта",
         ["admin/notifications"] = "админка сайта, смоук ходит под мастером проекта",
+        ["admin/notifications/log"] = "админка сайта, смоук ходит под мастером проекта",
         ["admin/test-message"] = "админка сайта, смоук ходит под мастером проекта",
         ["admin/user-merge"] = "админка сайта, смоук ходит под мастером проекта",
         ["webapi/UserAdmin/GetAdminPanel"] = "админка сайта, смоук ходит под мастером проекта",

@@ -35,6 +35,9 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
     private readonly ConcurrentQueue<NotificationMessageForRecipient> claimNotifications = new();
     private readonly ConcurrentQueue<(ClaimIdentification ClaimId, DateTimeOffset CreatedBefore)> getClaimNotificationsForClaimCalls = new();
 
+    private readonly ConcurrentQueue<NotificationLogItemDto> logItems = new();
+    private readonly ConcurrentQueue<(UserIdentification? Recipient, NotificationChannel? Channel, int Limit)> getNotificationLogCalls = new();
+
     private bool isNullObject;
 
     /// <summary>
@@ -94,8 +97,22 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
     public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
         => Task.FromResult(queueLengths ?? throw new NotSupportedException());
 
+    /// <summary>Добавляет запись — её отдаст <see cref="GetNotificationLog"/>, если подходит под фильтры.</summary>
+    public void AddLogItem(NotificationLogItemDto item) => logItems.Enqueue(item);
+
+    public IReadOnlyCollection<(UserIdentification? Recipient, NotificationChannel? Channel, int Limit)> GetNotificationLogCalls => getNotificationLogCalls;
+
     public Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit)
-        => isNullObject ? Task.FromResult<IReadOnlyCollection<NotificationLogItemDto>>([]) : throw new NotSupportedException();
+    {
+        getNotificationLogCalls.Enqueue((recipient, channel, limit));
+        return Task.FromResult<IReadOnlyCollection<NotificationLogItemDto>>(
+            [.. logItems
+                .Where(i => recipient is null || i.Message.Recipient == recipient)
+                .Where(i => channel is null || i.Channels.Any(c => c.Channel == channel))
+                .Take(limit)
+                // Как настоящий репозиторий: при фильтре по каналу в ответе только он.
+                .Select(i => i with { Channels = [.. i.Channels.Where(c => channel is null || c.Channel == channel)] })]);
+    }
 
     /// <summary>Добавляет уведомление по заявке — его отдаст <see cref="GetClaimNotificationsForProject"/>.</summary>
     public void AddClaimNotification(NotificationMessageForRecipient notification) => claimNotifications.Enqueue(notification);
