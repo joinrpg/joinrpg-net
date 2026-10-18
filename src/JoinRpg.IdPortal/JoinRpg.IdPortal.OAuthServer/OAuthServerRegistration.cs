@@ -35,6 +35,7 @@ public static class OAuthServerRegistration
     public static WebApplicationBuilder AddJoinOAuthServer(this WebApplicationBuilder builder)
     {
         builder.Services.AddOptions<OAuthServerOptions>();
+        builder.Services.AddExceptionHandler<OAuthProtocolExceptionHandler>();
 
         var oauthOptions = builder.Configuration.GetSection("OAuthServer").Get<OAuthServerOptions>();
         var certOptions = oauthOptions?.Certificates;
