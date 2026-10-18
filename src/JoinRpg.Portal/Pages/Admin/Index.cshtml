@@ -8,7 +8,7 @@
 @{
     var versionInfo = JoinRpg.Common.WebInfrastructure.AppVersionInfo.Current;
 }
-<component type="typeof(JoinRpg.Web.AdminTools.About.VersionPanel)" render-mode="Static"
+<component type="typeof(VersionPanel)" render-mode="Static"
            param-Version="versionInfo.Version" param-CommitSha="versionInfo.CommitSha" param-CommitUrl="versionInfo.CommitUrl" />
 <ul>
     <li><a asp-controller="ProjectList" asp-area="Admin">Список игр</a></li>
