@@ -5,7 +5,11 @@
     ViewBag.Title = "Администрирование";
 }
 <h3>@ViewBag.Title</h3>
-<component type="typeof(JoinRpg.Web.AdminTools.About.VersionPanel)" render-mode="Static" />
+@{
+    var versionInfo = JoinRpg.Common.WebInfrastructure.AppVersionInfo.Current;
+}
+<component type="typeof(JoinRpg.Web.AdminTools.About.VersionPanel)" render-mode="Static"
+           param-Version="versionInfo.Version" param-CommitSha="versionInfo.CommitSha" param-CommitUrl="versionInfo.CommitUrl" />
 <ul>
     <li><a asp-controller="ProjectList" asp-area="Admin">Список игр</a></li>
     <li><a asp-controller="AdminHome" asp-action="StaleGames" asp-area="Admin">Проблемные проекты</a></li>

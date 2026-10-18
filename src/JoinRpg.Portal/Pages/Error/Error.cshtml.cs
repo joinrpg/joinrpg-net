@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using JoinRpg.Common.WebInfrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
@@ -53,4 +54,11 @@ public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
 
     public required string RequestId { get; set; }
     public Uri? Referer { get; set; }
+
+    /// <summary>
+    /// Имя хоста; в Kubernetes это имя пода — по нему ищутся логи конкретной реплики.
+    /// </summary>
+    public string PodName { get; } = Environment.MachineName;
+
+    public AppVersionInfo Version { get; } = AppVersionInfo.Current;
 }

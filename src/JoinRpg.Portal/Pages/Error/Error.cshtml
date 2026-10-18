@@ -39,6 +39,15 @@ else
         {
             <p><b>Referer</b>: <a href="@Model.Referer">@Model.Referer</a></p>
         }
+
+        <p><b>Podname</b>: @Model.PodName</p>
+
+        <p><b>Версия</b>: @Model.Version.Version
+            @if (Model.Version.CommitUrl is not null)
+            {
+                <text>(коммит <a href="@Model.Version.CommitUrl" target="_blank">@Model.Version.CommitSha</a>)</text>
+            }
+        </p>
     </div>
     <div class="panel-footer">
         <i>Пожалуйста, присылайте данные текстом, а не скриншотом</i>
