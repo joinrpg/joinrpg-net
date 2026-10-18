@@ -117,7 +117,7 @@ public class ClaimRestorePlannerTest
         var lostAt = BackupAt.AddYears(1);
         var source = new ClaimRestoreSource(
             ClaimNotificationParser.Parse(ClaimChange(Day(1), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Гамлет")),
-            [ExistingClaim(Hamlet, ClaimStatus.OnHold) with { LastUpdated = lostAt.AddDays(1) }],
+            [ExistingClaim(Hamlet, ClaimStatus.OnHold) with { LastUpdated = lostAt.AddDays(1), LastChangedNotByRestore = lostAt.AddDays(1) }],
             [Hamlet],
             [new ProjectMasterName(Master.UserId, Master.DisplayName.DisplayName)],
             ProjectDefaultMaster,

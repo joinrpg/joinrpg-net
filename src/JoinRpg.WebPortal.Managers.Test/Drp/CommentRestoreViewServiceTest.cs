@@ -279,6 +279,9 @@ public class CommentRestoreViewServiceTest
         public Task<ClaimFinanceRestoreLookup> GetClaimFinanceForRestore(ProjectIdentification projectId, IReadOnlyCollection<int> notifiedCommentIds)
             => throw new NotSupportedException();
 
+        public Task<IReadOnlyDictionary<ClaimIdentification, DateTimeOffset>> GetClaimsCommentedNotByRestoreSince(ProjectIdentification projectId, DateTimeOffset since)
+            => throw new NotSupportedException();
+
         public Task<IReadOnlyList<ProjectIdentification>> GetBlockedProjects() => throw new NotSupportedException();
     }
 

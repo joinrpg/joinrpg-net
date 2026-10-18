@@ -389,12 +389,13 @@ public class ProjectRestorePlannerTest
         row.Warnings.ShouldContain(ProjectRestoreWarning.ExportOlderThanBackup);
     }
 
-    private ExistingClaimInfo DbClaim(int id, int characterId, ClaimStatus status, int? fee = null, string? wishesValue = null, DateTimeOffset? lastUpdated = null, int feePaid = 0)
+    private ExistingClaimInfo DbClaim(int id, int characterId, ClaimStatus status, int? fee = null, string? wishesValue = null, DateTimeOffset? lastUpdated = null, int feePaid = 0, DateTimeOffset? changedByHandAt = null)
         => new(ClaimId(id), CharacterId(characterId), Player.UserId, status, Master.UserId, fee)
         {
             FieldLayer = Layer((wishes, wishesValue)),
             LastUpdated = lastUpdated ?? BackupAt.AddDays(-1),
             FeePaid = feePaid,
+            LastChangedNotByRestore = changedByHandAt,
         };
 
     private static readonly DateTimeOffset MayExport = BackupAt.AddDays(10);
@@ -483,12 +484,63 @@ public class ProjectRestorePlannerTest
         var plan = Plan(
             [ClaimExport(Day(5), ClaimRow(3000, "Гамлет", ClaimStatus.Approved))],
             characters: [DbCharacter(101, "Гамлет")],
-            claims: [DbClaim(3000, 101, ClaimStatus.OnHold, lastUpdated: AfterRestore)]);
+            claims: [DbClaim(3000, 101, ClaimStatus.OnHold, lastUpdated: AfterRestore, changedByHandAt: AfterRestore)]);
 
         var row = plan.Claims.ShouldHaveSingleItem();
         row.Action.ShouldBe(ClaimRestoreAction.Change);
         row.ApplyByDefault.ShouldBeFalse();
         row.Warnings.ShouldContain(ClaimRestoreWarning.ChangedAfterRestore);
+    }
+
+    /// <summary>
+    /// Заявку после аварии трогали только инструменты восстановления (#5619): создали по уведомлениям или
+    /// восстановили комментарии майской заявки. Дата изменения поднята, но комментариев не от инструментов
+    /// нет — это не ручная правка, хотя статус в базе расходится с уведомлениями.
+    /// </summary>
+    [Fact]
+    public void ClaimTouchedOnlyByRestoreToolsIsAppliedByDefault()
+    {
+        var plan = Plan([],
+            characters: [DbCharacter(101, "Гамлет")],
+            claims: [DbClaim(3000, 101, ClaimStatus.AddedByUser, lastUpdated: AfterRestore)],
+            notifications: [ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Гамлет", claimId: ClaimId(3000))]);
+
+        var row = plan.Claims.ShouldHaveSingleItem();
+        row.Action.ShouldBe(ClaimRestoreAction.Change);
+        row.Status.ShouldBe(ClaimStatus.Approved);
+        row.ApplyByDefault.ShouldBeTrue();
+        row.AttributesNotByDefault.ShouldBeEmpty();
+        row.Warnings.ShouldNotContain(ClaimRestoreWarning.ChangedAfterRestore);
+    }
+
+    /// <summary>После аварии мастер сам сменил статус — в обсуждении есть его комментарий.</summary>
+    [Fact]
+    public void ClaimCommentedByHandAfterLossIsMarkedWithoutExports()
+    {
+        var plan = Plan([],
+            characters: [DbCharacter(101, "Гамлет")],
+            claims: [DbClaim(3000, 101, ClaimStatus.OnHold, lastUpdated: AfterRestore, changedByHandAt: AfterRestore)],
+            notifications: [ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Гамлет", claimId: ClaimId(3000))]);
+
+        var row = plan.Claims.ShouldHaveSingleItem();
+        row.Status.ShouldBe(ClaimStatus.Approved);
+        row.AttributesNotByDefault.ShouldBe([ClaimRestoreAttributeKind.Status]);
+        row.ApplyByDefault.ShouldBeFalse();
+        row.Warnings.ShouldContain(ClaimRestoreWarning.ChangedAfterRestore);
+    }
+
+    /// <summary>Комментарий не от инструментов, но до аварии, — не правка после восстановления.</summary>
+    [Fact]
+    public void ClaimCommentedBeforeLossIsNotMarked()
+    {
+        var plan = Plan([],
+            characters: [DbCharacter(101, "Гамлет")],
+            claims: [DbClaim(3000, 101, ClaimStatus.OnHold, lastUpdated: AfterRestore, changedByHandAt: LostAt)],
+            notifications: [ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Гамлет", claimId: ClaimId(3000))]);
+
+        var row = plan.Claims.ShouldHaveSingleItem();
+        row.ApplyByDefault.ShouldBeTrue();
+        row.Warnings.ShouldNotContain(ClaimRestoreWarning.ChangedAfterRestore);
     }
 
     [Fact]
@@ -500,7 +552,7 @@ public class ProjectRestorePlannerTest
                 ClaimExport(Day(5), ClaimRow(3000, "Гамлет", ClaimStatus.Approved)),
             ],
             characters: [DbCharacter(101, "Гамлет")],
-            claims: [DbClaim(3000, 101, ClaimStatus.Discussed, lastUpdated: AfterRestore)]);
+            claims: [DbClaim(3000, 101, ClaimStatus.Discussed, lastUpdated: AfterRestore, changedByHandAt: AfterRestore)]);
 
         var row = plan.Claims.ShouldHaveSingleItem();
         row.Action.ShouldBe(ClaimRestoreAction.Change);
@@ -789,7 +841,7 @@ public class ProjectRestorePlannerTest
                 ClaimExport(Day(5), ClaimRow(3000, "Гамлет", ClaimStatus.Approved)),
             ],
             characters: [DbCharacter(101, "Гамлет")],
-            claims: [DbClaim(3000, 101, ClaimStatus.Discussed, lastUpdated: AfterRestore) with { ResponsibleMaster = OtherMaster.UserId }]);
+            claims: [DbClaim(3000, 101, ClaimStatus.Discussed, lastUpdated: AfterRestore, changedByHandAt: AfterRestore) with { ResponsibleMaster = OtherMaster.UserId }]);
 
         var row = plan.Claims.ShouldHaveSingleItem();
         row.Status.ShouldBe(ClaimStatus.Approved);

@@ -54,6 +54,15 @@ public interface IProjectRestoreLookupRepository
     /// <param name="notifiedCommentIds">Id комментариев (операций), которые встретились в уведомлениях по заявкам проекта.</param>
     Task<ClaimFinanceRestoreLookup> GetClaimFinanceForRestore(ProjectIdentification projectId, IReadOnlyCollection<int> notifiedCommentIds);
 
+    /// <summary>
+    /// Заявки проекта, которые правили не инструменты восстановления (DRP, #5619): у каких в обсуждении есть
+    /// комментарий позже <paramref name="since"/> с действием не <see cref="CommentExtraAction.RestoredFromNotifications"/>
+    /// и не <see cref="CommentExtraAction.RestoredFromExport"/>. Любая ручная правка заявки (смена статуса,
+    /// ответственного, взноса, перемещение — в том числе игроком) пишет комментарий, а инструменты — только свои.
+    /// </summary>
+    /// <returns>Время последнего такого комментария (UTC) по заявке; заявок без них в словаре нет.</returns>
+    Task<IReadOnlyDictionary<ClaimIdentification, DateTimeOffset>> GetClaimsCommentedNotByRestoreSince(ProjectIdentification projectId, DateTimeOffset since);
+
     /// <summary>Заблокированные проекты (ADR023, <see cref="ProjectLifecycleStatus.Blocked"/>) в порядке id.</summary>
     Task<IReadOnlyList<ProjectIdentification>> GetBlockedProjects();
 }

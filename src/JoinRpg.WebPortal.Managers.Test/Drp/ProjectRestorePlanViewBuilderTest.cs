@@ -163,8 +163,10 @@ public class ProjectRestorePlanViewBuilderTest
         claim.LastUpdateDateTime = new DateTime(2026, 9, 2, 12, 0, 0, DateTimeKind.Unspecified);
         MockedProject.AssignFieldValues(claim, new FieldWithValue(mock.CharacterFieldInfo, "предложение игрока"));
 
+        var changedByHandAt = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
         var source = ClaimRestorePlanBuilder.BuildSource(
-            mock.ProjectInfo, [], [.. mock.Project.Characters.Select(mock.GetCharacterInfo)], At);
+            mock.ProjectInfo, [], [.. mock.Project.Characters.Select(mock.GetCharacterInfo)], At,
+            new Dictionary<ClaimIdentification, DateTimeOffset> { [claim.GetId()] = changedByHandAt });
 
         var character = source.Characters.Single(c => c.CharacterId.CharacterId == mock.Character.CharacterId);
         var characterLayer = character.FieldLayer.ShouldNotBeNull();
@@ -177,6 +179,7 @@ public class ProjectRestorePlanViewBuilderTest
 
         var existing = source.Claims.ShouldHaveSingleItem();
         existing.LastUpdated.ShouldBe(new DateTimeOffset(2026, 9, 2, 12, 0, 0, TimeSpan.Zero));
+        existing.LastChangedNotByRestore.ShouldBe(changedByHandAt);
         // Слой заявки — её собственный, значения персонажа в него не подмешиваются.
         existing.FieldLayer.ShouldNotBeNull().GetValue(mock.CharacterFieldInfo).ShouldBe("предложение игрока");
     }

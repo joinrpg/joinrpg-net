@@ -47,7 +47,8 @@ internal class ClaimRestoreViewService(
         var notifications = await notificationRepository.GetClaimNotificationsForProject(projectId, drp.LostAt);
         var events = ClaimNotificationParser.Parse(notifications);
         var characters = await characterInfoRepository.GetAllCharacterInfos(projectId);
-        var notificationSource = ClaimRestorePlanBuilder.BuildSource(projectInfo, events, characters, drp.BackupTakenAt);
+        var changedNotByRestore = await restoreLookupRepository.GetClaimsCommentedNotByRestoreSince(projectId, drp.LostAt);
+        var notificationSource = ClaimRestorePlanBuilder.BuildSource(projectInfo, events, characters, drp.BackupTakenAt, changedNotByRestore);
 
         // Без выгрузок email и занятые id плану не нужны — пустые списки в базу не ходят.
         var usersByEmail = await restoreLookupRepository.FindUsersByEmails(ProjectRestorePlanViewBuilder.PlayerEmails(exports));

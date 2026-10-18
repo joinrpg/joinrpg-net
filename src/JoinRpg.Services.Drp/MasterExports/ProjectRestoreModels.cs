@@ -17,7 +17,7 @@ public record ExistingGroupInfo(CharacterGroupIdentification GroupId, string Nam
 /// Уведомления и состояние заявок и персонажей в восстановленной базе. Для персонажей нужны
 /// <see cref="ExistingCharacterInfo.Groups"/>, <see cref="ExistingCharacterInfo.FieldLayer"/>,
 /// <see cref="ExistingCharacterInfo.UpdatedAt"/>, для заявок — <see cref="ExistingClaimInfo.FieldLayer"/>,
-/// <see cref="ExistingClaimInfo.LastUpdated"/>.
+/// <see cref="ExistingClaimInfo.LastUpdated"/>, <see cref="ExistingClaimInfo.LastChangedNotByRestore"/>.
 /// </param>
 /// <param name="Exports">Выгрузки в любом порядке — план сам упорядочит их по дате.</param>
 /// <param name="Groups">Группы проекта в восстановленной базе, включая удалённые.</param>

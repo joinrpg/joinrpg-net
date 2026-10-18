@@ -20,11 +20,16 @@ internal static class ClaimRestorePlanBuilder
     /// Слои полей, обычные группы и даты изменения нужны только плану по выгрузкам (#5529), но берутся
     /// из тех же агрегатов — без лишних запросов.
     /// </summary>
+    /// <param name="changedNotByRestore">
+    /// Последний комментарий после аварии, написанный не инструментом восстановления, по заявкам
+    /// (<see cref="ExistingClaimInfo.LastChangedNotByRestore"/>); null — не запрашивали.
+    /// </param>
     public static ClaimRestoreSource BuildSource(
         ProjectInfo projectInfo,
         IReadOnlyCollection<ClaimNotificationEvent> events,
         IReadOnlyCollection<CharacterInfo> characters,
-        DateTimeOffset backupTakenAt)
+        DateTimeOffset backupTakenAt,
+        IReadOnlyDictionary<ClaimIdentification, DateTimeOffset>? changedNotByRestore = null)
     {
         var existingCharacters = characters
             .Select(c => new ExistingCharacterInfo(
@@ -52,6 +57,7 @@ internal static class ClaimRestorePlanBuilder
                 // Слой заявки как есть (Claim.JsonData): поля заявки и предложения игрока.
                 FieldLayer = claim.Fields,
                 LastUpdated = AsUtc(claim.LastUpdateDateTime),
+                LastChangedNotByRestore = changedNotByRestore?.GetValueOrDefault(claim.ClaimId),
                 // Уже посчитано при чтении агрегата (сумма одобренных операций) — без отдельного запроса.
                 FeePaid = claim.Finance.FeePaid,
             }))
