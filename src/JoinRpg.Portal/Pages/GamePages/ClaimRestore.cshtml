@@ -11,3 +11,6 @@
 
 @* Комментарии к заявкам (DRP, #5492) — после заявок: восстанавливать их можно только в существующие заявки. *@
 @(await Html.RenderComponentAsync<CommentRestorePanel>(RenderMode.WebAssembly, new { Model.ProjectId }))
+
+@* Ручные оплаты (DRP, #5631) — после заявок: операции вешаются на существующие заявки. *@
+@(await Html.RenderComponentAsync<FinanceRestorePanel>(RenderMode.WebAssembly, new { Model.ProjectId }))

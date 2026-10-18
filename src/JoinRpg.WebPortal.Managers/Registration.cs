@@ -76,6 +76,7 @@ public static class Registration
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
         .AddScoped<IClaimRestoreClient, Drp.ClaimRestoreViewService>()
         .AddScoped<ICommentRestoreClient, Drp.CommentRestoreViewService>()
+        .AddScoped<IFinanceRestoreClient, Drp.FinanceRestoreViewService>()
         .AddScoped<IMoneyTransferClient, MoneyTransferViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IUserLinkResolveClient, UserLinkResolveViewService>()
