@@ -297,6 +297,7 @@
 Внутри заблокированного проекта, в темпе мастеров ([блокировка](#блокировка-проектов)).
 
 - [ ] Мастер заводит поля проекта заново (в блокировке разрешено — решение 2026-10-11, [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508)).
+- [ ] Настройки проекта в блокировке (поселение, типы оплаты, группы, правила ответственных) — [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), обсуждаем объём.
 - [ ] Фазы 7–9 по проекту.
 - [ ] Снять блокировку с проекта (или закрыть его) — последний шаг.
 
@@ -818,6 +819,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5612](https://github.com/joinrpg/joinrpg-net/issues/5612) | Ссылка из отказа в заявке — на `#for-players` (после docs#293) | 6 | открыт |
 | [#5607](https://github.com/joinrpg/joinrpg-net/issues/5607) | Баннер: ссылка на инструкцию для мастеров на docs.joinrpg.ru | 6 | открыт |
 | issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
+| issue [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) | Настройки поселения, типов оплаты, групп и правил в заблокированном проекте | 7 | заведён |
 | issue [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619) | Ложная пометка «Изменено после восстановления» у заявок | 7 | заведён |
 | issue [docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290) | Инструкция для мастеров на docs.joinrpg.ru | 6 | заведён |
 | issue [infra#6](https://github.com/joinrpg/joinrpg-infrastructure/issues/6) | Убрать DNAME на апексе `joinrpg.ru` (остаток хостинга в Yandex Object Storage) | 2 | заведён |
