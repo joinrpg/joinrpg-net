@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces;
@@ -198,6 +199,29 @@ public class BlockedProjectScenario(JoinApplicationFactory factory) : IClassFixt
             var categoryId = projectInfo.AccommodationSettings.GetTypeById(typeId).RoomCategoryId;
             var rooms = await sp.GetRequiredService<IAccommodationService>().AddRooms(categoryId, ["101"]);
             _ = rooms.ShouldHaveSingleItem();
+        });
+    }
+
+    [Fact]
+    public async Task Master_CreatesPaymentType_InBlockedProject()
+    {
+        var (masterId, projectId) = await CreateMasterAndProject();
+        await BlockProject(projectId);
+
+        // Типы оплаты после мая потеряны — мастер заводит их заново до снятия блокировки (ADR023).
+        await factory.Services.RunAsAsync(masterId, sp =>
+            sp.GetRequiredService<IProjectFinanceSettingsService>().CreatePaymentType(new CreatePaymentTypeRequest
+            {
+                ProjectId = projectId,
+                TargetMasterId = masterId,
+                TypeKind = PaymentTypeKind.Custom,
+                Name = "Перевод в блокировке",
+            }));
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            projectInfo.ProjectFinanceSettings.PaymentTypes.ShouldContain(pt => pt.Name == "Перевод в блокировке");
         });
     }
 
