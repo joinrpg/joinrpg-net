@@ -141,13 +141,14 @@
 
 ### Фаза 2. 🚧 Заглушка на обоих доменах, служебные домены
 
-- [ ] Включить заглушку для `joinrpg.ru` и `id.joinrpg.ru` (статическая заглушка — план
+- [x] (2026-10-16; с `id.joinrpg.ru` снята 2026-10-18) Включить заглушку для `joinrpg.ru` и `id.joinrpg.ru` (статическая заглушка — план
       инженеров) —
       **до** того, как в секрете `joinrpg-main` появится новая база ([деплой](#деплой)). Ответ 503
       с `Retry-After`. 2026-10-16: заглушка отдаётся на `joinrpg.ru` и `id.joinrpg.ru`, но с кодом
-      200, а не 503.
+      200, а не 503 (на 2026-10-18 так и осталось).
 - [ ] DNS боевых доменов на 176.53.231.74: `joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru` —
-      готово (2026-10-16); **`www.joinrpg.ru` в зоне нет — не резолвится** (на 2026-10-18 тоже) — запись в PR [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5).
+      готово (2026-10-16); `www.joinrpg.ru` резолвится с вечера 2026-10-18 (HTTP — 301 на `joinrpg.ru`),
+      хотя [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5) с этой записью ещё не влит — видимо, заведена в панели; перед apply infra#5 сверить, чтобы не было конфликта.
       У `components.joinrpg.ru` на Gateway нет сертификата (`TRAEFIK DEFAULT CERT`).
 - [x] (2026-10-16) DNS: `components.joinrpg.ru` и dev-хосты (`dev.joinrpg.ru`, `devid.joinrpg.ru`,
       `dev-components.joinrpg.ru`) — на 176.53.231.74: PR
@@ -278,7 +279,7 @@
       временно недоступны» ([почему](#вход-в-idportal)). 2026-10-18: заглушка ещё со старым текстом
       («ожидаем завершения работ к 18 октября»), про id.joinrpg.ru в ней ничего нет.
 - [x] (2026-10-18) Выключить заглушку для `id.joinrpg.ru` — IdPortal отвечает, `/health` Healthy, сертификат LE.
-- [ ] Проверить вход через `id.joinrpg.ru` на kogda-igra.ru.
+- [x] (2026-10-18) Проверить вход через `id.joinrpg.ru` на kogda-igra.ru.
 
 ### Фаза 6. 🚧 Открыть `joinrpg.ru`
 
