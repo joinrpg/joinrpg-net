@@ -1,133 +1,15 @@
-@using JoinRpg.Web.ProjectMasterTools.Acl
-@using JoinRpg.Web.ProjectCommon
-@using JoinRpg.Web.ProjectCommon.Masters
-@model JoinRpg.Web.Models.Masters.MastersListViewModel
+@using JoinRpg.Web.Games.Projects
+@model ProjectMastersViewModel
 @{
     ViewBag.Title = "Мастера";
 }
 
-<h2>@ViewBag.Title</h2>
+<component type="typeof(ProjectMastersPanel)" render-mode="Static" param-Model="@Model" />
 
-@if (Model.CanCurrentUserGrantRights)
+@if (Model.ViewerIsMaster)
 {
-    <p>
-        Чтобы добавить мастера в проект, найдите его поиском (в главном меню) по email, нику или ФИО.
-    </p>
+    @* Мастер видит здесь то же, что игроки; права, заявки и свой профиль мастера — на мастерской странице (ADR019, §7). *@
+    <div class="alert alert-info">
+        <a asp-action="Manage" asp-route-projectId="@Model.ProjectId.Value">Редактировать мастеров</a>
+    </div>
 }
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Masters.First().UserDetails)
-        </th>
-        <th class="hidden-xs" colspan="2">
-            Права доступа
-        </th>
-        <th>
-        </th>
-    </tr>
-
-    @foreach (var item in Model.Masters)
-    {
-        <tr>
-            <td>
-                @* Роль — над карточкой: под ней из-за отступа панели подпись читается как начало следующей строки. *@
-                <div>
-                    <b>@item.Role</b>
-                    @if (!item.IsPublic)
-                    {
-                        <span class="label label-default" title="Непубличного мастера видят только мастера проекта">скрыт от игроков</span>
-                    }
-                </div>
-                <component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@item.UserDetails" />
-            </td>
-            <td class="hidden-xs">
-                @foreach (var badge in item.Badges.Take(item.Badges.Length / 2))
-                {
-                    <component type="typeof(PermissionBadge)" param-Model="badge" render-mode="Static" />
-                }
-            </td>
-            <td class="hidden-xs">
-                @foreach (var badge in item.Badges.Skip(item.Badges.Length / 2))
-                {
-                    <component type="typeof(PermissionBadge)" param-Model="badge" render-mode="Static" />
-                }
-            </td>
-            <td>
-
-
-              @if (item.ClaimsCount > 0)
-              {
-                <div>
-                  @Html.ActionLink(
-                           CountHelper.DisplayCount(item.ClaimsCount, "заявка", "заявки", "заявок"),
-                           "Responsible", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null)
-                  <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null))</span>
-                </div>
-              }
-              @if (item.ResponsibleFor.Any())
-              {
-                <div>
-                  <b>Отв. мастер</b>:
-                  @{ var isFirstGroup = true; }
-                  @foreach (var group in item.ResponsibleFor)
-                  {
-                    if (!isFirstGroup)
-                    {
-                      @:,
-                    }
-                    isFirstGroup = false;
-                    <component type="typeof(CharacterGroupLink)" param-Model="group" render-mode="Static" />
-                  }
-                </div>
-              }
-              <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@item.ProjectId" asp-route-masterId="@item.UserId" class="btn btn-default btn-sm">
-                Подписки
-              </a>
-              @if (Model.CanCurrentUserGrantRights)
-               {
-                 <a href="@Url.Action("Edit", new {item.ProjectId, userId = item.UserId})" class="btn btn-default btn-sm">
-                            <join-icon icon="Edit" /> Изменить
-                        </a>
-               }
-              else if (item.UserId == Model.CurrentUserId)
-              {
-                 @* Свой профиль (роль, описание, публичность) мастер правит сам, ADR019 *@
-                 <a href="@Url.Action("Edit", new {item.ProjectId, userId = item.UserId})" class="btn btn-default btn-sm">
-                            <join-icon icon="Edit" /> Мой профиль
-                        </a>
-              }
-              @if (Model.CanCurrentUserGrantRights && Model.Masters.Count > 1)
-              {
-                  @* Порядок мастеров (ADR019, §5): JoinMoveControl, как в сетке ролей. *@
-                  <component type="typeof(MastersMoveControl)"
-                             render-mode="WebAssembly"
-                             param-Masters="@Model.MoveItems"
-                             param-Self="@item.MasterId" />
-              }
-
-              @if (item.UserId == Model.CurrentUserId)
-              {
-
-                    if (Model.AnyoneElseCanGrantRights)
-                    {
-                        <a href="@Url.Action("RemoveYourself", new {item.ProjectId, userId = item.UserId})" class="btn btn-danger btn-sm">
-                            <join-icon icon="Delete" /> Уйти из мастеров
-                        </a>
-                    }
-                    else
-                    {
-                     @* Нельзя удалять себя, если ты последний пользователь с правами*@   
-                    }
-                }
-              else if (Model.CanCurrentUserGrantRights)
-              {
-                  <a href="@Url.Action("Delete", new {item.ProjectId, userId = item.UserId})" class="btn btn-danger btn-sm">
-                    <join-icon icon="Delete" /> Снять доступ
-                  </a>
-              }
-            </td>
-
-        </tr>
-    }
-
-</table>

@@ -34,6 +34,8 @@ public class RoutingTests(IntegrationTestPortalFactory factory)
     [InlineData(typeof(AccommodationPrintController), nameof(AccommodationPrintController.MainReport), "{projectId}/rooms/report")]
     [InlineData(typeof(AccommodationTypeController), nameof(AccommodationTypeController.AddRoomType), "{projectId}/rooms/AddRoomType")]
     [InlineData(typeof(AclController), nameof(AclController.Add), "{projectId}/masters/add/{userId}")]
+    [InlineData(typeof(AclController), nameof(AclController.Index), "{projectId}/masters")]
+    [InlineData(typeof(AclController), nameof(AclController.Manage), "{projectId}/masters/manage")]
     [InlineData(typeof(CharacterController), nameof(CharacterController.Details), "{projectId}/character/{characterid}", "{projectId}/character/{characterid}/details")]
     [InlineData(typeof(CharacterListController), nameof(CharacterListController.Active), "{projectId}/characters/Active")]
     [InlineData(typeof(CheckInController), nameof(CheckInController.Setup), "{projectId}/checkin/Setup")]

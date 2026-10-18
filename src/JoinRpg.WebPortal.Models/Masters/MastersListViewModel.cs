@@ -19,6 +19,8 @@ public class MastersListViewModel
 
     public int CurrentUserId { get; }
 
+    public int ProjectId { get; }
+
     public MastersListViewModel(
         IReadOnlyCollection<ClaimCountByMaster> claims,
         ICurrentUserAccessor currentUser,
@@ -44,5 +46,6 @@ public class MastersListViewModel
         AnyoneElseCanGrantRights = Masters.Any(x => x.CanGrantRights && x.UserId != currentUser.UserId);
 
         CurrentUserId = currentUser.UserId;
+        ProjectId = projectInfo.ProjectId.Value;
     }
 }

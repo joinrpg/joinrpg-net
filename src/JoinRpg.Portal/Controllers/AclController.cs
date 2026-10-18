@@ -49,8 +49,7 @@ public class AclController(
     }
 
     /// <summary>
-    /// Список мастеров виден всем, включая анонимов (ADR019).
-    /// Права, заявки и управление — только мастерам проекта; админ сайта, не мастер проекта, видит публичную часть.
+    /// Публичный список мастеров — один для всех, включая анонимов и самих мастеров проекта (ADR019, §7).
     /// </summary>
     [AllowAnonymous]
     [HttpGet]
@@ -58,22 +57,29 @@ public class AclController(
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var profiles = await masterProfileRepository.GetMasterProfiles(projectId);
+        var viewerId = currentUserAccessor.UserIdentificationOrDefault;
+        // Markdown и пользователей грузим только тех, кого покажем: публичных.
+        var visible = projectInfo.PublicMasters.Select(m => m.UserId).ToHashSet();
+        var publicProfiles = profiles.Where(p => visible.Contains(p.UserId)).ToDictionary(
+            p => p.UserId,
+            p => new ProjectMasterProfileViewModel(p.Role.Value, p.Description is null ? null : p.Description.ToHtmlString()));
+        var users = (await userRepository.GetUserInfos([.. visible])).ToDictionary(u => u.UserId);
+        var viewer = viewerId is null ? null : await userRepository.GetUserInfo(viewerId);
+        var model = ProjectMastersViewModel.Build(projectInfo, viewerId, viewer, publicProfiles, users);
+        await profileAvatars.Fill(model.Masters.Select(m => m.Details));
+        return View(model);
+    }
 
-        if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))
-        {
-            var viewerId = currentUserAccessor.UserIdentificationOrDefault;
-            // Markdown и пользователей грузим только тех, кого покажем: немастеру — только публичных.
-            var visible = projectInfo.PublicMasters.Select(m => m.UserId).ToHashSet();
-            var publicProfiles = profiles.Where(p => visible.Contains(p.UserId)).ToDictionary(
-                p => p.UserId,
-                p => new ProjectMasterProfileViewModel(p.Role.Value, p.Description is null ? null : p.Description.ToHtmlString()));
-            var users = (await userRepository.GetUserInfos([.. visible])).ToDictionary(u => u.UserId);
-            var viewer = viewerId is null ? null : await userRepository.GetUserInfo(viewerId);
-            var publicModel = ProjectMastersViewModel.Build(projectInfo, viewer, publicProfiles, users);
-            await profileAvatars.Fill(publicModel.Masters.Select(m => m.Details));
-            return View("PublicIndex", publicModel);
-        }
-
+    /// <summary>
+    /// Мастерская страница: права, заявки, ответственные, подписки, свой профиль и управление — всем мастерам проекта;
+    /// менять других мастеров — с правом выдавать доступ (ADR019, §7).
+    /// </summary>
+    [HttpGet("manage")]
+    [RequireMaster]
+    public async Task<ActionResult> Manage(ProjectIdentification projectId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var profiles = await masterProfileRepository.GetMasterProfiles(projectId);
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
         var masterUsers = await userRepository.GetRequiredUserInfos([.. projectInfo.Masters.Select(m => m.UserId)]);
 
@@ -131,7 +137,7 @@ public class AclController(
             //We are removing ourself, need to redirect to public page
             return RedirectToIndex(projectId);
         }
-        return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
+        return RedirectToAction(nameof(Manage), "Acl", new { viewModel.ProjectId });
     }
 
     [HttpGet("leave")]
