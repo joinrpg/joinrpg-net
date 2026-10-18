@@ -284,7 +284,8 @@
       (`/{projectId}/unblock`, кнопка в настройках) возвращает проект как был; «Закрыть» из
       блокировки — в архив.
 - [ ] На `joinrpg.tsarevs.ru`: оболочка нового проекта, регистрация нового проекта, `/Admin/Jobs`.
-- [ ] Инструкция для мастеров на docs.joinrpg.ru — [docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290).
+- [ ] Инструкция для мастеров — опубликована https://docs.joinrpg.ru/recovery-2026.html ([docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290),
+      [docs#291](https://github.com/joinrpg/joinrpg-docs/pull/291)); ссылки из баннера ([#5607](https://github.com/joinrpg/joinrpg-net/issues/5607)) и из UI заблокированного проекта.
 - [ ] Выключить заглушку для `joinrpg.ru`.
 
 ### Фазы 7–9 — по каждому проекту
@@ -806,7 +807,8 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) | Служебные домены dev: `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` | 2 | влит |
 | [infra#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) | DNS служебных доменов prod и dev (terraform) | 2 | влит, apply сделан |
 | [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5) | Зона `joinrpg.ru`: одна SPF-запись, битая `yandex-verification`, `www.joinrpg.ru` (terraform) | 2 | на ревью, после мерджа — apply |
-| [#5604](https://github.com/joinrpg/joinrpg-net/issues/5604) | Страница снятия блокировки: предупреждение про «Восстановление проекта» | 6 | открыт |
+| [#5604](https://github.com/joinrpg/joinrpg-net/issues/5604) | Страница снятия блокировки: предупреждение про «Восстановление проекта» | 6 | влит |
+| [#5607](https://github.com/joinrpg/joinrpg-net/issues/5607) | Баннер: ссылка на инструкцию для мастеров на docs.joinrpg.ru | 6 | открыт |
 | issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
 | issue [docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290) | Инструкция для мастеров на docs.joinrpg.ru | 6 | заведён |
 | issue [infra#6](https://github.com/joinrpg/joinrpg-infrastructure/issues/6) | Убрать DNAME на апексе `joinrpg.ru` (остаток хостинга в Yandex Object Storage) | 2 | заведён |
