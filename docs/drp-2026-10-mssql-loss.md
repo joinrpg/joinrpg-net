@@ -811,7 +811,9 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [infra#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) | DNS служебных доменов prod и dev (terraform) | 2 | влит, apply сделан |
 | [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5) | Зона `joinrpg.ru`: одна SPF-запись, битая `yandex-verification`, `www.joinrpg.ru` (terraform) | 2 | на ревью, после мерджа — apply |
 | [#5604](https://github.com/joinrpg/joinrpg-net/issues/5604) | Страница снятия блокировки: предупреждение про «Восстановление проекта» | 6 | влит |
-| [#5609](https://github.com/joinrpg/joinrpg-net/issues/5609) | Ссылки на инструкцию по восстановлению в UI заблокированного проекта | 6 | открыт |
+| [#5609](https://github.com/joinrpg/joinrpg-net/issues/5609) | Ссылки на инструкцию по восстановлению в UI заблокированного проекта | 6 | влит |
+| [docs#293](https://github.com/joinrpg/joinrpg-docs/pull/293) | Инструкция: явный якорь `#for-players` у раздела «Для игроков» | 6 | открыт |
+| [#5612](https://github.com/joinrpg/joinrpg-net/issues/5612) | Ссылка из отказа в заявке — на `#for-players` (после docs#293) | 6 | открыт |
 | [#5607](https://github.com/joinrpg/joinrpg-net/issues/5607) | Баннер: ссылка на инструкцию для мастеров на docs.joinrpg.ru | 6 | открыт |
 | issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
 | issue [docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290) | Инструкция для мастеров на docs.joinrpg.ru | 6 | заведён |
