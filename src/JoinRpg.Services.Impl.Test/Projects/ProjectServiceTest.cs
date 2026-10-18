@@ -239,4 +239,93 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
+
+    // ADR023: настройки со страницы настроек проекта доступны и на время восстановления.
+    [Fact]
+    public async Task EditProject_Blocked_Allowed()
+    {
+        mock.Project.IsBlocked = true;
+
+        await CreateService().EditProject(new EditProjectRequest
+        {
+            ProjectId = ProjectId,
+            ProjectName = "Новое название",
+            ClaimApplyRules = "",
+            ProjectAnnounce = "",
+        });
+
+        Result.ProjectName.Value.ShouldBe("Новое название");
+    }
+
+    [Fact]
+    public async Task SetAccommodationSettings_Blocked_Allowed()
+    {
+        mock.Project.IsBlocked = true;
+
+        await CreateService().SetAccommodationSettings(ProjectId, enableAccommodation: true);
+
+        Result.AccommodationSettings.Enabled.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task SetContactSettings_Blocked_Allowed()
+    {
+        mock.Project.IsBlocked = true;
+
+        await CreateService().SetContactSettings(ProjectId,
+            ProjectProfileRequirementSettings.AllNotRequired with { RequirePhone = MandatoryStatus.Required });
+
+        Result.ProfileRequirementSettings.RequirePhone.ShouldBe(MandatoryStatus.Required);
+    }
+
+    [Fact]
+    public async Task SetClaimSettings_Blocked_Allowed()
+    {
+        mock.Project.IsBlocked = true;
+
+        await CreateService().SetClaimSettings(ProjectId, new ProjectClaimSettings(
+            DefaultTemplate: null,
+            StrictlyOneCharacter: true,
+            AutoAcceptClaims: false,
+            IsAcceptingClaims: true,
+            IsPublicProject: false));
+
+        Result.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
+        Result.ProjectStatus.ShouldBe(ProjectLifecycleStatus.Blocked);
+    }
+
+    [Fact]
+    public async Task SetTimeZone_Blocked_Allowed()
+    {
+        mock.Project.IsBlocked = true;
+
+        await CreateService().SetTimeZone(ProjectId, TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg"));
+
+        Result.TimeZone.Id.ShouldBe("Asia/Yekaterinburg");
+    }
+
+    [Fact]
+    public async Task SetPublishSettings_Blocked_Allowed()
+    {
+        mock.Project.IsBlocked = true;
+
+        await CreateService().SetPublishSettings(ProjectId, ProjectCloneSettings.CanBeClonedByAnyone, publishEnabled: true);
+
+        Result.CloneSettings.ShouldBe(ProjectCloneSettings.CanBeClonedByAnyone);
+        Result.PublishPlot.ShouldBeFalse();
+    }
+
+    // Регистрация настраивается на своей странице и в блокировке закрыта.
+    [Fact]
+    public async Task SetCheckInSettings_Blocked_Throws()
+    {
+        mock.Project.IsBlocked = true;
+
+        await Should.ThrowAsync<ProjectBlockedException>(() => CreateService().SetCheckInSettings(ProjectId,
+            checkInProgress: true,
+            enableCheckInModule: true,
+            modelAllowSecondRoles: true));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
 }
