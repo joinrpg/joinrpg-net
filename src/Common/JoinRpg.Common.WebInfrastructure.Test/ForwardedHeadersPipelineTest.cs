@@ -21,7 +21,8 @@ public class ForwardedHeadersPipelineTest
     {
         await using var app = await StartApp();
 
-        var context = await Send(app, "/", forwardedFor: "8.8.8.8");
+        // С X-Forwarded-Proto: https, как у настоящего прокси, — иначе запрос завернёт редирект на https
+        var context = await Send(app, "/", forwardedFor: "8.8.8.8", forwardedProto: "https");
 
         context.Response.Headers[RemoteIpHeader].ToString().ShouldBe("8.8.8.8");
     }
@@ -166,7 +167,7 @@ public class ForwardedHeadersPipelineTest
     {
         var builder = WebApplication.CreateBuilder();
         _ = builder.WebHost.UseTestServer();
-        _ = builder.Services.AddJoinForwardedHeaders();
+        _ = builder.Services.AddJoinForwardedHeaders(builder.Environment);
 
         var app = builder.Build();
         _ = app.Use((context, next) =>

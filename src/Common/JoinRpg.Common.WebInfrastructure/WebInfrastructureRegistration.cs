@@ -65,7 +65,7 @@ public static class WebInfrastructureRegistration
         }
 
         // До robots.txt: фильтры конвейера применяются в порядке регистрации, ForwardedHeaders должны идти первыми
-        _ = services.AddJoinForwardedHeaders();
+        _ = services.AddJoinForwardedHeaders(environment);
 
         services.AddJoinHealthChecks();
 
