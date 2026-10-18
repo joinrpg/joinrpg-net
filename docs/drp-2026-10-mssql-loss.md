@@ -114,8 +114,8 @@
       `dev.joinrpg.ru`, `devid.joinrpg.ru`, `dev.joinrpg.tsarevs.ru` отвечают по HTTPS. Редирект
       HTTP → HTTPS в самом приложении — [#5588](https://github.com/joinrpg/joinrpg-net/issues/5588) (открыт; до него [#5587](https://github.com/joinrpg/joinrpg-net/issues/5587), [#5590](https://github.com/joinrpg/joinrpg-net/issues/5590) — метрика
       запросов из локальной сети, чтобы проверить `X-Forwarded-Proto`).
-- [ ] Dev: админ вручную (`UserAuthDetails.IsAdmin`), загрузка аватарки. Старый `KUBECONFIG` из
-      окружения `dev` удалён (2026-10-16); в `prod` — удалить после первого деплоя прода.
+- [x] (2026-10-18) Dev: админ вручную (`UserAuthDetails.IsAdmin`), загрузка аватарки. Старый `KUBECONFIG`
+      удалён из окружений `dev` (2026-10-16) и `prod` (2026-10-18).
 - [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
       секрет `joinrpg-main`.
 - [x] (2026-10-16) Отправка почты: пока остаётся Yandex Postbox — из Selectel работает (проверено на dev, прежние
