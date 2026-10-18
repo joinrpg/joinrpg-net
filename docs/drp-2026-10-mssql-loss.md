@@ -93,7 +93,9 @@
       ([подробнее](#аватарки)).
       DNS: `avatars.joinrpg.ru` (бакет `joinrpg-prod-avatars`) и `avatars.dev.joinrpg.ru`
       (`joinrpg-dev-avatars`) — CNAME на `access.ru-6.storage.selcloud.ru`; на 2026-10-18
-      **оба ещё не резолвятся**. Объекты из бакета Yandex скопированы (2026-10-18, со слов
+      (повторно, вечер) `avatars.joinrpg.ru` → 176.53.231.74, сертификат LE, Gateway отвечает 301 на
+      публичный домен бакета `…selstorage.ru/<ключ>` (несуществующий ключ — 404, бакет публичный);
+      **`avatars.dev.joinrpg.ru` не резолвится**. Объекты из бакета Yandex скопированы (2026-10-18, со слов
       инженеров) — проверить старой аватаркой, когда заработает домен.
 - [ ] Облачные логи: stdout подов, разделение по namespace. На 2026-10-16 k8s-логи никуда не пишутся
       ([#5589](https://github.com/joinrpg/joinrpg-net/issues/5589) — пометка в скилле `prod-logs`).
