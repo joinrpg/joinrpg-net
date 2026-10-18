@@ -151,7 +151,7 @@ public class ManualFinanceApplierTest
             new(Claim, new ClaimCommentIdentification(Claim, 502), At.AddDays(-10), Master, ClaimNotificationKind.ClaimChange, null, null,
                 DomainTypes.Characters.Claims.CommentExtraAction.ApproveFinance, ClaimEventAuthor.Master, null, null, "", []),
         };
-        FinanceSourceBuilder.NotifiedCommentIds(events, At.AddDays(-1)).ShouldBe([500]);
+        FinanceRestorePlanner.NotifiedCommentIds(events, At.AddDays(-1)).ShouldBe([500]);
 
         var lookup = new ClaimFinanceRestoreLookup(
             [Claim], [], [], [], [CashType()], [new MoneyMasterForRestore(Master, IsOwner: true)]);

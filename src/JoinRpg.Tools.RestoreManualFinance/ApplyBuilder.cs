@@ -1,10 +1,10 @@
 using System.Globalization;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
-using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Drp.ManualFinance;
 using JoinRpg.Services.Interfaces.Drp;
+using JoinRpg.WebPortal.Managers.Drp;
 
 namespace JoinRpg.Tools.RestoreManualFinance;
 
@@ -36,21 +36,26 @@ internal record ProjectCsvDecisions(
 }
 
 /// <summary>
-/// Вход <see cref="IClaimRestoreService.RestoreFinanceOperations"/> по одной заявке и судьба каждой строки
-/// плана, которая в него не попала.
+/// Вход <see cref="IClaimRestoreService.RestoreFinanceOperations"/> по одной заявке
+/// (<see cref="FinanceRestoreInputBuilder.BuildClaim"/>) и судьба каждой строки плана, которая в него не попала, —
+/// с текстом для отчёта, включая причины, которые есть только у CSV.
 /// </summary>
-/// <param name="OperationKeys">Ключи операций — в порядке <paramref name="Operations"/>.</param>
-/// <param name="ModerationKeys">Ключи модераций — в порядке <paramref name="Moderations"/>.</param>
 /// <param name="NotPassed">Строки плана, которые не передаются, — с причиной.</param>
-internal record ClaimRestoreInput(
-    ClaimIdentification ClaimId,
-    IReadOnlyList<RestoredFinanceOperation> Operations,
-    IReadOnlyList<string> OperationKeys,
-    IReadOnlyList<RestoredFinanceModeration> Moderations,
-    IReadOnlyList<string> ModerationKeys,
-    IReadOnlyDictionary<string, ApplyOutcome> NotPassed)
+internal record ClaimRestoreInput(ClaimFinanceRestoreInput Domain, IReadOnlyDictionary<string, ApplyOutcome> NotPassed)
 {
-    public bool IsEmpty => Operations.Count == 0 && Moderations.Count == 0;
+    public ClaimIdentification ClaimId => Domain.ClaimId;
+
+    public IReadOnlyList<RestoredFinanceOperation> Operations => Domain.Operations;
+
+    /// <summary>Ключи операций — в порядке <see cref="Operations"/>.</summary>
+    public IReadOnlyList<string> OperationKeys => Domain.OperationKeys;
+
+    public IReadOnlyList<RestoredFinanceModeration> Moderations => Domain.Moderations;
+
+    /// <summary>Ключи модераций — в порядке <see cref="Moderations"/>.</summary>
+    public IReadOnlyList<string> ModerationKeys => Domain.ModerationKeys;
+
+    public bool IsEmpty => Domain.IsEmpty;
 }
 
 /// <summary>Сопоставление проверенного CSV с заново построенным планом и сборка входа доменного сервиса.</summary>
@@ -120,10 +125,10 @@ internal static class ApplyBuilder
                     continue;
                 }
             }
-            // Доменный возврат бывает только подтверждённым — заявленный игроком возврат разбирать вручную.
-            if (operation.Type == FinanceOperationType.Refund && operation.State != FinanceOperationState.Approved)
+            // Неприменимая операция (например, неподтверждённый возврат) не должна создать тип «наличные».
+            if (operation.NotApplicableReason() is { } reason)
             {
-                notApplicable[row.Key] = ApplyOutcome.Skipped("возврат не подтверждён мастером — разобрать вручную");
+                notApplicable[row.Key] = SkipOutcome(reason);
                 continue;
             }
             choices[row.Key] = choice;
@@ -138,10 +143,9 @@ internal static class ApplyBuilder
     }
 
     /// <summary>
-    /// Вход доменного сервиса по заявке. Передаются только операции со статусом
-    /// <see cref="FinanceRestoreStatus.Restore"/> и выбранным типом и модерации со статусом
-    /// <see cref="FinanceRestoreStatus.Restore"/>, кроме решений по операциям, которые не вставляются или
-    /// не восстанавливаются в этом прогоне.
+    /// Вход доменного сервиса по заявке (<see cref="FinanceRestoreInputBuilder.BuildClaim"/>). Строки, которые
+    /// не проходят по CSV (нет в CSV, неоднозначный ключ, ошибка или отсутствие типа, не создан тип «наличные»),
+    /// отсеиваются заранее — решения по отсеянным операциям откладываются так же, как по непереданным.
     /// </summary>
     /// <param name="cashTypes">Созданные (или найденные) типы «наличные» по владельцу.</param>
     public static ClaimRestoreInput BuildClaim(
@@ -149,157 +153,120 @@ internal static class ApplyBuilder
         ProjectCsvDecisions decisions,
         IReadOnlyDictionary<UserIdentification, PaymentTypeIdentification> cashTypes)
     {
+        // По индексу в плане: ключи могут повторяться.
+        var csvOperations = row.Operations.Select(o => CsvOutcome(o, decisions, cashTypes)).ToList();
+        var csvModerations = row.Moderations.Select(m => CsvOutcome(m.Status, m.Key, decisions)).ToList();
+
+        var domain = FinanceRestoreInputBuilder.BuildClaim(
+            row with
+            {
+                Operations = [.. row.Operations.Where((_, i) => csvOperations[i] is null)],
+                Moderations = [.. row.Moderations.Where((_, i) => csvModerations[i] is null)],
+            },
+            operation => PaymentType(operation, row.ClaimId.ProjectId, decisions, cashTypes));
+
+        // В порядке плана: при повторе ключа в отчёт попадает последняя строка.
         var notPassed = new Dictionary<string, ApplyOutcome>();
-        var operations = new List<RestoredFinanceOperation>();
-        var operationKeys = new List<string>();
-        var passedIndex = new Dictionary<string, int>();
-
-        foreach (var operation in row.Operations)
+        for (var i = 0; i < row.Operations.Count; i++)
         {
-            if (operation.Status != FinanceRestoreStatus.Restore)
+            var key = row.Operations[i].Key;
+            if (csvOperations[i] is { } outcome)
             {
-                notPassed[operation.Key] = NotRestored(operation.Status);
-                continue;
+                notPassed[key] = outcome;
             }
-            if (!decisions.KeysInCsv.Contains(operation.Key))
+            else if (domain.NotPassed.TryGetValue(key, out var reason))
             {
-                notPassed[operation.Key] = ApplyOutcome.Skipped(NotInCsv);
-                continue;
+                notPassed[key] = SkipOutcome(reason);
             }
-            if (decisions.NotApplicable.TryGetValue(operation.Key, out var notApplicable))
+        }
+        for (var i = 0; i < row.Moderations.Count; i++)
+        {
+            var moderation = row.Moderations[i];
+            if (csvModerations[i] is { } outcome)
             {
-                notPassed[operation.Key] = notApplicable;
-                continue;
+                notPassed[moderation.Key] = outcome;
             }
-            if (!decisions.Choices.TryGetValue(operation.Key, out var choice))
+            else if (domain.NotPassed.TryGetValue(moderation.Key, out var reason))
             {
-                notPassed[operation.Key] = ApplyOutcome.Skipped("не задан тип оплаты");
-                continue;
+                notPassed[moderation.Key] = SkipOutcome(reason, moderation.TargetOperationKey);
             }
-
-            PaymentTypeIdentification paymentType;
-            if (choice.PaymentTypeId is int id)
-            {
-                paymentType = new PaymentTypeIdentification(row.ClaimId.ProjectId, id);
-            }
-            else if (cashTypes.TryGetValue(choice.CashFor!, out var cash))
-            {
-                paymentType = cash;
-            }
-            else
-            {
-                notPassed[operation.Key] = ApplyOutcome.Error($"не создан тип «наличные» на {choice.Format()}");
-                continue;
-            }
-
-            passedIndex[operation.Key] = operations.Count;
-            operationKeys.Add(operation.Key);
-            operations.Add(new RestoredFinanceOperation(
-                operation.OperationId,
-                operation.Initiator,
-                IsCommentByPlayer: operation.IsByPlayer,
-                operation.Type,
-                operation.Money!.Value,
-                paymentType,
-                operation.State,
-                operation.CreatedAt,
-                ChangedAt: operation.ModeratedAt ?? operation.CreatedAt,
-                operation.Text));
         }
 
-        var moderations = new List<RestoredFinanceModeration>();
-        var moderationKeys = new List<string>();
-        foreach (var moderation in row.Moderations)
-        {
-            if (moderation.Status != FinanceRestoreStatus.Restore)
-            {
-                notPassed[moderation.Key] = NotRestored(moderation.Status);
-                continue;
-            }
-            if (!decisions.KeysInCsv.Contains(moderation.Key))
-            {
-                notPassed[moderation.Key] = ApplyOutcome.Skipped(NotInCsv);
-                continue;
-            }
-            if (decisions.NotApplicable.TryGetValue(moderation.Key, out var notApplicable))
-            {
-                notPassed[moderation.Key] = notApplicable;
-                continue;
-            }
-
-            var (parentId, parentIndex, skip) = Parent(moderation, operations, passedIndex);
-            if (skip is not null)
-            {
-                notPassed[moderation.Key] = ApplyOutcome.Skipped(skip);
-                continue;
-            }
-
-            moderationKeys.Add(moderation.Key);
-            moderations.Add(new RestoredFinanceModeration(
-                moderation.CommentId,
-                moderation.Initiator,
-                moderation.Approved,
-                moderation.CreatedAt,
-                moderation.Text,
-                ParentOperationId: parentId,
-                ParentRestoredIndex: parentIndex));
-        }
-
-        return new ClaimRestoreInput(row.ClaimId, operations, operationKeys, moderations, moderationKeys, notPassed);
+        return new ClaimRestoreInput(domain, notPassed);
     }
 
-    /// <summary>
-    /// Родитель модерации — не больше чем одним способом (как требует доменный сервис), либо причина пропуска.
-    /// Решение, которое не связалось с операцией (не найдена, неоднозначно, запрос льготы только из
-    /// уведомления), передаётся без родителя: вставится комментарий, состояние ничьё не изменится.
-    /// Решение по невставляемой или пропущенной в этом прогоне операции откладывается.
-    /// </summary>
-    private static (int? ParentId, int? ParentIndex, string? Skip) Parent(
-        FinanceModerationToRestore moderation,
-        List<RestoredFinanceOperation> operations,
-        Dictionary<string, int> passedIndex)
+    /// <summary>Причина не передавать строку, которая есть только у CSV; null — решает общая сборка.</summary>
+    private static ApplyOutcome? CsvOutcome(FinanceRestoreStatus status, string key, ProjectCsvDecisions decisions)
     {
-        switch (moderation.Link)
+        if (status != FinanceRestoreStatus.Restore)
         {
-            case FinanceModerationLink.RestoredOperation:
-                if (moderation.TargetOperationKey is { } key && passedIndex.TryGetValue(key, out var index))
-                {
-                    return operations[index].OperationId is int id ? (id, null, null) : (null, index, null);
-                }
-                return (null, null, $"операция {moderation.TargetOperationKey} в этом прогоне не восстанавливается — решение вставится вместе с ней");
-            case FinanceModerationLink.ExistingOperation or FinanceModerationLink.Preferential when moderation.TargetOperationId is int existingId:
-                return (existingId, null, null);
-            case FinanceModerationLink.Preferential or FinanceModerationLink.NotFound or FinanceModerationLink.Ambiguous:
-                return (null, null, null);
-            case FinanceModerationLink.NotRestoredOperation:
-                return (null, null, $"операция {moderation.TargetOperationKey} не вставляется — разобрать вручную");
-            default:
-                return (null, null, "операция решения не определена — разобрать вручную");
+            return null;
         }
+        if (!decisions.KeysInCsv.Contains(key))
+        {
+            return ApplyOutcome.Skipped(NotInCsv);
+        }
+        return decisions.NotApplicable.GetValueOrDefault(key);
     }
 
-    private static ApplyOutcome NotRestored(FinanceRestoreStatus status) => status switch
+    private static ApplyOutcome? CsvOutcome(
+        FinanceOperationToRestore operation,
+        ProjectCsvDecisions decisions,
+        IReadOnlyDictionary<UserIdentification, PaymentTypeIdentification> cashTypes)
     {
-        FinanceRestoreStatus.AlreadyExists => new ApplyOutcome("уже есть"),
-        FinanceRestoreStatus.Conflict => ApplyOutcome.Skipped("id занят в базе другим"),
-        FinanceRestoreStatus.InvalidMoney => ApplyOutcome.Skipped("некорректная сумма"),
-        _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
+        if (operation.Status != FinanceRestoreStatus.Restore)
+        {
+            return null;
+        }
+        if (CsvOutcome(operation.Status, operation.Key, decisions) is { } outcome)
+        {
+            return outcome;
+        }
+        if (!decisions.Choices.TryGetValue(operation.Key, out var choice))
+        {
+            return SkipOutcome(FinanceRestoreSkipReason.NoPaymentType);
+        }
+        if (choice.PaymentTypeId is null && !cashTypes.ContainsKey(choice.CashFor!))
+        {
+            return ApplyOutcome.Error($"не создан тип «наличные» на {choice.Format()}");
+        }
+        return null;
+    }
+
+    private static PaymentTypeIdentification? PaymentType(
+        FinanceOperationToRestore operation,
+        ProjectIdentification projectId,
+        ProjectCsvDecisions decisions,
+        IReadOnlyDictionary<UserIdentification, PaymentTypeIdentification> cashTypes)
+    {
+        if (!decisions.Choices.TryGetValue(operation.Key, out var choice))
+        {
+            return null;
+        }
+        return choice.PaymentTypeId is int id
+            ? new PaymentTypeIdentification(projectId, id)
+            : cashTypes.GetValueOrDefault(choice.CashFor!);
+    }
+
+    /// <param name="targetOperationKey">Ключ операции решения — для причин про родителя модерации.</param>
+    private static ApplyOutcome SkipOutcome(FinanceRestoreSkipReason reason, string? targetOperationKey = null) => reason switch
+    {
+        FinanceRestoreSkipReason.AlreadyExists => new ApplyOutcome("уже есть"),
+        FinanceRestoreSkipReason.Conflict => ApplyOutcome.Skipped("id занят в базе другим"),
+        FinanceRestoreSkipReason.InvalidMoney => ApplyOutcome.Skipped("некорректная сумма"),
+        FinanceRestoreSkipReason.RefundNotApproved => ApplyOutcome.Skipped("возврат не подтверждён мастером — разобрать вручную"),
+        FinanceRestoreSkipReason.NoPaymentType => ApplyOutcome.Skipped("не задан тип оплаты"),
+        FinanceRestoreSkipReason.ParentNotRestoredInThisRun => ApplyOutcome.Skipped($"операция {targetOperationKey} в этом прогоне не восстанавливается — решение вставится вместе с ней"),
+        FinanceRestoreSkipReason.ParentNotInserted => ApplyOutcome.Skipped($"операция {targetOperationKey} не вставляется — разобрать вручную"),
+        FinanceRestoreSkipReason.ParentUnknown => ApplyOutcome.Skipped("операция решения не определена — разобрать вручную"),
+        // Повторы ключа консоль отсекает раньше (Match), сюда они не доходят — но подпись та же.
+        FinanceRestoreSkipReason.AmbiguousKey => ApplyOutcome.Skipped(AmbiguousKey),
+        _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, null),
     };
 
     /// <summary>Исход каждой переданной строки по ответу доменного сервиса.</summary>
     public static IReadOnlyDictionary<string, ApplyOutcome> Outcomes(ClaimRestoreInput input, RestoredFinanceResult result)
-    {
-        var outcomes = new Dictionary<string, ApplyOutcome>();
-        for (var i = 0; i < input.OperationKeys.Count; i++)
-        {
-            outcomes[input.OperationKeys[i]] = Outcome(result.Operations[i]);
-        }
-        for (var i = 0; i < input.ModerationKeys.Count; i++)
-        {
-            outcomes[input.ModerationKeys[i]] = Outcome(result.Moderations[i]);
-        }
-        return outcomes;
-    }
+        => FinanceRestoreInputBuilder.Outcomes(input.Domain, result).ToDictionary(e => e.Key, e => Outcome(e.Value));
 
     private static ApplyOutcome Outcome(RestoredFinanceEntry entry)
     {
