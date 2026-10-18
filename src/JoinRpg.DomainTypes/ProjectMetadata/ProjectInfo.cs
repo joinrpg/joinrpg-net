@@ -181,7 +181,13 @@ public record class ProjectInfo
     /// остальным, включая анонима, — только публичные. Порядок — как в <see cref="Masters"/>.
     /// </summary>
     public IReadOnlyCollection<ProjectMasterInfo> GetMastersVisibleTo(UserIdentification? viewer)
-        => HasMasterAccess(viewer) ? Masters : [.. Masters.Where(m => m.IsPublic)];
+        => HasMasterAccess(viewer) ? Masters : PublicMasters;
+
+    /// <summary>
+    /// Публичные действующие мастера — то, что видят все, кто не мастер проекта (ADR019, §3).
+    /// Порядок — как в <see cref="Masters"/>.
+    /// </summary>
+    public IReadOnlyCollection<ProjectMasterInfo> PublicMasters => [.. Masters.Where(m => m.IsPublic)];
 
     public Permission[] GetMasterAccess(UserIdentification currentUser) => GetActiveMasterOrDefault(currentUser)?.Permissions ?? [];
 
