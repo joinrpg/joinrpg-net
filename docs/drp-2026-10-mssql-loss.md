@@ -313,6 +313,7 @@
 - [ ] 🟢 Загрузка выгрузок мастера (только xlsx, до 30 МБ) с датой на той же странице — слияние с
       уведомлениями: группы и персонажи с прежними id, значения полей ([#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), [#5534](https://github.com/joinrpg/joinrpg-net/issues/5534)–[#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
       Ответственного нового персонажа назначить руками после применения.
+- [ ] ⚪ Ложная пометка «Изменено после восстановления» у заявок, которые трогал только инструмент — [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619).
 - [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
       мастерские — мастер из своих материалов.
 
@@ -817,6 +818,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5612](https://github.com/joinrpg/joinrpg-net/issues/5612) | Ссылка из отказа в заявке — на `#for-players` (после docs#293) | 6 | открыт |
 | [#5607](https://github.com/joinrpg/joinrpg-net/issues/5607) | Баннер: ссылка на инструкцию для мастеров на docs.joinrpg.ru | 6 | открыт |
 | issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
+| issue [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619) | Ложная пометка «Изменено после восстановления» у заявок | 7 | заведён |
 | issue [docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290) | Инструкция для мастеров на docs.joinrpg.ru | 6 | заведён |
 | issue [infra#6](https://github.com/joinrpg/joinrpg-infrastructure/issues/6) | Убрать DNAME на апексе `joinrpg.ru` (остаток хостинга в Yandex Object Storage) | 2 | заведён |
 | [infra#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) | DNS dev-хостов и `components.joinrpg.ru` на Selectel (terraform) | 2 | влит, apply сделан |
