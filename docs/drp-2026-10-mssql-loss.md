@@ -343,7 +343,7 @@
       проектам, а мастера разблокируют в своём темпе — после разблокировки оплаты не вернуть.
 - [ ] Желательно раньше [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631): финансовые настройки в блокировке — [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), п. 2 (свои типы оплаты, не только «наличные»).
 - [ ] Пока блока нет — предупреждение «не снимайте блокировку, пока не восстановлены ручные оплаты» на странице
-      снятия блокировки и в инструкции для мастеров (в работе).
+      снятия блокировки ([#5632](https://github.com/joinrpg/joinrpg-net/issues/5632)) и в инструкции для мастеров ([docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296)).
 - [ ] Запасной путь — консольный `RestoreManualFinance` ([#5571](https://github.com/joinrpg/joinrpg-net/issues/5571); dry-run → CSV, ПДн локально → `--apply`) для
       проектов, где мастера не восстанавливают сами. Разблокированный раньше времени проект — вернуть блокировку SQL-ом
       (`UPDATE dbo.Projects SET IsBlocked = 1 WHERE ProjectId = …`), восстановить, разблокировать (так сделано с 1612, 2026-10-19).
@@ -826,6 +826,8 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5612](https://github.com/joinrpg/joinrpg-net/issues/5612) | Ссылка из отказа в заявке — на `#for-players` (после docs#293) | 6 | открыт |
 | [#5607](https://github.com/joinrpg/joinrpg-net/issues/5607) | Баннер: ссылка на инструкцию для мастеров на docs.joinrpg.ru | 6 | открыт |
 | issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
+| [#5632](https://github.com/joinrpg/joinrpg-net/issues/5632) | Страница снятия блокировки: предупреждение про ручные оплаты | 9 | открыт |
+| [docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296) | Инструкция: ручные оплаты только в заблокированном проекте | 9 | открыт |
 | issue [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631) | Блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | заведён |
 | issue [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) | Настройки поселения, типов оплаты, групп и правил в заблокированном проекте | 7 | заведён |
 | issue [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619) | Ложная пометка «Изменено после восстановления» у заявок | 7 | заведён |
