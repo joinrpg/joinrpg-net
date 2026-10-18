@@ -35,6 +35,7 @@ using JoinRpg.Services.Notifications.Senders;
 using JoinRpg.WebPortal.Managers;
 using JoinRpg.WebPortal.Managers.Drp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -148,6 +149,9 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
 
         _ = services.AddTransient<YandexLogLink>();
 
+        _ = services.AddProblemDetails();
+        _ = services.AddExceptionHandler<WebApiExceptionHandler>();
+
         _ = services.AddUserServicesOnly();
 
         _ = services
@@ -191,7 +195,13 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
               options.SupportedCultures = [new CultureInfo("ru-RU")];
           });
 
-        _ = app.UseExceptionHandler("/error");
+        _ = app.UseExceptionHandler(new ExceptionHandlerOptions
+        {
+            ExceptionHandlingPath = "/error",
+            // По умолчанию обработанное в IExceptionHandler не логируется вовсе — а сбои в /webapi/ должны попадать в логи.
+            SuppressDiagnosticsCallback = context => context.ExceptionHandledBy == ExceptionHandledType.ExceptionHandlerService
+                && WebApiExceptionHandler.IsExpectedRefusal(context.Exception),
+        });
         _ = app.UseStatusCodePagesWithReExecute("/error/{0}");
 
         _ = app.UseJoinRequestLogging();

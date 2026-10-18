@@ -66,6 +66,11 @@ public abstract class SettingsPanelBase<TModel> : ComponentBase, IDisposable
             await SaveModel(Model);
             success = true;
         }
+        catch (ServerProblemException exception)
+        {
+            success = false;
+            messageStore?.Add(() => Model, exception.Message);
+        }
         catch
         {
             success = false;
