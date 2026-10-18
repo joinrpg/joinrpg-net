@@ -1,37 +1,22 @@
-@using System.Reflection
-
 <JoinPanel>
     <Header>Версия</Header>
     <Body>
-        Версия: @version
-        @if (commitSha is not null)
+        Версия: @Version
+        @if (CommitSha is not null && CommitUrl is not null)
         {
             <br />
-            <text>Коммит: </text><a href="https://github.com/leotsarev/joinrpg-net/commit/@commitSha" target="_blank">@commitSha</a>
+            <text>Коммит: </text><a href="@CommitUrl" target="_blank">@CommitSha</a>
         }
     </Body>
 </JoinPanel>
 
 @code {
-    private string version = "неизвестна";
-    private string? commitSha;
+    [Parameter, EditorRequired]
+    public required string Version { get; set; }
 
-    protected override void OnInitialized()
-    {
-        var informationalVersion = Assembly.GetEntryAssembly()?
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion;
+    [Parameter]
+    public string? CommitSha { get; set; }
 
-        if (informationalVersion is null)
-        {
-            return;
-        }
-
-        var parts = informationalVersion.Split('+', 2);
-        version = parts[0];
-        if (parts.Length == 2)
-        {
-            commitSha = parts[1];
-        }
-    }
+    [Parameter]
+    public Uri? CommitUrl { get; set; }
 }
