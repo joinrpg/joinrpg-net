@@ -94,6 +94,9 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
     public Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
         => Task.FromResult(queueLengths ?? throw new NotSupportedException());
 
+    public Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit)
+        => isNullObject ? Task.FromResult<IReadOnlyCollection<NotificationLogItemDto>>([]) : throw new NotSupportedException();
+
     /// <summary>Добавляет уведомление по заявке — его отдаст <see cref="GetClaimNotificationsForProject"/>.</summary>
     public void AddClaimNotification(NotificationMessageForRecipient notification) => claimNotifications.Enqueue(notification);
 

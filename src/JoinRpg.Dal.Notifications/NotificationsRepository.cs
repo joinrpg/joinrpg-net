@@ -241,6 +241,49 @@ internal class NotificationsRepository(
         return counts.ToDictionary(x => x.Channel, x => x.Count);
     }
 
+    public async Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit)
+    {
+        IQueryable<NotificationMessage> query;
+        if (channel is not null)
+        {
+            // От строк канала по индексу (Channel, NotificationMessageChannelId): строки каналов вставляются вместе
+            // с сообщением, так что их id растут в том же порядке. Через EXISTS от сообщений редкий канал (Telegram)
+            // заставил бы просмотреть почти всю таблицу.
+            var channelRows = dbContext.NotificationMessageChannels.Where(c => c.Channel == channel.Value);
+            if (recipient is not null)
+            {
+                channelRows = channelRows.Where(c => c.NotificationMessage.RecipientUserId == recipient.Value);
+            }
+            var ids = channelRows
+                .OrderByDescending(c => c.NotificationMessageChannelId)
+                .Select(c => c.NotificationMessageId)
+                .Take(limit);
+            query = dbContext.Notifications.Where(m => ids.Contains(m.NotificationMessageId));
+        }
+        else
+        {
+            query = dbContext.Notifications;
+            if (recipient is not null)
+            {
+                query = query.Where(m => m.RecipientUserId == recipient.Value);
+            }
+        }
+
+        var result = await query
+            .AsNoTracking()
+            .OrderByDescending(m => m.NotificationMessageId)
+            .Take(limit)
+            .Include(m => m.NotificationMessageChannels.Where(c => channel == null || c.Channel == channel.Value))
+            .ToListAsync();
+
+        return [.. result.Select(m => new NotificationLogItemDto(
+            new NotificationId(m.NotificationMessageId),
+            CreateNotificationMessageDto(m),
+            [.. m.NotificationMessageChannels
+                .OrderBy(c => c.Channel)
+                .Select(c => new NotificationDeliveryDto(c.Channel, c.ChannelSpecificValue, c.NotificationMessageStatus, c.Attempts, c.SendAfter))]))];
+    }
+
     public async Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore)
     {
         var (claimPrefix, commentPrefix, financePrefix) = GetClaimReferencePrefixes(projectId);

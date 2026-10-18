@@ -38,6 +38,14 @@ public interface INotificationRepository
     Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths();
 
     /// <summary>
+    /// Последние <paramref name="limit"/> уведомлений, новые сверху, — для лога в админке.
+    /// </summary>
+    /// <param name="recipient">Только уведомления этому пользователю; null — всем.</param>
+    /// <param name="channel">Только уведомления, отправляемые по этому каналу; в <see cref="NotificationLogItemDto.Channels"/>
+    /// тогда попадает только он. null — все каналы.</param>
+    Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit);
+
+    /// <summary>
     /// Все уведомления по заявкам проекта (сама заявка, её комментарии, финансовые операции), созданные до
     /// <paramref name="createdBefore"/>, — строка на каждого получателя, по возрастанию времени.
     /// Для восстановления заявок после потери основной БД (DRP, #5481).
@@ -58,3 +66,13 @@ public interface INotificationRepository
 public record NotificationMessageCreateDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationAddress> Channels);
 
 public record NotificationHistoryDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationChannel> OtherChannels);
+
+public record NotificationLogItemDto(NotificationId Id, NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationDeliveryDto> Channels);
+
+/// <summary>
+/// Состояние отправки уведомления по одному каналу.
+/// </summary>
+/// <param name="Address">Адрес в канале (email, chat id Telegram) как он лежит в базе. Строкой, а не
+/// <see cref="NotificationAddress"/>: в базе бывают адреса, которые не разбираются (#5466), а лог должен показать и их.</param>
+/// <param name="SendAfter">Не раньше какого момента будет следующая попытка.</param>
+public record NotificationDeliveryDto(NotificationChannel Channel, string Address, NotificationMessageStatus Status, int Attempts, DateTimeOffset SendAfter);
