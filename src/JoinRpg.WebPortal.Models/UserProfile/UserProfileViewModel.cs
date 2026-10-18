@@ -1,4 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Games.Projects;
@@ -86,17 +85,11 @@ public class UserProfileDetailsViewModel
     public UserProfileDetailsViewModel(UserInfo user, UserInfo? currentUser)
         : this(user, user.GetAccess(currentUser), currentUser?.IsAdmin ?? false) { }
 
-    public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject, ICurrentUserAccessor currentUserAccessor)
-    : this(user, user.GetAccess(currentProject), currentUserAccessor.IsAdmin) { }
-
     /// <summary>
-    /// Карточка мастера проекта: для текущего пользователя — его собственный профиль, для остальных — со-мастер.
+    /// Карточка, которую смотрит мастер проекта: доступ к контактам — по проекту, свой профиль — «Это мой профиль».
     /// </summary>
-    public UserProfileDetailsViewModel(UserInfoHeader user, UserIdentification? currentUserId)
-    {
-        User = new UserLinkViewModel(user);
-        Reason = user.UserId == currentUserId ? AccessReasonView.ItsMe : AccessReasonView.CoMaster;
-    }
+    public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject, ICurrentUserAccessor currentUserAccessor)
+    : this(user, user.GetAccess(currentProject, currentUserAccessor.UserIdentificationOrDefault), currentUserAccessor.IsAdmin) { }
 
     private UserProfileDetailsViewModel(UserInfo user, UserProfileAccessReason accessReason, bool viewAsAdmin)
     {

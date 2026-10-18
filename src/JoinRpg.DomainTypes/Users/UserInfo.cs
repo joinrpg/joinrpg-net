@@ -101,13 +101,22 @@ public record class UserInfo(
         return UserProfileAccessReason.NoAccess;
     }
 
-    public UserProfileAccessReason GetAccess(ProjectInfo currentProject)
+    /// <summary>
+    /// Почему мастер проекта <paramref name="currentProject"/> видит этот профиль.
+    /// </summary>
+    /// <param name="currentUserId">Кто смотрит: на свой профиль — <see cref="UserProfileAccessReason.ItsMe"/>.</param>
+    public UserProfileAccessReason GetAccess(ProjectInfo currentProject, UserIdentification? currentUserId)
     {
+        if (UserId == currentUserId)
+        {
+            return UserProfileAccessReason.ItsMe;
+        }
         if (ActiveClaims.Any(x => x.ProjectId == currentProject.ProjectId))
         {
             return UserProfileAccessReason.Master;
         }
-        if (ActiveProjects.Any(x => x == currentProject.ProjectId))
+        // Только активные проекты: архивная игра не даёт доступа к персональным данным, в том числе со-мастерам.
+        if (ActiveProjects.Contains(currentProject.ProjectId))
         {
             return UserProfileAccessReason.CoMaster;
         }

@@ -64,8 +64,9 @@ public class AclController(
         }
 
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
+        var masterUsers = await userRepository.GetRequiredUserInfos([.. projectInfo.Masters.Select(m => m.UserId)]);
 
-        return View(new MastersListViewModel(claims, currentUserAccessor, projectInfo, profiles));
+        return View(new MastersListViewModel(claims, currentUserAccessor, projectInfo, profiles, masterUsers.ToDictionary(u => u.UserId)));
     }
 
     [HttpGet("delete")]
@@ -188,6 +189,7 @@ public class AclController(
             return null;
         }
         var claims = await claimRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
-        return new AclViewModel(master, claims.Count, projectInfo, currentUserAccessor.UserIdentificationOrDefault);
+        var masterUser = await userRepository.GetRequiredUserInfo(userId);
+        return new AclViewModel(master, masterUser, claims.Count, projectInfo, currentUserAccessor);
     }
 }
