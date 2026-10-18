@@ -110,7 +110,7 @@ internal class ProjectService(
     public async Task EditProject(EditProjectRequest request)
     {
         await projectPropsService.ChangeProjectProperties(request.ProjectId,
-            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             request,
             ctx =>
             {
@@ -123,7 +123,7 @@ internal class ProjectService(
     public async Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
-            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             enableAccommodation,
             ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
     }
@@ -131,7 +131,7 @@ internal class ProjectService(
     async Task IProjectService.SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
-            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowArchived,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowArchivedOrBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (cloneSettings, publishEnabled),
             ctx =>
             {
@@ -159,7 +159,7 @@ internal class ProjectService(
     public async Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
-            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             settings,
             ctx =>
             {
@@ -175,7 +175,7 @@ internal class ProjectService(
     public async Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
-            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             settings,
             ctx =>
             {
@@ -195,7 +195,7 @@ internal class ProjectService(
             throw new ArgumentException($"Часовой пояс {timeZone.Id} не имеет IANA-идентификатора", nameof(timeZone)); // TODO[Localize]
         }
         await projectPropsService.ChangeProjectProperties(projectId,
-            Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
+            Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             timeZone.Id,
             ctx => ctx.Project.Details.TimeZoneId = ctx.Request);
     }
