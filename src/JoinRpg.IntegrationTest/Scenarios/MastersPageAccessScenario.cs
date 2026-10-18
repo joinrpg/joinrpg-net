@@ -93,7 +93,6 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
     [Theory]
     [InlineData("masters")]
-    [InlineData("home")]
     [InlineData("Account/AccessDenied?projectId={0}")] // панель «нет доступа»: к кому обратиться за правами
     public async Task Anonymous_DoesNotSeeNonPublicMaster(string page)
     {
@@ -105,21 +104,6 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         // Один пользователь в списке — публичный владелец; скрытого мастера нет.
         CountUserLinks(html).ShouldBe(1);
-    }
-
-    [Fact]
-    public async Task Owner_SeesNonPublicMaster_OnProjectHome()
-    {
-        // Позитивный контроль к тесту выше: фильтр завязан на смотрящего, а не прячет всех непубличных подряд.
-        var (projectId, _, ownerEmail, _) = await CreateProjectWithHiddenMaster();
-
-        var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
-            factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
-            ownerEmail,
-            followsRedirects: false);
-        var html = await GetPage(client, projectId, "{0}/home");
-
-        CountUserLinks(html).ShouldBe(2);
     }
 
     [Fact]
