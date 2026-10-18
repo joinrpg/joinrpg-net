@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
+using System.Data.Entity.Validation;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Dal.Impl.Repositories.Accommodation;
 using JoinRpg.Dal.Impl.Repositories.Characters;
@@ -44,6 +46,54 @@ public class MyDbContext : DbContext, IUnitOfWork
     DbSet<T> IUnitOfWork.GetDbSet<T>() => Set<T>();
 
     Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
+
+    public override int SaveChanges()
+    {
+        try
+        {
+            return base.SaveChanges();
+        }
+        catch (DbEntityValidationException exception)
+        {
+            LogValidationErrors(exception);
+            throw;
+        }
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbEntityValidationException exception)
+        {
+            LogValidationErrors(exception);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Сам <see cref="DbEntityValidationException"/> не говорит, что именно не прошло валидацию —
+    /// подробности лежат в <see cref="DbEntityValidationException.EntityValidationErrors"/>, которые
+    /// в лог исключения не попадают. Пишем их отдельно, иначе по логу причину не найти.
+    /// Удаляется вместе с EF6 (ADR016): в EF Core валидации при сохранении нет.
+    /// </summary>
+    private void LogValidationErrors(DbEntityValidationException exception)
+    {
+        foreach (var entityErrors in exception.EntityValidationErrors)
+        {
+            foreach (var error in entityErrors.ValidationErrors)
+            {
+                Logger?.LogError(
+                    "Сущность {EntityType} (состояние {EntityState}) не прошла валидацию EF: {PropertyName}: {ValidationError}",
+                    ObjectContext.GetObjectType(entityErrors.Entry.Entity.GetType()).Name,
+                    entityErrors.Entry.State,
+                    error.PropertyName,
+                    error.ErrorMessage);
+            }
+        }
+    }
 
     Task<int> IUnitOfWork.ExecuteSqlCommandAsync(string sql) => Database.ExecuteSqlCommandAsync(sql);
 
