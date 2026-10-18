@@ -104,7 +104,7 @@ internal class CharacterApiViewService(
                 UpdatedAt = character.UpdatedAt,
                 IsActive = character.IsActive,
                 InGame = character.InGame,
-                BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
+                BusyStatus = ApiInfoBuilder.ToBusyStatus(character.GetBusyStatus()),
                 Groups = ApiInfoBuilder.ToGroupHeaders([.. character.DirectGroups]),
                 AllGroups = ApiInfoBuilder.ToGroupHeaders([.. character.ParentGroupsToTop]),
                 Fields = [.. fields.GetSortedFieldsForView().Select(ApiInfoBuilder.ToFieldValue)],

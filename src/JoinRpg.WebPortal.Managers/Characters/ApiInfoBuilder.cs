@@ -2,6 +2,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.XGameApi.Contract;
 
 namespace JoinRpg.WebPortal.Managers.Characters;
@@ -56,6 +57,24 @@ public class ApiInfoBuilder
         ClaimStatus.Discussed => ClaimStatusEnum.Discussed,
         ClaimStatus.OnHold => ClaimStatusEnum.OnHold,
         ClaimStatus.CheckedIn => ClaimStatusEnum.CheckedIn,
+        _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
+    };
+
+    /// <summary>
+    /// Во внешнем контракте нет шаблонов и горячих вакансий. Шаблон и горячая вакансия
+    /// уходят как <see cref="CharacterBusyStatus.NoClaims"/>: на них можно подать заявку,
+    /// а новое значение в контракте сломало бы клиентов со строгой десериализацией.
+    /// </summary>
+    public static CharacterBusyStatus ToBusyStatus(CharacterBusyStatusView status) => status switch
+    {
+        CharacterBusyStatusView.HasPlayer => CharacterBusyStatus.HasPlayer,
+        CharacterBusyStatusView.Discussed => CharacterBusyStatus.Discussed,
+        CharacterBusyStatusView.Npc => CharacterBusyStatus.Npc,
+        CharacterBusyStatusView.Vacancy
+            or CharacterBusyStatusView.HotVacancy
+            or CharacterBusyStatusView.Slot
+            or CharacterBusyStatusView.HotSlot
+            or CharacterBusyStatusView.Unknown => CharacterBusyStatus.NoClaims,
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
     };
 
