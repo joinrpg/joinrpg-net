@@ -64,7 +64,7 @@ public class UserProfilePanelTest : IDisposable
         cut.Markup.ShouldNotContain("player@example.com");
         cut.Markup.ShouldNotContain("+79990000000");
         cut.FindAll(".panel-footer").ShouldBeEmpty();
-        cut.Markup.ShouldContain("Игрок предпочитает сохранять анонимность.");
+        cut.Markup.ShouldContain("Пользователь предпочитает сохранять анонимность.");
     }
 
     [Fact]

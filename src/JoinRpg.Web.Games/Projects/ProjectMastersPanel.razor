@@ -1,12 +1,14 @@
+@using JoinRpg.Web.UserProfile
 <h2>Мастера</h2>
 
 @foreach (var master in Model.Masters)
 {
     <div style="margin-bottom: 1.5em">
-        <h4>
-            <UserLink Model="master.User" />
-            <small>@master.Role</small>
-        </h4>
+        @if (!string.IsNullOrWhiteSpace(master.Role))
+        {
+            <h4>@master.Role</h4>
+        }
+        <UserProfilePanel Model="master.Details" />
         @if (master.Description is { } description)
         {
             <div>@description</div>
