@@ -7,7 +7,10 @@
         <JoinAlert Variation="VariationStyleEnum.Warning">Проект находится в архиве, отослать новую заявку невозможно.</JoinAlert>
         break;
     case AddClaimForbideReason.ProjectBlocked:
-        <JoinAlert Variation="VariationStyleEnum.Warning">Проект заблокирован на время восстановления данных, отослать новую заявку невозможно.</JoinAlert>
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            Проект заблокирован на время восстановления данных, отослать новую заявку невозможно.
+            <HelpLink Link="recovery-2026.html#id3" Message="Подробнее" />
+        </JoinAlert>
         break;
     case AddClaimForbideReason.ProjectClaimsClosed:
         <JoinAlert Variation="VariationStyleEnum.Warning">Заявки на проект закрыты, отослать заявку невозможно.</JoinAlert>
