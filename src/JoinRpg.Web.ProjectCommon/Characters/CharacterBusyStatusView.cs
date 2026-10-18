@@ -12,8 +12,12 @@ public enum CharacterBusyStatusView
     Vacancy,
     [Display(Name = "NPC")]
     Npc,
+    [Display(Name = "Шаблон")]
     Slot,
+    [Display(Name = "Горячий шаблон")]
     HotSlot,
+    [Display(Name = "Неизвестно")]
     Unknown,
+    [Display(Name = "Горячая вакансия")]
     HotVacancy,
 }
