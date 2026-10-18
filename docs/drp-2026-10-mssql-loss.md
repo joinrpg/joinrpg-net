@@ -92,10 +92,11 @@
       аватарок отдаётся по `https://avatars.joinrpg.ru/<ключ>` (свой домен + TLS)
       ([подробнее](#аватарки)).
       DNS: `avatars.joinrpg.ru` (бакет `joinrpg-prod-avatars`) и `avatars.dev.joinrpg.ru`
-      (`joinrpg-dev-avatars`) — CNAME на `access.ru-6.storage.selcloud.ru`; на 2026-10-16
-      `avatars.joinrpg.ru` ещё не резолвится.
-- [ ] Облачные логи: stdout подов, разделение по namespace.
-- [ ] Для деплоя из CI ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)): сервис-аккаунт с правами на оба namespace, его Secret —
+      (`joinrpg-dev-avatars`) — CNAME на `access.ru-6.storage.selcloud.ru`; на 2026-10-18
+      **оба ещё не резолвятся**.
+- [ ] Облачные логи: stdout подов, разделение по namespace. На 2026-10-16 k8s-логи никуда не пишутся
+      ([#5589](https://github.com/joinrpg/joinrpg-net/issues/5589) — пометка в скилле `prod-logs`).
+- [x] (2026-10-15) Для деплоя из CI ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)): сервис-аккаунт с правами на оба namespace, его Secret —
       в GitHub-секрет `SELECTEL_DEPLOY_SA_SECRET` (environment `prod`, `dev`), адрес API — в
       переменную `SELECTEL_K8S_SERVER`; интеграция кластера с Container Registry (секрет
       `craas-auth` в namespace, создавать namespace до её включения).
@@ -106,10 +107,10 @@
       Мигратор на пустой базе теперь создаёт виртуальных пользователей ([#5576](https://github.com/joinrpg/joinrpg-net/issues/5576)) и проверяет
       подключение ко всем базам до первой миграции ([#5570](https://github.com/joinrpg/joinrpg-net/issues/5570)); автодеплой dev вернулся ([#5575](https://github.com/joinrpg/joinrpg-net/issues/5575)),
       2026-10-16 06:07Z прошёл.
-- [ ] Dev: HTTPS — на Gateway `infra/main` (Traefik) нет HTTPS-слушателей и перенаправления
-      HTTP → HTTPS для dev-имён (`dev.joinrpg.ru`, `devid.joinrpg.ru`, `dev-components.joinrpg.ru`,
-      `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru`): отдаётся `TRAEFIK DEFAULT CERT` и 404.
-      Запрос инженерам 2026-10-16.
+- [x] (2026-10-18) Dev: HTTPS на Gateway `infra/main` (Traefik) для dev-имён — сертификаты Let's Encrypt,
+      `dev.joinrpg.ru`, `devid.joinrpg.ru`, `dev.joinrpg.tsarevs.ru` отвечают по HTTPS. Редирект
+      HTTP → HTTPS в самом приложении — [#5588](https://github.com/joinrpg/joinrpg-net/issues/5588) (открыт; до него [#5587](https://github.com/joinrpg/joinrpg-net/issues/5587), [#5590](https://github.com/joinrpg/joinrpg-net/issues/5590) — метрика
+      запросов из локальной сети, чтобы проверить `X-Forwarded-Proto`).
 - [ ] Dev: админ вручную (`UserAuthDetails.IsAdmin`), загрузка аватарки. Старый `KUBECONFIG` из
       окружения `dev` удалён (2026-10-16); в `prod` — удалить после первого деплоя прода.
 - [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
@@ -126,7 +127,8 @@
       умолчанию 1 МБ — загрузка выгрузок мастера в фазе 7 получит 413 ([#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
 - [x] (2026-10-16) Строки подключения prod: MSSQL и Postgres (`DataProtection`, `DailyJob`,
       `Notifications`, IdPortal) — на новые, внутренними адресами кластера ([подробнее](#инфраструктура-в-selectel)).
-- [ ] Секреты S3 prod: `KUBESECRET_S3BLOBSTORAGE__ACCESSKEY`, `__SECRETKEY`, `__BUCKETNAME` = `joinrpg-prod-avatars`.
+- [ ] Секреты S3 prod: `__ACCESSKEY`, `__SECRETKEY` обновлены 2026-10-16; **`KUBESECRET_S3BLOBSTORAGE__BUCKETNAME`
+      не менялся с 2022** — проверить, что там `joinrpg-prod-avatars`.
 - [ ] 🟡 Аватарки ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)): сначала [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) (🟢 влит) — адрес из настройки
       `S3BlobStorage:PublicBaseUrl`, терпимое чтение и подмена домена у старых полных адресов; потом,
       **только после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод**, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — в базе ключ объекта вместо адреса,
@@ -142,18 +144,21 @@
       с `Retry-After`. 2026-10-16: заглушка отдаётся на `joinrpg.ru` и `id.joinrpg.ru`, но с кодом
       200, а не 503.
 - [ ] DNS боевых доменов на 176.53.231.74: `joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru` —
-      готово (2026-10-16); **`www.joinrpg.ru` в зоне нет — не резолвится**.
+      готово (2026-10-16); **`www.joinrpg.ru` в зоне нет — не резолвится** (на 2026-10-18 тоже).
+      У `components.joinrpg.ru` на Gateway нет сертификата (`TRAEFIK DEFAULT CERT`).
 - [x] (2026-10-16) DNS: `components.joinrpg.ru` и dev-хосты (`dev.joinrpg.ru`, `devid.joinrpg.ru`,
       `dev-components.joinrpg.ru`) — на 176.53.231.74: PR
       [joinrpg-infrastructure#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3).
 - [ ] DNS: почтовые записи `joinrpg.ru` (SPF, DKIM, DMARC, проверка домена у почтового
       провайдера — Postbox или новый) перенесены в новую зону; без них письма уйдут в спам или не
-      отправятся.
+      отправятся. 2026-10-18: SPF, DMARC, верификации в зоне есть, но **SPF-записей две**
+      (`include:_spf.yandexcloud.net` и `redirect=_spf.yandex.net`) — по RFC 7208 это PermError,
+      SPF не проходит; слить в одну: `v=spf1 include:_spf.yandexcloud.net include:_spf.yandex.net ~all`.
 - [x] (2026-10-16) DNS: `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` и для dev `dev.joinrpg.tsarevs.ru`,
       `dev.id.joinrpg.tsarevs.ru` — на балансировщик 176.53.231.74, мимо заглушки: PR
       [joinrpg-infrastructure#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) на ревью,
       после мерджа `terraform apply` в `05-dns`. **До** деплоя из фазы 4.
-- [ ] TLS на Gateway `infra/main` покрывает все четыре служебных хоста (манифесты — Gateway API,
+- [x] (2026-10-18, один сертификат с SAN на все четыре) TLS на Gateway `infra/main` покрывает все четыре служебных хоста (манифесты — Gateway API,
       `HTTPRoute`, без cert-manager в репозитории; Gateway — в инфраструктуре).
 - [x] Маршруты служебных доменов dev — [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) влит.
 - [x] (2026-10-10) PR с маршрутами служебных доменов prod ([#5474](https://github.com/joinrpg/joinrpg-net/issues/5474)) влит. Маршруты появятся с первым
@@ -808,6 +813,12 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
 | issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | закрыт |
 | [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | влит |
+| [#5587](https://github.com/joinrpg/joinrpg-net/issues/5587) | https, PR 1: метрика запросов из локальной сети | 1 | влит |
+| [#5590](https://github.com/joinrpg/joinrpg-net/issues/5590) | https, PR 3: теги схемы у счётчика запросов из локальной сети | 1 | влит |
+| [#5588](https://github.com/joinrpg/joinrpg-net/issues/5588) | https, PR 2: редирект HTTP → HTTPS и HSTS в приложении | 1 | открыт |
+| [#5586](https://github.com/joinrpg/joinrpg-net/issues/5586) | Health check S3 краснеет, если загрузка аватарки не прошла | 1 | влит |
+| [#5589](https://github.com/joinrpg/joinrpg-net/issues/5589) | Скилл `prod-logs`: k8s-логи не пишутся с переезда | 10 | влит |
+| [#5585](https://github.com/joinrpg/joinrpg-net/issues/5585) | Скилл `selectel-readonly` — чтение настроек Selectel через API | 1 | влит |
 | [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566) | Конфиг dev: S3 Selectel, `PublicBaseUrl` = `avatars.dev.joinrpg.ru` | 1 | влит |
 | [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) | Конфиг прода: выключенные джобы, S3 Selectel (`Endpoint`, `PublicBaseUrl`), баннер | 3 | влит |
 | issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | закрыт |
