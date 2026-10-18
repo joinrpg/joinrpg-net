@@ -29,7 +29,7 @@
             <td>
                 @if (channel.Error is not null)
                 {
-                    <JoinBadge Variation="VariationStyleEnum.Danger">channel.Error</JoinBadge>
+                    <JoinBadge Variation="VariationStyleEnum.Danger">@channel.Error</JoinBadge>
                 }
                 else
                 {
