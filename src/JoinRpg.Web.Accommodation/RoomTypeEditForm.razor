@@ -38,7 +38,10 @@ else
                                 </label>
                             </div>
                             <div style="margin-left: 20px;">
+                                @* Поля под радиокнопками сами переключают выбор: иначе выбранное в поле
+                                   молча игнорировалось бы при сохранении (#5642). *@
                                 <JoinTextInput @bind-Value="model.NewRoomCategoryName"
+                                               @bind-Value:after="OnNewCategoryNameTyped"
                                                placeholder="Название категории (если пусто — как у типа)" />
                             </div>
                             @if (model.RoomCategories.Count > 0)
@@ -50,7 +53,9 @@ else
                                     </label>
                                 </div>
                                 <div style="margin-left: 20px;">
-                                    <InputSelect @bind-Value="model.ExistingRoomCategoryId" class="form-control" id="roomtype-category-id">
+                                    <InputSelect @bind-Value="model.ExistingRoomCategoryId"
+                                                 @bind-Value:after="OnExistingCategoryPicked"
+                                                 class="form-control" id="roomtype-category-id">
                                         <option value="">— выберите категорию —</option>
                                         @foreach (var category in model.RoomCategories)
                                         {
@@ -160,6 +165,22 @@ else
 
     private static string CategoryTitle(RoomCategoryOptionViewModel category)
         => category.TypeNames.Count > 0 ? $"{category.Name} ({string.Join(", ", category.TypeNames)})" : category.Name;
+
+    private void OnExistingCategoryPicked()
+    {
+        if (model!.ExistingRoomCategoryId is not null)
+        {
+            model.RoomCategoryChoice = RoomCategoryChoice.Existing;
+        }
+    }
+
+    private void OnNewCategoryNameTyped()
+    {
+        if (!string.IsNullOrWhiteSpace(model!.NewRoomCategoryName))
+        {
+            model.RoomCategoryChoice = RoomCategoryChoice.New;
+        }
+    }
 
     private async Task RenameCategory(RoomCategoryOptionViewModel category)
     {

@@ -105,6 +105,39 @@ public class RoomTypeEditFormTest : BunitContext
         created.ExistingRoomCategoryId.ShouldBe(101);
     }
 
+    /// <summary>
+    /// Выбор в списке категорий сам переключает радиокнопку: иначе тип молча заводился в новой категории (#5642).
+    /// </summary>
+    [Fact]
+    public void CreateForm_PickingExistingCategory_SwitchesChoice()
+    {
+        client.Categories = [new RoomCategoryOptionViewModel(101, "Люкс", ["Люкс"])];
+        var cut = RenderCreate();
+
+        cut.Find("input[type=text]").Change("Люкс на одного");
+        cut.Find("#roomtype-category-id").Change("101");
+        cut.Find("form").Submit();
+
+        var created = client.Created.ShouldHaveSingleItem().Model;
+        created.RoomCategoryChoice.ShouldBe(RoomCategoryChoice.Existing);
+        created.ExistingRoomCategoryId.ShouldBe(101);
+    }
+
+    [Fact]
+    public void CreateForm_TypingNewCategoryName_SwitchesBackToNew()
+    {
+        client.Categories = [new RoomCategoryOptionViewModel(101, "Люкс", ["Люкс"])];
+        var cut = RenderCreate();
+
+        cut.FindAll("input[type=text]")[0].Change("Люкс на одного");
+        cut.Find("#roomtype-category-id").Change("101");
+        cut.FindAll("input[type=text]")[1].Change("Корпус Б");
+        cut.Find("form").Submit();
+
+        cut.Find("#roomtype-category-new").HasAttribute("checked").ShouldBeTrue();
+        client.Created.ShouldHaveSingleItem().Model.RoomCategoryChoice.ShouldBe(RoomCategoryChoice.New);
+    }
+
     [Fact]
     public void CreateForm_ExistingCategoryNotChosen_ShowsRussianError()
     {
