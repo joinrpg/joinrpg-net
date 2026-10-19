@@ -319,7 +319,7 @@
 - [x] 🟢 (2026-10-19) Ещё не созданные заявки не ссылками на странице восстановления — [#5639](https://github.com/joinrpg/joinrpg-net/issues/5639), [#5640](https://github.com/joinrpg/joinrpg-net/issues/5640).
 - [ ] 🟡 Шаблон восстанавливается как обычный персонаж, на нём несколько принятых заявок — [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645): влиты [#5654](https://github.com/joinrpg/joinrpg-net/issues/5654), [#5657](https://github.com/joinrpg/joinrpg-net/issues/5657), [#5663](https://github.com/joinrpg/joinrpg-net/issues/5663), [#5665](https://github.com/joinrpg/joinrpg-net/issues/5665);
       на ревью [#5668](https://github.com/joinrpg/joinrpg-net/issues/5668) (уведомления сохраняют шаблоны). 2026-10-19 14:05–17:19Z из-за 1612-200035 падали списки и сетка ролей 1612.
-- [ ] «Не разобрались» в блоках комментариев и ручных оплат считает и приглашения к проживанию (`Kind.Other`) — ложная тревога (пример: заявка 1684-117422).
+- [ ] «Не разобрались» в блоках комментариев и ручных оплат считает и приглашения к проживанию (`Kind.Other`) — ложная тревога (пример: заявка 1684-117422) — [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671).
 - [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
       мастерские — мастер из своих материалов.
 
@@ -859,6 +859,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647) | «Ручные оплаты»: время в двух поясах, итог | 9 | заведён |
 | issue [#5666](https://github.com/joinrpg/joinrpg-net/issues/5666) | Прод лежал ~14 минут: MSSQL не отвечал | 10 | заведён |
 | issue [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667) | IP клиента не доходит до приложения | 10 | заведён |
+| issue [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671) | Приглашения к проживанию считаются «неразобранными» уведомлениями | 8 | заведён |
 | [#5648](https://github.com/joinrpg/joinrpg-net/issues/5648), [#5653](https://github.com/joinrpg/joinrpg-net/issues/5653), [#5662](https://github.com/joinrpg/joinrpg-net/issues/5662) | Скиллы `prod-db-readonly`, `prod-logs`, `monitor-release` под Selectel (Closes [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582)) | 10 | влиты |
 | issue [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645) | Шаблон восстанавливается как обычный персонаж | 7 | в работе |
 | issue [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641) | Видимость комментария, менявшего статус заявки | 8 | закрыт |
