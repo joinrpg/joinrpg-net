@@ -74,7 +74,7 @@ public class ClaimAccommodationGroupChangeScenario(JoinApplicationFactory factor
     }
 
     /// <summary>
-    /// Из группы двоих (сложенной приёмом приглашения) один уходит: у него новая группа того же типа,
+    /// Из группы двоих (сложенной мастером без приглашения) один уходит: у него новая группа того же типа,
     /// у оставшегося — прежняя группа, и в ней ровно он.
     /// </summary>
     [Fact]
@@ -191,42 +191,26 @@ public class ClaimAccommodationGroupChangeScenario(JoinApplicationFactory factor
         });
 
     /// <summary>
-    /// Складывает группу из первых двух заявок сида: первая приглашает вторую, вторая принимает.
+    /// Складывает группу из первых двух заявок сида: мастер поселяет вторую вместе с первой.
     /// Возвращает группу, в которой они оказались.
     /// </summary>
     private async Task<int> JoinGroupAsync(Seed seed)
     {
-        var sender = seed.Claims[0];
-        var receiver = seed.Claims[1];
+        var host = seed.Claims[0];
+        var guest = seed.Claims[1];
 
         await factory.Services.RunAsAsync(seed.OwnerId, sp =>
-            sp.GetRequiredService<IAccommodationInviteService>().CreateAccommodationInvite(
-                sender,
-                seed.GroupIds[0],
-                AccommodationGroupIdentification.From(receiver)));
+            sp.GetRequiredService<IAccommodationInviteService>().MergeAccommodationGroups(
+                host,
+                AccommodationGroupIdentification.From(guest)));
 
-        int inviteId;
-        using (var scope = factory.Services.CreateScope())
-        {
-            inviteId = await scope.ServiceProvider.GetRequiredService<MyDbContext>().Set<AccommodationInvite>()
-                .Where(invite => invite.FromClaimId == sender.ClaimId && invite.ToClaimId == receiver.ClaimId)
-                .Select(invite => invite.Id)
-                .SingleAsync();
-        }
-
-        await factory.Services.RunAsAsync(seed.OwnerId, sp =>
-            sp.GetRequiredService<IAccommodationInviteService>().AcceptAccommodationInvite(
-                new AccommodationInviteIdentification(seed.ProjectId, inviteId)));
-
-        using (var scope = factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-            var senderGroup = await GetGroupFkAsync(db, sender);
-            senderGroup.ShouldNotBeNull();
-            (await GetGroupFkAsync(db, receiver)).ShouldBe(senderGroup, "Предусловие: заявки съехались");
-            (await GetSubjectsAsync(db, senderGroup.Value)).Count.ShouldBe(2);
-            return senderGroup.Value;
-        }
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+        var hostGroup = await GetGroupFkAsync(db, host);
+        hostGroup.ShouldNotBeNull();
+        (await GetGroupFkAsync(db, guest)).ShouldBe(hostGroup, "Предусловие: заявки съехались");
+        (await GetSubjectsAsync(db, hostGroup.Value)).Count.ShouldBe(2);
+        return hostGroup.Value;
     }
 
     /// <summary>

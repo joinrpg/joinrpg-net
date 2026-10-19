@@ -15,70 +15,68 @@ using JoinRpg.Services.Interfaces.Projects;
 namespace JoinRpg.IntegrationTest.Scenarios;
 
 /// <summary>
-/// Приглашение группы проживающих, которой нет в плане поселения приглашающего: она другого типа,
-/// у приглашающего типа нет вовсе, или такой группы в проекте нет.
+/// Мастер поселяет вместе с заявкой группу проживающих, которой нет в плане поселения этой заявки:
+/// группа другого типа, у заявки типа нет вовсе, или такой группы в проекте нет.
 /// </summary>
 /// <remarks>
 /// Такая цель разворачивается отдельной веткой (<c>LoadForeignGroup</c>): трекаемая группа из БД —
-/// ради существования и типа, затем план поселения её типа (ADR022 §3). Ветка ходит в базу двумя
-/// запросами с фильтром по проекту, поэтому проверяется на настоящем SQL Server: ошибка должна
-/// быть внятной (<see cref="AccommodationInviteNotAllowedException"/>), а не 500-й, и ни одной строки
-/// приглашения не должно появиться.
+/// ради существования и типа, затем план поселения её типа (ADR022 §3). Ветку проходят и
+/// приглашение, и объединение групп мастером (#5656); здесь она гоняется объединением — его делает
+/// владелец проекта, без игроков. Ветка ходит в базу двумя запросами с фильтром по проекту, поэтому
+/// проверяется на настоящем SQL Server: ошибка должна быть внятной
+/// (<see cref="AccommodationInviteNotAllowedException"/>), а не 500-й, состав групп не должен
+/// измениться, и ни одной строки приглашения не должно появиться.
 /// Сид свой: сценарий мутирует данные, а смоук-проект общий и только читается.
 /// </remarks>
 public class AccommodationInviteForeignGroupScenario(JoinApplicationFactory factory)
     : IClassFixture<JoinApplicationFactory>
 {
     /// <summary>
-    /// Приглашающий типа A приглашает группу типа B (другая категория, другой план) — отказ про тип.
+    /// К заявке типа A поселяют группу типа B (другая категория, другой план) — отказ про тип.
     /// </summary>
     [Fact]
-    public async Task InviteGroupOfOtherType_IsRefusedByType()
+    public async Task MergeGroupOfOtherType_IsRefusedByType()
     {
         var seed = await SeedAsync();
+        var groupsBefore = await GetGroupsAsync(seed.ProjectId);
 
-        var exception = await InviteAsync(seed, seed.InviterA, seed.InviterAGroup, seed.GroupB);
+        var exception = await MergeAsync(seed, seed.HostA, seed.GroupB);
 
         exception.Message.ShouldContain("такой же тип проживания");
-        (await CountInvitesAsync(seed.ProjectId)).ShouldBe(0);
+        await ShouldBeUnchangedAsync(seed.ProjectId, groupsBefore);
     }
 
     /// <summary>
-    /// Приглашающий без типа приглашает группу типа B — отказ «не выбран тип».
+    /// К заявке без типа поселяют группу типа B — отказ «не выбран тип».
     /// </summary>
     [Fact]
-    public async Task InviterWithoutType_InvitesGroup_IsRefusedAsNoType()
+    public async Task HostWithoutType_MergeGroup_IsRefusedAsNoType()
     {
         var seed = await SeedAsync();
+        var groupsBefore = await GetGroupsAsync(seed.ProjectId);
 
-        // Своей группы у приглашающего нет, поэтому ссылку на неё сервис сверять не с чем — передаём
-        // заведомо несуществующую.
-        var exception = await InviteAsync(
-            seed,
-            seed.InviterWithoutType,
-            new AccommodationRequestIdentification(seed.ProjectId, int.MaxValue),
-            seed.GroupB);
+        var exception = await MergeAsync(seed, seed.HostWithoutType, seed.GroupB);
 
         exception.Message.ShouldContain("не выбран тип");
-        (await CountInvitesAsync(seed.ProjectId)).ShouldBe(0);
+        await ShouldBeUnchangedAsync(seed.ProjectId, groupsBefore);
     }
 
     /// <summary>
-    /// Приглашение группы, которой нет в базе вовсе, — отказ «группа не найдена», а не 500.
+    /// Объединение с группой, которой нет в базе вовсе, — отказ «группа не найдена», а не 500.
     /// </summary>
     [Fact]
-    public async Task InviteMissingGroup_IsRefusedAsNotFound()
+    public async Task MergeMissingGroup_IsRefusedAsNotFound()
     {
         var seed = await SeedAsync();
+        var groupsBefore = await GetGroupsAsync(seed.ProjectId);
 
-        var exception = await InviteAsync(
+        var exception = await MergeAsync(
             seed,
-            seed.InviterA,
-            seed.InviterAGroup,
+            seed.HostA,
             new AccommodationRequestIdentification(seed.ProjectId, int.MaxValue));
 
         exception.Message.ShouldContain("не найдена");
-        (await CountInvitesAsync(seed.ProjectId)).ShouldBe(0);
+        await ShouldBeUnchangedAsync(seed.ProjectId, groupsBefore);
     }
 
     /// <summary>
@@ -86,39 +84,56 @@ public class AccommodationInviteForeignGroupScenario(JoinApplicationFactory fact
     /// запросе), — тоже «не найдена»: загрузка группы фильтрует по проекту.
     /// </summary>
     [Fact]
-    public async Task InviteGroupOfOtherProject_IsRefusedAsNotFound()
+    public async Task MergeGroupOfOtherProject_IsRefusedAsNotFound()
     {
         var seed = await SeedAsync();
         var other = await SeedAsync();
+        var groupsBefore = await GetGroupsAsync(seed.ProjectId);
+        var otherGroupsBefore = await GetGroupsAsync(other.ProjectId);
 
-        var exception = await InviteAsync(
+        var exception = await MergeAsync(
             seed,
-            seed.InviterA,
-            seed.InviterAGroup,
+            seed.HostA,
             new AccommodationRequestIdentification(seed.ProjectId, other.GroupB.AccommodationRequestId));
 
         exception.Message.ShouldContain("не найдена");
-        (await CountInvitesAsync(seed.ProjectId)).ShouldBe(0);
-        (await CountInvitesAsync(other.ProjectId)).ShouldBe(0);
+        await ShouldBeUnchangedAsync(seed.ProjectId, groupsBefore);
+        await ShouldBeUnchangedAsync(other.ProjectId, otherGroupsBefore);
     }
 
-    private Task<AccommodationInviteNotAllowedException> InviteAsync(
+    private Task<AccommodationInviteNotAllowedException> MergeAsync(
         Seed seed,
-        ClaimIdentification sender,
-        AccommodationRequestIdentification senderRequest,
+        ClaimIdentification host,
         AccommodationRequestIdentification targetGroup)
         => factory.Services.RunAsAsync(seed.OwnerId, sp =>
             Should.ThrowAsync<AccommodationInviteNotAllowedException>(() =>
-                sp.GetRequiredService<IAccommodationInviteService>().CreateAccommodationInvite(
-                    sender,
-                    senderRequest,
+                sp.GetRequiredService<IAccommodationInviteService>().MergeAccommodationGroups(
+                    host,
                     AccommodationGroupIdentification.From(targetGroup))));
 
-    private async Task<int> CountInvitesAsync(ProjectIdentification projectId)
+    /// <summary>
+    /// Отказ ничего не оставил после себя: ни одна заявка проекта не сменила группу, и приглашений
+    /// не появилось.
+    /// </summary>
+    private async Task ShouldBeUnchangedAsync(ProjectIdentification projectId, IReadOnlyList<int?> groupsBefore)
+    {
+        (await GetGroupsAsync(projectId)).ShouldBe(groupsBefore, "Состав групп проживающих не должен был измениться");
+
+        using var scope = factory.Services.CreateScope();
+        (await scope.ServiceProvider.GetRequiredService<MyDbContext>().Set<AccommodationInvite>()
+            .CountAsync(invite => invite.ProjectId == projectId.Value))
+            .ShouldBe(0, "Приглашений не должно было появиться");
+    }
+
+    /// <summary>Группы проживающих заявок проекта — по порядку заявок.</summary>
+    private async Task<IReadOnlyList<int?>> GetGroupsAsync(ProjectIdentification projectId)
     {
         using var scope = factory.Services.CreateScope();
-        return await scope.ServiceProvider.GetRequiredService<MyDbContext>().Set<AccommodationInvite>()
-            .CountAsync(invite => invite.ProjectId == projectId.Value);
+        return await scope.ServiceProvider.GetRequiredService<MyDbContext>().Set<Claim>()
+            .Where(claim => claim.ProjectId == projectId.Value)
+            .OrderBy(claim => claim.ClaimId)
+            .Select(claim => claim.AccommodationRequest_Id)
+            .ToListAsync();
     }
 
     /// <summary>
@@ -133,7 +148,7 @@ public class AccommodationInviteForeignGroupScenario(JoinApplicationFactory fact
         using (var scope = factory.Services.CreateScope())
         {
             projectId = await TestUserProjectHelpers.CreateProjectAsync(
-                scope.ServiceProvider, ownerId, "Проект для приглашения чужой группы");
+                scope.ServiceProvider, ownerId, "Проект для объединения с чужой группой");
         }
 
         await factory.Services.RunAsAsync(ownerId, async sp =>
@@ -160,18 +175,18 @@ public class AccommodationInviteForeignGroupScenario(JoinApplicationFactory fact
         });
 
         var claims = await CreateClaimsAsync(ownerId, projectId, count: 3);
-        var (inviterA, inviteeB, withoutType) = (claims[0], claims[1], claims[2]);
+        var (hostA, guestB, withoutType) = (claims[0], claims[1], claims[2]);
 
-        var groupIds = await factory.Services.RunAsAsync(ownerId, async sp =>
+        var groupB = await factory.Services.RunAsAsync(ownerId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
-            await claimService.SetAccommodationType(projectId.Value, inviterA.ClaimId, typeA.AccommodationTypeId);
-            await claimService.SetAccommodationType(projectId.Value, inviteeB.ClaimId, typeB.AccommodationTypeId);
+            await claimService.SetAccommodationType(projectId.Value, hostA.ClaimId, typeA.AccommodationTypeId);
+            await claimService.SetAccommodationType(projectId.Value, guestB.ClaimId, typeB.AccommodationTypeId);
 
-            return await AccommodationTestHelpers.GetAccommodationGroupIdsAsync(sp, [inviterA, inviteeB]);
+            return (await AccommodationTestHelpers.GetAccommodationGroupIdsAsync(sp, [guestB])).Single();
         });
 
-        return new Seed(ownerId, projectId, inviterA, groupIds[0], withoutType, groupIds[1]);
+        return new Seed(ownerId, projectId, hostA, withoutType, groupB);
     }
 
     private Task<AccommodationTypeIdentification> CreateTypeAsync(
@@ -244,11 +259,13 @@ public class AccommodationInviteForeignGroupScenario(JoinApplicationFactory fact
     }
 
     /// <summary>Проект с поселением, поднятый под один тест.</summary>
+    /// <param name="HostA">Заявка в своей группе типа A — к ней поселяют.</param>
+    /// <param name="HostWithoutType">Заявка без типа проживания — тоже как та, к которой поселяют.</param>
+    /// <param name="GroupB">Группа типа B, которой нет в плане поселения типа A.</param>
     private sealed record Seed(
         UserIdentification OwnerId,
         ProjectIdentification ProjectId,
-        ClaimIdentification InviterA,
-        AccommodationRequestIdentification InviterAGroup,
-        ClaimIdentification InviterWithoutType,
+        ClaimIdentification HostA,
+        ClaimIdentification HostWithoutType,
         AccommodationRequestIdentification GroupB);
 }

@@ -33,10 +33,11 @@ internal class AccommodationInviteViewService(
 
     public async Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId)
     {
-        var sender = await GetSenderGroup(claimId);
-        if (sender is null)
+        var (mode, sender) = await GetSenderGroupAndMode(claimId);
+        if (sender is null || mode == AccommodationInviteMode.None)
         {
-            return new AccommodationInviteTargetsViewModel(SenderRequestId: null, RoomFreeSpace: 0, Targets: []);
+            // Без места контрол молчит — так и надо: тип не выбран либо сделать ничего нельзя.
+            return new AccommodationInviteTargetsViewModel(SenderRequestId: null, RoomFreeSpace: 0, Targets: [], mode);
         }
 
         var (plan, senderGroup) = sender.Value;
@@ -83,14 +84,15 @@ internal class AccommodationInviteViewService(
         return new AccommodationInviteTargetsViewModel(
             senderGroup.Id,
             roomFreeSpace,
-            [.. groupedTargets, .. singleTargets]);
+            [.. groupedTargets, .. singleTargets],
+            mode);
     }
 
     public async Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
     {
         // Только группа приглашающего — список целей ради неё строить незачем: цель проверяет
         // сервис приглашений.
-        var sender = await GetSenderGroup(claimId)
+        var sender = (await GetSenderGroupAndMode(claimId)).Sender
             //TODO[Localize]
             ?? throw new AccommodationInviteNotAllowedException(claimId.ProjectId,
                 "Сначала надо выбрать тип проживания.");
@@ -98,31 +100,44 @@ internal class AccommodationInviteViewService(
         await accommodationInviteService.CreateAccommodationInvite(claimId, sender.Group.Id, target);
     }
 
+    // Все проверки — в сервисе: и права, и тип, и место.
+    public async Task MergeGroups(ClaimIdentification claimId, AccommodationGroupIdentification target)
+        => await accommodationInviteService.MergeAccommodationGroups(claimId, target);
+
     /// <summary>
-    /// План поселения и группа заявки, или <c>null</c>, если тип проживания по заявке не выбран.
+    /// Что текущий пользователь может сделать с соседями по заявке, вместе с планом поселения и
+    /// группой заявки (<c>null</c>, если тип проживания по заявке не выбран).
     /// </summary>
     /// <remarks>
-    /// Доступ ровно как у самого приглашения: кому операция откажет, тому и список не отдаём
-    /// (#5261).
+    /// Доступ ровно как у операций с проживанием: кому они откажут, тому и список не отдаём (#5261).
+    /// Режим решается по праву расселять, а не по тому, чья заявка: мастер с этим правом поселяет
+    /// вместе даже на своей заявке; без права приглашает только сам игрок, а ответственному мастеру
+    /// не остаётся ничего (#5656).
     /// </remarks>
-    private async Task<(RoomCategoryPlan Plan, AccommodationGroupInfo Group)?> GetSenderGroup(ClaimIdentification claimId)
+    private async Task<(AccommodationInviteMode Mode, (RoomCategoryPlan Plan, AccommodationGroupInfo Group)? Sender)>
+        GetSenderGroupAndMode(ClaimIdentification claimId)
     {
+        var userId = currentUserAccessor.UserIdentificationOrDefault;
         var claimInCharacter = await claimInfoRepository.GetClaimInCharacterOrDefault(claimId)
             ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(ClaimIdentification));
         var claimInfo = claimInCharacter
-            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault)
+            .RequestAccommodationChangeAccess(userId)
             .Claim;
+
+        var mode = claimInCharacter.Character.ProjectInfo.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations)
+            ? AccommodationInviteMode.Merge
+            : claimInfo.PlayerId == userId ? AccommodationInviteMode.Invite : AccommodationInviteMode.None;
 
         if (claimInfo.AccommodationTypeId is not { } typeId)
         {
-            return null;
+            return (mode, null);
         }
 
         var plan = await roomCategoryPlanRepository.GetPlanForTypeOrDefault(typeId)
             ?? throw new AccommodationTypeNotFoundException(typeId);
 
         // Тип задан — значит, ссылка указывает на группу (инвариант CharacterClaimInfo, ADR022).
-        return (plan, plan.GetGroupOrDefault(claimInfo.AccommodationGroupId)!);
+        return (mode, (plan, plan.GetGroupOrDefault(claimInfo.AccommodationGroupId)!));
     }
     public async Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
         ClaimIdentification claimId,
@@ -141,6 +156,9 @@ internal class AccommodationInviteViewService(
 
         // Принятые приглашения не показываем — они уже превратились в соседство по комнате
         var visible = invites.Where(invite => invite.IsAccepted != InviteState.Accepted).ToArray();
+
+        // Отвечать на приглашения может только сам игрок; мастер их только видит (#5656).
+        var canRespond = claim.PlayerUserId == currentUserAccessor.UserIdOrDefault;
         if (visible.Length == 0)
         {
             return [];
@@ -158,7 +176,8 @@ internal class AccommodationInviteViewService(
                 .Select(invite => new AccommodationInviteViewModel(
                     new AccommodationInviteIdentification(claimId.ProjectId, invite.Id),
                     ToUserLink(Counterparty(invite, direction).Player),
-                    invite.IsAccepted)),
+                    invite.IsAccepted,
+                    canRespond)),
         ];
     }
 

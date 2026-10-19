@@ -17,7 +17,8 @@
                         <td style="vertical-align: middle; border: none;">
                             <UserLink Model="@invite.Counterparty" />
                         </td>
-                        @if (invite.State == InviteState.Unanswered)
+                        @* Мастер видит приглашения без кнопок: отвечает только сам игрок (#5656) *@
+                        @if (invite.State == InviteState.Unanswered && invite.CanRespond)
                         {
                             <td style="border: none;">
                                 <div style="display: flex; flex-direction: row; align-items: center;">

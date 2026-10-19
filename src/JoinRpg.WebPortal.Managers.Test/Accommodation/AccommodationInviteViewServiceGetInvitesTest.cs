@@ -31,14 +31,14 @@ public class AccommodationInviteViewServiceGetInvitesTest
         Own = Mock.CreateApprovedClaim(Mock.CreateCharacter("Своя заявка"), Mock.Player);
     }
 
-    private AccommodationInviteViewService CreateService()
+    private AccommodationInviteViewService CreateService(int? currentUserId = null)
         => new(
             new FakeClaimsRepository(Mock),
             claimInfoRepository: null!,
             roomCategoryPlanRepository: null!,
             new FakeAccommodationInviteRepository(Mock),
             accommodationInviteService: null!,
-            new FakeCurrentUserAccessor(Mock.Master.UserId));
+            new FakeCurrentUserAccessor(currentUserId ?? Mock.Master.UserId));
 
     /// <summary>Утверждённая заявка отдельного игрока — чтобы контрагента было видно по пользователю.</summary>
     private Claim Other(string name)
@@ -60,6 +60,23 @@ public class AccommodationInviteViewServiceGetInvitesTest
 
     private Task<IReadOnlyCollection<AccommodationInviteViewModel>> Outgoing()
         => CreateService().GetInvites(OwnId, InviteDirection.Outgoing);
+
+    /// <summary>
+    /// Отвечать на приглашения может только сам игрок; мастер видит их без кнопок (#5656).
+    /// </summary>
+    [Fact]
+    public async Task CanRespond_OnlyForPlayer()
+    {
+        _ = Mock.CreateAccommodationRequest(Lux, Own);
+        var from = Other("Пригласивший");
+        _ = Mock.CreateAccommodationRequest(Lux, from);
+        _ = Mock.CreateAccommodationInvite(from, Own);
+
+        (await CreateService(Mock.Player.UserId).GetInvites(OwnId, InviteDirection.Incoming))
+            .ShouldHaveSingleItem().CanRespond.ShouldBeTrue();
+        (await CreateService(Mock.Master.UserId).GetInvites(OwnId, InviteDirection.Incoming))
+            .ShouldHaveSingleItem().CanRespond.ShouldBeFalse();
+    }
 
     [Fact]
     public async Task Incoming_Unanswered_IsVisibleWithSender()

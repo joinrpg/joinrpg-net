@@ -44,7 +44,7 @@ public class AccommodationInviteControlTest : BunitContext
     [Fact]
     public void ShouldSayNobodyToInviteWhenTargetListEmpty()
     {
-        client.NextTargets = new AccommodationInviteTargetsViewModel(SenderRequestId, RoomFreeSpace: 2, Targets: []);
+        client.NextTargets = new AccommodationInviteTargetsViewModel(SenderRequestId, RoomFreeSpace: 2, Targets: [], AccommodationInviteMode.Invite);
 
         var cut = RenderControl();
 
@@ -57,7 +57,7 @@ public class AccommodationInviteControlTest : BunitContext
         // Заполненность уже видна в панели проживания, а у типа на одного мест нет никогда —
         // «пока еще нельзя» там вводит в заблуждение (#5644)
         client.NextTargets = new AccommodationInviteTargetsViewModel(
-            SenderRequestId, RoomFreeSpace: 0, Targets: [SingleTarget(11)]);
+            SenderRequestId, RoomFreeSpace: 0, Targets: [SingleTarget(11)], AccommodationInviteMode.Invite);
 
         var cut = RenderControl();
 
@@ -70,7 +70,7 @@ public class AccommodationInviteControlTest : BunitContext
     public void ShouldRenderEveryTargetAsOption()
     {
         client.NextTargets = new AccommodationInviteTargetsViewModel(
-            SenderRequestId, RoomFreeSpace: 3, Targets: [GroupTarget(7), SingleTarget(11)]);
+            SenderRequestId, RoomFreeSpace: 3, Targets: [GroupTarget(7), SingleTarget(11)], AccommodationInviteMode.Invite);
 
         var cut = RenderControl();
 
@@ -89,7 +89,7 @@ public class AccommodationInviteControlTest : BunitContext
     public void GroupTargetShouldBeRenderedWithNegativeValue()
     {
         client.NextTargets = new AccommodationInviteTargetsViewModel(
-            SenderRequestId, RoomFreeSpace: 3, Targets: [GroupTarget(7), SingleTarget(11)]);
+            SenderRequestId, RoomFreeSpace: 3, Targets: [GroupTarget(7), SingleTarget(11)], AccommodationInviteMode.Invite);
 
         var cut = RenderControl();
 
@@ -107,11 +107,68 @@ public class AccommodationInviteControlTest : BunitContext
     public void InviteButtonShouldBeDisabledUntilTargetSelected()
     {
         client.NextTargets = new AccommodationInviteTargetsViewModel(
-            SenderRequestId, RoomFreeSpace: 3, Targets: [SingleTarget(11)]);
+            SenderRequestId, RoomFreeSpace: 3, Targets: [SingleTarget(11)], AccommodationInviteMode.Invite);
 
         var cut = RenderControl();
 
         cut.Find("button").HasAttribute("disabled").ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Игрок приглашает, мастер с правом расселять — поселяет вместе (#5656).
+    /// </summary>
+    [Fact]
+    public void PlayerShouldSeeInviteButton()
+    {
+        client.NextTargets = new AccommodationInviteTargetsViewModel(
+            SenderRequestId, RoomFreeSpace: 3, Targets: [SingleTarget(11)], AccommodationInviteMode.Invite);
+
+        var cut = RenderControl();
+
+        cut.Find("button").TextContent.ShouldContain("Пригласить");
+        cut.Markup.ShouldNotContain("Поселить вместе");
+    }
+
+    /// <inheritdoc cref="PlayerShouldSeeInviteButton"/>
+    [Fact]
+    public void MasterShouldSeeMergeButtonInsteadOfInvite()
+    {
+        client.NextTargets = new AccommodationInviteTargetsViewModel(
+            SenderRequestId, RoomFreeSpace: 3, Targets: [SingleTarget(11)], AccommodationInviteMode.Merge);
+
+        var cut = RenderControl();
+
+        cut.Find("button").TextContent.ShouldContain("Поселить вместе");
+        cut.Markup.ShouldNotContain("Пригласить");
+        cut.Markup.ShouldContain("(выберите, кого поселить вместе)");
+    }
+
+    [Fact]
+    public void MasterShouldSeeNobodyToMergeWhenTargetListEmpty()
+    {
+        client.NextTargets = new AccommodationInviteTargetsViewModel(
+            SenderRequestId, RoomFreeSpace: 2, Targets: [], AccommodationInviteMode.Merge);
+
+        var cut = RenderControl();
+
+        cut.Markup.ShouldContain("Пока некого поселить вместе.");
+        cut.Markup.ShouldNotContain("пригласить");
+    }
+
+    /// <summary>
+    /// Ответственный мастер без права расселять не приглашает и не поселяет — контрол молчит.
+    /// </summary>
+    [Fact]
+    public void ShouldShowNothingWhenNothingAllowed()
+    {
+        client.NextTargets = new AccommodationInviteTargetsViewModel(
+            SenderRequestId, RoomFreeSpace: 3, Targets: [SingleTarget(11)], AccommodationInviteMode.None);
+
+        var cut = RenderControl();
+
+        cut.FindAll("select").ShouldBeEmpty();
+        cut.FindAll("button").ShouldBeEmpty();
+        cut.Markup.ShouldNotContain("Пока");
     }
 
 
