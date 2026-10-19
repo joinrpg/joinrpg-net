@@ -34,6 +34,14 @@ internal sealed class FakeAccommodationNotificationService(List<object>? journal
         return Record(model);
     }
 
+    public List<AccommodationGroupMergedNotification> GroupMerged { get; } = [];
+
+    public Task SendNotification(AccommodationGroupMergedNotification model)
+    {
+        GroupMerged.Add(model);
+        return Record(model);
+    }
+
     private Task Record(object model)
     {
         journal?.Add(model);

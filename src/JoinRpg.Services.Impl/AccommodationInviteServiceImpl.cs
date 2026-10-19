@@ -51,7 +51,7 @@ internal class AccommodationInviteServiceImpl(
                         "Заявка на проживание не принадлежит приглашающей заявке.");
                 }
 
-                var (receiverGroup, receiverClaimIds) = await LoadInviteTarget(ctx, target, sender?.Plan);
+                var (receiverGroup, receiverClaimIds, _) = await LoadInviteTarget(ctx, target, sender?.Plan);
 
                 EnsureCanInvite(
                     senderClaimId.ProjectId,
@@ -83,6 +83,80 @@ internal class AccommodationInviteServiceImpl(
             });
     }
 
+    /// <inheritdoc />
+    public Task MergeAccommodationGroups(ClaimIdentification claimId, AccommodationGroupIdentification target)
+    {
+        _ = new IProjectEntityId[] { target }.EnsureProject(claimId.ProjectId);
+
+        // Корень агрегата — заявка, к которой переселяют. Доступ строго по праву расселять: операция
+        // двигает и заявки цели, за которые ни игрок, ни ответственный мастер этой заявки не
+        // отвечают (#5656).
+        return characterPropsService.ChangeClaimAsync(
+            claimId,
+            ClaimAccessRequirement.SetPlayersAccommodations,
+            ProjectActiveRequirement.MustBeActive,
+            target,
+            async ctx =>
+            {
+                var host = await ctx.LoadOwnAccommodationGroup();
+                var (targetGroup, _, targetClaim) = await LoadInviteTarget(ctx, target, host?.Plan);
+
+                // Проверки — те же, что у приглашения: объединение мастером заменяет пару
+                // «пригласить — принять», а не обходит её правила.
+                EnsureCanInvite(
+                    claimId.ProjectId,
+                    claimId,
+                    host,
+                    targetGroup,
+                    newDwellersCount: targetGroup?.SubjectsCount ?? 1,
+                    receiverClaimId: target.AsClaimId());
+
+                var (plan, hostGroup) = host!.Value;
+
+                // Переезжает вся группа цели, а если её нет — одна заявка, как и при приёме
+                // приглашения.
+                IReadOnlyCollection<ClaimIdentification> moving = targetGroup?.Subjects ?? [target.AsClaimId()!];
+                if (moving.Count == 0)
+                {
+                    // Группа без заявок в плане бывает, но в списке кандидатов её нет.
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(claimId.ProjectId,
+                        "В выбранной группе проживающих никого нет.");
+                }
+
+                var trackedHostGroup = ctx.Claim.AccommodationRequest;
+                if (trackedHostGroup is null || trackedHostGroup.Id != hostGroup.Id.AccommodationRequestId)
+                {
+                    throw new InvalidOperationException(
+                        $"Accommodation group {hostGroup.Id} of claim {claimId} is not loaded with the claim");
+                }
+
+                // Трекаемая группа цели приезжает вместе с любой её заявкой — с составом (как и у
+                // хэндла при приёме приглашения), поэтому заявки цели не грузятся по одной. Цель-заявка
+                // уже загружена при разборе цели, цель-группа — представлена любым участником.
+                var representative = targetClaim ?? await ctx.LoadOtherClaim(moving.First());
+                var trackedTargetGroup = representative.AccommodationRequest;
+                var movingClaims = targetGroup is null
+                    ? [representative]
+                    : TrackedSubjects(trackedTargetGroup, targetGroup);
+
+                await MoveIntoGroup(
+                    ctx,
+                    plan,
+                    hostGroup,
+                    trackedHostGroup,
+                    moving,
+                    movingClaims,
+                    emptiedGroup: targetGroup is null ? null : trackedTargetGroup,
+                    acceptedInvite: null);
+
+                ctx.AddGroupMergedNotification(new AccommodationGroupMergedNotification(
+                    claimId,
+                    [.. hostGroup.Subjects, .. moving],
+                    ctx.CurrentUser.ToUserInfoHeader()));
+            });
+    }
+
     /// <summary>
     /// Разворачивает цель приглашения: снимок её группы проживающих (если та уже есть) и заявки,
     /// которым уйдут приглашения.
@@ -93,13 +167,17 @@ internal class AccommodationInviteServiceImpl(
     /// План поселения приглашающего, если тот уже загружен: цель того же типа берётся из него же,
     /// без второго запроса.
     /// </param>
+    /// <returns>
+    /// Снимок группы цели, получатели приглашений и трекаемая заявка цели — если цель задана заявкой:
+    /// она уже загружена ради проверки проекта, и объединению групп её незачем грузить второй раз.
+    /// </returns>
     /// <remarks>
     /// Группа цели — снимок из плана поселения её <b>собственного</b> типа (ADR022 §3): она может
     /// оказаться другого типа, чем у приглашающего, то есть лежать в другом плане. Искать её в плане
     /// приглашающего значило бы получить <see cref="AccommodationGroupNotFoundException"/> вместо
     /// внятного «нужен такой же тип проживания».
     /// </remarks>
-    private static async Task<(AccommodationGroupInfo? Group, IReadOnlyCollection<ClaimIdentification> Receivers)>
+    private static async Task<(AccommodationGroupInfo? Group, IReadOnlyCollection<ClaimIdentification> Receivers, Claim? TargetClaim)>
         LoadInviteTarget(
             ClaimMutationContext ctx,
             AccommodationGroupIdentification target,
@@ -111,7 +189,7 @@ internal class AccommodationInviteServiceImpl(
             var group = senderPlan?.Groups.FirstOrDefault(g => g.Id == receiverGroupId)
                 ?? await LoadForeignGroup(ctx, receiverGroupId);
 
-            return (group, group.Subjects);
+            return (group, group.Subjects, null);
         }
 
         if (target.AsClaimId() is { } receiverClaimId)
@@ -120,16 +198,16 @@ internal class AccommodationInviteServiceImpl(
             // идентификатор цели приходит из запроса, и EnsureProject сверяет лишь объявленный в нём
             // проект. Без этого можно было пригласить заявку чужого проекта — приглашение создалось
             // бы, и игрок чужой игры получил бы уведомление.
-            var (_, receiverTypeId, receiverGroupRef) = await ctx.LoadOtherClaimAccommodation(receiverClaimId);
+            var (receiverClaim, receiverTypeId, receiverGroupRef) = await ctx.LoadOtherClaimAccommodation(receiverClaimId);
 
             if (receiverTypeId is null)
             {
                 // Тип не выбран — группы нет, приглашается одиночка.
-                return (null, [receiverClaimId]);
+                return (null, [receiverClaimId], receiverClaim);
             }
 
             var plan = await LoadPlanForType(ctx, receiverTypeId, senderPlan);
-            return (plan.GetGroupOrDefault(receiverGroupRef), [receiverClaimId]);
+            return (plan.GetGroupOrDefault(receiverGroupRef), [receiverClaimId], receiverClaim);
         }
 
         //TODO[Localize]

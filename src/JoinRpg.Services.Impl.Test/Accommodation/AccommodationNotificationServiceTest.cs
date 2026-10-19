@@ -359,4 +359,96 @@ public class AccommodationNotificationServiceTest
 
         notificationService.Queued.ShouldBeEmpty();
     }
+
+    private void SubscribeToInvites(User master)
+        => subscribeRepository.ForCharacters.Add(new UserSubscribe(
+            master.ToUserInfoHeader(),
+            SubscriptionOptions.CreateNoneSet() with { AccommodationInvitesChange = true }));
+
+    /// <summary>
+    /// Подписка — как у приглашений: объединение их заменяет. Ответственный мастер на приглашения не
+    /// подписан, подписанный только на изменения проживания — тоже не получает.
+    /// </summary>
+    [Fact]
+    public async Task Merge_GoesToInviteSubscribersOnly()
+    {
+        var responsibleMaster = mock.CreateMaster("Ответственный");
+        var accommodationOnly = mock.CreateMaster("Только проживание");
+        var invitesSubscriber = mock.CreateMaster("Приглашения");
+        mock.ReInitProjectInfo();
+        subscribeRepository.ForCharacters.Add(new UserSubscribe(
+            accommodationOnly.ToUserInfoHeader(),
+            SubscriptionOptions.CreateNoneSet() with { AccommodationChange = true }));
+        SubscribeToInvites(invitesSubscriber);
+        var host = AddClaim("Хозяин", playerId: 1, responsibleMaster);
+        var guest = AddClaim("Гость", playerId: 3, responsibleMaster);
+
+        await CreateService().SendNotification(Merged(host, guest));
+
+        var recipients = notificationService.Queued.SelectMany(n => n.Recepients).Select(r => r.UserId).ToList();
+        recipients.ShouldContain(new UserIdentification(invitesSubscriber.UserId));
+        recipients.ShouldNotContain(new UserIdentification(responsibleMaster.UserId));
+        recipients.ShouldNotContain(new UserIdentification(accommodationOnly.UserId));
+    }
+
+    private AccommodationGroupMergedNotification Merged(ClaimWithPlayer host, params ClaimWithPlayer[] others)
+        => new(host.ClaimId, [host.ClaimId, .. others.Select(claim => claim.ClaimId)], initiator);
+
+    [Fact]
+    public async Task Merge_EachPlayerGetsLinkToOwnClaim()
+    {
+        // Инициатор — mock.Master, он же ответственный мастер обеих заявок: себе он не пишет, так
+        // что мастерского уведомления нет вовсе.
+        var host = AddClaim("Хозяин", playerId: 1);
+        var guest = AddClaim("Гость", playerId: 3);
+
+        await CreateService().SendNotification(Merged(host, guest));
+
+        notificationService.Queued.Count.ShouldBe(2);
+        RecepientsOf(host.ClaimId).ShouldBe([host.Player.UserId]);
+        RecepientsOf(guest.ClaimId).ShouldBe([guest.Player.UserId]);
+    }
+
+    [Fact]
+    public async Task Merge_MasterOfSeveralClaims_GetsSingleNotificationLinkedToHost()
+    {
+        // Мастер, подписанный на все заявки группы, получил бы по письму на каждую — теперь одно,
+        // со ссылкой на заявку, на странице которой объединяли.
+        var otherMaster = mock.CreateMaster();
+        mock.ReInitProjectInfo();
+        SubscribeToInvites(otherMaster);
+        var host = AddClaim("Хозяин", playerId: 1);
+        var guest = AddClaim("Гость", playerId: 3);
+        var third = AddClaim("Третий", playerId: 4);
+
+        await CreateService().SendNotification(Merged(host, guest, third));
+
+        var masterId = new UserIdentification(otherMaster.UserId);
+        var toMaster = notificationService.Queued
+            .Where(notification => notification.Recepients.Any(r => r.UserId == masterId))
+            .ShouldHaveSingleItem();
+        toMaster.EntityReference.ShouldBe(host.ClaimId);
+        toMaster.Recepients.ShouldHaveSingleItem();
+
+        // Игрокам — по-прежнему каждому своё и без мастера.
+        RecepientsOf(guest.ClaimId).ShouldBe([guest.Player.UserId]);
+        RecepientsOf(third.ClaimId).ShouldBe([third.Player.UserId]);
+    }
+
+    [Fact]
+    public async Task Merge_PlayerWhoIsAlsoMasterOfAnotherClaim_GetsOnlyPlayerNotification()
+    {
+        var playingMaster = mock.CreateMaster();
+        mock.ReInitProjectInfo();
+        SubscribeToInvites(playingMaster);
+        var host = AddClaim("Хозяин", playerId: playingMaster.UserId);
+        var guest = AddClaim("Гость", playerId: 3);
+
+        await CreateService().SendNotification(Merged(host, guest));
+
+        var userId = new UserIdentification(playingMaster.UserId);
+        notificationService.Queued.Count(notification => notification.Recepients.Any(r => r.UserId == userId))
+            .ShouldBe(1);
+        RecepientsOf(host.ClaimId).ShouldBe([userId]);
+    }
 }

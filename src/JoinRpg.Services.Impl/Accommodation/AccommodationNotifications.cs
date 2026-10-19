@@ -92,3 +92,20 @@ internal record AccommodationInviteNotification(
     IReadOnlyCollection<ClaimIdentification> RecipientClaims,
     UserInfoHeader Initiator,
     InviteChangeKind Kind);
+
+/// <summary>
+/// Уведомление о том, что мастер поселил игроков вместе — объединил их группы проживания без
+/// приглашения.
+/// </summary>
+/// <param name="Host">
+/// Заявка, на странице которой объединяли, — к ней переселили цель. Ссылка мастерского уведомления.
+/// </param>
+/// <param name="Members">
+/// Итоговый состав группы: и те, к кому переселили, и переселённые. Игроки получают по уведомлению со
+/// ссылкой на свою заявку, мастера — одно на всех со ссылкой на <paramref name="Host"/>.
+/// </param>
+/// <param name="Initiator">Мастер, который объединил группы.</param>
+internal record AccommodationGroupMergedNotification(
+    ClaimIdentification Host,
+    IReadOnlyCollection<ClaimIdentification> Members,
+    UserInfoHeader Initiator);

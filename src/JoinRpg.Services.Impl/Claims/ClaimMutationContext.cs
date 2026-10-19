@@ -215,6 +215,11 @@ internal abstract record ClaimMutationContext(
     internal List<AccommodationInviteNotification> InviteNotifications { get; } = [];
 
     /// <summary>
+    /// Уведомления о том, что мастер поселил игроков вместе.
+    /// </summary>
+    internal List<AccommodationGroupMergedNotification> GroupMergedNotifications { get; } = [];
+
+    /// <summary>
     /// Добавляет комментарий к этой заявке и ставит уведомление по нему в очередь.
     /// </summary>
     public PendingComment AddComment(
@@ -274,6 +279,12 @@ internal abstract record ClaimMutationContext(
     /// </summary>
     public void AddInviteNotification(AccommodationInviteNotification notification)
         => InviteNotifications.Add(notification);
+
+    /// <summary>
+    /// Ставит уведомление об объединении групп проживания в очередь. Отправится после сохранения.
+    /// </summary>
+    public void AddGroupMergedNotification(AccommodationGroupMergedNotification notification)
+        => GroupMergedNotifications.Add(notification);
 
     /// <summary>
     /// Помечает персонажа изменённым, если заявка утверждена. Перенос

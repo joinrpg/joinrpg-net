@@ -200,6 +200,11 @@ internal class CharacterPropsService(
                     {
                         await accommodationNotificationService.SendNotification(notification);
                     }
+
+                    foreach (var notification in ctx.GroupMergedNotifications)
+                    {
+                        await accommodationNotificationService.SendNotification(notification);
+                    }
                 }
 
                 return result;

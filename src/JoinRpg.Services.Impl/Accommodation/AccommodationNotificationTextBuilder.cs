@@ -24,6 +24,15 @@ internal record InviteTextData(
     InviteChangeKind Kind);
 
 /// <summary>
+/// Готовые к подстановке данные уведомления о том, что мастер поселил игроков вместе.
+/// </summary>
+/// <param name="Members">Имена игроков итоговой группы — в порядке заявок.</param>
+internal record GroupMergedTextData(
+    ProjectName ProjectName,
+    UserDisplayName Initiator,
+    IReadOnlyCollection<UserDisplayName> Members);
+
+/// <summary>
 /// Собирает текст уведомлений о проживании. Вынесен отдельным классом без зависимостей — чтобы
 /// каждый видимый игроку текст закрывался verify-тестом (ADR003, «Тестирование»).
 /// </summary>
@@ -56,6 +65,21 @@ internal class AccommodationNotificationTextBuilder
                 $"{data.Initiator.DisplayName} отменил приглашение к совместному проживанию.",
             _ => throw new ArgumentOutOfRangeException(nameof(data), data.Kind, "Неожиданное значение"),
         };
+
+    public string GetHeader(GroupMergedTextData data)
+        => $"{data.ProjectName.Value}: совместное проживание";
+
+    // Текст общий для всех получателей — и для игроков, и для подписанных мастеров, — поэтому без
+    // «Вас»: перечислен весь итоговый состав.
+    public string GetBody(GroupMergedTextData data)
+        => $"""
+            Добрый день, %recepient.name%
+
+            {data.Initiator.DisplayName} поселил вместе:
+            {PlayerList(data.Members)}
+
+            Подробности — на странице заявки.
+            """;
 
     public string GetHeader(RoomOccupancyTextData data)
         => $"{data.ProjectName.Value}: комната {data.AccommodationTypeName} {data.RoomName}";
