@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace JoinRpg.Services.Impl;
+namespace JoinRpg.Domain;
 
-public static class GravatarHelper
+internal static class GravatarHelper
 {
     /// <summary>
     /// Get link to gravatar.com

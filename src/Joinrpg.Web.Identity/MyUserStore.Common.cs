@@ -2,6 +2,7 @@ using System.Data.Entity;
 using System.Linq.Expressions;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Users;
 using Microsoft.Extensions.Logging;
 using DbUser = JoinRpg.DataModel.User;
@@ -45,6 +46,23 @@ internal partial class MyUserStore(MyDbContext ctx, ILogger<MyUserStore> logger)
         _ = ctx.UserSet.Add(dbUser);
         _ = await ctx.SaveChangesAsync(ct);
         user.Id = dbUser.UserId;
+
+        // Аватарка по умолчанию есть у каждого пользователя с момента создания, так что на чтении её заводить
+        // не нужно. Аватарка из соцсети, если она будет, сменит эту (см. UserAvatarExtensions.AddSocialAvatar).
+        // Пользователь уже записан: если аватарка не сохранится, регистрация всё равно должна дойти до конца
+        // (письмо, привязка соцсети, вход). Аватарку такому пользователю заведут позже.
+        var avatar = dbUser.AddGravatar();
+        try
+        {
+            _ = await ctx.SaveChangesAsync(CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Не удалось завести аватарку по умолчанию новому пользователю {userId}", dbUser.UserId);
+            dbUser.SelectedAvatar = null;
+            _ = dbUser.Avatars.Remove(avatar);
+            ctx.Entry(avatar).State = EntityState.Detached;
+        }
     }
 
     private async Task UpdateImpl(JoinIdentityUser user, CancellationToken ct = default)
