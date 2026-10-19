@@ -42,7 +42,8 @@ else
         <GroupEditMenu GroupId="Model.RootGroupId"
                        GroupType="Model.RootGroupType"
                        HasMasterAccess="Model.HasMasterAccess"
-                       ShowEditControls="Model.CanEditSettings"
+                       ShowEditGroupControls="Model.CanEditGroups"
+                       ShowEditRoleControls="Model.CanEditRoles"
                        Size="SizeStyleEnum.Medium" />
         @* Заявка «просто на игру» — на шаблон по умолчанию (#5319). *@
         @if (Model.DefaultClaimProjectStatus is { } projectStatus)
@@ -50,7 +51,7 @@ else
             <SendClaimButton ProjectId="Model.RootGroupId.ProjectId" ProjectStatus="projectStatus" Size="SizeStyleEnum.Large" />
         }
         @* У транзиентной («классической») сетки нет id — кнопки настроек не показываем. *@
-        @if (Model.CanEditSettings && Model.RolesListId is { } rolesListId)
+        @if (Model.CanEditGroups && Model.RolesListId is { } rolesListId)
         {
             <JoinButton Preset="ButtonPreset.Edit"
                         OnClick='() => NavigationManager.NavigateTo($"/{rolesListId.ProjectId.Value}/tools/roleslist/edit/{rolesListId.ProjectRolesListId}")'
@@ -96,7 +97,8 @@ else
                             <GroupEditMenu GroupId="groupHeader.Group.CharacterGroupId"
                                           GroupType="groupHeader.GroupType"
                                           HasMasterAccess="Model.HasMasterAccess"
-                                          ShowEditControls="Model.CanEditSettings" />
+                                          ShowEditGroupControls="Model.CanEditGroups"
+                                          ShowEditRoleControls="Model.CanEditRoles" />
                             @if (groupHeader.Description is { } description)
                             {
                                 <br />@description
@@ -111,7 +113,7 @@ else
                         <tr>
                             <td>
                                 <CharacterLinkWithEdit Model="charRow.Character" />
-                                @if (charRow.Character.CanEdit && charBlock.Count > 1)
+                                @if (Model.CanEditGroups && charBlock.Count > 1)
                                 {
                                     <JoinMoveControl TItem="ProjectRoleGridCharacterRowViewModel"
                                                       Items="charBlock"

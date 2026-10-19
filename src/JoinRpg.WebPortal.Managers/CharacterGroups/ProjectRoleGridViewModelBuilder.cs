@@ -17,7 +17,8 @@ internal static class ProjectRoleGridViewModelBuilder
 {
     public static ProjectRoleGridViewModel Build(
         ProjectRolesList config,
-        bool canEditSettings,
+        bool canEditGroups,
+        bool canEditRoles,
         bool canViewPrivate,
         bool excludeSpecialGroups,
         IReadOnlyList<CharacterGroupInfo> orderedGroups,
@@ -36,13 +37,14 @@ internal static class ProjectRoleGridViewModelBuilder
         var rootGroup = orderedGroups[0];
 
         var rows = config.GroupsViewMode == RolesGridGroupsViewMode.Tree
-            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, excludeSpecialGroups, fields, projectInfo)
-            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, fields, projectInfo);
+            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditRoles, excludeSpecialGroups, fields, projectInfo)
+            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditRoles, fields, projectInfo);
 
         return new ProjectRoleGridViewModel(
             RolesListId: config.ProjectRolesListId,
             Name: config.Name,
-            CanEditSettings: canEditSettings,
+            CanEditGroups: canEditGroups,
+            CanEditRoles: canEditRoles,
             HasMasterAccess: canViewPrivate,
             HasPlayerColumn: hasPlayerColumn,
             HasGroupsColumn: hasGroupsColumn,
@@ -66,7 +68,7 @@ internal static class ProjectRoleGridViewModelBuilder
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         bool hasGroupsColumn,
         bool canViewPrivate,
-        bool canEditSettings,
+        bool canEditRoles,
         IReadOnlyList<ProjectFieldInfo> fields,
         ProjectInfo projectInfo)
     {
@@ -91,7 +93,7 @@ internal static class ProjectRoleGridViewModelBuilder
             {
                 if (config.GroupsViewMode != RolesGridGroupsViewMode.None || seen.Add(character.Id.CharacterId))
                 {
-                    result.Add(BuildCharacterRow(character, config, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings, fields, group.Id));
+                    result.Add(BuildCharacterRow(character, config, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditRoles, fields, group.Id));
                 }
             }
         }
@@ -113,7 +115,7 @@ internal static class ProjectRoleGridViewModelBuilder
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
         bool hasGroupsColumn,
         bool canViewPrivate,
-        bool canEditSettings,
+        bool canEditRoles,
         bool excludeSpecialGroups,
         IReadOnlyList<ProjectFieldInfo> fields,
         ProjectInfo projectInfo)
@@ -156,7 +158,7 @@ internal static class ProjectRoleGridViewModelBuilder
             foreach (var character in ordered)
             {
                 result.Add(BuildCharacterRow(
-                    character, config, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditSettings,
+                    character, config, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditRoles,
                     fields, group.Id, firstCopy: seenCharacters.Add(character.Id.CharacterId)));
             }
 
