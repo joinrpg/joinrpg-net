@@ -250,6 +250,72 @@ public class CharacterGroupServiceTest
 
     private CharacterGroup RootGroup => mock.Project.CharacterGroups.Single(g => g.IsRoot);
 
+    private void BlockProject()
+    {
+        mock.Project.IsBlocked = true;
+        mock.ReInitProjectInfo();
+    }
+
+    /// <summary>
+    /// ADR023: иерархия, описания и видимость групп после мая не восстанавливаются — восстановление
+    /// заводит потерянные группы скрытыми под корнем, и мастер расставляет их до снятия блокировки.
+    /// </summary>
+    [Fact]
+    public async Task GroupSetup_InBlockedProject_Succeeds()
+    {
+        var parent = CreateGroup(isPublic: true, RootGroup);
+        var restored = CreateGroup(isPublic: false, RootGroup);
+        var first = mock.CreateCharacter("Первый");
+        var second = mock.CreateCharacter("Второй");
+        first.ParentCharacterGroupIds = [parent.CharacterGroupId];
+        second.ParentCharacterGroupIds = [parent.CharacterGroupId];
+        BlockProject();
+        var service = CreateService(mock.Master.UserId);
+
+        _ = await service.AddCharacterGroup(ProjectId, "Новая группа", isPublic: false, [GroupId(parent)], "");
+        await service.EditCharacterGroup(GroupId(restored), "Восстановленная", isPublic: true, [GroupId(parent)], "Описание");
+        _ = await service.MoveCharacterAfter(GroupId(parent), CharacterId(first), CharacterId(second));
+        _ = await service.MoveCharacterGroupAfter(GroupId(parent), GroupId(restored), afterCharacterGroupId: null);
+
+        restored.IsPublic.ShouldBeTrue();
+        restored.ParentCharacterGroupIds.ShouldBe([parent.CharacterGroupId]);
+        mock.Project.CharacterGroups.ShouldContain(g => g.CharacterGroupName == "Новая группа");
+        unitOfWork.SaveChangesCallCount.ShouldBe(4);
+    }
+
+    /// <summary>
+    /// Удаление группы перевешивает персонажей и подгруппы, лежавшие только в ней, к её родителям, — это
+    /// правка персонажей, а она в блокировке запрещена (ADR023).
+    /// </summary>
+    [Fact]
+    public async Task DeleteCharacterGroup_InBlockedProject_Throws_AndDoesNotSave()
+    {
+        var group = CreateGroup(isPublic: true, RootGroup);
+        var character = mock.CreateCharacter("Жилец группы");
+        character.ParentCharacterGroupIds = [group.CharacterGroupId];
+        BlockProject();
+
+        _ = await Should.ThrowAsync<ProjectBlockedException>(
+            () => CreateService(mock.Master.UserId).DeleteCharacterGroup(GroupId(group)));
+
+        group.IsActive.ShouldBeTrue();
+        character.ParentCharacterGroupIds.ShouldBe([group.CharacterGroupId]);
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task AddCharacterGroup_InArchivedProject_Throws_AndDoesNotSave()
+    {
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(() => CreateService(mock.Master.UserId)
+            .AddCharacterGroup(ProjectId, "Новая группа", isPublic: false, [RootGroupId], ""));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
     [Fact]
     public async Task AddCharacterGroup_PublicGroupUnderPrivateParent_Throws_AndDoesNotSave()
     {
