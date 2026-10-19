@@ -409,6 +409,7 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
 
         var notification = accommodationNotifications.Invites.ShouldHaveSingleItem();
         notification.RecipientClaims.ShouldBe([invited.GetId()]);
+        notification.Host.ShouldBe(claim.GetId());
         notification.Kind.ShouldBe(InviteChangeKind.Cancelled);
     }
 

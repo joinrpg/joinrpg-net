@@ -80,11 +80,15 @@ public class AccommodationNotificationServiceTest
             remaining,
             RoomOccupancyChangeKind.Occupied);
 
+    /// <param name="host">Заявка, на странице которой выполнили операцию; по умолчанию — первая из
+    /// <paramref name="recipientClaims"/>.</param>
     private AccommodationInviteNotification Invite(
         IReadOnlyCollection<ClaimIdentification> recipientClaims,
         UserInfoHeader? initiatorOverride = null,
-        InviteChangeKind kind = InviteChangeKind.Created)
+        InviteChangeKind kind = InviteChangeKind.Created,
+        ClaimIdentification? host = null)
         => new(
+            host ?? recipientClaims.FirstOrDefault() ?? new ClaimIdentification(mock.ProjectInfo.ProjectId, 9999),
             recipientClaims,
             initiatorOverride ?? initiator,
             kind);
@@ -103,6 +107,15 @@ public class AccommodationNotificationServiceTest
 
     private IReadOnlyCollection<UserIdentification> RecepientsOf(ClaimIdentification claimId)
         => [.. QueuedFor(claimId).Recepients.Select(r => r.UserId)];
+
+    /// <summary>Получатели всех поставленных уведомлений вместе.</summary>
+    private List<UserIdentification> AllRecepients()
+        => [.. notificationService.Queued.SelectMany(n => n.Recepients).Select(r => r.UserId)];
+
+    /// <summary>Сколько уведомлений получил пользователь.</summary>
+    private int QueuedCountFor(User user)
+        => notificationService.Queued.Count(
+            notification => notification.Recepients.Any(r => r.UserId == new UserIdentification(user.UserId)));
 
     /// <summary>Поставлено ли вообще уведомление по этой заявке.</summary>
     private bool QueuedAnythingFor(ClaimIdentification claimId)
@@ -328,7 +341,7 @@ public class AccommodationNotificationServiceTest
 
         await CreateService().SendNotification(Invite([claim.ClaimId]));
 
-        var recipients = RecepientsOf(claim.ClaimId);
+        var recipients = AllRecepients();
         recipients.ShouldContain(new UserIdentification(subscribedMaster.UserId));
         recipients.ShouldNotContain(new UserIdentification(roomOnlyMaster.UserId));
     }
@@ -360,6 +373,51 @@ public class AccommodationNotificationServiceTest
         notificationService.Queued.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task Invite_MasterOfSeveralClaims_GetsSingleNotificationLinkedToHost()
+    {
+        // Приглашение целой группы: мастер, подписанный на все её заявки, раньше получал по письму
+        // на каждую (#5676). Теперь одно, со ссылкой на заявку, на странице которой приглашали.
+        var otherMaster = mock.CreateMaster();
+        mock.ReInitProjectInfo();
+        SubscribeToInvites(otherMaster);
+        var sender = AddClaim("Приглашающий", playerId: 1);
+        var first = AddClaim("Первый", playerId: 3);
+        var second = AddClaim("Второй", playerId: 4);
+
+        await CreateService().SendNotification(
+            Invite([first.ClaimId, second.ClaimId], host: sender.ClaimId));
+
+        var masterId = new UserIdentification(otherMaster.UserId);
+        var toMaster = notificationService.Queued
+            .Where(notification => notification.Recepients.Any(r => r.UserId == masterId))
+            .ShouldHaveSingleItem();
+        toMaster.EntityReference.ShouldBe(sender.ClaimId);
+        toMaster.Recepients.ShouldHaveSingleItem();
+
+        // Игрокам — по-прежнему каждому своё и без мастера.
+        RecepientsOf(first.ClaimId).ShouldBe([first.Player.UserId]);
+        RecepientsOf(second.ClaimId).ShouldBe([second.Player.UserId]);
+    }
+
+    [Fact]
+    public async Task Invite_PlayerWhoIsAlsoSubscribedMaster_GetsOnlyPlayerNotification()
+    {
+        // Отмена уведомляет обе стороны: игрок одной из них, подписанный как мастер на другую,
+        // получает одно уведомление — своё, со ссылкой на свою заявку.
+        var playingMaster = mock.CreateMaster();
+        mock.ReInitProjectInfo();
+        SubscribeToInvites(playingMaster);
+        var own = AddClaim("Свой", playerId: playingMaster.UserId);
+        var other = AddClaim("Другой", playerId: 3);
+
+        await CreateService().SendNotification(
+            Invite([own.ClaimId, other.ClaimId], kind: InviteChangeKind.Cancelled, host: other.ClaimId));
+
+        QueuedCountFor(playingMaster).ShouldBe(1);
+        RecepientsOf(own.ClaimId).ShouldBe([new UserIdentification(playingMaster.UserId)]);
+    }
+
     private void SubscribeToInvites(User master)
         => subscribeRepository.ForCharacters.Add(new UserSubscribe(
             master.ToUserInfoHeader(),
@@ -385,7 +443,7 @@ public class AccommodationNotificationServiceTest
 
         await CreateService().SendNotification(Merged(host, guest));
 
-        var recipients = notificationService.Queued.SelectMany(n => n.Recepients).Select(r => r.UserId).ToList();
+        var recipients = AllRecepients();
         recipients.ShouldContain(new UserIdentification(invitesSubscriber.UserId));
         recipients.ShouldNotContain(new UserIdentification(responsibleMaster.UserId));
         recipients.ShouldNotContain(new UserIdentification(accommodationOnly.UserId));
@@ -446,9 +504,7 @@ public class AccommodationNotificationServiceTest
 
         await CreateService().SendNotification(Merged(host, guest));
 
-        var userId = new UserIdentification(playingMaster.UserId);
-        notificationService.Queued.Count(notification => notification.Recepients.Any(r => r.UserId == userId))
-            .ShouldBe(1);
-        RecepientsOf(host.ClaimId).ShouldBe([userId]);
+        QueuedCountFor(playingMaster).ShouldBe(1);
+        RecepientsOf(host.ClaimId).ShouldBe([new UserIdentification(playingMaster.UserId)]);
     }
 }

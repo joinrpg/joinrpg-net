@@ -23,6 +23,8 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
 
         Notification().Kind.ShouldBe(InviteChangeKind.Created);
         RecipientClaimIds().ShouldBe([receiver.ClaimId]);
+        // Мастерам — ссылка на заявку, со страницы которой приглашали.
+        Notification().Host.ShouldBe(sender.GetId());
         NotificationWentAfterSave();
     }
 
@@ -42,6 +44,7 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
 
         Notification().Kind.ShouldBe(InviteChangeKind.Created);
         RecipientClaimIds().ShouldBe([firstNeighbour.ClaimId, secondNeighbour.ClaimId], ignoreOrder: true);
+        Notification().Host.ShouldBe(sender.GetId());
         NotificationWentAfterSave();
     }
 
@@ -57,6 +60,7 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
 
         Notification().Kind.ShouldBe(InviteChangeKind.Accepted);
         RecipientClaimIds().ShouldBe([sender.ClaimId]);
+        Notification().Host.ShouldBe(receiver.GetId());
         NotificationWentAfterSave();
     }
 
@@ -72,6 +76,7 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
 
         Notification().Kind.ShouldBe(InviteChangeKind.Cancelled);
         RecipientClaimIds().ShouldBe([sender.ClaimId, receiver.ClaimId], ignoreOrder: true);
+        Notification().Host.ShouldBe(sender.GetId());
         NotificationWentAfterSave();
     }
 
@@ -88,6 +93,7 @@ public class AccommodationInviteNotificationTest : AccommodationInviteTestBase
 
         Notification().Kind.ShouldBe(InviteChangeKind.Cancelled);
         RecipientClaimIds().ShouldBe([sender.ClaimId, receiver.ClaimId], ignoreOrder: true);
+        Notification().Host.ShouldBe(receiver.GetId());
         NotificationWentAfterSave();
     }
 

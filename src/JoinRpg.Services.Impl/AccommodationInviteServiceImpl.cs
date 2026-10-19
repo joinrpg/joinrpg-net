@@ -79,6 +79,7 @@ internal class AccommodationInviteServiceImpl(
                 }
 
                 ctx.AddInviteNotification(new AccommodationInviteNotification(
+                    senderClaimId,
                     receiverClaimIds,
                     ctx.CurrentUser.ToUserInfoHeader(),
                     InviteChangeKind.Created));
@@ -450,6 +451,7 @@ internal class AccommodationInviteServiceImpl(
                 invite.ResolveDescription = ResolveDescription.Accepted;
 
                 ctx.AddInviteNotification(new AccommodationInviteNotification(
+                    ctx.CharacterClaimInfo.ClaimId,
                     [participants.Sender],
                     ctx.CurrentUser.ToUserInfoHeader(),
                     InviteChangeKind.Accepted));
@@ -658,6 +660,7 @@ internal class AccommodationInviteServiceImpl(
 
                 // Уведомление уходит обеим сторонам, как и до миграции.
                 ctx.AddInviteNotification(new AccommodationInviteNotification(
+                    ctx.CharacterClaimInfo.ClaimId,
                     [participants.Sender, participants.Receiver],
                     ctx.CurrentUser.ToUserInfoHeader(),
                     InviteChangeKind.Cancelled));

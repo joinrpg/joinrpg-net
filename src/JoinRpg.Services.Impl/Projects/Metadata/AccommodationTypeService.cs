@@ -291,6 +291,7 @@ internal class AccommodationTypeService(
         if (recipients.Count > 0)
         {
             ctx.AddInviteNotification(new AccommodationInviteNotification(
+                ctx.CharacterClaimInfo.ClaimId,
                 recipients,
                 ctx.CurrentUser.ToUserInfoHeader(),
                 InviteChangeKind.Cancelled));
