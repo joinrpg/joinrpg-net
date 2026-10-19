@@ -63,7 +63,7 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
     internal const int CharacterIdentityCurrent = 100_000;
 
     /// <summary>
-    /// Оболочка персонажа так же, как в бою: скрытый активный персонаж игрока в корневой группе.
+    /// Оболочка персонажа так же, как в бою: активный персонаж заданных типа и видимости в корневой группе.
     /// Мок — один проект, поэтому «занят другим проектом» не бывает.
     /// </summary>
     public Task<RestoredShellInsertResult> InsertRestoredCharacterShell(RestoredCharacterShell shell)
@@ -82,8 +82,7 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         character.CharacterType = shell.CharacterType;
         character.IsHot = shell.IsHot;
         character.CharacterSlotLimit = null;
-        character.IsPublic = false;
-        character.HidePlayerForCharacter = true;
+        (character.IsPublic, character.HidePlayerForCharacter) = CharacterTypeInfo.GetVisibilityFlags(shell.Visibility);
         character.JsonData = "{}";
         character.Description = new MarkdownDbValue(shell.Description);
         character.ParentCharacterGroupIds = [shell.RootGroupId.CharacterGroupId];

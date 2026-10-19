@@ -87,6 +87,19 @@ public record CharacterTypeInfo
             (true, true) => CharacterVisibility.PlayerHidden,
         };
 
+    /// <summary>
+    /// Обратный к <see cref="GetVisibility"/> маппинг: пара флагов, которую пишет доменное создание.
+    /// У скрытого персонажа игрок тоже скрыт.
+    /// </summary>
+    public static (bool IsPublic, bool HidePlayerForCharacter) GetVisibilityFlags(CharacterVisibility visibility)
+        => visibility switch
+        {
+            CharacterVisibility.Public => (true, false),
+            CharacterVisibility.PlayerHidden => (true, true),
+            CharacterVisibility.Private => (false, true),
+            _ => throw new ArgumentOutOfRangeException(nameof(visibility), visibility, "Unknown character visibility"),
+        };
+
     public static CharacterTypeInfo Default() => new(CharacterType.Player, false, null, null, CharacterVisibility.Public);
 
     public static CharacterTypeInfo DefaultSlot(string slotName)
@@ -113,13 +126,7 @@ public record CharacterTypeInfo
         slotLimit = SlotLimit;
         isAcceptingClaims = CharacterType != CharacterType.NonPlayer;
         slotName = SlotName;
-        (isPublic, isPlayerHidden) = CharacterVisibility switch
-        {
-            CharacterVisibility.Public => (true, false),
-            CharacterVisibility.PlayerHidden => (true, true),
-            CharacterVisibility.Private => (false, true),
-            _ => throw new NotImplementedException(),
-        };
+        (isPublic, isPlayerHidden) = GetVisibilityFlags(CharacterVisibility);
     }
 
     public void Deconstruct(out CharacterType characterType, out bool isHot, out int? slotLimit)

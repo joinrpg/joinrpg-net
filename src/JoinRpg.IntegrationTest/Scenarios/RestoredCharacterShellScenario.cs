@@ -96,7 +96,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
         {
             var service = sp.GetRequiredService<IExportRestoreService>();
             await service.RestoreLostGroup(lostGroupId, "Потерянная группа");
-            await service.RestoreLostCharacter(lostCharacterId, CharacterName, CharacterType.Player, isHot: false, target);
+            await service.RestoreLostCharacter(lostCharacterId, CharacterName, CharacterType.Player, isHot: false, CharacterVisibility.Private, target);
         });
 
         // 5. Строки на месте с заданными id, как у доменного создания; счётчики не сдвинулись
@@ -136,7 +136,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
         {
             var service = sp.GetRequiredService<IExportRestoreService>();
             await service.RestoreLostGroup(lostGroupId, "Потерянная группа");
-            await service.RestoreLostCharacter(lostCharacterId, CharacterName, CharacterType.Player, isHot: false, target);
+            await service.RestoreLostCharacter(lostCharacterId, CharacterName, CharacterType.Player, isHot: false, CharacterVisibility.Private, target);
 
             var unitOfWork = sp.GetRequiredService<IUnitOfWork>();
             var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
@@ -145,7 +145,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
                 new RestoredCharacterGroupShell(lostGroupId, root, "Другое", masterId, DateTime.UtcNow)))
                 .ShouldBe(RestoredShellInsertResult.AlreadyExists);
             (await unitOfWork.GetCharacterAggregateWriteRepository().InsertRestoredCharacterShell(
-                new RestoredCharacterShell(lostCharacterId, root, "Другой", null, masterId, DateTime.UtcNow, CharacterType.Player, IsHot: false)))
+                new RestoredCharacterShell(lostCharacterId, root, "Другой", null, masterId, DateTime.UtcNow, CharacterType.Player, IsHot: false, CharacterVisibility.Private)))
                 .ShouldBe(RestoredShellInsertResult.AlreadyExists);
         });
 
@@ -181,12 +181,12 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
                 () => service.RestoreLostGroup(new CharacterGroupIdentification(otherProjectId, lostGroupIntId), "Чужая"));
             _ = await Should.ThrowAsync<JoinValidationException>(
                 () => service.RestoreLostCharacter(
-                    new CharacterIdentification(otherProjectId, lostCharacterIntId), "Чужой", CharacterType.Player, isHot: false, new RestoredCharacterTarget(null, null)));
+                    new CharacterIdentification(otherProjectId, lostCharacterIntId), "Чужой", CharacterType.Player, isHot: false, CharacterVisibility.Private, new RestoredCharacterTarget(null, null)));
             _ = await Should.ThrowAsync<JoinValidationException>(
                 () => service.RestoreLostGroup(new CharacterGroupIdentification(otherProjectId, groupIdentityBefore + 1000), "Будущая"));
             _ = await Should.ThrowAsync<JoinValidationException>(
                 () => service.RestoreLostCharacter(
-                    new CharacterIdentification(otherProjectId, characterIdentityBefore + 1000), "Будущий", CharacterType.Player, isHot: false, new RestoredCharacterTarget(null, null)));
+                    new CharacterIdentification(otherProjectId, characterIdentityBefore + 1000), "Будущий", CharacterType.Player, isHot: false, CharacterVisibility.Private, new RestoredCharacterTarget(null, null)));
         });
 
         using (var scope = factory.Services.CreateScope())
@@ -214,7 +214,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
                     new CharacterGroupIdentification(otherProjectId, id), otherRoot, "Группа", masterId, DateTime.UtcNow));
             Task<RestoredShellInsertResult> InsertCharacter(int id)
                 => characters.InsertRestoredCharacterShell(new RestoredCharacterShell(
-                    new CharacterIdentification(otherProjectId, id), otherRoot, "Персонаж", null, masterId, DateTime.UtcNow, CharacterType.Player, IsHot: false));
+                    new CharacterIdentification(otherProjectId, id), otherRoot, "Персонаж", null, masterId, DateTime.UtcNow, CharacterType.Player, IsHot: false, CharacterVisibility.Private));
 
             (await InsertGroup(lostGroupIntId)).ShouldBe(RestoredShellInsertResult.TakenInOtherProject);
             (await InsertCharacter(lostCharacterIntId)).ShouldBe(RestoredShellInsertResult.TakenInOtherProject);
@@ -241,13 +241,15 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
     /// <summary>
     /// Тип из «Занят?» выгрузки (#5645): шаблон, горячий шаблон, NPC, горячая вакансия восстанавливаются
     /// такими же строками, как их доменное создание (тип, «горячесть», приём заявок, лимит слота).
+    /// Видимость, выбранная мастером (#5677), — тоже как у доменного создания.
     /// </summary>
     [Theory]
-    [InlineData(CharacterType.Slot, false)]
-    [InlineData(CharacterType.Slot, true)]
-    [InlineData(CharacterType.NonPlayer, false)]
-    [InlineData(CharacterType.Player, true)]
-    public async Task RestoreLostCharacter_OfType_LikeDomainCreation(CharacterType type, bool isHot)
+    [InlineData(CharacterType.Slot, false, CharacterVisibility.Private)]
+    [InlineData(CharacterType.Slot, true, CharacterVisibility.Public)]
+    [InlineData(CharacterType.NonPlayer, false, CharacterVisibility.PlayerHidden)]
+    [InlineData(CharacterType.Player, true, CharacterVisibility.Public)]
+    [InlineData(CharacterType.Player, false, CharacterVisibility.PlayerHidden)]
+    public async Task RestoreLostCharacter_OfType_LikeDomainCreation(CharacterType type, bool isHot, CharacterVisibility visibility)
     {
         UserIdentification masterId;
         ProjectIdentification projectId;
@@ -272,7 +274,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
                     isHot,
                     SlotLimit: null,
                     SlotName: type == CharacterType.Slot ? CharacterName : null,
-                    CharacterVisibility.Private),
+                    visibility),
                 new FieldLayerContainer(projectInfo, new Dictionary<int, string?>
                 {
                     [nameField.Id.ProjectFieldId] = CharacterName,
@@ -293,6 +295,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
             CharacterName,
             type,
             isHot,
+            visibility,
             new RestoredCharacterTarget(null, new Dictionary<ProjectFieldIdentification, string?> { [fieldId] = FieldValue })));
 
         using (var scope = factory.Services.CreateScope())

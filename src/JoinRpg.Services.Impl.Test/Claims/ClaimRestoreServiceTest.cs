@@ -598,7 +598,8 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
         CharacterIdentification? character = null,
         string? newCharacterName = "Потерянный",
         UserIdentification? responsibleMaster = null,
-        RestoredClaimTarget? target = null)
+        RestoredClaimTarget? target = null,
+        CharacterVisibility visibility = CharacterVisibility.Private)
         => new(
             new ClaimIdentification(ProjectId, LostClaimId),
             character,
@@ -606,7 +607,8 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
             new UserIdentification(mock.Player.UserId),
             responsibleMaster ?? new UserIdentification(mock.Master.UserId),
             LostClaimCreatedAt,
-            target ?? Target());
+            target ?? Target(),
+            visibility);
 
     private Claim LostClaimInMock => mock.Project.Claims.Single(c => c.ClaimId == LostClaimId);
 
@@ -700,6 +702,28 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
         claim.ResponsibleMasterUserId.ShouldBe(mock.Master.UserId);
         claim.CreateDate.ShouldBe(LostClaimCreatedAt.UtcDateTime);
         claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByMaster);
+    }
+
+    /// <summary>Видимость — какую выбрал мастер (#5677); персонаж из шаблона наследует её от шаблона.</summary>
+    [Theory]
+    [InlineData(CharacterVisibility.Public, false)]
+    [InlineData(CharacterVisibility.PlayerHidden, false)]
+    [InlineData(CharacterVisibility.Private, false)]
+    [InlineData(CharacterVisibility.Public, true)]
+    [InlineData(CharacterVisibility.PlayerHidden, true)]
+    public async Task RestoreLostClaim_NewCharacter_HasGivenVisibility(CharacterVisibility visibility, bool isSlot)
+    {
+        BlockProject();
+        var charactersBefore = mock.Project.Characters.ToList();
+
+        _ = await CreateService().RestoreLostClaim(
+            LostClaim(newCharacterName: "Потерянный", target: Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt), visibility: visibility)
+            with
+            { NewCharacterIsSlot = isSlot });
+
+        var created = mock.Project.Characters.Except(charactersBefore).ToList();
+        created.ShouldNotBeEmpty();
+        created.ShouldAllBe(c => CharacterTypeInfo.GetVisibility(c.IsPublic, c.HidePlayerForCharacter) == visibility);
     }
 
     [Fact]

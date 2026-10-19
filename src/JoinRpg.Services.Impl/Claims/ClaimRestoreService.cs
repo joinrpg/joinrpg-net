@@ -104,7 +104,8 @@ internal class ClaimRestoreService(
             ?? await CreateCharacter(
                 projectId,
                 request.NewCharacterName!,
-                request.NewCharacterIsSlot ? CharacterType.Slot : CharacterType.Player);
+                request.NewCharacterIsSlot ? CharacterType.Slot : CharacterType.Player,
+                request.NewCharacterVisibility);
 
         var inserted = await unitOfWork.GetCharacterAggregateWriteRepository().InsertRestoredClaimShell(new RestoredClaimShell(
             request.ClaimId, characterId, request.Player, request.ResponsibleMaster, request.CreatedAt.UtcDateTime));
@@ -685,10 +686,14 @@ internal class ClaimRestoreService(
 
     /// <summary>
     /// Персонаж игрока или шаблон в корневой группе: групп в уведомлениях нет, разложит мастер.
-    /// Скрытый — какой была видимость, неизвестно, а скрытый ничего не раскроет до того, как мастер
-    /// разберётся. Шаблон — без ограничения числа персонажей: сколько их было, тоже неизвестно.
+    /// Видимость — какую выбрал мастер: какой она была, неизвестно (#5677). Шаблон — без ограничения
+    /// числа персонажей: сколько их было, тоже неизвестно.
     /// </summary>
-    private async Task<CharacterIdentification> CreateCharacter(ProjectIdentification projectId, string? name, CharacterType characterType)
+    private async Task<CharacterIdentification> CreateCharacter(
+        ProjectIdentification projectId,
+        string? name,
+        CharacterType characterType,
+        CharacterVisibility visibility)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -714,7 +719,7 @@ internal class ClaimRestoreService(
                     IsHot: false,
                     SlotLimit: null,
                     SlotName: characterType == CharacterType.Slot ? ctx.Request : null,
-                    CharacterVisibility.Private));
+                    visibility));
 
                 // Имя — значением поля-имени, если оно в проекте есть; иначе SaveFields имени не пишет.
                 var nameField = ctx.ProjectInfo.CharacterNameField;
