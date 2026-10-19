@@ -1,0 +1,41 @@
+@using JoinRpg.Common.WebComponents
+@preservewhitespace true
+
+@* Рисуется статически: данные и ссылки готовит страница. *@
+@if (Model.Items.Count == 0)
+{
+    <p>@(Model.NewestUrl is null ? "Уведомлений пока нет." : "Более старых уведомлений нет.")</p>
+}
+
+@foreach (var item in Model.Items)
+{
+    <JoinPanel>
+        <Header>
+            <div class="notification-header">
+                <span>@item.Header</span>
+                <span class="notification-time">@item.Time.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+            </div>
+        </Header>
+        <Body>@((MarkupString)item.BodyHtml)</Body>
+    </JoinPanel>
+}
+
+@if (Model.NewestUrl is not null || Model.OlderUrl is not null)
+{
+    <nav class="notification-pager">
+        @if (Model.NewestUrl is not null)
+        {
+            <a href="@Model.NewestUrl">← К последним</a>
+        }
+        @if (Model.OlderUrl is not null)
+        {
+            <a class="notification-older" href="@Model.OlderUrl">Ранее →</a>
+        }
+    </nav>
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public UserNotificationListViewModel Model { get; set; } = null!;
+}

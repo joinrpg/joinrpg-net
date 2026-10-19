@@ -1,7 +1,25 @@
 namespace JoinRpg.Interfaces;
 
-public record KeySetPagination(int? From, int PageSize = 1000)
+public enum KeySetDirection
 {
+    Ascending,
+    Descending,
+}
+
+/// <summary>
+/// Постраничная выборка по ключу (keyset).
+/// </summary>
+/// <param name="From">Ключ, с которого продолжать, сам он не включается: при <see cref="KeySetDirection.Ascending"/> — ключи больше него,
+/// при <see cref="KeySetDirection.Descending"/> — меньше. null — с начала (с наименьшего или с наибольшего ключа).</param>
+/// <param name="PageSize">Сколько записей вернуть.</param>
+/// <param name="Direction">В каком порядке идти по ключу.</param>
+public record KeySetPagination(int? From, int PageSize = 1000, KeySetDirection Direction = KeySetDirection.Ascending)
+{
+    /// <summary>
+    /// Новые (с большим ключом) сверху; <paramref name="before"/> — только ключи меньше него, для страницы «Ранее».
+    /// </summary>
+    public static KeySetPagination Descending(int? before, int pageSize) => new(before, pageSize, KeySetDirection.Descending);
+
     public int PageSize { get; } = ValidatePageSize(PageSize);
 
     private static int ValidatePageSize(int pageSize)
