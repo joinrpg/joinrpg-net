@@ -26,6 +26,9 @@ public static class OpenTelemetryRegistration
             {
                 metrics
                     .AddMeter(serviceName)
+                    // Общий meter приложений JoinRpg: в него пишут SenderJobService, NotificationsRepository и др.,
+                    // независимо от имени приложения
+                    .AddMeter("JoinRpg")
                     .AddMeter(WebInfrastructureMetrics.MeterName)
                     // Metrics provides by ASP.NET Core in .NET 8
                     .AddMeter("Microsoft.AspNetCore.Hosting")
