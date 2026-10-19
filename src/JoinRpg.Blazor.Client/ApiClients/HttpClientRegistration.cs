@@ -73,6 +73,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IInvitePlayerClient, InvitePlayerClient>()
                 .AddHttpClient<IClaimRestoreClient, ClaimRestoreClient>()
                 .AddHttpClient<ICommentRestoreClient, CommentRestoreClient>()
+                .AddHttpClient<IFinanceRestoreClient, FinanceRestoreClient>()
                 .AddHttpClient<IMoneyTransferClient, MoneyTransferClient>()
                 .AddHttpClient<IMoveClient, MoveClientImpl>()
                 .AddHttpClient<IUserLinkResolveClient, UserLinkResolveClientImpl>()
