@@ -116,8 +116,17 @@ internal class ClaimRestoreViewService(
             // TODO[Localize]
             throw new JoinValidationException("Не указано имя персонажа.");
         }
-        await exportRestoreService.RestoreLostCharacter(request.CharacterId, request.Name.Trim(), request.CharacterType, request.IsHot, CharacterVisibility.Private, target);
+        await exportRestoreService.RestoreLostCharacter(
+            request.CharacterId, request.Name.Trim(), request.CharacterType, request.IsHot, RequireVisibility(request.NewCharacterVisibility), target);
     }
+
+    /// <summary>
+    /// Видимость нового персонажа выбирает мастер (#5677): умолчания нет, чтобы сайт не решал за него,
+    /// что увидят игроки.
+    /// </summary>
+    private static CharacterVisibility RequireVisibility(CharacterVisibility? visibility)
+        // TODO[Localize]
+        => visibility ?? throw new JoinValidationException("Не выбрана видимость новых персонажей.");
 
     public async Task ApplyClaimFields(ClaimFieldsRestoreApplyRequest request)
         => await exportRestoreService.ApplyRestoredClaimFields(request.ClaimId, ToFields(request.Fields) ?? new Dictionary<ProjectFieldIdentification, string?>());
@@ -142,7 +151,8 @@ internal class ClaimRestoreViewService(
                     responsible,
                     request.CreatedAt,
                     new RestoredClaimTarget(Character: null, status, request.StatusChangedAt, ResponsibleMaster: null, request.ManualFee),
-                    CharacterVisibility.Private,
+                    // Для существующего персонажа видимость не нужна и не используется.
+                    request.Character is null ? RequireVisibility(request.NewCharacterVisibility) : CharacterVisibility.Private,
                     request.NewCharacterIsSlot));
                 // Для шаблона — сам шаблон: следующие заявки с этим именем подаются на него же.
                 return new ClaimRestoreApplyResult(character);

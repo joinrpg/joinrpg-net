@@ -68,6 +68,21 @@ public class ClaimRestorePanelTest : BunitContext
     private static ClaimRestorePlanViewModel Plan(params ClaimRestoreRowViewModel[] rows)
         => new(ProjectId, null, At.AddDays(-30), At.AddDays(30), rows, [new ClaimRestoreMasterOption(Master, "Мастер")]);
 
+    private static IReadOnlyList<AngleSharp.Dom.IElement> VisibilityOptions(IRenderedComponent<ClaimRestorePanel> cut)
+        => cut.FindAll("input[name=new-character-visibility]");
+
+    private static AngleSharp.Dom.IElement ApplyButton(IRenderedComponent<ClaimRestorePanel> cut)
+        => cut.FindAll("button[type=button]").Last();
+
+    /// <summary>
+    /// «Применить отмеченные»; если применение создаёт персонажей — сперва выбрать их видимость (#5677).
+    /// </summary>
+    private static void ClickApply(IRenderedComponent<ClaimRestorePanel> cut, CharacterVisibility visibility = CharacterVisibility.Private)
+    {
+        VisibilityOptions(cut).SingleOrDefault(o => o.GetAttribute("value") == visibility.ToString())?.Change(true);
+        ApplyButton(cut).Click();
+    }
+
     [Fact]
     public void ProjectNotBlocked_ShowsExplanation()
     {
@@ -95,7 +110,7 @@ public class ClaimRestorePanelTest : BunitContext
         checkboxes[0].HasAttribute("disabled").ShouldBeTrue();
         checkboxes[1].HasAttribute("checked").ShouldBeTrue();
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(2));
         client.Applied[0].ClaimId.ClaimId.ShouldBe(2);
@@ -104,6 +119,64 @@ public class ClaimRestorePanelTest : BunitContext
         client.Applied[1].Character.ShouldBe(new CharacterIdentification(ProjectId, 777));
         client.Applied[1].NewCharacterName.ShouldBeNull();
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Применено строк: 2"));
+    }
+
+    /// <summary>
+    /// Видимость новых персонажей (#5677): без выбора применить нельзя, выбор уходит в каждую строку
+    /// этого применения — и в заявки, и в персонажей из выгрузки, — а после применения сбрасывается.
+    /// </summary>
+    [Fact]
+    public void NewCharacters_VisibilityRequired_SentToAllRows_ResetAfterApply()
+    {
+        var exportPlan = ExportPlan();
+        client.Plans.Enqueue(exportPlan with
+        {
+            Rows = [.. exportPlan.Rows, Row(2, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)],
+        });
+        client.Plans.Enqueue(Plan(Row(4, ClaimRestoreActionView.Create, "Ещё новый", status: ClaimStatusView.Discussed)));
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        VisibilityOptions(cut).Count.ShouldBe(3);
+        ApplyButton(cut).HasAttribute("disabled").ShouldBeTrue();
+
+        ClickApply(cut, CharacterVisibility.PlayerHidden);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Применено строк: 6"));
+        client.Applied.Single(r => r.NewCharacterName == "Новый").NewCharacterVisibility.ShouldBe(CharacterVisibility.PlayerHidden);
+        client.Log.OfType<CharacterRestoreApplyRequest>().Where(r => r.Create)
+            .ShouldAllBe(r => r.NewCharacterVisibility == CharacterVisibility.PlayerHidden);
+        client.Log.OfType<CharacterRestoreApplyRequest>().ShouldContain(r => r.Create);
+
+        // Следующее применение спрашивает заново.
+        VisibilityOptions(cut).Count.ShouldBe(3);
+        VisibilityOptions(cut).ShouldAllBe(o => !o.HasAttribute("checked"));
+        ApplyButton(cut).HasAttribute("disabled").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void NewCharacterOnlyFromNotifications_VisibilityRequiredAndSent()
+    {
+        client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Create, "Новый")));
+        client.Plans.Enqueue(Plan());
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        ApplyButton(cut).HasAttribute("disabled").ShouldBeTrue();
+        ClickApply(cut, CharacterVisibility.Public);
+
+        cut.WaitForAssertion(() => client.Applied.ShouldHaveSingleItem().NewCharacterVisibility.ShouldBe(CharacterVisibility.Public));
+    }
+
+    [Fact]
+    public void NoNewCharacters_VisibilityNotAsked()
+    {
+        client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Create, "Есть", Created)));
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        VisibilityOptions(cut).ShouldBeEmpty();
+        ApplyButton(cut).HasAttribute("disabled").ShouldBeFalse();
     }
 
     [Fact]
@@ -121,12 +194,12 @@ public class ClaimRestorePanelTest : BunitContext
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось применить: 2"));
         client.Applied.Select(r => r.ClaimId.ClaimId).ShouldBe([2]);
         cut.Markup.ShouldContain("мог быть создан строкой выше");
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
         cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(3));
         client.Applied[1].Character.ShouldBe(Created);
         client.Applied[1].NewCharacterName.ShouldBeNull();
@@ -147,10 +220,10 @@ public class ClaimRestorePanelTest : BunitContext
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось применить: 1"));
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
         cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(3));
         client.Applied[2].ClaimId.ClaimId.ShouldBe(3);
         client.Applied[2].Character.ShouldBe(Created);
@@ -168,7 +241,7 @@ public class ClaimRestorePanelTest : BunitContext
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
         cut.FindAll("tbody input[type=checkbox]")[1].Change(false);
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Применено строк: 1"));
         client.Applied.Select(r => r.ClaimId.ClaimId).ShouldBe([2]);
@@ -181,7 +254,7 @@ public class ClaimRestorePanelTest : BunitContext
         client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Change, "А", Created)));
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось обновить план"));
         cut.Markup.ShouldContain("Применено строк: 1.");
@@ -224,7 +297,7 @@ public class ClaimRestorePanelTest : BunitContext
         client.Plans.Enqueue(Plan());
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
-        cut.FindAll("button[type=button]").Last().Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Применено строк: 5"));
         client.Log.Select(r => r.GetType()).ShouldBe([
@@ -292,7 +365,7 @@ public class ClaimRestorePanelTest : BunitContext
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
         cut.Find("table.restore-claims tbody input[type=checkbox]").Change(false);
-        cut.FindAll("button[type=button]").Last().Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось применить: 1"));
         client.Log.ShouldNotContain(r => r is ClaimFieldsRestoreApplyRequest);
@@ -359,7 +432,7 @@ public class ClaimRestorePanelTest : BunitContext
         client.FailGroups.Add(LostGroup.CharacterGroupId);
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
-        cut.FindAll("button[type=button]").Last().Click();
+        ClickApply(cut);
 
         // Группа упала → персонаж в ней не создаётся → заявка на него и её поля тоже.
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Применено строк: 1. Не удалось применить: 4"));
@@ -462,7 +535,7 @@ public class ClaimRestorePanelTest : BunitContext
         cut.FindAll("table.restore-groups tbody input[type=checkbox]").ShouldAllBe(c => c.HasAttribute("disabled"));
         cut.FindAll("table.restore-characters tbody input[type=checkbox]").ShouldAllBe(c => c.HasAttribute("disabled"));
 
-        cut.FindAll("button[type=button]").Last().Click();
+        ClickApply(cut);
         // Поля заявки зависят от заявки 3, которой в этом плане нет, — применяются.
         cut.WaitForAssertion(() => client.Log.ShouldHaveSingleItem().ShouldBeOfType<ClaimFieldsRestoreApplyRequest>());
     }
@@ -614,7 +687,7 @@ public class ClaimRestorePanelTest : BunitContext
         cut.Find("select.selectpicker").Change(twinValue);
 
         cut.FindAll("input[placeholder='Имя нового персонажа']").ShouldBeEmpty();
-        cut.FindAll("button[type=button]").Last().Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => client.Applied.ShouldHaveSingleItem());
         client.Applied[0].Character.ShouldBe(Twin);
@@ -640,7 +713,7 @@ public class ClaimRestorePanelTest : BunitContext
         slots[0].HasAttribute("checked").ShouldBeTrue();
         slots[1].HasAttribute("checked").ShouldBeFalse();
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(2));
         client.Applied[0].NewCharacterIsSlot.ShouldBeTrue();
@@ -661,7 +734,7 @@ public class ClaimRestorePanelTest : BunitContext
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(2));
         client.Applied[1].Character.ShouldBe(Created);
@@ -681,7 +754,7 @@ public class ClaimRestorePanelTest : BunitContext
         cut.FindAll(".text-info").ShouldAllBe(e => e.TextContent.StartsWith("Похоже на шаблон"));
         cut.FindAll(".text-info").Count.ShouldBe(2);
 
-        cut.Find("button[type=button]").Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(2));
         client.Applied[0].NewCharacterName.ShouldBe("Стражник");
@@ -703,7 +776,7 @@ public class ClaimRestorePanelTest : BunitContext
         var slot = cut.Find("input.new-character-slot");
         slot.HasAttribute("checked").ShouldBeFalse();
         slot.Change(true);
-        cut.FindAll("button[type=button]").Last().Click();
+        ClickApply(cut);
 
         cut.WaitForAssertion(() => client.Applied.ShouldHaveSingleItem().NewCharacterIsSlot.ShouldBeTrue());
     }

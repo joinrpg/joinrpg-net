@@ -339,6 +339,12 @@ public record CharacterRestoreApplyRequest(
 
     /// <summary>Горячий ли новый персонаж (только для создания).</summary>
     public bool IsHot { get; init; }
+
+    /// <summary>
+    /// Видимость нового персонажа (только для создания, #5677): выбирает мастер на каждое применение,
+    /// умолчания нет.
+    /// </summary>
+    public CharacterVisibility? NewCharacterVisibility { get; init; }
 }
 
 /// <summary>Записать в заявку поля из выгрузки (дельта).</summary>
