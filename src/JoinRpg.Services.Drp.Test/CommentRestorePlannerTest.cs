@@ -138,13 +138,57 @@ public class CommentRestorePlannerTest
     }
 
     [Fact]
-    public void HiddenMasterActionKeepsAction()
+    public void ChangeResponsibleWithoutPlayerAmongRecipientsIsVisible()
     {
         var comment = SingleComment(Plan(ClaimChange(Day(1), CommentExtraAction.ChangeResponsible, Master, [OtherMaster],
             text: $"{Master.DisplayName.DisplayName} → {OtherMaster.DisplayName.DisplayName}")));
 
         comment.ExtraAction.ShouldBe(CommentExtraAction.ChangeResponsible);
-        comment.IsVisibleToPlayer.ShouldBeFalse();
+        comment.IsVisibleToPlayer.ShouldBeTrue();
+        comment.VisibilityQuestionable.ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(CommentExtraAction.ApproveByMaster)]
+    [InlineData(CommentExtraAction.DeclineByMaster)]
+    [InlineData(CommentExtraAction.RestoreByMaster)]
+    [InlineData(CommentExtraAction.OnHoldByMaster)]
+    [InlineData(CommentExtraAction.CheckedIn)]
+    [InlineData(CommentExtraAction.OutOfGame)]
+    [InlineData(CommentExtraAction.MoveByMaster)]
+    public void StatusChangeWithoutPlayerAmongRecipientsIsVisible(CommentExtraAction action)
+    {
+        var comment = SingleComment(Plan(ClaimChange(Day(1), action, Master, [OtherMaster])));
+
+        comment.IsVisibleToPlayer.ShouldBeTrue();
+        comment.VisibilityQuestionable.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void StatusChangeAfterPlayerIsNotQuestionableAndAnswersPlayer()
+    {
+        var row = Plan(
+            ClaimChange(Day(1), action: null, Player, [Master], text: "вопрос"),
+            ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], text: "принята"),
+            ClaimChange(Day(3), action: null, Master, [Player], text: "ещё"))
+            .ShouldHaveSingleItem();
+
+        row.ToRestore.Select(c => (c.Text, c.IsVisibleToPlayer, c.VisibilityQuestionable)).ShouldBe([
+            ("вопрос", true, false),
+            ("принята", true, false),
+            ("ещё", true, false),
+        ]);
+    }
+
+    [Fact]
+    public void StatusChangeInMasterAsPlayerClaimIsNotQuestionable()
+    {
+        var comment = Plan(Events(ClaimChange(Day(1), CommentExtraAction.ApproveByMaster, Master, [Player])),
+                masters: [Master.UserId, Player.UserId])
+            .ShouldHaveSingleItem().ToRestore.ShouldHaveSingleItem();
+
+        comment.IsVisibleToPlayer.ShouldBeTrue();
+        comment.VisibilityQuestionable.ShouldBeFalse();
     }
 
     [Fact]

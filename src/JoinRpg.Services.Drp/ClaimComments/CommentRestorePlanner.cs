@@ -29,6 +29,26 @@ public static class CommentRestorePlanner
         CommentExtraAction.RequestPreferential,
     ];
 
+    /// <summary>
+    /// Действия, которые меняют статус заявки, ответственного мастера или персонажа. Комментарий к ним
+    /// всегда виден игроку — даже если уведомление игроку не пришло (#5641).
+    /// </summary>
+    private static readonly HashSet<CommentExtraAction> AlwaysVisibleActions =
+    [
+        CommentExtraAction.NewClaim,
+        CommentExtraAction.ApproveByMaster,
+        CommentExtraAction.DeclineByMaster,
+        CommentExtraAction.DeclineByPlayer,
+        CommentExtraAction.RestoreByMaster,
+        CommentExtraAction.OnHoldByMaster,
+        CommentExtraAction.CheckedIn,
+        CommentExtraAction.SecondRole,
+        CommentExtraAction.OutOfGame,
+        CommentExtraAction.InvitationAcceptedByPlayer,
+        CommentExtraAction.MoveByMaster,
+        CommentExtraAction.ChangeResponsible,
+    ];
+
     /// <returns>
     /// Строки по заявкам, у которых после бэкапа есть события, в порядке id заявки.
     /// </returns>
@@ -104,7 +124,7 @@ public static class CommentRestorePlanner
 
             var byPlayer = e.Author == ClaimEventAuthor.Player;
             var visible = byPlayer || history.IsVisibleToPlayer(e);
-            var questionable = !byPlayer && visible && history.IsVisibilityQuestionable(e.CreatedAt);
+            var questionable = !byPlayer && visible && !IsAlwaysVisible(e) && history.IsVisibilityQuestionable(e.CreatedAt);
             toRestore.Add(new CommentToRestore(e.CommentId, e.Initiator, byPlayer, e.Action, e.CreatedAt, e.Text, visible, questionable));
         }
 
@@ -147,7 +167,7 @@ public static class CommentRestorePlanner
                 .Concat(existingComments.Where(c => !c.IsCommentByPlayer && c.IsVisibleToPlayer).Select(c => c.CreatedAt))];
         }
 
-        public bool IsVisibleToPlayer(ClaimNotificationEvent e) => e.Recipients.Any(r => r.UserId == player);
+        public bool IsVisibleToPlayer(ClaimNotificationEvent e) => IsAlwaysVisible(e) || e.Recipients.Any(r => r.UserId == player);
 
         /// <summary>
         /// Видимый мастерский комментарий мог быть и скрытым: игрок писал после предыдущего видимого
@@ -186,6 +206,9 @@ public static class CommentRestorePlanner
         && NormalizeText(text) == NormalizeText(e.Text);
 
     private static string NormalizeText(string text) => text.Replace("\r\n", "\n").Trim();
+
+    private static bool IsAlwaysVisible(ClaimNotificationEvent e)
+        => e.Action is { } action && AlwaysVisibleActions.Contains(action);
 
     private static bool IsFinance(ClaimNotificationEvent e)
         => e.Kind == ClaimNotificationKind.OnlinePayment
