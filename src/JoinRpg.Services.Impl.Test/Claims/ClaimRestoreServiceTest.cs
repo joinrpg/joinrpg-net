@@ -511,11 +511,10 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
     }
 
     /// <summary>
-    /// Текущее поведение, общее с одобрением (ApproveCore): пустое поле-имя даёт имя «CHAR» + id, а id у
-    /// персонажа из шаблона до сохранения ещё -1. Фиксируется, а не чинится здесь.
+    /// Пустое поле-имя оставляет персонажу имя шаблона, а не «CHAR» + несохранённый id (#5673).
     /// </summary>
     [Fact]
-    public async Task Approve_OnSlot_WithEmptyNameField_NamesCharacterWithUnsavedId()
+    public async Task Approve_OnSlot_WithEmptyNameField_NamesCharacterAfterSlot()
     {
         _ = AddCharacterNameField();
         var slot = mock.CreateSlot("Слот");
@@ -524,7 +523,7 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
 
         await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
 
-        claim.Character.CharacterName.ShouldBe("CHAR-1");
+        claim.Character.CharacterName.ShouldBe("Слот");
     }
 
     [Fact]

@@ -70,12 +70,25 @@ internal abstract class CharacterExistsStrategyBase(
             var fromField = working.GetValue(nameField);
 
             name = string.IsNullOrWhiteSpace(fromField)
-                ? "CHAR" + Character.CharacterId
+                ? NameWhenNameFieldEmpty()
                 : fromField;
         }
 
         return (name, description);
     }
+
+    /// <summary>
+    /// Имя персонажа, когда поле-имя в проекте есть, но не заполнено.
+    /// </summary>
+    /// <remarks>
+    /// Прежнее имя сохраняется: у персонажа из шаблона это имя шаблона, а у существующего заглушка
+    /// не меняется от сохранения к сохранению. Заглушка не строится из CharacterId: сохранение полей
+    /// идёт до SaveChanges, и у нового персонажа id ещё -1 или 0 — получалось «CHAR-1» (#5673).
+    /// </remarks>
+    private string NameWhenNameFieldEmpty()
+        => string.IsNullOrWhiteSpace(Character.CharacterName)
+            ? "CHAR" + Random.Shared.Next(100_000, 1_000_000)
+            : Character.CharacterName;
 
     /// <summary>Имя персонажа, когда в проекте не настроено поле-имя.</summary>
     protected abstract string CharacterNameFromPlayer();

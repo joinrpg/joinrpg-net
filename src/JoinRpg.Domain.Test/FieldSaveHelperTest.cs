@@ -711,4 +711,56 @@ public class FieldSaveHelperTest
 
         mock.Character.Description.Contents.ShouldBe("Написано руками");
     }
+
+    [Fact]
+    public void EmptyNameFieldShouldKeepPreviousCharacterName()
+    {
+        var mock = new MockedProject();
+        var nameField = AddCharacterNameField(mock);
+        mock.Character.CharacterName = "Прежнее имя";
+
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Master.UserId,
+            mock.Character,
+            new Dictionary<int, string?> { { nameField.Id.ProjectFieldId, "" } },
+            mock.ProjectInfo);
+
+        mock.Character.CharacterName.ShouldBe("Прежнее имя");
+    }
+
+    /// <summary>
+    /// Заглушка не строится из CharacterId: до сохранения у нового персонажа он -1 или 0 (#5673).
+    /// </summary>
+    [Fact]
+    public void EmptyNameFieldWithoutPreviousNameShouldGivePlaceholder()
+    {
+        var mock = new MockedProject();
+        var nameField = AddCharacterNameField(mock);
+        mock.Character.CharacterName = "";
+
+        _ = InitFieldSaveHelper().SaveCharacterFields(
+            mock.Master.UserId,
+            mock.Character,
+            new Dictionary<int, string?> { { nameField.Id.ProjectFieldId, "" } },
+            mock.ProjectInfo);
+
+        var name = mock.Character.CharacterName;
+        name.ShouldStartWith("CHAR");
+        name.Length.ShouldBe("CHAR".Length + 6);
+        name["CHAR".Length..].ShouldAllBe(c => char.IsDigit(c));
+    }
+
+    private static ProjectFieldInfo AddCharacterNameField(MockedProject mock)
+    {
+        var nameField = mock.AddField(field =>
+        {
+            field.FieldName = "Имя персонажа";
+            field.FieldType = ProjectFieldType.String;
+            field.FieldBoundTo = FieldBoundTo.Character;
+        });
+        mock.Project.Details.CharacterNameField =
+            mock.Project.ProjectFields.Single(f => f.ProjectFieldId == nameField.Id.ProjectFieldId);
+        mock.ReInitProjectInfo();
+        return nameField;
+    }
 }
