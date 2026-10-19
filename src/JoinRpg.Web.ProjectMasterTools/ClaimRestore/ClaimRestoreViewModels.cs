@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.ProjectMasterTools.ClaimRestore;
@@ -184,7 +185,14 @@ public record ClaimRestoreApplyRequest(
     UserIdentification? ResponsibleMaster,
     int? ManualFee,
     DateTimeOffset CreatedAt,
-    bool NewCharacterIsSlot = false);
+    bool NewCharacterIsSlot = false)
+{
+    /// <summary>
+    /// Видимость нового персонажа (#5677): выбирает мастер на каждое применение, умолчания нет.
+    /// Нужна, только если строка создаёт персонажа.
+    /// </summary>
+    public CharacterVisibility? NewCharacterVisibility { get; init; }
+}
 
 /// <param name="Character">Персонаж заявки после применения (для «Создать» — найденный или созданный).</param>
 public record ClaimRestoreApplyResult(CharacterIdentification? Character);

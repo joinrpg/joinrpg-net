@@ -33,6 +33,8 @@
             Игрокам при этом <b>ничего не отправляется</b>, а в истории заявки остаётся запись о восстановлении.
             Инструмент доступен, только пока проект заблокирован на время восстановления.
             Строки и поля с пометками заранее не отмечены — проверьте их сами.
+            Видимость новых персонажей вы выбираете при каждом применении: публичными; публичными, но с игроком,
+            которого видят только мастера; или скрытыми.
             Выгрузки на сервере не сохраняются: если обновить страницу, их нужно загрузить снова.
         </p>
         <p>Перед восстановлением желательно:</p>
@@ -110,7 +112,7 @@
 
                 @NotesSection()
                 @GroupsSection()
-                @CharactersSection("Новые персонажи", "Персонажи из выгрузки, которых нет в базе: создаются с прежними номерами, скрытыми, с группами и полями из выгрузки.", creations)
+                @CharactersSection("Новые персонажи", "Персонажи из выгрузки, которых нет в базе: создаются с прежними номерами, с группами и полями из выгрузки и с видимостью, которую вы выберете при применении.", creations)
                 @ClaimsSection()
                 @CharactersSection("Изменения персонажей", "Группы и поля существующих персонажей, которые отличаются от выгрузки.", changes)
                 @ClaimFieldsSection()
@@ -122,9 +124,13 @@
                         измените дату или уберите и снова загрузите выгрузку, либо обновите страницу.
                     </JoinAlert>
                 }
+                @if (CreatesCharacters)
+                {
+                    @NewCharacterVisibilitySection()
+                }
                 <JoinButton Preset="ButtonPreset.Save" Label="Применить отмеченные" ProgressLabel="Применяем..."
                             InProgress="@applying" AutoProgress="false"
-                            Disabled="@(Busy || planStale || SelectedRows == 0)"
+                            Disabled="@(Busy || planStale || SelectedRows == 0 || VisibilityMissing)"
                             OnClick="ApplySelected" />
             }
         }
@@ -177,6 +183,19 @@
             + claimFields.Count;
 
     private int SelectedRows => rows.Count(r => r.Selected && r.CanApply) + ExportRows.Count(r => r.Selected && r.CanApply);
+
+    /// <summary>
+    /// Видимость персонажей, которых создаст это применение (#5677). Умолчания нет, после применения
+    /// выбор сбрасывается: каждое нажатие спрашивает заново.
+    /// </summary>
+    private CharacterVisibility? newCharacterVisibility;
+
+    /// <summary>Среди отмеченного есть создание персонажа — из выгрузки или под заявку из уведомлений.</summary>
+    private bool CreatesCharacters
+        => creations.Any(r => r.Selected && r.CanApply && r.BlockingProblem is null)
+            || rows.Any(r => r.Selected && r.CanApply && r.BlockingProblem is null && r.CreatesCharacterNamed(createdCharacters) is not null);
+
+    private bool VisibilityMissing => CreatesCharacters && newCharacterVisibility is null;
 
     protected override async Task OnInitializedAsync() => await ReloadPlan();
 
@@ -741,7 +760,7 @@
 
     private async Task ApplySelected()
     {
-        if (model is null || Busy || planStale)
+        if (model is null || Busy || planStale || VisibilityMissing)
         {
             return;
         }
@@ -774,7 +793,8 @@
 
         foreach (var row in creations.Where(r => r.Selected && r.CanApply).ToList())
         {
-            if (await ApplyRow(row, dependencies.GroupsProblem(row.GroupsToApply), () => Client.ApplyCharacter(row.ToApplyRequest())))
+            var request = row.ToApplyRequest() with { NewCharacterVisibility = newCharacterVisibility };
+            if (await ApplyRow(row, dependencies.GroupsProblem(row.GroupsToApply), () => Client.ApplyCharacter(request)))
             {
                 dependencies.Created(row.Row.CharacterId);
             }
@@ -822,9 +842,36 @@
             errorMessage = reloadError is null ? summary : $"{summary} {reloadError}";
         }
 
+        newCharacterVisibility = null;
         applying = false;
         StateHasChanged();
     }
+
+    private RenderFragment NewCharacterVisibilitySection() => __builder =>
+    {
+        <div class="form-group">
+            <label>Новых персонажей создать:</label>
+            @VisibilityOption(CharacterVisibility.Public, "публичными", "персонаж, его имя, публичные поля и игрок видны всем")
+            @VisibilityOption(CharacterVisibility.PlayerHidden, "публичными, игрок скрыт", "персонаж, его имя и публичные поля видны всем, игрок — только мастерам")
+            @VisibilityOption(CharacterVisibility.Private, "скрытыми", "персонаж виден только мастерам")
+            <JoinAlert Variation="VariationStyleEnum.Warning">
+                Выбор действует на всех персонажей, которых создаст это применение, — и из выгрузки, и под заявки
+                из уведомлений. Пока проект заблокирован, видимость персонажа не поменять — только после снятия
+                блокировки. Если сомневаетесь — создавайте скрытыми.
+            </JoinAlert>
+        </div>
+    };
+
+    private RenderFragment VisibilityOption(CharacterVisibility value, string label, string description) => __builder =>
+    {
+        <div class="radio">
+            <label>
+                <input type="radio" name="new-character-visibility" value="@value" checked="@(newCharacterVisibility == value)" disabled="@Busy"
+                       @onchange="@(() => newCharacterVisibility = value)" />
+                <b>@label</b> — @description
+            </label>
+        </div>
+    };
 
     private async Task<bool> ApplyRow(RestoreRowEditorBase row, string? dependencyProblem, Func<Task> apply)
     {
@@ -882,7 +929,7 @@
             try
             {
                 // Для шаблона в ответе — сам шаблон: следующие строки с этим именем подаются на него.
-                var result = await Client.Apply(row.ToApplyRequest(createdCharacters));
+                var result = await Client.Apply(row.ToApplyRequest(createdCharacters) with { NewCharacterVisibility = newCharacterVisibility });
                 if (newCharacterName is not null && result.Character is not null)
                 {
                     createdCharacters[newCharacterName] = result.Character;

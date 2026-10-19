@@ -112,12 +112,25 @@ public class ClaimRestoreViewServiceTest
 
         _ = await CreateService(mock.Master.UserId).Apply(new ClaimRestoreApplyRequest(
             new ClaimIdentification(ProjectId, 999), ClaimRestoreActionView.Create, null, "Новый", Player: null, PlayerLink: "42",
-            null, null, master, null, BackupTakenAt));
+            null, null, master, null, BackupTakenAt)
+        { NewCharacterVisibility = CharacterVisibility.Public });
 
         var lost = restoreService.Lost.ShouldHaveSingleItem();
         lost.Player.ShouldBe(new UserIdentification(42));
         lost.NewCharacterName.ShouldBe("Новый");
         lost.Character.ShouldBeNull();
+        lost.NewCharacterVisibility.ShouldBe(CharacterVisibility.Public);
+    }
+
+    /// <summary>Видимость нового персонажа выбирает мастер (#5677): без выбора не создаём.</summary>
+    [Fact]
+    public async Task Apply_CreateNewCharacterWithoutVisibility_Refuses()
+    {
+        _ = await Should.ThrowAsync<JoinValidationException>(() => CreateService(mock.Master.UserId).Apply(new ClaimRestoreApplyRequest(
+            new ClaimIdentification(ProjectId, 999), ClaimRestoreActionView.Create, null, "Новый", new UserIdentification(mock.Player.UserId), null,
+            null, null, new UserIdentification(mock.Master.UserId), null, BackupTakenAt)));
+
+        restoreService.Lost.ShouldBeEmpty();
     }
 
     [Fact]
@@ -127,11 +140,13 @@ public class ClaimRestoreViewServiceTest
 
         _ = await CreateService(mock.Master.UserId).Apply(new ClaimRestoreApplyRequest(
             new ClaimIdentification(ProjectId, 999), ClaimRestoreActionView.Create, null, "Стражник", new UserIdentification(mock.Player.UserId), null,
-            ClaimStatusView.Approved, BackupTakenAt, master, null, BackupTakenAt, NewCharacterIsSlot: true));
+            ClaimStatusView.Approved, BackupTakenAt, master, null, BackupTakenAt, NewCharacterIsSlot: true)
+        { NewCharacterVisibility = CharacterVisibility.PlayerHidden });
 
         var lost = restoreService.Lost.ShouldHaveSingleItem();
         lost.NewCharacterName.ShouldBe("Стражник");
         lost.NewCharacterIsSlot.ShouldBeTrue();
+        lost.NewCharacterVisibility.ShouldBe(CharacterVisibility.PlayerHidden);
     }
 
     [Fact]
@@ -183,8 +198,13 @@ public class ClaimRestoreViewServiceTest
 
         var request = new ClaimRestoreApplyRequest(
             row.ClaimId, ClaimRestoreActionView.Create, null, "Новый", null, "42",
-            null, null, master, null, BackupTakenAt, NewCharacterIsSlot: true);
+            null, null, master, null, BackupTakenAt, NewCharacterIsSlot: true)
+        { NewCharacterVisibility = CharacterVisibility.PlayerHidden };
         JsonRoundTrip.Ensure(request).ShouldBe(request);
+
+        var characterRequest = new CharacterRestoreApplyRequest(new CharacterIdentification(projectId, 9), true, "Новый", null, [])
+        { NewCharacterVisibility = CharacterVisibility.Public };
+        JsonRoundTrip.Ensure(characterRequest).NewCharacterVisibility.ShouldBe(CharacterVisibility.Public);
 
         var result = new ClaimRestoreApplyResult(character.CharacterId);
         JsonRoundTrip.Ensure(result).ShouldBe(result);
@@ -297,13 +317,16 @@ public class ClaimRestoreViewServiceTest
         var field = new ProjectFieldIdentification(ProjectId, 5);
         var service = CreateService(mock.Master.UserId);
 
-        await service.ApplyCharacter(new CharacterRestoreApplyRequest(characterId, true, "Герой", [groupId], [new RestoreFieldValueRequest(field, "x")]));
+        await service.ApplyCharacter(new CharacterRestoreApplyRequest(characterId, true, "Герой", [groupId], [new RestoreFieldValueRequest(field, "x")])
+        { NewCharacterVisibility = CharacterVisibility.Public });
+        // Изменение существующего видимости не требует.
         await service.ApplyCharacter(new CharacterRestoreApplyRequest(characterId, false, null, null, [new RestoreFieldValueRequest(field, null)]));
 
         var created = exportRestoreService.Created.ShouldHaveSingleItem();
         created.Name.ShouldBe("Герой");
         created.Type.ShouldBe(CharacterType.Player);
         created.IsHot.ShouldBeFalse();
+        created.Visibility.ShouldBe(CharacterVisibility.Public);
         created.Target.Groups.ShouldBe([groupId]);
         created.Target.Fields.ShouldNotBeNull()[field].ShouldBe("x");
         var changed = exportRestoreService.Changed.ShouldHaveSingleItem();
@@ -317,11 +340,27 @@ public class ClaimRestoreViewServiceTest
         var characterId = new CharacterIdentification(ProjectId, 9999);
 
         await CreateService(mock.Master.UserId).ApplyCharacter(
-            new CharacterRestoreApplyRequest(characterId, true, "Шаблон", null, []) { CharacterType = CharacterType.Slot, IsHot = true });
+            new CharacterRestoreApplyRequest(characterId, true, "Шаблон", null, [])
+            {
+                CharacterType = CharacterType.Slot,
+                IsHot = true,
+                NewCharacterVisibility = CharacterVisibility.Private,
+            });
 
         var created = exportRestoreService.Created.ShouldHaveSingleItem();
         created.Type.ShouldBe(CharacterType.Slot);
         created.IsHot.ShouldBeTrue();
+        created.Visibility.ShouldBe(CharacterVisibility.Private);
+    }
+
+    /// <summary>Видимость нового персонажа выбирает мастер (#5677): без выбора не создаём.</summary>
+    [Fact]
+    public async Task ApplyCharacter_CreateWithoutVisibility_Refuses()
+    {
+        _ = await Should.ThrowAsync<JoinValidationException>(() => CreateService(mock.Master.UserId).ApplyCharacter(
+            new CharacterRestoreApplyRequest(new CharacterIdentification(ProjectId, 9999), true, "Герой", null, [])));
+
+        exportRestoreService.Created.ShouldBeEmpty();
     }
 
     [Fact]
