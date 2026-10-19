@@ -1,16 +1,11 @@
+@using JoinRpg.Common.PrimitiveTypes
 <JoinPanel>
     <Header><h4>Команда сайта</h4></Header>
     <Body>
-        <b>#ЛеоЦарев</b> — создатель сайта, программист
-        <br />
-        <b>#Шико</b> — программист
-        <br />
-        <b>#Атана</b> — документация
-        <br />
-        <b>#Айка</b> — техподдержка
-        <br />
-        <b>Лулукошка</b> — тестер
-        <br />
+        @foreach (var (user, role) in team)
+        {
+            <div><b><UserLink Model="user" /></b> — @role</div>
+        }
         <a href="http://bastilia.ru/about/">#Бастилия</a>
         <br />
         <JoinButton Label="К благодарностям"
@@ -45,3 +40,17 @@
         </p>
     </Body>
 </JoinPanel>
+
+@code {
+    private static readonly (UserLinkViewModel User, string Role)[] team =
+    [
+        (Member(1, "#ЛеоЦарев"), "создатель сайта, программист"),
+        (Member(6817, "#Шико"), "программист"),
+        (Member(393, "#Атана"), "документация"),
+        (Member(490, "#Айка"), "техподдержка"),
+        (Member(3173, "Лулукошка"), "тестер"),
+        (Member(77075, "Боромир"), "DevOps"),
+    ];
+
+    private static UserLinkViewModel Member(int userId, string name) => new(new UserIdentification(userId), name, ViewMode.Show);
+}
