@@ -5,7 +5,7 @@ description: Мониторить прод joinrpg.ru после деплоя (�
 
 # Мониторинг релиза на проде
 
-Работает поверх `gh` (уже авторизован) и `yc` CLI (см. скилл **prod-logs** — конвенции по фильтрам и структуре логов). Здесь — то, что специфично именно для *мониторинга релиза*: что проверять сразу после деплоя, как отличить реальную проблему от известного фона, и как вести длительное наблюдение через `/loop`.
+Работает поверх `gh` (уже авторизован) и aws CLI с профилем `selectel-logs` — логи в сервисе Логи Selectel (см. скилл **prod-logs** — доступ, фильтры и структура записи). Здесь — то, что специфично именно для *мониторинга релиза*: что проверять сразу после деплоя, как отличить реальную проблему от известного фона, и как вести длительное наблюдение через `/loop`.
 
 ## 1. Найти и дождаться деплоя
 
@@ -74,28 +74,25 @@ curl -s "https://joinrpg.ru/webapi/project-role-grid/get?projectId=1657&projectR
 
 ## 3. Проверка логов на всплеск ошибок
 
-Смотри логи через `yc logging read joinrpg-k8s-logs --resource-types prod ...` (структура полей — в скилле **prod-logs**). Специфика именно для этого сценария:
+Смотри логи через `aws logs filter-log-events --profile selectel-logs --log-group-name k8s/joinrpg-prod --log-stream-names _all ...` (доступ, фильтры, структура записи — в скилле **prod-logs**). ERROR-срез окна:
 
-### Гочи `yc logging read`
+```powershell
+$from = [DateTimeOffset]::Parse('<начало окна, UTC>').ToUnixTimeMilliseconds()
+$to   = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+aws logs filter-log-events --profile selectel-logs --log-group-name k8s/joinrpg-prod --log-stream-names _all `
+  --start-time $from --end-time $to --filter-pattern ERROR --max-items 2000 --output json > err.json
+```
 
-- **`--since` в виде относительной длительности (`20m`, `2h`) без явного `--until` может подвиснуть/не завершиться.** Всегда передавай оба параметра как абсолютные RFC-3339 таймстемпы (`--since "2026-08-28T18:29:00Z" --until "2026-08-28T18:55:00Z"`). Текущее время бери через `date -u +%Y-%m-%dT%H:%M:%SZ`.
-- Всегда `--format json`, иначе структурированные поля (в т.ч. `exceptions`, `ClassName`) не видны.
-- **Текст сообщения лежит в поле `message` на верхнем уровне записи, а НЕ в `json_payload.message`.** В `json_payload` его нет вовсе (виден только `"_dropped_attributes": "1"`), так что `json_payload.message` молча вернёт `None`/пусто — и лог будет выглядеть пустым, хотя он не пустой. Структура записи целиком:
+Сводка по нему — в скилле **prod-logs** (раздел «Сценарии»). Специфика именно для этого сценария:
 
-  ```
-  uid, resource{type,id}, timestamp, ingested_at, saved_at, level, message, stream_name,
-  json_payload{ @timestamp, AppName, Level, SourceContext, MachineName, LoggedUser,
-                RequestId, RequestPath, ActionName, TraceId, SpanId,
-                exceptions[{ClassName, Message, StackTraceString, Depth}],
-                fields{http.request.method, url.path, user_agent.original, ...},
-                kubernetes{pod_name, container_name, container_image, labels{pod-template-hash}, ...} }
-  ```
+### Грабли Selectel Logs
 
-  То есть: человекочитаемая строка — `entry["message"]`, семантика ошибки — `entry["json_payload"]["exceptions"][0]`, «с какого пода» — `entry["json_payload"]["kubernetes"]`.
-- Точного count-режима нет — считай через `grep -c '"level":'` по сохранённому JSON-файлу.
-- `--limit` — это именно лимит записей на возврат; если результат равен лимиту тютелька в тютельку, вероятно упёрлись в кап и объём выше — либо сузь окно, либо подними `--limit`.
-- Экспортируй `YC_CLI_INITIALIZATION_SILENCE=true`, чтобы не засорять вывод предупреждением про network connectivity.
-- Фильтр по классу ошибок/контексту: `--filter 'json_payload.SourceContext="..."'`, по контейнеру: `--filter 'json_payload.kubernetes.container_name="joinrpg-portal"'`.
+- **Всегда `--log-stream-names _all`** (или имя контейнера): без него каждая запись приходит дважды и счётчики удваиваются.
+- **JSON-фильтры (`{ $.Level = ... }`) молча возвращают пусто** — фильтровать текстовым термом (`ERROR`, `WARN`, `SourceContext`), уточнять на клиенте после `ConvertFrom-Json`. Пустой срез с JSON-фильтром — не «ошибок нет».
+- **`events[].message` — JSON строкой**, разбирать дважды: `($_.message | ConvertFrom-Json)`. Человекочитаемая строка — `.message` уже разобранной записи, семантика ошибки — `.exceptions[0]` (`ClassName`, `Message`, `StackTraceString`), «с какого пода» — `.kubernetes`.
+- Уровень — в полях `YcLevel` (`INFO`/`WARN`/`ERROR`) и `Level` (`Information`/`Warning`/`Error`).
+- Всегда передавать `--start-time`: без него выдача начинается с самого старого события в потоке. Выдача идёт от старых к новым, `--max-items` отрезает **новые** — если вернулось ровно `--max-items` и есть `NextToken`, сузь окно или подними лимит.
+- Count-режима нет — считать по сохранённому файлу: `((Get-Content err.json -Raw | ConvertFrom-Json).events).Count`.
 
 ### Ноль ошибок сразу после rollout — это ещё не «всё хорошо»
 
@@ -105,7 +102,7 @@ curl -s "https://joinrpg.ru/webapi/project-role-grid/get?projectId=1657&projectR
 
 ### Как отличить новый деплой от старого в логах
 
-Если видишь в `json_payload.kubernetes.pod_name` / `pod-template-hash` / `container_image` sha, отличающиеся от того, что было в предыдущей проверке, — значит между проверками прошёл ещё один деплой, который тебе не сообщили. Сверься с `gh run list --workflow=deploy_prod.yml` — если там появился новый run, доложи пользователю и обнови контекст "последний известный релиз" в дальнейших итерациях мониторинга.
+Если видишь в `kubernetes.pod_name` / `kubernetes.labels.pod-template-hash` / `kubernetes.container_hash` (sha образа), отличающиеся от того, что было в предыдущей проверке, — значит между проверками прошёл ещё один деплой, который тебе не сообщили. Сверься с `gh run list --workflow=deploy_prod.yml` — если там появился новый run, доложи пользователю и обнови контекст "последний известный релиз" в дальнейших итерациях мониторинга.
 
 ## 4. Известный фоновый шум — не считать аномалией
 
@@ -136,14 +133,14 @@ curl -s "https://joinrpg.ru/webapi/project-role-grid/get?projectId=1657&projectR
    git fetch upstream master && git show upstream/master:src/JoinRpg.IntegrationTest/TestInfrastructure/lazy-loads-baseline.json
    ```
 
-2. Снять WARN-срез за окно итерации и сохранить в файл — lazy-WARN в проде идут **тысячами в час**, поэтому большой `--limit` и никакого чтения построчно:
+2. Снять срез lazy-WARN за окно итерации и сохранить в файл — в проде их **тысячи в час**, поэтому большой `--max-items` и никакого чтения построчно:
 
-   ```bash
-   yc logging read joinrpg-k8s-logs --resource-types prod \
-     --since "<start>" --until "<end>" --levels WARN --format json --limit 5000 > warn.json
+   ```powershell
+   aws logs filter-log-events --profile selectel-logs --log-group-name k8s/joinrpg-prod --log-stream-names _all `
+     --start-time $from --end-time $to --filter-pattern '"Probably lazy load"' --max-items 5000 --output json > lazy.json
    ```
 
-3. Сгруппировать по (метод, шаблон маршрута) и работать со сводкой, а не со строками. Где что лежит: текст — `message` **на верхнем уровне** записи (`SQL: Probably lazy load from '"[dbo].[Claims]"' during operation ...`), `json_payload.SourceContext` = `JoinRpg.Dal.Impl.MyDbContext`, конкретный URL — `json_payload.RequestPath`, метод — `json_payload.fields."http.request.method"`, таблица — `json_payload.fields.lazyLoadTableName`.
+3. Сгруппировать по (метод, шаблон маршрута) и работать со сводкой, а не со строками. Где что лежит в разобранной записи (`$_.message | ConvertFrom-Json`): текст — `.message` (`SQL: Probably lazy load from '"[dbo].[Claims]"' during operation ...`), `.SourceContext` = `JoinRpg.Dal.Impl.MyDbContext`, конкретный URL — `.RequestPath`, метод — `.fields.'http.request.method'`, таблица — `.fields.lazyLoadTableName`.
 
    Ключи baseline — **шаблоны** маршрутов (`GET /{projectId}/plots/EditElement`), а `RequestPath` — конкретный URL с идентификаторами, поэтому перед сравнением URL надо нормализовать: числовые сегменты → параметр, регистр не учитывать. Проще всего свести и то и то к одному виду (числа и `{...}` → `{}`, всё в нижний регистр) и сравнивать уже нормализованные ключи.
 
@@ -179,7 +176,7 @@ curl -s "https://joinrpg.ru/webapi/project-role-grid/get?projectId=1657&projectR
 
 Категория из таблицы выше защищает только от ложной тревоги "это регрессия текущего релиза". Она не означает, что шум можно после этого игнорировать целиком:
 
-- **Следи за изменением объёма/состава шума во времени**, не только за его наличием. Например, для lazy load (помимо сверки маршрутов с baseline — см. выше) сравнивай не просто "есть WARN или нет", а состав таблиц (`grep -o "lazy load from '\\\"\[dbo\]\.\[[A-Za-z]*\]"` по сохранённому JSON, `sort | uniq -c | sort -rn`) в разных временных окнах. Если несколько конкретных таблиц идут в логах **устойчиво равными пачками** (например `UserExternalLogins`/`UserAuthDetails`/`AllrpgUserDetails` почти всегда с одинаковыми счётчиками) — это не просто "шум", а конкретный код, который на каждый запрос грузит сущность без нужных `.Include()`. Такой паттерн стоит выцепить и явно назвать, даже если по объёму он "старый".
+- **Следи за изменением объёма/состава шума во времени**, не только за его наличием. Например, для lazy load (помимо сверки маршрутов с baseline — см. выше) сравнивай не просто "есть WARN или нет", а состав таблиц (группировка по `fields.lazyLoadTableName` в сохранённом срезе: `... | ForEach-Object { $_.message | ConvertFrom-Json } | Group-Object { $_.fields.lazyLoadTableName } | Sort-Object Count -Descending`) в разных временных окнах. Если несколько конкретных таблиц идут в логах **устойчиво равными пачками** (например `UserExternalLogins`/`UserAuthDetails`/`AllrpgUserDetails` почти всегда с одинаковыми счётчиками) — это не просто "шум", а конкретный код, который на каждый запрос грузит сущность без нужных `.Include()`. Такой паттерн стоит выцепить и явно назвать, даже если по объёму он "старый".
 - **Если нашёл такой чёткий, воспроизводимый под-паттерн внутри общей категории шума, и под него ещё нет issue — предложи завести отдельный issue**, а не молчать под предлогом "это же известный фоновый шум". Не заводи автоматически без спроса (см. п. 5.5) — предложи пользователю: приложи конкретные счётчики/таблицы/окна как доказательство, обоснуй, почему это именно системная закономерность, а не разовый всплеск трафика.
 - То же касается прочих категорий шума: единичные Telegram-ретраи это норма, но если вдруг ошибка **у одного и того же `NotificationId` повторяется много раз подряд** или **резко вырос процент неуспешных доставок относительно общего числа отправок** — это уже не "тот же старый шум", а достойный отдельного разбора сигнал.
 - Разница между "трафик-зависимым колебанием объёма" (не повод для issue) и "устойчивым структурным паттерном" (повод предложить issue) — в том, повторяется ли **состав/пропорция** конкретных таблиц/полей в разных, несвязанных временных окнах, а не просто общее число записей.
@@ -202,7 +199,7 @@ curl -s "https://joinrpg.ru/webapi/project-role-grid/get?projectId=1657&projectR
 
 Для сессии мониторинга "последи, пока не скажу" — использовать `/loop` без явного интервала (self-pacing), не фиксированный cron. На каждой итерации:
 
-1. ERROR-срез логов с прошлой проверки до сейчас (`--since <время предыдущей проверки> --until <сейчас>`).
+1. ERROR-срез логов с прошлой проверки до сейчас (`--start-time <время предыдущей проверки> --end-time <сейчас>`, оба в ms epoch).
 2. `gh run list --workflow=deploy_prod.yml --limit 3` — не появился ли новый релиз.
 3. Smoke-check трёх сайтов + разбор тела `/health` (п. 2) — деградация подсистемы может проявиться позже, чем сразу после выката.
 4. Сверить lazy-load WARN с baseline (раздел 4) — маршруты вне baseline докладывать и заводить на них issue, предварительно проверив, что issue ещё нет.

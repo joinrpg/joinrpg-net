@@ -309,14 +309,6 @@ internal class AccommodationInviteServiceImpl(
                     : null;
                 IReadOnlyCollection<ClaimIdentification> moving = receiverGroup?.Subjects ?? [ctx.CharacterClaimInfo.ClaimId];
 
-                // Правило свободного места одно на систему — план поселения (ADR022 §3).
-                if (senderPlan.GetFreeSpaceForGroup(senderGroup.Id) < moving.Count)
-                {
-                    //TODO[Localize]
-                    throw new AccommodationInviteNotAllowedException(inviteId.ProjectId,
-                        "В номере не хватает мест для всех приглашаемых.");
-                }
-
                 // Трекаемые сущности — только «ручки» для записи, и обе уже на руках: группа
                 // приглашающего приехала с его заявкой, группа принимающего вместе с составом — с
                 // заявкой хэндла. Каждая сверяется со снимком, по которому принято решение.
@@ -332,35 +324,16 @@ internal class AccommodationInviteServiceImpl(
                     ? [ctx.Claim]
                     : TrackedSubjects(trackedReceiverGroup, receiverGroup);
 
-                foreach (var claim in movingClaims)
-                {
-                    // Состав меняется внешним ключом (ADR022 §4); навигация — вместе с ним, чтобы EF6
-                    // при DetectChanges видел согласованную пару, а не разбирал конфликт «ключ против
-                    // ссылки». Коллекции Subjects не трогаем — их синхронизирует relationship fixup.
-                    claim.AccommodationRequest_Id = trackedSenderGroup.Id;
-                    claim.AccommodationRequest = trackedSenderGroup;
-                }
-
-                if (receiverGroup is not null)
-                {
-                    // Группа опустела — все её жильцы переехали. Порядок важен: DbSet.Remove сам
-                    // вызывает DetectChanges, и к моменту удаления EF6 уже видит переехавших в новой
-                    // группе. Удали мы группу раньше смены ссылок, EF6 по правилу опциональной связи
-                    // обнулил бы внешний ключ её загруженным жильцам.
-                    ctx.RemoveEntity(trackedReceiverGroup!);
-                }
-
-                // Итоговый состав группы — её снимок ДО переезда плюс переехавшие; только теперь
-                // видно, кто кому стал соседом, — поэтому прочие приглашения разбираются после
-                // переезда, а не внутри него.
-                var neighbours = senderGroup.Subjects
-                    .Concat(moving)
-                    .Select(claimId => claimId.ClaimId)
-                    .ToHashSet();
-                foreach (var claimId in moving)
-                {
-                    await ResolveInvitesOfMovedClaim(ctx, claimId, invite, neighbours);
-                }
+                await MoveIntoGroup(
+                    ctx,
+                    senderPlan,
+                    senderGroup,
+                    trackedSenderGroup,
+                    moving,
+                    movingClaims,
+                    // Переезжает вся группа принимающего — она опустеет.
+                    emptiedGroup: receiverGroup is null ? null : trackedReceiverGroup,
+                    acceptedInvite: invite);
 
                 invite.IsAccepted = InviteState.Accepted;
                 invite.ResolveDescription = ResolveDescription.Accepted;
@@ -370,6 +343,72 @@ internal class AccommodationInviteServiceImpl(
                     ctx.CurrentUser.ToUserInfoHeader(),
                     InviteChangeKind.Accepted));
             });
+    }
+
+    /// <summary>
+    /// Переезд заявок в группу проживающих: место, смена ссылок, удаление опустевшей группы и разбор
+    /// прочих приглашений переехавших.
+    /// </summary>
+    /// <param name="ctx">Контекст мутации.</param>
+    /// <param name="plan">План поселения группы назначения.</param>
+    /// <param name="destination">Снимок группы назначения ДО переезда.</param>
+    /// <param name="trackedDestination">Трекаемая группа назначения — «ручка» для записи.</param>
+    /// <param name="moving">Кто переезжает — решение о месте принимается по нему.</param>
+    /// <param name="movingClaims">Трекаемые заявки тех же переезжающих.</param>
+    /// <param name="emptiedGroup">
+    /// Трекаемая группа, которая после переезда опустеет, либо <c>null</c>, если переезжает одиночка
+    /// без группы.
+    /// </param>
+    /// <param name="acceptedInvite">
+    /// Приглашение, ради которого переезд, — его разбор пропускается: статус ему ставит вызывающий.
+    /// </param>
+    private static async Task MoveIntoGroup(
+        ClaimMutationContext ctx,
+        RoomCategoryPlan plan,
+        AccommodationGroupInfo destination,
+        AccommodationRequest trackedDestination,
+        IReadOnlyCollection<ClaimIdentification> moving,
+        IReadOnlyCollection<Claim> movingClaims,
+        AccommodationRequest? emptiedGroup,
+        AccommodationInvite? acceptedInvite)
+    {
+        // Правило свободного места одно на систему — план поселения (ADR022 §3).
+        if (plan.GetFreeSpaceForGroup(destination.Id) < moving.Count)
+        {
+            //TODO[Localize]
+            throw new AccommodationInviteNotAllowedException(destination.Id.ProjectId,
+                "В номере не хватает мест для всех приглашаемых.");
+        }
+
+        foreach (var claim in movingClaims)
+        {
+            // Состав меняется внешним ключом (ADR022 §4); навигация — вместе с ним, чтобы EF6
+            // при DetectChanges видел согласованную пару, а не разбирал конфликт «ключ против
+            // ссылки». Коллекции Subjects не трогаем — их синхронизирует relationship fixup.
+            claim.AccommodationRequest_Id = trackedDestination.Id;
+            claim.AccommodationRequest = trackedDestination;
+        }
+
+        if (emptiedGroup is not null)
+        {
+            // Группа опустела — все её жильцы переехали. Порядок важен: DbSet.Remove сам
+            // вызывает DetectChanges, и к моменту удаления EF6 уже видит переехавших в новой
+            // группе. Удали мы группу раньше смены ссылок, EF6 по правилу опциональной связи
+            // обнулил бы внешний ключ её загруженным жильцам.
+            ctx.RemoveEntity(emptiedGroup);
+        }
+
+        // Итоговый состав группы — её снимок ДО переезда плюс переехавшие; только теперь
+        // видно, кто кому стал соседом, — поэтому прочие приглашения разбираются после
+        // переезда, а не внутри него.
+        var neighbours = destination.Subjects
+            .Concat(moving)
+            .Select(claimId => claimId.ClaimId)
+            .ToHashSet();
+        foreach (var claimId in moving)
+        {
+            await ResolveInvitesOfMovedClaim(ctx, claimId, acceptedInvite, neighbours);
+        }
     }
 
     /// <summary>
@@ -427,14 +466,14 @@ internal class AccommodationInviteServiceImpl(
     private static async Task ResolveInvitesOfMovedClaim(
         ClaimMutationContext ctx,
         ClaimIdentification claimId,
-        AccommodationInvite acceptedInvite,
+        AccommodationInvite? acceptedInvite,
         HashSet<int> neighbours)
     {
         var invites = await ctx.LoadInvitesForClaim(claimId);
 
         foreach (var invite in invites)
         {
-            if (invite.Id == acceptedInvite.Id || invite.IsAccepted != InviteState.Unanswered)
+            if (invite.Id == acceptedInvite?.Id || invite.IsAccepted != InviteState.Unanswered)
             {
                 continue;
             }

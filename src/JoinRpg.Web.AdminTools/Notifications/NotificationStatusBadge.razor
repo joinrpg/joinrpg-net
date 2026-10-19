@@ -1,0 +1,23 @@
+<JoinBadge Variation="@Variation(Status)">@Label(Status)</JoinBadge>
+
+@code {
+    [Parameter, EditorRequired]
+    public NotificationMessageStatus Status { get; set; }
+
+    private static string Label(NotificationMessageStatus status) => status switch
+    {
+        NotificationMessageStatus.Queued => "В очереди",
+        NotificationMessageStatus.Sending => "Отправляется",
+        NotificationMessageStatus.Sent => "Отправлено",
+        NotificationMessageStatus.Failed => "Ошибка",
+        _ => status.ToString(),
+    };
+
+    private static VariationStyleEnum Variation(NotificationMessageStatus status) => status switch
+    {
+        NotificationMessageStatus.Sent => VariationStyleEnum.Success,
+        NotificationMessageStatus.Failed => VariationStyleEnum.Danger,
+        NotificationMessageStatus.Sending => VariationStyleEnum.Warning,
+        _ => VariationStyleEnum.Info,
+    };
+}

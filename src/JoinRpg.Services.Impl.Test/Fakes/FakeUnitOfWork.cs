@@ -66,6 +66,7 @@ internal sealed class FakeUnitOfWork(MockedProject mock) : IUnitOfWork
                 $"Обращение к DbSet<{typeof(T).Name}> не предусмотрено тестом. Если так и задумано — подключи набор через UseDbSet.");
 
     public IUserRepository GetUsersRepository() => new FakeUserRepository(mock);
+    public IUserMergeWriteRepository GetUserMergeWriteRepository() => throw new NotSupportedException();
     public IProjectRepository GetProjectRepository() => throw new NotSupportedException();
     public IClaimsRepository GetClaimsRepository() => new FakeClaimsRepository(mock);
     public IPlotRepository GetPlotRepository() => throw new NotSupportedException();

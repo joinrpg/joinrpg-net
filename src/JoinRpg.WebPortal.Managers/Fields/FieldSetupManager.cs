@@ -1,7 +1,5 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Interfaces;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.ProjectMasterTools.Fields;
 using JoinRpg.WebPortal.Managers.Fields;
 using JoinRpg.WebPortal.Managers.Interfaces;
@@ -17,7 +15,6 @@ public class FieldSetupManager
     private ICurrentUserAccessor CurrentUser { get; }
     private IProjectMetadataRepository ProjectMetadataRepository { get; }
     private ICurrentProjectAccessor CurrentProject { get; }
-    private IFieldSetupService Service { get; }
 
     /// <summary>
     /// ctor
@@ -25,14 +22,12 @@ public class FieldSetupManager
     public FieldSetupManager(
         ICurrentUserAccessor currentUser,
         IProjectMetadataRepository projectMetadataRepository,
-        ICurrentProjectAccessor currentProject,
-        IFieldSetupService service
+        ICurrentProjectAccessor currentProject
         )
     {
         CurrentUser = currentUser;
         ProjectMetadataRepository = projectMetadataRepository;
         CurrentProject = currentProject;
-        Service = service;
     }
 
     /// <summary>
@@ -60,12 +55,6 @@ public class FieldSetupManager
         return FillFromProject(projectInfo, model);
     }
 
-    public async Task<FieldSettingsViewModel?> FillFailedSettingsModel(FieldSettingsViewModel model)
-    {
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
-        return FillSettingsModel(projectInfo, model);
-    }
-
     /// <summary>
     /// Get field edit page
     /// </summary>
@@ -88,70 +77,7 @@ public class FieldSetupManager
     public async Task<FieldSettingsViewModel?> SettingsPagesAsync()
     {
         var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
-
-        var viewModel = new FieldSettingsViewModel
-        {
-            NameField = projectInfo.CharacterNameField?.Id.ProjectFieldId ?? -1,
-            DescriptionField = projectInfo.CharacterDescriptionField?.Id.ProjectFieldId ?? -1,
-        };
-        return FillSettingsModel(projectInfo, viewModel);
-    }
-
-    private FieldSettingsViewModel FillSettingsModel(ProjectInfo projectInfo, FieldSettingsViewModel viewModel)
-    {
-        var fields = projectInfo.SortedFields;
-        viewModel.PossibleDescriptionFields =
-                ToSelectListItems(
-                    fields.Where(f => f.Type == ProjectFieldType.Text && f.BoundTo == FieldBoundTo.Character),
-                    "Нет поля с описанием персонажа"
-                    ).SetSelected(projectInfo.CharacterDescriptionField?.Id.ProjectFieldId);
-        viewModel.PossibleNameFields =
-                ToSelectListItems(
-                    fields.Where(f => f.Type == ProjectFieldType.String && f.BoundTo == FieldBoundTo.Character),
-                    "Имя персонажа берется из имени игрока"
-                    ).SetSelected(projectInfo.CharacterNameField?.Id.ProjectFieldId);
-
-        // cast needed to call correct method
-        var _ = FillFromProject(projectInfo, viewModel);
-        return viewModel;
-    }
-
-    /// <summary>
-    /// Set settings
-    /// </summary>
-    public async Task SettingsHandleAsync(FieldSettingsViewModel viewModel)
-    {
-        await Service.SetFieldSettingsAsync(new FieldSettingsRequest()
-        {
-            DescriptionField = viewModel.DescriptionField > 0 ? new(CurrentProject.ProjectId, viewModel.DescriptionField) : null,
-            NameField = viewModel.NameField > 0 ? new(CurrentProject.ProjectId, viewModel.NameField) : null,
-            ProjectId = CurrentProject.ProjectId,
-        });
-    }
-
-    private List<JoinSelectListItem> ToSelectListItems(
-        IEnumerable<ProjectFieldInfo> enumerable,
-        string? notSelectedName = null
-        )
-    {
-        var list = enumerable.Select(field => new JoinSelectListItem()
-        {
-            Value = field.Id.ProjectFieldId,
-            Text = field.Name,
-
-        }).ToList();
-
-        if (notSelectedName != null)
-        {
-
-            list.Insert(0, new JoinSelectListItem()
-            {
-                Value = -1,
-                Text = notSelectedName,
-            });
-        }
-
-        return list;
+        return FillFromProject(projectInfo, new FieldSettingsViewModel());
     }
 
     private async Task<GameFieldListViewModel?> GetFieldsImpl(

@@ -37,7 +37,7 @@ public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo 
             yield return c;
         }
 
-        if (projectInfo.ProfileRequirementSettings.SensitiveDataRequired && projectInfo.IsActive)
+        if (projectInfo.ProfileRequirementSettings.SensitiveDataRequired && !projectInfo.IsArchived)
         {
             yield return StringColumn(x => x.PassportData);
             yield return StringColumn(x => x.RegistrationAddress);

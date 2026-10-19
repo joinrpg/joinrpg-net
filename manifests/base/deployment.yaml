@@ -31,6 +31,8 @@ spec:
                   - joinrpg-portal
               topologyKey: kubernetes.io/hostname
             weight: 100
+      imagePullSecrets:
+      - name: craas-auth
       containers:
       - name: joinrpg-portal
         envFrom:

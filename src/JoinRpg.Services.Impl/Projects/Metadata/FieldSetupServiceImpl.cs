@@ -16,7 +16,7 @@ internal class FieldSetupServiceImpl(
         var field = await projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             request,
             ctx =>
             {
@@ -65,7 +65,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             request,
             ctx =>
             {
@@ -89,7 +89,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             new ProjectIdentification(projectId),
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             projectFieldId,
             ctx =>
             {
@@ -129,7 +129,7 @@ internal class FieldSetupServiceImpl(
         var variant = await projectPropsService.ChangeProjectProperties(
             request.ProjectFieldId.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             request,
             ctx =>
             {
@@ -145,7 +145,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             request.ProjectFieldId.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             request,
             ctx =>
             {
@@ -159,7 +159,7 @@ internal class FieldSetupServiceImpl(
         return await projectPropsService.ChangeProjectProperties(
             new ProjectIdentification(projectId),
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             (projectFieldId, valueId),
             ctx =>
             {
@@ -174,7 +174,7 @@ internal class FieldSetupServiceImpl(
         return await projectPropsService.ChangeProjectProperties(
             projectFieldId.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             projectFieldId.ProjectFieldId,
             ctx =>
             {
@@ -206,7 +206,9 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             fields.ProjectInfo.ProjectId,
             requiredPermission: null,
-            ProjectActiveRequirement.MustBeActive,
+            // значения полей пишет восстановление из выгрузки (ADR023, DRP #5529); обычные сохранения
+            // в заблокированном проекте всё равно отказывают — их операции требуют MustBeActive
+            ProjectActiveRequirement.AllowBlocked,
             usage,
             ctx =>
             {
@@ -235,7 +237,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             new ProjectIdentification(projectId),
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             (projectcharacterfieldid, direction),
             ctx =>
             {
@@ -257,7 +259,7 @@ internal class FieldSetupServiceImpl(
         return await projectPropsService.ChangeProjectProperties(
             variantId.FieldId.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             (variantId, afterVariantId),
             ctx =>
             {
@@ -288,7 +290,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             projectFieldId.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             (projectFieldId, valuesToAdd),
             ctx =>
             {
@@ -315,7 +317,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             request.ProjectFieldId.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             request,
             ctx =>
             {
@@ -358,7 +360,7 @@ internal class FieldSetupServiceImpl(
         return await projectPropsService.ChangeProjectProperties(
             new ProjectIdentification(projectId),
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             (projectFieldId, afterFieldId),
             ctx =>
             {
@@ -390,7 +392,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             request,
             ctx =>
             {
@@ -411,7 +413,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             new ProjectIdentification(projectId),
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             projectFieldId,
             ctx => SortVariants(GetField(ctx.Project, ctx.Request), x => x.Label));
     }
@@ -421,7 +423,7 @@ internal class FieldSetupServiceImpl(
         await projectPropsService.ChangeProjectProperties(
             projectFieldId.ProjectId,
             Permission.CanChangeFields,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             projectFieldId,
             ctx =>
             {

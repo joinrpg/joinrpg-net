@@ -24,12 +24,15 @@
     </HeadContent>
     <ItemTemplate>
         <tr>
-            <td><NotificationChannelName Channel="channel.Channel" /></td>
+            <td>
+                <NotificationChannelName Channel="channel.Channel" />
+                <a href="@NotificationLogUrl.For(channel: channel.Channel)">[Последние уведомления]</a>
+            </td>
             <td>@channel.QueueLength</td>
             <td>
                 @if (channel.Error is not null)
                 {
-                    <JoinBadge Variation="VariationStyleEnum.Danger">channel.Error</JoinBadge>
+                    <JoinBadge Variation="VariationStyleEnum.Danger">@channel.Error</JoinBadge>
                 }
                 else
                 {

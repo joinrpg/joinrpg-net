@@ -34,8 +34,12 @@ function loadBootstrapSelect() {
   return bootstrapSelectLoading;
 }
 
+// select'ы, чей компонент уже удалён. Init и refresh ждут загрузки плагина и могут доехать после destroy —
+// тогда они не должны заново создать обёртку (вызов selectpicker на неинициализированном элементе её создаёт).
+const destroyedSelects = new WeakSet();
+
 export async function initBootstrapSelect(ref, initialValues) {
-  if (!await loadBootstrapSelect()) {
+  if (!await loadBootstrapSelect() || destroyedSelects.has(ref)) {
     return;
   }
   $(ref).selectpicker();
@@ -44,10 +48,29 @@ export async function initBootstrapSelect(ref, initialValues) {
 };
 
 export async function refreshBootstrapSelect(ref) {
-  if (!await loadBootstrapSelect()) {
+  if (!await loadBootstrapSelect() || destroyedSelects.has(ref)) {
     return;
   }
   $(ref).selectpicker('refresh');
+};
+
+// bootstrap-select оборачивает <select> в свой div.bootstrap-select с кнопкой. Blazor при удалении компонента
+// убирает только свой <select>, а обёртка с кнопкой остаётся висеть на странице — её надо снести самим.
+export function destroyBootstrapSelect(ref) {
+  if (!ref) {
+    return;
+  }
+  destroyedSelects.add(ref);
+  if (!$.fn.selectpicker || !$(ref).data('selectpicker')) {
+    return; // Плагин не загрузился или ещё не инициализировал этот select — обёртки нет.
+  }
+  // destroy() возвращает select на место обёртки. Если Blazor уже вынул select из DOM, возвращать его нельзя:
+  // на странице остался бы осиротевший select, поэтому после destroy вынимаем его обратно.
+  const alreadyRemoved = !ref.parentNode;
+  $(ref).selectpicker('destroy');
+  if (alreadyRemoved && ref.parentNode) {
+    ref.parentNode.removeChild(ref);
+  }
 };
 
 export function getSelectedValues(ref) {

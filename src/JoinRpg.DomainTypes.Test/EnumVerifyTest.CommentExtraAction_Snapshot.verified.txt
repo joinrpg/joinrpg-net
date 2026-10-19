@@ -16,6 +16,8 @@
   RejectFinance: 1,
   RequestPreferential: 14,
   RestoreByMaster: 4,
+  RestoredFromExport: 21,
+  RestoredFromNotifications: 20,
   SecondRole: 12,
   TransferFrom: 18,
   TransferTo: 17

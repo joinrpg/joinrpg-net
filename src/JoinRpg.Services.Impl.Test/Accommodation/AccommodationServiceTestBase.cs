@@ -48,6 +48,13 @@ public abstract class AccommodationServiceTestBase : ProjectMetadataServiceTestB
         mock.ReInitProjectInfo();
     }
 
+    /// <summary>Блокирует проект на время восстановления (ADR023).</summary>
+    protected void BlockProject()
+    {
+        mock.Project.IsBlocked = true;
+        mock.ReInitProjectInfo();
+    }
+
     /// <summary>Идентификатор той же комнаты, но в чужом проекте.</summary>
     protected AccommodationRoomIdentification AlienRoomId(ProjectAccommodation room)
         => new(new ProjectIdentification(ProjectId.Value + 1), room.Id);

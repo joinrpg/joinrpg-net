@@ -1,0 +1,23 @@
+/* Заголовок слева, время справа; длинный заголовок переносится, время — нет. */
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.notification-time {
+    flex: none;
+    color: #777;
+    white-space: nowrap;
+}
+
+/* «К последним» слева, «Ранее» справа, даже если ссылка одна. */
+.notification-pager {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.notification-older {
+    margin-left: auto;
+}

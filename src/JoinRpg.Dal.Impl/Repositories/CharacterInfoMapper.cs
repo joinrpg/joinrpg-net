@@ -55,8 +55,7 @@ internal static class CharacterInfoMapper
         // AccommodationRequest.AccommodationTypeId стоит FK, а метаданные отдают все типы проекта
         // без фильтров. Поэтому промах — это рассинхрон, и GetTypeById бросает
         // AccommodationTypeNotFoundException, а не подставляет 0: молчаливый ноль превратился бы
-        // в заниженный взнос по заявке, который никто не заметит. Так же ведёт себя и легаси-путь
-        // поверх EF — Claim.ClaimAccommodationFee через GetAccommodationType.
+        // в заниженный взнос по заявке, который никто не заметит.
         var accommodationFee = accommodationTypeId is { } id
             ? projectInfo.AccommodationSettings.GetTypeById(id).Cost
             : 0;

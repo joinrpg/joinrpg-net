@@ -4,9 +4,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace JoinRpg.BlobStorage;
 
-public class HealthCheckS3Storage(IAmazonS3 amazonS3,
+internal class HealthCheckS3Storage(IAmazonS3 amazonS3,
     ILogger<HealthCheckS3Storage> logger,
-    IOptions<S3StorageOptions> options) : IHealthCheck
+    IOptions<S3StorageOptions> options,
+    S3UploadHealth uploadHealth) : IHealthCheck
 {
     private readonly S3StorageOptions options = options.Value;
 
@@ -24,6 +25,13 @@ public class HealthCheckS3Storage(IAmazonS3 amazonS3,
             _ = await amazonS3.GetBucketLocationAsync(
                 new GetBucketLocationRequest { BucketName = options.BucketName },
                 cancellationToken);
+
+            // GetBucketLocation не проверяет права на запись: без них бакет читается, а загрузки падают
+            if (uploadHealth.LastFailureErrorCode is string errorCode)
+            {
+                data["lastUploadError"] = errorCode;
+                return HealthCheckResult.Unhealthy($"Last avatar upload failed: {errorCode}", data: data);
+            }
 
             return HealthCheckResult.Healthy(data: data);
         }

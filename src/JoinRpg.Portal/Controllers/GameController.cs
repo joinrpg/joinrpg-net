@@ -47,11 +47,11 @@ public class GameController(
         {
             var claims = await claimsRepository.GetClaimsHeadersForPlayer(projectId, ClaimStatusSpec.ActiveOrOnHold, userId);
             var captainAccess = await captainRulesRepository.GetCaptainRules(projectId, userId);
-            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, details.DisableKogdaIgraMapping, captainAccess, userId));
+            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), claims.ToClaimViewModels(), list, details.DisableKogdaIgraMapping, captainAccess));
         }
         else
         {
-            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), [], list, details.DisableKogdaIgraMapping, [], viewer: null));
+            return View(new ProjectDetailsViewModel(project, details.ProjectDescription.ToHtmlString(), [], list, details.DisableKogdaIgraMapping, []));
         }
 
 
@@ -78,7 +78,8 @@ public class GameController(
             ProjectId = projectId.Value,
             ProjectName = project.ProjectName,
             OriginalName = project.ProjectName,
-            Active = project.IsActive,
+            Active = !project.IsArchived,
+            Blocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked,
             EnableAccomodation = project.AccommodationSettings.Enabled,
         });
     }
@@ -104,10 +105,47 @@ public class GameController(
 
             return RedirectTo(projectId);
         }
-        catch
+        catch (Exception ex)
         {
+            // В заблокированном проекте (ADR023) сохранение — штатный отказ, его надо показать.
+            AddModelException(ex);
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             viewModel.OriginalName = project.ProjectName;
+            viewModel.Active = !project.IsArchived;
+            viewModel.Blocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked;
+            return View(viewModel);
+        }
+    }
+
+    [HttpGet("/{projectId}/unblock")]
+    [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
+    public async Task<IActionResult> Unblock(ProjectIdentification projectId)
+    {
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return View(new UnblockProjectViewModel
+        {
+            ProjectId = projectId.Value,
+            OriginalName = project.ProjectName,
+            IsBlocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked,
+        });
+    }
+
+    [HttpPost("/{projectId}/unblock")]
+    [RequireMasterOrAdmin(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
+    public async Task<IActionResult> Unblock(UnblockProjectViewModel viewModel)
+    {
+        ProjectIdentification projectId = new(viewModel.ProjectId);
+        try
+        {
+            await projectService.UnblockProject(projectId);
+            return RedirectTo(projectId);
+        }
+        catch (Exception ex)
+        {
+            AddModelException(ex);
+            var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+            viewModel.OriginalName = project.ProjectName;
+            viewModel.IsBlocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked;
             return View(viewModel);
         }
     }

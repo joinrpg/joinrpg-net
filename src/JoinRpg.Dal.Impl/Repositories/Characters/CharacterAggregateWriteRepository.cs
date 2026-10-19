@@ -47,6 +47,340 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
             ctx, loader, project, projectInfo, character, characterInfo, claim, claimInfo);
     }
 
+    public async Task<bool> InsertRestoredClaimShell(RestoredClaimShell shell)
+    {
+        // Одним батчем и своей транзакцией: обсуждение получает обычный id, заявка — заданный.
+        // Проверка занятости — внутри транзакции с блокировкой диапазона, чтобы два одновременных
+        // восстановления одной заявки не столкнулись на первичном ключе. Персонаж обязан быть из того
+        // же проекта: внешний ключ этого не проверяет, а заявку на чужом персонаже потом не загрузить.
+        // IDENTITY_INSERT действует на сессию, поэтому выключается и при ошибке.
+        const string sql = """
+            SET XACT_ABORT ON;
+            BEGIN TRY
+                BEGIN TRANSACTION;
+                IF EXISTS (SELECT 1 FROM dbo.Claims WITH (UPDLOCK, HOLDLOCK) WHERE ClaimId = @p0)
+                BEGIN
+                    COMMIT TRANSACTION;
+                    SELECT 0;
+                    RETURN;
+                END;
+                IF NOT EXISTS (SELECT 1 FROM dbo.Characters WHERE CharacterId = @p2 AND ProjectId = @p1)
+                    THROW 50000, N'Character is not in the claim project', 1;
+                INSERT INTO dbo.CommentDiscussions (ProjectId) VALUES (@p1);
+                DECLARE @discussionId int = CAST(SCOPE_IDENTITY() AS int);
+                SET IDENTITY_INSERT dbo.Claims ON;
+                INSERT INTO dbo.Claims (ClaimId, ProjectId, CharacterId, PlayerUserId, ResponsibleMasterUserId,
+                    ClaimStatus, CommentDiscussionId, CreateDate, PlayerAcceptedDate, LastUpdateDateTime,
+                    PreferentialFeeUser, PlayerAllowedSenstiveData)
+                VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @discussionId, @p6, @p6, @p6, 0, 0);
+                SET IDENTITY_INSERT dbo.Claims OFF;
+                COMMIT TRANSACTION;
+                SELECT 1;
+            END TRY
+            BEGIN CATCH
+                IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                SET IDENTITY_INSERT dbo.Claims OFF;
+                THROW;
+            END CATCH;
+            """;
+
+        var inserted = await ctx.Database.SqlQuery<int>(
+                sql,
+                shell.ClaimId.ClaimId,
+                shell.ClaimId.ProjectId.Value,
+                shell.CharacterId.CharacterId,
+                shell.PlayerId.Value,
+                shell.ResponsibleMasterId.Value,
+                (int)ClaimStatus.AddedByMaster,
+                shell.CreatedAt)
+            .SingleAsync();
+        return inserted == 1;
+    }
+
+    public Task<bool> IsClaimIdTaken(int claimId) => ctx.Set<Claim>().AnyAsync(c => c.ClaimId == claimId);
+
+    public Task<bool> ClaimExists(ClaimIdentification claimId)
+    {
+        var claimIntId = claimId.ClaimId;
+        var projectIntId = claimId.ProjectId.Value;
+        return ctx.Set<Claim>().AnyAsync(c => c.ClaimId == claimIntId && c.ProjectId == projectIntId);
+    }
+
+    public Task<RestoredShellInsertResult> InsertRestoredCharacterShell(RestoredCharacterShell shell)
+    {
+        if (shell.CharacterId.ProjectId != shell.RootGroupId.ProjectId)
+        {
+            throw new ArgumentException($"Корневая группа {shell.RootGroupId} не из проекта персонажа {shell.CharacterId}", nameof(shell));
+        }
+        if (shell.IsHot && shell.CharacterType == CharacterType.NonPlayer)
+        {
+            throw new ArgumentException($"NPC {shell.CharacterId} не бывает горячим", nameof(shell));
+        }
+
+        // Поля — как у доменного создания (CharacterServiceImpl.AddCharacter → ApplySettings и
+        // SaveFields с пустым слоем): тип и «горячесть» из оболочки, видимость Private (IsPublic = 0,
+        // HidePlayerForCharacter = 1), заявки принимает (IsAcceptingClaims = 1 у всех, кроме NPC),
+        // без лимита слота, активный; поля — пустой JSON-объект, как сериализует пустой слой;
+        // группы — только корневая; аудит — сейчас. Порядок персонажей в группе не трогается.
+        // JSON полей — параметром: EF6 прогоняет текст команды через string.Format, и фигурные скобки
+        // в литерале её ломают.
+        const string insert = """
+            INSERT INTO dbo.Characters (CharacterId, ProjectId, CharacterName, CharacterType, IsPublic,
+                HidePlayerForCharacter, IsAcceptingClaims, IsHot, CharacterSlotLimit, IsActive, InGame, AutoCreated,
+                JsonData, Description_Contents, ParentGroupsImpl_ListIds, PlotElementOrderData, ApprovedClaimId,
+                OriginalCharacterSlot_CharacterId, CreatedAt, CreatedById, UpdatedAt, UpdatedById)
+            VALUES (@p0, @p1, @p3, @p4, 0,
+                1, @p9, @p10, NULL, 1, 0, 0,
+                @p8, @p5, CAST(@p2 AS nvarchar(20)), NULL, NULL,
+                NULL, @p6, @p7, @p6, @p7);
+            """;
+
+        return RestoredShellInsert.Execute(
+            ctx,
+            "Characters",
+            "CharacterId",
+            insert,
+            shell.CharacterId.CharacterId,
+            shell.CharacterId.ProjectId.Value,
+            shell.RootGroupId.CharacterGroupId,
+            shell.CharacterName,
+            (int)shell.CharacterType,
+            (object?)shell.Description ?? DBNull.Value,
+            shell.CreatedAt,
+            shell.CreatedBy.Value,
+            EmptyFieldsJson,
+            shell.CharacterType != CharacterType.NonPlayer,
+            shell.IsHot);
+    }
+
+    public async Task<RestoredCommentInsertResult> InsertRestoredClaimComment(RestoredClaimCommentRow comment)
+    {
+        // Отдельный батч, а не RestoredShellInsert: занятость id здесь решает обсуждение, а не проект,
+        // проверки корневой группы нет, а без id — обычная вставка с поиском повтора.
+        // Одним батчем и своей транзакцией; проверки занятости — с блокировкой диапазона, чтобы два
+        // одновременных восстановления одного комментария не вставили его дважды. Колонки — как у
+        // доменного создания (CommentHelper.CreateCommentForDiscussion): родитель — только у решения по
+        // финансовой операции (сама операция, из этого же обсуждения), время правки равно времени создания. Повтор без id узнаётся по автору, времени и тексту; текст сравнивается
+        // побайтно, а не по сортировке базы, нечувствительной к регистру. Текст и прочее — параметрами:
+        // EF6 прогоняет текст команды через string.Format, фигурные скобки markdown его сломали бы.
+        // IDENTITY_INSERT действует на сессию, поэтому выключается и при ошибке.
+        // Время приводится к типу колонки (datetime, шаг ~3 мс) один раз: и пишется, и сравнивается при
+        // поиске повтора одно и то же значение, как бы провайдер ни типизировал параметр.
+        if (!await ClaimExists(comment.ClaimId))
+        {
+            // То же исключение, что у загрузки заявки; THROW в батче — только на гонку с удалением.
+            throw new JoinRpgEntityNotFoundException(comment.ClaimId.ClaimId, "claim");
+        }
+
+        var sql = $"""
+            SET XACT_ABORT ON;
+            BEGIN TRY
+                BEGIN TRANSACTION;
+                DECLARE @createdAt datetime = @p7;
+                DECLARE @discussionId int;
+                SELECT @discussionId = CommentDiscussionId FROM dbo.Claims WHERE ClaimId = @p0 AND ProjectId = @p1;
+                IF @discussionId IS NULL
+                    THROW 50000, N'Claim is not found in the project', 1;
+                DECLARE @parentId int = @p9;
+                IF @parentId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.Comments WHERE CommentId = @parentId AND CommentDiscussionId = @discussionId)
+                    THROW 50000, N'Parent comment is not found in the claim discussion', 1;
+                DECLARE @commentId int = @p2;
+                IF @commentId IS NOT NULL
+                BEGIN
+                    DECLARE @existingDiscussionId int;
+                    SELECT @existingDiscussionId = CommentDiscussionId FROM dbo.Comments WITH (UPDLOCK, HOLDLOCK) WHERE CommentId = @commentId;
+                    IF @existingDiscussionId IS NOT NULL
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT CASE WHEN @existingDiscussionId = @discussionId THEN {(int)RestoredCommentInsertResult.AlreadyExists} ELSE {(int)RestoredCommentInsertResult.TakenElsewhere} END;
+                        RETURN;
+                    END;
+                    IF @commentId <= 0 OR @commentId >= ISNULL(IDENT_CURRENT('dbo.Comments'), 0)
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT {(int)RestoredCommentInsertResult.NotLostId};
+                        RETURN;
+                    END;
+                    SET IDENTITY_INSERT dbo.Comments ON;
+                    INSERT INTO dbo.Comments (CommentId, ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
+                        LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
+                    VALUES (@commentId, @p1, @discussionId, @parentId, @createdAt, @createdAt, @p3, @p4, @p5, @p6);
+                    SET IDENTITY_INSERT dbo.Comments OFF;
+                END
+                ELSE
+                BEGIN
+                    IF EXISTS (
+                        SELECT 1
+                        FROM dbo.Comments c WITH (UPDLOCK, HOLDLOCK)
+                        JOIN dbo.CommentTexts t ON t.CommentId = c.CommentId
+                        WHERE c.CommentDiscussionId = @discussionId AND c.AuthorUserId = @p3 AND c.CreatedTime = @createdAt
+                            AND CAST(t.Text_Contents AS varbinary(max)) = CAST(@p8 AS varbinary(max)))
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT {(int)RestoredCommentInsertResult.AlreadyExists};
+                        RETURN;
+                    END;
+                    INSERT INTO dbo.Comments (ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
+                        LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
+                    VALUES (@p1, @discussionId, @parentId, @createdAt, @createdAt, @p3, @p4, @p5, @p6);
+                    SET @commentId = CAST(SCOPE_IDENTITY() AS int);
+                END;
+                INSERT INTO dbo.CommentTexts (CommentId, Text_Contents) VALUES (@commentId, @p8);
+                COMMIT TRANSACTION;
+                SELECT {(int)RestoredCommentInsertResult.Inserted};
+            END TRY
+            BEGIN CATCH
+                IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                SET IDENTITY_INSERT dbo.Comments OFF;
+                THROW;
+            END CATCH;
+            """;
+
+        var result = await ctx.Database.SqlQuery<int>(
+                sql,
+                comment.ClaimId.ClaimId,
+                comment.ClaimId.ProjectId.Value,
+                (object?)comment.CommentId ?? DBNull.Value,
+                comment.AuthorId.Value,
+                comment.IsCommentByPlayer,
+                comment.IsVisibleToPlayer,
+                comment.ExtraAction is { } extraAction ? (object)(int)extraAction : DBNull.Value,
+                comment.CreatedAt,
+                comment.Text,
+                (object?)comment.ParentCommentId ?? DBNull.Value)
+            .SingleAsync();
+        return (RestoredCommentInsertResult)result;
+    }
+
+    public async Task<RestoredFinanceOperationInsert> InsertRestoredFinanceOperation(RestoredFinanceOperationRow operation)
+    {
+        // Тот же каркас, что у InsertRestoredClaimComment: один батч своей транзакцией, проверки занятости
+        // с блокировкой диапазона, IDENTITY_INSERT выключается и при ошибке, текст и прочее — параметрами,
+        // время приводится к datetime один раз. Строки — как у доменного приёма взноса (AcceptFee):
+        // комментарий без родителя, видимый игроку, с действием по виду операции, и операция с тем же
+        // идентификатором (FinanceOperations.CommentId — не IDENTITY). Прежний id «уже есть», только
+        // если это операция этого обсуждения: комментарий без операции — занятый номер. Без id повтор
+        // узнаётся по операции того же автора, вида и суммы в пределах минуты от времени уведомления.
+        if (!await ClaimExists(operation.ClaimId))
+        {
+            throw new JoinRpgEntityNotFoundException(operation.ClaimId.ClaimId, "claim");
+        }
+        if (operation.PaymentTypeId.ProjectId != operation.ClaimId.ProjectId)
+        {
+            throw new ArgumentException($"Тип оплаты {operation.PaymentTypeId} не из проекта заявки {operation.ClaimId}", nameof(operation));
+        }
+        var extraAction = operation.OperationType switch
+        {
+            FinanceOperationType.Submit => CommentExtraAction.PaidFee,
+            FinanceOperationType.Refund => CommentExtraAction.RefundFee,
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation.OperationType, "Восстанавливаются только взносы и возвраты"),
+        };
+
+        var sql = $"""
+            SET XACT_ABORT ON;
+            BEGIN TRY
+                BEGIN TRANSACTION;
+                DECLARE @createdAt datetime = @p6;
+                DECLARE @changedAt datetime = @p12;
+                DECLARE @discussionId int;
+                SELECT @discussionId = CommentDiscussionId FROM dbo.Claims WHERE ClaimId = @p0 AND ProjectId = @p1;
+                IF @discussionId IS NULL
+                    THROW 50000, N'Claim is not found in the project', 1;
+                IF NOT EXISTS (SELECT 1 FROM dbo.PaymentTypes WHERE PaymentTypeId = @p10 AND ProjectId = @p1)
+                    THROW 50000, N'Payment type is not found in the project', 1;
+                DECLARE @commentId int = @p2;
+                IF @commentId IS NOT NULL
+                BEGIN
+                    DECLARE @existingDiscussionId int;
+                    SELECT @existingDiscussionId = CommentDiscussionId FROM dbo.Comments WITH (UPDLOCK, HOLDLOCK) WHERE CommentId = @commentId;
+                    IF @existingDiscussionId IS NOT NULL
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT CASE
+                                WHEN @existingDiscussionId = @discussionId AND EXISTS (SELECT 1 FROM dbo.FinanceOperations WHERE CommentId = @commentId)
+                                THEN {(int)RestoredCommentInsertResult.AlreadyExists}
+                                ELSE {(int)RestoredCommentInsertResult.TakenElsewhere}
+                            END AS Result,
+                            @commentId AS OperationId;
+                        RETURN;
+                    END;
+                    IF @commentId <= 0 OR @commentId >= ISNULL(IDENT_CURRENT('dbo.Comments'), 0)
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT {(int)RestoredCommentInsertResult.NotLostId} AS Result, @commentId AS OperationId;
+                        RETURN;
+                    END;
+                    SET IDENTITY_INSERT dbo.Comments ON;
+                    INSERT INTO dbo.Comments (CommentId, ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
+                        LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
+                    VALUES (@commentId, @p1, @discussionId, NULL, @createdAt, @createdAt, @p3, @p4, 1, @p5);
+                    SET IDENTITY_INSERT dbo.Comments OFF;
+                END
+                ELSE
+                BEGIN
+                    DECLARE @existingId int;
+                    SELECT TOP 1 @existingId = c.CommentId
+                    FROM dbo.Comments c WITH (UPDLOCK, HOLDLOCK)
+                    JOIN dbo.FinanceOperations f ON f.CommentId = c.CommentId
+                    WHERE c.CommentDiscussionId = @discussionId AND c.AuthorUserId = @p3
+                        AND c.CreatedTime BETWEEN DATEADD(minute, -1, @createdAt) AND DATEADD(minute, 1, @createdAt)
+                        AND f.OperationType = @p8 AND f.MoneyAmount = @p9
+                    ORDER BY ABS(DATEDIFF(millisecond, c.CreatedTime, @createdAt)), c.CommentId;
+                    IF @existingId IS NOT NULL
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT {(int)RestoredCommentInsertResult.AlreadyExists} AS Result, @existingId AS OperationId;
+                        RETURN;
+                    END;
+                    INSERT INTO dbo.Comments (ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
+                        LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
+                    VALUES (@p1, @discussionId, NULL, @createdAt, @createdAt, @p3, @p4, 1, @p5);
+                    SET @commentId = CAST(SCOPE_IDENTITY() AS int);
+                END;
+                INSERT INTO dbo.CommentTexts (CommentId, Text_Contents) VALUES (@commentId, @p7);
+                INSERT INTO dbo.FinanceOperations (CommentId, ProjectId, ClaimId, MoneyAmount, PaymentTypeId, Created,
+                    Changed, OperationDate, State, OperationType)
+                VALUES (@commentId, @p1, @p0, @p9, @p10, @createdAt, @changedAt, @p13, @p11, @p8);
+                COMMIT TRANSACTION;
+                SELECT {(int)RestoredCommentInsertResult.Inserted} AS Result, @commentId AS OperationId;
+            END TRY
+            BEGIN CATCH
+                IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                SET IDENTITY_INSERT dbo.Comments OFF;
+                THROW;
+            END CATCH;
+            """;
+
+        var row = await ctx.Database.SqlQuery<RestoredFinanceOperationInsertRow>(
+                sql,
+                operation.ClaimId.ClaimId,
+                operation.ClaimId.ProjectId.Value,
+                (object?)operation.OperationId ?? DBNull.Value,
+                operation.AuthorId.Value,
+                operation.IsCommentByPlayer,
+                (int)extraAction,
+                operation.CreatedAt,
+                operation.Text,
+                (int)operation.OperationType,
+                operation.MoneyAmount,
+                operation.PaymentTypeId.PaymentTypeId,
+                (int)operation.State,
+                operation.ChangedAt,
+                operation.OperationDate)
+            .SingleAsync();
+        return new RestoredFinanceOperationInsert((RestoredCommentInsertResult)row.Result, row.OperationId);
+    }
+
+    /// <summary>Строка ответа батча <see cref="InsertRestoredFinanceOperation"/>.</summary>
+    private sealed class RestoredFinanceOperationInsertRow
+    {
+        public int Result { get; set; }
+        public int OperationId { get; set; }
+    }
+
+    /// <summary>Пустой набор полей — так его сериализует сохранение полей (<c>SerializeFields</c>).</summary>
+    private const string EmptyFieldsJson = "{}";
+
     private async Task<(Project, ProjectInfo)> LoadProject(ProjectIdentification projectId)
     {
         var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false)

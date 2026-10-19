@@ -5,6 +5,7 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Portal.Infrastructure.DailyJobs;
 
+[Obsolete("Выключена (DRP #5459): никогда не работала и после восстановления из старого бэкапа может повторно списать деньги. Не регистрировать без отдельного решения.")]
 public class PerformRecurrentPaymentMidnightJob(IPaymentsService paymentsService, ILogger<PerformRecurrentPaymentMidnightJob> logger) : IDailyJob
 {
     private const int MaxTransientErrors = 5;

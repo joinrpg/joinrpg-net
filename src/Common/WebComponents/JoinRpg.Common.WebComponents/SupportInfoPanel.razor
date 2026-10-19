@@ -1,0 +1,56 @@
+@* Блок «Данные для техподдержки» на странице ошибки. Данные собирает сервер
+   (ErrorSupportInfo в JoinRpg.Common.WebInfrastructure), компонент только показывает. *@
+<JoinPanel Variation="VariationStyleEnum.Warning">
+    <Header><b>Данные для техподдержки</b></Header>
+    <Body>
+        @if (ActivityId is not null)
+        {
+            <p><b>ActivityId</b>: @ActivityId</p>
+        }
+
+        <p><b>RequestId</b>: "@RequestId"</p>
+
+        @if (!string.IsNullOrWhiteSpace(Path))
+        {
+            <p><b>Путь</b>: <a href="@Path">@Path</a></p>
+        }
+
+        @if (Referer is not null)
+        {
+            <p><b>Referer</b>: <a href="@Referer">@Referer</a></p>
+        }
+
+        <p><b>Podname</b>: @PodName</p>
+
+        <p>
+            <b>Версия</b>: @Version
+            @if (CommitSha is not null && CommitUrl is not null)
+            {
+                @* Пробел перед скобкой — выражением: Blazor вырезает пробелы вокруг @if. *@
+                @(" ")<text>(коммит <a href="@CommitUrl" target="_blank">@CommitSha</a>)</text>
+            }
+        </p>
+    </Body>
+    <Footer><i>Пожалуйста, присылайте данные текстом, а не скриншотом</i></Footer>
+</JoinPanel>
+
+@code {
+    [Parameter] public string? ActivityId { get; set; }
+
+    [Parameter, EditorRequired] public required string RequestId { get; set; }
+
+    [Parameter] public string? Path { get; set; }
+
+    [Parameter] public Uri? Referer { get; set; }
+
+    /// <summary>
+    /// Имя хоста; в Kubernetes это имя пода — по нему ищутся логи конкретной реплики.
+    /// </summary>
+    [Parameter, EditorRequired] public required string PodName { get; set; }
+
+    [Parameter, EditorRequired] public required string Version { get; set; }
+
+    [Parameter] public string? CommitSha { get; set; }
+
+    [Parameter] public Uri? CommitUrl { get; set; }
+}

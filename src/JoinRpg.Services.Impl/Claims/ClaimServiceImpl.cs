@@ -248,7 +248,7 @@ internal class ClaimServiceImpl(
     /// отдельная операция, <see cref="ModerateFinanceOperation"/>.
     /// </summary>
     /// <remarks>
-    /// Единственная claim-операция с <see cref="ProjectActiveRequirement.AllowInactive"/>: по ADR014
+    /// Единственная claim-операция с <see cref="ProjectActiveRequirement.AllowArchived"/>: по ADR014
     /// комментирование в архивном проекте остаётся разрешённым — обсуждение игры продолжается после
     /// её конца, и форма комментария в UI намеренно не спрятана.
     /// </remarks>
@@ -256,7 +256,7 @@ internal class ClaimServiceImpl(
         => characterPropsService.ChangeClaim(
             claimId,
             ClaimAccessRequirement.MasterOrPlayer,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             (ParentCommentId: parentCommentId,
                 IsVisibleToPlayer: isVisibleToPlayer,
                 CommentText: commentText),
@@ -302,7 +302,7 @@ internal class ClaimServiceImpl(
         => characterPropsService.ChangeClaim(
             claimId,
             ClaimAccessRequirement.AnyMaster,
-            ProjectActiveRequirement.AllowInactive,
+            ProjectActiveRequirement.AllowArchived,
             (ParentCommentId: parentCommentId,
                 CommentText: commentText,
                 FinanceAction: financeAction),
@@ -412,9 +412,16 @@ internal class ClaimServiceImpl(
         {
             // Единственная асинхронная загрузка метода, и она условная: сюжеты нужны только
             // слоту. Поднимать её наверх нельзя — грузились бы на каждое утверждение.
-            var character = await CreateCharacterFromSlot(ctx, ctx.Claim.Character, ctx.Claim.Player);
+            var character = await ctx.CreateCharacterFromSlot(ctx.Claim.Character, ctx.Claim.Player, allowExhaustedLimit: false);
             ctx.Claim.Character = character;
             ctx.Claim.CharacterId = character.CharacterId;
+        }
+        else if (ctx.Claim.Character.ApprovedClaimId is { } approvedClaimId && approvedClaimId != ctx.Claim.ClaimId)
+        {
+            // Персонаж уже занят другой принятой заявкой. «Занят» проверяется при подаче, но
+            // две заявки, поданные на свободного персонажа, иначе принимались обе, и вторая
+            // молча перезаписывала ApprovedClaimId (#5645).
+            throw new ClaimTargetIsNotAcceptingClaims();
         }
 
         ctx.ChangeStatus(ctx.Claim, ClaimStatus.Approved);
@@ -459,9 +466,15 @@ internal class ClaimServiceImpl(
     }
 
     /// <summary>
-    /// Автоприём заявки в проекте, где включён <c>AutoAcceptClaims</c>.
+    /// Автоприём заявки на шаблон (<see cref="CharacterType.Slot"/>) в проекте, где включён
+    /// <c>AutoAcceptClaims</c>.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Заявки на обычного персонажа автоматически не принимаются никогда (#5645): автоприём
+    /// нужен конвентам, где игрок заявляется на шаблон и получает собственного персонажа,
+    /// созданного из него.
+    /// </para>
     /// <para>
     /// Вызывается строго ПОСЛЕ завершения операции, создавшей или принявшей заявку: вкладывать
     /// одну мутацию в другую запрещено (ADR014, §7). Порядок побочных эффектов при этом сохранён —
@@ -484,6 +497,18 @@ internal class ClaimServiceImpl(
 
         var claim = await ClaimsRepository.GetClaim(claimId)
             ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(Claim));
+
+        // Автоприём — только для заявок на шаблон (#5645): из шаблона создаётся новый персонаж,
+        // а заявку на конкретного персонажа мастер должен принять сам. Персонаж загружен вместе
+        // с заявкой (ClaimsRepository.GetClaim), лишнего запроса здесь нет.
+        if (claim.Character.CharacterType != CharacterType.Slot)
+        {
+            logger.LogInformation(
+                "Claim ({claimId}) was not auto-approved: character type is {characterType}, only slot claims are auto-approved",
+                claimId,
+                claim.Character.CharacterType);
+            return;
+        }
 
         // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
         if (!claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
@@ -527,85 +552,6 @@ internal class ClaimServiceImpl(
         }
     }
 
-    /// <summary>
-    /// Создаёт персонажа из слота при утверждении заявки: уменьшает остаток слота, копирует
-    /// свойства и наследует прямые привязки к сюжетам.
-    /// </summary>
-    /// <remarks>
-    /// <c>CreatedAt</c>/<c>UpdatedAt</c> проставляются локальным <see cref="DateTime.Now"/>, а не
-    /// временем операции (UTC). Это выглядит ошибкой, но сохранено как есть: миграция обязана
-    /// сохранять поведение, а починка — отдельное изменение.
-    /// </remarks>
-    private static async Task<Character> CreateCharacterFromSlot(ClaimMutationContext ctx, Character slot, User player)
-    {
-        switch (slot.CharacterSlotLimit)
-        {
-            case null:  // Unlimited slot
-                break;
-            case > 0:
-                slot.CharacterSlotLimit--;
-                break;
-            default:
-                throw new JoinRpgSlotLimitedException(slot);
-        }
-
-        if (slot.CharacterType != CharacterType.Slot)
-        {
-            throw new EntityWrongStatusException(slot);
-        }
-
-        // Сюжеты грузятся до создания персонажа: прямые привязки берутся из этой выборки, а не из
-        // slot.DirectlyRelatedPlotElements — навигация на write-хэндле не загружена, и обращение к
-        // ней стоило бы ленивой загрузки (#5061).
-        var plots = await ctx.LoadDirectPlotsForCharacter(slot.GetId());
-
-        var newCharacter = new Character()
-        {
-            ApprovedClaim = null,
-            ApprovedClaimId = null,
-            AutoCreated = true,
-            OriginalCharacterSlot = slot,
-            CanBePermanentlyDeleted = false,
-            CharacterId = -1,
-            CharacterName = slot.CharacterName, // Probably will be updated by field save
-            CharacterSlotLimit = null,
-            CharacterType = CharacterType.Player,
-            CreatedAt = DateTime.Now,
-            CreatedBy = player,
-            CreatedById = player.UserId,
-            DirectlyRelatedPlotElements = [.. plots],
-            HidePlayerForCharacter = slot.HidePlayerForCharacter,
-            InGame = false,
-            IsAcceptingClaims = true,
-            IsActive = true,
-            IsHot = false,
-            IsPublic = slot.IsPublic,
-            JsonData = slot.JsonData,
-            ParentCharacterGroupIds = slot.ParentCharacterGroupIds,
-            PlotElementOrderData = slot.PlotElementOrderData,
-            Project = slot.Project,
-            ProjectId = slot.ProjectId,
-            Subscriptions = slot.Subscriptions,
-            UpdatedAt = DateTime.Now,
-            UpdatedBy = player,
-            UpdatedById = player.UserId,
-        };
-
-        // Через контекст, а не через UnitOfWork.GetDbSet: сохраняет тот DbContext, который загрузил
-        // агрегат, а DI-экземпляр UnitOfWork у сервиса — другой (ADR014).
-        ctx.AddEntity(newCharacter);
-
-        foreach (var plot in plots)
-        {
-            if (plot.TargetCharacters.Contains(slot))
-            {
-                plot.TargetCharacters.Add(newCharacter);
-            }
-        }
-
-        return newCharacter;
-    }
-
     public Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)
         => characterPropsService.ChangeClaimAsync(
             claimId,
@@ -634,7 +580,7 @@ internal class ClaimServiceImpl(
                     DeleteCharacter(ctx);
                 }
 
-                await DeclineAllClaimInvites(ctx);
+                await DeclineUnansweredClaimInvites(ctx);
 
                 _ = ctx.AddComment(
                     ctx.Request.CommentText,
@@ -774,16 +720,23 @@ internal class ClaimServiceImpl(
     }
 
     /// <summary>
-    /// Отклоняет все приглашения к совместному проживанию, в которых участвует заявка, и ставит
-    /// уведомление остальным участникам в очередь.
+    /// Отклоняет неотвеченные приглашения к совместному проживанию, в которых участвует заявка, и
+    /// ставит уведомление остальным участникам в очередь.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Уже отвеченные приглашения — история, их не трогаем: иначе принятое приглашение выглядело бы
+    /// отклонённым из-за отмены заявки, а второй стороне ушло бы уведомление по давно решённому
+    /// приглашению (#5452). Так же поступает удаление типа проживания.
+    /// </para>
+    /// <para>
     /// Раньше это делал <c>AccommodationInviteServiceImpl.DeclineAllClaimInvites</c> на собственном
     /// <c>DbContext</c> и собственным <c>SaveChanges</c> — приглашения коммитились независимо от
     /// внешней операции. Теперь и запрос, и мутация идут через контекст, значит уезжают в то же
     /// единственное сохранение (ADR014).
+    /// </para>
     /// </remarks>
-    private static async Task DeclineAllClaimInvites(ClaimMutationContext ctx)
+    private static async Task DeclineUnansweredClaimInvites(ClaimMutationContext ctx)
     {
         var invites = await ctx.LoadInvitesForClaim();
         if (invites.Count == 0)
@@ -794,6 +747,11 @@ internal class ClaimServiceImpl(
         var recipients = new List<Claim>();
         foreach (var invite in invites)
         {
+            if (invite.IsAccepted != InviteState.Unanswered)
+            {
+                continue;
+            }
+
             invite.IsAccepted = InviteState.Declined;
             invite.ResolveDescription = ResolveDescription.ClaimCanceled;
 
@@ -939,7 +897,7 @@ internal class ClaimServiceImpl(
                 // Сбрасываем это при отклонении заявки, если заявку восстановить, надо будет повторно получать разрешение
                 ctx.Claim.PlayerAllowedSenstiveData = false;
 
-                await DeclineAllClaimInvites(ctx);
+                await DeclineUnansweredClaimInvites(ctx);
 
                 var roomNotification = await CommonClaimDecline(ctx);
 
@@ -1061,7 +1019,7 @@ internal class ClaimServiceImpl(
     /// отметку на форуме.
     /// </para>
     /// <para>
-    /// По требованиям ADR014 это <c>AllowInactive</c> (отметка «прочитано» — по смыслу чтение), и
+    /// По требованиям ADR014 это <c>AllowArchived</c> (отметка «прочитано» — по смыслу чтение), и
     /// именно так метод себя и ведёт: проверки активности здесь нет. Отсутствие проверки доступа —
     /// известная дыра из списка «что сознательно не чиним».
     /// </para>
@@ -1073,6 +1031,13 @@ internal class ClaimServiceImpl(
     /// </remarks>
     public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
     {
+        // Отметку прочтения пишет просмотр заявки, поэтому в заблокированном проекте (ADR023) не бросаем,
+        // а молча не пишем: просмотр должен работать, а строки в проекте на восстановлении — не появляться.
+        if ((await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).ProjectStatus == ProjectLifecycleStatus.Blocked)
+        {
+            return;
+        }
+
         var currentUserId = currentUserAccessor.UserId;
         var watermarks =
           unitOfWork.GetDbSet<ReadCommentWatermark>()
@@ -1193,7 +1158,7 @@ internal class ClaimServiceImpl(
     /// требовать здесь <c>ClaimIdentification</c> было бы неправдой о предметной области.
     /// </para>
     /// <para>
-    /// По ADR014 это <c>AllowInactive</c>: модерация должна работать всюду, где работает
+    /// По ADR014 это <c>AllowArchived</c>: модерация должна работать всюду, где работает
     /// комментирование, а комментирование в архивном проекте разрешено. Проверки активности здесь
     /// нет — то есть требование уже выполнено.
     /// </para>
@@ -1216,7 +1181,8 @@ internal class ClaimServiceImpl(
         }
 
         // Права — по ProjectInfo, а не по comment.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId));
+        // Скрывать комментарии можно и в архиве (ADR014), но не в заблокированном проекте (ADR023).
+        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).EnsureNotBlocked();
 
         if (projectInfo.HasMasterAccess(currentUserAccessor) && !childComments.Any() &&
             comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)

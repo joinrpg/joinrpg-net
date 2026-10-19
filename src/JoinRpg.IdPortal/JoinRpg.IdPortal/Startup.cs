@@ -16,8 +16,6 @@ public static class Startup
 {
     public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
     {
-        builder.Host.UseJoinSerilog("JoinRpg.IdPortal");
-
         // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents()
@@ -38,11 +36,12 @@ public static class Startup
 
         builder.Services.AddOptions<OAuthServerOptions>().BindConfiguration("OAuthServer");
 
+        // Портал аккаунтов — только вход и профиль, в поиске ему делать нечего
+        builder.Services.AddOptions<RobotsTxtOptions>().Configure(robots => robots.DisallowAll = true);
+
         builder.Services.AddJoinExternalLogins(builder.Configuration.GetSection("Authentication"));
 
-        builder.Services.AddJoinWebPlatform(builder.Configuration,
-                    builder.Environment,
-                    "JoinRpg.IdPortal",
+        builder.AddJoinWebPlatform("JoinRpg.IdPortal",
                     dataProtectionConnectionStringName: "DataProtection",
                     telemetryServiceNames: []);
 

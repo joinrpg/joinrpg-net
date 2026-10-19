@@ -1,5 +1,4 @@
 using JoinRpg.Common.Telegram;
-using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.DomainTypes.Users;

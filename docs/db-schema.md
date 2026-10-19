@@ -96,6 +96,7 @@ erDiagram
         datetime CreatedDate
         bool Active
         bool IsAcceptingClaims
+        bool IsBlocked "заблокирован на время восстановления данных, ADR023"
         datetime CharacterTreeModifiedAt "obsolete, заменяется версией метаданных"
     }
 
@@ -824,7 +825,7 @@ erDiagram
         string Body
         int InitiatorUserId "индекс, FK нет — другая БД"
         int RecipientUserId "индекс, FK нет — другая БД"
-        string EntityReference "ссылка на проект, заявку и т.п."
+        string EntityReference "ссылка на проект, заявку и т.п.; индекс text_pattern_ops — выборка по префиксу"
         bool SkipSignature
         datetimeoffset CreatedAt
     }

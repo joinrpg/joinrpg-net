@@ -1,5 +1,6 @@
 using JoinRpg.Common.WebInfrastructure.Cache;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Services.Interfaces.Avatars;
 
 namespace Joinrpg.Web.Identity;
 
@@ -10,7 +11,10 @@ public record AvatarCacheKey(AvatarIdentification Id, int Size) { }
 /// This cache cannot be too large (it just id to string), so we never purge it.
 /// Avatars are immutable.
 /// </summary>
-public class AvatarCachedLoader(IUserRepository userRepository, SingletonCache<AvatarCacheKey, Task<AvatarInfo>> cache) : IAvatarLoader
+public class AvatarCachedLoader(
+    IUserRepository userRepository,
+    SingletonCache<AvatarCacheKey, Task<AvatarInfo>> cache,
+    IAvatarUriResolver avatarUriResolver) : IAvatarLoader
 {
     Task<AvatarInfo> IAvatarLoader.GetAvatar(AvatarIdentification userAvatarId, int recommendedSize)
     {
@@ -32,7 +36,7 @@ public class AvatarCachedLoader(IUserRepository userRepository, SingletonCache<A
         async Task<AvatarInfo> Load(AvatarCacheKey key)
         {
             var avatar = await userRepository.LoadAvatar(key.Id);
-            return new AvatarInfo(new Uri(avatar.CachedUri ?? avatar.OriginalUri), recommendedSize);
+            return new AvatarInfo(avatarUriResolver.GetAvatarUri(avatar.CachedUri, avatar.OriginalUri), recommendedSize);
         }
     }
 

@@ -28,7 +28,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     {
         return await Ctx
           .ClaimSet
-          .Include(c => c.AccommodationRequest)
           .Include(c => c.Player.Extra)
           .Include(c => c.FinanceOperations)
           .Include(c => c.Character)
@@ -74,6 +73,22 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             projectId,
             claim => claim.ClaimStatus == ClaimStatus.Approved && claim.AccommodationRequest_Id == null);
 
+    public async Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId)
+    {
+        var predicate = PredicateBuilder.New<Claim>()
+            .And(ClaimPredicates.GetForProject(projectId))
+            .And(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active))
+            .And(claim => claim.AccommodationRequest_Id == null);
+
+        var ids = await Ctx.ClaimSet
+            .AsExpandable()
+            .Where(predicate)
+            .Select(claim => claim.ClaimId)
+            .ToListAsync();
+
+        return [.. ids.Select(id => new ClaimIdentification(projectId, id))];
+    }
+
     public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId)
     {
         if (roomTypeId != null)
@@ -115,7 +130,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             Ctx.ClaimSet.Include(c => c.CommentDiscussion.Comments.Select(com => com.Finance))
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.Author))
               .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
-              .Include(c => c.AccommodationRequest)
               .Include(c => c.Character)
               .SingleOrDefaultAsync(e => e.ClaimId == claimId.ClaimId && e.ProjectId == claimId.ProjectId.Value);
     }
@@ -216,7 +230,6 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
         return await Ctx
           .ClaimSet
-          .Include(c => c.AccommodationRequest)
           .Include(c => c.Player)
           .Include(c => c.FinanceOperations)
           .Include(c => c.Character)

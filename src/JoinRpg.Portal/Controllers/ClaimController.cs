@@ -10,6 +10,7 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
@@ -36,7 +37,8 @@ public class ClaimController(
     ICurrentUserAccessor currentUserAccessor,
     CharacterPlotViewService characterPlotViewService,
     JoinrpgMarkdownLinkRendererFactory linkRendererFactory,
-    IRoomCategoryPlanRepository roomCategoryPlanRepository
+    IRoomCategoryPlanRepository roomCategoryPlanRepository,
+    UserProfileAvatars profileAvatars
     ) : JoinControllerGameBase
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
@@ -152,6 +154,7 @@ public class ClaimController(
                 ? await linkRendererFactory.Load(new ProjectIdentification(claim.ProjectId))
                 : JoinrpgMarkdownLinkRendererFactory.NoDirectives,
             await UserRepository.LoadFieldUserLinks(claim, projectInfo));
+        await profileAvatars.Fill(claimViewModel.PlayerDetails);
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
         {
@@ -673,7 +676,11 @@ public class ClaimController(
                 });
         }
 
-        return View("PaymentTransfer", new PaymentTransferViewModel(claim));
+        // Заявка уже найдена через EF, так что промах здесь — рассинхрон, а не 404.
+        var snapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claim.GetId())
+            ?? throw new InvalidOperationException($"Claim {claim.GetId()} is not found in character aggregate");
+
+        return View("PaymentTransfer", new PaymentTransferViewModel(snapshot));
     }
 
     private async Task<ActionResult> RedirectToDefaultTemplate(int projectid)

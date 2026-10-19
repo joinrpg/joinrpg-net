@@ -63,27 +63,6 @@ public class GameFieldController(
     }
 
     [HttpPost]
-    [MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> Settings(FieldSettingsViewModel viewModel)
-    {
-        if (!ModelState.IsValid)
-        {
-            return await ViewIfFound(Manager.FillFailedSettingsModel(viewModel));
-        }
-        try
-        {
-            await Manager.SettingsHandleAsync(viewModel);
-
-            return ReturnToIndex();
-        }
-        catch (Exception exception)
-        {
-            AddModelException(exception);
-            return View(await Manager.FillFailedSettingsModel(viewModel));
-        }
-    }
-
-    [HttpPost]
     [ValidateAntiForgeryToken]
     [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> Create(GameFieldCreateViewModel viewModel)

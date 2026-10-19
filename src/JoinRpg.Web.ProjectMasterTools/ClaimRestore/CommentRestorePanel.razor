@@ -1,0 +1,380 @@
+@using JoinRpg.Helpers
+@inject ICommentRestoreClient Client
+@inject IUriLocator<ClaimIdentification> ClaimUriLocator
+
+<JoinPanel>
+    <Header>Комментарии к заявкам</Header>
+    <Body>
+        <p>
+            Комментарии к заявкам, написанные после резервной копии, возвращаются в обсуждения заявок из
+            <b>уведомлений</b> — с прежними номерами, авторами и временем. Запускайте <b>после восстановления заявок</b>
+            выше: комментарии к заявке, которой нет в базе, восстановить некуда.
+        </p>
+        <ul>
+            <li>Обсуждения станут плоскими: ответы на комментарии восстановятся отдельными комментариями, без привязки к исходному.</li>
+            <li>
+                Видимость мастерских комментариев определяется по тому, получил ли игрок уведомление. Строки
+                с пометкой <b>«под вопросом»</b> могли быть и скрытыми — проверьте их вручную после восстановления.
+            </li>
+            <li>Финансовые операции здесь пропускаются — их восстановят позже отдельно.</li>
+            <li>Игрокам ничего не отправляется, в истории заявки остаётся запись о восстановлении. Повторный запуск ничего не дублирует.</li>
+        </ul>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+        }
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">@successMessage</JoinAlert>
+        }
+
+        @if (CanRefresh)
+        {
+            @* Заявки восстанавливает соседний остров — после него план комментариев надо перестроить. *@
+            <p>
+                <JoinButton Label="Обновить план" ProgressLabel="Обновляем..." InProgress="@loading" AutoProgress="false"
+                            Disabled="@Busy" OnClick="RefreshPlan" />
+            </p>
+        }
+
+        @if (model is null)
+        {
+            @if (string.IsNullOrEmpty(errorMessage))
+            {
+                <JoinLoadingMessage Message="Строим план восстановления комментариев..." />
+            }
+        }
+        else if (model.UnavailableReason is { } reason)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Warning">
+                @(reason switch
+                {
+                    ClaimRestoreUnavailableReason.ProjectNotBlocked => "Восстанавливать комментарии можно, только пока проект заблокирован на время восстановления.",
+                    _ => "Для восстановления комментариев нужны права на управление заявками.",
+                })
+            </JoinAlert>
+        }
+        else if (VisibleRows.Count == 0)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Info">Нечего восстанавливать: по уведомлениям все комментарии к заявкам уже есть в базе.</JoinAlert>
+            @HiddenRowsNote()
+        }
+        else
+        {
+            @HiddenRowsNote()
+            <p>
+                Заявок к восстановлению: @VisibleRows.Count, из них отмечено: @SelectedCount.
+                <button type="button" class="btn btn-link btn-xs comment-restore-select-all" disabled="@Busy" @onclick="SelectAll">Выбрать все</button>
+                <button type="button" class="btn btn-link btn-xs comment-restore-select-none" disabled="@Busy" @onclick="SelectNone">Снять все</button>
+            </p>
+            <div class="table-responsive">
+                <table class="table table-bordered table-condensed restore-comments">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>№ заявки</th>
+                            <th>Персонаж</th>
+                            <th>Игрок</th>
+                            <th title="Комментарии, которых нет в базе">К восстановлению</th>
+                            <th title="Комментарии из уведомлений, которые уже есть в базе">Уже есть</th>
+                            <th title="Видимость мастерского комментария определена эвристикой — проверьте вручную">Под вопросом</th>
+                            <th title="Номер комментария в базе занят другим">Конфликты</th>
+                            <th title="Финансовые операции восстанавливаются отдельно, позже">Финансы пропущены</th>
+                            <th>Не разобрано</th>
+                            <th>Пометки</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in VisibleRows)
+                        {
+                            var r = row.Row;
+                            <tr class="@RowClass(row)" @key="r.ClaimId">
+                                <td>
+                                    <input type="checkbox" checked="@(row.Selected && row.CanApply)" disabled="@(!row.CanApply || Busy)"
+                                           title="Восстановить комментарии этой заявки"
+                                           @onchange="@(e => row.Selected = e.Value is true)" />
+                                </td>
+                                <td><a href="@ClaimUriLocator.GetUri(r.ClaimId)">@r.ClaimId.ClaimId</a></td>
+                                <td>@(r.CharacterName ?? "—")</td>
+                                <td>@(r.PlayerName ?? "—")</td>
+                                <td>
+                                    @r.Comments.Count
+                                    @if (r.Comments.Count > 0)
+                                    {
+                                        <button type="button" class="btn btn-link btn-xs" @onclick="@(() => row.Expanded = !row.Expanded)">
+                                            @(row.Expanded ? "Скрыть" : "Показать")
+                                        </button>
+                                    }
+                                </td>
+                                <td>@r.SkippedExisting</td>
+                                <td>@QuestionableCount(r)</td>
+                                <td title="@string.Join(", ", r.Conflicts)">@r.Conflicts.Count</td>
+                                <td>@r.SkippedFinance</td>
+                                <td>@r.Unparsed</td>
+                                <td>
+                                    @if (row.ResultText is not null)
+                                    {
+                                        <div class="text-success">@row.ResultText</div>
+                                    }
+                                    @if (row.Error is not null)
+                                    {
+                                        <div class="text-danger">@row.Error</div>
+                                    }
+                                    @foreach (var warning in r.Warnings)
+                                    {
+                                        <div class="text-warning">@warning.GetDisplayName()</div>
+                                    }
+                                </td>
+                            </tr>
+                            @if (row.Expanded && r.Comments.Count > 0)
+                            {
+                                <tr @key="@($"comments-{r.ClaimId}")">
+                                    <td></td>
+                                    <td colspan="10">@CommentsTable(r.Comments)</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <JoinButton Preset="ButtonPreset.Save" Label="Применить выбранные" ProgressLabel="Восстанавливаем..."
+                        InProgress="@applying" AutoProgress="false"
+                        Disabled="@(Busy || SelectedCount == 0)"
+                        OnClick="ApplySelected" />
+        }
+    </Body>
+</JoinPanel>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private CommentRestorePlanViewModel? model;
+    private List<RowEditor> rows = [];
+    private bool applying;
+    private bool loading;
+    private string? errorMessage;
+    private string? successMessage;
+
+    /// <summary>Итоги применения по заявкам — переживают перезагрузку плана, иначе их не увидеть.</summary>
+    private readonly Dictionary<ClaimIdentification, (string? Result, string? Error)> outcomes = [];
+
+    private bool Busy => applying || loading;
+
+    private int SelectedCount => VisibleRows.Count(r => r.Selected && r.CanApply);
+
+    /// <summary>
+    /// Строки, которые показываем: есть что восстановить, есть о чём предупредить или только что применяли.
+    /// Остальные (всё уже в базе) — одной строкой-счётчиком: после восстановления их большинство.
+    /// </summary>
+    private List<RowEditor> VisibleRows => [.. rows.Where(r => r.CanApply || r.Row.Warnings.Count > 0 || r.ResultText is not null || r.Error is not null)];
+
+    private int HiddenCount => rows.Count - VisibleRows.Count;
+
+    /// <summary>Обновлять можно, пока восстановление доступно или план не загрузился.</summary>
+    private bool CanRefresh => model is null ? !string.IsNullOrEmpty(errorMessage) : model.UnavailableReason is null;
+
+    private RenderFragment HiddenRowsNote() => __builder =>
+    {
+        if (HiddenCount > 0)
+        {
+            <p class="text-muted">Уже восстановлено заявок: @HiddenCount.</p>
+        }
+    };
+
+    private async Task RefreshPlan()
+    {
+        if (Busy)
+        {
+            return;
+        }
+        errorMessage = null;
+        successMessage = null;
+        outcomes.Clear();
+        _ = await LoadPlan();
+    }
+
+    protected override async Task OnInitializedAsync() => await LoadPlan();
+
+    /// <returns>Удалось ли получить план.</returns>
+    private async Task<bool> LoadPlan()
+    {
+        loading = true;
+        try
+        {
+            model = await Client.GetPlan(ProjectId);
+            rows = [.. model.Rows.Select(r =>
+            {
+                var editor = new RowEditor(r);
+                if (outcomes.TryGetValue(r.ClaimId, out var outcome))
+                {
+                    (editor.ResultText, editor.Error) = outcome;
+                }
+                return editor;
+            })];
+            return true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Не удалось построить план восстановления комментариев: {ex.Message}";
+            return false;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void SelectAll()
+    {
+        foreach (var row in VisibleRows.Where(r => r.CanApply))
+        {
+            row.Selected = true;
+        }
+    }
+
+    private void SelectNone()
+    {
+        foreach (var row in rows)
+        {
+            row.Selected = false;
+        }
+    }
+
+    private async Task ApplySelected()
+    {
+        if (model is null || Busy)
+        {
+            return;
+        }
+        applying = true;
+        errorMessage = null;
+        successMessage = null;
+        outcomes.Clear();
+        foreach (var row in rows)
+        {
+            row.ResultText = null;
+            row.Error = null;
+        }
+        StateHasChanged();
+
+        var inserted = 0;
+        var failed = 0;
+        // По одной заявке: после неудачной следующая начинается с чистого контекста.
+        foreach (var row in VisibleRows.Where(r => r.Selected && r.CanApply))
+        {
+            try
+            {
+                var result = await Client.Apply(row.Row.ClaimId);
+                inserted += result.Inserted;
+                row.ResultText = ResultText(result);
+            }
+            catch (Exception ex)
+            {
+                failed++;
+                row.Error = ex.Message;
+            }
+            outcomes[row.Row.ClaimId] = (row.ResultText, row.Error);
+            StateHasChanged();
+        }
+
+        var summary = failed == 0
+            ? $"Восстановлено комментариев: {inserted}."
+            : $"Восстановлено комментариев: {inserted}. Не удалось по заявкам: {failed} — см. пометки в таблице.";
+        var reloaded = await LoadPlan();
+        if (failed == 0 && reloaded)
+        {
+            successMessage = summary;
+        }
+        else
+        {
+            errorMessage = reloaded ? summary : $"{summary} {errorMessage} Обновите страницу.";
+        }
+        applying = false;
+    }
+
+    private static string ResultText(CommentRestoreApplyResult result)
+    {
+        if (result.Inserted == 0 && result.AlreadyExisted == 0 && result.Conflicts.Count == 0)
+        {
+            return "Нечего восстанавливать";
+        }
+        var text = $"Восстановлено: {result.Inserted}";
+        if (result.AlreadyExisted > 0)
+        {
+            text += $", уже были: {result.AlreadyExisted}";
+        }
+        if (result.Conflicts.Count > 0)
+        {
+            text += $", не восстановлены из-за занятых номеров: {string.Join(", ", result.Conflicts)}";
+        }
+        return text;
+    }
+
+    private static int QuestionableCount(CommentRestoreRowViewModel row) => row.Comments.Count(c => c.VisibilityQuestionable);
+
+    private static string RowClass(RowEditor row)
+        => row.Error is not null ? "danger" : row.ResultText is not null ? "success" : !row.CanApply ? "text-muted" : "";
+
+    private static string Format(DateTimeOffset value) => value.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+
+    private static RenderFragment CommentsTable(IReadOnlyList<CommentRestoreCommentView> comments) => __builder =>
+    {
+        <table class="table table-condensed restore-comment-list">
+            <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>Автор</th>
+                    <th>Видимость</th>
+                    <th>Действие</th>
+                    <th>Текст</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var comment in comments)
+                {
+                    <tr class="@(comment.VisibilityQuestionable ? "warning" : "")">
+                        <td>
+                            @Format(comment.CreatedAt)
+                            @if (comment.CommentId is { } id)
+                            {
+                                <div class="text-muted small">№ @id</div>
+                            }
+                        </td>
+                        <td>
+                            @comment.AuthorName
+                            <div class="text-muted small">@(comment.IsCommentByPlayer ? "игрок" : "мастер")</div>
+                        </td>
+                        <td>
+                            @(comment.IsVisibleToPlayer ? "Виден игроку" : "Скрыт от игрока")
+                            @if (comment.VisibilityQuestionable)
+                            {
+                                <div class="text-warning small">Под вопросом — проверьте вручную</div>
+                            }
+                        </td>
+                        <td>@(comment.ActionName ?? "")</td>
+                        <td>@((MarkupString)comment.TextHtml)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    };
+
+    private sealed class RowEditor(CommentRestoreRowViewModel row)
+    {
+        public CommentRestoreRowViewModel Row { get; } = row;
+
+        /// <summary>Есть что восстановить и есть куда.</summary>
+        public bool CanApply { get; } = row.ClaimExists && row.Comments.Count > 0;
+
+        public bool Selected { get; set; } = row.ClaimExists && row.Comments.Count > 0;
+
+        public bool Expanded { get; set; }
+
+        public string? ResultText { get; set; }
+
+        public string? Error { get; set; }
+    }
+}

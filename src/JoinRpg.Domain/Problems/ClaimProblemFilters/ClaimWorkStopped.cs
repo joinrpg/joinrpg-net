@@ -13,7 +13,7 @@ internal class ClaimWorkStopped : IClaimProblemFilter
         // Прежний код проверял claim.Project.Active и вёл себя ровно наоборот — молчал на живых
         // проектах и срабатывал в архиве, то есть единственный мастер, которому правило могло
         // пригодиться, его и не видел. Условие исправлено при переносе на доменные сущности.
-        if (!context.ProjectInfo.IsActive)
+        if (context.ProjectInfo.IsArchived)
         {
             yield break;
         }

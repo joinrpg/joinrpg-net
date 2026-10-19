@@ -9,13 +9,28 @@
         Subtext: f.BoundTo == FieldBoundTo.Character ? "Персонаж" : "Заявка"))"
     SelectedValues="SelectedFieldIds"
     SelectedValuesChanged="SelectedFieldIdsChanged"
-    Multiple="true" />
+    Multiple="@Multiple"
+    AllowEmpty="@AllowEmpty"
+    EmptyText="@EmptyText" />
 
 @code {
     [Parameter] [EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+    /// <summary>
+    /// Выбранные поля. В списке только активные поля проекта: неактивное поле отсюда не отображается выбранным
+    /// (пункта для него нет), но и не выкидывается, пока пользователь не изменит выбор. После любого изменения
+    /// в <see cref="SelectedFieldIdsChanged"/> приходят только видимые в списке поля.
+    /// </summary>
     [Parameter] public ProjectFieldIdentification[] SelectedFieldIds { get; set; } = [];
     [Parameter] public EventCallback<ProjectFieldIdentification[]> SelectedFieldIdsChanged { get; set; }
+    [Parameter] public bool Multiple { get; set; } = true;
+    [Parameter] public bool AllowEmpty { get; set; } = false;
+    [Parameter] public string EmptyText { get; set; } = "(нет)";
+    /// <summary>Показывать только поля этого типа. null — любого.</summary>
+    [Parameter] public ProjectFieldType? FieldType { get; set; }
+    /// <summary>Показывать только поля с этой привязкой. null — любой.</summary>
+    [Parameter] public FieldBoundTo? BoundTo { get; set; }
 
+    private ProjectFieldDto[]? _loaded;
     private ProjectFieldDto[]? _items;
     /// <summary>Для какого проекта список уже загружен: пока он тот же, в сеть не ходим.</summary>
     private ProjectIdentification? _loadedFor;
@@ -27,8 +42,11 @@
         // когда изменился проект.
         if (_loadedFor != ProjectId)
         {
-            _items = [.. await fieldsClient.GetProjectFields(ProjectId)];
+            _loaded = [.. await fieldsClient.GetProjectFields(ProjectId)];
             _loadedFor = ProjectId;
         }
+        _items = _loaded?
+            .Where(f => (FieldType is null || f.FieldType == FieldType) && (BoundTo is null || f.BoundTo == BoundTo))
+            .ToArray();
     }
 }

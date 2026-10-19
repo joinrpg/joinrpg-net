@@ -18,8 +18,9 @@
         <GroupEditMenu GroupId="Node.Header.Group.CharacterGroupId"
                        GroupType="Node.Header.GroupType"
                        HasMasterAccess="Model.HasMasterAccess"
-                       ShowEditControls="Model.CanEditSettings" />
-        @if (Model.CanEditSettings && !Node.Header.IsSpecial && GetGroupSiblings() is { Count: > 1 } groupSiblings)
+                       ShowEditGroupControls="Model.CanEditGroups"
+                       ShowEditRoleControls="Model.CanEditRoles" />
+        @if (Model.CanEditGroups &&!Node.Header.IsSpecial && GetGroupSiblings() is { Count: > 1 } groupSiblings)
         {
             <JoinMoveControl TItem="ProjectRoleGridGroupHeaderRowViewModel"
                              Items="groupSiblings"
@@ -52,7 +53,7 @@
             {
                 <li>
                     <CharacterLinkWithEdit Model="charRow.Character" />
-                    @if (charRow.Character.CanEdit && charBlock.Count > 1)
+                    @if (Model.CanEditGroups && charBlock.Count > 1)
                     {
                         <JoinMoveControl TItem="ProjectRoleGridCharacterRowViewModel"
                                          Items="charBlock"

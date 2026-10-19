@@ -60,7 +60,8 @@ Task<TResult> ChangeProjectProperties<TArgs, TResult>(
 Сервис централизует:
 
 - **права** — `RequestMasterAccess(requiredPermission)` с bypass для админа;
-- **активность** — явный параметр `ProjectActiveRequirement` (`MustBeActive` / `AllowInactive`),
+- **активность** — явный параметр `ProjectActiveRequirement` (`MustBeActive` / `AllowArchived`;
+  до [ADR023](adr023-project-blocked-status.md) — `AllowInactive`),
   по умолчанию значения нет: вызывающий обязан указать намерение явно;
 - **логирование** — имя операции (`[CallerMemberName]`) и её аргументы (`TArgs`) пишутся в лог
   **после** операции: `Information` при успехе, `Warning` (с исключением) при провале, после чего

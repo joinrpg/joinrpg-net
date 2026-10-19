@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.Web.Models.Accommodation;
@@ -39,12 +40,16 @@ public class AccommodationListViewModelTest
         return claim;
     }
 
-    private async Task<AccommodationListViewModel> Build(params Claim[] claims)
+    private Task<AccommodationListViewModel> Build(params Claim[] claims) => Build(claimsWithoutRoomType: [], claims);
+
+    /// <param name="claimsWithoutRoomType">Что вернёт выборка заявок без типа проживания.</param>
+    /// <param name="claims">Заявки, снимки персонажей которых загружены (вместе с заявками без типа).</param>
+    private async Task<AccommodationListViewModel> Build(Claim[] claimsWithoutRoomType, params Claim[] claims)
         => new(
             mock.ProjectInfo,
             await new FakeRoomCategoryPlanRepository(mock).GetAllPlans(mock.ProjectInfo.ProjectId),
-            claimsWithoutRoomType: [],
-            [.. claims.Select(claim => mock.GetCharacterInfo(claim.Character))],
+            [.. claimsWithoutRoomType.Select(claim => claim.GetId())],
+            [.. claims.Concat(claimsWithoutRoomType).Select(claim => mock.GetCharacterInfo(claim.Character))],
             new FakeCurrentUserAccessor(new UserIdentification(mock.Master.UserId)));
 
     [Fact]
@@ -77,5 +82,25 @@ public class AccommodationListViewModelTest
         var model = await Build(unsettled, settled);
 
         model.RoomTypes.ShouldHaveSingleItem().Occupancy.PaidCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ClaimsWithoutRoomTypeArePaidByBaseFee()
+    {
+        // Без типа проживания стоимость проживания не начисляется: взноса достаточно.
+        var paid = CreatePaidClaim("Оплатил взнос", BaseFee);
+        var notPaid = CreatePaidClaim("Оплатил не всё", BaseFee - 1);
+        // Ожидающий нерасселённый — чтобы итоги складывались из обеих строк.
+        var unsettled = CreatePaidClaim("Ждёт комнату", BaseFee + AccommodationCost);
+        _ = mock.CreateAccommodationRequest(tent, unsettled);
+
+        var model = await Build(claimsWithoutRoomType: [paid, notPaid], unsettled);
+
+        model.UnassignedClaims.PendingRequests.ShouldBe(2);
+        model.UnassignedClaims.PaidCount.ShouldBe(1);
+        model.UnassignedClaims.AcceptedNotPaidCount.ShouldBe(1);
+        model.TotalPending.ShouldBe(3);
+        model.TotalPaid.ShouldBe(2);
+        model.TotalAcceptedNotPaid.ShouldBe(1);
     }
 }

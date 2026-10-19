@@ -1,0 +1,42 @@
+# Служебные домены для проверки приложений при восстановлении после потери БД (DRP, #5459):
+# пока joinrpg.ru и id.joinrpg.ru закрыты заглушкой, Portal и IdPortal доступны здесь.
+# Боевые маршруты (joinrpg-portal, joinrpg-idportal) не трогаем.
+# Чтобы убрать — удалить этот файл из resources в kustomization.yaml: деплой удалит
+# HTTPRoute прунингом по метке managed-by-kustomize-prod.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: joinrpg-portal-service-domain
+spec:
+  hostnames:
+    - joinrpg.tsarevs.ru
+  parentRefs:
+    - name: main
+      namespace: infra
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: joinrpg-portal
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: joinrpg-idportal-service-domain
+spec:
+  hostnames:
+    - id.joinrpg.tsarevs.ru
+  parentRefs:
+    - name: main
+      namespace: infra
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: joinrpg-idportal
+          port: 80

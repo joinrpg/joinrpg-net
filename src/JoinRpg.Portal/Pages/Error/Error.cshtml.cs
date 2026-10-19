@@ -1,8 +1,8 @@
-using System.Diagnostics;
+using JoinRpg.Common.WebInfrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace JoinRpg.Portal.Pages.Error;
@@ -11,11 +11,9 @@ namespace JoinRpg.Portal.Pages.Error;
 [IgnoreAntiforgeryToken]
 public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
 {
-    public void OnGet() => FillErrorData();
-
-    public void OnPost() => FillErrorData();
-
-    private void FillErrorData()
+    // Не OnGet/OnPost: страница перезапускается тем же методом, что и упавший запрос, а для
+    // DELETE, PUT, OPTIONS и прочих обработчика нет — Razor Pages рендерит страницу без него.
+    public override void OnPageHandlerExecuting(PageHandlerExecutingContext context)
     {
         // При перезапуске UseStatusCodePagesWithReExecute привязка маршрута не работает,
         // потому что endpoint routing уже отработал до него. Берём статус из ответа.
@@ -32,25 +30,11 @@ public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
             logger.LogError("It's suspicios that we hit error handler w/o exception");
         }
 
-        ActivityId = Activity.Current?.Id;
-        RequestId = HttpContext.TraceIdentifier;
-        if (HttpContext.Features.Get<IHttpRequestFeature>()?.RawTarget is string path)
-        {
-            Path = HttpContext.Request.Scheme + "://" + HttpContext.Request.Host + path;
-        }
-        else
-        {
-            Path = null;
-        }
-        Referer = HttpContext.Request.GetTypedHeaders().Referer;
+        SupportInfo = ErrorSupportInfo.FromHttpContext(HttpContext);
     }
 
     [BindProperty(SupportsGet = true)]
     public int? HttpStatusCode { get; set; }
-    public string? ActivityId { get; set; }
 
-    public string? Path { get; set; }
-
-    public required string RequestId { get; set; }
-    public Uri? Referer { get; set; }
+    public ErrorSupportInfo SupportInfo { get; private set; } = null!;
 }

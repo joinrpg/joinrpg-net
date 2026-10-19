@@ -1,5 +1,4 @@
 @using JoinRpg.Portal
-@using JoinRpg.Portal.AppCodeCompiled
 @using JoinRpg.WebPortal.Models.FieldSetup
 @model FieldSettingsViewModel
 
@@ -15,19 +14,5 @@
         со @await Html.HelpLink("fields/settings_for_role_list.html", "справкой о связи полей и сетки ролей").
     </div>
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    @Html.HiddenFor(model => model.ProjectId)
-
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-
-        @Html.JoinFormDropdownFor(model => model.NameField, Model.PossibleNameFields)
-
-        @Html.JoinFormDropdownFor(model => model.DescriptionField, Model.PossibleDescriptionFields)
-
-        @await Html.PartialAsync("FormButtons")
-    </div>
-}
+<component type="typeof(JoinRpg.Web.ProjectMasterTools.Fields.ProjectFieldSettingsPanel)" render-mode="WebAssembly"
+           param-ProjectId="new ProjectIdentification(Model.ProjectId)" />

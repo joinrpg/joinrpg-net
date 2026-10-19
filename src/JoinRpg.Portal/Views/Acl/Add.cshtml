@@ -8,13 +8,11 @@
 
 <h2>@ViewBag.Title</h2>
 
-<partial name="_UserDetailsPanel" model="@Model.UserDetails" />
-<hr class="col-md-12" />
-@* Карточка пользователя и линия — плавающие колонки: без clearfix панели острова обтекают карточку. *@
-<div class="clearfix"></div>
+<component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@Model.UserDetails" />
+<hr />
 
 <component type="typeof(AddMasterPanel)" render-mode="WebAssembly"
            param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
            param-UserId="@(new UserIdentification(Model.UserId))"
-           param-MastersUrl="@Url.Action("Index", new { Model.ProjectId })"
+           param-MastersUrl="@Url.Action("Manage", new { Model.ProjectId })"
            param-UserProfileUrl="@Url.Action("Details", "User", new { userId = Model.UserId })" />

@@ -2,6 +2,7 @@
 @model JoinRpg.Portal.Pages.Error.ErrorPageModel
 @{
     ViewBag.Title = Model.HttpStatusCode == 404 ? "Страница не найдена" : "Ошибка";
+    var info = Model.SupportInfo;
 }
 
 <h1 class="text-danger">@ViewBag.Title</h1>
@@ -16,31 +17,12 @@ else
     <h3 class="text-danger">При обработке вашего запроса возникла ошибка.</h3>
 }
 
-<div class="panel panel-warning">
-    <div class="panel-heading">
-        <b>Данные для техподдержки</b>
-    </div>
-
-    <div class="panel-body">
-
-        @if (Model.ActivityId is not null)
-        {
-            <p> <b>ActivityId:</b> @Model.ActivityId </p>
-        }
-
-        <p><b>RequestId</b>: "@Model.RequestId"</p>
-
-        @if (!string.IsNullOrWhiteSpace(Model.Path))
-        {
-            <p> <b>Путь</b>: <a href="@Model.Path">@Model.Path</a> </p>
-        }
-
-        @if (Model.Referer is not null)
-        {
-            <p><b>Referer</b>: <a href="@Model.Referer">@Model.Referer</a></p>
-        }
-    </div>
-    <div class="panel-footer">
-        <i>Пожалуйста, присылайте данные текстом, а не скриншотом</i>
-    </div>
-</div>
+<component type="typeof(SupportInfoPanel)" render-mode="Static"
+           param-ActivityId="info.ActivityId"
+           param-RequestId="info.RequestId"
+           param-Path="info.Path"
+           param-Referer="info.Referer"
+           param-PodName="info.PodName"
+           param-Version="info.Version.Version"
+           param-CommitSha="info.Version.CommitSha"
+           param-CommitUrl="info.Version.CommitUrl" />

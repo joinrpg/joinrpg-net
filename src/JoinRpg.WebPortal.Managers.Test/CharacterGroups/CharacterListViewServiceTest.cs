@@ -40,6 +40,7 @@ public class CharacterListViewServiceTest
     [InlineData(CharacterListType.AvailableForMaster, CharacterStatusSpec.Active)]
     [InlineData(CharacterListType.AvailableNonSlotsForMaster, CharacterStatusSpec.Active)]
     [InlineData(CharacterListType.AvailableTemplatesForMaster, CharacterStatusSpec.Active)]
+    [InlineData(CharacterListType.Active, CharacterStatusSpec.Active)]
     public async Task RepositoryIsAskedForRightCharacters(CharacterListType listType, CharacterStatusSpec expected)
     {
         _ = await GetList(listType);
@@ -176,6 +177,33 @@ public class CharacterListViewServiceTest
         _ = Mock.CreateApprovedClaim(busy, Mock.Player);
 
         (await GetNames(CharacterListType.All)).ShouldContain(busy.CharacterName);
+    }
+
+    /// <summary>
+    /// Список активных нужен восстановлению заявок: проект там заблокирован, а персонажи бывают
+    /// заняты и неигровые — всё равно все активные в списке, удалённых нет.
+    /// </summary>
+    [Fact]
+    public async Task ActiveListHasAllActiveCharactersEvenInBlockedProject()
+    {
+        var busy = Mock.CreateCharacter("busy");
+        _ = Mock.CreateApprovedClaim(busy, Mock.Player);
+        var npc = Mock.CreateCharacter("npc");
+        npc.CharacterType = CharacterType.NonPlayer;
+        var slot = CreateSlot("slot", slotLimit: 0);
+        var inactive = Mock.CreateCharacter("inactive");
+        inactive.IsActive = false;
+
+        Mock.Project.IsBlocked = true;
+        Mock.ReInitProjectInfo();
+        Mock.ProjectInfo.ProjectStatus.ShouldBe(ProjectLifecycleStatus.Blocked);
+
+        var names = await GetNames(CharacterListType.Active);
+
+        names.ShouldContain(busy.CharacterName);
+        names.ShouldContain(npc.CharacterName);
+        names.ShouldContain(slot.CharacterName);
+        names.ShouldNotContain(inactive.CharacterName);
     }
 
     private Character CreateSlot(string name, int? slotLimit)

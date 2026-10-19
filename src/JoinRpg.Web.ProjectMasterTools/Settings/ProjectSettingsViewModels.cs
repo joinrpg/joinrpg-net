@@ -58,7 +58,7 @@ public class ProjectClaimSettingsViewModel
     public required CharacterIdentification? DefaultTemplateCharacterId { get; set; }
 
     [Display(Name = "Автоматически принимать заявки",
-    Description = "Сразу после подачи заявки joinrpg попытается автоматически принять ее, если это возможно. Удобно для конвентов.")]
+    Description = "Сразу после подачи заявки на шаблон joinrpg попытается автоматически её принять, если это возможно. Удобно для конвентов.")]
     public required bool AutoAcceptClaims { get; set; }
 
     [Display(Name = "Проверять, что игрок играет только одного персонажа",

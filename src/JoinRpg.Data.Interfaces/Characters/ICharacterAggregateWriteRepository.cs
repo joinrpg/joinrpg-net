@@ -3,6 +3,8 @@ using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Data.Interfaces.Characters;
 
@@ -38,7 +40,163 @@ public interface ICharacterAggregateWriteRepository
     /// <param name="claimId">Заявка, которая будет изменена.</param>
     /// <exception cref="JoinRpgEntityNotFoundException">Заявка или её персонаж не найдены.</exception>
     Task<IClaimUpdateHandle> LoadClaimForUpdate(ClaimIdentification claimId);
+
+    /// <summary>
+    /// Вставляет «оболочку» заявки с заданным идентификатором — для восстановления потерянной
+    /// заявки по уведомлениям (DRP, #5481): на её прежний id ссылаются уведомления, письма и выгрузки,
+    /// а EF6 значение IDENTITY-колонки не вставляет. Оболочка — заявка в статусе «предложена» со своим
+    /// обсуждением и без полей; наполняет её дальше обычная операция над заявкой.
+    /// </summary>
+    /// <remarks>
+    /// Выполняется сразу, своей транзакцией, мимо <c>SaveChanges</c>. Значение ниже текущего счётчика
+    /// IDENTITY его не двигает, поэтому параллельно создаваемым заявкам не мешает.
+    /// </remarks>
+    /// <returns><c>false</c>, если заявка с таким идентификатором уже есть (в любом проекте).</returns>
+    Task<bool> InsertRestoredClaimShell(RestoredClaimShell shell);
+
+    /// <summary>
+    /// Занят ли идентификатор заявки в <b>любом</b> проекте — идентификаторы заявок общие на всю базу.
+    /// </summary>
+    Task<bool> IsClaimIdTaken(int claimId);
+
+    /// <summary>
+    /// Есть ли заявка в своём проекте — лёгкая проверка без загрузки агрегата, чтобы отказать до
+    /// первой записи мимо <c>SaveChanges</c>.
+    /// </summary>
+    Task<bool> ClaimExists(ClaimIdentification claimId);
+
+    /// <summary>
+    /// Вставляет «оболочку» персонажа с заданным идентификатором — для восстановления потерянного
+    /// персонажа из выгрузки мастера (DRP, #5529). Оболочка — то, что дало бы доменное создание
+    /// персонажа без полей: активный скрытый (<c>CharacterVisibility.Private</c>) персонаж игрока
+    /// (<c>CharacterType.Player</c>) в корневой группе, без заявок, с пустым набором полей; порядок
+    /// персонажей в корневой группе не меняется. Наполняет её дальше обычная операция над персонажем.
+    /// </summary>
+    /// <remarks>
+    /// Выполняется сразу, своей транзакцией, мимо <c>SaveChanges</c>. Вставляется только id ниже
+    /// текущего счётчика IDENTITY — такая вставка его не двигает.
+    /// </remarks>
+    Task<RestoredShellInsertResult> InsertRestoredCharacterShell(RestoredCharacterShell shell);
+
+    /// <summary>
+    /// Вставляет восстановленный комментарий к заявке — для восстановления переписки по уведомлениям
+    /// (DRP, #5492). Строки — те же, что пишет доменное добавление комментария, но с датой и автором из
+    /// уведомления и, если он известен, с прежним идентификатором: на него ссылаются уведомления и
+    /// письма. Заявку (её отметки о последних комментариях, дату обновления) не трогает — это дело
+    /// операции над заявкой.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Выполняется сразу, своей транзакцией, мимо <c>SaveChanges</c>. Прежний идентификатор вставляется
+    /// только ниже текущего счётчика IDENTITY — такая вставка его не двигает. Без идентификатора повтор
+    /// узнаётся по автору, времени (с точностью колонки <c>datetime</c>) и тексту в обсуждении заявки.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="JoinRpgEntityNotFoundException">Заявки нет в указанном проекте; ничего не вставлено.</exception>
+    Task<RestoredCommentInsertResult> InsertRestoredClaimComment(RestoredClaimCommentRow comment);
+
+    /// <summary>
+    /// Вставляет восстановленную ручную финансовую операцию (взнос или возврат) — для восстановления
+    /// по уведомлениям (DRP, #5561). Строки — те же, что пишет доменный приём взноса (<c>AcceptFee</c>):
+    /// комментарий, его текст и финансовая операция с тем же идентификатором, но с датами и автором из
+    /// уведомления и, если он известен, с прежним идентификатором. Заявку (взнос, отметки, дату
+    /// обновления) не трогает — это дело операции над заявкой.
+    /// </summary>
+    /// <remarks>
+    /// Выполняется сразу, одной своей транзакцией, мимо <c>SaveChanges</c>. Прежний идентификатор
+    /// вставляется только ниже текущего счётчика IDENTITY комментариев — такая вставка его не двигает.
+    /// Без идентификатора повтор узнаётся по операции в обсуждении заявки: тот же автор, тот же вид
+    /// операции и сумма, время — в пределах минуты.
+    /// </remarks>
+    /// <returns>
+    /// Исход и идентификатор: вставленной или уже бывшей операции, а при конфликте — запрошенный.
+    /// </returns>
+    /// <exception cref="JoinRpgEntityNotFoundException">Заявки нет в указанном проекте; ничего не вставлено.</exception>
+    Task<RestoredFinanceOperationInsert> InsertRestoredFinanceOperation(RestoredFinanceOperationRow operation);
 }
+
+/// <summary>
+/// Строка восстановленного комментария к заявке.
+/// </summary>
+/// <param name="CommentId">Прежний идентификатор либо <c>null</c> — тогда комментарий получит новый.</param>
+/// <param name="CreatedAt">Время создания (UTC); им же ставится время правки.</param>
+/// <param name="ParentCommentId">
+/// Родительский комментарий того же обсуждения — у решения по финансовой операции это сама операция.
+/// </param>
+public record RestoredClaimCommentRow(
+    ClaimIdentification ClaimId,
+    int? CommentId,
+    UserIdentification AuthorId,
+    bool IsCommentByPlayer,
+    bool IsVisibleToPlayer,
+    CommentExtraAction? ExtraAction,
+    DateTime CreatedAt,
+    string Text,
+    int? ParentCommentId = null);
+
+/// <summary>
+/// Строка восстановленной ручной финансовой операции. Комментарий операции видим игроку, его действие —
+/// по виду операции (<c>PaidFee</c>/<c>RefundFee</c>), как у доменного приёма взноса.
+/// </summary>
+/// <param name="OperationId">
+/// Прежний идентификатор (он же идентификатор комментария) либо <c>null</c> — тогда операция получит новый.
+/// </param>
+/// <param name="OperationType">Только <c>Submit</c> или <c>Refund</c>.</param>
+/// <param name="MoneyAmount">Со знаком: у возврата — отрицательная.</param>
+/// <param name="CreatedAt">Время создания (UTC) — комментария и операции.</param>
+/// <param name="ChangedAt">Время последнего изменения операции (UTC) — решения по ней или создания.</param>
+/// <param name="OperationDate">Дата операции — полночь без часового пояса, как её пишет форма приёма взноса.</param>
+public record RestoredFinanceOperationRow(
+    ClaimIdentification ClaimId,
+    int? OperationId,
+    UserIdentification AuthorId,
+    bool IsCommentByPlayer,
+    FinanceOperationType OperationType,
+    int MoneyAmount,
+    PaymentTypeIdentification PaymentTypeId,
+    FinanceOperationState State,
+    DateTime CreatedAt,
+    DateTime ChangedAt,
+    DateTime OperationDate,
+    string Text);
+
+/// <summary>Исход вставки восстановленной финансовой операции.</summary>
+/// <param name="OperationId">
+/// Идентификатор вставленной или уже бывшей операции; при конфликте — запрошенный.
+/// </param>
+public record RestoredFinanceOperationInsert(RestoredCommentInsertResult Result, int OperationId);
+
+/// <summary>
+/// Минимум, без которого строки персонажа нет.
+/// </summary>
+/// <param name="RootGroupId">Корневая группа проекта — единственная группа оболочки.</param>
+/// <param name="CharacterName">Имя персонажа (как его записало бы сохранение полей).</param>
+/// <param name="Description">
+/// Описание: <c>null</c> — не задано (в проекте нет поля описания), пустая строка — пустое описание,
+/// как его пишет сохранение полей при настроенном поле описания.
+/// </param>
+/// <param name="CreatedAt">Время создания и изменения (UTC) — восстановленный персонаж поднимает дату обновления проекта.</param>
+/// <param name="CharacterType">Тип персонажа. Заявки не принимает только NPC; лимита у шаблона нет.</param>
+/// <param name="IsHot">Горячий ли; у NPC не бывает.</param>
+public record RestoredCharacterShell(
+    CharacterIdentification CharacterId,
+    CharacterGroupIdentification RootGroupId,
+    string CharacterName,
+    string? Description,
+    UserIdentification CreatedBy,
+    DateTime CreatedAt,
+    CharacterType CharacterType,
+    bool IsHot);
+
+/// <summary>
+/// Минимум, без которого строки заявки нет: персонаж, игрок, ответственный мастер и дата подачи.
+/// </summary>
+public record RestoredClaimShell(
+    ClaimIdentification ClaimId,
+    CharacterIdentification CharacterId,
+    UserIdentification PlayerId,
+    UserIdentification ResponsibleMasterId,
+    DateTime CreatedAt);
 
 /// <summary>
 /// Согласованная тройка: трекаемый <see cref="Character"/>, <see cref="ProjectInfo"/> и

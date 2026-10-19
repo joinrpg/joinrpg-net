@@ -5,18 +5,24 @@
     ViewBag.Title = "Администрирование";
 }
 <h3>@ViewBag.Title</h3>
-<component type="typeof(JoinRpg.Web.AdminTools.About.VersionPanel)" render-mode="Static" />
+@{
+    var versionInfo = JoinRpg.Common.WebInfrastructure.AppVersionInfo.Current;
+}
+<component type="typeof(VersionPanel)" render-mode="Static"
+           param-Version="versionInfo.Version" param-CommitSha="versionInfo.CommitSha" param-CommitUrl="versionInfo.CommitUrl" />
 <ul>
     <li><a asp-controller="ProjectList" asp-area="Admin">Список игр</a></li>
     <li><a asp-controller="AdminHome" asp-action="StaleGames" asp-area="Admin">Проблемные проекты</a></li>
     <li><a asp-controller="DumpConfig" asp-area="Admin">Конфигурация (для отладки)</a></li>
     <li><a asp-controller="DumpConfig" asp-action="Endpoints" asp-area="Admin">Эндпойнты (для отладки)</a></li>
+    <li><a asp-page="/Admin/AdminList">Администраторы</a></li>
     <li><a asp-page="/Admin/Jobs">Джобы</a></li>
     <li><a asp-page="/Admin/NotificationDashboard">Статус уведомлений</a></li>
     <li><a asp-page="/Admin/AdminHotRolesList">Горячие роли</a></li>
     <li><a asp-page="/Admin/AdvertisementDashboard">Реклама горячих вакансий</a></li>
     <li><a asp-page="/Admin/SyncWithKogdaIgra">КогдаИгра</a></li>
     <li><a asp-page="/Admin/TestMessage">Проверка отправки сообщения</a></li>
+    <li><a asp-page="/Admin/UserMerge">Объединение аккаунтов</a></li>
     @if (environment.IsDevelopment())
     {
         <li><a asp-page="/Admin/ComponentTestPage">Тесты компонентов</a></li>

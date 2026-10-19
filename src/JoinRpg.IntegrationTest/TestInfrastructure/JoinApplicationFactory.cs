@@ -2,6 +2,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Migrations;
 using JoinRpg.Dal.Impl.Migrations;
 using JoinRpg.Data.Write.Interfaces.Notifications;
+using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.Portal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -85,7 +86,7 @@ public class JoinApplicationFactory : WebApplicationFactory<Startup>, IAsyncLife
         {
             services.RemoveAll<IHostedService>();
             services.RemoveAll<INotificationRepository>();
-            services.AddSingleton<INotificationRepository, NullNotificationRepository>();
+            services.AddSingleton<INotificationRepository>(FakeNotificationRepository.CreateNullObject());
             services.AddDataProtection().UseEphemeralDataProtectionProvider();
 
             services.AddSingleton(Observations);

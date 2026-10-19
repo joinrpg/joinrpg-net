@@ -501,6 +501,111 @@ public class AccommodationTypeServiceTest : ProjectMetadataServiceTestBase
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
 
+    private void BlockProject()
+    {
+        mock.Project.IsBlocked = true;
+        mock.ReInitProjectInfo();
+    }
+
+    // ADR023: типы поселения после мая потеряны, мастер заводит их заново до снятия блокировки.
+    [Fact]
+    public async Task CreateAndUpdateAccommodationType_InBlockedProject_Succeed()
+    {
+        BlockProject();
+
+        var id = await CreateService().CreateAccommodationType(
+            ProjectId,
+            new AccommodationTypeRequest("Домик", new MarkdownString(""), Cost: 1500, Capacity: 4, IsPlayerSelectable: true));
+        await CreateService().UpdateAccommodationType(
+            id,
+            new AccommodationTypeRequest("Люкс", new MarkdownString(""), Cost: 9000, Capacity: 2, IsPlayerSelectable: false));
+
+        Result.AccommodationSettings.Types.ShouldHaveSingleItem().Name.ShouldBe("Люкс");
+        unitOfWork.SaveChangesCallCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task RenameRoomCategory_InBlockedProject_Succeeds()
+    {
+        var type = mock.CreateAccommodationType("Люкс");
+        BlockProject();
+        var categoryId = new RoomCategoryIdentification(ProjectId, type.RoomCategoryId);
+
+        await CreateService().RenameRoomCategory(categoryId, "Корпус А");
+
+        Result.AccommodationSettings.GetRoomCategoryById(categoryId).Name.ShouldBe("Корпус А");
+    }
+
+    [Fact]
+    public async Task DeleteAccommodationType_WithoutClaims_InBlockedProject_Succeeds()
+    {
+        var id = AddAccommodationType();
+        BlockProject();
+
+        await CreateService().DeleteAccommodationType(id);
+
+        mock.AccommodationTypes.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Вывод заявок из групп удаляемого типа — операция над заявками, в блокировке она запрещена
+    /// (ADR023). Тип тогда не удаляется, заявки и приглашения не трогаются, писем нет.
+    /// </summary>
+    [Fact]
+    public async Task DeleteAccommodationType_WithUnplacedGroup_InBlockedProject_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim("Вася");
+        var invited = CreateClaim("Петя");
+        var type = mock.CreateAccommodationType("Палатка");
+        var group = mock.CreateAccommodationRequest(type, claim);
+        var pending = mock.CreateAccommodationInvite(claim, invited);
+        BlockProject();
+
+        _ = await Should.ThrowAsync<ProjectBlockedException>(
+            () => CreateService().DeleteAccommodationType(new AccommodationTypeIdentification(ProjectId, type.Id)));
+
+        claim.AccommodationRequest.ShouldBe(group);
+        pending.IsAccepted.ShouldBe(InviteState.Unanswered);
+        mock.AccommodationTypes.ShouldHaveSingleItem();
+        accommodationNotifications.Invites.ShouldBeEmpty();
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task CreateAccommodationType_InArchivedProject_Throws()
+    {
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(() => CreateService().CreateAccommodationType(
+            ProjectId,
+            new AccommodationTypeRequest("Домик", new MarkdownString(""), Cost: 1500, Capacity: 4, IsPlayerSelectable: true)));
+
+        mock.AccommodationTypes.ShouldBeEmpty();
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task UpdateRenameDeleteAccommodationType_InArchivedProject_Throw()
+    {
+        var type = mock.CreateAccommodationType("Палатка");
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+        var id = new AccommodationTypeIdentification(ProjectId, type.Id);
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(() => CreateService().UpdateAccommodationType(
+            id,
+            new AccommodationTypeRequest("Люкс", new MarkdownString(""), Cost: 9000, Capacity: 2, IsPlayerSelectable: false)));
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(() => CreateService().RenameRoomCategory(
+            new RoomCategoryIdentification(ProjectId, type.RoomCategoryId), "Корпус А"));
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(() => CreateService().DeleteAccommodationType(id));
+
+        mock.AccommodationTypes.ShouldHaveSingleItem().Name.ShouldBe("Палатка");
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+    }
+
     /// <summary>
     /// Занятость комнат — оперативные данные вне метаданных проекта, сервис берёт их отдельным
     /// запросом. Фейк отдаёт то, что задал тест, а состав групп — по моку. <paramref name="staleClaims"/>

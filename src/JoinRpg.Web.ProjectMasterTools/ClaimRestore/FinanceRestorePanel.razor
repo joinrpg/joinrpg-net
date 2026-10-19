@@ -1,0 +1,554 @@
+@using JoinRpg.Helpers
+@inject IFinanceRestoreClient Client
+@inject IUriLocator<ClaimIdentification> ClaimUriLocator
+
+<JoinPanel>
+    <Header>Ручные оплаты</Header>
+    <Body>
+        <p>
+            Оплаты и возвраты взносов, внесённые вручную после резервной копии (наличными или своими типами оплаты),
+            возвращаются в заявки из <b>уведомлений</b> — с прежними номерами, суммами, авторами и временем.
+            Запускайте <b>после восстановления заявок</b> выше: оплаты к заявке, которой нет в базе, восстановить некуда.
+        </p>
+        <ul>
+            <li>
+                <b>Тип оплаты выбираете вы</b> — для каждой операции. По умолчанию подставлен тип, который удалось угадать
+                по уведомлению. Операция без выбранного типа не восстанавливается.
+            </li>
+            <li>Датой операции станет время уведомления: своей даты операции в уведомлении нет.</li>
+            <li>Подтверждения и отклонения восстанавливаются вместе с операциями заявки.</li>
+            <li>Онлайн-оплаты и переводы между заявками здесь не восстанавливаются.</li>
+            <li>Игрокам ничего не отправляется, в истории заявки остаётся запись о восстановлении. Повторный запуск ничего не дублирует.</li>
+        </ul>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+        }
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">@successMessage</JoinAlert>
+        }
+
+        @if (CanRefresh)
+        {
+            @* Заявки восстанавливает соседний остров — после него план оплат надо перестроить. *@
+            <p>
+                <JoinButton Label="Обновить план" ProgressLabel="Обновляем..." InProgress="@loading" AutoProgress="false"
+                            Disabled="@Busy" OnClick="RefreshPlan" />
+            </p>
+        }
+
+        @if (model is null)
+        {
+            @if (string.IsNullOrEmpty(errorMessage))
+            {
+                <JoinLoadingMessage Message="Строим план восстановления ручных оплат..." />
+            }
+        }
+        else if (model.UnavailableReason is { } reason)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Warning">
+                @(reason switch
+                {
+                    ClaimRestoreUnavailableReason.ProjectNotBlocked => "Восстанавливать ручные оплаты можно, только пока проект заблокирован на время восстановления.",
+                    _ => "Для восстановления ручных оплат нужны права на управление финансами.",
+                })
+            </JoinAlert>
+        }
+        else
+        {
+            @if (!model.HasOwnCash)
+            {
+                <p>
+                    Нет подходящего типа оплаты? Создайте себе тип «Наличные» — он появится в списках выбора.
+                    <JoinButton Label="Создать «Наличные» на меня" ProgressLabel="Создаём..." InProgress="@creatingCash" AutoProgress="false"
+                                Disabled="@Busy" OnClick="CreateOwnCash" />
+                </p>
+            }
+
+            @if (VisibleRows.Count == 0)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Info">Нечего восстанавливать: по уведомлениям все ручные оплаты уже есть в базе.</JoinAlert>
+                @HiddenRowsNote()
+            }
+            else
+            {
+                @HiddenRowsNote()
+                <p>
+                    Заявок к восстановлению: @VisibleRows.Count, из них отмечено: @SelectedCount.
+                    <button type="button" class="btn btn-link btn-xs" disabled="@Busy" @onclick="SelectAll">Выбрать все</button>
+                    <button type="button" class="btn btn-link btn-xs" disabled="@Busy" @onclick="SelectNone">Снять все</button>
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-condensed restore-finance">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>№ заявки</th>
+                                <th>Персонаж</th>
+                                <th>Игрок</th>
+                                <th title="Операции, которые восстановятся, и у скольких из них выбран тип оплаты">К восстановлению</th>
+                                <th title="Операции и подтверждения из уведомлений, которые уже есть в базе">Уже есть</th>
+                                <th title="Номер операции или подтверждения в базе занят другим">Конфликты</th>
+                                <th title="Переводы между заявками не восстанавливаются — внесите их вручную">Переводы</th>
+                                <th title="Онлайн-оплаты восстанавливаются по выгрузке платёжного провайдера, не здесь">Онлайн</th>
+                                <th>Пометки</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in VisibleRows)
+                            {
+                                var applicable = ApplicableOperations(row).ToList();
+                                var canApply = CanApply(row);
+                                <tr class="@RowClass(row)" @key="row.ClaimId">
+                                    <td>
+                                        <input type="checkbox" checked="@IsSelected(row)" disabled="@(!canApply || Busy)"
+                                               title="Восстановить ручные оплаты этой заявки"
+                                               @onchange="@(e => selectionOverrides[row.ClaimId] = e.Value is true)" />
+                                    </td>
+                                    <td><a href="@ClaimUriLocator.GetUri(row.ClaimId)">@row.ClaimId.ClaimId</a></td>
+                                    <td>@(row.CharacterName ?? "—")</td>
+                                    <td>@(row.PlayerName ?? "—")</td>
+                                    <td>
+                                        операций @applicable.Count, тип выбран у @(applicable.Count(op => ChosenType(row, op) is not null))
+                                        @if (row.Operations.Count > 0 || row.Moderations.Count > 0)
+                                        {
+                                            <button type="button" class="btn btn-link btn-xs" @onclick="@(() => Toggle(row.ClaimId))">
+                                                @(expanded.Contains(row.ClaimId) ? "Скрыть" : "Показать")
+                                            </button>
+                                        }
+                                    </td>
+                                    <td>@row.AlreadyExisting</td>
+                                    <td>@row.Conflicts</td>
+                                    <td>@row.Transfers</td>
+                                    <td>@row.OnlinePayments</td>
+                                    <td>
+                                        @if (outcomes.TryGetValue(row.ClaimId, out var outcome))
+                                        {
+                                            @if (outcome.Result is not null)
+                                            {
+                                                <div class="text-success">@outcome.Result</div>
+                                            }
+                                            @if (outcome.Error is not null)
+                                            {
+                                                <div class="text-danger">@outcome.Error</div>
+                                            }
+                                        }
+                                        @foreach (var warning in row.Warnings)
+                                        {
+                                            <div class="text-warning">@warning.GetDisplayName()</div>
+                                        }
+                                    </td>
+                                </tr>
+                                @if (expanded.Contains(row.ClaimId) && (row.Operations.Count > 0 || row.Moderations.Count > 0))
+                                {
+                                    <tr @key="@($"operations-{row.ClaimId}")">
+                                        <td></td>
+                                        <td colspan="9">@OperationsTable(row)</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <JoinButton Preset="ButtonPreset.Save" Label="Применить выбранные" ProgressLabel="Восстанавливаем..."
+                            InProgress="@applying" AutoProgress="false"
+                            Disabled="@(Busy || SelectedCount == 0)"
+                            OnClick="ApplySelected" />
+            }
+        }
+    </Body>
+</JoinPanel>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private FinanceRestorePlanViewModel? model;
+    private bool applying;
+    private bool loading;
+    private bool creatingCash;
+    private string? errorMessage;
+    private string? successMessage;
+
+    /// <summary>
+    /// Тип оплаты, выбранный мастером, по операции; null — мастер выбрал «не выбран». Нет ключа — берём
+    /// предложенный планировщиком. Переживает перезагрузку плана (в том числе после создания «наличных»).
+    /// </summary>
+    private readonly Dictionary<(ClaimIdentification ClaimId, string Key), int?> chosenTypes = [];
+
+    /// <summary>Отметка строки, поставленная мастером вручную. Нет ключа — отметка по умолчанию.</summary>
+    private readonly Dictionary<ClaimIdentification, bool> selectionOverrides = [];
+
+    private readonly HashSet<ClaimIdentification> expanded = [];
+
+    /// <summary>Итоги применения по заявкам — переживают перезагрузку плана, иначе их не увидеть.</summary>
+    private readonly Dictionary<ClaimIdentification, (string? Result, string? Error)> outcomes = [];
+
+    private bool Busy => applying || loading || creatingCash;
+
+    private IReadOnlyList<FinanceRestoreRowViewModel> Rows => model?.Rows ?? [];
+
+    private int SelectedCount => VisibleRows.Count(IsSelected);
+
+    /// <summary>
+    /// Строки, которые показываем: есть что восстановить, есть о чём предупредить или только что применяли.
+    /// Остальные (всё уже в базе) — одной строкой-счётчиком: после восстановления их большинство.
+    /// </summary>
+    private List<FinanceRestoreRowViewModel> VisibleRows
+        => [.. Rows.Where(r => CanApply(r) || r.Warnings.Count > 0 || outcomes.ContainsKey(r.ClaimId))];
+
+    private int HiddenCount => Rows.Count - VisibleRows.Count;
+
+    /// <summary>Обновлять можно, пока восстановление доступно или план не загрузился.</summary>
+    private bool CanRefresh => model is null ? !string.IsNullOrEmpty(errorMessage) : model.UnavailableReason is null;
+
+    private static IEnumerable<FinanceRestoreOperationView> ApplicableOperations(FinanceRestoreRowViewModel row)
+        => row.Operations.Where(o => IsApplicable(row, o));
+
+    /// <summary>
+    /// Выбор типа хранится и отправляется по ключу операции, поэтому операция с повторяющимся в строке ключом
+    /// неприменима, даже если сервер счёл иначе: так панель не упадёт на повторе.
+    /// </summary>
+    private static bool IsApplicable(FinanceRestoreRowViewModel row, FinanceRestoreOperationView op)
+        => row.ClaimExists && op.CanApply && row.Operations.Count(o => o.Key == op.Key) == 1;
+
+    /// <summary>Есть что восстановить и есть куда.</summary>
+    private static bool CanApply(FinanceRestoreRowViewModel row)
+        => row.ClaimExists && (row.Operations.Any(o => o.CanApply) || row.Moderations.Any(m => m.CanApply));
+
+    /// <summary>
+    /// По умолчанию строка отмечена, только если у всех операций выбран тип и нет неоднозначных подтверждений —
+    /// иначе мастер должен сначала разобраться.
+    /// </summary>
+    private bool SelectedByDefault(FinanceRestoreRowViewModel row)
+        => CanApply(row)
+        && ApplicableOperations(row).All(op => ChosenType(row, op) is not null)
+        && !row.Warnings.Contains(FinanceRestoreWarningView.ModerationAmbiguous);
+
+    private bool IsSelected(FinanceRestoreRowViewModel row)
+        => CanApply(row) && (selectionOverrides.TryGetValue(row.ClaimId, out var selected) ? selected : SelectedByDefault(row));
+
+    /// <summary>Выбранный тип оплаты операции — только из тех, что есть в списке выбора.</summary>
+    private int? ChosenType(FinanceRestoreRowViewModel row, FinanceRestoreOperationView op)
+    {
+        var chosen = chosenTypes.TryGetValue((row.ClaimId, op.Key), out var value) ? value : op.SuggestedPaymentTypeId;
+        return chosen is { } id && model?.PaymentTypes.Any(t => t.PaymentTypeId == id) == true ? id : null;
+    }
+
+    private void SetType(FinanceRestoreRowViewModel row, FinanceRestoreOperationView op, object? value)
+        => chosenTypes[(row.ClaimId, op.Key)] = int.TryParse(value as string, out var id) ? id : null;
+
+    private void Toggle(ClaimIdentification claimId)
+    {
+        if (!expanded.Remove(claimId))
+        {
+            _ = expanded.Add(claimId);
+        }
+    }
+
+    private RenderFragment HiddenRowsNote() => __builder =>
+    {
+        if (HiddenCount > 0)
+        {
+            <p class="text-muted">Уже восстановлено заявок: @HiddenCount.</p>
+        }
+    };
+
+    private async Task RefreshPlan()
+    {
+        if (Busy)
+        {
+            return;
+        }
+        errorMessage = null;
+        successMessage = null;
+        outcomes.Clear();
+        _ = await LoadPlan();
+    }
+
+    protected override async Task OnInitializedAsync() => await LoadPlan();
+
+    /// <returns>Удалось ли получить план.</returns>
+    private async Task<bool> LoadPlan()
+    {
+        loading = true;
+        try
+        {
+            model = await Client.GetPlan(ProjectId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Не удалось построить план восстановления ручных оплат: {ex.Message}";
+            return false;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task CreateOwnCash()
+    {
+        if (Busy)
+        {
+            return;
+        }
+        creatingCash = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            await Client.CreateOwnCash(ProjectId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Не удалось создать тип оплаты «Наличные»: {ex.Message}";
+            creatingCash = false;
+            return;
+        }
+        creatingCash = false;
+        // Новый тип появится в списках выбора; выбранное мастером при этом сохраняется.
+        if (await LoadPlan())
+        {
+            successMessage = "Тип оплаты «Наличные» создан — выберите его у нужных операций.";
+        }
+    }
+
+    private void SelectAll()
+    {
+        foreach (var row in VisibleRows.Where(CanApply))
+        {
+            selectionOverrides[row.ClaimId] = true;
+        }
+    }
+
+    private void SelectNone()
+    {
+        foreach (var row in Rows)
+        {
+            selectionOverrides[row.ClaimId] = false;
+        }
+    }
+
+    private async Task ApplySelected()
+    {
+        if (model is null || Busy)
+        {
+            return;
+        }
+        applying = true;
+        errorMessage = null;
+        successMessage = null;
+        outcomes.Clear();
+        var selected = VisibleRows.Where(IsSelected).ToList();
+        StateHasChanged();
+
+        var inserted = 0;
+        var failed = 0;
+        // По одной заявке: после неудачной следующая начинается с чистого контекста.
+        foreach (var row in selected)
+        {
+            var types = ApplicableOperations(row)
+                .Select(op => (op.Key, Type: ChosenType(row, op)))
+                .Where(x => x.Type is not null)
+                .ToDictionary(x => x.Key, x => x.Type!.Value);
+            try
+            {
+                var result = await Client.Apply(new FinanceRestoreApplyRequest(row.ClaimId, types));
+                inserted += result.Inserted;
+                outcomes[row.ClaimId] = (ResultText(result), null);
+            }
+            catch (Exception ex)
+            {
+                failed++;
+                outcomes[row.ClaimId] = (null, ex.Message);
+            }
+            StateHasChanged();
+        }
+        // Применённые строки дальше снова отмечаются по умолчанию — по новому плану.
+        selectionOverrides.Clear();
+
+        var summary = failed == 0
+            ? $"Восстановлено операций и подтверждений: {inserted}."
+            : $"Восстановлено операций и подтверждений: {inserted}. Не удалось по заявкам: {failed} — см. пометки в таблице.";
+        var reloaded = await LoadPlan();
+        if (failed == 0 && reloaded)
+        {
+            successMessage = summary;
+        }
+        else
+        {
+            errorMessage = reloaded ? summary : $"{summary} {errorMessage} Обновите страницу.";
+        }
+        applying = false;
+    }
+
+    private static string ResultText(FinanceRestoreApplyResult result)
+    {
+        if (result.Inserted == 0 && result.AlreadyExisted == 0 && result.Conflicts == 0 && result.Skipped.Count == 0)
+        {
+            return "Нечего восстанавливать";
+        }
+        var text = $"Восстановлено: {result.Inserted}";
+        if (result.AlreadyExisted > 0)
+        {
+            text += $", уже были: {result.AlreadyExisted}";
+        }
+        if (result.Conflicts > 0)
+        {
+            text += $", не восстановлены из-за занятых номеров: {result.Conflicts}";
+        }
+        if (result.Skipped.Count > 0)
+        {
+            text += $". Пропущено: {string.Join("; ", result.Skipped)}";
+        }
+        return text;
+    }
+
+    private string RowClass(FinanceRestoreRowViewModel row)
+    {
+        if (outcomes.TryGetValue(row.ClaimId, out var outcome))
+        {
+            return outcome.Error is not null ? "danger" : "success";
+        }
+        return CanApply(row) ? "" : "text-muted";
+    }
+
+    private static string Format(DateTimeOffset value) => value.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+
+    private static string StateText(FinanceRestoreOperationStateView state) => state switch
+    {
+        FinanceRestoreOperationStateView.Approved => "Подтверждена",
+        FinanceRestoreOperationStateView.Proposed => "Ждёт подтверждения",
+        FinanceRestoreOperationStateView.Declined => "Отклонена",
+        _ => state.ToString(),
+    };
+
+    private static string TypeLabel(FinanceRestorePaymentTypeView type)
+        => $"{type.Name} — {type.OwnerName}{(type.IsActive ? "" : " (выключен)")}";
+
+    private RenderFragment TypeOption(FinanceRestorePaymentTypeView type, int? chosen) => __builder =>
+    {
+        <option value="@type.PaymentTypeId" selected="@(type.PaymentTypeId == chosen)">@TypeLabel(type)</option>
+    };
+
+    private RenderFragment TypeSelect(FinanceRestoreRowViewModel row, FinanceRestoreOperationView op) => __builder =>
+    {
+        var chosen = ChosenType(row, op);
+        var types = model?.PaymentTypes ?? [];
+        var candidates = types.Where(t => op.CandidatePaymentTypeIds.Contains(t.PaymentTypeId)).ToList();
+        <select class="form-control input-sm finance-restore-type" disabled="@Busy" title="Тип оплаты восстановленной операции"
+                @onchange="@(e => SetType(row, op, e.Value))">
+            <option value="" selected="@(chosen is null)">— не выбран —</option>
+            @if (candidates.Count > 0)
+            {
+                <optgroup label="Подходят по уведомлению">
+                    @foreach (var type in candidates)
+                    {
+                        @TypeOption(type, chosen)
+                    }
+                </optgroup>
+                <optgroup label="Остальные">
+                    @foreach (var type in types.Except(candidates))
+                    {
+                        @TypeOption(type, chosen)
+                    }
+                </optgroup>
+            }
+            else
+            {
+                @foreach (var type in types)
+                {
+                    @TypeOption(type, chosen)
+                }
+            }
+        </select>
+    };
+
+    private RenderFragment OperationsTable(FinanceRestoreRowViewModel row) => __builder =>
+    {
+        @if (row.Operations.Count > 0)
+        {
+            <table class="table table-condensed restore-finance-operations">
+                <thead>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Сумма</th>
+                        <th title="Время уведомления — своей даты операции в уведомлении нет">Дата</th>
+                        <th>Автор</th>
+                        <th>Состояние</th>
+                        <th>Тип оплаты</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var op in row.Operations)
+                    {
+                        var applicable = IsApplicable(row, op);
+                        @* Без @key: ключи операций в строке могут повторяться («неоднозначный ключ»), и повтор @key роняет остров. *@
+                        <tr class="@(applicable ? (ChosenType(row, op) is null ? "warning" : "") : "text-muted")">
+                            <td>
+                                @(op.IsRefund ? "Возврат" : "Оплата")
+                                @if (op.OperationId is { } id)
+                                {
+                                    <div class="text-muted small">№ @id</div>
+                                }
+                            </td>
+                            <td>@op.Money</td>
+                            <td>@Format(op.CreatedAt)</td>
+                            <td>
+                                @op.AuthorName
+                                <div class="text-muted small">@(op.IsByPlayer ? "игрок" : "мастер")</div>
+                            </td>
+                            <td>@StateText(op.State)</td>
+                            <td>
+                                @if (applicable)
+                                {
+                                    @TypeSelect(row, op)
+                                }
+                                else
+                                {
+                                    @(op.NotApplicableReason ?? "Не восстановится")
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        @if (row.Moderations.Count > 0)
+        {
+            <table class="table table-condensed restore-finance-moderations">
+                <thead>
+                    <tr>
+                        <th>Решение</th>
+                        <th>Дата</th>
+                        <th>Автор</th>
+                        <th>Пояснение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var moderation in row.Moderations)
+                    {
+                        @* Без @key: ключи решений тоже могут повторяться. *@
+                        <tr class="@(moderation.CanApply ? "" : "text-muted")">
+                            <td>
+                                @(moderation.Approved ? "Подтверждение" : "Отклонение")
+                                @if (moderation.CommentId is { } id)
+                                {
+                                    <div class="text-muted small">№ @id</div>
+                                }
+                            </td>
+                            <td>@Format(moderation.CreatedAt)</td>
+                            <td>@moderation.AuthorName</td>
+                            <td>@(moderation.Note ?? "")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    };
+}

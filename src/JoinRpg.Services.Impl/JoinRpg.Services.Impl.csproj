@@ -2,6 +2,10 @@
   <PropertyGroup>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Тесты разбора уведомлений (DRP, #5481) строят входные тексты настоящим ClaimNotificationTextBuilder. -->
+    <InternalsVisibleTo Include="JoinRpg.Services.Drp.Test" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Common\JoinRpg.Common.BastiliaRatingClient\JoinRpg.Common.BastiliaRatingClient.csproj" />
     <ProjectReference Include="..\Common\JoinRpg.Common.KogdaIgraClient\JoinRpg.Common.KogdaIgraClient.csproj" />
     <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj" />

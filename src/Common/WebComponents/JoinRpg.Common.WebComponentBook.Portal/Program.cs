@@ -3,12 +3,19 @@ using JoinRpg.Common.WebInfrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddJoinHealthChecks();
+// Каталог компонентов для разработчиков — в поиск не пускаем. Без robots.txt запрос уходил бы
+// в SPA-фоллбэк и отдавал index.html
+_ = builder.Services.AddJoinRobotsTxt().Configure(robots => robots.DisallowAll = true);
 builder.Services.ConfigureForwardedHeaders();
 builder.Host.UseJoinSerilog("ComponentBook");
 
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+
+// Маршрутизация — до логирования запросов: эндпойнты с ShortCircuit() замыкаются
+// прямо в EndpointRoutingMiddleware и не попадают в лог (как в Portal и IdPortal).
+app.UseRouting();
 
 app.UseJoinRequestLogging();
 
@@ -19,8 +26,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
-
-app.UseRouting();
 
 app.MapJoinHealthChecks();
 

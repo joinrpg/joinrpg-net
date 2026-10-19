@@ -33,9 +33,9 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             CreateFieldSetupService(currentUserId));
     }
 
-    private Claim CreateClaim(ClaimStatus status, string characterName = "Вася")
+    private Claim CreateClaim(ClaimStatus status, string characterName = "Вася", bool toSlot = false)
     {
-        var character = mock.CreateCharacter(characterName);
+        var character = toSlot ? mock.CreateSlot(characterName) : mock.CreateCharacter(characterName);
         var claim = mock.CreateClaim(character, mock.Player);
         claim.ClaimStatus = status;
         mock.ReInitProjectInfo();
@@ -474,6 +474,28 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SentNotifications.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Две заявки, поданные на свободного персонажа: принять вторую, когда первая уже принята,
+    /// нельзя. Иначе на персонаже две принятые заявки, и его снимок больше не загружается (#5645).
+    /// </summary>
+    [Fact]
+    public async Task ApproveByMaster_WhenCharacterHasOtherApprovedClaim_Throws_AndDoesNotSave()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var approved = mock.CreateApprovedClaim(character, mock.Master);
+        var claim = mock.CreateClaim(character, mock.Player);
+        claim.ClaimStatus = ClaimStatus.AddedByUser;
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ClaimTargetIsNotAcceptingClaims>(
+            () => CreateService().ApproveByMaster(claim.GetId(), "принято"));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        character.ApprovedClaimId.ShouldBe(approved.ClaimId);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task ApproveByMaster_ByPlayer_Throws_AndDoesNotSave()
     {
@@ -608,6 +630,17 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var character = mock.CreateCharacter(name);
         mock.ReInitProjectInfo();
         return (character, FieldLayerContainer.Empty(mock.ProjectInfo));
+    }
+
+    /// <summary>
+    /// То же, что <see cref="CreateTarget"/>, но шаблон без ограничения числа заявок — на него
+    /// работает автоприём (#5645).
+    /// </summary>
+    private (Character Slot, FieldLayerContainer Fields) CreateSlotTarget(string name = "Шаблон")
+    {
+        var slot = mock.CreateSlot(name);
+        mock.ReInitProjectInfo();
+        return (slot, FieldLayerContainer.Empty(mock.ProjectInfo));
     }
 
     [Fact]
@@ -802,14 +835,21 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     public async Task AddClaimFromUser_WithAutoAccept_ApprovesAfterCreationCompleted()
     {
         mock.Project.Details.AutoAcceptClaims = true;
-        var (character, fields) = CreateTarget();
+        var (slot, fields) = CreateSlotTarget();
 
-        _ = await CreateService(mock.Player.UserId)
-            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
+        var claimId = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(slot.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
 
-        var claim = character.Claims.ShouldHaveSingleItem();
+        var claim = mock.Project.Claims.ShouldHaveSingleItem();
+        claim.GetId().ShouldBe(claimId);
         claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
-        character.ApprovedClaim.ShouldBe(claim);
+
+        // Принятая заявка на шаблон переезжает на нового персонажа, созданного из шаблона.
+        var created = claim.Character;
+        created.ShouldNotBe(slot);
+        created.OriginalCharacterSlot.ShouldBe(slot);
+        created.CharacterType.ShouldBe(CharacterType.Player);
+        created.ApprovedClaim.ShouldBe(claim);
 
         // Создание заявки — два сохранения (ADR014), автоприём добавляет третье строго после них.
         SaveChangesCallCount.ShouldBe(3);
@@ -833,22 +873,43 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         mock.Project.Details.AutoAcceptClaims = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
-        var (character, fields) = CreateTarget();
+        var (slot, fields) = CreateSlotTarget();
 
         _ = await CreateService(mock.Player.UserId)
-            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed);
+            .AddClaimFromUser(slot.GetId(), "хочу играть", fields, sensitiveDataAllowed);
 
         impersonateAccessor.Impersonated.Count.ShouldBe(expectedAutoApprove ? 1 : 0);
         SaveChangesCallCount.ShouldBe(expectedAutoApprove ? 3 : 2);
     }
 
+    /// <summary>
+    /// Автоприём — только для заявок на шаблон (#5645). Заявку на конкретного персонажа мастер
+    /// принимает сам, даже если в проекте автоприём включён.
+    /// </summary>
     [Fact]
-    public async Task AddClaimFromUser_WithoutAutoAccept_DoesNotApprove()
+    public async Task AddClaimFromUser_ToRegularCharacter_WithAutoAccept_DoesNotApprove()
     {
+        mock.Project.Details.AutoAcceptClaims = true;
         var (character, fields) = CreateTarget();
 
         _ = await CreateService(mock.Player.UserId)
             .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
+
+        var claim = character.Claims.ShouldHaveSingleItem();
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        character.ApprovedClaim.ShouldBeNull();
+        SaveChangesCallCount.ShouldBe(2);
+        SentNotifications.Count.ShouldBe(1);
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AddClaimFromUser_WithoutAutoAccept_DoesNotApprove()
+    {
+        var (slot, fields) = CreateSlotTarget();
+
+        _ = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(slot.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
 
         impersonateAccessor.Impersonated.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(2);
@@ -926,7 +987,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     public async Task AcceptInvitation_WithAutoAccept_ApprovesAfterNotification()
     {
         mock.Project.Details.AutoAcceptClaims = true;
-        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+        var claim = CreateClaim(ClaimStatus.AddedByMaster, toSlot: true);
 
         await CreateService(mock.Player.UserId)
             .AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed: false);
@@ -979,7 +1040,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         mock.Project.Details.AutoAcceptClaims = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
-        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var claim = CreateClaim(ClaimStatus.AddedByUser, toSlot: true);
 
         await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
 
@@ -1009,7 +1070,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         mock.Project.Details.AutoAcceptClaims = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
-        var claim = CreateClaim(status);
+        var claim = CreateClaim(status, toSlot: true);
 
         await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
 
@@ -1024,12 +1085,32 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     public async Task AllowSensitiveData_WithoutAutoAccept_DoesNotApprove()
     {
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
-        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var claim = CreateClaim(ClaimStatus.AddedByUser, toSlot: true);
 
         await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
         SaveChangesCallCount.ShouldBe(1);
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Разрешение доступа к паспорту по заявке на обычного персонажа автоприём не запускает:
+    /// он работает только для заявок на шаблон (#5645).
+    /// </summary>
+    [Fact]
+    public async Task AllowSensitiveData_ToRegularCharacter_WithAutoAccept_DoesNotApprove()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        mock.Project.Details.RequirePassport = MandatoryStatus.Required;
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
+
+        claim.PlayerAllowedSenstiveData.ShouldBeTrue();
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.ShouldBeEmpty();
         impersonateAccessor.Impersonated.ShouldBeEmpty();
     }
 
@@ -1565,6 +1646,35 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         SentInviteNotifications.ShouldBeEmpty();
         SentRoomNotifications.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Отвеченные приглашения — история: отклонение заявки не переписывает их в «отклонено из-за
+    /// отмены заявки» и не шлёт второй стороне уведомление по давно решённому приглашению (#5452).
+    /// </summary>
+    [Fact]
+    public async Task DeclineByMaster_WithAnsweredInvites_KeepsThemAndSendsNoNotification()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var acceptedNeighbour = CreateClaim(ClaimStatus.AddedByUser, "Принявший");
+        var declinedNeighbour = CreateClaim(ClaimStatus.AddedByUser, "Отказавший");
+
+        var accepted = mock.CreateAccommodationInvite(claim, acceptedNeighbour);
+        accepted.IsAccepted = InviteState.Accepted;
+        accepted.ResolveDescription = ResolveDescription.Accepted;
+
+        var declined = mock.CreateAccommodationInvite(declinedNeighbour, claim);
+        declined.IsAccepted = InviteState.Declined;
+        declined.ResolveDescription = ResolveDescription.Declined;
+
+        await CreateService().DeclineByMaster(
+            claim.GetId(), ClaimDenialReason.Refused, "отказ", deleteCharacter: false);
+
+        accepted.IsAccepted.ShouldBe(InviteState.Accepted);
+        accepted.ResolveDescription.ShouldBe(ResolveDescription.Accepted);
+        declined.IsAccepted.ShouldBe(InviteState.Declined);
+        declined.ResolveDescription.ShouldBe(ResolveDescription.Declined);
+        SentInviteNotifications.ShouldBeEmpty();
     }
 
     #endregion

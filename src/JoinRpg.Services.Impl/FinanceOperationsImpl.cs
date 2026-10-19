@@ -114,13 +114,17 @@ internal class FinanceOperationsImpl(
         var (claimFrom, projectInfo) = await LoadClaimAsMaster(
             new ClaimIdentification(request.ProjectId, request.ClaimId),
             Permission.CanManageMoney);
+        _ = projectInfo.EnsureNotBlocked(); // ADR023; архив здесь не проверялся и раньше
 
         // Loading destination claim
         var (claimTo, _) = await LoadClaimAsMaster(new ClaimIdentification(request.ProjectId, request.ToClaimId));
 
-        // Checking money amount
-        var availableMoney = claimFrom.GetPaymentSum();
-        if (availableMoney < request.Money)
+        // Checking money amount. Уплаченное — из снимка (ADR013): FeePaid считает все подтверждённые
+        // операции, но не движущие деньги операции (запрос льготы) всегда нулевые, так что это то же
+        // самое, что сумма подтверждённых денежных операций.
+        var claimFromSnapshot = await claimInfoRepository.GetClaimInCharacterOrDefault(claimFrom.GetId())
+            ?? throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
+        if (claimFromSnapshot.Claim.Finance.FeePaid < request.Money)
         {
             throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Character.CharacterName} to perform transfer");
         }
@@ -177,8 +181,9 @@ internal class FinanceOperationsImpl(
 
         await UnitOfWork.SaveChangesAsync();
 
-        await claimNotificationService.SendNotification(emailTo.WithCommentId(commentTo.CommentId));
-        await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId));
+        // Сумма — со знаком, как у финоперации своей заявки: без неё перевод по уведомлению не восстановить (#5643).
+        await claimNotificationService.SendNotification(emailTo.WithCommentId(commentTo.CommentId) with { Money = request.Money });
+        await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId) with { Money = -request.Money });
     }
 
     /// <summary>
@@ -210,6 +215,9 @@ internal class FinanceOperationsImpl(
 
     public async Task CreateTransfer(CreateTransferRequest request)
     {
+        // ADR023; архив здесь не проверялся и раньше.
+        _ = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(request.ProjectId))).EnsureNotBlocked();
+
         var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
 
         _ = project.RequestMasterAccess(CurrentUserId);
@@ -272,6 +280,8 @@ internal class FinanceOperationsImpl(
 
     public async Task MarkTransfer(ApproveRejectTransferRequest request)
     {
+        _ = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(request.ProjectId))).EnsureNotBlocked();
+
         var moneyTransfer = await UnitOfWork.GetDbSet<MoneyTransfer>()
             .Include(transfer => transfer.Project)
             .Include(transfer => transfer.Sender)

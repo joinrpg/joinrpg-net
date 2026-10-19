@@ -51,6 +51,8 @@ public static class Registraton
             .AddTransient<IProjectRolesListRepository, ProjectRolesListRepository>()
             .AddTransient<IFinanceOperationsRepository, FinanceOperationsRepository>()
             .AddTransient<IAdvertisementLogRepository, AdvertisementLogRepository>()
+            .AddTransient<IUserMergeRepository, UserMergeRepository>()
+            .AddTransient<IProjectRestoreLookupRepository, ProjectRestoreLookupRepository>()
             .AddSingleton<IJoinDbContextConfiguration, ConfigurationAdapter>();
 
         return services;

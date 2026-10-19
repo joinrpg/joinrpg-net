@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
-    <ContainerRegistry>cr.yandex</ContainerRegistry>
-    <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-componentbook</ContainerRepository>
+    <ContainerRepository>joinrpg/joinrpg-componentbook</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <!-- ReferenceTrimmer не видит, что ссылка на Client нужна UseBlazorFrameworkFiles() для копирования wwwroot/_framework при публикации, т.к. нет прямого использования типов Client -->
     <NoWarn>$(NoWarn);RT0002</NoWarn>

@@ -1,6 +1,5 @@
 using System.Net;
 using JoinRpg.Portal.Controllers;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,7 +29,7 @@ public class MyClaimListRedirectTests(IntegrationTestPortalFactory factory)
     [InlineData("claimlist/my", "/my/claims")]
     public async Task LegacyClaimListUrlRedirectsPermanently(string requestPath, string expectedLocation)
     {
-        var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var client = factory.CreateClientWithoutRedirects();
         var response = await client.GetAsync(requestPath);
 
         response.StatusCode.ShouldBe(HttpStatusCode.MovedPermanently);

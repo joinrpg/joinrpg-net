@@ -13,6 +13,7 @@
                SelectedItemsChanged="HandleSelectedItemsChanged"
                Multiple="@Multiple"
                AllowEmpty="@AllowEmpty"
+               EmptyText="@EmptyText"
                />
 <p>@SelectedCharactersText</p>
 
@@ -30,6 +31,8 @@
     [Parameter] public bool Multiple { get; set; } = true;
     [Parameter] public CharacterListType ListType { get; set; } = CharacterListType.All;
     [Parameter] public bool AllowEmpty { get; set; } = false;
+    /// <summary>Текст пустого пункта (при <see cref="AllowEmpty"/>).</summary>
+    [Parameter] public string EmptyText { get; set; } = "(нет)";
     [Parameter] public CharacterIdentification[] ExcludeCharacterIds { get; set; } = [];
 
     public string SelectedCharactersText{ get; private set; } = "";

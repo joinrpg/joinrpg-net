@@ -1,0 +1,43 @@
+using JoinRpg.Domain;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+
+namespace JoinRpg.Portal.Infrastructure;
+
+/// <summary>
+/// Ошибки API островов (<c>/webapi/</c>) отдаёт как <see cref="ProblemDetails"/>, а не HTML-страницей ошибки:
+/// остров показывает <see cref="ProblemDetails.Title"/> пользователю (#4231).
+/// Остальные пути не трогает — для них остаётся страница <c>/error</c>.
+/// </summary>
+internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
+{
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    {
+        if (!httpContext.Request.Path.IsInternalApiPath())
+        {
+            return false;
+        }
+
+        var (status, title) = GetRefusal(exception) ?? (StatusCodes.Status500InternalServerError, "Неизвестная ошибка на сервере");
+        httpContext.Response.StatusCode = status;
+        return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            Exception = exception,
+            ProblemDetails = new ProblemDetails { Status = status, Title = title },
+        });
+    }
+
+    /// <summary>
+    /// Штатный отказ в операции — не сбой сервера, его не надо логировать как необработанное исключение.
+    /// </summary>
+    public static bool IsExpectedRefusal(Exception exception) => GetRefusal(exception) is not null;
+
+    private static (int Status, string Title)? GetRefusal(Exception exception) => exception switch
+    {
+        ProjectBlockedException => (StatusCodes.Status409Conflict, "Проект заблокирован на время восстановления данных, изменения в нём сейчас невозможны"),
+        ProjectDeactivatedException => (StatusCodes.Status409Conflict, "Проект находится в архиве, изменения в нём невозможны"),
+        NoAccessToProjectException => (StatusCodes.Status403Forbidden, "Недостаточно прав для этого действия"),
+        _ => null,
+    };
+}

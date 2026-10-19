@@ -1,0 +1,1236 @@
+@using JoinRpg.DomainTypes.Characters
+@using JoinRpg.Helpers
+@using JoinRpg.Web.Claims
+@inject IClaimRestoreClient Client
+@inject IUriLocator<ClaimIdentification> ClaimUriLocator
+@inject IUriLocator<CharacterGroupIdentification> GroupUriLocator
+@inject ICharacterUriLocator CharacterUriLocator
+
+<JoinPanel>
+    <Header>Восстановление проекта</Header>
+    <Body>
+        <p>
+            Основная база восстановлена из резервной копии, и всё, что менялось после неё, потерялось.
+            Эта страница собирает проект обратно из двух источников. Из <b>уведомлений</b>, которые сайт рассылал
+            до аварии, — заявки: подача, статус, ответственный, взнос, перемещения. Из <b>выгрузок</b> персонажей
+            и заявок, которые мастера скачивали себе в Excel (xlsx), — группы, персонажи с прежними номерами
+            и значения полей. По каждому значению берётся самое свежее.
+        </p>
+        <p><HelpLink Link="recovery-2026.html" Message="Инструкция по восстановлению" /></p>
+        <p>
+            <b>Выгрузок нет — восстановить всё равно можно.</b> План по уведомлениям строится сразу, без загрузки
+            файлов: заявки вернутся со своими номерами, статусами, ответственными и взносами, а персонажи для них
+            создадутся по именам из уведомлений. Без выгрузки не восстановятся группы, прежние номера персонажей и
+            значения полей анкет. В этом случае пропустите шаги 1–2.
+        </p>
+        <ol>
+            <li>Если выгрузки есть — загрузите выгрузки персонажей и заявок, можно несколько, разных дат.</li>
+            <li>Укажите дату каждой выгрузки: по ней решается, что свежее. Она подставлена из свойств файла — проверьте её; если в свойствах даты нет, введите сами.</li>
+            <li>Проверьте план: по каждому полю видно, что сейчас, что станет и откуда значение.</li>
+            <li>Отметьте нужное и нажмите «Применить отмеченные».</li>
+        </ol>
+        <p>
+            Игрокам при этом <b>ничего не отправляется</b>, а в истории заявки остаётся запись о восстановлении.
+            Инструмент доступен, только пока проект заблокирован на время восстановления.
+            Строки и поля с пометками заранее не отмечены — проверьте их сами.
+            Выгрузки на сервере не сохраняются: если обновить страницу, их нужно загрузить снова.
+        </p>
+        <p>Перед восстановлением желательно:</p>
+        <ul>
+            <li>
+                <b>настроить поля проекта</b>, если они потерялись, с прежними названиями: значения из выгрузки
+                сопоставляются с полями по названию колонки, а варианты списков — по тексту варианта;
+                прежде всего — поле с именем персонажа: через него задаётся имя новых персонажей;
+            </li>
+            <li>
+                <b>вернуть доступ всем мастерам</b>, которые вели заявки: ответственным можно назначить только
+                мастера проекта, и строку с ответственным, которого нет среди мастеров, не применить;
+            </li>
+            <li>
+                убедиться, что <b>игроки есть на сайте</b> — иначе их не выбрать в строке заявки.
+            </li>
+        </ul>
+
+        @if (model is not null && model.UnavailableReason is null)
+        {
+            <p class="text-muted">
+                Учтены уведомления до @Format(model.LostAt); резервная копия базы — от @Format(model.BackupTakenAt).
+            </p>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+        }
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">@successMessage</JoinAlert>
+        }
+
+        @if (model is null)
+        {
+            <JoinLoadingMessage Message="Строим план восстановления..." />
+        }
+        else if (model.UnavailableReason is { } reason)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Warning">
+                @(reason switch
+                {
+                    ClaimRestoreUnavailableReason.ProjectNotBlocked => "Восстанавливать проект можно, только пока он заблокирован на время восстановления.",
+                    _ => "Для восстановления проекта нужны права на управление заявками.",
+                })
+            </JoinAlert>
+        }
+        else
+        {
+            @ExportsSection()
+
+            @if (IsEmpty)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Info">
+                    @(exports.Count > 0
+                        ? "Восстанавливать нечего: по уведомлениям заявки после резервной копии не менялись, а выгрузки совпадают с базой."
+                        : "По уведомлениям восстанавливать нечего. Загрузите выгрузки персонажей и заявок, если они есть.")
+                </JoinAlert>
+            }
+            else
+            {
+                @if (!model.CanEditRoles && (groups.Count > 0 || creations.Count > 0 || changes.Count > 0))
+                {
+                    <JoinAlert Variation="VariationStyleEnum.Warning">
+                        Группы и персонажей может восстанавливать только мастер с правом редактировать персонажей и группы.
+                        Эти разделы показаны для сведения, применить их нельзя.
+                    </JoinAlert>
+                }
+                <p>
+                    Строк в плане: @TotalRows, из них отмечено: @SelectedRows.
+                    Строки применяются по очереди: группы, новые персонажи, заявки, изменения персонажей, поля заявок.
+                    Если строка, от которой зависит другая, не применилась, зависимая тоже не применяется.
+                </p>
+
+                @NotesSection()
+                @GroupsSection()
+                @CharactersSection("Новые персонажи", "Персонажи из выгрузки, которых нет в базе: создаются с прежними номерами, скрытыми, с группами и полями из выгрузки.", creations)
+                @ClaimsSection()
+                @CharactersSection("Изменения персонажей", "Группы и поля существующих персонажей, которые отличаются от выгрузки.", changes)
+                @ClaimFieldsSection()
+
+                @if (planStale)
+                {
+                    <JoinAlert Variation="VariationStyleEnum.Warning">
+                        План на экране устарел: перестроить его по загруженным выгрузкам не удалось. Применять его нельзя —
+                        измените дату или уберите и снова загрузите выгрузку, либо обновите страницу.
+                    </JoinAlert>
+                }
+                <JoinButton Preset="ButtonPreset.Save" Label="Применить отмеченные" ProgressLabel="Применяем..."
+                            InProgress="@applying" AutoProgress="false"
+                            Disabled="@(Busy || planStale || SelectedRows == 0)"
+                            OnClick="ApplySelected" />
+            }
+        }
+    </Body>
+</JoinPanel>
+
+@code {
+    private const long MaxFileSize = 30 * 1024 * 1024;
+    private const int MaxFilesAtOnce = 20;
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private ClaimRestorePlanViewModel? model;
+    private List<ClaimRestoreRowEditor> rows = [];
+    private List<GroupRestoreRowEditor> groups = [];
+    private List<CharacterRestoreRowEditor> creations = [];
+    private List<CharacterRestoreRowEditor> changes = [];
+    private List<ClaimFieldsRestoreRowEditor> claimFields = [];
+    private readonly List<UploadedExport> exports = [];
+    private readonly List<string> uploadErrors = [];
+    private bool applying;
+    private bool uploading;
+    private string? errorMessage;
+    private string? successMessage;
+
+    /// <summary>Идёт построение плана — таблицы показывают прежний план, применять его нельзя.</summary>
+    private bool loadingPlan;
+
+    /// <summary>
+    /// План на экране не соответствует загруженным выгрузкам (перестроить не удалось) — применять нельзя.
+    /// </summary>
+    private bool planStale;
+
+    /// <summary>Номер последнего запроса плана: ответы на более ранние запросы отбрасываются.</summary>
+    private int planVersion;
+
+    private bool Busy => applying || uploading || loadingPlan;
+
+    private bool IsEmpty => rows.Count == 0 && groups.Count == 0 && creations.Count == 0 && changes.Count == 0 && claimFields.Count == 0;
+
+    private IEnumerable<RestoreRowEditorBase> ExportRows => [.. groups, .. creations, .. changes, .. claimFields];
+
+    /// <summary>Строки, где есть что делать: «ничего» (совпадает с базой или менять нельзя) не считаем.</summary>
+    private int TotalRows
+        => rows.Count(r => r.Row.Action != ClaimRestoreActionView.Nothing)
+            + groups.Count(g => g.Row.Action != ClaimRestoreActionView.Nothing)
+            + creations.Concat(changes).Count(c => c.Row.Action != ClaimRestoreActionView.Nothing)
+            + claimFields.Count;
+
+    private int SelectedRows => rows.Count(r => r.Selected && r.CanApply) + ExportRows.Count(r => r.Selected && r.CanApply);
+
+    protected override async Task OnInitializedAsync() => await ReloadPlan();
+
+    private async Task ReloadPlan()
+    {
+        if (await LoadPlan() is { } error)
+        {
+            errorMessage = $"Не удалось построить план восстановления: {error}";
+        }
+    }
+
+    /// <summary>
+    /// Перестраивает план по текущим выгрузкам. Если за время запроса начался другой, ответ отбрасывается —
+    /// на экране остаётся план по последнему набору выгрузок.
+    /// </summary>
+    /// <returns>Текст ошибки; null — план обновлён (или его уже обновляет более поздний запрос).</returns>
+    private async Task<string?> LoadPlan()
+    {
+        var version = ++planVersion;
+        loadingPlan = true;
+        try
+        {
+            var request = new ClaimRestorePlanRequest(ProjectId, [.. exports.Select(e => e.ToPlanExport()).OfType<MasterExportForPlan>()]);
+            var plan = await Client.GetPlan(request);
+            if (version != planVersion)
+            {
+                return null;
+            }
+            ShowPlan(plan);
+            planStale = false;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            if (version != planVersion)
+            {
+                return null;
+            }
+            planStale = model is not null;
+            return ex.Message;
+        }
+        finally
+        {
+            if (version == planVersion)
+            {
+                loadingPlan = false;
+            }
+        }
+    }
+
+    private void ShowPlan(ClaimRestorePlanViewModel plan)
+    {
+        model = plan;
+
+        var previous = rows.ToDictionary(r => r.Row.ClaimId);
+        rows = [.. model.Rows.Select(r =>
+        {
+            var editor = new ClaimRestoreRowEditor(r);
+            if (previous.TryGetValue(r.ClaimId, out var old))
+            {
+                editor.CopyEditsFrom(old);
+            }
+            return editor;
+        })];
+
+        var oldGroups = groups.ToDictionary(g => g.Row.GroupId);
+        groups = [.. model.Groups.Select(g =>
+        {
+            var editor = new GroupRestoreRowEditor(g, model.CanEditRoles);
+            if (oldGroups.TryGetValue(g.GroupId, out var old))
+            {
+                editor.CopyEditsFrom(old);
+            }
+            return editor;
+        })];
+
+        creations = CharacterEditors(model.CharacterCreations, creations, model.CanEditRoles);
+        changes = CharacterEditors(model.CharacterChanges, changes, model.CanEditRoles);
+
+        var oldClaimFields = claimFields.ToDictionary(c => c.Row.ClaimId);
+        claimFields = [.. model.ClaimFields.Select(c =>
+        {
+            var editor = new ClaimFieldsRestoreRowEditor(c);
+            if (oldClaimFields.TryGetValue(c.ClaimId, out var old))
+            {
+                editor.CopyEditsFrom(old);
+            }
+            return editor;
+        })];
+    }
+
+    private static List<CharacterRestoreRowEditor> CharacterEditors(
+        IReadOnlyList<CharacterRestoreRowViewModel> plan, List<CharacterRestoreRowEditor> previous, bool canEditRoles)
+    {
+        var old = previous.ToDictionary(c => c.Row.CharacterId);
+        return [.. plan.Select(c =>
+        {
+            var editor = new CharacterRestoreRowEditor(c, canEditRoles);
+            if (old.TryGetValue(c.CharacterId, out var was))
+            {
+                editor.CopyEditsFrom(was);
+            }
+            return editor;
+        })];
+    }
+
+    // ---------- Загрузка выгрузок ----------
+
+    private async Task OnFilesSelected(InputFileChangeEventArgs e)
+    {
+        uploading = true;
+        uploadErrors.Clear();
+        errorMessage = null;
+        successMessage = null;
+        StateHasChanged();
+
+        IReadOnlyList<IBrowserFile> files;
+        try
+        {
+            files = e.GetMultipleFiles(MaxFilesAtOnce);
+        }
+        catch (InvalidOperationException)
+        {
+            uploadErrors.Add($"За один раз можно загрузить не больше {MaxFilesAtOnce} файлов.");
+            uploading = false;
+            return;
+        }
+
+        foreach (var file in files)
+        {
+            if (file.Size > MaxFileSize)
+            {
+                uploadErrors.Add($"{file.Name}: файл больше 30 МБ.");
+                continue;
+            }
+            try
+            {
+                await using var stream = file.OpenReadStream(MaxFileSize);
+                var result = await Client.ParseExport(ProjectId, file.Name, stream);
+                if (result.Export is { } export)
+                {
+                    exports.Add(new UploadedExport(export));
+                }
+                else
+                {
+                    uploadErrors.Add($"{file.Name}: {result.Error?.GetDisplayName() ?? "не удалось разобрать"}.");
+                }
+            }
+            catch (Exception ex)
+            {
+                uploadErrors.Add($"{file.Name}: {ex.Message}");
+            }
+        }
+
+        await ReloadPlan();
+        uploading = false;
+    }
+
+    private async Task OnExportDateChanged(UploadedExport export, string? value)
+    {
+        export.SetFromLocalInput(value);
+        await ReloadPlan();
+    }
+
+    private async Task RemoveExport(UploadedExport export)
+    {
+        _ = exports.Remove(export);
+        await ReloadPlan();
+    }
+
+    private RenderFragment ExportsSection() => __builder =>
+    {
+        <h4>Выгрузки</h4>
+        <p class="text-muted">
+            Подходят выгрузки списка персонажей и списка заявок, которые делает сам сайт, в формате Excel (xlsx), до 30 МБ. Выгрузки в csv не подходят.
+        </p>
+        <div class="form-group">
+            <InputFile OnChange="OnFilesSelected" multiple accept=".xlsx" disabled="@Busy" class="form-control" />
+        </div>
+        @if (uploading)
+        {
+            <JoinLoadingMessage Message="Разбираем выгрузки..." />
+        }
+        @foreach (var error in uploadErrors)
+        {
+            <div class="text-danger">@error</div>
+        }
+        @if (exports.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Файл</th>
+                            <th>Что</th>
+                            <th>Строк</th>
+                            <th>Дата выгрузки</th>
+                            <th>Пометки</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var export in exports)
+                        {
+                            var upload = export.Upload;
+                            <tr class="@(export.ExportedAt is null ? "warning" : "")">
+                                <td>@upload.FileName</td>
+                                <td>@upload.Kind.GetDisplayName()</td>
+                                <td>@upload.RowCount</td>
+                                <td>
+                                    <input type="datetime-local" class="form-control input-sm export-date" value="@export.LocalInputValue" disabled="@Busy"
+                                           @onchange="@(e => OnExportDateChanged(export, e.Value as string))" />
+                                    @if (export.ExportedAt is null)
+                                    {
+                                        <div class="text-danger">Укажите дату — без неё выгрузка не учитывается</div>
+                                    }
+                                    else if (upload.SuggestedDate is not null && upload.SuggestedDate == export.ExportedAt)
+                                    {
+                                        <div class="text-muted small">из свойств файла</div>
+                                    }
+                                </td>
+                                <td>
+                                    @if (upload.ProjectId != ProjectId.Value)
+                                    {
+                                        <div class="text-danger">Выгрузка из другого проекта (@upload.ProjectId) — учитываться не будет</div>
+                                    }
+                                    @foreach (var warning in upload.Warnings)
+                                    {
+                                        <div class="text-warning">@warning.GetDisplayName()</div>
+                                    }
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-default btn-xs remove-export" disabled="@Busy" @onclick="@(() => RemoveExport(export))">Убрать</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        @if (model is not null)
+        {
+            @foreach (var info in model.Exports.Where(e => e.Used && e.Columns.Count > 0))
+            {
+                <div>
+                    <b>Несопоставленные колонки</b> — выгрузка @info.Kind.GetDisplayName().ToLowerInvariant() от @Format(info.ExportedAt)
+                    (сопоставлено с полями: @info.MappedCount):
+                    <ul>
+                        @foreach (var column in info.Columns)
+                        {
+                            <li>
+                                «@column.Header»@(column.FieldName is null ? "" : $" → поле «{column.FieldName}»")
+                                @foreach (var warning in column.Warnings)
+                                {
+                                    <span class="text-muted"> — @warning.GetDisplayName()</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+    };
+
+    // ---------- Разделы плана ----------
+
+    private RenderFragment NotesSection() => __builder =>
+    {
+        if (model is null || model.Notes.Count == 0)
+        {
+            return;
+        }
+        <h4>Пометки</h4>
+        <ul>
+            @foreach (var group in model.Notes.GroupBy(n => (n.ExportedAt, n.Warning)))
+            {
+                var rowNumbers = group.Select(n => n.RowNumber).OfType<int>().ToList();
+                <li>
+                    Выгрузка от @Format(group.Key.ExportedAt): @group.Key.Warning.GetDisplayName()
+                    @if (rowNumbers.Count > 0)
+                    {
+                        <span class="text-muted"> (строки @string.Join(", ", rowNumbers))</span>
+                    }
+                </li>
+            }
+        </ul>
+    };
+
+    private RenderFragment GroupsSection() => __builder =>
+    {
+        if (groups.Count == 0)
+        {
+            return;
+        }
+        <h4>Группы</h4>
+        <p class="text-muted">Потерянные группы создаются с прежними номерами прямо под корневой группой, скрытыми.</p>
+        <div class="table-responsive">
+            <table class="table table-bordered table-condensed restore-groups">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>№ группы</th>
+                        <th>Действие</th>
+                        <th>Название</th>
+                        <th>Выгрузка от</th>
+                        <th>Пометки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in groups)
+                    {
+                        var r = row.Row;
+                        <tr class="@RowClass(row)" @key="r.GroupId">
+                            <td>@SelectCheckbox(row)</td>
+                            <td>
+                                @if (r.CurrentName is not null)
+                                {
+                                    <a href="@GroupUriLocator.GetUri(r.GroupId)">@r.GroupId.CharacterGroupId</a>
+                                }
+                                else
+                                {
+                                    @r.GroupId.CharacterGroupId
+                                }
+                            </td>
+                            <td>@r.Action.GetDisplayName()</td>
+                            <td>
+                                @if (row.CanApply)
+                                {
+                                    <input type="text" class="form-control input-sm" value="@row.Name" disabled="@Busy" placeholder="Название группы"
+                                           @onchange="@(e => row.Name = e.Value as string ?? "")" />
+                                }
+                                else
+                                {
+                                    @(r.CurrentName ?? r.Name)
+                                }
+                                @if (r.CurrentName is not null && r.Name is not null && r.Name != r.CurrentName)
+                                {
+                                    <div class="text-muted small">в выгрузке: @r.Name</div>
+                                }
+                            </td>
+                            <td>@Format(r.ExportedAt)</td>
+                            <td>@RowNotes(row, r.Warnings.Select(w => w.GetDisplayName()))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+
+    private RenderFragment CharactersSection(string title, string description, List<CharacterRestoreRowEditor> section) => __builder =>
+    {
+        if (section.Count == 0)
+        {
+            return;
+        }
+        <h4>@title</h4>
+        <p class="text-muted">@description</p>
+        <div class="table-responsive">
+            <table class="table table-bordered table-condensed restore-characters">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>№</th>
+                        <th>Персонаж</th>
+                        <th>Группы</th>
+                        <th>Поля</th>
+                        <th>Пометки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in section)
+                    {
+                        var r = row.Row;
+                        <tr class="@RowClass(row)" @key="r.CharacterId">
+                            <td>@SelectCheckbox(row)</td>
+                            <td>@r.CharacterId.CharacterId</td>
+                            <td>
+                                @if (row.Create && row.CanApply)
+                                {
+                                    <input type="text" class="form-control input-sm" value="@row.Name" disabled="@Busy" placeholder="Имя персонажа"
+                                           @onchange="@(e => row.Name = e.Value as string ?? "")" />
+                                }
+                                else if (r.CurrentName is not null)
+                                {
+                                    <a href="@CharacterUriLocator.GetDetailsUri(r.CharacterId)">@r.CurrentName</a>
+                                }
+                                else
+                                {
+                                    @r.Name
+                                }
+                                <div class="text-muted small">выгрузка от @Format(r.ExportedAt)</div>
+                                @if (row.Create && NewCharacterTypeText(r) is { } typeText)
+                                {
+                                    <div class="small new-character-type">будет создан как: @typeText</div>
+                                }
+                                @if (r.ExportResponsibleMaster is { } responsible)
+                                {
+                                    <div class="text-muted small export-responsible">
+                                        ответственный по выгрузке: @MasterName(responsible) — назначьте после восстановления
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                @if (r.Groups is { } target)
+                                {
+                                    <label style="font-weight: normal">
+                                        <input type="checkbox" checked="@row.ApplyGroups" disabled="@(!row.CanApply || Busy)"
+                                               @onchange="@(e => row.ApplyGroups = e.Value is true)" />
+                                        @(row.Create ? "поставить в группы" : "заменить группы")
+                                    </label>
+                                    @if (!row.Create)
+                                    {
+                                        <div class="text-muted">@GroupList(r.CurrentGroups)</div>
+                                        <div>→ @GroupList(target)</div>
+                                    }
+                                    else
+                                    {
+                                        <div>@GroupList(target)</div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">@GroupList(r.CurrentGroups)</span>
+                                }
+                            </td>
+                            <td>@FieldsCell(row.Fields, row.CanApply)</td>
+                            <td>@RowNotes(row, r.Warnings.Select(w => w.GetDisplayName()))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+
+    private RenderFragment ClaimFieldsSection() => __builder =>
+    {
+        if (claimFields.Count == 0)
+        {
+            return;
+        }
+        <h4>Поля заявок</h4>
+        <p class="text-muted">
+            Поля заявки и предложения игрока по полям персонажа из выгрузки заявок. Применяются последними — после заявок и персонажей.
+        </p>
+        <div class="table-responsive">
+            <table class="table table-bordered table-condensed restore-claim-fields">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>№ заявки</th>
+                        <th>Персонаж</th>
+                        <th>Поля</th>
+                        <th>Пометки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in claimFields)
+                    {
+                        var r = row.Row;
+                        <tr class="@RowClass(row)" @key="r.ClaimId">
+                            <td>@SelectCheckbox(row)</td>
+                            <td>
+                                @if (r.ExistsInDatabase)
+                                {
+                                    <a href="@ClaimUriLocator.GetUri(r.ClaimId)">@r.ClaimId.ClaimId</a>
+                                }
+                                else
+                                {
+                                    @r.ClaimId.ClaimId
+                                }
+                            </td>
+                            <td>@r.CharacterName</td>
+                            <td>@FieldsCell(row.Fields, row.CanApply)</td>
+                            <td>@RowNotes(row, r.Warnings.Select(w => w.GetDisplayName()))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+
+    private RenderFragment FieldsCell(IReadOnlyList<FieldRestoreSelection> fields, bool canApply) => __builder =>
+    {
+        foreach (var field in fields)
+        {
+            var change = field.Change;
+            <div class="restore-field">
+                <label style="font-weight: normal">
+                    <input type="checkbox" checked="@field.Selected" disabled="@(!canApply || Busy)"
+                           @onchange="@(e => field.Selected = e.Value is true)" />
+                    <b>@change.FieldName</b>:
+                </label>
+                <span class="text-muted" style="white-space: pre-wrap">@ValueText(change.CurrentDisplay)</span>
+                →
+                <span style="white-space: pre-wrap">@ValueText(change.NewDisplay)</span>
+                <span class="text-muted small">(выгрузка @change.ExportKind.GetDisplayName().ToLowerInvariant() от @Format(change.ExportedAt))</span>
+                @foreach (var warning in change.RestoreWarnings)
+                {
+                    <div class="text-warning small">@warning.GetDisplayName()</div>
+                }
+                @foreach (var warning in change.Warnings)
+                {
+                    <div class="text-warning small">@warning.GetDisplayName()</div>
+                }
+            </div>
+        }
+    };
+
+    private RenderFragment SelectCheckbox(RestoreRowEditorBase row) =>
+        @<input type="checkbox" checked="@(row.Selected && row.CanApply)" disabled="@(!row.CanApply || Busy)"
+                title="Применить эту строку" @onchange="@(e => row.Selected = e.Value is true)" />;
+
+    private static string RowClass(RestoreRowEditorBase row)
+        => !row.CanApply ? "text-muted" : row.Succeeded == true ? "success" : row.Succeeded == false ? "danger" : "";
+
+    private static RenderFragment RowNotes(RestoreRowEditorBase row, IEnumerable<string> warnings) => __builder =>
+    {
+        if (row.Succeeded == true)
+        {
+            <div class="text-success">Применено</div>
+        }
+        if (row.Error is not null)
+        {
+            <div class="text-danger">@row.Error</div>
+        }
+        if (row.CanApply && row.Selected && row.BlockingProblem is { } problem)
+        {
+            <div class="text-danger">@problem</div>
+        }
+        foreach (var warning in warnings)
+        {
+            <div class="text-warning">@warning</div>
+        }
+    };
+
+    private static string ValueText(string value) => string.IsNullOrEmpty(value) ? "(пусто)" : value;
+
+    /// <summary>Тип нового персонажа, если он не обычный персонаж игрока; null — обычный.</summary>
+    private static string? NewCharacterTypeText(CharacterRestoreRowViewModel row) => (row.CharacterType, row.IsHot) switch
+    {
+        (CharacterType.Slot, true) => CharacterBusyStatusView.HotSlot.GetDisplayName(),
+        (CharacterType.Slot, false) => CharacterBusyStatusView.Slot.GetDisplayName(),
+        (CharacterType.NonPlayer, _) => CharacterBusyStatusView.Npc.GetDisplayName(),
+        (CharacterType.Player, true) => CharacterBusyStatusView.HotVacancy.GetDisplayName(),
+        _ => null,
+    };
+
+    private static string GroupList(IReadOnlyList<RestoreGroupOption> groups)
+        => groups.Count == 0 ? "нет групп" : string.Join(", ", groups.Select(g => g.Name));
+
+    // ---------- Применение ----------
+
+    /// <summary>
+    /// Новые персонажи, созданные за время работы со страницей, по имени. Живёт дольше одного
+    /// применения: строка, упавшая после создания персонажа, при повторе не должна создать второго.
+    /// Найденный планом персонаж всё равно важнее (см. <see cref="ClaimRestoreRowEditor.CopyEditsFrom"/>).
+    /// </summary>
+    private readonly Dictionary<string, CharacterIdentification> createdCharacters = new(StringComparer.Ordinal);
+
+    private int succeededCount;
+    private int failedCount;
+
+    private async Task ApplySelected()
+    {
+        if (model is null || Busy || planStale)
+        {
+            return;
+        }
+        applying = true;
+        errorMessage = null;
+        successMessage = null;
+        succeededCount = 0;
+        failedCount = 0;
+        foreach (var row in rows)
+        {
+            row.Succeeded = null;
+            row.Error = null;
+        }
+        foreach (var row in ExportRows)
+        {
+            row.Succeeded = null;
+            row.Error = null;
+        }
+        StateHasChanged();
+
+        var dependencies = new RestoreDependencies(model);
+
+        foreach (var row in groups.Where(r => r.Selected && r.CanApply).ToList())
+        {
+            if (await ApplyRow(row, null, () => Client.ApplyGroup(row.ToApplyRequest())))
+            {
+                dependencies.Created(row.Row.GroupId);
+            }
+        }
+
+        foreach (var row in creations.Where(r => r.Selected && r.CanApply).ToList())
+        {
+            if (await ApplyRow(row, dependencies.GroupsProblem(row.GroupsToApply), () => Client.ApplyCharacter(row.ToApplyRequest())))
+            {
+                dependencies.Created(row.Row.CharacterId);
+            }
+        }
+
+        await ApplyClaims(dependencies);
+
+        foreach (var row in changes.Where(r => r.Selected && r.CanApply).ToList())
+        {
+            // Поля от групп не зависят: если группа не создана, не меняем только группы.
+            var groupsProblem = dependencies.GroupsProblem(row.GroupsToApply);
+            var request = row.ToApplyRequest();
+            if (groupsProblem is null)
+            {
+                _ = await ApplyRow(row, null, () => Client.ApplyCharacter(request));
+            }
+            else if (request.Fields.Count == 0)
+            {
+                _ = await ApplyRow(row, groupsProblem, () => Client.ApplyCharacter(request));
+            }
+            else if (await ApplyRow(row, null, () => Client.ApplyCharacter(request with { Groups = null })))
+            {
+                row.Error = $"Поля записаны, группы не изменены: {char.ToLowerInvariant(groupsProblem[0])}{groupsProblem[1..]}";
+            }
+        }
+
+        foreach (var row in claimFields.Where(r => r.Selected && r.CanApply).ToList())
+        {
+            _ = await ApplyRow(row, dependencies.ClaimProblem(row.Row.ClaimId), () => Client.ApplyClaimFields(row.ToApplyRequest()));
+        }
+
+        var reloadError = await LoadPlan() is { } error
+            ? $"Не удалось обновить план: {error}. Обновите страницу."
+            : null;
+
+        var summary = failedCount == 0
+            ? $"Применено строк: {succeededCount}."
+            : $"Применено строк: {succeededCount}. Не удалось применить: {failedCount} — см. пометки в таблицах.";
+        if (failedCount == 0 && reloadError is null)
+        {
+            successMessage = summary;
+        }
+        else
+        {
+            errorMessage = reloadError is null ? summary : $"{summary} {reloadError}";
+        }
+
+        applying = false;
+        StateHasChanged();
+    }
+
+    private async Task<bool> ApplyRow(RestoreRowEditorBase row, string? dependencyProblem, Func<Task> apply)
+    {
+        if ((row.BlockingProblem ?? dependencyProblem) is { } problem)
+        {
+            row.Succeeded = false;
+            row.Error = problem;
+            failedCount++;
+            return false;
+        }
+        try
+        {
+            await apply();
+            row.Succeeded = true;
+            succeededCount++;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            row.Succeeded = false;
+            row.Error = string.IsNullOrWhiteSpace(ex.Message) ? "Не удалось применить" : ex.Message;
+            failedCount++;
+            return false;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task ApplyClaims(RestoreDependencies dependencies)
+    {
+        // Имена новых персонажей, на которых строка упала: персонаж мог успеть создаться, а его id
+        // мы не узнали. Следующие строки с тем же именем в этом проходе не трогаем — после обновления
+        // плана он найдётся по имени.
+        var uncertainNewCharacters = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var row in rows.Where(r => r.Selected && r.CanApply).ToList())
+        {
+            if ((row.BlockingProblem ?? dependencies.CharacterProblem(row.Character)) is { } problem)
+            {
+                row.Succeeded = false;
+                row.Error = problem;
+                failedCount++;
+                continue;
+            }
+            var newCharacterName = row.CreatesCharacterNamed(createdCharacters);
+            if (newCharacterName is not null && uncertainNewCharacters.Contains(newCharacterName))
+            {
+                row.Succeeded = false;
+                row.Error = $"Персонаж «{newCharacterName}» мог быть создан строкой выше, которая не применилась. Проверьте строку после обновления плана и примените ещё раз.";
+                failedCount++;
+                continue;
+            }
+            try
+            {
+                var result = await Client.Apply(row.ToApplyRequest(createdCharacters));
+                if (newCharacterName is not null && result.Character is not null)
+                {
+                    createdCharacters[newCharacterName] = result.Character;
+                }
+                if (row.AppliesPlannedStatus)
+                {
+                    dependencies.Created(row.Row.ClaimId);
+                }
+                row.Succeeded = true;
+                succeededCount++;
+            }
+            catch (Exception ex)
+            {
+                if (newCharacterName is not null)
+                {
+                    _ = uncertainNewCharacters.Add(newCharacterName);
+                }
+                row.Succeeded = false;
+                row.Error = string.IsNullOrWhiteSpace(ex.Message) ? "Не удалось применить" : ex.Message;
+                failedCount++;
+            }
+            StateHasChanged();
+        }
+    }
+
+    // ---------- Заявки ----------
+
+    private RenderFragment ClaimsSection() => __builder =>
+    {
+        if (rows.Count == 0)
+        {
+            return;
+        }
+        <h4>Заявки</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-condensed restore-claims">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>№ заявки</th>
+                        <th>Действие</th>
+                        <th>Персонаж</th>
+                        <th>Игрок</th>
+                        <th>Статус</th>
+                        <th>Ответственный</th>
+                        <th>Взнос</th>
+                        <th>Последняя активность</th>
+                        <th>Пометки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in rows)
+                    {
+                        var r = row.Row;
+                        <tr class="@(row.CanApply ? (row.Succeeded == true ? "success" : row.Succeeded == false ? "danger" : "") : "text-muted")" @key="r.ClaimId">
+                            <td>
+                                <input type="checkbox" checked="@(row.Selected && row.CanApply)" disabled="@(!row.CanApply || Busy)"
+                                       title="Применить эту строку"
+                                       @onchange="@(e => row.Selected = e.Value is true)" />
+                            </td>
+                            <td>
+                                @if (r.Action == ClaimRestoreActionView.Create)
+                                {
+                                    @* Заявки ещё нет в базе — ссылка вела бы на несуществующую заявку. *@
+                                    @r.ClaimId.ClaimId
+                                }
+                                else
+                                {
+                                    <a href="@ClaimUriLocator.GetUri(r.ClaimId)">@r.ClaimId.ClaimId</a>
+                                }
+                            </td>
+                            <td>@r.Action.GetDisplayName()</td>
+                            <td>@CharacterCell(row)</td>
+                            <td>@PlayerCell(row)</td>
+                            <td>@StatusCell(row)</td>
+                            <td>@ResponsibleCell(row)</td>
+                            <td>@FeeCell(row)</td>
+                            <td>@Format(r.LastActivity)</td>
+                            <td>
+                                @if (row.Succeeded == true)
+                                {
+                                    <div class="text-success">Применено</div>
+                                }
+                                @if (row.Error is not null)
+                                {
+                                    <div class="text-danger">@row.Error</div>
+                                }
+                                @if (row.CanApply && row.BlockingProblem is { } problem)
+                                {
+                                    <div class="text-danger">@problem</div>
+                                }
+                                @foreach (var warning in r.Warnings)
+                                {
+                                    <div class="text-warning">@ClaimWarningText(r, warning)</div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+
+    private static string ClaimWarningText(ClaimRestoreRowViewModel row, ClaimRestoreWarningView warning)
+        => warning == ClaimRestoreWarningView.FeePaidMismatch && row.FeePaidMismatch is { } paid
+            ? $"Уплачено в выгрузке ({paid.Exported}) не совпадает с оплатами в базе ({paid.InDatabase})"
+            : warning.GetDisplayName();
+
+    private static string Format(DateTimeOffset value) => value.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+
+    private static string SourceText<T>(RestoreSourcedValueView<T> value) => $"{value.Source.GetDisplayName()}, {Format(value.At)}";
+
+    /// <summary>Значения спорного атрибута по источникам: выбранное первым.</summary>
+    private static string SourcesText<T>(RestoreAttributeView<T> attribute, Func<T, string> name)
+        => string.Join("; ", new[] { attribute.Chosen }.Concat(attribute.Alternatives).Select(v => $"{name(v.Value)} ({SourceText(v)})"));
+
+    private string MasterName(UserIdentification? userId)
+        => model?.Masters.FirstOrDefault(m => m.UserId == userId)?.Name ?? userId?.Value.ToString() ?? "—";
+
+    /// <summary>Персонаж, которого создаёт план (раздел «Новые персонажи»); null — не такой.</summary>
+    private CharacterRestoreRowViewModel? PlannedCreation(CharacterIdentification? characterId)
+        => characterId is null ? null : model?.CharacterCreations.FirstOrDefault(c => c.CharacterId == characterId);
+
+    private static string StatusName(ClaimStatusView? status) => status?.GetDisplayName() ?? "неизвестен";
+
+    private RenderFragment CharacterLink(ClaimRestoreCharacterOption character)
+        => @<a href="@CharacterUriLocator.GetDetailsUri(character.CharacterId)">@character.Name</a>;
+
+    private RenderFragment CharacterCell(ClaimRestoreRowEditor row) => __builder =>
+    {
+        var r = row.Row;
+        if (r.Action == ClaimRestoreActionView.Create && PlannedCreation(row.Character) is { } creation)
+        {
+            @* Персонажа ещё нет в базе — выбор персонажа его не знает и сбросил бы на «новый персонаж». *@
+            <div class="planned-character">будет создан: @(creation.Name ?? r.CharacterName) (№ @creation.CharacterId.CharacterId)</div>
+            <div class="text-muted small">строкой раздела «Новые персонажи»; заявка подаётся на него</div>
+        }
+        else if (r.Action == ClaimRestoreActionView.Create)
+        {
+            @* Проект заблокирован, так что списки *ForMaster пусты; план ищет только среди активных. *@
+            <SingleCharacterSelector ProjectId="@ProjectId"
+                                     ListType="CharacterListType.Active"
+                                     SelectedCharacterId="@row.Character"
+                                     SelectedCharacterIdChanged="@(id => OnCreateCharacterChanged(row, id))"
+                                     NewCharacterOptionText="Новый персонаж" />
+            @if (row.NewCharacter)
+            {
+                <input type="text" class="form-control input-sm" value="@row.NewCharacterName" disabled="@Busy"
+                       placeholder="Имя нового персонажа"
+                       @onchange="@(e => row.NewCharacterName = e.Value as string ?? "")" />
+            }
+            @if (r.CharacterCandidates.Count > 0)
+            {
+                <div class="text-muted small">
+                    подходят по имени:
+                    @for (var i = 0; i < r.CharacterCandidates.Count; i++)
+                    {
+                        @(i > 0 ? ", " : "")@CharacterLink(r.CharacterCandidates[i])
+                    }
+                </div>
+            }
+            @if (r.Character is { } planned && row.Character is null)
+            {
+                <div class="text-muted small">план предлагал: @planned.Name</div>
+            }
+        }
+        else
+        {
+            if (r.CurrentCharacter is { } current)
+            {
+                <text>@CharacterLink(current)</text>
+            }
+            else
+            {
+                <text>@r.CharacterName</text>
+            }
+            if (r.Action == ClaimRestoreActionView.Change && row.CharacterOptions.Count > 0)
+            {
+                <div>
+                    переместить на:
+                    <select class="form-control input-sm" value="@(row.Character?.CharacterId.ToString() ?? "")" disabled="@Busy"
+                            @onchange="@(e => OnMoveTargetChanged(row, e.Value as string))">
+                        <option value="">не перемещать</option>
+                        @foreach (var option in row.CharacterOptions)
+                        {
+                            <option value="@option.CharacterId.CharacterId">@option.Name</option>
+                        }
+                    </select>
+                </div>
+            }
+            else if (r.CharacterName is not null && r.CharacterName.Trim() != r.CurrentCharacter?.Name.Trim())
+            {
+                <div class="text-muted">в уведомлениях: @r.CharacterName</div>
+            }
+        }
+        @if (r.Attributes?.CharacterName is { HasAlternatives: true } names)
+        {
+            <div class="text-muted small">имя по источникам: @SourcesText(names, n => n)</div>
+        }
+    };
+
+    private static void OnCreateCharacterChanged(ClaimRestoreRowEditor row, CharacterIdentification? id)
+    {
+        // null — пункт «новый персонаж».
+        row.Character = id;
+    }
+
+    /// <summary>Куда переместить заявку при «изменить»; пусто — не перемещать.</summary>
+    private void OnMoveTargetChanged(ClaimRestoreRowEditor row, string? value)
+        => row.Character = int.TryParse(value, out var id) ? new CharacterIdentification(ProjectId, id) : null;
+
+    private RenderFragment PlayerCell(ClaimRestoreRowEditor row) => __builder =>
+    {
+        var r = row.Row;
+        if (r.Action != ClaimRestoreActionView.Create)
+        {
+            if (r.Player is { } player)
+            {
+                <UserLink Model="@player" />
+            }
+            return;
+        }
+
+        var candidates = new[] { r.Player }.OfType<UserLinkViewModel>().Concat(r.PlayerCandidates)
+            .Where(p => p.UserId is not null).DistinctBy(p => p.UserId).ToList();
+        if (candidates.Count > 0)
+        {
+            var selected = row.ManualPlayer ? "" : row.Player?.Value.ToString() ?? "";
+            <select class="form-control input-sm" value="@selected" disabled="@Busy"
+                    @onchange="@(e => OnPlayerChanged(row, e.Value as string))">
+                @if (!row.ManualPlayer && row.Player is null)
+                {
+                    <option value="none">— выберите —</option>
+                }
+                @foreach (var candidate in candidates)
+                {
+                    <option value="@candidate.UserId!.Value">@candidate.DisplayName</option>
+                }
+                <option value="">Указать вручную</option>
+            </select>
+        }
+        if (row.ManualPlayer)
+        {
+            <JoinUserLinkEditor Multiple="false" Values="@row.PlayerLinks" ValuesChanged="@(links => row.PlayerLinks = links)" />
+        }
+    };
+
+    private void OnPlayerChanged(ClaimRestoreRowEditor row, string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            row.ManualPlayer = true;
+            row.Player = null;
+        }
+        else
+        {
+            row.ManualPlayer = false;
+            row.Player = int.TryParse(value, out var id) ? new UserIdentification(id) : null;
+        }
+    }
+
+    private RenderFragment StatusCell(ClaimRestoreRowEditor row) => __builder =>
+    {
+        var r = row.Row;
+        var options = row.StatusOptions;
+        if (row.CanApply && (options.Count > 1 || (r.Action == ClaimRestoreActionView.Change && options.Count > 0)))
+        {
+            // Источники расходятся — мастер может выбрать не самый свежий статус.
+            <select class="form-control input-sm status-select" value="@(row.Status?.ToString() ?? "")" disabled="@Busy"
+                    @onchange="@(e => row.Status = Enum.TryParse<ClaimStatusView>(e.Value as string, out var status) ? status : null)">
+                @if (r.Action == ClaimRestoreActionView.Change)
+                {
+                    <option value="">не менять (@StatusName(r.CurrentStatus))</option>
+                }
+                @foreach (var option in options.DistinctBy(o => o.Value))
+                {
+                    <option value="@option.Value">@StatusName(option.Value) — @SourceText(option)</option>
+                }
+            </select>
+            return;
+        }
+        switch (r.Action)
+        {
+            case ClaimRestoreActionView.Create:
+                <text>@StatusName(r.Status)</text>
+                break;
+            case ClaimRestoreActionView.Change when r.Status is not null:
+                <span class="text-muted">@StatusName(r.CurrentStatus)</span>
+                <text> → @StatusName(r.Status)</text>
+                break;
+            default:
+                <span class="text-muted">@StatusName(r.CurrentStatus)</span>
+                break;
+        }
+        if (r.Status is not null && r.StatusChangedAt is { } changedAt)
+        {
+            <div class="text-muted small">с @Format(changedAt)</div>
+        }
+    };
+
+    private RenderFragment ResponsibleCell(ClaimRestoreRowEditor row) => __builder =>
+    {
+        var r = row.Row;
+        if (!row.CanApply || model is null)
+        {
+            <text>@MasterName(r.CurrentResponsibleMaster)</text>
+            return;
+        }
+        var selected = row.ResponsibleMaster?.Value.ToString() ?? "";
+        <select class="form-control input-sm" value="@selected" disabled="@Busy"
+                @onchange="@(e => row.ResponsibleMaster = int.TryParse(e.Value as string, out var id) ? new UserIdentification(id) : null)">
+            @if (r.Action == ClaimRestoreActionView.Change)
+            {
+                <option value="">не менять (@MasterName(r.CurrentResponsibleMaster))</option>
+            }
+            else if (row.ResponsibleMaster is null)
+            {
+                <option value="">— выберите —</option>
+            }
+            @foreach (var master in model.Masters)
+            {
+                <option value="@master.UserId.Value">@master.Name</option>
+            }
+        </select>
+        @if (r.Attributes?.ResponsibleMaster is { HasAlternatives: true } responsible)
+        {
+            <div class="text-muted small">по источникам: @SourcesText(responsible, MasterName)</div>
+        }
+    };
+
+    private RenderFragment FeeCell(ClaimRestoreRowEditor row) => __builder =>
+    {
+        var r = row.Row;
+        if (r.Action == ClaimRestoreActionView.Change && r.ManualFee is not null)
+        {
+            <label style="font-weight: normal">
+                <input type="checkbox" checked="@row.ApplyFee" disabled="@(!row.CanApply || Busy)" title="Поставить этот взнос"
+                       @onchange="@(e => row.ApplyFee = e.Value is true)" />
+                <span class="text-muted">@(r.CurrentFee?.ToString() ?? "по умолчанию")</span>
+                <text> → @r.ManualFee</text>
+            </label>
+        }
+        else if (r.Action == ClaimRestoreActionView.Create)
+        {
+            <text>@(r.ManualFee?.ToString() ?? "по умолчанию")</text>
+        }
+        else
+        {
+            <span class="text-muted">@(r.CurrentFee?.ToString() ?? "по умолчанию")</span>
+        }
+    };
+}

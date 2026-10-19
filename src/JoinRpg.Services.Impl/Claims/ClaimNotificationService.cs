@@ -32,7 +32,7 @@ internal class ClaimNotificationService(
             Claims: [claim.ClaimId],
             Characters: [claim.CharacterId, model.AnotherCharacterId],
             Finance: [model.PaymentOwner],
-            RespondingTo: [model.ParentCommentAuthor]
+            RespondingTo: [GetVisibleParentCommentAuthor(model, projectInfo)]
             );
 
 
@@ -73,6 +73,23 @@ internal class ClaimNotificationService(
             ));
     }
 
+    /// <summary>
+    /// Автор комментария, на который отвечают, — если ответ ему виден. Скрытый от игрока ответ
+    /// мастера на комментарий игрока не должен уходить игроку уведомлением.
+    /// </summary>
+    private static UserInfoHeader? GetVisibleParentCommentAuthor(ClaimSimpleChangedNotification model, ProjectInfo projectInfo)
+    {
+        if (model.ParentCommentAuthor is not { } author)
+        {
+            return null;
+        }
+        if (model.ClaimOperationType == ClaimOperationType.MasterSecretChange && !projectInfo.HasMasterAccess(author.UserId))
+        {
+            return null;
+        }
+        return author;
+    }
+
     internal static Func<SubscriptionOptions, bool> GetSubscribePredicate(CommentExtraAction? commentExtraAction)
     {
         return commentExtraAction switch
@@ -92,6 +109,11 @@ internal class ClaimNotificationService(
             or CommentExtraAction.NewClaim or CommentExtraAction.InvitationAcceptedByPlayer
                 => s => s.ClaimStatusChange,
             null => s => s.Comments,
+            // Восстановление из уведомлений и из выгрузки пишет в историю без уведомления (DRP-план,
+            // принцип 3) и сюда не доходит; подписка — как у прочих изменений заявки, чтобы таблица
+            // оставалась полной.
+            CommentExtraAction.RestoredFromNotifications or CommentExtraAction.RestoredFromExport
+                => s => s.ClaimStatusChange,
             _ => throw new ArgumentOutOfRangeException(nameof(commentExtraAction), commentExtraAction, "Неожиданное значение")
         };
     }

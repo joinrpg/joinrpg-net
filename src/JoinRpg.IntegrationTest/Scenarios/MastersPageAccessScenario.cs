@@ -9,17 +9,19 @@ using Microsoft.AspNetCore.Mvc.Testing;
 namespace JoinRpg.IntegrationTest.Scenarios;
 
 /// <summary>
-/// Страница мастеров открыта всем (ADR019): немастер видит список мастеров, но не права и не управление.
+/// Страниц мастеров две (ADR019, §7): публичная {projectId}/masters — одна для всех, мастерская
+/// {projectId}/masters/manage (права, заявки, управление) — только мастерам проекта.
 /// </summary>
 public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
     private const string MasterOnlyMarker = "Права доступа";
+    private const string ManageLinkText = "Редактировать мастеров";
 
     [Fact]
     public async Task Anonymous_SeesMastersList_WithoutManagement()
     {
         using var scope = factory.Services.CreateScope();
-        var (ownerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
         var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
 
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
@@ -28,13 +30,20 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         html.ShouldContain("class=\"join-user\"");
         html.ShouldNotContain(MasterOnlyMarker);
+        // Контакты — по правилам профиля: аноним email мастера не видит.
+        html.ShouldNotContain(ownerEmail);
+        // Аватарку компонент не грузит сам — её заполняет контроллер (UserProfileAvatars.Fill, #5600).
+        html.ShouldContain("class=\"profile-avatar\"");
+
+        // Мастерская страница анониму — на вход.
+        await ManagePageShouldRedirectTo(client, projectId, "login");
     }
 
     [Fact]
     public async Task AuthenticatedNonMaster_SeesMastersList_WithoutManagement()
     {
         using var scope = factory.Services.CreateScope();
-        var (ownerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
         var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
         var (_, playerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
 
@@ -47,10 +56,31 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         html.ShouldContain("class=\"join-user\"");
         html.ShouldNotContain(MasterOnlyMarker);
+        html.ShouldNotContain(ownerEmail);
+        html.ShouldNotContain(ManageLinkText);
+
+        // Мастерская страница немастеру закрыта — отказ, а не падение.
+        await ManagePageShouldRedirectTo(client, projectId, "AccessDenied");
     }
 
     [Fact]
-    public async Task Master_SeesManagement()
+    public async Task Master_PublicPageShowsOnlyPublicMasters_LikeForPlayers()
+    {
+        // ADR019, §7: на публичной странице мастер видит то же, что игроки; всех мастеров — на мастерской.
+        var (projectId, _, ownerEmail, _) = await CreateProjectWithHiddenMaster();
+
+        var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
+            factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
+            ownerEmail,
+            followsRedirects: false);
+        var html = await GetPage(client, projectId, "masters");
+
+        // Один пользователь в списке — публичный владелец; скрытого мастера нет.
+        CountUserLinks(html).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Master_PublicPageIsSameAsForPlayers_WithLinkToManagement()
     {
         using var scope = factory.Services.CreateScope();
         var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
@@ -63,16 +93,36 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         var html = await GetMastersPage(client, projectId);
 
-        html.ShouldContain(MasterOnlyMarker);
+        html.ShouldNotContain(MasterOnlyMarker);
+        html.ShouldContain(ManageLinkText);
+        html.ShouldContain($"/{projectId.Value}/masters/manage");
     }
 
     [Fact]
-    public async Task AdminNotMaster_SeesManagement()
+    public async Task Master_SeesManagement_WithLinkToPublicPage()
     {
-        // Регрессия: админ сайта, не будучи мастером проекта, проходил авторизацию и падал на
-        // Masters.Single(текущий пользователь) в MastersListViewModel.
         using var scope = factory.Services.CreateScope();
-        var (ownerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
+
+        var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
+            factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
+            ownerEmail,
+            followsRedirects: false);
+
+        var html = WebUtility.HtmlDecode(await GetPage(client, projectId, "masters/manage"));
+
+        html.ShouldContain(MasterOnlyMarker);
+        html.ShouldContain("Перейти на публичный список мастеров");
+    }
+
+    [Fact]
+    public async Task AdminNotMaster_SeesPublicPageWithContacts()
+    {
+        // Админ сайта, не будучи мастером проекта, видит публичную страницу, а не мастерскую таблицу.
+        // Контакты мастеров — как в их профилях: админу видны.
+        using var scope = factory.Services.CreateScope();
+        var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
         var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
         var (_, adminEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
 
@@ -88,12 +138,16 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         var html = await GetMastersPage(client, projectId);
 
-        html.ShouldContain(MasterOnlyMarker);
+        html.ShouldNotContain(MasterOnlyMarker);
+        html.ShouldContain(ownerEmail);
+        html.ShouldNotContain(ManageLinkText);
+
+        // Мастерская страница — только мастерам проекта, админ сайта сам по себе её не открывает.
+        await ManagePageShouldRedirectTo(client, projectId, "AccessDenied");
     }
 
     [Theory]
     [InlineData("masters")]
-    [InlineData("home")]
     [InlineData("Account/AccessDenied?projectId={0}")] // панель «нет доступа»: к кому обратиться за правами
     public async Task Anonymous_DoesNotSeeNonPublicMaster(string page)
     {
@@ -105,21 +159,6 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
 
         // Один пользователь в списке — публичный владелец; скрытого мастера нет.
         CountUserLinks(html).ShouldBe(1);
-    }
-
-    [Fact]
-    public async Task Owner_SeesNonPublicMaster_OnProjectHome()
-    {
-        // Позитивный контроль к тесту выше: фильтр завязан на смотрящего, а не прячет всех непубличных подряд.
-        var (projectId, _, ownerEmail, _) = await CreateProjectWithHiddenMaster();
-
-        var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
-            factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
-            ownerEmail,
-            followsRedirects: false);
-        var html = await GetPage(client, projectId, "{0}/home");
-
-        CountUserLinks(html).ShouldBe(2);
     }
 
     [Fact]
@@ -162,7 +201,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
             factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
             ownerEmail,
             followsRedirects: false);
-        var html = WebUtility.HtmlDecode(await GetPage(client, projectId, "masters"));
+        var html = WebUtility.HtmlDecode(await GetPage(client, projectId, "masters/manage"));
 
         html.ShouldContain("Главный мастер"); // роль создателя игры
         html.ShouldContain("скрыт от игроков");
@@ -193,6 +232,13 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
         var response = await client.GetAsync(page);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         return await response.Content.ReadAsStringAsync();
+    }
+
+    private static async Task ManagePageShouldRedirectTo(HttpClient client, ProjectIdentification projectId, string target)
+    {
+        var response = await client.GetAsync($"{projectId.Value}/masters/manage");
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        response.Headers.Location.ShouldNotBeNull().ToString().ShouldContain(target, Case.Insensitive);
     }
 
     private static int CountUserLinks(string html) => html.Split("class=\"join-user\"").Length - 1;

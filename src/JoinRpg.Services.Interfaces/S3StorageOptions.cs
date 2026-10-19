@@ -8,6 +8,12 @@ public class S3StorageOptions
 
     public string? BucketName { get; set; }
 
+    /// <summary>
+    /// Публичный адрес объектов бакета (например, https://avatars.joinrpg.ru).
+    /// Если не задан, адрес строится как {Endpoint}/{BucketName}.
+    /// </summary>
+    public string? PublicBaseUrl { get; set; }
+
     public bool Enabled { get; set; } = true;
 
     public bool Configured => !string.IsNullOrEmpty(Endpoint) && !string.IsNullOrEmpty(AccessKey) && !string.IsNullOrEmpty(SecretKey)

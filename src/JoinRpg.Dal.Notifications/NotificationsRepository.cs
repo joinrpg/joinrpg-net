@@ -2,6 +2,7 @@ using System.Diagnostics.Metrics;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.CommonEfCore;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Claims;
 using JoinRpg.Interfaces;
 using LinqKit;
 using Microsoft.EntityFrameworkCore.Query;
@@ -89,28 +90,45 @@ internal class NotificationsRepository(
 
     private async Task<TargetedNotificationMessageForRecipient?> InternalSelectNextNotificationAsync(SelectMessageData data, CancellationToken cancellationToken)
     {
-        var candidate = await dbContext.NotificationMessageChannels
-            .FromSqlRaw(lockRequestSql, data.Channel, NotificationMessageStatus.Queued)
-            .Include(static e => e.NotificationMessage)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (candidate is null)
+        while (true)
         {
-            // No messages left
-            return null;
+            var candidate = await dbContext.NotificationMessageChannels
+                .FromSqlRaw(lockRequestSql, data.Channel, NotificationMessageStatus.Queued)
+                .Include(static e => e.NotificationMessage)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (candidate is null)
+            {
+                // No messages left
+                return null;
+            }
+
+            var dto = TryCreateTargetedNotificationMessageDto(candidate);
+
+            if (dto is null)
+            {
+                // Битую строку не отправить никогда. Если просто бросить исключение, транзакция откатится,
+                // строка останется в очереди и будет выбираться снова, останавливая весь канал (#5466).
+                await SetStatus(
+                    candidate.NotificationMessageId,
+                    candidate.Channel,
+                    from: candidate.NotificationMessageStatus,
+                    to: NotificationMessageStatus.Failed);
+                continue;
+            }
+
+            await SetStatus(
+                candidate.NotificationMessageId,
+                candidate.Channel,
+                from: candidate.NotificationMessageStatus,
+                to: NotificationMessageStatus.Sending,
+                attempts: candidate.Attempts + 1);
+
+            successRaceCounter.Add(1);
+
+            return dto;
         }
-
-        await SetStatus(
-            candidate.NotificationMessageId,
-            candidate.Channel,
-            from: candidate.NotificationMessageStatus,
-            to: NotificationMessageStatus.Sending,
-            attempts: candidate.Attempts + 1);
-
-        successRaceCounter.Add(1);
-
-        return CreateTargetedNotificationMessageDto(candidate);
     }
 
     Task<TargetedNotificationMessageForRecipient?> INotificationRepository.SelectNextNotificationForSending(NotificationChannel channel)
@@ -121,7 +139,7 @@ internal class NotificationsRepository(
             (_, _) => Task.FromResult(false));
     }
 
-    private TargetedNotificationMessageForRecipient CreateTargetedNotificationMessageDto(NotificationMessageChannel candidate)
+    private TargetedNotificationMessageForRecipient? TryCreateTargetedNotificationMessageDto(NotificationMessageChannel candidate)
     {
         try
         {
@@ -133,8 +151,8 @@ internal class NotificationsRepository(
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to parse NotificationMessageChannel record from DB {notificationMessageChannelId}", candidate.NotificationMessageChannelId);
-            throw;
+            logger.LogError(e, "Failed to parse NotificationMessageChannel record from DB {notificationMessageChannelId}, marking it as failed", candidate.NotificationMessageChannelId);
+            return null;
         }
     }
 
@@ -199,7 +217,7 @@ internal class NotificationsRepository(
     public async Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination)
     {
         var query =
-            from message in dbContext.Notifications.AsExpandableEFCore().Include(x => x.NotificationMessageChannels)
+            from message in dbContext.Notifications.AsNoTracking().AsExpandableEFCore()
             where message.RecipientUserId == userId
             where message.NotificationMessageChannels.Any(c => c.Channel == notificationChannel)
             select message;
@@ -208,8 +226,7 @@ internal class NotificationsRepository(
 
         var result = await query.ToListAsync();
 
-        return [.. result.Select(x => new NotificationHistoryDto(CreateNotificationMessageDto(x), [.. x.NotificationMessageChannels.Select(c => c.Channel)]))];
-
+        return [.. result.Select(x => new NotificationHistoryDto(new NotificationId(x.NotificationMessageId), CreateNotificationMessageDto(x)))];
     }
 
     public async Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
@@ -221,5 +238,117 @@ internal class NotificationsRepository(
             .ToListAsync();
 
         return counts.ToDictionary(x => x.Channel, x => x.Count);
+    }
+
+    public async Task<IReadOnlyCollection<NotificationLogItemDto>> GetNotificationLog(UserIdentification? recipient, NotificationChannel? channel, int limit)
+    {
+        IQueryable<NotificationMessage> query;
+        if (channel is not null)
+        {
+            // От строк канала по индексу (Channel, NotificationMessageChannelId): строки каналов вставляются вместе
+            // с сообщением, так что их id растут в том же порядке. Через EXISTS от сообщений редкий канал (Telegram)
+            // заставил бы просмотреть почти всю таблицу.
+            var channelRows = dbContext.NotificationMessageChannels.Where(c => c.Channel == channel.Value);
+            if (recipient is not null)
+            {
+                channelRows = channelRows.Where(c => c.NotificationMessage.RecipientUserId == recipient.Value);
+            }
+            var ids = channelRows
+                .OrderByDescending(c => c.NotificationMessageChannelId)
+                .Select(c => c.NotificationMessageId)
+                .Take(limit);
+            query = dbContext.Notifications.Where(m => ids.Contains(m.NotificationMessageId));
+        }
+        else
+        {
+            query = dbContext.Notifications;
+            if (recipient is not null)
+            {
+                query = query.Where(m => m.RecipientUserId == recipient.Value);
+            }
+        }
+
+        var result = await query
+            .AsNoTracking()
+            .OrderByDescending(m => m.NotificationMessageId)
+            .Take(limit)
+            .Include(m => m.NotificationMessageChannels.Where(c => channel == null || c.Channel == channel.Value))
+            .ToListAsync();
+
+        return [.. result.Select(m => new NotificationLogItemDto(
+            new NotificationId(m.NotificationMessageId),
+            CreateNotificationMessageDto(m),
+            [.. m.NotificationMessageChannels
+                .OrderBy(c => c.Channel)
+                .Select(c => new NotificationDeliveryDto(c.Channel, c.ChannelSpecificValue, c.NotificationMessageStatus, c.Attempts, c.SendAfter))]))];
+    }
+
+    public async Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForProject(ProjectIdentification projectId, DateTimeOffset createdBefore)
+    {
+        var (claimPrefix, commentPrefix, financePrefix) = GetClaimReferencePrefixes(projectId);
+        // Npgsql пишет в timestamptz только DateTimeOffset со смещением 0.
+        var cutoff = createdBefore.ToUniversalTime();
+
+        // StartsWith → LIKE 'ClaimId(12-%': идёт по индексу на EntityReference (text_pattern_ops).
+        var result = await dbContext.Notifications
+            .AsNoTracking()
+            .Where(m => m.EntityReference!.StartsWith(claimPrefix)
+                || m.EntityReference!.StartsWith(commentPrefix)
+                || m.EntityReference!.StartsWith(financePrefix))
+            .Where(m => m.CreatedAt < cutoff)
+            .OrderBy(m => m.CreatedAt)
+            .ThenBy(m => m.NotificationMessageId)
+            .ToListAsync();
+
+        return [.. result.Select(CreateNotificationMessageDto)];
+    }
+
+    public async Task<IReadOnlyCollection<NotificationMessageForRecipient>> GetClaimNotificationsForClaim(ClaimIdentification claimId, DateTimeOffset createdBefore)
+    {
+        var (claimReference, commentPrefix, financePrefix) = GetSingleClaimReferences(claimId);
+        var cutoff = createdBefore.ToUniversalTime();
+
+        // Сама заявка — точным совпадением (иначе «ClaimId(1-5» поймала бы заявку 50), остальное — префиксом
+        // с завершающим «-» по тому же индексу.
+        var result = await dbContext.Notifications
+            .AsNoTracking()
+            .Where(m => m.EntityReference == claimReference
+                || m.EntityReference!.StartsWith(commentPrefix)
+                || m.EntityReference!.StartsWith(financePrefix))
+            .Where(m => m.CreatedAt < cutoff)
+            .OrderBy(m => m.CreatedAt)
+            .ThenBy(m => m.NotificationMessageId)
+            .ToListAsync();
+
+        return [.. result.Select(CreateNotificationMessageDto)];
+    }
+
+    /// <summary>
+    /// Ссылки одной заявки: «ClaimId(12-345)» целиком, префиксы «ClaimCommentId(12-345-» и «FinanceOperationId(12-345-».
+    /// Берутся из ToString() самих идентификаторов, чтобы не разойтись с форматом.
+    /// </summary>
+    internal static (string Claim, string CommentPrefix, string FinancePrefix) GetSingleClaimReferences(ClaimIdentification claimId)
+    {
+        return (
+            claimId.ToString(),
+            UpToLastDash(new ClaimCommentIdentification(claimId, 0).ToString()),
+            UpToLastDash(new FinanceOperationIdentification(claimId, 0).ToString()));
+
+        static string UpToLastDash(string reference) => reference[..(reference.LastIndexOf('-') + 1)];
+    }
+
+    /// <summary>
+    /// Префиксы ссылок на заявки проекта: «ClaimId(12-», «ClaimCommentId(12-», «FinanceOperationId(12-».
+    /// Берутся из ToString() самих идентификаторов, чтобы не разойтись с форматом.
+    /// </summary>
+    internal static (string Claim, string Comment, string Finance) GetClaimReferencePrefixes(ProjectIdentification projectId)
+    {
+        var claim = new ClaimIdentification(projectId, 0);
+        return (
+            UpToFirstDash(claim.ToString()),
+            UpToFirstDash(new ClaimCommentIdentification(claim, 0).ToString()),
+            UpToFirstDash(new FinanceOperationIdentification(claim, 0).ToString()));
+
+        static string UpToFirstDash(string reference) => reference[..(reference.IndexOf('-') + 1)];
     }
 }

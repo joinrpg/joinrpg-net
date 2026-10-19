@@ -133,7 +133,17 @@ public record class ProjectFieldInfo(
     /// Проверяет, что список идентификаторов вариантов для присвоения корректен.
     /// Неактивные варианты можно сохранить, если они уже были установлены, но добавить можно только активный вариант.
     /// </summary>
-    public void ValidateVariantList(IReadOnlyList<int> newVariantIds, IReadOnlyList<int> existingVariantIds)
+    /// <param name="newVariantIds">Варианты, которые присваиваются.</param>
+    /// <param name="existingVariantIds">Варианты, установленные сейчас.</param>
+    /// <param name="allowInactiveVariants">
+    /// Разрешить и неактивные варианты, которых нет в текущем значении: восстановление потерянного значения
+    /// (DRP, #5529) возвращает то, что было выбрано, даже если вариант с тех пор выключили. Вариант всё равно
+    /// обязан принадлежать полю.
+    /// </param>
+    public void ValidateVariantList(
+        IReadOnlyList<int> newVariantIds,
+        IReadOnlyList<int> existingVariantIds,
+        bool allowInactiveVariants = false)
     {
         var activeIds = Variants.Where(v => v.IsActive).Select(v => v.Id.ProjectFieldVariantId).ToHashSet();
         var allIds = Variants.Select(v => v.Id.ProjectFieldVariantId).ToHashSet();
@@ -145,7 +155,7 @@ public record class ProjectFieldInfo(
                 continue;
             }
 
-            if (!allIds.Contains(id) || !existingVariantIds.Contains(id))
+            if (!allIds.Contains(id) || (!allowInactiveVariants && !existingVariantIds.Contains(id)))
             {
                 throw new FieldValueInvalidException(Id, id);
             }

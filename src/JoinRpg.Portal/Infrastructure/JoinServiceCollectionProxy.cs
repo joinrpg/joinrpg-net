@@ -1,6 +1,7 @@
 using System.Collections;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.DailyJobs;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace JoinRpg.Portal.Infrastructure;
 
@@ -8,11 +9,13 @@ internal class JoinServiceCollectionProxy(IServiceCollection inner) : IJoinServi
 {
     public IJoinServiceCollection AddDailyJob<TJob>() where TJob : class, IDailyJob
     {
+        this.TryAddSingleton(TimeProvider.System);
         _ = this
             .AddScoped<TJob>()
             .AddScoped<IDailyJob, TJob>()
             .AddScoped<JobRunner<TJob>>()
             .AddScoped<IJobRunner, JobRunner<TJob>>()
+            .AddSingleton(new RegisteredDailyJob(typeof(TJob)))
             .AddHostedService<MidnightJobBackgroundService<TJob>>();
         return this;
     }

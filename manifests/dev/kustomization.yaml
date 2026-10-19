@@ -1,7 +1,8 @@
 resources:
   - ../base
+  - service-domain-ingress.yaml # DRP #5459: служебные домены на время восстановления
 
-namespace: dev
+namespace: joinrpg-dev
 
 commonLabels:
   managed-by-kustomize-dev: "true" #Careful. Contains name of the environment, used for kubectl apply --prune
@@ -13,36 +14,24 @@ configMapGenerator:
 
 patchesJson6902:
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-portal
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: dev.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: dev.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: dev-joinrpg-ru-tls
 
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-idportal
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: devid.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: devid.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: devid-joinrpg-ru-tls
 
   - target:
       group: apps
@@ -55,13 +44,23 @@ patchesJson6902:
         value: 500m
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/cpu
-        value: 300m
+        value: 150m
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/memory
         value: 768Mi
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/memory
         value: 256Mi
+
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: joinrpg-idportal
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
 
   - target:
       group: policy
@@ -84,20 +83,14 @@ patchesJson6902:
         value: 0
 
   - target:
-      kind: Ingress
-      group: networking.k8s.io
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
       version: v1
       name: joinrpg-componentbook
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: dev-components.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/hosts/0
-        value: dev-components.joinrpg.ru
-      - op: replace
-        path: /spec/tls/0/secretName
-        value: dev-components-joinrpg-ru-tls
 
   - target:
       group: policy

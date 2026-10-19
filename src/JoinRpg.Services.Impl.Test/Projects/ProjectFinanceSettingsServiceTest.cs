@@ -224,6 +224,137 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
                 Name = null,
             }));
 
+    private void BlockProject()
+    {
+        mock.Project.IsBlocked = true;
+        mock.ReInitProjectInfo();
+    }
+
+    // ADR023: типы оплаты и сетку взносов после мая мастер заводит заново до снятия блокировки.
+    [Fact]
+    public async Task PaymentTypeSettings_InBlockedProject_Succeed()
+    {
+        var existing = AddPaymentType(PaymentTypeKind.Custom);
+        BlockProject();
+
+        await CreateService().CreatePaymentType(new CreatePaymentTypeRequest
+        {
+            ProjectId = ProjectId,
+            TargetMasterId = new UserIdentification(mock.Master.UserId),
+            TypeKind = PaymentTypeKind.Custom,
+            Name = "Перевод на карту",
+        });
+        await CreateService().EditCustomPaymentType(PaymentTypeId(existing), "Наличные казначею", isDefault: true);
+        await CreateService().TogglePaymentActiveness(PaymentTypeId(existing));
+
+        FinanceSettings.PaymentTypes.Select(pt => pt.Name).ShouldBe(["Перевод на карту", "Наличные казначею"], ignoreOrder: true);
+        existing.IsActive.ShouldBeFalse();
+        unitOfWork.SaveChangesCallCount.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task FeeAndGlobalSettings_InBlockedProject_Succeed()
+    {
+        var removed = AddFeeSetting(DateTime.UtcNow.Date.AddDays(20));
+        BlockProject();
+
+        await CreateService().SaveGlobalSettings(GlobalSettings(preferentialFeeEnabled: true));
+        await CreateService().CreateFeeSetting(new CreateFeeSettingRequest
+        {
+            ProjectId = ProjectId,
+            Fee = 500,
+            PreferentialFee = 300,
+            StartDate = DateTime.UtcNow.Date.AddDays(10),
+        });
+        await CreateService().DeleteFeeSetting(ProjectId, removed.ProjectFeeSettingId);
+
+        FinanceSettings.PreferentialFeeEnabled.ShouldBeTrue();
+        var fee = FinanceSettings.FeeSchedule.ShouldHaveSingleItem();
+        fee.Fee.ShouldBe(500);
+        fee.StartDate.ShouldBe(mock.Project.CreatedDate);
+        unitOfWork.SaveChangesCallCount.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task CantCreatePaymentTypeInArchivedProject()
+    {
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => CreateService().CreatePaymentType(new CreatePaymentTypeRequest
+            {
+                ProjectId = ProjectId,
+                TargetMasterId = new UserIdentification(mock.Master.UserId),
+                TypeKind = PaymentTypeKind.Cash,
+                Name = null,
+            }));
+
+        mock.Project.PaymentTypes.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateRestoredCashPaymentType_InBlockedProject_CreatesCashForOwner()
+    {
+        BlockProject();
+
+        var result = await CreateService().CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Master.UserId));
+
+        var paymentType = FinanceSettings.PaymentTypes.ShouldHaveSingleItem();
+        paymentType.TypeKind.ShouldBe(PaymentTypeKind.Cash);
+        paymentType.Enabled.ShouldBeTrue();
+        paymentType.User.UserId.ShouldBe(new UserIdentification(mock.Master.UserId));
+        result.ShouldBe(paymentType.PaymentTypeId);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateRestoredCashPaymentType_ExistingCash_IsReturnedEvenIfDisabled(bool isActive)
+    {
+        var existing = AddPaymentType(PaymentTypeKind.Cash, isActive);
+        BlockProject();
+
+        var result = await CreateService().CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Master.UserId));
+
+        result.ShouldBe(PaymentTypeId(existing));
+        mock.Project.PaymentTypes.ShouldHaveSingleItem().IsActive.ShouldBe(isActive);
+    }
+
+    [Fact]
+    public async Task CreateRestoredCashPaymentType_ActiveProject_Throws()
+    {
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Master.UserId)));
+
+        mock.Project.PaymentTypes.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateRestoredCashPaymentType_OwnerNotAMaster_Throws()
+    {
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService().CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Player.UserId)));
+
+        mock.Project.PaymentTypes.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateRestoredCashPaymentType_WithoutManageMoneyPermission_Throws()
+    {
+        var restorer = mock.CreateMaster("Мастер без денег");
+        mock.Project.ProjectAcls.Single(a => a.UserId == restorer.UserId).CanManageMoney = false;
+        BlockProject();
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(currentUserId: restorer.UserId).CreateRestoredCashPaymentType(ProjectId, new UserIdentification(mock.Master.UserId)));
+
+        mock.Project.PaymentTypes.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task EditCustomPaymentTypeShouldAppearInProjectInfo()
     {

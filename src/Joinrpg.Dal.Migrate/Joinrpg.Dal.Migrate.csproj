@@ -3,8 +3,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>JoinRpg.Dal.Migrate</RootNamespace>
     <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier>
-    <ContainerRegistry>cr.yandex</ContainerRegistry>
-    <ContainerRepository>crp3fr717nr1rn78qeij/joinrpg-dal-migrate</ContainerRepository>
+    <ContainerRepository>joinrpg/joinrpg-dal-migrate</ContainerRepository>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <!-- Content root = текущий каталог, а appsettings.json лежит здесь. Без этого «dotnet run» с ключом project
          из корня репозитория не находит строки подключения (Web SDK задаёт это сам, обычный SDK нет). -->

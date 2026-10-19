@@ -57,7 +57,37 @@ public class HealthCheckS3StorageTests
         result.Status.ShouldBe(HealthStatus.Unhealthy);
     }
 
-    private static HealthCheckS3Storage CreateCheck(IAmazonS3 client)
+    /// <summary>
+    /// Регрессия: на dev ключ приложения мог читать бакет, но не писать в него. GetBucketLocation
+    /// проходил, чек был зелёным, а каждая загрузка аватарки падала с AccessDenied.
+    /// </summary>
+    [Fact]
+    public async Task FailedUploadIsUnhealthy()
+    {
+        using var client = new StubS3Client(_ => Task.CompletedTask);
+        var uploadHealth = new S3UploadHealth();
+        uploadHealth.ReportFailure("AccessDenied");
+
+        var result = await CreateCheck(client, uploadHealth).CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        result.Status.ShouldBe(HealthStatus.Unhealthy);
+        result.Description.ShouldNotBeNull().ShouldContain("AccessDenied");
+    }
+
+    [Fact]
+    public async Task SuccessfulUploadAfterFailureIsHealthy()
+    {
+        using var client = new StubS3Client(_ => Task.CompletedTask);
+        var uploadHealth = new S3UploadHealth();
+        uploadHealth.ReportFailure("AccessDenied");
+        uploadHealth.ReportSuccess();
+
+        var result = await CreateCheck(client, uploadHealth).CheckHealthAsync(new HealthCheckContext(), CancellationToken.None);
+
+        result.Status.ShouldBe(HealthStatus.Healthy);
+    }
+
+    private static HealthCheckS3Storage CreateCheck(IAmazonS3 client, S3UploadHealth? uploadHealth = null)
         => new(client,
             NullLogger<HealthCheckS3Storage>.Instance,
             Options.Create(new S3StorageOptions
@@ -66,7 +96,8 @@ public class HealthCheckS3StorageTests
                 AccessKey = "key",
                 SecretKey = "secret",
                 BucketName = "bucket",
-            }));
+            }),
+            uploadHealth ?? new S3UploadHealth());
 
     /// <summary>
     /// Настоящий клиент AWS SDK с подменённым единственным вызовом, который делает чек.

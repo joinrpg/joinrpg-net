@@ -1,36 +1,53 @@
-﻿@page "/Error"
-@using System.Diagnostics
+@page "/Error"
+@page "/Error/{StatusCode:int}"
+@using JoinRpg.Common.WebInfrastructure
 
-<PageTitle>Error</PageTitle>
+<PageTitle>@title</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
-
-@if (ShowRequestId)
+<h1 class="text-danger">@title</h1>
+@if (StatusCode == StatusCodes.Status404NotFound)
 {
-    <p>
-        <strong>Request ID:</strong> <code>@RequestId</code>
-    </p>
+    <h3 class="text-danger">
+        Если вы перешли на эту страницу по ссылке с нашего сайта, обратитесь в техподдержку.
+    </h3>
+}
+else
+{
+    <h3 class="text-danger">При обработке вашего запроса возникла ошибка.</h3>
 }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+@if (info is not null)
+{
+    <SupportInfoPanel ActivityId="@info.ActivityId"
+                      RequestId="@info.RequestId"
+                      Path="@info.Path"
+                      Referer="@info.Referer"
+                      PodName="@info.PodName"
+                      Version="@info.Version.Version"
+                      CommitSha="@info.Version.CommitSha"
+                      CommitUrl="@info.Version.CommitUrl" />
+}
 
-@code{
+@code {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
-    private string? RequestId { get; set; }
-    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+    [Parameter]
+    public int? StatusCode { get; set; }
 
-    protected override void OnInitialized() =>
-        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+    private ErrorSupportInfo? info;
+
+    private string title => StatusCode == StatusCodes.Status404NotFound ? "Страница не найдена" : "Ошибка";
+
+    protected override void OnInitialized()
+    {
+        if (HttpContext is null)
+        {
+            return;
+        }
+
+        // Если маршрут не дал статус (страница открыта из UseExceptionHandler), берём его из ответа.
+        StatusCode ??= HttpContext.Response.StatusCode is var sc and > 0 ? sc : null;
+        info = ErrorSupportInfo.FromHttpContext(HttpContext);
+    }
 }

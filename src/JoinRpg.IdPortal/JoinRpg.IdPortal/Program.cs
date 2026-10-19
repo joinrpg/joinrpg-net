@@ -6,8 +6,6 @@ using Microsoft.Extensions.Options;
 
 var app = WebApplication.CreateBuilder(args).ConfigureServices().Build();
 
-app.UseForwardedHeaders();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -17,6 +15,12 @@ else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
+
+// OAuth-клиентам нужен ответ протокола (JSON, WWW-Authenticate), а не HTML-страница.
+app.UseWhen(context => !OAuthServerRegistration.IsProtocolPath(context.Request.Path),
+    branch => branch.UseStatusCodePagesWithReExecute("/Error/{0}", createScopeForStatusCodePages: true));
+
+app.UseErrorPageReExecuteAsGet();
 
 app.UseRouting();
 

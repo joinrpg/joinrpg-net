@@ -1,5 +1,6 @@
 @using System.ComponentModel.DataAnnotations
 @using JoinRpg.Common.WebComponents.Dialog
+@using JoinRpg.Web.AdminTools.Notifications
 @inject IUserAdminClient UserAdminClient
 @inject NavigationManager NavigationManager
 @inject ILogger<AdminUserActionsPanel> Logger
@@ -60,6 +61,8 @@
     }
 
     <JoinButton Label="Логи" Title="Посмотреть логи действий пользователя на сайте" Link="@LogLink.AbsoluteUri" />
+
+    <JoinButton Label="Уведомления" Title="Последние уведомления, отправленные пользователю" Link="@NotificationLogUrl.For(recipient: UserId)" />
 </JoinButtonGroup>
 
 <JoinFormDialog

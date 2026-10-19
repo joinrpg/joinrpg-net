@@ -1,0 +1,60 @@
+@using JoinRpg.Web.ProjectCommon.Projects
+@preservewhitespace true
+@switch (Conflict.Kind)
+{
+    case UserMergeConflictKind.SameUser:
+        <span>это один и тот же аккаунт</span>
+        break;
+    case UserMergeConflictKind.SecondaryIsCurrentUser:
+        <span>поглощаемый аккаунт — ваш собственный: удалить его этим инструментом нельзя, попросите другого админа</span>
+        break;
+    case UserMergeConflictKind.VirtualUser:
+        <span>служебный аккаунт (робот или платежи) объединять нельзя</span>
+        break;
+    case UserMergeConflictKind.BothMasters:
+        <span>оба аккаунта — мастера (в том числе бывшие) проекта @Project</span>
+        break;
+    case UserMergeConflictKind.BothClaimedCharacter:
+        <span>у обоих активные заявки на персонажа @Character в проекте @Project</span>
+        break;
+    case UserMergeConflictKind.ApprovedClaimInSingleCharacterProject:
+        <span>в проекте @Project, где разрешён только один персонаж, у одного аккаунта принятая заявка, а у другого — тоже активная</span>
+        break;
+    case UserMergeConflictKind.BothHaveCashPaymentType:
+        <span>у обоих есть касса в проекте @Project</span>
+        break;
+    case UserMergeConflictKind.MoneyTransfersBetween:
+        <span>аккаунты переводили друг другу деньги в проекте @Project</span>
+        break;
+    case UserMergeConflictKind.BlockedProject:
+        <span>проект @Project заблокирован на время восстановления данных — пока восстановление не закончено, объединять аккаунты нельзя</span>
+        break;
+    case UserMergeConflictKind.BothCaptains:
+        <span>оба аккаунта — капитаны группы «@Conflict.GroupName» в проекте @Project</span>
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public UserMergeConflictViewModel Conflict { get; set; } = null!;
+
+    private RenderFragment Project => builder =>
+    {
+        if (Conflict.Project is not null)
+        {
+            builder.OpenComponent<ProjectLink>(0);
+            builder.AddAttribute(1, nameof(ProjectLink.Model), Conflict.Project);
+            builder.CloseComponent();
+        }
+    };
+
+    private RenderFragment Character => builder =>
+    {
+        if (Conflict.Character is not null)
+        {
+            builder.OpenComponent<CharacterLink>(0);
+            builder.AddAttribute(1, nameof(CharacterLink.Model), Conflict.Character);
+            builder.CloseComponent();
+        }
+    };
+}

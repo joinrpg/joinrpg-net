@@ -4,6 +4,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Web.Games.Projects;
@@ -23,7 +24,8 @@ public class AclController(
     IUserRepository userRepository,
     IProjectAccessService projectAccessService,
     ICurrentUserAccessor currentUserAccessor,
-    IProjectMasterProfileRepository masterProfileRepository
+    IProjectMasterProfileRepository masterProfileRepository,
+    UserProfileAvatars profileAvatars
     ) : JoinControllerGameBase
 {
     [HttpGet("add/{userId}")]
@@ -36,14 +38,18 @@ public class AclController(
             // Действующего мастера правят, бывшего возвращают правкой прав — обоих на странице правки (ADR019, §1).
             return RedirectToAction(nameof(Edit), new { projectId = projectId.Value, userId = userId.Value });
         }
-        var targetUser = await userRepository.GetUserInfo(userId);
+        if (await userRepository.GetUserInfo(userId) is not { } targetUser)
+        {
+            return NotFound();
+        }
         // Форма — остров AddMasterPanel: профиль и права грузит и сохраняет через API (ADR019, §4).
-        return targetUser is null ? NotFound() : View(new AclViewModel(project, targetUser, currentUserAccessor));
+        var model = new AclViewModel(project, targetUser, currentUserAccessor);
+        await profileAvatars.Fill(model.UserDetails);
+        return View(model);
     }
 
     /// <summary>
-    /// Список мастеров виден всем, включая анонимов, — как на главной странице проекта (ADR019).
-    /// Права, заявки и управление — только мастерам и админу.
+    /// Публичный список мастеров — один для всех, включая анонимов и самих мастеров проекта (ADR019, §7).
     /// </summary>
     [AllowAnonymous]
     [HttpGet]
@@ -51,21 +57,35 @@ public class AclController(
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var profiles = await masterProfileRepository.GetMasterProfiles(projectId);
+        var viewerId = currentUserAccessor.UserIdentificationOrDefault;
+        // Markdown и пользователей грузим только тех, кого покажем: публичных.
+        var visible = projectInfo.PublicMasters.Select(m => m.UserId).ToHashSet();
+        var publicProfiles = profiles.Where(p => visible.Contains(p.UserId)).ToDictionary(
+            p => p.UserId,
+            p => new ProjectMasterProfileViewModel(p.Role.Value, p.Description is null ? null : p.Description.ToHtmlString()));
+        var users = (await userRepository.GetUserInfos([.. visible])).ToDictionary(u => u.UserId);
+        var viewer = viewerId is null ? null : await userRepository.GetUserInfo(viewerId);
+        var model = ProjectMastersViewModel.Build(projectInfo, viewerId, viewer, publicProfiles, users);
+        await profileAvatars.Fill(model.Masters.Select(m => m.Details));
+        return View(model);
+    }
 
-        if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault) && !currentUserAccessor.IsAdmin)
-        {
-            var viewer = currentUserAccessor.UserIdentificationOrDefault;
-            // Markdown рендерим только тем, кого покажем: непубличные всё равно отбросятся.
-            var visible = projectInfo.GetMastersVisibleTo(viewer).Select(m => m.UserId).ToHashSet();
-            var publicProfiles = profiles.Where(p => visible.Contains(p.UserId)).ToDictionary(
-                p => p.UserId,
-                p => new ProjectMasterProfileViewModel(p.Role.Value, p.Description is null ? null : p.Description.ToHtmlString()));
-            return View("PublicIndex", ProjectMastersViewModel.Build(projectInfo, viewer, publicProfiles));
-        }
-
+    /// <summary>
+    /// Мастерская страница: права, заявки, ответственные, подписки, свой профиль и управление — всем мастерам проекта;
+    /// менять других мастеров — с правом выдавать доступ (ADR019, §7).
+    /// </summary>
+    [HttpGet("manage")]
+    [RequireMaster]
+    public async Task<ActionResult> Manage(ProjectIdentification projectId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var profiles = await masterProfileRepository.GetMasterProfiles(projectId);
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
+        var masterUsers = await userRepository.GetRequiredUserInfos([.. projectInfo.Masters.Select(m => m.UserId)]);
 
-        return View(new MastersListViewModel(claims, currentUserAccessor, projectInfo, profiles));
+        var model = new MastersListViewModel(claims, currentUserAccessor, projectInfo, profiles, masterUsers.ToDictionary(u => u.UserId));
+        await profileAvatars.Fill(model.Masters.Select(m => m.UserDetails));
+        return View(model);
     }
 
     [HttpGet("delete")]
@@ -86,6 +106,7 @@ public class AclController(
             SelfRemove = userId == currentUserAccessor.UserId,
             UserId = userId,
         };
+        await profileAvatars.Fill(innerModel.UserDetails);
         return View("Delete", viewModel);
     }
 
@@ -108,6 +129,7 @@ public class AclController(
                 return NotFound();
             }
             viewModel.InnerModel = aclViewModel;
+            await profileAvatars.Fill(aclViewModel.UserDetails);
             return View(viewModel);
         }
         if (viewModel.UserId == currentUserAccessor.UserId)
@@ -115,7 +137,7 @@ public class AclController(
             //We are removing ourself, need to redirect to public page
             return RedirectToIndex(projectId);
         }
-        return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
+        return RedirectToAction(nameof(Manage), "Acl", new { viewModel.ProjectId });
     }
 
     [HttpGet("leave")]
@@ -131,8 +153,13 @@ public class AclController(
     [RequireMaster()]
     public async Task<ActionResult> Edit(ProjectIdentification projectId, UserIdentification userId)
     {
-        var model = await GetEditViewModel(projectId, userId);
-        return model is null ? NotFound() : View(model);
+        if (await GetEditViewModel(projectId, userId) is not { } model)
+        {
+            return NotFound();
+        }
+        // Аватарка — уже после проверки доступа в GetEditViewModel: лишних запросов для того, кому откажут, нет.
+        await profileAvatars.Fill(model.UserDetails);
+        return View(model);
     }
 
     /// <summary>
@@ -157,8 +184,9 @@ public class AclController(
             // и снятый мастер в ней уже не «Со-мастер».
             model = new AclViewModel(projectInfo, formerUser, currentUserAccessor) { IsFormerMaster = true };
         }
-        // Права меняются только в активном проекте (ChangeAccess — MustBeActive), профиль — и в архиве: это «титры» игры.
-        model.CanEditPermissions = canGrantRights && projectInfo.IsActive;
+        // Права меняются в активном и заблокированном проекте (ChangeAccess — AllowBlocked, ADR023),
+        // профиль — и в архиве: это «титры» игры.
+        model.CanEditPermissions = canGrantRights && !projectInfo.IsArchived;
         if (!canGrantRights && userId != currentUserAccessor.UserIdentificationOrDefault)
         {
             _ = NoAccesToProjectView(projectInfo, currentUserAccessor); // бросает NoAccessToProjectException
@@ -187,6 +215,7 @@ public class AclController(
             return null;
         }
         var claims = await claimRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
-        return new AclViewModel(master, claims.Count, projectInfo);
+        var masterUser = await userRepository.GetRequiredUserInfo(userId);
+        return new AclViewModel(master, masterUser, claims.Count, projectInfo, currentUserAccessor);
     }
 }

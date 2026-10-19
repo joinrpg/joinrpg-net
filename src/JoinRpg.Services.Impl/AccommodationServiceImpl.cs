@@ -264,8 +264,8 @@ internal class AccommodationServiceImpl(
         var created = await accommodationPropsService.ChangePlan(
             categoryId,
             Permission.CanManageAccommodation,
-            ProjectActiveRequirement.MustBeActive,
-            // Создание комнат групп жильцов не трогает — за трекаемыми группами не ходим.
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
+                                                   // Создание комнат групп жильцов не трогает — за трекаемыми группами не ходим.
             RoomCategoryPlanTracking.RoomsOnly,
             roomNames,
             ctx =>
@@ -295,7 +295,7 @@ internal class AccommodationServiceImpl(
         => accommodationPropsService.ChangePlanForRoom(
             roomId,
             Permission.CanManageAccommodation,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             RoomCategoryPlanTracking.RoomsOnly,
             (RoomId: roomId, Name: name),
             ctx => ctx.GetRoomForChange(ctx.Request.RoomId).Name = ServiceValidation.Required(ctx.Request.Name));
@@ -304,8 +304,8 @@ internal class AccommodationServiceImpl(
         => accommodationPropsService.ChangePlanForRoom(
             roomId,
             Permission.CanManageAccommodation,
-            ProjectActiveRequirement.MustBeActive,
-            // Заселённость видна по доменному снимку плана — трекаемые группы удалению не нужны.
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
+                                                   // Заселённость видна по доменному снимку плана — трекаемые группы удалению не нужны.
             RoomCategoryPlanTracking.RoomsOnly,
             roomId,
             ctx =>

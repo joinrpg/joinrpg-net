@@ -7,6 +7,8 @@ spec:
   activeDeadlineSeconds: 300
   template:
     spec:
+      imagePullSecrets:
+        - name: craas-auth
       containers:
         - name: joinrpg-dal-migrate
           envFrom:

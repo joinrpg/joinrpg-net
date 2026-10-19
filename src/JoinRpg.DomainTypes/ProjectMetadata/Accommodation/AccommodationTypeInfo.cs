@@ -102,4 +102,10 @@ public record ProjectAccommodationSettings(
     /// <summary>Типы, доступные игроку для самостоятельного выбора</summary>
     public IReadOnlyCollection<AccommodationTypeInfo> PlayerSelectableTypes
         => [.. Types.Where(t => t.IsPlayerSelectable)];
+
+    /// <summary>
+    /// Поселение включено, и хотя бы один тип проживания платный — значит, у заявки может
+    /// появиться плата за проживание, даже если сейчас проживание в ней не выбрано.
+    /// </summary>
+    public bool HasPaidTypes => Enabled && Types.Any(t => t.Cost > 0);
 }

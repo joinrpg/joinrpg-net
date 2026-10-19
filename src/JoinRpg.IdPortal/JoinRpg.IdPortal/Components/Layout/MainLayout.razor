@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject Microsoft.Extensions.Options.IOptions<JoinRpg.Common.WebInfrastructure.SiteBannerOptions> SiteBannerOptions
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
@@ -26,6 +27,7 @@
     </div>
 
     <div class="container body-content">
+        <SiteBanner Text="@SiteBannerOptions.Value.Text" />
         @Body
     </div>
 </LayoutView>

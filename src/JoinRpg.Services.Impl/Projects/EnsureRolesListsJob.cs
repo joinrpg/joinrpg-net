@@ -27,7 +27,7 @@ public class EnsureRolesListsJob(
 
     private async Task AddAllRolesListToProjectsWithoutAnyList(CancellationToken cancellationToken)
     {
-        // Активные проекты.
+        // Активные проекты, включая заблокированные: сетки ролей не восстанавливают (ADR023).
         var activeProjectIds = await unitOfWork.GetDbSet<Project>()
             .Where(p => p.Active)
             .Select(p => p.ProjectId)

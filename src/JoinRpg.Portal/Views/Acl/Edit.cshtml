@@ -9,10 +9,8 @@
 
 <h2>@ViewBag.Title</h2>
 
-<partial name="_UserDetailsPanel" model="@Model.UserDetails" />
-<hr class="col-md-12" />
-@* Карточка пользователя и линия — плавающие колонки: без clearfix панели острова обтекают карточку. *@
-<div class="clearfix"></div>
+<component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@Model.UserDetails" />
+<hr />
 
 @if (Model.IsFormerMaster)
 {
@@ -38,4 +36,4 @@ else
                param-UserId="@(new UserIdentification(Model.UserId))" />
 }
 
-@Html.ActionLink("Назад к списку", "Index", new { Model.ProjectId })
+@Html.ActionLink("Назад к списку", "Manage", new { Model.ProjectId })

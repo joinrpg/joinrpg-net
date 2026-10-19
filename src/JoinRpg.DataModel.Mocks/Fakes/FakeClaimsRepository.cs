@@ -60,6 +60,8 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
                 .Where(claim => claim.ClaimStatus == ClaimStatus.Approved && claim.AccommodationRequest_Id == null)
                 .Select(ToHeader)]);
 
+    public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
+
     /// <summary>Заголовок заявки из мока — так его собрал бы настоящий репозиторий.</summary>
     public static ClaimWithPlayer ToHeader(Claim claim)
         => new()
@@ -74,7 +76,22 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
 
     public Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds) => throw new NotSupportedException();
-    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec) => throw new NotSupportedException();
+    /// <remarks>
+    /// Выводится из мока. Как и настоящий запрос, смотрит только на прямых родителей персонажа:
+    /// дочерние группы раскрывает вызывающий. Поддержан только <see cref="ClaimStatusSpec.Approved"/>.
+    /// </remarks>
+    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec)
+    {
+        if (spec != ClaimStatusSpec.Approved)
+        {
+            throw new NotSupportedException();
+        }
+        var groupIds = characterGroupsIds.Select(g => g.CharacterGroupId).ToHashSet();
+        return Task.FromResult<IReadOnlyCollection<ClaimWithPlayer>>(
+            [.. mock.Project.Claims
+                .Where(claim => claim.IsApproved && claim.Character.ParentCharacterGroupIds.Any(groupIds.Contains))
+                .Select(ToHeader)]);
+    }
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec, UserIdentification userId) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec) => throw new NotSupportedException();

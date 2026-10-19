@@ -19,16 +19,21 @@ public class MastersListViewModel
 
     public int CurrentUserId { get; }
 
+    public int ProjectId { get; }
+
     public MastersListViewModel(
         IReadOnlyCollection<ClaimCountByMaster> claims,
         ICurrentUserAccessor currentUser,
         ProjectInfo projectInfo,
-        IReadOnlyCollection<ProjectMasterProfileDto> profiles)
+        IReadOnlyCollection<ProjectMasterProfileDto> profiles,
+        IReadOnlyDictionary<UserIdentification, UserInfo> masterUsers)
     {
         Masters = [.. projectInfo.Masters.Select(master => new AclViewModel(
             master,
+            masterUsers[master.UserId],
             claims.SingleOrDefault(c => c.MasterId == master.UserId.Value)?.ClaimCount ?? 0,
-            projectInfo)
+            projectInfo,
+            currentUser)
         {
             Role = profiles.SingleOrDefault(p => p.UserId == master.UserId)?.Role.Value ?? "",
             IsPublic = master.IsPublic,
@@ -36,11 +41,11 @@ public class MastersListViewModel
 
         MoveItems = [.. Masters.Select(m => new MasterMoveItemViewModel(m.MasterId, m.UserDetails.User.DisplayName, m.Role))];
 
-        // Админ, который не мастер проекта, тоже видит эту страницу — его в списке нет.
         CanCurrentUserGrantRights = Masters.SingleOrDefault(acl => acl.UserId == currentUser.UserId)?.CanGrantRights ?? false;
 
         AnyoneElseCanGrantRights = Masters.Any(x => x.CanGrantRights && x.UserId != currentUser.UserId);
 
         CurrentUserId = currentUser.UserId;
+        ProjectId = projectInfo.ProjectId.Value;
     }
 }

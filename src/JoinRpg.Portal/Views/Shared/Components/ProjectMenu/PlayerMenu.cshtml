@@ -98,7 +98,13 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Функции администратора<span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            @if (Model.ProjectStatus != ProjectLifecycleStatus.Archived)
+                            @if (Model.ProjectStatus == ProjectLifecycleStatus.Blocked)
+                            {
+                                <li>
+                                    @Html.ActionLink("Снять блокировку", "Unblock", "Game", new { Model.ProjectId }, null)
+                                </li>
+                            }
+                            @if (!Model.ProjectStatus.IsArchived())
                             {
                                 <li>
                                     @Html.ActionLink("Закрыть проект", "Close", "Game", new { Model.ProjectId }, null)

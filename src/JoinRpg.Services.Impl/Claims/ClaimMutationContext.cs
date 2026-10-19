@@ -129,6 +129,14 @@ internal abstract record ClaimMutationContext(
         => SaveFieldsCore(Claim, fieldsToSet);
 
     /// <summary>
+    /// То же, что <see cref="SaveFields(FieldLayerContainer)"/>, но в режиме восстановления
+    /// (<see cref="FieldSaveMode.Restore"/>, DRP, #5529): значения записываются как были — без проверки
+    /// обязательности и без значений по умолчанию. Права на поле и проверка значений остаются.
+    /// </summary>
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveRestoredFields(FieldLayerContainer fieldsToSet)
+        => SaveFieldsCore(Claim, fieldsToSet, FieldSaveMode.Restore);
+
+    /// <summary>
     /// Явный выход за границу агрегата: другой персонаж того же проекта — трекаемая сущность вместе
     /// со своим доменным снимком. Операции над двумя персонажами (перенос, восстановление, вторая
     /// роль) пересекают границу только так, а не скрытой ленивой навигацией (ADR014).
@@ -232,6 +240,19 @@ internal abstract record ClaimMutationContext(
         PendingComments.Add(pending);
 
         return pending;
+    }
+
+    /// <summary>
+    /// Скрытая от игрока запись в истории заявки <b>без уведомления</b>. Нужна восстановлению из
+    /// уведомлений (DRP, #5481): восстановление не шлёт писем, но в истории отмечается. Уведомление
+    /// помощник строит всегда — здесь его просто не ставят в очередь, как и у комментария к онлайн-оплате
+    /// в <c>PaymentsService</c>.
+    /// </summary>
+    public Comment AddHistoryRecordWithoutNotification(string text, CommentExtraAction extraAction)
+    {
+        var (comment, _) = CommentHelper.CreateClaimCommentWithNotification(
+            text, Claim, ProjectInfo, extraAction, ClaimOperationType.MasterSecretChange, Now);
+        return comment;
     }
 
     /// <summary>

@@ -18,7 +18,10 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
     {
         var group = await LoadProjectSubEntityAsync<CharacterGroup>(characterGroupId);
 
-        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId)).RequestMasterAccess(currentUserAccessor);
+        // Раньше активность проверял только [ProjectShouldBeActive] на контроллере.
+        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(characterGroupId.ProjectId))
+            .RequestMasterAccess(currentUserAccessor)
+            .EnsureProjectActive();
         ClaimOperationType claimOperationType = GetOperationType(hideFromUser, projectInfo);
 
         var forumThread = new ForumThread()
@@ -50,7 +53,8 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
                 new ForumCommentIdentification(comment.ProjectId, forumThread.ForumThreadId, comment.CommentId),
                 currentUserAccessor.ToUserInfoHeader(),
                 new MarkdownDbValue(commentText),
-                header
+                header,
+                IsVisibleToPlayer: forumThread.IsVisibleToPlayer && comment.IsVisibleToPlayer
                 );
 
             await forumNotificationService.SendNotification(email);
@@ -61,6 +65,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
     public async Task AddComment(ForumThreadIdentification forumThreadId, int? parentCommentId, bool isVisibleToPlayer, string commentText)
     {
         var (forumThread, projectInfo) = await GetForumThread(forumThreadId);
+        _ = projectInfo.EnsureProjectActive();
 
         var parentComment = forumThread.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
@@ -70,7 +75,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
             Now,
             commentText,
             projectInfo,
-            GetOperationType(!isVisibleToPlayer, projectInfo));
+            GetOperationType(!visibleToPlayerUpdated, projectInfo));
 
         comment.Parent = parentComment;
 
@@ -81,6 +86,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
                 currentUserAccessor.ToUserInfoHeader(),
                 new MarkdownDbValue(commentText),
                 forumThread.Header,
+                IsVisibleToPlayer: forumThread.IsVisibleToPlayer && comment.IsVisibleToPlayer,
                 ParentCommentAuthor: parentComment?.Author.ToUserInfoHeader()
                 );
 

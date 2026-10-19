@@ -1,0 +1,22 @@
+<JoinPanel>
+    <Header>Версия</Header>
+    <Body>
+        Версия: @Version
+        @if (CommitSha is not null && CommitUrl is not null)
+        {
+            <br />
+            <text>Коммит: </text><a href="@CommitUrl" target="_blank">@CommitSha</a>
+        }
+    </Body>
+</JoinPanel>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Version { get; set; }
+
+    [Parameter]
+    public string? CommitSha { get; set; }
+
+    [Parameter]
+    public Uri? CommitUrl { get; set; }
+}

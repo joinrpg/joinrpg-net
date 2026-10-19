@@ -35,6 +35,7 @@ public static class OAuthServerRegistration
     public static WebApplicationBuilder AddJoinOAuthServer(this WebApplicationBuilder builder)
     {
         builder.Services.AddOptions<OAuthServerOptions>();
+        builder.Services.AddExceptionHandler<OAuthProtocolExceptionHandler>();
 
         var oauthOptions = builder.Configuration.GetSection("OAuthServer").Get<OAuthServerOptions>();
         var certOptions = oauthOptions?.Certificates;
@@ -170,6 +171,13 @@ public static class OAuthServerRegistration
 
         return builder;
     }
+
+    /// <summary>
+    /// Эндпоинты протокола OAuth/OIDC (<c>connect/*</c>) и метаданные (<c>.well-known/*</c>):
+    /// их читают программы, поэтому HTML-страница ошибки им не подходит.
+    /// </summary>
+    public static bool IsProtocolPath(PathString path)
+        => path.StartsWithSegments("/connect") || path.StartsWithSegments("/.well-known");
 
     public static WebApplication MapJoinOAuthServer(this WebApplication app)
     {

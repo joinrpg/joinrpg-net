@@ -344,12 +344,14 @@ public class ClaimListController(
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> PaidDeclined(ProjectIdentification projectid, string export)
     {
+        var loadedClaims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.InActive);
+        var claimInfos = await LoadClaimInfos(loadedClaims);
         var claims =
-            (await claimsRepository.GetClaims(projectid, ClaimStatusSpec.InActive))
-            .Where(claim => claim.ClaimBalance() > 0)
+            loadedClaims
+            .Where(claim => claimInfos[claim.GetId()].ClaimInCharacter.Claim.Finance.FeePaid > 0)
             .ToList();
 
-        return await ShowMasterClaimList(projectid, export, "Оплаченные отклоненные заявки", claims, ClaimStatusSpec.InActive);
+        return await ShowMasterClaimList(projectid, export, "Оплаченные отклоненные заявки", claims, ClaimStatusSpec.InActive, claimInfos);
     }
 
     [HttpGet, MasterAuthorize()]

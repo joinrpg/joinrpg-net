@@ -26,6 +26,16 @@ public class FieldLayerContainer
     }
 
     /// <summary>
+    /// Слой из «сырых» значений полей с типизированными id. <c>null</c> значения — «поле не заполнено».
+    /// </summary>
+    /// <exception cref="ArgumentException">Поле из другого проекта.</exception>
+    /// <exception cref="KeyNotFoundException">В наборе есть поле, которого нет в проекте.</exception>
+    public FieldLayerContainer(ProjectInfo projectInfo, IReadOnlyDictionary<ProjectFieldIdentification, string?> layerData)
+        : this(projectInfo, CreateLayerData(projectInfo, layerData))
+    {
+    }
+
+    /// <summary>
     /// Значение поля в этом слое. <c>null</c>, если поля в слое нет или оно не заполнено.
     /// </summary>
     public string? GetValue(ProjectFieldInfo field) => LayerData.GetValueOrDefault(field.Id)?.Value;
@@ -47,6 +57,23 @@ public class FieldLayerContainer
         foreach (var (fieldId, value) in layerData)
         {
             var field = projectInfo.GetFieldById(new ProjectFieldIdentification(projectInfo.ProjectId, fieldId));
+            result.Add(field.Id, new FieldWithValue(field, value));
+        }
+
+        return result;
+    }
+
+    private static Dictionary<ProjectFieldIdentification, FieldWithValue> CreateLayerData(ProjectInfo projectInfo, IReadOnlyDictionary<ProjectFieldIdentification, string?> layerData)
+    {
+        var result = new Dictionary<ProjectFieldIdentification, FieldWithValue>(layerData.Count);
+
+        foreach (var (fieldId, value) in layerData)
+        {
+            if (fieldId.ProjectId != projectInfo.ProjectId)
+            {
+                throw new ArgumentException($"Поле {fieldId} из другого проекта", nameof(layerData));
+            }
+            var field = projectInfo.GetFieldById(fieldId);
             result.Add(field.Id, new FieldWithValue(field, value));
         }
 

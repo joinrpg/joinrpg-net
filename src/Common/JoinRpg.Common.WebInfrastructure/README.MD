@@ -4,25 +4,28 @@
 
 ## Подключение
 
-### 1. Настройка хоста (Program.cs)
+### 1. Регистрация сервисов (Program.cs)
 
-Настройте Serilog как провайдер логирования, передав имя приложения:
-
-```csharp
-builder.Host.UseJoinSerilog("MyApp.Name");
-```
-
-### 2. Регистрация сервисов
+Метод над `WebApplicationBuilder` регистрирует сервисы платформы и заодно подключает Serilog (`UseJoinSerilog`) с тем же именем приложения:
 
 ```csharp
-services.AddJoinWebPlatform(
-    configuration: Configuration,
-    environment: Environment,
+builder.AddJoinWebPlatform(
     appName: "MyApp.Name",
     dataProtectionConnectionStringName: "DataProtection",
     telemetryServiceNames: ["MyApp.ActivitySourceName"]
 );
 ```
+
+Если у приложения одна база, ключи Data Protection можно хранить в его собственном DbContext — тогда отдельная строка подключения `DataProtection` не нужна. Контекст реализует `IDataProtectionKeyContext` (таблица `DataProtectionKeys` появится в его миграциях) и регистрируется как обычно через `AddJoinEfCoreDbContext`:
+
+```csharp
+builder.AddJoinWebPlatform<MyDbContext>(
+    appName: "MyApp.Name",
+    telemetryServiceNames: ["MyApp.ActivitySourceName"]
+);
+```
+
+Если `WebApplicationBuilder` под рукой нет (класс `Startup`), есть те же методы над `IServiceCollection` — им конфигурацию и окружение передают явно, а Serilog подключают отдельно: `builder.Host.UseJoinSerilog("MyApp.Name")`.
 
 Опционально — конфигурация имён хостов JoinRpg (нужна, если приложение использует `JoinRpgHostNamesOptions`):
 
@@ -32,7 +35,7 @@ services.Configure<JoinRpgHostNamesOptions>(
 );
 ```
 
-### 3. Подключение DbContext (если нужно)
+### 2. Подключение DbContext (если нужно)
 
 Регистрация DbContext с PostgreSQL и health check:
 
@@ -52,7 +55,7 @@ services.RegisterMigrator<MyDbContext>(
 );
 ```
 
-### 4. Логин через id.joinrpg.ru (OpenIddict client)
+### 3. Логин через id.joinrpg.ru (OpenIddict client)
 
 Для сателлитных сайтов, авторизующих пользователей через id.joinrpg.ru (authorization code flow):
 
@@ -94,10 +97,10 @@ app.MapAuthEndpoints();
 
 Получить id пользователя из текущего `ClaimsPrincipal`: `user.GetJoinrpgUserId()`.
 
-### 5. Middleware pipeline
+### 4. Middleware pipeline
 
 ```csharp
-app.UseForwardedHeaders();           // Должен быть первым — обрабатывает X-Forwarded-* заголовки
+// UseForwardedHeaders() вызывать не нужно — AddJoinWebPlatform сам ставит его в начало конвейера
 app.UseOpenTelemetryPrometheusScrapingEndpoint();  // Эндпойнт /metrics
 app.UseJoinRequestLogging();         // Логирование HTTP-запросов через Serilog
 
@@ -106,7 +109,7 @@ app.UseJoinRequestLogging();         // Логирование HTTP-запрос
 app.MapJoinHealthChecks();           // Эндпойнты /health, /health/ready, /health/live
 ```
 
-### 6. MVC/Razor Pages фильтры (опционально)
+### 5. MVC/Razor Pages фильтры (опционально)
 
 Для обогащения логов данными из MVC/Razor Pages контекста:
 
@@ -122,11 +125,13 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 | Компонент | Класс/Метод | Описание |
 |-----------|-------------|----------|
 | **Логирование** | `UseJoinSerilog()`, `UseJoinRequestLogging()` | Serilog с обогащением (пользователь, трассировка, YC-уровни), JSON/text форматтеры, фильтрация health check запросов |
-| **Data Protection** | `AddJoinDataProtection()` (вызывается из `AddJoinWebPlatform`) | Хранение ключей шифрования в PostgreSQL для работы в нескольких репликах |
+| **Data Protection** | `AddJoinDataProtection()` (вызывается из `AddJoinWebPlatform`) | Хранение ключей шифрования в PostgreSQL для работы в нескольких репликах: в отдельной базе или в DbContext приложения (`AddJoinDataProtection<T>()`) |
 | **OpenTelemetry** | `AddJoinOpenTelemetry()` (вызывается из `AddJoinWebPlatform`) | Distributed tracing + метрики, Prometheus endpoint `/metrics` |
 | **Кеширование** | `PerRequestCache<K,V>`, `SingletonCache<K,V>` | Per-request scoped кеш и singleton-кеш с фабрикой значений |
 | **Health Checks** | `MapJoinHealthChecks()` | Эндпойнты `/health` (полный), `/health/ready` (тег `ready`), `/health/live` (всегда OK) |
-| **Forwarded Headers** | `UseForwardedHeaders()` / `ConfigureForwardedHeaders()` | Обработка X-Forwarded-Proto и X-Forwarded-For от reverse proxy |
+| **robots.txt** | `AddJoinRobotsTxt()` (вызывается из `AddJoinWebPlatform`) | `/robots.txt` первым middleware конвейера (до логирования). Настройки — секция `RobotsTxt`, см. ниже |
+| **Forwarded Headers** | `ConfigureForwardedHeaders()` (вызывается из `AddJoinWebPlatform`) | Обработка X-Forwarded-Proto и X-Forwarded-For от reverse proxy первым middleware конвейера. Метрика `joinrpg.http.requests.private_network` (meter `JoinRpg.WebInfrastructure`) считает запросы с внутренних адресов — признак неправильной настройки. Теги для диагностики без логов: `forwarded`, `client.subnet` (/24 или /64), `xff.count` (0/1/2/3+), `xfp` (none/http/https/other), `host.kind` (ip/name/none), `scheme` (итоговая схема после ForwardedHeaders: http/https/other); как читать сочетания — в xml-doc `PrivateNetworkRequestMetrics` |
+| **HTTPS** | вызывается из `AddJoinWebPlatform` | Редирект http → https (307, вне Development на порт 443) сразу после Forwarded Headers, кроме `/health*` и `/metrics`; HSTS вне Development (пока `max-age` 1 день). Рубильник `HttpsRedirection:Enabled` (по умолчанию `true`; `HttpsRedirection__Enabled=false` в окружении отключает редирект и HSTS) |
 | **DbContext** | `AddJoinEfCoreDbContext<T>()` | PostgreSQL + EntityFramework.Exceptions + health check для каждого контекста |
 | **Миграции** | `RegisterMigrator<T>()` | Регистрация DbContext + `IMigratorService` для применения миграций |
 | **Логин через id.joinrpg.ru** | `AddJoinRpgAuthentication<T>()`, `MapAuthEndpoints()`, `IJoinUserLoginHandler` | OpenIddict client (authorization code flow), cookie-схема, эндпойнты `/login`, `/signin-joinrpg`, `/logout` |
@@ -168,7 +173,7 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 
 | Ключ | Обязателен | Описание |
 |------|------------|----------|
-| `DataProtection` | Да | Строка подключения PostgreSQL для хранения ключей Data Protection |
+| `DataProtection` | Да, кроме `AddJoinWebPlatform<TKeysContext>` | Строка подключения PostgreSQL для хранения ключей Data Protection |
 | Любой другой | По необходимости | Строки подключения для каждого DbContext, зарегистрированного через `AddJoinEfCoreDbContext` |
 
 #### Logging
@@ -187,3 +192,24 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 | `IdHost` | Портал аккаунтов (например, `id.joinrpg.ru`) |
 | `KogdaIgraHost` | Сервис KogdaIgra |
 | `RatingHost` | Сервис рейтинга Бастилии |
+
+#### RobotsTxt
+
+Без настроек индексирование разрешено на всех хостах, кроме служебных `/health` и `/metrics`. Остальные запреты только явные.
+
+| Параметр | По умолчанию | Описание |
+|----------|--------------|----------|
+| `MainHost` | `null` | Главный хост приложения. Если указан без порта, порт запроса не учитывается; пустая строка — то же, что `null`. Если задан — индексирование разрешено только на нём, остальные хосты (служебные домены и т.п.) получают `Disallow: /` |
+| `DisallowAll` | `false` | Запретить индексирование целиком (например, для dev-окружения) |
+| `DisallowedPaths` | `[]` | Пути приложения, закрытые от индексирования и на разрешённом хосте. Свои `/health` и `/metrics` инфраструктура закрывает сама |
+
+Главный хост обычно берут из `JoinRpgHostNamesOptions` — какой из хостов «свой», знает только приложение:
+
+```csharp
+services.AddOptions<RobotsTxtOptions>()
+    .Configure<IOptions<JoinRpgHostNamesOptions>>((robots, hostNames) =>
+    {
+        robots.MainHost ??= hostNames.Value.MainHost;
+        robots.DisallowedPaths.AddRange(["/x-api"]);
+    });
+```

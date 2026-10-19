@@ -62,7 +62,11 @@ public record class ProjectInfo
     public ProjectCheckInSettings ProjectCheckInSettings { get; }
 
     public ProjectLifecycleStatus ProjectStatus { get; }
-    public bool IsActive => ProjectStatus != ProjectLifecycleStatus.Archived;
+    /// <summary>Проект можно менять обычными операциями. Для вопросов чтения — <see cref="IsArchived"/> (ADR023).</summary>
+    public bool IsActive => ProjectStatus.AllowsChanges();
+
+    /// <summary>Проект в архиве.</summary>
+    public bool IsArchived => ProjectStatus.IsArchived();
 
     public DateOnly CreateDate { get; }
 
@@ -177,7 +181,13 @@ public record class ProjectInfo
     /// остальным, включая анонима, — только публичные. Порядок — как в <see cref="Masters"/>.
     /// </summary>
     public IReadOnlyCollection<ProjectMasterInfo> GetMastersVisibleTo(UserIdentification? viewer)
-        => HasMasterAccess(viewer) ? Masters : [.. Masters.Where(m => m.IsPublic)];
+        => HasMasterAccess(viewer) ? Masters : PublicMasters;
+
+    /// <summary>
+    /// Публичные действующие мастера — то, что видят все, кто не мастер проекта (ADR019, §3).
+    /// Порядок — как в <see cref="Masters"/>.
+    /// </summary>
+    public IReadOnlyCollection<ProjectMasterInfo> PublicMasters => [.. Masters.Where(m => m.IsPublic)];
 
     public Permission[] GetMasterAccess(UserIdentification currentUser) => GetActiveMasterOrDefault(currentUser)?.Permissions ?? [];
 
@@ -204,6 +214,14 @@ public record class ProjectInfo
     {
         return HasMasterAccess(userId, Permission.CanEditRoles) && IsActive;
     }
+
+    /// <summary>
+    /// Можно ли настраивать группы персонажей (создание, правка, порядок). В отличие от
+    /// <see cref="HasEditRolesAccess"/>, разрешено и в заблокированном проекте: группы заводят заново
+    /// при восстановлении (ADR023). Удаление группы перевешивает персонажей, поэтому для него — <see cref="HasEditRolesAccess"/>.
+    /// </summary>
+    public bool HasEditGroupsAccess(UserIdentification? userId)
+        => HasMasterAccess(userId, Permission.CanEditRoles) && !IsArchived;
 
     // For tests
     internal ProjectInfo WithAddedField(ProjectFieldInfo field)
@@ -279,7 +297,24 @@ public record class ProjectInfo
     public ProjectRolesList? GetRolesListByIdOrDefault(ProjectRolesListIdentification id)
         => ProjectRolesLists.SingleOrDefault(x => x.ProjectRolesListId == id);
 
-    public ProjectInfo EnsureProjectActive() => !IsActive ? throw new ProjectDeactivatedException(ProjectId) : this;
+    /// <summary>
+    /// Для операций, допустимых и в архиве (комментарии и т. п.): запрещает только заблокированный проект (ADR023).
+    /// </summary>
+    public ProjectInfo EnsureNotBlocked()
+        => ProjectStatus == ProjectLifecycleStatus.Blocked ? throw new ProjectBlockedException(ProjectId) : this;
+
+    /// <summary>
+    /// Для операций, допустимых и в заблокированном проекте (ACL, сетки ролей): запрещает только архив (ADR023).
+    /// </summary>
+    public ProjectInfo EnsureNotArchived()
+        => IsArchived ? throw new ProjectDeactivatedException(ProjectId) : this;
+
+    public ProjectInfo EnsureProjectActive() => ProjectStatus switch
+    {
+        ProjectLifecycleStatus.Blocked => throw new ProjectBlockedException(ProjectId),
+        _ when !IsActive => throw new ProjectDeactivatedException(ProjectId),
+        _ => this,
+    };
 
     /// <summary>
     /// Ответственный по правилам групп: мастер ближайшей группы, иначе мастер по умолчанию. Правило, чей мастер
