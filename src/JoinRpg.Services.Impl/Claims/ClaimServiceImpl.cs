@@ -412,7 +412,7 @@ internal class ClaimServiceImpl(
         {
             // Единственная асинхронная загрузка метода, и она условная: сюжеты нужны только
             // слоту. Поднимать её наверх нельзя — грузились бы на каждое утверждение.
-            var character = await CreateCharacterFromSlot(ctx, ctx.Claim.Character, ctx.Claim.Player);
+            var character = await ctx.CreateCharacterFromSlot(ctx.Claim.Character, ctx.Claim.Player, allowExhaustedLimit: false);
             ctx.Claim.Character = character;
             ctx.Claim.CharacterId = character.CharacterId;
         }
@@ -550,85 +550,6 @@ internal class ClaimServiceImpl(
         {
             impersonateAccessor.StopImpersonate();
         }
-    }
-
-    /// <summary>
-    /// Создаёт персонажа из слота при утверждении заявки: уменьшает остаток слота, копирует
-    /// свойства и наследует прямые привязки к сюжетам.
-    /// </summary>
-    /// <remarks>
-    /// <c>CreatedAt</c>/<c>UpdatedAt</c> проставляются локальным <see cref="DateTime.Now"/>, а не
-    /// временем операции (UTC). Это выглядит ошибкой, но сохранено как есть: миграция обязана
-    /// сохранять поведение, а починка — отдельное изменение.
-    /// </remarks>
-    private static async Task<Character> CreateCharacterFromSlot(ClaimMutationContext ctx, Character slot, User player)
-    {
-        switch (slot.CharacterSlotLimit)
-        {
-            case null:  // Unlimited slot
-                break;
-            case > 0:
-                slot.CharacterSlotLimit--;
-                break;
-            default:
-                throw new JoinRpgSlotLimitedException(slot);
-        }
-
-        if (slot.CharacterType != CharacterType.Slot)
-        {
-            throw new EntityWrongStatusException(slot);
-        }
-
-        // Сюжеты грузятся до создания персонажа: прямые привязки берутся из этой выборки, а не из
-        // slot.DirectlyRelatedPlotElements — навигация на write-хэндле не загружена, и обращение к
-        // ней стоило бы ленивой загрузки (#5061).
-        var plots = await ctx.LoadDirectPlotsForCharacter(slot.GetId());
-
-        var newCharacter = new Character()
-        {
-            ApprovedClaim = null,
-            ApprovedClaimId = null,
-            AutoCreated = true,
-            OriginalCharacterSlot = slot,
-            CanBePermanentlyDeleted = false,
-            CharacterId = -1,
-            CharacterName = slot.CharacterName, // Probably will be updated by field save
-            CharacterSlotLimit = null,
-            CharacterType = CharacterType.Player,
-            CreatedAt = DateTime.Now,
-            CreatedBy = player,
-            CreatedById = player.UserId,
-            DirectlyRelatedPlotElements = [.. plots],
-            HidePlayerForCharacter = slot.HidePlayerForCharacter,
-            InGame = false,
-            IsAcceptingClaims = true,
-            IsActive = true,
-            IsHot = false,
-            IsPublic = slot.IsPublic,
-            JsonData = slot.JsonData,
-            ParentCharacterGroupIds = slot.ParentCharacterGroupIds,
-            PlotElementOrderData = slot.PlotElementOrderData,
-            Project = slot.Project,
-            ProjectId = slot.ProjectId,
-            Subscriptions = slot.Subscriptions,
-            UpdatedAt = DateTime.Now,
-            UpdatedBy = player,
-            UpdatedById = player.UserId,
-        };
-
-        // Через контекст, а не через UnitOfWork.GetDbSet: сохраняет тот DbContext, который загрузил
-        // агрегат, а DI-экземпляр UnitOfWork у сервиса — другой (ADR014).
-        ctx.AddEntity(newCharacter);
-
-        foreach (var plot in plots)
-        {
-            if (plot.TargetCharacters.Contains(slot))
-            {
-                plot.TargetCharacters.Add(newCharacter);
-            }
-        }
-
-        return newCharacter;
     }
 
     public Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter)

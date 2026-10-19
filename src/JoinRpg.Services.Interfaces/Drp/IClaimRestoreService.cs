@@ -36,7 +36,8 @@ public interface IClaimRestoreService
     /// </summary>
     /// <returns>
     /// Персонаж заявки — найденный или созданный: следующие потерянные заявки на того же нового
-    /// персонажа надо подавать уже на него, а не создавать второго.
+    /// персонажа надо подавать уже на него, а не создавать второго. Для шаблона — сам шаблон, даже
+    /// если принятая заявка переехала на своего персонажа из него.
     /// </returns>
     Task<CharacterIdentification> RestoreLostClaim(LostClaimToRestore claim);
 
@@ -204,9 +205,14 @@ public record RestoredCommentsResult(int Inserted, int AlreadyExisted, IReadOnly
 /// <param name="ClaimId">Прежний идентификатор из уведомлений.</param>
 /// <param name="Character">
 /// Персонаж из восстановленной базы, на которого была заявка, либо null — тогда создаётся новый
-/// персонаж игрока с именем <paramref name="NewCharacterName"/> в корневой группе.
+/// персонаж с именем <paramref name="NewCharacterName"/> в корневой группе.
 /// </param>
 /// <param name="CreatedAt">Когда заявка была подана — первое событие по ней.</param>
+/// <param name="NewCharacterIsSlot">
+/// Новый персонаж (при <paramref name="Character"/> = null) создаётся шаблоном, а не персонажем игрока.
+/// Принятая заявка на шаблон, как при одобрении, получает своего персонажа из шаблона; заявка в
+/// обсуждении остаётся на шаблоне.
+/// </param>
 public record LostClaimToRestore(
     ClaimIdentification ClaimId,
     CharacterIdentification? Character,
@@ -214,4 +220,5 @@ public record LostClaimToRestore(
     UserIdentification Player,
     UserIdentification ResponsibleMaster,
     DateTimeOffset CreatedAt,
-    RestoredClaimTarget Target);
+    RestoredClaimTarget Target,
+    bool NewCharacterIsSlot = false);

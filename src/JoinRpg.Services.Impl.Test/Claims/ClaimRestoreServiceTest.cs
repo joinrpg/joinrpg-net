@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -264,20 +265,286 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
         RestoreComments(claim).ShouldHaveSingleItem();
     }
 
-    [Fact]
-    public async Task Approve_OnSlot_Throws()
+    // --- Принятая заявка на шаблон (#5645): как при одобрении, получает своего персонажа из шаблона ---
+
+    private Claim CreateClaimOnSlot(Character slot, ClaimStatus status = ClaimStatus.Discussed)
     {
-        var slot = mock.CreateCharacter("Слот");
-        slot.CharacterType = CharacterType.Slot;
         var claim = mock.CreateClaim(slot, mock.Player);
+        claim.ClaimStatus = status;
+        return claim;
+    }
+
+    /// <summary>
+    /// Что сделало бы сохранение EF6: персонаж из шаблона получает id, а заявка переезжает в его
+    /// коллекцию заявок. Без этого следующая операция над заявкой или шаблоном увидит мок до сохранения.
+    /// </summary>
+    private void SimulateSaveOfCharacterFromSlot(Claim claim, Character slot)
+    {
+        var created = claim.Character;
+        created.CharacterId = mock.Project.Characters.Max(c => c.CharacterId) + 1;
+        claim.CharacterId = created.CharacterId;
+        _ = slot.Claims.Remove(claim);
+        _ = created.Claims.Add(claim);
+    }
+
+    [Fact]
+    public async Task Approve_OnSlot_CreatesOwnCharacterFromSlot()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 3);
+        var plot = mock.CreatePlotElement(slot);
+        var claim = CreateClaimOnSlot(slot);
         BlockProject();
 
-        _ = await Should.ThrowAsync<JoinValidationException>(
-            () => CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt)));
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
 
-        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        var created = claim.Character;
+        created.ShouldNotBe(slot);
+        created.AutoCreated.ShouldBeTrue();
+        created.OriginalCharacterSlot.ShouldBe(slot);
+        created.CharacterType.ShouldBe(CharacterType.Player);
+        created.ApprovedClaim.ShouldBe(claim);
+        mock.Project.Characters.ShouldContain(created);
+        plot.TargetCharacters.ShouldContain(created);
+
+        slot.CharacterType.ShouldBe(CharacterType.Slot);
+        slot.CharacterSlotLimit.ShouldBe(2);
         slot.ApprovedClaimId.ShouldBeNull();
-        SaveChangesCallCount.ShouldBe(0);
+
+        RestoreComments(claim).ShouldHaveSingleItem().CommentText.Text.Contents.ShouldNotBeNull().ShouldContain("персонаж создан из шаблона «Слот»");
+        claimNotifications.Sent.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task CheckedIn_OnSlot_CreatesOwnCharacterInGame()
+    {
+        var slot = mock.CreateSlot("Слот");
+        var claim = CreateClaimOnSlot(slot);
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.CheckedIn, statusChangedAt: StatusChangedAt));
+
+        var created = claim.Character;
+        created.OriginalCharacterSlot.ShouldBe(slot);
+        created.ApprovedClaimId.ShouldBe(claim.ClaimId);
+        created.InGame.ShouldBeTrue();
+        slot.CharacterSlotLimit.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Approve_TwoClaimsOnSlot_EachGetsOwnCharacter()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 5);
+        var first = CreateClaimOnSlot(slot);
+        var second = mock.CreateClaim(slot, mock.CreateMaster("Другой игрок"));
+        second.ClaimStatus = ClaimStatus.Discussed;
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(first.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+        SimulateSaveOfCharacterFromSlot(first, slot);
+        await CreateService().ApplyRestoredState(second.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+
+        first.Character.OriginalCharacterSlot.ShouldBe(slot);
+        second.Character.OriginalCharacterSlot.ShouldBe(slot);
+        second.Character.ShouldNotBe(first.Character);
+        first.Character.ApprovedClaimId.ShouldBe(first.ClaimId);
+        second.Character.ApprovedClaimId.ShouldBe(second.ClaimId);
+        slot.CharacterSlotLimit.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task Approve_OnExhaustedSlot_DoesNotThrow_AndLimitStaysZero()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 0);
+        var claim = CreateClaimOnSlot(slot);
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        claim.Character.OriginalCharacterSlot.ShouldBe(slot);
+        slot.CharacterSlotLimit.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Discussed_OnSlot_StaysOnSlot()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 3);
+        var claim = CreateClaimOnSlot(slot, ClaimStatus.AddedByUser);
+        BlockProject();
+        var charactersCount = mock.Project.Characters.Count;
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Discussed, statusChangedAt: StatusChangedAt));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
+        claim.Character.ShouldBe(slot);
+        slot.CharacterSlotLimit.ShouldBe(3);
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+    }
+
+    [Fact]
+    public async Task Approve_OnSlot_Repeat_IsNoOp()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 3);
+        var claim = CreateClaimOnSlot(slot);
+        BlockProject();
+        var target = Target(character: slot.GetId(), status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt);
+
+        await CreateService().ApplyRestoredState(claim.GetId(), target);
+        SimulateSaveOfCharacterFromSlot(claim, slot);
+        var created = claim.Character;
+        var charactersCount = mock.Project.Characters.Count;
+
+        await CreateService().ApplyRestoredState(claim.GetId(), target);
+
+        claim.Character.ShouldBe(created);
+        mock.Project.Characters.Count.ShouldBe(charactersCount);
+        slot.CharacterSlotLimit.ShouldBe(2);
+        RestoreComments(claim).ShouldHaveSingleItem();
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task MoveToSlotAndApprove_CreatesOwnCharacterFromSlot()
+    {
+        var oldCharacter = mock.CreateCharacter("Вася");
+        var slot = mock.CreateSlot("Слот", slotLimit: 3);
+        var claim = mock.CreateApprovedClaim(oldCharacter, mock.Player);
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(character: slot.GetId()));
+
+        oldCharacter.ApprovedClaimId.ShouldBeNull();
+        claim.Character.OriginalCharacterSlot.ShouldBe(slot);
+        claim.Character.ApprovedClaimId.ShouldBe(claim.ClaimId);
+        slot.ApprovedClaimId.ShouldBeNull();
+        slot.CharacterSlotLimit.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task MoveFromSlotToOtherSlotAndApprove_CreatesCharacterFromTargetSlot()
+    {
+        var firstSlot = mock.CreateSlot("Первый", slotLimit: 3);
+        var secondSlot = mock.CreateSlot("Второй", slotLimit: 3);
+        var claim = CreateClaimOnSlot(firstSlot);
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(
+            claim.GetId(), Target(character: secondSlot.GetId(), status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+
+        claim.Character.OriginalCharacterSlot.ShouldBe(secondSlot);
+        firstSlot.CharacterSlotLimit.ShouldBe(3);
+        secondSlot.CharacterSlotLimit.ShouldBe(2);
+    }
+
+    /// <summary>Заявка, уже принятая на персонажа, созданного из шаблона.</summary>
+    private (Claim Claim, Character Created) CreateApprovedClaimOnCharacterFromSlot(Character slot)
+    {
+        var created = mock.CreateCharacter("Из шаблона");
+        created.AutoCreated = true;
+        created.OriginalCharacterSlot = slot;
+        var claim = mock.CreateApprovedClaim(created, mock.Player);
+        return (claim, created);
+    }
+
+    [Fact]
+    public async Task NotApprovedClaim_OnCharacterFromSlot_WithSlotAsTarget_MovesToSlot()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 3);
+        var (claim, created) = CreateApprovedClaimOnCharacterFromSlot(slot);
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(
+            claim.GetId(), Target(character: slot.GetId(), status: ClaimStatus.Discussed, statusChangedAt: StatusChangedAt));
+
+        claim.Character.ShouldBe(slot);
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
+        created.ApprovedClaimId.ShouldBeNull();
+        slot.CharacterSlotLimit.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task ApprovedClaim_OnCharacterFromSlot_MovesToOtherCharacter()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 3);
+        var (claim, created) = CreateApprovedClaimOnCharacterFromSlot(slot);
+        var other = mock.CreateCharacter("Петя");
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(character: other.GetId()));
+
+        claim.Character.ShouldBe(other);
+        other.ApprovedClaimId.ShouldBe(claim.ClaimId);
+        created.ApprovedClaimId.ShouldBeNull();
+        slot.CharacterSlotLimit.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task Approve_OnSlot_WithoutNameField_NamesCharacterAfterPlayer()
+    {
+        var slot = mock.CreateSlot("Слот");
+        var claim = CreateClaimOnSlot(slot);
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+
+        claim.Character.CharacterName.ShouldBe(mock.Player.GetDisplayName());
+        slot.CharacterName.ShouldBe("Слот");
+    }
+
+    [Fact]
+    public async Task Approve_OnSlot_WithNameField_NamesCharacterFromClaimFields()
+    {
+        var nameField = AddCharacterNameField();
+        var slot = mock.CreateSlot("Слот");
+        var claim = CreateClaimOnSlot(slot);
+        MockedProject.AssignFieldValues(claim, new FieldWithValue(nameField, "Имя из заявки"));
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+
+        var created = claim.Character;
+        created.CharacterName.ShouldBe("Имя из заявки");
+        SimulateSaveOfCharacterFromSlot(claim, slot);
+        mock.GetCharacterInfo(created).CharacterFields.GetValue(mock.ProjectInfo.GetFieldById(nameField.Id)).ShouldBe("Имя из заявки");
+    }
+
+    /// <summary>
+    /// Текущее поведение, общее с одобрением (ApproveCore): пустое поле-имя даёт имя «CHAR» + id, а id у
+    /// персонажа из шаблона до сохранения ещё -1. Фиксируется, а не чинится здесь.
+    /// </summary>
+    [Fact]
+    public async Task Approve_OnSlot_WithEmptyNameField_NamesCharacterWithUnsavedId()
+    {
+        _ = AddCharacterNameField();
+        var slot = mock.CreateSlot("Слот");
+        var claim = CreateClaimOnSlot(slot);
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+
+        claim.Character.CharacterName.ShouldBe("CHAR-1");
+    }
+
+    [Fact]
+    public async Task Approve_OnSlot_WithEmptyRequiredField_DoesNotThrow()
+    {
+        _ = mock.AddField(f =>
+        {
+            f.FieldName = "Обязательное";
+            f.FieldType = ProjectFieldType.String;
+            f.FieldBoundTo = FieldBoundTo.Character;
+            f.MandatoryStatus = MandatoryStatus.Required;
+        });
+        var slot = mock.CreateSlot("Слот");
+        var claim = CreateClaimOnSlot(slot);
+        BlockProject();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        claim.Character.OriginalCharacterSlot.ShouldBe(slot);
     }
 
     [Fact]
@@ -447,6 +714,73 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
         var created = mock.Project.Characters.Except(charactersBefore).ShouldHaveSingleItem();
         created.CharacterName.ShouldBe("Потерянный");
         mock.GetCharacterInfo(created).CharacterFields.GetValue(mock.ProjectInfo.GetFieldById(nameField.Id)).ShouldBe("Потерянный");
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_NewSlot_InDiscussion_StaysOnHiddenUnlimitedSlot()
+    {
+        BlockProject();
+        var charactersBefore = mock.Project.Characters.ToList();
+
+        var returned = await CreateService().RestoreLostClaim(
+            LostClaim(newCharacterName: "Шаблон", target: Target(status: ClaimStatus.Discussed, statusChangedAt: StatusChangedAt))
+            with
+            { NewCharacterIsSlot = true });
+
+        var slot = mock.Project.Characters.Except(charactersBefore).ShouldHaveSingleItem();
+        slot.CharacterType.ShouldBe(CharacterType.Slot);
+        slot.CharacterSlotLimit.ShouldBeNull();
+        slot.IsPublic.ShouldBeFalse();
+        slot.CharacterName.ShouldBe("Шаблон");
+        returned.ShouldBe(slot.GetId());
+        LostClaimInMock.CharacterId.ShouldBe(slot.CharacterId);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_NewSlot_Approved_CreatesOwnCharacterFromSlot()
+    {
+        BlockProject();
+        var charactersBefore = mock.Project.Characters.ToList();
+
+        var returned = await CreateService().RestoreLostClaim(
+            LostClaim(newCharacterName: "Шаблон", target: Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt))
+            with
+            { NewCharacterIsSlot = true });
+
+        var slot = mock.Project.Characters.Except(charactersBefore).Single(c => c.CharacterType == CharacterType.Slot);
+        returned.ShouldBe(slot.GetId());
+        var claim = LostClaimInMock;
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        claim.Character.OriginalCharacterSlot.ShouldBe(slot);
+        claim.Character.ApprovedClaimId.ShouldBe(LostClaimId);
+        slot.ApprovedClaimId.ShouldBeNull();
+        slot.CharacterSlotLimit.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_ExistingSlot_Approved_CreatesOwnCharacterFromSlot()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 1);
+        BlockProject();
+
+        _ = await CreateService().RestoreLostClaim(LostClaim(
+            character: slot.GetId(), newCharacterName: null,
+            target: Target(status: ClaimStatus.Approved, statusChangedAt: StatusChangedAt)));
+
+        LostClaimInMock.Character.OriginalCharacterSlot.ShouldBe(slot);
+        slot.CharacterSlotLimit.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task RestoreLostClaim_SlotFlagWithExistingCharacter_Throws()
+    {
+        var character = mock.CreateCharacter("Вася");
+        BlockProject();
+
+        _ = await Should.ThrowAsync<ArgumentException>(
+            () => CreateService().RestoreLostClaim(LostClaim(character: character.GetId(), newCharacterName: null) with { NewCharacterIsSlot = true }));
+
+        mock.Project.Claims.ShouldNotContain(c => c.ClaimId == LostClaimId);
     }
 
     [Fact]

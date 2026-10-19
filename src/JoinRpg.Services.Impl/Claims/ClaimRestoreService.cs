@@ -69,6 +69,10 @@ internal class ClaimRestoreService(
             // Персонаж новой заявки задаётся только Character/NewCharacterName — иначе их два.
             throw new ArgumentException("Персонаж новой заявки задаётся только Character или NewCharacterName", nameof(request));
         }
+        if (request.Character is not null && request.NewCharacterIsSlot)
+        {
+            throw new ArgumentException("Шаблоном создаётся только новый персонаж", nameof(request));
+        }
 
         var writeRepository = unitOfWork.GetCharacterAggregateWriteRepository();
         if (await writeRepository.IsClaimIdTaken(request.ClaimId.ClaimId))
@@ -97,7 +101,10 @@ internal class ClaimRestoreService(
         }
 
         var characterId = request.Character
-            ?? await CreateCharacter(projectId, request.NewCharacterName!);
+            ?? await CreateCharacter(
+                projectId,
+                request.NewCharacterName!,
+                request.NewCharacterIsSlot ? CharacterType.Slot : CharacterType.Player);
 
         var inserted = await unitOfWork.GetCharacterAggregateWriteRepository().InsertRestoredClaimShell(new RestoredClaimShell(
             request.ClaimId, characterId, request.Player, request.ResponsibleMaster, request.CreatedAt.UtcDateTime));
@@ -677,10 +684,11 @@ internal class ClaimRestoreService(
     };
 
     /// <summary>
-    /// Персонаж игрока в корневой группе: групп в уведомлениях нет, разложит мастер. Скрытый — какой
-    /// была видимость, неизвестно, а скрытый ничего не раскроет до того, как мастер разберётся.
+    /// Персонаж игрока или шаблон в корневой группе: групп в уведомлениях нет, разложит мастер.
+    /// Скрытый — какой была видимость, неизвестно, а скрытый ничего не раскроет до того, как мастер
+    /// разберётся. Шаблон — без ограничения числа персонажей: сколько их было, тоже неизвестно.
     /// </summary>
-    private async Task<CharacterIdentification> CreateCharacter(ProjectIdentification projectId, string? name)
+    private async Task<CharacterIdentification> CreateCharacter(ProjectIdentification projectId, string? name, CharacterType characterType)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -702,7 +710,11 @@ internal class ClaimRestoreService(
                 };
 
                 ctx.SetCharacterSettings(character, new CharacterTypeInfo(
-                    CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Private));
+                    characterType,
+                    IsHot: false,
+                    SlotLimit: null,
+                    SlotName: characterType == CharacterType.Slot ? ctx.Request : null,
+                    CharacterVisibility.Private));
 
                 // Имя — значением поля-имени, если оно в проекте есть; иначе SaveFields имени не пишет.
                 var nameField = ctx.ProjectInfo.CharacterNameField;
@@ -738,7 +750,14 @@ internal class ClaimRestoreService(
                 var oldCharacter = ctx.Character;
                 var (newCharacter, newCharacterInfo) = (ctx.Character, ctx.CharacterInfo);
                 var moved = false;
-                if (ctx.Request.Character is { } characterId && characterId != ctx.CharacterInfo.Id)
+                // Заявка, принятая на шаблон, живёт на своём персонаже из него: шаблон в цели для принятой
+                // заявки — не перемещение, а то же место (иначе повтор создал бы ещё одного персонажа).
+                // Непринятую же заявку с такого персонажа на шаблон переносить надо.
+                var staysOnCharacterFromSlot = ctx.Request.Character == ctx.CharacterInfo.OriginalCharacterSlotId
+                    && (ctx.Request.Status ?? claimSnapshot.Status) is ClaimStatus.Approved or ClaimStatus.CheckedIn;
+                if (ctx.Request.Character is { } characterId
+                    && characterId != ctx.CharacterInfo.Id
+                    && !staysOnCharacterFromSlot)
                 {
                     if (characterId.ProjectId != ctx.ProjectInfo.ProjectId)
                     {
@@ -764,6 +783,10 @@ internal class ClaimRestoreService(
                     return;
                 }
 
+                // Принятая заявка на шаблон, как при одобрении, получает своего персонажа из шаблона.
+                var fromSlot = finalStatus is ClaimStatus.Approved or ClaimStatus.CheckedIn
+                    && newCharacterInfo.CharacterTypeInfo.CharacterType == CharacterType.Slot;
+
                 if (finalStatus is ClaimStatus.Approved or ClaimStatus.CheckedIn)
                 {
                     EnsureCanBeApprovedOn(newCharacterInfo, claimSnapshot.ClaimId);
@@ -779,6 +802,18 @@ internal class ClaimRestoreService(
                     changes.Add($"персонаж — {newCharacter.CharacterName}");
                 }
 
+                if (fromSlot)
+                {
+                    var slot = newCharacter;
+                    // Исчерпанный остаток не мешает: одобрение было на самом деле, остаток остаётся нулём.
+                    newCharacter = await ctx.CreateCharacterFromSlot(slot, ctx.Claim.Player, allowExhaustedLimit: true);
+                    ctx.Claim.Character = newCharacter;
+                    ctx.Claim.CharacterId = newCharacter.CharacterId;
+                    ctx.MarkChanged(slot);
+                    // TODO[Localize]
+                    changes.Add($"персонаж создан из шаблона «{slot.CharacterName}»");
+                }
+
                 if (status is { } newStatus)
                 {
                     ctx.RestoreStatus(newStatus, ctx.Request.StatusChangedAt?.UtcDateTime ?? ctx.Now);
@@ -786,9 +821,18 @@ internal class ClaimRestoreService(
                 }
 
                 // Новая заявка тоже: она может прийти на удалённого в бэкапе персонажа.
-                if (isCreation || moved || status is not null)
+                if (isCreation || moved || fromSlot || status is not null)
                 {
                     SyncCharacters(ctx, oldCharacter, newCharacter);
+                }
+
+                if (fromSlot)
+                {
+                    // Как ApproveCore: пересохранение пустым слоем после принятия (ApprovedClaim уже
+                    // проставлен) даёт персонажу из шаблона имя, переносит в него поля персонажа из
+                    // заявки и пересчитывает спецгруппы. Режим восстановления — без значений
+                    // по умолчанию и проверки обязательности: данные какие были.
+                    _ = ctx.SaveRestoredFields(FieldLayerContainer.Empty(ctx.ProjectInfo));
                 }
 
                 if (responsibleMaster is not null)
@@ -829,16 +873,14 @@ internal class ClaimRestoreService(
 
     /// <summary>
     /// Принятой заявка может стать только на персонаже, у которого нет другой принятой заявки (инвариант
-    /// снимка, ADR013), и не на слоте: одобрение слота создаёт из него нового персонажа, а этого
-    /// восстановление не повторяет.
+    /// снимка, ADR013). Шаблон не проверяется: принятая заявка на него, как при одобрении, переезжает на
+    /// своего, только что созданного из шаблона персонажа, а у того других заявок нет.
     /// </summary>
     private static void EnsureCanBeApprovedOn(CharacterInfo character, ClaimIdentification claimId)
     {
         if (character.CharacterTypeInfo.CharacterType == CharacterType.Slot)
         {
-            // TODO[Localize]
-            throw new JoinValidationException(
-                $"Персонаж «{character.CharacterName}» — слот, принятую заявку на него не восстановить. Выберите персонажа.");
+            return;
         }
         if (character.Claims.FirstOrDefault(c => c.IsApproved && c.ClaimId != claimId) is { } other)
         {
