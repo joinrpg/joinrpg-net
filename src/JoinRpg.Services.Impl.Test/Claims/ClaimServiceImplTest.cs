@@ -33,9 +33,9 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             CreateFieldSetupService(currentUserId));
     }
 
-    private Claim CreateClaim(ClaimStatus status, string characterName = "Вася")
+    private Claim CreateClaim(ClaimStatus status, string characterName = "Вася", bool toSlot = false)
     {
-        var character = mock.CreateCharacter(characterName);
+        var character = toSlot ? mock.CreateSlot(characterName) : mock.CreateCharacter(characterName);
         var claim = mock.CreateClaim(character, mock.Player);
         claim.ClaimStatus = status;
         mock.ReInitProjectInfo();
@@ -632,6 +632,17 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         return (character, FieldLayerContainer.Empty(mock.ProjectInfo));
     }
 
+    /// <summary>
+    /// То же, что <see cref="CreateTarget"/>, но шаблон без ограничения числа заявок — на него
+    /// работает автоприём (#5645).
+    /// </summary>
+    private (Character Slot, FieldLayerContainer Fields) CreateSlotTarget(string name = "Шаблон")
+    {
+        var slot = mock.CreateSlot(name);
+        mock.ReInitProjectInfo();
+        return (slot, FieldLayerContainer.Empty(mock.ProjectInfo));
+    }
+
     [Fact]
     public async Task AddClaimFromUser_CreatesClaim_SavesTwice_AndNotifiesOnce()
     {
@@ -824,14 +835,21 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     public async Task AddClaimFromUser_WithAutoAccept_ApprovesAfterCreationCompleted()
     {
         mock.Project.Details.AutoAcceptClaims = true;
-        var (character, fields) = CreateTarget();
+        var (slot, fields) = CreateSlotTarget();
 
-        _ = await CreateService(mock.Player.UserId)
-            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
+        var claimId = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(slot.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
 
-        var claim = character.Claims.ShouldHaveSingleItem();
+        var claim = mock.Project.Claims.ShouldHaveSingleItem();
+        claim.GetId().ShouldBe(claimId);
         claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
-        character.ApprovedClaim.ShouldBe(claim);
+
+        // Принятая заявка на шаблон переезжает на нового персонажа, созданного из шаблона.
+        var created = claim.Character;
+        created.ShouldNotBe(slot);
+        created.OriginalCharacterSlot.ShouldBe(slot);
+        created.CharacterType.ShouldBe(CharacterType.Player);
+        created.ApprovedClaim.ShouldBe(claim);
 
         // Создание заявки — два сохранения (ADR014), автоприём добавляет третье строго после них.
         SaveChangesCallCount.ShouldBe(3);
@@ -855,22 +873,43 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         mock.Project.Details.AutoAcceptClaims = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
-        var (character, fields) = CreateTarget();
+        var (slot, fields) = CreateSlotTarget();
 
         _ = await CreateService(mock.Player.UserId)
-            .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed);
+            .AddClaimFromUser(slot.GetId(), "хочу играть", fields, sensitiveDataAllowed);
 
         impersonateAccessor.Impersonated.Count.ShouldBe(expectedAutoApprove ? 1 : 0);
         SaveChangesCallCount.ShouldBe(expectedAutoApprove ? 3 : 2);
     }
 
+    /// <summary>
+    /// Автоприём — только для заявок на шаблон (#5645). Заявку на конкретного персонажа мастер
+    /// принимает сам, даже если в проекте автоприём включён.
+    /// </summary>
     [Fact]
-    public async Task AddClaimFromUser_WithoutAutoAccept_DoesNotApprove()
+    public async Task AddClaimFromUser_ToRegularCharacter_WithAutoAccept_DoesNotApprove()
     {
+        mock.Project.Details.AutoAcceptClaims = true;
         var (character, fields) = CreateTarget();
 
         _ = await CreateService(mock.Player.UserId)
             .AddClaimFromUser(character.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
+
+        var claim = character.Claims.ShouldHaveSingleItem();
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        character.ApprovedClaim.ShouldBeNull();
+        SaveChangesCallCount.ShouldBe(2);
+        SentNotifications.Count.ShouldBe(1);
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AddClaimFromUser_WithoutAutoAccept_DoesNotApprove()
+    {
+        var (slot, fields) = CreateSlotTarget();
+
+        _ = await CreateService(mock.Player.UserId)
+            .AddClaimFromUser(slot.GetId(), "хочу играть", fields, sensitiveDataAllowed: false);
 
         impersonateAccessor.Impersonated.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(2);
@@ -948,7 +987,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     public async Task AcceptInvitation_WithAutoAccept_ApprovesAfterNotification()
     {
         mock.Project.Details.AutoAcceptClaims = true;
-        var claim = CreateClaim(ClaimStatus.AddedByMaster);
+        var claim = CreateClaim(ClaimStatus.AddedByMaster, toSlot: true);
 
         await CreateService(mock.Player.UserId)
             .AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed: false);
@@ -1001,7 +1040,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         mock.Project.Details.AutoAcceptClaims = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
-        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var claim = CreateClaim(ClaimStatus.AddedByUser, toSlot: true);
 
         await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
 
@@ -1031,7 +1070,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         mock.Project.Details.AutoAcceptClaims = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
-        var claim = CreateClaim(status);
+        var claim = CreateClaim(status, toSlot: true);
 
         await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
 
@@ -1046,12 +1085,32 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     public async Task AllowSensitiveData_WithoutAutoAccept_DoesNotApprove()
     {
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
-        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var claim = CreateClaim(ClaimStatus.AddedByUser, toSlot: true);
 
         await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
         SaveChangesCallCount.ShouldBe(1);
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Разрешение доступа к паспорту по заявке на обычного персонажа автоприём не запускает:
+    /// он работает только для заявок на шаблон (#5645).
+    /// </summary>
+    [Fact]
+    public async Task AllowSensitiveData_ToRegularCharacter_WithAutoAccept_DoesNotApprove()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        mock.Project.Details.RequirePassport = MandatoryStatus.Required;
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService(mock.Player.UserId).AllowSensitiveData(claim.GetId());
+
+        claim.PlayerAllowedSenstiveData.ShouldBeTrue();
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(1);
+        SentNotifications.ShouldBeEmpty();
         impersonateAccessor.Impersonated.ShouldBeEmpty();
     }
 

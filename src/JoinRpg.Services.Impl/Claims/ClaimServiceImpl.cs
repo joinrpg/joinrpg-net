@@ -466,9 +466,15 @@ internal class ClaimServiceImpl(
     }
 
     /// <summary>
-    /// Автоприём заявки в проекте, где включён <c>AutoAcceptClaims</c>.
+    /// Автоприём заявки на шаблон (<see cref="CharacterType.Slot"/>) в проекте, где включён
+    /// <c>AutoAcceptClaims</c>.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Заявки на обычного персонажа автоматически не принимаются никогда (#5645): автоприём
+    /// нужен конвентам, где игрок заявляется на шаблон и получает собственного персонажа,
+    /// созданного из него.
+    /// </para>
     /// <para>
     /// Вызывается строго ПОСЛЕ завершения операции, создавшей или принявшей заявку: вкладывать
     /// одну мутацию в другую запрещено (ADR014, §7). Порядок побочных эффектов при этом сохранён —
@@ -491,6 +497,18 @@ internal class ClaimServiceImpl(
 
         var claim = await ClaimsRepository.GetClaim(claimId)
             ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(Claim));
+
+        // Автоприём — только для заявок на шаблон (#5645): из шаблона создаётся новый персонаж,
+        // а заявку на конкретного персонажа мастер должен принять сам. Персонаж загружен вместе
+        // с заявкой (ClaimsRepository.GetClaim), лишнего запроса здесь нет.
+        if (claim.Character.CharacterType != CharacterType.Slot)
+        {
+            logger.LogInformation(
+                "Claim ({claimId}) was not auto-approved: character type is {characterType}, only slot claims are auto-approved",
+                claimId,
+                claim.Character.CharacterType);
+            return;
+        }
 
         // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
         if (!claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
