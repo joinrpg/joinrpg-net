@@ -1,12 +1,15 @@
 ---
 name: prod-db-readonly
-description: Читать прод-БД joinrpg-prod (MSSQL, Yandex Cloud Managed SQL Server) через readonly-логин для расследования инцидентов — посмотреть состояние конкретной заявки/персонажа/проекта, свериться с тем, что видно в логах (см. скилл prod-logs). Только SELECT, никаких мутаций.
+description: Читать прод-БД joinrpg-prod (MSSQL на ВМ mssql-prod в Selectel) через readonly-логин для расследования инцидентов — посмотреть состояние конкретной заявки/персонажа/проекта, свериться с тем, что видно в логах (см. скилл prod-logs). Только SELECT, никаких мутаций.
 ---
 
 # Readonly-доступ к прод-БД (MSSQL)
 
-Прод-БД `joinrpg-prod` — legacy `JoinRpg.DataModel` через EF6 (см. [[dal-uses-ef6-not-ef-core]] в памяти), хостится
-как Yandex Cloud Managed SQL Server. Это точечный инструмент для расследования конкретного
+Прод-БД `joinrpg-prod` — legacy `JoinRpg.DataModel` через EF6 (см. [[dal-uses-ef6-not-ef-core]] в памяти).
+С переезда в Selectel (DRP #5459) это не managed-сервис: SQL Server поставлен вручную на ВМ `mssql-prod`
+(пул ru-6, публичный адрес — домен `joindb.tsarevs.ru`). ВМ, диск и группа безопасности описаны
+в Terraform: [`joinrpg-infrastructure/03-databases/mssql.tf`](https://github.com/joinrpg/joinrpg-infrastructure/blob/main/03-databases/mssql.tf),
+сам SQL Server и его логины — нет. Это точечный инструмент для расследования конкретного
 инцидента (например, дополняет находки из скилла **prod-logs**: нашёл `ProjectId`/`ClaimId`
 в логах — можно посмотреть его текущее состояние в БД), а не канал массовой выгрузки данных.
 
@@ -22,7 +25,7 @@ SQL. Этот скилл — не замена и не прототип того
 **не хранится в репозитории и не передаётся модели напрямую** — только через переменные
 окружения на машине пользователя:
 
-- `JOINRPG_PROD_DB_HOST` — хост managed-инстанса (и порт, если не 1433, через запятую: `host,port`)
+- `JOINRPG_PROD_DB_HOST` — `joindb.tsarevs.ru` (порт, если не 1433, через запятую: `host,port`)
 - `JOINRPG_PROD_DB_RO_PASSWORD` — пароль readonly-логина
 
 Если переменные не заданы — попроси пользователя их выставить (PowerShell: `$env:JOINRPG_PROD_DB_RO_PASSWORD = '...'`
@@ -35,7 +38,7 @@ sqlcmd -S "$JOINRPG_PROD_DB_HOST" -U claude_joinrpg_readonly -P "$JOINRPG_PROD_D
   -d joinrpg-prod -C -y0 -Q "<SELECT-запрос>"
 ```
 
-- `-C` — доверять сертификату сервера (managed-инстансы обычно на self-signed/промежуточном CA).
+- `-C` — доверять сертификату сервера (у SQL Server на ВМ самоподписанный сертификат).
 - `-y0` — не обрезать длинные текстовые колонки в выводе.
 - Для запроса из файла: `-i query.sql` вместо `-Q`.
 
@@ -54,15 +57,21 @@ sqlcmd -S "$JOINRPG_PROD_DB_HOST" -U claude_joinrpg_readonly -P "$JOINRPG_PROD_D
 
 ## Сетевой доступ
 
-Managed SQL Server пускает по allowlist IP/security group в Yandex Cloud. Если подключение
-не проходит с таймаутом (а не auth-ошибкой) — вероятно, текущий внешний IP не добавлен;
-это делается в консоли/`yc` отдельно и не через этот скилл (у пользователя это уже должно
-быть настроено или настраивается разово при заведении логина).
+Порт 1433 ВМ открыт снаружи только для адресов из группы безопасности `mssql-sg` — правила
+`mssql_ingress_rules` в [`joinrpg-infrastructure/03-databases/locals.tf`](https://github.com/joinrpg/joinrpg-infrastructure/blob/main/03-databases/locals.tf)
+(плюс подсеть кластера `192.168.0.0/24`). Если подключение не проходит с таймаутом (а не
+auth-ошибкой) — вероятно, текущий внешний IP туда не добавлен. Добавляет его пользователь через
+Terraform, не через этот скилл; скиллом **selectel-readonly** можно посмотреть, какие правила
+применены сейчас.
 
 ## Диагностика
 
 - Auth-ошибка (`Login failed`) — не тот пароль/логин или логин не привязан к БД `joinrpg-prod`
   (`ALTER ROLE db_datareader ADD MEMBER` не выполнялся).
+- `Login failed` после переезда или восстановления сервера — логина на новом сервере нет: серверные
+  логины в бэкап базы не входят. Его заводят заново тем же `create-readonly-user.sql` — скрипт
+  перепривязывает к новому логину «осиротевшего» пользователя, который приехал в базе из бэкапа.
+  Заодно проверить, что `JOINRPG_PROD_DB_HOST` указывает на `joindb.tsarevs.ru`, а не на старый хост.
 - Таймаут подключения — сетевой доступ (allowlist), а не логин/пароль.
 - `Cannot open database "joinrpg-prod" requested by the login` — `DEFAULT_DATABASE` не выставлен
   или `CREATE USER ... FOR LOGIN` не выполнялся в контексте `joinrpg-prod`.
