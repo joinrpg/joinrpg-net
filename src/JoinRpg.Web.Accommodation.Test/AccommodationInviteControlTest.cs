@@ -52,14 +52,18 @@ public class AccommodationInviteControlTest : BunitContext
     }
 
     [Fact]
-    public void ShouldSayNobodyToInviteWhenRoomIsFull()
+    public void ShouldShowNothingWhenRoomIsFull()
     {
+        // Заполненность уже видна в панели проживания, а у типа на одного мест нет никогда —
+        // «пока еще нельзя» там вводит в заблуждение (#5644)
         client.NextTargets = new AccommodationInviteTargetsViewModel(
             SenderRequestId, RoomFreeSpace: 0, Targets: [SingleTarget(11)]);
 
         var cut = RenderControl();
 
-        cut.Markup.ShouldContain("Пока еще нельзя никого пригласить");
+        cut.Markup.ShouldNotContain("Пока еще нельзя никого пригласить");
+        cut.FindAll("select").ShouldBeEmpty();
+        cut.FindAll("button").ShouldBeEmpty();
     }
 
     [Fact]

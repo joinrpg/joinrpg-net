@@ -5,6 +5,11 @@
 {
     <JoinLoadingMessage />
 }
+else if (model.RoomFreeSpace == 0)
+{
+    @* Мест нет — молчим: заполненность уже видна в панели проживания, а у типа на одного
+       приглашать некого в принципе (#5644). *@
+}
 else if (!HasTargets)
 {
     <div style="margin-top: 1em;">
