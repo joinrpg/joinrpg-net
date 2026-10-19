@@ -9,6 +9,11 @@ public interface IAvatarService
     /// Ensures that is correct UserAvatar record for user
     /// </summary>
     Task<AvatarIdentification> EnsureAvatarPresent(int userId);
+
+    /// <summary>
+    /// Заводит аватарку по умолчанию тем из пользователей, у кого нет выбранной. Одно сохранение на всю пачку.
+    /// </summary>
+    Task EnsureDefaultAvatars(IReadOnlyCollection<UserIdentification> userIds);
     /// <summary>
     /// Delete avatar
     /// </summary>

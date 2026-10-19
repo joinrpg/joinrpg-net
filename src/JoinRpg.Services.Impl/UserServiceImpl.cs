@@ -282,6 +282,23 @@ public class UserServiceImpl(
         return new(userAvatar.UserAvatarId);
     }
 
+    async Task IAvatarService.EnsureDefaultAvatars(IReadOnlyCollection<UserIdentification> userIds)
+    {
+        var users = await UserRepository.GetUsersWithAvatars(userIds);
+        foreach (var user in users.Where(u => u.SelectedAvatarId is null))
+        {
+            if (user.Avatars.FirstOrDefault(a => a.AvatarSource == AvatarSource.GrAvatar && a.IsActive) is UserAvatar grAvatar)
+            {
+                user.SelectedAvatar = grAvatar;
+            }
+            else
+            {
+                _ = user.AddGravatar();
+            }
+        }
+        await UnitOfWork.SaveChangesAsync();
+    }
+
     async Task IAvatarService.SelectAvatar(int userId, AvatarIdentification avatarIdentification)
     {
         logger.LogInformation("Selecting {avatarId} for user({userId})", avatarIdentification, userId);

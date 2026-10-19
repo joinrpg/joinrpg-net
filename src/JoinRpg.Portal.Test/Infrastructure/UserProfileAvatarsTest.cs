@@ -71,6 +71,7 @@ public class UserProfileAvatarsTest
             return Task.FromResult(new AvatarIdentification(1000 + userId));
         }
 
+        public Task EnsureDefaultAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         public Task DeleteAvatar(int userId, AvatarIdentification avatarIdentification) => throw new NotImplementedException();
         public Task RecacheAvatar(UserIdentification userId, AvatarIdentification avatarIdentification, CancellationToken ct = default) => throw new NotImplementedException();
         public Task SelectAvatar(int userId, AvatarIdentification avatarIdentification) => throw new NotImplementedException();

@@ -57,6 +57,7 @@ public static class Services
             .AddDailyJob<UnhotNpcJob>()
             .AddDailyJob<HidePublicGroupsUnderPrivateJob>()
             .AddDailyJob<FormerMastersBackfillJob>()
+            .AddDailyJob<DefaultAvatarsBackfillJob>()
             .AddTransient<IPublicGroupVisibilityFixer, PublicGroupVisibilityFixer>()
 #pragma warning restore CS0618
             .AddTransient<ICharacterGroupService, CharacterGroupService>()

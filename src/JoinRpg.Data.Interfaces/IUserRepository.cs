@@ -2,6 +2,7 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.Data.Interfaces;
 
@@ -11,6 +12,16 @@ public interface IUserRepository
 
     Task<User> WithProfile(int userId);
     Task<User> GetWithSubscribe(int currentUserId);
+
+    /// <summary>
+    /// Пользователи без выбранной аватарки, страница по id.
+    /// </summary>
+    Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination);
+
+    /// <summary>
+    /// Пользователи вместе с аватарками — для правки.
+    /// </summary>
+    Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds);
     Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId);
 
     Task<UserInfo?> GetUserInfo(UserIdentification userId);
