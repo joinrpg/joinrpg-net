@@ -417,7 +417,7 @@ public class MockedProject
             character.InGame,
             character.AutoCreated,
             new MarkdownString(character.Description?.Contents ?? ""),
-            originalCharacterSlotId: null,
+            originalCharacterSlotId: CharacterIdentification.FromOptional(projectId, character.OriginalCharacterSlot?.CharacterId),
             [.. character.ParentCharacterGroupIds.Select(id => new CharacterGroupIdentification(projectId, id))],
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, character.JsonData),
             character.PlotElementOrderData,
