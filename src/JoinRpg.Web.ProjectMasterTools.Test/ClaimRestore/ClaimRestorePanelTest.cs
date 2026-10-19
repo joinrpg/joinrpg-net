@@ -2,6 +2,7 @@ using Bunit;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
@@ -252,6 +253,34 @@ public class ClaimRestorePanelTest : BunitContext
         cut.Find(".export-responsible").TextContent.ShouldContain("ответственный по выгрузке: Мастер — назначьте после восстановления");
     }
 
+    /// <summary>Мастер видит, что персонаж восстановится шаблоном, а не персонажем игрока (#5645).</summary>
+    [Theory]
+    [InlineData(CharacterType.Slot, true, "Горячий шаблон")]
+    [InlineData(CharacterType.Slot, false, "Шаблон")]
+    [InlineData(CharacterType.NonPlayer, false, "NPC")]
+    [InlineData(CharacterType.Player, true, "Горячая вакансия")]
+    public void ExportPlan_CreationOfNotPlainCharacter_ShowsType(CharacterType type, bool isHot, string expected)
+    {
+        client.Plans.Enqueue(ExportPlan() with
+        {
+            CharacterCreations = [CharacterRow(LostCharacter, ClaimRestoreActionView.Create) with { CharacterType = type, IsHot = isHot }],
+        });
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        cut.Find(".new-character-type").TextContent.ShouldBe($"будет создан как: {expected}");
+    }
+
+    [Fact]
+    public void ExportPlan_CreationOfPlayerCharacter_NoTypeNote()
+    {
+        client.Plans.Enqueue(ExportPlan());
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        cut.FindAll(".new-character-type").ShouldBeEmpty();
+    }
+
     [Fact]
     public void ExportPlan_ClaimRowNotApplied_ClaimFieldsBlocked()
     {
@@ -484,6 +513,7 @@ public class ClaimRestorePanelTest : BunitContext
         public bool Equals(CharacterRestoreApplyRequest? x, CharacterRestoreApplyRequest? y)
             => x is not null && y is not null
                 && x.CharacterId == y.CharacterId && x.Create == y.Create && x.Name == y.Name
+                && x.CharacterType == y.CharacterType && x.IsHot == y.IsHot
                 && (x.Groups ?? []).SequenceEqual(y.Groups ?? []) && x.Fields.SequenceEqual(y.Fields);
 
         public int GetHashCode(CharacterRestoreApplyRequest obj) => obj.CharacterId.GetHashCode();

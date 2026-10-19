@@ -86,13 +86,14 @@ public class MasterExportRoundTripTest
     private ClaimInfo ClaimInfoOf(Claim claim)
         => new(new ClaimInCharacter(mock.GetCharacterInfo(claim.Character), claim.GetId()), mock.PlayerInfo);
 
-    private byte[] ExportCharacters()
+    private byte[] ExportCharacters(params Character[] extraCharacters)
     {
         var approvedClaims = new Dictionary<CharacterIdentification, ClaimInfo>
         {
             [approvedCharacter.GetId()] = ClaimInfoOf(approvedClaim),
         };
         var items = new[] { approvedCharacter, freeCharacter }
+            .Concat(extraCharacters)
             .Select(c => new CharacterListItemViewModel(
                 mock.GetCharacterInfo(c),
                 new UserIdentification(mock.Master.UserId),
@@ -152,6 +153,33 @@ public class MasterExportRoundTripTest
         free.Name.ShouldBe("Свободный");
         free.Groups.ShouldBeEmpty();
         free.PlayerEmail.ShouldBeNull();
+    }
+
+    /// <summary>Тип персонажа переживает выгрузку через «Занят?» (#5645).</summary>
+    [Fact]
+    public void CharacterTypesRoundTrip()
+    {
+        var slot = mock.CreateSlot("Шаблон");
+        var hotSlot = mock.CreateSlot("Горячий шаблон");
+        hotSlot.IsHot = true;
+        var npc = mock.CreateCharacter("NPC");
+        npc.CharacterType = CharacterType.NonPlayer;
+        var hotVacancy = mock.CreateCharacter("Горячая вакансия");
+        hotVacancy.IsHot = true;
+
+        var result = Parse(ExportCharacters(slot, hotSlot, npc, hotVacancy));
+
+        result.Warnings.ShouldBeEmpty();
+        result.Rows.Select(r => r.CharacterType).ShouldBe(
+        [
+            // Занят и обсуждается — персонажи игроков.
+            MasterExportCharacterType.Player,
+            MasterExportCharacterType.Player,
+            new MasterExportCharacterType(CharacterType.Slot, IsHot: false),
+            new MasterExportCharacterType(CharacterType.Slot, IsHot: true),
+            new MasterExportCharacterType(CharacterType.NonPlayer, IsHot: false),
+            new MasterExportCharacterType(CharacterType.Player, IsHot: true),
+        ]);
     }
 
     [Fact]

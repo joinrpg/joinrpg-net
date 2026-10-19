@@ -605,7 +605,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
     public async Task LostCharacter_ActiveProject_Throws_AndNothingIsInserted()
     {
         _ = await Should.ThrowAsync<JoinValidationException>(
-            () => CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget));
+            () => CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, EmptyTarget));
 
         FindCharacter(LostId).ShouldBeNull();
     }
@@ -616,7 +616,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         BlockProject();
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateService(mock.Player.UserId).RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget));
+            () => CreateService(mock.Player.UserId).RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, EmptyTarget));
 
         FindCharacter(LostId).ShouldBeNull();
     }
@@ -628,7 +628,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         BlockProject();
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateService(master.UserId).RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget));
+            () => CreateService(master.UserId).RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, EmptyTarget));
 
         FindCharacter(LostId).ShouldBeNull();
     }
@@ -641,7 +641,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         BlockProject();
 
         _ = await Should.ThrowAsync<JoinValidationException>(
-            () => CreateService().RestoreLostCharacter(LostCharacterId, name, EmptyTarget));
+            () => CreateService().RestoreLostCharacter(LostCharacterId, name, CharacterType.Player, isHot: false, EmptyTarget));
 
         FindCharacter(LostId).ShouldBeNull();
     }
@@ -655,7 +655,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         var nameBefore = mock.Character.CharacterName;
 
         await CreateService().RestoreLostCharacter(
-            mock.Character.GetId(), "Другое имя", new RestoredCharacterTarget(null, Fields((field, "из выгрузки"))));
+            mock.Character.GetId(), "Другое имя", CharacterType.Player, isHot: false, new RestoredCharacterTarget(null, Fields((field, "из выгрузки"))));
 
         mock.Character.CharacterName.ShouldBe(nameBefore);
         GetCharacterValue(mock.Character, field).ShouldBe("из выгрузки");
@@ -669,7 +669,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
 
         _ = await Should.ThrowAsync<ArgumentException>(
             () => CreateService().RestoreLostCharacter(
-                LostCharacterId, "Потерянный", new RestoredCharacterTarget(null, Fields((claimField, "значение")))));
+                LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, new RestoredCharacterTarget(null, Fields((claimField, "значение")))));
 
         FindCharacter(LostId).ShouldBeNull();
     }
@@ -684,6 +684,8 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         await CreateService().RestoreLostCharacter(
             LostCharacterId,
             "Потерянный",
+            CharacterType.Player,
+            isHot: false,
             new RestoredCharacterTarget(
                 [new CharacterGroupIdentification(ProjectId, mock.Group.CharacterGroupId)],
                 Fields((field, "из выгрузки"))));
@@ -699,12 +701,53 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         SentInOrder.ShouldBeEmpty();
     }
 
+    /// <summary>Тип — из «Занят?» выгрузки (#5645): шаблоны не восстанавливаются персонажами игроков.</summary>
+    [Theory]
+    [InlineData(CharacterType.Slot, false)]
+    [InlineData(CharacterType.Slot, true)]
+    [InlineData(CharacterType.NonPlayer, false)]
+    [InlineData(CharacterType.Player, true)]
+    public async Task LostCharacter_IsInsertedWithGivenType(CharacterType type, bool isHot)
+    {
+        BlockProject();
+
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", type, isHot, EmptyTarget);
+
+        var character = FindCharacter(LostId).ShouldNotBeNull();
+        character.CharacterType.ShouldBe(type);
+        character.IsHot.ShouldBe(isHot);
+        character.CharacterSlotLimit.ShouldBeNull();
+        character.CharacterName.ShouldBe("Потерянный");
+    }
+
+    [Fact]
+    public async Task LostCharacter_HotNpc_ThrowsBeforeInserting()
+    {
+        BlockProject();
+
+        _ = await Should.ThrowAsync<ArgumentException>(
+            () => CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.NonPlayer, isHot: true, EmptyTarget));
+
+        FindCharacter(LostId).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task LostCharacter_Existing_TypeIsNotChanged()
+    {
+        BlockProject();
+
+        await CreateService().RestoreLostCharacter(mock.Character.GetId(), "Другое имя", CharacterType.Slot, isHot: true, EmptyTarget);
+
+        mock.Character.CharacterType.ShouldBe(CharacterType.Player);
+        mock.Character.IsHot.ShouldBeFalse();
+    }
+
     [Fact]
     public async Task LostCharacter_NoFields_StaysInRootGroup()
     {
         BlockProject();
 
-        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget);
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, EmptyTarget);
 
         var character = FindCharacter(LostId).ShouldNotBeNull();
         character.CharacterName.ShouldBe("Потерянный");
@@ -718,7 +761,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         mock.Project.Details.CharacterNameField = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == nameField.Id.ProjectFieldId);
         BlockProject();
 
-        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", EmptyTarget);
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, EmptyTarget);
 
         var character = FindCharacter(LostId).ShouldNotBeNull();
         character.CharacterName.ShouldBe("Потерянный");
@@ -732,7 +775,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         var service = CreateService();
 
         await service.RestoreLostGroup(LostGroupId, "Потерянная");
-        await service.RestoreLostCharacter(LostCharacterId, "Потерянный", new RestoredCharacterTarget([LostGroupId], null));
+        await service.RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, new RestoredCharacterTarget([LostGroupId], null));
 
         FindCharacter(LostId).ShouldNotBeNull().ParentCharacterGroupIds.ShouldBe([LostId]);
     }
@@ -745,7 +788,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         var countBefore = mock.Project.Characters.Count;
 
         await CreateService().RestoreLostCharacter(
-            mock.Character.GetId(), "Другое имя", new RestoredCharacterTarget(null, Fields((field, "из выгрузки"))));
+            mock.Character.GetId(), "Другое имя", CharacterType.Player, isHot: false, new RestoredCharacterTarget(null, Fields((field, "из выгрузки"))));
 
         mock.Project.Characters.Count.ShouldBe(countBefore);
         GetCharacterValue(mock.Character, field).ShouldBe("из выгрузки");
@@ -759,11 +802,11 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         var target = new RestoredCharacterTarget(
             [new CharacterGroupIdentification(ProjectId, mock.Group.CharacterGroupId)],
             Fields((field, "из выгрузки")));
-        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", target);
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, target);
         var countAfterFirst = mock.Project.Characters.Count;
         var savesAfterFirst = SaveChangesCallCount;
 
-        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", target);
+        await CreateService().RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, target);
 
         mock.Project.Characters.Count.ShouldBe(countAfterFirst);
         SaveChangesCallCount.ShouldBe(savesAfterFirst);
@@ -776,7 +819,7 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
         var id = Fakes.FakeCharacterAggregateWriteRepository.CharacterIdentityCurrent;
 
         _ = await Should.ThrowAsync<JoinValidationException>(
-            () => CreateService().RestoreLostCharacter(new CharacterIdentification(ProjectId, id), "Будущий", EmptyTarget));
+            () => CreateService().RestoreLostCharacter(new CharacterIdentification(ProjectId, id), "Будущий", CharacterType.Player, isHot: false, EmptyTarget));
 
         FindCharacter(id).ShouldBeNull();
     }

@@ -1,3 +1,4 @@
+@using JoinRpg.DomainTypes.Characters
 @using JoinRpg.Helpers
 @using JoinRpg.Web.Claims
 @inject IClaimRestoreClient Client
@@ -567,6 +568,10 @@
                                     @r.Name
                                 }
                                 <div class="text-muted small">выгрузка от @Format(r.ExportedAt)</div>
+                                @if (row.Create && NewCharacterTypeText(r) is { } typeText)
+                                {
+                                    <div class="small new-character-type">будет создан как: @typeText</div>
+                                }
                                 @if (r.ExportResponsibleMaster is { } responsible)
                                 {
                                     <div class="text-muted small export-responsible">
@@ -708,6 +713,16 @@
     };
 
     private static string ValueText(string value) => string.IsNullOrEmpty(value) ? "(пусто)" : value;
+
+    /// <summary>Тип нового персонажа, если он не обычный персонаж игрока; null — обычный.</summary>
+    private static string? NewCharacterTypeText(CharacterRestoreRowViewModel row) => (row.CharacterType, row.IsHot) switch
+    {
+        (CharacterType.Slot, true) => CharacterBusyStatusView.HotSlot.GetDisplayName(),
+        (CharacterType.Slot, false) => CharacterBusyStatusView.Slot.GetDisplayName(),
+        (CharacterType.NonPlayer, _) => CharacterBusyStatusView.Npc.GetDisplayName(),
+        (CharacterType.Player, true) => CharacterBusyStatusView.HotVacancy.GetDisplayName(),
+        _ => null,
+    };
 
     private static string GroupList(IReadOnlyList<RestoreGroupOption> groups)
         => groups.Count == 0 ? "нет групп" : string.Join(", ", groups.Select(g => g.Name));

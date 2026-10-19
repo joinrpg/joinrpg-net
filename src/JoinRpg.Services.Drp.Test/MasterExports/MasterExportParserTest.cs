@@ -1,4 +1,5 @@
 using System.Text;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Services.Drp.MasterExports;
 using static JoinRpg.Services.Drp.Test.MasterExports.MasterExportTestHelpers;
 
@@ -368,6 +369,62 @@ public class MasterExportParserTest
             ClaimStatus.DeclinedByMaster, ClaimStatus.Discussed, ClaimStatus.OnHold, ClaimStatus.CheckedIn,
         ]);
     }
+
+    /// <summary>
+    /// Тип персонажа из «Занят?» (#5645). До 2026-10-18 (#5624) шаблоны и горячая вакансия выгружались
+    /// именем члена enum — узнаём и их.
+    /// </summary>
+    [Theory]
+    [InlineData("Занят", CharacterType.Player, false)]
+    [InlineData("Обсуждается", CharacterType.Player, false)]
+    [InlineData("Нет заявок", CharacterType.Player, false)]
+    [InlineData("Горячая вакансия", CharacterType.Player, true)]
+    [InlineData("HotVacancy", CharacterType.Player, true)]
+    [InlineData("NPC", CharacterType.NonPlayer, false)]
+    [InlineData("Шаблон", CharacterType.Slot, false)]
+    [InlineData("Slot", CharacterType.Slot, false)]
+    [InlineData(" Горячий шаблон ", CharacterType.Slot, true)]
+    [InlineData("HotSlot", CharacterType.Slot, true)]
+    public void BusyStatus_GivesCharacterType(string busyStatus, CharacterType type, bool isHot)
+    {
+        var row = Parse(Xlsx(
+            ["Персонаж", "Персонаж", "Занят?", "Группы", "Входит в группы"],
+            ["Арагорн", CharacterLink, busyStatus, "", ""])).Rows.ShouldHaveSingleItem();
+
+        row.CharacterType.ShouldBe(new MasterExportCharacterType(type, isHot));
+        row.Warnings.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Неизвестно")]
+    [InlineData("Unknown")]
+    public void BusyStatusEmptyOrUnknown_TypeUnknownWithoutWarning(string busyStatus)
+    {
+        var row = Parse(Xlsx(
+            ["Персонаж", "Персонаж", "Занят?", "Группы", "Входит в группы"],
+            ["Арагорн", CharacterLink, busyStatus, "", ""])).Rows.ShouldHaveSingleItem();
+
+        row.CharacterType.ShouldBeNull();
+        row.Warnings.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void BusyStatusNotRecognized_IsWarning()
+    {
+        var result = Parse(Xlsx(
+            ["Персонаж", "Персонаж", "Занят?", "Группы", "Входит в группы"],
+            ["Арагорн", CharacterLink, "Полузанят", "", ""]));
+
+        var row = result.Rows.ShouldHaveSingleItem();
+        row.CharacterType.ShouldBeNull();
+        row.Warnings.ShouldBe([MasterExportWarning.UnknownBusyStatus]);
+        result.Warnings.ShouldContain(MasterExportWarning.UnknownBusyStatus);
+    }
+
+    [Fact]
+    public void NoBusyStatusColumn_TypeUnknown()
+        => Parse(Xlsx(["Персонаж", "Персонаж"], ["Арагорн", CharacterLink])).Rows.ShouldHaveSingleItem().CharacterType.ShouldBeNull();
 
     [Fact]
     public void NoLinkColumn_Throws()

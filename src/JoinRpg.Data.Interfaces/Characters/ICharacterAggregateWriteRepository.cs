@@ -176,13 +176,17 @@ public record RestoredFinanceOperationInsert(RestoredCommentInsertResult Result,
 /// как его пишет сохранение полей при настроенном поле описания.
 /// </param>
 /// <param name="CreatedAt">Время создания и изменения (UTC) — восстановленный персонаж поднимает дату обновления проекта.</param>
+/// <param name="CharacterType">Тип персонажа. Заявки не принимает только NPC; лимита у шаблона нет.</param>
+/// <param name="IsHot">Горячий ли; у NPC не бывает.</param>
 public record RestoredCharacterShell(
     CharacterIdentification CharacterId,
     CharacterGroupIdentification RootGroupId,
     string CharacterName,
     string? Description,
     UserIdentification CreatedBy,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    CharacterType CharacterType,
+    bool IsHot);
 
 /// <summary>
 /// Минимум, без которого строки заявки нет: персонаж, игрок, ответственный мастер и дата подачи.

@@ -84,9 +84,22 @@ internal class ExportRestoreService(
     /// операцией над персонажем). Вместо неё — повторяемость: оборвись между шагами, повтор найдёт
     /// оболочку («уже есть») и доведёт её до состояния по выгрузке.
     /// </remarks>
-    public async Task RestoreLostCharacter(CharacterIdentification characterId, string name, RestoredCharacterTarget target)
+    public async Task RestoreLostCharacter(
+        CharacterIdentification characterId,
+        string name,
+        CharacterType characterType,
+        bool isHot,
+        RestoredCharacterTarget target)
     {
         // Всё, что можно проверить, — до вставки: после неё неудача оставит оболочку.
+        if (!Enum.IsDefined(characterType))
+        {
+            throw new ArgumentOutOfRangeException(nameof(characterType), characterType, "Unknown character type");
+        }
+        if (isHot && characterType == CharacterType.NonPlayer)
+        {
+            throw new ArgumentException("NPCs are not hot", nameof(isHot));
+        }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterId.ProjectId);
         EnsureProjectBlocked(projectInfo);
         _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanEditRoles);
@@ -113,7 +126,9 @@ internal class ExportRestoreService(
                 name,
                 description,
                 currentUserAccessor.UserIdentification,
-                DateTime.UtcNow));
+                DateTime.UtcNow,
+                characterType,
+                isHot));
         // TODO[Localize]
         EnsureShellInserted(result, $"Персонаж {characterId.CharacterId}");
         if (result == RestoredShellInsertResult.Inserted)

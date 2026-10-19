@@ -124,6 +124,11 @@ public enum ProjectRestoreWarning
     /// отфильтрована. План берёт его из старой выгрузки; создание — только по решению мастера.
     /// </summary>
     MissingInNewerExport,
+
+    /// <summary>
+    /// Тип персонажа в базе (персонаж игрока, NPC, шаблон) другой, чем в «Занят?» выгрузки. План тип не меняет.
+    /// </summary>
+    CharacterTypeDiffers,
 }
 
 /// <summary>Пометка, не относящаяся к одной строке плана: про выгрузку целиком или про её строку.</summary>
@@ -212,6 +217,13 @@ public record CharacterRestorePlanRow(
     /// (<see cref="ProjectRestoreWarning.ChangedAfterRestore"/>) или группы из выгрузки старше бэкапа.
     /// </summary>
     public bool GroupsApplyByDefault { get; init; } = true;
+
+    /// <summary>
+    /// Тип персонажа по «Занят?» самой свежей выгрузки персонажей, где он есть; null — неизвестен (или
+    /// персонажа нет в выгрузках персонажей). Создаётся персонаж этого типа, а неизвестного — персонажем
+    /// игрока. Тип существующего персонажа план не меняет (<see cref="ProjectRestoreWarning.CharacterTypeDiffers"/>).
+    /// </summary>
+    public MasterExportCharacterType? ExportCharacterType { get; init; }
 }
 
 /// <summary>

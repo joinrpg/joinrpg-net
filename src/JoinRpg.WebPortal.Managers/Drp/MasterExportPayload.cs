@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text.Json;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Services.Drp.MasterExports;
 
 namespace JoinRpg.WebPortal.Managers.Drp;
@@ -72,7 +73,9 @@ internal static class MasterExportPayload
                 && e.Rows.All(r => r is not null
                     && r.Groups is not null && r.Groups.All(g => g is not null && g.Name is not null)
                     && r.OtherCells is not null && r.OtherCells.All(c => c is not null && c.Header is not null && c.Value is not null)
-                    && r.Warnings is not null);
+                    && r.Warnings is not null
+                    && (r.CharacterType is not { } type
+                        || (Enum.IsDefined(type.Type) && !(type.Type == CharacterType.NonPlayer && type.IsHot))));
 
         return Valid(export) ? export! : throw new FormatException("Incomplete master export payload");
     }

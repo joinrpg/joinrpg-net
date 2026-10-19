@@ -79,7 +79,9 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
 
         var character = mock.CreateCharacter(shell.CharacterName);
         character.CharacterId = shell.CharacterId.CharacterId;
-        character.CharacterType = CharacterType.Player;
+        character.CharacterType = shell.CharacterType;
+        character.IsHot = shell.IsHot;
+        character.CharacterSlotLimit = null;
         character.IsPublic = false;
         character.HidePlayerForCharacter = true;
         character.JsonData = "{}";

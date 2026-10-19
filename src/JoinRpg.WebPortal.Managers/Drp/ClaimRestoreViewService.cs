@@ -115,7 +115,7 @@ internal class ClaimRestoreViewService(
             // TODO[Localize]
             throw new JoinValidationException("Не указано имя персонажа.");
         }
-        await exportRestoreService.RestoreLostCharacter(request.CharacterId, request.Name.Trim(), target);
+        await exportRestoreService.RestoreLostCharacter(request.CharacterId, request.Name.Trim(), request.CharacterType, request.IsHot, target);
     }
 
     public async Task ApplyClaimFields(ClaimFieldsRestoreApplyRequest request)

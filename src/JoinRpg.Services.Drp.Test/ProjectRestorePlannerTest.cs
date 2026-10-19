@@ -47,9 +47,15 @@ public class ProjectRestorePlannerTest
     private CharacterGroupIdentification GroupId(int id) => new(ProjectId, id);
     private ClaimIdentification ClaimId(int id) => new(ProjectId, id);
 
-    private static MasterExportRow CharacterRow(int id, string name, (int Id, string Name)[] groups, string strength = "", string? playerEmail = null)
+    private static MasterExportRow CharacterRow(
+        int id, string name, (int Id, string Name)[] groups, string strength = "", string? playerEmail = null, MasterExportCharacterType? type = null)
         => new(id, id, null, name, [.. groups.Select(g => new MasterExportGroupRef(g.Id, g.Name))], Master.DisplayName.DisplayName,
-            playerEmail, null, null, null, null, null, null, [new MasterExportCell("Сила", strength, false)]);
+            playerEmail, null, null, null, null, null, null, [new MasterExportCell("Сила", strength, false)])
+        {
+            CharacterType = type,
+        };
+
+    private static readonly MasterExportCharacterType SlotType = new(CharacterType.Slot, IsHot: false);
 
     private static MasterExportRow ClaimRow(int id, string characterName, ClaimStatus status, string? playerEmail = PlayerEmail, string wishes = "", string strength = "", int? totalFee = null, int? feePaid = null)
         => new(id, null, id, characterName, [], Master.DisplayName.DisplayName, playerEmail, null, status, totalFee, feePaid, null, null,
@@ -266,6 +272,88 @@ public class ProjectRestorePlannerTest
         var row = plan.Claims.ShouldHaveSingleItem();
         row.Character.ShouldBe(CharacterId(104));
         row.Warnings.ShouldNotContain(ClaimRestoreWarning.CharacterAmbiguous);
+    }
+
+    /// <summary>Тип из «Занят?» переходит в строку создания; неизвестный остаётся неизвестным (#5645).</summary>
+    [Fact]
+    public void CreatedCharacterCarriesTypeFromExport()
+    {
+        var hotSlot = new MasterExportCharacterType(CharacterType.Slot, IsHot: true);
+        var plan = Plan([CharacterExport(Day(5),
+            CharacterRow(101, "Стражник", [], type: hotSlot),
+            CharacterRow(102, "Гамлет", []))]);
+
+        plan.CharacterCreations.Single(c => c.CharacterId == CharacterId(101)).ExportCharacterType.ShouldBe(hotSlot);
+        plan.CharacterCreations.Single(c => c.CharacterId == CharacterId(102)).ExportCharacterType.ShouldBeNull();
+        plan.CharacterCreations.ShouldAllBe(c => c.ApplyByDefault);
+    }
+
+    /// <summary>
+    /// Шаблон, создаваемый по выгрузке, — шаблон и для привязки заявок: принятая заявка на него не садится
+    /// (одобрение создало из шаблона нового персонажа), а обсуждаемая — садится.
+    /// </summary>
+    [Fact]
+    public void CreatedSlotIsSlotForClaimMatching()
+    {
+        var plan = Plan([
+            CharacterExport(Day(5), CharacterRow(101, "Стражник", [], type: SlotType)),
+            ClaimExport(Day(5),
+                ClaimRow(3000, "Стражник", ClaimStatus.Approved),
+                ClaimRow(3001, "Стражник", ClaimStatus.Discussed)),
+        ]);
+
+        var approved = plan.Claims.Single(c => c.ClaimId == ClaimId(3000));
+        approved.Character.ShouldNotBe(CharacterId(101));
+        approved.Warnings.ShouldContain(ClaimRestoreWarning.ApprovedOnSlot);
+        var discussed = plan.Claims.Single(c => c.ClaimId == ClaimId(3001));
+        discussed.Character.ShouldBe(CharacterId(101));
+    }
+
+    [Fact]
+    public void ExistingCharacterOfOtherType_IsWarned_TypeNotChanged()
+    {
+        var plan = Plan(
+            [CharacterExport(Day(5),
+                CharacterRow(101, "Гамлет", [], type: SlotType),
+                CharacterRow(102, "Офелия", [], type: SlotType),
+                CharacterRow(103, "Полоний", [], type: SlotType))],
+            characters: [
+                DbCharacter(101, "Гамлет") with { CharacterType = CharacterType.Player },
+                DbCharacter(102, "Офелия") with { CharacterType = CharacterType.Slot },
+                // Тип не передан — не сверяем.
+                DbCharacter(103, "Полоний"),
+            ]);
+
+        var hamlet = plan.CharacterChanges.Single(c => c.CharacterId == CharacterId(101));
+        hamlet.Warnings.ShouldContain(ProjectRestoreWarning.CharacterTypeDiffers);
+        hamlet.Action.ShouldBe(ProjectRestoreAction.Nothing);
+        hamlet.ExportCharacterType.ShouldBe(SlotType);
+        plan.CharacterChanges.Single(c => c.CharacterId == CharacterId(102)).Warnings.ShouldNotContain(ProjectRestoreWarning.CharacterTypeDiffers);
+        plan.CharacterChanges.Single(c => c.CharacterId == CharacterId(103)).Warnings.ShouldNotContain(ProjectRestoreWarning.CharacterTypeDiffers);
+    }
+
+    [Fact]
+    public void InactiveCharacterOfOtherType_IsNotWarnedAboutType()
+    {
+        var plan = Plan(
+            [CharacterExport(Day(5), CharacterRow(101, "Гамлет", [], type: SlotType))],
+            characters: [DbCharacter(101, "Гамлет") with { IsActive = false, CharacterType = CharacterType.Player }]);
+
+        var hamlet = plan.Characters.Single(c => c.CharacterId == CharacterId(101));
+        hamlet.Warnings.ShouldContain(ProjectRestoreWarning.CharacterInactive);
+        hamlet.Warnings.ShouldNotContain(ProjectRestoreWarning.CharacterTypeDiffers);
+    }
+
+    [Fact]
+    public void UnknownTypeInExport_IsNotWarnedAboutType()
+    {
+        var plan = Plan(
+            [CharacterExport(Day(5), CharacterRow(101, "Гамлет", [], type: null))],
+            characters: [DbCharacter(101, "Гамлет") with { CharacterType = CharacterType.Slot }]);
+
+        var hamlet = plan.Characters.Single(c => c.CharacterId == CharacterId(101));
+        hamlet.ExportCharacterType.ShouldBeNull();
+        hamlet.Warnings.ShouldNotContain(ProjectRestoreWarning.CharacterTypeDiffers);
     }
 
     [Fact]

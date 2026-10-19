@@ -160,7 +160,11 @@ public sealed class CharacterRestoreRowEditor : RestoreRowEditorBase
         => ApplyGroups && Row.Groups is { } groups ? [.. groups.Select(g => g.GroupId)] : null;
 
     public CharacterRestoreApplyRequest ToApplyRequest()
-        => new(Row.CharacterId, Create, Create ? Name.Trim() : null, GroupsToApply, SelectedFields(Fields));
+        => new(Row.CharacterId, Create, Create ? Name.Trim() : null, GroupsToApply, SelectedFields(Fields))
+        {
+            CharacterType = Row.CharacterType,
+            IsHot = Row.IsHot,
+        };
 
     public void CopyEditsFrom(CharacterRestoreRowEditor previous)
     {

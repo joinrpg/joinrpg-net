@@ -251,6 +251,11 @@ public static class ProjectRestorePlanner
                 {
                     warnings.Add(ProjectRestoreWarning.CharacterInactive);
                 }
+                else if (row.CharacterType is { } exportType && current.CharacterType is { } currentType && exportType.Type != currentType)
+                {
+                    // Тип не меняем: шаблон с заявками или персонаж с заявками — смена типа не механическая.
+                    warnings.Add(ProjectRestoreWarning.CharacterTypeDiffers);
+                }
             }
             else if (taken.Contains(id))
             {
@@ -330,8 +335,11 @@ public static class ProjectRestorePlanner
                     c.CharacterId,
                     c.Name!,
                     IsActive: true,
-                    IsSlot: false,
-                    FindMaster(notifications.Masters, c.Row.ResponsibleMasterName) ?? notifications.DefaultResponsibleMaster)),
+                    IsSlot: c.Row.CharacterType?.Type == CharacterType.Slot,
+                    FindMaster(notifications.Masters, c.Row.ResponsibleMasterName) ?? notifications.DefaultResponsibleMaster)
+                {
+                    CharacterType = (c.Row.CharacterType ?? MasterExportCharacterType.Player).Type,
+                }),
         ];
 
         return ClaimRestorePlanner.Plan(notifications with { Characters = candidates }, context);
@@ -437,7 +445,10 @@ public static class ProjectRestorePlanner
             if (skeleton is { Action: ProjectRestoreAction.Nothing })
             {
                 rows.Add(new CharacterRestorePlanRow(characterId, ProjectRestoreAction.Nothing, skeleton.Name, null,
-                    current?.Groups ?? [], [], null, exportedAt, false, warnings));
+                    current?.Groups ?? [], [], null, exportedAt, false, warnings)
+                {
+                    ExportCharacterType = skeleton.Row.CharacterType,
+                });
                 continue;
             }
 
@@ -459,7 +470,10 @@ public static class ProjectRestorePlanner
                     FindMaster(source.Notifications.Masters, skeleton.Row.ResponsibleMasterName),
                     exportedAt,
                     skeleton.ApplyByDefault,
-                    warnings));
+                    warnings)
+                {
+                    ExportCharacterType = skeleton.Row.CharacterType,
+                });
                 continue;
             }
 
@@ -520,6 +534,7 @@ public static class ProjectRestorePlanner
                 [.. warnings.Distinct()])
             {
                 GroupsApplyByDefault = groupsApply,
+                ExportCharacterType = skeleton?.Row.CharacterType,
             });
         }
         return (rows, planned);
