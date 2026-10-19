@@ -847,6 +847,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5635](https://github.com/joinrpg/joinrpg-net/issues/5635) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 3: группы персонажей в блокировке | 7 | влит |
 | [#5636](https://github.com/joinrpg/joinrpg-net/issues/5636) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 4: ADR023 — настройки в блокировке | 7 | влит |
 | [docs#297](https://github.com/joinrpg/joinrpg-docs/pull/297) | Инструкция: настройки в блокировке ([#5630](https://github.com/joinrpg/joinrpg-net/issues/5630)) | 7 | влит |
+| [docs#301](https://github.com/joinrpg/joinrpg-docs/pull/301) | Инструкция: поле с именем персонажа — только если оно есть; категории комнат в блокировке | 6 | открыт |
 | [#5620](https://github.com/joinrpg/joinrpg-net/issues/5620) | Ложная пометка «Изменено после восстановления» (Closes [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619)) | 7 | влит |
 | [#5640](https://github.com/joinrpg/joinrpg-net/issues/5640) | Не создан — не ссылка на странице восстановления (Closes [#5639](https://github.com/joinrpg/joinrpg-net/issues/5639)) | 7 | влит |
 | [#5654](https://github.com/joinrpg/joinrpg-net/issues/5654) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 1: не принимать заявку на персонажа с принятой | 7 | влит |
