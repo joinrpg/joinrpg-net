@@ -218,13 +218,22 @@ public class FinanceRestorePlannerTest
     [Fact]
     public void UnparsedEventsAreWarned()
     {
-        var invitation = Row($"{ProjectTitle}: приглашение на поселение", "Добрый день, Игрок Игроков\n\nВас пригласили жить вместе",
+        var unknown = Row($"{ProjectTitle}: что-то новое", "Добрый день, Игрок Игроков\n\nНепонятный текст",
             Master, Player, CommentRef(556), Day(1));
 
-        var row = SingleRow(Plan([invitation], MasterPaid(Day(2))));
+        var row = SingleRow(Plan([unknown], MasterPaid(Day(2))));
 
         row.Unparsed.ShouldBe(1);
         row.Warnings.ShouldBe([FinanceRestoreWarning.UnparsedEvents]);
+    }
+
+    [Fact]
+    public void AccommodationInviteIsNotUnparsed()
+    {
+        var row = SingleRow(Plan([AccommodationInvite(Day(1))], MasterPaid(Day(2))));
+
+        row.Unparsed.ShouldBe(0);
+        row.Warnings.ShouldBeEmpty();
     }
 
     [Fact]

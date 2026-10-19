@@ -43,6 +43,8 @@ public static class ClaimNotificationParser
     private const string CommentShortName = "откомментирована";
     private const string MoneyPrefix = "Сумма операции: ";
     private const string LegacyClaimLinkPrefix = "Страница заявки: ";
+    /// <summary>Заголовок приглашений к проживанию (<c>AccommodationNotificationTextBuilder</c>).</summary>
+    private const string AccommodationInviteHeaderSuffix = ": приглашения к проживанию";
 
     private static readonly Dictionary<string, CommentExtraAction> ActionsByDisplayName =
         Enum.GetValues<UiCommentExtraAction>().ToDictionary(a => a.GetDisplayName(), a => (CommentExtraAction)a);
@@ -120,7 +122,12 @@ public static class ClaimNotificationParser
             }
         }
 
-        var kind = reference is FinanceOperationIdentification ? ClaimNotificationKind.OnlinePayment : ClaimNotificationKind.Other;
+        var kind = reference switch
+        {
+            FinanceOperationIdentification => ClaimNotificationKind.OnlinePayment,
+            _ when header.EndsWith(AccommodationInviteHeaderSuffix, StringComparison.Ordinal) => ClaimNotificationKind.AccommodationInvite,
+            _ => ClaimNotificationKind.Other,
+        };
         return new ClaimNotificationEvent(claimId, reference, createdAt, initiator, kind,
             CharacterName: null, PlayerName: null, Action: null, Author: null, MasterName: null, Money: null, CleanText(rest), recipients);
     }

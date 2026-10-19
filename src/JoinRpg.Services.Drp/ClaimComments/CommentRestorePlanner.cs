@@ -75,7 +75,10 @@ public static class CommentRestorePlanner
         HashSet<int> takenIds,
         HashSet<UserIdentification> masters)
     {
-        var afterBackup = claimEvents.Where(e => e.CreatedAt >= source.BackupTakenAt).ToList();
+        // Приглашения к проживанию заявку не меняют — ни комментариев, ни строки плана из них не будет.
+        var afterBackup = claimEvents
+            .Where(e => e.CreatedAt >= source.BackupTakenAt && e.Kind != ClaimNotificationKind.AccommodationInvite)
+            .ToList();
         if (afterBackup.Count == 0)
         {
             return null;

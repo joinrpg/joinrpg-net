@@ -143,16 +143,25 @@ public class ClaimNotificationParserTest
     }
 
     [Fact]
+    public void AccommodationInvite()
+    {
+        // Приглашения к проживанию тоже ссылаются на заявку, но устроены иначе.
+        var e = Parse([ClaimNotificationFactory.AccommodationInvite(Day(1))]).ShouldHaveSingleItem();
+
+        e.Kind.ShouldBe(ClaimNotificationKind.AccommodationInvite);
+        e.CharacterName.ShouldBeNull();
+        e.Recipients.ShouldHaveSingleItem().GreetingName.ShouldBe("Игрок Игроков");
+    }
+
+    [Fact]
     public void OtherClaimNotification()
     {
-        // Приглашения на поселение тоже ссылаются на заявку, но устроены иначе.
-        var row = Row($"{ProjectTitle}: приглашение на поселение", "Добрый день, Игрок Игроков\n\nВас пригласили жить вместе", Master, Player, Claim, Day(1));
+        var row = Row($"{ProjectTitle}: что-то новое", "Добрый день, Игрок Игроков\n\nНепонятный текст", Master, Player, Claim, Day(1));
 
         var e = Parse([row]).ShouldHaveSingleItem();
 
         e.Kind.ShouldBe(ClaimNotificationKind.Other);
         e.CharacterName.ShouldBeNull();
-        e.Recipients.ShouldHaveSingleItem().GreetingName.ShouldBe("Игрок Игроков");
     }
 
     [Fact]
