@@ -15,4 +15,9 @@ internal interface IAccommodationNotificationService
     /// Уведомление об изменении приглашения к совместному проживанию.
     /// </summary>
     Task SendNotification(AccommodationInviteNotification model);
+
+    /// <summary>
+    /// Уведомление о том, что мастер поселил игроков вместе.
+    /// </summary>
+    Task SendNotification(AccommodationGroupMergedNotification model);
 }

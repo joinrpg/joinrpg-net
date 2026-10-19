@@ -120,6 +120,81 @@ internal class AccommodationNotificationService(
         }
     }
 
+    public async Task SendNotification(AccommodationGroupMergedNotification model)
+    {
+        var claims = await claimsRepository.GetClaimHeadersWithPlayer(model.Members);
+        if (claims.Count == 0)
+        {
+            return;
+        }
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(claims.First().ClaimId.ProjectId);
+        var byId = claims.ToDictionary(claim => claim.ClaimId);
+
+        var data = new GroupMergedTextData(
+            projectInfo.ProjectName,
+            model.Initiator.DisplayName,
+            PlayerNames(model.Members, byId));
+        var header = textBuilder.GetHeader(data);
+        var body = new NotificationEventTemplate(textBuilder.GetBody(data));
+
+        // Игрокам — по уведомлению со ссылкой на свою заявку: чужую заявку игрок не откроет.
+        // Мастерам и прочим подписчикам — одно на всех: подписанный на несколько заявок группы иначе
+        // получил бы столько одинаковых писем, сколько в ней заявок. Подписка — та же, что у
+        // приглашений: объединение заменяет пару «пригласить — принять», и получать его должны те же
+        // люди. Ответственный мастер на приглашения не подписан (SubscribeCalculator.CreateForRespMaster),
+        // поэтому в расчёт его не отдаём.
+        var players = new HashSet<UserIdentification>();
+        var masters = new Dictionary<UserIdentification, NotificationRecepient>();
+        foreach (var claim in claims)
+        {
+            var args = new SubscribeCalculateArgs(
+                Predicate: subscribe => subscribe.AccommodationInvitesChange,
+                Initiator: model.Initiator,
+                Player: [claim.Player],
+                RespMasters: [],
+                Claims: [claim.ClaimId],
+                Characters: [claim.CharacterId],
+                Finance: [],
+                RespondingTo: []);
+
+            var recipients = await subscribeCalculator.GetRecepients(args, projectInfo);
+            var player = recipients.Where(r => r.SubscriptionReason == SubscriptionReason.Player).ToList();
+            foreach (var recipient in recipients.Except(player))
+            {
+                _ = masters.TryAdd(recipient.UserId, recipient);
+            }
+
+            if (player.Count == 0)
+            {
+                // Обычно — игрок сам инициатор.
+                continue;
+            }
+
+            players.UnionWith(player.Select(r => r.UserId));
+            await notificationService.QueueNotification(new NotificationEvent(
+                NotificationClass.Accommodation,
+                claim.ClaimId,
+                header,
+                body,
+                player,
+                model.Initiator.UserId));
+        }
+
+        // Игрок одной из заявок, подписанный ещё и как мастер, своё уже получил.
+        var masterRecipients = masters.Values.Where(r => !players.Contains(r.UserId)).ToList();
+        if (masterRecipients.Count > 0)
+        {
+            await notificationService.QueueNotification(new NotificationEvent(
+                NotificationClass.Accommodation,
+                model.Host,
+                header,
+                body,
+                masterRecipients,
+                model.Initiator.UserId));
+        }
+    }
+
     /// <summary>
     /// Имена игроков строго в порядке переданных заявок: порядок виден в тексте уведомления, а
     /// репозиторий его не обещает. Заявку, которой в выборке не оказалось, молча пропускаем — на

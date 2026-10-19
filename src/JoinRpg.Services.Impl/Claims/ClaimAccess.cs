@@ -110,6 +110,7 @@ internal static class ClaimAccess
             ClaimAccessRequirement.ManageMoney => (Permission.CanManageMoney, ExtraAccessReason.None),
             ClaimAccessRequirement.ManageClaims => (Permission.CanManageClaims, ExtraAccessReason.None),
             ClaimAccessRequirement.ManageAccommodation => (Permission.CanManageAccommodation, ExtraAccessReason.None),
+            ClaimAccessRequirement.SetPlayersAccommodations => (Permission.CanSetPlayersAccommodations, ExtraAccessReason.None),
 
             // Единственное требование, зависящее от данных — от статуса заявки. Правило общее с UI,
             // чтобы кнопки показывались ровно тем, кому операция не откажет (см. AccommodationAccess).

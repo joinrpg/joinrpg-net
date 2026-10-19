@@ -16,6 +16,17 @@ public interface IAccommodationInviteService
         AccommodationGroupIdentification target);
 
     /// <summary>
+    /// Поселить вместе: мастер сразу объединяет группу проживания заявки с <paramref name="target"/>,
+    /// без приглашения. Цель переезжает в группу заявки — вся её группа, если она есть. Проверки те
+    /// же, что у приглашения.
+    /// </summary>
+    /// <exception cref="AccommodationInviteNotAllowedException">
+    /// Объединить нельзя: кто-то уже расселён по комнатам, типы проживания не совпадают или в номере
+    /// не хватает мест.
+    /// </exception>
+    Task MergeAccommodationGroups(ClaimIdentification claimId, AccommodationGroupIdentification target);
+
+    /// <summary>
     /// Принять приглашение: приглашённый вместе со своими соседями переезжает в группу
     /// приглашающего.
     /// </summary>

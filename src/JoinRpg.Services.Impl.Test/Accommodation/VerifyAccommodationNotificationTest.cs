@@ -103,4 +103,15 @@ public class VerifyAccommodationNotificationTest
 
         return VerifyText(builder.GetHeader(data), builder.GetBody(data), caseName);
     }
+
+    [Fact]
+    public Task GroupMerged()
+    {
+        var data = new GroupMergedTextData(
+            new ProjectName("Тестовая песочница"),
+            Player("Мастер Мастерович"),
+            [Player("Вася"), Player("Петя"), Player("Маша")]);
+
+        return VerifyText(builder.GetHeader(data), builder.GetBody(data), nameof(GroupMerged));
+    }
 }
