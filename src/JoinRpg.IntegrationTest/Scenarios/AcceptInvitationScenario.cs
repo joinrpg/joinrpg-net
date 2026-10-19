@@ -13,8 +13,38 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 
 public class AcceptInvitationScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
+    /// <summary>
+    /// Автоприём работает только для заявок на шаблон (#5645): принятая заявка переезжает на
+    /// нового персонажа, созданного из шаблона.
+    /// </summary>
     [Fact]
-    public async Task MasterInvitesPlayer_PlayerAccepts_AutoAcceptApprovesClaim()
+    public async Task MasterInvitesPlayerToSlot_PlayerAccepts_AutoAcceptApprovesClaim()
+    {
+        var (claimId, slotId) = await InviteAndAccept(
+            new CharacterTypeInfo(CharacterType.Slot, IsHot: false, SlotLimit: null, SlotName: "Стражник", CharacterVisibility.Public));
+
+        // Из-за включённого автопринятия заявка должна быть принята
+        var claim = await GetClaim(claimId);
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        claim.CharacterId.ShouldNotBe(slotId.CharacterId);
+    }
+
+    /// <summary>
+    /// Заявку на обычного персонажа автоприём не трогает, даже если он включён в проекте (#5645).
+    /// </summary>
+    [Fact]
+    public async Task MasterInvitesPlayerToCharacter_PlayerAccepts_AutoAcceptDoesNotApprove()
+    {
+        var (claimId, characterId) = await InviteAndAccept(
+            new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public));
+
+        var claim = await GetClaim(claimId);
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
+        claim.CharacterId.ShouldBe(characterId.CharacterId);
+    }
+
+    private async Task<(ClaimIdentification ClaimId, CharacterIdentification CharacterId)> InviteAndAccept(
+        CharacterTypeInfo characterType)
     {
         // 1. Создаём мастера, проект и игрока
         UserIdentification masterId;
@@ -41,7 +71,7 @@ public class AcceptInvitationScenario(JoinApplicationFactory factory) : IClassFi
             return await characterService.AddCharacter(new AddCharacterRequest(
                 projectId,
                 ParentCharacterGroupIds: [],
-                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                characterType,
                 FieldValues: FieldLayerContainer.Empty(projectInfo)));
         });
 
@@ -54,7 +84,7 @@ public class AcceptInvitationScenario(JoinApplicationFactory factory) : IClassFi
         });
 
         // Приглашение создаёт заявку в статусе «Предложена»
-        (await GetClaimStatus(claimId)).ShouldBe(ClaimStatus.AddedByMaster);
+        (await GetClaim(claimId)).ClaimStatus.ShouldBe(ClaimStatus.AddedByMaster);
 
         // 3. Игрок принимает приглашение
         await factory.Services.RunAsAsync(playerId, async sp =>
@@ -63,16 +93,14 @@ public class AcceptInvitationScenario(JoinApplicationFactory factory) : IClassFi
             await claimService.AcceptInvitation(claimId, "Согласен!", sensitiveDataAllowed: false);
         });
 
-        // 4. Из-за включённого автопринятия заявка должна быть принята
-        (await GetClaimStatus(claimId)).ShouldBe(ClaimStatus.Approved);
+        return (claimId, characterId);
     }
 
-    private async Task<ClaimStatus> GetClaimStatus(ClaimIdentification claimId)
+    private async Task<DataModel.Claim> GetClaim(ClaimIdentification claimId)
     {
         using var scope = factory.Services.CreateScope();
         var claimsRepository = scope.ServiceProvider.GetRequiredService<IClaimsRepository>();
-        var claim = await claimsRepository.GetClaim(claimId)
+        return await claimsRepository.GetClaim(claimId)
             ?? throw new InvalidOperationException("Claim not found");
-        return claim.ClaimStatus;
     }
 }
