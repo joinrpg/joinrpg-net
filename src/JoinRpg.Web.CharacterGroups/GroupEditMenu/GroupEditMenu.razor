@@ -9,23 +9,30 @@
         <JoinMenuItem Href="@UriLocator.GetCharacterListUri(GroupId).ToString()">список персонажей</JoinMenuItem>
         <JoinMenuItem Href="@UriLocator.GetReportUri(GroupId).ToString()">сводный отчет</JoinMenuItem>
 
-        @if (GroupType == CharacterGroupType.Regular && ShowEditControls)
+        @if (GroupType == CharacterGroupType.Regular && ShowEditGroupControls)
         {
             <JoinMenuItem Href="@UriLocator.GetEditUri(GroupId).ToString()" Icon="JoinIconType.Edit" Label="настроить" />
         }
 
         <JoinMenuItem Href="@UriLocator.GetSubscribeUri(GroupId).ToString()" Icon="JoinIconType.Subscribe" Label="подписка" />
 
-        @if (GroupType == CharacterGroupType.Regular && ShowEditControls)
+        @* Удаление перевешивает персонажей — поэтому по праву правки ролей, а не групп (ADR023). *@
+        @if (GroupType == CharacterGroupType.Regular && ShowEditRoleControls)
         {
             <JoinMenuItem Href="@UriLocator.GetDeleteUri(GroupId).ToString()" Icon="JoinIconType.Delete" Label="удалить" />
         }
 
-        @if (GroupType is not (CharacterGroupType.SpecialToField or CharacterGroupType.SpecialToValue) && ShowEditControls)
+        @if (GroupType is not (CharacterGroupType.SpecialToField or CharacterGroupType.SpecialToValue) && (ShowEditRoleControls || ShowEditGroupControls))
         {
             <JoinMenuHeader Label="Добавить" />
-            <JoinMenuItem Href="@UriLocator.GetCreateCharacterUri(GroupId).ToString()">..персонажа</JoinMenuItem>
-            <JoinMenuItem Href="@UriLocator.GetAddGroupUri(GroupId).ToString()">..подгруппу</JoinMenuItem>
+            @if (ShowEditRoleControls)
+            {
+                <JoinMenuItem Href="@UriLocator.GetCreateCharacterUri(GroupId).ToString()">..персонажа</JoinMenuItem>
+            }
+            @if (ShowEditGroupControls)
+            {
+                <JoinMenuItem Href="@UriLocator.GetAddGroupUri(GroupId).ToString()">..подгруппу</JoinMenuItem>
+            }
         }
     </JoinDotsMenu>
 }
@@ -34,6 +41,9 @@
     [Parameter, EditorRequired] public CharacterGroupIdentification GroupId { get; set; } = null!;
     [Parameter, EditorRequired] public CharacterGroupType GroupType { get; set; }
     [Parameter] public bool HasMasterAccess { get; set; }
-    [Parameter] public bool ShowEditControls { get; set; }
+    /// <summary>Настройка группы и добавление подгрупп — разрешены и в заблокированном проекте.</summary>
+    [Parameter] public bool ShowEditGroupControls { get; set; }
+    /// <summary>Удаление группы и добавление персонажа — только в активном проекте.</summary>
+    [Parameter] public bool ShowEditRoleControls { get; set; }
     [Parameter] public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Small;
 }

@@ -38,7 +38,8 @@ public class ProjectRoleGridViewModelBuilderTests
     private ProjectRoleGridViewModel BuildGrid(
         ProjectRolesList config,
         IReadOnlyCollection<Character> characters,
-        bool canEditSettings = false,
+        bool canEditGroups = false,
+        bool canEditRoles = false,
         bool canViewPrivate = true,
         bool excludeSpecialGroups = false,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader>? fieldUsers = null)
@@ -70,7 +71,7 @@ public class ProjectRoleGridViewModelBuilderTests
                 c => new ClaimInfo(new ClaimInCharacter(c, c.ApprovedClaim!), players[c.ApprovedClaim!.PlayerId]));
 
         var grid = ProjectRoleGridViewModelBuilder.Build(
-            config, canEditSettings, canViewPrivate, excludeSpecialGroups,
+            config, canEditGroups, canEditRoles, canViewPrivate, excludeSpecialGroups,
             orderedGroups, charactersByGroup,
             new Dictionary<CharacterGroupIdentification, CharacterGroupFullInfo>(),
             approvedClaims,
@@ -321,13 +322,14 @@ public class ProjectRoleGridViewModelBuilderTests
     }
 
     [Fact]
-    public void Build_CanEditSettings_FlowsToViewModel()
+    public void Build_EditFlags_FlowToViewModelIndependently()
     {
         var character = _mock.CreateCharacter("Вася");
 
-        var result = BuildGrid(Config(), [character], canEditSettings: true);
+        var result = BuildGrid(Config(), [character], canEditGroups: true);
 
-        result.CanEditSettings.ShouldBeTrue();
+        result.CanEditGroups.ShouldBeTrue();
+        result.CanEditRoles.ShouldBeFalse();
         result.RolesListId.ShouldBe(Config().ProjectRolesListId);
     }
 
@@ -646,10 +648,22 @@ public class ProjectRoleGridViewModelBuilderTests
     {
         var character = _mock.CreateCharacter("Вася");
 
-        var result = BuildGrid(Config(), [character], canEditSettings: true);
+        var result = BuildGrid(Config(), [character], canEditRoles: true);
 
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
             .Character.CanEdit.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Build_OnlyCanEditGroups_CharacterLinkCannotEdit()
+    {
+        // Заблокированный проект: группы править можно, персонажей — нет (ADR023, #5655).
+        var character = _mock.CreateCharacter("Вася");
+
+        var result = BuildGrid(Config(), [character], canEditGroups: true);
+
+        result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Character.CanEdit.ShouldBeFalse();
     }
 
     [Fact]

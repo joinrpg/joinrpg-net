@@ -109,14 +109,15 @@ internal class ProjectRoleGridViewService(
                     .ToDictionary(g => g.Id)
                 : [];
 
-        var canEditSettings = projectInfo.HasMasterAccess(
-            currentUserAccessor.UserIdentificationOrDefault,
-            Permission.CanEditRoles);
+        // Группы, сетку и порядок правят и в заблокированном проекте, а персонажей и удаление групп —
+        // только в активном (ADR023); в архиве — ничего.
+        var canEditGroups = projectInfo.HasEditGroupsAccess(currentUserAccessor.UserIdentificationOrDefault);
+        var canEditRoles = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentificationOrDefault);
 
         return new ProjectRoleGridViewResult(
             HasAccess: true,
             Grid: ProjectRoleGridViewModelBuilder.Build(
-                config, canEditSettings, canViewPrivate, excludeSpecialGroups,
+                config, canEditGroups, canEditRoles, canViewPrivate, excludeSpecialGroups,
                 orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, projectInfo),
             NoAccess: null);
     }

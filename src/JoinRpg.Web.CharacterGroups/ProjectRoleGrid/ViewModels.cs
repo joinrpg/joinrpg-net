@@ -29,6 +29,9 @@ public record ProjectRoleGridViewResult(
 /// Персонаж → Игрок (если есть) → Группы (если есть) → Поля. В режиме дерева поля и группы
 /// показываются под именем персонажа.
 /// </summary>
+/// <param name="CanEditGroups">Можно настраивать группы и сетку, переставлять группы и персонажей —
+/// и в заблокированном проекте (ADR023)</param>
+/// <param name="CanEditRoles">Можно править и добавлять персонажей, удалять группы — только в активном проекте</param>
 /// <param name="RootGroupId">Корневая группа сетки — для меню управления группой у заголовка</param>
 /// <param name="SuppressFieldLabels">Не подписывать значения полей в режиме дерева
 /// (выбрано единственное поле и это «Описание персонажа»)</param>
@@ -37,7 +40,8 @@ public record ProjectRoleGridViewResult(
 public record ProjectRoleGridViewModel(
     ProjectRolesListIdentification? RolesListId,
     string Name,
-    bool CanEditSettings,
+    bool CanEditGroups,
+    bool CanEditRoles,
     bool HasMasterAccess,
     bool HasPlayerColumn,
     bool HasGroupsColumn,

@@ -70,7 +70,8 @@ public class ProjectRoleGridTreeWhitespaceTest
         var grid = new ProjectRoleGridViewModel(
             RolesListId: null,
             Name: "Все роли",
-            CanEditSettings: false,
+            CanEditGroups: false,
+            CanEditRoles: false,
             HasMasterAccess: false,
             HasPlayerColumn: true,
             HasGroupsColumn: false,
