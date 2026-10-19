@@ -50,7 +50,7 @@ public class ClaimRestorePlannerTest
     private static string Projection(ClaimRestorePlanRow r) => string.Join(" | ",
         r.ClaimId, r.Action, r.CharacterName, r.Character, string.Join(",", r.CharacterCandidates), r.Player,
         string.Join(",", r.PlayerCandidates), r.Status, r.StatusChangedAt, r.ResponsibleMaster, r.ManualFee,
-        r.FirstActivity, r.LastActivity, string.Join(",", r.Warnings), r.ApplyByDefault);
+        r.FirstActivity, r.LastActivity, string.Join(",", r.Warnings), r.ApplyByDefault, r.NewCharacterIsSlot);
 
     [Fact]
     public void LostClaimOnExistingCharacter()
@@ -253,18 +253,82 @@ public class ClaimRestorePlannerTest
     }
 
     [Fact]
-    public void LostClaimApprovedFromSlotCreatesNewCharacter()
+    public void LostClaimApprovedFromSlotGoesToSlot()
     {
-        // Одобрение слота создало персонажа с именем слота — его и нет в базе.
+        // Одобрение слота создало персонажа с именем слота — его и нет в базе. Заявка подаётся на слот,
+        // восстановление создаст персонажа из него заново (#5645).
         var slot = Character(5, "Стражник", isSlot: true);
         var row = Plan([], [slot],
             ClaimChange(Day(1), CommentExtraAction.NewClaim, Player, [Master], characterName: "Стражник"),
             ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Стражник"))
             .ShouldHaveSingleItem();
 
-        row.Character.ShouldBeNull();
-        row.CharacterName.ShouldBe("Стражник");
-        row.Warnings.ShouldContain(ClaimRestoreWarning.ApprovedOnSlot);
+        row.Character.ShouldBe(slot.CharacterId);
+        row.NewCharacterIsSlot.ShouldBeFalse();
+        row.Warnings.ShouldBe([ClaimRestoreWarning.CharacterFromSlot]);
+    }
+
+    [Fact]
+    public void LostClaimApprovedOnSlotSkipsCharacterCreatedFromIt()
+    {
+        // Прошлое восстановление уже создало из слота персонажа для другой заявки — с тем же именем.
+        var slot = Character(5, "Стражник", isSlot: true);
+        var child = Character(6, "Стражник") with { OriginalSlotId = slot.CharacterId };
+        var row = Plan([], [slot, child],
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, Player, [Master], characterName: "Стражник"),
+            ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Стражник"))
+            .ShouldHaveSingleItem();
+
+        row.Character.ShouldBe(slot.CharacterId);
+        row.CharacterCandidates.ShouldBeEmpty();
+        row.Warnings.ShouldBe([ClaimRestoreWarning.CharacterFromSlot]);
+    }
+
+    [Fact]
+    public void LostClaimInDiscussionSkipsCharacterCreatedFromSlot()
+    {
+        var slot = Character(5, "Стражник", isSlot: true);
+        var child = Character(6, "Стражник") with { OriginalSlotId = slot.CharacterId };
+        var row = Plan([], [slot, child],
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, Player, [Master], characterName: "Стражник"))
+            .ShouldHaveSingleItem();
+
+        row.Character.ShouldBe(slot.CharacterId);
+        row.Warnings.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ApprovedLostClaimsOfDifferentPlayersLookLikeSlot()
+    {
+        // Слота нет в базе, а принятые заявки на одно имя — у двух игроков: на одном персонаже так не бывает.
+        var otherPlayer = User(11, "Другой Игрок");
+        var second = new ClaimIdentification(Project, 1235);
+        var third = new ClaimIdentification(Project, 1236);
+        var thirdPlayer = User(12, "Третий Игрок");
+        var rows = Plan([], [Hamlet],
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, Player, [Master], characterName: "Стражник"),
+            ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Стражник"),
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, otherPlayer, [Master], characterName: "Стражник", player: otherPlayer, claimId: second),
+            ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [otherPlayer], characterName: "Стражник", player: otherPlayer, claimId: second),
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, thirdPlayer, [Master], characterName: "Стражник", player: thirdPlayer, claimId: third));
+
+        rows.Count.ShouldBe(3);
+        rows.ShouldAllBe(r => r.Character == null && r.NewCharacterIsSlot);
+        rows.ShouldAllBe(r => r.Warnings.Contains(ClaimRestoreWarning.LooksLikeSlot));
+    }
+
+    [Fact]
+    public void ApprovedLostClaimOfOnePlayerIsNotSlot()
+    {
+        var second = new ClaimIdentification(Project, 1235);
+        var otherPlayer = User(11, "Другой Игрок");
+        var rows = Plan([], [Hamlet],
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, Player, [Master], characterName: "Стражник"),
+            ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Стражник"),
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, otherPlayer, [Master], characterName: "Стражник", player: otherPlayer, claimId: second));
+
+        rows.Count.ShouldBe(2);
+        rows.ShouldAllBe(r => !r.NewCharacterIsSlot && !r.Warnings.Contains(ClaimRestoreWarning.LooksLikeSlot));
     }
 
     [Fact]
@@ -280,14 +344,30 @@ public class ClaimRestorePlannerTest
     }
 
     [Fact]
-    public void ExistingClaimOnSlotApprovedIsWarned()
+    public void ExistingClaimOnSlotApprovedGetsCharacterFromSlot()
     {
         var slot = Character(5, "Стражник", isSlot: true);
         var row = Plan([ExistingClaim(slot, ClaimStatus.Discussed)], [slot],
             ClaimChange(Day(1), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Стражник"))
             .ShouldHaveSingleItem();
 
-        row.Warnings.ShouldBe([ClaimRestoreWarning.ApprovedOnSlot]);
+        row.Action.ShouldBe(ClaimRestoreAction.Change);
+        row.Status.ShouldBe(ClaimStatus.Approved);
+        row.Warnings.ShouldBe([ClaimRestoreWarning.CharacterFromSlot]);
+    }
+
+    [Fact]
+    public void ExistingClaimOnCharacterFromSlotIsNotMovedToSlot()
+    {
+        // Принятая заявка уже на своём персонаже из слота, а имя у него теперь другое: по уведомлениям — имя слота.
+        var slot = Character(5, "Стражник", isSlot: true);
+        var child = Character(6, "Стражник Иван") with { OriginalSlotId = slot.CharacterId };
+        var row = Plan([ExistingClaim(child, ClaimStatus.Approved)], [slot, child],
+            ClaimChange(Day(1), CommentExtraAction.MoveByMaster, Master, [Player], characterName: "Стражник"))
+            .ShouldHaveSingleItem();
+
+        row.Character.ShouldBeNull();
+        row.Action.ShouldBe(ClaimRestoreAction.Nothing);
     }
 
     [Fact]

@@ -730,7 +730,7 @@
     // ---------- Применение ----------
 
     /// <summary>
-    /// Новые персонажи, созданные за время работы со страницей, по имени. Живёт дольше одного
+    /// Новые персонажи (и шаблоны), созданные за время работы со страницей, по имени. Живёт дольше одного
     /// применения: строка, упавшая после создания персонажа, при повторе не должна создать второго.
     /// Найденный планом персонаж всё равно важнее (см. <see cref="ClaimRestoreRowEditor.CopyEditsFrom"/>).
     /// </summary>
@@ -881,6 +881,7 @@
             }
             try
             {
+                // Для шаблона в ответе — сам шаблон: следующие строки с этим именем подаются на него.
                 var result = await Client.Apply(row.ToApplyRequest(createdCharacters));
                 if (newCharacterName is not null && result.Character is not null)
                 {
@@ -975,7 +976,7 @@
                                 }
                                 @foreach (var warning in r.Warnings)
                                 {
-                                    <div class="text-warning">@ClaimWarningText(r, warning)</div>
+                                    <div class="@(warning.IsNote() ? "text-info" : "text-warning")">@ClaimWarningText(r, warning)</div>
                                 }
                             </td>
                         </tr>
@@ -1032,6 +1033,13 @@
                 <input type="text" class="form-control input-sm" value="@row.NewCharacterName" disabled="@Busy"
                        placeholder="Имя нового персонажа"
                        @onchange="@(e => row.NewCharacterName = e.Value as string ?? "")" />
+                <div class="checkbox">
+                    <label title="Создать нового персонажа шаблоном: на него подаются все заявки с этим именем, принятые получат своих персонажей из шаблона">
+                        <input type="checkbox" class="new-character-slot" checked="@row.NewCharacterIsSlot" disabled="@Busy"
+                               @onchange="@(e => row.NewCharacterIsSlot = e.Value is true)" />
+                        Шаблон
+                    </label>
+                </div>
             }
             @if (r.CharacterCandidates.Count > 0)
             {

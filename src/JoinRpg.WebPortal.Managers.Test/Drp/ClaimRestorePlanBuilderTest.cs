@@ -178,6 +178,38 @@ public class ClaimRestorePlanBuilderTest
     }
 
     [Fact]
+    public void BuildSource_CharacterFromSlotKnowsItsSlot()
+    {
+        var slot = mock.CreateSlot("Стражник");
+        var child = mock.CreateCharacter("Стражник");
+        child.OriginalCharacterSlot = slot;
+
+        var source = BuildSource();
+
+        source.Characters.Single(c => c.CharacterId.CharacterId == child.CharacterId).OriginalSlotId
+            .ShouldBe(new CharacterIdentification(ProjectId, slot.CharacterId));
+        source.Characters.Single(c => c.CharacterId.CharacterId == slot.CharacterId).OriginalSlotId.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Build_NewCharacterIsSlot_Passed()
+    {
+        var row = new ClaimRestorePlanRow(
+            new ClaimIdentification(ProjectId, 999),
+            ClaimRestoreAction.Create,
+            "Стражник", null, [], PlayerId, [PlayerId], ClaimStatus.Approved, BackupTakenAt, MasterId, null, BackupTakenAt, BackupTakenAt,
+            [ClaimRestoreWarning.LooksLikeSlot])
+        {
+            NewCharacterIsSlot = true,
+        };
+
+        var result = ClaimRestorePlanBuilder.Build(mock.ProjectInfo, BuildSource(), [row], [], Options).Rows.Single();
+
+        result.NewCharacterIsSlot.ShouldBeTrue();
+        result.Warnings.ShouldBe([ClaimRestoreWarningView.LooksLikeSlot]);
+    }
+
+    [Fact]
     public void Build_MapsEveryWarning()
     {
         var row = new ClaimRestorePlanRow(

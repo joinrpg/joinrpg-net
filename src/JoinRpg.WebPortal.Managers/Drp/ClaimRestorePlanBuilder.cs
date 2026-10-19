@@ -43,6 +43,7 @@ internal static class ClaimRestorePlanBuilder
                 FieldLayer = CharacterLayer(projectInfo, c.CharacterFields),
                 UpdatedAt = AsUtc(c.UpdatedAt),
                 CharacterType = c.CharacterType,
+                OriginalSlotId = c.OriginalCharacterSlotId,
             })
             .ToList();
 
@@ -151,6 +152,7 @@ internal static class ClaimRestorePlanBuilder
                 FeePaidMismatch = row.FeePaidMismatch is { } paid
                     ? new ClaimRestoreFeePaidMismatchView(paid.Exported, paid.InDatabase)
                     : null,
+                NewCharacterIsSlot = row.NewCharacterIsSlot,
             };
         }).ToList();
 
@@ -191,7 +193,8 @@ internal static class ClaimRestorePlanBuilder
         ClaimRestoreWarning.CharacterNotFound => ClaimRestoreWarningView.CharacterNotFound,
         ClaimRestoreWarning.MovedCharacterNotFound => ClaimRestoreWarningView.MovedCharacterNotFound,
         ClaimRestoreWarning.CharacterRenamed => ClaimRestoreWarningView.CharacterRenamed,
-        ClaimRestoreWarning.ApprovedOnSlot => ClaimRestoreWarningView.ApprovedOnSlot,
+        ClaimRestoreWarning.CharacterFromSlot => ClaimRestoreWarningView.CharacterFromSlot,
+        ClaimRestoreWarning.LooksLikeSlot => ClaimRestoreWarningView.LooksLikeSlot,
         ClaimRestoreWarning.StatusUnknown => ClaimRestoreWarningView.StatusUnknown,
         ClaimRestoreWarning.LostClaimNotSubmittedAfterBackup => ClaimRestoreWarningView.LostClaimNotSubmittedAfterBackup,
         ClaimRestoreWarning.ChangedAfterRestore => ClaimRestoreWarningView.ChangedAfterRestore,

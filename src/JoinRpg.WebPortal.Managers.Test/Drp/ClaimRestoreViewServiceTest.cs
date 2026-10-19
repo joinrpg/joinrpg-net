@@ -120,6 +120,20 @@ public class ClaimRestoreViewServiceTest
     }
 
     [Fact]
+    public async Task Apply_CreateAsSlot_CreatesNewCharacterAsSlot()
+    {
+        var master = new UserIdentification(mock.Master.UserId);
+
+        _ = await CreateService(mock.Master.UserId).Apply(new ClaimRestoreApplyRequest(
+            new ClaimIdentification(ProjectId, 999), ClaimRestoreActionView.Create, null, "Стражник", new UserIdentification(mock.Player.UserId), null,
+            ClaimStatusView.Approved, BackupTakenAt, master, null, BackupTakenAt, NewCharacterIsSlot: true));
+
+        var lost = restoreService.Lost.ShouldHaveSingleItem();
+        lost.NewCharacterName.ShouldBe("Стражник");
+        lost.NewCharacterIsSlot.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Apply_CreateWithoutPlayer_Refuses()
         => await Should.ThrowAsync<JoinValidationException>(() => CreateService(mock.Master.UserId).Apply(new ClaimRestoreApplyRequest(
             new ClaimIdentification(ProjectId, 999), ClaimRestoreActionView.Create, null, "Новый", null, " ",
@@ -153,18 +167,22 @@ public class ClaimRestoreViewServiceTest
         var row = new ClaimRestoreRowViewModel(
             new ClaimIdentification(projectId, 999), ClaimRestoreActionView.Change, "Герой", character, character, [character],
             player, [player], ClaimStatusView.AddedByUser, ClaimStatusView.Approved, BackupTakenAt, master, master, 100, 200,
-            BackupTakenAt, LostAt, [ClaimRestoreWarningView.CharacterRenamed]);
+            BackupTakenAt, LostAt, [ClaimRestoreWarningView.CharacterRenamed])
+        {
+            NewCharacterIsSlot = true,
+        };
         var plan = new ClaimRestorePlanViewModel(projectId, null, BackupTakenAt, LostAt, [row], [new ClaimRestoreMasterOption(master, "Мастер")]);
 
         var restored = JsonRoundTrip.Ensure(plan);
         restored.Rows.Single().ClaimId.ShouldBe(row.ClaimId);
         restored.Rows.Single().Character.ShouldBe(character);
         restored.Rows.Single().Player.ShouldBe(player);
+        restored.Rows.Single().NewCharacterIsSlot.ShouldBeTrue();
         restored.Masters.Single().UserId.ShouldBe(master);
 
         var request = new ClaimRestoreApplyRequest(
             row.ClaimId, ClaimRestoreActionView.Create, null, "Новый", null, "42",
-            null, null, master, null, BackupTakenAt);
+            null, null, master, null, BackupTakenAt, NewCharacterIsSlot: true);
         JsonRoundTrip.Ensure(request).ShouldBe(request);
 
         var result = new ClaimRestoreApplyResult(character.CharacterId);

@@ -42,7 +42,9 @@ public class ClaimRestorePanelTest : BunitContext
 
     private static readonly CharacterIdentification Created = new(ProjectId, 777);
 
-    private static ClaimRestoreRowViewModel Row(int claimId, ClaimRestoreActionView action, string characterName, CharacterIdentification? character = null)
+    private static ClaimRestoreRowViewModel Row(
+        int claimId, ClaimRestoreActionView action, string characterName, CharacterIdentification? character = null,
+        ClaimStatusView status = ClaimStatusView.Approved)
         => new(
             new ClaimIdentification(ProjectId, claimId),
             action,
@@ -53,7 +55,7 @@ public class ClaimRestorePanelTest : BunitContext
             Player,
             [Player],
             CurrentStatus: action == ClaimRestoreActionView.Create ? null : ClaimStatusView.AddedByUser,
-            ClaimStatusView.Approved,
+            status,
             At,
             CurrentResponsibleMaster: action == ClaimRestoreActionView.Create ? null : Master,
             Master,
@@ -82,13 +84,13 @@ public class ClaimRestorePanelTest : BunitContext
     {
         client.Plans.Enqueue(Plan(
             Row(1, ClaimRestoreActionView.Nothing, "Ничего"),
-            Row(2, ClaimRestoreActionView.Create, "Новый"),
-            Row(3, ClaimRestoreActionView.Create, "Новый")));
+            Row(2, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed),
+            Row(3, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)));
         client.Plans.Enqueue(Plan());
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
 
-        var checkboxes = cut.FindAll("tbody input[type=checkbox]");
+        var checkboxes = cut.FindAll("tbody input[type=checkbox]:not(.new-character-slot)");
         checkboxes.Count.ShouldBe(3);
         checkboxes[0].HasAttribute("disabled").ShouldBeTrue();
         checkboxes[1].HasAttribute("checked").ShouldBeTrue();
@@ -136,10 +138,10 @@ public class ClaimRestorePanelTest : BunitContext
     public void CreatedCharacterRememberedBetweenRuns()
     {
         client.Plans.Enqueue(Plan(
-            Row(2, ClaimRestoreActionView.Create, "Новый"),
-            Row(3, ClaimRestoreActionView.Create, "Новый")));
+            Row(2, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed),
+            Row(3, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)));
         // План персонажа не нашёл (например, имя записано полем) — помогает память страницы.
-        client.Plans.Enqueue(Plan(Row(3, ClaimRestoreActionView.Create, "Новый")));
+        client.Plans.Enqueue(Plan(Row(3, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)));
         client.Plans.Enqueue(Plan());
         client.FailOnce.Add(3);
 
@@ -621,6 +623,90 @@ public class ClaimRestorePanelTest : BunitContext
 
     private static readonly CharacterIdentification Hero = new(ProjectId, 100);
     private static readonly CharacterIdentification Twin = new(ProjectId, 101);
+
+    [Fact]
+    public void MixedSlotChoiceInOneName_LaterRowGoesToCreatedSlot()
+    {
+        // Первая строка создаёт шаблон, у второй галочка «Шаблон» снята: персонаж с этим именем уже есть —
+        // строка идёт на него (домен сам создаст персонажа из шаблона).
+        client.Plans.Enqueue(Plan(
+            Row(2, ClaimRestoreActionView.Create, "Стражник") with { NewCharacterIsSlot = true },
+            Row(3, ClaimRestoreActionView.Create, "Стражник")));
+        client.Plans.Enqueue(Plan());
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        var slots = cut.FindAll("input.new-character-slot");
+        slots[0].HasAttribute("checked").ShouldBeTrue();
+        slots[1].HasAttribute("checked").ShouldBeFalse();
+
+        cut.Find("button[type=button]").Click();
+
+        cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(2));
+        client.Applied[0].NewCharacterIsSlot.ShouldBeTrue();
+        client.Applied[1].Character.ShouldBe(Created);
+        client.Applied[1].NewCharacterName.ShouldBeNull();
+        client.Applied[1].NewCharacterIsSlot.ShouldBeFalse();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Применено строк: 2"));
+    }
+
+    [Fact]
+    public void TwoApprovedOnSameNewPlayerCharacter_SecondGoesToCreated()
+    {
+        // Персонаж создан первой строкой — вторая идёт на него; дубль принятой отклонит домен.
+        client.Plans.Enqueue(Plan(
+            Row(2, ClaimRestoreActionView.Create, "Стражник"),
+            Row(3, ClaimRestoreActionView.Create, "Стражник")));
+        client.Plans.Enqueue(Plan());
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        cut.Find("button[type=button]").Click();
+
+        cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(2));
+        client.Applied[1].Character.ShouldBe(Created);
+    }
+
+    [Fact]
+    public void LooksLikeSlot_ApprovedRowsGoToOneSlot()
+    {
+        client.Plans.Enqueue(Plan(
+            Row(2, ClaimRestoreActionView.Create, "Стражник") with { NewCharacterIsSlot = true, Warnings = [ClaimRestoreWarningView.LooksLikeSlot] },
+            Row(3, ClaimRestoreActionView.Create, "Стражник") with { NewCharacterIsSlot = true, Warnings = [ClaimRestoreWarningView.LooksLikeSlot] }));
+        client.Plans.Enqueue(Plan());
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        cut.FindAll("input.new-character-slot").ShouldAllBe(c => c.HasAttribute("checked"));
+        cut.FindAll(".text-info").ShouldAllBe(e => e.TextContent.StartsWith("Похоже на шаблон"));
+        cut.FindAll(".text-info").Count.ShouldBe(2);
+
+        cut.Find("button[type=button]").Click();
+
+        cut.WaitForAssertion(() => client.Applied.Count.ShouldBe(2));
+        client.Applied[0].NewCharacterName.ShouldBe("Стражник");
+        client.Applied[0].NewCharacterIsSlot.ShouldBeTrue();
+        // Шаблон, который вернул сервер, — и вторая принятая заявка идёт на него: персонажа ей создаст домен.
+        client.Applied[1].Character.ShouldBe(Created);
+        client.Applied[1].NewCharacterIsSlot.ShouldBeFalse();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Применено строк: 2"));
+    }
+
+    [Fact]
+    public void SlotCheckbox_SendsNewCharacterAsSlot()
+    {
+        client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Create, "Стражник")));
+        client.Plans.Enqueue(Plan());
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        var slot = cut.Find("input.new-character-slot");
+        slot.HasAttribute("checked").ShouldBeFalse();
+        slot.Change(true);
+        cut.FindAll("button[type=button]").Last().Click();
+
+        cut.WaitForAssertion(() => client.Applied.ShouldHaveSingleItem().NewCharacterIsSlot.ShouldBeTrue());
+    }
 
     private sealed class FakeCharactersClient : ICharactersClient
     {
