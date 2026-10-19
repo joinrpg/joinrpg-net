@@ -59,6 +59,13 @@ internal static class ClaimNotificationFactory
         return recipients.Select(r => Row(header, body.Replace("%recepient.name%", r.DisplayName.DisplayName), initiator, r, entityReference, at));
     }
 
+    /// <summary>Приглашение к совместному проживанию (формат <c>AccommodationNotificationTextBuilder</c>): ссылается на заявку получателя.</summary>
+    public static NotificationMessageForRecipient AccommodationInvite(DateTimeOffset at)
+        => Row(
+            $"{ProjectTitle}: приглашения к проживанию",
+            $"Добрый день, {Player.DisplayName.DisplayName}\n\n{OtherMaster.DisplayName.DisplayName} отправил Вам приглашение к совместному проживанию.\n\nУправлять приглашениями можно на странице Вашей заявки.",
+            OtherMaster, Player, Claim, at);
+
     public static NotificationMessageForRecipient Row(string header, string body, UserInfoHeader initiator, UserInfoHeader recipient, IProjectEntityId? reference, DateTimeOffset at)
         => new(new MarkdownString(body), initiator.UserId, header, recipient.UserId, reference, at);
 

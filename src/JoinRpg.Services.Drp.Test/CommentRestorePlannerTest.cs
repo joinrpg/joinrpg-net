@@ -273,15 +273,28 @@ public class CommentRestorePlannerTest
     [Fact]
     public void UnparsedEventsAreWarned()
     {
-        var invitation = Row($"{ProjectTitle}: приглашение на поселение", "Добрый день, Игрок Игроков\n\nВас пригласили жить вместе",
+        var unknown = Row($"{ProjectTitle}: что-то новое", "Добрый день, Игрок Игроков\n\nНепонятный текст",
             Master, Player, CommentRef(556), Day(1));
 
-        var row = Plan([invitation]).ShouldHaveSingleItem();
+        var row = Plan([unknown]).ShouldHaveSingleItem();
 
         row.Unparsed.ShouldBe(1);
         row.ToRestore.ShouldBeEmpty();
         row.Warnings.ShouldBe([CommentRestoreWarning.UnparsedEvents]);
     }
+
+    [Fact]
+    public void AccommodationInviteIsNotUnparsed()
+    {
+        var row = Plan(ClaimChange(Day(1), action: null, Master, [Player]), [AccommodationInvite(Day(2))]).ShouldHaveSingleItem();
+
+        row.Unparsed.ShouldBe(0);
+        row.Warnings.ShouldBeEmpty();
+        row.ToRestore.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void AccommodationInviteAloneGivesNoRow() => Plan([AccommodationInvite(Day(1))]).ShouldBeEmpty();
 
     [Fact]
     public void EventsBeforeBackupAreIgnored()
