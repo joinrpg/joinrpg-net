@@ -95,8 +95,14 @@ public static class ProjectRestorePlanner
         var (groups, usableGroups) = PlanGroups(source, characterExports);
         var skeletons = PlanCharacterSkeletons(source, characterExports, usableGroups);
         var claims = PlanClaims(source, claimExports, skeletons, usersByEmail);
-        var (characters, plannedValues) = PlanCharacterFields(source, characterExports, claimExports, skeletons, claims, usableGroups);
-        var claimFields = PlanClaimFields(source, claimExports, claims, plannedValues);
+        // Шаблоны — и из базы, и те, что план создаёт по выгрузке: принятая заявка на них уйдёт на своего персонажа.
+        var slots = source.Notifications.Characters.Where(c => c.IsSlot).Select(c => c.CharacterId)
+            .Concat(skeletons
+                .Where(s => s.Action == ProjectRestoreAction.Create && s.Row.CharacterType?.Type == CharacterType.Slot)
+                .Select(s => s.CharacterId))
+            .ToHashSet();
+        var (characters, plannedValues) = PlanCharacterFields(source, characterExports, claimExports, skeletons, claims, usableGroups, slots);
+        var claimFields = PlanClaimFields(source, claimExports, claims, plannedValues, slots);
 
         // Существующих персонажей меняем после заявок: одобрение заявки переносит её слой в персонажа.
         var existing = source.Notifications.Characters.Select(c => c.CharacterId).ToHashSet();
@@ -345,9 +351,23 @@ public static class ProjectRestorePlanner
         return ClaimRestorePlanner.Plan(notifications with { Characters = candidates }, context);
     }
 
-    /// <summary>Персонаж, на котором заявка окажется по плану; null — не определён (создаётся новый или нужен выбор).</summary>
-    private static CharacterIdentification? FinalCharacter(ClaimRestorePlanRow? row, ExistingClaimInfo? existing)
+    /// <summary>
+    /// Персонаж, на котором заявка окажется по плану; null — не определён (создаётся новый или нужен выбор).
+    /// Принятая заявка на слоте окажется на своём персонаже из него (#5645) — его ещё нет, тоже null.
+    /// </summary>
+    private static CharacterIdentification? FinalCharacter(
+        ClaimRestorePlanRow? row, ExistingClaimInfo? existing, IReadOnlySet<CharacterIdentification> slots)
+        => PlannedCharacter(row, existing) is { } character && !CreatesCharacterFromSlot(row, existing, slots) ? character : null;
+
+    private static CharacterIdentification? PlannedCharacter(ClaimRestorePlanRow? row, ExistingClaimInfo? existing)
         => row?.Character ?? (row?.Action == ClaimRestoreAction.Create ? null : existing?.CharacterId);
+
+    /// <summary>Принятая по итогу заявка окажется на слоте: восстановление создаст ей персонажа из него.</summary>
+    private static bool CreatesCharacterFromSlot(
+        ClaimRestorePlanRow? row, ExistingClaimInfo? existing, IReadOnlySet<CharacterIdentification> slots)
+        => PlannedCharacter(row, existing) is { } character
+            && slots.Contains(character)
+            && IsApproved(FinalStatus(row, existing));
 
     private static ClaimStatus? FinalStatus(ClaimRestorePlanRow? row, ExistingClaimInfo? existing) => row?.Status ?? existing?.Status;
 
@@ -359,7 +379,8 @@ public static class ProjectRestorePlanner
         IReadOnlyList<MappedExport> claimExports,
         IReadOnlyList<CharacterSkeleton> skeletons,
         IReadOnlyList<ClaimRestorePlanRow> claims,
-        HashSet<int> usableGroups)
+        HashSet<int> usableGroups,
+        IReadOnlySet<CharacterIdentification> slots)
     {
         var project = source.Project;
         var projectId = project.ProjectId;
@@ -413,7 +434,7 @@ public static class ProjectRestorePlanner
                     continue;
                 }
                 var claimId = new ClaimIdentification(projectId, id);
-                if (FinalCharacter(claimRows.GetValueOrDefault(claimId), existingClaims.GetValueOrDefault(claimId)) is not { } characterId)
+                if (FinalCharacter(claimRows.GetValueOrDefault(claimId), existingClaims.GetValueOrDefault(claimId), slots) is not { } characterId)
                 {
                     continue;
                 }
@@ -544,7 +565,8 @@ public static class ProjectRestorePlanner
         ProjectRestoreSource source,
         IReadOnlyList<MappedExport> claimExports,
         IReadOnlyList<ClaimRestorePlanRow> claims,
-        IReadOnlyDictionary<CharacterIdentification, Dictionary<ProjectFieldIdentification, string?>> plannedCharacterValues)
+        IReadOnlyDictionary<CharacterIdentification, Dictionary<ProjectFieldIdentification, string?>> plannedCharacterValues,
+        IReadOnlySet<CharacterIdentification> slots)
     {
         var project = source.Project;
         var projectId = project.ProjectId;
@@ -560,10 +582,12 @@ public static class ProjectRestorePlanner
             var claimRow = claimRows.GetValueOrDefault(claimId);
 
             var finalStatus = FinalStatus(claimRow, existing);
-            var character = FinalCharacter(claimRow, existing);
-            // Одобренная по итогу потерянная заявка без персонажа сама создаёт его при одобрении: поля персонажа
-            // из её выгрузок идут в неё, домен у одобренной запишет их в персонажа.
-            var createsCharacter = claimRow is { Action: ClaimRestoreAction.Create } && character is null && IsApproved(finalStatus);
+            var character = FinalCharacter(claimRow, existing, slots);
+            // Одобренная по итогу потерянная заявка без персонажа сама создаёт его при одобрении (как и принятая
+            // на слот — персонажа из него): поля персонажа из её выгрузок идут в неё, домен у одобренной запишет
+            // их в персонажа.
+            var createsCharacter = (claimRow is { Action: ClaimRestoreAction.Create } && character is null && IsApproved(finalStatus))
+                || CreatesCharacterFromSlot(claimRow, existing, slots);
             // Иначе поля персонажа в слое заявки — только пока она не одобрена по итогу (по плану): у одобренной
             // домен их хранит в персонаже. И только из выгрузок новее последней, где заявка была одобрена: в той
             // выгрузке колонки показывали поля персонажа, а не предложения игрока.

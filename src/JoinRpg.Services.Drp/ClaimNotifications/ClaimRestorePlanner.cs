@@ -145,6 +145,7 @@ public static class ClaimRestorePlanner
             }
         }
 
+        rows = MarkLooksLikeSlot(rows);
         return [.. rows
             .OrderBy(r => r.FinalStatus is ClaimStatus.Approved or ClaimStatus.CheckedIn)
             .ThenBy(r => r.Row.ClaimId.ClaimId)
@@ -521,35 +522,80 @@ public static class ClaimRestorePlanner
             return (null, []);
         }
 
-        var matches = known.Select(p.FindCharactersByName).FirstOrDefault(m => m.Count > 0) ?? [];
-        if (status is ClaimStatus.Approved or ClaimStatus.CheckedIn && matches.Any(c => c.IsSlot))
+        var matches = WithoutSlotChildren(known.Select(p.FindCharactersByName).FirstOrDefault(m => m.Count > 0) ?? []);
+        if (status is ClaimStatus.Approved or ClaimStatus.CheckedIn && matches.Any(c => !c.IsSlot) && matches.Any(c => c.IsSlot))
         {
-            // Одобрение слота создало персонажа с его именем: он и потерян — создать заново.
-            warnings.Add(ClaimRestoreWarning.ApprovedOnSlot);
+            // Тёзка-персонаж (например, из выгрузки персонажей) для принятой заявки точнее слота: слот —
+            // только когда, кроме слотов, по имени никого нет.
             matches = [.. matches.Where(c => !c.IsSlot)];
         }
-        return Choose(p, matches, player, warnings);
+        var (character, candidates) = Choose(p, matches, player, warnings);
+        // Одобрение слота создало персонажа с его именем, он и потерян: заявка подаётся на слот, и
+        // восстановление, как одобрение, создаст его заново.
+        CheckApprovedOnSlot(p, status, character, null, warnings);
+        return (character, candidates);
+    }
+
+    /// <summary>
+    /// Без персонажей, созданных из слота, который тоже подходит по имени (#5645): у них имя слота, но они
+    /// заняты своими заявками. Заявка на это имя — заявка на слот: в обсуждении она на нём и живёт, а принятая
+    /// получит своего персонажа из слота.
+    /// </summary>
+    private static IReadOnlyList<ExistingCharacterInfo> WithoutSlotChildren(IReadOnlyList<ExistingCharacterInfo> matches)
+    {
+        var slots = matches.Where(c => c.IsSlot).Select(c => c.CharacterId).ToHashSet();
+        return slots.Count == 0 ? matches : [.. matches.Where(c => c.OriginalSlotId is not { } slot || !slots.Contains(slot))];
+    }
+
+    /// <summary>
+    /// Персонажа с таким именем в базе нет, а принятые заявки на это имя — у нескольких разных игроков: на
+    /// одном персонаже принятой может быть только одна, так что это был слот (#5645). Все строки с этим именем
+    /// создают нового персонажа слотом — на него сходятся и заявки в обсуждении.
+    /// </summary>
+    private static List<(ClaimRestorePlanRow Row, ClaimStatus? FinalStatus)> MarkLooksLikeSlot(
+        List<(ClaimRestorePlanRow Row, ClaimStatus? FinalStatus)> rows)
+    {
+        static bool CreatesNewCharacter(ClaimRestorePlanRow row)
+            => row is { Action: ClaimRestoreAction.Create, Character: null, CharacterName: not null, CharacterCandidates.Count: 0 };
+
+        var slotNames = rows
+            .Where(r => CreatesNewCharacter(r.Row) && r.FinalStatus is ClaimStatus.Approved or ClaimStatus.CheckedIn && r.Row.Player is not null)
+            .GroupBy(r => r.Row.CharacterName!.Trim())
+            .Where(g => g.Select(r => r.Row.Player).Distinct().Count() > 1)
+            .Select(g => g.Key)
+            .ToHashSet();
+        if (slotNames.Count == 0)
+        {
+            return rows;
+        }
+
+        return [.. rows.Select(r => CreatesNewCharacter(r.Row) && slotNames.Contains(r.Row.CharacterName!.Trim())
+            ? (r.Row with { NewCharacterIsSlot = true, Warnings = [.. r.Row.Warnings, ClaimRestoreWarning.LooksLikeSlot] }, r.FinalStatus)
+            : r)];
     }
 
     private static (CharacterIdentification? Character, IReadOnlyCollection<CharacterIdentification> Candidates) FindMoveTarget(
         Planning p, ExistingClaimInfo existing, string name, List<ClaimRestoreWarning> warnings)
     {
-        var matches = p.FindCharactersByName(name);
+        var matches = WithoutSlotChildren(p.FindCharactersByName(name));
         if (matches.Count == 0)
         {
             warnings.Add(ClaimRestoreWarning.MovedCharacterNotFound);
         }
         var (moveTo, candidates) = Choose(p, matches, existing.Player, warnings);
-        return (moveTo == existing.CharacterId ? null : moveTo, candidates);
+        // Заявка, принятая на слот, живёт на своём персонаже из него: слот для неё — то же место.
+        var current = p.Characters.GetValueOrDefault(existing.CharacterId);
+        return (moveTo == existing.CharacterId || (moveTo is not null && moveTo == current?.OriginalSlotId) ? null : moveTo, candidates);
     }
 
+    /// <summary>Принятая заявка окажется на слоте — пояснить, что восстановление создаст ей персонажа из него.</summary>
     private static void CheckApprovedOnSlot(
-        Planning p, ClaimStatus finalStatus, CharacterIdentification? moveTo, ExistingCharacterInfo? current, List<ClaimRestoreWarning> warnings)
+        Planning p, ClaimStatus? finalStatus, CharacterIdentification? moveTo, ExistingCharacterInfo? current, List<ClaimRestoreWarning> warnings)
     {
         var finalCharacter = moveTo is { } target ? p.Characters.GetValueOrDefault(target) : current;
         if (finalStatus is ClaimStatus.Approved or ClaimStatus.CheckedIn && finalCharacter?.IsSlot == true)
         {
-            warnings.Add(ClaimRestoreWarning.ApprovedOnSlot);
+            warnings.Add(ClaimRestoreWarning.CharacterFromSlot);
         }
     }
 

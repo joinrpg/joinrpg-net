@@ -289,8 +289,9 @@ public class ProjectRestorePlannerTest
     }
 
     /// <summary>
-    /// Шаблон, создаваемый по выгрузке, — шаблон и для привязки заявок: принятая заявка на него не садится
-    /// (одобрение создало из шаблона нового персонажа), а обсуждаемая — садится.
+    /// Шаблон, создаваемый по выгрузке, — шаблон и для привязки заявок: и принятая, и обсуждаемая заявка идут
+    /// на него, принятой домен создаст своего персонажа из шаблона (#5645). Поля персонажа из выгрузки принятой
+    /// заявки на шаблон не пишутся.
     /// </summary>
     [Fact]
     public void CreatedSlotIsSlotForClaimMatching()
@@ -303,8 +304,9 @@ public class ProjectRestorePlannerTest
         ]);
 
         var approved = plan.Claims.Single(c => c.ClaimId == ClaimId(3000));
-        approved.Character.ShouldNotBe(CharacterId(101));
-        approved.Warnings.ShouldContain(ClaimRestoreWarning.ApprovedOnSlot);
+        approved.Character.ShouldBe(CharacterId(101));
+        approved.Warnings.ShouldContain(ClaimRestoreWarning.CharacterFromSlot);
+        plan.Characters.ShouldNotContain(c => c.CharacterId == CharacterId(101) && c.Action != ProjectRestoreAction.Create);
         var discussed = plan.Claims.Single(c => c.ClaimId == ClaimId(3001));
         discussed.Character.ShouldBe(CharacterId(101));
     }
@@ -965,6 +967,80 @@ public class ProjectRestorePlannerTest
         var claim = plan.Claims.ShouldHaveSingleItem();
         claim.Action.ShouldBe(ClaimRestoreAction.Create);
         claim.Character.ShouldBeNull();
+        var field = plan.ClaimFields.ShouldHaveSingleItem().Fields.ShouldHaveSingleItem();
+        field.Field.ShouldBe(strength.Id);
+        field.Value.ShouldBe("12");
+    }
+
+    [Fact]
+    public void ApprovedLostClaimOnSlotKeepsCharacterFieldsOffSlot()
+    {
+        // Принятая заявка на слот получит своего персонажа из него (#5645): поля персонажа из выгрузки — в заявку,
+        // а не в слот.
+        var plan = Plan(
+            [ClaimExport(Day(5), ClaimRow(3000, "Стражник", ClaimStatus.Approved, strength: "12"))],
+            characters: [DbCharacter(101, "Стражник", strengthValue: "5") with { IsSlot = true }]);
+
+        var claim = plan.Claims.ShouldHaveSingleItem();
+        claim.Character.ShouldBe(CharacterId(101));
+        claim.Warnings.ShouldContain(ClaimRestoreWarning.CharacterFromSlot);
+        plan.Characters.ShouldBeEmpty();
+        var field = plan.ClaimFields.ShouldHaveSingleItem().Fields.ShouldHaveSingleItem();
+        field.Field.ShouldBe(strength.Id);
+        field.Value.ShouldBe("12");
+    }
+
+    [Fact]
+    public void ApprovedLostClaimOnSlotCreatedFromExportKeepsCharacterFieldsOffSlot()
+    {
+        // То же для шаблона, которого нет в базе, — его создаёт план по «Занят?» выгрузки персонажей.
+        var plan = Plan([
+            CharacterExport(Day(5), CharacterRow(101, "Стражник", [], type: SlotType)),
+            ClaimExport(Day(5), ClaimRow(3000, "Стражник", ClaimStatus.Approved, strength: "12")),
+        ]);
+
+        var claim = plan.Claims.ShouldHaveSingleItem();
+        claim.Character.ShouldBe(CharacterId(101));
+        claim.Warnings.ShouldContain(ClaimRestoreWarning.CharacterFromSlot);
+        plan.Characters.ShouldNotContain(c => c.CharacterId == CharacterId(101) && c.Fields.Count > 0);
+        var field = plan.ClaimFields.ShouldHaveSingleItem().Fields.ShouldHaveSingleItem();
+        field.Field.ShouldBe(strength.Id);
+        field.Value.ShouldBe("12");
+    }
+
+    [Fact]
+    public void ApprovedLostClaimPrefersExportedNamesakeOverSlot()
+    {
+        // Слот «Стражник» в базе и тёзка из выгрузки персонажей (без игрока): принятая заявка — на тёзку,
+        // слот — только когда, кроме слотов, по имени никого нет.
+        var plan = Plan(
+            [
+                CharacterExport(Day(5), CharacterRow(201, "Стражник", [])),
+                ClaimExport(Day(6), ClaimRow(3000, "Стражник", ClaimStatus.Approved)),
+            ],
+            characters: [DbCharacter(101, "Стражник") with { IsSlot = true }]);
+
+        var claim = plan.Claims.ShouldHaveSingleItem();
+        claim.Character.ShouldBe(CharacterId(201));
+        claim.CharacterCandidates.ShouldBeEmpty();
+        claim.Warnings.ShouldNotContain(ClaimRestoreWarning.CharacterAmbiguous);
+        claim.Warnings.ShouldNotContain(ClaimRestoreWarning.CharacterFromSlot);
+    }
+
+    [Fact]
+    public void ExistingClaimOnSlotApprovedInExportKeepsCharacterFieldsOffSlot()
+    {
+        // Заявка в обсуждении на слоте, по выгрузке — принята: персонаж из слота создастся при восстановлении,
+        // поля персонажа из выгрузки — в строку полей заявки, а не в слот.
+        var plan = Plan(
+            [ClaimExport(Day(6), ClaimRow(3000, "Стражник", ClaimStatus.Approved, strength: "12"))],
+            characters: [DbCharacter(101, "Стражник", strengthValue: "5") with { IsSlot = true }],
+            claims: [DbClaim(3000, 101, ClaimStatus.Discussed)]);
+
+        var claim = plan.Claims.ShouldHaveSingleItem();
+        claim.Status.ShouldBe(ClaimStatus.Approved);
+        claim.Warnings.ShouldContain(ClaimRestoreWarning.CharacterFromSlot);
+        plan.Characters.ShouldBeEmpty();
         var field = plan.ClaimFields.ShouldHaveSingleItem().Fields.ShouldHaveSingleItem();
         field.Field.ShouldBe(strength.Id);
         field.Value.ShouldBe("12");

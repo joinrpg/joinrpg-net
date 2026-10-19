@@ -281,4 +281,50 @@ public class ClaimRestoreRowEditorTest
         editor.BlockingProblem.ShouldBe("Выберите ответственного мастера");
         editor.Selected.ShouldBeFalse();
     }
+
+    [Theory]
+    [InlineData(ClaimRestoreWarningView.CharacterFromSlot)]
+    [InlineData(ClaimRestoreWarningView.LooksLikeSlot)]
+    public void RowWithNote_SelectedByDefault(ClaimRestoreWarningView note)
+    {
+        var editor = new ClaimRestoreRowEditor(Row(character: Hero, player: Player, responsible: Master, warnings: [note]));
+
+        note.IsNote().ShouldBeTrue();
+        editor.Selected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Create_NewCharacterAsSlot_SentAsSlotOnlyWhenCreated()
+    {
+        var first = new ClaimRestoreRowEditor(Row(player: Player, responsible: Master, claimId: 500, warnings: [ClaimRestoreWarningView.LooksLikeSlot]) with { NewCharacterIsSlot = true });
+        var second = new ClaimRestoreRowEditor(Row(player: OtherPlayer, responsible: Master, claimId: 501, warnings: [ClaimRestoreWarningView.LooksLikeSlot]) with { NewCharacterIsSlot = true });
+        var created = new Dictionary<string, CharacterIdentification>();
+
+        first.NewCharacterIsSlot.ShouldBeTrue();
+        var firstRequest = first.ToApplyRequest(created);
+        firstRequest.NewCharacterName.ShouldBe("Герой");
+        firstRequest.NewCharacterIsSlot.ShouldBeTrue();
+
+        // Для шаблона домен вернул сам шаблон — вторая принятая заявка подаётся на него же.
+        created["Герой"] = Hero.CharacterId;
+        var secondRequest = second.ToApplyRequest(created);
+        secondRequest.Character.ShouldBe(Hero.CharacterId);
+        secondRequest.NewCharacterName.ShouldBeNull();
+        secondRequest.NewCharacterIsSlot.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void CopyEditsFrom_FailedRow_KeepsSlotChoice()
+    {
+        var failed = new ClaimRestoreRowEditor(Row(player: Player, responsible: Master))
+        {
+            NewCharacterIsSlot = true,
+            Succeeded = false,
+        };
+        var reloaded = new ClaimRestoreRowEditor(Row(player: Player, responsible: Master));
+
+        reloaded.CopyEditsFrom(failed);
+
+        reloaded.NewCharacterIsSlot.ShouldBeTrue();
+    }
 }

@@ -140,7 +140,9 @@ internal class ClaimRestoreViewService(
                     player,
                     responsible,
                     request.CreatedAt,
-                    new RestoredClaimTarget(Character: null, status, request.StatusChangedAt, ResponsibleMaster: null, request.ManualFee)));
+                    new RestoredClaimTarget(Character: null, status, request.StatusChangedAt, ResponsibleMaster: null, request.ManualFee),
+                    request.NewCharacterIsSlot));
+                // Для шаблона — сам шаблон: следующие заявки с этим именем подаются на него же.
                 return new ClaimRestoreApplyResult(character);
 
             case ClaimRestoreActionView.Change:

@@ -46,8 +46,9 @@ public record ExistingClaimInfo(
 
 /// <summary>Персонаж в восстановленной базе.</summary>
 /// <param name="IsSlot">
-/// Слот: принятой заявка на нём не бывает — одобрение создаёт из слота нового персонажа, по умолчанию
-/// с тем же именем.
+/// Слот (шаблон): принятой заявка на нём не бывает — одобрение создаёт из слота нового персонажа
+/// (<see cref="OriginalSlotId"/>), по умолчанию с тем же именем. Восстановление принятой заявки на слот
+/// делает так же.
 /// </param>
 /// <param name="DefaultResponsibleMaster">Ответственный по правилам проекта для новой заявки на него.</param>
 public record ExistingCharacterInfo(
@@ -79,6 +80,12 @@ public record ExistingCharacterInfo(
     /// Нужно только при восстановлении по выгрузке.
     /// </summary>
     public CharacterType? CharacterType { get; init; }
+
+    /// <summary>
+    /// Слот, из которого персонаж создан одобрением заявки (#5645); null — не из слота. У такого персонажа
+    /// обычно имя слота, но он занят своей заявкой: потерянную заявку на слот на него не подавать.
+    /// </summary>
+    public CharacterIdentification? OriginalSlotId { get; init; }
 }
 
 /// <summary>Мастер проекта — для сопоставления ответственного по имени из уведомлений.</summary>
@@ -134,10 +141,17 @@ public enum ClaimRestoreWarning
     CharacterRenamed,
 
     /// <summary>
-    /// Принятая заявка на слоте: одобрение создаёт из слота нового персонажа. Для потерянной заявки план
-    /// создаёт его сам; для заявки из базы — выбрать персонажа вручную.
+    /// Не предупреждение, а пояснение: принятая заявка подаётся на слот, и восстановление, как одобрение,
+    /// создаст ей своего персонажа из слота (#5645).
     /// </summary>
-    ApprovedOnSlot,
+    CharacterFromSlot,
+
+    /// <summary>
+    /// Пояснение: персонажа с таким именем в базе нет, а принятые заявки на это имя есть у нескольких разных
+    /// игроков — похоже, это был слот. План создаёт нового персонажа слотом
+    /// (<see cref="ClaimRestorePlanRow.NewCharacterIsSlot"/>), мастер может это снять.
+    /// </summary>
+    LooksLikeSlot,
 
     /// <summary>По уведомлениям не понять, в каком статусе заявка.</summary>
     StatusUnknown,
@@ -230,6 +244,12 @@ public record ClaimRestorePlanRow(
 
     /// <summary>Суммы при <see cref="ClaimRestoreWarning.FeePaidMismatch"/>; null — совпали или сверять не с чем.</summary>
     public FeePaidMismatch? FeePaidMismatch { get; init; }
+
+    /// <summary>
+    /// Создать: нового персонажа (при <see cref="Character"/> = null) создавать слотом — на него сходятся все
+    /// заявки с этим именем, а принятые получают своих персонажей из слота (<see cref="ClaimRestoreWarning.LooksLikeSlot"/>).
+    /// </summary>
+    public bool NewCharacterIsSlot { get; init; }
 
     /// <summary>
     /// Создание, которое нельзя применить без решения мастера: не выбран игрок, персонаж неоднозначен

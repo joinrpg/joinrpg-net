@@ -40,8 +40,13 @@ public enum ClaimRestoreWarningView
     [Display(Name = "Имя персонажа другое — похоже на переименование, его план не делает")]
     CharacterRenamed,
 
-    [Display(Name = "Принятая заявка на слоте")]
-    ApprovedOnSlot,
+    /// <summary>Пояснение, не предупреждение (<see cref="ClaimRestoreWarningViewExtensions.IsNote"/>).</summary>
+    [Display(Name = "Принятая заявка на шаблон — будет создан персонаж из шаблона")]
+    CharacterFromSlot,
+
+    /// <summary>Пояснение, не предупреждение (<see cref="ClaimRestoreWarningViewExtensions.IsNote"/>).</summary>
+    [Display(Name = "Похоже на шаблон: принятые заявки на это имя у нескольких игроков — новый персонаж будет создан шаблоном")]
+    LooksLikeSlot,
 
     [Display(Name = "Статус заявки по уведомлениям не понять")]
     StatusUnknown,
@@ -58,6 +63,16 @@ public enum ClaimRestoreWarningView
     /// <summary>Суммы — в <see cref="ClaimRestoreRowViewModel.FeePaidMismatch"/>.</summary>
     [Display(Name = "Уплачено в выгрузке не совпадает с оплатами в базе")]
     FeePaidMismatch,
+}
+
+public static class ClaimRestoreWarningViewExtensions
+{
+    /// <summary>
+    /// Пояснение, а не предупреждение: план уверен, строка отмечена по умолчанию, пометка — чтобы мастер
+    /// видел, что произойдёт.
+    /// </summary>
+    public static bool IsNote(this ClaimRestoreWarningView warning)
+        => warning is ClaimRestoreWarningView.CharacterFromSlot or ClaimRestoreWarningView.LooksLikeSlot;
 }
 
 /// <summary>Расхождение уплаченного: «Уплачено» в выгрузке и сумма одобренных оплат в базе.</summary>
@@ -115,6 +130,9 @@ public record ClaimRestoreRowViewModel(
 
     /// <summary>Суммы при <see cref="ClaimRestoreWarningView.FeePaidMismatch"/>; null — совпали или сверять не с чем.</summary>
     public ClaimRestoreFeePaidMismatchView? FeePaidMismatch { get; init; }
+
+    /// <summary>Создать: нового персонажа по умолчанию создавать шаблоном (<see cref="ClaimRestoreWarningView.LooksLikeSlot"/>).</summary>
+    public bool NewCharacterIsSlot { get; init; }
 }
 
 /// <summary>План восстановления заявок проекта. Строки — в порядке применения.</summary>
@@ -153,6 +171,7 @@ public record ClaimRestorePlanViewModel(
 /// <param name="Player">Игрок новой заявки; null — взять из <paramref name="PlayerLink"/>.</param>
 /// <param name="PlayerLink">Ссылка на профиль или id игрока, если мастер указал его вручную.</param>
 /// <param name="CreatedAt">Когда заявка была подана — первое событие по ней.</param>
+/// <param name="NewCharacterIsSlot">Создать: нового персонажа (<paramref name="NewCharacterName"/>) создать шаблоном.</param>
 public record ClaimRestoreApplyRequest(
     ClaimIdentification ClaimId,
     ClaimRestoreActionView Action,
@@ -164,7 +183,8 @@ public record ClaimRestoreApplyRequest(
     DateTimeOffset? StatusChangedAt,
     UserIdentification? ResponsibleMaster,
     int? ManualFee,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    bool NewCharacterIsSlot = false);
 
 /// <param name="Character">Персонаж заявки после применения (для «Создать» — найденный или созданный).</param>
 public record ClaimRestoreApplyResult(CharacterIdentification? Character);

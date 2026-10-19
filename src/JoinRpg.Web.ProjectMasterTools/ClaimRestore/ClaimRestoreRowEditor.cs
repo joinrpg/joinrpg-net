@@ -15,6 +15,7 @@ public class ClaimRestoreRowEditor
         bool ByDefault(ClaimRestoreAttributeKindView kind) => !row.AttributesNotByDefault.Contains(kind);
         Character = ByDefault(ClaimRestoreAttributeKindView.Character) ? row.Character?.CharacterId : null;
         NewCharacterName = row.CharacterName?.Trim() ?? "";
+        NewCharacterIsSlot = row.NewCharacterIsSlot;
         Player = row.Player?.UserId;
         ManualPlayer = row.Action == ClaimRestoreActionView.Create && Player is null && row.PlayerCandidates.Count == 0;
         ResponsibleMaster = ByDefault(ClaimRestoreAttributeKindView.ResponsibleMaster) ? row.ResponsibleMaster : null;
@@ -23,7 +24,7 @@ public class ClaimRestoreRowEditor
         // Строки с пометками мастер проверяет сам — по умолчанию не отмечены. «Правили руками» решается
         // по атрибутам выше, остальное в строке применяется.
         Selected = CanApply && BlockingProblem is null && row.ApplyByDefault
-            && row.Warnings.All(w => w == ClaimRestoreWarningView.ChangedAfterRestore);
+            && row.Warnings.All(w => w == ClaimRestoreWarningView.ChangedAfterRestore || w.IsNote());
     }
 
     public ClaimRestoreRowViewModel Row { get; }
@@ -66,6 +67,12 @@ public class ClaimRestoreRowEditor
     public bool NewCharacter => Row.Action == ClaimRestoreActionView.Create && Character is null;
 
     public string NewCharacterName { get; set; }
+
+    /// <summary>
+    /// Нового персонажа создать шаблоном: на него сходятся все строки с этим именем, а принятые заявки
+    /// получают своих персонажей из шаблона.
+    /// </summary>
+    public bool NewCharacterIsSlot { get; set; }
 
     /// <summary>Игрок новой заявки, выбранный из кандидатов.</summary>
     public UserIdentification? Player { get; set; }
@@ -124,7 +131,7 @@ public class ClaimRestoreRowEditor
     /// <summary>Запрос на применение.</summary>
     /// <param name="createdCharacters">
     /// Новые персонажи, уже созданные предыдущими строками, по имени: следующие заявки на того же
-    /// нового персонажа подаются на него, а не создают второго.
+    /// нового персонажа подаются на него, а не создают второго. Для шаблона — сам шаблон.
     /// </param>
     public ClaimRestoreApplyRequest ToApplyRequest(IReadOnlyDictionary<string, CharacterIdentification> createdCharacters)
     {
@@ -145,7 +152,9 @@ public class ClaimRestoreRowEditor
                 StatusChangedAt,
                 ResponsibleMaster,
                 ApplyFee ? Row.ManualFee : null,
-                Row.FirstActivity);
+                Row.FirstActivity,
+                // Персонаж уже создан предыдущей строкой — шаблон он или нет, решено тогда.
+                NewCharacterIsSlot: NewCharacter && character is null && NewCharacterIsSlot);
         }
 
         var status = Status == Row.CurrentStatus ? null : Status;
@@ -191,6 +200,7 @@ public class ClaimRestoreRowEditor
         {
             Character = previous.Character;
             NewCharacterName = previous.NewCharacterName;
+            NewCharacterIsSlot = previous.NewCharacterIsSlot;
         }
         Player = previous.Player;
         ManualPlayer = previous.ManualPlayer;
