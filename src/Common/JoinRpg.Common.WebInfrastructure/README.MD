@@ -126,7 +126,7 @@ options.Filters.Add<SerilogRazorPagesFilter>();
 |-----------|-------------|----------|
 | **Логирование** | `UseJoinSerilog()`, `UseJoinRequestLogging()` | Serilog с обогащением (пользователь, трассировка, YC-уровни), JSON/text форматтеры, фильтрация health check запросов |
 | **Data Protection** | `AddJoinDataProtection()` (вызывается из `AddJoinWebPlatform`) | Хранение ключей шифрования в PostgreSQL для работы в нескольких репликах: в отдельной базе или в DbContext приложения (`AddJoinDataProtection<T>()`) |
-| **OpenTelemetry** | `AddJoinOpenTelemetry()` (вызывается из `AddJoinWebPlatform`) | Distributed tracing + метрики, Prometheus endpoint `/metrics` |
+| **OpenTelemetry** | `AddJoinOpenTelemetry()` (вызывается из `AddJoinWebPlatform`) | Distributed tracing + метрики, Prometheus endpoint `/metrics`. Экспортируются meter'ы с именем приложения (`appName`), общий `JoinRpg`, `JoinRpg.WebInfrastructure` и `Microsoft.AspNetCore.Hosting` |
 | **Кеширование** | `PerRequestCache<K,V>`, `SingletonCache<K,V>` | Per-request scoped кеш и singleton-кеш с фабрикой значений |
 | **Health Checks** | `MapJoinHealthChecks()` | Эндпойнты `/health` (полный), `/health/ready` (тег `ready`), `/health/live` (всегда OK) |
 | **robots.txt** | `AddJoinRobotsTxt()` (вызывается из `AddJoinWebPlatform`) | `/robots.txt` первым middleware конвейера (до логирования). Настройки — секция `RobotsTxt`, см. ниже |
