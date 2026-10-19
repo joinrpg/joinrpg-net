@@ -181,8 +181,9 @@ internal class FinanceOperationsImpl(
 
         await UnitOfWork.SaveChangesAsync();
 
-        await claimNotificationService.SendNotification(emailTo.WithCommentId(commentTo.CommentId));
-        await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId));
+        // Сумма — со знаком, как у финоперации своей заявки: без неё перевод по уведомлению не восстановить (#5643).
+        await claimNotificationService.SendNotification(emailTo.WithCommentId(commentTo.CommentId) with { Money = request.Money });
+        await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId) with { Money = -request.Money });
     }
 
     /// <summary>
