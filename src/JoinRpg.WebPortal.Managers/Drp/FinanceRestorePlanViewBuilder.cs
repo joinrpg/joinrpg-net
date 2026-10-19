@@ -46,7 +46,7 @@ internal static class FinanceRestorePlanViewBuilder
                 claim?.CharacterName,
                 claim?.Player.DisplayName.DisplayName,
                 [.. row.Operations.Select(o => ToOperationView(o, row.ClaimExists, ambiguous, NameOf(o.Initiator), currentUser, ownCash))],
-                [.. row.Moderations.Select(m => ToModerationView(m, row, ambiguous, NameOf(m.Initiator), projectInfo.TimeZone))],
+                [.. row.Moderations.Select(m => ToModerationView(m, row, ambiguous, NameOf(m.Initiator)))],
                 row.AlreadyExisting,
                 row.Conflicts.Count,
                 row.Transfers,
@@ -138,8 +138,7 @@ internal static class FinanceRestorePlanViewBuilder
         FinanceModerationToRestore moderation,
         FinanceRestorePlanRow row,
         HashSet<string> ambiguousKeys,
-        string authorName,
-        TimeZoneInfo timeZone)
+        string authorName)
     {
         var target = Target(row, moderation);
         var reason = moderation.NotApplicableReason()
@@ -147,6 +146,10 @@ internal static class FinanceRestorePlanViewBuilder
         var notApplicableText = ambiguousKeys.Contains(moderation.Key)
             ? AmbiguousKeyText
             : reason is { } r ? NotApplicableText(r) : null;
+        // «К операции «оплата 500 от …»» собирает панель: время — в том же поясе, что и в таблице.
+        var targetOperation = notApplicableText is null && moderation.Link == FinanceModerationLink.RestoredOperation && target is not null
+            ? ToRef(target)
+            : null;
         return new FinanceRestoreModerationView(
             moderation.Key,
             moderation.CommentId,
@@ -154,7 +157,8 @@ internal static class FinanceRestorePlanViewBuilder
             moderation.CreatedAt,
             authorName,
             CanApply: row.ClaimExists && notApplicableText is null,
-            notApplicableText ?? LinkNote(moderation, target, timeZone));
+            notApplicableText ?? LinkNote(moderation),
+            targetOperation);
     }
 
     /// <summary>Операция из уведомлений, с которой связалось решение.</summary>
@@ -171,12 +175,11 @@ internal static class FinanceRestorePlanViewBuilder
             || (moderation.Link == FinanceModerationLink.RestoredOperation
                 && (target is null || target.NotApplicableReason() is not null || ambiguousKeys.Contains(target.Key)));
 
-    private static string? LinkNote(FinanceModerationToRestore moderation, FinanceOperationToRestore? target, TimeZoneInfo timeZone)
+    /// <summary>Пояснение к связи решения; к восстанавливаемой операции — нет: его собирает панель.</summary>
+    private static string? LinkNote(FinanceModerationToRestore moderation)
         => moderation.Link switch
         {
-            FinanceModerationLink.RestoredOperation => target is null
-                ? null
-                : $"К операции «{Describe(target, timeZone)}» — восстановится вместе с ней",
+            FinanceModerationLink.RestoredOperation => null,
             FinanceModerationLink.ExistingOperation => moderation.TargetOperationId is { } id
                 ? $"К операции № {id}, которая уже есть в базе"
                 : "К операции, которая уже есть в базе",
@@ -191,15 +194,15 @@ internal static class FinanceRestorePlanViewBuilder
     /// Что из того, что мастер мог восстановить, в этот раз не передано и почему. «Уже есть», конфликты и прочее
     /// неприменимое здесь не повторяется: это видно в плане.
     /// </summary>
-    public static IReadOnlyList<string> Skipped(FinanceRestorePlanRow row, ClaimFinanceRestoreInput input, TimeZoneInfo timeZone)
+    public static IReadOnlyList<FinanceRestoreSkippedView> Skipped(FinanceRestorePlanRow row, ClaimFinanceRestoreInput input)
     {
-        var result = new List<string>();
+        var result = new List<FinanceRestoreSkippedView>();
         var ambiguous = AmbiguousKeys(row);
         foreach (var operation in row.Operations.Where(o => !ambiguous.Contains(o.Key)))
         {
             if (input.NotPassed.TryGetValue(operation.Key, out var reason) && IsWorthReporting(reason))
             {
-                result.Add($"{Describe(operation, timeZone)}: {SkippedText(reason)}");
+                result.Add(new FinanceRestoreSkippedView(ToRef(operation), SkippedText(reason)));
             }
         }
         // Решения, которые в плане и так показаны неприменимыми, не повторяем.
@@ -208,7 +211,7 @@ internal static class FinanceRestorePlanViewBuilder
         {
             if (input.NotPassed.TryGetValue(moderation.Key, out var reason) && IsWorthReporting(reason))
             {
-                result.Add($"{Describe(moderation, timeZone)}: {SkippedText(reason)}");
+                result.Add(new FinanceRestoreSkippedView(ToRef(moderation), SkippedText(reason)));
             }
         }
         return result;
@@ -219,15 +222,15 @@ internal static class FinanceRestorePlanViewBuilder
             or FinanceRestoreSkipReason.ParentNotRestoredInThisRun
             or FinanceRestoreSkipReason.ParentUnknown;
 
-    /// <summary>«оплата 500 от 01.07.2026 13:00» — время в часовом поясе проекта.</summary>
-    public static string Describe(FinanceOperationToRestore operation, TimeZoneInfo timeZone)
-        => $"{(operation.Type == FinanceOperationType.Refund ? "возврат" : "оплата")} {Math.Abs(operation.Money ?? 0)} от {Format(operation.CreatedAt, timeZone)}";
+    /// <summary>Ссылка на операцию для текста; описание со временем собирает панель.</summary>
+    private static FinanceRestoreEntryRef ToRef(FinanceOperationToRestore operation)
+        => new(
+            operation.Type == FinanceOperationType.Refund ? FinanceRestoreEntryKind.Refund : FinanceRestoreEntryKind.Payment,
+            Math.Abs(operation.Money ?? 0),
+            operation.CreatedAt);
 
-    private static string Describe(FinanceModerationToRestore moderation, TimeZoneInfo timeZone)
-        => $"{(moderation.Approved ? "подтверждение" : "отклонение")} от {Format(moderation.CreatedAt, timeZone)}";
-
-    private static string Format(DateTimeOffset value, TimeZoneInfo timeZone)
-        => TimeZoneInfo.ConvertTime(value, timeZone).ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture);
+    private static FinanceRestoreEntryRef ToRef(FinanceModerationToRestore moderation)
+        => new(moderation.Approved ? FinanceRestoreEntryKind.Approval : FinanceRestoreEntryKind.Rejection, Money: null, moderation.CreatedAt);
 
     /// <summary>Почему строка плана не восстановится — пояснение в плане.</summary>
     internal static string NotApplicableText(FinanceRestoreSkipReason reason) => reason switch

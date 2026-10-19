@@ -78,11 +78,35 @@ public record FinanceRestoreOperationView(
     bool CanApply,
     string? NotApplicableReason);
 
+/// <summary>Вид операции или решения, на которое ссылается текст для мастера.</summary>
+public enum FinanceRestoreEntryKind
+{
+    Payment,
+    Refund,
+    Approval,
+    Rejection,
+}
+
+/// <summary>
+/// Операция или решение, на которое ссылается текст для мастера. Описание («оплата 500 от …») собирает
+/// панель — чтобы время было в том же поясе, что и в таблице.
+/// </summary>
+/// <param name="Money">Сумма без знака; у решения — null.</param>
+public record FinanceRestoreEntryRef(FinanceRestoreEntryKind Kind, int? Money, DateTimeOffset CreatedAt);
+
+/// <summary>Что не передано на восстановление в этот раз.</summary>
+/// <param name="Reason">Почему — продолжение описания записи, текст для мастера.</param>
+public record FinanceRestoreSkippedView(FinanceRestoreEntryRef Entry, string Reason);
+
 /// <summary>Подтверждение или отклонение финансовой операции из уведомления.</summary>
 /// <param name="CommentId">Прежний номер комментария; null — в уведомлении его не было.</param>
 /// <param name="Approved">Подтверждение; иначе отклонение.</param>
 /// <param name="CanApply">Восстановится при применении заявки (не «уже есть», не конфликт).</param>
-/// <param name="Note">Пояснение для мастера: к какой операции относится, почему не восстановится и т.п.</param>
+/// <param name="Note">
+/// Пояснение для мастера: к какой операции относится, почему не восстановится и т.п. Null, если задано
+/// <paramref name="TargetOperation"/>.
+/// </param>
+/// <param name="TargetOperation">Операция из уведомлений, вместе с которой восстановится решение.</param>
 public record FinanceRestoreModerationView(
     string Key,
     int? CommentId,
@@ -90,7 +114,8 @@ public record FinanceRestoreModerationView(
     DateTimeOffset CreatedAt,
     string AuthorName,
     bool CanApply,
-    string? Note);
+    string? Note,
+    FinanceRestoreEntryRef? TargetOperation = null);
 
 /// <summary>План восстановления ручных оплат одной заявки.</summary>
 /// <param name="ClaimExists">Заявка есть в базе; если нет — восстанавливать некуда.</param>
@@ -142,5 +167,10 @@ public record FinanceRestoreApplyRequest(ClaimIdentification ClaimId, IReadOnlyD
 /// <param name="ParentsNotRestored">
 /// Сколько решений не вставлено: их операция не вставилась (номер заняли между построением плана и вставкой).
 /// </param>
-/// <param name="Skipped">Что пропущено и почему — тексты для мастера.</param>
-public record FinanceRestoreApplyResult(int Inserted, int AlreadyExisted, int Conflicts, int ParentsNotRestored, IReadOnlyList<string> Skipped);
+/// <param name="Skipped">Что пропущено и почему.</param>
+public record FinanceRestoreApplyResult(
+    int Inserted,
+    int AlreadyExisted,
+    int Conflicts,
+    int ParentsNotRestored,
+    IReadOnlyList<FinanceRestoreSkippedView> Skipped);

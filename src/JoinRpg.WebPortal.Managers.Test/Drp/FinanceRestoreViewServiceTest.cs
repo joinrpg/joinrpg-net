@@ -362,8 +362,9 @@ public class FinanceRestoreViewServiceTest
         operations.Select(o => o.OperationId).ShouldBe([602]);
         moderations.ShouldBeEmpty();
         result.Skipped.ShouldBe([
-            "оплата 300 от 01.07.2026 13:00: не выбран тип оплаты",
-            "подтверждение от 02.07.2026 13:00: восстановится вместе со своей операцией, когда для неё выберут тип оплаты",
+            new FinanceRestoreSkippedView(new(FinanceRestoreEntryKind.Payment, 300, Day(1)), "не выбран тип оплаты"),
+            new FinanceRestoreSkippedView(new(FinanceRestoreEntryKind.Approval, null, Day(2)),
+                "восстановится вместе со своей операцией, когда для неё выберут тип оплаты"),
         ]);
     }
 
@@ -385,7 +386,7 @@ public class FinanceRestoreViewServiceTest
         var moderation = moderations.ShouldHaveSingleItem();
         moderation.CommentId.ShouldBe(601);
         moderation.ParentOperationId.ShouldBe(500);
-        result.Skipped.ShouldBe(["оплата 500 от 03.07.2026 13:00: не выбран тип оплаты"]);
+        result.Skipped.ShouldBe([new FinanceRestoreSkippedView(new(FinanceRestoreEntryKind.Payment, 500, Day(3)), "не выбран тип оплаты")]);
     }
 
     [Fact]
@@ -470,7 +471,8 @@ public class FinanceRestoreViewServiceTest
         var projectId = new ProjectIdentification(1);
         var operation = new FinanceRestoreOperationView("id:555", 555, false, 500, BackupTakenAt, "Мастер", false,
             FinanceRestoreOperationStateView.Proposed, 3, [3, 4], true, null);
-        var moderation = new FinanceRestoreModerationView("id:556", 556, true, BackupTakenAt, "Мастер", true, "Пояснение");
+        var moderation = new FinanceRestoreModerationView("id:556", 556, true, BackupTakenAt, "Мастер", true, null,
+            new FinanceRestoreEntryRef(FinanceRestoreEntryKind.Refund, 200, BackupTakenAt));
         var row = new FinanceRestoreRowViewModel(new ClaimIdentification(projectId, 5), true, CharacterName, "Игрок", [operation], [moderation],
             1, 2, 3, 4, 5, [FinanceRestoreWarningView.IdConflict]);
         var plan = new FinanceRestorePlanViewModel(projectId, null, [new FinanceRestorePaymentTypeView(3, "Наличные", "Мастер", false)], [row], true);
@@ -485,9 +487,10 @@ public class FinanceRestoreViewServiceTest
 
         var request = new FinanceRestoreApplyRequest(row.ClaimId, new Dictionary<string, int> { ["id:555"] = 3 });
         JsonRoundTrip.Ensure(request).PaymentTypes.ShouldBe(request.PaymentTypes);
-        var result = JsonRoundTrip.Ensure(new FinanceRestoreApplyResult(1, 2, 3, 4, ["текст"]));
+        var skipped = new FinanceRestoreSkippedView(new(FinanceRestoreEntryKind.Approval, null, BackupTakenAt), "текст");
+        var result = JsonRoundTrip.Ensure(new FinanceRestoreApplyResult(1, 2, 3, 4, [skipped]));
         result.ParentsNotRestored.ShouldBe(4);
-        result.Skipped.ShouldBe(["текст"]);
+        result.Skipped.ShouldBe([skipped]);
     }
 
     /// <summary>Записи со списками сравниваются по ссылке на список — сравниваем по содержимому.</summary>

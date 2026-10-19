@@ -77,7 +77,7 @@ internal class FinanceRestoreViewService(
         var input = FinanceRestoreInputBuilder.BuildClaim(
             row,
             op => request.PaymentTypes.TryGetValue(op.Key, out var id) ? new PaymentTypeIdentification(claimId.ProjectId, id) : null);
-        var skipped = FinanceRestorePlanViewBuilder.Skipped(row, input, projectInfo.TimeZone);
+        var skipped = FinanceRestorePlanViewBuilder.Skipped(row, input);
         if (input.IsEmpty)
         {
             return new FinanceRestoreApplyResult(0, 0, 0, 0, skipped);
