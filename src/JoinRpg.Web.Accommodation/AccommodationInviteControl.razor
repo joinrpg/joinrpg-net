@@ -1,4 +1,5 @@
 @* Приглашение к совместному проживанию. Раньше жило в Views/Claim/_ClaimAccommodation.cshtml. *@
+@* Мастер с правом расселять не приглашает за игрока, а сразу поселяет вместе (#5656). *@
 @inject IAccommodationInviteClient Client
 @inject NavigationManager NavigationManager
 
@@ -11,8 +12,8 @@
     <AccommodationInviteTargetSelector ClaimId="@ClaimId"
                                        Value="@selectedTarget"
                                        ValueChanged="@HandleTargetChanged"
-                                       HasTargetsChanged="@HandleHasTargetsChanged" />
-    @if (hasTargets)
+                                       ModeChanged="@HandleModeChanged" />
+    @if (mode == AccommodationInviteMode.Invite)
     {
         <span style="margin-left: 1em;">
             <JoinButton Label="Пригласить"
@@ -22,7 +23,20 @@
                         DisabledTitle="Сначала выберите, кого пригласить"
                         AutoConfirm="true"
                         AutoConfirmMessage="Отправить приглашение на совместное проживание?"
-                        OnClick="@HandleInviteClicked" />
+                        OnClick="@(args => Act(args, Client.CreateInvite))" />
+        </span>
+    }
+    else if (mode == AccommodationInviteMode.Merge)
+    {
+        <span style="margin-left: 1em;">
+            <JoinButton Label="Поселить вместе"
+                        Style="VariationStyleEnum.Success"
+                        Size="SizeStyleEnum.Small"
+                        Disabled="@(selectedTarget is null)"
+                        DisabledTitle="Сначала выберите, кого поселить вместе"
+                        AutoConfirm="true"
+                        AutoConfirmMessage="Объединить в одну группу проживания? Игроки получат уведомление."
+                        OnClick="@(args => Act(args, Client.MergeGroups))" />
         </span>
     }
 </div>
@@ -32,10 +46,10 @@
     public ClaimIdentification ClaimId { get; set; } = null!;
 
     private AccommodationGroupIdentification? selectedTarget;
-    private bool hasTargets;
+    private AccommodationInviteMode mode;
     private string? errorMessage;
 
-    private void HandleHasTargetsChanged(bool value) => hasTargets = value;
+    private void HandleModeChanged(AccommodationInviteMode value) => mode = value;
 
     private void HandleTargetChanged(AccommodationGroupIdentification? target)
     {
@@ -43,7 +57,9 @@
         errorMessage = null;
     }
 
-    private async Task HandleInviteClicked(ButtonClickEventArgs args)
+    private async Task Act(
+        ButtonClickEventArgs args,
+        Func<ClaimIdentification, AccommodationGroupIdentification, Task> action)
     {
         if (selectedTarget is null)
         {
@@ -53,8 +69,8 @@
 
         try
         {
-            await Client.CreateInvite(ClaimId, selectedTarget);
-            // Приглашение меняет обе панели «приглашения» на странице заявки, поэтому перезагружаем её целиком
+            await action(ClaimId, selectedTarget);
+            // Приглашение меняет панели «приглашения», объединение — соседей: перезагружаем страницу целиком
             NavigationManager.Refresh(forceReload: true);
         }
         catch (Exception exception)

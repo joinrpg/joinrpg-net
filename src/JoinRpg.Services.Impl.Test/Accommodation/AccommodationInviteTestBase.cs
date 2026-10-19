@@ -38,13 +38,17 @@ public abstract class AccommodationInviteTestBase : ClaimServiceTestBase
     private protected FakeAccommodationNotificationService notificationService => accommodationNotifications;
 
     /// <summary>
-    /// Сервис от лица указанного пользователя; по умолчанию — от мастера проекта, у которого есть
-    /// все права.
+    /// Сервис от лица указанного пользователя; по умолчанию — от игрока: приглашениями распоряжается
+    /// только он (#5656), а все заявки тестов — его.
     /// </summary>
     private protected AccommodationInviteServiceImpl CreateService(int? currentUserId = null)
         => new(
-            CreatePropsService(currentUserId),
+            CreatePropsService(currentUserId ?? mock.Player.UserId),
             new FakeAccommodationInviteRepository(mock));
+
+    /// <summary>Сервис от лица мастера проекта, у которого есть все права.</summary>
+    private protected AccommodationInviteServiceImpl CreateMasterService()
+        => CreateService(mock.Master.UserId);
 
     /// <summary>Переводит проект в архив — операции над ним запрещены.</summary>
     private protected void ArchiveProject()

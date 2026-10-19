@@ -17,7 +17,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var target = CreateClaimWithAccommodation("Гость");
         var targetGroup = target.AccommodationRequest!;
 
-        await CreateService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
 
         MembersOf(host.AccommodationRequest!).ShouldBe([host.ClaimId, target.ClaimId], ignoreOrder: true);
         target.AccommodationRequest.ShouldBe(host.AccommodationRequest);
@@ -33,7 +33,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var second = CreateClaim("Гость2");
         var targetGroup = mock.CreateAccommodationRequest(accommodationType, first, second);
 
-        await CreateService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(RequestId(targetGroup)));
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(RequestId(targetGroup)));
 
         MembersOf(host.AccommodationRequest!)
             .ShouldBe([host.ClaimId, first.ClaimId, second.ClaimId], ignoreOrder: true);
@@ -52,7 +52,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var neighbour = CreateClaim("Сосед гостя");
         _ = mock.CreateAccommodationRequest(accommodationType, target, neighbour);
 
-        await CreateService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
 
         MembersOf(host.AccommodationRequest!)
             .ShouldBe([host.ClaimId, target.ClaimId, neighbour.ClaimId], ignoreOrder: true);
@@ -64,7 +64,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var host = CreateClaimWithAccommodation("Хозяин");
         var target = CreateClaim("Гость без типа");
 
-        await CreateService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
 
         MembersOf(host.AccommodationRequest!).ShouldBe([host.ClaimId, target.ClaimId], ignoreOrder: true);
     }
@@ -76,7 +76,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var host = CreateClaimWithAccommodation("Хозяин");
         var target = CreateClaimWithAccommodation("Гость");
 
-        await CreateService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
 
         mock.AccommodationInvites.ShouldBeEmpty();
         notificationService.Invites.ShouldBeEmpty();
@@ -95,7 +95,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var between = mock.CreateAccommodationInvite(target, host);
         var fromOutside = mock.CreateAccommodationInvite(outsider, target);
 
-        await CreateService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
 
         between.IsAccepted.ShouldBe(InviteState.Accepted);
         between.ResolveDescription.ShouldBe(ResolveDescription.AcceptedAuto);
@@ -109,7 +109,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var host = CreateClaimWithAccommodation("Хозяин");
         var target = CreateClaimWithAccommodation("Гость");
 
-        await CreateService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
 
         var notification = notificationService.GroupMerged.ShouldHaveSingleItem();
         notification.Members.Select(claimId => claimId.ClaimId)
@@ -167,7 +167,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var targetGroup = mock.CreateAccommodationRequest(smallType, target);
 
         var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
-            () => CreateService().MergeAccommodationGroups(
+            () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         exception.Message.ShouldContain("не хватает мест");
@@ -187,7 +187,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         _ = mock.CreateAccommodationRequest(otherType, target);
 
         var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
-            () => CreateService().MergeAccommodationGroups(
+            () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         exception.Message.ShouldContain("такой же тип проживания");
@@ -202,7 +202,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var group = mock.CreateAccommodationRequest(accommodationType, host, neighbour);
 
         _ = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
-            () => CreateService().MergeAccommodationGroups(
+            () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(RequestId(group))));
 
         SaveChangesCallCount.ShouldBe(0);
@@ -214,7 +214,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var host = CreateClaimWithAccommodation("Хозяин");
 
         _ = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
-            () => CreateService().MergeAccommodationGroups(
+            () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(host.GetId())));
 
         SaveChangesCallCount.ShouldBe(0);
@@ -229,7 +229,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         _ = mock.CreateAccommodationRequest(accommodationType, host, neighbour);
 
         _ = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
-            () => CreateService().MergeAccommodationGroups(
+            () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(neighbour.GetId())));
 
         SaveChangesCallCount.ShouldBe(0);
@@ -242,7 +242,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var target = CreateClaimWithAccommodation("Гость");
 
         var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
-            () => CreateService().MergeAccommodationGroups(
+            () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         exception.Message.ShouldContain("не выбран тип");
@@ -260,7 +260,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         _ = mock.CreateRoom(target.AccommodationRequest!, "Домик №1");
 
         var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
-            () => CreateService().MergeAccommodationGroups(
+            () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         exception.Message.ShouldContain("расселён");
@@ -282,7 +282,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var targetNeighbour = CreateClaim("Сосед гостя");
         _ = mock.CreateAccommodationRequest(accommodationType, target, targetNeighbour);
 
-        await CreateService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
 
         notificationService.GroupMerged.ShouldHaveSingleItem().Members.Select(claimId => claimId.ClaimId)
             .ShouldBe([host.ClaimId, hostNeighbour.ClaimId, target.ClaimId, targetNeighbour.ClaimId], ignoreOrder: true);
@@ -296,7 +296,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         ArchiveProject();
 
         _ = await Should.ThrowAsync<ProjectDeactivatedException>(
-            () => CreateService().MergeAccommodationGroups(
+            () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         SaveChangesCallCount.ShouldBe(0);

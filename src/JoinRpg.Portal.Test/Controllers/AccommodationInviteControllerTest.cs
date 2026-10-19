@@ -23,6 +23,7 @@ public class AccommodationInviteControllerTest
 
     public static TheoryData<string> Actions => [
         nameof(AccommodationInviteController.CreateInvite),
+        nameof(AccommodationInviteController.MergeGroups),
         nameof(AccommodationInviteController.AcceptInvite),
         nameof(AccommodationInviteController.DeclineInvite),
         nameof(AccommodationInviteController.CancelInvite),
@@ -32,6 +33,7 @@ public class AccommodationInviteControllerTest
     private static Task<ActionResult> Invoke(AccommodationInviteController controller, string action) => action switch
     {
         nameof(AccommodationInviteController.CreateInvite) => controller.CreateInvite(ClaimId, Target),
+        nameof(AccommodationInviteController.MergeGroups) => controller.MergeGroups(ClaimId, Target),
         nameof(AccommodationInviteController.AcceptInvite) => controller.AcceptInvite(InviteId),
         nameof(AccommodationInviteController.DeclineInvite) => controller.DeclineInvite(InviteId),
         nameof(AccommodationInviteController.CancelInvite) => controller.CancelInvite(InviteId),
@@ -83,6 +85,7 @@ public class AccommodationInviteControllerTest
 
         public Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId) => throw new NotSupportedException();
         public Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target) => Fail();
+        public Task MergeGroups(ClaimIdentification claimId, AccommodationGroupIdentification target) => Fail();
         public Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(ClaimIdentification claimId, InviteDirection direction) => throw new NotSupportedException();
         public Task AcceptInvite(AccommodationInviteIdentification inviteId) => Fail();
         public Task DeclineInvite(AccommodationInviteIdentification inviteId) => Fail();

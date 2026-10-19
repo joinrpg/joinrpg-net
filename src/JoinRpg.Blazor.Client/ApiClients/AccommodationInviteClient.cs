@@ -15,6 +15,9 @@ public class AccommodationInviteClient(HttpClient httpClient, CsrfTokenProvider 
     public async Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
         => await Post($"webapi/AccommodationInvite/CreateInvite?claimId={claimId}&target={target}");
 
+    public async Task MergeGroups(ClaimIdentification claimId, AccommodationGroupIdentification target)
+        => await Post($"webapi/AccommodationInvite/MergeGroups?claimId={claimId}&target={target}");
+
     public async Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
         ClaimIdentification claimId,
         InviteDirection direction)

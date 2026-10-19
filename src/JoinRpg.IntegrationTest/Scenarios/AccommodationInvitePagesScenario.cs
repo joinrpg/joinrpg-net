@@ -1,6 +1,9 @@
+using System.Data.Entity;
 using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
@@ -20,11 +23,17 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// <c>AccommodationInviteControl</c>.
 /// </summary>
 /// <remarks>
+/// Приглашениями распоряжается сам игрок (#5656): приглашает игрок заявки-отправителя, отвечает
+/// игрок заявки-получателя, и каждый ходит своим клиентом. Мастер с правом расселять вместо
+/// приглашения сразу поселяет вместе (<c>MergeGroups</c>) — это тут проверено ровно настолько,
+/// чтобы было видно, что ручка доходит до сервиса и что мастеру приглашать не дают.
+/// <para>
 /// Поведение контура подробно покрыто юнит-тестами поверх фейков
 /// (<c>src/JoinRpg.Services.Impl.Test/Accommodation/</c>), и дублировать их тут нечего. Смысл этого
 /// сценария ровно один: прогнать на настоящем SQL Server те EF6-запросы, которых фейки не видят.
 /// Переезд контура на <c>ICharacterPropsService</c> (ADR014) завёл для него новые загрузчики, и
 /// ошибка в дереве выражений прошла бы все юнит-тесты, а упала бы в бою:
+/// </para>
 /// <list type="bullet">
 /// <item><description>
 /// <c>CharacterAggregateWriteRepository.ClaimQuery</c> в роли загрузчика стороны приглашения:
@@ -71,6 +80,30 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     private const string AntiforgeryTokenPage = "game/create";
 
     /// <summary>
+    /// Без antiforgery-токена /webapi отвечает 400 с причиной, а не редиректом на страницу ошибки:
+    /// остров ходит через fetch, и редирект превратился бы в 200 — отказ выглядел бы успехом.
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_WithoutAntiforgeryToken_IsRejectedWithReason()
+    {
+        var seed = await SeedAsync();
+        var sessions = new Sessions(factory, seed);
+        var sender = seed.Claims[0];
+        var senderPlayer = await sessions.PlayerOf(sender);
+        var receiverTarget = FindTarget(await GetTargetsAsync(senderPlayer.Client, sender), seed.GroupTarget(1));
+
+        var response = await senderPlayer.Client.PostAsync(
+            InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", receiverTarget.TargetId.ToString())),
+            content: null);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, await DescribeAsync(response, "Ожидался отказ antiforgery"));
+        (await response.Content.ReadAsStringAsync()).ShouldContain("Сессия устарела");
+        var receiverPlayer = await sessions.PlayerOf(seed.Claims[1]);
+        (await GetInvitesAsync(receiverPlayer.Client, seed.Claims[1], InviteDirection.Incoming)).ShouldBeEmpty(
+            "Приглашение без токена не должно было создаться");
+    }
+
+    /// <summary>
     /// Полный круг «создали — увидели — приняли», оба вида цели приглашения.
     /// </summary>
     /// <remarks>
@@ -81,39 +114,21 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// видит игрок: у приглашающего уменьшается свободное место, а переехавший перестаёт быть
     /// доступной целью.
     /// </remarks>
-    /// <summary>
-    /// Без antiforgery-токена /webapi отвечает 400 с причиной, а не редиректом на страницу ошибки:
-    /// остров ходит через fetch, и редирект превратился бы в 200 — отказ выглядел бы успехом.
-    /// </summary>
-    [Fact]
-    public async Task CreateInvite_WithoutAntiforgeryToken_IsRejectedWithReason()
-    {
-        var seed = await SeedAsync();
-        var client = await seed.CreateClientAsync(factory);
-        var sender = seed.Claims[0];
-        var receiverTarget = FindTarget(await GetTargetsAsync(client, sender), seed.GroupTarget(1));
-
-        var response = await client.PostAsync(
-            InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", receiverTarget.TargetId.ToString())),
-            content: null);
-
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, await DescribeAsync(response, "Ожидался отказ antiforgery"));
-        (await response.Content.ReadAsStringAsync()).ShouldContain("Сессия устарела");
-        (await GetInvitesAsync(client, seed.Claims[1], InviteDirection.Incoming)).ShouldBeEmpty(
-            "Приглашение без токена не должно было создаться");
-    }
-
     [Fact]
     public async Task CreateAndAcceptInvite_RoundTrip()
     {
         var seed = await SeedAsync();
-        var client = await seed.CreateClientAsync(factory);
-        var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
+        var sessions = new Sessions(factory, seed);
 
         var sender = seed.Claims[0];
         var receiver = seed.Claims[1];
+        var senderPlayer = await sessions.PlayerOf(sender);
+        var receiverPlayer = await sessions.PlayerOf(receiver);
 
-        var targetsBefore = await GetTargetsAsync(client, sender);
+        var targetsBefore = await GetTargetsAsync(senderPlayer.Client, sender);
+        targetsBefore.Mode.ShouldBe(
+            AccommodationInviteMode.Invite,
+            "Игрок своей заявки приглашает, а не поселяет вместе");
         targetsBefore.SenderRequestId.ShouldBe(
             seed.RequestId(0),
             "Заявка на проживание приглашающего должна быть его собственной");
@@ -123,21 +138,22 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
 
         var receiverTarget = FindTarget(targetsBefore, seed.GroupTarget(1));
 
-        var create = await client.PostWithTokenHeaderAsync(
+        var create = await senderPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", receiverTarget.TargetId.ToString())),
-            token);
+            senderPlayer.Token);
         create.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(create, "Приглашение не создалось"));
 
-        var incoming = await GetInvitesAsync(client, receiver, InviteDirection.Incoming);
+        var incoming = await GetInvitesAsync(receiverPlayer.Client, receiver, InviteDirection.Incoming);
         var invite = incoming.ShouldHaveSingleItem();
         invite.State.ShouldBe(InviteState.Unanswered, "Только что созданное приглашение ещё без ответа");
+        invite.CanRespond.ShouldBeTrue("Получатель — сам игрок, отвечать на приглашение ему");
 
-        var accept = await client.PostWithTokenHeaderAsync(
+        var accept = await receiverPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("AcceptInvite", ("inviteId", invite.InviteId.ToString())),
-            token);
+            receiverPlayer.Token);
         accept.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(accept, "Приглашение не принялось"));
 
-        var targetsAfterAccept = await GetTargetsAsync(client, sender);
+        var targetsAfterAccept = await GetTargetsAsync(senderPlayer.Client, sender);
         targetsAfterAccept.SenderRequestId.ShouldBe(
             seed.RequestId(0),
             "Переезжает приглашённый, группа приглашающего остаётся той же");
@@ -154,22 +170,24 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
             targetsAfterAccept,
             AccommodationGroupIdentification.From(seed.ClaimWithoutRequest));
 
-        var createSecond = await client.PostWithTokenHeaderAsync(
+        var createSecond = await senderPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", noRequestTarget.TargetId.ToString())),
-            token);
+            senderPlayer.Token);
         createSecond.StatusCode.ShouldBe(
             HttpStatusCode.OK,
             await DescribeAsync(createSecond, "Приглашение заявки без типа проживания не создалось"));
 
-        var incomingSecond = await GetInvitesAsync(client, seed.ClaimWithoutRequest, InviteDirection.Incoming);
-        var acceptSecond = await client.PostWithTokenHeaderAsync(
+        var noRequestPlayer = await sessions.PlayerOf(seed.ClaimWithoutRequest);
+        var incomingSecond = await GetInvitesAsync(
+            noRequestPlayer.Client, seed.ClaimWithoutRequest, InviteDirection.Incoming);
+        var acceptSecond = await noRequestPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("AcceptInvite", ("inviteId", incomingSecond.ShouldHaveSingleItem().InviteId.ToString())),
-            token);
+            noRequestPlayer.Token);
         acceptSecond.StatusCode.ShouldBe(
             HttpStatusCode.OK,
             await DescribeAsync(acceptSecond, "Приглашение заявки без типа проживания не принялось"));
 
-        var targetsFull = await GetTargetsAsync(client, sender);
+        var targetsFull = await GetTargetsAsync(senderPlayer.Client, sender);
         targetsFull.RoomFreeSpace.ShouldBe(0, "Номер заполнен: в группе все три места заняты");
         targetsFull.Targets.ShouldBeEmpty("В полный номер приглашать некого");
     }
@@ -187,14 +205,14 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     public async Task CreateInvite_ToWholeGroup()
     {
         var seed = await SeedAsync();
-        var client = await seed.CreateClientAsync(factory);
-        var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
+        var sessions = new Sessions(factory, seed);
 
         // Готовим группу из двоих: первая заявка приглашает вторую, вторая соглашается.
-        await InviteAndAcceptAsync(client, token, seed, senderIndex: 0, receiverTarget: seed.GroupTarget(1));
+        await InviteAndAcceptAsync(sessions, seed, senderIndex: 0, receiverTarget: seed.GroupTarget(1));
 
         var outsider = seed.Claims[2];
-        var targetsOfOutsider = await GetTargetsAsync(client, outsider);
+        var outsiderPlayer = await sessions.PlayerOf(outsider);
+        var targetsOfOutsider = await GetTargetsAsync(outsiderPlayer.Client, outsider);
         var groupTarget = FindTarget(targetsOfOutsider, seed.GroupTarget(0));
 
         groupTarget.Subtext.ShouldNotBeNullOrWhiteSpace(
@@ -206,32 +224,34 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
             seed.RequestId(0),
             "Цель-группа — это заявка на проживание, а не заявка игрока");
 
-        var create = await client.PostWithTokenHeaderAsync(
+        var create = await outsiderPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("CreateInvite", ("claimId", outsider.ToString()), ("target", groupTarget.TargetId.ToString())),
-            token);
+            outsiderPlayer.Token);
         create.StatusCode.ShouldBe(
             HttpStatusCode.OK,
             await DescribeAsync(create, "Приглашение группы не создалось"));
 
-        var outgoing = await GetInvitesAsync(client, outsider, InviteDirection.Outgoing);
+        var outgoing = await GetInvitesAsync(outsiderPlayer.Client, outsider, InviteDirection.Outgoing);
         outgoing.Count.ShouldBe(2, "Приглашение группы уходит каждому её участнику");
 
         // Принимает один участник группы — переезжает вся группа.
-        var incoming = await GetInvitesAsync(client, seed.Claims[0], InviteDirection.Incoming);
-        var accept = await client.PostWithTokenHeaderAsync(
+        var firstMember = await sessions.PlayerOf(seed.Claims[0]);
+        var incoming = await GetInvitesAsync(firstMember.Client, seed.Claims[0], InviteDirection.Incoming);
+        var accept = await firstMember.Client.PostWithTokenHeaderAsync(
             InviteUrl("AcceptInvite", ("inviteId", incoming.ShouldHaveSingleItem().InviteId.ToString())),
-            token);
+            firstMember.Token);
         accept.StatusCode.ShouldBe(
             HttpStatusCode.OK,
             await DescribeAsync(accept, "Приглашение группы не принялось"));
 
-        var targetsAfter = await GetTargetsAsync(client, outsider);
+        var targetsAfter = await GetTargetsAsync(outsiderPlayer.Client, outsider);
         targetsAfter.SenderRequestId.ShouldBe(
             seed.RequestId(2),
             "Группа приглашающего осталась его собственной, в неё переехали остальные");
         targetsAfter.RoomFreeSpace.ShouldBe(0, "Переехала вся группа — номер заполнен");
 
-        var secondMemberInvites = await GetInvitesAsync(client, seed.Claims[1], InviteDirection.Incoming);
+        var secondMember = await sessions.PlayerOf(seed.Claims[1]);
+        var secondMemberInvites = await GetInvitesAsync(secondMember.Client, seed.Claims[1], InviteDirection.Incoming);
         secondMemberInvites.ShouldBeEmpty(
             "Приглашение второму участнику сбылось вместе с переездом и висеть неотвеченным не должно");
     }
@@ -244,43 +264,46 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// (<c>EnsureCanInvite</c>), поэтому приглашение создаётся до заселения, а принимается уже
     /// после. Только в этот момент <c>RoomCategoryPlan.GetFreeSpaceForGroup</c> уходит в ветку
     /// комнаты и считает место по её жильцам из плана поселения. Результат виден на
-    /// странице комнат: приглашённый въехал к приглашающему.
+    /// странице комнат: приглашённый въехал к приглашающему. Заселяет и смотрит комнаты владелец
+    /// проекта — это мастерская страница.
     /// </remarks>
     [Fact]
     public async Task AcceptInvite_WhenSenderIsOccupied_CountsFreeSpaceByRoom()
     {
         var seed = await SeedAsync();
-        var client = await seed.CreateClientAsync(factory);
-        var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
+        var sessions = new Sessions(factory, seed);
 
         var sender = seed.Claims[0];
         var receiver = seed.Claims[1];
+        var senderPlayer = await sessions.PlayerOf(sender);
+        var receiverPlayer = await sessions.PlayerOf(receiver);
+        var owner = await sessions.Owner();
 
-        var targets = await GetTargetsAsync(client, sender);
+        var targets = await GetTargetsAsync(senderPlayer.Client, sender);
         var receiverTarget = FindTarget(targets, seed.GroupTarget(1));
 
-        var create = await client.PostWithTokenHeaderAsync(
+        var create = await senderPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", receiverTarget.TargetId.ToString())),
-            token);
+            senderPlayer.Token);
         create.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(create, "Приглашение не создалось"));
 
         // Заселяем группу приглашающего в комнату — той же ручкой, которой это делает страница комнат.
-        var occupy = await client.OccupyAsync(
-            token, seed.ProjectId, new AccommodationRoomIdentification(seed.ProjectId, seed.RoomIds[0]), seed.RequestId(0));
+        var occupy = await owner.Client.OccupyAsync(
+            owner.Token, seed.ProjectId, new AccommodationRoomIdentification(seed.ProjectId, seed.RoomIds[0]), seed.RequestId(0));
         occupy.StatusCode.ShouldBe(HttpStatusCode.OK, "Заселение приглашающего не прошло");
-        (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(
+        (await seed.GetOccupancyAsync(owner.Client, seed.RoomIds[0])).ShouldBe(
             1,
             "В комнате пока только приглашающий");
 
-        var incoming = await GetInvitesAsync(client, receiver, InviteDirection.Incoming);
-        var accept = await client.PostWithTokenHeaderAsync(
+        var incoming = await GetInvitesAsync(receiverPlayer.Client, receiver, InviteDirection.Incoming);
+        var accept = await receiverPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("AcceptInvite", ("inviteId", incoming.ShouldHaveSingleItem().InviteId.ToString())),
-            token);
+            receiverPlayer.Token);
         accept.StatusCode.ShouldBe(
             HttpStatusCode.OK,
             await DescribeAsync(accept, "Приём приглашения в расселённую группу не прошёл"));
 
-        (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(
+        (await seed.GetOccupancyAsync(owner.Client, seed.RoomIds[0])).ShouldBe(
             2,
             "Приглашённый должен переехать в комнату приглашающего");
     }
@@ -291,35 +314,37 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// <remarks>
     /// Отказ и отзыв делают разные стороны, и после переезда на <c>ICharacterPropsService</c> у них
     /// разные корни агрегата — а значит и разные обращения к
-    /// <c>GetInviteParticipants</c>/<c>LoadInvite</c>. Поэтому обе операции проверяются рядом.
+    /// <c>GetInviteParticipants</c>/<c>LoadInvite</c>. Поэтому обе операции проверяются рядом:
+    /// отказывается игрок получателя, отзывает игрок отправителя.
     /// </remarks>
     [Fact]
     public async Task DeclineAndCancelInvite_KeepInviteVisibleWithState()
     {
         var seed = await SeedAsync();
-        var client = await seed.CreateClientAsync(factory);
-        var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
+        var sessions = new Sessions(factory, seed);
 
         var sender = seed.Claims[0];
+        var senderPlayer = await sessions.PlayerOf(sender);
+        var receiverPlayer = await sessions.PlayerOf(seed.Claims[1]);
 
-        var declined = await CreateInviteAsync(client, token, seed, senderIndex: 0, target: seed.GroupTarget(1));
-        var decline = await client.PostWithTokenHeaderAsync(
+        var declined = await CreateInviteAsync(sessions, seed, senderIndex: 0, target: seed.GroupTarget(1));
+        var decline = await receiverPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("DeclineInvite", ("inviteId", declined.ToString())),
-            token);
+            receiverPlayer.Token);
         decline.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(decline, "Отказ не прошёл"));
 
-        var receiverInvites = await GetInvitesAsync(client, seed.Claims[1], InviteDirection.Incoming);
+        var receiverInvites = await GetInvitesAsync(receiverPlayer.Client, seed.Claims[1], InviteDirection.Incoming);
         receiverInvites.ShouldHaveSingleItem().State.ShouldBe(
             InviteState.Declined,
             "Отклонённое приглашение остаётся видимым, но со своим состоянием");
 
-        var canceled = await CreateInviteAsync(client, token, seed, senderIndex: 0, target: seed.GroupTarget(2));
-        var cancel = await client.PostWithTokenHeaderAsync(
+        var canceled = await CreateInviteAsync(sessions, seed, senderIndex: 0, target: seed.GroupTarget(2));
+        var cancel = await senderPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("CancelInvite", ("inviteId", canceled.ToString())),
-            token);
+            senderPlayer.Token);
         cancel.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(cancel, "Отзыв не прошёл"));
 
-        var outgoing = await GetInvitesAsync(client, sender, InviteDirection.Outgoing);
+        var outgoing = await GetInvitesAsync(senderPlayer.Client, sender, InviteDirection.Outgoing);
         outgoing.Select(invite => invite.State).Order().ShouldBe(
             new[] { InviteState.Declined, InviteState.Canceled }.Order(),
             "В отправленных должны остаться оба приглашения — отклонённое и отозванное");
@@ -336,21 +361,21 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     public async Task AnswerInviteTwice_IsBadRequestWithMessage()
     {
         var seed = await SeedAsync();
-        var client = await seed.CreateClientAsync(factory);
-        var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
+        var sessions = new Sessions(factory, seed);
+        var receiverPlayer = await sessions.PlayerOf(seed.Claims[1]);
 
-        var inviteId = await CreateInviteAsync(client, token, seed, senderIndex: 0, target: seed.GroupTarget(1));
+        var inviteId = await CreateInviteAsync(sessions, seed, senderIndex: 0, target: seed.GroupTarget(1));
 
-        var decline = await client.PostWithTokenHeaderAsync(
+        var decline = await receiverPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("DeclineInvite", ("inviteId", inviteId.ToString())),
-            token);
+            receiverPlayer.Token);
         decline.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(decline, "Первый отказ не прошёл"));
 
         foreach (var action in new[] { "DeclineInvite", "AcceptInvite" })
         {
-            var again = await client.PostWithTokenHeaderAsync(
+            var again = await receiverPlayer.Client.PostWithTokenHeaderAsync(
                 InviteUrl(action, ("inviteId", inviteId.ToString())),
-                token);
+                receiverPlayer.Token);
 
             again.StatusCode.ShouldBe(
                 HttpStatusCode.BadRequest,
@@ -360,29 +385,99 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
         }
     }
 
-    /// <summary>Создаёт приглашение и возвращает его идентификатор, взятый из списка полученных.</summary>
+    /// <summary>
+    /// Мастер с правом расселять (владелец проекта) поселяет игроков вместе одной ручкой, без
+    /// приглашения: цель сразу переезжает к заявке, и приглашений не появляется.
+    /// </summary>
+    [Fact]
+    public async Task MergeGroups_ByMaster_MovesTargetWithoutInvite()
+    {
+        var seed = await SeedAsync();
+        var sessions = new Sessions(factory, seed);
+        var owner = await sessions.Owner();
+
+        var host = seed.Claims[0];
+        var targetsBefore = await GetTargetsAsync(owner.Client, host);
+        targetsBefore.Mode.ShouldBe(
+            AccommodationInviteMode.Merge,
+            "Владелец проекта вправе расселять — ему предлагается поселить вместе, а не пригласить");
+
+        var guestTarget = FindTarget(targetsBefore, seed.GroupTarget(1));
+
+        var merge = await owner.Client.PostWithTokenHeaderAsync(
+            InviteUrl("MergeGroups", ("claimId", host.ToString()), ("target", guestTarget.TargetId.ToString())),
+            owner.Token);
+        merge.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(merge, "Объединение не прошло"));
+
+        var targetsAfter = await GetTargetsAsync(owner.Client, host);
+        targetsAfter.SenderRequestId.ShouldBe(
+            seed.RequestId(0),
+            "Переезжает цель, группа заявки остаётся той же");
+        targetsAfter.RoomFreeSpace.ShouldBe(
+            RoomCapacity - 2,
+            "В группе стало двое — свободное место должно уменьшиться");
+        targetsAfter.Targets.Select(target => target.TargetId).ShouldNotContain(
+            guestTarget.TargetId,
+            customMessage: "Того, кто уже живёт вместе с заявкой, поселять к ней больше нельзя");
+
+        // Прямо по базе: GetInvites прячет приглашения внутри своей группы и пропустил бы созданные.
+        using var scope = factory.Services.CreateScope();
+        (await scope.ServiceProvider.GetRequiredService<MyDbContext>().Set<AccommodationInvite>()
+            .CountAsync(invite => invite.ProjectId == seed.ProjectId.Value))
+            .ShouldBe(0, "Объединение мастером обходится без приглашений");
+    }
+
+    /// <summary>
+    /// Мастер не приглашает от имени игрока: ручка создания приглашения отвечает 400 с причиной,
+    /// и приглашение не создаётся (#5656).
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_ByMaster_IsRejectedWithReason()
+    {
+        var seed = await SeedAsync();
+        var sessions = new Sessions(factory, seed);
+        var owner = await sessions.Owner();
+
+        var sender = seed.Claims[0];
+        var receiverTarget = FindTarget(await GetTargetsAsync(owner.Client, sender), seed.GroupTarget(1));
+
+        var create = await owner.Client.PostWithTokenHeaderAsync(
+            InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", receiverTarget.TargetId.ToString())),
+            owner.Token);
+
+        create.StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest,
+            await DescribeAsync(create, "Мастеру приглашать от имени игрока нельзя"));
+        (await create.Content.ReadAsStringAsync()).ShouldContain("сам игрок");
+        (await GetInvitesAsync(owner.Client, seed.Claims[1], InviteDirection.Incoming)).ShouldBeEmpty(
+            "Отклонённое приглашение не должно было создаться");
+    }
+
+    /// <summary>
+    /// Создаёт приглашение от игрока заявки-отправителя и возвращает его идентификатор, взятый из
+    /// списка полученных у игрока заявки-получателя.
+    /// </summary>
     private static async Task<AccommodationInviteIdentification> CreateInviteAsync(
-        HttpClient client,
-        string token,
+        Sessions sessions,
         InviteSeed seed,
         int senderIndex,
         AccommodationGroupIdentification target)
     {
         var sender = seed.Claims[senderIndex];
-        var targets = await GetTargetsAsync(client, sender);
+        var senderPlayer = await sessions.PlayerOf(sender);
+        var targets = await GetTargetsAsync(senderPlayer.Client, sender);
         var found = FindTarget(targets, target);
 
-        var create = await client.PostWithTokenHeaderAsync(
+        var create = await senderPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("CreateInvite", ("claimId", sender.ToString()), ("target", found.TargetId.ToString())),
-            token);
+            senderPlayer.Token);
         create.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(create, "Приглашение не создалось"));
 
         // Идентификатор приглашения берётся из списка у получателя: наружу его не возвращает ни
         // ручка создания, ни сервис.
-        var receiverClaimId = target.AsAccommodationRequestId() is { } requestId
-            ? seed.ClaimByRequest(requestId)
-            : target.AsClaimId()!;
-        var incoming = await GetInvitesAsync(client, receiverClaimId, InviteDirection.Incoming);
+        var receiverClaimId = ReceiverOf(seed, target);
+        var receiverPlayer = await sessions.PlayerOf(receiverClaimId);
+        var incoming = await GetInvitesAsync(receiverPlayer.Client, receiverClaimId, InviteDirection.Incoming);
 
         return incoming
             .Where(invite => invite.State == InviteState.Unanswered)
@@ -391,21 +486,31 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
             .InviteId;
     }
 
-    /// <summary>Создаёт приглашение и сразу его принимает — подготовка состояния для теста.</summary>
+    /// <summary>
+    /// Создаёт приглашение и сразу его принимает игрок получателя — подготовка состояния для теста.
+    /// </summary>
     private static async Task InviteAndAcceptAsync(
-        HttpClient client,
-        string token,
+        Sessions sessions,
         InviteSeed seed,
         int senderIndex,
         AccommodationGroupIdentification receiverTarget)
     {
-        var inviteId = await CreateInviteAsync(client, token, seed, senderIndex, receiverTarget);
+        var inviteId = await CreateInviteAsync(sessions, seed, senderIndex, receiverTarget);
+        var receiverPlayer = await sessions.PlayerOf(ReceiverOf(seed, receiverTarget));
 
-        var accept = await client.PostWithTokenHeaderAsync(
+        var accept = await receiverPlayer.Client.PostWithTokenHeaderAsync(
             InviteUrl("AcceptInvite", ("inviteId", inviteId.ToString())),
-            token);
+            receiverPlayer.Token);
         accept.StatusCode.ShouldBe(HttpStatusCode.OK, await DescribeAsync(accept, "Приглашение не принялось"));
     }
+
+    /// <summary>
+    /// Заявка, которая получает приглашение: сама цель-заявка либо исходный хозяин цели-группы.
+    /// </summary>
+    private static ClaimIdentification ReceiverOf(InviteSeed seed, AccommodationGroupIdentification target)
+        => target.AsAccommodationRequestId() is { } requestId
+            ? seed.ClaimByRequest(requestId)
+            : target.AsClaimId()!;
 
     private static async Task<AccommodationInviteTargetsViewModel> GetTargetsAsync(
         HttpClient client,
@@ -474,7 +579,8 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// <remarks>
     /// Заявки именно утверждённые: список потенциальных соседей собирается только из утверждённых
     /// (<c>IClaimsRepository.GetApprovedClaimHeaders</c>, <c>GetApprovedClaimHeadersWithoutAccommodation</c>),
-    /// и на неутверждённых ручка целей вернула бы пустой список — приглашать было бы некого.
+    /// и на неутверждённых ручка целей вернула бы пустой список — приглашать было бы некого. К тому
+    /// же игрок меняет проживание только у утверждённой заявки.
     /// Четвёртая заявка без типа проживания нужна для второго вида цели: приглашение заявки, у
     /// которой группы ещё нет.
     /// </remarks>
@@ -548,10 +654,11 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
         });
 
         var claims = new List<ClaimIdentification>(characters.Count);
+        var playerEmails = new Dictionary<ClaimIdentification, string>(characters.Count);
         foreach (var characterId in characters)
         {
-            var (playerId, _) = await CreateUserAsync();
-            claims.Add(await factory.Services.RunAsAsync(playerId, async sp =>
+            var (playerId, playerEmail) = await CreateUserAsync();
+            var claimId = await factory.Services.RunAsAsync(playerId, async sp =>
             {
                 var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
                     .GetProjectMetadata(projectId);
@@ -560,7 +667,9 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
                     "Хочу играть эту роль",
                     FieldLayerContainer.Empty(projectInfo),
                     sensitiveDataAllowed: true);
-            }));
+            });
+            claims.Add(claimId);
+            playerEmails.Add(claimId, playerEmail);
         }
 
         var requestIds = await factory.Services.RunAsAsync(ownerId, async sp =>
@@ -591,7 +700,8 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
             [.. roomIds.Select(room => room.RoomId)],
             [.. claims.SkipLast(1)],
             requestIds,
-            claims[^1]);
+            claims[^1],
+            playerEmails);
     }
 
     private async Task<(UserIdentification UserId, string Email)> CreateUserAsync()
@@ -604,6 +714,7 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
     /// <param name="Claims">Утверждённые заявки с выбранным типом проживания.</param>
     /// <param name="RequestIds">Их заявки на проживание, по индексам <paramref name="Claims"/>.</param>
     /// <param name="ClaimWithoutRequest">Утверждённая заявка, у которой тип проживания не выбран.</param>
+    /// <param name="PlayerEmails">Email игрока каждой заявки — чтобы войти от его имени.</param>
     private sealed record InviteSeed(
         UserIdentification OwnerId,
         string OwnerEmail,
@@ -612,7 +723,8 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
         IReadOnlyList<int> RoomIds,
         IReadOnlyList<ClaimIdentification> Claims,
         IReadOnlyList<int> RequestIds,
-        ClaimIdentification ClaimWithoutRequest)
+        ClaimIdentification ClaimWithoutRequest,
+        IReadOnlyDictionary<ClaimIdentification, string> PlayerEmails)
     {
         /// <summary>Заявка на проживание указанной заявки.</summary>
         public AccommodationRequestIdentification RequestId(int claimIndex)
@@ -629,14 +741,41 @@ public class AccommodationInvitePagesScenario(JoinApplicationFactory factory)
         /// <summary>Страница комнат типа проживания.</summary>
         public string RoomTypeDetailsUrl => $"{ProjectId.Value}/rooms/{RoomTypeId}/details";
 
-        public Task<HttpClient> CreateClientAsync(JoinApplicationFactory factory)
-            => TestUserProjectHelpers.CreateAuthenticatedClientAsync(
-                factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
-                OwnerEmail,
-                followsRedirects: false);
-
         /// <summary>Сколько человек живёт в комнате по данным страницы комнат</summary>
         public Task<int> GetOccupancyAsync(HttpClient client, int roomId)
             => client.GetOccupancyAsync(RoomTypeDetailsUrl, roomId);
+    }
+
+    /// <summary>Вошедший пользователь: клиент со своими cookie и antiforgery-токен к ним.</summary>
+    private sealed record Session(HttpClient Client, string Token);
+
+    /// <summary>
+    /// Вошедшие участники одного теста: владелец проекта и игроки заявок. Каждый входит один раз,
+    /// при первом обращении. Antiforgery-токен у каждого свой — он привязан к cookie клиента.
+    /// </summary>
+    private sealed class Sessions(JoinApplicationFactory factory, InviteSeed seed)
+    {
+        private readonly Dictionary<string, Session> sessions = [];
+
+        /// <summary>Владелец проекта — мастер с правом расселять.</summary>
+        public Task<Session> Owner() => LoginAsync(seed.OwnerEmail);
+
+        /// <summary>Игрок указанной заявки.</summary>
+        public Task<Session> PlayerOf(ClaimIdentification claimId) => LoginAsync(seed.PlayerEmails[claimId]);
+
+        private async Task<Session> LoginAsync(string email)
+        {
+            if (!sessions.TryGetValue(email, out var session))
+            {
+                var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
+                    factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
+                    email,
+                    followsRedirects: false);
+                session = new Session(client, await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage));
+                sessions.Add(email, session);
+            }
+
+            return session;
+        }
     }
 }

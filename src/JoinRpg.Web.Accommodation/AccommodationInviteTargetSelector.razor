@@ -1,11 +1,12 @@
-@* Выбор цели приглашения к совместному проживанию: игрок либо целая группа проживающих. *@
+@* Выбор цели приглашения к совместному проживанию (или того, кого мастер поселит вместе, #5656): *@
+@* игрок либо целая группа проживающих. *@
 @inject IAccommodationInviteClient Client
 
 @if (model is null)
 {
     <JoinLoadingMessage />
 }
-else if (model.RoomFreeSpace == 0)
+else if (model.RoomFreeSpace == 0 || model.Mode == AccommodationInviteMode.None)
 {
     @* Мест нет — молчим: заполненность уже видна в панели проживания, а у типа на одного
        приглашать некого в принципе (#5644). *@
@@ -13,7 +14,7 @@ else if (model.RoomFreeSpace == 0)
 else if (!HasTargets)
 {
     <div style="margin-top: 1em;">
-        <b>Пока еще нельзя никого пригласить к совместному проживанию.</b>
+        <b>@NoTargetsText</b>
     </div>
 }
 else
@@ -44,12 +45,23 @@ else
 
     [Parameter] public EventCallback<AccommodationGroupIdentification?> ValueChanged { get; set; }
 
-    /// <summary>Сообщает наружу, есть ли вообще кого приглашать — чтобы спрятать кнопку</summary>
-    [Parameter] public EventCallback<bool> HasTargetsChanged { get; set; }
+    /// <summary>
+    /// Сообщает наружу, что можно сделать: <see cref="AccommodationInviteMode.None"/>, если некого
+    /// выбирать, — чтобы спрятать кнопку; иначе приглашать или поселять вместе — чтобы подписать её.
+    /// </summary>
+    [Parameter] public EventCallback<AccommodationInviteMode> ModeChanged { get; set; }
 
-    [Parameter] public string EmptyText { get; set; } = "(выберите, кого пригласить)";
+    private bool HasTargets => model!.Mode != AccommodationInviteMode.None
+        && model.RoomFreeSpace > 0
+        && model.Targets.Count > 0;
 
-    private bool HasTargets => model!.RoomFreeSpace > 0 && model.Targets.Count > 0;
+    private bool IsMerge => model!.Mode == AccommodationInviteMode.Merge;
+
+    private string EmptyText => IsMerge ? "(выберите, кого поселить вместе)" : "(выберите, кого пригласить)";
+
+    private string NoTargetsText => IsMerge
+        ? "Пока некого поселить вместе."
+        : "Пока еще нельзя никого пригласить к совместному проживанию.";
 
     private AccommodationInviteTargetViewModel[] Targets => [.. model!.Targets];
 
@@ -59,7 +71,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         model ??= await Client.GetInviteTargets(ClaimId);
-        await HasTargetsChanged.InvokeAsync(HasTargets);
+        await ModeChanged.InvokeAsync(HasTargets ? model.Mode : AccommodationInviteMode.None);
     }
 
     private async Task HandleSelectedChanged(AccommodationGroupIdentification[] values)

@@ -6,11 +6,13 @@ namespace JoinRpg.Web.Accommodation.Test;
 internal sealed class FakeAccommodationInviteClient : IAccommodationInviteClient
 {
     public AccommodationInviteTargetsViewModel NextTargets { get; set; } =
-        new(SenderRequestId: null, RoomFreeSpace: 0, Targets: []);
+        new(SenderRequestId: null, RoomFreeSpace: 0, Targets: [], AccommodationInviteMode.Invite);
 
     public Dictionary<InviteDirection, IReadOnlyCollection<AccommodationInviteViewModel>> NextInvites { get; } = [];
 
     public List<(ClaimIdentification ClaimId, AccommodationGroupIdentification Target)> CreatedInvites { get; } = [];
+
+    public List<(ClaimIdentification ClaimId, AccommodationGroupIdentification Target)> MergedGroups { get; } = [];
 
     public List<(string Action, AccommodationInviteIdentification InviteId)> Answers { get; } = [];
 
@@ -20,6 +22,12 @@ internal sealed class FakeAccommodationInviteClient : IAccommodationInviteClient
     public Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
     {
         CreatedInvites.Add((claimId, target));
+        return Task.CompletedTask;
+    }
+
+    public Task MergeGroups(ClaimIdentification claimId, AccommodationGroupIdentification target)
+    {
+        MergedGroups.Add((claimId, target));
         return Task.CompletedTask;
     }
 

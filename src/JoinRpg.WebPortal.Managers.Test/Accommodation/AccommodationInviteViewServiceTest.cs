@@ -3,6 +3,7 @@ using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.Web.Accommodation;
 using JoinRpg.WebPortal.Managers.Accommodation;
 
 namespace JoinRpg.WebPortal.Managers.Test.Accommodation;
@@ -28,7 +29,7 @@ public class AccommodationInviteViewServiceTest
         Sender = Mock.CreateApprovedClaim(Mock.CreateCharacter("Приглашающий"), Mock.Player);
     }
 
-    private AccommodationInviteViewService CreateService()
+    private AccommodationInviteViewService CreateService(int? currentUserId = null)
     {
         // Заголовки заявок фейк не выводит из мока сам — кладём все, как их отдал бы репозиторий.
         var claims = new FakeClaimsRepository(Mock);
@@ -40,7 +41,7 @@ public class AccommodationInviteViewServiceTest
             // Список целей приглашения не читает и не создаёт — если обратится, тест упадёт.
             accommodationInviteRepository: null!,
             accommodationInviteService: null!,
-            new FakeCurrentUserAccessor(Mock.Master.UserId));
+            new FakeCurrentUserAccessor(currentUserId ?? Mock.Master.UserId));
     }
 
     private Claim Approved(string characterName) => Mock.CreateApprovedClaim(Mock.CreateCharacter(characterName), Mock.Player);
@@ -61,6 +62,70 @@ public class AccommodationInviteViewServiceTest
 
         result.SenderRequestId.ShouldBeNull();
         result.Targets.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Режим — по праву расселять: мастер с ним поселяет вместе, игрок приглашает (#5656).
+    /// </summary>
+    [Fact]
+    public async Task Mode_MasterWithPermission_IsMerge()
+    {
+        _ = Group(Lux, Sender);
+        _ = Approved("Одиночка");
+
+        var result = await CreateService().GetInviteTargets(SenderId);
+
+        result.Mode.ShouldBe(AccommodationInviteMode.Merge);
+        result.Targets.ShouldNotBeEmpty();
+    }
+
+    /// <inheritdoc cref="Mode_MasterWithPermission_IsMerge"/>
+    [Fact]
+    public async Task Mode_Player_IsInvite()
+    {
+        _ = Group(Lux, Sender);
+        _ = Approved("Одиночка");
+
+        var result = await CreateService(Mock.Player.UserId).GetInviteTargets(SenderId);
+
+        result.Mode.ShouldBe(AccommodationInviteMode.Invite);
+        result.Targets.ShouldNotBeEmpty();
+    }
+
+    /// <summary>
+    /// Режим решается по праву, а не по тому, чья заявка: мастер с правом расселять, играющий в своём
+    /// проекте, на своей заявке тоже поселяет вместе (решение по #5656).
+    /// </summary>
+    [Fact]
+    public async Task Mode_PlayerWithPermission_IsMerge()
+    {
+        var own = Mock.CreateApprovedClaim(Mock.CreateCharacter("Мастер играет"), Mock.Master);
+        _ = Group(Lux, own);
+        _ = Approved("Одиночка");
+
+        var result = await CreateService(Mock.Master.UserId).GetInviteTargets(own.GetId());
+
+        result.Mode.ShouldBe(AccommodationInviteMode.Merge);
+    }
+
+    /// <summary>
+    /// Ответственный мастер без права расселять менять проживание утверждённой заявки может, но ни
+    /// приглашать за игрока, ни поселять вместе — нет: список ему не нужен.
+    /// </summary>
+    [Fact]
+    public async Task Mode_ResponsibleMasterWithoutPermission_IsNoneWithoutTargets()
+    {
+        _ = Group(Lux, Sender);
+        _ = Approved("Одиночка");
+        Sender.ResponsibleMasterUserId.ShouldBe(Mock.Master.UserId);
+        Mock.Project.ProjectAcls.Single(acl => acl.UserId == Mock.Master.UserId).CanSetPlayersAccommodations = false;
+        Mock.ReInitProjectInfo();
+
+        var result = await CreateService().GetInviteTargets(SenderId);
+
+        result.Mode.ShouldBe(AccommodationInviteMode.None);
+        result.Targets.ShouldBeEmpty();
+        result.RoomFreeSpace.ShouldBe(0);
     }
 
     [Fact]

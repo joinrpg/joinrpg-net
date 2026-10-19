@@ -25,11 +25,12 @@ public class ClaimAccommodationInvitesTest : BunitContext
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
     }
 
-    private static AccommodationInviteViewModel Invite(int inviteId, InviteState state)
+    private static AccommodationInviteViewModel Invite(int inviteId, InviteState state, bool canRespond = true)
         => new(
             new AccommodationInviteIdentification(ProjectId, inviteId),
             new UserLinkViewModel(new UserIdentification(42), "Сосед", ViewMode.Show),
-            state);
+            state,
+            canRespond);
 
     private IRenderedComponent<ClaimAccommodationInvites> RenderInvites(InviteDirection direction)
         => Render<ClaimAccommodationInvites>(parameters => parameters
@@ -67,6 +68,22 @@ public class ClaimAccommodationInvitesTest : BunitContext
         cut.Markup.ShouldContain("Отправленные приглашения");
         cut.Markup.ShouldContain("Отозвать");
         cut.Markup.ShouldNotContain("Принять");
+    }
+
+    /// <summary>
+    /// Мастер видит приглашения игрока без кнопок: отвечает на них только сам игрок (#5656).
+    /// </summary>
+    [Theory]
+    [InlineData(InviteDirection.Incoming)]
+    [InlineData(InviteDirection.Outgoing)]
+    public void MasterShouldSeeInvitesWithoutButtons(InviteDirection direction)
+    {
+        client.NextInvites[direction] = [Invite(1, InviteState.Unanswered, canRespond: false)];
+
+        var cut = RenderInvites(direction);
+
+        cut.FindAll("button").ShouldBeEmpty();
+        cut.Markup.ShouldContain("Не отвечено");
     }
 
     /// <summary>

@@ -76,7 +76,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
-    /// Пункт 3: приглашать может только игрок самой заявки или мастер с правом расселять.
+    /// Пункт 3: приглашать может только игрок самой заявки (мастер поселяет вместе напрямую, #5656).
     /// Посторонний получает отказ, и в базу ничего не попадает.
     /// </summary>
     [Fact]
@@ -542,7 +542,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
 
     /// <summary>
     /// Принять приглашение может только тот, кому разрешено менять проживание принимающей заявки:
-    /// сам игрок, ответственный мастер или мастер с правом расселять. Посторонний получает отказ.
+    /// сам игрок (с #5656 — только он, см. <see cref="InviteOperations_ByMaster_AreRefused"/>). Посторонний получает отказ.
     /// </summary>
     /// <remarks>
     /// До миграции проверки прав здесь не было вовсе — зная идентификатор приглашения, принять его
@@ -675,7 +675,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
-    /// Принять приглашение может и сам игрок принимающей заявки, не только мастер.
+    /// Принять приглашение может сам игрок принимающей заявки.
     /// </summary>
     [Fact]
     public async Task AcceptInvite_ByPlayer_Accepts()
@@ -859,7 +859,7 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
-    /// Отказаться или отозвать может только сторона приглашения или мастер с правом расселять.
+    /// Отказаться или отозвать может только игрок стороны приглашения.
     /// </summary>
     /// <remarks>
     /// До миграции проверки прав здесь не было вовсе: зная идентификатор приглашения, его мог
@@ -940,6 +940,63 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
             () => CreateService().DeclineAccommodationInvite(InviteId(invite)));
         _ = await Should.ThrowAsync<ProjectDeactivatedException>(
             () => CreateService().CancelAccommodationInvite(InviteId(invite)));
+
+        invite.IsAccepted.ShouldBe(InviteState.Unanswered);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Мастер — даже с правом расселять — не приглашает и не отвечает на приглашения за игрока:
+    /// получатель видел приглашение «от мастера», а ответа всё равно ждали от игрока (#5656). Мастер
+    /// поселяет игроков вместе напрямую.
+    /// </summary>
+    [Fact]
+    public async Task InviteOperations_ByMaster_AreRefused()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+        var master = CreateMasterService();
+
+        foreach (var operation in new Func<Task>[]
+        {
+            () => master.CreateAccommodationInvite(
+                sender.GetId(), RequestId(sender), AccommodationGroupIdentification.From(receiver.GetId())),
+            () => master.AcceptAccommodationInvite(InviteId(invite)),
+            () => master.DeclineAccommodationInvite(InviteId(invite)),
+            () => master.CancelAccommodationInvite(InviteId(invite)),
+        })
+        {
+            var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(operation);
+            exception.Message.ShouldContain("сам игрок");
+        }
+
+        mock.AccommodationInvites.ShouldHaveSingleItem().IsAccepted.ShouldBe(InviteState.Unanswered);
+        SaveChangesCallCount.ShouldBe(0);
+        notificationService.Invites.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Отвечает игрок именно принимающей заявки: игрок приглашающей принять за него не может, даже
+    /// если у приглашающего своё проживание менять можно.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_BySenderPlayer_IsRefused()
+    {
+        var receiverPlayer = new User
+        {
+            UserId = 777,
+            PrefferedName = "Получатель",
+            Email = "receiver@example.com",
+            Claims = new HashSet<Claim>(),
+            Auth = new UserAuthDetails { UserId = 777, EmailConfirmed = true },
+        };
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = mock.CreateApprovedClaim(mock.CreateCharacter("Приглашаемый"), receiverPlayer);
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).AcceptAccommodationInvite(InviteId(invite)));
 
         invite.IsAccepted.ShouldBe(InviteState.Unanswered);
         SaveChangesCallCount.ShouldBe(0);

@@ -20,6 +20,12 @@ public class AccommodationInviteController(
         [FromQuery] AccommodationGroupIdentification target)
         => await NotAllowedToBadRequest(() => inviteClient.CreateInvite(claimId, target));
 
+    [HttpPost]
+    public async Task<ActionResult> MergeGroups(
+        [FromQuery] ClaimIdentification claimId,
+        [FromQuery] AccommodationGroupIdentification target)
+        => await NotAllowedToBadRequest(() => inviteClient.MergeGroups(claimId, target));
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<AccommodationInviteViewModel>>> GetInvites(
         [FromQuery] ClaimIdentification claimId,

@@ -38,6 +38,8 @@ internal class AccommodationInviteServiceImpl(
             target,
             async ctx =>
             {
+                EnsureActsAsPlayer(ctx);
+
                 // Группа приглашающего берётся из его же заявки, а не по senderRequestId из
                 // запроса: идентификатор приходит из формы и раньше проверялся только на
                 // принадлежность проекту, то есть мастер мог пригласить соседа в чужую комнату.
@@ -155,6 +157,26 @@ internal class AccommodationInviteServiceImpl(
                     [.. hostGroup.Subjects, .. moving],
                     ctx.CurrentUser.ToUserInfoHeader()));
             });
+    }
+
+    /// <summary>
+    /// Приглашение — договорённость между игроками, поэтому отправляет его и отвечает на него только
+    /// игрок заявки, от имени которой оно идёт. Раньше это мог делать и мастер — получатель видел
+    /// приглашение «от мастера», а ответа всё равно ждали от игрока (#5656). Мастер поселяет игроков
+    /// вместе напрямую (<see cref="MergeAccommodationGroups"/>).
+    /// </summary>
+    /// <remarks>
+    /// Проверка дополняет требование доступа <c>AccommodationChange</c>, а не заменяет его: игрок
+    /// по-прежнему не меняет проживание у неутверждённой заявки и после регистрации.
+    /// </remarks>
+    private static void EnsureActsAsPlayer(ClaimMutationContext ctx)
+    {
+        if (ctx.CharacterClaimInfo.PlayerId != ctx.CurrentUser.UserIdentificationOrDefault)
+        {
+            //TODO[Localize]
+            throw new AccommodationInviteNotAllowedException(ctx.ProjectInfo.ProjectId,
+                "Приглашениями к совместному проживанию распоряжается сам игрок. Мастер может поселить игроков вместе.");
+        }
     }
 
     /// <summary>
@@ -326,6 +348,8 @@ internal class AccommodationInviteServiceImpl(
             inviteId,
             async ctx =>
             {
+                EnsureActsAsPlayer(ctx);
+
                 var invite = await ctx.LoadInvite(inviteId);
 
                 // Отвечать можно только на неотвеченное. Проверки не было, а принятые приглашения
@@ -607,6 +631,8 @@ internal class AccommodationInviteServiceImpl(
             inviteId,
             async ctx =>
             {
+                EnsureActsAsPlayer(ctx);
+
                 var invite = await ctx.LoadInvite(inviteId);
 
                 // Отвечать можно только на неотвеченное — как и при приёме. Раньше состояние не

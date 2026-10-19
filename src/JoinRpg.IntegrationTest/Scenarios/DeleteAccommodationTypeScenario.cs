@@ -65,14 +65,17 @@ public class DeleteAccommodationTypeScenario(JoinApplicationFactory factory)
                     Capacity: 3,
                     IsPlayerSelectable: true)));
 
-        var claims = await CreateClaimsAsync(ownerId, projectId, count: 3);
+        var players = await CreateClaimsAsync(ownerId, projectId, count: 3);
+        var claims = players.Select(player => player.ClaimId).ToList();
 
-        // У каждой заявки — своя одноместная группа этого типа.
+        // Заявки утверждены: приглашениями распоряжается сам игрок, а игрок меняет проживание только
+        // у утверждённой заявки. У каждой заявки — своя одноместная группа этого типа.
         var requestIds = await factory.Services.RunAsAsync(ownerId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
             foreach (var claimId in claims)
             {
+                await claimService.ApproveByMaster(claimId, "Принято");
                 await claimService.SetAccommodationType(
                     projectId.Value, claimId.ClaimId, typeId.AccommodationTypeId);
             }
@@ -80,11 +83,13 @@ public class DeleteAccommodationTypeScenario(JoinApplicationFactory factory)
             return await AccommodationTestHelpers.GetAccommodationGroupIdsAsync(sp, claims);
         });
 
-        // Первые двое съезжаются: приглашение и его приём. Третьему приглашение только отправлено.
-        var acceptedInviteId = await InviteAsync(ownerId, claims[0], requestIds[0], claims[1]);
-        await factory.Services.RunAsAsync(ownerId, sp =>
+        // Первые двое съезжаются: игрок первой приглашает, игрок второй принимает. Третьему
+        // приглашение только отправлено. Приглашения тут — суть сценария: удаление типа обязано
+        // отклонить неотвеченное и не трогать отвеченное.
+        var acceptedInviteId = await InviteAsync(players[0].PlayerId, claims[0], requestIds[0], claims[1]);
+        await factory.Services.RunAsAsync(players[1].PlayerId, sp =>
             sp.GetRequiredService<IAccommodationInviteService>().AcceptAccommodationInvite(acceptedInviteId));
-        var pendingInviteId = await InviteAsync(ownerId, claims[0], requestIds[0], claims[2]);
+        var pendingInviteId = await InviteAsync(players[0].PlayerId, claims[0], requestIds[0], claims[2]);
 
         await factory.Services.RunAsAsync(ownerId, sp =>
             sp.GetRequiredService<IAccommodationTypeService>().DeleteAccommodationType(typeId));
@@ -123,7 +128,7 @@ public class DeleteAccommodationTypeScenario(JoinApplicationFactory factory)
     }
 
     /// <summary>Заявки игроков на новых персонажей — по одному игроку на заявку.</summary>
-    private async Task<IReadOnlyList<ClaimIdentification>> CreateClaimsAsync(
+    private async Task<IReadOnlyList<(ClaimIdentification ClaimId, UserIdentification PlayerId)>> CreateClaimsAsync(
         UserIdentification ownerId,
         ProjectIdentification projectId,
         int count)
@@ -151,11 +156,11 @@ public class DeleteAccommodationTypeScenario(JoinApplicationFactory factory)
             return result;
         });
 
-        var claims = new List<ClaimIdentification>(count);
+        var claims = new List<(ClaimIdentification ClaimId, UserIdentification PlayerId)>(count);
         foreach (var characterId in characters)
         {
             var (playerId, _) = await CreateUserAsync();
-            claims.Add(await factory.Services.RunAsAsync(playerId, async sp =>
+            var claimId = await factory.Services.RunAsAsync(playerId, async sp =>
             {
                 var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>()
                     .GetProjectMetadata(projectId);
@@ -164,23 +169,24 @@ public class DeleteAccommodationTypeScenario(JoinApplicationFactory factory)
                     "Хочу играть эту роль",
                     FieldLayerContainer.Empty(projectInfo),
                     sensitiveDataAllowed: true);
-            }));
+            });
+            claims.Add((claimId, playerId));
         }
 
         return claims;
     }
 
     /// <summary>
-    /// Приглашение от мастера за заявку-отправителя. Идентификатор сервис наружу не отдаёт —
-    /// берём его из базы.
+    /// Приглашение от игрока заявки-отправителя — приглашениями распоряжается сам игрок (#5656).
+    /// Идентификатор сервис наружу не отдаёт — берём его из базы.
     /// </summary>
     private async Task<AccommodationInviteIdentification> InviteAsync(
-        UserIdentification ownerId,
+        UserIdentification senderPlayerId,
         ClaimIdentification sender,
         AccommodationRequestIdentification senderRequest,
         ClaimIdentification receiver)
     {
-        await factory.Services.RunAsAsync(ownerId, sp =>
+        await factory.Services.RunAsAsync(senderPlayerId, sp =>
             sp.GetRequiredService<IAccommodationInviteService>().CreateAccommodationInvite(
                 sender,
                 senderRequest,

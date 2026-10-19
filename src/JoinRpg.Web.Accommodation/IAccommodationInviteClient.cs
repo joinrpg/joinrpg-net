@@ -15,15 +15,32 @@ public record AccommodationInviteTargetViewModel(
     string Subtext);
 
 /// <summary>
+/// Что текущий пользователь может сделать с соседями по заявке (#5656).
+/// </summary>
+public enum AccommodationInviteMode
+{
+    /// <summary>Ничего: например, ответственный мастер без права расселять игроков</summary>
+    None,
+
+    /// <summary>Игрок приглашает к совместному проживанию — решение за приглашёнными</summary>
+    Invite,
+
+    /// <summary>Мастер с правом расселять сразу поселяет игроков вместе</summary>
+    Merge,
+}
+
+/// <summary>
 /// Всё, что нужно контролу приглашения, одним согласованным снимком.
 /// </summary>
 /// <param name="SenderRequestId">Заявка на проживание приглашающего. <c>null</c> — тип проживания не выбран</param>
 /// <param name="RoomFreeSpace">Сколько ещё человек влезет к приглашающему</param>
 /// <param name="Targets">Кого можно пригласить. Пустой список — приглашать некого</param>
+/// <param name="Mode">Приглашать или сразу поселять вместе — зависит от того, кто смотрит</param>
 public record AccommodationInviteTargetsViewModel(
     AccommodationRequestIdentification? SenderRequestId,
     int RoomFreeSpace,
-    IReadOnlyCollection<AccommodationInviteTargetViewModel> Targets);
+    IReadOnlyCollection<AccommodationInviteTargetViewModel> Targets,
+    AccommodationInviteMode Mode);
 
 /// <summary>
 /// С какой стороны смотрим на приглашение.
@@ -43,10 +60,15 @@ public enum InviteDirection
 /// <param name="InviteId">Идентификатор приглашения</param>
 /// <param name="Counterparty">Вторая сторона: пригласивший для полученных, приглашённый для отправленных</param>
 /// <param name="State">Текущее состояние приглашения</param>
+/// <param name="CanRespond">
+/// Может ли текущий пользователь ответить на приглашение (принять, отклонить, отозвать). Может только
+/// сам игрок; мастер видит приглашения без кнопок (#5656)
+/// </param>
 public record AccommodationInviteViewModel(
     AccommodationInviteIdentification InviteId,
     UserLinkViewModel Counterparty,
-    InviteState State);
+    InviteState State,
+    bool CanRespond);
 
 /// <summary>
 /// Операции с приглашениями к совместному проживанию.
@@ -58,6 +80,12 @@ public interface IAccommodationInviteClient
 
     /// <summary>Отправить приглашение. Бросает исключение, если пригласить нельзя</summary>
     Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target);
+
+    /// <summary>
+    /// Поселить <paramref name="target"/> вместе с заявкой <paramref name="claimId"/> без приглашения
+    /// (мастер). Бросает исключение, если объединить нельзя
+    /// </summary>
+    Task MergeGroups(ClaimIdentification claimId, AccommodationGroupIdentification target);
 
     /// <summary>Полученные либо отправленные приглашения заявки, кроме уже принятых</summary>
     Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
