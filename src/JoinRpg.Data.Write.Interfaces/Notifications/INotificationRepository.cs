@@ -30,6 +30,10 @@ public interface INotificationRepository
     /// </summary>
     Task MarkEnqueued(NotificationId id, NotificationChannel channel, DateTimeOffset sendAfter, int? attempts = null);
 
+    /// <summary>
+    /// Уведомления пользователю, отправляемые по каналу <paramref name="notificationChannel"/>, постранично по их id.
+    /// Чтобы новые были сверху, передавать <see cref="KeySetPagination.Descending"/>.
+    /// </summary>
     Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination);
 
     /// <summary>
@@ -65,7 +69,7 @@ public interface INotificationRepository
 
 public record NotificationMessageCreateDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationAddress> Channels);
 
-public record NotificationHistoryDto(NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationChannel> OtherChannels);
+public record NotificationHistoryDto(NotificationId Id, NotificationMessageForRecipient Message);
 
 public record NotificationLogItemDto(NotificationId Id, NotificationMessageForRecipient Message, IReadOnlyCollection<NotificationDeliveryDto> Channels);
 

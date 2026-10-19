@@ -217,7 +217,7 @@ internal class NotificationsRepository(
     public async Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(UserIdentification userId, NotificationChannel notificationChannel, KeySetPagination pagination)
     {
         var query =
-            from message in dbContext.Notifications.AsExpandableEFCore().Include(x => x.NotificationMessageChannels)
+            from message in dbContext.Notifications.AsNoTracking().AsExpandableEFCore()
             where message.RecipientUserId == userId
             where message.NotificationMessageChannels.Any(c => c.Channel == notificationChannel)
             select message;
@@ -226,8 +226,7 @@ internal class NotificationsRepository(
 
         var result = await query.ToListAsync();
 
-        return [.. result.Select(x => new NotificationHistoryDto(CreateNotificationMessageDto(x), [.. x.NotificationMessageChannels.Select(c => c.Channel)]))];
-
+        return [.. result.Select(x => new NotificationHistoryDto(new NotificationId(x.NotificationMessageId), CreateNotificationMessageDto(x)))];
     }
 
     public async Task<IReadOnlyDictionary<NotificationChannel, int>> GetQueueLengths()
