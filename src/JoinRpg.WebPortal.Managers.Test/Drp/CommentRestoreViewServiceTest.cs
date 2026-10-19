@@ -273,6 +273,9 @@ public class CommentRestoreViewServiceTest
         public Task<IReadOnlyCollection<CharacterIdentification>> GetCharactersTakenByOtherProjects(IReadOnlyCollection<CharacterIdentification> characterIds)
             => throw new NotSupportedException();
 
+        public Task<IReadOnlyCollection<CharacterGroupIdentification>> GetGroupsCreatedAfter(IReadOnlyCollection<CharacterGroupIdentification> groupIds, DateTimeOffset since)
+            => throw new NotSupportedException();
+
         public Task<IReadOnlyDictionary<string, UserIdentification>> FindUsersByEmails(IReadOnlyCollection<string> emails)
             => throw new NotSupportedException();
 

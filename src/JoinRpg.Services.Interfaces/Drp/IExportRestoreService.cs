@@ -98,4 +98,15 @@ public interface IExportRestoreService
         bool isHot,
         CharacterVisibility visibility,
         RestoredCharacterTarget target);
+
+    /// <summary>
+    /// Открывает скрытые группы, созданные восстановлением, в которых лежит видимый всем персонаж
+    /// (публичный или со скрытым игроком), — по <c>RestoredGroupPublication</c> (#5677). Скрытый
+    /// персонаж групп не открывает; скрытые группы из резервной копии не трогаются.
+    /// </summary>
+    /// <param name="backupTakenAt">
+    /// Момент резервной копии: группы, созданные позже, считаются созданными восстановлением.
+    /// </param>
+    /// <returns>Открытые группы; пусто — открывать было нечего.</returns>
+    Task<IReadOnlyList<CharacterGroupIdentification>> PublishRestoredGroupsOf(CharacterIdentification characterId, DateTimeOffset backupTakenAt);
 }

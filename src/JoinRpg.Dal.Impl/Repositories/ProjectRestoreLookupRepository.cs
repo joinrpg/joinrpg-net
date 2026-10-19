@@ -36,6 +36,22 @@ internal class ProjectRestoreLookupRepository(MyDbContext ctx) : IProjectRestore
         return [.. taken.Distinct().Select(id => new CharacterIdentification(projectId, id))];
     }
 
+    public async Task<IReadOnlyCollection<CharacterGroupIdentification>> GetGroupsCreatedAfter(IReadOnlyCollection<CharacterGroupIdentification> groupIds, DateTimeOffset since)
+    {
+        if (groupIds.Count == 0)
+        {
+            return [];
+        }
+        var projectId = groupIds.EnsureSameProject().First().ProjectId;
+        var ids = groupIds.Select(g => g.CharacterGroupId).Distinct().ToList();
+        var sinceUtc = since.UtcDateTime;
+        var created = await ctx.Set<CharacterGroup>()
+            .Where(g => g.ProjectId == projectId.Value && ids.Contains(g.CharacterGroupId) && g.CreatedAt > sinceUtc)
+            .Select(g => g.CharacterGroupId)
+            .ToListAsync();
+        return [.. created.Select(id => new CharacterGroupIdentification(projectId, id))];
+    }
+
     public async Task<IReadOnlyDictionary<string, UserIdentification>> FindUsersByEmails(IReadOnlyCollection<string> emails)
     {
         var normalized = emails

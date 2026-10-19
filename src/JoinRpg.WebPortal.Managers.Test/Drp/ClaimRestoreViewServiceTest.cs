@@ -332,6 +332,8 @@ public class ClaimRestoreViewServiceTest
         var changed = exportRestoreService.Changed.ShouldHaveSingleItem();
         changed.Target.Groups.ShouldBeNull();
         changed.Target.Fields.ShouldNotBeNull()[field].ShouldBeNull();
+        // Группы открываются только там, где их меняли (#5677): у создания — да, у изменения без групп — нет.
+        exportRestoreService.Published.ShouldBe([(characterId, BackupTakenAt)]);
     }
 
     [Fact]
@@ -351,6 +353,8 @@ public class ClaimRestoreViewServiceTest
         created.Type.ShouldBe(CharacterType.Slot);
         created.IsHot.ShouldBeTrue();
         created.Visibility.ShouldBe(CharacterVisibility.Private);
+        // Групп строка не меняла — и открывать нечего.
+        exportRestoreService.Published.ShouldBeEmpty();
     }
 
     /// <summary>Видимость нового персонажа выбирает мастер (#5677): без выбора не создаём.</summary>
@@ -412,6 +416,14 @@ public class ClaimRestoreViewServiceTest
             Created.Add((characterId, name, characterType, isHot, visibility, target));
             return Task.CompletedTask;
         }
+
+        public List<(CharacterIdentification CharacterId, DateTimeOffset BackupTakenAt)> Published { get; } = [];
+
+        public Task<IReadOnlyList<CharacterGroupIdentification>> PublishRestoredGroupsOf(CharacterIdentification characterId, DateTimeOffset backupTakenAt)
+        {
+            Published.Add((characterId, backupTakenAt));
+            return Task.FromResult<IReadOnlyList<CharacterGroupIdentification>>([]);
+        }
     }
 
     private sealed class FakeLookupRepository : IProjectRestoreLookupRepository
@@ -432,6 +444,9 @@ public class ClaimRestoreViewServiceTest
             CharacterIds.AddRange(characterIds);
             return Task.FromResult<IReadOnlyCollection<CharacterIdentification>>([]);
         }
+
+        public Task<IReadOnlyCollection<CharacterGroupIdentification>> GetGroupsCreatedAfter(IReadOnlyCollection<CharacterGroupIdentification> groupIds, DateTimeOffset since)
+            => throw new NotSupportedException();
 
         public Task<IReadOnlyDictionary<string, UserIdentification>> FindUsersByEmails(IReadOnlyCollection<string> emails)
         {
