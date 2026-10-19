@@ -31,7 +31,7 @@ internal class AccommodationTypeService(
         var entity = await projectPropsService.ChangeProjectProperties(
             projectId,
             Permission.CanManageAccommodation,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (Request: request, RoomCategory: roomCategory ?? new NewRoomCategory(request.Name)),
             ctx =>
             {
@@ -73,7 +73,7 @@ internal class AccommodationTypeService(
         => projectPropsService.ChangeProjectProperties(
             roomCategoryId.ProjectId,
             Permission.CanManageAccommodation,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (RoomCategoryId: roomCategoryId, Name: name),
             ctx =>
             {
@@ -113,7 +113,7 @@ internal class AccommodationTypeService(
         => projectPropsService.ChangeProjectProperties(
             accommodationTypeId.ProjectId,
             Permission.CanManageAccommodation,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (AccommodationTypeId: accommodationTypeId, Request: request),
             ctx =>
             {
@@ -155,6 +155,12 @@ internal class AccommodationTypeService(
     /// группы. Порядок выбран так, чтобы оборванное удаление никогда не оставляло заявку со
     /// ссылкой на несуществующий тип.
     /// </para>
+    /// <para>
+    /// В заблокированном проекте (ADR023) удаляется только тип, в группах которого нет заявок. Вывод
+    /// заявки из группы — операция над заявкой, она остаётся <c>MustBeActive</c>: заявки в блокировке
+    /// не меняются, а отказ от неотвеченных приглашений ещё и шлёт письма игрокам. Тогда первая же
+    /// заявка даёт отказ «Проект заблокирован», и ничего не сохраняется.
+    /// </para>
     /// </remarks>
     public async Task DeleteAccommodationType(AccommodationTypeIdentification accommodationTypeId)
     {
@@ -176,7 +182,7 @@ internal class AccommodationTypeService(
         await projectPropsService.ChangeProjectProperties(
             accommodationTypeId.ProjectId,
             Permission.CanManageAccommodation,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             accommodationTypeId,
             ctx =>
             {
