@@ -24,6 +24,46 @@ public class ContactComponentsTest
     }
 
     [Fact]
+    public void ContactLink_Collapse_RendersOnlyIconLinkWithAccessibleName()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<ContactLink>(p => p
+            .Add(x => x.Icon, JoinIconType.Email)
+            .Add(x => x.Href, "mailto:test@example.com")
+            .Add(x => x.Title, "test@example.com")
+            .Add(x => x.Collapse, true)
+            .AddChildContent("test@example.com"));
+        var link = cut.Find("a");
+        link.GetAttribute("href").ShouldBe("mailto:test@example.com");
+        link.GetAttribute("aria-label").ShouldBe("test@example.com");
+        link.TextContent.Trim().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ContactLink_CollapseWithoutHref_RendersText()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<ContactLink>(p => p
+            .Add(x => x.Icon, JoinIconType.Phone)
+            .Add(x => x.Collapse, true)
+            .AddChildContent("спросить у мастера"));
+        cut.Markup.ShouldContain("спросить у мастера");
+        cut.FindAll("a").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TelegramLink_Collapse_HidesUnverifiedIcon()
+    {
+        using var ctx = new BunitContext();
+        var contact = new TelegramSocialLink(null, new PrefferedName("joinrpg"), isVerified: false);
+        var cut = ctx.Render<TelegramLink>(p => p
+            .Add(x => x.Contact, contact)
+            .Add(x => x.Collapse, true));
+        cut.Find("a").GetAttribute("href").ShouldBe("https://t.me/joinrpg");
+        cut.Markup.ShouldNotContain(JoinIconDefinitions.Get(JoinIconType.Info).IconName);
+    }
+
+    [Fact]
     public void PhoneLink_Null_RendersNothing()
     {
         using var ctx = new BunitContext();
@@ -39,6 +79,26 @@ public class ContactComponentsTest
         cut.Markup.ShouldContain("+79161234567");
         cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Phone).IconName);
         cut.Markup.ShouldContain("white-space: nowrap");
+    }
+
+    [Theory]
+    [InlineData("+79161234567", "tel:+79161234567")]
+    [InlineData("8 (916) 123-45-67, после 18:00", "tel:89161234567")]
+    [InlineData(" +7 916 123-45-67", "tel:+79161234567")]
+    public void PhoneLink_WithValue_RendersTelLinkWithDigitsOnly(string phone, string expectedHref)
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<PhoneLink>(p => p.Add(x => x.Contact, new PhoneNumber(phone)));
+        cut.Find("a").GetAttribute("href").ShouldBe(expectedHref);
+    }
+
+    [Fact]
+    public void PhoneLink_WithoutDigits_RendersTextWithoutLink()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<PhoneLink>(p => p.Add(x => x.Contact, new PhoneNumber("спросить у мастера")));
+        cut.Markup.ShouldContain("спросить у мастера");
+        cut.FindAll("a").ShouldBeEmpty();
     }
 
     [Fact]

@@ -3,26 +3,19 @@
 }
 @if (!string.IsNullOrWhiteSpace(effectiveLink))
 {
-    if (Collapse)
-    {
-        <a href="@($"https://t.me/{effectiveLink}")"><JoinIcon Icon="JoinIconType.Telegram" /></a>
-    }
-    else
-    {
-        <ContactLink Icon="JoinIconType.Telegram" Href="@($"https://t.me/{effectiveLink}")">
-            @if (ChildContent is null)
-            {
-                @effectiveLink
-            }
-            else
-            {
-                @ChildContent
-            }
-        </ContactLink>
-        @if (Contact is not null && !Contact.IsVerified)
+    <ContactLink Icon="JoinIconType.Telegram" Href="@($"https://t.me/{effectiveLink}")" Collapse="Collapse" Title="Telegram">
+        @if (ChildContent is null)
         {
-            <JoinIcon Icon="JoinIconType.Info" Title="Telegram не подтвержден" />
+            @effectiveLink
         }
+        else
+        {
+            @ChildContent
+        }
+    </ContactLink>
+    @if (!Collapse && Contact is not null && !Contact.IsVerified)
+    {
+        <JoinIcon Icon="JoinIconType.Info" Title="Telegram не подтвержден" />
     }
 }
 

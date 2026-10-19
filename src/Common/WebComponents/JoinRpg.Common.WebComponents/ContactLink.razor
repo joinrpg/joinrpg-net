@@ -1,25 +1,38 @@
-<span style="white-space: nowrap">
-    @if (Icon is not null)
-    {
-        <JoinIcon Icon="@Icon.Value" style="margin-right: 2px" />
-    }
-    @if (Prefix is not null)
-    {
-        @Prefix<text>&nbsp;</text>
-    }
-    @if (Href is not null)
-    {
-        <a href="@Href">@ChildContent</a>
-    }
-    else
-    {
-        @ChildContent
-    }
-</span>
+@if (Collapse && Icon is not null && Href is not null)
+{
+    <JoinIconButton Icon="@Icon" Link="@Href" Title="@Title" />
+}
+else
+{
+    <span style="white-space: nowrap">
+        @if (Icon is not null)
+        {
+            <JoinIcon Icon="@Icon.Value" style="margin-right: 2px" />
+        }
+        @if (Prefix is not null)
+        {
+            @Prefix<text>&nbsp;</text>
+        }
+        @if (Href is not null)
+        {
+            <a href="@Href">@ChildContent</a>
+        }
+        else
+        {
+            @ChildContent
+        }
+    </span>
+}
 
 @code {
     [Parameter] public JoinIconType? Icon { get; set; }
     [Parameter] public string? Prefix { get; set; }
     [Parameter] public string? Href { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Показать только иконку-ссылку, без текста. Работает, когда заданы <see cref="Icon"/> и <see cref="Href"/>.</summary>
+    [Parameter] public bool Collapse { get; set; }
+
+    /// <summary>Подсказка и имя для скринридера у свёрнутой ссылки — текста у неё нет.</summary>
+    [Parameter] public string? Title { get; set; }
 }

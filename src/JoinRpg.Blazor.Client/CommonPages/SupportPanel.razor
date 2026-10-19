@@ -1,3 +1,4 @@
+@using JoinRpg.Common.PrimitiveTypes
 <h3>Справка</h3>
 <HelpLink Message="Руководство пользователя" Link=""/>
 
@@ -6,10 +7,10 @@
 <br /><TelegramLink Link="+QGY9nm81elDmiBX3">Пользовательский чат</TelegramLink> (техподдержка не отвечает в чате).
 
 <h3>Служба поддержки сайта</h3>
-Электронная почта: <a href="mailto:support@joinrpg.ru">support@joinrpg.ru</a>
+Электронная почта: <EmailLink Contact="@(new Email("support@joinrpg.ru"))" />
 <br />Телеграм-бот: <TelegramLink Link="joinrpg_help_bot" />
 
 <h3>Служба поддержки ООО «Джойн Регистрация»</h3>
 По вопросам организационных взносов (покупки или продажи билетов):
-<br />Электронная почта: <a href="mailto:payments@joinrpg.ru">payments@joinrpg.ru</a>
-<br />Для экстренных вопросов: <a href="tel:+79218997957">+79218997957</a> (Понедельник-пятница, с 10:00 по 17:00 (по Москве).
+<br />Электронная почта: <EmailLink Contact="@(new Email("payments@joinrpg.ru"))" />
+<br />Для экстренных вопросов: <PhoneLink Contact="@(new PhoneNumber("+79218997957"))" /> (Понедельник-пятница, с 10:00 по 17:00 (по Москве).

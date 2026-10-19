@@ -1,0 +1,14 @@
+@using JoinRpg.Common.PrimitiveTypes
+@using JoinRpg.Common.WebComponents
+@preservewhitespace true
+<footer>
+    <hr />
+    &copy; #<a href="https://leotsarev.ru">ЛеоЦарев</a>, <a href="http://bastilia.ru">Бастилия</a> и Друзья.
+    <a href="/support">Поддержка</a>:
+    <EmailLink Contact="@(new Email("support@joinrpg.ru"))" Collapse="true" />
+    <a href="https://vk.com/joinrpg">ВК</a>
+    <TelegramLink Link="joinrpg" Collapse="true" />
+    <HelpLink Link="" />.
+    Информация о <a href="/OnlinePayments">приеме платежей</a>.
+    <a href="/privacy">Приватность</a>.
+</footer>
