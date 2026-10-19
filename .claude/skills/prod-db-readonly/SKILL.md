@@ -7,7 +7,7 @@ description: Читать прод-БД joinrpg-prod (MSSQL на ВМ mssql-prod
 
 Прод-БД `joinrpg-prod` — legacy `JoinRpg.DataModel` через EF6 (см. [[dal-uses-ef6-not-ef-core]] в памяти).
 С переезда в Selectel (DRP #5459) это не managed-сервис: SQL Server поставлен вручную на ВМ `mssql-prod`
-(пул ru-6, публичный адрес — домен `joindb.tsarevs.ru`). ВМ, диск и группа безопасности описаны
+(пул ru-6, снаружи доступна как `joindb.tsarevs.ru` через балансировщик). ВМ, диск и группа безопасности описаны
 в Terraform: [`joinrpg-infrastructure/03-databases/mssql.tf`](https://github.com/joinrpg/joinrpg-infrastructure/blob/main/03-databases/mssql.tf),
 сам SQL Server и его логины — нет. Это точечный инструмент для расследования конкретного
 инцидента (например, дополняет находки из скилла **prod-logs**: нашёл `ProjectId`/`ClaimId`
@@ -57,12 +57,25 @@ sqlcmd -S "$JOINRPG_PROD_DB_HOST" -U claude_joinrpg_readonly -P "$JOINRPG_PROD_D
 
 ## Сетевой доступ
 
-Порт 1433 ВМ открыт снаружи только для адресов из группы безопасности `mssql-sg` — правила
-`mssql_ingress_rules` в [`joinrpg-infrastructure/03-databases/locals.tf`](https://github.com/joinrpg/joinrpg-infrastructure/blob/main/03-databases/locals.tf)
-(плюс подсеть кластера `192.168.0.0/24`). Если подключение не проходит с таймаутом (а не
-auth-ошибкой) — вероятно, текущий внешний IP туда не добавлен. Добавляет его пользователь через
-Terraform, не через этот скилл; скиллом **selectel-readonly** можно посмотреть, какие правила
-применены сейчас.
+`joindb.tsarevs.ru` указывает не на ВМ, а на балансировщик кластера (176.53.231.74): слушатель
+`joindb-mssql` (1433) проксирует на ВМ. Вход ограничен списком адресов на слушателе (`allowed_cidrs`).
+Слушатели заведены вручную, не Terraform'ом — см. README
+[`joinrpg-infrastructure`](https://github.com/joinrpg/joinrpg-infrastructure#readme).
+
+Сетевые проблемы выглядят как таймаут (`Ошибка времени ожидания [258]`, `Login timeout expired`),
+а не `Login failed`. `Test-NetConnection -Port 1433` тут не помогает: TCP-соединение принимает сам
+балансировщик, и оно отвечает `True` в любом случае. Таймаут бывает и разовым — сначала повторить
+с `-l 45`.
+
+Свой внешний IP проверять **российским** сервисом: `Invoke-RestMethod https://ipv4-internet.yandex.net/api/v0/ip`.
+Зарубежные (ipify и т. п.) у пользователя могут ходить через VPN на роутере и показать чужой адрес,
+хотя Selectel трафик идёт напрямую. Текущий список адресов — скиллом **selectel-readonly**:
+
+```bash
+pwsh -NoProfile -File .claude/skills/selectel-readonly/selectel-api.ps1 -Service load-balancer -Region ru-6 -Path v2/lbaas/listeners
+```
+
+Добавляет адрес пользователь (`openstack loadbalancer listener set --allowed-cidr …`), не этот скилл.
 
 ## Диагностика
 
@@ -72,6 +85,6 @@ Terraform, не через этот скилл; скиллом **selectel-readon
   логины в бэкап базы не входят. Его заводят заново тем же `create-readonly-user.sql` — скрипт
   перепривязывает к новому логину «осиротевшего» пользователя, который приехал в базе из бэкапа.
   Заодно проверить, что `JOINRPG_PROD_DB_HOST` указывает на `joindb.tsarevs.ru`, а не на старый хост.
-- Таймаут подключения — сетевой доступ (allowlist), а не логин/пароль.
+- Таймаут подключения или входа — сетевой доступ (`allowed_cidrs` слушателя), а не логин/пароль.
 - `Cannot open database "joinrpg-prod" requested by the login` — `DEFAULT_DATABASE` не выставлен
   или `CREATE USER ... FOR LOGIN` не выполнялся в контексте `joinrpg-prod`.
