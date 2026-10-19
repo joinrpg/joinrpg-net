@@ -633,7 +633,16 @@
                         var r = row.Row;
                         <tr class="@RowClass(row)" @key="r.ClaimId">
                             <td>@SelectCheckbox(row)</td>
-                            <td><a href="@ClaimUriLocator.GetUri(r.ClaimId)">@r.ClaimId.ClaimId</a></td>
+                            <td>
+                                @if (r.ExistsInDatabase)
+                                {
+                                    <a href="@ClaimUriLocator.GetUri(r.ClaimId)">@r.ClaimId.ClaimId</a>
+                                }
+                                else
+                                {
+                                    @r.ClaimId.ClaimId
+                                }
+                            </td>
                             <td>@r.CharacterName</td>
                             <td>@FieldsCell(row.Fields, row.CanApply)</td>
                             <td>@RowNotes(row, r.Warnings.Select(w => w.GetDisplayName()))</td>
@@ -918,7 +927,17 @@
                                        title="Применить эту строку"
                                        @onchange="@(e => row.Selected = e.Value is true)" />
                             </td>
-                            <td><a href="@ClaimUriLocator.GetUri(r.ClaimId)">@r.ClaimId.ClaimId</a></td>
+                            <td>
+                                @if (r.Action == ClaimRestoreActionView.Create)
+                                {
+                                    @* Заявки ещё нет в базе — ссылка вела бы на несуществующую заявку. *@
+                                    @r.ClaimId.ClaimId
+                                }
+                                else
+                                {
+                                    <a href="@ClaimUriLocator.GetUri(r.ClaimId)">@r.ClaimId.ClaimId</a>
+                                }
+                            </td>
                             <td>@r.Action.GetDisplayName()</td>
                             <td>@CharacterCell(row)</td>
                             <td>@PlayerCell(row)</td>

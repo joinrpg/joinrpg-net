@@ -294,13 +294,15 @@ public record CharacterRestoreRowViewModel(
 }
 
 /// <summary>Поля заявки из выгрузки заявок.</summary>
+/// <param name="ExistsInDatabase">Заявка есть в базе (иначе создаётся строкой раздела «Заявки» или не создаётся вовсе).</param>
 public record ClaimFieldsRestoreRowViewModel(
     ClaimIdentification ClaimId,
     string? CharacterName,
     IReadOnlyList<FieldRestoreChangeView> Fields,
     DateTimeOffset ExportedAt,
     bool ApplyByDefault,
-    IReadOnlyList<ProjectRestoreWarningView> Warnings);
+    IReadOnlyList<ProjectRestoreWarningView> Warnings,
+    bool ExistsInDatabase);
 
 /// <summary>Восстановить потерянную группу с прежним id.</summary>
 public record GroupRestoreApplyRequest(CharacterGroupIdentification GroupId, string Name);
