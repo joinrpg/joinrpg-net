@@ -1,105 +1,32 @@
-@* Панель приглашений к совместному проживанию. Одна и та же для полученных и отправленных — *@
-@* различия только в заголовке и наборе кнопок, поэтому направление задаётся параметром. *@
-@using JoinRpg.Helpers
+@* Полученные и отправленные приглашения к совместному проживанию на странице заявки. *@
 @inject IAccommodationInviteClient Client
-@inject NavigationManager NavigationManager
 
-@* Пока не загрузились или приглашений нет — панель не показываем вовсе *@
-@if (invites is { Count: > 0 })
+@* Пока не загрузились — панели не показываем *@
+@if (incoming is not null)
 {
-    <JoinPanel>
-        <Header>@Caption</Header>
-        <Body>
-            <table class="table" style="margin: 0;">
-                @foreach (var invite in invites)
-                {
-                    <tr @key="invite.InviteId">
-                        <td style="vertical-align: middle; border: none;">
-                            <UserLink Model="@invite.Counterparty" />
-                        </td>
-                        @* Мастер видит приглашения без кнопок: отвечает только сам игрок (#5656) *@
-                        @if (invite.State == InviteState.Unanswered && invite.CanRespond)
-                        {
-                            <td style="border: none;">
-                                <div style="display: flex; flex-direction: row; align-items: center;">
-                                    @if (Direction == InviteDirection.Incoming)
-                                    {
-                                        <span style="margin-right: 1em;">
-                                            <JoinButton Label="Принять"
-                                                        Icon="JoinIconType.Approve"
-                                                        Size="SizeStyleEnum.Small"
-                                                        AutoConfirm="true"
-                                                        AutoConfirmMessage="Принять приглашение к совместному проживанию?"
-                                                        OnClick="@(args => Act(args, () => Client.AcceptInvite(invite.InviteId)))" />
-                                        </span>
-                                        <JoinButton Label="Отклонить"
-                                                    Icon="JoinIconType.Decline"
-                                                    Size="SizeStyleEnum.Small"
-                                                    AutoConfirm="true"
-                                                    AutoConfirmMessage="Отклонить приглашение к совместному проживанию?"
-                                                    OnClick="@(args => Act(args, () => Client.DeclineInvite(invite.InviteId)))" />
-                                    }
-                                    else
-                                    {
-                                        <JoinButton Label="Отозвать"
-                                                    Icon="JoinIconType.Decline"
-                                                    Size="SizeStyleEnum.Small"
-                                                    AutoConfirm="true"
-                                                    AutoConfirmMessage="Отменить приглашение к совместному проживанию?"
-                                                    OnClick="@(args => Act(args, () => Client.CancelInvite(invite.InviteId)))" />
-                                    }
-                                </div>
-                            </td>
-                        }
-                        else
-                        {
-                            <td class="@invite.State.GetAppropriateTextStyle()" style="border: none;">@invite.State.GetDescription()</td>
-                        }
-                    </tr>
-                }
-            </table>
-            @if (errorMessage is not null)
-            {
-                <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
-            }
-        </Body>
-    </JoinPanel>
+    <ClaimAccommodationInvitesPanel Invites="@incoming" Direction="InviteDirection.Incoming" />
+}
+@if (outgoing is not null)
+{
+    <ClaimAccommodationInvitesPanel Invites="@outgoing" Direction="InviteDirection.Outgoing" />
 }
 
 @code {
+    // Оба направления — в одном острове и в разных свойствах. Ключ PersistentState считается
+    // по типу компонента и имени свойства, поэтому два экземпляра одного острова на странице
+    // сохраняли состояние под одним ключом: пререндер падал, а WASM читал чужой список (#5670).
     [PersistentState]
-    public IReadOnlyCollection<AccommodationInviteViewModel>? invites { get; set; }
+    public IReadOnlyCollection<AccommodationInviteViewModel>? incoming { get; set; }
+
+    [PersistentState]
+    public IReadOnlyCollection<AccommodationInviteViewModel>? outgoing { get; set; }
 
     [Parameter, EditorRequired]
     public ClaimIdentification ClaimId { get; set; } = null!;
 
-    [Parameter, EditorRequired]
-    public InviteDirection Direction { get; set; }
-
-    private string? errorMessage;
-
-    private string Caption => Direction switch
-    {
-        InviteDirection.Incoming => "Полученные приглашения к совместному проживанию",
-        InviteDirection.Outgoing => "Отправленные приглашения к совместному проживанию",
-        _ => throw new ArgumentOutOfRangeException(nameof(Direction)),
-    };
-
     protected override async Task OnInitializedAsync()
-        => invites ??= await Client.GetInvites(ClaimId, Direction);
-
-    private async Task Act(ButtonClickEventArgs args, Func<Task> action)
     {
-        try
-        {
-            await action();
-            // Ответ на приглашение меняет и панель проживания, и оба списка — перезагружаем страницу целиком
-            NavigationManager.Refresh(forceReload: true);
-        }
-        catch (Exception exception)
-        {
-            errorMessage = exception.Message;
-            args.ExitProgressState = true;
-        }
+        incoming ??= await Client.GetInvites(ClaimId, InviteDirection.Incoming);
+        outgoing ??= await Client.GetInvites(ClaimId, InviteDirection.Outgoing);
     }
 }

@@ -25,22 +25,24 @@ public class ClaimAccommodationInvitesTest : BunitContext
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
     }
 
-    private static AccommodationInviteViewModel Invite(int inviteId, InviteState state, bool canRespond = true)
+    private static AccommodationInviteViewModel Invite(
+        int inviteId,
+        InviteState state,
+        bool canRespond = true,
+        string counterparty = "Сосед")
         => new(
             new AccommodationInviteIdentification(ProjectId, inviteId),
-            new UserLinkViewModel(new UserIdentification(42), "Сосед", ViewMode.Show),
+            new UserLinkViewModel(new UserIdentification(42 + inviteId), counterparty, ViewMode.Show),
             state,
             canRespond);
 
-    private IRenderedComponent<ClaimAccommodationInvites> RenderInvites(InviteDirection direction)
-        => Render<ClaimAccommodationInvites>(parameters => parameters
-            .Add(c => c.ClaimId, ClaimId)
-            .Add(c => c.Direction, direction));
+    private IRenderedComponent<ClaimAccommodationInvites> RenderInvites()
+        => Render<ClaimAccommodationInvites>(parameters => parameters.Add(c => c.ClaimId, ClaimId));
 
     [Fact]
     public void ShouldRenderNothingWhenNoInvites()
     {
-        var cut = RenderInvites(InviteDirection.Incoming);
+        var cut = RenderInvites();
 
         cut.Markup.Trim().ShouldBeEmpty();
     }
@@ -50,7 +52,7 @@ public class ClaimAccommodationInvitesTest : BunitContext
     {
         client.NextInvites[InviteDirection.Incoming] = [Invite(1, InviteState.Unanswered)];
 
-        var cut = RenderInvites(InviteDirection.Incoming);
+        var cut = RenderInvites();
 
         cut.Markup.ShouldContain("Полученные приглашения");
         cut.Markup.ShouldContain("Принять");
@@ -63,7 +65,7 @@ public class ClaimAccommodationInvitesTest : BunitContext
     {
         client.NextInvites[InviteDirection.Outgoing] = [Invite(1, InviteState.Unanswered)];
 
-        var cut = RenderInvites(InviteDirection.Outgoing);
+        var cut = RenderInvites();
 
         cut.Markup.ShouldContain("Отправленные приглашения");
         cut.Markup.ShouldContain("Отозвать");
@@ -80,10 +82,48 @@ public class ClaimAccommodationInvitesTest : BunitContext
     {
         client.NextInvites[direction] = [Invite(1, InviteState.Unanswered, canRespond: false)];
 
-        var cut = RenderInvites(direction);
+        var cut = RenderInvites();
 
         cut.FindAll("button").ShouldBeEmpty();
         cut.Markup.ShouldContain("Не отвечено");
+    }
+
+    /// <summary>
+    /// Оба направления в одном острове: каждая панель получает свой список (#5670).
+    /// </summary>
+    [Fact]
+    public void EachPanelShouldShowItsOwnInvites()
+    {
+        client.NextInvites[InviteDirection.Incoming] = [Invite(1, InviteState.Unanswered, counterparty: "Пригласивший")];
+        client.NextInvites[InviteDirection.Outgoing] = [Invite(2, InviteState.Unanswered, counterparty: "Приглашённый")];
+
+        var cut = RenderInvites();
+
+        var panels = cut.FindAll(".panel");
+        panels.Count.ShouldBe(2);
+
+        panels[0].TextContent.ShouldContain("Полученные приглашения");
+        panels[0].TextContent.ShouldContain("Пригласивший");
+        panels[0].TextContent.ShouldContain("Принять");
+        panels[0].TextContent.ShouldNotContain("Приглашённый");
+        panels[0].TextContent.ShouldNotContain("Отозвать");
+
+        panels[1].TextContent.ShouldContain("Отправленные приглашения");
+        panels[1].TextContent.ShouldContain("Приглашённый");
+        panels[1].TextContent.ShouldContain("Отозвать");
+        panels[1].TextContent.ShouldNotContain("Пригласивший");
+        panels[1].TextContent.ShouldNotContain("Принять");
+    }
+
+    [Fact]
+    public void ShouldNotRenderIncomingPanelWhenOnlyOutgoing()
+    {
+        client.NextInvites[InviteDirection.Outgoing] = [Invite(1, InviteState.Unanswered)];
+
+        var cut = RenderInvites();
+
+        cut.FindAll(".panel").Count.ShouldBe(1);
+        cut.Markup.ShouldNotContain("Полученные приглашения");
     }
 
     /// <summary>
@@ -94,7 +134,7 @@ public class ClaimAccommodationInvitesTest : BunitContext
     {
         client.NextInvites[InviteDirection.Incoming] = [Invite(1, InviteState.Declined)];
 
-        var cut = RenderInvites(InviteDirection.Incoming);
+        var cut = RenderInvites();
 
         cut.Markup.ShouldContain("text-danger");
         cut.Markup.ShouldContain("Отклонено");
