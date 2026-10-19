@@ -39,6 +39,7 @@ public class ClaimFeeViewModel
         HasBaseFee = feeBreakdown.HasBaseFee;
 
         AccommodationFee = feeBreakdown.AccommodationFee;
+        ProjectHasPaidAccommodation = projectInfo.AccommodationSettings.HasPaidTypes;
         RoomType = accommodation?.AccommodationType?.Name ?? "";
         RoomName = accommodation?.RoomName;
 
@@ -166,14 +167,21 @@ public class ClaimFeeViewModel
     public Dictionary<FieldBoundToViewModel, int> FieldsFee { get; }
 
     /// <summary>
-    /// true if fee row should be visible in claim editor.
-    /// One of the following conditions has to be met:
-    /// CurrentBalance > 0 (player sends some money),
-    /// or there is any base fee (assigned manually or automatically),
-    /// or there is at least one field with fee
+    /// В проекте включено поселение и есть платный тип проживания.
     /// </summary>
+    public bool ProjectHasPaidAccommodation { get; }
+
+    /// <summary>
+    /// Показывать ли блок взноса в заявке — а с ним и кнопки «Отметить оплату…» и «Изменить взнос».
+    /// Нужно одно из условий: уже есть принятые оплаты, есть базовый взнос (назначенный вручную
+    /// или по графику), есть поля с оплатой или в проекте есть платное поселение.
+    /// </summary>
+    /// <remarks>
+    /// Платное поселение учитывается, даже если в заявке проживание не выбрано: иначе в проекте
+    /// без взноса оплату за проживание нельзя отметить, пока игрока не поселят (#5646).
+    /// </remarks>
     public bool ShowFee
-        => CurrentBalance > 0 || HasBaseFee || HasFieldsWithFee;
+        => CurrentBalance > 0 || HasBaseFee || HasFieldsWithFee || ProjectHasPaidAccommodation;
 
     /// <summary>
     /// Returns count of fields with assigned fee
