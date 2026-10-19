@@ -3,7 +3,7 @@
 -- нигде, кроме твоей головы/менеджера паролей, он оседать не должен.
 --
 -- Без `GO`: команда-разделитель батчей sqlcmd/SSMS, которую не все клиенты
--- понимают (например, веб-консоль Yandex Cloud). CREATE LOGIN/CREATE USER
+-- понимают (например, веб-консоли облаков). CREATE LOGIN/CREATE USER
 -- не обязаны быть единственным оператором в батче, так что скрипт можно
 -- выполнить целиком одним запуском. Если конкретный клиент всё равно
 -- ругается на несколько `USE` в одном выполнении — выполняй по разделам
@@ -17,9 +17,15 @@ CREATE LOGIN [claude_joinrpg_readonly]
     CHECK_EXPIRATION = ON,
     DEFAULT_DATABASE = [joinrpg-prod];
 
--- 2. Пользователь в целевой БД + встроенная readonly-роль
+-- 2. Пользователь в целевой БД + встроенная readonly-роль.
+-- Если база восстановлена из бэкапа (как при переезде в Selectel, DRP #5459), пользователь
+-- в ней уже есть, но «осиротел»: серверный логин в бэкап базы не входит, а SID нового логина
+-- другой. Тогда не создаём пользователя, а перепривязываем его к новому логину.
 USE [joinrpg-prod];
-CREATE USER [claude_joinrpg_readonly] FOR LOGIN [claude_joinrpg_readonly];
+IF DATABASE_PRINCIPAL_ID(N'claude_joinrpg_readonly') IS NULL
+    CREATE USER [claude_joinrpg_readonly] FOR LOGIN [claude_joinrpg_readonly];
+ELSE
+    ALTER USER [claude_joinrpg_readonly] WITH LOGIN = [claude_joinrpg_readonly];
 ALTER ROLE db_datareader ADD MEMBER [claude_joinrpg_readonly];
 
 -- 3. Проверка: у логина не должно быть доступа ни к чему, кроме [joinrpg-prod] —
