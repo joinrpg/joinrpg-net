@@ -67,9 +67,9 @@ public interface IExportRestoreService
 
     /// <summary>
     /// Возвращает потерянного персонажа с прежним идентификатором и приводит его к состоянию по
-    /// выгрузке. Новый персонаж — скрытый, заданного типа, в корневой группе (как при восстановлении
+    /// выгрузке. Новый персонаж — заданных типа и видимости, в корневой группе (как при восстановлении
     /// заявки), дальше — как <see cref="ApplyRestoredCharacter"/>. Если персонаж с таким id в этом
-    /// проекте уже есть — только <see cref="ApplyRestoredCharacter"/>, тип не меняется.
+    /// проекте уже есть — только <see cref="ApplyRestoredCharacter"/>, тип и видимость не меняются.
     /// </summary>
     /// <param name="characterId">Прежний идентификатор персонажа.</param>
     /// <param name="name">
@@ -79,6 +79,10 @@ public interface IExportRestoreService
     /// </param>
     /// <param name="characterType">Тип нового персонажа (по «Занят?» выгрузки, #5645). Лимита у шаблона нет.</param>
     /// <param name="isHot">Горячий ли новый персонаж; у NPC не бывает (<see cref="ArgumentException"/>).</param>
+    /// <param name="visibility">
+    /// Видимость нового персонажа: в выгрузке её нет, выбирает мастер (#5677). У уже существующего
+    /// персонажа не меняется.
+    /// </param>
     /// <param name="target">Состояние по выгрузке, как у <see cref="ApplyRestoredCharacter"/>.</param>
     /// <remarks>
     /// Вставка и наполнение — без общей транзакции, но повторяемы: повтор после сбоя между ними найдёт
@@ -92,5 +96,6 @@ public interface IExportRestoreService
         string name,
         CharacterType characterType,
         bool isHot,
+        CharacterVisibility visibility,
         RestoredCharacterTarget target);
 }

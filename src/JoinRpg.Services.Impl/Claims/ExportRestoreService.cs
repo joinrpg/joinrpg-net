@@ -89,12 +89,17 @@ internal class ExportRestoreService(
         string name,
         CharacterType characterType,
         bool isHot,
+        CharacterVisibility visibility,
         RestoredCharacterTarget target)
     {
         // Всё, что можно проверить, — до вставки: после неё неудача оставит оболочку.
         if (!Enum.IsDefined(characterType))
         {
             throw new ArgumentOutOfRangeException(nameof(characterType), characterType, "Unknown character type");
+        }
+        if (!Enum.IsDefined(visibility))
+        {
+            throw new ArgumentOutOfRangeException(nameof(visibility), visibility, "Unknown character visibility");
         }
         if (isHot && characterType == CharacterType.NonPlayer)
         {
@@ -128,7 +133,8 @@ internal class ExportRestoreService(
                 currentUserAccessor.UserIdentification,
                 DateTime.UtcNow,
                 characterType,
-                isHot));
+                isHot,
+                visibility));
         // TODO[Localize]
         EnsureShellInserted(result, $"Персонаж {characterId.CharacterId}");
         if (result == RestoredShellInsertResult.Inserted)

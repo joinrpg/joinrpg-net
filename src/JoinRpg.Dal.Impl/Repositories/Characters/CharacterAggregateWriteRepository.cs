@@ -116,10 +116,11 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         {
             throw new ArgumentException($"NPC {shell.CharacterId} не бывает горячим", nameof(shell));
         }
+        var (isPublic, hidePlayerForCharacter) = CharacterTypeInfo.GetVisibilityFlags(shell.Visibility);
 
         // Поля — как у доменного создания (CharacterServiceImpl.AddCharacter → ApplySettings и
-        // SaveFields с пустым слоем): тип и «горячесть» из оболочки, видимость Private (IsPublic = 0,
-        // HidePlayerForCharacter = 1), заявки принимает (IsAcceptingClaims = 1 у всех, кроме NPC),
+        // SaveFields с пустым слоем): тип, «горячесть» и видимость из оболочки (флаги видимости — как
+        // их пишет ApplySettings), заявки принимает (IsAcceptingClaims = 1 у всех, кроме NPC),
         // без лимита слота, активный; поля — пустой JSON-объект, как сериализует пустой слой;
         // группы — только корневая; аудит — сейчас. Порядок персонажей в группе не трогается.
         // JSON полей — параметром: EF6 прогоняет текст команды через string.Format, и фигурные скобки
@@ -129,8 +130,8 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                 HidePlayerForCharacter, IsAcceptingClaims, IsHot, CharacterSlotLimit, IsActive, InGame, AutoCreated,
                 JsonData, Description_Contents, ParentGroupsImpl_ListIds, PlotElementOrderData, ApprovedClaimId,
                 OriginalCharacterSlot_CharacterId, CreatedAt, CreatedById, UpdatedAt, UpdatedById)
-            VALUES (@p0, @p1, @p3, @p4, 0,
-                1, @p9, @p10, NULL, 1, 0, 0,
+            VALUES (@p0, @p1, @p3, @p4, @p11,
+                @p12, @p9, @p10, NULL, 1, 0, 0,
                 @p8, @p5, CAST(@p2 AS nvarchar(20)), NULL, NULL,
                 NULL, @p6, @p7, @p6, @p7);
             """;
@@ -150,7 +151,9 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
             shell.CreatedBy.Value,
             EmptyFieldsJson,
             shell.CharacterType != CharacterType.NonPlayer,
-            shell.IsHot);
+            shell.IsHot,
+            isPublic,
+            hidePlayerForCharacter);
     }
 
     public async Task<RestoredCommentInsertResult> InsertRestoredClaimComment(RestoredClaimCommentRow comment)

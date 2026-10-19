@@ -2,6 +2,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Drp.ClaimNotifications;
 using JoinRpg.Services.Drp.MasterExports;
@@ -115,7 +116,7 @@ internal class ClaimRestoreViewService(
             // TODO[Localize]
             throw new JoinValidationException("Не указано имя персонажа.");
         }
-        await exportRestoreService.RestoreLostCharacter(request.CharacterId, request.Name.Trim(), request.CharacterType, request.IsHot, target);
+        await exportRestoreService.RestoreLostCharacter(request.CharacterId, request.Name.Trim(), request.CharacterType, request.IsHot, CharacterVisibility.Private, target);
     }
 
     public async Task ApplyClaimFields(ClaimFieldsRestoreApplyRequest request)
@@ -141,6 +142,7 @@ internal class ClaimRestoreViewService(
                     responsible,
                     request.CreatedAt,
                     new RestoredClaimTarget(Character: null, status, request.StatusChangedAt, ResponsibleMaster: null, request.ManualFee),
+                    CharacterVisibility.Private,
                     request.NewCharacterIsSlot));
                 // Для шаблона — сам шаблон: следующие заявки с этим именем подаются на него же.
                 return new ClaimRestoreApplyResult(character);

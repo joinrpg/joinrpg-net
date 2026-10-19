@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
@@ -208,6 +209,10 @@ public record RestoredCommentsResult(int Inserted, int AlreadyExisted, IReadOnly
 /// персонаж с именем <paramref name="NewCharacterName"/> в корневой группе.
 /// </param>
 /// <param name="CreatedAt">Когда заявка была подана — первое событие по ней.</param>
+/// <param name="NewCharacterVisibility">
+/// Видимость нового персонажа (при <paramref name="Character"/> = null): в уведомлениях её нет,
+/// выбирает мастер (#5677). Персонаж из шаблона при принятии наследует её от шаблона.
+/// </param>
 /// <param name="NewCharacterIsSlot">
 /// Новый персонаж (при <paramref name="Character"/> = null) создаётся шаблоном, а не персонажем игрока.
 /// Принятая заявка на шаблон, как при одобрении, получает своего персонажа из шаблона; заявка в
@@ -221,4 +226,5 @@ public record LostClaimToRestore(
     UserIdentification ResponsibleMaster,
     DateTimeOffset CreatedAt,
     RestoredClaimTarget Target,
+    CharacterVisibility NewCharacterVisibility,
     bool NewCharacterIsSlot = false);

@@ -101,7 +101,8 @@ public class ClaimRestoreViewServiceTest
         var lost = restoreService.Lost.ShouldHaveSingleItem();
         lost.ShouldBe(new LostClaimToRestore(
             claimId, character, null, player, master, createdAt,
-            new RestoredClaimTarget(null, ClaimStatus.Approved, statusChangedAt, null, 700)));
+            new RestoredClaimTarget(null, ClaimStatus.Approved, statusChangedAt, null, 700),
+            CharacterVisibility.Private));
     }
 
     [Fact]
@@ -344,7 +345,7 @@ public class ClaimRestoreViewServiceTest
     private sealed class FakeExportRestoreService : IExportRestoreService
     {
         public List<(CharacterGroupIdentification GroupId, string Name)> Groups { get; } = [];
-        public List<(CharacterIdentification CharacterId, string Name, CharacterType Type, bool IsHot, RestoredCharacterTarget Target)> Created { get; } = [];
+        public List<(CharacterIdentification CharacterId, string Name, CharacterType Type, bool IsHot, CharacterVisibility Visibility, RestoredCharacterTarget Target)> Created { get; } = [];
         public List<(CharacterIdentification CharacterId, RestoredCharacterTarget Target)> Changed { get; } = [];
         public List<(ClaimIdentification ClaimId, IReadOnlyDictionary<ProjectFieldIdentification, string?> Fields)> ClaimFields { get; } = [];
 
@@ -367,9 +368,9 @@ public class ClaimRestoreViewServiceTest
         }
 
         public Task RestoreLostCharacter(
-            CharacterIdentification characterId, string name, CharacterType characterType, bool isHot, RestoredCharacterTarget target)
+            CharacterIdentification characterId, string name, CharacterType characterType, bool isHot, CharacterVisibility visibility, RestoredCharacterTarget target)
         {
-            Created.Add((characterId, name, characterType, isHot, target));
+            Created.Add((characterId, name, characterType, isHot, visibility, target));
             return Task.CompletedTask;
         }
     }
