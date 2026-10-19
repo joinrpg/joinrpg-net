@@ -496,6 +496,7 @@ public class MockedProject
                 Comments = [],
             },
             FinanceOperations = [],
+            RecurrentPayments = [],
         };
         claim.CommentDiscussion.Project = Project;
         mockCharacter.Claims.Add(claim);
