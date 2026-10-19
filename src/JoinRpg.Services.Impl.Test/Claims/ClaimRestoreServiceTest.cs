@@ -1649,7 +1649,8 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
             new RestoredFinanceEntry(RestoredFinanceEntryStatus.NotLostId, notLost),
         ]);
         result.Moderations.ShouldBe([new RestoredFinanceEntry(RestoredFinanceEntryStatus.ParentNotRestored, null)]);
-        result.Conflicts.ShouldBe(3);
+        result.Conflicts.ShouldBe(2);
+        result.ParentsNotRestored.ShouldBe(1);
         claim.CommentDiscussion.Comments.ShouldBeEmpty();
         claim.FinanceOperations.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(0);

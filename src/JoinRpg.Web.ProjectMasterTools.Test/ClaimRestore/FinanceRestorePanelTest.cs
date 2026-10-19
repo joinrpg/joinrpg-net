@@ -267,6 +267,22 @@ public class FinanceRestorePanelTest : BunitContext
         cut.FindAll("table").ShouldBeEmpty();
     }
 
+    /// <summary>Решение, чья операция не вставилась, — не «занятый номер»: итог называет их раздельно (#5647).</summary>
+    [Fact]
+    public void ApplyResult_ConflictsAndParentsNotRestored_ShownSeparately()
+    {
+        client.Plans.Enqueue(Plan(Row(5, true, Op("a", Cash.PaymentTypeId))));
+        client.Plans.Enqueue(Plan(Row(5, true, Op("a", Cash.PaymentTypeId))));
+        client.Result = new FinanceRestoreApplyResult(Inserted: 0, AlreadyExisted: 0, Conflicts: 1, ParentsNotRestored: 2, []);
+
+        var cut = RenderPanel();
+        Button(cut, "Применить выбранные").Click();
+
+        cut.WaitForAssertion(() => client.PlanRequests.ShouldBe(2));
+        cut.Markup.ShouldContain("не восстановлены из-за занятых номеров: 1");
+        cut.Markup.ShouldContain("решения не восстановлены — их операция не восстановилась: 2");
+    }
+
     [Fact]
     public void ProjectNotBlocked_ShowsExplanation()
     {
@@ -289,7 +305,7 @@ public class FinanceRestorePanelTest : BunitContext
         }) with
         { UnavailableReason = ClaimRestoreUnavailableReason.NoAccess };
         var request = new FinanceRestoreApplyRequest(new ClaimIdentification(ProjectId, 5), new Dictionary<string, int> { ["id:100"] = 10 });
-        var result = new FinanceRestoreApplyResult(1, 2, 3, ["операция без типа"]);
+        var result = new FinanceRestoreApplyResult(1, 2, 3, 4, ["операция без типа"]);
 
         RoundTrip(plan).ShouldBe(JsonSerializer.Serialize(plan));
         RoundTrip(request).ShouldBe(JsonSerializer.Serialize(request));
@@ -313,12 +329,15 @@ public class FinanceRestorePanelTest : BunitContext
             return Plans.TryDequeue(out var plan) ? Task.FromResult(plan) : throw new InvalidOperationException("нет связи");
         }
 
+        /// <summary>Итог применения вместо стандартного «вставлено по числу выбранных типов».</summary>
+        public FinanceRestoreApplyResult? Result { get; set; }
+
         public Task<FinanceRestoreApplyResult> Apply(FinanceRestoreApplyRequest request)
         {
             Applied.Add(request);
             return Failing.Contains(request.ClaimId.ClaimId)
                 ? throw new InvalidOperationException($"Сбой заявки {request.ClaimId.ClaimId}")
-                : Task.FromResult(new FinanceRestoreApplyResult(request.PaymentTypes.Count, 0, 0, []));
+                : Task.FromResult(Result ?? new FinanceRestoreApplyResult(request.PaymentTypes.Count, 0, 0, 0, []));
         }
 
         public Task CreateOwnCash(ProjectIdentification projectId)

@@ -271,7 +271,7 @@ public class FinanceRestoreViewServiceTest
         var result = await CreateService(mock.Master.UserId).Apply(
             new FinanceRestoreApplyRequest(Claim(5), new Dictionary<string, int> { ["id:555"] = cash.PaymentTypeId }));
 
-        result.ShouldBe(new FinanceRestoreApplyResult(1, 0, 0, []), new ApplyResultComparer());
+        result.ShouldBe(new FinanceRestoreApplyResult(1, 0, 0, 0, []), new ApplyResultComparer());
         // Уведомления — только этой заявки.
         notifications.GetClaimNotificationsForProjectCalls.ShouldBeEmpty();
         notifications.GetClaimNotificationsForClaimCalls.ShouldHaveSingleItem().ShouldBe((Claim(5), LostAt));
@@ -399,7 +399,7 @@ public class FinanceRestoreViewServiceTest
         var result = await CreateService(mock.Master.UserId).Apply(
             new FinanceRestoreApplyRequest(Claim(5), new Dictionary<string, int> { ["id:555"] = cash.PaymentTypeId }));
 
-        result.ShouldBe(new FinanceRestoreApplyResult(0, 0, 0, []), new ApplyResultComparer());
+        result.ShouldBe(new FinanceRestoreApplyResult(0, 0, 0, 0, []), new ApplyResultComparer());
         restoreService.Calls.ShouldBeEmpty();
     }
 
@@ -427,7 +427,7 @@ public class FinanceRestoreViewServiceTest
 
         var result = await CreateService(mock.Master.UserId).Apply(new FinanceRestoreApplyRequest(Claim(5), new Dictionary<string, int>()));
 
-        result.ShouldBe(new FinanceRestoreApplyResult(0, 0, 0, []), new ApplyResultComparer());
+        result.ShouldBe(new FinanceRestoreApplyResult(0, 0, 0, 0, []), new ApplyResultComparer());
         restoreService.Calls.ShouldBeEmpty();
     }
 
@@ -485,7 +485,9 @@ public class FinanceRestoreViewServiceTest
 
         var request = new FinanceRestoreApplyRequest(row.ClaimId, new Dictionary<string, int> { ["id:555"] = 3 });
         JsonRoundTrip.Ensure(request).PaymentTypes.ShouldBe(request.PaymentTypes);
-        JsonRoundTrip.Ensure(new FinanceRestoreApplyResult(1, 2, 3, ["текст"])).Skipped.ShouldBe(["текст"]);
+        var result = JsonRoundTrip.Ensure(new FinanceRestoreApplyResult(1, 2, 3, 4, ["текст"]));
+        result.ParentsNotRestored.ShouldBe(4);
+        result.Skipped.ShouldBe(["текст"]);
     }
 
     /// <summary>Записи со списками сравниваются по ссылке на список — сравниваем по содержимому.</summary>
@@ -503,7 +505,7 @@ public class FinanceRestoreViewServiceTest
     {
         public bool Equals(FinanceRestoreApplyResult? x, FinanceRestoreApplyResult? y)
             => x is not null && y is not null
-            && (x.Inserted, x.AlreadyExisted, x.Conflicts) == (y.Inserted, y.AlreadyExisted, y.Conflicts)
+            && (x.Inserted, x.AlreadyExisted, x.Conflicts, x.ParentsNotRestored) == (y.Inserted, y.AlreadyExisted, y.Conflicts, y.ParentsNotRestored)
             && x.Skipped.SequenceEqual(y.Skipped);
 
         public int GetHashCode(FinanceRestoreApplyResult obj) => obj.Inserted;

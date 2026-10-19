@@ -71,7 +71,7 @@ internal class FinanceRestoreViewService(
         EnsureValidPaymentTypes(projectInfo, row, request.PaymentTypes);
         if (row is null)
         {
-            return new FinanceRestoreApplyResult(0, 0, 0, []);
+            return new FinanceRestoreApplyResult(0, 0, 0, 0, []);
         }
 
         var input = FinanceRestoreInputBuilder.BuildClaim(
@@ -80,11 +80,11 @@ internal class FinanceRestoreViewService(
         var skipped = FinanceRestorePlanViewBuilder.Skipped(row, input, projectInfo.TimeZone);
         if (input.IsEmpty)
         {
-            return new FinanceRestoreApplyResult(0, 0, 0, skipped);
+            return new FinanceRestoreApplyResult(0, 0, 0, 0, skipped);
         }
 
         var result = await claimRestoreService.RestoreFinanceOperations(claimId, input.Operations, input.Moderations);
-        return new FinanceRestoreApplyResult(result.Inserted, result.AlreadyExisted, result.Conflicts, skipped);
+        return new FinanceRestoreApplyResult(result.Inserted, result.AlreadyExisted, result.Conflicts, result.ParentsNotRestored, skipped);
     }
 
     public async Task CreateOwnCash(ProjectIdentification projectId)

@@ -389,7 +389,8 @@
 
     private static string ResultText(FinanceRestoreApplyResult result)
     {
-        if (result.Inserted == 0 && result.AlreadyExisted == 0 && result.Conflicts == 0 && result.Skipped.Count == 0)
+        if (result.Inserted == 0 && result.AlreadyExisted == 0 && result.Conflicts == 0 && result.ParentsNotRestored == 0
+            && result.Skipped.Count == 0)
         {
             return "Нечего восстанавливать";
         }
@@ -401,6 +402,10 @@
         if (result.Conflicts > 0)
         {
             text += $", не восстановлены из-за занятых номеров: {result.Conflicts}";
+        }
+        if (result.ParentsNotRestored > 0)
+        {
+            text += $", решения не восстановлены — их операция не восстановилась: {result.ParentsNotRestored}";
         }
         if (result.Skipped.Count > 0)
         {

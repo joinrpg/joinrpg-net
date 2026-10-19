@@ -167,8 +167,12 @@ public record RestoredFinanceResult(IReadOnlyList<RestoredFinanceEntry> Operatio
     /// <summary>Сколько записей уже было в заявке.</summary>
     public int AlreadyExisted => Operations.Concat(Moderations).Count(e => e.Status == RestoredFinanceEntryStatus.AlreadyExisted);
 
-    /// <summary>Сколько записей пропущено из-за конфликта.</summary>
-    public int Conflicts => Operations.Concat(Moderations).Count(e => !e.IsPresent);
+    /// <summary>Сколько записей пропущено из-за номера: занят другим или не потерянный.</summary>
+    public int Conflicts => Operations.Concat(Moderations)
+        .Count(e => e.Status is RestoredFinanceEntryStatus.TakenElsewhere or RestoredFinanceEntryStatus.NotLostId);
+
+    /// <summary>Сколько решений пропущено: их операция не восстановлена.</summary>
+    public int ParentsNotRestored => Moderations.Count(e => e.Status == RestoredFinanceEntryStatus.ParentNotRestored);
 }
 
 /// <summary>

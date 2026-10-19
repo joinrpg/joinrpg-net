@@ -139,5 +139,8 @@ public record FinanceRestoreApplyRequest(ClaimIdentification ClaimId, IReadOnlyD
 /// <param name="Inserted">Сколько операций и модераций вставлено.</param>
 /// <param name="AlreadyExisted">Сколько уже было в базе.</param>
 /// <param name="Conflicts">Сколько не вставлено: номер занят другим.</param>
+/// <param name="ParentsNotRestored">
+/// Сколько решений не вставлено: их операция не вставилась (номер заняли между построением плана и вставкой).
+/// </param>
 /// <param name="Skipped">Что пропущено и почему — тексты для мастера.</param>
-public record FinanceRestoreApplyResult(int Inserted, int AlreadyExisted, int Conflicts, IReadOnlyList<string> Skipped);
+public record FinanceRestoreApplyResult(int Inserted, int AlreadyExisted, int Conflicts, int ParentsNotRestored, IReadOnlyList<string> Skipped);
