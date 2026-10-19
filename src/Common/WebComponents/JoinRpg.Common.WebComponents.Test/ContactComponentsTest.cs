@@ -24,15 +24,43 @@ public class ContactComponentsTest
     }
 
     [Fact]
-    public void EmailLink_Collapse_RendersOnlyIconLink()
+    public void ContactLink_Collapse_RendersOnlyIconLinkWithAccessibleName()
     {
         using var ctx = new BunitContext();
-        var cut = ctx.Render<EmailLink>(p => p
-            .Add(x => x.Contact, new Email("test@example.com"))
-            .Add(x => x.Collapse, true));
+        var cut = ctx.Render<ContactLink>(p => p
+            .Add(x => x.Icon, JoinIconType.Email)
+            .Add(x => x.Href, "mailto:test@example.com")
+            .Add(x => x.Title, "test@example.com")
+            .Add(x => x.Collapse, true)
+            .AddChildContent("test@example.com"));
         var link = cut.Find("a");
         link.GetAttribute("href").ShouldBe("mailto:test@example.com");
+        link.GetAttribute("aria-label").ShouldBe("test@example.com");
         link.TextContent.Trim().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ContactLink_CollapseWithoutHref_RendersText()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<ContactLink>(p => p
+            .Add(x => x.Icon, JoinIconType.Phone)
+            .Add(x => x.Collapse, true)
+            .AddChildContent("спросить у мастера"));
+        cut.Markup.ShouldContain("спросить у мастера");
+        cut.FindAll("a").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TelegramLink_Collapse_HidesUnverifiedIcon()
+    {
+        using var ctx = new BunitContext();
+        var contact = new TelegramSocialLink(null, new PrefferedName("joinrpg"), isVerified: false);
+        var cut = ctx.Render<TelegramLink>(p => p
+            .Add(x => x.Contact, contact)
+            .Add(x => x.Collapse, true));
+        cut.Find("a").GetAttribute("href").ShouldBe("https://t.me/joinrpg");
+        cut.Markup.ShouldNotContain(JoinIconDefinitions.Get(JoinIconType.Info).IconName);
     }
 
     [Fact]

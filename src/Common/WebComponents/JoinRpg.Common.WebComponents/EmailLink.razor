@@ -1,13 +1,6 @@
 @if (Contact is not null)
 {
-    if (Collapse)
-    {
-        <a href="@($"mailto:{Contact.Value}")" title="@Contact.Value"><JoinIcon Icon="JoinIconType.Email" /></a>
-    }
-    else
-    {
-        <ContactLink Icon="JoinIconType.Email" Href="@($"mailto:{Contact.Value}")">@Contact.Value.Trim()</ContactLink>
-    }
+    <ContactLink Icon="JoinIconType.Email" Href="@($"mailto:{Contact.Value}")" Collapse="Collapse" Title="@Contact.Value">@Contact.Value.Trim()</ContactLink>
 }
 
 @code {
