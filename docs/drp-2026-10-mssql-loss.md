@@ -137,7 +137,7 @@
       **только после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод**, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — в базе ключ объекта вместо адреса,
       старые адреса переводит джоба `AvatarCachedUriToKeyJob`.
 - [x] ~~Логи: формат severity в `CustomJsonFormatter`~~ — в логах Selectel распознаётся (2026-10-16);
-      скиллы чтения логов — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582), отложено (фаза 10).
+      скиллы чтения логов — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582), готово 2026-10-19.
 
 ### Фаза 2. 🚧 Заглушка на обоих доменах, служебные домены
 
@@ -298,8 +298,7 @@
 Внутри заблокированного проекта, в темпе мастеров ([блокировка](#блокировка-проектов)).
 
 - [ ] Мастер заводит поля проекта заново (в блокировке разрешено — решение 2026-10-11, [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508)).
-- [ ] 🟡 Настройки проекта в блокировке: поселение, финансы, группы — [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630). Влиты [#5633](https://github.com/joinrpg/joinrpg-net/issues/5633) (поселение), [#5634](https://github.com/joinrpg/joinrpg-net/issues/5634) (финансы);
-      на ревью [#5635](https://github.com/joinrpg/joinrpg-net/issues/5635) (группы); draft [#5636](https://github.com/joinrpg/joinrpg-net/issues/5636) (ADR023), [docs#297](https://github.com/joinrpg/joinrpg-docs/pull/297) (инструкция, с выкаткой).
+- [x] 🟢 (2026-10-19) Настройки проекта в блокировке: поселение, финансы, группы — [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) ([#5633](https://github.com/joinrpg/joinrpg-net/issues/5633)–[#5636](https://github.com/joinrpg/joinrpg-net/issues/5636), [docs#297](https://github.com/joinrpg/joinrpg-docs/pull/297)).
 - [ ] Фазы 7–9 по проекту.
 - [ ] Снять блокировку с проекта (или закрыть его) — последний шаг.
 
@@ -318,7 +317,9 @@
       Ответственного нового персонажа назначить руками после применения.
 - [x] 🟢 (2026-10-18) Ложная пометка «Изменено после восстановления» у заявок, которые трогал только инструмент — [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619), [#5620](https://github.com/joinrpg/joinrpg-net/issues/5620).
 - [x] 🟢 (2026-10-19) Ещё не созданные заявки не ссылками на странице восстановления — [#5639](https://github.com/joinrpg/joinrpg-net/issues/5639), [#5640](https://github.com/joinrpg/joinrpg-net/issues/5640).
-- [ ] Шаблон восстанавливается как обычный персонаж, на нём несколько принятых заявок — [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645).
+- [ ] 🟡 Шаблон восстанавливается как обычный персонаж, на нём несколько принятых заявок — [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645): влиты [#5654](https://github.com/joinrpg/joinrpg-net/issues/5654), [#5657](https://github.com/joinrpg/joinrpg-net/issues/5657), [#5663](https://github.com/joinrpg/joinrpg-net/issues/5663), [#5665](https://github.com/joinrpg/joinrpg-net/issues/5665);
+      на ревью [#5668](https://github.com/joinrpg/joinrpg-net/issues/5668) (уведомления сохраняют шаблоны). 2026-10-19 14:05–17:19Z из-за 1612-200035 падали списки и сетка ролей 1612.
+- [ ] «Не разобрались» в блоках комментариев и ручных оплат считает и приглашения к проживанию (`Kind.Other`) — ложная тревога (пример: заявка 1684-117422).
 - [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
       мастерские — мастер из своих материалов.
 
@@ -329,7 +330,7 @@
       блок на той же странице «Восстановление проекта», после заявок ([#5557](https://github.com/joinrpg/joinrpg-net/issues/5557)–[#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) влиты).
 - [ ] Комментарии с пометкой «видимость под вопросом» — мастеру проверить видимость руками.
       Обсуждение восстанавливается плоским (родитель в уведомлениях не хранится).
-- [ ] Эвристика видимости: комментарий, менявший статус заявки, всегда был виден игроку — [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641).
+- [x] 🟢 (2026-10-19) Эвристика видимости: комментарий, менявший статус заявки, всегда был виден игроку — [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641), [#5649](https://github.com/joinrpg/joinrpg-net/issues/5649).
 
 ### Фаза 9. Финансы
 
@@ -347,7 +348,8 @@
       и `CanManageMoney`), сверка «Уплачено» [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567). Причина: консольный инструмент ждал запуска разом по всем
       проектам, а мастера разблокируют в своём темпе — после разблокировки оплаты не вернуть.
 - [x] 🟢 (2026-10-19) Финансовые настройки в блокировке (свои типы оплаты, не только «наличные») — [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), [#5634](https://github.com/joinrpg/joinrpg-net/issues/5634).
-- [ ] Переводы между заявками — [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643).
+- [x] ~~Переводы между заявками~~ — [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643) закрыт: суммы в уведомлениях нет, только предупреждение; на будущее сумма в уведомлении — [#5650](https://github.com/joinrpg/joinrpg-net/issues/5650).
+- [ ] Блок «Ручные оплаты»: время в двух поясах, неточный итог — [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647).
 - [x] 🟢 (2026-10-18) Предупреждение «не снимайте блокировку, пока не восстановлены ручные оплаты» на странице
       снятия блокировки ([#5632](https://github.com/joinrpg/joinrpg-net/issues/5632)) и в инструкции для мастеров ([docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296)).
 - [ ] Запасной путь — консольный `RestoreManualFinance` ([#5571](https://github.com/joinrpg/joinrpg-net/issues/5571); dry-run → CSV, ПДн локально → `--apply`) для
@@ -365,7 +367,9 @@
       проекты пропускает — включать, когда готова сверка с платёжным провайдером, независимо от
       блокировок.
 - [ ] Снять баннер.
-- [ ] Скиллы чтения логов и прод-БД под Selectel — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582) (отложено).
+- [x] (2026-10-19) Скиллы чтения логов и прод-БД под Selectel — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582) ([#5648](https://github.com/joinrpg/joinrpg-net/issues/5648), [#5653](https://github.com/joinrpg/joinrpg-net/issues/5653), [#5662](https://github.com/joinrpg/joinrpg-net/issues/5662)).
+- [ ] Прод лежал ~14 минут 2026-10-19 16:54–17:08Z: MSSQL не отвечал — [#5666](https://github.com/joinrpg/joinrpg-net/issues/5666).
+- [ ] IP клиента не доходит до приложения (traefik, `externalTrafficPolicy: Cluster`) — [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667).
 - [x] ~~Вернуть автодеплой dev~~ — [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) влит 2026-10-16.
 - [ ] Старый бакет аватарок в Yandex Cloud — выключить (можно сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с
       `PublicBaseUrl`). Временную джобу `AvatarCachedUriToKeyJob` ([#5532](https://github.com/joinrpg/joinrpg-net/issues/5532)) — убрать после отработки.
@@ -420,7 +424,7 @@ IdPortal и ingress. Миграция и старт подов идут одни
   образы через секрет `craas-auth` от интеграции кластера с реестром.
 - **Лимит тела** на ingress портала: выгрузки мастера (до 30 МБ) не пройдут в дефолтный 1 МБ nginx.
 - **Логи.** Severity из `CustomJsonFormatter` (`level`) в логах Selectel распознаётся. Скиллы
-  `prod-logs`, `monitor-release`, `prod-db-readonly` смотрят в Yandex — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582).
+  `prod-logs`, `monitor-release`, `prod-db-readonly` переведены на Selectel — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582).
 - **Почта.** Yandex Postbox, из Selectel работает (проверено на dev 2026-10-16).
 - **Адреса баз.** Изнутри кластера: MSSQL — `192.168.0.2`, Postgres —
   `master.4b8029b8-1433-4452-b2e3-e171e7212ec6.c.dbaas.selcloud.ru` (Managed PostgreSQL). Снаружи,
@@ -835,19 +839,30 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5632](https://github.com/joinrpg/joinrpg-net/issues/5632) | Страница снятия блокировки: предупреждение про ручные оплаты | 9 | влит |
 | [docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296) | Инструкция: ручные оплаты — блоком «Ручные оплаты», только в блокировке | 9 | влит |
 | issue [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631) | Блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | закрыт |
-| issue [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) | Настройки поселения, типов оплаты, групп и правил в заблокированном проекте | 7 | в работе |
+| issue [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) | Настройки поселения, типов оплаты, групп и правил в заблокированном проекте | 7 | закрыт |
 | [#5637](https://github.com/joinrpg/joinrpg-net/issues/5637) | [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631), PR 1: общий код плана ручных финопераций — в `Services.Drp` и `Managers` | 9 | влит |
 | [#5638](https://github.com/joinrpg/joinrpg-net/issues/5638) | [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631), PR 2: блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | влит |
 | [#5633](https://github.com/joinrpg/joinrpg-net/issues/5633) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 1: поселение в блокировке | 7 | влит |
 | [#5634](https://github.com/joinrpg/joinrpg-net/issues/5634) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 2: финансовые настройки в блокировке | 7 | влит |
-| [#5635](https://github.com/joinrpg/joinrpg-net/issues/5635) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 3: группы персонажей в блокировке | 7 | на ревью |
-| [#5636](https://github.com/joinrpg/joinrpg-net/issues/5636) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 4: ADR023 — настройки в блокировке | 7 | draft, после PR 1–3 |
-| [docs#297](https://github.com/joinrpg/joinrpg-docs/pull/297) | Инструкция: настройки в блокировке ([#5630](https://github.com/joinrpg/joinrpg-net/issues/5630)) | 7 | draft, с выкаткой |
+| [#5635](https://github.com/joinrpg/joinrpg-net/issues/5635) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 3: группы персонажей в блокировке | 7 | влит |
+| [#5636](https://github.com/joinrpg/joinrpg-net/issues/5636) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 4: ADR023 — настройки в блокировке | 7 | влит |
+| [docs#297](https://github.com/joinrpg/joinrpg-docs/pull/297) | Инструкция: настройки в блокировке ([#5630](https://github.com/joinrpg/joinrpg-net/issues/5630)) | 7 | влит |
 | [#5620](https://github.com/joinrpg/joinrpg-net/issues/5620) | Ложная пометка «Изменено после восстановления» (Closes [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619)) | 7 | влит |
 | [#5640](https://github.com/joinrpg/joinrpg-net/issues/5640) | Не создан — не ссылка на странице восстановления (Closes [#5639](https://github.com/joinrpg/joinrpg-net/issues/5639)) | 7 | влит |
-| issue [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645) | Шаблон восстанавливается как обычный персонаж | 7 | заведён |
-| issue [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641) | Видимость комментария, менявшего статус заявки | 8 | заведён |
-| issue [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643) | Восстановление переводов между заявками | 9 | заведён |
+| [#5654](https://github.com/joinrpg/joinrpg-net/issues/5654) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 1: не принимать заявку на персонажа с принятой | 7 | влит |
+| [#5657](https://github.com/joinrpg/joinrpg-net/issues/5657) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 1b: автоприём только для заявок на шаблон | 7 | влит |
+| [#5665](https://github.com/joinrpg/joinrpg-net/issues/5665) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 2: одобренная заявка на шаблон — на своего персонажа | 7 | влит |
+| [#5668](https://github.com/joinrpg/joinrpg-net/issues/5668) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 3: восстановление по уведомлениям сохраняет шаблоны | 7 | на ревью |
+| [#5663](https://github.com/joinrpg/joinrpg-net/issues/5663) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 4: тип персонажа из колонки «Занят?» выгрузки | 7 | влит |
+| [#5649](https://github.com/joinrpg/joinrpg-net/issues/5649) | Смена статуса всегда видна игроку (Closes [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641)) | 8 | влит |
+| [#5650](https://github.com/joinrpg/joinrpg-net/issues/5650) | Сумма в уведомлении о переводе между заявками (по [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643)) | 9 | влит |
+| issue [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647) | «Ручные оплаты»: время в двух поясах, итог | 9 | заведён |
+| issue [#5666](https://github.com/joinrpg/joinrpg-net/issues/5666) | Прод лежал ~14 минут: MSSQL не отвечал | 10 | заведён |
+| issue [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667) | IP клиента не доходит до приложения | 10 | заведён |
+| [#5648](https://github.com/joinrpg/joinrpg-net/issues/5648), [#5653](https://github.com/joinrpg/joinrpg-net/issues/5653), [#5662](https://github.com/joinrpg/joinrpg-net/issues/5662) | Скиллы `prod-db-readonly`, `prod-logs`, `monitor-release` под Selectel (Closes [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582)) | 10 | влиты |
+| issue [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645) | Шаблон восстанавливается как обычный персонаж | 7 | в работе |
+| issue [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641) | Видимость комментария, менявшего статус заявки | 8 | закрыт |
+| issue [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643) | Восстановление переводов между заявками | 9 | закрыт: не делаем |
 | [docs#294](https://github.com/joinrpg/joinrpg-docs/pull/294) | Инструкция: якорь «Автоматическое закрытие проекта» | 6 | влит |
 | [#5615](https://github.com/joinrpg/joinrpg-net/issues/5615) | Ссылка на автозакрытие по стабильному якорю (после [docs#294](https://github.com/joinrpg/joinrpg-docs/pull/294)) | 6 | влит |
 | [docs#295](https://github.com/joinrpg/joinrpg-docs/pull/295) | Инструкция: якорь «Загрузка аватарки из Вконтакте» | 6 | открыт, **нужен мердж** |
@@ -899,7 +914,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | issue [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540) | Деплой в Selectel: токен сервис-аккаунта вместо `KUBECONFIG` | 1 | закрыт |
 | [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) | Деплой через сервис-аккаунт Selectel, namespace `joinrpg-prod`/`joinrpg-dev` (Closes [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540)) | 1 | влит |
 | issue [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) | Вернуть автодеплой после переезда | 1 | закрыт |
-| issue [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582) | Скиллы `prod-logs`, `monitor-release`, `prod-db-readonly` — под Selectel | 10 | отложено |
+| issue [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582) | Скиллы `prod-logs`, `monitor-release`, `prod-db-readonly` — под Selectel | 10 | закрыт |
 | [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) | Автодеплой dev после сборки master (Closes [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)) | 1 | влит |
 | [#5570](https://github.com/joinrpg/joinrpg-net/issues/5570) | Мигратор проверяет подключение ко всем базам до первой миграции | 1 | влит |
 | [#5576](https://github.com/joinrpg/joinrpg-net/issues/5576) | Мигратор запускает Seed: виртуальные пользователи на пустой базе | 1 | влит |
