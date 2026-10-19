@@ -1,9 +1,24 @@
 @if (Contact is not null)
 {
-    <ContactLink Icon="JoinIconType.Phone">@Contact.Value</ContactLink>
+    <ContactLink Icon="JoinIconType.Phone" Href="@GetTelHref(Contact)">@Contact.Value</ContactLink>
 }
 
 @code {
     [Parameter]
     public PhoneNumber? Contact { get; set; }
+
+    // Номер вводится свободным текстом («8 (916) 123-45-67, после 18:00»),
+    // поэтому для tel: берём начало строки до первого символа, которого не бывает в номере,
+    // и оставляем из него только ведущий плюс и цифры.
+    private static string? GetTelHref(PhoneNumber phone)
+    {
+        var value = phone.Value.Trim();
+        var number = value.TakeWhile(ch => char.IsAsciiDigit(ch) || ch is ' ' or '+' or '-' or '(' or ')' or '.');
+        var digits = string.Concat(number.Where(char.IsAsciiDigit));
+        if (digits.Length == 0)
+        {
+            return null;
+        }
+        return value.StartsWith('+') ? $"tel:+{digits}" : $"tel:{digits}";
+    }
 }

@@ -24,6 +24,18 @@ public class ContactComponentsTest
     }
 
     [Fact]
+    public void EmailLink_Collapse_RendersOnlyIconLink()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<EmailLink>(p => p
+            .Add(x => x.Contact, new Email("test@example.com"))
+            .Add(x => x.Collapse, true));
+        var link = cut.Find("a");
+        link.GetAttribute("href").ShouldBe("mailto:test@example.com");
+        link.TextContent.Trim().ShouldBeEmpty();
+    }
+
+    [Fact]
     public void PhoneLink_Null_RendersNothing()
     {
         using var ctx = new BunitContext();
@@ -39,6 +51,26 @@ public class ContactComponentsTest
         cut.Markup.ShouldContain("+79161234567");
         cut.Markup.ShouldContain(JoinIconDefinitions.Get(JoinIconType.Phone).IconName);
         cut.Markup.ShouldContain("white-space: nowrap");
+    }
+
+    [Theory]
+    [InlineData("+79161234567", "tel:+79161234567")]
+    [InlineData("8 (916) 123-45-67, после 18:00", "tel:89161234567")]
+    [InlineData(" +7 916 123-45-67", "tel:+79161234567")]
+    public void PhoneLink_WithValue_RendersTelLinkWithDigitsOnly(string phone, string expectedHref)
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<PhoneLink>(p => p.Add(x => x.Contact, new PhoneNumber(phone)));
+        cut.Find("a").GetAttribute("href").ShouldBe(expectedHref);
+    }
+
+    [Fact]
+    public void PhoneLink_WithoutDigits_RendersTextWithoutLink()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<PhoneLink>(p => p.Add(x => x.Contact, new PhoneNumber("спросить у мастера")));
+        cut.Markup.ShouldContain("спросить у мастера");
+        cut.FindAll("a").ShouldBeEmpty();
     }
 
     [Fact]
