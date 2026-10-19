@@ -111,7 +111,8 @@ internal class AccommodationInviteServiceImpl(
                     host,
                     targetGroup,
                     newDwellersCount: targetGroup?.SubjectsCount ?? 1,
-                    receiverClaimId: target.AsClaimId());
+                    receiverClaimId: target.AsClaimId(),
+                    merge: true);
 
                 var (plan, hostGroup) = host!.Value;
 
@@ -271,8 +272,8 @@ internal class AccommodationInviteServiceImpl(
             : await ctx.LoadRoomCategoryPlan(typeId);
 
     /// <summary>
-    /// Общие для обоих видов приглашения проверки. Раньше каждая из них молча возвращала
-    /// <c>null</c>, и игрок не понимал, почему приглашение не отправилось.
+    /// Общие для обоих видов приглашения и для объединения мастером проверки. Раньше каждая из них
+    /// молча возвращала <c>null</c>, и игрок не понимал, почему приглашение не отправилось.
     /// </summary>
     /// <param name="projectId">Проект — для исключения.</param>
     /// <param name="senderClaimId">Заявка приглашающего.</param>
@@ -284,6 +285,10 @@ internal class AccommodationInviteServiceImpl(
     /// <param name="receiverGroup">Снимок группы цели, либо <c>null</c>, если у цели группы нет.</param>
     /// <param name="newDwellersCount">Сколько человек переедет к приглашающему.</param>
     /// <param name="receiverClaimId">Заявка-цель, если приглашается заявка, а не группа.</param>
+    /// <param name="merge">
+    /// Проверяется объединение мастером (<see cref="MergeAccommodationGroups"/>), а не приглашение:
+    /// правила те же, но отказ мастеру формулируется без «пригласить» (#5656).
+    /// </param>
     /// <remarks>
     /// Решения — по доменным снимкам (ADR022 §4): вместимость и свободное место — из плана поселения,
     /// а не из навигаций трекаемых сущностей.
@@ -295,42 +300,46 @@ internal class AccommodationInviteServiceImpl(
         (RoomCategoryPlan Plan, AccommodationGroupInfo Group)? sender,
         AccommodationGroupInfo? receiverGroup,
         int newDwellersCount,
-        ClaimIdentification? receiverClaimId = null)
+        ClaimIdentification? receiverClaimId = null,
+        bool merge = false)
     {
+        AccommodationInviteNotAllowedException Refuse(string invite, string mergeText)
+            => new(projectId, merge ? mergeText : invite);
+
         // Нельзя пригласить самого себя: ни напрямую на свою заявку, ни в составе группового
         // приглашения на заявку на проживание, куда входит собственная заявка
         if (receiverClaimId == senderClaimId || receiverGroup?.Subjects.Contains(senderClaimId) == true)
         {
-            throw new AccommodationInviteNotAllowedException(projectId,
-                "Нельзя пригласить самого себя.");
+            throw Refuse("Нельзя пригласить самого себя.",
+                "Эта заявка уже живёт в той же группе проживания.");
         }
 
         if (sender is not var (senderPlan, senderGroup))
         {
-            throw new AccommodationInviteNotAllowedException(projectId,
-                "У приглашающего не выбран тип проживания.");
+            throw Refuse("У приглашающего не выбран тип проживания.",
+                "У заявки не выбран тип проживания.");
         }
 
         // Приглашать и приглашаться могут только те, кого ещё не расселили по конкретным комнатам
         if (receiverGroup?.RoomId is not null || senderGroup.RoomId is not null)
         {
-            throw new AccommodationInviteNotAllowedException(projectId,
-                "Нельзя приглашать, когда кто-то из участников уже расселён по комнатам.");
+            throw Refuse("Нельзя приглашать, когда кто-то из участников уже расселён по комнатам.",
+                "Нельзя поселить вместе, когда кто-то уже расселён по комнатам.");
         }
 
         // Приглашать можно либо в такой же тип проживания, либо тех, кто ещё не выбрал тип
         if (receiverGroup is not null && receiverGroup.AccommodationTypeId != senderGroup.AccommodationTypeId)
         {
-            throw new AccommodationInviteNotAllowedException(projectId,
-                "Приглашать можно только тех, кто выбрал такой же тип проживания.");
+            throw Refuse("Приглашать можно только тех, кто выбрал такой же тип проживания.",
+                "Поселить вместе можно только тех, у кого такой же тип проживания или он ещё не выбран.");
         }
 
         // Группа приглашающего не расселена (проверено выше), поэтому свободное место — вместимость
         // её типа минус состав: то же, что прежнее «состав + новые > вместимости».
         if (senderPlan.GetFreeSpaceForGroup(senderGroup.Id) < newDwellersCount)
         {
-            throw new AccommodationInviteNotAllowedException(projectId,
-                "В номере не хватает мест для всех приглашаемых.");
+            throw Refuse("В номере не хватает мест для всех приглашаемых.",
+                "В номере не хватает мест для всех.");
         }
     }
 

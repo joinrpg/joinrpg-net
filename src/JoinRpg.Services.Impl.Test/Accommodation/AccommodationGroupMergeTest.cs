@@ -171,6 +171,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         exception.Message.ShouldContain("не хватает мест");
+        NoInviteWording(exception);
         MembersOf(hostGroup).ShouldHaveSingleItem().ShouldBe(host.ClaimId);
         MembersOf(targetGroup).ShouldHaveSingleItem().ShouldBe(target.ClaimId);
         SaveChangesCallCount.ShouldBe(0);
@@ -191,6 +192,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         exception.Message.ShouldContain("такой же тип проживания");
+        NoInviteWording(exception);
         SaveChangesCallCount.ShouldBe(0);
     }
 
@@ -201,10 +203,12 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var neighbour = CreateClaim("Сосед");
         var group = mock.CreateAccommodationRequest(accommodationType, host, neighbour);
 
-        _ = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
             () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(RequestId(group))));
 
+        exception.Message.ShouldContain("уже живёт");
+        NoInviteWording(exception);
         SaveChangesCallCount.ShouldBe(0);
     }
 
@@ -213,10 +217,12 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
     {
         var host = CreateClaimWithAccommodation("Хозяин");
 
-        _ = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
             () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(host.GetId())));
 
+        exception.Message.ShouldContain("уже живёт");
+        NoInviteWording(exception);
         SaveChangesCallCount.ShouldBe(0);
     }
 
@@ -228,10 +234,12 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         var neighbour = CreateClaim("Сосед");
         _ = mock.CreateAccommodationRequest(accommodationType, host, neighbour);
 
-        _ = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
             () => CreateMasterService().MergeAccommodationGroups(
                 host.GetId(), AccommodationGroupIdentification.From(neighbour.GetId())));
 
+        exception.Message.ShouldContain("уже живёт");
+        NoInviteWording(exception);
         SaveChangesCallCount.ShouldBe(0);
     }
 
@@ -246,6 +254,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         exception.Message.ShouldContain("не выбран тип");
+        NoInviteWording(exception);
         SaveChangesCallCount.ShouldBe(0);
     }
 
@@ -264,6 +273,7 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
                 host.GetId(), AccommodationGroupIdentification.From(target.GetId())));
 
         exception.Message.ShouldContain("расселён");
+        NoInviteWording(exception);
         MembersOf(target.AccommodationRequest!).ShouldHaveSingleItem().ShouldBe(target.ClaimId);
         SaveChangesCallCount.ShouldBe(0);
     }
@@ -301,6 +311,12 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
 
         SaveChangesCallCount.ShouldBe(0);
     }
+
+    /// <summary>
+    /// Мастер не приглашает, а поселяет вместе — и отказ ему не должен говорить о приглашении (#5656).
+    /// </summary>
+    private static void NoInviteWording(Exception exception)
+        => exception.Message.ShouldNotContain("приглаш", Case.Insensitive);
 
     private IReadOnlyCollection<int> MembersOf(AccommodationRequest group)
         => [.. mock.Project.Claims
