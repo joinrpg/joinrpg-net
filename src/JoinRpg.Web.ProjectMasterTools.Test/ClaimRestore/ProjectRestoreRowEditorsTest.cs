@@ -92,7 +92,7 @@ public class ProjectRestoreRowEditorsTest
     [Fact]
     public void ClaimFields_KeepsSelectionsAfterReload()
     {
-        var row = new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(ProjectId, 3), "Герой", [Field(FieldA, true), Field(FieldB, false)], At, true, []);
+        var row = new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(ProjectId, 3), "Герой", [Field(FieldA, true), Field(FieldB, false)], At, true, [], ExistsInDatabase: true);
         var previous = new ClaimFieldsRestoreRowEditor(row);
         previous.Fields[1].Selected = true;
 

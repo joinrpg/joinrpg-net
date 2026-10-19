@@ -211,7 +211,7 @@ public class ClaimRestorePanelTest : BunitContext
             Groups = [new GroupRestoreRowViewModel(LostGroup, ClaimRestoreActionView.Create, "Потерянная группа", null, At, true, [])],
             CharacterCreations = [CharacterRow(LostCharacter, ClaimRestoreActionView.Create) with { ExportResponsibleMaster = Master }],
             CharacterChanges = [CharacterRow(Created, ClaimRestoreActionView.Change)],
-            ClaimFields = [new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(ProjectId, 3), "Потерянный", [FieldChange()], At, true, [])],
+            ClaimFields = [new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(ProjectId, 3), "Потерянный", [FieldChange()], At, true, [], ExistsInDatabase: false)],
         };
 
     [Fact]
@@ -377,6 +377,46 @@ public class ClaimRestorePanelTest : BunitContext
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
 
         cut.Markup.ShouldContain("Строк в плане: 1, из них отмечено: 1.");
+    }
+
+    [Fact]
+    public void ClaimsSection_NotCreatedClaimNumberIsNotALink()
+    {
+        client.Plans.Enqueue(Plan(
+            Row(1, ClaimRestoreActionView.Nothing, "Ничего"),
+            Row(2, ClaimRestoreActionView.Change, "А", Created),
+            Row(3, ClaimRestoreActionView.Create, "Новый")));
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        var cells = cut.FindAll("table.restore-claims tbody td:nth-child(2)");
+        cells.Count.ShouldBe(3);
+        // Уже созданные заявки (даже «ничего») — ссылки; «создать» — ещё нет в базе, просто текст.
+        cells[0].QuerySelector("a").ShouldNotBeNull();
+        cells[1].QuerySelector("a").ShouldNotBeNull();
+        cells[2].QuerySelector("a").ShouldBeNull();
+        cells[2].TextContent.Trim().ShouldBe("3");
+    }
+
+    [Fact]
+    public void ClaimFieldsSection_LinkOnlyForExistingClaims()
+    {
+        client.Plans.Enqueue(Plan() with
+        {
+            ClaimFields =
+            [
+                new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(ProjectId, 5), "Старый", [FieldChange()], At, true, [], ExistsInDatabase: true),
+                new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(ProjectId, 3), "Потерянный", [FieldChange()], At, true, [], ExistsInDatabase: false),
+            ],
+        });
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        var cells = cut.FindAll("table.restore-claim-fields tbody td:nth-child(2)");
+        cells.Count.ShouldBe(2);
+        cells[0].QuerySelector("a").ShouldNotBeNull();
+        cells[1].QuerySelector("a").ShouldBeNull();
+        cells[1].TextContent.Trim().ShouldBe("3");
     }
 
     [Fact]

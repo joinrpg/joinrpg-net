@@ -222,6 +222,38 @@ public class ProjectRestorePlanViewBuilderTest
         model.Notes.ShouldHaveSingleItem().RowNumber.ShouldBe(5);
     }
 
+    [Fact]
+    public void Build_ClaimFieldsExistInDatabaseFlag()
+    {
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        var claimId = claim.GetId();
+        var missingClaimId = new ClaimIdentification(mock.ProjectInfo.ProjectId, claimId.ClaimId + 1000);
+        var source = new ProjectRestoreSource(
+            mock.ProjectInfo,
+            ClaimRestorePlanBuilder.BuildSource(mock.ProjectInfo, [], [.. mock.Project.Characters.Select(mock.GetCharacterInfo)], At),
+            [], [], new Dictionary<string, UserIdentification>(), At);
+        var change = new FieldRestoreChange(mock.CharacterFieldInfo.Id, "новое", "старое", At, MasterExportKind.Claims,
+            ApplyByDefault: true, [], []);
+        var plan = new ProjectRestorePlan(
+            [],
+            [],
+            [],
+            [],
+            [],
+            [
+                new ClaimFieldsRestorePlanRow(claimId, [change], At, true, []),
+                new ClaimFieldsRestorePlanRow(missingClaimId, [change], At, true, []),
+            ],
+            []);
+
+        var model = ProjectRestorePlanViewBuilder.Build(mock.ProjectInfo, source, plan, [], new DrpOptions { BackupTakenAt = At, LostAt = At }, canEditRoles: false);
+
+        var existing = model.ClaimFields.Single(c => c.ClaimId == claimId);
+        existing.ExistsInDatabase.ShouldBeTrue();
+        var missing = model.ClaimFields.Single(c => c.ClaimId == missingClaimId);
+        missing.ExistsInDatabase.ShouldBeFalse();
+    }
+
     /// <summary>Модели плана по выгрузкам ездят в остров по JSON.</summary>
     [Fact]
     public void ViewModels_SurviveJson()
@@ -235,7 +267,7 @@ public class ProjectRestorePlanViewBuilderTest
             Groups = [new GroupRestoreRowViewModel(new CharacterGroupIdentification(projectId, 5), ClaimRestoreActionView.Create, "Г", null, At, true, [])],
             CharacterCreations = [new CharacterRestoreRowViewModel(new CharacterIdentification(projectId, 7), ClaimRestoreActionView.Create, "П", null,
                 [new RestoreGroupOption(new CharacterGroupIdentification(projectId, 5), "Г")], [], true, [field], At, true, [ProjectRestoreWarningView.GroupSkipped])],
-            ClaimFields = [new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(projectId, 9), "П", [field], At, true, [])],
+            ClaimFields = [new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(projectId, 9), "П", [field], At, true, [], ExistsInDatabase: true)],
             Exports = [new MasterExportPlanInfoView(MasterExportKindView.Characters, At, true, 2, [new MasterExportColumnView("X", null, [MasterExportFieldWarningView.ColumnNotMapped])])],
             Notes = [new ProjectRestoreNoteView(ProjectRestoreWarningView.DuplicateRow, At, 4)],
         };

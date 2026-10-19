@@ -139,7 +139,8 @@ internal static class ProjectRestorePlanViewBuilder
                 [.. c.Fields.Select(f => ToFieldView(projectInfo, f))],
                 c.ExportedAt,
                 c.ApplyByDefault,
-                [.. c.Warnings.Select(ToWarningView)]))],
+                [.. c.Warnings.Select(ToWarningView)],
+                existingClaims.ContainsKey(c.ClaimId)))],
             Notes = [.. plan.Notes.Select(n => new ProjectRestoreNoteView(ToWarningView(n.Warning), n.ExportedAt, n.RowNumber))],
         };
     }
