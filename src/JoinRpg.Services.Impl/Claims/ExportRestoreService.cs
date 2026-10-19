@@ -36,6 +36,8 @@ namespace JoinRpg.Services.Impl.Claims;
 /// </remarks>
 internal class ExportRestoreService(
     ICharacterPropsService characterPropsService,
+    IProjectPropsService projectPropsService,
+    IProjectRestoreLookupRepository restoreLookupRepository,
     IUnitOfWork unitOfWork,
     IProjectMetadataRepository projectMetadataRepository,
     ICurrentUserAccessor currentUserAccessor,
@@ -226,6 +228,74 @@ internal class ExportRestoreService(
                     ctx.NothingChanged();
                 }
             });
+    }
+
+    /// <remarks>
+    /// Кандидаты (скрытые обычные группы персонажа и их предки) и то, какие из них созданы
+    /// восстановлением, считаются до операции: у персонажа в скрытой группе из копии — частый случай
+    /// для строк «Изменения» — операция над проектом не нужна вовсе. Сам выбор групп повторяется
+    /// внутри операции по свежему дереву.
+    /// </remarks>
+    public async Task<IReadOnlyList<CharacterGroupIdentification>> PublishRestoredGroupsOf(
+        CharacterIdentification characterId,
+        DateTimeOffset backupTakenAt)
+    {
+        var projectId = characterId.ProjectId;
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        EnsureProjectBlocked(projectInfo);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanEditRoles);
+
+        var character = (await unitOfWork.GetCharacterAggregateWriteRepository().LoadCharacterForUpdate(characterId)).CharacterInfo;
+        if (!character.CharacterTypeInfo.IsNamePublic)
+        {
+            return [];
+        }
+
+        var tree = projectInfo.GroupTree;
+        var candidates = character.DirectGroupIds
+            .Select(tree.GetGroupByIdOrDefault)
+            .OfType<CharacterGroupInfo>()
+            .SelectMany(g => g.AllParentGroups.Select(tree.GetGroupById).Prepend(g))
+            .Where(g => g is { IsActive: true, IsPublic: false, GroupType: CharacterGroupType.Regular })
+            .Select(g => g.Id)
+            .Distinct()
+            .ToList();
+        if (candidates.Count == 0)
+        {
+            return [];
+        }
+        var restored = (await restoreLookupRepository.GetGroupsCreatedAfter(candidates, backupTakenAt)).ToHashSet();
+        if (RestoredGroupPublication.GroupsToPublish(tree, character.DirectGroupIds, restored).Count == 0)
+        {
+            return [];
+        }
+
+        var published = await projectPropsService.ChangeProjectProperties(
+            projectId,
+            Permission.CanEditRoles,
+            ProjectActiveRequirement.AllowBlocked,
+            (character.DirectGroupIds, restored),
+            ctx =>
+            {
+                EnsureProjectBlocked(ctx.ProjectInfo);
+                var toPublish = RestoredGroupPublication.GroupsToPublish(ctx.ProjectInfo.GroupTree, ctx.Request.DirectGroupIds, ctx.Request.restored);
+                foreach (var groupId in toPublish)
+                {
+                    var (group, _) = ctx.GetCharacterGroupForChange(groupId);
+                    group.IsPublic = true;
+                }
+                return toPublish;
+            });
+
+        foreach (var groupId in published)
+        {
+            logger.LogInformation(
+                "Группа {characterGroupId} проекта {projectId} стала публичной: в неё восстановлен видимый всем персонаж {characterId}",
+                groupId.CharacterGroupId,
+                projectId.Value,
+                characterId.CharacterId);
+        }
+        return published;
     }
 
     public async Task ApplyRestoredClaimFields(

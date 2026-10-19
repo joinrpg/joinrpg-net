@@ -5,6 +5,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Claims;
+using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces.Drp;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -19,6 +20,8 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
     private ExportRestoreService CreateService(int? currentUserId = null)
         => new(
             CreatePropsService(currentUserId),
+            new ProjectPropsService(unitOfWork, CreateCurrentUser(currentUserId), metadataRepository, NullLogger<ProjectPropsService>.Instance),
+            new Fakes.FakeProjectRestoreLookupRepository(mock),
             unitOfWork,
             metadataRepository,
             CreateCurrentUser(currentUserId),
@@ -849,6 +852,137 @@ public class ExportRestoreServiceTest : ClaimServiceTestBase
             () => CreateService().RestoreLostCharacter(new CharacterIdentification(ProjectId, id), "Будущий", CharacterType.Player, isHot: false, CharacterVisibility.Private, EmptyTarget));
 
         FindCharacter(id).ShouldBeNull();
+    }
+
+    #endregion
+
+    #region PublishRestoredGroupsOf
+
+    /// <summary>Резервная копия — вчера: группы мока из «копии» созданы раньше, оболочки — сейчас.</summary>
+    private static readonly DateTimeOffset BackupTakenAt = DateTimeOffset.UtcNow.AddDays(-1);
+
+    private async Task RestoreCharacterInLostGroup(CharacterVisibility visibility)
+    {
+        BlockProject();
+        var service = CreateService();
+        await service.RestoreLostGroup(LostGroupId, "Потерянная");
+        await service.RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, visibility, new RestoredCharacterTarget([LostGroupId], null));
+    }
+
+    [Theory]
+    [InlineData(CharacterVisibility.Public)]
+    [InlineData(CharacterVisibility.PlayerHidden)]
+    public async Task PublishGroups_VisibleCharacter_OpensRestoredGroup(CharacterVisibility visibility)
+    {
+        await RestoreCharacterInLostGroup(visibility);
+        FindGroup(LostId).ShouldNotBeNull().IsPublic.ShouldBeFalse();
+
+        var published = await CreateService().PublishRestoredGroupsOf(LostCharacterId, BackupTakenAt);
+
+        published.ShouldBe([LostGroupId]);
+        FindGroup(LostId).ShouldNotBeNull().IsPublic.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task PublishGroups_HiddenCharacter_ChangesNothing()
+    {
+        await RestoreCharacterInLostGroup(CharacterVisibility.Private);
+        var savesBefore = SaveChangesCallCount;
+
+        (await CreateService().PublishRestoredGroupsOf(LostCharacterId, BackupTakenAt)).ShouldBeEmpty();
+
+        FindGroup(LostId).ShouldNotBeNull().IsPublic.ShouldBeFalse();
+        SaveChangesCallCount.ShouldBe(savesBefore);
+    }
+
+    /// <summary>Скрытую группу из резервной копии скрыл мастер — её не открываем и проект не трогаем.</summary>
+    [Fact]
+    public async Task PublishGroups_HiddenGroupFromBackup_ChangesNothing()
+    {
+        mock.Group.IsPublic = false;
+        mock.Character.IsPublic = true;
+        mock.Character.ParentCharacterGroupIds = [mock.Group.CharacterGroupId];
+        mock.ReInitProjectInfo();
+        BlockProject();
+        var savesBefore = SaveChangesCallCount;
+
+        (await CreateService().PublishRestoredGroupsOf(mock.Character.GetId(), BackupTakenAt)).ShouldBeEmpty();
+
+        mock.Group.IsPublic.ShouldBeFalse();
+        SaveChangesCallCount.ShouldBe(savesBefore);
+    }
+
+    /// <summary>Восстановленную группу вложили в скрытую группу из копии — открыть её нельзя, проект не трогаем.</summary>
+    [Fact]
+    public async Task PublishGroups_RestoredUnderHiddenBackupGroup_ChangesNothing()
+    {
+        await RestoreCharacterInLostGroup(CharacterVisibility.Public);
+        mock.Group.IsPublic = false;
+        FindGroup(LostId).ShouldNotBeNull().ParentCharacterGroupIds = [mock.Group.CharacterGroupId];
+        mock.ReInitProjectInfo();
+        var savesBefore = SaveChangesCallCount;
+
+        (await CreateService().PublishRestoredGroupsOf(LostCharacterId, BackupTakenAt)).ShouldBeEmpty();
+
+        FindGroup(LostId).ShouldNotBeNull().IsPublic.ShouldBeFalse();
+        mock.Group.IsPublic.ShouldBeFalse();
+        SaveChangesCallCount.ShouldBe(savesBefore);
+    }
+
+    /// <summary>Восстановленная группа внутри восстановленной — открываются обе, сверху вниз.</summary>
+    [Fact]
+    public async Task PublishGroups_RestoredInsideRestored_OpensBoth()
+    {
+        BlockProject();
+        var service = CreateService();
+        var outerGroupId = new CharacterGroupIdentification(ProjectId, LostId + 1);
+        await service.RestoreLostGroup(outerGroupId, "Внешняя");
+        await service.RestoreLostGroup(LostGroupId, "Потерянная");
+        FindGroup(LostId).ShouldNotBeNull().ParentCharacterGroupIds = [LostId + 1];
+        mock.ReInitProjectInfo();
+        await service.RestoreLostCharacter(LostCharacterId, "Потерянный", CharacterType.Player, isHot: false, CharacterVisibility.Public, new RestoredCharacterTarget([LostGroupId], null));
+
+        var published = await CreateService().PublishRestoredGroupsOf(LostCharacterId, BackupTakenAt);
+
+        published.ShouldBe([outerGroupId, LostGroupId]);
+        FindGroup(LostId + 1).ShouldNotBeNull().IsPublic.ShouldBeTrue();
+        FindGroup(LostId).ShouldNotBeNull().IsPublic.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task PublishGroups_Repeated_ChangesNothing()
+    {
+        await RestoreCharacterInLostGroup(CharacterVisibility.Public);
+        _ = await CreateService().PublishRestoredGroupsOf(LostCharacterId, BackupTakenAt);
+        var savesAfterFirst = SaveChangesCallCount;
+
+        (await CreateService().PublishRestoredGroupsOf(LostCharacterId, BackupTakenAt)).ShouldBeEmpty();
+
+        SaveChangesCallCount.ShouldBe(savesAfterFirst);
+    }
+
+    [Fact]
+    public async Task PublishGroups_ByPlayer_Throws()
+    {
+        await RestoreCharacterInLostGroup(CharacterVisibility.Public);
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(mock.Player.UserId).PublishRestoredGroupsOf(LostCharacterId, BackupTakenAt));
+
+        FindGroup(LostId).ShouldNotBeNull().IsPublic.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task PublishGroups_ActiveProject_Throws()
+    {
+        await RestoreCharacterInLostGroup(CharacterVisibility.Public);
+        mock.Project.IsBlocked = false;
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<JoinValidationException>(
+            () => CreateService().PublishRestoredGroupsOf(LostCharacterId, BackupTakenAt));
+
+        FindGroup(LostId).ShouldNotBeNull().IsPublic.ShouldBeFalse();
     }
 
     #endregion

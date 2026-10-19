@@ -26,6 +26,14 @@ public interface IProjectRestoreLookupRepository
     /// <returns>Подмножество <paramref name="characterIds"/>.</returns>
     Task<IReadOnlyCollection<CharacterIdentification>> GetCharactersTakenByOtherProjects(IReadOnlyCollection<CharacterIdentification> characterIds);
 
+    /// <summary>
+    /// Какие из групп созданы позже <paramref name="since"/> — для восстановления это группы, созданные им
+    /// самим (#5677): группы из резервной копии созданы раньше неё.
+    /// </summary>
+    /// <param name="groupIds">Id групп одного проекта.</param>
+    /// <returns>Подмножество <paramref name="groupIds"/>.</returns>
+    Task<IReadOnlyCollection<CharacterGroupIdentification>> GetGroupsCreatedAfter(IReadOnlyCollection<CharacterGroupIdentification> groupIds, DateTimeOffset since);
+
     /// <summary>Пользователи по email пачкой, без учёта регистра. Кого не нашли — того в словаре нет.</summary>
     Task<IReadOnlyDictionary<string, UserIdentification>> FindUsersByEmails(IReadOnlyCollection<string> emails);
 

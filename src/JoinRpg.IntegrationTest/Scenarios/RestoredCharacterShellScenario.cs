@@ -312,6 +312,62 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
         }
     }
 
+    /// <summary>
+    /// Видимый всем персонаж открывает восстановленную группу, в которую попал (#5677), а скрытую группу,
+    /// созданную до резервной копии, — нет. Признак «создана восстановлением» читается из базы.
+    /// </summary>
+    [Fact]
+    public async Task PublishRestoredGroupsOf_OpensOnlyGroupsCreatedAfterBackup()
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId);
+        }
+
+        // Скрытая группа «из копии» — создана до момента бэкапа.
+        var backupGroupId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return await sp.GetRequiredService<ICharacterGroupService>().AddCharacterGroup(
+                projectId, "Из копии", isPublic: false, [projectInfo.GroupTree.RootGroupId], description: "");
+        });
+        var backupTakenAt = DateTimeOffset.UtcNow.AddSeconds(1);
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
+        int lostGroupIntId;
+        int lostCharacterIntId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            lostGroupIntId = await BurnTwoIdsAsync(db, BurnGroupsSql, projectId, masterId);
+            lostCharacterIntId = await BurnTwoIdsAsync(db, BurnCharactersSql, projectId, masterId);
+        }
+        await BlockProject(projectId);
+
+        var lostGroupId = new CharacterGroupIdentification(projectId, lostGroupIntId);
+        var lostCharacterId = new CharacterIdentification(projectId, lostCharacterIntId);
+        var published = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var service = sp.GetRequiredService<IExportRestoreService>();
+            await service.RestoreLostGroup(lostGroupId, "Потерянная");
+            await service.RestoreLostCharacter(
+                lostCharacterId, CharacterName, CharacterType.Player, isHot: false, CharacterVisibility.Public,
+                new RestoredCharacterTarget([lostGroupId, backupGroupId], null));
+            return await service.PublishRestoredGroupsOf(lostCharacterId, backupTakenAt);
+        });
+
+        published.ShouldBe([lostGroupId]);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            (await GetGroupAsync(db, lostGroupIntId)).IsPublic.ShouldBeTrue();
+            (await GetGroupAsync(db, backupGroupId.CharacterGroupId)).IsPublic.ShouldBeFalse();
+        }
+    }
+
     private static Task<ProjectFieldIdentification> AddStringField(IServiceProvider sp, ProjectIdentification projectId, string name)
         => sp.GetRequiredService<IFieldSetupService>().AddField(new CreateFieldRequest(
             projectId,

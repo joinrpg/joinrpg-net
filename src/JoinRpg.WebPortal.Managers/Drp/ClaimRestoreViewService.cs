@@ -109,15 +109,24 @@ internal class ClaimRestoreViewService(
         if (!request.Create)
         {
             await exportRestoreService.ApplyRestoredCharacter(request.CharacterId, target);
-            return;
         }
-        if (string.IsNullOrWhiteSpace(request.Name))
+        else if (string.IsNullOrWhiteSpace(request.Name))
         {
             // TODO[Localize]
             throw new JoinValidationException("Не указано имя персонажа.");
         }
-        await exportRestoreService.RestoreLostCharacter(
-            request.CharacterId, request.Name.Trim(), request.CharacterType, request.IsHot, RequireVisibility(request.NewCharacterVisibility), target);
+        else
+        {
+            await exportRestoreService.RestoreLostCharacter(
+                request.CharacterId, request.Name.Trim(), request.CharacterType, request.IsHot, RequireVisibility(request.NewCharacterVisibility), target);
+        }
+
+        // Видимый всем персонаж открывает восстановленные группы, в которые попал (#5677). Отдельной
+        // операцией: при сбое повтор строки найдёт персонажа готовым и доведёт группы.
+        if (request.Groups is not null)
+        {
+            _ = await exportRestoreService.PublishRestoredGroupsOf(request.CharacterId, options.Value.BackupTakenAt);
+        }
     }
 
     /// <summary>
