@@ -416,6 +416,13 @@ internal class ClaimServiceImpl(
             ctx.Claim.Character = character;
             ctx.Claim.CharacterId = character.CharacterId;
         }
+        else if (ctx.Claim.Character.ApprovedClaimId is { } approvedClaimId && approvedClaimId != ctx.Claim.ClaimId)
+        {
+            // Персонаж уже занят другой принятой заявкой. «Занят» проверяется при подаче, но
+            // две заявки, поданные на свободного персонажа, иначе принимались обе, и вторая
+            // молча перезаписывала ApprovedClaimId (#5645).
+            throw new ClaimTargetIsNotAcceptingClaims();
+        }
 
         ctx.ChangeStatus(ctx.Claim, ClaimStatus.Approved);
 

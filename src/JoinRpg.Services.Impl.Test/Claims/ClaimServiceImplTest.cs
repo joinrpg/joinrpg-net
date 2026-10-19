@@ -474,6 +474,28 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SentNotifications.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Две заявки, поданные на свободного персонажа: принять вторую, когда первая уже принята,
+    /// нельзя. Иначе на персонаже две принятые заявки, и его снимок больше не загружается (#5645).
+    /// </summary>
+    [Fact]
+    public async Task ApproveByMaster_WhenCharacterHasOtherApprovedClaim_Throws_AndDoesNotSave()
+    {
+        var character = mock.CreateCharacter("Вася");
+        var approved = mock.CreateApprovedClaim(character, mock.Master);
+        var claim = mock.CreateClaim(character, mock.Player);
+        claim.ClaimStatus = ClaimStatus.AddedByUser;
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ClaimTargetIsNotAcceptingClaims>(
+            () => CreateService().ApproveByMaster(claim.GetId(), "принято"));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        character.ApprovedClaimId.ShouldBe(approved.ClaimId);
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task ApproveByMaster_ByPlayer_Throws_AndDoesNotSave()
     {
