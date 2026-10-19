@@ -1611,6 +1611,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var notification = SentInviteNotifications.ShouldHaveSingleItem();
         notification.Kind.ShouldBe(InviteChangeKind.Cancelled);
         notification.RecipientClaims.ShouldBe([neighbourClaim.GetId()]);
+        notification.Host.ShouldBe(claim.GetId());
         notification.Initiator.UserId.ShouldBe(mock.Master.GetId());
 
         SentInOrder.Count.ShouldBe(2);

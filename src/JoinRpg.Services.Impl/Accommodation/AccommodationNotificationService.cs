@@ -79,45 +79,14 @@ internal class AccommodationNotificationService(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(claims.First().ClaimId.ProjectId);
 
         var data = new InviteTextData(projectInfo.ProjectName, model.Initiator.DisplayName, model.Kind);
-        var header = textBuilder.GetHeader(data);
-        var body = new NotificationEventTemplate(textBuilder.GetBody(data));
 
-        // По уведомлению на заявку, а не одно на всех: ссылка ведёт на страницу заявки получателя,
-        // где приглашениями и управляют, а она у каждого своя. Мастер, подписанный сразу на обе
-        // стороны приглашения, получит два уведомления — легаси-канал в этом случае слал одно
-        // письмо, но и ссылка в нём была верной не для всех.
-        foreach (var claim in claims)
-        {
-            var args = new SubscribeCalculateArgs(
-                // Не AccommodationChange: ответственный мастер на приглашения не подписан
-                // (см. SubscribeCalculator.CreateForRespMaster) — легаси-канал уведомлял и его.
-                Predicate: subscribe => subscribe.AccommodationInvitesChange,
-                Initiator: model.Initiator,
-                Player: [claim.Player],
-                // Ответственный мастер на приглашения не подписан по определению, поэтому в расчёт
-                // его не отдаём вовсе: предикат всё равно отсеет его запись.
-                RespMasters: [],
-                Claims: [claim.ClaimId],
-                Characters: [claim.CharacterId],
-                Finance: [],
-                RespondingTo: []);
-
-            var recipients = await subscribeCalculator.GetRecepients(args, projectInfo);
-            if (recipients.Count == 0)
-            {
-                // Обычный случай: заявка самого инициатора. Он в получателях не значится, а
-                // ответственный мастер на приглашения не подписан — уведомлять некого.
-                continue;
-            }
-
-            await notificationService.QueueNotification(new NotificationEvent(
-                NotificationClass.Accommodation,
-                claim.ClaimId,
-                header,
-                body,
-                recipients,
-                model.Initiator.UserId));
-        }
+        await QueueToPlayersAndOnceToSubscribers(
+            claims,
+            model.Host,
+            model.Initiator,
+            textBuilder.GetHeader(data),
+            new NotificationEventTemplate(textBuilder.GetBody(data)),
+            projectInfo);
     }
 
     public async Task SendNotification(AccommodationGroupMergedNotification model)
@@ -135,23 +104,44 @@ internal class AccommodationNotificationService(
             projectInfo.ProjectName,
             model.Initiator.DisplayName,
             PlayerNames(model.Members, byId));
-        var header = textBuilder.GetHeader(data);
-        var body = new NotificationEventTemplate(textBuilder.GetBody(data));
 
-        // Игрокам — по уведомлению со ссылкой на свою заявку: чужую заявку игрок не откроет.
-        // Мастерам и прочим подписчикам — одно на всех: подписанный на несколько заявок группы иначе
-        // получил бы столько одинаковых писем, сколько в ней заявок. Подписка — та же, что у
-        // приглашений: объединение заменяет пару «пригласить — принять», и получать его должны те же
-        // люди. Ответственный мастер на приглашения не подписан (SubscribeCalculator.CreateForRespMaster),
-        // поэтому в расчёт его не отдаём.
+        // Подписка — та же, что у приглашений: объединение заменяет пару «пригласить — принять», и
+        // получать его должны те же люди.
+        await QueueToPlayersAndOnceToSubscribers(
+            claims,
+            model.Host,
+            model.Initiator,
+            textBuilder.GetHeader(data),
+            new NotificationEventTemplate(textBuilder.GetBody(data)),
+            projectInfo);
+    }
+
+    /// <summary>
+    /// Рассылка подписчикам приглашений (<see cref="SubscriptionOptions.AccommodationInvitesChange"/>)
+    /// по набору заявок. Игрокам — по уведомлению со ссылкой на свою заявку: чужую заявку игрок не
+    /// откроет. Мастерам и прочим подписчикам — одно на всех со ссылкой на <paramref name="host"/>:
+    /// подписанный на несколько заявок иначе получил бы столько одинаковых писем, сколько их задето.
+    /// </summary>
+    private async Task QueueToPlayersAndOnceToSubscribers(
+        IReadOnlyCollection<ClaimWithPlayer> claims,
+        ClaimIdentification host,
+        UserInfoHeader initiator,
+        string header,
+        NotificationEventTemplate body,
+        ProjectInfo projectInfo)
+    {
         var players = new HashSet<UserIdentification>();
         var masters = new Dictionary<UserIdentification, NotificationRecepient>();
         foreach (var claim in claims)
         {
             var args = new SubscribeCalculateArgs(
+                // Не AccommodationChange: ответственный мастер на приглашения не подписан
+                // (см. SubscribeCalculator.CreateForRespMaster) — легаси-канал уведомлял и его.
                 Predicate: subscribe => subscribe.AccommodationInvitesChange,
-                Initiator: model.Initiator,
+                Initiator: initiator,
                 Player: [claim.Player],
+                // Ответственный мастер на приглашения не подписан по определению, поэтому в расчёт
+                // его не отдаём вовсе: предикат всё равно отсеет его запись.
                 RespMasters: [],
                 Claims: [claim.ClaimId],
                 Characters: [claim.CharacterId],
@@ -178,7 +168,7 @@ internal class AccommodationNotificationService(
                 header,
                 body,
                 player,
-                model.Initiator.UserId));
+                initiator.UserId));
         }
 
         // Игрок одной из заявок, подписанный ещё и как мастер, своё уже получил.
@@ -187,11 +177,11 @@ internal class AccommodationNotificationService(
         {
             await notificationService.QueueNotification(new NotificationEvent(
                 NotificationClass.Accommodation,
-                model.Host,
+                host,
                 header,
                 body,
                 masterRecipients,
-                model.Initiator.UserId));
+                initiator.UserId));
         }
     }
 

@@ -773,6 +773,7 @@ internal class ClaimServiceImpl(
         }
 
         var notification = new AccommodationInviteNotification(
+            ctx.Claim.GetId(),
             [.. recipients.Select(claim => claim.GetId())],
             ctx.CurrentUser.ToUserInfoHeader(),
             InviteChangeKind.Cancelled);
