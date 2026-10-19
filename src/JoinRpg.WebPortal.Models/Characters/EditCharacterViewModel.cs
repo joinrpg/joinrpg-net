@@ -37,6 +37,9 @@ public class EditCharacterViewModel : CharacterViewModelBase
             currentUserId);
         FillFields(field, currentUserId, projectInfo, fieldUsers);
 
+        // Имя не постится с формы — без этого при повторной отрисовке после ошибки оно пустое
+        Name = field.CharacterName;
+
         ActiveClaimsCount = field.Claims.Count(claim => claim.ClaimStatus.IsActive());
         IsActive = field.IsActive;
         HasApprovedClaim = field.ApprovedClaim is not null;

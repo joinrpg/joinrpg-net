@@ -85,7 +85,6 @@ public class CharacterController(
             CharacterId = field.CharacterId,
             ProjectName = projectInfo.ProjectName,
             CharacterTypeInfo = characterInfo.CharacterTypeInfo,
-            Name = field.CharacterName,
             ParentCharacterGroupIds = [.. field.GetDirectNonSpecialGroupIds(projectInfo)],
         }.Fill(field, characterInfo, currentUser.UserIdentification, projectInfo, await userRepository.LoadFieldUserLinks(field, projectInfo)));
     }

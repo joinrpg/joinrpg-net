@@ -69,6 +69,12 @@
 
     [Parameter] public bool CharactersHaveNameField { get; set; } = true;
 
+    /// <summary>
+    /// Текущее имя персонажа (при создании — <c>null</c>). Подставляется в название шаблона,
+    /// когда персонаж принудительно показывается шаблоном.
+    /// </summary>
+    [Parameter] public string? CharacterName { get; set; }
+
     [Parameter]
     public string Name { get; set; } = "CharacterTypeInfo";
 
@@ -97,6 +103,8 @@
             // We are creating or editing character without claims in project that have no name field
             // We can create ONLY slots in thus projects
             ct = CharacterType.Slot;
+            // У персонажа-игрока SlotName пустой — показываем шаблон с его текущим именем (#5678)
+            slotName ??= CharacterName;
         }
 
         characterType = (CharacterTypeView)ct;
