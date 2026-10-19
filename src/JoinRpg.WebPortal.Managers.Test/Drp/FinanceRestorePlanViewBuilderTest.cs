@@ -50,8 +50,9 @@ public class FinanceRestorePlanViewBuilderTest
         var moderation = BuildModeration(Moderation(FinanceModerationLink.RestoredOperation, targetKey: "op"), Operation("op"));
 
         moderation.CanApply.ShouldBeTrue();
-        // 10:00 UTC — 13:00 в Москве, часовом поясе проекта.
-        moderation.Note.ShouldBe("К операции «оплата 500 от 01.07.2026 13:00» — восстановится вместе с ней");
+        // Текст со временем собирает панель — в поясе браузера, как и таблицу (#5647).
+        moderation.Note.ShouldBeNull();
+        moderation.TargetOperation.ShouldBe(new FinanceRestoreEntryRef(FinanceRestoreEntryKind.Payment, 500, At));
     }
 
     [Fact]
@@ -63,6 +64,7 @@ public class FinanceRestorePlanViewBuilderTest
 
         moderation.CanApply.ShouldBeFalse();
         moderation.Note.ShouldBe("Относится к операции, которая не восстановится, — проверьте вручную");
+        moderation.TargetOperation.ShouldBeNull();
     }
 
     [Fact]

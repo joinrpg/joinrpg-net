@@ -389,7 +389,8 @@
 
     private static string ResultText(FinanceRestoreApplyResult result)
     {
-        if (result.Inserted == 0 && result.AlreadyExisted == 0 && result.Conflicts == 0 && result.Skipped.Count == 0)
+        if (result.Inserted == 0 && result.AlreadyExisted == 0 && result.Conflicts == 0 && result.ParentsNotRestored == 0
+            && result.Skipped.Count == 0)
         {
             return "Нечего восстанавливать";
         }
@@ -402,9 +403,13 @@
         {
             text += $", не восстановлены из-за занятых номеров: {result.Conflicts}";
         }
+        if (result.ParentsNotRestored > 0)
+        {
+            text += $", решения не восстановлены — их операция не восстановилась: {result.ParentsNotRestored}";
+        }
         if (result.Skipped.Count > 0)
         {
-            text += $". Пропущено: {string.Join("; ", result.Skipped)}";
+            text += $". Пропущено: {string.Join("; ", result.Skipped.Select(s => $"{Describe(s.Entry)}: {s.Reason}"))}";
         }
         return text;
     }
@@ -419,6 +424,21 @@
     }
 
     private static string Format(DateTimeOffset value) => value.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+
+    /// <summary>«оплата 500 от 01.07.2026 13:00» — время в том же поясе, что и в таблице.</summary>
+    private static string Describe(FinanceRestoreEntryRef entry) => entry.Kind switch
+    {
+        FinanceRestoreEntryKind.Payment => $"оплата {entry.Money} от {Format(entry.CreatedAt)}",
+        FinanceRestoreEntryKind.Refund => $"возврат {entry.Money} от {Format(entry.CreatedAt)}",
+        FinanceRestoreEntryKind.Approval => $"подтверждение от {Format(entry.CreatedAt)}",
+        FinanceRestoreEntryKind.Rejection => $"отклонение от {Format(entry.CreatedAt)}",
+        _ => entry.Kind.ToString(),
+    };
+
+    private static string ModerationNote(FinanceRestoreModerationView moderation)
+        => moderation.TargetOperation is { } target
+            ? $"К операции «{Describe(target)}» — восстановится вместе с ней"
+            : moderation.Note ?? "";
 
     private static string StateText(FinanceRestoreOperationStateView state) => state switch
     {
@@ -544,7 +564,7 @@
                             </td>
                             <td>@Format(moderation.CreatedAt)</td>
                             <td>@moderation.AuthorName</td>
-                            <td>@(moderation.Note ?? "")</td>
+                            <td>@ModerationNote(moderation)</td>
                         </tr>
                     }
                 </tbody>

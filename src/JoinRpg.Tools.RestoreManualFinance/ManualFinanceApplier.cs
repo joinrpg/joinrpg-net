@@ -112,8 +112,8 @@ internal sealed class ManualFinanceApplier(IManualFinanceDomain domain, TextWrit
                     results.Entries[(plan.ProjectId, key)] = outcome;
                 }
                 results.Claims[row.ClaimId] = new ApplyOutcome(
-                    $"применено: вставлено {result.Inserted}, уже было {result.AlreadyExisted}, пропущено из-за конфликта {result.Conflicts}");
-                output.WriteLine($"  заявка {row.ClaimId.ClaimId}: вставлено {result.Inserted}, уже было {result.AlreadyExisted}, конфликтов {result.Conflicts}");
+                    $"применено: вставлено {result.Inserted}, уже было {result.AlreadyExisted}, пропущено из-за конфликта {result.Conflicts}, решений без операции {result.ParentsNotRestored}");
+                output.WriteLine($"  заявка {row.ClaimId.ClaimId}: вставлено {result.Inserted}, уже было {result.AlreadyExisted}, конфликтов {result.Conflicts}, решений без операции {result.ParentsNotRestored}");
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {

@@ -267,6 +267,50 @@ public class FinanceRestorePanelTest : BunitContext
         cut.FindAll("table").ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Описания операций в пояснении к решению и в «Пропущено» собирает панель — время в них то же, что в
+    /// таблице, в поясе браузера (#5647).
+    /// </summary>
+    [Fact]
+    public void TextsWithTime_UseSameTimeAsTable()
+    {
+        var operationAt = new DateTimeOffset(2026, 6, 10, 22, 30, 0, TimeSpan.Zero);
+        var shown = operationAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+        var moderation = new FinanceRestoreModerationView("mod", 101, Approved: true, At, "Мастер", CanApply: true, Note: null,
+            new FinanceRestoreEntryRef(FinanceRestoreEntryKind.Payment, 500, operationAt));
+        var row = Row(5, true, Op("a", Cash.PaymentTypeId) with { CreatedAt = operationAt }) with { Moderations = [moderation] };
+        client.Plans.Enqueue(Plan(row));
+        client.Plans.Enqueue(Plan(row));
+        client.Result = new FinanceRestoreApplyResult(0, 0, 0, 0,
+            [new FinanceRestoreSkippedView(new FinanceRestoreEntryRef(FinanceRestoreEntryKind.Refund, 200, operationAt), "не выбран тип оплаты")]);
+
+        var cut = RenderPanel();
+        var details = TypeSelect(cut, 5).ParentElement!.Closest("td[colspan]")!;
+        details.QuerySelector("table.restore-finance-operations tbody tr")!.TextContent.ShouldContain(shown);
+        details.QuerySelector("table.restore-finance-moderations tbody tr")!.TextContent
+            .ShouldContain($"К операции «оплата 500 от {shown}» — восстановится вместе с ней");
+        Button(cut, "Применить выбранные").Click();
+
+        cut.WaitForAssertion(() => client.PlanRequests.ShouldBe(2));
+        cut.Markup.ShouldContain($"Пропущено: возврат 200 от {shown}: не выбран тип оплаты");
+    }
+
+    /// <summary>Решение, чья операция не вставилась, — не «занятый номер»: итог называет их раздельно (#5647).</summary>
+    [Fact]
+    public void ApplyResult_ConflictsAndParentsNotRestored_ShownSeparately()
+    {
+        client.Plans.Enqueue(Plan(Row(5, true, Op("a", Cash.PaymentTypeId))));
+        client.Plans.Enqueue(Plan(Row(5, true, Op("a", Cash.PaymentTypeId))));
+        client.Result = new FinanceRestoreApplyResult(Inserted: 0, AlreadyExisted: 0, Conflicts: 1, ParentsNotRestored: 2, []);
+
+        var cut = RenderPanel();
+        Button(cut, "Применить выбранные").Click();
+
+        cut.WaitForAssertion(() => client.PlanRequests.ShouldBe(2));
+        cut.Markup.ShouldContain("не восстановлены из-за занятых номеров: 1");
+        cut.Markup.ShouldContain("решения не восстановлены — их операция не восстановилась: 2");
+    }
+
     [Fact]
     public void ProjectNotBlocked_ShowsExplanation()
     {
@@ -284,12 +328,14 @@ public class FinanceRestorePanelTest : BunitContext
     {
         var plan = Plan(Row(5, true, Op("id:100", Cash.PaymentTypeId) with { CandidatePaymentTypeIds = [10, 11] }) with
         {
-            Moderations = [new FinanceRestoreModerationView("id:101", 101, Approved: true, At, "Мастер", CanApply: true, "К оплате № 100")],
+            Moderations = [new FinanceRestoreModerationView("id:101", 101, Approved: true, At, "Мастер", CanApply: true, Note: null,
+                new FinanceRestoreEntryRef(FinanceRestoreEntryKind.Payment, 500, At))],
             Warnings = [FinanceRestoreWarningView.ModerationAmbiguous],
         }) with
         { UnavailableReason = ClaimRestoreUnavailableReason.NoAccess };
         var request = new FinanceRestoreApplyRequest(new ClaimIdentification(ProjectId, 5), new Dictionary<string, int> { ["id:100"] = 10 });
-        var result = new FinanceRestoreApplyResult(1, 2, 3, ["операция без типа"]);
+        var result = new FinanceRestoreApplyResult(1, 2, 3, 4,
+            [new FinanceRestoreSkippedView(new FinanceRestoreEntryRef(FinanceRestoreEntryKind.Payment, 500, At), "не выбран тип оплаты")]);
 
         RoundTrip(plan).ShouldBe(JsonSerializer.Serialize(plan));
         RoundTrip(request).ShouldBe(JsonSerializer.Serialize(request));
@@ -313,12 +359,15 @@ public class FinanceRestorePanelTest : BunitContext
             return Plans.TryDequeue(out var plan) ? Task.FromResult(plan) : throw new InvalidOperationException("нет связи");
         }
 
+        /// <summary>Итог применения вместо стандартного «вставлено по числу выбранных типов».</summary>
+        public FinanceRestoreApplyResult? Result { get; set; }
+
         public Task<FinanceRestoreApplyResult> Apply(FinanceRestoreApplyRequest request)
         {
             Applied.Add(request);
             return Failing.Contains(request.ClaimId.ClaimId)
                 ? throw new InvalidOperationException($"Сбой заявки {request.ClaimId.ClaimId}")
-                : Task.FromResult(new FinanceRestoreApplyResult(request.PaymentTypes.Count, 0, 0, []));
+                : Task.FromResult(Result ?? new FinanceRestoreApplyResult(request.PaymentTypes.Count, 0, 0, 0, []));
         }
 
         public Task CreateOwnCash(ProjectIdentification projectId)

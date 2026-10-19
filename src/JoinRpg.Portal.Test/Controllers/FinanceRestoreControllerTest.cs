@@ -62,7 +62,7 @@ public class FinanceRestoreControllerTest
     {
         public List<FinanceRestoreApplyRequest> Applied { get; } = [];
 
-        public FinanceRestoreApplyResult Result { get; } = new(1, 0, 0, []);
+        public FinanceRestoreApplyResult Result { get; } = new(1, 0, 0, 0, []);
 
         public Exception? Error { get; set; }
 
