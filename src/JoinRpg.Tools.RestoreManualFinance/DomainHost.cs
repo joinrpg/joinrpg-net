@@ -9,6 +9,7 @@ using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal;
 using JoinRpg.Services.Drp.ClaimNotifications;
+using JoinRpg.Services.Drp.ManualFinance;
 using JoinRpg.Services.Interfaces.Drp;
 using JoinRpg.Services.Interfaces.Projects;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -83,7 +84,7 @@ internal sealed class DomainHost : IManualFinanceDomain, IAsyncDisposable
         var events = ClaimNotificationParser.Parse(
             await sp.GetRequiredService<INotificationRepository>().GetClaimNotificationsForProject(projectId, lostAt));
         var lookup = await sp.GetRequiredService<IProjectRestoreLookupRepository>()
-            .GetClaimFinanceForRestore(projectId, FinanceSourceBuilder.NotifiedCommentIds(events, backupTakenAt));
+            .GetClaimFinanceForRestore(projectId, FinanceRestorePlanner.NotifiedCommentIds(events, backupTakenAt));
         return FinanceSourceBuilder.BuildPlan(projectId, events, lookup, backupTakenAt);
     }
 

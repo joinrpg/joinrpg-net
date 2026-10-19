@@ -159,6 +159,34 @@ public class FinanceRestorePlannerTest
         => Plan(MasterPaid(BackupAt.AddTicks(-1)), Moderation(BackupAt.AddTicks(-1))).ShouldBeEmpty();
 
     [Fact]
+    public void NotifiedCommentIdsAreFinanceEventsSinceBackup()
+    {
+        var at = BackupAt.AddDays(1);
+        ClaimNotificationEvent Event(int commentId, CommentExtraAction? action, DateTimeOffset createdAt)
+            => new(Claim, CommentRef(commentId), createdAt, Master.UserId, ClaimNotificationKind.ClaimChange,
+                null, null, action, ClaimEventAuthor.Master, null, null, "", []);
+
+        var events = new[]
+        {
+            Event(500, CommentExtraAction.PaidFee, at),
+            Event(500, CommentExtraAction.PaidFee, at),
+            Event(501, CommentExtraAction.RefundFee, at),
+            Event(502, CommentExtraAction.ApproveFinance, at),
+            Event(503, CommentExtraAction.RejectFinance, at),
+            // Нефинансовый комментарий и финансовое событие задолго до бэкапа — о них базу не спрашиваем.
+            Event(504, null, at),
+            Event(505, CommentExtraAction.PaidFee, BackupAt.AddDays(-10)),
+            // Чуть раньше бэкапа — в пределах допуска планировщика.
+            Event(506, CommentExtraAction.PaidFee, BackupAt - TimeSpan.FromSeconds(30)),
+            // Без id комментария: событие ссылается на заявку.
+            new(Claim, Claim, at, Master.UserId, ClaimNotificationKind.ClaimChange, null, null, CommentExtraAction.PaidFee,
+                ClaimEventAuthor.Master, null, 100, "", []),
+        };
+
+        FinanceRestorePlanner.NotifiedCommentIds(events, BackupAt).ShouldBe([500, 501, 502, 503, 506], ignoreOrder: true);
+    }
+
+    [Fact]
     public void EventAtBackupMomentIsRestored()
         => SingleOperation(Plan(MasterPaid(BackupAt))).CreatedAt.ShouldBe(BackupAt);
 

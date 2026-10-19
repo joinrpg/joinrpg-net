@@ -30,6 +30,20 @@ public static class FinanceRestorePlanner
             .OrderBy(r => r.ClaimId.ClaimId)];
     }
 
+    /// <summary>
+    /// Id из уведомлений, о которых спрашивать базу (<see cref="FinanceRestoreSource.TakenCommentIds"/>): только
+    /// у финансовых событий, которые рассматривает <see cref="Plan"/> (не раньше бэкапа за вычетом
+    /// <see cref="SameTimeTolerance"/>).
+    /// </summary>
+    public static IReadOnlyCollection<int> NotifiedCommentIds(IEnumerable<ClaimNotificationEvent> events, DateTimeOffset backupTakenAt)
+        => [.. events
+            .Where(e => e.Action is CommentExtraAction.PaidFee or CommentExtraAction.RefundFee
+                or CommentExtraAction.ApproveFinance or CommentExtraAction.RejectFinance)
+            .Where(e => e.CreatedAt >= backupTakenAt - SameTimeTolerance)
+            .Select(e => e.CommentId)
+            .OfType<int>()
+            .Distinct()];
+
     private sealed class PlanContext(FinanceRestoreSource source)
     {
         public DateTimeOffset BackupTakenAt { get; } = source.BackupTakenAt;
