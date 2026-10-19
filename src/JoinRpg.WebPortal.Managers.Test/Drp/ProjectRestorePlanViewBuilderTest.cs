@@ -109,6 +109,7 @@ public class ProjectRestorePlanViewBuilderTest
                 OtherCells: [new MasterExportCell("Легенда", "Длинный текст", Truncated: true), new MasterExportCell("Возраст", "", false)])
             {
                 Warnings = [MasterExportWarning.TruncatedValues],
+                CharacterType = new MasterExportCharacterType(CharacterType.Slot, IsHot: true),
             }],
             Warnings: [MasterExportWarning.DuplicateHeaders, MasterExportWarning.TruncatedValues]);
 
@@ -121,8 +122,22 @@ public class ProjectRestorePlanViewBuilderTest
         row.ClaimCreatedAt.ShouldBe(At.AddDays(-3));
         row.ClaimCreatedAt!.Value.Offset.ShouldBe(TimeSpan.FromHours(3));
         row.OtherCells[0].Truncated.ShouldBeTrue();
+        row.CharacterType.ShouldBe(new MasterExportCharacterType(CharacterType.Slot, IsHot: true));
         restored.SuggestedDate.ShouldBe(At);
     }
+
+    [Theory]
+    [InlineData("""{"Type":1,"IsHot":true}""")]
+    [InlineData("""{"Type":42,"IsHot":false}""")]
+    public void Payload_InvalidCharacterType_FormatException(string characterType)
+        => Should.Throw<FormatException>(() => MasterExportPayload.Deserialize(Gzip(
+            $$"""{"Kind":0,"ProjectId":1,"OtherHeaders":[],"Warnings":[],"Rows":[{"RowNumber":2,"Groups":[],"OtherCells":[],"Warnings":[],"CharacterType":{{characterType}}}]}""")));
+
+    [Fact]
+    public void Payload_WithoutCharacterType_TypeUnknown()
+        => MasterExportPayload.Deserialize(Gzip(
+                """{"Kind":0,"ProjectId":1,"OtherHeaders":[],"Warnings":[],"Rows":[{"RowNumber":2,"Groups":[],"OtherCells":[],"Warnings":[]}]}"""))
+            .Rows.ShouldHaveSingleItem().CharacterType.ShouldBeNull();
 
     [Fact]
     public void Payload_Garbage_FormatException()
@@ -176,6 +191,7 @@ public class ProjectRestorePlanViewBuilderTest
         character.UpdatedAt.ShouldBe(new DateTimeOffset(2026, 9, 1, 12, 0, 0, TimeSpan.Zero));
         character.Groups.ShouldAllBe(g => mock.ProjectInfo.GroupTree.GetGroupById(g).GroupType == CharacterGroupType.Regular);
         character.Groups.ShouldNotContain(mock.ProjectInfo.GroupTree.RootGroupId);
+        character.CharacterType.ShouldBe(CharacterType.Player);
 
         var existing = source.Claims.ShouldHaveSingleItem();
         existing.LastUpdated.ShouldBe(new DateTimeOffset(2026, 9, 2, 12, 0, 0, TimeSpan.Zero));
@@ -222,6 +238,29 @@ public class ProjectRestorePlanViewBuilderTest
         model.Notes.ShouldHaveSingleItem().RowNumber.ShouldBe(5);
     }
 
+    /// <summary>Тип из «Занят?» доходит до строки создания; неизвестный — персонаж игрока, как раньше (#5645).</summary>
+    [Fact]
+    public void Build_CreationCarriesCharacterType()
+    {
+        var source = new ProjectRestoreSource(
+            mock.ProjectInfo,
+            ClaimRestorePlanBuilder.BuildSource(mock.ProjectInfo, [], [.. mock.Project.Characters.Select(mock.GetCharacterInfo)], At),
+            [], [], new Dictionary<string, UserIdentification>(), At);
+        CharacterRestorePlanRow Creation(int id, MasterExportCharacterType? type)
+            => new(new CharacterIdentification(mock.ProjectInfo.ProjectId, id), ProjectRestoreAction.Create, "П", [], [], [], null, At, true, [])
+            {
+                ExportCharacterType = type,
+            };
+        var plan = new ProjectRestorePlan(
+            [], [],
+            [Creation(9001, new MasterExportCharacterType(CharacterType.Slot, IsHot: true)), Creation(9002, null)],
+            [], [], [], []);
+
+        var model = ProjectRestorePlanViewBuilder.Build(mock.ProjectInfo, source, plan, [], new DrpOptions { BackupTakenAt = At, LostAt = At }, canEditRoles: true);
+
+        model.CharacterCreations.Select(c => (c.CharacterType, c.IsHot)).ShouldBe([(CharacterType.Slot, true), (CharacterType.Player, false)]);
+    }
+
     [Fact]
     public void Build_ClaimFieldsExistInDatabaseFlag()
     {
@@ -266,7 +305,11 @@ public class ProjectRestorePlanViewBuilderTest
             CanEditRoles = true,
             Groups = [new GroupRestoreRowViewModel(new CharacterGroupIdentification(projectId, 5), ClaimRestoreActionView.Create, "Г", null, At, true, [])],
             CharacterCreations = [new CharacterRestoreRowViewModel(new CharacterIdentification(projectId, 7), ClaimRestoreActionView.Create, "П", null,
-                [new RestoreGroupOption(new CharacterGroupIdentification(projectId, 5), "Г")], [], true, [field], At, true, [ProjectRestoreWarningView.GroupSkipped])],
+                [new RestoreGroupOption(new CharacterGroupIdentification(projectId, 5), "Г")], [], true, [field], At, true, [ProjectRestoreWarningView.GroupSkipped])
+            {
+                CharacterType = CharacterType.Slot,
+                IsHot = true,
+            }],
             ClaimFields = [new ClaimFieldsRestoreRowViewModel(new ClaimIdentification(projectId, 9), "П", [field], At, true, [], ExistsInDatabase: true)],
             Exports = [new MasterExportPlanInfoView(MasterExportKindView.Characters, At, true, 2, [new MasterExportColumnView("X", null, [MasterExportFieldWarningView.ColumnNotMapped])])],
             Notes = [new ProjectRestoreNoteView(ProjectRestoreWarningView.DuplicateRow, At, 4)],
@@ -276,13 +319,20 @@ public class ProjectRestorePlanViewBuilderTest
 
         restored.CanEditRoles.ShouldBeTrue();
         restored.Groups.ShouldHaveSingleItem().GroupId.ShouldBe(plan.Groups[0].GroupId);
-        restored.CharacterCreations.ShouldHaveSingleItem().Fields.ShouldHaveSingleItem().FieldId.ShouldBe(field.FieldId);
+        var creation = restored.CharacterCreations.ShouldHaveSingleItem();
+        creation.Fields.ShouldHaveSingleItem().FieldId.ShouldBe(field.FieldId);
+        creation.CharacterType.ShouldBe(CharacterType.Slot);
+        creation.IsHot.ShouldBeTrue();
         restored.ClaimFields.ShouldHaveSingleItem().ClaimId.ShouldBe(plan.ClaimFields[0].ClaimId);
         restored.Notes.ShouldHaveSingleItem().ShouldBe(plan.Notes[0]);
 
         var request = new CharacterRestoreApplyRequest(new CharacterIdentification(projectId, 7), true, "П",
-            [new CharacterGroupIdentification(projectId, 5)], [new RestoreFieldValueRequest(field.FieldId, null)]);
+            [new CharacterGroupIdentification(projectId, 5)], [new RestoreFieldValueRequest(field.FieldId, null)])
+        {
+            CharacterType = CharacterType.NonPlayer,
+        };
         var restoredRequest = JsonRoundTrip.Ensure(request);
+        restoredRequest.CharacterType.ShouldBe(CharacterType.NonPlayer);
         restoredRequest.Groups.ShouldNotBeNull().ShouldBe(request.Groups!);
         restoredRequest.Fields.ShouldBe(request.Fields);
 

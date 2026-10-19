@@ -1,4 +1,5 @@
 using System.Globalization;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Services.Drp.MasterExports;
@@ -45,6 +46,32 @@ public static class MasterExportParser
 
     private static readonly Dictionary<string, ClaimStatus> StatusesByDisplayName =
         StatusDisplayNames.ToDictionary(x => x.Value, x => x.Key);
+
+    /// <summary>
+    /// Значения «Занят?» — копия <c>CharacterBusyStatusView</c> из <c>JoinRpg.Web.ProjectCommon</c>: имя члена,
+    /// Display и тип персонажа (null — тип неизвестен). Совпадение имён стережёт тест.
+    /// </summary>
+    /// <remarks>
+    /// До 2026-10-18 (#5624) у шаблонов, горячей вакансии и «Неизвестно» не было Display, и выгрузка писала
+    /// имя члена enum («Slot», «HotSlot»…), — поэтому узнаём и имена членов.
+    /// </remarks>
+    internal static IReadOnlyList<(string Member, string DisplayName, MasterExportCharacterType? Type)> BusyStatuses { get; } =
+    [
+        ("HasPlayer", "Занят", MasterExportCharacterType.Player),
+        ("Discussed", "Обсуждается", MasterExportCharacterType.Player),
+        ("Vacancy", "Нет заявок", MasterExportCharacterType.Player),
+        ("Npc", "NPC", new(CharacterType.NonPlayer, IsHot: false)),
+        ("Slot", "Шаблон", new(CharacterType.Slot, IsHot: false)),
+        ("HotSlot", "Горячий шаблон", new(CharacterType.Slot, IsHot: true)),
+        ("Unknown", "Неизвестно", null),
+        ("HotVacancy", "Горячая вакансия", new(CharacterType.Player, IsHot: true)),
+    ];
+
+    private static readonly Dictionary<string, MasterExportCharacterType?> CharacterTypesByBusyStatus =
+        BusyStatuses
+            .SelectMany(s => new[] { (Text: s.DisplayName, s.Type), (Text: s.Member, s.Type) })
+            .DistinctBy(s => s.Text, StringComparer.Ordinal)
+            .ToDictionary(s => s.Text, s => s.Type, StringComparer.Ordinal);
 
     private static readonly CultureInfo RussianCulture = CultureInfo.GetCultureInfo("ru-RU");
 
@@ -98,6 +125,7 @@ public static class MasterExportParser
         int? Find(MasterExportColumn column) => columns.Where(c => c.Value == column).Select(c => (int?)c.Key).FirstOrDefault();
 
         var nameColumn = Find(MasterExportColumn.Name);
+        var busyStatusColumn = Find(MasterExportColumn.BusyStatus);
         var groupNamesColumn = Find(MasterExportColumn.GroupNames);
         var groupLinksColumn = Find(MasterExportColumn.GroupLinks);
         var responsibleColumn = Find(MasterExportColumn.ResponsibleMaster);
@@ -151,6 +179,19 @@ public static class MasterExportParser
                 }
             }
 
+            MasterExportCharacterType? characterType = null;
+            if (Text(busyStatusColumn) is { } busyStatusText)
+            {
+                if (CharacterTypesByBusyStatus.TryGetValue(busyStatusText, out var t))
+                {
+                    characterType = t;
+                }
+                else
+                {
+                    rowWarnings.Add(MasterExportWarning.UnknownBusyStatus);
+                }
+            }
+
             var otherCells = otherColumns.Select(c => new MasterExportCell(headers[c], row[c].Text, row[c].Truncated)).ToList();
             if (otherCells.Any(c => c.Truncated))
             {
@@ -174,6 +215,7 @@ public static class MasterExportParser
                 otherCells)
             {
                 Warnings = rowWarnings,
+                CharacterType = characterType,
             });
         }
 

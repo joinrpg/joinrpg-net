@@ -96,7 +96,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
         {
             var service = sp.GetRequiredService<IExportRestoreService>();
             await service.RestoreLostGroup(lostGroupId, "Потерянная группа");
-            await service.RestoreLostCharacter(lostCharacterId, CharacterName, target);
+            await service.RestoreLostCharacter(lostCharacterId, CharacterName, CharacterType.Player, isHot: false, target);
         });
 
         // 5. Строки на месте с заданными id, как у доменного создания; счётчики не сдвинулись
@@ -136,7 +136,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
         {
             var service = sp.GetRequiredService<IExportRestoreService>();
             await service.RestoreLostGroup(lostGroupId, "Потерянная группа");
-            await service.RestoreLostCharacter(lostCharacterId, CharacterName, target);
+            await service.RestoreLostCharacter(lostCharacterId, CharacterName, CharacterType.Player, isHot: false, target);
 
             var unitOfWork = sp.GetRequiredService<IUnitOfWork>();
             var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
@@ -145,7 +145,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
                 new RestoredCharacterGroupShell(lostGroupId, root, "Другое", masterId, DateTime.UtcNow)))
                 .ShouldBe(RestoredShellInsertResult.AlreadyExists);
             (await unitOfWork.GetCharacterAggregateWriteRepository().InsertRestoredCharacterShell(
-                new RestoredCharacterShell(lostCharacterId, root, "Другой", null, masterId, DateTime.UtcNow)))
+                new RestoredCharacterShell(lostCharacterId, root, "Другой", null, masterId, DateTime.UtcNow, CharacterType.Player, IsHot: false)))
                 .ShouldBe(RestoredShellInsertResult.AlreadyExists);
         });
 
@@ -181,12 +181,12 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
                 () => service.RestoreLostGroup(new CharacterGroupIdentification(otherProjectId, lostGroupIntId), "Чужая"));
             _ = await Should.ThrowAsync<JoinValidationException>(
                 () => service.RestoreLostCharacter(
-                    new CharacterIdentification(otherProjectId, lostCharacterIntId), "Чужой", new RestoredCharacterTarget(null, null)));
+                    new CharacterIdentification(otherProjectId, lostCharacterIntId), "Чужой", CharacterType.Player, isHot: false, new RestoredCharacterTarget(null, null)));
             _ = await Should.ThrowAsync<JoinValidationException>(
                 () => service.RestoreLostGroup(new CharacterGroupIdentification(otherProjectId, groupIdentityBefore + 1000), "Будущая"));
             _ = await Should.ThrowAsync<JoinValidationException>(
                 () => service.RestoreLostCharacter(
-                    new CharacterIdentification(otherProjectId, characterIdentityBefore + 1000), "Будущий", new RestoredCharacterTarget(null, null)));
+                    new CharacterIdentification(otherProjectId, characterIdentityBefore + 1000), "Будущий", CharacterType.Player, isHot: false, new RestoredCharacterTarget(null, null)));
         });
 
         using (var scope = factory.Services.CreateScope())
@@ -214,7 +214,7 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
                     new CharacterGroupIdentification(otherProjectId, id), otherRoot, "Группа", masterId, DateTime.UtcNow));
             Task<RestoredShellInsertResult> InsertCharacter(int id)
                 => characters.InsertRestoredCharacterShell(new RestoredCharacterShell(
-                    new CharacterIdentification(otherProjectId, id), otherRoot, "Персонаж", null, masterId, DateTime.UtcNow));
+                    new CharacterIdentification(otherProjectId, id), otherRoot, "Персонаж", null, masterId, DateTime.UtcNow, CharacterType.Player, IsHot: false));
 
             (await InsertGroup(lostGroupIntId)).ShouldBe(RestoredShellInsertResult.TakenInOtherProject);
             (await InsertCharacter(lostCharacterIntId)).ShouldBe(RestoredShellInsertResult.TakenInOtherProject);
@@ -236,6 +236,77 @@ public class RestoredCharacterShellScenario(JoinApplicationFactory factory)
             (await GetIdentityAsync(db, "CharacterGroups")).ShouldBe(groupIdentity);
             (await GetIdentityAsync(db, "Characters")).ShouldBe(characterIdentity);
         });
+    }
+
+    /// <summary>
+    /// Тип из «Занят?» выгрузки (#5645): шаблон, горячий шаблон, NPC, горячая вакансия восстанавливаются
+    /// такими же строками, как их доменное создание (тип, «горячесть», приём заявок, лимит слота).
+    /// </summary>
+    [Theory]
+    [InlineData(CharacterType.Slot, false)]
+    [InlineData(CharacterType.Slot, true)]
+    [InlineData(CharacterType.NonPlayer, false)]
+    [InlineData(CharacterType.Player, true)]
+    public async Task RestoreLostCharacter_OfType_LikeDomainCreation(CharacterType type, bool isHot)
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId);
+        }
+
+        var fieldId = await factory.Services.RunAsAsync(masterId, sp => AddStringField(sp, projectId, "Сторона"));
+
+        // Эталон — доменное создание того же типа в корневой группе.
+        var referenceCharacterId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            var nameField = projectInfo.CharacterNameField.ShouldNotBeNull();
+            return await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                projectId,
+                [projectInfo.GroupTree.RootGroupId],
+                new CharacterTypeInfo(
+                    type,
+                    isHot,
+                    SlotLimit: null,
+                    SlotName: type == CharacterType.Slot ? CharacterName : null,
+                    CharacterVisibility.Private),
+                new FieldLayerContainer(projectInfo, new Dictionary<int, string?>
+                {
+                    [nameField.Id.ProjectFieldId] = CharacterName,
+                    [fieldId.ProjectFieldId] = FieldValue,
+                })));
+        });
+
+        int lostCharacterIntId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            lostCharacterIntId = await BurnTwoIdsAsync(scope.ServiceProvider.GetRequiredService<MyDbContext>(), BurnCharactersSql, projectId, masterId);
+        }
+        await BlockProject(projectId);
+
+        var lostCharacterId = new CharacterIdentification(projectId, lostCharacterIntId);
+        await factory.Services.RunAsAsync(masterId, sp => sp.GetRequiredService<IExportRestoreService>().RestoreLostCharacter(
+            lostCharacterId,
+            CharacterName,
+            type,
+            isHot,
+            new RestoredCharacterTarget(null, new Dictionary<ProjectFieldIdentification, string?> { [fieldId] = FieldValue })));
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            var restored = await GetCharacterAsync(db, lostCharacterIntId);
+            restored.CharacterType.ShouldBe((int)type);
+            restored.IsHot.ShouldBe(isHot);
+            restored.IsAcceptingClaims.ShouldBe(type != CharacterType.NonPlayer);
+            restored.CharacterSlotLimit.ShouldBeNull();
+            var reference = await GetCharacterAsync(db, referenceCharacterId.CharacterId);
+            restored.ParentGroupsImpl_ListIds.ShouldBe(reference.ParentGroupsImpl_ListIds);
+            Comparable(restored).ShouldBe(Comparable(reference));
+        }
     }
 
     private static Task<ProjectFieldIdentification> AddStringField(IServiceProvider sp, ProjectIdentification projectId, string name)

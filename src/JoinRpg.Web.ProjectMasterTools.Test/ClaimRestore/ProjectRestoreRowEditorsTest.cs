@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Shouldly;
@@ -35,6 +36,19 @@ public class ProjectRestoreRowEditorsTest
         request.Name.ShouldBeNull();
         request.Groups.ShouldBe([Group]);
         request.Fields.ShouldBe([new RestoreFieldValueRequest(FieldA, "значение")]);
+    }
+
+    /// <summary>Тип нового персонажа из плана (по «Занят?» выгрузки) уходит в запрос создания (#5645).</summary>
+    [Fact]
+    public void Character_CreateSendsCharacterType()
+    {
+        var row = CharacterRow(ClaimRestoreActionView.Create) with { CharacterType = CharacterType.Slot, IsHot = true };
+
+        var request = new CharacterRestoreRowEditor(row, canEditRoles: true).ToApplyRequest();
+
+        request.Create.ShouldBeTrue();
+        request.CharacterType.ShouldBe(CharacterType.Slot);
+        request.IsHot.ShouldBeTrue();
     }
 
     [Fact]

@@ -2,6 +2,7 @@ using JoinRpg.Common.WebComponents;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Drp.MasterExports;
 using JoinRpg.Services.Interfaces.Drp;
@@ -282,11 +283,26 @@ public class ClaimRestoreViewServiceTest
 
         var created = exportRestoreService.Created.ShouldHaveSingleItem();
         created.Name.ShouldBe("Герой");
+        created.Type.ShouldBe(CharacterType.Player);
+        created.IsHot.ShouldBeFalse();
         created.Target.Groups.ShouldBe([groupId]);
         created.Target.Fields.ShouldNotBeNull()[field].ShouldBe("x");
         var changed = exportRestoreService.Changed.ShouldHaveSingleItem();
         changed.Target.Groups.ShouldBeNull();
         changed.Target.Fields.ShouldNotBeNull()[field].ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ApplyCharacter_Create_PassesCharacterType()
+    {
+        var characterId = new CharacterIdentification(ProjectId, 9999);
+
+        await CreateService(mock.Master.UserId).ApplyCharacter(
+            new CharacterRestoreApplyRequest(characterId, true, "Шаблон", null, []) { CharacterType = CharacterType.Slot, IsHot = true });
+
+        var created = exportRestoreService.Created.ShouldHaveSingleItem();
+        created.Type.ShouldBe(CharacterType.Slot);
+        created.IsHot.ShouldBeTrue();
     }
 
     [Fact]
@@ -310,7 +326,7 @@ public class ClaimRestoreViewServiceTest
     private sealed class FakeExportRestoreService : IExportRestoreService
     {
         public List<(CharacterGroupIdentification GroupId, string Name)> Groups { get; } = [];
-        public List<(CharacterIdentification CharacterId, string Name, RestoredCharacterTarget Target)> Created { get; } = [];
+        public List<(CharacterIdentification CharacterId, string Name, CharacterType Type, bool IsHot, RestoredCharacterTarget Target)> Created { get; } = [];
         public List<(CharacterIdentification CharacterId, RestoredCharacterTarget Target)> Changed { get; } = [];
         public List<(ClaimIdentification ClaimId, IReadOnlyDictionary<ProjectFieldIdentification, string?> Fields)> ClaimFields { get; } = [];
 
@@ -332,9 +348,10 @@ public class ClaimRestoreViewServiceTest
             return Task.CompletedTask;
         }
 
-        public Task RestoreLostCharacter(CharacterIdentification characterId, string name, RestoredCharacterTarget target)
+        public Task RestoreLostCharacter(
+            CharacterIdentification characterId, string name, CharacterType characterType, bool isHot, RestoredCharacterTarget target)
         {
-            Created.Add((characterId, name, target));
+            Created.Add((characterId, name, characterType, isHot, target));
             return Task.CompletedTask;
         }
     }

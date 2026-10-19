@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Services.Drp.MasterExports;
@@ -21,6 +22,15 @@ public record MasterExportGroupRef(int CharacterGroupId, string Name);
 /// в <paramref name="Value"/> лежит сохранившееся начало текста.
 /// </param>
 public record MasterExportCell(string Header, string Value, bool Truncated);
+
+/// <summary>Тип персонажа из колонки «Занят?» выгрузки персонажей.</summary>
+/// <param name="IsHot">
+/// Горячий ли. У «Занят» и «Обсуждается» выгрузка этого не показывает — там false.
+/// </param>
+public record MasterExportCharacterType(CharacterType Type, bool IsHot)
+{
+    public static MasterExportCharacterType Player { get; } = new(CharacterType.Player, false);
+}
 
 /// <summary>Строка выгрузки.</summary>
 /// <param name="RowNumber">Номер строки в файле, считая строку заголовков первой, — чтобы мастер нашёл её у себя.</param>
@@ -47,6 +57,12 @@ public record MasterExportRow(
 {
     /// <summary>Что не так именно с этой строкой. Те же значения попадают и в предупреждения всей выгрузки.</summary>
     public IReadOnlyList<MasterExportWarning> Warnings { get; init; } = [];
+
+    /// <summary>
+    /// Тип персонажа из «Занят?»; есть только в выгрузке персонажей. null — неизвестен: колонки нет, она
+    /// пустая, в ней «Неизвестно» или нераспознанное значение (<see cref="MasterExportWarning.UnknownBusyStatus"/>).
+    /// </summary>
+    public MasterExportCharacterType? CharacterType { get; init; }
 }
 
 /// <summary>Что в выгрузке разобралось не полностью. Разбор при этом продолжается.</summary>
@@ -80,6 +96,12 @@ public enum MasterExportWarning
 
     /// <summary>Несколько колонок-кандидатов в поля с одинаковым заголовком — по имени их не различить.</summary>
     DuplicateHeaders,
+
+    /// <summary>
+    /// Значение «Занят?» в выгрузке персонажей не совпало ни с одним известным — тип персонажа неизвестен.
+    /// В конце: в строке выгрузки для острова значения хранятся числами.
+    /// </summary>
+    UnknownBusyStatus,
 }
 
 /// <summary>Разобранная выгрузка мастера.</summary>

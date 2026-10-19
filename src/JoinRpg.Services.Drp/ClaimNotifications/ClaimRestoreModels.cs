@@ -73,6 +73,12 @@ public record ExistingCharacterInfo(
 
     /// <summary>Когда персонаж последний раз менялся.</summary>
     public DateTimeOffset UpdatedAt { get; init; } = DateTimeOffset.MinValue;
+
+    /// <summary>
+    /// Тип персонажа — для сверки с «Занят?» выгрузки (#5645); null — не передан, тогда не сверяется.
+    /// Нужно только при восстановлении по выгрузке.
+    /// </summary>
+    public CharacterType? CharacterType { get; init; }
 }
 
 /// <summary>Мастер проекта — для сопоставления ответственного по имени из уведомлений.</summary>

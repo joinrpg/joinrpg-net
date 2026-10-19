@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.Characters;
+
 namespace JoinRpg.Services.Interfaces.Drp;
 
 /// <summary>
@@ -65,9 +67,9 @@ public interface IExportRestoreService
 
     /// <summary>
     /// Возвращает потерянного персонажа с прежним идентификатором и приводит его к состоянию по
-    /// выгрузке. Новый персонаж — скрытый персонаж игрока в корневой группе (как при восстановлении
+    /// выгрузке. Новый персонаж — скрытый, заданного типа, в корневой группе (как при восстановлении
     /// заявки), дальше — как <see cref="ApplyRestoredCharacter"/>. Если персонаж с таким id в этом
-    /// проекте уже есть — только <see cref="ApplyRestoredCharacter"/>.
+    /// проекте уже есть — только <see cref="ApplyRestoredCharacter"/>, тип не меняется.
     /// </summary>
     /// <param name="characterId">Прежний идентификатор персонажа.</param>
     /// <param name="name">
@@ -75,6 +77,8 @@ public interface IExportRestoreService
     /// поля нет в <paramref name="target"/>; если есть — главнее оно); иначе — самим именем персонажа,
     /// и тогда у уже существующего персонажа имя не меняется.
     /// </param>
+    /// <param name="characterType">Тип нового персонажа (по «Занят?» выгрузки, #5645). Лимита у шаблона нет.</param>
+    /// <param name="isHot">Горячий ли новый персонаж; у NPC не бывает (<see cref="ArgumentException"/>).</param>
     /// <param name="target">Состояние по выгрузке, как у <see cref="ApplyRestoredCharacter"/>.</param>
     /// <remarks>
     /// Вставка и наполнение — без общей транзакции, но повторяемы: повтор после сбоя между ними найдёт
@@ -83,5 +87,10 @@ public interface IExportRestoreService
     /// <exception cref="JoinValidationException">
     /// Id занят персонажем другого проекта или не ниже счётчика.
     /// </exception>
-    Task RestoreLostCharacter(CharacterIdentification characterId, string name, RestoredCharacterTarget target);
+    Task RestoreLostCharacter(
+        CharacterIdentification characterId,
+        string name,
+        CharacterType characterType,
+        bool isHot,
+        RestoredCharacterTarget target);
 }

@@ -42,6 +42,7 @@ internal static class ClaimRestorePlanBuilder
                 Groups = [.. c.DirectGroupIds.Where(g => projectInfo.GroupTree.GetGroupByIdOrDefault(g)?.GroupType == CharacterGroupType.Regular)],
                 FieldLayer = CharacterLayer(projectInfo, c.CharacterFields),
                 UpdatedAt = AsUtc(c.UpdatedAt),
+                CharacterType = c.CharacterType,
             })
             .ToList();
 

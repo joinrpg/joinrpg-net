@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Web.Claims;
 
 namespace JoinRpg.Web.ProjectMasterTools.ClaimRestore;
@@ -64,6 +65,9 @@ public enum MasterExportWarningView
 
     [Display(Name = "Несколько колонок с одинаковым заголовком — по имени их не различить")]
     DuplicateHeaders,
+
+    [Display(Name = "Значение «Занят?» у некоторых персонажей не распознано — они восстановятся персонажами игроков")]
+    UnknownBusyStatus,
 }
 
 /// <summary>В чём сопоставление колонки или значения поля не уверено.</summary>
@@ -162,6 +166,9 @@ public enum ProjectRestoreWarningView
 
     [Display(Name = "Персонажа нет в более новой выгрузке — удалён или выгрузка отфильтрована")]
     MissingInNewerExport,
+
+    [Display(Name = "В базе у персонажа другой тип (шаблон, NPC или персонаж игрока), чем в выгрузке — тип не меняем")]
+    CharacterTypeDiffers,
 }
 
 /// <summary>Откуда взято значение.</summary>
@@ -291,6 +298,12 @@ public record CharacterRestoreRowViewModel(
     /// мастер назначает его после.
     /// </summary>
     public UserIdentification? ExportResponsibleMaster { get; init; }
+
+    /// <summary>Тип нового персонажа — по «Занят?» выгрузки (для создания).</summary>
+    public CharacterType CharacterType { get; init; } = CharacterType.Player;
+
+    /// <summary>Горячий ли новый персонаж — по «Занят?» выгрузки (для создания).</summary>
+    public bool IsHot { get; init; }
 }
 
 /// <summary>Поля заявки из выгрузки заявок.</summary>
@@ -319,7 +332,14 @@ public record CharacterRestoreApplyRequest(
     bool Create,
     string? Name,
     IReadOnlyList<CharacterGroupIdentification>? Groups,
-    IReadOnlyList<RestoreFieldValueRequest> Fields);
+    IReadOnlyList<RestoreFieldValueRequest> Fields)
+{
+    /// <summary>Тип нового персонажа (только для создания).</summary>
+    public CharacterType CharacterType { get; init; } = CharacterType.Player;
+
+    /// <summary>Горячий ли новый персонаж (только для создания).</summary>
+    public bool IsHot { get; init; }
+}
 
 /// <summary>Записать в заявку поля из выгрузки (дельта).</summary>
 public record ClaimFieldsRestoreApplyRequest(ClaimIdentification ClaimId, IReadOnlyList<RestoreFieldValueRequest> Fields);

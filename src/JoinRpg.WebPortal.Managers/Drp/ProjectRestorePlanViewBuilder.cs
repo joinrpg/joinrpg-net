@@ -85,6 +85,8 @@ internal static class ProjectRestorePlanViewBuilder
         CharacterRestoreRowViewModel ToCharacterRow(CharacterRestorePlanRow row)
         {
             var current = characters.GetValueOrDefault(row.CharacterId);
+            // Неизвестный тип — персонаж игрока, как было до разбора «Занят?».
+            var createAs = row.ExportCharacterType ?? MasterExportCharacterType.Player;
             return new CharacterRestoreRowViewModel(
                 row.CharacterId,
                 ToActionView(row.Action),
@@ -100,6 +102,8 @@ internal static class ProjectRestorePlanViewBuilder
             {
                 // Домен ответственного нового персонажа не ставит — показываем справкой.
                 ExportResponsibleMaster = row.Action == ProjectRestoreAction.Create ? row.ResponsibleMaster : null,
+                CharacterType = createAs.Type,
+                IsHot = createAs.IsHot,
             };
         }
 
