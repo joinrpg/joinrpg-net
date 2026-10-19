@@ -21,7 +21,7 @@ internal class ProjectFinanceSettingsService(
         => projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanManageMoney,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             request,
             ctx =>
             {
@@ -69,8 +69,9 @@ internal class ProjectFinanceSettingsService(
     /// <inheritdoc />
     /// <remarks>
     /// Вид — только Cash: у него нет имени, которое пришлось бы выдумывать, а «один наличный тип на
-    /// мастера» — то же правило, что у <see cref="CreatePaymentType"/>. Создать тип в заблокированном
-    /// проекте обычным путём нельзя: настройки финансов там закрыты (ADR023).
+    /// мастера» — то же правило, что у <see cref="CreatePaymentType"/>. В отличие от него, существующий
+    /// тип (в том числе выключенный) возвращается, а не даёт ошибку: инструменту восстановления нужен
+    /// тип, на который записать операцию, а не отказ.
     /// </remarks>
     public async Task<PaymentTypeIdentification> CreateRestoredCashPaymentType(ProjectIdentification projectId, UserIdentification owner)
     {
@@ -119,7 +120,7 @@ internal class ProjectFinanceSettingsService(
         => projectPropsService.ChangeProjectProperties(
             paymentTypeId.ProjectId,
             Permission.None,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             paymentTypeId,
             ctx =>
             {
@@ -168,7 +169,7 @@ internal class ProjectFinanceSettingsService(
         => projectPropsService.ChangeProjectProperties(
             paymentTypeId.ProjectId,
             Permission.CanManageMoney,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (paymentTypeId, name, isDefault),
             ctx =>
             {
@@ -193,7 +194,7 @@ internal class ProjectFinanceSettingsService(
         => projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanManageMoney,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             request,
             ctx =>
             {
@@ -232,7 +233,7 @@ internal class ProjectFinanceSettingsService(
         => projectPropsService.ChangeProjectProperties(
             projectId,
             Permission.CanManageMoney,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             projectFeeSettingId,
             ctx =>
             {
@@ -254,7 +255,7 @@ internal class ProjectFinanceSettingsService(
         => projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanManageMoney,
-            ProjectActiveRequirement.MustBeActive,
+            ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             request,
             ctx =>
             {
