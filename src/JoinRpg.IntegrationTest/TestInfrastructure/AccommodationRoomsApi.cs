@@ -38,6 +38,13 @@ internal static class AccommodationRoomsApi
         AccommodationTypeIdentification typeId)
         => client.PostJsonWithTokenHeaderAsync(Url(typeId.ProjectId, "UnOccupyRoomType"), typeId, antiforgeryToken);
 
+    /// <summary>Выселение по проекту: тела нет, проект — в адресе.</summary>
+    public static Task<HttpResponseMessage> UnOccupyAllAsync(
+        this HttpClient client,
+        string? antiforgeryToken,
+        ProjectIdentification projectId)
+        => client.PostWithTokenHeaderAsync(Url(projectId, "UnOccupyAll"), antiforgeryToken);
+
     public static Task<HttpResponseMessage> UnOccupyRoomAsync(
         this HttpClient client,
         string? antiforgeryToken,

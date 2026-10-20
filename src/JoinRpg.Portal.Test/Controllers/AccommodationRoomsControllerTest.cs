@@ -113,6 +113,7 @@ public class AccommodationRoomsControllerTest
     [InlineData(nameof(AccommodationRoomsController.UnOccupyGroup), Permission.CanSetPlayersAccommodations)]
     [InlineData(nameof(AccommodationRoomsController.UnOccupyRoom), Permission.CanSetPlayersAccommodations)]
     [InlineData(nameof(AccommodationRoomsController.UnOccupyRoomType), Permission.CanSetPlayersAccommodations)]
+    [InlineData(nameof(AccommodationRoomsController.UnOccupyAll), Permission.CanSetPlayersAccommodations)]
     public void ActionRequiresPermission(string action, Permission permission)
     {
         var method = typeof(AccommodationRoomsController).GetMethod(action)
@@ -140,6 +141,7 @@ public class AccommodationRoomsControllerTest
                 nameof(AccommodationRoomsController.GetRooms),
                 nameof(AccommodationRoomsController.OccupyRoom),
                 nameof(AccommodationRoomsController.RenameRoom),
+                nameof(AccommodationRoomsController.UnOccupyAll),
                 nameof(AccommodationRoomsController.UnOccupyGroup),
                 nameof(AccommodationRoomsController.UnOccupyRoom),
                 nameof(AccommodationRoomsController.UnOccupyRoomType),
@@ -167,5 +169,6 @@ public class AccommodationRoomsControllerTest
         public Task UnOccupyGroup(AccommodationRequestIdentification groupId) => Call();
         public Task UnOccupyRoom(AccommodationRoomIdentification roomId) => Call();
         public Task UnOccupyRoomType(AccommodationTypeIdentification typeId) => Call();
+        public Task UnOccupyAll(ProjectIdentification projectId) => Call();
     }
 }

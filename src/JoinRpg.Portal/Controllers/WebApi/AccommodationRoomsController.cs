@@ -228,4 +228,25 @@ public class AccommodationRoomsController(IAccommodationRoomsClient client) : Co
             return NotFound(TypeNotFound);
         }
     }
+
+    /// <summary>
+    /// Выселить всех по проекту. Тела нет: проект — тот, что в адресе, по нему проверены права.
+    /// </summary>
+    /// <remarks>
+    /// Включено ли поселение в проекте, здесь не проверяется — как и у остальных ручек контрола.
+    /// Выключение поселения не удаляет ни типы, ни комнаты, а выселение идемпотентно и закрыто
+    /// правом и активностью проекта в сервисе; прятать кнопку при выключенном поселении — дело страницы.
+    /// </remarks>
+    [HttpPost]
+    [RequireMaster(Permission.CanSetPlayersAccommodations)]
+    public async Task<ActionResult> UnOccupyAll([FromQuery] ProjectIdentification projectId)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(WrongProject);
+        }
+
+        await client.UnOccupyAll(projectId);
+        return Ok();
+    }
 }

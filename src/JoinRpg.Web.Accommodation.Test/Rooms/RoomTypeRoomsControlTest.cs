@@ -432,5 +432,8 @@ public class RoomTypeRoomsControlTest : BunitContext
         public Task UnOccupyRoom(AccommodationRoomIdentification roomId) => Record($"UnOccupyRoom {roomId.RoomId}");
 
         public Task UnOccupyRoomType(AccommodationTypeIdentification typeId) => Record($"UnOccupyRoomType {typeId.AccommodationTypeId}");
+
+        // Выселение по проекту — кнопка страницы типов, не этого контрола.
+        public Task UnOccupyAll(ProjectIdentification projectId) => throw new NotSupportedException();
     }
 }

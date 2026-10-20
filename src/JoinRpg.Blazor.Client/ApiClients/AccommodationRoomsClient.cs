@@ -39,12 +39,19 @@ public class AccommodationRoomsClient(HttpClient httpClient, CsrfTokenProvider c
     public async Task UnOccupyRoomType(AccommodationTypeIdentification typeId)
         => await Post(typeId.ProjectId, "UnOccupyRoomType", typeId);
 
-    private async Task<HttpResponseMessage> Post<TBody>(ProjectIdentification projectId, string action, TBody body)
+    // Тела нет: проект — в адресе.
+    public async Task UnOccupyAll(ProjectIdentification projectId)
+        => await Send(projectId, "UnOccupyAll", content: null);
+
+    private Task<HttpResponseMessage> Post<TBody>(ProjectIdentification projectId, string action, TBody body)
+        => Send(projectId, action, JsonContent.Create(body));
+
+    private async Task<HttpResponseMessage> Send(ProjectIdentification projectId, string action, HttpContent? content)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsJsonAsync(
+        var response = await httpClient.PostAsync(
             $"webapi/accommodation-rooms/{action}?projectId={projectId.Value}",
-            body);
+            content);
 
         // Причину отказа сервер отдаёт текстом, чтобы контрол мог показать её мастеру
         if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)

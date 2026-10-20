@@ -355,5 +355,8 @@ public class RoomTypeEditFormTest : BunitContext
             Renamed.Add((roomCategoryId, model.Name));
             return PendingRename ?? Task.CompletedTask;
         }
+
+        // Удаление — кнопка страницы типов, не формы.
+        public Task DeleteRoomType(AccommodationTypeIdentification roomTypeId) => throw new NotSupportedException();
     }
 }
