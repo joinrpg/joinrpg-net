@@ -26,14 +26,16 @@ public class MastersListViewModel
         ICurrentUserAccessor currentUser,
         ProjectInfo projectInfo,
         IReadOnlyCollection<ProjectMasterProfileDto> profiles,
-        IReadOnlyDictionary<UserIdentification, UserInfo> masterUsers)
+        IReadOnlyDictionary<UserIdentification, UserInfo> masterUsers,
+        UserProfileDetailsBuilder cardBuilder)
     {
         Masters = [.. projectInfo.Masters.Select(master => new AclViewModel(
             master,
             masterUsers[master.UserId],
             claims.SingleOrDefault(c => c.MasterId == master.UserId.Value)?.ClaimCount ?? 0,
             projectInfo,
-            currentUser)
+            currentUser,
+            cardBuilder)
         {
             Role = profiles.SingleOrDefault(p => p.UserId == master.UserId)?.Role.Value ?? "",
             IsPublic = master.IsPublic,

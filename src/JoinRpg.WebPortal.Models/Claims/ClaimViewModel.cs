@@ -106,7 +106,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
       Func<string?, string?> externalPaymentUrlFactory,
       ClaimAccommodationViewModel? accommodationModel,
       ILinkRenderer linkRenderer,
-      IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
+      IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
+      UserProfileDetailsBuilder cardBuilder)
     {
         ArgumentNullException.ThrowIfNull(claim);
         ArgumentNullException.ThrowIfNull(claimInfo);
@@ -164,7 +165,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         // playerInfo уже прочитан репозиторием одним запросом. Старый claim.GetUserInfo() лез
         // по навигациям EF-сущности игрока (Extra, Auth, Allrpg, ExternalLogins, Claims, ProjectAcls),
         // а на ProjectAcls ещё и дёргал .Project по одному на проект — до 48 догрузок за запрос (#4960).
-        PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUser.UserIdentificationOrDefault, currentUser.IsAdmin);
+        PlayerDetails = cardBuilder.Build(playerInfo, projectInfo, currentUser.UserIdentificationOrDefault, currentUser.IsAdmin);
         ProjectActive = projectInfo.IsActive;
         CheckInStarted = projectInfo.ProjectCheckInSettings.InProgress;
         CheckInModuleEnabled = projectInfo.ProjectCheckInSettings.CheckInModuleEnabled;

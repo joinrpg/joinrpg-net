@@ -22,7 +22,8 @@ public class CheckInClaimModel : IProjectIdAware
         ClaimInfo claimInfo,
         IReadOnlyCollection<PlotTextDto> plotElements,
         IClaimProblemValidator claimValidator,
-        ICurrentUserAccessor currentUserAccessor
+        ICurrentUserAccessor currentUserAccessor,
+        UserProfileDetailsBuilder cardBuilder
         )
     {
         ArgumentNullException.ThrowIfNull(claimInfo);
@@ -36,7 +37,7 @@ public class CheckInClaimModel : IProjectIdAware
         Validator = new ClaimCheckInValidator(claimInfo, claimValidator);
         CheckInTime = claim.CheckInDate;
         ClaimStatus = (ClaimStatusView)claim.Status;
-        PlayerDetails = new UserProfileDetailsViewModel(playerInfo, projectInfo, currentUserAccessor.UserIdentificationOrDefault, currentUserAccessor.IsAdmin);
+        PlayerDetails = cardBuilder.Build(playerInfo, projectInfo, currentUserAccessor.UserIdentificationOrDefault, currentUserAccessor.IsAdmin);
         Navigation = CharacterNavigationViewModel.FromClaim(characterInfo, claimId, currentUserAccessor.UserIdentification, CharacterNavigationPage.None);
 
         CanAcceptFee = projectInfo.ProjectFinanceSettings.CanAcceptCash(currentUserAccessor.UserIdentification);

@@ -16,6 +16,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Helpers;
+using JoinRpg.Web.UserProfile;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,7 +39,8 @@ public class ClaimController(
     CharacterPlotViewService characterPlotViewService,
     JoinrpgMarkdownLinkRendererFactory linkRendererFactory,
     IRoomCategoryPlanRepository roomCategoryPlanRepository,
-    UserProfileAvatars profileAvatars
+    UserProfileAvatars profileAvatars,
+    UserProfileDetailsBuilder cardBuilder
     ) : JoinControllerGameBase
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
@@ -153,7 +155,8 @@ public class ClaimController(
             plots.Count > 0
                 ? await linkRendererFactory.Load(new ProjectIdentification(claim.ProjectId))
                 : JoinrpgMarkdownLinkRendererFactory.NoDirectives,
-            await UserRepository.LoadFieldUserLinks(claim, projectInfo));
+            await UserRepository.LoadFieldUserLinks(claim, projectInfo),
+            cardBuilder);
         await profileAvatars.Fill(claimViewModel.PlayerDetails);
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
