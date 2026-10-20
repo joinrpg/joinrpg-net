@@ -1,6 +1,7 @@
 using JoinRpg.Blazor.Client;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
@@ -26,6 +27,7 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
     private static readonly ProjectFieldVariantIdentification VariantId = new(FieldId, 3);
     private static readonly PlotElementIdentification PlotElementId = new(new PlotFolderIdentification(ProjectId, 17), 230);
     private static readonly PlotVersionIdentification PlotVersionId = new(PlotElementId, 4);
+    private static readonly AccommodationTypeIdentification RoomTypeId = new(ProjectId, 58);
 
     private readonly IServiceProvider _clientServices = new ServiceCollection().AddUriLocator().BuildServiceProvider();
 
@@ -188,6 +190,26 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
 
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
         NormalizePathAndQuery(server).ShouldBe($"/{ProjectId.Value}/rooms", StringCompareShould.IgnoreCase);
+    }
+
+    public static IEnumerable<object[]> AccommodationCases() =>
+    [
+        ["GetAddRoomTypeUri", (Func<IAccommodationUriLocator, Uri>)(l => l.GetAddRoomTypeUri(ProjectId))],
+        ["GetEditRoomTypeUri", (Func<IAccommodationUriLocator, Uri>)(l => l.GetEditRoomTypeUri(RoomTypeId))],
+        ["GetRoomTypeDetailsUri", (Func<IAccommodationUriLocator, Uri>)(l => l.GetRoomTypeDetailsUri(RoomTypeId))],
+        ["GetAccommodationReportExcelUri", (Func<IAccommodationUriLocator, Uri>)(l => l.GetAccommodationReportExcelUri(ProjectId))],
+        ["GetRoomTypeClaimListUri", (Func<IAccommodationUriLocator, Uri>)(l => l.GetRoomTypeClaimListUri(RoomTypeId))],
+        ["GetClaimsWithoutRoomTypeListUri", (Func<IAccommodationUriLocator, Uri>)(l => l.GetClaimsWithoutRoomTypeListUri(ProjectId))],
+    ];
+
+    [Theory]
+    [MemberData(nameof(AccommodationCases))]
+    public void AccommodationLocatorsShouldAgree(string caseName, Func<IAccommodationUriLocator, Uri> call)
+    {
+        _ = caseName;
+        var server = call(factory.Services.GetRequiredService<IAccommodationUriLocator>());
+        var client = call(_clientServices.GetRequiredService<IAccommodationUriLocator>());
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
     }
 
     // Якорь тоже часть ссылки: GetElementInFolderUri без него не раскроет панель вводной.

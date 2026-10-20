@@ -299,6 +299,12 @@ public class RoomTypeEditFormTest : BunitContext
     private sealed class FakeUriLocator : IAccommodationUriLocator
     {
         public Uri GetRoomTypesListUri(ProjectIdentification projectId) => new($"/{projectId.Value}/rooms", UriKind.Relative);
+        public Uri GetAddRoomTypeUri(ProjectIdentification projectId) => throw new NotImplementedException();
+        public Uri GetEditRoomTypeUri(AccommodationTypeIdentification roomTypeId) => throw new NotImplementedException();
+        public Uri GetRoomTypeDetailsUri(AccommodationTypeIdentification roomTypeId) => throw new NotImplementedException();
+        public Uri GetAccommodationReportExcelUri(ProjectIdentification projectId) => throw new NotImplementedException();
+        public Uri GetRoomTypeClaimListUri(AccommodationTypeIdentification roomTypeId) => throw new NotImplementedException();
+        public Uri GetClaimsWithoutRoomTypeListUri(ProjectIdentification projectId) => throw new NotImplementedException();
     }
 
     private sealed class FakeRoomTypeEditClient : IRoomTypeEditClient
