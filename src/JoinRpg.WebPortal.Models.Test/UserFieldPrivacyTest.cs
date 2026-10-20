@@ -40,7 +40,7 @@ public class UserFieldPrivacyTest
         ActiveProjects: [],
         AllProjects: [],
         IsAdmin: false,
-        SelectedAvatarId: null,
+        SelectedAvatar: null,
         new Email("secret@example.com"),
         EmailConfirmed: true,
         new UserFullName(new PrefferedName("Седьмой"), null, null, null),

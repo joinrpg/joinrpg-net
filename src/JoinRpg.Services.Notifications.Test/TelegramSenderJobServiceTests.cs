@@ -19,7 +19,7 @@ public class TelegramSenderJobServiceTests
         [],
         [],
         IsAdmin: true,
-        SelectedAvatarId: null,
+        SelectedAvatar: null,
         new JoinRpg.Common.PrimitiveTypes.Email("robot@joinrpg.ru"),
         EmailConfirmed: true,
         new UserFullName(new PrefferedName("Master"), null, null, null),

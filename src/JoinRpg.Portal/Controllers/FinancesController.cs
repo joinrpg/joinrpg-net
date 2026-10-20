@@ -4,7 +4,6 @@ using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -30,7 +29,6 @@ public class FinancesController(
     ICurrentUserAccessor currentUserAccessor,
     ILogger<FinancesController> logger,
     IProjectMetadataRepository projectMetadataRepository,
-    UserProfileAvatars profileAvatars,
     UserProfileDetailsBuilder cardBuilder
         ) : JoinControllerGameBase
 {
@@ -332,7 +330,6 @@ public class FinancesController(
             currentUserAccessor,
             projectInfo,
             cardBuilder);
-        await profileAvatars.Fill(viewModel.UserDetails);
         return View(viewModel);
     }
 }

@@ -6,7 +6,6 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
@@ -29,7 +28,6 @@ public class CheckInController(
     IClaimProblemValidator claimValidator,
     CharacterPlotViewService characterPlotViewService,
     ICurrentUserAccessor currentUserAccessor,
-    UserProfileAvatars profileAvatars,
     UserProfileDetailsBuilder cardBuilder
         ) : JoinControllerGameBase
 {
@@ -99,7 +97,6 @@ public class CheckInController(
             currentUserAccessor,
             cardBuilder
           );
-        await profileAvatars.Fill(model.PlayerDetails);
         return View("CheckIn", model);
     }
 
@@ -149,7 +146,6 @@ public class CheckInController(
         }
 
         var model = new SecondRoleViewModel(claimInfo, currentUserAccessor, cardBuilder);
-        await profileAvatars.Fill(model.PlayerDetails);
         return View(model);
     }
 

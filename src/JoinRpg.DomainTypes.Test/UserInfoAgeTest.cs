@@ -12,7 +12,7 @@ public class UserInfoAgeTest
             ActiveProjects: [],
             AllProjects: [],
             IsAdmin: false,
-            SelectedAvatarId: null,
+            SelectedAvatar: null,
             Email: new Email("user@example.com"),
             EmailConfirmed: true,
             UserFullName: new UserFullName(null, BornName.FromOptional("Иван"), SurName.FromOptional("Иванов"), null),

@@ -2,7 +2,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
@@ -14,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers;
 
 public class UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor, YandexLogLink yandexLogLink,
-    IProjectRepository projectRepository, IClaimsRepository claimsRepository, UserProfileAvatars profileAvatars,
+    IProjectRepository projectRepository, IClaimsRepository claimsRepository,
     UserProfileDetailsBuilder cardBuilder) : Common.JoinMvcControllerBase()
 {
     [HttpGet("user/{userId:int}")]
@@ -56,7 +55,6 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             Details = cardBuilder.Build(user, currentUser),
             Admin = currentUserAccessor.IsAdmin ? new UserAdminOperationsViewModel(yandexLogLink.GetLinkForUser(user.Email)) : null,
         };
-        await profileAvatars.Fill(userProfileViewModel.Details);
 
         if (currentUser != null)
         {

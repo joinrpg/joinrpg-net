@@ -4,7 +4,6 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Web.Games.Projects;
@@ -26,7 +25,6 @@ public class AclController(
     IProjectAccessService projectAccessService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMasterProfileRepository masterProfileRepository,
-    UserProfileAvatars profileAvatars,
     UserProfileDetailsBuilder cardBuilder
     ) : JoinControllerGameBase
 {
@@ -46,7 +44,6 @@ public class AclController(
         }
         // Форма — остров AddMasterPanel: профиль и права грузит и сохраняет через API (ADR019, §4).
         var model = new AclViewModel(project, targetUser, currentUserAccessor, cardBuilder);
-        await profileAvatars.Fill(model.UserDetails);
         return View(model);
     }
 
@@ -68,7 +65,6 @@ public class AclController(
         var users = (await userRepository.GetUserInfos([.. visible])).ToDictionary(u => u.UserId);
         var viewer = viewerId is null ? null : await userRepository.GetUserInfo(viewerId);
         var model = ProjectMastersViewModel.Build(projectInfo, viewerId, viewer, publicProfiles, users, cardBuilder);
-        await profileAvatars.Fill(model.Masters.Select(m => m.Details));
         return View(model);
     }
 
@@ -86,7 +82,6 @@ public class AclController(
         var masterUsers = await userRepository.GetRequiredUserInfos([.. projectInfo.Masters.Select(m => m.UserId)]);
 
         var model = new MastersListViewModel(claims, currentUserAccessor, projectInfo, profiles, masterUsers.ToDictionary(u => u.UserId), cardBuilder);
-        await profileAvatars.Fill(model.Masters.Select(m => m.UserDetails));
         return View(model);
     }
 
@@ -108,7 +103,6 @@ public class AclController(
             SelfRemove = userId == currentUserAccessor.UserId,
             UserId = userId,
         };
-        await profileAvatars.Fill(innerModel.UserDetails);
         return View("Delete", viewModel);
     }
 
@@ -131,7 +125,6 @@ public class AclController(
                 return NotFound();
             }
             viewModel.InnerModel = aclViewModel;
-            await profileAvatars.Fill(aclViewModel.UserDetails);
             return View(viewModel);
         }
         if (viewModel.UserId == currentUserAccessor.UserId)
@@ -160,7 +153,6 @@ public class AclController(
             return NotFound();
         }
         // Аватарка — уже после проверки доступа в GetEditViewModel: лишних запросов для того, кому откажут, нет.
-        await profileAvatars.Fill(model.UserDetails);
         return View(model);
     }
 

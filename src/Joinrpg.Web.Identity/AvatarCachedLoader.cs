@@ -1,6 +1,6 @@
 using JoinRpg.Common.WebInfrastructure.Cache;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Services.Interfaces.Avatars;
+using JoinRpg.DomainTypes.Users;
 
 namespace Joinrpg.Web.Identity;
 

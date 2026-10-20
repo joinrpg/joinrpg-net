@@ -88,7 +88,7 @@ public class UserProfilePanelTest : IDisposable
         ActiveProjects: [],
         AllProjects: [],
         IsAdmin: false,
-        SelectedAvatarId: null,
+        SelectedAvatar: null,
         new Email("player@example.com"),
         EmailConfirmed: true,
         new UserFullName(new PrefferedName("Вася"), null, null, null),

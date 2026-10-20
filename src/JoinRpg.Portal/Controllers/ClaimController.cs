@@ -10,7 +10,6 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
@@ -39,7 +38,6 @@ public class ClaimController(
     CharacterPlotViewService characterPlotViewService,
     JoinrpgMarkdownLinkRendererFactory linkRendererFactory,
     IRoomCategoryPlanRepository roomCategoryPlanRepository,
-    UserProfileAvatars profileAvatars,
     UserProfileDetailsBuilder cardBuilder
     ) : JoinControllerGameBase
 {
@@ -157,7 +155,6 @@ public class ClaimController(
                 : JoinrpgMarkdownLinkRendererFactory.NoDirectives,
             await UserRepository.LoadFieldUserLinks(claim, projectInfo),
             cardBuilder);
-        await profileAvatars.Fill(claimViewModel.PlayerDetails);
 
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
         {

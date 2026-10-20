@@ -21,7 +21,7 @@ public class MockedProject
     // Auth проставлен, потому что без него падает UserExtensions.GetUserInfo — а он нужен всем,
     // кто строит UserInfo из мока (например колонка контактов в сетке ролей).
     public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>(), Auth = new UserAuthDetails() { UserId = 1, EmailConfirmed = true } };
-    private UserInfo PlayerInfoTemplate { get; } = new UserInfo(new UserIdentification(1), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("player@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Player"), null, null, null), false, null, HasPassword: false);
+    private UserInfo PlayerInfoTemplate { get; } = new UserInfo(new UserIdentification(1), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatar: null, new Email("player@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Player"), null, null, null), false, null, HasPassword: false);
 
     /// <summary>
     /// <see cref="UserInfo"/> игрока, согласованный с заявками мока.
@@ -39,7 +39,7 @@ public class MockedProject
     };
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>(), Auth = new UserAuthDetails() { UserId = 2, EmailConfirmed = true } };
 
-    private UserInfo MasterInfoTemplate { get; } = new UserInfo(new UserIdentification(2), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatarId: null, new Email("master@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Master"), null, null, null), false, null, HasPassword: false);
+    private UserInfo MasterInfoTemplate { get; } = new UserInfo(new UserIdentification(2), Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public), [], [], [], IsAdmin: false, SelectedAvatar: null, new Email("master@example.com"), EmailConfirmed: true, new UserFullName(new PrefferedName("Master"), null, null, null), false, null, HasPassword: false);
 
     /// <summary>
     /// <see cref="UserInfo"/> мастера, согласованный с заявками мока.
@@ -106,7 +106,7 @@ public class MockedProject
             Social: new UserSocialNetworks(null, null, null, null, ContactsAccessType.Public),
             [], [], [],
             IsAdmin: false,
-            SelectedAvatarId: null,
+            SelectedAvatar: null,
             new Email(user.Email),
             EmailConfirmed: true,
             new UserFullName(PrefferedName.FromOptional(user.PrefferedName), null, null, null),

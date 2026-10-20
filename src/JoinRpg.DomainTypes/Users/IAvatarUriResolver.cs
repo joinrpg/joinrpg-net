@@ -1,4 +1,4 @@
-namespace JoinRpg.Services.Interfaces.Avatars;
+namespace JoinRpg.DomainTypes.Users;
 
 /// <summary>
 /// Строит публичный адрес аватарки. В БД хранится ключ объекта в хранилище, домен берётся из настроек.

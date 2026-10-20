@@ -32,7 +32,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
         html.ShouldNotContain(MasterOnlyMarker);
         // Контакты — по правилам профиля: аноним email мастера не видит.
         html.ShouldNotContain(ownerEmail);
-        // Аватарку компонент не грузит сам — её заполняет контроллер (UserProfileAvatars.Fill, #5600).
+        // Аватарку компонент не грузит сам — её кладёт UserProfileDetailsBuilder (#5600, #5602).
         html.ShouldContain("class=\"profile-avatar\"");
 
         // Мастерская страница анониму — на вход.
