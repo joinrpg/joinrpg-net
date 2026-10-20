@@ -1,11 +1,14 @@
-<table class="table">
-    <thead>
-        <tr>@TableHeader</tr>
-    </thead>
-    <tbody>
-        @TableBody
-    </tbody>
-</table>
+@if (Responsive)
+{
+    @* Широкая таблица прокручивается внутри обёртки, а не растягивает страницу. *@
+    <div class="join-table-responsive">
+        @RenderTable
+    </div>
+}
+else
+{
+    @RenderTable
+}
 
 @code {
     [Parameter]
@@ -13,4 +16,23 @@
 
     [Parameter]
     public RenderFragment? TableBody { get; set; }
+
+    /// <summary>
+    /// Прокручивать таблицу по горизонтали, если она не помещается в ширину. По умолчанию включено.
+    /// </summary>
+    /// <remarks>
+    /// Выключать, когда в ячейках есть выпадающие меню с абсолютным позиционированием: прокручиваемая
+    /// обёртка их обрезает. Диалоги и <see cref="Tooltip"/> выводятся в top layer, им обёртка не мешает.
+    /// </remarks>
+    [Parameter]
+    public bool Responsive { get; set; } = true;
+
+    private RenderFragment RenderTable => @<table class="table">
+        <thead>
+            <tr>@TableHeader</tr>
+        </thead>
+        <tbody>
+            @TableBody
+        </tbody>
+    </table>;
 }

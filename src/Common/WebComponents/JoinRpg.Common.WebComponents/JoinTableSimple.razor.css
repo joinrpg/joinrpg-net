@@ -1,0 +1,30 @@
+/*
+ * Прокрутка широкой таблицы. Значения перенесены 1:1 из Bootstrap 3.4.0 (.table-responsive),
+ * но на своём классе: обёртка не зависит от Bootstrap и его правил для .table-responsive > .table.
+ *
+ * Ячейки рендерит не этот компонент, а фрагменты TableHeader/TableBody родителя (и компоненты строк),
+ * поэтому правила для th/td — через ::deep.
+ */
+.join-table-responsive {
+    min-height: 0.01%;
+    overflow-x: auto;
+}
+
+@media screen and (max-width: 767px) {
+    .join-table-responsive {
+        width: 100%;
+        margin-bottom: 15px;
+        overflow-y: hidden;
+        border: 1px solid #ddd;
+    }
+
+    .join-table-responsive > table {
+        margin-bottom: 0;
+    }
+
+    /* На узком экране текст в ячейках не переносится: таблица прокручивается, а не сжимается в столбики. */
+    .join-table-responsive > table ::deep th,
+    .join-table-responsive > table ::deep td {
+        white-space: nowrap;
+    }
+}
