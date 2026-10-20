@@ -26,7 +26,7 @@
                 <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
                     <label for="Input.Email" class="form-label">Email</label>
-                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <InputText type="email" @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                     
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
@@ -76,6 +76,7 @@
 
     public async Task LoginUser()
     {
+        Input.Email = Input.Email.Trim();
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, isPersistent:true, lockoutOnFailure: false);
