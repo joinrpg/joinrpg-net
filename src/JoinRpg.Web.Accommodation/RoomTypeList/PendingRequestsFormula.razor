@@ -5,7 +5,7 @@
     var showPaid = Paid != 0 || AcceptedNotPaid == 0;
     if (showPaid)
     {
-        <span title="@RoomTypeListItemViewModel.PaidTooltip">@Paid</span>
+        <Tooltip Title="@RoomTypeListItemViewModel.PaidTooltip">@Paid</Tooltip>
     }
     if (AcceptedNotPaid != 0)
     {
@@ -13,9 +13,9 @@
         {
             @(" + ")
         }
-        <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@AcceptedNotPaid</span>
+        <Tooltip Title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@AcceptedNotPaid</Tooltip>
     }
-    @(" = ")<span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Total</span>
+    @(" = ")<Tooltip Title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Total</Tooltip>
 }
 
 @code {

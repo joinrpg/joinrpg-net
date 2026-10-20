@@ -6,13 +6,13 @@
 else
 {
     <div>
-        @("Свободно: ")<span title="@RoomTypeListItemViewModel.CapacityTooltip">@Occupancy.Capacity</span>
-        @(" ✕ ")<span title="@RoomTypeListItemViewModel.FullyFreeRoomsTooltip">@Occupancy.FullyFreeRoomsCount</span>
+        @("Свободно: ")<Tooltip Title="@RoomTypeListItemViewModel.CapacityTooltip">@Occupancy.Capacity</Tooltip>
+        @(" ✕ ")<Tooltip Title="@RoomTypeListItemViewModel.FullyFreeRoomsTooltip">@Occupancy.FullyFreeRoomsCount</Tooltip>
         @if (Occupancy.PartialRoomsCount > 0)
         {
-            @(" + ")<span title="@RoomTypeListItemViewModel.PartialFreeSeatsTooltip">@Occupancy.PartialFreeSeats</span>
+            @(" + ")<Tooltip Title="@RoomTypeListItemViewModel.PartialFreeSeatsTooltip">@Occupancy.PartialFreeSeats</Tooltip>
         }
-        @(" = ")<span title="@RoomTypeListItemViewModel.TotalFreeTooltip">@Occupancy.FreeCapacity</span>
+        @(" = ")<Tooltip Title="@RoomTypeListItemViewModel.TotalFreeTooltip">@Occupancy.FreeCapacity</Tooltip>
     </div>
 }
 

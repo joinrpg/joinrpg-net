@@ -74,16 +74,16 @@ public class AccommodationRoomTypeListScenario(SmokeProjectFixture fixture)
 
         var document = await response.AsHtmlDocument();
 
-        // Все размеченные подписями цифры страницы. Искать их сразу через XPath по значению
-        // атрибута нельзя: Razor кодирует кириллицу в атрибутах числовыми сущностями
-        // (&#x44D;…), поэтому подписи сначала надо раскодировать.
-        var counterNodes = document.DocumentNode.SelectNodes("//span[@title]")
+        // Все подписанные подсказками (Tooltip) элементы страницы: первый вложенный span — сама цифра,
+        // span.join-tooltip — текст подсказки. Подписи есть и у кнопок, но читаются только нужные.
+        var counterNodes = document.DocumentNode.SelectNodes("//span[contains(@class,'join-tooltip-container')]")
             ?? throw new InvalidOperationException($"На странице {url} нет ни одной размеченной цифры");
         var counters = counterNodes
-            .GroupBy(node => WebUtility.HtmlDecode(node.GetAttributeValue("title", "")))
+            .GroupBy(node => WebUtility.HtmlDecode(
+                node.SelectSingleNode("span[contains(@class,'join-tooltip')]")?.InnerText ?? "").Trim())
             .ToDictionary(
                 group => group.Key,
-                group => group.Select(node => WebUtility.HtmlDecode(node.InnerText).Trim()).ToList());
+                group => group.Select(node => WebUtility.HtmlDecode(node.SelectSingleNode("span[1]").InnerText).Trim()).ToList());
 
         var placed = fixture.Residents.Count(resident => resident.IsPlaced);
         var totalCapacity = fixture.RoomCapacity * fixture.RoomNames.Count;

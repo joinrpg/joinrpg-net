@@ -1,3 +1,4 @@
+using AngleSharp.Dom;
 using Bunit;
 using JoinRpg.Web.Accommodation.RoomTypeList;
 using JoinRpg.Web.Models.Accommodation;
@@ -11,15 +12,25 @@ namespace JoinRpg.Web.Accommodation.Test.RoomTypeList;
 /// </summary>
 public class RoomTypeListFormulasTest : BunitContext
 {
+    /// <summary>Видимый текст формулы — без текста подсказок, которые лежат в DOM скрытыми до наведения.</summary>
     private static string Text(IRenderedComponent<Microsoft.AspNetCore.Components.IComponent> cut)
-        => string.Join(" ", string.Concat(cut.Nodes.Select(node => node.TextContent))
+        => string.Join(" ", string.Concat(cut.Nodes.Select(VisibleText))
             .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
-    private string RenderPending(int paid, int acceptedNotPaid)
-        => Text(Render<PendingRequestsFormula>(parameters => parameters
+    private static string VisibleText(INode node) => node switch
+    {
+        IElement element when element.ClassList.Contains("join-tooltip") => "",
+        IElement or IDocumentFragment => string.Concat(node.ChildNodes.Select(VisibleText)),
+        _ => node.TextContent,
+    };
+
+    private IRenderedComponent<PendingRequestsFormula> RenderPendingComponent(int paid, int acceptedNotPaid)
+        => Render<PendingRequestsFormula>(parameters => parameters
             .Add(c => c.Paid, paid)
             .Add(c => c.AcceptedNotPaid, acceptedNotPaid)
-            .Add(c => c.Total, paid + acceptedNotPaid)));
+            .Add(c => c.Total, paid + acceptedNotPaid));
+
+    private string RenderPending(int paid, int acceptedNotPaid) => Text(RenderPendingComponent(paid, acceptedNotPaid));
 
     [Theory]
     [InlineData(2, 1, "2 + 1 = 3")]
@@ -28,6 +39,28 @@ public class RoomTypeListFormulasTest : BunitContext
     [InlineData(0, 0, "")]
     public void PendingRequestsOmitZeroTerms(int paid, int acceptedNotPaid, string expected)
         => RenderPending(paid, acceptedNotPaid).ShouldBe(expected);
+
+    /// <summary>
+    /// Каждое число формулы объяснено своей подсказкой: по ним же цифры страницы находит
+    /// интеграционный <c>AccommodationRoomTypeListScenario</c>.
+    /// </summary>
+    [Fact]
+    public void PendingRequestsNumbersAreExplainedByTooltips()
+    {
+        var cut = RenderPendingComponent(paid: 2, acceptedNotPaid: 1);
+
+        var tooltips = cut.FindAll(".join-tooltip-container")
+            .ToDictionary(
+                container => container.QuerySelector(".join-tooltip")!.TextContent.Trim(),
+                container => container.FirstElementChild!.TextContent.Trim());
+
+        tooltips.ShouldBe(new Dictionary<string, string>
+        {
+            [RoomTypeListItemViewModel.PaidTooltip] = "2",
+            [RoomTypeListItemViewModel.AcceptedNotPaidTooltip] = "1",
+            [RoomTypeListItemViewModel.TotalUnsettledTooltip] = "3",
+        }, ignoreOrder: true);
+    }
 
     private static RoomTypeOccupancySummary Occupancy(
         int poolOccupied = 0,

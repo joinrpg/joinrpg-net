@@ -7,12 +7,12 @@
 else
 {
     <div>
-        @("Занято: ")<span title="@RoomTypeListItemViewModel.FullyOccupiedSeatsTooltip">@Occupancy.FullyOccupiedSeats</span>
+        @("Занято: ")<Tooltip Title="@RoomTypeListItemViewModel.FullyOccupiedSeatsTooltip">@Occupancy.FullyOccupiedSeats</Tooltip>
         @if (Occupancy.PartialRoomsCount > 0)
         {
-            @(" + ")<span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Occupancy.PartialOccupiedSeats</span>
+            @(" + ")<Tooltip Title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Occupancy.PartialOccupiedSeats</Tooltip>
         }
-        @(" = ")<span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Occupancy.PoolOccupied</span>
+        @(" = ")<Tooltip Title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Occupancy.PoolOccupied</Tooltip>
     </div>
 }
 
