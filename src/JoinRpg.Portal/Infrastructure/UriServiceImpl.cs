@@ -255,8 +255,8 @@ internal class UriServiceImpl(
             ForumCommentIdentification c => (GetUri(c), "сообщение на форуме"),
             ForumThreadIdentification t => (GetUri(t), "обсуждение"),
             FinanceOperationIdentification f => (GetUri(f), "финансовая операция"),
-            // Отдельной страницы комнаты нет — ведём на список комнат проекта.
-            AccommodationRoomIdentification r => (GetRoomsUri(r.ProjectId), "комнаты"),
+            // Комнаты сознательно без ссылки: отдельной страницы у комнаты нет, а список комнат
+            // открыт только мастерам — игрок, тоже получающий уведомление, упрётся в отказ.
             ProjectIdentification p => (GetUri(p), "проект"),
             _ => (null, null),
         };

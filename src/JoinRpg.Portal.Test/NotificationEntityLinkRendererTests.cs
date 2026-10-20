@@ -42,17 +42,13 @@ public class NotificationEntityLinkRendererTests(IntegrationTestPortalFactory fa
     }
 
     [Fact]
-    public void RendersLinkForAccommodationRoom()
+    public void NoLinkForAccommodationRoom()
     {
         using var scope = factory.Services.CreateScope();
         var renderer = Resolve(scope);
 
-        // Отдельной страницы комнаты нет, поэтому ссылка ведёт на список комнат проекта.
-        var link = renderer.RenderEntityLink(new AccommodationRoomIdentification(new ProjectIdentification(1), 7));
-
-        link.ShouldNotBeNull();
-        link.Markdown.Value.ShouldStartWith("Подробнее: [комнаты](http");
-        link.PlainText.ShouldStartWith("Подробнее: комнаты: http");
+        // Уведомление о комнате получают и игроки, а список комнат им недоступен.
+        renderer.RenderEntityLink(new AccommodationRoomIdentification(new ProjectIdentification(1), 7)).ShouldBeNull();
     }
 
     [Fact]
