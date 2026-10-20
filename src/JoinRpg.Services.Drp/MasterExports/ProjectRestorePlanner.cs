@@ -226,8 +226,9 @@ public static class ProjectRestorePlanner
         }
 
         var result = new List<CharacterSkeleton>();
-        foreach (var (id, (export, row)) in latest.OrderBy(r => r.Key))
+        foreach (var (id, (export, exportRow)) in latest.OrderBy(r => r.Key))
         {
+            var row = exportRow;
             var characterId = new CharacterIdentification(projectId, id);
             var warnings = new List<ProjectRestoreWarning>();
             var name = string.IsNullOrWhiteSpace(row.Name) ? null : row.Name.Trim();
@@ -272,6 +273,11 @@ public static class ProjectRestorePlanner
             else
             {
                 action = ProjectRestoreAction.Create;
+                if (source.NewCharacterIsSlot.TryGetValue(characterId, out var isSlot))
+                {
+                    // Выбор мастера — дальше по плану (привязка и поля заявок) персонаж такой, каким его создадут.
+                    row = row with { CharacterType = WithSlotChoice(row.CharacterType, isSlot) };
+                }
                 var olderThanBackup = export.ExportedAt < source.Notifications.BackupTakenAt;
                 if (name is null)
                 {
@@ -286,6 +292,19 @@ public static class ProjectRestorePlanner
             result.Add(new CharacterSkeleton(characterId, action, name, row, export.ExportedAt, targetGroups, apply, warnings));
         }
         return result;
+    }
+
+    /// <summary>
+    /// Тип нового персонажа с выбором мастера «шаблон / не шаблон» (#5733). Горячесть — из выгрузки; снятый
+    /// шаблон становится персонажем игрока, NPC и персонаж игрока остаются собой.
+    /// </summary>
+    private static MasterExportCharacterType? WithSlotChoice(MasterExportCharacterType? exported, bool isSlot)
+    {
+        if (isSlot)
+        {
+            return new MasterExportCharacterType(CharacterType.Slot, exported?.IsHot ?? false);
+        }
+        return exported?.Type == CharacterType.Slot ? exported with { Type = CharacterType.Player } : exported;
     }
 
     private static IReadOnlyList<ClaimRestorePlanRow> PlanClaims(

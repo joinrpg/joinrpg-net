@@ -229,8 +229,15 @@ public record MasterExportUploadResult(MasterExportUploadViewModel? Export, Mast
 /// <summary>Выгрузка с подтверждённой мастером датой — для построения плана.</summary>
 public record MasterExportForPlan(string Payload, DateTimeOffset ExportedAt);
 
+/// <summary>Выбор мастера «шаблон / не шаблон» у нового персонажа из выгрузки (#5733).</summary>
+public record NewCharacterSlotChoice(CharacterIdentification CharacterId, bool IsSlot);
+
 /// <summary>Построить план восстановления: по уведомлениям и загруженным выгрузкам.</summary>
-public record ClaimRestorePlanRequest(ProjectIdentification ProjectId, IReadOnlyList<MasterExportForPlan> Exports);
+public record ClaimRestorePlanRequest(ProjectIdentification ProjectId, IReadOnlyList<MasterExportForPlan> Exports)
+{
+    /// <summary>Выбор мастера у новых персонажей; кого нет — тип по «Занят?» выгрузки.</summary>
+    public IReadOnlyList<NewCharacterSlotChoice> SlotChoices { get; init; } = [];
+}
 
 /// <summary>Колонка выгрузки и поле проекта, если сопоставилась.</summary>
 public record MasterExportColumnView(string Header, string? FieldName, IReadOnlyList<MasterExportFieldWarningView> Warnings);

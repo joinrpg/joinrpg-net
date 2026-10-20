@@ -69,6 +69,10 @@ internal class ClaimRestoreViewService(
             // Планировщик сверяет с номерами из выгрузки — они числовые.
             GroupIdsTakenByOtherProjects = [.. takenGroups.Select(g => g.CharacterGroupId)],
             CharacterIdsTakenByOtherProjects = [.. takenCharacters.Select(c => c.CharacterId)],
+            NewCharacterIsSlot = request.SlotChoices
+                .Where(c => c.CharacterId.ProjectId == projectId)
+                .DistinctBy(c => c.CharacterId)
+                .ToDictionary(c => c.CharacterId, c => c.IsSlot),
         };
         var plan = ProjectRestorePlanner.Plan(source);
         var users = await userRepository.GetUserInfoHeaders(ClaimRestorePlanBuilder.UsersToShow(plan.Claims));

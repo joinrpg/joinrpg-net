@@ -331,7 +331,6 @@ public class ClaimRestorePanelTest : BunitContext
     /// <summary>Мастер видит, что персонаж восстановится шаблоном, а не персонажем игрока (#5645).</summary>
     [Theory]
     [InlineData(CharacterType.Slot, true, "Горячий шаблон")]
-    [InlineData(CharacterType.Slot, false, "Шаблон")]
     [InlineData(CharacterType.NonPlayer, false, "NPC")]
     [InlineData(CharacterType.Player, true, "Горячая вакансия")]
     public void ExportPlan_CreationOfNotPlainCharacter_ShowsType(CharacterType type, bool isHot, string expected)
@@ -354,6 +353,48 @@ public class ClaimRestorePanelTest : BunitContext
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
 
         cut.FindAll(".new-character-type").ShouldBeEmpty();
+    }
+
+    /// <summary>Галочка «шаблон» у нового персонажа — по типу из плана (#5733).</summary>
+    [Theory]
+    [InlineData(CharacterType.Slot, true)]
+    [InlineData(CharacterType.Player, false)]
+    public void ExportPlan_CreationSlotCheckbox_FollowsPlanType(CharacterType type, bool expected)
+    {
+        client.Plans.Enqueue(ExportPlan() with
+        {
+            CharacterCreations = [CharacterRow(LostCharacter, ClaimRestoreActionView.Create) with { CharacterType = type }],
+        });
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        cut.Find(".new-character-slot input").HasAttribute("checked").ShouldBe(expected);
+    }
+
+    /// <summary>
+    /// Выбор «шаблон» уходит в план и остаётся в нём при следующих перестроениях: от типа зависят привязка заявок
+    /// и поля, и применяется персонаж с типом из нового плана (#5733).
+    /// </summary>
+    [Fact]
+    public void ExportPlan_SlotChoice_RebuildsPlanWithChoice()
+    {
+        client.Plans.Enqueue(ExportPlan());
+        client.Plans.Enqueue(ExportPlan() with
+        {
+            CharacterCreations = [CharacterRow(LostCharacter, ClaimRestoreActionView.Create) with { CharacterType = CharacterType.Slot }],
+        });
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+        client.PlanRequests.ShouldHaveSingleItem().SlotChoices.ShouldBeEmpty();
+        cut.Find(".new-character-slot input").Change(true);
+
+        cut.WaitForAssertion(() => client.PlanRequests.Count.ShouldBe(2));
+        client.PlanRequests[1].SlotChoices.ShouldBe([new NewCharacterSlotChoice(LostCharacter, true)]);
+        cut.WaitForAssertion(() => cut.Find(".new-character-slot input").HasAttribute("checked").ShouldBeTrue());
+
+        ClickApply(cut);
+        cut.WaitForAssertion(() => client.Log.OfType<CharacterRestoreApplyRequest>()
+            .Single(r => r.CharacterId == LostCharacter).CharacterType.ShouldBe(CharacterType.Slot));
     }
 
     [Fact]
