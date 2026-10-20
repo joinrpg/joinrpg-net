@@ -139,4 +139,25 @@ public interface IAccommodationUriLocator
 {
     /// <summary>Список типов проживания проекта</summary>
     Uri GetRoomTypesListUri(ProjectIdentification projectId);
+
+    /// <summary>Форма добавления нового типа проживания</summary>
+    Uri GetAddRoomTypeUri(ProjectIdentification projectId);
+
+    /// <summary>Форма изменения типа проживания</summary>
+    Uri GetEditRoomTypeUri(AccommodationTypeIdentification roomTypeId);
+
+    /// <summary>Расселение типа проживания: его комнаты, жильцы и нерасселённые заявки</summary>
+    Uri GetRoomTypeDetailsUri(AccommodationTypeIdentification roomTypeId);
+
+    /// <summary>Выгрузка списка расселения проекта в Excel</summary>
+    Uri GetAccommodationReportExcelUri(ProjectIdentification projectId);
+
+    /// <summary>Список активных заявок, выбравших этот тип проживания</summary>
+    Uri GetRoomTypeClaimListUri(AccommodationTypeIdentification roomTypeId);
+
+    /// <summary>
+    /// Список активных заявок, не выбравших тип проживания: кнопка «Игроки без поселения» и строка
+    /// «без типа» в списке типов.
+    /// </summary>
+    Uri GetClaimsWithoutRoomTypeListUri(ProjectIdentification projectId);
 }

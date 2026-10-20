@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
@@ -87,6 +88,24 @@ public static class UriLocatorExtensions
 
         Uri IAccommodationUriLocator.GetRoomTypesListUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/rooms", UriKind.Relative);
+
+        Uri IAccommodationUriLocator.GetAddRoomTypeUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/rooms/AddRoomType", UriKind.Relative);
+
+        Uri IAccommodationUriLocator.GetEditRoomTypeUri(AccommodationTypeIdentification roomTypeId) =>
+            new($"/{roomTypeId.ProjectId.Value}/rooms/{roomTypeId.AccommodationTypeId}/edit", UriKind.Relative);
+
+        Uri IAccommodationUriLocator.GetRoomTypeDetailsUri(AccommodationTypeIdentification roomTypeId) =>
+            new($"/{roomTypeId.ProjectId.Value}/rooms/{roomTypeId.AccommodationTypeId}/details", UriKind.Relative);
+
+        Uri IAccommodationUriLocator.GetAccommodationReportExcelUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/rooms/report?Export=xlsx", UriKind.Relative);
+
+        Uri IAccommodationUriLocator.GetRoomTypeClaimListUri(AccommodationTypeIdentification roomTypeId) =>
+            new($"/{roomTypeId.ProjectId.Value}/claims/by-roomtype/{roomTypeId.AccommodationTypeId}", UriKind.Relative);
+
+        Uri IAccommodationUriLocator.GetClaimsWithoutRoomTypeListUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/claims/without-roomtype", UriKind.Relative);
 
         Uri IProjectUriLocator.GetMyClaimUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/myclaim", UriKind.Relative);
