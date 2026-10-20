@@ -10,7 +10,7 @@
 <h1 class="text-danger">@ViewBag.Title</h1>
 @if (Model.IsProjectNotFound)
 {
-    <h3>Проекта с таким номером нет — возможно, ссылка устарела.</h3>
+    <h3>Проекта с таким номером нет — возможно, ошибка в ссылке.</h3>
 }
 else if (Model.HttpStatusCode == 404)
 {
