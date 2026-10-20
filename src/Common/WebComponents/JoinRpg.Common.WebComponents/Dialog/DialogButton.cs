@@ -129,8 +129,10 @@ public class DialogButton
         }
         else
         {
-            return new DialogButton(name: "button", label: self.Label!, style: self.Style);
+            // У кнопки из одной иконки подписи нет, а кнопке подтверждения в диалоге она нужна:
+            // берём подсказку — это и есть имя действия («Удалить»).
+            var label = string.IsNullOrWhiteSpace(self.Label) ? self.Title : self.Label;
+            return new DialogButton(name: "button", label: string.IsNullOrWhiteSpace(label) ? "Да" : label, style: self.Style);
         }
-
     }
 }
