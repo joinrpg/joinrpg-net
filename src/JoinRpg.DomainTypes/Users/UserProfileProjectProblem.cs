@@ -39,32 +39,37 @@ public static class UserProfileProblemsCalculator
     {
         List<UserProfileProjectProblem> problems = [];
 
-        AddIfMissing(UserProfileItemType.Telegram, requirementSettings.RequireTelegram);
-        AddIfMissing(UserProfileItemType.Vkontakte, requirementSettings.RequireVkontakte);
-        AddIfMissing(UserProfileItemType.Phone, requirementSettings.RequirePhone);
-        AddIfMissing(UserProfileItemType.RealName, requirementSettings.RequireRealName);
+        AddIfMissing(UserProfileItemType.Telegram, ToSeverity(requirementSettings.RequireTelegram));
+        AddIfMissing(UserProfileItemType.Vkontakte, ToSeverity(requirementSettings.RequireVkontakte));
+        AddIfMissing(UserProfileItemType.Phone, ToSeverity(requirementSettings.RequirePhone));
+        AddIfMissing(UserProfileItemType.RealName, ToSeverity(requirementSettings.RequireRealName));
 
         if (sensitiveDataAccessAllowed)
         {
-            AddIfMissing(UserProfileItemType.Passport, requirementSettings.RequirePassport);
-            AddIfMissing(UserProfileItemType.RegistrationAddress, requirementSettings.RequireRegistrationAddress);
+            AddIfMissing(UserProfileItemType.Passport, ToSensitiveDataSeverity(requirementSettings.RequirePassport));
+            AddIfMissing(UserProfileItemType.RegistrationAddress, ToSensitiveDataSeverity(requirementSettings.RequireRegistrationAddress));
         }
 
         return problems;
 
-        void AddIfMissing(UserProfileItemType itemType, MandatoryStatus requirement)
+        void AddIfMissing(UserProfileItemType itemType, ProblemSeverity? severity)
         {
-            if (!missingItems.Contains(itemType))
+            if (missingItems.Contains(itemType) && severity is { } s)
             {
-                return;
-            }
-
-            if (ToSeverity(requirement) is { } severity)
-            {
-                problems.Add(new UserProfileProjectProblem(itemType, severity));
+                problems.Add(new UserProfileProjectProblem(itemType, s));
             }
         }
     }
+
+    /// <summary>
+    /// Паспорт/адрес регистрации мастер может только «запросить» (в настройках это
+    /// <see cref="MandatoryStatus.Recommended"/>), обязательными они не бывают. Но раз мастер их
+    /// запросил, а игрок дал доступ и не заполнил — это полноценная проблема заявки, а не подсказка:
+    /// иначе она не попадает в «Проблемные заявки». Подачу заявки это не блокирует —
+    /// <c>ClaimValidator</c> паспорт/адрес не проверяет.
+    /// </summary>
+    public static ProblemSeverity? ToSensitiveDataSeverity(MandatoryStatus requirement)
+        => requirement == MandatoryStatus.Optional ? null : ProblemSeverity.Warning;
 
     public static ProblemSeverity? ToSeverity(MandatoryStatus requirement) => requirement switch
     {

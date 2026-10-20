@@ -78,7 +78,7 @@ public class UserInfoSensitiveDataScenario(JoinApplicationFactory factory) : ICl
 
     /// <summary>
     /// Пустая строка — это не заполненный паспорт: <c>GetMissingItems</c> считает заполненным
-    /// значение не короче <see cref="UserProfileItemsCalculator.MinContactLength"/>. Тест сторожит,
+    /// значение не короче <see cref="UserProfileItemsCalculator.MinSensitiveDataLength"/>. Тест сторожит,
     /// что исправленная проекция не начала путать «нет значения» с «значение есть».
     /// </summary>
     [Fact]

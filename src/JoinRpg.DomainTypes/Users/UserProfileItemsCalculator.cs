@@ -11,7 +11,16 @@ public static class UserProfileItemsCalculator
     /// </summary>
     public const int MinContactLength = 5;
 
+    /// <summary>
+    /// Минимальная длина паспортных данных/адреса регистрации, при которой они считаются
+    /// заполненными. Серия с номером паспорта — уже 10 символов, поэтому общий порог контактов
+    /// пропускал заведомо неполные значения.
+    /// </summary>
+    public const int MinSensitiveDataLength = 20;
+
     public static bool IsCorrectContact(string? value) => (value?.Length ?? 0) >= MinContactLength;
+
+    private static bool IsCorrectSensitiveData(string? value) => (value?.Length ?? 0) >= MinSensitiveDataLength;
 
     /// <summary>
     /// Перегрузка на "сырых" фактах. Заводилась под потребителей, которые не могли дёшево
@@ -45,11 +54,11 @@ public static class UserProfileItemsCalculator
         {
             missing.Add(UserProfileItemType.RealName);
         }
-        if (!IsCorrectContact(passportData))
+        if (!IsCorrectSensitiveData(passportData))
         {
             missing.Add(UserProfileItemType.Passport);
         }
-        if (!IsCorrectContact(registrationAddress))
+        if (!IsCorrectSensitiveData(registrationAddress))
         {
             missing.Add(UserProfileItemType.RegistrationAddress);
         }
