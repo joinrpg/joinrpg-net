@@ -5,7 +5,6 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.UserProfile;
@@ -25,7 +24,6 @@ public class ManageController(
     ICurrentUserAccessor currentUserAccessor,
     ExternalLoginProfileExtractor externalLoginProfileExtractor,
     ILogger<ManageController> logger,
-    IAvatarService avatarService,
     IAvatarUriResolver avatarUriResolver
         ) : Common.JoinMvcControllerBase
 {
@@ -197,8 +195,6 @@ public class ManageController(
     [HttpGet]
     public async Task<ActionResult> SetupProfile([FromServices] IOptions<TelegramLoginOptions> options, bool checkContactsMessage = false, ManageMessageId? message = null, int? conflictUserId = null)
     {
-        _ = await avatarService.EnsureAvatarPresent(currentUserAccessor.UserId);
-
         var user = await UserRepository.WithProfile(currentUserAccessor.UserId);
         var userInfo = await UserRepository.GetUserInfo(currentUserAccessor.UserIdentification) ?? throw new InvalidOperationException();
         var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;

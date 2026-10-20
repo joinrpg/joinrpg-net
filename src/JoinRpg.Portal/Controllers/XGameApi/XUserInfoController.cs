@@ -1,7 +1,6 @@
-using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Portal.Infrastructure.XApi;
-using JoinRpg.Services.Interfaces.Avatars;
 using JoinRpg.WebPortal.Managers.Characters;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
@@ -11,8 +10,7 @@ namespace JoinRpg.Portal.Controllers.XGameApi;
 [Route("x-api/users/"), XAdminAuthorize()]
 public class XUserInfoController(
     IUserRepository userRepository,
-    IAvatarLoader avatarLoader,
-    IAvatarService avatarService
+    IAvatarUriResolver avatarUriResolver
         ) : XGameApiController()
 {
 
@@ -28,10 +26,12 @@ public class XUserInfoController(
         {
             return new StatusCodeResult(410);
         }
-        var userAvatarId = userInfo.SelectedAvatarId ?? await avatarService.EnsureAvatarPresent(userInfo.UserId);
-        var avatarUrl = await avatarLoader.GetAvatar(userAvatarId, 64);
+        // Аватарка есть у каждого пользователя (#5602); пустая строка — только если где-то её всё же не завели.
+        var avatarUrl = userInfo.SelectedAvatar is { } avatar
+            ? avatarUriResolver.GetAvatarUri(avatar.CachedUri, avatar.OriginalUri).AbsoluteUri
+            : "";
         return Ok(
-            new PlayerInfo(userInfo.UserId, userInfo.DisplayName.DisplayName, userInfo.UserFullName.FullName, avatarUrl.Uri.AbsoluteUri, ApiInfoBuilder.ToPlayerContacts(userInfo))
+            new PlayerInfo(userInfo.UserId, userInfo.DisplayName.DisplayName, userInfo.UserFullName.FullName, avatarUrl, ApiInfoBuilder.ToPlayerContacts(userInfo))
             );
     }
 
