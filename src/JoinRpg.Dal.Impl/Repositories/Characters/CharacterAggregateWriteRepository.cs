@@ -99,6 +99,12 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
 
     public Task<bool> IsClaimIdTaken(int claimId) => ctx.Set<Claim>().AnyAsync(c => c.ClaimId == claimId);
 
+    // Опечатка в имени колонки — как в Claim.PlayerAllowedSenstiveData.
+    public Task<int> RevokeSensitiveDataConsents(ProjectIdentification projectId)
+        => ctx.Database.ExecuteSqlCommandAsync(
+            "UPDATE dbo.Claims SET PlayerAllowedSenstiveData = 0 WHERE ProjectId = @p0 AND PlayerAllowedSenstiveData = 1",
+            projectId.Value);
+
     public Task<bool> ClaimExists(ClaimIdentification claimId)
     {
         var claimIntId = claimId.ClaimId;

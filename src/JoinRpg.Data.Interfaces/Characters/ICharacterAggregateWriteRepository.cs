@@ -55,6 +55,15 @@ public interface ICharacterAggregateWriteRepository
     Task<bool> InsertRestoredClaimShell(RestoredClaimShell shell);
 
     /// <summary>
+    /// Отзывает согласие на защищённые данные у всех заявок проекта — когда проект начинает запрашивать
+    /// данные, на которые согласие не давалось (#5706). Это единственная операция, выходящая за границу
+    /// агрегата персонажа на все заявки проекта сразу: один массовый UPDATE вместо загрузки каждого агрегата.
+    /// </summary>
+    /// <remarks>Выполняется сразу, своей транзакцией, мимо <c>SaveChanges</c>.</remarks>
+    /// <returns>Сколько заявок потеряли согласие.</returns>
+    Task<int> RevokeSensitiveDataConsents(ProjectIdentification projectId);
+
+    /// <summary>
     /// Занят ли идентификатор заявки в <b>любом</b> проекте — идентификаторы заявок общие на всю базу.
     /// </summary>
     Task<bool> IsClaimIdTaken(int claimId);

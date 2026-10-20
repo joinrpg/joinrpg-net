@@ -130,6 +130,94 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         Result.ProfileRequirementSettings.RequireBirthDate.ShouldBe(MandatoryStatus.Recommended);
     }
 
+    // #5706: согласие давалось на прежний набор защищённых данных — на новый его спрашивают заново.
+    [Fact]
+    public async Task SetContactSettings_NewSensitiveDataRequested_RevokesConsents()
+    {
+        mock.Project.Details.RequirePassport = MandatoryStatus.Recommended;
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+        mock.ReInitProjectInfo();
+
+        await CreateService().SetContactSettings(ProjectId,
+            mock.ProjectInfo.ProfileRequirementSettings with { RequireBirthDate = MandatoryStatus.Recommended });
+
+        claim.PlayerAllowedSenstiveData.ShouldBeFalse();
+        Result.ProfileRequirementSettings.BirthDateRequested.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(MandatoryStatus.Recommended, MandatoryStatus.Recommended)] // ничего нового
+    [InlineData(MandatoryStatus.Recommended, MandatoryStatus.Optional)] // запрос снят
+    public async Task SetContactSettings_NothingNewRequested_KeepsConsents(MandatoryStatus before, MandatoryStatus after)
+    {
+        mock.Project.Details.RequirePassport = before;
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+        mock.ReInitProjectInfo();
+
+        await CreateService().SetContactSettings(ProjectId,
+            mock.ProjectInfo.ProfileRequirementSettings with { RequirePassport = after, RequirePhone = MandatoryStatus.Required });
+
+        claim.PlayerAllowedSenstiveData.ShouldBeTrue();
+    }
+
+    // Порядок «отзыв до сохранения» выбран нарочно: упало сохранение — согласие отозвано зря,
+    // но новые данные по старому согласию не откроются.
+    [Fact]
+    public async Task SetContactSettings_SaveFails_ConsentsAlreadyRevoked()
+    {
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+        unitOfWork.OnSaveChanges = _ => throw new InvalidOperationException("Сбой БД");
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(() => CreateService()
+            .SetContactSettings(ProjectId, mock.ProjectInfo.ProfileRequirementSettings with { RequirePassport = MandatoryStatus.Recommended }));
+
+        claim.PlayerAllowedSenstiveData.ShouldBeFalse();
+    }
+
+    // Настройки контактов разрешены и на время восстановления (ADR023) — отзыв тоже.
+    [Fact]
+    public async Task SetContactSettings_BlockedProject_RevokesConsents()
+    {
+        mock.Project.IsBlocked = true;
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+        mock.ReInitProjectInfo();
+
+        await CreateService().SetContactSettings(ProjectId,
+            mock.ProjectInfo.ProfileRequirementSettings with { RequirePassport = MandatoryStatus.Recommended });
+
+        claim.PlayerAllowedSenstiveData.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task SetContactSettings_ArchivedProject_ThrowsAndKeepsConsents()
+    {
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(() => CreateService()
+            .SetContactSettings(ProjectId, mock.ProjectInfo.ProfileRequirementSettings with { RequirePassport = MandatoryStatus.Recommended }));
+
+        claim.PlayerAllowedSenstiveData.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task SetContactSettings_WithoutPermission_DoesNotRevokeConsents()
+    {
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(() => CreateService(currentUserId: mock.Player.UserId)
+            .SetContactSettings(ProjectId, mock.ProjectInfo.ProfileRequirementSettings with { RequirePassport = MandatoryStatus.Recommended }));
+
+        claim.PlayerAllowedSenstiveData.ShouldBeTrue();
+    }
+
     [Fact]
     public async Task SetClaimSettings_AppliesSettings()
     {

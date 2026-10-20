@@ -28,7 +28,13 @@ internal class ProjectPropsService(
         Action<ProjectMutationContext<TArgs>> action,
         [CallerMemberName] string operationName = "")
         => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
-            AsFunc(action), operationName);
+            ctx =>
+            {
+                action(ctx);
+                return Task.FromResult(true);
+            },
+            asyncMutation: false,
+            operationName);
 
     public Task<TResult> ChangeProjectProperties<TArgs, TResult>(
         ProjectIdentification projectId,
@@ -38,21 +44,36 @@ internal class ProjectPropsService(
         Func<ProjectMutationContext<TArgs>, TResult> action,
         [CallerMemberName] string operationName = "")
         => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
-            action, operationName);
+            ctx => Task.FromResult(action(ctx)), asyncMutation: false, operationName);
 
-    private static Func<ProjectMutationContext<TArgs>, bool> AsFunc<TArgs>(Action<ProjectMutationContext<TArgs>> action)
-        => ctx =>
-        {
-            action(ctx);
-            return true;
-        };
+    public Task ChangeProjectPropertiesAsync<TArgs>(
+        ProjectIdentification projectId,
+        Permission? requiredPermission,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ProjectMutationContext<TArgs>, Task> action,
+        [CallerMemberName] string operationName = "")
+        => ChangeProjectPropertiesCore(projectId, requiredPermission, activeRequirement, arguments,
+            async ctx =>
+            {
+                await action(ctx);
+                return true;
+            },
+            asyncMutation: true,
+            operationName);
 
+    /// <param name="asyncMutation">
+    /// Мутация асинхронная и может дождаться записи мимо <c>SaveChanges</c>. Синхронная бросила бы
+    /// Task, которого никто не ждёт, и запустила вторую операцию на том же <c>DbContext</c>, поэтому ей
+    /// отзыв согласий недоступен.
+    /// </param>
     private async Task<TResult> ChangeProjectPropertiesCore<TArgs, TResult>(
         ProjectIdentification projectId,
         Permission? requiredPermission,
         ProjectActiveRequirement activeRequirement,
         TArgs arguments,
-        Func<ProjectMutationContext<TArgs>, TResult> action,
+        Func<ProjectMutationContext<TArgs>, Task<TResult>> action,
+        bool asyncMutation,
         string operationName)
     {
         using var activity = ProjectPropsServiceActivity.ActivitySource.StartActivity(operationName);
@@ -72,8 +93,13 @@ internal class ProjectPropsService(
 
             activeRequirement.EnsureSatisfiedBy(handle.ProjectInfo);
 
-            var ctx = new ProjectMutationContext<TArgs>(handle.Project, handle.ProjectInfo, now, currentUserAccessor, arguments, handle.Remove);
-            var result = action(ctx);
+            Func<Task<int>> revokeSensitiveDataConsents = asyncMutation
+                ? () => unitOfWork.GetCharacterAggregateWriteRepository().RevokeSensitiveDataConsents(projectId)
+                : () => throw new InvalidOperationException(
+                    $"Revoking sensitive data consents is available only from {nameof(ChangeProjectPropertiesAsync)}");
+            var ctx = new ProjectMutationContext<TArgs>(handle.Project, handle.ProjectInfo, now, currentUserAccessor, arguments, handle.Remove,
+                revokeSensitiveDataConsents);
+            var result = await action(ctx);
 
             await unitOfWork.SaveChangesAsync();
 

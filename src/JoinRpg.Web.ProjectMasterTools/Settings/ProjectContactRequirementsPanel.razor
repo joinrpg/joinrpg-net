@@ -44,6 +44,14 @@
                 <FormRowFor For="@(() => Model.BirthDate)">
                     <EnumRadioButtonGroup @bind-SelectedValue="Model.BirthDate" />
                 </FormRowFor>
+                @if (RequestsNewSensitiveData)
+                {
+                    <FormRow>
+                        <JoinAlert Variation="VariationStyleEnum.Warning">
+                            Вы запрашиваете новые защищенные данные. Если игрок ранее давал вам согласие, вам нужно будет запрашивать его снова.
+                        </JoinAlert>
+                    </FormRow>
+                }
                 <FormRow>
                     <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
                 </FormRow>
@@ -61,7 +69,39 @@
     [Parameter]
     public ProjectIdentification ProjectId { get; set; } = null!;
 
-    protected override Task<ProjectContactsSettingsViewModel> LoadModel() => settingsClient.GetContactSettings(ProjectId);
+    /// <summary>Какие защищённые данные проект запрашивает по сохранённым настройкам.</summary>
+    private SensitiveRequests? saved;
 
-    protected override Task SaveModel(ProjectContactsSettingsViewModel model) => settingsClient.SaveContactSettings(model);
+    /// <summary>
+    /// В форме запрошено то, чего нет в сохранённых настройках: при сохранении сервер отзовёт уже
+    /// выданные согласия (#5706), и мастера надо предупредить заранее.
+    /// </summary>
+    private bool RequestsNewSensitiveData => saved is { } before && SensitiveRequests.From(Model).HasNewComparedTo(before);
+
+    protected override async Task<ProjectContactsSettingsViewModel> LoadModel()
+    {
+        var model = await settingsClient.GetContactSettings(ProjectId);
+        saved = SensitiveRequests.From(model);
+        return model;
+    }
+
+    protected override async Task SaveModel(ProjectContactsSettingsViewModel model)
+    {
+        await settingsClient.SaveContactSettings(model);
+        saved = SensitiveRequests.From(model);
+    }
+
+    private sealed record SensitiveRequests(bool Passport, bool RegistrationAddress, bool BirthDate)
+    {
+        public static SensitiveRequests From(ProjectContactsSettingsViewModel model)
+            => new(
+                model.Passport == MandatorySenstiveContactsView.Request,
+                model.RegistrationAddress == MandatorySenstiveContactsView.Request,
+                model.BirthDate == MandatorySenstiveContactsView.Request);
+
+        public bool HasNewComparedTo(SensitiveRequests before)
+            => (Passport && !before.Passport)
+            || (RegistrationAddress && !before.RegistrationAddress)
+            || (BirthDate && !before.BirthDate);
+    }
 }

@@ -79,6 +79,11 @@ internal interface ICharacterPropsService
 `ctx.LoadOtherCharacter(id)`, возвращающий пару «сущность и её снимок», а не скрытой ленивой
 навигацией.
 
+Единственная запись заявок не через `CharacterPropsService` — отзыв согласия на защищённые данные
+у всех заявок проекта, когда проект начинает запрашивать новые данные (#5706):
+`ICharacterAggregateWriteRepository.RevokeSensitiveDataConsents`, один массовый UPDATE из операции
+над проектом (см. ADR009). Грузить ради одного флага каждый агрегат персонажа было бы непропорционально.
+
 ### 2. Хэндл записи: трекаемая сущность и доменный снимок вместе
 
 `ICharacterAggregateWriteRepository` отдаёт согласованную тройку: трекаемый `Character` (и `Claim`,

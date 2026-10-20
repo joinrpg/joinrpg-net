@@ -369,7 +369,7 @@ erDiagram
         datetimeoffset LastPlayerCommentAt
         int CurrentFee "взнос, выставленный мастером вручную; null = из ProjectFeeSettings"
         bool PreferentialFeeUser
-        bool PlayerAllowedSenstiveData "игрок открыл паспорт и адрес"
+        bool PlayerAllowedSenstiveData "игрок открыл запрошенные защищённые данные"
         int AccommodationRequest_Id FK
     }
 
