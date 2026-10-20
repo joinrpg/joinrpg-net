@@ -85,7 +85,8 @@ public class ProjectRestorePlannerTest
         IEnumerable<ExistingClaimInfo>? claims = null,
         IEnumerable<ExistingGroupInfo>? groups = null,
         IEnumerable<IEnumerable<NotificationMessageForRecipient>>? notifications = null,
-        IReadOnlyCollection<int>? groupIdsTakenElsewhere = null)
+        IReadOnlyCollection<int>? groupIdsTakenElsewhere = null,
+        IReadOnlyDictionary<CharacterIdentification, bool>? slotChoices = null)
         => ProjectRestorePlanner.Plan(new ProjectRestoreSource(
             mock.ProjectInfo,
             new ClaimRestoreSource(
@@ -101,6 +102,7 @@ public class ProjectRestorePlannerTest
             LostAt)
         {
             GroupIdsTakenByOtherProjects = groupIdsTakenElsewhere ?? [],
+            NewCharacterIsSlot = slotChoices ?? new Dictionary<CharacterIdentification, bool>(),
         });
 
     [Fact]
@@ -309,6 +311,63 @@ public class ProjectRestorePlannerTest
         plan.Characters.ShouldNotContain(c => c.CharacterId == CharacterId(101) && c.Action != ProjectRestoreAction.Create);
         var discussed = plan.Claims.Single(c => c.ClaimId == ClaimId(3001));
         discussed.Character.ShouldBe(CharacterId(101));
+    }
+
+    /// <summary>
+    /// Персонаж из выгрузки без «Занят?», которого мастер отметил шаблоном, создаётся шаблоном. Принятая заявка
+    /// на него получает своего персонажа из шаблона, поля персонажа из её выгрузки — в заявку (#5733, проект 1696).
+    /// </summary>
+    [Fact]
+    public void CreatedCharacterMarkedSlotByMaster_IsSlotForClaims()
+    {
+        var plan = Plan(
+            [
+                CharacterExport(Day(5), CharacterRow(101, "Стражник", [])),
+                ClaimExport(Day(5), ClaimRow(3000, "Стражник", ClaimStatus.Approved, strength: "12")),
+            ],
+            slotChoices: new Dictionary<CharacterIdentification, bool> { [CharacterId(101)] = true });
+
+        plan.CharacterCreations.ShouldHaveSingleItem().ExportCharacterType.ShouldBe(SlotType);
+        var claim = plan.Claims.ShouldHaveSingleItem();
+        claim.Character.ShouldBe(CharacterId(101));
+        claim.Warnings.ShouldContain(ClaimRestoreWarning.CharacterFromSlot);
+        plan.Characters.ShouldNotContain(c => c.CharacterId == CharacterId(101) && c.Fields.Count > 0);
+        var field = plan.ClaimFields.ShouldHaveSingleItem().Fields.ShouldHaveSingleItem();
+        field.Field.ShouldBe(strength.Id);
+        field.Value.ShouldBe("12");
+    }
+
+    /// <summary>
+    /// Снятая мастером галочка: шаблон из выгрузки создаётся персонажем игрока, горячесть сохраняется; NPC
+    /// остаётся NPC (#5733).
+    /// </summary>
+    [Fact]
+    public void CreatedSlotUnmarkedByMaster_IsPlayerCharacter()
+    {
+        var plan = Plan(
+            [CharacterExport(Day(5),
+                CharacterRow(101, "Стражник", [], type: new MasterExportCharacterType(CharacterType.Slot, IsHot: true)),
+                CharacterRow(102, "Трактирщик", [], type: new MasterExportCharacterType(CharacterType.NonPlayer, IsHot: false)))],
+            slotChoices: new Dictionary<CharacterIdentification, bool> { [CharacterId(101)] = false, [CharacterId(102)] = false });
+
+        plan.CharacterCreations.Single(c => c.CharacterId == CharacterId(101)).ExportCharacterType
+            .ShouldBe(new MasterExportCharacterType(CharacterType.Player, IsHot: true));
+        plan.CharacterCreations.Single(c => c.CharacterId == CharacterId(102)).ExportCharacterType
+            .ShouldBe(new MasterExportCharacterType(CharacterType.NonPlayer, IsHot: false));
+    }
+
+    /// <summary>Выбор мастера — только для создаваемых: тип существующего персонажа план не меняет.</summary>
+    [Fact]
+    public void SlotChoiceForExistingCharacter_Ignored()
+    {
+        var plan = Plan(
+            [CharacterExport(Day(5), CharacterRow(101, "Гамлет", []))],
+            characters: [DbCharacter(101, "Гамлет") with { CharacterType = CharacterType.Player }],
+            slotChoices: new Dictionary<CharacterIdentification, bool> { [CharacterId(101)] = true });
+
+        var hamlet = plan.CharacterChanges.Single(c => c.CharacterId == CharacterId(101));
+        hamlet.ExportCharacterType.ShouldBeNull();
+        hamlet.Warnings.ShouldNotContain(ProjectRestoreWarning.CharacterTypeDiffers);
     }
 
     [Fact]

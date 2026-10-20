@@ -38,6 +38,13 @@ public record ProjectRestoreSource(
 
     /// <summary>Id персонажей из выгрузок, занятые персонажами других проектов.</summary>
     public IReadOnlyCollection<int> CharacterIdsTakenByOtherProjects { get; init; } = [];
+
+    /// <summary>
+    /// Выбор мастера «шаблон / не шаблон» у новых персонажей из выгрузки (#5733) — важнее «Занят?» выгрузки.
+    /// Кого нет — тип по выгрузке.
+    /// </summary>
+    public IReadOnlyDictionary<CharacterIdentification, bool> NewCharacterIsSlot { get; init; }
+        = new Dictionary<CharacterIdentification, bool>();
 }
 
 /// <summary>Что сделать с группой или персонажем.</summary>

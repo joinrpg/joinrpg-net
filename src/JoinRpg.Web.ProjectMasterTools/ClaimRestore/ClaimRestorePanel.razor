@@ -152,6 +152,13 @@
     private List<CharacterRestoreRowEditor> changes = [];
     private List<ClaimFieldsRestoreRowEditor> claimFields = [];
     private readonly List<UploadedExport> exports = [];
+
+    /// <summary>
+    /// Выбор мастера «шаблон / не шаблон» у новых персонажей (#5733). Уходит в план: от типа зависят привязка
+    /// заявок и куда идут поля персонажа из выгрузки заявок.
+    /// </summary>
+    private readonly Dictionary<CharacterIdentification, bool> slotChoices = [];
+
     private readonly List<string> uploadErrors = [];
     private bool applying;
     private bool uploading;
@@ -218,7 +225,10 @@
         loadingPlan = true;
         try
         {
-            var request = new ClaimRestorePlanRequest(ProjectId, [.. exports.Select(e => e.ToPlanExport()).OfType<MasterExportForPlan>()]);
+            var request = new ClaimRestorePlanRequest(ProjectId, [.. exports.Select(e => e.ToPlanExport()).OfType<MasterExportForPlan>()])
+            {
+                SlotChoices = [.. slotChoices.Select(c => new NewCharacterSlotChoice(c.Key, c.Value))],
+            };
             var plan = await Client.GetPlan(request);
             if (version != planVersion)
             {
@@ -357,6 +367,12 @@
     private async Task OnExportDateChanged(UploadedExport export, string? value)
     {
         export.SetFromLocalInput(value);
+        await ReloadPlan();
+    }
+
+    private async Task OnSlotChoiceChanged(CharacterIdentification characterId, bool isSlot)
+    {
+        slotChoices[characterId] = isSlot;
         await ReloadPlan();
     }
 
@@ -593,6 +609,14 @@
                                     @r.Name
                                 }
                                 <div class="text-muted small">выгрузка от @Format(r.ExportedAt)</div>
+                                @if (row.Create && row.CanApply)
+                                {
+                                    <label class="small new-character-slot" style="font-weight: normal; display: block">
+                                        <input type="checkbox" checked="@(r.CharacterType == CharacterType.Slot)" disabled="@Busy"
+                                               @onchange="@(e => OnSlotChoiceChanged(r.CharacterId, e.Value is true))" />
+                                        шаблон
+                                    </label>
+                                }
                                 @if (row.Create && NewCharacterTypeText(r) is { } typeText)
                                 {
                                     <div class="small new-character-type">будет создан как: @typeText</div>
@@ -739,11 +763,10 @@
 
     private static string ValueText(string value) => string.IsNullOrEmpty(value) ? "(пусто)" : value;
 
-    /// <summary>Тип нового персонажа, если он не обычный персонаж игрока; null — обычный.</summary>
+    /// <summary>Тип нового персонажа, если он не обычный персонаж игрока и не просто шаблон (его видно по галочке); null — обычный.</summary>
     private static string? NewCharacterTypeText(CharacterRestoreRowViewModel row) => (row.CharacterType, row.IsHot) switch
     {
         (CharacterType.Slot, true) => CharacterBusyStatusView.HotSlot.GetDisplayName(),
-        (CharacterType.Slot, false) => CharacterBusyStatusView.Slot.GetDisplayName(),
         (CharacterType.NonPlayer, _) => CharacterBusyStatusView.Npc.GetDisplayName(),
         (CharacterType.Player, true) => CharacterBusyStatusView.HotVacancy.GetDisplayName(),
         _ => null,
