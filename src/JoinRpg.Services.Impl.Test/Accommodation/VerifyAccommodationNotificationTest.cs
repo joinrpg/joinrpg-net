@@ -22,7 +22,6 @@ public class VerifyAccommodationNotificationTest
             new ProjectName("Тестовая песочница"),
             AccommodationTypeName: "Палатка",
             RoomName: "101",
-            Initiator: Player("Мастер Мастерович"),
             changed,
             remaining,
             kind);

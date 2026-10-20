@@ -40,7 +40,6 @@ internal class AccommodationNotificationService(
             projectInfo.ProjectName,
             projectInfo.AccommodationSettings.GetRoomCategoryById(model.RoomCategoryId).Name,
             model.RoomName,
-            model.Initiator.DisplayName,
             PlayerNames(model.Changed, byId),
             PlayerNames(model.Remaining, byId),
             model.Kind);
