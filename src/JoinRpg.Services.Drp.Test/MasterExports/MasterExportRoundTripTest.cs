@@ -182,6 +182,30 @@ public class MasterExportRoundTripTest
         ]);
     }
 
+    /// <summary>
+    /// Проект запросил только дату рождения: её колонка идёт сразу за блоком игрока, без пары паспорт+адрес.
+    /// Парсер её не узнаёт — она первый кандидат в поля, а распознавание остальных колонок не ломается.
+    /// </summary>
+    [Fact]
+    public void ClaimsWithOnlyBirthDateRoundTrip()
+    {
+        mock.Project.Details.RequireBirthDate = MandatoryStatus.Recommended;
+        approvedClaim.PlayerAllowedSenstiveData = true;
+        mock.ReInitProjectInfo();
+
+        var bytes = ExportClaims();
+        var headers = XlsxHeaders(bytes);
+        headers.ShouldContain("Дата рождения игрока");
+        headers.ShouldNotContain("Паспортные данные");
+
+        var result = Parse(bytes);
+
+        result.Kind.ShouldBe(MasterExportKind.Claims);
+        result.OtherHeaders.ShouldBe(["Дата рождения игрока", .. FieldHeaders]);
+        result.Rows[0].PlayerEmail.ShouldBe("player@example.com");
+        result.Warnings.ShouldBeEmpty();
+    }
+
     [Fact]
     public void ClaimsRoundTrip()
     {
@@ -213,7 +237,7 @@ public class MasterExportRoundTripTest
         _ = pending.ClaimUpdatedAt.ShouldNotBeNull();
     }
 
-    /// <summary>Все модули, добавляющие колонки: заезд, льготный взнос, поселение, паспорт и адрес.</summary>
+    /// <summary>Все модули, добавляющие колонки: заезд, льготный взнос, поселение, паспорт и адрес, дата рождения.</summary>
     [Fact]
     public void ClaimsWithAllModulesRoundTrip()
     {
@@ -221,6 +245,7 @@ public class MasterExportRoundTripTest
         mock.Project.Details.PreferentialFeeEnabled = true;
         mock.Project.Details.EnableAccommodation = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
+        mock.Project.Details.RequireBirthDate = MandatoryStatus.Required;
         var accommodationType = mock.CreateAccommodationType(name: "Домик");
         _ = mock.CreateAccommodationRequest(accommodationType, approvedClaim);
         approvedClaim.PlayerAllowedSenstiveData = true;
@@ -233,12 +258,13 @@ public class MasterExportRoundTripTest
         headers.ShouldContain("Льготник");
         headers.ShouldContain("Тип поселения");
         headers.ShouldContain("Паспортные данные");
+        headers.ShouldContain("Дата рождения игрока");
         headers.Count(h => h == "Комната").ShouldBe(2);
 
         var result = Parse(bytes);
 
         result.Kind.ShouldBe(MasterExportKind.Claims);
-        result.OtherHeaders.ShouldBe(FieldHeaders);
+        result.OtherHeaders.ShouldBe(["Дата рождения игрока", .. FieldHeaders]); // дату парсер не узнаёт, см. MasterExportColumns
         result.Rows.Select(r => r.ClaimId).ShouldBe([approvedClaim.ClaimId, pendingClaim.ClaimId]);
         result.Rows[0].Status.ShouldBe(ClaimStatus.Approved);
         result.Rows[0].PlayerEmail.ShouldBe("player@example.com");

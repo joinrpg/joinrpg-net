@@ -51,6 +51,21 @@ public class ClosedXmlExcelBackendTests
     }
 
     [Fact]
+    public void DateOnly_IsWrittenAsExcelDateWithoutTime()
+    {
+        var backend = new ClosedXmlExcelBackend();
+        backend.WriteRow([new Cell("Заголовок")]);
+        backend.WriteRow([new Cell(new DateOnly(2000, 2, 1))]);
+
+        using var stream = new MemoryStream(backend.Generate());
+        using var workbook = new XLWorkbook(stream);
+        var cell = workbook.Worksheets.First().Cell(2, 1);
+        cell.DataType.ShouldBe(XLDataType.DateTime);
+        cell.GetDateTime().ShouldBe(new DateTime(2000, 2, 1));
+        cell.GetFormattedString().ShouldBe("01.02.2000");
+    }
+
+    [Fact]
     public void ExcelFileWithLongValue_CanBeCreatedWithoutException()
     {
         var value = new string('х', 100_000);

@@ -93,6 +93,7 @@ public static class ClaimListBuilder
             characterClaim.Finance.PreferentialFeeUser,
             sensitiveData.PassportData,
             sensitiveData.RegistrationAddress,
+            sensitiveData.BirthDate,
             claimInfo.ClaimInCharacter.GetAllFields().ToDictionary(x => x.Field.Id, x => x.ExportString),
             playerInfo
             );

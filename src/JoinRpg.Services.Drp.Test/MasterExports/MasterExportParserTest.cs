@@ -121,6 +121,7 @@ public class MasterExportParserTest
     [InlineData("Паспортные данные")]
     [InlineData("Адрес")]
     [InlineData("PassportData")]
+    [InlineData("Дата рождения игрока")] // колонку даты рождения парсер не узнаёт вовсе, см. MasterExportColumns
     public void ClaimsWithoutPassport_FirstFieldNamedLikePassport_IsField(string fieldName)
     {
         var result = Parse(Xlsx(

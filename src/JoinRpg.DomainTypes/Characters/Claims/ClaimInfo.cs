@@ -59,11 +59,14 @@ public record class ClaimInfo
             var access = Claim.PlayerAllowedSensitiveData && requirements.SensitiveDataRequired;
             var showPassport = access && requirements.PassportRequested;
             var showAddress = access && requirements.RegistrationAddressRequested;
+            var showBirthDate = access && requirements.BirthDateRequested;
             return new ClaimSensitiveData(
                 showPassport,
                 showPassport ? Player.PassportData : null,
                 showAddress,
-                showAddress ? Player.RegistrationAddress : null);
+                showAddress ? Player.RegistrationAddress : null,
+                showBirthDate,
+                showBirthDate ? Player.BirthDate : null);
         }
     }
 
@@ -92,4 +95,6 @@ public record ClaimSensitiveData(
     bool ShowPassportData,
     string? PassportData,
     bool ShowRegistrationAddress,
-    string? RegistrationAddress);
+    string? RegistrationAddress,
+    bool ShowBirthDate,
+    DateOnly? BirthDate);

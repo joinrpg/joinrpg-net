@@ -125,7 +125,7 @@ public class ClaimListBuilderTest
         Mock.ReInitProjectInfo();
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
         claim.PlayerAllowedSenstiveData = true;
-        var player = Mock.PlayerInfo with { PassportData = "паспорт", RegistrationAddress = "адрес" };
+        var player = Mock.PlayerInfo with { PassportData = "паспорт", RegistrationAddress = "адрес", BirthDate = new DateOnly(2000, 2, 1) };
         var claimInfo = new ClaimInfo(
             new ClaimInCharacter(Mock.GetCharacterInfo(Mock.Character), claim.GetId()),
             player);
@@ -138,6 +138,32 @@ public class ClaimListBuilderTest
 
         result.PassportData.ShouldBe(requestPassport ? "паспорт" : null);
         result.RegistrationAddress.ShouldBe(requestAddress ? "адрес" : null);
+        result.BirthDate.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ExportGivesBirthDateOnlyWithConsent(bool consent)
+    {
+        DateOnly? expected = consent ? new DateOnly(2000, 2, 1) : null;
+        Mock.Project.Details.RequireBirthDate = MandatoryStatus.Recommended;
+        Mock.ReInitProjectInfo();
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.PlayerAllowedSenstiveData = consent;
+        var player = Mock.PlayerInfo with { PassportData = "паспорт", BirthDate = new DateOnly(2000, 2, 1) };
+        var claimInfo = new ClaimInfo(
+            new ClaimInCharacter(Mock.GetCharacterInfo(Mock.Character), claim.GetId()),
+            player);
+
+        var result = ClaimListBuilder.BuildItemForExport(
+            claim,
+            new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
+            claimInfo,
+            roomName: null);
+
+        result.BirthDate.ShouldBe(expected);
+        result.PassportData.ShouldBeNull();
     }
 
     // EF-версия списка отдавала пустую строку, если у игрока нет ФИО, а доменный

@@ -109,6 +109,13 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     }
 
     [Pure]
+    protected ITableColumn DateOnlyColumn(Expression<Func<TRow, DateOnly?>> func)
+    {
+        var member = func.AsPropertyAccess();
+        return new TableColumn<DateOnly?>(member, r => func.Compile()(r));
+    }
+
+    [Pure]
     protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User?>> func, ProjectInfo projectInfo)
     {
         if (projectInfo.ProjectStatus == ProjectLifecycleStatus.Archived)

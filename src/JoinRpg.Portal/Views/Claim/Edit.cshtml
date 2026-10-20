@@ -127,6 +127,13 @@
                       @Model.SensitiveData.RegistrationAddress
                     </dd>
                 }
+                @if (Model.SensitiveData.ShowBirthDate)
+                {
+                    <dt>Дата рождения</dt>
+                    <dd>
+                      @Model.SensitiveData.BirthDate?.ToString("dd.MM.yyyy")
+                    </dd>
+                }
             </dl>
         </div>
     </div>
