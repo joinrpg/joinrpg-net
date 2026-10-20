@@ -45,6 +45,18 @@ public class WebApiExceptionHandlerTest
     }
 
     [Fact]
+    public async Task ProjectNotFound_InWebApi_ReturnsNotFoundWithReason()
+    {
+        var httpContext = CreateHttpContext("/webapi/1611/project/SaveContactSettings");
+
+        var (handled, problem) = await Handle(httpContext, new ProjectNotFoundException(ProjectId));
+
+        handled.ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+        problem.GetProperty("title").GetString().ShouldBe("Проект не найден");
+    }
+
+    [Fact]
     public async Task UnknownException_InWebApi_ReturnsServerErrorProblem()
     {
         var httpContext = CreateHttpContext("/webapi/1611/project/SaveContactSettings");

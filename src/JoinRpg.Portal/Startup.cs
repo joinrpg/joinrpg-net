@@ -35,7 +35,6 @@ using JoinRpg.Services.Notifications.Senders;
 using JoinRpg.WebPortal.Managers;
 using JoinRpg.WebPortal.Managers.Drp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -195,16 +194,13 @@ public class Startup(WebApplicationBuilder builder)
               options.SupportedCultures = [new CultureInfo("ru-RU")];
           });
 
-        _ = app.UseExceptionHandler(new ExceptionHandlerOptions
-        {
-            ExceptionHandlingPath = "/error",
-            // По умолчанию обработанное в IExceptionHandler не логируется вовсе — а сбои в /webapi/ должны попадать в логи.
-            SuppressDiagnosticsCallback = context => context.ExceptionHandledBy == ExceptionHandledType.ExceptionHandlerService
-                && WebApiExceptionHandler.IsExpectedRefusal(context.Exception),
-        });
-        _ = app.UseStatusCodePagesWithReExecute("/error/{0}");
-
+        // Снаружи обработчика исключений: лог запроса видит итоговый код ответа (404 для не найденного
+        // проекта — Information), а не исключение, на которое Serilog всегда пишет Error и «responded 500».
+        // Стектрейс настоящего сбоя пишет страница ошибки.
         _ = app.UseJoinRequestLogging();
+
+        _ = app.UseExceptionHandler(PortalExceptionHandling.CreateOptions());
+        _ = app.UseStatusCodePagesWithReExecute(PortalExceptionHandling.ErrorPagePath + "/{0}");
 
         _ = app.MapOpenApi();
         _ = app.MapSwaggerUI("swagger", c =>

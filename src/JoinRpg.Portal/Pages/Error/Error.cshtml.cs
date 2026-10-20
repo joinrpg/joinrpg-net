@@ -21,9 +21,19 @@ public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
 
         if (HttpContext.Features.Get<IExceptionHandlerPathFeature>() is IExceptionHandlerPathFeature exceptionHandlerPathFeature)
         {
-            logger.LogError(exceptionHandlerPathFeature.Error,
-                "Exception during web request in {errorPath}",
-                exceptionHandlerPathFeature.Path);
+            if (exceptionHandlerPathFeature.Error is ProjectNotFoundException notFound)
+            {
+                IsProjectNotFound = true;
+                logger.LogInformation("Запрошен несуществующий проект {notFoundProjectId} в {errorPath}",
+                    notFound.ProjectId.Value,
+                    exceptionHandlerPathFeature.Path);
+            }
+            else
+            {
+                logger.LogError(exceptionHandlerPathFeature.Error,
+                    "Exception during web request in {errorPath}",
+                    exceptionHandlerPathFeature.Path);
+            }
         }
         else if (HttpStatusCode is null)
         {
@@ -35,6 +45,8 @@ public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
 
     [BindProperty(SupportsGet = true)]
     public int? HttpStatusCode { get; set; }
+
+    public bool IsProjectNotFound { get; private set; }
 
     public ErrorSupportInfo SupportInfo { get; private set; } = null!;
 }

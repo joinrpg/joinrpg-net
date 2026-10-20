@@ -2,10 +2,10 @@ namespace JoinRpg.Data.Interfaces;
 
 public interface IProjectMetadataRepository
 {
-    /// <exception cref="JoinRpgEntityNotFoundException">Проект не найден.</exception>
+    /// <exception cref="ProjectNotFoundException">Проект не найден.</exception>
     Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false);
 
-    /// <exception cref="JoinRpgEntityNotFoundException">Проект не найден.</exception>
+    /// <exception cref="ProjectNotFoundException">Проект не найден.</exception>
     Task<ProjectDetails> GetProjectDetails(ProjectIdentification projectId);
 
     /// <summary>
