@@ -48,13 +48,13 @@ public class MasterExportFieldMapperTest
 
     private static MasterExportFieldValue RoundTrip(ProjectFieldInfo field, string? stored, string? expectedStored)
     {
-        var display = new FieldWithValue(field, stored).DisplayString;
+        var display = new FieldWithValue(field, stored).ExportString;
 
         var result = MasterExportFieldMapper.MapValue(field, display, truncated: false);
 
         result.Field.ShouldBe(field.Id);
         result.StoredValue.ShouldBe(expectedStored);
-        new FieldWithValue(field, result.StoredValue).DisplayString.ShouldBe(display);
+        new FieldWithValue(field, result.StoredValue).ExportString.ShouldBe(display);
         return result;
     }
 
@@ -96,13 +96,29 @@ public class MasterExportFieldMapperTest
         => ShouldApplyCleanly(RoundTrip(AddField(ProjectFieldType.Checkbox), stored, expectedStored: null));
 
     [Fact]
-    public void CheckboxWithoutVariationSelectorIsOn()
-        => MasterExportFieldMapper.MapValue(AddField(ProjectFieldType.Checkbox), "☑", false).StoredValue.ShouldBe("on");
+    public void CheckboxExportIsDistinguishable()
+        => new FieldWithValue(AddField(ProjectFieldType.Checkbox), "on").ExportString
+            .ShouldNotBe(new FieldWithValue(AddField(ProjectFieldType.Checkbox), null).ExportString);
+
+    // Выгрузки до перехода на «да»/«нет» писали значки
+    [Theory]
+    [InlineData("☑️", "on")]
+    [InlineData("☑", "on")]
+    [InlineData("☐", null)]
+    [InlineData("Да", "on")]
+    [InlineData("НЕТ", null)]
+    public void CheckboxOtherSpellingsAreParsed(string text, string? expectedStored)
+    {
+        var result = MasterExportFieldMapper.MapValue(AddField(ProjectFieldType.Checkbox), text, false);
+
+        result.StoredValue.ShouldBe(expectedStored);
+        ShouldApplyCleanly(result);
+    }
 
     [Fact]
     public void CheckboxGarbageIsMarked()
     {
-        var result = MasterExportFieldMapper.MapValue(AddField(ProjectFieldType.Checkbox), "да", false);
+        var result = MasterExportFieldMapper.MapValue(AddField(ProjectFieldType.Checkbox), "может быть", false);
 
         result.StoredValue.ShouldBeNull();
         result.Warnings.ShouldBe([MasterExportFieldWarning.InvalidCheckboxValue]);

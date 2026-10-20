@@ -266,6 +266,6 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     protected static ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc, string name)
     {
         return new TableColumn<string>(name,
-          x => fieldsFunc(x).SingleOrDefault(f => f.Field == projectField)?.DisplayString);
+          x => fieldsFunc(x).SingleOrDefault(f => f.Field == projectField)?.ExportString);
     }
 }

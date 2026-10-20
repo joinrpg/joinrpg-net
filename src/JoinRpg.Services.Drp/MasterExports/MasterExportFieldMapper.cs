@@ -9,8 +9,8 @@ namespace JoinRpg.Services.Drp.MasterExports;
 /// и превращает отображаемый текст значения обратно в хранимое значение поля.
 /// </summary>
 /// <remarks>
-/// Выгрузка пишет заголовок колонки = имя поля, значение = <see cref="FieldWithValue.DisplayString"/>
-/// (см. <c>CustomExporter.FieldColumn</c>). Разбор — обратная операция: <see cref="FieldWithValue.DisplayString"/>
+/// Выгрузка пишет заголовок колонки = имя поля, значение = <see cref="FieldWithValue.ExportString"/>
+/// (см. <c>CustomExporter.FieldColumn</c>). Разбор — обратная операция: <see cref="FieldWithValue.ExportString"/>
 /// от <see cref="MasterExportFieldValue.StoredValue"/> даёт исходный текст.
 /// </remarks>
 public static class MasterExportFieldMapper
@@ -134,12 +134,14 @@ public static class MasterExportFieldMapper
 
     private static string? ParseCheckbox(string text, List<MasterExportFieldWarning> warnings)
     {
-        // «☑️» — символ и вариационный селектор; табличный редактор мог селектор потерять
-        if (text.StartsWith(CheckboxOnPrefix, StringComparison.Ordinal))
+        // Старые выгрузки писали «☑️»/«☐». «☑️» — символ и вариационный селектор; табличный редактор мог селектор потерять
+        if (string.Equals(text, FieldWithValue.CheckboxExportOn, StringComparison.OrdinalIgnoreCase)
+            || text.StartsWith(CheckboxOnPrefix, StringComparison.Ordinal))
         {
             return FieldWithValue.CheckboxValueOn;
         }
-        if (!text.StartsWith(CheckboxOffPrefix, StringComparison.Ordinal))
+        if (!string.Equals(text, FieldWithValue.CheckboxExportOff, StringComparison.OrdinalIgnoreCase)
+            && !text.StartsWith(CheckboxOffPrefix, StringComparison.Ordinal))
         {
             warnings.Add(MasterExportFieldWarning.InvalidCheckboxValue);
         }
