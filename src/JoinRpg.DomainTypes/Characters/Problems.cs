@@ -73,6 +73,7 @@ public enum ClaimProblemType
     MissingPassport,
     MissingRegistrationAddress,
     SensitiveDataNotAllowed,
+    MissingBirthDate,
 }
 
 public enum ProblemSeverity
@@ -100,7 +101,7 @@ public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemS
 {
     /// <summary>
     /// Держит то, что проект требует (Warning и выше), подсказки по рекомендованным контактам — нет.
-    /// Запрошенные паспорт и адрес регистрации — тоже Warning (см. <c>UserProfileProblemsCalculator.ToSensitiveDataSeverity</c>).
+    /// Запрошенные паспорт, адрес регистрации и дата рождения — тоже Warning (см. <c>UserProfileProblemsCalculator.ToSensitiveDataSeverity</c>).
     /// </summary>
     public override bool BlocksCheckIn => Severity >= ProblemSeverity.Warning;
 

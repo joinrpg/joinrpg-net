@@ -35,7 +35,8 @@ public record class ProblemViewModel(string ProblemTypeText, ClaimProblemType Pr
       {ClaimProblemType.MissingVkontakte, "Не привязан ВК" },
       {ClaimProblemType.MissingPassport, "В профиле нет паспортных данных" },
       {ClaimProblemType.MissingRegistrationAddress, "В профиле нет адреса регистрации" },
-      {ClaimProblemType.SensitiveDataNotAllowed, "Не разрешен доступ к паспортным данным" },
+      {ClaimProblemType.MissingBirthDate, "В профиле нет даты рождения" },
+      {ClaimProblemType.SensitiveDataNotAllowed, "Не разрешен доступ к защищённым данным" },
     };
 
     public ProblemViewModel(ClaimProblem problem) : this(Types[problem.ProblemType], problem.ProblemType, problem.ProblemTime, problem.Severity, problem is ProfileRelatedProblem, problem.ExtraInfo)

@@ -167,6 +167,45 @@ public class ClaimContactsMissingFilterTest
     }
 
     [Fact]
+    public void RequestedBirthDateMissingIsWarning()
+    {
+        var projectInfo = WithRequirement(s => s with { RequireBirthDate = MandatoryStatus.Recommended });
+
+        Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: true))
+            .ShouldContain(p => p.ProblemType == ClaimProblemType.MissingBirthDate && p.Severity == ProblemSeverity.Warning);
+    }
+
+    [Fact]
+    public void BirthDateNotMissingWhenFilled()
+    {
+        var projectInfo = WithRequirement(s => s with { RequireBirthDate = MandatoryStatus.Recommended });
+        var player = Mock.PlayerInfo with { BirthDate = new DateOnly(2000, 2, 1) };
+
+        Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: true, player: player))
+            .ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingBirthDate);
+    }
+
+    [Fact]
+    public void BirthDateNotMissingWithoutConsent()
+    {
+        var projectInfo = WithRequirement(s => s with { RequireBirthDate = MandatoryStatus.Recommended });
+
+        var problems = Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: false));
+
+        problems.ShouldContain(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed);
+        problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingBirthDate);
+    }
+
+    [Fact]
+    public void BirthDateNotRequested_NoProblem()
+    {
+        var projectInfo = WithRequirement(s => s with { RequirePassport = MandatoryStatus.Recommended });
+
+        Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: true))
+            .ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingBirthDate);
+    }
+
+    [Fact]
     public void SensitiveDataNotAllowedWhenConsentNotGiven()
     {
         var projectInfo = WithRequirement(s => s with { RequirePassport = MandatoryStatus.Required });

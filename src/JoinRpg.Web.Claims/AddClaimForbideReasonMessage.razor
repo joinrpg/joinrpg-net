@@ -84,6 +84,12 @@
             <br /><JoinProfileButton />
     </JoinAlert>
         break;
+    case AddClaimForbideReason.BirthDateMissing:
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+            Мастера требуют указать дату рождения, чтобы подать заявку на проект.
+            <br /><JoinProfileButton />
+    </JoinAlert>
+        break;
     case AddClaimForbideReason.ApprovedClaimMovedToSlot:
         <JoinAlert Variation="VariationStyleEnum.Warning">
             Утверждённую заявку нельзя перенести в слот «@CharacterName». Выберите конкретного персонажа.

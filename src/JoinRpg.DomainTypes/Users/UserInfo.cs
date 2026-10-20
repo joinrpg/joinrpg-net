@@ -42,7 +42,8 @@ public record class UserInfo(
             PhoneNumber,
             UserFullName.FullName,
             PassportData,
-            RegistrationAddress);
+            RegistrationAddress,
+            BirthDate);
 
     /// <summary>
     /// Число полных лет на дату <paramref name="today"/>, или null, если дата рождения не указана.
