@@ -11,7 +11,7 @@ public class GlobalScheduleController(IProjectRepository projectRepository) : XG
     /// <summary>
     /// All active projects with schedules
     /// </summary>
-    [HttpGet, Authorize, Route("projects/active")]
+    [HttpGet, Authorize("XApiUser"), Route("projects/active")]
     public async Task<IEnumerable<ProjectHeader>> GetActiveProjects()
     {
         return (await projectRepository.GetProjectsBySpecification(ProjectListSpecification.ActiveProjectsWithSchedule))
