@@ -21,6 +21,18 @@ public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? Problem
     public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTimeOffset problemTime, string? extraInfo = null) : this(problemType, problemTime.DateTime, extraInfo, severity)
     {
     }
+
+    /// <summary>
+    /// Не даёт зарегистрировать игрока на полигоне (#5708): пока проблема есть, заявка не готова к регистрации.
+    /// </summary>
+    [JsonIgnore]
+    public virtual bool BlocksCheckIn => false;
+
+    /// <summary>
+    /// Исправить может сам игрок; иначе — только мастер.
+    /// </summary>
+    [JsonIgnore]
+    public virtual bool PlayerCanFix => false;
 }
 
 public enum ClaimProblemType
@@ -75,6 +87,25 @@ public record class FieldRelatedProblem(ClaimProblemType ProblemType, ProblemSev
     : ClaimProblem(ProblemType, Severity, Field.Name + ExtraInfo ?? "")
 {
     public ProjectFieldInfo Field { get; } = Field ?? throw new ArgumentNullException(nameof(Field));
+
+    /// <summary>
+    /// Незаполненное поле — любой важности — держит регистрацию: так было и до #5708.
+    /// </summary>
+    public override bool BlocksCheckIn => true;
+
+    public override bool PlayerCanFix => Field.CanPlayerEdit;
 }
 
-public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemSeverity ProblemSeverity) : ClaimProblem(ProblemType, ProblemSeverity);
+public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemSeverity ProblemSeverity) : ClaimProblem(ProblemType, ProblemSeverity)
+{
+    /// <summary>
+    /// Держит то, что проект требует (Warning и выше), подсказки по рекомендованным контактам — нет.
+    /// Запрошенные паспорт и адрес регистрации — тоже Warning (см. <c>UserProfileProblemsCalculator.ToSensitiveDataSeverity</c>).
+    /// </summary>
+    public override bool BlocksCheckIn => Severity >= ProblemSeverity.Warning;
+
+    /// <summary>
+    /// Профиль и согласие на доступ к нему — только сам игрок.
+    /// </summary>
+    public override bool PlayerCanFix => true;
+}
