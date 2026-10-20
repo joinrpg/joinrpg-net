@@ -34,7 +34,7 @@ public sealed class FieldWithValue
         {
             if (Field.Type == ProjectFieldType.Checkbox)
             {
-                return Value?.StartsWith(CheckboxValueOn) == true ? "☑️" : "☐";
+                return IsCheckboxOn ? "☑️" : "☐";
             }
 
             if (Field.HasValueList)
@@ -49,6 +49,22 @@ public sealed class FieldWithValue
             return Value ?? "";
         }
     }
+
+    /// <summary>
+    /// Текст значения для выгрузки в таблицу. Отличается от <see cref="DisplayString"/> только у чекбоксов:
+    /// «☑️» и «☐» в Excel почти неотличимы, поэтому там «да» и «нет».
+    /// </summary>
+    public string ExportString
+        => Field.Type == ProjectFieldType.Checkbox
+            ? (IsCheckboxOn ? CheckboxExportOn : CheckboxExportOff)
+            : DisplayString;
+
+    private bool IsCheckboxOn => Value?.StartsWith(CheckboxValueOn) == true;
+
+    // TODO[Localize]
+    public const string CheckboxExportOn = "да";
+    // TODO[Localize]
+    public const string CheckboxExportOff = "нет";
 
     /// <summary>
     /// Идентификаторы пользователей для полей-ссылок на пользователя (ADR017).

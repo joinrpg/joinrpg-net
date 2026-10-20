@@ -101,7 +101,7 @@ public class ClaimListBuilderTest
             claimInfo,
             roomName: null);
 
-        var legacy = claim.GetFields(Mock.ProjectInfo).ToDictionary(x => x.Field.Id, x => x.DisplayString);
+        var legacy = claim.GetFields(Mock.ProjectInfo).ToDictionary(x => x.Field.Id, x => x.ExportString);
         result.FieldValues.ShouldBe(legacy);
         result.FieldValues[Mock.CharacterFieldInfo.Id].ShouldBe(approved ? "секрет персонажа" : "");
 
