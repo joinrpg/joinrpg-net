@@ -9,7 +9,7 @@ public class EditUserProfileViewModel
     [Display(Name = "Имя")]
     public string BornName { get; set; }
 
-    [Display(Name = "Отчество")]
+    [Display(Name = "Отчество", Description = "Если у вас есть отчество, скорее всего оно понадобится при поселении.")]
     public string FatherName { get; set; }
 
     [Display(Name = "Фамилия")]
