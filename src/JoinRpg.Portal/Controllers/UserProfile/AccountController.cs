@@ -64,6 +64,8 @@ public class AccountController(
             return View(vm1);
         }
 
+        model.Email = model.Email.Trim();
+
         // Require the user to have a confirmed email before they can log on.
         var user = await userManager.FindByNameAsync(model.Email);
 
