@@ -17,7 +17,8 @@ internal static class Swagger
                 return Task.CompletedTask;
             })
             .AddDocumentTransformer(new JwtSecuritySchemeTransformer())
-            .AddDocumentTransformer(new XGameApiPathFilter());
+            .AddDocumentTransformer(new XGameApiPathFilter())
+            .AddSchemaTransformer(new StrictNumberSchemaTransformer());
         });
     }
     internal static void ConfigureUI(SwaggerUIOptions c)
