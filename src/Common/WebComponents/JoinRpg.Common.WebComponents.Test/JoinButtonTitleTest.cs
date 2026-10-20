@@ -44,6 +44,24 @@ public class JoinButtonTitleTest
         cut.Find("a").GetAttribute("aria-label").ShouldBe("Изменить персонажа");
     }
 
+    /// <summary>
+    /// У кнопки из одной иконки нет подписи, и кнопка подтверждения в диалоге берёт её из подсказки.
+    /// Раньше такая кнопка с <see cref="JoinButton.AutoConfirm"/> падала при рендере.
+    /// </summary>
+    [Fact]
+    public void IconOnlyButtonWithAutoConfirm_DialogButtonIsNamedByTitle()
+    {
+        using var ctx = CreateContext();
+        var cut = ctx.Render<JoinButton>(p => p
+            .Add(x => x.Icon, JoinIconType.Delete)
+            .Add(x => x.Title, "Удалить")
+            .Add(x => x.AutoConfirm, true)
+            .Add(x => x.AutoConfirmMessage, "Удалить тип размещения «Палатка»?"));
+
+        cut.FindAll("dialog .join-dialog-footer button").Select(b => b.TextContent.Trim())
+            .ShouldContain("Удалить");
+    }
+
     [Fact]
     public void JoinIconButton_TitleIsHintAndAccessibleName()
     {
