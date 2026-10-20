@@ -1,0 +1,12 @@
+/* Скрыта, пока blazor.web.js не выставит display: block. */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.2);
+}
