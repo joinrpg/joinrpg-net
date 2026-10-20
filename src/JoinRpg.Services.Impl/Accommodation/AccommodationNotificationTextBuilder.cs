@@ -10,7 +10,6 @@ internal record RoomOccupancyTextData(
     ProjectName ProjectName,
     string AccommodationTypeName,
     string RoomName,
-    UserDisplayName Initiator,
     IReadOnlyCollection<UserDisplayName> Changed,
     IReadOnlyCollection<UserDisplayName> Remaining,
     RoomOccupancyChangeKind Kind);
@@ -43,8 +42,8 @@ internal class AccommodationNotificationTextBuilder
     public string GetHeader(InviteTextData data)
         => $"{data.ProjectName.Value}: приглашения к проживанию";
 
-    // Подписи инициатора в конце нет, в отличие от уведомлений о комнате: его имя уже стоит в самой
-    // фразе, и повтор читался бы странно.
+    // Подпись с именем инициатора в тело не пишем: её добавляет канал доставки (письмо — после
+    // разделителя), повтор в теле давал бы имя дважды.
     public string GetBody(InviteTextData data)
         => $"""
             Добрый день, %recepient.name%
@@ -90,8 +89,6 @@ internal class AccommodationNotificationTextBuilder
             Изменен состав жителей комнаты {data.AccommodationTypeName} {data.RoomName}
 
             {GetChangeDescription(data)}
-
-            {data.Initiator.DisplayName}
             """;
 
     private static string GetChangeDescription(RoomOccupancyTextData data)
