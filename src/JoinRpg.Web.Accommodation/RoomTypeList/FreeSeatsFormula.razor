@@ -1,0 +1,21 @@
+@* «вместимость × пустые комнаты + свободные места в частично занятых = всего свободно» *@
+@if (Occupancy.FreeCapacity == 0)
+{
+    <div>Свободно: нет</div>
+}
+else
+{
+    <div>
+        @("Свободно: ")<span title="@RoomTypeListItemViewModel.CapacityTooltip">@Occupancy.Capacity</span>
+        @(" ✕ ")<span title="@RoomTypeListItemViewModel.FullyFreeRoomsTooltip">@Occupancy.FullyFreeRoomsCount</span>
+        @if (Occupancy.PartialRoomsCount > 0)
+        {
+            @(" + ")<span title="@RoomTypeListItemViewModel.PartialFreeSeatsTooltip">@Occupancy.PartialFreeSeats</span>
+        }
+        @(" = ")<span title="@RoomTypeListItemViewModel.TotalFreeTooltip">@Occupancy.FreeCapacity</span>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public RoomTypeOccupancySummary Occupancy { get; set; } = null!;
+}

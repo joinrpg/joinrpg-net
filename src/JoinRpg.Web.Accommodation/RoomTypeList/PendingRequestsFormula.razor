@@ -1,0 +1,30 @@
+@* Нерасселённые заявки: «оплаченные + принятые, не оплаченные = всего». Слагаемое-ноль не выводится,
+   но если неоплаченных нет, оплаченные показываются даже нулём — формула не остаётся без левой части. *@
+@if (Total != 0)
+{
+    var showPaid = Paid != 0 || AcceptedNotPaid == 0;
+    if (showPaid)
+    {
+        <span title="@RoomTypeListItemViewModel.PaidTooltip">@Paid</span>
+    }
+    if (AcceptedNotPaid != 0)
+    {
+        if (showPaid)
+        {
+            @(" + ")
+        }
+        <span title="@RoomTypeListItemViewModel.AcceptedNotPaidTooltip">@AcceptedNotPaid</span>
+    }
+    @(" = ")<span title="@RoomTypeListItemViewModel.TotalUnsettledTooltip">@Total</span>
+}
+
+@code {
+    /// <summary>Сколько нерасселённых заявок оплачено полностью</summary>
+    [Parameter, EditorRequired] public int Paid { get; set; }
+
+    /// <summary>Сколько нерасселённых заявок принято, но оплачено не полностью</summary>
+    [Parameter, EditorRequired] public int AcceptedNotPaid { get; set; }
+
+    /// <summary>Всего нерасселённых заявок</summary>
+    [Parameter, EditorRequired] public int Total { get; set; }
+}

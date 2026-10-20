@@ -1,0 +1,61 @@
+@inject IAccommodationUriLocator UriLocator
+
+<h2>Поселение на игре «@Model.ProjectName»</h2>
+
+<JoinButtonGroup>
+    @if (Model.CanManageRooms)
+    {
+        <JoinButton Preset="ButtonPreset.Add" Style="VariationStyleEnum.Success" Label="Добавить тип размещения"
+                    Link="@UriLocator.GetAddRoomTypeUri(ProjectId).ToString()" />
+    }
+    <JoinButton Label="Игроки без поселения..." Link="@UriLocator.GetClaimsWithoutRoomTypeListUri(ProjectId).ToString()" />
+    <JoinButton Icon="JoinIconType.Download" Label="Список расселения (Excel)"
+                Link="@UriLocator.GetAccommodationReportExcelUri(ProjectId).ToString()" />
+    @if (Model.CanAssignRooms)
+    {
+        @* Последней: остров без пререндера появляется после загрузки WASM и не сдвигает соседей. *@
+        <UnOccupyAllButton ProjectId="ProjectId" @rendermode="ButtonRenderMode" />
+    }
+</JoinButtonGroup>
+
+<div style="margin-top: 1em;">
+    <JoinTableSimple>
+        <TableHeader>
+            <th>Название</th>
+            <th class="visible-lg">Описание</th>
+            <th class="price-table" style="min-width: 10em; width: 10em;">Цена</th>
+            <th class="price-table">Места</th>
+            <th class="price-table">Нерасселено</th>
+            <th style="min-width: 11em; width: 11em;"></th>
+        </TableHeader>
+        <TableBody>
+            @foreach (var roomType in Model.RoomTypes)
+            {
+                <RoomTypeListRow Model="roomType" />
+            }
+            @if (Model.RoomTypes.Count == 0)
+            {
+                <tr><td colspan="6">Типы размещения не добавлены</td></tr>
+            }
+            <UnassignedClaimsRow Model="Model.UnassignedClaims" />
+            <RoomTypeListTotalRow Model="Model" />
+        </TableBody>
+    </JoinTableSimple>
+
+    @if (Model.CanManageRooms)
+    {
+        <div style="margin-top: 1em;">
+            <JoinButton Preset="ButtonPreset.Add" Style="VariationStyleEnum.Success" Label="Добавить тип размещения"
+                        Link="@UriLocator.GetAddRoomTypeUri(ProjectId).ToString()" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public AccommodationListViewModel Model { get; set; } = null!;
+
+    // Кнопка выселения — остров на странице, которая сама рендерится статически.
+    private static readonly IComponentRenderMode ButtonRenderMode = new InteractiveWebAssemblyRenderMode(prerender: false);
+
+    private ProjectIdentification ProjectId => Model.ProjectId;
+}

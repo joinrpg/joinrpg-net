@@ -1,0 +1,41 @@
+@* Остров на статической странице «Поселение»: удаление — мутация, поэтому идёт POST-ом через API,
+   а не переходом по ссылке. *@
+@inject IRoomTypeEditClient Client
+@inject NavigationManager NavigationManager
+@inject ILogger<DeleteRoomTypeButton> Logger
+
+<JoinButton Icon="JoinIconType.Delete" Style="VariationStyleEnum.Warning" Size="SizeStyleEnum.Small" Title="Удалить"
+            AutoConfirm="true" AutoConfirmMessage="@($"Удалить тип размещения «{Name}»?")"
+            OnClick="Delete" />
+<JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
+
+@code {
+    [Parameter, EditorRequired] public AccommodationTypeIdentification RoomTypeId { get; set; } = null!;
+
+    /// <summary>Название типа — для вопроса перед удалением</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = null!;
+
+    private JoinMessageDialog errorDialog = null!;
+    private string error = "";
+
+    private async Task Delete(ButtonClickEventArgs args)
+    {
+        try
+        {
+            await Client.DeleteRoomType(RoomTypeId);
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка при удалении типа проживания {RoomTypeId}", RoomTypeId);
+            // Отказ сервера (например, в комнатах этого типа живут) приходит с понятным текстом.
+            error = exception is InvalidOperationException
+                ? exception.Message
+                : "Произошла ошибка при удалении типа проживания";
+            // Страница не перезагрузится — кнопку надо вывести из состояния «в процессе», иначе повторить нельзя.
+            args.ExitProgressState = true;
+            StateHasChanged();
+            _ = errorDialog.ShowModalAsync();
+        }
+    }
+}

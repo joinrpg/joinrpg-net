@@ -1,0 +1,21 @@
+@* Не «вместимость × комнаты»: полную комнату может заполнить и тип с меньшей вместимостью (ADR020),
+   так что выводим само число жильцов полных комнат. *@
+@if (Occupancy.PoolOccupied == 0)
+{
+    <div>Занято: нет</div>
+}
+else
+{
+    <div>
+        @("Занято: ")<span title="@RoomTypeListItemViewModel.FullyOccupiedSeatsTooltip">@Occupancy.FullyOccupiedSeats</span>
+        @if (Occupancy.PartialRoomsCount > 0)
+        {
+            @(" + ")<span title="@RoomTypeListItemViewModel.PartialOccupiedSeatsTooltip">@Occupancy.PartialOccupiedSeats</span>
+        }
+        @(" = ")<span title="@RoomTypeListItemViewModel.TotalOccupiedTooltip">@Occupancy.PoolOccupied</span>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public RoomTypeOccupancySummary Occupancy { get; set; } = null!;
+}

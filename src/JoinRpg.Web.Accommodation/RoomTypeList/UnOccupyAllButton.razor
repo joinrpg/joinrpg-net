@@ -1,0 +1,37 @@
+@* Остров на статической странице «Поселение»: выселение — мутация, поэтому идёт POST-ом через API. *@
+@using JoinRpg.Web.Accommodation.Rooms
+@inject IAccommodationRoomsClient Client
+@inject NavigationManager NavigationManager
+@inject ILogger<UnOccupyAllButton> Logger
+
+<JoinButton Icon="JoinIconType.EvictAll" Label="Выселить всех" ProgressLabel="Выселяем..."
+            AutoConfirm="true"
+            AutoConfirmMessage="Вы точно уверены, что хотите выселить ВСЕХ участников из ВСЕХ комнат ВСЕХ типов?"
+            OnClick="UnOccupyAll" />
+<JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
+
+@code {
+    [Parameter, EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private JoinMessageDialog errorDialog = null!;
+    private string error = "";
+
+    private async Task UnOccupyAll(ButtonClickEventArgs args)
+    {
+        try
+        {
+            await Client.UnOccupyAll(ProjectId);
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка при выселении всех в проекте {ProjectId}", ProjectId);
+            error = exception is AccommodationRoomsOperationRefusedException
+                ? $"Произошла ошибка при выселении: {exception.Message}"
+                : "Произошла ошибка при выселении";
+            args.ExitProgressState = true;
+            StateHasChanged();
+            _ = errorDialog.ShowModalAsync();
+        }
+    }
+}

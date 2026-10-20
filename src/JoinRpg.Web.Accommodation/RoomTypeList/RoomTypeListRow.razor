@@ -1,0 +1,78 @@
+@inject IAccommodationUriLocator UriLocator
+
+<tr>
+    <td>
+        <div>@Model.Name</div>
+        @if (Model.SiblingTypeNames.Count > 0)
+        {
+            @* Комнаты у типов одной категории общие (ADR020): счётчики мест в строке — по категории. *@
+            <div class="text-muted small">
+                Категория «@Model.RoomCategoryName», комнаты общие с: @string.Join(", ", Model.SiblingTypeNames)
+            </div>
+        }
+        @if (Model.IsInfinite || !Model.IsPlayerSelectable || Model.IsAutoFilledAccommodation)
+        {
+            <div style="margin-top: 0.3em;">
+                @if (Model.IsInfinite)
+                {
+                    <JoinBadge Variation="VariationStyleEnum.Info" Text="Бесконечное" />@(" ")
+                }
+                @if (!Model.IsPlayerSelectable)
+                {
+                    <JoinBadge Variation="VariationStyleEnum.Warning" Text="Закрыто для участников" />@(" ")
+                }
+                @if (Model.IsAutoFilledAccommodation)
+                {
+                    <JoinBadge Variation="VariationStyleEnum.Success" Text="Автозаполнение" />
+                }
+            </div>
+        }
+    </td>
+    <td class="visible-lg">@Model.DescriptionView</td>
+    <td class="price-value"><PriceElement Price="Model.Cost" /></td>
+    <td class="price-value">
+        @if (Model.IsInfinite)
+        {
+            <div>@Model.Capacity ✕ ∞ = ∞</div>
+        }
+        else
+        {
+            <FreeSeatsFormula Occupancy="Model.Occupancy" />
+        }
+        <OccupiedSeatsFormula Occupancy="Model.Occupancy" />
+    </td>
+    <td class="price-value">
+        <PendingRequestsFormula Paid="Model.Occupancy.PaidCount"
+                                AcceptedNotPaid="Model.Occupancy.AcceptedNotPaidCount"
+                                Total="Model.Occupancy.PendingRequests" />
+    </td>
+    <td>
+        <JoinButtonGroup Size="SizeStyleEnum.Small">
+            <JoinButton Icon="JoinIconType.MenuHorizontal" Title="@($"Показать список заявок на тип поселения «{Model.Name}»")"
+                        Link="@UriLocator.GetRoomTypeClaimListUri(RoomTypeId).ToString()" />
+            @if (Model.CanAssignRooms)
+            {
+                <JoinButton Icon="JoinIconType.Accommodation" Title="Расселение"
+                            Link="@UriLocator.GetRoomTypeDetailsUri(RoomTypeId).ToString()" />
+            }
+            @if (Model.CanManageRooms)
+            {
+                <JoinButton Icon="JoinIconType.Edit" Style="VariationStyleEnum.Primary" Title="Изменить"
+                            Link="@UriLocator.GetEditRoomTypeUri(RoomTypeId).ToString()" />
+            }
+            @if (Model.CanManageRooms && Model.Occupancy.Occupied == 0)
+            {
+                <DeleteRoomTypeButton RoomTypeId="RoomTypeId" Name="@Model.Name" @rendermode="ButtonRenderMode" />
+            }
+        </JoinButtonGroup>
+    </td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public RoomTypeListItemViewModel Model { get; set; } = null!;
+
+    // Кнопка удаления — остров на странице, которая сама рендерится статически.
+    private static readonly IComponentRenderMode ButtonRenderMode = new InteractiveWebAssemblyRenderMode(prerender: false);
+
+    private AccommodationTypeIdentification RoomTypeId => new(new ProjectIdentification(Model.ProjectId), Model.Id);
+}

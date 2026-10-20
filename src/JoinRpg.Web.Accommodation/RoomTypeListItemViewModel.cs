@@ -176,7 +176,7 @@ public class RoomTypeListItemViewModel : RoomTypeViewModelBase
             .Select(type => type.Name)];
     }
 
-    // Подписи для tooltip-ов над отдельными цифрами формул в разметке (Index.cshtml, _RoomTypeDetails.cshtml)
+    // Подписи для tooltip-ов над отдельными цифрами формул в разметке (компоненты RoomTypeList/*Formula.razor)
     public const string CapacityTooltip = "это вместимость номера";
     public const string FullyFreeRoomsTooltip = "это кол-во полностью свободных номеров";
     public const string PartialFreeSeatsTooltip = "количество свободных мест в частично занятых номерах";

@@ -1,0 +1,19 @@
+<tr>
+    <td>Итого</td>
+    <td class="visible-lg">&nbsp;</td>
+    <td class="price-value">&nbsp;</td>
+    <td class="price-value">
+        <div>Свободно: @Model.FreeCapacity</div>
+        <div>Занято: @Model.TotalOccupied</div>
+    </td>
+    <td class="price-value">
+        <PendingRequestsFormula Paid="Model.TotalPaid" AcceptedNotPaid="Model.TotalAcceptedNotPaid" Total="Model.TotalPending" />
+    </td>
+    <td>
+        <JoinButton Size="SizeStyleEnum.Small" Icon="JoinIconType.MenuHorizontal" Disabled="true" />
+    </td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public AccommodationListViewModel Model { get; set; } = null!;
+}

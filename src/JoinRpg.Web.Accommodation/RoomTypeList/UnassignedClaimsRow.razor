@@ -1,0 +1,20 @@
+@inject IAccommodationUriLocator UriLocator
+
+<tr>
+    <td>Игроки с невыбранным типом поселения</td>
+    <td class="visible-lg">&nbsp;</td>
+    <td class="price-value">&nbsp;</td>
+    <td class="price-value">&nbsp;</td>
+    <td class="price-value">
+        <PendingRequestsFormula Paid="Model.PaidCount" AcceptedNotPaid="Model.AcceptedNotPaidCount" Total="Model.PendingRequests" />
+    </td>
+    <td>
+        <JoinButton Size="SizeStyleEnum.Small" Icon="JoinIconType.MenuHorizontal"
+                    Title="Показать список заявок с невыбранным типом поселения"
+                    Link="@UriLocator.GetClaimsWithoutRoomTypeListUri(Model.ProjectId).ToString()" />
+    </td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public UnassignedClaimsRowViewModel Model { get; set; } = null!;
+}
