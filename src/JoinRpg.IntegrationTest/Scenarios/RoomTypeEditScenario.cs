@@ -70,6 +70,29 @@ public class RoomTypeEditScenario(JoinApplicationFactory factory) : IClassFixtur
         (await GetMetadataAsync(projectId)).AccommodationSettings.GetRoomCategoryById(updated.RoomCategoryId).Name.ShouldBe("Поляна");
     }
 
+    /// <summary>
+    /// Удаление — POST без тела, параметры в query. Такой запрос может отправить и форма с чужого
+    /// сайта, поэтому ручка, в отличие от соседних, требует antiforgery-токен: без него тип остаётся.
+    /// </summary>
+    [Fact]
+    public async Task DeleteRoomType_RequiresAntiforgeryToken()
+    {
+        var (ownerId, email) = await CreateUserAsync();
+        var projectId = await CreateProjectWithAccommodationAsync(ownerId);
+        var typeId = await CreateTypeAsync(ownerId, projectId, "Палатка");
+        var client = await CreateClientAsync(email);
+        var deleteUrl = DeleteUrl(typeId);
+
+        var withoutToken = await client.PostWithTokenHeaderAsync(deleteUrl, antiforgeryToken: null);
+        withoutToken.StatusCode.ShouldBe(HttpStatusCode.BadRequest, "Удаление без antiforgery-токена не должно приниматься");
+        (await GetMetadataAsync(projectId)).AccommodationSettings.Types.ShouldHaveSingleItem();
+
+        var token = await client.GetAntiforgeryTokenAsync("game/create");
+        var delete = await client.PostWithTokenHeaderAsync(deleteUrl, token);
+        delete.StatusCode.ShouldBe(HttpStatusCode.OK, await delete.Content.ReadAsStringAsync());
+        (await GetMetadataAsync(projectId)).AccommodationSettings.Types.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task CreateRoomType_InvalidForm_ReturnsRussianMessage()
     {
@@ -126,6 +149,10 @@ public class RoomTypeEditScenario(JoinApplicationFactory factory) : IClassFixtur
             new RoomCategoryRenameViewModel { Name = "Чужая поляна" });
         ShouldBeDenied(rename, "Переименование категории без права должно быть запрещено");
 
+        var token = await client.GetAntiforgeryTokenAsync("game/create");
+        var delete = await client.PostWithTokenHeaderAsync(DeleteUrl(typeId), token);
+        ShouldBeDenied(delete, "Удаление без права должно быть запрещено");
+
         var types = (await GetMetadataAsync(projectId)).AccommodationSettings.Types;
         types.ShouldHaveSingleItem().Name.ShouldBe("Палатка", "Без права ничего не должно было измениться");
     }
@@ -174,6 +201,10 @@ public class RoomTypeEditScenario(JoinApplicationFactory factory) : IClassFixtur
             .Name.ShouldBe("Чужая палатка", "Чужой тип не должен был измениться");
         (await GetMetadataAsync(projectId)).AccommodationSettings.Types.ShouldBeEmpty();
     }
+
+    /// <summary>Адрес удаления — ровно такой, какой собирает HTTP-клиент острова.</summary>
+    private static string DeleteUrl(AccommodationTypeIdentification typeId)
+        => $"webapi/room-type/delete?projectId={typeId.ProjectId.Value}&roomTypeId={typeId.AccommodationTypeId}";
 
     /// <summary>
     /// Отказ по правам: <c>webapi/</c> отвечает 403, а не редиректом на «нет доступа» (#5392).

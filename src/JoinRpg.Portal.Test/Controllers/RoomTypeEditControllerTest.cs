@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Portal.Controllers.WebApi;
@@ -36,6 +37,43 @@ public class RoomTypeEditControllerTest
 
         _ = result.ShouldBeOfType<OkResult>();
         client.RenamedId.ShouldBe(new RoomCategoryIdentification(ProjectId, 12));
+    }
+
+    [Fact]
+    public async Task DeleteGluesRoomTypeWithAuthorizedProject()
+    {
+        var client = new FakeClient();
+        var controller = new RoomTypeEditController(client);
+
+        var result = await controller.Delete(ProjectId, 7);
+
+        _ = result.ShouldBeOfType<OkResult>();
+        client.DeletedId.ShouldBe(new AccommodationTypeIdentification(ProjectId, 7));
+    }
+
+    [Fact]
+    public async Task DeleteOccupiedTypeIsBadRequestWithReason()
+    {
+        var typeId = new AccommodationTypeIdentification(ProjectId, 7);
+        var client = new FakeClient { DeleteFailure = new AccommodationTypeIsOccupiedException(typeId) };
+        var controller = new RoomTypeEditController(client);
+
+        var result = await controller.Delete(ProjectId, 7);
+
+        result.ShouldBeOfType<BadRequestObjectResult>().Value
+            .ShouldBe("В комнатах этого типа живут игроки — сначала выселите их");
+    }
+
+    [Fact]
+    public async Task DeleteMissingTypeIsBadRequestWithReason()
+    {
+        var client = new FakeClient { DeleteFailure = new JoinRpgEntityNotFoundException(7, "ProjectAccommodationType") };
+        var controller = new RoomTypeEditController(client);
+
+        var result = await controller.Delete(ProjectId, 7);
+
+        result.ShouldBeOfType<BadRequestObjectResult>().Value
+            .ShouldBe("Тип проживания не найден — возможно, его уже удалили");
     }
 
     [Fact]
@@ -80,6 +118,16 @@ public class RoomTypeEditControllerTest
         {
             RenamedId = roomCategoryId;
             return Task.CompletedTask;
+        }
+
+        public AccommodationTypeIdentification? DeletedId { get; private set; }
+
+        public Exception? DeleteFailure { get; init; }
+
+        public Task DeleteRoomType(AccommodationTypeIdentification roomTypeId)
+        {
+            DeletedId = roomTypeId;
+            return DeleteFailure is null ? Task.CompletedTask : Task.FromException(DeleteFailure);
         }
     }
 }

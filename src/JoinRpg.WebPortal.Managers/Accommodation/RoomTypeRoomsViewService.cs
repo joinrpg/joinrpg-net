@@ -98,6 +98,10 @@ public class RoomTypeRoomsViewService(
     public Task UnOccupyRoomType(AccommodationTypeIdentification typeId)
         => accommodationService.UnOccupyRoomType(typeId);
 
+    /// <inheritdoc />
+    public Task UnOccupyAll(ProjectIdentification projectId)
+        => accommodationService.UnOccupyAllRooms(projectId);
+
     private async Task<IReadOnlyDictionary<ClaimIdentification, RoomResidentWithFee>> LoadResidents(RoomCategoryPlan plan)
     {
         var claimIds = plan.Groups.SelectMany(group => group.Subjects).ToHashSet();

@@ -120,6 +120,12 @@ public interface IRoomTypeEditClient
     /// <see cref="UpdateRoomType"/>: имя категории — не параметр одного типа.
     /// </summary>
     Task RenameRoomCategory(RoomCategoryIdentification roomCategoryId, RoomCategoryRenameViewModel model);
+
+    /// <summary>
+    /// Удалить тип проживания. Тип, в комнатах которого живут игроки, удалить нельзя; нерасселённые
+    /// группы типа расформировываются, последний тип категории уносит её комнаты (ADR020).
+    /// </summary>
+    Task DeleteRoomType(AccommodationTypeIdentification roomTypeId);
 }
 
 /// <summary>Новое название категории комнат</summary>

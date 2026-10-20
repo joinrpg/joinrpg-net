@@ -10,6 +10,7 @@
   "GET /{projectId}/money/MoneySummary": 1,
   "GET /{projectId}/money/Operations": 5,
   "POST /webapi/accommodation-rooms/OccupyRoom": 1,
+  "POST /webapi/accommodation-rooms/UnOccupyAll": 1,
   "POST /webapi/accommodation-rooms/UnOccupyGroup": 1,
   "POST /webapi/accommodation-rooms/UnOccupyRoom": 1,
   "POST /webapi/accommodation-rooms/UnOccupyRoomType": 1,

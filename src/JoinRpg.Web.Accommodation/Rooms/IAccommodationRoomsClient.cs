@@ -121,4 +121,7 @@ public interface IAccommodationRoomsClient
 
     /// <summary>Выселить всех, кто живёт по этому типу проживания</summary>
     Task UnOccupyRoomType(AccommodationTypeIdentification typeId);
+
+    /// <summary>Выселить всех жильцов всех комнат проекта</summary>
+    Task UnOccupyAll(ProjectIdentification projectId);
 }

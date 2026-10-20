@@ -28,10 +28,15 @@ internal class RoomTypeEditClient(HttpClient httpClient, CsrfTokenProvider csrfT
             $"webapi/room-type/RenameRoomCategory?projectId={roomCategoryId.ProjectId.Value}&roomCategoryId={roomCategoryId.RoomCategoryId}",
             model);
 
-    private async Task Post<TModel>(string uri, TModel model)
+    public Task DeleteRoomType(AccommodationTypeIdentification roomTypeId)
+        => Send($"webapi/room-type/delete?projectId={roomTypeId.ProjectId.Value}&roomTypeId={roomTypeId.AccommodationTypeId}", content: null);
+
+    private Task Post<TModel>(string uri, TModel model) => Send(uri, JsonContent.Create(model));
+
+    private async Task Send(string uri, HttpContent? content)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsJsonAsync(uri, model);
+        var response = await httpClient.PostAsync(uri, content);
 
         // Ошибки валидации приходят текстом, чтобы форма могла показать их мастеру
         if (response.StatusCode == HttpStatusCode.BadRequest)

@@ -104,6 +104,36 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
             HttpStatusCode.Found,
             $"Выселение по проекту не прошло: {await unoccupyAll.DescribeValidationErrorsAsync()}");
         (await seed.GetOccupancyAsync(client, seed.RoomIds[1])).ShouldBe(0);
+
+        // То же выселение по проекту — ручкой острова страницы типов: тела нет, проект в адресе.
+        (await client.OccupyAsync(token, seed.ProjectId, seed.Room(0), seed.Request(0))).StatusCode
+            .ShouldBe(HttpStatusCode.OK, "Заселение перед выселением по проекту не прошло");
+        var unoccupyAllApi = await client.UnOccupyAllAsync(token, seed.ProjectId);
+        unoccupyAllApi.StatusCode.ShouldBe(
+            HttpStatusCode.OK,
+            $"Выселение по проекту через ручку не прошло: {await unoccupyAllApi.Content.ReadAsStringAsync()}");
+        (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Выселение по проекту — POST без тела, и такой запрос могла бы отправить обычная форма с
+    /// чужого сайта. Без antiforgery-токена он не должен ничего менять.
+    /// </summary>
+    [Fact]
+    public async Task UnOccupyAll_WithoutAntiforgeryToken_DoesNothing()
+    {
+        var seed = await SeedAsync();
+        var client = await seed.CreateClientAsync(factory);
+        var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
+        (await client.OccupyAsync(token, seed.ProjectId, seed.Room(0), seed.Request(0))).StatusCode
+            .ShouldBe(HttpStatusCode.OK, "Заселение не прошло");
+
+        var response = await client.UnOccupyAllAsync(antiforgeryToken: null, seed.ProjectId);
+
+        response.StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest,
+            "Выселение по проекту без antiforgery-токена не должно приниматься");
+        (await seed.GetOccupancyAsync(client, seed.RoomIds[0])).ShouldBe(1);
     }
 
     /// <summary>
@@ -259,6 +289,7 @@ public class AccommodationMutationPagesScenario(JoinApplicationFactory factory)
             AccommodationRoomsApi.Url(seed.ProjectId, "UnOccupyGroup"),
             AccommodationRoomsApi.Url(seed.ProjectId, "UnOccupyRoom"),
             AccommodationRoomsApi.Url(seed.ProjectId, "UnOccupyRoomType"),
+            AccommodationRoomsApi.Url(seed.ProjectId, "UnOccupyAll"),
             $"{seed.ProjectId.Value}/rooms/UnOccupyAll?projectId={seed.ProjectId.Value}",
         })
         {
