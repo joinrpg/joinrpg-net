@@ -119,10 +119,42 @@ public class ClaimContactsMissingFilterTest
     public void PassportNotMissingWhenAllowedAndFilled()
     {
         var projectInfo = WithRequirement(s => s with { RequirePassport = MandatoryStatus.Required });
-        var player = Mock.PlayerInfo with { PassportData = "1234 567890" };
+        var player = Mock.PlayerInfo with { PassportData = "4505 123456, выдан 01.01.2010" };
 
         Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: true, player: player))
             .ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
+    }
+
+    [Fact]
+    public void PassportMissingWhenTooShort()
+    {
+        var projectInfo = WithRequirement(s => s with { RequirePassport = MandatoryStatus.Required });
+        var player = Mock.PlayerInfo with { PassportData = "4505 123456" };
+
+        Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: true, player: player))
+            .ShouldContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
+    }
+
+    /// <summary>
+    /// «Запросить» в настройках проекта сохраняется как Recommended. Незаполненный паспорт при этом
+    /// должен быть Warning — иначе заявка не попадает в «Проблемные заявки».
+    /// </summary>
+    [Fact]
+    public void RequestedPassportMissingIsWarning()
+    {
+        var projectInfo = WithRequirement(s => s with { RequirePassport = MandatoryStatus.Recommended });
+
+        Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: true))
+            .ShouldContain(p => p.ProblemType == ClaimProblemType.MissingPassport && p.Severity == ProblemSeverity.Warning);
+    }
+
+    [Fact]
+    public void RequestedRegistrationAddressMissingIsWarning()
+    {
+        var projectInfo = WithRequirement(s => s with { RequireRegistrationAddress = MandatoryStatus.Recommended });
+
+        Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: true))
+            .ShouldContain(p => p.ProblemType == ClaimProblemType.MissingRegistrationAddress && p.Severity == ProblemSeverity.Warning);
     }
 
     [Fact]
