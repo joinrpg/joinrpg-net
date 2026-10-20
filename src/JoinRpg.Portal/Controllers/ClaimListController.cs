@@ -315,13 +315,11 @@ public class ClaimListController(
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> SomeFieldsToFill(ProjectIdentification projectid, string export)
     {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectid));
-        var playerEditableFields = projectInfo.UnsortedFields.Where(p => p.CanPlayerEdit).Select(c => c.Id).ToList();
         var loadedClaims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved);
         var claimInfos = await LoadClaimInfos(loadedClaims);
         var claims =
             loadedClaims
-            .Where(claim => claimValidator.ValidateFieldsOnly(claimInfos[claim.GetId()], playerEditableFields).Any())
+            .Where(claim => claimValidator.ValidatePlayerToFill(claimInfos[claim.GetId()]).Any())
             .ToList();
 
         return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", claims, ClaimStatusSpec.Approved, claimInfos);
