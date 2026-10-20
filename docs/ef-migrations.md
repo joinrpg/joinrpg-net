@@ -161,7 +161,7 @@ Update-Database -TargetMigration $InitialDatabase
 1. **Контекст базы данных**: `MyDbContext` находится в `JoinRpg.Dal.Impl`.
 2. **Папка миграций**: `src/JoinRpg.Dal.Impl/Migrations/` — содержит файлы миграций.
 3. **Строка подключения**: Настраивается в `appsettings.json` проекта `Joinrpg.Dal.Migrate` (обычно используется `DefaultConnection`).
-4. **Движок БД**: `MyDbContext` (EF6) работает поверх **SQL Server** — строка подключения `DefaultConnection` (`Initial Catalog=joinrpg`), миграции применяются через провайдер `System.Data.SqlClient` (см. `Joinrpg.Dal.Migrate/Ef6/JoinMigrationsConfig.cs`). Более новые DbContext-ы (DataProtection, DailyJob, Notifications, IdPortal) — это EF Core поверх **PostgreSQL** и к данному документу не относятся. О планах объединения см. [adr009-efcore-migration.md](adr009-efcore-migration.md).
+4. **Движок БД**: `MyDbContext` (EF6) работает поверх **SQL Server** — строка подключения `DefaultConnection` (`Initial Catalog=joinrpg`), миграции применяются через провайдер `System.Data.SqlClient` (см. `Joinrpg.Dal.Migrate/Ef6/JoinMigrationsConfig.cs`). Более новые DbContext-ы (DataProtection, DailyJob, Notifications, IdPortal) — это EF Core поверх **PostgreSQL** и к данному документу не относятся. О планах объединения см. [ADR016](adr016-efcore-migration.md).
 
 ## Типичные проблемы
 
