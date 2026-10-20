@@ -5,8 +5,6 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.WebPortal.Managers.Accommodation;
 using Microsoft.AspNetCore.Mvc;
@@ -21,8 +19,6 @@ namespace JoinRpg.Portal.Controllers;
 [MasterAuthorize()]
 [Route("{projectId}/rooms/[action]")]
 public class AccommodationTypeController(
-    IAccommodationService accommodationService,
-    IAccommodationTypeService accommodationTypeService,
     IRoomCategoryPlanRepository roomCategoryPlanRepository,
     IClaimsRepository claimsRepository,
     ICharacterInfoRepository characterInfoRepository,
@@ -113,17 +109,6 @@ public class AccommodationTypeController(
         return View(viewModel);
     }
 
-    /// <summary>
-    /// Removes room type
-    /// </summary>
-    [MasterAuthorize(Permission.CanManageAccommodation)]
-    [HttpGet]
-    public async Task<ActionResult> DeleteRoomType(AccommodationTypeIdentification roomTypeId)
-    {
-        await accommodationTypeService.DeleteAccommodationType(roomTypeId);
-        return RedirectToAction("Index", new { ProjectId = roomTypeId.ProjectId.Value });
-    }
-
     [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
     [HttpGet]
     public async Task<ActionResult> OccupyAll(ProjectIdentification projectId)
@@ -140,30 +125,6 @@ public class AccommodationTypeController(
         }
 
         //TODO: Implement mass occupation
-
-        return RedirectToAction("Index");
-    }
-
-    /// <summary>
-    /// Выселяет всех жильцов всех комнат проекта
-    /// </summary>
-    [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<ActionResult> UnOccupyAll(ProjectIdentification projectId)
-    {
-        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-        if (project == null)
-        {
-            return NotFound($"Project {projectId} not found");
-        }
-
-        if (!project.AccommodationSettings.Enabled)
-        {
-            return RedirectToAction("Edit", "Game", new { projectId = projectId.Value });
-        }
-
-        await accommodationService.UnOccupyAllRooms(projectId);
 
         return RedirectToAction("Index");
     }

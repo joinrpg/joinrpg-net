@@ -25,12 +25,12 @@ public class AccommodationRoomTypeListScenario(SmokeProjectFixture fixture)
     /// </summary>
     /// <remarks>
     /// Описание лежит в <c>RoomTypeViewModelBase.DescriptionView</c> типа <see cref="MarkupString"/>.
-    /// Это тип Blazor: в MVC-разметке он не <c>IHtmlContent</c>, и если вывести его просто как
-    /// <c>@Model.DescriptionView</c>, Razor вызовет <c>ToString()</c> и покажет пользователю
-    /// <c>&lt;p&gt;</c> текстом. Поэтому в <c>.cshtml</c> он выводится через
-    /// <c>@Html.Raw(...Value)</c> — значение уже прошло санитайзер рендерера markdown.
+    /// Это тип Blazor: в razor-компоненте он выводится разметкой, а в MVC-разметке он не
+    /// <c>IHtmlContent</c>, и <c>@Model.DescriptionView</c> показал бы пользователю <c>&lt;p&gt;</c>
+    /// текстом — поэтому в <c>.cshtml</c> нужен <c>@Html.Raw(...Value)</c>. Значение уже прошло
+    /// санитайзер рендерера markdown.
     ///
-    /// Проверяется список типов (<c>_RoomTypeDetails</c>): второе место вывода,
+    /// Проверяется список типов (компонент <c>RoomTypeListRow</c>): второе место вывода,
     /// <c>_RoomTypeOverview</c>, показывается только мастеру без права управлять поселением, но
     /// выводит ровно то же свойство базы — одинаково на обеих страницах.
     /// </remarks>
