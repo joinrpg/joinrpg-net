@@ -70,17 +70,7 @@ public static class ClaimListBuilder
         var projectInfo = claimInfo.ProjectInfo;
         var characterClaim = claimInfo.Claim;
         var playerInfo = claimInfo.Player;
-
-        string? PassportData, RegistrationAddress;
-        if (characterClaim.PlayerAllowedSensitiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
-        {
-            PassportData = playerInfo.PassportData;
-            RegistrationAddress = playerInfo.RegistrationAddress;
-        }
-        else
-        {
-            PassportData = RegistrationAddress = null;
-        }
+        var sensitiveData = claimInfo.SensitiveData;
 
         return new ClaimListItemForExportViewModel(
             claimInfo.Character.CharacterName,
@@ -101,8 +91,8 @@ public static class ClaimListBuilder
                 : null,
             roomName,
             characterClaim.Finance.PreferentialFeeUser,
-            PassportData,
-            RegistrationAddress,
+            sensitiveData.PassportData,
+            sensitiveData.RegistrationAddress,
             claimInfo.ClaimInCharacter.GetAllFields().ToDictionary(x => x.Field.Id, x => x.ExportString),
             playerInfo
             );

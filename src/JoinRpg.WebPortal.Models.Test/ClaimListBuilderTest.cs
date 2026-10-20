@@ -5,6 +5,7 @@ using JoinRpg.Domain;using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.Models.ClaimList;
 
 namespace JoinRpg.WebPortal.Models.Test;
@@ -109,6 +110,34 @@ public class ClaimListBuilderTest
         result.TotalFee.ShouldBe(balance.TotalFee);
         result.FeeDue.ShouldBe(balance.FeeDue);
         result.FeePaid.ShouldBe(balance.FeePaid);
+    }
+
+    // Согласие игрока на защищённые данные открывает только то, что проект запросил:
+    // проект, которому нужен один адрес, паспорт не получает.
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void ExportGivesOnlyRequestedSensitiveData(bool requestPassport, bool requestAddress)
+    {
+        Mock.Project.Details.RequirePassport = requestPassport ? MandatoryStatus.Recommended : MandatoryStatus.Optional;
+        Mock.Project.Details.RequireRegistrationAddress = requestAddress ? MandatoryStatus.Recommended : MandatoryStatus.Optional;
+        Mock.ReInitProjectInfo();
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+        var player = Mock.PlayerInfo with { PassportData = "паспорт", RegistrationAddress = "адрес" };
+        var claimInfo = new ClaimInfo(
+            new ClaimInCharacter(Mock.GetCharacterInfo(Mock.Character), claim.GetId()),
+            player);
+
+        var result = ClaimListBuilder.BuildItemForExport(
+            claim,
+            new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
+            claimInfo,
+            roomName: null);
+
+        result.PassportData.ShouldBe(requestPassport ? "паспорт" : null);
+        result.RegistrationAddress.ShouldBe(requestAddress ? "адрес" : null);
     }
 
     // EF-версия списка отдавала пустую строку, если у игрока нет ФИО, а доменный

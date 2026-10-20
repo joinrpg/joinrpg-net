@@ -345,7 +345,15 @@ public record ProjectProfileRequirementSettings(
     public static readonly ProjectProfileRequirementSettings AllNotRequired
         = new(MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional);
 
-    public bool SensitiveDataRequired => RequirePassport != MandatoryStatus.Optional || RequireRegistrationAddress != MandatoryStatus.Optional;
+    public bool PassportRequested => RequirePassport != MandatoryStatus.Optional;
+    public bool RegistrationAddressRequested => RequireRegistrationAddress != MandatoryStatus.Optional;
+
+    /// <summary>
+    /// Проект запрашивает защищённые данные — мастер увидит их только с согласия игрока на заявке.
+    /// Согласие открывает только запрошенное: смотреть <see cref="PassportRequested"/> и
+    /// <see cref="RegistrationAddressRequested"/> по каждому полю.
+    /// </summary>
+    public bool SensitiveDataRequired => PassportRequested || RegistrationAddressRequested;
 }
 
 public record ProjectClaimSettings(
