@@ -45,7 +45,7 @@ public class AccommodationListViewModelTest
     /// <param name="claimsWithoutRoomType">Что вернёт выборка заявок без типа проживания.</param>
     /// <param name="claims">Заявки, снимки персонажей которых загружены (вместе с заявками без типа).</param>
     private async Task<AccommodationListViewModel> Build(Claim[] claimsWithoutRoomType, params Claim[] claims)
-        => new(
+        => AccommodationListViewModelBuilder.Build(
             mock.ProjectInfo,
             await new FakeRoomCategoryPlanRepository(mock).GetAllPlans(mock.ProjectInfo.ProjectId),
             [.. claimsWithoutRoomType.Select(claim => claim.GetId())],
