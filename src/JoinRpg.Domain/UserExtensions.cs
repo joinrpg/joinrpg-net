@@ -22,7 +22,9 @@ public static class UserExtensions
             user.ProjectAcls.Where(p => p.IsActive && p.Project.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             user.ProjectAcls.Where(p => p.IsActive).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             user.Auth.IsAdmin,
-            AvatarIdentification.FromOptional(user.SelectedAvatarId),
+            user.SelectedAvatar is { } avatar
+                ? new UserAvatarSource(new AvatarIdentification(avatar.UserAvatarId), avatar.CachedUri, avatar.OriginalUri)
+                : null,
             new Email(user.Email),
             user.Auth.EmailConfirmed,
             user.ExtractFullName(),

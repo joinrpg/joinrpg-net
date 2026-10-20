@@ -167,6 +167,8 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                 user.Extra.VkVerified,
                 user.Extra.SocialNetworksAccess,
                 user.SelectedAvatarId,
+                SelectedAvatarCachedUri = user.SelectedAvatar.CachedUri,
+                SelectedAvatarOriginalUri = user.SelectedAvatar.OriginalUri,
                 user.VerifiedProfileFlag,
                 user.Extra.PhoneNumber,
                 user.Auth.EmailConfirmed,
@@ -210,7 +212,9 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             result.Projects.Where(p => p.Active).Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             result.Projects.Select(p => new ProjectIdentification(p.ProjectId)).ToList(),
             result.IsAdmin,
-            AvatarIdentification.FromOptional(result.SelectedAvatarId),
+            result.SelectedAvatarId is int avatarId
+                ? new UserAvatarSource(new AvatarIdentification(avatarId), result.SelectedAvatarCachedUri, result.SelectedAvatarOriginalUri)
+                : null,
             new Email(result.Email),
             result.EmailConfirmed,
             userFullName,

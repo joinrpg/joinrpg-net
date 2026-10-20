@@ -2,7 +2,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Subscribe;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Subscribe;
@@ -20,7 +19,6 @@ public class GameSubscribeController(
     IUriService uriService,
     IGameSubscribeClient subscribeClient,
     ICurrentUserAccessor currentUserAccessor,
-    UserProfileAvatars profileAvatars,
     UserProfileDetailsBuilder cardBuilder
         ) : JoinControllerGameBase
 {
@@ -37,7 +35,6 @@ public class GameSubscribeController(
 
 
         var userDetails = cardBuilder.Build(user, currentUser);
-        await profileAvatars.Fill(userDetails);
 
         return View(new SubscribeByMasterPageViewModel(userDetails, subscribeViewModel));
     }

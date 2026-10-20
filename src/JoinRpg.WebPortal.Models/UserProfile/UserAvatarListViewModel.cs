@@ -1,6 +1,5 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
-using JoinRpg.Services.Interfaces.Avatars;
 
 namespace JoinRpg.Web.Models.UserProfile;
 

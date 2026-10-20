@@ -1,4 +1,5 @@
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Web.Games.Projects;
@@ -78,14 +79,14 @@ public class ProjectMastersViewModelTest
     /// <summary>Ссылка на мастерскую страницу — по id смотрящего, даже если его профиль не загрузился.</summary>
     [Fact]
     public void LinkToManagement_DoesNotNeedViewerProfile()
-        => ProjectMastersViewModel.Build(mock.ProjectInfo, mock.MasterInfo.UserId, viewer: null, Profiles, Users, new UserProfileDetailsBuilder())
+        => ProjectMastersViewModel.Build(mock.ProjectInfo, mock.MasterInfo.UserId, viewer: null, Profiles, Users, new UserProfileDetailsBuilder(new FakeAvatarUriResolver()))
             .ViewerIsMaster.ShouldBeTrue();
 
     private ProjectMastersViewModel BuildFor(
         UserInfo? viewer,
         IReadOnlyDictionary<UserIdentification, ProjectMasterProfileViewModel> profiles,
         IReadOnlyDictionary<UserIdentification, UserInfo> users)
-        => ProjectMastersViewModel.Build(mock.ProjectInfo, viewer?.UserId, viewer, profiles, users, new UserProfileDetailsBuilder());
+        => ProjectMastersViewModel.Build(mock.ProjectInfo, viewer?.UserId, viewer, profiles, users, new UserProfileDetailsBuilder(new FakeAvatarUriResolver()));
 
     [Fact]
     public void MasterWithoutLoadedUser_IsSkipped()

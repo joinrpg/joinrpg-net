@@ -11,7 +11,7 @@ public record class UserInfo(
     IReadOnlyCollection<ProjectIdentification> ActiveProjects,
     IReadOnlyCollection<ProjectIdentification> AllProjects,
     bool IsAdmin,
-    AvatarIdentification? SelectedAvatarId,
+    UserAvatarSource? SelectedAvatar,
     Email Email,
     bool EmailConfirmed,
     UserFullName UserFullName,
@@ -23,6 +23,8 @@ public record class UserInfo(
     string? RegistrationAddress = null)
 {
     public UserDisplayName DisplayName { get; } = new UserDisplayName(UserFullName, Email);
+
+    public AvatarIdentification? SelectedAvatarId => SelectedAvatar?.Id;
 
     public UserInfoHeader ToUserInfoHeader() => new(UserId, DisplayName);
 

@@ -21,14 +21,10 @@ public class UserProfileDetailsViewModel
 
     public int? AllrpgId { get; }
 
-    /// <summary>Аватарка, которую выбрал пользователь; null — пусть сервер заведёт аватарку по умолчанию.</summary>
-    public AvatarIdentification? SelectedAvatarId { get; }
-
     /// <summary>
-    /// Готовая к показу аватарка. Компонент её не грузит: перед рендером её заполняет сервер
-    /// (в портале — UserProfileAvatars.Fill), иначе карточка будет без аватарки.
+    /// Готовая к показу аватарка. Компонент её не грузит: её кладёт <see cref="UserProfileDetailsBuilder"/>.
     /// </summary>
-    public AvatarInfo? Avatar { get; set; }
+    public AvatarInfo? Avatar { get; internal init; }
 
     public UserLinkViewModel User { get; }
 
@@ -59,7 +55,6 @@ public class UserProfileDetailsViewModel
     {
         User = new UserLinkViewModel(user.ToUserInfoHeader());
         Reason = (AccessReasonView)accessReason;
-        SelectedAvatarId = user.SelectedAvatarId;
 
         if (Reason != AccessReasonView.NoAccess)
         {

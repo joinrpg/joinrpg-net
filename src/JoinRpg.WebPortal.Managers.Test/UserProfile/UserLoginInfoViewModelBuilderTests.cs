@@ -17,7 +17,7 @@ public class UserLoginInfoViewModelBuilderTests
             ActiveProjects: [],
             AllProjects: [],
             IsAdmin: false,
-            SelectedAvatarId: null,
+            SelectedAvatar: null,
             Email: new Email("player@example.com"),
             EmailConfirmed: true,
             UserFullName: new UserFullName(new PrefferedName("Player"), null, null, null),

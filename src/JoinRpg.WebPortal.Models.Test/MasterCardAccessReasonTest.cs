@@ -19,7 +19,7 @@ public class MasterCardAccessReasonTest
     private UserInfo ArchivedGameMaster => mock.MasterInfo with { ActiveProjects = [] };
 
     private MastersListViewModel ListFor(UserInfo master, ICurrentUserAccessor viewer)
-        => new([], viewer, mock.ProjectInfo, [], new Dictionary<UserIdentification, UserInfo> { [master.UserId] = master }, new UserProfileDetailsBuilder());
+        => new([], viewer, mock.ProjectInfo, [], new Dictionary<UserIdentification, UserInfo> { [master.UserId] = master }, new UserProfileDetailsBuilder(new FakeAvatarUriResolver()));
 
     private static ICurrentUserAccessor OtherMaster => new FakeCurrentUserAccessor(new UserIdentification(100500));
 
@@ -45,5 +45,19 @@ public class MasterCardAccessReasonTest
 
         card.Reason.ShouldBe(AccessReasonView.NoAccess);
         card.Email.ShouldBeNull();
+    }
+
+    /// <summary>Карточка в проекте (перегрузка билдера с ProjectInfo) тоже получает аватарку из UserInfo.</summary>
+    [Fact]
+    public void MasterCard_HasAvatarFromUserInfo()
+    {
+        var master = ActiveGameMaster with
+        {
+            SelectedAvatar = new UserAvatarSource(new AvatarIdentification(5), CachedUri: null, OriginalUri: "https://www.gravatar.com/avatar/m"),
+        };
+
+        var card = ListFor(master, OtherMaster).Masters.ShouldHaveSingleItem().UserDetails;
+
+        card.Avatar.ShouldNotBeNull().Uri.ShouldBe(new Uri("https://www.gravatar.com/avatar/m"));
     }
 }

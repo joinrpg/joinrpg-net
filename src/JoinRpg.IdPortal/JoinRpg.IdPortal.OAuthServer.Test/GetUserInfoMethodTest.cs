@@ -31,7 +31,7 @@ public class GetUserInfoMethodTest
             ActiveProjects: [],
             AllProjects: [],
             IsAdmin: false,
-            SelectedAvatarId: selectedAvatarId,
+            SelectedAvatar: selectedAvatarId is { } avatarId ? new UserAvatarSource(avatarId, null, "https://example.com/avatar.png") : null,
             Email: new Email(email),
             EmailConfirmed: emailConfirmed,
             UserFullName: new UserFullName(null, BornName.FromOptional(bornName), SurName.FromOptional(surName), FatherName.FromOptional(fatherName)),

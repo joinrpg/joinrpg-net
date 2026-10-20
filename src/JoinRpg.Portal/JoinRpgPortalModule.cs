@@ -4,7 +4,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Controllers;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.UserProfile;
 using JoinRpg.WebPortal.Managers.Projects;
@@ -22,7 +21,6 @@ internal class JoinRpgPortalModule : Module
 
         _ = builder.RegisterType<UriServiceImpl>().AsImplementedInterfaces();
         _ = builder.RegisterType<PublicCharacterJsonBuilder>().AsSelf();
-        _ = builder.RegisterType<UserProfileAvatars>().AsSelf();
         _ = builder.RegisterType<UserProfileDetailsBuilder>().AsSelf().SingleInstance();
         _ = builder.RegisterType<ConfigurationAdapter>().AsImplementedInterfaces();
 
