@@ -46,6 +46,27 @@ public record class ClaimInfo
 
     public ClaimIdentification ClaimId => ClaimInCharacter.ClaimId;
 
+    /// <summary>
+    /// Защищённые данные игрока, которые мастер видит по этой заявке: их открывает согласие игрока
+    /// на заявке, и только те, что проект запросил. Права текущего пользователя на заявку здесь не
+    /// проверяются — это забота вызывающего.
+    /// </summary>
+    public ClaimSensitiveData SensitiveData
+    {
+        get
+        {
+            var requirements = ProjectInfo.ProfileRequirementSettings;
+            var access = Claim.PlayerAllowedSensitiveData && requirements.SensitiveDataRequired;
+            var showPassport = access && requirements.PassportRequested;
+            var showAddress = access && requirements.RegistrationAddressRequested;
+            return new ClaimSensitiveData(
+                showPassport,
+                showPassport ? Player.PassportData : null,
+                showAddress,
+                showAddress ? Player.RegistrationAddress : null);
+        }
+    }
+
     public ClaimInfo(ClaimInCharacter claimInCharacter, UserInfo player)
     {
         ArgumentNullException.ThrowIfNull(claimInCharacter);
@@ -62,3 +83,13 @@ public record class ClaimInfo
         Player = player;
     }
 }
+
+/// <summary>
+/// Защищённые данные игрока по заявке (см. <see cref="ClaimInfo.SensitiveData"/>). Флаг Show* —
+/// «показывать поле мастеру»: значение может быть null и при открытом поле, если игрок его не заполнил.
+/// </summary>
+public record ClaimSensitiveData(
+    bool ShowPassportData,
+    string? PassportData,
+    bool ShowRegistrationAddress,
+    string? RegistrationAddress);

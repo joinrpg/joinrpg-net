@@ -87,10 +87,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; }
 
-    public bool HasSensitiveDataAccess { get; }
     public bool SensitiveDataRequired { get; }
-    public string? PassportData { get; }
-    public string? RegistrationAddress { get; }
+    public ClaimSensitiveData SensitiveData { get; }
 
     /// <param name="claim">
     /// EF-сущность той же заявки. Пока нужна тому, чего нет в агрегате (ADR021, шаг 6):
@@ -187,14 +185,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         AccommodationModel = accommodationModel;
 
         SensitiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
-        HasSensitiveDataAccess = claimData.PlayerAllowedSensitiveData && SensitiveDataRequired;
-        if (HasSensitiveDataAccess)
-        {
-            // Берём из уже загруженного playerInfo, а не по ленивой навигации claim.Player.Extra:
-            // репозиторий профиля отдаёт эти поля с тем же значением и без лишнего запроса.
-            PassportData = playerInfo.PassportData;
-            RegistrationAddress = playerInfo.RegistrationAddress;
-        }
+        // Из уже загруженного профиля в ClaimInfo, а не по ленивой навигации claim.Player.Extra.
+        SensitiveData = claimInfo.SensitiveData;
     }
 
     public int CommentDiscussionId { get; }

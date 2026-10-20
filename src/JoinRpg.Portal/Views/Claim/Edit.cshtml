@@ -113,15 +113,18 @@
                         }
                     }
                 </dd>
-                @if (Model.HasSensitiveDataAccess)
+                @if (Model.SensitiveData.ShowPassportData)
                 {
                     <dt>Паспортные данные</dt>
                     <dd>
-                      @Model.PassportData
+                      @Model.SensitiveData.PassportData
                     </dd>
+                }
+                @if (Model.SensitiveData.ShowRegistrationAddress)
+                {
                     <dt>Адрес регистрации</dt>
                     <dd>
-                      @Model.RegistrationAddress
+                      @Model.SensitiveData.RegistrationAddress
                     </dd>
                 }
             </dl>
