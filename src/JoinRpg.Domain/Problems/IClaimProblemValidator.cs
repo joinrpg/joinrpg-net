@@ -26,4 +26,11 @@ public interface IClaimProblemValidator
     /// </summary>
     IEnumerable<ClaimProblem> ValidateCheckInBlockers(ClaimInfo context)
         => Validate(context).Where(problem => problem.BlocksCheckIn);
+
+    /// <summary>
+    /// Что игроку нужно заполнить самому: поля заявки, которые он может редактировать, и данные
+    /// профиля, которые требует проект. То же, что держит регистрацию, за вычетом мастерского.
+    /// </summary>
+    IEnumerable<ClaimProblem> ValidatePlayerToFill(ClaimInfo context)
+        => ValidateCheckInBlockers(context).Where(problem => problem.PlayerCanFix);
 }
