@@ -1,6 +1,7 @@
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.Avatars;
 
 namespace JoinRpg.Services.Impl;
@@ -204,9 +205,7 @@ public class UserServiceImpl(
             return;
         }
 
-        user.SelectedAvatar ??= userAvatar;
-
-        user.Avatars.Add(userAvatar);
+        user.AddSocialAvatar(userAvatar);
     }
 
     private async Task<UserAvatar> UploadNewAvatar(Uri avatarUri, User user, string providerId, CancellationToken ct)
@@ -276,19 +275,7 @@ public class UserServiceImpl(
             return new(grAvatar.UserAvatarId);
         }
 
-        // We do not need to cache avatar here — or GrAvatar will not be automatically updated 
-        var userAvatar = new UserAvatar()
-        {
-            AvatarSource = AvatarSource.GrAvatar,
-            IsActive = true,
-            ProviderId = null,
-            OriginalUri = GravatarHelper.GetLink(user.Email, 64).AbsoluteUri,
-            CachedUri = null,
-            User = user,
-        };
-        user.Avatars.Add(userAvatar);
-
-        user.SelectedAvatar ??= userAvatar;
+        var userAvatar = user.AddGravatar();
 
         await UnitOfWork.SaveChangesAsync();
 

@@ -126,7 +126,9 @@ public class UserMergeScenario(JoinApplicationFactory factory) : IClassFixture<J
         var avatarId = 0;
         await WithDb(db =>
         {
-            // У основного нет ни Extra, ни Allrpg — строки создаются слиянием.
+            // У основного нет ни Extra, ни Allrpg — строки создаются слиянием. И нет выбранной аватарки
+            // (так бывает у старых пользователей), поэтому выбранной станет аватарка поглощаемого.
+            db.Set<User>().Single(u => u.UserId == a.Value).SelectedAvatarId = null;
             db.Set<UserExtra>().RemoveRange(db.Set<UserExtra>().Where(x => x.UserId == a.Value));
             db.Set<AllrpgUserDetails>().RemoveRange(db.Set<AllrpgUserDetails>().Where(x => x.UserId == a.Value));
             db.Set<AllrpgUserDetails>().RemoveRange(db.Set<AllrpgUserDetails>().Where(x => x.UserId == b.Value));
