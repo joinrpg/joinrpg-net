@@ -1,6 +1,5 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Portal.Infrastructure;
 using Serilog;
 
@@ -18,14 +17,13 @@ public class Program
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            var startup = new Startup(builder.Configuration, builder.Environment);
+            var startup = new Startup(builder);
 
             startup.ConfigureServices(new JoinServiceCollectionProxy(builder.Services));
 
             _ = builder.Host
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-                .ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer)
-                .UseJoinSerilog("JoinRpg.Portal");
+                .ConfigureContainer<ContainerBuilder>(startup.ConfigureContainer);
 
             var app = builder.Build();
 

@@ -42,9 +42,11 @@ using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal;
 
-public class Startup(IConfiguration configuration, IWebHostEnvironment environment)
+public class Startup(WebApplicationBuilder builder)
 {
-    public IConfiguration Configuration { get; } = configuration;
+    private readonly IWebHostEnvironment environment = builder.Environment;
+
+    public IConfiguration Configuration { get; } = builder.Configuration;
 
     public void ConfigureServices(IJoinServiceCollection services)
     {
@@ -105,9 +107,7 @@ public class Startup(IConfiguration configuration, IWebHostEnvironment environme
             options.Conventions.ConfigureFilter(new RedirectAntiforgeryValidationFailedResultFilter());
         });
 
-        services.AddJoinWebPlatform(Configuration,
-            environment,
-            "JoinRpg",
+        builder.AddJoinWebPlatform("JoinRpg.Portal",
             dataProtectionConnectionStringName: "DataProtection",
             telemetryServiceNames: [
                 BackgroundServiceActivity.ActivitySourceName,
