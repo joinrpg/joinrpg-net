@@ -10,7 +10,7 @@
 <div class="btn-group">
     @if (Model.CanManageRooms)
     {
-        <a href="@Url.Action("AddRoomType", "AccommodationType", new {Model.ProjectId })" class="btn btn-success">
+        <a href="@Url.Action("AddRoomType", "AccommodationType", new { ProjectId = Model.ProjectId.Value })" class="btn btn-success">
             <join-icon icon="Add" /> Добавить тип размещения
         </a>
     }
@@ -23,15 +23,15 @@
             <join-icon icon="EvictAll" /> Выселить всех
         </button>
     }
-    <a href="@Url.Action("ListForRoomType", "ClaimList", new {Model.ProjectId})" class="btn btn-default">Игроки без поселения...</a>
-    <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", Model.ProjectId})" class="btn btn-default">
+    <a href="@Url.Action("ListForRoomType", "ClaimList", new { ProjectId = Model.ProjectId.Value })" class="btn btn-default">Игроки без поселения...</a>
+    <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", ProjectId = Model.ProjectId.Value })" class="btn btn-default">
         <join-icon icon="Download" /> Список расселения (Excel)
     </a>
 </div>
 @if (Model.CanAssignRooms)
 {
     <form id="frmUnOccupyAll" method="post" asp-action="UnOccupyAll" asp-controller="AccommodationType"
-          asp-route-projectId="@Model.ProjectId" hidden></form>
+          asp-route-projectId="@Model.ProjectId.Value" hidden></form>
 }
 
 <div class="table-responsive" style="margin-top: 1em;">
@@ -92,7 +92,7 @@
   @if (Model.CanManageRooms)
   {
     <div style="margin-top: 1em;">
-      <a href="@Url.Action("AddRoomType", "AccommodationType", new {Model.ProjectId})" class="btn btn-success">
+      <a href="@Url.Action("AddRoomType", "AccommodationType", new { ProjectId = Model.ProjectId.Value })" class="btn btn-success">
         <join-icon icon="Add" /> Добавить тип размещения
       </a>
     </div>

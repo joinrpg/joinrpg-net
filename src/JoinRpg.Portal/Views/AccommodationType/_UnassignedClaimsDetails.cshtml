@@ -27,7 +27,7 @@
     </td>
     <td>
         <div class="btn-group btn-group-sm" style="display: inline-block">
-            <a title="Показать список заявок с невыбранным типом поселения" class="btn btn-default" href="@Url.Action("ListWithoutRoomType", "ClaimList", new { Model.ProjectId })"><join-icon icon="MenuHorizontal" /></a>
+            <a title="Показать список заявок с невыбранным типом поселения" class="btn btn-default" href="@Url.Action("ListWithoutRoomType", "ClaimList", new { ProjectId = Model.ProjectId.Value })"><join-icon icon="MenuHorizontal" /></a>
         </div>
     </td>
 </tr>

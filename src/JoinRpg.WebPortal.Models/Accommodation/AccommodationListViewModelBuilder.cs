@@ -1,4 +1,3 @@
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -8,35 +7,13 @@ using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Models.Accommodation;
 
-public class AccommodationListViewModel
+/// <summary>
+/// Собирает <see cref="AccommodationListViewModel"/> для страницы «Поселение». Сама вью-модель
+/// лежит в браузерной библиотеке <c>JoinRpg.Web.Accommodation</c>, а здесь — то, что ей недоступно:
+/// рендер описаний из Markdown и подсчёт оплаченных заявок по снимкам персонажей.
+/// </summary>
+public static class AccommodationListViewModelBuilder
 {
-    public int ProjectId { get; set; }
-
-    [DisplayName("Проект")]
-    public string ProjectName { get; set; }
-
-    [DisplayName("Типы проживания")]
-    public List<RoomTypeListItemViewModel> RoomTypes { get; set; }
-
-    public bool CanAssignRooms { get; set; }
-    public bool CanManageRooms { get; set; }
-
-    public int? TotalCapacity { get; set; }
-
-    public int? FreeCapacity { get; set; }
-
-    public int TotalOccupied { get; set; }
-
-    public int TotalPending { get; set; }
-
-    public bool IsInfinite { get; set; }
-
-    public int TotalPaid { get; }
-
-    public int TotalAcceptedNotPaid { get; }
-
-    public UnassignedClaimsRowViewModel UnassignedClaims { get; set; }
-
     /// <param name="plans">
     /// Планы всех категорий комнат проекта (ADR018): из них считаются и комнатные счётчики пула,
     /// и занятость каждого типа. Комнаты у типов одной категории общие (ADR020), поэтому итоги
@@ -49,24 +26,19 @@ public class AccommodationListViewModel
     /// какого они типа — решает план (ADR022), а не навигация группы; лишние заявки этих персонажей
     /// не считаются.
     /// </param>
-    public AccommodationListViewModel(ProjectInfo project,
+    public static AccommodationListViewModel Build(ProjectInfo project,
         IReadOnlyCollection<RoomCategoryPlan> plans,
         IReadOnlyCollection<ClaimIdentification> claimIdsWithoutRoomType,
         IReadOnlyCollection<CharacterInfo> characters,
         ICurrentUserAccessor userId)
     {
-        ProjectId = project.ProjectId;
-        ProjectName = project.ProjectName;
-        CanManageRooms = project.HasMasterAccess(userId, Permission.CanManageAccommodation);
-        CanAssignRooms = project.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations);
-
         var counters = new AccommodationClaimCounters(characters);
         var paidByRoomType = counters.CountUnsettledPaid(plans);
 
         var planByCategory = plans.ToDictionary(plan => plan.Id);
 
         // Тип проживания — настройка проекта, он уже есть в метаданных (ADR015).
-        RoomTypes = [.. project.AccommodationSettings.Types.Select(typeInfo => new RoomTypeListItemViewModel(
+        List<RoomTypeListItemViewModel> roomTypes = [.. project.AccommodationSettings.Types.Select(typeInfo => new RoomTypeListItemViewModel(
             typeInfo,
             // Markdown рендерится здесь, на сервере: вью-модель лежит в браузерной библиотеке
             // JoinRpg.Web.Accommodation и рендерера markdown не видит.
@@ -78,44 +50,12 @@ public class AccommodationListViewModel
             userId.UserIdentification,
             project))];
 
-        IsInfinite = RoomTypes.Any(rt => rt.IsInfinite);
+        var unassignedClaims = new UnassignedClaimsRowViewModel(
+            project.ProjectId,
+            claimIdsWithoutRoomType.Count,
+            counters.CountPaid(claimIdsWithoutRoomType));
 
-        var allInfinite = RoomTypes.All(rt => rt.IsInfinite);
-        TotalCapacity = allInfinite ? (int?)null : plans.Sum(plan => plan.TotalCapacity);
-        FreeCapacity = allInfinite ? (int?)null : plans.Sum(plan => plan.FreeCapacity);
-
-        TotalOccupied = RoomTypes.Sum(x => x.Occupancy.Occupied);
-
-        UnassignedClaims = new UnassignedClaimsRowViewModel(claimIdsWithoutRoomType.Count, counters.CountPaid(claimIdsWithoutRoomType))
-        {
-            ProjectId = project.ProjectId,
-        };
-
-        TotalPending = RoomTypes.Sum(x => x.Occupancy.PendingRequests) + UnassignedClaims.PendingRequests;
-
-        TotalPaid = RoomTypes.Sum(rt => rt.Occupancy.PaidCount) + UnassignedClaims.PaidCount;
-        TotalAcceptedNotPaid = RoomTypes.Sum(rt => rt.Occupancy.AcceptedNotPaidCount) + UnassignedClaims.AcceptedNotPaidCount;
-    }
-}
-
-/// <summary>
-/// Виртуальная строка для игроков, у которых не выбран тип поселения
-/// </summary>
-public class UnassignedClaimsRowViewModel
-{
-    public int ProjectId { get; set; }
-
-    public int PendingRequests { get; }
-
-    public int PaidCount { get; }
-
-    public int AcceptedNotPaidCount { get; }
-
-    public UnassignedClaimsRowViewModel(int pendingRequests, int paidCount)
-    {
-        PendingRequests = pendingRequests;
-        PaidCount = paidCount;
-        AcceptedNotPaidCount = PendingRequests - PaidCount;
+        return new AccommodationListViewModel(project, plans, roomTypes, unassignedClaims, userId.UserIdentification);
     }
 }
 

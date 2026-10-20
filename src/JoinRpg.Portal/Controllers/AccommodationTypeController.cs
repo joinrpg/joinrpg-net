@@ -60,7 +60,7 @@ public class AccommodationTypeController(
             .ToList();
         var characters = await characterInfoRepository.GetCharacterInfosByClaims(claimIds);
 
-        return View(new AccommodationListViewModel(project,
+        return View(AccommodationListViewModelBuilder.Build(project,
             plans,
             claimIdsWithoutRoomType,
             characters,
