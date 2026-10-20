@@ -17,6 +17,16 @@ public class ProjectDeactivatedException(ProjectIdentification projectId)
 /// </summary>
 public class ProjectBlockedException(ProjectIdentification projectId) : ProjectDeactivatedException(projectId);
 
+/// <summary>
+/// Проекта с таким идентификатором нет — например, пришли по старой ссылке или бот перебирает номера (#5709).
+/// Штатный отказ, а не сбой: портал отвечает 404 и не пишет в лог ошибку.
+/// </summary>
+public class ProjectNotFoundException(ProjectIdentification projectId)
+    : JoinRpgEntityNotFoundException(projectId.Value, "project")
+{
+    public ProjectIdentification ProjectId { get; } = projectId;
+}
+
 public class MasterHasResponsibleException(ProjectIdentification projectId, UserIdentification userId)
     : JoinRpgProjectException(projectId, "Cannot remove master that has groups attached to it.")
 {

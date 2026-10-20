@@ -387,7 +387,7 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
     private async Task<(Project, ProjectInfo)> LoadProject(ProjectIdentification projectId)
     {
         var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false)
-            ?? throw new JoinRpgEntityNotFoundException(projectId.Value, "project");
+            ?? throw new ProjectNotFoundException(projectId);
 
         // Единственный источник истины Project -> ProjectInfo, тот же, что у read-пути.
         return (project, ProjectMetadataRepository.CreateInfoFromProject(project, projectId));

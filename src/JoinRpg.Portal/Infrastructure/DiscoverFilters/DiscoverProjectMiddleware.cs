@@ -16,7 +16,8 @@ namespace JoinRpg.Portal.Infrastructure.DiscoverFilters;
 /// (ProjectLoaderCommon.GetProjectWithFieldsAsync) на каждый запрос с числом в первом сегменте —
 /// до роутинга и аутентификации, в том числе для ботового мусора, который в кеш не попадает.
 /// Поэтому «проекта нет» обрабатывают потребители: <see cref="IProjectMetadataRepository"/>
-/// бросает <see cref="JoinRpgEntityNotFoundException"/>, и это штатный исход, а не ошибка.
+/// бросает <see cref="ProjectNotFoundException"/>, и это штатный исход, а не ошибка. Не пойманное
+/// потребителем, оно превращается в 404 без ошибки в логе (<see cref="PortalExceptionHandling"/>).
 /// </remarks>
 public class DiscoverProjectMiddleware(RequestDelegate nextDelegate)
 {

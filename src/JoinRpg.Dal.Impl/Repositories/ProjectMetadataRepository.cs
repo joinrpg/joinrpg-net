@@ -10,7 +10,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 {
     public async Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache)
     {
-        var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, ignoreCache) ?? throw new JoinRpgEntityNotFoundException(projectId.Value, "project");
+        var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, ignoreCache) ?? throw new ProjectNotFoundException(projectId);
 
         return CreateInfoFromProject(project, projectId);
     }
@@ -228,7 +228,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
 
     public async Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
     {
-        var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false) ?? throw new JoinRpgEntityNotFoundException(projectId.Value, "project");
+        var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false) ?? throw new ProjectNotFoundException(projectId);
 
         return new DomainTypes.ProjectMetadata.ProjectDetails(
             CreateInfoFromProject(project, projectId),

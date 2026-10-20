@@ -1,12 +1,18 @@
 @page "/error/{HttpStatusCode:int?}"
 @model JoinRpg.Portal.Pages.Error.ErrorPageModel
 @{
-    ViewBag.Title = Model.HttpStatusCode == 404 ? "Страница не найдена" : "Ошибка";
+    ViewBag.Title = Model.IsProjectNotFound ? "Проект не найден"
+        : Model.HttpStatusCode == 404 ? "Страница не найдена"
+        : "Ошибка";
     var info = Model.SupportInfo;
 }
 
 <h1 class="text-danger">@ViewBag.Title</h1>
-@if (Model.HttpStatusCode == 404)
+@if (Model.IsProjectNotFound)
+{
+    <h3>Проекта с таким номером нет — возможно, ссылка устарела.</h3>
+}
+else if (Model.HttpStatusCode == 404)
 {
     <h3 class="text-danger">
         Если вы перешли на эту страницу по ссылке с нашего сайта, обратитесь в техподдержку.

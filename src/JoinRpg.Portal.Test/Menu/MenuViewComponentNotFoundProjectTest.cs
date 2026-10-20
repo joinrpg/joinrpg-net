@@ -80,10 +80,10 @@ public class MenuViewComponentNotFoundProjectTest
     private sealed class NotFoundProjectMetadataRepository : IProjectMetadataRepository
     {
         public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
-            => throw new JoinRpgEntityNotFoundException(projectId.Value, "project");
+            => throw new ProjectNotFoundException(projectId);
 
         public Task<ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-            => throw new JoinRpgEntityNotFoundException(projectId.Value, "project");
+            => throw new ProjectNotFoundException(projectId);
 
         public void PrimeCache(ProjectInfo projectInfo) { }
     }

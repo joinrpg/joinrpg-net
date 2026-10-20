@@ -38,6 +38,7 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
         ProjectBlockedException => (StatusCodes.Status409Conflict, "Проект заблокирован на время восстановления данных, изменения в нём сейчас невозможны"),
         ProjectDeactivatedException => (StatusCodes.Status409Conflict, "Проект находится в архиве, изменения в нём невозможны"),
         NoAccessToProjectException => (StatusCodes.Status403Forbidden, "Недостаточно прав для этого действия"),
+        ProjectNotFoundException => (StatusCodes.Status404NotFound, "Проект не найден"),
         _ => null,
     };
 }
