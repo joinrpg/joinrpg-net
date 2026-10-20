@@ -1,4 +1,3 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Portal.Controllers.WebApi;

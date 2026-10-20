@@ -1,4 +1,4 @@
-using JoinRpg.Data.Interfaces;
+using JoinRpg.DomainTypes;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
