@@ -10,6 +10,7 @@
 }
 <component type="typeof(VersionPanel)" render-mode="Static"
            param-Version="versionInfo.Version" param-CommitSha="versionInfo.CommitSha" param-CommitUrl="versionInfo.CommitUrl" />
+<p>Заблокировано проектов после DRP: @Model.BlockedProjects из @JoinRpg.Portal.Pages.Admin.IndexModel.DrpInitiallyBlockedProjects</p>
 <ul>
     <li><a asp-controller="ProjectList" asp-area="Admin">Список игр</a></li>
     <li><a asp-controller="AdminHome" asp-action="StaleGames" asp-area="Admin">Проблемные проекты</a></li>
