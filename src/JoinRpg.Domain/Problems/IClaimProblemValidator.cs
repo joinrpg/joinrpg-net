@@ -20,4 +20,10 @@ public interface IClaimProblemValidator
 
     IEnumerable<FieldRelatedProblem> ValidateFieldOnly(ClaimInfo context, ProjectFieldIdentification fieldId)
         => ValidateFieldsOnly(context, [fieldId]);
+
+    /// <summary>
+    /// Проблемы, которые не дают зарегистрировать игрока на полигоне (<see cref="ClaimProblem.BlocksCheckIn"/>).
+    /// </summary>
+    IEnumerable<ClaimProblem> ValidateCheckInBlockers(ClaimInfo context)
+        => Validate(context).Where(problem => problem.BlocksCheckIn);
 }

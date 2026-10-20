@@ -85,7 +85,6 @@ public class CheckInController(
                 CheckedIn = !validator.NotCheckedInAlready,
                 Approved = validator.IsApproved,
                 CheckInPossible = validator.CanCheckInInPrinciple,
-                EverythingFilled = !validator.FieldProblems.Any(),
                 ClaimFeeBalance = validator.FeeDue,
                 Handouts = new[] //TODO FIX ME
                 {

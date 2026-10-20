@@ -1,32 +1,33 @@
 @model JoinRpg.Domain.ClaimCheckInValidator
+@using JoinRpg.Web.Models.CheckIn
 
 @if (Model.CanCheckInNow)
 {
 <div class="alert alert-success">
-  Регистрация на полигоне пройдет максимально быстро — все поля заполнены и взнос сдан.
+  Регистрация на полигоне пройдет максимально быстро — все данные заполнены и взнос сдан.
 </div>
 }
 else if (Model.CanCheckInInPrinciple)
 {
 <div class="alert alert-success">
-  Заявка готова к регистрации, все поля заполнены. Просим вас сдать взнос заранее, чтобы ускорить прохождение регистрации.
+  Заявка готова к регистрации, все данные заполнены. Просим вас сдать взнос заранее, чтобы ускорить прохождение регистрации.
 </div>
 } else if (Model.IsApproved)
 {
   <div class="alert alert-warning">
-    Заявка заполнена не полностью. <b>Регистрация на полигоне в ручном режиме и только после игроков с заполненными заявками.</b>
-    @if (Model.FieldProblems.Any(f => f.Field.CanPlayerEdit))
+    Не хватает данных для регистрации. <b>Регистрация на полигоне в ручном режиме и только после игроков с заполненными заявками.</b>
+    @if (Model.Problems.Any(p => p.PlayerCanFix))
     {
       <br/>
-      <text> Не заполнены следующие поля (заполняет игрок)</text>
+      <text> Заполните сами (поля заявки — на этой странице, данные профиля — в своём профиле):</text>
       <ul>
-        @foreach (var field in Model.FieldProblems.Where(f => f.Field.CanPlayerEdit))
+        @foreach (var problem in Model.Problems.Where(p => p.PlayerCanFix))
         {
-          <li>@field.Field.Name</li>
+          <li>@(new CheckInProblemViewModel(problem).Title)</li>
         }
       </ul>
     }
-    @if (Model.FieldProblems.Any(f => !f.Field.CanPlayerEdit))
+    @if (Model.Problems.Any(p => !p.PlayerCanFix))
     {
       <br/>
       <text> Не заполнены скрытые мастерские поля. Обратитесь к ответственному мастеру за дозаполнением заявки. </text>

@@ -46,7 +46,7 @@ public class CheckInClaimModel : IProjectIdAware
         var responsibleMaster = projectInfo.GetMasterById(claim.ResponsibleMasterId);
         Master = new UserLinkViewModel(responsibleMaster.UserId, responsibleMaster.Name.DisplayName, ViewMode.Show);
         Handouts = [.. plotElements.Select(e => new HandoutListItemViewModel(e))];
-        ProblemFields = [.. Validator.FieldProblems.Select(frp => new NotFilledFieldViewModel(frp))];
+        Problems = [.. Validator.Problems.Select(p => new CheckInProblemViewModel(p))];
 
         CurrentUserFullName = currentUserAccessor.DisplayName.FullName ?? "";
     }
@@ -62,15 +62,31 @@ public class CheckInClaimModel : IProjectIdAware
     public int ProjectId { get; }
     [Display(Name = "Ответственный мастер")]
     public UserLinkViewModel Master { get; }
-    public IReadOnlyCollection<NotFilledFieldViewModel> ProblemFields { get; }
+    /// <summary>
+    /// Что не даёт зарегистрировать игрока. Сами паспортные данные стойке не показываются — только
+    /// факт, что их не хватает.
+    /// </summary>
+    public IReadOnlyCollection<CheckInProblemViewModel> Problems { get; }
     public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string CurrentUserFullName { get; }
 }
 
-public record class NotFilledFieldViewModel(FieldRelatedProblem fieldRelatedProblem) : ProblemViewModel(fieldRelatedProblem)
+/// <summary>
+/// Проблема, которая держит регистрацию: незаполненное поле заявки или данные профиля.
+/// </summary>
+public record class CheckInProblemViewModel(ClaimProblem Problem) : ProblemViewModel(Problem)
 {
-    public WhoWllFillEnum WhoWillFill { get; } = fieldRelatedProblem.Field.CanPlayerEdit ? WhoWllFillEnum.Player : WhoWllFillEnum.Master;
-    public string FieldName { get; } = fieldRelatedProblem.Field.Name;
+    public WhoWllFillEnum WhoWillFill { get; } = Problem.PlayerCanFix ? WhoWllFillEnum.Player : WhoWllFillEnum.Master;
+
+    /// <summary>
+    /// Что именно не так: название поля или «В профиле нет паспортных данных».
+    /// </summary>
+    public string Title => Problem is FieldRelatedProblem fieldProblem ? fieldProblem.Field.Name : ProblemTypeText;
+
+    /// <summary>
+    /// Уточнение для поля («Поле не заполнено»); у проблем профиля всё сказано в <see cref="Title"/>.
+    /// </summary>
+    public string? Details => Problem is FieldRelatedProblem ? ProblemTypeText : null;
 
     public enum WhoWllFillEnum
     {

@@ -53,17 +53,18 @@
     </div>
   </div>
   }
-  @if (Model.ProblemFields.Any())
+  @if (Model.Problems.Any())
   {
   <div class="alert alert-danger">
-    Есть проблемы со следующими полями:
+    Не хватает данных для регистрации:
     <ul>
-      @foreach (var fieldProblem in Model.ProblemFields)
+      @foreach (var problem in Model.Problems)
       {
-        <li><b>@fieldProblem.FieldName</b> — @fieldProblem.ProblemTypeText (@Html.DisplayFor(modelField => fieldProblem.WhoWillFill))</li>
+        <li><b>@problem.Title</b>@(problem.Details is null ? "" : " — " + problem.Details) (@Html.DisplayFor(modelField => problem.WhoWillFill))</li>
       }
     </ul>
-   Перейдите на @Html.ActionLink("заявку", "Edit", "Claim", new { Model.ClaimId, Model.ProjectId }, null) для их заполнения или вызовите ответственного мастера @Html.DisplayFor(model => model.Master)
+    Поля заполняются на @Html.ActionLink("заявке", "Edit", "Claim", new { Model.ClaimId, Model.ProjectId }, null), с полями мастера поможет ответственный мастер @Html.DisplayFor(model => model.Master).
+    Данные профиля игрок заполняет сам в своём профиле.
   </div>
   }
   @await Html.PartialAsync("..\\Print\\_CharacterHandout", Model.Handouts)

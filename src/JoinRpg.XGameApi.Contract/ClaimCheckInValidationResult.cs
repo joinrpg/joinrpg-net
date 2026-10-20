@@ -18,11 +18,7 @@ public class ClaimCheckInValidationResult
     /// </summary>
     public bool Approved { get; set; }
     /// <summary>
-    /// Every filed filled (if not, could not checkin)
-    /// </summary>
-    public bool EverythingFilled { get; set; }
-    /// <summary>
-    /// Could we checkin !CheckedIn AND Approved AND EverythingFilled
+    /// Could we checkin: !CheckedIn AND Approved AND claim fields and player profile are filled
     /// </summary>
     public bool CheckInPossible { get; set; }
     /// <summary>

@@ -23,9 +23,13 @@ public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator cla
 
     public bool IsApproved => claim.Status == ClaimStatus.Approved;
 
-    public IReadOnlyCollection<FieldRelatedProblem> FieldProblems { get; } = [.. claimValidator.ValidateFieldsOnly(context)];
+    /// <summary>
+    /// Что не даёт зарегистрировать игрока: незаполненные поля заявки и данные профиля, которые
+    /// требует проект (#5708).
+    /// </summary>
+    public IReadOnlyCollection<ClaimProblem> Problems { get; } = [.. claimValidator.ValidateCheckInBlockers(context)];
 
-    public bool CanCheckInInPrinciple => NotCheckedInAlready && IsApproved && FieldProblems.Count == 0;
+    public bool CanCheckInInPrinciple => NotCheckedInAlready && IsApproved && Problems.Count == 0;
 
     public bool CanCheckInNow => CanCheckInInPrinciple && FeeDue <= 0;
 }
