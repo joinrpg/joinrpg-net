@@ -37,6 +37,7 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             Vkontakte = (MandatoryContactsView)project.ProfileRequirementSettings.RequireVkontakte,
             Passport = project.ProfileRequirementSettings.RequirePassport == MandatoryStatus.Optional ? MandatorySenstiveContactsView.Optional : MandatorySenstiveContactsView.Request,
             RegistrationAddress = project.ProfileRequirementSettings.RequireRegistrationAddress == MandatoryStatus.Optional ? MandatorySenstiveContactsView.Optional : MandatorySenstiveContactsView.Request,
+            BirthDate = project.ProfileRequirementSettings.RequireBirthDate == MandatoryStatus.Optional ? MandatorySenstiveContactsView.Optional : MandatorySenstiveContactsView.Request,
         };
     }
 
@@ -66,7 +67,8 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             (MandatoryStatus)model.Vkontakte,
             (MandatoryStatus)model.Phone,
             model.Passport == MandatorySenstiveContactsView.Request ? MandatoryStatus.Recommended : MandatoryStatus.Optional,
-            model.RegistrationAddress == MandatorySenstiveContactsView.Request ? MandatoryStatus.Recommended : MandatoryStatus.Optional
+            model.RegistrationAddress == MandatorySenstiveContactsView.Request ? MandatoryStatus.Recommended : MandatoryStatus.Optional,
+            model.BirthDate == MandatorySenstiveContactsView.Request ? MandatoryStatus.Recommended : MandatoryStatus.Optional
             );
         await projectService.SetContactSettings(model.ProjectId, settings);
     }

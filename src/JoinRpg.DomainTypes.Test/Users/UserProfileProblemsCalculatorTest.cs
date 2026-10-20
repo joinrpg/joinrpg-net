@@ -23,7 +23,8 @@ public class UserProfileProblemsCalculatorTest
             RequireVkontakte: MandatoryStatus.Required,
             RequirePhone: MandatoryStatus.Required,
             RequirePassport: MandatoryStatus.Required,
-            RequireRegistrationAddress: MandatoryStatus.Required);
+            RequireRegistrationAddress: MandatoryStatus.Required,
+            RequireBirthDate: MandatoryStatus.Required);
 
         var missingItems = Enum.GetValues<UserProfileItemType>();
 
@@ -41,7 +42,8 @@ public class UserProfileProblemsCalculatorTest
             RequireVkontakte: MandatoryStatus.Required,
             RequirePhone: MandatoryStatus.Required,
             RequirePassport: MandatoryStatus.Required,
-            RequireRegistrationAddress: MandatoryStatus.Required);
+            RequireRegistrationAddress: MandatoryStatus.Required,
+            RequireBirthDate: MandatoryStatus.Required);
 
         var missingItems = Enum.GetValues<UserProfileItemType>();
 

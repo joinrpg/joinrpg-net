@@ -41,6 +41,9 @@
                 <FormRowFor For="@(() => Model.RegistrationAddress)">
                     <EnumRadioButtonGroup @bind-SelectedValue="Model.RegistrationAddress" />
                 </FormRowFor>
+                <FormRowFor For="@(() => Model.BirthDate)">
+                    <EnumRadioButtonGroup @bind-SelectedValue="Model.BirthDate" />
+                </FormRowFor>
                 <FormRow>
                     <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
                 </FormRow>
