@@ -323,6 +323,7 @@
 - [x] 🟢 (2026-10-19) «Не разобрались» не считает приглашения к проживанию — [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671), [#5672](https://github.com/joinrpg/joinrpg-net/issues/5672).
 - [x] 🟢 (2026-10-19) Видимость новых персонажей выбирается при каждом применении, группы открываются вслед за персонажем — [#5677](https://github.com/joinrpg/joinrpg-net/issues/5677) ([#5682](https://github.com/joinrpg/joinrpg-net/issues/5682), [#5684](https://github.com/joinrpg/joinrpg-net/issues/5684), [#5688](https://github.com/joinrpg/joinrpg-net/issues/5688), [docs#302](https://github.com/joinrpg/joinrpg-docs/pull/302)); ждёт выкатки.
 - [x] 🟢 (2026-10-19) Пустое поле-имя давало персонажу имя «CHAR-1» — [#5673](https://github.com/joinrpg/joinrpg-net/issues/5673), [#5685](https://github.com/joinrpg/joinrpg-net/issues/5685); ждёт выкатки.
+- [ ] Шаблон без принятых заявок от разных игроков восстанавливается обычным персонажем (пример: проект 1696) — [#5733](https://github.com/joinrpg/joinrpg-net/issues/5733).
 - [x] ~~«Шаблон» с пустым названием в проекте без поля имени~~ — [#5678](https://github.com/joinrpg/joinrpg-net/issues/5678) закрыт без исправления ([#5681](https://github.com/joinrpg/joinrpg-net/issues/5681) закрыт): велик риск сделать обычного персонажа шаблоном. Обход — вписать название шаблона руками.
 - [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
       мастерские — мастер из своих материалов.
@@ -875,6 +876,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5685](https://github.com/joinrpg/joinrpg-net/issues/5685) | Пустое поле-имя не даёт «CHAR-1» (Closes [#5673](https://github.com/joinrpg/joinrpg-net/issues/5673)) | 7 | влит, ждёт выкатки |
 | [#5681](https://github.com/joinrpg/joinrpg-net/issues/5681) | Шаблон без поля имени получает имя персонажа ([#5678](https://github.com/joinrpg/joinrpg-net/issues/5678)) | 7 | закрыт без мерджа |
 | issue [#5678](https://github.com/joinrpg/joinrpg-net/issues/5678) | «Шаблон» с пустым названием в проекте без поля имени | 7 | закрыт: не делаем |
+| issue [#5733](https://github.com/joinrpg/joinrpg-net/issues/5733) | Шаблон без принятых заявок от разных игроков — обычным персонажем | 7 | заведён |
 | [#5690](https://github.com/joinrpg/joinrpg-net/issues/5690) | «Ручные оплаты»: пояс браузера, точный итог (Closes [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647)) | 9 | влит, ждёт выкатки |
 | [#5674](https://github.com/joinrpg/joinrpg-net/issues/5674) | Один остров приглашений на заявке (Closes [#5670](https://github.com/joinrpg/joinrpg-net/issues/5670)) | 10 | влит |
 | [#5689](https://github.com/joinrpg/joinrpg-net/issues/5689) | Одно уведомление о приглашении мастеру (Closes [#5676](https://github.com/joinrpg/joinrpg-net/issues/5676)) | 10 | влит, ждёт выкатки |
