@@ -4,6 +4,7 @@ using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Interfaces;
 using LinqKit;
 using Microsoft.Extensions.Logging;
 
@@ -35,6 +36,26 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
           .Include(u => u.SelectedAvatar)
           .Include(u => u.ExternalLogins)
           .SingleOrDefaultAsync(u => u.UserId == userId);
+    }
+
+    public async Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination)
+    {
+        var ids = await ctx.Set<User>()
+            .AsExpandable()
+            .Where(u => u.SelectedAvatarId == null)
+            .ApplyPaginationEf(pagination, u => u.UserId)
+            .Select(u => u.UserId)
+            .ToListAsync();
+        return [.. ids.Select(id => new UserIdentification(id))];
+    }
+
+    public async Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds)
+    {
+        var ids = userIds.Select(x => x.Value).ToList();
+        return await ctx.Set<User>()
+            .Include(u => u.Avatars)
+            .Where(u => ids.Contains(u.UserId))
+            .ToListAsync();
     }
 
     public Task<User> GetWithSubscribe(int currentUserId)

@@ -3,6 +3,7 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.DataModel.Mocks.Fakes;
 
@@ -104,6 +105,8 @@ public sealed class FakeUserRepository(
     public Task<User> WithProfile(int userId) => throw NotConfigured("профиль пользователя");
     public Task<User> GetWithSubscribe(int currentUserId) => throw NotConfigured("подписки пользователя");
     public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw NotConfigured("аватарки");
+    public Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination) => throw NotConfigured("пользователи без аватарки");
+    public Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw NotConfigured("аватарки пользователей");
     public Task<UserIdentification?> FindByVk(string vkId) => throw NotConfigured("поиск по ВК");
     public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw NotConfigured("поиск по телеграму");
     public Task<UserIdentification?> FindByEmail(string email) => throw NotConfigured("поиск по email");

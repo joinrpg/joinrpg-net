@@ -8,6 +8,7 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Interfaces;
 using JoinRpg.WebPortal.Managers.Print;
 
 namespace JoinRpg.WebPortal.Managers.Test.Print;
@@ -151,6 +152,8 @@ public class PrintViewServiceTests
         public Task<User> WithProfile(int userId) => throw new NotSupportedException();
         public Task<User> GetWithSubscribe(int currentUserId) => throw new NotSupportedException();
         public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
         public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
