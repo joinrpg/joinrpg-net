@@ -20,7 +20,8 @@ public class GameSubscribeController(
     IUriService uriService,
     IGameSubscribeClient subscribeClient,
     ICurrentUserAccessor currentUserAccessor,
-    UserProfileAvatars profileAvatars
+    UserProfileAvatars profileAvatars,
+    UserProfileDetailsBuilder cardBuilder
         ) : JoinControllerGameBase
 {
 
@@ -35,7 +36,7 @@ public class GameSubscribeController(
         var currentUser = await userRepository.GetUserInfo(currentUserAccessor.UserIdentification);
 
 
-        var userDetails = new UserProfileDetailsViewModel(user, currentUser);
+        var userDetails = cardBuilder.Build(user, currentUser);
         await profileAvatars.Fill(userDetails);
 
         return View(new SubscribeByMasterPageViewModel(userDetails, subscribeViewModel));

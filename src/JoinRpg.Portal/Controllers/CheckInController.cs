@@ -11,6 +11,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CheckIn;
+using JoinRpg.Web.UserProfile;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +29,8 @@ public class CheckInController(
     IClaimProblemValidator claimValidator,
     CharacterPlotViewService characterPlotViewService,
     ICurrentUserAccessor currentUserAccessor,
-    UserProfileAvatars profileAvatars
+    UserProfileAvatars profileAvatars,
+    UserProfileDetailsBuilder cardBuilder
         ) : JoinControllerGameBase
 {
     [HttpGet]
@@ -94,7 +96,8 @@ public class CheckInController(
             claimInfo,
             handouts[characterId],
             claimValidator,
-            currentUserAccessor
+            currentUserAccessor,
+            cardBuilder
           );
         await profileAvatars.Fill(model.PlayerDetails);
         return View("CheckIn", model);
@@ -145,7 +148,7 @@ public class CheckInController(
             return RedirectToAction("Edit", "Claim", new { projectId, claimId });
         }
 
-        var model = new SecondRoleViewModel(claimInfo, currentUserAccessor);
+        var model = new SecondRoleViewModel(claimInfo, currentUserAccessor, cardBuilder);
         await profileAvatars.Fill(model.PlayerDetails);
         return View(model);
     }

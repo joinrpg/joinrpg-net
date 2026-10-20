@@ -14,7 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers;
 
 public class UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor, YandexLogLink yandexLogLink,
-    IProjectRepository projectRepository, IClaimsRepository claimsRepository, UserProfileAvatars profileAvatars) : Common.JoinMvcControllerBase()
+    IProjectRepository projectRepository, IClaimsRepository claimsRepository, UserProfileAvatars profileAvatars,
+    UserProfileDetailsBuilder cardBuilder) : Common.JoinMvcControllerBase()
 {
     [HttpGet("user/{userId:int}")]
     [AllowAnonymous]
@@ -52,7 +53,7 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             ActiveMasterProjects = [.. visibleUserProjects.Where(p => p.Active).Select(p => new ProjectListItemViewModel(p))],
             ArchivedProjects = visibleUserProjects.Where(p => !p.Active).ToLinkViewModels().ToList(),
             UserId = user.UserId,
-            Details = new UserProfileDetailsViewModel(user, currentUser),
+            Details = cardBuilder.Build(user, currentUser),
             Admin = currentUserAccessor.IsAdmin ? new UserAdminOperationsViewModel(yandexLogLink.GetLinkForUser(user.Email)) : null,
         };
         await profileAvatars.Fill(userProfileViewModel.Details);

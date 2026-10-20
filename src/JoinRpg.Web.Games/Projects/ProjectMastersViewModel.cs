@@ -24,12 +24,14 @@ public record ProjectMastersViewModel(
     /// <param name="viewer">Профиль смотрящего: контакты — по тем же правилам, что в профиле пользователя.</param>
     /// <param name="profiles">Профили действующих мастеров по UserId.</param>
     /// <param name="users">Пользователи — действующие мастера, по UserId.</param>
+    /// <param name="cardBuilder">Строит карточки профиля мастеров.</param>
     public static ProjectMastersViewModel Build(
         ProjectInfo project,
         UserIdentification? viewerId,
         UserInfo? viewer,
         IReadOnlyDictionary<UserIdentification, ProjectMasterProfileViewModel> profiles,
-        IReadOnlyDictionary<UserIdentification, UserInfo> users)
+        IReadOnlyDictionary<UserIdentification, UserInfo> users,
+        UserProfileDetailsBuilder cardBuilder)
         // Профиль есть у каждого действующего мастера. Нет его (или пользователя) только у того, кого добавили
         // между двумя чтениями, — такой появится при следующей загрузке страницы.
         => new(
@@ -37,7 +39,7 @@ public record ProjectMastersViewModel(
             [.. project.PublicMasters
                 .Where(master => profiles.ContainsKey(master.UserId) && users.ContainsKey(master.UserId))
                 .Select(master => new ProjectMasterCardViewModel(
-                    new UserProfileDetailsViewModel(users[master.UserId], viewer),
+                    cardBuilder.Build(users[master.UserId], viewer),
                     profiles[master.UserId].Role,
                     profiles[master.UserId].Description))],
             project.HasMasterAccess(viewerId));

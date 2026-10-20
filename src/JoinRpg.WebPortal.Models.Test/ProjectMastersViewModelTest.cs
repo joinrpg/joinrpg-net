@@ -78,14 +78,14 @@ public class ProjectMastersViewModelTest
     /// <summary>Ссылка на мастерскую страницу — по id смотрящего, даже если его профиль не загрузился.</summary>
     [Fact]
     public void LinkToManagement_DoesNotNeedViewerProfile()
-        => ProjectMastersViewModel.Build(mock.ProjectInfo, mock.MasterInfo.UserId, viewer: null, Profiles, Users)
+        => ProjectMastersViewModel.Build(mock.ProjectInfo, mock.MasterInfo.UserId, viewer: null, Profiles, Users, new UserProfileDetailsBuilder())
             .ViewerIsMaster.ShouldBeTrue();
 
     private ProjectMastersViewModel BuildFor(
         UserInfo? viewer,
         IReadOnlyDictionary<UserIdentification, ProjectMasterProfileViewModel> profiles,
         IReadOnlyDictionary<UserIdentification, UserInfo> users)
-        => ProjectMastersViewModel.Build(mock.ProjectInfo, viewer?.UserId, viewer, profiles, users);
+        => ProjectMastersViewModel.Build(mock.ProjectInfo, viewer?.UserId, viewer, profiles, users, new UserProfileDetailsBuilder());
 
     [Fact]
     public void MasterWithoutLoadedUser_IsSkipped()

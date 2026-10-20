@@ -39,9 +39,9 @@ public class AclViewModel
     public bool CanGrantRights => Badges.Single(b => b.Permission == Permission.CanGrantRights).Value;
 
     // For Add/Edit pages: needs full User entity for detailed profile display
-    public AclViewModel(ProjectInfo projectInfo, UserInfo targetUser, ICurrentUserAccessor currentUserAccessor)
+    public AclViewModel(ProjectInfo projectInfo, UserInfo targetUser, ICurrentUserAccessor currentUserAccessor, UserProfileDetailsBuilder cardBuilder)
     {
-        UserDetails = new UserProfileDetailsViewModel(targetUser, projectInfo, currentUserAccessor.UserIdentificationOrDefault, currentUserAccessor.IsAdmin);
+        UserDetails = cardBuilder.Build(targetUser, projectInfo, currentUserAccessor.UserIdentificationOrDefault, currentUserAccessor.IsAdmin);
         ProjectId = projectInfo.ProjectId;
         ProjectName = projectInfo.ProjectName;
         UserId = targetUser.UserId;
@@ -49,9 +49,9 @@ public class AclViewModel
     }
 
     // For master list and manage pages
-    public AclViewModel(ProjectMasterInfo master, UserInfo masterUser, int claimsCount, ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor)
+    public AclViewModel(ProjectMasterInfo master, UserInfo masterUser, int claimsCount, ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor, UserProfileDetailsBuilder cardBuilder)
     {
-        UserDetails = new UserProfileDetailsViewModel(masterUser, projectInfo, currentUserAccessor.UserIdentificationOrDefault, currentUserAccessor.IsAdmin);
+        UserDetails = cardBuilder.Build(masterUser, projectInfo, currentUserAccessor.UserIdentificationOrDefault, currentUserAccessor.IsAdmin);
         UserId = master.UserId.Value;
         ProjectId = projectInfo.ProjectId;
         ProjectName = projectInfo.ProjectName;

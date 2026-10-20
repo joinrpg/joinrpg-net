@@ -44,7 +44,7 @@ public class UserProfileAvatarsTest
         cards.ShouldAllBe(c => c.Avatar != null);
     }
 
-    private static UserProfileDetailsViewModel Card(int userId, int? selectedAvatarId) => new(
+    private static UserProfileDetailsViewModel Card(int userId, int? selectedAvatarId) => new UserProfileDetailsBuilder().Build(
         new UserInfo(
             new UserIdentification(userId),
             new UserSocialNetworks(null, null, null, null, ContactsAccessType.OnlyForMasters),

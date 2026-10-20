@@ -7,7 +7,7 @@ namespace JoinRpg.Web.Models.CheckIn;
 
 public class SecondRoleViewModel
 {
-    public SecondRoleViewModel(ClaimInfo claimInfo, ICurrentUserAccessor currentUser)
+    public SecondRoleViewModel(ClaimInfo claimInfo, ICurrentUserAccessor currentUser, UserProfileDetailsBuilder cardBuilder)
     {
         ArgumentNullException.ThrowIfNull(claimInfo);
 
@@ -16,7 +16,7 @@ public class SecondRoleViewModel
         // за ним числятся заявки (ProjectAccessService.RemoveAccess передаёт их другому).
         Master = new UserLinkViewModel(projectInfo.GetMasterById(claimInfo.Claim.ResponsibleMasterId).UserInfo);
         Navigation = CharacterNavigationViewModel.FromClaim(claimInfo.Character, claimInfo.ClaimId, currentUser.UserIdentification, CharacterNavigationPage.None);
-        PlayerDetails = new UserProfileDetailsViewModel(claimInfo.Player, projectInfo, currentUser.UserIdentificationOrDefault, currentUser.IsAdmin);
+        PlayerDetails = cardBuilder.Build(claimInfo.Player, projectInfo, currentUser.UserIdentificationOrDefault, currentUser.IsAdmin);
         ClaimId = claimInfo.ClaimId.ClaimId;
         ProjectId = projectInfo.ProjectId.Value;
     }

@@ -11,6 +11,7 @@ using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using JoinRpg.Web.Models.Money;
+using JoinRpg.Web.UserProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,8 @@ public class FinancesController(
     ICurrentUserAccessor currentUserAccessor,
     ILogger<FinancesController> logger,
     IProjectMetadataRepository projectMetadataRepository,
-    UserProfileAvatars profileAvatars
+    UserProfileAvatars profileAvatars,
+    UserProfileDetailsBuilder cardBuilder
         ) : JoinControllerGameBase
 {
     protected readonly IUserRepository UserRepository = userRepository;
@@ -328,7 +330,8 @@ public class FinancesController(
             operations,
             payments,
             currentUserAccessor,
-            projectInfo);
+            projectInfo,
+            cardBuilder);
         await profileAvatars.Fill(viewModel.UserDetails);
         return View(viewModel);
     }

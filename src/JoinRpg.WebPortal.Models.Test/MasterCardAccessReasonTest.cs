@@ -19,7 +19,7 @@ public class MasterCardAccessReasonTest
     private UserInfo ArchivedGameMaster => mock.MasterInfo with { ActiveProjects = [] };
 
     private MastersListViewModel ListFor(UserInfo master, ICurrentUserAccessor viewer)
-        => new([], viewer, mock.ProjectInfo, [], new Dictionary<UserIdentification, UserInfo> { [master.UserId] = master });
+        => new([], viewer, mock.ProjectInfo, [], new Dictionary<UserIdentification, UserInfo> { [master.UserId] = master }, new UserProfileDetailsBuilder());
 
     private static ICurrentUserAccessor OtherMaster => new FakeCurrentUserAccessor(new UserIdentification(100500));
 

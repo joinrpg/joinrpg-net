@@ -10,6 +10,7 @@ using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Masters;
+using JoinRpg.Web.UserProfile;
 using JoinRpg.WebPortal.Models.Masters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,8 @@ public class AclController(
     IProjectAccessService projectAccessService,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMasterProfileRepository masterProfileRepository,
-    UserProfileAvatars profileAvatars
+    UserProfileAvatars profileAvatars,
+    UserProfileDetailsBuilder cardBuilder
     ) : JoinControllerGameBase
 {
     [HttpGet("add/{userId}")]
@@ -43,7 +45,7 @@ public class AclController(
             return NotFound();
         }
         // Форма — остров AddMasterPanel: профиль и права грузит и сохраняет через API (ADR019, §4).
-        var model = new AclViewModel(project, targetUser, currentUserAccessor);
+        var model = new AclViewModel(project, targetUser, currentUserAccessor, cardBuilder);
         await profileAvatars.Fill(model.UserDetails);
         return View(model);
     }
@@ -65,7 +67,7 @@ public class AclController(
             p => new ProjectMasterProfileViewModel(p.Role.Value, p.Description is null ? null : p.Description.ToHtmlString()));
         var users = (await userRepository.GetUserInfos([.. visible])).ToDictionary(u => u.UserId);
         var viewer = viewerId is null ? null : await userRepository.GetUserInfo(viewerId);
-        var model = ProjectMastersViewModel.Build(projectInfo, viewerId, viewer, publicProfiles, users);
+        var model = ProjectMastersViewModel.Build(projectInfo, viewerId, viewer, publicProfiles, users, cardBuilder);
         await profileAvatars.Fill(model.Masters.Select(m => m.Details));
         return View(model);
     }
@@ -83,7 +85,7 @@ public class AclController(
         var claims = await claimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
         var masterUsers = await userRepository.GetRequiredUserInfos([.. projectInfo.Masters.Select(m => m.UserId)]);
 
-        var model = new MastersListViewModel(claims, currentUserAccessor, projectInfo, profiles, masterUsers.ToDictionary(u => u.UserId));
+        var model = new MastersListViewModel(claims, currentUserAccessor, projectInfo, profiles, masterUsers.ToDictionary(u => u.UserId), cardBuilder);
         await profileAvatars.Fill(model.Masters.Select(m => m.UserDetails));
         return View(model);
     }
@@ -182,7 +184,7 @@ public class AclController(
             }
             // Карточка — как на странице добавления: причина доступа к профилю считается по проекту,
             // и снятый мастер в ней уже не «Со-мастер».
-            model = new AclViewModel(projectInfo, formerUser, currentUserAccessor) { IsFormerMaster = true };
+            model = new AclViewModel(projectInfo, formerUser, currentUserAccessor, cardBuilder) { IsFormerMaster = true };
         }
         // Права меняются в активном и заблокированном проекте (ChangeAccess — AllowBlocked, ADR023),
         // профиль — и в архиве: это «титры» игры.
@@ -216,6 +218,6 @@ public class AclController(
         }
         var claims = await claimRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
         var masterUser = await userRepository.GetRequiredUserInfo(userId);
-        return new AclViewModel(master, masterUser, claims.Count, projectInfo, currentUserAccessor);
+        return new AclViewModel(master, masterUser, claims.Count, projectInfo, currentUserAccessor, cardBuilder);
     }
 }

@@ -12,9 +12,10 @@ public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transf
     IReadOnlyCollection<FinanceOperation> operations,
     PaymentTypeSummaryViewModel[] payments,
     ICurrentUserAccessor currentUserId,
-    ProjectInfo projectInfo)
+    ProjectInfo projectInfo,
+    UserProfileDetailsBuilder cardBuilder)
 {
-    public UserProfileDetailsViewModel UserDetails { get; } = new UserProfileDetailsViewModel(master, projectInfo, currentUserId.UserIdentificationOrDefault, currentUserId.IsAdmin);
+    public UserProfileDetailsViewModel UserDetails { get; } = cardBuilder.Build(master, projectInfo, currentUserId.UserIdentificationOrDefault, currentUserId.IsAdmin);
     public int ProjectId { get; } = projectInfo.ProjectId;
     public IReadOnlyCollection<MoneyTransferListItemViewModel> Transfers { get; } = transfers
             .OrderBy(f => f.Id)

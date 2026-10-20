@@ -45,13 +45,14 @@ public class UserProfileDetailsViewModel
 
     public bool IsMine => Reason == AccessReasonView.ItsMe;
 
-    public UserProfileDetailsViewModel(UserInfo user, UserInfo? currentUser)
+    // Конструкторы закрыты: карточку строит только UserProfileDetailsBuilder.
+    internal UserProfileDetailsViewModel(UserInfo user, UserInfo? currentUser)
         : this(user, user.GetAccess(currentUser), currentUser?.IsAdmin ?? false) { }
 
     /// <summary>
     /// Карточка, которую смотрит мастер проекта: доступ к контактам — по проекту, свой профиль — «Это мой профиль».
     /// </summary>
-    public UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject, UserIdentification? currentUserId, bool viewAsAdmin)
+    internal UserProfileDetailsViewModel(UserInfo user, ProjectInfo currentProject, UserIdentification? currentUserId, bool viewAsAdmin)
     : this(user, user.GetAccess(currentProject, currentUserId), viewAsAdmin) { }
 
     private UserProfileDetailsViewModel(UserInfo user, UserProfileAccessReason accessReason, bool viewAsAdmin)
