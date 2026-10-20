@@ -71,7 +71,7 @@ public class EditUserProfileViewModel
     [ReadOnly(true)]
     public string TelegramBotName { get; set; } = null!;
 
-    [Display(Name = "Паспортные данные")]
+    [Display(Name = "Паспортные данные", Description = "Укажите: серию, номер, кем и когда выдан, код подразделения, дату рождения. Проще всего скопировать данные кнопкой «Скопировать» <a href=\"https://lk.gosuslugi.ru/profile/personal\" target=\"_blank\" rel=\"noopener noreferrer\">на Госуслугах</a>.")]
     [UIHint("MultilineText")]
     public required string PassportData { get; set; }
 
