@@ -7,6 +7,7 @@ namespace JoinRpg.Portal.Infrastructure.XApi;
 /// Из-за <c>JsonNumberHandling.AllowReadingFromString</c> числа описываются как
 /// <c>type: ["integer", "string"]</c> с регулярным выражением. Swagger UI такие схемы не понимает
 /// и не даёт вызвать метод («Required field is not provided»), поэтому оставляем только числовой тип.
+/// Убрать, когда починят https://github.com/swagger-api/swagger-ui/issues/10646
 /// </summary>
 public sealed class StrictNumberSchemaTransformer : IOpenApiSchemaTransformer
 {
