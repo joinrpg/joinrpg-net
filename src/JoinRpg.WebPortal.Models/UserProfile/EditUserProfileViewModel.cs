@@ -76,7 +76,7 @@ public class EditUserProfileViewModel
     public required string PassportData { get; set; }
 
 
-    [Display(Name = "Адрес регистрации")]
+    [Display(Name = "Адрес регистрации", Description = "Полностью, как в паспорте: индекс, город, улица, дом, квартира.")]
     [UIHint("MultilineText")]
     public required string RegistrationAddress { get; set; }
 }
