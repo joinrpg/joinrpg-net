@@ -1,14 +1,8 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Accommodation;
-using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
-using JoinRpg.DomainTypes.Users;
-using JoinRpg.Interfaces;
 using JoinRpg.WebPortal.Managers.Print;
 
 namespace JoinRpg.WebPortal.Managers.Test.Print;
@@ -24,11 +18,18 @@ namespace JoinRpg.WebPortal.Managers.Test.Print;
 public class PrintViewServiceTests
 {
     private readonly MockedProject mock = new();
-    private readonly FakePhoneRepository phones = new();
+    private readonly Dictionary<UserIdentification, string> phoneNumbers = [];
+    private readonly FakeUserRepository users;
     private readonly RecordingRoomPlanRepository roomPlans = new();
 
+    public PrintViewServiceTests()
+        // Пользователи мока, с телефонами, которые задал тест.
+        => users = new FakeUserRepository(userId => mock.TryGetUserInfo(userId) is { } user
+            ? user with { PhoneNumber = phoneNumbers.GetValueOrDefault(userId) }
+            : null);
+
     private PrintViewService CreateService()
-        => new(new FakeCharacterInfoRepository(mock), phones, roomPlans);
+        => new(new FakeCharacterInfoRepository(mock), users, roomPlans);
 
     [Fact]
     public async Task Envelopes_DoNotMixUpPhonesBetweenCharacters()
@@ -41,8 +42,8 @@ public class PrintViewServiceTests
         var secondPlayer = mock.CreateMaster("Второй игрок");
         _ = mock.CreateApprovedClaim(second, secondPlayer);
 
-        phones.Set(new UserIdentification(firstPlayer.UserId), "+7 900 000-00-01");
-        phones.Set(new UserIdentification(secondPlayer.UserId), "+7 900 000-00-02");
+        phoneNumbers[new UserIdentification(firstPlayer.UserId)] = "+7 900 000-00-01";
+        phoneNumbers[new UserIdentification(secondPlayer.UserId)] = "+7 900 000-00-02";
 
         var envelopes = (await CreateService().GetEnvelopes(
             [mock.GetCharacterInfo(first), mock.GetCharacterInfo(second)]))
@@ -110,7 +111,7 @@ public class PrintViewServiceTests
         var envelopes = await CreateService().GetEnvelopes([]);
 
         envelopes.ShouldBeEmpty();
-        phones.CallCount.ShouldBe(0);
+        users.CallCount.ShouldBe(0);
         roomPlans.CallCount.ShouldBe(0);
     }
 
@@ -126,40 +127,5 @@ public class PrintViewServiceTests
 
         public Task<RoomCategoryPlan?> GetPlanForTypeOrDefault(AccommodationTypeIdentification typeId)
             => throw new NotSupportedException();
-    }
-
-    /// <summary>
-    /// Телефоны тестов. Остальные методы намеренно бросают: поход сервиса за лишним профилем
-    /// должен быть виден в тесте, а не подменяться пустышкой.
-    /// </summary>
-    private sealed class FakePhoneRepository : IUserRepository
-    {
-        private readonly Dictionary<UserIdentification, PhoneNumber> phones = [];
-
-        public int CallCount { get; private set; }
-
-        public void Set(UserIdentification userId, string phone) => phones[userId] = new PhoneNumber(phone);
-
-        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(
-            IReadOnlyCollection<UserIdentification> userIds)
-        {
-            CallCount++;
-            return Task.FromResult<IReadOnlyDictionary<UserIdentification, PhoneNumber>>(
-                userIds.Where(phones.ContainsKey).ToDictionary(userId => userId, userId => phones[userId]));
-        }
-
-        public Task<User> GetById(int id) => throw new NotSupportedException();
-        public Task<User> WithProfile(int userId) => throw new NotSupportedException();
-        public Task<User> GetWithSubscribe(int currentUserId) => throw new NotSupportedException();
-        public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByVk(string vkId) => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotSupportedException();
-        public Task<UserIdentification?> FindByEmail(string email) => throw new NotSupportedException();
     }
 }
