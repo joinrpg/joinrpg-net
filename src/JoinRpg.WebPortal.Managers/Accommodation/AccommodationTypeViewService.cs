@@ -1,4 +1,3 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Domain;

@@ -1,4 +1,3 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.Accommodation;
 using Microsoft.AspNetCore.Mvc;

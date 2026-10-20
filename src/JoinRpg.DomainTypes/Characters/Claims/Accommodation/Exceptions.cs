@@ -13,8 +13,8 @@ public class AccommodationInviteNotAllowedException(ProjectIdentification projec
 /// В проекте нет типа проживания с таким идентификатором.
 /// </summary>
 /// <remarks>
-/// Аналог <c>JoinRpgEntityNotFoundException</c> из <c>JoinRpg.Data.Interfaces</c>: тот живёт слоем
-/// выше и отсюда недоступен, а бросать <see cref="KeyNotFoundException"/> из доменной модели
+/// Типизированный аналог <see cref="JoinRpgEntityNotFoundException"/>: несёт идентификатор типа
+/// проживания вместе с проектом. Бросать <see cref="KeyNotFoundException"/> из доменной модели
 /// нельзя — это исключение про коллекции, а не про предметную область.
 /// </remarks>
 public class AccommodationTypeNotFoundException(AccommodationTypeIdentification accommodationTypeId)
