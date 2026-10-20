@@ -120,12 +120,14 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
             RequireVkontakte: MandatoryStatus.Optional,
             RequirePhone: MandatoryStatus.Required,
             RequirePassport: MandatoryStatus.Optional,
-            RequireRegistrationAddress: MandatoryStatus.Optional);
+            RequireRegistrationAddress: MandatoryStatus.Optional,
+            RequireBirthDate: MandatoryStatus.Recommended);
 
         await CreateService().SetContactSettings(ProjectId, settings);
 
         Result.ProfileRequirementSettings.RequireRealName.ShouldBe(MandatoryStatus.Required);
         Result.ProfileRequirementSettings.RequirePhone.ShouldBe(MandatoryStatus.Required);
+        Result.ProfileRequirementSettings.RequireBirthDate.ShouldBe(MandatoryStatus.Recommended);
     }
 
     [Fact]

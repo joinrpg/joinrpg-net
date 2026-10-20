@@ -132,6 +132,7 @@ erDiagram
         enum RequirePhone
         enum RequirePassport
         enum RequireRegistrationAddress
+        enum RequireBirthDate "дата рождения — защищённые данные, как паспорт"
         string TimeZoneId "IANA-пояс, по умолчанию Europe/Moscow"
     }
 

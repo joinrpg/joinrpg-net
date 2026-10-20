@@ -39,6 +39,9 @@ public class ProjectContactsSettingsViewModel
     [Display(Name = "Требовать адрес регистрации")]
     public required MandatorySenstiveContactsView RegistrationAddress { get; set; }
 
+    [Display(Name = "Требовать дату рождения")]
+    public required MandatorySenstiveContactsView BirthDate { get; set; }
+
 }
 
 public class ProjectClaimSettingsViewModel

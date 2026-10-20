@@ -340,20 +340,23 @@ public record ProjectProfileRequirementSettings(
     MandatoryStatus RequireVkontakte,
     MandatoryStatus RequirePhone,
     MandatoryStatus RequirePassport,
-    MandatoryStatus RequireRegistrationAddress)
+    MandatoryStatus RequireRegistrationAddress,
+    MandatoryStatus RequireBirthDate)
 {
     public static readonly ProjectProfileRequirementSettings AllNotRequired
-        = new(MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional);
+        = new(MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional, MandatoryStatus.Optional);
 
     public bool PassportRequested => RequirePassport != MandatoryStatus.Optional;
     public bool RegistrationAddressRequested => RequireRegistrationAddress != MandatoryStatus.Optional;
+    public bool BirthDateRequested => RequireBirthDate != MandatoryStatus.Optional;
 
     /// <summary>
-    /// Проект запрашивает защищённые данные — мастер увидит их только с согласия игрока на заявке.
-    /// Согласие открывает только запрошенное: смотреть <see cref="PassportRequested"/> и
-    /// <see cref="RegistrationAddressRequested"/> по каждому полю.
+    /// Проект запрашивает защищённые данные (паспорт, адрес регистрации, дату рождения) — мастер
+    /// увидит их только с согласия игрока на заявке. Согласие открывает только запрошенное:
+    /// смотреть <see cref="PassportRequested"/>, <see cref="RegistrationAddressRequested"/> и
+    /// <see cref="BirthDateRequested"/> по каждому полю.
     /// </summary>
-    public bool SensitiveDataRequired => PassportRequested || RegistrationAddressRequested;
+    public bool SensitiveDataRequired => PassportRequested || RegistrationAddressRequested || BirthDateRequested;
 }
 
 public record ProjectClaimSettings(

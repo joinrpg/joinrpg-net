@@ -169,6 +169,7 @@ internal class ProjectService(
                 ctx.Project.Details.RequireTelegram = ctx.Request.RequireTelegram;
                 ctx.Project.Details.RequirePassport = ctx.Request.RequirePassport;
                 ctx.Project.Details.RequireRegistrationAddress = ctx.Request.RequireRegistrationAddress;
+                ctx.Project.Details.RequireBirthDate = ctx.Request.RequireBirthDate;
             });
     }
 

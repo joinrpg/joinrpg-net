@@ -70,7 +70,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             createDate: DateOnly.FromDateTime(project.CreatedDate),
             profileRequirementSettings: new ProjectProfileRequirementSettings(
                 project.Details.RequireRealName, project.Details.RequireTelegram, project.Details.RequireVkontakte, project.Details.RequirePhone, project.Details.RequirePassport,
-                project.Details.RequireRegistrationAddress),
+                project.Details.RequireRegistrationAddress, project.Details.RequireBirthDate),
             projectClaimSettings: new ProjectClaimSettings(
                 DefaultTemplate: CharacterIdentification.FromOptional(projectId, project.Details.DefaultTemplateCharacterId),
                 StrictlyOneCharacter: !project.Details.EnableManyCharacters,
