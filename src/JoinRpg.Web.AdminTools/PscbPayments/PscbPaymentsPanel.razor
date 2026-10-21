@@ -1,0 +1,339 @@
+@using JoinRpg.XGameApi.Contract.Pscb
+@inject IPscbPaymentsClient Client
+
+<JoinPanel>
+    <Header>Список платежей</Header>
+    <Body>
+        <p class="text-muted">
+            Платежи магазина в том виде, в котором их знает банк. Банк принимает не больше месяца
+            за запрос, поэтому длинный период запрашивается частями и склеивается — колонка
+            «Запросов» показывает, сколько обращений к банку это заняло.
+        </p>
+
+        @if (listError is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@listError</JoinAlert>
+        }
+
+        <fieldset class="form-horizontal" disabled="@listLoading">
+            <div class="form-group">
+                <label class="control-label col-md-3">Период с</label>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" @bind="listDateFrom" @bind:format="yyyy-MM-dd" />
+                </div>
+                <label class="control-label col-md-2">по (включительно)</label>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" @bind="listDateTo" @bind:format="yyyy-MM-dd" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-3">Статус</label>
+                <div class="col-md-3">
+                    <select class="form-control" @bind="listSelectMode">
+                        <option value="">Как решит банк (только завершённые)</option>
+                        <option value="@nameof(PscbPaymentsSelectMode.Paid)">Только завершённые</option>
+                        <option value="@nameof(PscbPaymentsSelectMode.Created)">Все, включая незавершённые</option>
+                    </select>
+                </div>
+                <label class="control-label col-md-2">Вид</label>
+                <div class="col-md-3">
+                    <select class="form-control" @bind="listPaymentType">
+                        <option value="">Платежи и счета вместе</option>
+                        <option value="@nameof(PscbPaymentKind.Payment)">Только платежи</option>
+                        <option value="@nameof(PscbPaymentKind.Invoice)">Только счета</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                    <label>
+                        <input type="checkbox" @bind="listRequestFiscalData" />
+                        Запрашивать фискальные чеки
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                    <JoinButton Label="Запросить список" OnClick="LoadPayments" InProgress="listLoading" AutoProgress="false"
+                                Disabled="@(listDateFrom is null || listDateTo is null)" />
+                    @if (list is { IsSuccess: true })
+                    {
+                        <a class="btn btn-default" href="@csvHref" download>Скачать CSV</a>
+                    }
+                </div>
+            </div>
+        </fieldset>
+
+        @if (list is not null)
+        {
+            if (!list.IsSuccess)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Danger">
+                    Банк не вернул список: @list.ErrorCode @list.ErrorDescription
+                    @if (list.RequestId is not null)
+                    {
+                        <span class="text-muted">(requestId: @list.RequestId)</span>
+                    }
+                </JoinAlert>
+            }
+            else
+            {
+                <p>
+                    Найдено платежей: <b>@list.Payments.Count</b>, запросов к банку: <b>@list.RequestCount</b>.
+                </p>
+                <div style="overflow-x: auto;">
+                    <table class="table table-striped table-condensed">
+                        <thead>
+                            <tr>
+                                <th>orderId</th>
+                                <th>Показываемый</th>
+                                <th>paymentId</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th>Дата статуса</th>
+                                <th>Метод</th>
+                                <th>Вид</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var payment in list.Payments)
+                            {
+                                <tr>
+                                    <td>@payment.OrderId</td>
+                                    <td>@payment.DisplayOrderId</td>
+                                    <td>@payment.PaymentId</td>
+                                    <td>@payment.Amount</td>
+                                    <td>@payment.Status</td>
+                                    <td>@payment.StatusDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                    <td>@payment.PaymentMethod</td>
+                                    <td>@payment.Kind</td>
+                                    <td>@payment.CustomerEmail</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </Body>
+</JoinPanel>
+
+<JoinPanel>
+    <Header>Параметры платежа</Header>
+    <Body>
+        <p class="text-muted">
+            Всё, что банк знает про один платёж. <c>orderId</c> — идентификатор платежа на нашей
+            стороне: это номер финансовой операции, дополненный нулями до 10 знаков.
+        </p>
+
+        @if (detailsError is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@detailsError</JoinAlert>
+        }
+
+        <fieldset class="form-horizontal" disabled="@detailsLoading">
+            <div class="form-group">
+                <label class="control-label col-md-3">orderId</label>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" @bind="orderId" @bind:event="oninput" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                    <label><input type="checkbox" @bind="detailsRequestCardData" /> Данные банковской карты</label>
+                    <label><input type="checkbox" @bind="detailsRequestFiscalData" /> Фискальные чеки</label>
+                    <label><input type="checkbox" @bind="detailsRequestClearingData" /> Данные для сверки</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                    <JoinButton Label="Запросить платёж" OnClick="LoadPaymentInfo" InProgress="detailsLoading" AutoProgress="false"
+                                Disabled="@string.IsNullOrWhiteSpace(orderId)" />
+                </div>
+            </div>
+        </fieldset>
+
+        @if (details is not null)
+        {
+            if (!details.IsSuccess)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Danger">
+                    Банк не вернул платёж: @details.ErrorCode @details.ErrorDescription
+                    @if (details.RequestId is not null)
+                    {
+                        <span class="text-muted">(requestId: @details.RequestId)</span>
+                    }
+                </JoinAlert>
+            }
+            else
+            {
+                <table class="table table-condensed">
+                    <tbody>
+                        <tr><th>requestId</th><td>@details.RequestId</td></tr>
+                        <tr><th>Описание состояния</th><td>@details.Description</td></tr>
+                        @if (details.Payment is { } payment)
+                        {
+                            <tr><th>orderId</th><td>@payment.OrderId</td></tr>
+                            <tr><th>Показываемый orderId</th><td>@payment.DisplayOrderId</td></tr>
+                            <tr><th>paymentId</th><td>@payment.PaymentId</td></tr>
+                            <tr><th>transactionId</th><td>@payment.TransactionId</td></tr>
+                            <tr><th>Магазин</th><td>@payment.MarketPlace</td></tr>
+                            <tr><th>Сумма</th><td>@payment.Amount</td></tr>
+                            <tr><th>Комиссия плательщика</th><td>@payment.Fee</td></tr>
+                            <tr><th>Статус</th><td>@payment.Status (@payment.SubStatus)</td></tr>
+                            <tr><th>Вид</th><td>@payment.Kind</td></tr>
+                            <tr><th>Метод</th><td>@payment.PaymentMethod</td></tr>
+                            <tr><th>Дата статуса</th><td>@payment.StatusDate.ToString("yyyy-MM-dd HH:mm:ss zzz")</td></tr>
+                            <tr><th>Плательщик</th><td>@payment.CustomerAccount</td></tr>
+                            <tr><th>Email</th><td>@payment.CustomerEmail</td></tr>
+                            <tr><th>Телефон</th><td>@payment.CustomerPhone</td></tr>
+                            <tr><th>Комментарий плательщика</th><td>@payment.CustomerComment</td></tr>
+                            <tr><th>Детали</th><td>@payment.Details</td></tr>
+                            <tr><th>Данные магазина</th><td>@payment.MerchantData</td></tr>
+                            <tr><th>Токен рекуррента</th><td>@payment.RecurrentPaymentToken</td></tr>
+                            <tr><th>Реестр</th><td>@payment.RegistryId от @payment.RegistryDate?.ToString("yyyy-MM-dd HH:mm:ss")</td></tr>
+                            @if (payment.Card is { } card)
+                            {
+                                <tr>
+                                    <th>Карта</th>
+                                    <td>
+                                        @card.MaskedNumber, @card.CardType, @card.Bank (@card.Country, @card.CountryCode),
+                                        до @card.ExpirationDate, RRN @card.ReferenceRetrievalNumber,
+                                        обработка: @card.ProcessingStatus, email: @card.CardholderEmail
+                                    </td>
+                                </tr>
+                            }
+                            @if (payment.Refunds.Count > 0)
+                            {
+                                <tr>
+                                    <th>Возвраты</th>
+                                    <td>
+                                        @foreach (var refund in payment.Refunds)
+                                        {
+                                            <div>@refund.RefundId: @refund.Status, @refund.Amount</div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            @if (payment.Receipts.Count > 0)
+                            {
+                                <tr>
+                                    <th>Чеки</th>
+                                    <td>
+                                        @foreach (var receipt in payment.Receipts)
+                                        {
+                                            <div>
+                                                @receipt.ReceiptId: @receipt.Type, @receipt.Amount,
+                                                ФД @receipt.DocumentNumber, ККТ @receipt.RegisterNumber,
+                                                ФН @receipt.FiscalNumber, смена @receipt.ShiftNumber, чек @receipt.ReceiptNumber,
+                                                @receipt.Date.ToString("yyyy-MM-dd HH:mm:ss")
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><th>Платёж</th><td>Банк не вернул объект платежа</td></tr>
+                        }
+                        @foreach (var error in details.LastErrors)
+                        {
+                            <tr>
+                                <th>Ошибка банка</th>
+                                <td>@error.Description (платёжная система: @error.PaymentsSystemCode, процессинг: @error.ProcessingCenterCode)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+    </Body>
+</JoinPanel>
+
+@code {
+    private DateTime? listDateFrom = DateTime.Today.AddDays(-7);
+    private DateTime? listDateTo = DateTime.Today;
+    private string listSelectMode = "";
+    private string listPaymentType = "";
+    private bool listRequestFiscalData;
+    private bool listLoading;
+    private PscbPaymentsListResult? list;
+    private string? listError;
+    private string? csvHref;
+
+    private string? orderId;
+    private bool detailsRequestCardData;
+    private bool detailsRequestFiscalData;
+    private bool detailsRequestClearingData;
+    private bool detailsLoading;
+    private PscbPaymentDetailsResult? details;
+    private string? detailsError;
+
+    private async Task LoadPayments()
+    {
+        list = null;
+        listError = null;
+        csvHref = null;
+        if (listDateFrom is not { } from || listDateTo is not { } to)
+        {
+            return;
+        }
+
+        var query = new PscbPaymentsQuery(
+            StartOfDay(from),
+            // Верхняя граница у банка исключительная, а мастер выбирает день включительно.
+            StartOfDay(to.AddDays(1)),
+            Parse<PscbPaymentsSelectMode>(listSelectMode),
+            Parse<PscbPaymentKind>(listPaymentType),
+            listRequestFiscalData);
+
+        listLoading = true;
+        try
+        {
+            list = await Client.GetPayments(query);
+            csvHref = PscbPaymentsRoutes.GetPaymentsUri(query, PscbPaymentsRoutes.CsvFormat);
+        }
+        catch (Exception ex)
+        {
+            listError = ex.Message;
+        }
+        finally
+        {
+            listLoading = false;
+        }
+    }
+
+    private async Task LoadPaymentInfo()
+    {
+        details = null;
+        detailsError = null;
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            return;
+        }
+
+        detailsLoading = true;
+        try
+        {
+            details = await Client.GetPaymentInfo(new PscbPaymentDetailsQuery(
+                orderId.Trim(), detailsRequestCardData, detailsRequestFiscalData, detailsRequestClearingData));
+        }
+        catch (Exception ex)
+        {
+            detailsError = ex.Message;
+        }
+        finally
+        {
+            detailsLoading = false;
+        }
+    }
+
+    // DateTimeOffset(DateTime) для DateTimeKind.Unspecified берёт локальное смещение — в браузере
+    // это часовой пояс админа, что и нужно для выборки по дню.
+    private static DateTimeOffset StartOfDay(DateTime date) => new(date.Date);
+
+    private static TEnum? Parse<TEnum>(string value) where TEnum : struct, Enum
+        => Enum.TryParse<TEnum>(value, ignoreCase: true, out var parsed) ? parsed : null;
+}

@@ -1,0 +1,8 @@
+@page "/admin/pscb-payments"
+@using JoinRpg.Web.AdminTools.PscbPayments
+@model JoinRpg.Portal.Pages.Admin.PscbPaymentsModel
+@{
+    ViewBag.Title = "Платежи ПСБ";
+}
+
+@(await Html.RenderComponentAsync<PscbPaymentsPanel>(RenderMode.WebAssembly))

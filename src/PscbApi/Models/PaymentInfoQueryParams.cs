@@ -33,4 +33,10 @@ public class PaymentInfoQueryParams
     /// </summary>
     [JsonProperty("requestFiscalData")]
     public bool GetFiscalData { get; set; }
+
+    /// <summary>
+    /// If true, clearing data (registry number and registry date) will be returned
+    /// </summary>
+    [JsonProperty("requestClearingData")]
+    public bool GetClearingData { get; set; }
 }
