@@ -20,9 +20,9 @@ public class GameSubscribeClient : IGameSubscribeClient
         try
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
-            _ = (await httpClient.PostAsJsonAsync($"webapi/gamesubscribe/save?projectId={projectId}", model)).EnsureSuccessStatusCode();
+            await (await httpClient.PostAsJsonAsync($"webapi/gamesubscribe/save?projectId={projectId}", model)).EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;
@@ -31,9 +31,8 @@ public class GameSubscribeClient : IGameSubscribeClient
 
     public async Task<SubscribeListViewModel> GetSubscribeForMaster(int projectId, int masterId)
     {
-        return await httpClient.GetFromJsonAsync<SubscribeListViewModel>(
-            $"webapi/gamesubscribe/getformaster?projectId={projectId}&masterId={masterId}")
-            ?? throw new Exception("Couldn't get result from server");
+        return await (await httpClient.GetAsync($"webapi/gamesubscribe/getformaster?projectId={projectId}&masterId={masterId}"))
+            .ReadFromJsonOrThrowProblem<SubscribeListViewModel>();
     }
 
     public async Task RemoveSubscription(int projectId, int userSubscriptionsId)
@@ -41,10 +40,10 @@ public class GameSubscribeClient : IGameSubscribeClient
         try
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
-            _ = (await httpClient.PostAsync($"webapi/gamesubscribe/unsubscribe?projectId={projectId}&userSubscriptionsId={userSubscriptionsId}", null))
-                .EnsureSuccessStatusCode();
+            await (await httpClient.PostAsync($"webapi/gamesubscribe/unsubscribe?projectId={projectId}&userSubscriptionsId={userSubscriptionsId}", null))
+                .EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;
@@ -53,28 +52,24 @@ public class GameSubscribeClient : IGameSubscribeClient
 
     public async Task<ClaimSubscribeViewModel> GetSubscribeForClaim(ClaimIdentification claimId)
     {
-        return await httpClient.GetFromJsonAsync<ClaimSubscribeViewModel>(
-            $"webapi/gamesubscribe/getforclaim?projectId={claimId.ProjectId.Value}&claimId={claimId.ClaimId}")
-            ?? throw new Exception("Couldn't get result from server");
+        return await (await httpClient.GetAsync(
+            $"webapi/gamesubscribe/getforclaim?projectId={claimId.ProjectId.Value}&claimId={claimId.ClaimId}"))
+            .ReadFromJsonOrThrowProblem<ClaimSubscribeViewModel>();
     }
 
     public async Task<ClaimSubscribeViewModel> SubscribeClaimToUser(ClaimIdentification claimId)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = (await httpClient.PostAsync(
+        return await (await httpClient.PostAsync(
             $"webapi/gamesubscribe/subscribeclaim?projectId={claimId.ProjectId.Value}&claimId={claimId.ClaimId}", null))
-            .EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<ClaimSubscribeViewModel>()
-            ?? throw new Exception("Couldn't get result from server");
+            .ReadFromJsonOrThrowProblem<ClaimSubscribeViewModel>();
     }
 
     public async Task<ClaimSubscribeViewModel> UnsubscribeClaimToUser(ClaimIdentification claimId)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = (await httpClient.PostAsync(
+        return await (await httpClient.PostAsync(
             $"webapi/gamesubscribe/unsubscribeclaim?projectId={claimId.ProjectId.Value}&claimId={claimId.ClaimId}", null))
-            .EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<ClaimSubscribeViewModel>()
-            ?? throw new Exception("Couldn't get result from server");
+            .ReadFromJsonOrThrowProblem<ClaimSubscribeViewModel>();
     }
 }

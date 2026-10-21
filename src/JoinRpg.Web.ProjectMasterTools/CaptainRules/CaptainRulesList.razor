@@ -13,6 +13,10 @@
       Капитаны получат возможность смотреть список заявок в свою команду (включая скрытых персонажей), статус заявки и взнос.
 	    Они не увидят сюжеты своей команды, переписку с мастерами или каких-то скрытых полей персонажа, это прерогатива мастеров.
     </p>
+    @if (_error is not null)
+    {
+      <JoinAlert Variation="VariationStyleEnum.Danger">@_error</JoinAlert>
+    }
     @if (Adding)
     {
             <CaptainRuleForm OnSubmit="PerformAdd" OnCancelAdd="() => Adding = false" ProjectId="@ProjectId" />
@@ -68,13 +72,21 @@
         var idx = items.IndexOf(item);
 
         items.RemoveAt(idx);
+        _error = null;
         try
         {
             await Client.Remove(item.Rule);
         }
+        catch (ServerProblemException exc)
+        {
+            // Например, проект заблокирован — причину показываем как есть
+            _error = exc.Message;
+            items.Insert(idx, item);
+        }
         catch (Exception exc)
         {
-            logger.LogError(exc, "Error during remove resp master");
+            logger.LogError(exc, "Error during remove captain rule");
+            _error = "Не удалось удалить правило";
             items.Insert(idx, item);
         }
     }
@@ -82,6 +94,7 @@
     async Task PerformAdd(AddCaptainRuleViewModel addedModel)
     {
         Adding = false;
+        _error = null;
 
         var rule = addedModel.ToRule();
 
@@ -95,13 +108,20 @@
 
             _model = await Client.AddOrChange(rule);
         }
+        catch (ServerProblemException exc)
+        {
+            _error = exc.Message;
+            _model!.Items.RemoveAt(0);
+        }
         catch (Exception exc)
         {
-            logger.LogError(exc, "Error during add resp master");
+            logger.LogError(exc, "Error during add captain rule");
+            _error = "Не удалось добавить правило";
             _model!.Items.RemoveAt(0);
         }
     }
 
+    private string? _error;
 
 
 }

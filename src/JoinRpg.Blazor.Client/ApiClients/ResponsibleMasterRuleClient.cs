@@ -9,9 +9,8 @@ internal class ResponsibleMasterRuleClient(
 {
     public async Task<ResponsibleMasterRuleListViewModel> GetResponsibleMasterRuleList(ProjectIdentification projectId)
     {
-        return await httpClient.GetFromJsonAsync<ResponsibleMasterRuleListViewModel>(
-             $"webapi/resp-master-rule/getlist?projectId={projectId.Value}")
-             ?? throw new Exception("Couldn't get result from server");
+        return await (await httpClient.GetAsync($"webapi/resp-master-rule/getlist?projectId={projectId.Value}"))
+            .ReadFromJsonOrThrowProblem<ResponsibleMasterRuleListViewModel>();
     }
     public async Task RemoveResponsibleMasterRule(ProjectIdentification projectId, int ruleId)
     {
@@ -19,9 +18,9 @@ internal class ResponsibleMasterRuleClient(
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsync($"webapi/resp-master-rule/remove?projectId={projectId.Value}&ruleId={ruleId}", null);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;
@@ -34,14 +33,9 @@ internal class ResponsibleMasterRuleClient(
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsync($"webapi/resp-master-rule/add?projectId={projectId.Value}&groupId={groupId}&masterId={masterId}", null);
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<ResponsibleMasterRuleListViewModel>()
-                ?? throw new Exception("Empty");
-
+            return await response.ReadFromJsonOrThrowProblem<ResponsibleMasterRuleListViewModel>();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;

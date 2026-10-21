@@ -96,9 +96,15 @@
                 NavigationManager.NavigateTo($"/{ProjectId.Value}/tools/roleslist");
             }
         }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            _error = $"Ошибка сохранения: {ex.Message}";
+        }
         catch (Exception ex)
         {
-            _error = $"Ошибка сохранения: {ex.Message}";
+            // Текст произвольного исключения не для мастера — там английский текст HttpRequestException
+            _error = "Не удалось сохранить сетку ролей";
             Logger.LogError(ex, "Ошибка сохранения сетки ролей");
         }
         finally

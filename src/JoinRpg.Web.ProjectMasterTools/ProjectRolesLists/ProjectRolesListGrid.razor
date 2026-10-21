@@ -13,6 +13,10 @@
     <p>
       Сетки ролей позволяют мастерам и игрокам просматривать список персонажей и заявок в виде таблицы с настраиваемыми колонками.
     </p>
+    @if (_error is not null)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Danger">@_error</JoinAlert>
+    }
     @if (_model.HasEditAccess)
     {
         <JoinButton Preset="ButtonPreset.Add" OnClick='() => NavigationManager.NavigateTo($"/{ProjectId.Value}/tools/roleslist/edit")' Title="Добавить сетку ролей" Label="Добавить сетку"/>
@@ -60,26 +64,42 @@
         var idx = items.IndexOf(item);
 
         items.RemoveAt(idx);
+        _error = null;
         try
         {
             await Client.Remove(item.RolesList.ProjectRolesListId!);
         }
+        catch (ServerProblemException exc)
+        {
+            // Например, проект заблокирован — причину показываем как есть
+            _error = exc.Message;
+            items.Insert(idx, item);
+        }
         catch (Exception exc)
         {
             logger.LogError(exc, "Ошибка при удалении сетки ролей");
+            _error = "Не удалось удалить сетку ролей";
             items.Insert(idx, item);
         }
     }
 
     async Task OnSetDefaultRow(ProjectRolesListItemViewModel item)
     {
+        _error = null;
         try
         {
             _model = await Client.SetDefault(item.RolesList.ProjectRolesListId!);
         }
+        catch (ServerProblemException exc)
+        {
+            _error = exc.Message;
+        }
         catch (Exception exc)
         {
             logger.LogError(exc, "Ошибка при переключении сетки ролей по умолчанию");
+            _error = "Не удалось сделать сетку ролей сеткой по умолчанию";
         }
     }
+
+    private string? _error;
 }

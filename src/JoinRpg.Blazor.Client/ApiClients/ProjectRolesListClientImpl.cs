@@ -10,16 +10,14 @@ internal class ProjectRolesListClientImpl(
 {
     public async Task<ProjectRolesListViewModel> GetList(ProjectIdentification projectId)
     {
-        return await httpClient.GetFromJsonAsync<ProjectRolesListViewModel>(
-             $"webapi/project-roles-list/getlist?projectId={projectId.Value}")
-             ?? throw new Exception("Couldn't get result from server");
+        return await (await httpClient.GetAsync($"webapi/project-roles-list/getlist?projectId={projectId.Value}"))
+            .ReadFromJsonOrThrowProblem<ProjectRolesListViewModel>();
     }
 
     public async Task<ProjectRolesList> GetById(ProjectRolesListIdentification id)
     {
-        return await httpClient.GetFromJsonAsync<ProjectRolesList>(
-             $"webapi/project-roles-list/getbyid?targetId={id}")
-             ?? throw new Exception("Couldn't get result from server");
+        return await (await httpClient.GetAsync($"webapi/project-roles-list/getbyid?targetId={id}"))
+            .ReadFromJsonOrThrowProblem<ProjectRolesList>();
     }
 
     public async Task Remove(ProjectRolesListIdentification id)
@@ -28,9 +26,9 @@ internal class ProjectRolesListClientImpl(
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsJsonAsync($"webapi/project-roles-list/remove?projectId={id.ProjectId.Value}", id);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;
@@ -43,13 +41,9 @@ internal class ProjectRolesListClientImpl(
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsJsonAsync($"webapi/project-roles-list/setdefault?projectId={id.ProjectId.Value}", id);
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<ProjectRolesListViewModel>()
-                ?? throw new Exception("Empty");
+            return await response.ReadFromJsonOrThrowProblem<ProjectRolesListViewModel>();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;
@@ -62,13 +56,9 @@ internal class ProjectRolesListClientImpl(
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsJsonAsync($"webapi/project-roles-list/create?projectId={projectId.Value}", model);
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<ProjectRolesListViewModel>()
-                ?? throw new Exception("Empty");
+            return await response.ReadFromJsonOrThrowProblem<ProjectRolesListViewModel>();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;
@@ -83,13 +73,9 @@ internal class ProjectRolesListClientImpl(
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsJsonAsync($"webapi/project-roles-list/update?projectId={projectRolesListId.ProjectId.Value}", model);
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<ProjectRolesListViewModel>()
-                ?? throw new Exception("Empty");
+            return await response.ReadFromJsonOrThrowProblem<ProjectRolesListViewModel>();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;
