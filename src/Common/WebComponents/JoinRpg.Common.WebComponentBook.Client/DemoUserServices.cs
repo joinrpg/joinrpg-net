@@ -21,7 +21,7 @@ internal sealed class DemoUserLinkResolveClient : IUserLinkResolveClient
             return Task.FromResult(new UserLinkViewModel(new UserIdentification(456), "Вася Пупкин", ViewMode.Show));
         }
 
-        throw new InvalidOperationException($"Пользователь по ссылке «{userLink}» не найден.");
+        throw new ServerProblemException($"Пользователь по ссылке «{userLink}» не найден.");
     }
 }
 

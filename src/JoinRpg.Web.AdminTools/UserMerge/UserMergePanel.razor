@@ -1,5 +1,6 @@
 @using JoinRpg.Web.ProjectCommon.Projects
 @inject IUserMergeClient Client
+@inject ILogger<UserMergePanel> Logger
 
 <JoinPanel>
     <Header>Объединение аккаунтов</Header>
@@ -125,9 +126,15 @@
         {
             preview = await Client.GetPreview(primaryLinks.First(), secondaryLinks.First());
         }
+        catch (ServerProblemException ex)
+        {
+            // Аккаунт не найден, неверная ссылка, нет прав — причину показываем как есть
+            errorMessage = ex.Message;
+        }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            Logger.LogError(ex, "Ошибка при проверке аккаунтов перед объединением");
+            errorMessage = "Не удалось проверить аккаунты.";
         }
         finally
         {
@@ -150,10 +157,16 @@
             preview = null;
             secondaryLinks = [];
         }
+        catch (ServerProblemException ex)
+        {
+            // Сервер отказал — объединения не было, причину показываем как есть
+            errorMessage = ex.Message;
+        }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Ошибка при объединении аккаунтов {Primary} и {Secondary}", primary.Value, secondary.Value);
             // Ответ мог потеряться уже после коммита (таймаут, обрыв) — повторная проверка покажет, что вышло.
-            errorMessage = $"{ex.Message} Проверьте результат кнопкой «Проверить»: если поглощаемый аккаунт не найден, объединение прошло.";
+            errorMessage = "Не удалось объединить аккаунты. Проверьте результат кнопкой «Проверить»: если поглощаемый аккаунт не найден, объединение прошло.";
         }
         finally
         {
