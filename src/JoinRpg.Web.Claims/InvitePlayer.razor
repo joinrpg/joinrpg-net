@@ -4,6 +4,7 @@
 @using JoinRpg.DomainTypes.ProjectMetadata
 @inject IInvitePlayerClient InvitePlayerClient
 @inject NavigationManager NavigationManager
+@inject ILogger<InvitePlayer> Logger
 
 @if (loading)
 {
@@ -130,9 +131,15 @@
                 var claimId = await InvitePlayerClient.InvitePlayer(model.CharacterIdentification, userLink, model.ClaimText);
                 succeeded.Add(claimId);
             }
+            catch (ServerProblemException ex)
+            {
+                // Отказ сервера (игрок не найден, персонаж занят и т. п.) — текст предназначен мастеру
+                failed.Add((userLink, ex.Message));
+            }
             catch (Exception ex)
             {
-                failed.Add((userLink, ex.Message));
+                Logger.LogError(ex, "Ошибка при приглашении игрока на персонажа {CharacterId}", model.CharacterIdentification);
+                failed.Add((userLink, "произошла ошибка, попробуйте ещё раз"));
             }
         }
 

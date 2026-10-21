@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Controllers.WebApi;
 using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -38,14 +39,29 @@ public class InvitePlayerControllerTest
         client.Called.ShouldBeTrue();
     }
 
+    /// <summary>
+    /// Блокировку проекта отдаёт WebApiExceptionHandler — русским текстом с 409, а не английским Message в 400 (#5735).
+    /// </summary>
+    [Fact]
+    public async Task BlockedProjectGoesToCommonHandler()
+    {
+        var controller = new InvitePlayerController(new FakeClient { Failure = new ProjectBlockedException(ProjectId) });
+
+        _ = await Should.ThrowAsync<ProjectBlockedException>(
+            controller.Invite(ProjectId, new CharacterIdentification(ProjectId, 124501), "42", "Приглашение"));
+    }
+
     private sealed class FakeClient : IInvitePlayerClient
     {
         public bool Called { get; private set; }
+        public Exception? Failure { get; init; }
 
         public Task<ClaimIdentification> InvitePlayer(CharacterIdentification CharacterId, string UserLink, string ClaimText)
         {
             Called = true;
-            return Task.FromResult(new ClaimIdentification(CharacterId.ProjectId, 1));
+            return Failure is null
+                ? Task.FromResult(new ClaimIdentification(CharacterId.ProjectId, 1))
+                : Task.FromException<ClaimIdentification>(Failure);
         }
     }
 }

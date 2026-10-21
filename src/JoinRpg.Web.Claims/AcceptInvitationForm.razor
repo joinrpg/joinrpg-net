@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject IClaimOperationClient ClaimClient
 @inject NavigationManager NavigationManager
+@inject ILogger<AcceptInvitationForm> Logger
 
 @* Обёртка .collapse раскрывается кнопкой через Bootstrap (data-target="#acceptInvitationActionPanel"). *@
 @* margin-top повторяет отступ, который Bootstrap даёт соседним панелям через .panel-group .panel + .panel. *@
@@ -78,11 +79,22 @@
             await ClaimClient.AcceptInvitation(ClaimId, new AcceptInvitationRequest(model.CommentText, model.SensitiveDataAllowed));
             NavigationManager.Refresh(forceReload: true);
         }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (например, проект заблокирован) — текст предназначен игроку
+            ShowError(ex.Message);
+        }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
-            loading = false;
-            StateHasChanged();
+            Logger.LogError(ex, "Ошибка при принятии приглашения по заявке {ClaimId}", ClaimId);
+            ShowError("Не удалось принять приглашение. Обновите страницу и попробуйте ещё раз.");
         }
+    }
+
+    private void ShowError(string text)
+    {
+        errorMessage = text;
+        loading = false;
+        StateHasChanged();
     }
 }
