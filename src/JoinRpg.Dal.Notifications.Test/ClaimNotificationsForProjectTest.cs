@@ -4,6 +4,7 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Notifications;
+using JoinRpg.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Testcontainers.PostgreSql;
@@ -16,7 +17,7 @@ namespace JoinRpg.Dal.Notifications.Test;
 /// </summary>
 public class ClaimNotificationsForProjectTest : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer postgres = new PostgreSqlBuilder("postgres:16-alpine").Build();
+    private readonly PostgreSqlContainer postgres = new PostgreSqlBuilder(ProductionPostgres.Image).Build();
 
     private static readonly ProjectIdentification Project = new(1);
     private static readonly ClaimIdentification Claim = new(Project, 5);

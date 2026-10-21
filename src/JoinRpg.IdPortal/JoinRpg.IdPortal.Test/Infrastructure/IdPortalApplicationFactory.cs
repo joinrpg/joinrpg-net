@@ -10,6 +10,7 @@ using JoinRpg.IdPortal.OAuthServer;
 using JoinRpg.IdPortal.OAuthServer.Cimd;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.TestHelpers;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -25,7 +26,7 @@ namespace JoinRpg.IdPortal.Test.Infrastructure;
 
 public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder("postgres:16-alpine")
+    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder(ProductionPostgres.Image)
         .Build();
 
     private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
