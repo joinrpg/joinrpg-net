@@ -99,7 +99,42 @@ public class ScheduleBuilderTest
 
         var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
 
-        result.NotScheduled.ShouldHaveSingleItem().Id.ShouldBe(character.Id);
+        var notScheduled = result.NotScheduled.ShouldHaveSingleItem();
+        notScheduled.ProgramItem.Id.ShouldBe(character.Id);
+        notScheduled.Rooms.ShouldBeEmpty();
+        notScheduled.TimeSlots.ShouldBeEmpty();
+        result.AllItems.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// #5754: место выбрано, а времени нет — в сетку не попасть, но выбранное место не теряется.
+    /// </summary>
+    [Fact]
+    public void KeepsSelectedRoomWhenNoTimeSlotSelected()
+    {
+        var projectInfo = MakeScheduleProject();
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [], rooms: [1]);
+
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
+
+        var notScheduled = result.NotScheduled.ShouldHaveSingleItem();
+        notScheduled.Rooms.ShouldHaveSingleItem().Label.ShouldBe("Комната 1");
+        notScheduled.TimeSlots.ShouldBeEmpty();
+        result.AllItems.ShouldBeEmpty();
+        result.Slots.SelectMany(row => row).ShouldAllBe(item => item == null);
+    }
+
+    [Fact]
+    public void KeepsSelectedTimeSlotWhenNoRoomSelected()
+    {
+        var projectInfo = MakeScheduleProject();
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [2], rooms: []);
+
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
+
+        var notScheduled = result.NotScheduled.ShouldHaveSingleItem();
+        notScheduled.Rooms.ShouldBeEmpty();
+        notScheduled.TimeSlots.ShouldHaveSingleItem().Label.ShouldBe("Слот 2");
         result.AllItems.ShouldBeEmpty();
     }
 
@@ -113,7 +148,11 @@ public class ScheduleBuilderTest
 
         var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
 
-        result.NotScheduled.ShouldHaveSingleItem().Id.ShouldBe(character.Id);
+        var notScheduled = result.NotScheduled.ShouldHaveSingleItem();
+        notScheduled.ProgramItem.Id.ShouldBe(character.Id);
+        // Удалённая комната остаётся в выборе — по ней и видно, почему пункт в списке
+        notScheduled.Rooms.Select(room => (room.Label, room.IsActive))
+            .ShouldBe([("Комната 1", true), ("Комната 2", false)]);
         // Оставшаяся часть расстановки при этом не теряется.
         result.Slots[0][0]!.Id.ShouldBe(character.Id);
     }
