@@ -1,4 +1,5 @@
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -32,7 +33,8 @@ public class InvitePlayerController(IInvitePlayerClient client) : ControllerBase
         {
             return TypedResults.BadRequest(ex.Message);
         }
-        catch (JoinRpgBaseException ex)
+        // Проект заблокирован, в архиве, нет прав — WebApiExceptionHandler отдаст их по-русски с 409/403
+        catch (JoinRpgBaseException ex) when (!WebApiExceptionHandler.IsExpectedRefusal(ex))
         {
             return TypedResults.BadRequest(ex.Message);
         }

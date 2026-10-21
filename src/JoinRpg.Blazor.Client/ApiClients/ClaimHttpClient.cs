@@ -12,8 +12,7 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
         await csrfTokenProvider.SetCsrfToken(httpClient);
         var response = await httpClient.PostAsync($"webapi/ClaimOperations/AllowSensitiveData?projectId={projectId}", content: null);
 
-        response.EnsureSuccessStatusCode();
-
+        await response.EnsureSuccessOrThrowProblem();
     }
 
     public async Task AcceptInvitation(ClaimIdentification claimId, AcceptInvitationRequest request)
@@ -21,15 +20,16 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
         await csrfTokenProvider.SetCsrfToken(httpClient);
         var response = await httpClient.PostAsJsonAsync($"webapi/ClaimOperations/AcceptInvitation?claimId={claimId}", request);
 
-        response.EnsureSuccessStatusCode();
+        await response.EnsureSuccessOrThrowProblem();
     }
 
     async Task<IReadOnlyCollection<ClaimLinkViewModel>> IClaimListClient.GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
-        => await httpClient.GetFromJsonAsync<IReadOnlyCollection<ClaimLinkViewModel>>(
-            $"webapi/claim-list/GetClaims?projectId={projectId.Value}&claimStatusSpec={claimStatusSpec}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync(
+            $"webapi/claim-list/GetClaims?projectId={projectId.Value}&claimStatusSpec={claimStatusSpec}"))
+            .ReadFromJsonOrThrowProblem<IReadOnlyCollection<ClaimLinkViewModel>>();
+
     async Task<IReadOnlyCollection<UgItemForCaptainViewModel>> IUnifiedGridClient.GetForCaptain(ProjectIdentification projectId, UgStatusFilterView filter)
-                => await httpClient.GetFromJsonAsync<IReadOnlyCollection<UgItemForCaptainViewModel>>(
-            $"webapi/claim-list/GetForCaptain?projectId={projectId.Value}&filter={filter}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync(
+            $"webapi/claim-list/GetForCaptain?projectId={projectId.Value}&filter={filter}"))
+            .ReadFromJsonOrThrowProblem<IReadOnlyCollection<UgItemForCaptainViewModel>>();
 }

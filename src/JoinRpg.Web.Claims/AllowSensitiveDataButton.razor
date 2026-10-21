@@ -1,5 +1,7 @@
+@using JoinRpg.Common.WebComponents.Dialog
 @inject IClaimOperationClient ClaimClient;
 @inject NavigationManager NavigationManager;
+@inject ILogger<AllowSensitiveDataButton> Logger
 <JoinButton
   Preset="ButtonPreset.Profile"
   Label="Разрешить доступ к паспортным данным"
@@ -7,14 +9,40 @@
   AutoConfirmMessage="Мастера игры получат доступ к паспортным данным и адресу регистрации, которые хранятся в вашем профиле, пока проект активен и ваша заявка не отозвана"
   OnClick="OnClick"
   />
+<JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
 @code {
     [Parameter]
     [EditorRequired]
     public ProjectIdentification ProjectId { get; set; } = null!;
 
-    private async void OnClick(ButtonClickEventArgs args)
+    private JoinMessageDialog errorDialog = null!;
+    private string error = "";
+
+    private async Task OnClick(ButtonClickEventArgs args)
     {
-        await ClaimClient.AllowSensitiveData(ProjectId);
-        NavigationManager.Refresh(forceReload: true);
+        try
+        {
+            await ClaimClient.AllowSensitiveData(ProjectId);
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (ServerProblemException exception)
+        {
+            // Например, проект заблокирован — причину показываем как есть
+            ShowError(args, $"Не удалось разрешить доступ к паспортным данным: {exception.Message}");
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка при разрешении доступа к паспортным данным в проекте {ProjectId}", ProjectId);
+            ShowError(args, "Не удалось разрешить доступ к паспортным данным");
+        }
+    }
+
+    private void ShowError(ButtonClickEventArgs args, string text)
+    {
+        error = text;
+        // Страница не перезагрузится — кнопку надо вывести из состояния «в процессе», иначе повторить нельзя.
+        args.ExitProgressState = true;
+        StateHasChanged();
+        _ = errorDialog.ShowModalAsync();
     }
 }

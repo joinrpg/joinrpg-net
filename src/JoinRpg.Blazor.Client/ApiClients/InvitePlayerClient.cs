@@ -11,13 +11,7 @@ public class InvitePlayerClient(HttpClient httpClient, CsrfTokenProvider csrfTok
         var response = await httpClient.PostAsync(
             $"webapi/invite-player/Invite?projectId={CharacterId.ProjectId}&targetId={CharacterId}&UserLink={Uri.EscapeDataString(UserLink)}&claimText={Uri.EscapeDataString(ClaimText)}", null);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            throw new Exception(string.IsNullOrWhiteSpace(errorMessage) ? "Произошла ошибка при приглашении игрока" : errorMessage.Trim('"'));
-        }
-
-        var result = await response.Content.ReadFromJsonAsync<ClaimIdentification>();
-        return result ?? throw new Exception("Не удалось получить результат с сервера");
+        // Отказ (игрок не найден, персонаж занят, проект заблокирован) приходит JSON-строкой или ProblemDetails
+        return await response.ReadFromJsonOrThrowProblem<ClaimIdentification>();
     }
 }
