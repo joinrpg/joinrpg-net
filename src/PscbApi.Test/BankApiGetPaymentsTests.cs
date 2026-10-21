@@ -38,8 +38,10 @@ public class BankApiGetPaymentsTests
 
         var body = ParseBody(handler.Requests[0].Body);
         body["marketPlace"]!.Value<string>().ShouldBe(MerchantId);
-        body["dateFrom"]!.Value<string>().ShouldBe("2026-01-01T00:00:00+03:00");
-        body["dateTo"]!.Value<string>().ShouldBe("2026-01-06T00:00:00+03:00");
+        // Формат даты — как в примерах банка: шесть знаков дроби и смещение,
+        // его задаёт PscbDateTimeOffsetConverter.
+        body["dateFrom"]!.Value<string>().ShouldBe("2026-01-01T00:00:00.000000+03:00");
+        body["dateTo"]!.Value<string>().ShouldBe("2026-01-06T00:00:00.000000+03:00");
 
         result.Status.ShouldBe(PaymentInfoQueryStatus.Success);
         var payment = result.Payments!.Single();
@@ -122,7 +124,7 @@ public class BankApiGetPaymentsTests
         var first = ParseBody(handler.Requests[0].Body);
         var second = ParseBody(handler.Requests[1].Body);
         second["dateFrom"]!.Value<string>().ShouldBe(first["dateTo"]!.Value<string>());
-        second["dateTo"]!.Value<string>().ShouldBe("2026-02-10T00:00:00+03:00");
+        second["dateTo"]!.Value<string>().ShouldBe("2026-02-10T00:00:00.000000+03:00");
 
         result.Payments!.Select(p => p.OrderId).ShouldBe(["0000000001", "0000000002"]);
     }

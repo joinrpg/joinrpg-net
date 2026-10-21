@@ -25,12 +25,14 @@ public class PaymentsListQueryParams
     /// </summary>
     [Required]
     [JsonProperty("dateFrom")]
+    [JsonConverter(typeof(PscbDateTimeOffsetConverter))]
     public DateTimeOffset DateFrom { get; set; }
 
     /// <summary>
     /// Upper bound of the requested period, exclusive
     /// </summary>
     [JsonProperty("dateTo", NullValueHandling = NullValueHandling.Ignore)]
+    [JsonConverter(typeof(PscbDateTimeOffsetConverter))]
     public DateTimeOffset? DateTo { get; set; }
 
     /// <summary>
