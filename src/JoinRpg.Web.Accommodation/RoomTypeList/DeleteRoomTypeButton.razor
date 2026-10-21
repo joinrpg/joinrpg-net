@@ -25,17 +25,24 @@
             await Client.DeleteRoomType(RoomTypeId);
             NavigationManager.Refresh(forceReload: true);
         }
+        catch (ServerProblemException exception)
+        {
+            // Отказ сервера (например, в комнатах этого типа живут) приходит с понятным текстом.
+            ShowError(args, exception.Message);
+        }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Ошибка при удалении типа проживания {RoomTypeId}", RoomTypeId);
-            // Отказ сервера (например, в комнатах этого типа живут) приходит с понятным текстом.
-            error = exception is InvalidOperationException
-                ? exception.Message
-                : "Произошла ошибка при удалении типа проживания";
-            // Страница не перезагрузится — кнопку надо вывести из состояния «в процессе», иначе повторить нельзя.
-            args.ExitProgressState = true;
-            StateHasChanged();
-            _ = errorDialog.ShowModalAsync();
+            ShowError(args, "Произошла ошибка при удалении типа проживания");
         }
+    }
+
+    private void ShowError(ButtonClickEventArgs args, string text)
+    {
+        error = text;
+        // Страница не перезагрузится — кнопку надо вывести из состояния «в процессе», иначе повторить нельзя.
+        args.ExitProgressState = true;
+        StateHasChanged();
+        _ = errorDialog.ShowModalAsync();
     }
 }

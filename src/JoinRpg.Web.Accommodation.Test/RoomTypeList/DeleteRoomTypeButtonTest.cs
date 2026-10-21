@@ -1,4 +1,5 @@
 using Bunit;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Web.Accommodation.RoomTypeList;
@@ -61,7 +62,7 @@ public class DeleteRoomTypeButtonTest : BunitContext
     [Fact]
     public async Task RefusalIsShownAndDeleteCanBeRetried()
     {
-        client.Failure = new InvalidOperationException("В комнатах этого типа живут игроки — сначала выселите их");
+        client.Failure = new ServerProblemException("В комнатах этого типа живут игроки — сначала выселите их");
         var cut = RenderButton();
 
         await ClickDeleteAndConfirm(cut);
@@ -72,6 +73,18 @@ public class DeleteRoomTypeButtonTest : BunitContext
         client.Failure = null;
         await ClickDeleteAndConfirm(cut);
         client.Deleted.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task UnexpectedFailureShowsGenericText()
+    {
+        client.Failure = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).");
+        var cut = RenderButton();
+
+        await ClickDeleteAndConfirm(cut);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Произошла ошибка при удалении типа проживания"));
+        cut.Markup.ShouldNotContain("Bad Gateway");
     }
 
     private sealed class FakeClient : IRoomTypeEditClient

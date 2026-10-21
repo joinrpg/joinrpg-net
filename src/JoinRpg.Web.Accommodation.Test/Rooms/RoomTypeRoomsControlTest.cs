@@ -91,7 +91,7 @@ public class RoomTypeRoomsControlTest : BunitContext
     [Fact]
     public async Task Occupy_ServerRefusal_RollsBackAndShowsReason()
     {
-        client.Failure = new AccommodationRoomsOperationRefusedException("В комнате не хватает мест");
+        client.Failure = new ServerProblemException("В комнате не хватает мест");
         var cut = RenderControl(RoomsModel.Create(
             rooms: [RoomsModel.Room(1)],
             unassigned: [RoomsModel.Group(3, persons: 1)]));
@@ -162,7 +162,7 @@ public class RoomTypeRoomsControlTest : BunitContext
     [Fact]
     public async Task Delete_RemovesRoomAndRestoresOnFailure()
     {
-        client.Failure = new AccommodationRoomsOperationRefusedException("В комнате живут игроки — сначала выселите их");
+        client.Failure = new ServerProblemException("В комнате живут игроки — сначала выселите их");
         var cut = RenderControl(RoomsModel.Create(rooms: [RoomsModel.Room(1)]));
 
         RoomRow(cut, 1).QuerySelector("[data-action='delete']")!.Click();
@@ -278,7 +278,7 @@ public class RoomTypeRoomsControlTest : BunitContext
     [Fact]
     public async Task Rename_Failure_RestoresName()
     {
-        client.Failure = new AccommodationRoomsOperationRefusedException("Укажите название комнаты");
+        client.Failure = new ServerProblemException("Укажите название комнаты");
         var cut = RenderControl(RoomsModel.Create(rooms: [RoomsModel.Room(1)]));
 
         RoomRow(cut, 1).QuerySelector("[data-action='rename']")!.Click();

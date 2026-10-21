@@ -79,12 +79,6 @@ public record RoomTypeRoomsViewModel(
     bool CanAssignRooms);
 
 /// <summary>
-/// Сервер отказал в операции по понятной пользователю причине — например, в комнате не хватает
-/// мест. Причина уже сформулирована для показа.
-/// </summary>
-public class AccommodationRoomsOperationRefusedException(string message) : Exception(message);
-
-/// <summary>
 /// Управление комнатами и расселение на странице «Комнаты» типа проживания.
 /// </summary>
 /// <remarks>
