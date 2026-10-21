@@ -1,0 +1,951 @@
+# DRP: восстановление после потери основной БД (октябрь 2026)
+
+Рабочий план восстановления. Документ живой: правится по ходу работ в том же PR, пока
+восстановление не закончено. Скрипты, ручки и джобы приходят отдельными PR и отмечаются в
+[таблице PR](#pr).
+
+Персональные данные (email, имена, тексты комментариев) и пароли сюда не пишем — репозиторий
+публичный. Идентификаторы (облачные ресурсы, id сущностей) — можно.
+
+## Что случилось
+
+- Основная БД (MSSQL) потеряна. Логи прода обрываются **2026-10-07 около 22:30 UTC** — это
+  считаем моментом аварии.
+- Последний доступный бэкап MSSQL — **май 2026**. Всё, что создано и изменено с мая по
+  7 октября, в нём отсутствует: почти весь сезон.
+- Postgres-кластер `joinrpg-prod` (Yandex Cloud) недоступен. Он восстановлен из последнего бэкапа
+  (автоматический, **2026-10-06 ~22:45 UTC**, более нового нет) в `joinrpg-new`
+  (`c9qg3f27vleg34u1f1lr`, 2026-10-10), с него снят `pg_dump` (2026-10-11): база уведомлений
+  (`Notifications`), база IdPortal, ключи Data Protection, журнал ежедневных джоб.
+- **Последние ~сутки до аварии** (2026-10-06 22:45 — 2026-10-07 22:30) в уведомлениях нет: о них
+  знают только логи k8s (запросы без тел) и логи почты (темы писем).
+- **Всё разворачивается заново в Selectel**: k8s, MSSQL, Managed PostgreSQL (из дампа), S3,
+  DNS, балансировщик, сертификаты, логи. Инфраструктуру ведут инженеры по
+  [своему плану](https://docs.google.com/document/d/1b8lPIU475HqAW12Q9crq0tnxvZNhBplq7Ek7eXh3N2U/edit?tab=t.0); в этом плане — то, что от неё нужно приложению, и правки в репозитории.
+- Сайт не запущен.
+
+## Источники данных
+
+| Источник | Что в нём | Период | Ограничения |
+|---|---|---|---|
+| Бэкап MSSQL | всё | до мая 2026 | — |
+| База уведомлений (Postgres) | тексты уведомлений, получатель и инициатор (id пользователя), ссылка на сущность, время, email / Telegram получателя | до 2026-10-06 ~22:45 UTC (последний бэкап) | последних ~суток до аварии нет; значений полей нет — см. [каталог](#каталог-уведомлений) |
+| Логи k8s (Cloud Logging) | все POST/DELETE портала и IdPortal: путь с id, пользователь, проект, код ответа | 2026-09-10 — 2026-10-07 | тел запросов нет; сохранены локально, в облаке ретенция 30 дней |
+| Логи почты (Cloud Logging) | адресат, тема письма, статус доставки | 2026-10-03 — 2026-10-07 | сохранены локально |
+| Выгрузки у мастеров (xlsx/csv) | персонажи, заявки, финансы: id в ссылках, значения полей, контакты игроков | на момент выгрузки | значения полей — отображаемый текст; Excel режет ячейку на 32767 символах; инструмент принимает только xlsx |
+| Платёжный провайдер | онлайн-оплаты | весь период | — |
+| Почта и Telegram участников | копии уведомлений | весь период | только по запросу у людей |
+
+## Принципы
+
+1. **Id из потерянного диапазона не выдаются заново.** Счётчики сдвигаются до первой записи на
+   восстановленную базу. Ссылки из выгрузок, уведомлений, писем и логов не должны вести на
+   чужие сущности.
+2. **Источники не трогаем.** Postgres-кластер и сохранённые логи — только чтение; перед любыми
+   действиями с кластером — ручной бэкап.
+3. **Восстановление не шлёт уведомлений** и помечается в истории как восстановленное.
+4. **Сначала сверка, потом применение.** Любой импорт сначала показывает, что он сделает.
+
+## Порядок работ
+
+Отмечать `[x]` по мере выполнения, с датой. Пояснения к пунктам — в [заметках](#заметки).
+Пункты, для которых нужен инструмент или доработка кода: ⚪ — issue пока нет; 🟡 — issue есть,
+идёт работа; 🟢 — готово и принято (влито).
+
+Заглушка включается и выключается **на балансировщике** (управляет @leotsarev), отдельно для
+каждого домена. Каждое переключение — отдельная фаза 🚧. Сайт открывается до восстановления
+данных проектов: старые проекты на это время заблокированы ([#5473](https://github.com/joinrpg/joinrpg-net/issues/5473)). Пока снаружи заглушка,
+приложения проверяем на служебных доменах `joinrpg.tsarevs.ru` (Portal) и
+`id.joinrpg.tsarevs.ru` (IdPortal) ([подробнее](#служебные-домены)).
+
+### Фаза 0. Сохранить источники
+
+- [x] Выгрузить логи k8s и почты локально (2026-10-10); копия у @leotsarev в
+      `backups/joinrpg-logs` (2026-10-11), главное — `k8s-prod-mutations-merged.json`,
+      `mail-merged.json`.
+- [x] (2026-10-11) Ручной бэкап Postgres: `pg_dump` всех прод-баз кластера `joinrpg-new`
+      (`c9qg3f27vleg34u1f1lr`) — локально у @leotsarev, `backups/joinrpg-new/2026-10-11_0828`
+      (+ zip). Dev-базы не сняты (нет паролей).
+- [ ] Тикет в поддержку облака про бэкап MSSQL —
+      [BC622830](https://center.yandex.cloud/support/tickets/BC622830), ждём ответа. Если бэкап
+      есть — **весь план пересматривается**.
+- [x] (2026-10-10) Объявить мастерам: не удалять выгрузки, после открытия сайта загрузить их на странице
+      проекта (фаза 7), в поддержку — только если не справятся (в выгрузках ПДн). Игрокам — не
+      удалять письма.
+
+### Фаза 1. Инфраструктура в Selectel
+
+Ведут инженеры по [своему плану](https://docs.google.com/document/d/1b8lPIU475HqAW12Q9crq0tnxvZNhBplq7Ek7eXh3N2U/edit?tab=t.0) — пункты оттуда здесь не дублируем. От нас — что нужно
+приложению и что меняется в репозитории ([подробнее](#инфраструктура-в-selectel)).
+
+**Нужно от инфраструктуры**
+
+- [x] (2026-10-15) Кластер k8s, namespace `joinrpg-prod` и `joinrpg-dev`; ingress-nginx (ingress class `nginx`, как в старом)
+      или его замена — тогда править манифесты.
+- [x] (2026-10-15) Автовыдача сертификатов Let's Encrypt для боевых и служебных доменов.
+- [x] (2026-10-15) MSSQL Express (ВМ или в кубере — решают инженеры), **регулярные бэкапы** с первого дня
+      ([подробнее](#mssql-в-кластере)).
+- [x] (2026-10-15) Внешний доступ к MSSQL: `joindb.tsarevs.ru` (TCP 1433), только с разрешённых IP, как было
+      раньше ([подробнее](#внешний-доступ-к-mssql)).
+- [x] (2026-10-15) Managed PostgreSQL, в него — дамп `joinrpg-new` от 2026-10-11 (все прод-базы).
+- [ ] S3 (аватары и прочие файлы) перенесён **с теми же ключами** (имя объекта в корне бакета); бакет
+      аватарок отдаётся по `https://avatars.joinrpg.ru/<ключ>` (свой домен + TLS)
+      ([подробнее](#аватарки)).
+      DNS: `avatars.joinrpg.ru` (бакет `joinrpg-prod-avatars`) и `avatars.dev.joinrpg.ru`
+      (`joinrpg-dev-avatars`) — CNAME на `access.ru-6.storage.selcloud.ru`; на 2026-10-18
+      (повторно, вечер) `avatars.joinrpg.ru` → 176.53.231.74, сертификат LE, Gateway отвечает 301 на
+      публичный домен бакета `…selstorage.ru/<ключ>` (несуществующий ключ — 404, бакет публичный);
+      **`avatars.dev.joinrpg.ru` не резолвится**. Объекты из бакета Yandex скопированы (2026-10-18, со слов
+      инженеров) — проверить старой аватаркой, когда заработает домен.
+- [ ] Облачные логи: stdout подов, разделение по namespace. На 2026-10-16 k8s-логи никуда не пишутся
+      ([#5589](https://github.com/joinrpg/joinrpg-net/issues/5589) — пометка в скилле `prod-logs`).
+- [x] (2026-10-15) Для деплоя из CI ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)): сервис-аккаунт с правами на оба namespace, его Secret —
+      в GitHub-секрет `SELECTEL_DEPLOY_SA_SECRET` (environment `prod`, `dev`), адрес API — в
+      переменную `SELECTEL_K8S_SERVER`; интеграция кластера с Container Registry (секрет
+      `craas-auth` в namespace, создавать namespace до её включения).
+- [x] (2026-10-16) Dev ([подробнее](#dev-в-selectel)): базу **не восстанавливаем** (решение 2026-10-15) —
+      пустой MSSQL, схему создаёт job миграций. Секреты `dev` обновлены (строки подключения, ключи
+      S3), конфиг — [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566). Деплой в `joinrpg-dev` прошёл (2026-10-15 22:03Z), сайт
+      открывается по HTTP, почта работает (проверено 2026-10-16).
+      Мигратор на пустой базе теперь создаёт виртуальных пользователей ([#5576](https://github.com/joinrpg/joinrpg-net/issues/5576)) и проверяет
+      подключение ко всем базам до первой миграции ([#5570](https://github.com/joinrpg/joinrpg-net/issues/5570)); автодеплой dev вернулся ([#5575](https://github.com/joinrpg/joinrpg-net/issues/5575)),
+      2026-10-16 06:07Z прошёл.
+- [x] (2026-10-18) Dev: HTTPS на Gateway `infra/main` (Traefik) для dev-имён — сертификаты Let's Encrypt,
+      `dev.joinrpg.ru`, `devid.joinrpg.ru`, `dev.joinrpg.tsarevs.ru` отвечают по HTTPS. Редирект
+      HTTP → HTTPS в самом приложении — [#5588](https://github.com/joinrpg/joinrpg-net/issues/5588) (влит, на проде; до него [#5587](https://github.com/joinrpg/joinrpg-net/issues/5587), [#5590](https://github.com/joinrpg/joinrpg-net/issues/5590) — метрика
+      запросов из локальной сети, чтобы проверить `X-Forwarded-Proto`).
+- [x] (2026-10-18) Dev: админ вручную (`UserAuthDetails.IsAdmin`), загрузка аватарки. Старый `KUBECONFIG`
+      удалён из окружений `dev` (2026-10-16) и `prod` (2026-10-18).
+- [x] (2026-10-14) Секреты — как раньше: GitHub-секреты `KUBESECRET_*`, деплой собирает из них
+      секрет `joinrpg-main`.
+- [x] (2026-10-16) Отправка почты: пока остаётся Yandex Postbox — из Selectel работает (проверено на dev, прежние
+      ключи) — оставляем.
+
+**Правки в репозитории**
+
+- [x] 🟢 Деплой в Selectel ([#5540](https://github.com/joinrpg/joinrpg-net/issues/5540), PR [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) влит 2026-10-15): токен сервис-аккаунта вместо
+      `KUBECONFIG`, namespace `joinrpg-prod`/`joinrpg-dev`, образы из `cr.selcloud.ru`
+      (`imagePullSecrets: craas-auth`). Автодеплой dev вернул [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) (Closes [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)).
+- [ ] ⚪ Лимит тела запроса на ingress портала (`proxy-body-size`, порядка 200m): у nginx по
+      умолчанию 1 МБ — загрузка выгрузок мастера в фазе 7 получит 413 ([#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
+- [x] (2026-10-16) Строки подключения prod: MSSQL и Postgres (`DataProtection`, `DailyJob`,
+      `Notifications`, IdPortal) — на новые, внутренними адресами кластера ([подробнее](#инфраструктура-в-selectel)).
+- [x] (2026-10-18) Секреты S3 prod: `__ACCESSKEY`, `__SECRETKEY` обновлены 2026-10-16;
+      `__BUCKETNAME` = `joinrpg-prod-avatars` (проверено).
+- [ ] 🟡 Аватарки ([#5526](https://github.com/joinrpg/joinrpg-net/issues/5526), [подробнее](#аватарки)): сначала [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) (🟢 влит) — адрес из настройки
+      `S3BlobStorage:PublicBaseUrl`, терпимое чтение и подмена домена у старых полных адресов; потом,
+      **только после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод**, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — в базе ключ объекта вместо адреса,
+      старые адреса переводит джоба `AvatarCachedUriToKeyJob`.
+- [x] ~~Логи: формат severity в `CustomJsonFormatter`~~ — в логах Selectel распознаётся (2026-10-16);
+      скиллы чтения логов — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582), готово 2026-10-19.
+
+### Фаза 2. 🚧 Заглушка на обоих доменах, служебные домены
+
+- [x] (2026-10-16; с `id.joinrpg.ru` снята 2026-10-18) Включить заглушку для `joinrpg.ru` и `id.joinrpg.ru` (статическая заглушка — план
+      инженеров) —
+      **до** того, как в секрете `joinrpg-main` появится новая база ([деплой](#деплой)). Ответ 503
+      с `Retry-After`. 2026-10-16: заглушка отдаётся на `joinrpg.ru` и `id.joinrpg.ru`, но с кодом
+      200, а не 503 (на 2026-10-18 так и осталось).
+- [ ] DNS боевых доменов на 176.53.231.74: `joinrpg.ru`, `id.joinrpg.ru`, `components.joinrpg.ru` —
+      готово (2026-10-16); `www.joinrpg.ru` резолвится с вечера 2026-10-18 (HTTP — 301 на `joinrpg.ru`),
+      хотя [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5) с этой записью ещё не влит — видимо, заведена в панели; перед apply infra#5 сверить, чтобы не было конфликта.
+      У `components.joinrpg.ru` на Gateway нет сертификата (`TRAEFIK DEFAULT CERT`).
+- [x] (2026-10-16) DNS: `components.joinrpg.ru` и dev-хосты (`dev.joinrpg.ru`, `devid.joinrpg.ru`,
+      `dev-components.joinrpg.ru`) — на 176.53.231.74: PR
+      [joinrpg-infrastructure#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3).
+- [ ] DNS: почтовые записи `joinrpg.ru` (SPF, DKIM, DMARC, проверка домена у почтового
+      провайдера — Postbox или новый) перенесены в новую зону; без них письма уйдут в спам или не
+      отправятся. 2026-10-18: SPF, DMARC, верификации в зоне есть, но **SPF-записей две**
+      (`include:_spf.yandexcloud.net` и `redirect=_spf.yandex.net`) — по RFC 7208 это PermError,
+      SPF не проходит; слить в одну: `v=spf1 include:_spf.yandexcloud.net include:_spf.yandex.net ~all` — PR [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5).
+- [x] (2026-10-16) DNS: `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` и для dev `dev.joinrpg.tsarevs.ru`,
+      `dev.id.joinrpg.tsarevs.ru` — на балансировщик 176.53.231.74, мимо заглушки: PR
+      [joinrpg-infrastructure#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) на ревью,
+      после мерджа `terraform apply` в `05-dns`. **До** деплоя из фазы 4.
+- [x] (2026-10-18, один сертификат с SAN на все четыре) TLS на Gateway `infra/main` покрывает все четыре служебных хоста (манифесты — Gateway API,
+      `HTTPRoute`, без cert-manager в репозитории; Gateway — в инфраструктуре).
+- [x] Маршруты служебных доменов dev — [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) влит.
+- [x] (2026-10-10) PR с маршрутами служебных доменов prod ([#5474](https://github.com/joinrpg/joinrpg-net/issues/5474)) влит. Маршруты появятся с первым
+      успешным деплоем (фаза 4).
+
+### Фаза 3. Поднять базу
+
+**MSSQL**
+
+- [x] (2026-10-15) Майский бэкап (`.bacpac`) импортирован в новый MSSQL.
+- [x] (2026-10-15) Майские максимумы: Users 78808, Projects 1622 — в `Drp:BackupMax:*` ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562)).
+- [x] (2026-10-15) Момент майского бэкапа: `Drp:BackupTakenAt` = 2026-05-08T12:58:51Z (`Origin.xml`,
+      `Operation/Start`; `End` не заполнен) — в `appsettings.json` Portal ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562)).
+- [x] (2026-10-15) Максимумы по базе уведомлений в `@Known` скрипта сдвига: Users 84473, Comments
+      644590 ([#5562](https://github.com/joinrpg/joinrpg-net/issues/5562)). Ожидаемые счётчики — 112 000 и 784 000.
+- [x] (2026-10-15) 🟢 Сдвиг счётчиков — `scripts/incident-restore/reseed-identities.sql` ([#5460](https://github.com/joinrpg/joinrpg-net/issues/5460)): `@Apply = 0`,
+      проверить план, `@Apply = 1`. `Comments` обязательно ([почему](#сдвиг-счётчиков)).
+- [x] (2026-10-15) Миграции вручную на новую базу: `dotnet run --project src/Joinrpg.Dal.Migrate` со строкой
+      подключения к ней (или разовый job в кластере). Секрет пока **не трогаем** — поды
+      поднимаются только в конце фазы 4 ([почему](#деплой)).
+- [x] (2026-10-15) Сдвиг счётчиков ещё раз. Фактически первый сдвиг пропущен, миграции прошли по
+      несдвинутым счётчикам — безвредно (миграции после мая строк в старые таблицы не вставляют);
+      один прогон `@Apply = 1` в 15:44Z сдвинул всё. `@MinMargin` был 100 000, а не 1 млн: таблицы
+      без `@Known` получили max(×3, +100 000) — запаса за 5 месяцев хватает.
+- [x] ~~Адреса аватарок в базе — `REPLACE` префикса~~ — не нужен: [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) сам подменяет домен у
+      старых адресов, [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) переводит их в ключи джобой.
+- [x] (2026-10-15) Право на `IDENTITY_INSERT` у логина приложения: проверить **под ним**
+      `SELECT HAS_PERMS_BY_NAME('dbo.Claims', 'OBJECT', 'ALTER')` (и для `Comments`,
+      `CharacterGroups`, `Characters`); если нет — `GRANT ALTER ON dbo.<таблица> TO <логин>` на
+      время восстановления (фазы 7–9) ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492)).
+
+**Postgres** (после ручного бэкапа кластера)
+
+- [x] ~~Заморозить очередь уведомлений~~ — очередь пуста (проверено 2026-10-10), до старта
+      писать в неё некому ([подробнее](#очередь-уведомлений)).
+- [x] (2026-10-15) Перед деплоем ещё раз убедиться, что `queued` в `joinrpg-prod-notifications` нового
+      Managed PostgreSQL пуст (в `joinrpg-new` проверено 2026-10-10).
+- [x] ~~Ядовитые Telegram-строки в очереди~~ — исправлено [#5468](https://github.com/joinrpg/joinrpg-net/issues/5468).
+
+**Конфиг** (`manifests/prod`, уходит одним деплоем с новым секретом в конце фазы 4)
+
+Джобы, S3, адрес аватарок и баннер — [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) влит 2026-10-15.
+
+- [x] (2026-10-15) 🟢 Выключить джобы ([#5470](https://github.com/joinrpg/joinrpg-net/issues/5470)): `DailyJobs__Disabled__0=AdvertisementJob`,
+      `__1=UpdatePaymentStatusJob` ([почему](#опасные-джобы)). `ProjectPerformCloseJob` выключать
+      не нужно: заблокированные проекты он не выбирает ([#5482](https://github.com/joinrpg/joinrpg-net/issues/5482)), а майские блокируются в фазе 4
+      до старта подов.
+- [x] (2026-10-15) Аватарки: `S3BlobStorage__PublicBaseUrl` = `https://avatars.joinrpg.ru` — **и Portal, и
+      IdPortal** (без него IdPortal молча отдаёт аватарку провайдера); dev — `https://avatars.dev.joinrpg.ru`.
+- [x] (2026-10-15) 🟢 Баннер: `SiteBanner__Text` ([#5463](https://github.com/joinrpg/joinrpg-net/issues/5463)).
+- [x] ~~Рекуррентные платежи~~ — джоба выключена в коде ([#5464](https://github.com/joinrpg/joinrpg-net/issues/5464)).
+- [x] ~~MCP~~ — игнорируем, им никто не пользовался.
+
+### Фаза 4. Пользователи, проекты и старт приложений
+
+Поды ещё не запущены — заготовки создаются без остановки приложений, и никто параллельно не
+создаёт пользователей и проекты.
+
+**Пользователи**
+
+- [x] (2026-10-15) 🟢 Заготовки потерянных пользователей с прежними id — `src/JoinRpg.Tools.RestoreLostUsers`
+      ([#5465](https://github.com/joinrpg/joinrpg-net/issues/5465)): dry-run, разбор CSV (ПДн — только локально), `--apply`
+      ([подробнее](#заготовки-пользователей)).
+      Создано 2623 (id 78809–84473), счётчик остался 112000. Не создано 13: NoEmail 10, EmailTaken 1,
+      DuplicateEmail 2 — разобрать вручную позже; события с их участием инструменты восстановления
+      пропустят (автора нет).
+- [x] (2026-10-15) Повторный dry-run — «создавать некого» (AlreadyExists 2623).
+- [x] ~~Пользователи последних суток до аварии~~ — не восстанавливаем ([#5489](https://github.com/joinrpg/joinrpg-net/issues/5489)): данных им всё равно
+      не вернуть, email свободен — зарегистрируются заново.
+
+**Проекты** (нужен статус «Заблокирован», [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473))
+
+- [x] (2026-10-15, 119 проектов) 🟢 Заблокировать все активные проекты майской базы (после миграций — колонка
+      `IsBlocked` появляется миграцией `AddProjectIsBlocked`, [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480)):
+      `UPDATE dbo.Projects SET IsBlocked = 1 WHERE Active = 1;`
+- [x] (2026-10-15, 84 проекта, «да» — 77) 🟢 Список проектов, созданных после мая, — CSV на ручную проверку: id, название, создатель,
+      источники ([#5479](https://github.com/joinrpg/joinrpg-net/issues/5479), PR [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485), [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504), [подробнее](#список-новых-проектов)).
+- [x] (2026-10-15) 🟢 Оболочки этих проектов с прежним id, создателем и статусом «Заблокирован»
+      (`Active = 1`, `IsBlocked = 1`; `Active = 0` + `IsBlocked = 1` недопустимо — загрузка метаданных
+      падает) — доменным созданием проекта с подменой счётчика ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491), PR [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509), [подробнее](#оболочки-проектов)). Запуск:
+      `dotnet run --project src/JoinRpg.Tools.RestoreProjectShells -- --input <проверенный CSV> [--apply]`.
+      Создано 77 (1623–1713). Пропущены при проверке 7: 1624, 1636, 1653, 1665, 1666, 1695, 1714 —
+      если создавать, то **до старта подов** (подмена счётчика безопасна только без работающих
+      приложений).
+- [x] (2026-10-16) Повторный dry-run `RestoreProjectShells`: 77 «уже создан», 7 «пропущен», счётчик 20000;
+      SQL-проверка графа (заблокирован, активен, одна корневая группа, владелец, настройки) — чисто.
+- [x] (2026-10-15, 1713 → 20000) Вернуть счётчик `Projects` — повторный прогон `reseed-identities.sql` с `@Apply = 1`; ожидается
+      `Restore [dbo].[Projects]: <id> -> 20000`.
+
+**Старт приложений за заглушкой**
+
+- [x] (2026-10-18, «Deploy to prod» 16:28Z; первый запуск 16:15Z упал на строках Postgres) Строку подключения к новой базе — в GitHub-секрет окружения prod
+      `KUBESECRET_ConnectionStrings__DefaultConnection` (из него собирается секрет
+      `joinrpg-main`), деплой вместе с конфигом из
+      фазы 3. Миграции уже накатаны, job ничего не делает; деплой поднимает поды и ingress
+      служебных доменов.
+- [ ] Снаружи на боевых доменах по-прежнему заглушка.
+- [x] (2026-10-18) На служебных доменах: оба приложения открываются, вход существующего пользователя
+      проходит; `/health` обоих — Healthy (все базы, S3 `joinrpg-prod-avatars`, Telegram).
+      Логи подов в облако не пишутся — смотреть `kubectl logs`.
+- [ ] Аватарки: старая показывается (адрес `avatars.joinrpg.ru`), новая загружается и тоже
+      показывается. 2026-10-18: **не работают** — `avatars.joinrpg.ru` не резолвится (A на
+      балансировщик в terraform есть, apply нет; маршрута к бакету на Gateway, видимо, тоже);
+      объекты из бакета Yandex, по словам инженеров, скопированы.
+- [ ] **Почта работает** — до фазы 5: на `joinrpg.tsarevs.ru` «забыл пароль» для своего аккаунта —
+      письмо пришло и не в спаме. Без этого `id.joinrpg.ru` не открываем. 2026-10-18: с прода письма
+      доходят (сброс пароля заготовки); «не в спаме» — проверить после SPF ([infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5)).
+
+### Фаза 5. 🚧 Открыть `id.joinrpg.ru`
+
+- [x] (2026-10-18) На `id.joinrpg.tsarevs.ru`: вход по паролю пользователя из майской базы; «забыл пароль»
+      для заготовки — письмо приходит.
+- [ ] Текст заглушки `joinrpg.ru`: «войти можно на id.joinrpg.ru, регистрация и профиль
+      временно недоступны» ([почему](#вход-в-idportal)). 2026-10-18: заглушка ещё со старым текстом
+      («ожидаем завершения работ к 18 октября»), про id.joinrpg.ru в ней ничего нет.
+- [x] (2026-10-18) Выключить заглушку для `id.joinrpg.ru` — IdPortal отвечает, `/health` Healthy, сертификат LE.
+- [x] (2026-10-18) Проверить вход через `id.joinrpg.ru` на kogda-igra.ru.
+
+### Фаза 6. 🚧 Открыть `joinrpg.ru`
+
+- [ ] На `joinrpg.tsarevs.ru` — блокировка ([#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) влит; в браузере ещё не проверялся): заблокированный проект показывает плашку; изменение даёт страницу «Проект
+      заблокирован»; мастер может добавить мастера и править сетки ролей; «Снять блокировку»
+      (`/{projectId}/unblock`, кнопка в настройках) возвращает проект как был; «Закрыть» из
+      блокировки — в архив.
+- [ ] На `joinrpg.tsarevs.ru`: оболочка нового проекта, регистрация нового проекта, `/Admin/Jobs`.
+- [x] (2026-10-18) Инструкция для мастеров — опубликована https://docs.joinrpg.ru/recovery-2026.html ([docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290),
+      [docs#291](https://github.com/joinrpg/joinrpg-docs/pull/291)); ссылки из баннера ([#5607](https://github.com/joinrpg/joinrpg-net/issues/5607)) и из UI заблокированного проекта ([#5609](https://github.com/joinrpg/joinrpg-net/issues/5609)).
+- [x] (2026-10-19) [docs#295](https://github.com/joinrpg/joinrpg-docs/pull/295) влит — якорь «Загрузка аватарки из Вконтакте» для [#5617](https://github.com/joinrpg/joinrpg-net/issues/5617).
+- [ ] Выключить заглушку для `joinrpg.ru`.
+
+### Фазы 7–9 — по каждому проекту
+
+Внутри заблокированного проекта, в темпе мастеров ([блокировка](#блокировка-проектов)).
+
+- [ ] Мастер заводит поля проекта заново (в блокировке разрешено — решение 2026-10-11, [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508)).
+- [x] 🟢 (2026-10-19) Настройки проекта в блокировке: поселение, финансы, группы — [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) ([#5633](https://github.com/joinrpg/joinrpg-net/issues/5633)–[#5636](https://github.com/joinrpg/joinrpg-net/issues/5636), [docs#297](https://github.com/joinrpg/joinrpg-docs/pull/297)).
+- [ ] Выкатить master после 2026-10-19 20:33Z: [#5684](https://github.com/joinrpg/joinrpg-net/issues/5684), [#5688](https://github.com/joinrpg/joinrpg-net/issues/5688), [#5685](https://github.com/joinrpg/joinrpg-net/issues/5685), [#5689](https://github.com/joinrpg/joinrpg-net/issues/5689), [#5690](https://github.com/joinrpg/joinrpg-net/issues/5690).
+- [ ] Фазы 7–9 по проекту.
+- [ ] Снять блокировку с проекта (или закрыть его) — последний шаг.
+
+### Фаза 7. Персонажи и заявки
+
+Одна страница «Восстановление» заблокированного проекта ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529)): выгрузка мастера
+(если есть) + уведомления → единый предпросмотр → применение. По каждому атрибуту побеждает
+более свежее значение ([подробнее](#слияние-выгрузки-и-уведомлений)).
+
+- [ ] Спросить у мастера выгрузки персонажей и заявок и любые свои копии (таблицы, документы).
+- [ ] 🟢 Восстановление из уведомлений — страница `/{projectId}/claims/restore-from-notifications`
+      ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481), [#5506](https://github.com/joinrpg/joinrpg-net/issues/5506)): персонажи и заявки (создать / изменить; игрок, статус, ответственный,
+      взнос), заявки с прежними id.
+- [ ] 🟢 Загрузка выгрузок мастера (только xlsx, до 30 МБ) с датой на той же странице — слияние с
+      уведомлениями: группы и персонажи с прежними id, значения полей ([#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), [#5534](https://github.com/joinrpg/joinrpg-net/issues/5534)–[#5539](https://github.com/joinrpg/joinrpg-net/issues/5539)).
+      Ответственного нового персонажа назначить руками после применения.
+- [x] 🟢 (2026-10-18) Ложная пометка «Изменено после восстановления» у заявок, которые трогал только инструмент — [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619), [#5620](https://github.com/joinrpg/joinrpg-net/issues/5620).
+- [x] 🟢 (2026-10-19) Ещё не созданные заявки не ссылками на странице восстановления — [#5639](https://github.com/joinrpg/joinrpg-net/issues/5639), [#5640](https://github.com/joinrpg/joinrpg-net/issues/5640).
+- [x] 🟢 (2026-10-19) Шаблон восстанавливается как обычный персонаж, на нём несколько принятых заявок — [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645) ([#5654](https://github.com/joinrpg/joinrpg-net/issues/5654), [#5657](https://github.com/joinrpg/joinrpg-net/issues/5657), [#5663](https://github.com/joinrpg/joinrpg-net/issues/5663), [#5665](https://github.com/joinrpg/joinrpg-net/issues/5665), [#5668](https://github.com/joinrpg/joinrpg-net/issues/5668); на проде с 20:33Z).
+      2026-10-19 14:05–17:19Z из-за 1612-200035 падали списки и сетка ролей 1612.
+- [x] 🟢 (2026-10-19) «Не разобрались» не считает приглашения к проживанию — [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671), [#5672](https://github.com/joinrpg/joinrpg-net/issues/5672).
+- [x] 🟢 (2026-10-19) Видимость новых персонажей выбирается при каждом применении, группы открываются вслед за персонажем — [#5677](https://github.com/joinrpg/joinrpg-net/issues/5677) ([#5682](https://github.com/joinrpg/joinrpg-net/issues/5682), [#5684](https://github.com/joinrpg/joinrpg-net/issues/5684), [#5688](https://github.com/joinrpg/joinrpg-net/issues/5688), [docs#302](https://github.com/joinrpg/joinrpg-docs/pull/302)); ждёт выкатки.
+- [x] 🟢 (2026-10-19) Пустое поле-имя давало персонажу имя «CHAR-1» — [#5673](https://github.com/joinrpg/joinrpg-net/issues/5673), [#5685](https://github.com/joinrpg/joinrpg-net/issues/5685); ждёт выкатки.
+- [ ] В разделе «Новые персонажи» нет выбора «шаблон / не шаблон» — шаблоны 1696 восстановились обычными персонажами — [#5733](https://github.com/joinrpg/joinrpg-net/issues/5733).
+- [x] ~~«Шаблон» с пустым названием в проекте без поля имени~~ — [#5678](https://github.com/joinrpg/joinrpg-net/issues/5678) закрыт без исправления ([#5681](https://github.com/joinrpg/joinrpg-net/issues/5681) закрыт): велик риск сделать обычного персонажа шаблоном. Обход — вписать название шаблона руками.
+- [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
+      мастерские — мастер из своих материалов.
+
+### Фаза 8. Обсуждения
+
+- [ ] 🟢 Импорт комментариев к заявкам из базы уведомлений как восстановленных, с прежними id
+      (у комментариев с 2026-06-06 id есть в `ClaimCommentId`; у более ранних id нет — новые; [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492)):
+      блок на той же странице «Восстановление проекта», после заявок ([#5557](https://github.com/joinrpg/joinrpg-net/issues/5557)–[#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) влиты).
+- [ ] Комментарии с пометкой «видимость под вопросом» — мастеру проверить видимость руками.
+      Обсуждение восстанавливается плоским (родитель в уведомлениях не хранится).
+- [x] 🟢 (2026-10-19) Эвристика видимости: комментарий, менявший статус заявки, всегда был виден игроку — [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641), [#5649](https://github.com/joinrpg/joinrpg-net/issues/5649).
+
+### Фаза 9. Финансы
+
+**Онлайн-оплаты** — восстанавливает @Shiko1st по своему плану, по выгрузке платёжного провайдера.
+
+- [ ] Выгрузка операций у платёжного провайдера с мая и восстановление онлайн-оплат — @Shiko1st.
+
+**Ручные операции** (типы оплаты Cash / Custom) — у провайдера их нет, только из уведомлений
+([подробнее](#ручные-финансовые-операции)).
+
+- [x] ~~Установка взноса вручную~~ — уже восстанавливается в фазе 7 ([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)).
+- [x] 🟢 (2026-10-19) Ручные оплаты и возвраты — **мастер сам, блоком «Ручные оплаты» на странице «Восстановление проекта»**
+      ([#5631](https://github.com/joinrpg/joinrpg-net/issues/5631), решение 2026-10-19; [#5637](https://github.com/joinrpg/joinrpg-net/issues/5637), [#5638](https://github.com/joinrpg/joinrpg-net/issues/5638), на проде): тип оплаты выбирает мастер, «Наличные на меня» — кнопкой; после блока заявок,
+      до разблокировки. Готовое под него: планировщик [#5568](https://github.com/joinrpg/joinrpg-net/issues/5568), доменная операция [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569) (уже требует блокировку
+      и `CanManageMoney`), сверка «Уплачено» [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567). Причина: консольный инструмент ждал запуска разом по всем
+      проектам, а мастера разблокируют в своём темпе — после разблокировки оплаты не вернуть.
+- [x] 🟢 (2026-10-19) Финансовые настройки в блокировке (свои типы оплаты, не только «наличные») — [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), [#5634](https://github.com/joinrpg/joinrpg-net/issues/5634).
+- [x] ~~Переводы между заявками~~ — [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643) закрыт: суммы в уведомлениях нет, только предупреждение; на будущее сумма в уведомлении — [#5650](https://github.com/joinrpg/joinrpg-net/issues/5650).
+- [x] 🟢 (2026-10-19) Блок «Ручные оплаты»: время в поясе браузера, точный итог — [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647), [#5690](https://github.com/joinrpg/joinrpg-net/issues/5690); ждёт выкатки.
+- [x] 🟢 (2026-10-18) Предупреждение «не снимайте блокировку, пока не восстановлены ручные оплаты» на странице
+      снятия блокировки ([#5632](https://github.com/joinrpg/joinrpg-net/issues/5632)) и в инструкции для мастеров ([docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296)).
+- [ ] Запасной путь — консольный `RestoreManualFinance` ([#5571](https://github.com/joinrpg/joinrpg-net/issues/5571); dry-run → CSV, ПДн локально → `--apply`) для
+      проектов, где мастера не восстанавливают сами. Разблокированный раньше времени проект — вернуть блокировку SQL-ом
+      (`UPDATE dbo.Projects SET IsBlocked = 1 WHERE ProjectId = …`), восстановить, разблокировать (так сделано с 1612, 2026-10-19).
+- [x] ~~Проекты без типа оплаты~~ — решено 2026-10-15: инструмент создаёт тип Cash на мастера по
+      подтверждению в CSV (`cash:<userId>`).
+- [ ] Сверка «Уплачено» из выгрузки мастера с оплатами в базе — [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567) влит.
+
+### Фаза 10. Возврат в штатный режим
+
+- [ ] Заблокированных проектов не осталось.
+- [ ] Отозвать временные `GRANT ALTER` на таблицы восстановления у логина приложения (фазы 7–9).
+- [ ] Включить джобы: убрать из `DailyJobs__Disabled__*`. `UpdatePaymentStatusJob` заблокированные
+      проекты пропускает — включать, когда готова сверка с платёжным провайдером, независимо от
+      блокировок.
+- [ ] Снять баннер.
+- [x] (2026-10-19) Скиллы чтения логов и прод-БД под Selectel — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582) ([#5648](https://github.com/joinrpg/joinrpg-net/issues/5648), [#5653](https://github.com/joinrpg/joinrpg-net/issues/5653), [#5662](https://github.com/joinrpg/joinrpg-net/issues/5662)).
+- [ ] Прод лежал ~14 минут 2026-10-19 16:54–17:08Z: MSSQL не отвечал — [#5666](https://github.com/joinrpg/joinrpg-net/issues/5666).
+- [x] 🟢 (2026-10-19) Ошибки PersistentState приглашений на странице заявки — [#5670](https://github.com/joinrpg/joinrpg-net/issues/5670), [#5674](https://github.com/joinrpg/joinrpg-net/issues/5674).
+- [x] 🟢 (2026-10-19) Мастеру одно уведомление о приглашении к проживанию, а не по письму на заявку — [#5676](https://github.com/joinrpg/joinrpg-net/issues/5676), [#5689](https://github.com/joinrpg/joinrpg-net/issues/5689); ждёт выкатки.
+- [ ] IP клиента не доходит до приложения (traefik, `externalTrafficPolicy: Cluster`) — [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667).
+- [x] ~~Вернуть автодеплой dev~~ — [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) влит 2026-10-16.
+- [ ] Старый бакет аватарок в Yandex Cloud — выключить (можно сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с
+      `PublicBaseUrl`). Временную джобу `AvatarCachedUriToKeyJob` ([#5532](https://github.com/joinrpg/joinrpg-net/issues/5532)) — убрать после отработки.
+- [ ] Убрать ingress служебных доменов из `manifests/prod` (деплой удалит их прунингом), TLS-секреты
+      удалить вручную: `kubectl delete secret joinrpg-tsarevs-ru-tls id-joinrpg-tsarevs-ru-tls -n prod`.
+- [ ] DNS: удалить записи `joinrpg.tsarevs.ru` и `id.joinrpg.tsarevs.ru` — после деплоя, который
+      убрал ingress.
+- [ ] Скилл `prod-db-readonly` — на новый MSSQL через `joindb.tsarevs.ru` (readonly-логин заново).
+- [ ] Внешний доступ к MSSQL (`joindb.tsarevs.ru`): оставить для админов или закрыть.
+
+### Фаза 11. Разбор: какие метаданные улучшили бы восстановление
+
+После прохождения плана — @leotsarev.
+
+- [ ] Пройти весь план и инструменты: где восстановление упиралось в нехватку данных в уведомлениях,
+      логах или выгрузках (тип оплаты и дата операции, id комментариев до 2026-06-06, родитель
+      комментария, значения полей, группы, сюжеты и т.п.) и какие дополнительные метаданные это бы
+      исправили.
+- [ ] Завести issue по итогам.
+
+## Открытые решения
+
+- ~~**Персонажи и заявки — прежние id или новые?**~~ Решено 2026-10-11: прежние, через
+  `IDENTITY_INSERT` ([подробнее](#прежние-id-через-identity_insert)).
+
+## Заметки
+
+### Деплой
+
+Каждый деплой (`deploy_reusable_workflow.yml`) сначала запускает job `joinrpg-dal-migrate` с
+базой из секрета `joinrpg-main`, потом `kubectl apply` всех манифестов — поднимает Portal,
+IdPortal и ingress. Миграция и старт подов идут одним деплоем, между ними ничего не вставить.
+Поэтому оба сдвига счётчиков и миграции делаются вручную, **до** того как строка подключения к
+новой базе попадёт в секрет: иначе миграции пойдут по несдвинутым счётчикам, а второй сдвиг —
+уже при работающих подах, которые успеют вставить строки в новые таблицы с id от 1.
+
+Пока секрет смотрит в потерянную базу, деплой падает на миграции и манифесты не применяет —
+поэтому изменения конфига в `manifests/prod` вступят в силу только деплоем с новым секретом.
+
+### Инфраструктура в Selectel
+
+Всё разворачивается заново в Selectel по [плану инженеров](https://docs.google.com/document/d/1b8lPIU475HqAW12Q9crq0tnxvZNhBplq7Ek7eXh3N2U/edit?tab=t.0): k8s (зона ru-6, 3 узла
+4 CPU / 8 ГБ, namespace вида `joinrpg-prod`), балансировщик, Let's Encrypt, статическая
+заглушка, MSSQL, Managed PostgreSQL, S3, DNS (зоны переносятся с Яндекса), облачные логи,
+хранение секретов (решено: остаются GitHub-секреты `KUBESECRET_*`). Что это значит для репозитория:
+
+- **Деплой** ([#5541](https://github.com/joinrpg/joinrpg-net/issues/5541)). Kubeconfig Selectel протухает с ротацией сертификатов раз в 30 дней,
+  поэтому CI ходит токеном сервис-аккаунта. Namespace — `joinrpg-<среда>`; имя GitHub
+  environment, папка манифестов и метка прунинга остались `prod`/`dev`. Прод — ручной деплой,
+  dev — автодеплой после сборки master ([#5575](https://github.com/joinrpg/joinrpg-net/issues/5575)).
+- **Реестр образов** — Selectel Container Registry (`cr.selcloud.ru`), пуш уже идёт; поды тянут
+  образы через секрет `craas-auth` от интеграции кластера с реестром.
+- **Лимит тела** на ingress портала: выгрузки мастера (до 30 МБ) не пройдут в дефолтный 1 МБ nginx.
+- **Логи.** Severity из `CustomJsonFormatter` (`level`) в логах Selectel распознаётся. Скиллы
+  `prod-logs`, `monitor-release`, `prod-db-readonly` переведены на Selectel — [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582).
+- **Почта.** Yandex Postbox, из Selectel работает (проверено на dev 2026-10-16).
+- **Адреса баз.** Изнутри кластера: MSSQL — `192.168.0.2`, Postgres —
+  `master.4b8029b8-1433-4452-b2e3-e171e7212ec6.c.dbaas.selcloud.ru` (Managed PostgreSQL). Снаружи,
+  для инструментов с машины админа, — `joindb.tsarevs.ru:1433` и `psql.tsarevs.ru:5433`.
+- **Маршрутизация** — Gateway API: приложения публикуются `HTTPRoute` с `parentRefs: infra/main`,
+  TLS и сертификаты — на Gateway в инфраструктуре; в репозитории ни Ingress, ни cert-manager.
+
+### Dev в Selectel
+
+База dev не восстанавливается: пустой MSSQL и пустые базы Postgres, схему создаёт job миграций
+при деплое. Окружение `Staging`: первый вошедший **не** становится админом — назначить вручную.
+reCAPTCHA на dev выключена секретом `KUBESECRET_RECAPTCHA__PUBLICKEY` = `_` (капча включена,
+только если оба ключа заданы и не `_`; имя поля — `PublicKey`/`PrivateKey`, без подчёркивания).
+Тишина в логах подов = до них не дошло ни одного запроса: каждый запрос, кроме проверок здоровья,
+пишется на уровне Information. Проверять по шагам: `port-forward` к поду в обход Gateway → статус
+`HTTPRoute` (`Accepted`, `ResolvedRefs`) → листенеры и `allowedRoutes` Gateway `infra/main` →
+`curl -sv` снаружи.
+
+### Аватарки
+
+Загруженная аватарка хранит адрес в `dbo.UserAvatars.CachedUri` (у внешних — ещё `OriginalUri`,
+адрес соцсети). Сейчас там полный адрес Yandex S3 (`{Endpoint}/{BucketName}/<ключ>`), после
+переезда S3 в Selectel он не работает. Решение [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526):
+
+1. **[#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) — терпимое чтение.** Публичный адрес — `S3BlobStorage:PublicBaseUrl` + ключ; у старых
+   полных адресов домен подменяется на лету. Новый домен работает сразу с выкаткой [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) и
+   настройкой `S3BlobStorage__PublicBaseUrl` в Portal и IdPortal — SQL по базе не нужен.
+2. **[#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) — ключ вместо адреса.** Новые аватарки пишутся ключом объекта, временная джоба
+   `AvatarCachedUriToKeyJob` переводит старые адреса в ключи. Вливать **только после** того, как
+   [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на проде: старый код падает на записях-ключах. После отработки джобы откат ниже
+   [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) ломает аватарки.
+3. **Бакет** в Selectel: объекты с теми же ключами (в корне), домен `avatars.joinrpg.ru` + TLS —
+   инфраструктура.
+
+Старый бакет Yandex можно выключать сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с настройкой.
+
+### MSSQL в кластере
+
+Вместо потерянного managed-экземпляра — MSSQL в Selectel (на ВМ или в кубере — решают
+инженеры), образ `mcr.microsoft.com/mssql/server` не старше версии, из которой снят бэкап (локально
+используем 2019), редакция Express (решение 2026-10-10; лимит 10 ГБ на базу).
+
+- **Бэкапы.** CronJob с `BACKUP DATABASE` и выгрузкой в Object Storage, с хранением нескольких
+  поколений и проверкой восстановления. Без этого повторим аварию.
+- **Ресурсы и диск.** Узел под MSSQL с запасом памяти; диск network-ssd с запасом под рост.
+
+### Прежние id через IDENTITY_INSERT
+
+Решение 2026-10-11: группы, персонажи, заявки и комментарии, потерянные после мая,
+восстанавливаются **со своими прежними id** — на них ссылаются уведомления, письма, выгрузки и
+логи.
+
+- Вставка с явным id: `SET IDENTITY_INSERT <таблица> ON`. Потерянные id всегда **ниже**
+  сдвинутого счётчика ([#5460](https://github.com/joinrpg/joinrpg-net/issues/5460)), а при явной вставке значения ниже текущего SQL Server счётчик не
+  меняет. Поэтому это безопасно на живом сайте: параллельные вставки идут выше счётчика и в
+  зарезервированный диапазон не попадают.
+- **Подмена счётчика** (`DBCC CHECKIDENT ... RESEED`) на живом сайте **небезопасна**: счётчик
+  общий для таблицы, и пока он опущен, чужие вставки из других проектов получают id из
+  потерянного диапазона. Поэтому подмена — только для оболочек проектов в фазе 4, до старта
+  подов.
+- EF6 не умеет вставлять с заданным id — строки вставляются SQL-ом, мимо доменных сервисов.
+  Инструмент обязан создавать тот же минимальный граф, что и доменное создание (у заявки —
+  обсуждение и связь с персонажем, у комментария — текст и т.п.); паритет с доменом проверяется
+  тестами, как у `RestoreLostUsers` с `MyUserStore.CreateImpl`. Дальнейшее наполнение — доменом.
+- `IDENTITY_INSERT` включается одновременно только для одной таблицы в сессии — граф заявки
+  вставляется по таблицам по очереди, в одной транзакции.
+- Уведомлений вставка не шлёт (принцип 3); в истории — пометка «восстановлено».
+- Комментарии до 2026-06-06 без id в уведомлениях получают новые id.
+- Финансовая операция — это комментарий (id операции = id комментария), восстанавливается так же.
+
+### Конфигурация DRP-инструментов
+
+Решение 2026-10-11, для всех консольных инструментов восстановления ([#5465](https://github.com/joinrpg/joinrpg-net/issues/5465), [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479), оболочки
+проектов и следующие). Конфигурация — `Microsoft.Extensions.Configuration`, слои по возрастанию
+приоритета:
+
+1. **Факты инцидента — в репозитории**, `drp.appsettings.json` рядом с инструментами:
+   `Drp:LostAt` (2026-10-07T22:30:49Z), после восстановления бэкапа — `Drp:BackupMax:Users`,
+   `Drp:BackupMax:Projects` и т.п. Не секреты, одинаковы для всех запусков — инструменты не
+   разойдутся в параметрах.
+2. **Строки подключения — user-secrets** с общим `UserSecretsId` `joinrpg-drp`: настраиваются
+   один раз на машине админа, вне репозитория. Ключи как в Portal:
+   `ConnectionStrings:DefaultConnection` (MSSQL через `joindb.tsarevs.ru`),
+   `ConnectionStrings:Notifications` (база `joinrpg-prod-notifications` в новом Managed PostgreSQL).
+   ```
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<...>" --id joinrpg-drp
+   dotnet user-secrets set "ConnectionStrings:Notifications" "<...>" --id joinrpg-drp
+   dotnet user-secrets set "Drp:K8sLogs" "<путь>\k8s-prod-mutations-merged.json" --id joinrpg-drp
+   ```
+   `Drp:K8sLogs` — сохранённые логи k8s (файл или каталог выгрузки; повторы по `uid` отбрасываются),
+   **обязателен** для `RestoreLostProjects`: путь у каждого свой, поэтому — в user-secrets, а не в
+   репозиторий. Можно также `DRP_Drp__K8sLogs` или `--logs`.
+3. **Переменные окружения** с префиксом `DRP_` (`DRP_ConnectionStrings__DefaultConnection`).
+4. **Аргументы командной строки** — режимы (`--apply`) и разовые переопределения.
+
+Реализовано в `src/JoinRpg.Tools.Drp.Common` ([#5465](https://github.com/joinrpg/joinrpg-net/issues/5465)). Отчёты с ПДн — в `Drp:ReportDir` вне репозитория (по умолчанию
+`%LOCALAPPDATA%\joinrpg-drp\reports`). Общий код сборки конфигурации — в одном маленьком проекте,
+который подключают все инструменты. SQL-скрипты (`reseed-identities.sql`) — вне этого подхода:
+параметры в самом скрипте, подключение — аргументами `sqlcmd`.
+
+### Внешний доступ к MSSQL
+
+Скрипты фазы 3 (сдвиг счётчиков, миграции) и инструменты фазы 4 ([#5465](https://github.com/joinrpg/joinrpg-net/issues/5465), [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479), оболочки
+проектов) запускаются с машины админа и ходят в MSSQL кластера через `joindb.tsarevs.ru:1433`.
+Это не HTTP: через ingress не пройдёт как обычный хост — сервис типа LoadBalancer или
+TCP-проброс ingress-nginx. Доступ — только с разрешённых IP, как было у прежнего MSSQL
+(решение 2026-10-11); плюс сильный пароль `sa` или отдельный логин и шифрование соединения
+(`Encrypt=True`; без доверенного сертификата клиентам нужен `TrustServerCertificate=True`).
+
+### Сертификаты
+
+Старые TLS-секреты потеряны вместе с кластером, сертификаты выпускаются заново — автовыдачей
+Let's Encrypt в новом кластере (план инженеров). Для HTTP-01 DNS уже должен смотреть на новый
+балансировщик, а заглушка — пропускать `/.well-known/acme-challenge/`. Лимиты Let's Encrypt на
+повторный выпуск для того же набора имён — учитывать при экспериментах.
+
+### Сдвиг счётчиков
+
+Счётчики IDENTITY после восстановления продолжат с майского максимума, и новые сущности
+получат id потерянных. Скрипт сдвигает их за известный максимум. Второй прогон после миграций —
+для таблиц, созданных после мая (они пустые). Сдвинутые таблицы записываются в журнал
+`drp.ReseedLog`: повторный прогон их не сдвигает заново, а опущенный счётчик (оболочки проектов)
+возвращает к записанному значению. `Comments` — номер заказа в платёжном провайдере
+равен id комментария, повтор совпадёт с уже известным банку.
+
+### Очередь уведомлений
+
+Если бы в очереди были `queued`-сообщения, при старте они ушли бы адресатам со ссылками на
+несуществующие сущности. Проверено 2026-10-10: `queued` пуст, а пока приложения не работают,
+писать в очередь некому — заморозка не нужна. `Postbox:Enabled` **не выключать**: через ту же
+очередь идут «забыли пароль» и подтверждение email. Зависшие `sending` старше аварии к
+восстановлению не относятся — issue [#5477](https://github.com/joinrpg/joinrpg-net/issues/5477).
+
+### Опасные джобы
+
+- `ProjectPerformCloseJob` — по майским датам все проекты «давно не обновлялись»: разошлёт
+  «проект скоро закроется» и **закроет** проекты. Заблокированные проекты не выбирает
+  (`GetStaleProjects` фильтрует `IsBlocked`, [#5482](https://github.com/joinrpg/joinrpg-net/issues/5482)), поэтому выключать его не нужно — при
+  условии, что майские проекты заблокированы до старта подов (фаза 4).
+- `AdvertisementJob` — опубликует в Telegram-канал роли по майским данным.
+- `UpdatePaymentStatusJob` — опросит банк по майским незавершённым операциям и разошлёт письма
+  об оплате.
+- Остаются включёнными: `SyncKogdaIgraJob` (только читает), `BastiliaGamesSyncDailyJob`,
+  `UnhotNpcJob`, `HidePublicGroupsUnderPrivateJob`, `FormerMastersBackfillJob`,
+  `EnsureRolesListsJob`.
+
+Переменные окружения читаются при старте: включить джобу — убрать из списка и перезапустить под.
+
+### Служебные домены
+
+`joinrpg.tsarevs.ru` → Portal, `id.joinrpg.tsarevs.ru` → IdPortal: отдельные маршруты (`HTTPRoute`); для dev
+то же — `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` ([#5560](https://github.com/joinrpg/joinrpg-net/issues/5560)), мимо заглушки на балансировщике, без авторизации на уровне ingress. Нужны, чтобы проверять приложения,
+пока боевые домены под заглушкой. Ссылки, которые приложения строят на боевые хосты
+(`JoinRpgHostNames`), ведут на заглушку — проверяем сами страницы, а не переходы. Это касается и
+ссылок в письмах: проверяем, что письмо пришло, а не переход по ссылке. Вход через ВК на
+служебном домене не работает: redirect URI зарегистрирован на боевой. Если заглушка на
+балансировщике закрывает весь адрес, а не только боевые хосты, служебные хосты (включая
+`/.well-known/acme-challenge/` для сертификатов) должны проходить мимо неё.
+
+### Список новых проектов
+
+Новые — с id больше майского максимума (снимаем с восстановленной базы). Источники:
+
+- **База уведомлений** — основной. Почти в каждой `EntityReference` есть id проекта
+  (`Project(p)`, `ClaimId(p-c)`, `ClaimCommentId(p-c-x)` и т.д.).
+  - Название и создатель: с 2026-08-23 ([#4625](https://github.com/joinrpg/joinrpg-net/issues/4625)) при создании проекта админам уходит «Новый
+    проект «{название}» — статус КогдаИгры» — `EntityReference` = проект, `InitiatorUserId` =
+    создатель, в теле — привязка к КогдаИгре (на стороне КогдаИгры она не хранится, другого
+    источника нет).
+  - Для созданных раньше: название — из заголовков уведомлений по заявкам («{Проект}: …»),
+    создатель — предположительно, самый ранний мастер по уведомлениям; подтверждает мастер.
+- **Логи k8s** (2026-09-10 — 2026-10-07) — **обязательный вход**: сверка и единственный источник
+  для проектов, созданных после бэкапа базы уведомлений (2026-10-06 ~22:45 UTC). Учитываются только
+  ответы ниже 400. Для проекта, которого нет в уведомлениях: создатель — самый ранний `LoggedUser`
+  с мутацией в проекте («предположительно (по логам)»), пометка «только по логам», названия нет.
+- Админы (не считаются создателями) — только по MSSQL (`UserAuthDetails.IsAdmin`).
+- Результат — CSV с колонкой «Создавать» (да/нет) для ручной проверки; контракт формата —
+  `LostProjectsCsv` / `DrpCsv` в `JoinRpg.Tools.Drp.Common`, его читает инструмент оболочек
+  ([#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)).
+
+Проекты без уведомлений и без активности в последний месяц не найдём — данных в них, скорее
+всего, почти не было.
+
+Мастеров, кроме создателя, не восстанавливаем: действующих создатель пригласит сам, а тех, кто
+оставил следы (комментарии, деньги, авторство), после фаз 7–9 запишет бывшими мастерами
+`FormerMastersBackfillJob`.
+
+### Оболочки проектов
+
+Создание проекта (`ProjectPropsService.CreateProject`) порождает граф: проект, корневую группу
+персонажей, права мастера-создателя, настройки. Писать его SQL-ом не стоит. Для каждого проекта
+из проверенного списка:
+
+1. `DBCC CHECKIDENT('dbo.Projects', RESEED, <id − 1>)`.
+2. Доменное создание проекта от имени создателя — проект получает ровно `<id>`, остальной граф —
+   новые id из сдвинутых диапазонов.
+3. Статус «Заблокирован».
+
+После всех — повторный прогон `reseed-identities.sql` вернёт счётчик `Projects` на 20 000.
+Безопасно, только пока никто параллельно не создаёт проекты, — поэтому до старта подов.
+Создатели к этому моменту уже есть (заготовки пользователей). Нужен консольный инструмент по
+образцу `RestoreLostUsers`: dry-run с отчётом, `--apply`.
+
+### Слияние выгрузки и уведомлений
+
+Выгрузка — снимок на дату выгрузки: id персонажей и групп, значения полей, состояние заявок.
+Уведомления — история событий до аварии: заявки, статусы, ответственные, взносы, но без полей и
+id персонажей. Правило — по каждому атрибуту самое свежее значение: поля, группы, id
+персонажей — из выгрузки; статус, ответственный, взнос, перемещение — из уведомлений, если
+событие позже даты выгрузки; заявки, поданные после выгрузки, — из уведомлений. Заявка
+привязывается к персонажу из выгрузки по имени персонажа и игрока. Дату выгрузки вводит мастер
+(по умолчанию — из свойств xlsx). Повторный запуск показывает только новые расхождения и не
+трогает то, что мастер поправил руками. Без выгрузки — тот же инструмент, только уведомления.
+
+### Момент бэкапа
+
+`Drp:BackupTakenAt` — момент снимка майского бэкапа MSSQL. Восстановление заявок
+([#5481](https://github.com/joinrpg/joinrpg-net/issues/5481)) переигрывает события из уведомлений по заявкам, которые есть в восстановленной базе,
+только **после** этого момента: более ранние уже учтены в бэкапе. Слишком раннее значение —
+переиграются лишние события (например, статус откатится и снова применится), слишком позднее —
+потеряются изменения между снимком и указанным моментом. Бэкап — `.bacpac` (экспорт, а не `.bak`), `RESTORE HEADERONLY` к нему неприменим. Источник —
+`Origin.xml` в корне `.bacpac` (это zip): `Operation/Start` и `Operation/End` — начало и конец
+экспорта, с часовым поясом машины, которая экспортировала. Экспорт с живой базы не
+транзакционно согласован: таблицы читаются в разные моменты между `Start` и `End`. Поэтому брать
+`Start` — тогда события внутри окна экспорта переиграются, а не потеряются; инструменты
+восстановления повтор переносят. Сверка по данным: `MAX(Comments.CreatedTime)` и
+`MAX(Claims.LastUpdateDateTime)` в восстановленной базе должны быть не позже `End` и рядом со
+`Start`. Фактически (2026-10-15): `Start` = 2026-05-08T15:58:51+03:00 (12:58:51Z), `End` в
+`Origin.xml` не заполнен — сверка по `MAX(...)` остаётся единственной проверкой верхней границы.
+
+### Ручные финансовые операции
+
+Ручная оплата или возврат — это комментарий с финансовой частью, у платёжного провайдера его нет.
+Что есть в уведомлениях:
+
+- `**Оплачен взнос**` / `**Возвращен взнос**` + `Сумма операции: N` + комментарий; инициатор —
+  мастер, отметивший операцию; `EntityReference` с 2026-06-06 — `FinanceOperationId(p-c-op)`
+  (id операции = id комментария, восстанавливается с прежним id через `IDENTITY_INSERT`), раньше —
+  `ClaimId(p-c)`.
+- **Тип оплаты не пишется**, но владелец типа оплаты получает уведомление как получатель — по нему
+  тип оплаты определяется предположительно (у мастера обычно один тип Cash); мастер подтверждает.
+- **Дата операции не пишется** — берётся время уведомления.
+- `**Сумма взноса установлена вручную**` + число — взнос заявки.
+- `**Финансовая операция подтверждена/отклонена**` — модерация, сумма не пишется, ссылка — на
+  комментарий модерации, а не на операцию; связать с операцией по заявке и времени.
+- Переводы между заявками — суммы нет, не восстанавливаются.
+
+Онлайн-оплаты (`PaymentsService`, тексты без приветствия «Онлайн-оплата на сумму …») — не здесь,
+их восстанавливает @Shiko1st по выгрузке провайдера; из уведомлений их пропускать.
+
+### Проекты без выгрузки
+
+Майский бэкап уже содержит всё, что было до мая. Для изменений после — только уведомления
+(заявки с id, имя персонажа и игрока из заголовка, история статусов, ответственный по имени,
+комментарии, суммы оплат) и логи k8s за 2026-09-10 — 2026-10-07 (какие персонажи и заявки
+менялись, без значений). Не восстанавливаются: значения полей анкет, персонажи без заявок,
+созданные после мая, группы, сюжеты, настройки полей. Дополнительно можно поискать публичные
+сетки ролей и страницы персонажей в кэше поисковиков и web.archive.org.
+
+### Сессии
+
+Portal сверяет security stamp каждые 3 секунды, IdPortal — раз в 30 минут. Cookie пользователя,
+которого нет в базе, превращается в анонима без ошибок. Пользователи из майской базы входят как
+сами себя; кто менял пароль или привязывал соцсеть после мая — будет разлогинен.
+
+### Заготовки пользователей
+
+- Прежние id: на них ссылаются уведомления, токены IdPortal и cookie.
+- Строки в `Users`, `UserAuthDetails`, `UserExtras`. `EmailConfirmed = 1` — адрес из
+  доставленных писем, поэтому «забыл пароль» работает и в Portal, и в IdPortal.
+  `AspNetSecurityStamp` — случайный GUID: все потерянные входят заново (решение 2026-10-10).
+- Email, занятый в майской базе, инструмент пропускает: поиск по email — `SingleOrDefault`,
+  дубликат ломает вход обоим.
+- `Drp:LostAt` отсекает уведомления после аварии: id потерянного мог достаться новому
+  регистранту, такой случай отчёт покажет как конфликт.
+- `--apply` блокирует `Users` на время прогона — поэтому запускается до старта подов (фаза 4).
+- Вход через ВК по совпадающему email сам привязывается к заготовке и подтверждает email. Если
+  email в ВК другой — будет второй аккаунт с новым id.
+
+### Вход в IdPortal
+
+IdPortal открывается раньше Portal: вход, «забыл пароль», сброс пароля и подтверждение email
+живут в нём самом, а пользователи берутся только из MSSQL. Под Portal при этом должен работать —
+письма из IdPortal отправляет он. Пока `joinrpg.ru` под заглушкой, ссылки из IdPortal в Portal
+упираются в неё: «Регистрация», вход через ВК без привязанного логина, «Профиль» и «Настройки».
+
+### Блокировка проектов
+
+Статус «Заблокирован» — [ADR023](adr023-project-blocked-status.md), [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473). Флаг `Project.IsBlocked`
+рядом с `Active`/`IsAcceptingClaims`: после снятия проект возвращается ровно в прежнее состояние.
+
+- В блокировке запрещено всё (включая комментарии, форум, оплаты), кроме ACL мастеров, снятия
+  блокировки, закрытия, инструментов восстановления, сеток ролей, привязки к КогдаИгре и —
+  решение 2026-10-11 — **настройки полей проекта** (часть восстановления).
+- Ставит блокировку только скрипт DRP (кнопки нет); снять или закрыть — мастер с
+  `CanChangeProjectProperties` или админ. Восстановление идёт только в заблокированном проекте —
+  разблокировка последний шаг по проекту.
+- Джобы заблокированные проекты не выбирают (кроме `EnsureRolesListsJob` и разовых починок).
+- **Для текста мастерам:** в заблокированном проекте можно добавлять и убирать мастеров, править
+  сетки ролей и привязку к КогдаИгре, настраивать поля, снять блокировку или закрыть проект (мастер
+  с правом менять свойства проекта и админ). Нельзя всё остальное, включая комментарии, форум,
+  оплаты и подписки.
+- Инструменты восстановления вызывают `ChangeProjectProperties` / `ChangeClaim` с
+  `ProjectActiveRequirement.AllowBlocked`.
+- **Дата последнего обновления** при снятии блокировки не трогается (решение 2026-10-11, ADR023).
+  Поэтому **инструменты восстановления обязаны обновить её сами**: дату проекта считает
+  `ProjectRepository.GetProjectWithLastUpdateQuery` как максимум из `Comment.LastEditTime`,
+  `Character.UpdatedAt`, `CharacterGroup.UpdatedAt`, `Claim.LastUpdateDateTime`, дат сюжетов и т.п. —
+  достаточно, чтобы хоть одна восстановленная строка получила текущее время (естественно —
+  `Claim.LastUpdateDateTime` заявок, затронутых восстановлением). Иначе после снятия блокировки
+  `ProjectPerformCloseJob` сочтёт проект давно не обновлявшимся (майские даты) и закроет его.
+  Проект, разблокированный без восстановления, закроется штатно — так и задумано.
+
+## Каталог уведомлений
+
+По коду на 2026-10-10. Даты — даты коммитов, выкат на прод может быть позже.
+
+### Как пишется
+
+- Единственный писатель — `NotificationServiceImpl` (`QueueNotification`, `QueueDirectNotification`).
+  Других путей отправки в окне май–октябрь нет: не попало в Postgres — не отправлялось.
+- **Строка на каждого получателя.** `Body` уже с подставленным приветствием. Инициатор из
+  получателей исключён. Нет получателей — нет записи, событие потеряно.
+- Тип события **не хранится** — определяется по `Header`/`Body`/`EntityReference`.
+- `Body` — markdown. Ссылка на сущность и подпись добавляются при отправке и в БД не попадают
+  (до 2026-06-07 в теле заявки и форума была строка с URL).
+- `EntityReference` — `IProjectEntityId.ToString()`, разбирается `ProjectEntityIdParser.TryParseId`:
+  `Project(p)`, `ClaimId(p-c)`, `ClaimCommentId(p-c-comment)`, `FinanceOperationId(p-c-op)`,
+  `ForumCommentId(p-t-c)`, `ForumThreadId(p-t)`, `PlotElementId(p-f-e)`, `AccommodationRoomId(…)`,
+  `NULL`. С 2026-06-06 у комментариев точный id комментария — ключ дедупликации по получателям.
+- Каналы: `ShowInUi` всегда (строка есть даже без email), email — `Email(…)`, Telegram —
+  `TelegramChatId(…)` (до 2026-08-26 — `TelegramId(…)`).
+
+### Что восстанавливается
+
+| Данные | Откуда | Чего нет |
+|---|---|---|
+| Комментарии к заявкам | полный текст, автор (`InitiatorUserId`), время, id | явной видимости: скрытый = среди получателей нет игрока (эвристика) |
+| Новые заявки, смена статуса, перемещение, смена ответственного | тип действия жирным в теле, персонаж и игрок в `Header` | значений полей анкеты; старого персонажа при перемещении; ответственный — только по имени |
+| Ручные оплаты/возвраты, установка взноса, онлайн-оплаты | суммы | способа оплаты, даты операции, сумм переводов между заявками и модераций |
+| Форум | полный текст, тред, автор | — |
+| Массовые рассылки | полный текст | — |
+| Публикация вводной | факт и комментарий | текста вводной |
+| Пользователи | id, email на момент события, Telegram, факт регистрации (письмо подтверждения) | ФИО, профиля |
+| Поселение и приглашения | списки жильцов | **только с 2026-10-02**, раньше не писалось |
+
+### Не восстанавливается из уведомлений
+
+- **Значения полей заявок и персонажей** — уведомления об изменении полей не отправлялись с
+  2026-02-15. Источник — только выгрузки мастеров.
+- Персонажи и группы, сюжеты, настройки проекта и полей, доступы мастеров, расписание, типы
+  оплаты, переводы между мастерами, профили пользователей.
+- События без получателей (например, скрытый комментарий ответственного мастера без подписчиков).
+
+## Что останется невосстановленным
+
+Изменения после мая (до мая всё есть в бэкапе), которые не вернуть ни одним источником или
+только частично.
+
+**Не восстанавливается**
+
+- **Сюжеты** — тексты вводных и сюжетных элементов: в уведомлениях только факт публикации и
+  комментарий к ней.
+- **Иерархия, описания и настройки групп персонажей.**
+- **Настройки проектов и полей** — тип, видимость, варианты списков: мастер заводит заново.
+- **Персонажи без заявок**, созданные после мая (в логах за последний месяц — только id).
+- **Расписание и таймслоты.**
+- **Поселение до 2026-10-02** — уведомления о заселении писались только с этой даты.
+- **Типы оплаты, переводы между мастерами**, их настройки.
+- **Профили пользователей** — ФИО, контакты, привязки соцсетей (ВК привяжется заново при входе),
+  аватары.
+- **Пользователи, зарегистрированные в последние сутки до аварии** — не восстанавливаем, регистрируются
+  заново.
+- **События без получателей уведомлений** — например, скрытый комментарий ответственного мастера,
+  на который никто не подписан.
+
+**Только частично**
+
+- **Группы персонажей** — имена, id и состав, если есть выгрузка персонажей (колонка «Группы»,
+  фаза 7); иерархию и описания мастер восстанавливает сам; без выгрузки — никак.
+- **Значения полей анкет** — только из выгрузок; без них — игроки заполняют заново, скрытые
+  мастерские поля — из материалов мастера.
+- **Видимость комментариев** — по эвристике: скрытый = среди получателей нет игрока.
+- **Финансы** — онлайн-оплаты — по выгрузке платёжного провайдера; ручные (Cash / Custom) — из
+  уведомлений: сумма есть, тип оплаты — предположительно, дата — по времени уведомления; сумм
+  переводов между заявками и модераций нет.
+- **Мастера проектов** — создатель (по уведомлению админам или предположительно) и бывшие
+  мастера через `FormerMastersBackfillJob`; действующих приглашают заново.
+
+## PR
+
+| PR | Что | Фаза | Статус |
+|---|---|---|---|
+| [#5459](https://github.com/joinrpg/joinrpg-net/issues/5459) | Этот план | — | открыт, draft до конца работ |
+| [#5460](https://github.com/joinrpg/joinrpg-net/issues/5460) | Сдвиг IDENTITY-счётчиков (`scripts/incident-restore/reseed-identities.sql`) | 3 | влит |
+| [#5462](https://github.com/joinrpg/joinrpg-net/issues/5462) | ~~Заморозка очереди уведомлений (Postgres)~~ | 3 | закрыт: очередь пуста |
+| [#5463](https://github.com/joinrpg/joinrpg-net/issues/5463) | Глобальный баннер из конфига (закрывает issue [#5461](https://github.com/joinrpg/joinrpg-net/issues/5461)) | 3 | влит |
+| [#5464](https://github.com/joinrpg/joinrpg-net/issues/5464) | Выключить джобу рекуррентных платежей | 3 | влит |
+| [#5465](https://github.com/joinrpg/joinrpg-net/issues/5465) | Инструмент восстановления потерянных пользователей | 4 | влит |
+| [#5468](https://github.com/joinrpg/joinrpg-net/issues/5468) | Старый Telegram-адрес в очереди не останавливает канал (закрывает issue [#5466](https://github.com/joinrpg/joinrpg-net/issues/5466)) | 3 | влит |
+| [#5470](https://github.com/joinrpg/joinrpg-net/issues/5470) | Выключение ежедневных джоб через конфиг `DailyJobs:Disabled` | 3 | влит |
+| [#5474](https://github.com/joinrpg/joinrpg-net/issues/5474) | Служебные домены `joinrpg.tsarevs.ru`, `id.joinrpg.tsarevs.ru` | 2 | влит |
+| [#5560](https://github.com/joinrpg/joinrpg-net/issues/5560) | Служебные домены dev: `dev.joinrpg.tsarevs.ru`, `dev.id.joinrpg.tsarevs.ru` | 2 | влит |
+| [infra#2](https://github.com/joinrpg/joinrpg-infrastructure/pull/2) | DNS служебных доменов prod и dev (terraform) | 2 | влит, apply сделан |
+| [infra#5](https://github.com/joinrpg/joinrpg-infrastructure/pull/5) | Зона `joinrpg.ru`: одна SPF-запись, битая `yandex-verification`, `www.joinrpg.ru` (terraform) | 2 | на ревью, после мерджа — apply |
+| [#5604](https://github.com/joinrpg/joinrpg-net/issues/5604) | Страница снятия блокировки: предупреждение про «Восстановление проекта» | 6 | влит |
+| [#5609](https://github.com/joinrpg/joinrpg-net/issues/5609) | Ссылки на инструкцию по восстановлению в UI заблокированного проекта | 6 | влит |
+| [docs#293](https://github.com/joinrpg/joinrpg-docs/pull/293) | Инструкция: явный якорь `#for-players` у раздела «Для игроков» | 6 | влит |
+| [#5612](https://github.com/joinrpg/joinrpg-net/issues/5612) | Ссылка из отказа в заявке — на `#for-players` (после docs#293) | 6 | влит |
+| [#5607](https://github.com/joinrpg/joinrpg-net/issues/5607) | Баннер: ссылка на инструкцию для мастеров на docs.joinrpg.ru | 6 | влит |
+| issue [#5603](https://github.com/joinrpg/joinrpg-net/issues/5603) | ~~Добавление мастеров в заблокированный проект~~ — работает | 6 | закрыт |
+| [#5632](https://github.com/joinrpg/joinrpg-net/issues/5632) | Страница снятия блокировки: предупреждение про ручные оплаты | 9 | влит |
+| [docs#296](https://github.com/joinrpg/joinrpg-docs/pull/296) | Инструкция: ручные оплаты — блоком «Ручные оплаты», только в блокировке | 9 | влит |
+| issue [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631) | Блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | закрыт |
+| issue [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630) | Настройки поселения, типов оплаты, групп и правил в заблокированном проекте | 7 | закрыт |
+| [#5637](https://github.com/joinrpg/joinrpg-net/issues/5637) | [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631), PR 1: общий код плана ручных финопераций — в `Services.Drp` и `Managers` | 9 | влит |
+| [#5638](https://github.com/joinrpg/joinrpg-net/issues/5638) | [#5631](https://github.com/joinrpg/joinrpg-net/issues/5631), PR 2: блок «Ручные оплаты» на странице «Восстановление проекта» | 9 | влит |
+| [#5633](https://github.com/joinrpg/joinrpg-net/issues/5633) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 1: поселение в блокировке | 7 | влит |
+| [#5634](https://github.com/joinrpg/joinrpg-net/issues/5634) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 2: финансовые настройки в блокировке | 7 | влит |
+| [#5635](https://github.com/joinrpg/joinrpg-net/issues/5635) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 3: группы персонажей в блокировке | 7 | влит |
+| [#5636](https://github.com/joinrpg/joinrpg-net/issues/5636) | [#5630](https://github.com/joinrpg/joinrpg-net/issues/5630), PR 4: ADR023 — настройки в блокировке | 7 | влит |
+| [docs#297](https://github.com/joinrpg/joinrpg-docs/pull/297) | Инструкция: настройки в блокировке ([#5630](https://github.com/joinrpg/joinrpg-net/issues/5630)) | 7 | влит |
+| [docs#301](https://github.com/joinrpg/joinrpg-docs/pull/301) | Инструкция: поле с именем персонажа — только если оно есть; категории комнат в блокировке | 6 | влит |
+| [#5620](https://github.com/joinrpg/joinrpg-net/issues/5620) | Ложная пометка «Изменено после восстановления» (Closes [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619)) | 7 | влит |
+| [#5640](https://github.com/joinrpg/joinrpg-net/issues/5640) | Не создан — не ссылка на странице восстановления (Closes [#5639](https://github.com/joinrpg/joinrpg-net/issues/5639)) | 7 | влит |
+| [#5654](https://github.com/joinrpg/joinrpg-net/issues/5654) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 1: не принимать заявку на персонажа с принятой | 7 | влит |
+| [#5657](https://github.com/joinrpg/joinrpg-net/issues/5657) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 1b: автоприём только для заявок на шаблон | 7 | влит |
+| [#5665](https://github.com/joinrpg/joinrpg-net/issues/5665) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 2: одобренная заявка на шаблон — на своего персонажа | 7 | влит |
+| [#5668](https://github.com/joinrpg/joinrpg-net/issues/5668) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 3: восстановление по уведомлениям сохраняет шаблоны | 7 | влит |
+| [#5663](https://github.com/joinrpg/joinrpg-net/issues/5663) | [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645), PR 4: тип персонажа из колонки «Занят?» выгрузки | 7 | влит |
+| [#5649](https://github.com/joinrpg/joinrpg-net/issues/5649) | Смена статуса всегда видна игроку (Closes [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641)) | 8 | влит |
+| [#5650](https://github.com/joinrpg/joinrpg-net/issues/5650) | Сумма в уведомлении о переводе между заявками (по [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643)) | 9 | влит |
+| issue [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647) | «Ручные оплаты»: время в двух поясах, итог | 9 | закрыт ([#5690](https://github.com/joinrpg/joinrpg-net/issues/5690)) |
+| issue [#5666](https://github.com/joinrpg/joinrpg-net/issues/5666) | Прод лежал ~14 минут: MSSQL не отвечал | 10 | заведён |
+| issue [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667) | IP клиента не доходит до приложения | 10 | заведён |
+| issue [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671) | Приглашения к проживанию считаются «неразобранными» уведомлениями | 8 | закрыт ([#5672](https://github.com/joinrpg/joinrpg-net/issues/5672)) |
+| [#5672](https://github.com/joinrpg/joinrpg-net/issues/5672) | Приглашения к проживанию не «неразобранные» (Closes [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671)) | 8 | влит |
+| [#5682](https://github.com/joinrpg/joinrpg-net/issues/5682) | [#5677](https://github.com/joinrpg/joinrpg-net/issues/5677), PR 1: видимость — параметром доменных операций | 7 | влит |
+| [#5684](https://github.com/joinrpg/joinrpg-net/issues/5684) | [#5677](https://github.com/joinrpg/joinrpg-net/issues/5677), PR 2: видимость выбирается при каждом применении | 7 | влит, ждёт выкатки |
+| [#5688](https://github.com/joinrpg/joinrpg-net/issues/5688) | [#5677](https://github.com/joinrpg/joinrpg-net/issues/5677), PR 3: группы открываются вслед за персонажем | 7 | влит, ждёт выкатки |
+| [docs#302](https://github.com/joinrpg/joinrpg-docs/pull/302) | Инструкция: выбор видимости, группы вслед за персонажем ([#5677](https://github.com/joinrpg/joinrpg-net/issues/5677)) | 7 | влит |
+| [#5685](https://github.com/joinrpg/joinrpg-net/issues/5685) | Пустое поле-имя не даёт «CHAR-1» (Closes [#5673](https://github.com/joinrpg/joinrpg-net/issues/5673)) | 7 | влит, ждёт выкатки |
+| [#5681](https://github.com/joinrpg/joinrpg-net/issues/5681) | Шаблон без поля имени получает имя персонажа ([#5678](https://github.com/joinrpg/joinrpg-net/issues/5678)) | 7 | закрыт без мерджа |
+| issue [#5678](https://github.com/joinrpg/joinrpg-net/issues/5678) | «Шаблон» с пустым названием в проекте без поля имени | 7 | закрыт: не делаем |
+| issue [#5733](https://github.com/joinrpg/joinrpg-net/issues/5733) | Выбор «шаблон / не шаблон» у новых персонажей | 7 | заведён |
+| [#5690](https://github.com/joinrpg/joinrpg-net/issues/5690) | «Ручные оплаты»: пояс браузера, точный итог (Closes [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647)) | 9 | влит, ждёт выкатки |
+| [#5674](https://github.com/joinrpg/joinrpg-net/issues/5674) | Один остров приглашений на заявке (Closes [#5670](https://github.com/joinrpg/joinrpg-net/issues/5670)) | 10 | влит |
+| [#5689](https://github.com/joinrpg/joinrpg-net/issues/5689) | Одно уведомление о приглашении мастеру (Closes [#5676](https://github.com/joinrpg/joinrpg-net/issues/5676)) | 10 | влит, ждёт выкатки |
+| [#5648](https://github.com/joinrpg/joinrpg-net/issues/5648), [#5653](https://github.com/joinrpg/joinrpg-net/issues/5653), [#5662](https://github.com/joinrpg/joinrpg-net/issues/5662) | Скиллы `prod-db-readonly`, `prod-logs`, `monitor-release` под Selectel (Closes [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582)) | 10 | влиты |
+| issue [#5645](https://github.com/joinrpg/joinrpg-net/issues/5645) | Шаблон восстанавливается как обычный персонаж | 7 | закрыт |
+| issue [#5641](https://github.com/joinrpg/joinrpg-net/issues/5641) | Видимость комментария, менявшего статус заявки | 8 | закрыт |
+| issue [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643) | Восстановление переводов между заявками | 9 | закрыт: не делаем |
+| [docs#294](https://github.com/joinrpg/joinrpg-docs/pull/294) | Инструкция: якорь «Автоматическое закрытие проекта» | 6 | влит |
+| [#5615](https://github.com/joinrpg/joinrpg-net/issues/5615) | Ссылка на автозакрытие по стабильному якорю (после [docs#294](https://github.com/joinrpg/joinrpg-docs/pull/294)) | 6 | влит |
+| [docs#295](https://github.com/joinrpg/joinrpg-docs/pull/295) | Инструкция: якорь «Загрузка аватарки из Вконтакте» | 6 | влит |
+| [#5617](https://github.com/joinrpg/joinrpg-net/issues/5617) | Ссылка на инструкцию про аватарку по стабильному якорю (после [docs#295](https://github.com/joinrpg/joinrpg-docs/pull/295)) | 6 | влит раньше [docs#295](https://github.com/joinrpg/joinrpg-docs/pull/295) |
+| issue [#5619](https://github.com/joinrpg/joinrpg-net/issues/5619) | Ложная пометка «Изменено после восстановления» у заявок | 7 | закрыт |
+| issue [docs#290](https://github.com/joinrpg/joinrpg-docs/issues/290) | Инструкция для мастеров на docs.joinrpg.ru | 6 | закрыт |
+| issue [infra#6](https://github.com/joinrpg/joinrpg-infrastructure/issues/6) | Убрать DNAME на апексе `joinrpg.ru` (остаток хостинга в Yandex Object Storage) | 2 | заведён |
+| [infra#3](https://github.com/joinrpg/joinrpg-infrastructure/pull/3) | DNS dev-хостов и `components.joinrpg.ru` на Selectel (terraform) | 2 | влит, apply сделан |
+| [#5485](https://github.com/joinrpg/joinrpg-net/issues/5485) | Список проектов, созданных после бэкапа (закрывает issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479)) | 4 | влит |
+| [#5504](https://github.com/joinrpg/joinrpg-net/issues/5504) | RestoreLostProjects — в логах только ответы ниже 400 | 4 | влит |
+| issue [#5473](https://github.com/joinrpg/joinrpg-net/issues/5473) | Статус проекта «Заблокирован» | 4 | закрыт |
+| [#5478](https://github.com/joinrpg/joinrpg-net/issues/5478) | ADR023, PR 0: «не в архиве» и «можно менять» у статуса проекта | 4 | влит |
+| [#5480](https://github.com/joinrpg/joinrpg-net/issues/5480) | ADR023, PR 1: `Project.IsBlocked`, статус «Заблокирован», запрет изменений | 4 | влит |
+| [#5482](https://github.com/joinrpg/joinrpg-net/issues/5482) | ADR023, PR 2: проверки в сервисах, фильтры джоб | 4 | влит |
+| [#5484](https://github.com/joinrpg/joinrpg-net/issues/5484) | ADR023, PR 3: снятие блокировки, закрытие, плашка, метки | 6 | влит |
+| [#5508](https://github.com/joinrpg/joinrpg-net/issues/5508) | ADR023: настройка полей в заблокированном проекте; требование к инструментам про дату обновления | 7 | влит |
+| issue [#5479](https://github.com/joinrpg/joinrpg-net/issues/5479) | Список проектов, созданных после мая | 4 | закрыт |
+| issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491) | Оболочки проектов, созданных после мая | 4 | закрыт |
+| [#5509](https://github.com/joinrpg/joinrpg-net/issues/5509) | Оболочки проектов с прежними id (закрывает issue [#5491](https://github.com/joinrpg/joinrpg-net/issues/5491)) | 4 | влит |
+| issue [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492) | Импорт комментариев к заявкам из уведомлений | 8 | закрыт |
+| [#5562](https://github.com/joinrpg/joinrpg-net/issues/5562) | Факты майского бэкапа: `Drp:BackupMax`, `Drp:BackupTakenAt`; `@Known` Users/Comments | 3 | влит |
+| [#5587](https://github.com/joinrpg/joinrpg-net/issues/5587) | https, PR 1: метрика запросов из локальной сети | 1 | влит |
+| [#5590](https://github.com/joinrpg/joinrpg-net/issues/5590) | https, PR 3: теги схемы у счётчика запросов из локальной сети | 1 | влит |
+| [#5588](https://github.com/joinrpg/joinrpg-net/issues/5588) | https, PR 2: редирект HTTP → HTTPS и HSTS в приложении | 1 | влит |
+| [#5586](https://github.com/joinrpg/joinrpg-net/issues/5586) | Health check S3 краснеет, если загрузка аватарки не прошла | 1 | влит |
+| [#5589](https://github.com/joinrpg/joinrpg-net/issues/5589) | Скилл `prod-logs`: k8s-логи не пишутся с переезда | 10 | влит |
+| [#5585](https://github.com/joinrpg/joinrpg-net/issues/5585) | Скилл `selectel-readonly` — чтение настроек Selectel через API | 1 | влит |
+| [#5566](https://github.com/joinrpg/joinrpg-net/issues/5566) | Конфиг dev: S3 Selectel, `PublicBaseUrl` = `avatars.dev.joinrpg.ru` | 1 | влит |
+| [#5565](https://github.com/joinrpg/joinrpg-net/issues/5565) | Конфиг прода: выключенные джобы, S3 Selectel (`Endpoint`, `PublicBaseUrl`), баннер | 3 | влит |
+| issue [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561) | Восстановление ручных финансовых операций (Cash/Custom) из уведомлений | 9 | закрыт |
+| [#5568](https://github.com/joinrpg/joinrpg-net/issues/5568) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 1: планировщик ручных финансовых операций | 9 | влит |
+| [#5569](https://github.com/joinrpg/joinrpg-net/issues/5569) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 2: вставка операций с прежними id | 9 | влит |
+| [#5571](https://github.com/joinrpg/joinrpg-net/issues/5571) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 3: консольный инструмент `RestoreManualFinance` | 9 | влит |
+| [#5567](https://github.com/joinrpg/joinrpg-net/issues/5567) | [#5561](https://github.com/joinrpg/joinrpg-net/issues/5561), PR 4: сверка «Уплачено» из выгрузки с оплатами | 9 | влит |
+| [#5557](https://github.com/joinrpg/joinrpg-net/issues/5557) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 1: планировщик восстановления комментариев | 8 | влит |
+| [#5558](https://github.com/joinrpg/joinrpg-net/issues/5558) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 2: вставка комментариев с прежними id | 8 | влит |
+| [#5559](https://github.com/joinrpg/joinrpg-net/issues/5559) | [#5492](https://github.com/joinrpg/joinrpg-net/issues/5492), PR 3: блок восстановления комментариев на странице | 8 | влит |
+| issue [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526) | Публичный адрес аватарок — `avatars.joinrpg.ru` | 1 | заведён |
+| [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) | Аватарки: адрес из `PublicBaseUrl`, терпимое чтение (PR 1 [#5526](https://github.com/joinrpg/joinrpg-net/issues/5526)) | 1 | влит |
+| issue [#5532](https://github.com/joinrpg/joinrpg-net/issues/5532) | Аватарки: ключ вместо адреса, джоба — **после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530)** | 1 | ждёт выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) на прод |
+| issue [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481) | Восстановление персонажей и заявок: выгрузка мастера + уведомления | 7 | закрыт: ветка «нет выгрузки»; выгрузка — [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) |
+| issue [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529) | Загрузка выгрузки мастера на странице восстановления | 7 | закрыт |
+| [#5536](https://github.com/joinrpg/joinrpg-net/issues/5536) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 1: разбор выгрузок xlsx | 7 | влит |
+| [#5534](https://github.com/joinrpg/joinrpg-net/issues/5534) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 2: сопоставление колонок с полями проекта | 7 | влит |
+| [#5535](https://github.com/joinrpg/joinrpg-net/issues/5535) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 3: режим восстановления полей, применение к персонажу и заявке | 7 | влит |
+| [#5537](https://github.com/joinrpg/joinrpg-net/issues/5537) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 4: группы и персонажи с прежними id | 7 | влит |
+| [#5538](https://github.com/joinrpg/joinrpg-net/issues/5538) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 5: планировщик слияния выгрузок с уведомлениями | 7 | влит |
+| [#5539](https://github.com/joinrpg/joinrpg-net/issues/5539) | [#5529](https://github.com/joinrpg/joinrpg-net/issues/5529), PR 6: страница «Восстановление проекта» с загрузкой выгрузок | 7 | влит |
+| issue [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540) | Деплой в Selectel: токен сервис-аккаунта вместо `KUBECONFIG` | 1 | закрыт |
+| [#5541](https://github.com/joinrpg/joinrpg-net/issues/5541) | Деплой через сервис-аккаунт Selectel, namespace `joinrpg-prod`/`joinrpg-dev` (Closes [#5540](https://github.com/joinrpg/joinrpg-net/issues/5540)) | 1 | влит |
+| issue [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542) | Вернуть автодеплой после переезда | 1 | закрыт |
+| issue [#5582](https://github.com/joinrpg/joinrpg-net/issues/5582) | Скиллы `prod-logs`, `monitor-release`, `prod-db-readonly` — под Selectel | 10 | закрыт |
+| [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) | Автодеплой dev после сборки master (Closes [#5542](https://github.com/joinrpg/joinrpg-net/issues/5542)) | 1 | влит |
+| [#5570](https://github.com/joinrpg/joinrpg-net/issues/5570) | Мигратор проверяет подключение ко всем базам до первой миграции | 1 | влит |
+| [#5576](https://github.com/joinrpg/joinrpg-net/issues/5576) | Мигратор запускает Seed: виртуальные пользователи на пустой базе | 1 | влит |
+| [#5494](https://github.com/joinrpg/joinrpg-net/issues/5494) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): выборка уведомлений по заявкам проекта, индекс по `EntityReference` | 7 | влит |
+| [#5501](https://github.com/joinrpg/joinrpg-net/issues/5501) | `FinanceOperationIdentification` с вложенным `ClaimIdentification` (по ревью [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496)) | 7 | влит |
+| [#5496](https://github.com/joinrpg/joinrpg-net/issues/5496) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): разбор уведомлений в события и состояние заявки | 7 | влит |
+| [#5499](https://github.com/joinrpg/joinrpg-net/issues/5499) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): восстановление состояния заявки — «изменить» | 7 | влит |
+| [#5502](https://github.com/joinrpg/joinrpg-net/issues/5502) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): потерянная заявка с прежним id — «создать» | 7 | влит |
+| [#5503](https://github.com/joinrpg/joinrpg-net/issues/5503) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): план восстановления — одно действие на заявку | 7 | влит |
+| [#5506](https://github.com/joinrpg/joinrpg-net/issues/5506) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): страница мастера «Восстановление заявок из уведомлений» | 7 | влит |
+| [#5512](https://github.com/joinrpg/joinrpg-net/issues/5512) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): вариант «Новый персонаж» в выборе персонажа | 7 | влит |
+| [#5511](https://github.com/joinrpg/joinrpg-net/issues/5511) | [#5481](https://github.com/joinrpg/joinrpg-net/issues/5481): тест — восстановление поднимает дату обновления проекта | 7 | влит |
+| issue [#5489](https://github.com/joinrpg/joinrpg-net/issues/5489) | ~~Пользователи, зарегистрированные в последние сутки до аварии~~ | 4 | закрыт: не делаем |
