@@ -102,7 +102,7 @@ internal interface IProjectPropsService
 
     /// <summary>
     /// То же, что <see cref="ChangeProjectProperties{TArgs}"/>, но мутация асинхронная: нужна, когда
-    /// после проверки прав и до сохранения надо выполнить запись мимо <c>SaveChanges</c>
+    /// после проверки прав и до сохранения надо дождаться загрузки из БД
     /// (<see cref="ProjectMutationContext{TArgs}.RevokeSensitiveDataConsents"/>).
     /// </summary>
     Task ChangeProjectPropertiesAsync<TArgs>(
