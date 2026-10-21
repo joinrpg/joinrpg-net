@@ -176,6 +176,111 @@ public class JoinUserLinkEditorTest
     }
 
     /// <summary>
+    /// Причина отказа сервера (неверный формат, пользователь не найден) показывается как есть.
+    /// </summary>
+    [Fact]
+    public void ServerRefusal_ShowsServerText()
+    {
+        using var ctx = CreateContext(new FakeUserLinkResolveClient { Failure = new ServerProblemException("Неверный формат ссылки на пользователя") });
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, ["vk.com/"]));
+
+        cut.Find(".join-user-link-editor-status").TextContent.Trim().ShouldBe("Неверный формат ссылки на пользователя");
+    }
+
+    /// <summary>
+    /// При пререндере работает серверная реализация клиента — она отказывает через FormatException.
+    /// </summary>
+    [Fact]
+    public void ServerSideImplementationRefusal_ShowsItsText()
+    {
+        using var ctx = CreateContext(new FakeUserLinkResolveClient { Failure = new FormatException("Пользователь 123 не найден.") });
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, ["123"]));
+
+        cut.Markup.ShouldContain("Пользователь 123 не найден.");
+    }
+
+    /// <summary>
+    /// Сбой (5xx, обрыв сети) — не «пользователь не найден»: показываем общий текст, а не английское
+    /// сообщение исключения.
+    /// </summary>
+    [Fact]
+    public void UnexpectedFailure_ShowsGenericText_NotExceptionMessage()
+    {
+        using var ctx = CreateContext(new FakeUserLinkResolveClient
+        {
+            Failure = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway)."),
+        });
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, ["123"])
+            .Add(x => x.Name, "field_1"));
+
+        cut.Markup.ShouldContain("Не удалось проверить пользователя");
+        cut.Markup.ShouldNotContain("Bad Gateway");
+        cut.Markup.ShouldNotContain("не найден");
+        cut.Find("input[type=hidden]").GetAttribute("value").ShouldBe("");
+    }
+
+    /// <summary>
+    /// Сбой не запоминается: после повторного ввода той же строки её проверяют снова.
+    /// </summary>
+    [Fact]
+    public void TransientFailure_IsRetriedOnNextInput()
+    {
+        var client = new FakeUserLinkResolveClient
+        {
+            Users = { ["123"] = (123, "Вася Пупкин") },
+            Failure = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway)."),
+            FailOnce = true,
+        };
+        using var ctx = CreateContext(client);
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, [])
+            .Add(x => x.Name, "field_1"));
+
+        cut.Find("input[type=text]").Change("123");
+        cut.Markup.ShouldContain("Не удалось проверить пользователя");
+
+        cut.Find("input[type=text]").Change("123");
+
+        cut.Markup.ShouldContain("Вася Пупкин");
+        cut.Find("input[type=hidden]").GetAttribute("value").ShouldBe("123");
+        client.CallCount.ShouldBe(2);
+    }
+
+    /// <summary>
+    /// Отказ, в отличие от сбоя, запоминается: та же строка повторно не проверяется.
+    /// </summary>
+    [Fact]
+    public void Refusal_IsNotRequestedAgain()
+    {
+        var client = new FakeUserLinkResolveClient();
+        using var ctx = CreateContext(client);
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, []));
+
+        cut.Find("input[type=text]").Change("кто-то");
+        cut.Find("input[type=text]").Change("кто-то");
+
+        client.CallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Наследники FormatException (UriFormatException и т. п.) несут английский текст — это сбой, а не отказ.
+    /// </summary>
+    [Fact]
+    public void FormatExceptionSubclass_ShowsGenericText()
+    {
+        using var ctx = CreateContext(new FakeUserLinkResolveClient { Failure = new UriFormatException("Invalid URI: The format of the URI could not be determined.") });
+        var cut = ctx.Render<JoinUserLinkEditor>(p => p
+            .Add(x => x.Values, ["123"]));
+
+        cut.Markup.ShouldContain("Не удалось проверить пользователя");
+        cut.Markup.ShouldNotContain("Invalid URI");
+    }
+
+    /// <summary>
     /// После ввода строки мастер видит, кого он вписал, а не голый id.
     /// </summary>
     [Fact]
@@ -234,12 +339,21 @@ public class JoinUserLinkEditorTest
 
         public int CallCount { get; private set; }
 
+        public Exception? Failure { get; init; }
+
+        /// <summary>Бросить <see cref="Failure"/> только на первом вызове.</summary>
+        public bool FailOnce { get; init; }
+
         public Task<UserLinkViewModel> ResolveUserLink(string userLink)
         {
             CallCount++;
+            if (Failure is not null && !(FailOnce && CallCount > 1))
+            {
+                throw Failure;
+            }
             return Users.TryGetValue(userLink, out var user)
                 ? Task.FromResult(new UserLinkViewModel(new UserIdentification(user.UserId), user.Name, ViewMode.Show))
-                : throw new InvalidOperationException($"Пользователь «{userLink}» не найден.");
+                : throw new ServerProblemException($"Пользователь «{userLink}» не найден.");
         }
     }
 

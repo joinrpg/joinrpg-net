@@ -1,6 +1,7 @@
 @using System.Linq.Expressions
 @using Microsoft.Extensions.DependencyInjection
 @inject IServiceProvider Services
+@inject ILogger<JoinUserLinkEditor> Logger
 
 @for (var i = 0; i < RowsToRender.Count; i++)
 {
@@ -72,7 +73,8 @@
 
     private FieldIdentifier fieldIdentifier;
 
-    private sealed record ResolveState(UserLinkViewModel? User, string? Error);
+    /// <param name="IsTransient">Сбой, а не ответ: такой результат не запоминаем и при следующей правке строки спрашиваем снова.</param>
+    private sealed record ResolveState(UserLinkViewModel? User, string? Error, bool IsTransient = false);
 
     /// <summary>
     /// Клиент резолва берётся из DI мягко: если хост его не зарегистрировал, компонент работает
@@ -131,7 +133,7 @@
     private async Task ResolveIfNeededAsync(string value)
     {
         var key = Key(value);
-        if (resolveClient is null || !initialized || key.Length == 0 || resolved.ContainsKey(key))
+        if (resolveClient is null || !initialized || key.Length == 0 || resolved.TryGetValue(key, out var known) && !known.IsTransient)
         {
             return;
         }
@@ -146,11 +148,19 @@
             var user = await resolveClient.ResolveUserLink(key);
             resolved[key] = new ResolveState(user, null);
         }
-        catch (Exception exception)
+        // FormatException бросает серверная реализация клиента при пререндере — её текст тоже для пользователя.
+        // Ровно этот тип: у наследников вроде UriFormatException текст английский
+        catch (Exception exception) when (exception is ServerProblemException || exception.GetType() == typeof(FormatException))
         {
             resolved[key] = new ResolveState(
                 null,
                 string.IsNullOrWhiteSpace(exception.Message) ? "Пользователь не найден" : exception.Message);
+        }
+        catch (Exception exception)
+        {
+            // Саму строку в лог не пишем: это может быть email или телеграм
+            Logger.LogError(exception, "Ошибка при поиске пользователя по ссылке");
+            resolved[key] = new ResolveState(null, "Не удалось проверить пользователя, попробуйте ещё раз", IsTransient: true);
         }
         finally
         {

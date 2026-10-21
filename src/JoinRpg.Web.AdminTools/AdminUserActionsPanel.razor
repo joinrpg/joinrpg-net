@@ -17,6 +17,11 @@
     return;
 }
 
+@if (actionError is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@actionError</JoinAlert>
+}
+
 <JoinButtonGroup Vertical="true">
     <a href="#" class="disabled btn btn-default">Функции администратора:</a>
 
@@ -100,6 +105,7 @@
 
     private UserAdminPanelViewModel? panel;
     private bool isError;
+    private string? actionError;
 
     private JoinFormDialog<ChangeEmailFormModel> changeEmailDialog = default!;
     private readonly ChangeEmailFormModel emailModel = new();
@@ -127,8 +133,7 @@
             var result = await changeEmailDialog.ShowModalAsync();
             if (result is not null)
             {
-                await UserAdminClient.ChangeEmail(UserId, result.NewEmail);
-                NavigationManager.Refresh(forceReload: true);
+                await RunAsync(() => UserAdminClient.ChangeEmail(UserId, result.NewEmail), "Не удалось изменить email");
             }
         }
         finally
@@ -137,23 +142,14 @@
         }
     }
 
-    private async Task ToggleAdminAsync(ButtonClickEventArgs args)
-    {
-        await UserAdminClient.SetAdminFlag(UserId, !panel!.IsAdmin);
-        NavigationManager.Refresh(forceReload: true);
-    }
+    private Task ToggleAdminAsync(ButtonClickEventArgs args)
+        => RunAsync(() => UserAdminClient.SetAdminFlag(UserId, !panel!.IsAdmin), "Не удалось изменить права администратора", args);
 
-    private async Task ToggleVerificationAsync(ButtonClickEventArgs args)
-    {
-        await UserAdminClient.SetVerificationFlag(UserId, !panel!.IsVerifiedUser);
-        NavigationManager.Refresh(forceReload: true);
-    }
+    private Task ToggleVerificationAsync(ButtonClickEventArgs args)
+        => RunAsync(() => UserAdminClient.SetVerificationFlag(UserId, !panel!.IsVerifiedUser), "Не удалось изменить подтверждение профиля", args);
 
-    private async Task RemoveVkLinkAsync(ButtonClickEventArgs args)
-    {
-        await UserAdminClient.RemoveVkLink(UserId);
-        NavigationManager.Refresh(forceReload: true);
-    }
+    private Task RemoveVkLinkAsync(ButtonClickEventArgs args)
+        => RunAsync(() => UserAdminClient.RemoveVkLink(UserId), "Не удалось отвязать ВК", args);
 
     private async Task OpenBirthDateDialogAsync(ButtonClickEventArgs args)
     {
@@ -163,8 +159,7 @@
             var result = await birthDateDialog.ShowModalAsync();
             if (result is not null)
             {
-                await UserAdminClient.SetBirthDate(UserId, result.Value);
-                NavigationManager.Refresh(forceReload: true);
+                await RunAsync(() => UserAdminClient.SetBirthDate(UserId, result.Value), "Не удалось изменить дату рождения");
             }
         }
         finally
@@ -173,10 +168,40 @@
         }
     }
 
-    private async Task ClearBirthDateAsync(ButtonClickEventArgs args)
+    private Task ClearBirthDateAsync(ButtonClickEventArgs args)
+        => RunAsync(() => UserAdminClient.SetBirthDate(UserId, null), "Не удалось очистить дату рождения", args);
+
+    /// <summary>
+    /// Действие меняет данные на всей странице пользователя, поэтому после успеха перезагружаем её целиком.
+    /// </summary>
+    private async Task RunAsync(Func<Task> action, string failureText, ButtonClickEventArgs? args = null)
     {
-        await UserAdminClient.SetBirthDate(UserId, null);
-        NavigationManager.Refresh(forceReload: true);
+        actionError = null;
+        try
+        {
+            await action();
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (ServerProblemException ex)
+        {
+            // Например, нет прав или сессия истекла — причину показываем как есть
+            actionError = $"{failureText}: {ex.Message}";
+            ExitProgress(args);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка действия администратора над пользователем {UserId}", UserId.Value);
+            actionError = failureText;
+            ExitProgress(args);
+        }
+    }
+
+    private static void ExitProgress(ButtonClickEventArgs? args)
+    {
+        if (args is not null)
+        {
+            args.ExitProgressState = true;
+        }
     }
 
     public class ChangeEmailFormModel

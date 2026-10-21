@@ -10,16 +10,7 @@ internal class UserLinkResolveClientImpl(HttpClient httpClient, CsrfTokenProvide
             $"webapi/user-link/Resolve?userLink={Uri.EscapeDataString(userLink)}",
             null);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            throw new Exception(
-                string.IsNullOrWhiteSpace(errorMessage)
-                    ? "Не удалось определить пользователя"
-                    : errorMessage.Trim('"'));
-        }
-
-        return await response.Content.ReadFromJsonAsync<UserLinkViewModel>()
-            ?? throw new Exception("Не удалось получить результат с сервера");
+        // «Пользователь не найден», «неверный формат ссылки» приходят JSON-строкой — редактор покажет их как есть
+        return await response.ReadFromJsonOrThrowProblem<UserLinkViewModel>();
     }
 }

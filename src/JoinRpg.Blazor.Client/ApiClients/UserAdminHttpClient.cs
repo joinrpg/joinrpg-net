@@ -5,47 +5,33 @@ namespace JoinRpg.Blazor.Client.ApiClients;
 public class UserAdminHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenProvider) : IUserAdminClient
 {
     public async Task<UserAdminPanelViewModel> GetAdminPanel(UserIdentification userId)
-        => await httpClient.GetFromJsonAsync<UserAdminPanelViewModel>($"webapi/UserAdmin/GetAdminPanel?userId={userId.Value}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync($"webapi/UserAdmin/GetAdminPanel?userId={userId.Value}"))
+            .ReadFromJsonOrThrowProblem<UserAdminPanelViewModel>();
 
-    public async Task RemoveVkLink(UserIdentification userId)
+    public Task RemoveVkLink(UserIdentification userId)
+        => Post($"webapi/UserAdmin/RemoveVkLink?userId={userId.Value}");
+
+    public Task SetAdminFlag(UserIdentification userId, bool value)
+        => Post($"webapi/UserAdmin/SetAdminFlag?userId={userId.Value}&value={value}");
+
+    public Task SetVerificationFlag(UserIdentification userId, bool value)
+        => Post($"webapi/UserAdmin/SetVerificationFlag?userId={userId.Value}&value={value}");
+
+    public Task ChangeEmail(UserIdentification userId, string newEmail)
+        => Post($"webapi/UserAdmin/ChangeEmail?userId={userId.Value}&newEmail={Uri.EscapeDataString(newEmail)}");
+
+    public Task SetBirthDate(UserIdentification userId, DateOnly? birthDate)
     {
-        await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsync($"webapi/UserAdmin/RemoveVkLink?userId={userId.Value}", content: null);
-
-        response.EnsureSuccessStatusCode();
-    }
-
-    public async Task SetAdminFlag(UserIdentification userId, bool value)
-    {
-        await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsync($"webapi/UserAdmin/SetAdminFlag?userId={userId.Value}&value={value}", content: null);
-
-        response.EnsureSuccessStatusCode();
-    }
-
-    public async Task SetVerificationFlag(UserIdentification userId, bool value)
-    {
-        await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsync($"webapi/UserAdmin/SetVerificationFlag?userId={userId.Value}&value={value}", content: null);
-
-        response.EnsureSuccessStatusCode();
-    }
-
-    public async Task ChangeEmail(UserIdentification userId, string newEmail)
-    {
-        await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsync($"webapi/UserAdmin/ChangeEmail?userId={userId.Value}&newEmail={Uri.EscapeDataString(newEmail)}", content: null);
-
-        response.EnsureSuccessStatusCode();
-    }
-
-    public async Task SetBirthDate(UserIdentification userId, DateOnly? birthDate)
-    {
-        await csrfTokenProvider.SetCsrfToken(httpClient);
         var query = birthDate is null ? "" : $"&birthDate={birthDate.Value:yyyy-MM-dd}";
-        var response = await httpClient.PostAsync($"webapi/UserAdmin/SetBirthDate?userId={userId.Value}{query}", content: null);
+        return Post($"webapi/UserAdmin/SetBirthDate?userId={userId.Value}{query}");
+    }
 
-        response.EnsureSuccessStatusCode();
+    private async Task Post(string uri)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = await httpClient.PostAsync(uri, content: null);
+
+        // Отказ (например, нет прав администратора) панель показывает как есть
+        await response.EnsureSuccessOrThrowProblem();
     }
 }
