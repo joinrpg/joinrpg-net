@@ -1,4 +1,5 @@
 using Bunit;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using Microsoft.AspNetCore.Components;
@@ -97,6 +98,54 @@ public class AccommodationTypeSelectorTest : BunitContext
         cut.Markup.ShouldContain("отменит существующие договоренности");
     }
 
+    private async Task<IRenderedComponent<AccommodationTypeSelector>> SaveSelectedType()
+    {
+        client.NextChoice = new AccommodationTypeChoiceViewModel(
+            [Type(1, "Палатка")],
+            SelectedTypeId: new AccommodationTypeIdentification(ProjectId, 1),
+            RoomAssigned: false,
+            HasNeighbours: false);
+        var cut = RenderSelector();
+
+        await cut.ClickAndConfirm("Изменить…", "Варианты проживания", "Сохранить проживание");
+        return cut;
+    }
+
+    /// <summary>
+    /// Причину отказа сервера (например, проект в архиве) игрок видит как есть (#5735).
+    /// </summary>
+    [Fact]
+    public async Task RefusalReasonIsShown()
+    {
+        client.Failure = new ServerProblemException("Проект находится в архиве, изменить проживание уже нельзя");
+
+        var cut = await SaveSelectedType();
+
+        cut.WaitForAssertion(() => VisibleError(cut).ShouldBe("Проект находится в архиве, изменить проживание уже нельзя"));
+        client.Saved.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task UnexpectedFailureShowsGenericText()
+    {
+        client.Failure = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).");
+
+        var cut = await SaveSelectedType();
+
+        cut.WaitForAssertion(() => VisibleError(cut).ShouldBe("Не удалось сохранить тип проживания. Попробуйте ещё раз."));
+        cut.Markup.ShouldNotContain("Bad Gateway");
+    }
+
+    /// <summary>
+    /// Сохранение идёт после закрытия диалога: ошибка внутри закрытого &lt;dialog&gt; игроку не видна.
+    /// </summary>
+    private static string VisibleError(IRenderedComponent<AccommodationTypeSelector> cut)
+    {
+        var alert = cut.FindAll(".alert-danger").ShouldHaveSingleItem();
+        alert.Closest("dialog").ShouldBeNull();
+        return alert.TextContent.Trim();
+    }
+
     private sealed class FakeAccommodationTypeClient : IAccommodationTypeClient
     {
         public AccommodationTypeChoiceViewModel NextChoice { get; set; } =
@@ -104,13 +153,16 @@ public class AccommodationTypeSelectorTest : BunitContext
 
         public List<(ClaimIdentification ClaimId, AccommodationTypeIdentification TypeId)> Saved { get; } = [];
 
+        /// <summary>Чем завершается сохранение. <c>null</c> — успехом.</summary>
+        public Exception? Failure { get; set; }
+
         public Task<AccommodationTypeChoiceViewModel> GetAccommodationTypes(ClaimIdentification claimId)
             => Task.FromResult(NextChoice);
 
         public Task SetAccommodationType(ClaimIdentification claimId, AccommodationTypeIdentification typeId)
         {
             Saved.Add((claimId, typeId));
-            return Task.CompletedTask;
+            return Failure is null ? Task.CompletedTask : Task.FromException(Failure);
         }
     }
 }

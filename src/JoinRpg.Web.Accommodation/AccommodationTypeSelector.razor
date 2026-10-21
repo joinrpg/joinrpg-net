@@ -3,6 +3,7 @@
 @using JoinRpg.Common.WebComponents.Dialog
 @inject IAccommodationTypeClient Client
 @inject NavigationManager NavigationManager
+@inject ILogger<AccommodationTypeSelector> Logger
 
 @if (model is not null)
 {
@@ -47,13 +48,14 @@
                     </label>
                 </div>
             }
-
-            @if (errorMessage is not null)
-            {
-                <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
-            }
         </ChildContent>
     </JoinDialog>
+
+    @* Сохранение идёт уже после закрытия диалога, поэтому ошибку показываем рядом с кнопкой *@
+    @if (errorMessage is not null)
+    {
+        <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+    }
 }
 
 @code {
@@ -96,9 +98,15 @@
             // Смена типа переселяет игрока и рушит приглашения — перезагружаем страницу целиком
             NavigationManager.Refresh(forceReload: true);
         }
+        catch (ServerProblemException exception)
+        {
+            // Отказ сервера (проект в архиве, нет прав) — с понятной игроку причиной
+            errorMessage = exception.Message;
+        }
         catch (Exception exception)
         {
-            errorMessage = exception.Message;
+            Logger.LogError(exception, "Не удалось сменить тип проживания для заявки {ClaimId}", ClaimId);
+            errorMessage = "Не удалось сохранить тип проживания. Попробуйте ещё раз.";
         }
     }
 }

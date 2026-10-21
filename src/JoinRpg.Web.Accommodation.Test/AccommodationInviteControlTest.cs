@@ -1,4 +1,5 @@
 using Bunit;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using Microsoft.AspNetCore.Components;
@@ -171,5 +172,61 @@ public class AccommodationInviteControlTest : BunitContext
         cut.Markup.ShouldNotContain("Пока");
     }
 
+    private async Task<IRenderedComponent<AccommodationInviteControl>> InviteSingleTarget(AccommodationInviteMode mode)
+    {
+        var target = SingleTarget(11);
+        client.NextTargets = new AccommodationInviteTargetsViewModel(SenderRequestId, RoomFreeSpace: 3, Targets: [target], mode);
+        var module = JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+        _ = module.Setup<List<string>>("getSelectedValues", _ => true).SetResult([target.TargetId.ToString()]);
 
+        var cut = RenderControl();
+        cut.Find("select").Change(target.TargetId.ToString());
+
+        if (mode == AccommodationInviteMode.Merge)
+        {
+            await cut.ClickAndConfirm("Поселить вместе", "Объединить в одну группу проживания?", "Поселить вместе");
+        }
+        else
+        {
+            await cut.ClickAndConfirm("Пригласить", "Отправить приглашение", "Пригласить");
+        }
+        return cut;
+    }
+
+    /// <summary>
+    /// Причину отказа сервера (например, проект в архиве) игрок видит как есть (#5735).
+    /// </summary>
+    [Fact]
+    public async Task InviteRefusalReasonIsShown()
+    {
+        client.Failure = new ServerProblemException("Проект находится в архиве, изменить проживание уже нельзя");
+
+        var cut = await InviteSingleTarget(AccommodationInviteMode.Invite);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Проект находится в архиве, изменить проживание уже нельзя"));
+        client.CreatedInvites.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task InviteUnexpectedFailureShowsGenericText()
+    {
+        client.Failure = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).");
+
+        var cut = await InviteSingleTarget(AccommodationInviteMode.Invite);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось отправить приглашение. Попробуйте ещё раз."));
+        cut.Markup.ShouldNotContain("Bad Gateway");
+    }
+
+    [Fact]
+    public async Task MergeUnexpectedFailureShowsGenericText()
+    {
+        client.Failure = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).");
+
+        var cut = await InviteSingleTarget(AccommodationInviteMode.Merge);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось поселить вместе. Попробуйте ещё раз."));
+        cut.Markup.ShouldNotContain("Bad Gateway");
+        client.MergedGroups.Count.ShouldBe(1);
+    }
 }

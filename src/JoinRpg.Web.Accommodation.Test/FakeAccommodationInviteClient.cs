@@ -16,19 +16,25 @@ internal sealed class FakeAccommodationInviteClient : IAccommodationInviteClient
 
     public List<(string Action, AccommodationInviteIdentification InviteId)> Answers { get; } = [];
 
+    /// <summary>
+    /// Чем завершаются действия (пригласить, поселить вместе, ответить). <c>null</c> — успехом.
+    /// Отказ сервера клиент передаёт как <see cref="JoinRpg.Common.WebComponents.ServerProblemException"/>.
+    /// </summary>
+    public Exception? Failure { get; set; }
+
     public Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId)
         => Task.FromResult(NextTargets);
 
     public Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
     {
         CreatedInvites.Add((claimId, target));
-        return Task.CompletedTask;
+        return Complete();
     }
 
     public Task MergeGroups(ClaimIdentification claimId, AccommodationGroupIdentification target)
     {
         MergedGroups.Add((claimId, target));
-        return Task.CompletedTask;
+        return Complete();
     }
 
     public Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
@@ -45,6 +51,8 @@ internal sealed class FakeAccommodationInviteClient : IAccommodationInviteClient
     private Task Record(string action, AccommodationInviteIdentification inviteId)
     {
         Answers.Add((action, inviteId));
-        return Task.CompletedTask;
+        return Complete();
     }
+
+    private Task Complete() => Failure is null ? Task.CompletedTask : Task.FromException(Failure);
 }

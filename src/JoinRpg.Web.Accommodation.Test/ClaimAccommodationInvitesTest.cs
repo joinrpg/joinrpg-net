@@ -141,6 +141,40 @@ public class ClaimAccommodationInvitesTest : BunitContext
         cut.FindAll("button").ShouldBeEmpty();
     }
 
+    private async Task<IRenderedComponent<ClaimAccommodationInvites>> AcceptIncomingInvite()
+    {
+        client.NextInvites[InviteDirection.Incoming] = [Invite(1, InviteState.Unanswered)];
+        var cut = RenderInvites();
+
+        await cut.ClickAndConfirm("Принять", "Принять приглашение к совместному проживанию?", "Принять");
+        return cut;
+    }
+
+    /// <summary>
+    /// Причину отказа сервера (например, приглашение уже отозвано) игрок видит как есть (#5735).
+    /// </summary>
+    [Fact]
+    public async Task RefusalReasonIsShown()
+    {
+        client.Failure = new ServerProblemException("Приглашение уже отозвано");
+
+        var cut = await AcceptIncomingInvite();
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Приглашение уже отозвано"));
+        client.Answers.ShouldHaveSingleItem().Action.ShouldBe(nameof(IAccommodationInviteClient.AcceptInvite));
+    }
+
+    [Fact]
+    public async Task UnexpectedFailureShowsGenericText()
+    {
+        client.Failure = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).");
+
+        var cut = await AcceptIncomingInvite();
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось принять приглашение. Попробуйте ещё раз."));
+        cut.Markup.ShouldNotContain("Bad Gateway");
+    }
+
     private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
     {
         public Uri GetUri(UserLinkViewModel target) => new($"https://example.com/user/{target.UserId!.Value}");
