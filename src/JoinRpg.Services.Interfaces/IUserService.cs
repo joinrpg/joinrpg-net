@@ -5,6 +5,12 @@ public interface IUserService
     Task UpdateProfile(int userId, UserFullName userFullName, Gender gender, string phoneNumber, string nicknames, string groupNames, string livejournal, ContactsAccessType socialNetworkAccess, string passportData, string registrationAddress, DateOnly? birthDate);
     Task SetAdminFlag(int userId, bool administratorFlag);
     Task SetVerificationFlag(int userId, bool verificationFlag);
+
+    /// <summary>
+    /// Current user removes verification from own profile to be able to edit verified fields.
+    /// Only admin can verify profile again. NOP if profile is not verified.
+    /// </summary>
+    Task RemoveOwnVerification();
     /// <summary>
     /// Set user name data if not set already.
     /// All access check fortfeit (cause is method typically called during login, so ICurrentUserAccessor could be old).

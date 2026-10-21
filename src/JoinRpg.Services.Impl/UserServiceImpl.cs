@@ -94,6 +94,19 @@ public class UserServiceImpl(
     }
 
     /// <inheritdoc />
+    public async Task RemoveOwnVerification()
+    {
+        var user = await UserRepository.GetById(CurrentUserId);
+        if (!user.VerifiedProfileFlag)
+        {
+            return;
+        }
+        user.VerifiedProfileFlag = false;
+        await UnitOfWork.SaveChangesAsync();
+        logger.LogInformation("User {userId} removed verification from own profile", CurrentUserId);
+    }
+
+    /// <inheritdoc />
     public async Task SetBirthDate(UserIdentification userId, DateOnly? birthDate)
     {
         if (!IsCurrentUserAdmin)

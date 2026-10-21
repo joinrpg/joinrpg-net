@@ -48,6 +48,14 @@ public class ManageController(
         return RedirectToAction("SetupProfile", new { Message = message });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> RemoveVerification()
+    {
+        await userService.RemoveOwnVerification();
+        return RedirectToAction("SetupProfile", new { Message = ManageMessageId.RemoveVerificationSuccess });
+    }
+
     //
     // GET: /Manage/ChangePassword
     public ActionResult ChangePassword() => View();

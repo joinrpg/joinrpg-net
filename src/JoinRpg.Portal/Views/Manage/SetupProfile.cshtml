@@ -19,6 +19,7 @@
             ManageMessageId.ChangePasswordSuccess => "Пароль изменен",
             ManageMessageId.SetPasswordSuccess => "Пароль установлен",
             ManageMessageId.RemoveLoginSuccess => "Соцсеть отвязана",
+            ManageMessageId.RemoveVerificationSuccess => "Подтверждение снято. Теперь вы можете изменить ФИО, телефон и паспортные данные",
             _ => "Неизвестная ошибка",
         })
         @if (Model.Message == ManageMessageId.SocialLoginAlreadyLinked && Model.ConflictingAccountUrl != null)
@@ -90,7 +91,8 @@
         @if (Model.IsVerifiedFlag)
         {
             <div class="alert alert-success">
-                Ваш профиль подтвержден администраторами. Если вы хотите изменить свое ФИО, телефон или паспортные данные, обращайтесь в техподдержку.
+                Ваш профиль подтвержден администраторами, поэтому ФИО, телефон и паспортные данные изменить нельзя.
+                Чтобы их поправить, <a href="#remove-verification">снимите подтверждение профиля</a>.
             </div>
 
             <div class="form-group">
@@ -277,6 +279,22 @@
             </div>
         </div>
     </div>
+}
+
+@if (Model.IsVerifiedFlag)
+{
+    <details id="remove-verification">
+        <summary>Снять подтверждение профиля…</summary>
+        <div class="alert alert-warning">
+            <p>
+                После снятия подтверждения вы сможете изменить ФИО, телефон и паспортные данные.
+                Вернуть подтверждение сможет только администратор.
+            </p>
+            <form asp-controller="Manage" asp-action="RemoveVerification" method="post">
+                <button type="submit" class="btn btn-warning">Снять подтверждение</button>
+            </form>
+        </div>
+    </details>
 }
 
 <h3 id="social">Соцсети</h3>

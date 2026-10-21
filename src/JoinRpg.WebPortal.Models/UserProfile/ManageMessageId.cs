@@ -7,4 +7,5 @@ public enum ManageMessageId
     RemoveLoginSuccess,
     Error,
     SocialLoginAlreadyLinked,
+    RemoveVerificationSuccess,
 }
