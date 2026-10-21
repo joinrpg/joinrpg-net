@@ -73,6 +73,11 @@ internal partial class ClosedXmlExcelBackend : IGeneratorBackend
             case DateTime time:
                 _ = xlCell.SetValue(time);
                 break;
+            case DateOnly date:
+                // Настоящая дата Excel (сортируется и фильтруется), но без времени.
+                _ = xlCell.SetValue(date.ToDateTime(TimeOnly.MinValue));
+                xlCell.Style.DateFormat.Format = "dd.MM.yyyy";
+                break;
             case Uri uri:
                 _ = xlCell.SetValue(uri.AbsoluteUri);
                 xlCell.GetHyperlink().ExternalAddress = uri;

@@ -52,6 +52,9 @@ public record class ClaimListItemForExportViewModel(
     [property: Display(Name = "Льготник")] bool PreferentialFeeUser,
     [property: Display(Name = "Паспортные данные")] string? PassportData,
     [property: Display(Name = "Адрес")] string? RegistrationAddress,
+    // Парсер выгрузки DRP эту колонку не узнаёт: она попадает в кандидаты в поля проекта (см. MasterExportColumns).
+    // «игрока» — чтобы не дублировать заголовок частого поля проекта «Дата рождения».
+    [property: Display(Name = "Дата рождения игрока")] DateOnly? BirthDate,
     IReadOnlyDictionary<ProjectFieldIdentification, string> FieldValues,
     // Доменный UserInfo вместо EF-сущности User: выгрузке нужны имя, почта и контакты, и все они
     // приезжают загруженными пачкой, без ленивых навигаций на каждую строку.

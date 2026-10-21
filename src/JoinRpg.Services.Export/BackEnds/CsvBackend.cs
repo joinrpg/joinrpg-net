@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using JoinRpg.Services.Export.Internal;
 using JoinRpg.Services.Interfaces;
@@ -16,7 +17,12 @@ internal class CsvBackend : IGeneratorBackend
     public void WriteRow(IEnumerable<Cell> cells)
       => Builder.AppendLine(string.Join(",", cells.Select(GetContentForCsv)));
 
-    private static string GetContentForCsv(Cell c) => EscapeForCsv(c.Content?.ToString());
+    private static string GetContentForCsv(Cell c) => EscapeForCsv(c.Content switch
+    {
+        // Явный формат: ToString() у DateOnly зависит от культуры сервера.
+        DateOnly date => date.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture),
+        var content => content?.ToString(),
+    });
 
     private static string EscapeForCsv(string? value)
     {

@@ -37,10 +37,16 @@ public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo 
             yield return c;
         }
 
-        if (projectInfo.ProfileRequirementSettings.SensitiveDataRequired && !projectInfo.IsArchived)
+        var requirements = projectInfo.ProfileRequirementSettings;
+        // Паспорт и адрес — парой: так их узнаёт парсер выгрузки DRP (MasterExportColumns.PassportBlock).
+        if ((requirements.PassportRequested || requirements.RegistrationAddressRequested) && !projectInfo.IsArchived)
         {
             yield return StringColumn(x => x.PassportData);
             yield return StringColumn(x => x.RegistrationAddress);
+        }
+        if (requirements.BirthDateRequested && !projectInfo.IsArchived)
+        {
+            yield return DateOnlyColumn(x => x.BirthDate);
         }
 
         foreach (var projectField in projectInfo.SortedFields.Where(f => f.CanHaveValue))
