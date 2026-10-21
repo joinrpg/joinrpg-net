@@ -26,6 +26,18 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             new Handle(mock, character));
     }
 
+    public Task<int> RevokeSensitiveDataConsents(ProjectIdentification projectId)
+    {
+        var consented = mock.Project.Claims
+            .Where(c => c.ProjectId == projectId.Value && c.PlayerAllowedSenstiveData)
+            .ToList();
+        foreach (var claim in consented)
+        {
+            claim.PlayerAllowedSenstiveData = false;
+        }
+        return Task.FromResult(consented.Count);
+    }
+
     /// <summary>Мок — один проект, поэтому «в любом проекте» значит «в этом».</summary>
     public Task<bool> IsClaimIdTaken(int claimId) => Task.FromResult(mock.Project.Claims.Any(c => c.ClaimId == claimId));
 

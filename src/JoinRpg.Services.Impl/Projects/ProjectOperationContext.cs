@@ -30,13 +30,21 @@ internal abstract record ProjectMutationContext(
 /// <summary>
 /// Контекст изменения метаданных проекта с типизированными аргументами операции (<see cref="Request"/>).
 /// </summary>
+/// <param name="RevokeSensitiveDataConsents">
+/// Отзыв согласия на защищённые данные у всех заявок проекта (#5706) — единственный выход операции над
+/// проектом за границу агрегата персонажа (ADR014). Пишет сразу, мимо <c>SaveChanges</c>, поэтому звать
+/// его до сохранения: упадёт сохранение — согласие окажется отозвано зря, но новые данные по старому
+/// согласию не откроются. Доступен только из асинхронной мутации
+/// (<see cref="IProjectPropsService.ChangeProjectPropertiesAsync{TArgs}"/>).
+/// </param>
 internal sealed record ProjectMutationContext<TArgs>(
     Project Project,
     ProjectInfo ProjectInfo,
     DateTimeOffset Now,
     ICurrentUserAccessor CurrentUser,
     TArgs Request,
-    Action<object> RemovePermanently)
+    Action<object> RemovePermanently,
+    Func<Task<int>> RevokeSensitiveDataConsents)
     : ProjectMutationContext(Project, ProjectInfo, Now, CurrentUser, RemovePermanently);
 
 /// <summary>

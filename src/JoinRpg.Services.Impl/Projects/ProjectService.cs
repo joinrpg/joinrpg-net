@@ -158,11 +158,24 @@ internal class ProjectService(
 
     public async Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings)
     {
-        await projectPropsService.ChangeProjectProperties(projectId,
+        await projectPropsService.ChangeProjectPropertiesAsync(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             settings,
-            ctx =>
+            async ctx =>
             {
+                // Согласие игрок давал на прежний набор защищённых данных — на новый его надо спросить заново.
+                if (ctx.Request.RequestsNewSensitiveDataComparedTo(ctx.ProjectInfo.ProfileRequirementSettings))
+                {
+                    var revoked = await ctx.RevokeSensitiveDataConsents();
+                    if (revoked > 0) // у нового проекта (клонирование) заявок нет — шуметь в лог незачем
+                    {
+                        logger.LogInformation(
+                            "Проект {projectId} запросил новые защищённые данные, отозвано согласий: {revokedCount}",
+                            projectId,
+                            revoked);
+                    }
+                }
+
                 ctx.Project.Details.RequireRealName = ctx.Request.RequireRealName;
                 ctx.Project.Details.RequirePhone = ctx.Request.RequirePhone;
                 ctx.Project.Details.RequireVkontakte = ctx.Request.RequireVkontakte;

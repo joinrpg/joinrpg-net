@@ -357,6 +357,15 @@ public record ProjectProfileRequirementSettings(
     /// <see cref="BirthDateRequested"/> по каждому полю.
     /// </summary>
     public bool SensitiveDataRequired => PassportRequested || RegistrationAddressRequested || BirthDateRequested;
+
+    /// <summary>
+    /// Проект стал запрашивать защищённые данные, которых не запрашивал в <paramref name="previous"/>.
+    /// Согласие игрока давалось на прежний набор, поэтому на новый его нужно спрашивать заново.
+    /// </summary>
+    public bool RequestsNewSensitiveDataComparedTo(ProjectProfileRequirementSettings previous)
+        => (PassportRequested && !previous.PassportRequested)
+        || (RegistrationAddressRequested && !previous.RegistrationAddressRequested)
+        || (BirthDateRequested && !previous.BirthDateRequested);
 }
 
 public record ProjectClaimSettings(

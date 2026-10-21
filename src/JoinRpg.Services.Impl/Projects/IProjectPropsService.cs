@@ -101,6 +101,19 @@ internal interface IProjectPropsService
         [CallerMemberName] string operationName = "");
 
     /// <summary>
+    /// То же, что <see cref="ChangeProjectProperties{TArgs}"/>, но мутация асинхронная: нужна, когда
+    /// после проверки прав и до сохранения надо выполнить запись мимо <c>SaveChanges</c>
+    /// (<see cref="ProjectMutationContext{TArgs}.RevokeSensitiveDataConsents"/>).
+    /// </summary>
+    Task ChangeProjectPropertiesAsync<TArgs>(
+        ProjectIdentification projectId,
+        Permission? requiredPermission,
+        ProjectActiveRequirement activeRequirement,
+        TArgs arguments,
+        Func<ProjectMutationContext<TArgs>, Task> action,
+        [CallerMemberName] string operationName = "");
+
+    /// <summary>
     /// Создаёт новый проект: <paramref name="factory"/> строит EF-сущность <see cref="Project"/>
     /// (используя <see cref="ProjectCreationContext{TArgs}"/> для аудита), сервис добавляет её в БД
     /// и сохраняет. Единственная точка создания <see cref="Project"/>.
