@@ -23,15 +23,23 @@
             await Client.UnOccupyAll(ProjectId);
             NavigationManager.Refresh(forceReload: true);
         }
+        catch (ServerProblemException exception)
+        {
+            // Например, проект заблокирован — причину показываем как есть
+            ShowError(args, $"Произошла ошибка при выселении: {exception.Message}");
+        }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Ошибка при выселении всех в проекте {ProjectId}", ProjectId);
-            error = exception is AccommodationRoomsOperationRefusedException
-                ? $"Произошла ошибка при выселении: {exception.Message}"
-                : "Произошла ошибка при выселении";
-            args.ExitProgressState = true;
-            StateHasChanged();
-            _ = errorDialog.ShowModalAsync();
+            ShowError(args, "Произошла ошибка при выселении");
         }
+    }
+
+    private void ShowError(ButtonClickEventArgs args, string text)
+    {
+        error = text;
+        args.ExitProgressState = true;
+        StateHasChanged();
+        _ = errorDialog.ShowModalAsync();
     }
 }

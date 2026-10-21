@@ -202,12 +202,14 @@ else
             await Client.RenameRoomCategory(new RoomCategoryIdentification(ProjectId, category.Id), result);
             model!.RoomCategory = category with { Name = result.Name.Trim() };
         }
+        catch (ServerProblemException exception)
+        {
+            errorMessage = exception.Message;
+        }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Не удалось переименовать категорию комнат");
-            errorMessage = exception is InvalidOperationException
-                ? exception.Message
-                : "Не удалось переименовать категорию комнат. Попробуйте ещё раз.";
+            errorMessage = "Не удалось переименовать категорию комнат. Попробуйте ещё раз.";
         }
         finally
         {
@@ -233,12 +235,14 @@ else
             // Список типов — MVC-страница, поэтому переход полной загрузкой.
             NavigationManager.NavigateTo(ListUri, forceLoad: true);
         }
+        catch (ServerProblemException exception)
+        {
+            errorMessage = exception.Message;
+        }
         catch (Exception exception)
         {
             Logger.LogError(exception, "Не удалось сохранить тип проживания");
-            errorMessage = exception is InvalidOperationException
-                ? exception.Message
-                : "Не удалось сохранить тип поселения. Попробуйте ещё раз.";
+            errorMessage = "Не удалось сохранить тип поселения. Попробуйте ещё раз.";
         }
         finally
         {

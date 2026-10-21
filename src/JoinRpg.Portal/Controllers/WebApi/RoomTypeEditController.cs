@@ -103,8 +103,7 @@ public class RoomTypeEditController(IRoomTypeEditClient client) : ControllerBase
         }
         catch (JoinRpgEntityNotFoundException)
         {
-            // Повторное нажатие или тип уже удалили в соседней вкладке. 400, а не 404: текст причины
-            // HTTP-клиент острова показывает только для 400.
+            // Повторное нажатие или тип уже удалили в соседней вкладке.
             return BadRequest("Тип проживания не найден — возможно, его уже удалили");
         }
     }

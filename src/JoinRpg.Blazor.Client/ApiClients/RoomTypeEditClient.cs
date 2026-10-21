@@ -1,4 +1,3 @@
-using System.Net;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Web.Accommodation;
 
@@ -7,13 +6,13 @@ namespace JoinRpg.Blazor.Client.ApiClients;
 internal class RoomTypeEditClient(HttpClient httpClient, CsrfTokenProvider csrfTokenProvider) : IRoomTypeEditClient
 {
     public async Task<RoomTypeEditViewModel> GetRoomType(AccommodationTypeIdentification roomTypeId)
-        => await httpClient.GetFromJsonAsync<RoomTypeEditViewModel>(
-            $"webapi/room-type/get?projectId={roomTypeId.ProjectId.Value}&roomTypeId={roomTypeId.AccommodationTypeId}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync(
+            $"webapi/room-type/get?projectId={roomTypeId.ProjectId.Value}&roomTypeId={roomTypeId.AccommodationTypeId}"))
+            .ReadFromJsonOrThrowProblem<RoomTypeEditViewModel>();
 
     public async Task<RoomTypeEditViewModel> GetNewRoomType(ProjectIdentification projectId)
-        => await httpClient.GetFromJsonAsync<RoomTypeEditViewModel>($"webapi/room-type/new?projectId={projectId.Value}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync($"webapi/room-type/new?projectId={projectId.Value}"))
+            .ReadFromJsonOrThrowProblem<RoomTypeEditViewModel>();
 
     public Task CreateRoomType(ProjectIdentification projectId, RoomTypeEditViewModel model)
         => Post($"webapi/room-type/create?projectId={projectId.Value}", model);
@@ -38,12 +37,7 @@ internal class RoomTypeEditClient(HttpClient httpClient, CsrfTokenProvider csrfT
         await csrfTokenProvider.SetCsrfToken(httpClient);
         var response = await httpClient.PostAsync(uri, content);
 
-        // Ошибки валидации приходят текстом, чтобы форма могла показать их мастеру
-        if (response.StatusCode == HttpStatusCode.BadRequest)
-        {
-            throw new InvalidOperationException(await response.Content.ReadAsStringAsync());
-        }
-
-        _ = response.EnsureSuccessStatusCode();
+        // Ошибки валидации и отказы домена форма показывает мастеру
+        await response.EnsureSuccessOrThrowProblem();
     }
 }

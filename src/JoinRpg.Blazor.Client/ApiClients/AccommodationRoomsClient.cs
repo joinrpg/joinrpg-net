@@ -1,4 +1,3 @@
-using System.Net;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Web.Accommodation.Rooms;
 
@@ -8,40 +7,37 @@ public class AccommodationRoomsClient(HttpClient httpClient, CsrfTokenProvider c
     : IAccommodationRoomsClient
 {
     public async Task<RoomTypeRoomsViewModel> GetRooms(AccommodationTypeIdentification typeId)
-        => await httpClient.GetFromJsonAsync<RoomTypeRoomsViewModel>(
-            $"webapi/accommodation-rooms/GetRooms?projectId={typeId.ProjectId.Value}&roomTypeId={typeId}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync(
+            $"webapi/accommodation-rooms/GetRooms?projectId={typeId.ProjectId.Value}&roomTypeId={typeId}"))
+            .ReadFromJsonOrThrowProblem<RoomTypeRoomsViewModel>();
 
     public async Task<RoomTypeRoomsViewModel> AddRooms(AccommodationTypeIdentification typeId, string roomNames)
-    {
-        var response = await Post(typeId.ProjectId, "AddRooms", new AddRoomsRequest(typeId, roomNames));
-        return await response.Content.ReadFromJsonAsync<RoomTypeRoomsViewModel>()
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await Post(typeId.ProjectId, "AddRooms", new AddRoomsRequest(typeId, roomNames)))
+            .ReadFromJsonOrThrowProblem<RoomTypeRoomsViewModel>();
 
     public async Task RenameRoom(AccommodationRoomIdentification roomId, string name)
-        => await Post(roomId.ProjectId, "RenameRoom", new RenameRoomRequest(roomId, name));
+        => await (await Post(roomId.ProjectId, "RenameRoom", new RenameRoomRequest(roomId, name))).EnsureSuccessOrThrowProblem();
 
     public async Task DeleteRoom(AccommodationRoomIdentification roomId)
-        => await Post(roomId.ProjectId, "DeleteRoom", roomId);
+        => await (await Post(roomId.ProjectId, "DeleteRoom", roomId)).EnsureSuccessOrThrowProblem();
 
     public async Task OccupyRoom(
         AccommodationRoomIdentification roomId,
         IReadOnlyCollection<AccommodationRequestIdentification> groupIds)
-        => await Post(roomId.ProjectId, "OccupyRoom", new OccupyRoomRequest(roomId, groupIds));
+        => await (await Post(roomId.ProjectId, "OccupyRoom", new OccupyRoomRequest(roomId, groupIds))).EnsureSuccessOrThrowProblem();
 
     public async Task UnOccupyGroup(AccommodationRequestIdentification groupId)
-        => await Post(groupId.ProjectId, "UnOccupyGroup", groupId);
+        => await (await Post(groupId.ProjectId, "UnOccupyGroup", groupId)).EnsureSuccessOrThrowProblem();
 
     public async Task UnOccupyRoom(AccommodationRoomIdentification roomId)
-        => await Post(roomId.ProjectId, "UnOccupyRoom", roomId);
+        => await (await Post(roomId.ProjectId, "UnOccupyRoom", roomId)).EnsureSuccessOrThrowProblem();
 
     public async Task UnOccupyRoomType(AccommodationTypeIdentification typeId)
-        => await Post(typeId.ProjectId, "UnOccupyRoomType", typeId);
+        => await (await Post(typeId.ProjectId, "UnOccupyRoomType", typeId)).EnsureSuccessOrThrowProblem();
 
     // Тела нет: проект — в адресе.
     public async Task UnOccupyAll(ProjectIdentification projectId)
-        => await Send(projectId, "UnOccupyAll", content: null);
+        => await (await Send(projectId, "UnOccupyAll", content: null)).EnsureSuccessOrThrowProblem();
 
     private Task<HttpResponseMessage> Post<TBody>(ProjectIdentification projectId, string action, TBody body)
         => Send(projectId, action, JsonContent.Create(body));
@@ -49,20 +45,8 @@ public class AccommodationRoomsClient(HttpClient httpClient, CsrfTokenProvider c
     private async Task<HttpResponseMessage> Send(ProjectIdentification projectId, string action, HttpContent? content)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsync(
+        return await httpClient.PostAsync(
             $"webapi/accommodation-rooms/{action}?projectId={projectId.Value}",
             content);
-
-        // Причину отказа сервер отдаёт текстом, чтобы контрол мог показать её мастеру
-        if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
-        {
-            var reason = await response.Content.ReadAsStringAsync();
-            if (!string.IsNullOrWhiteSpace(reason))
-            {
-                throw new AccommodationRoomsOperationRefusedException(reason);
-            }
-        }
-
-        return response.EnsureSuccessStatusCode();
     }
 }

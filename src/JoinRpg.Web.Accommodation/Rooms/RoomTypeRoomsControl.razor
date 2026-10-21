@@ -407,9 +407,14 @@
 
     private void ShowError(Exception exception, string text)
     {
+        // Отказ сервера с причиной (не хватает мест, проект заблокирован) — не сбой, в лог как ошибку не пишем
+        if (exception is ServerProblemException)
+        {
+            ShowMessage(MessageDialogType.Fail, $"{text}: {exception.Message}");
+            return;
+        }
         Logger.LogError(exception, "Ошибка операции над комнатами: {Text}", text);
-        var reason = exception is AccommodationRoomsOperationRefusedException ? exception.Message : null;
-        ShowMessage(MessageDialogType.Fail, reason is null ? text : $"{text}: {reason}");
+        ShowMessage(MessageDialogType.Fail, text);
     }
 
     private void ShowMessage(MessageDialogType type, string text)

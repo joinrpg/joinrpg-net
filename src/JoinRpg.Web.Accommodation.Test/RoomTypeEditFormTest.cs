@@ -1,5 +1,6 @@
 using Bunit;
 using Bunit.TestDoubles;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using Microsoft.AspNetCore.Components;
@@ -240,7 +241,7 @@ public class RoomTypeEditFormTest : BunitContext
     [Fact]
     public async Task EditForm_RenameFailure_KeepsNameAndShowsError()
     {
-        client.Error = new InvalidOperationException("Укажите название категории");
+        client.Error = new ServerProblemException("Укажите название категории");
         var cut = RenderEditInSharedCategory();
 
         await SubmitRename(cut, "Корпус Б");
@@ -286,7 +287,7 @@ public class RoomTypeEditFormTest : BunitContext
     [Fact]
     public void ServerError_IsShownInForm()
     {
-        client.Error = new InvalidOperationException("Проект закрыт");
+        client.Error = new ServerProblemException("Проект закрыт");
         var cut = RenderCreate();
 
         cut.Find("input[type=text]").Change("Шатёр");
@@ -294,6 +295,19 @@ public class RoomTypeEditFormTest : BunitContext
 
         cut.Markup.ShouldContain("Проект закрыт");
         Services.GetRequiredService<BunitNavigationManager>().Uri.ShouldNotEndWith("/rooms");
+    }
+
+    [Fact]
+    public void UnexpectedFailure_ShowsGenericTextNotExceptionMessage()
+    {
+        client.Error = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).");
+        var cut = RenderCreate();
+
+        cut.Find("input[type=text]").Change("Шатёр");
+        cut.Find("form").Submit();
+
+        cut.Markup.ShouldContain("Не удалось сохранить тип поселения. Попробуйте ещё раз.");
+        cut.Markup.ShouldNotContain("Bad Gateway");
     }
 
     private sealed class FakeUriLocator : IAccommodationUriLocator
