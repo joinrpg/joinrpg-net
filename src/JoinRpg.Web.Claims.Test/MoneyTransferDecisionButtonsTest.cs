@@ -1,4 +1,5 @@
 using Bunit.TestDoubles;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.Web.Claims.Finance;
 using Microsoft.AspNetCore.Components.Web;
@@ -71,7 +72,7 @@ public class MoneyTransferDecisionButtonsTest : BunitContext
     [Fact]
     public async Task ShouldShowServerRejectionReason()
     {
-        client.FailWith = new InvalidOperationException("Этот перевод уже подтверждён или отклонён.");
+        client.FailWith = new ServerProblemException("Этот перевод уже подтверждён или отклонён.");
         var cut = RenderButtons();
 
         await ClickAndConfirm(cut, "Отклонить");
@@ -83,12 +84,26 @@ public class MoneyTransferDecisionButtonsTest : BunitContext
     [Fact]
     public async Task ShouldShowErrorWhenServerFails()
     {
-        client.FailWith = new HttpRequestException("500");
+        client.FailWith = new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).");
         var cut = RenderButtons();
 
         await ClickAndConfirm(cut, "Подтвердить");
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось сохранить решение по переводу"));
+        cut.Markup.ShouldNotContain("Bad Gateway");
+    }
+
+    [Fact]
+    public async Task ShouldNotShowMessageOfUnexpectedInvalidOperation()
+    {
+        // Раньше InvalidOperationException считалось отказом сервера и его текст уходил мастеру
+        client.FailWith = new InvalidOperationException("Sequence contains no elements");
+        var cut = RenderButtons();
+
+        await ClickAndConfirm(cut, "Отклонить");
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось сохранить решение по переводу"));
+        cut.Markup.ShouldNotContain("Sequence contains no elements");
     }
 
     private class FakeMoneyTransferClient : IMoneyTransferClient
