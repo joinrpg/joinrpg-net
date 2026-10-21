@@ -1,5 +1,6 @@
 @inject IMasterAccessClient accessClient
 @inject NavigationManager navigationManager
+@inject ILogger<MasterPermissionsPanel> logger
 @implements IDisposable
 
 @if (Model is null)
@@ -35,15 +36,15 @@
 {
     <JoinAlert Variation="VariationStyleEnum.Success">Права доступа сохранены</JoinAlert>
 }
-@if (failed)
+@if (errorMessage is not null)
 {
-    <JoinAlert Variation="VariationStyleEnum.Danger">Неизвестная серверная ошибка при сохранении прав</JoinAlert>
+    <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
 }
 
 @code {
     private EditContext? editContext;
     private bool success;
-    private bool failed;
+    private string? errorMessage;
 
     private MasterPermissionsViewModel? Model { get; set; }
 
@@ -70,20 +71,29 @@
 
     private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
     {
-        success = failed = false;
+        success = false;
+        errorMessage = null;
         StateHasChanged();
     }
 
     private async Task HandleValidSubmit()
     {
-        success = failed = false;
+        success = false;
+        errorMessage = null;
         try
         {
             await accessClient.SavePermissions(Model!);
         }
-        catch
+        catch (ServerProblemException exception)
         {
-            failed = true;
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            errorMessage = exception.Message;
+            return;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка при сохранении прав мастера в проекте {ProjectId}", ProjectId);
+            errorMessage = "Неизвестная серверная ошибка при сохранении прав";
             return;
         }
         if (Model!.IsFormerMaster)
