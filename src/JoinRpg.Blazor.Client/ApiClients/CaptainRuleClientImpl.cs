@@ -10,9 +10,8 @@ internal class CaptainRuleClientImpl(
 {
     public async Task<CaptainRuleListViewModel> GetList(ProjectIdentification projectId)
     {
-        return await httpClient.GetFromJsonAsync<CaptainRuleListViewModel>(
-             $"webapi/captain-rule/getlist?projectId={projectId.Value}")
-             ?? throw new Exception("Couldn't get result from server");
+        return await (await httpClient.GetAsync($"webapi/captain-rule/getlist?projectId={projectId.Value}"))
+            .ReadFromJsonOrThrowProblem<CaptainRuleListViewModel>();
     }
     public async Task Remove(CaptainAccessRule rule)
     {
@@ -20,9 +19,9 @@ internal class CaptainRuleClientImpl(
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsJsonAsync($"webapi/captain-rule/remove?projectId={rule.ProjectId.Value}", rule);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;
@@ -35,14 +34,9 @@ internal class CaptainRuleClientImpl(
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsJsonAsync($"webapi/captain-rule/addorchange?projectId={rule.ProjectId.Value}", rule);
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<CaptainRuleListViewModel>()
-                ?? throw new Exception("Empty");
-
+            return await response.ReadFromJsonOrThrowProblem<CaptainRuleListViewModel>();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during access");
             throw;

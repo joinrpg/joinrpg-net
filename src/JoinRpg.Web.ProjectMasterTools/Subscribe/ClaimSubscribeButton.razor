@@ -1,6 +1,7 @@
 @using JoinRpg.DomainTypes
 @using JoinRpg.DomainTypes.Users
 @inject IGameSubscribeClient Client
+@inject ILogger<ClaimSubscribeButton> Logger
 
 @if (model is null)
 {
@@ -38,6 +39,10 @@ else
         </TitleContent>
     </JoinButton>
 }
+@if (error is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@error</JoinAlert>
+}
 
 @code {
     [PersistentState]
@@ -51,15 +56,31 @@ else
         model ??= await Client.GetSubscribeForClaim(ClaimId);
     }
 
-    private async Task OnSubscribeClicked(ButtonClickEventArgs args)
-    {
-        model = await Client.SubscribeClaimToUser(ClaimId);
-        args.ExitProgressState = true;
-    }
+    private string? error;
 
-    private async Task OnUnsubscribeClicked(ButtonClickEventArgs args)
+    private Task OnSubscribeClicked(ButtonClickEventArgs args)
+        => Change(args, () => Client.SubscribeClaimToUser(ClaimId), "Не удалось подписаться на заявку");
+
+    private Task OnUnsubscribeClicked(ButtonClickEventArgs args)
+        => Change(args, () => Client.UnsubscribeClaimToUser(ClaimId), "Не удалось отписаться от заявки");
+
+    private async Task Change(ButtonClickEventArgs args, Func<Task<ClaimSubscribeViewModel>> action, string failureText)
     {
-        model = await Client.UnsubscribeClaimToUser(ClaimId);
+        error = null;
+        try
+        {
+            model = await action();
+        }
+        catch (ServerProblemException exception)
+        {
+            // Например, проект заблокирован — причину показываем как есть
+            error = exception.Message;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка при изменении подписки на заявку {ClaimId}", ClaimId);
+            error = failureText;
+        }
         args.ExitProgressState = true;
     }
 }

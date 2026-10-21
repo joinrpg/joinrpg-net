@@ -1,10 +1,16 @@
 @using JoinRpg.Web.ProjectCommon
 @using Microsoft.JSInterop
 @inject IGameSubscribeClient Client
+@inject ILogger<MasterSubscribeList> Logger
 @if (model is null)
 {
   <JoinLoadingMessage />
   return;
+}
+
+@if (error is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@error</JoinAlert>
 }
 
 @if (addingModel is not null)
@@ -81,16 +87,64 @@ else
 
     async Task OnRemoveRow(SubscribeListItemViewModel item)
     {
-        model!.Items.Remove(item);
-        await Client.RemoveSubscription(ProjectId, item.UserSubscriptionId);
+        var items = model!.Items;
+        var idx = items.IndexOf(item);
+        if (idx < 0)
+        {
+            return;
+        }
+        items.RemoveAt(idx);
+        error = null;
+        try
+        {
+            await Client.RemoveSubscription(ProjectId, item.UserSubscriptionId);
+        }
+        catch (ServerProblemException exception)
+        {
+            // Например, проект заблокирован — причину показываем как есть
+            error = exception.Message;
+            items.Insert(idx, item);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка при удалении подписки {UserSubscriptionId}", item.UserSubscriptionId);
+            error = "Не удалось отписаться";
+            items.Insert(idx, item);
+        }
     }
 
     private async Task OnAddRow(EditSubscribeViewModel added)
     {
-        await Client.SaveGroupSubscription(ProjectId, added);
+        error = null;
+        try
+        {
+            await Client.SaveGroupSubscription(ProjectId, added);
+        }
+        catch (ServerProblemException exception)
+        {
+            error = exception.Message;
+            return;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка при добавлении подписки мастера {MasterId}", MasterId);
+            error = "Не удалось сохранить подписку";
+            return;
+        }
         addingModel = null;
-        model = await Client.GetSubscribeForMaster(ProjectId, MasterId);
+        try
+        {
+            model = await Client.GetSubscribeForMaster(ProjectId, MasterId);
+        }
+        catch (Exception exception)
+        {
+            // Подписка уже сохранена — не предлагаем сохранить её ещё раз
+            Logger.LogError(exception, "Ошибка при обновлении списка подписок мастера {MasterId}", MasterId);
+            error = "Подписка сохранена, но список не обновился — обновите страницу";
+        }
     }
+
+    private string? error;
 
     private void OnAddClicked()
     {

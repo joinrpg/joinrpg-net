@@ -14,6 +14,10 @@
       Порядок менять пока нельзя, но автоматически более специфичная группа (например, «Гриффиндор»)
       окажется раньше менее специфичной (например, «Ученики Хогвартса»).
     </p>
+    @if (_error is not null)
+    {
+      <JoinAlert Variation="VariationStyleEnum.Danger">@_error</JoinAlert>
+    }
     @if (Adding)
     {
             <AddResponsibleMasterRuleForm OnSubmit="PerformAdd" OnCancelAdd="() => Adding = false" ProjectId="@ProjectId" />
@@ -70,13 +74,21 @@
         var idx = items.IndexOf(item);
 
         items.RemoveAt(idx);
+        _error = null;
         try
         {
             await Client.RemoveResponsibleMasterRule(ProjectIdentification, item.Id);
         }
+        catch (ServerProblemException exc)
+        {
+            // Например, проект заблокирован — причину показываем как есть
+            _error = exc.Message;
+            items.Insert(idx, item);
+        }
         catch (Exception exc)
         {
             logger.LogError(exc, "Error during remove resp master");
+            _error = "Не удалось удалить правило";
             items.Insert(idx, item);
         }
     }
@@ -84,6 +96,7 @@
     async Task PerformAdd(AddRespMasterRuleViewModel model)
     {
         Adding = false;
+        _error = null;
 
         _model!.Items.Insert(
           0,
@@ -98,13 +111,20 @@
 
             _model = await Client.AddResponsibleMasterRule(ProjectIdentification, model.Group.CharacterGroupId.CharacterGroupId, model.Master.UserId.Value);
         }
+        catch (ServerProblemException exc)
+        {
+            _error = exc.Message;
+            _model!.Items.RemoveAt(0);
+        }
         catch (Exception exc)
         {
             logger.LogError(exc, "Error during add resp master");
+            _error = "Не удалось добавить правило";
             _model!.Items.RemoveAt(0);
         }
     }
 
+    private string? _error;
 
 
 }
