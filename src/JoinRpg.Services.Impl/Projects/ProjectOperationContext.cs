@@ -32,9 +32,8 @@ internal abstract record ProjectMutationContext(
 /// </summary>
 /// <param name="RevokeSensitiveDataConsents">
 /// Отзыв согласия на защищённые данные у всех заявок проекта (#5706) — единственный выход операции над
-/// проектом за границу агрегата персонажа (ADR014). Пишет сразу, мимо <c>SaveChanges</c>, поэтому звать
-/// его до сохранения: упадёт сохранение — согласие окажется отозвано зря, но новые данные по старому
-/// согласию не откроются. Доступен только из асинхронной мутации
+/// проектом за границу агрегата персонажа (ADR014). Изменения уходят в тот же <c>SaveChanges</c>, что и
+/// новые настройки проекта: сохраняются вместе или не сохраняются вовсе. Доступен только из асинхронной мутации
 /// (<see cref="IProjectPropsService.ChangeProjectPropertiesAsync{TArgs}"/>).
 /// </param>
 internal sealed record ProjectMutationContext<TArgs>(

@@ -12,8 +12,8 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 
 /// <summary>
 /// #5706: когда проект начинает запрашивать новые защищённые данные, согласие у его заявок
-/// отзывается массовым UPDATE мимо <c>SaveChanges</c>. Проверяется на настоящей базе: юнит-тесты
-/// видят только фейк, а здесь важны сам SQL и то, что чужой проект он не задевает.
+/// отзывается в том же <c>SaveChanges</c>, что и новые настройки. Проверяется на настоящей базе: юнит-тесты
+/// видят только фейк, а здесь важны настоящий запрос и то, что чужой проект он не задевает.
 /// </summary>
 public class SensitiveDataConsentRevocationScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {

@@ -162,21 +162,6 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         claim.PlayerAllowedSenstiveData.ShouldBeTrue();
     }
 
-    // Порядок «отзыв до сохранения» выбран нарочно: упало сохранение — согласие отозвано зря,
-    // но новые данные по старому согласию не откроются.
-    [Fact]
-    public async Task SetContactSettings_SaveFails_ConsentsAlreadyRevoked()
-    {
-        var claim = mock.CreateClaim(mock.Character, mock.Player);
-        claim.PlayerAllowedSenstiveData = true;
-        unitOfWork.OnSaveChanges = _ => throw new InvalidOperationException("Сбой БД");
-
-        _ = await Should.ThrowAsync<InvalidOperationException>(() => CreateService()
-            .SetContactSettings(ProjectId, mock.ProjectInfo.ProfileRequirementSettings with { RequirePassport = MandatoryStatus.Recommended }));
-
-        claim.PlayerAllowedSenstiveData.ShouldBeFalse();
-    }
-
     // Настройки контактов разрешены и на время восстановления (ADR023) — отзыв тоже.
     [Fact]
     public async Task SetContactSettings_BlockedProject_RevokesConsents()
