@@ -40,6 +40,11 @@
             await ProjectFieldOperationsClient.CreateVariants(new FieldValuesMassAddRequest(FieldId, result.ValuesToAdd));
             NavigationManager.Refresh(forceReload: true);
         }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            errorMessage = ex.Message;
+        }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Ошибка при добавлении нескольких значений поля");

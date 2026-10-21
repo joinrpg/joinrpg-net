@@ -15,9 +15,9 @@ internal class ProjectFieldOperationsClientImpl(
             var response = await httpClient.PostAsJsonAsync(
                 $"webapi/project-field-operations/delete?projectId={fieldId.ProjectId.Value}",
                 fieldId);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during field delete");
             throw;
@@ -32,9 +32,9 @@ internal class ProjectFieldOperationsClientImpl(
             var response = await httpClient.PostAsJsonAsync(
                 $"webapi/project-field-operations/deletevariant?projectId={variantId.FieldId.ProjectId.Value}",
                 variantId);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during field variant delete");
             throw;
@@ -49,9 +49,9 @@ internal class ProjectFieldOperationsClientImpl(
             var response = await httpClient.PostAsJsonAsync(
                 $"webapi/project-field-operations/deleteunusedvariants?projectId={fieldId.ProjectId.Value}",
                 fieldId);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during unused field variants delete");
             throw;
@@ -66,9 +66,9 @@ internal class ProjectFieldOperationsClientImpl(
             var response = await httpClient.PostAsJsonAsync(
                 $"webapi/project-field-operations/createtimeslots?projectId={request.FieldId.ProjectId.Value}",
                 request);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during time slots mass creation");
             throw;
@@ -83,9 +83,9 @@ internal class ProjectFieldOperationsClientImpl(
             var response = await httpClient.PostAsJsonAsync(
                 $"webapi/project-field-operations/sorttimeslotsbystarttime?projectId={fieldId.ProjectId.Value}",
                 fieldId);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during time slots sort");
             throw;
@@ -100,9 +100,9 @@ internal class ProjectFieldOperationsClientImpl(
             var response = await httpClient.PostAsJsonAsync(
                 $"webapi/project-field-operations/sortvariantsbylabel?projectId={fieldId.ProjectId.Value}",
                 fieldId);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during field variants sort");
             throw;
@@ -117,9 +117,9 @@ internal class ProjectFieldOperationsClientImpl(
             var response = await httpClient.PostAsJsonAsync(
                 $"webapi/project-field-operations/createvariants?projectId={request.FieldId.ProjectId.Value}",
                 request);
-            response.EnsureSuccessStatusCode();
+            await response.EnsureSuccessOrThrowProblem();
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not ServerProblemException)
         {
             logger.LogError(e, "Error during field variants mass creation");
             throw;
@@ -127,9 +127,9 @@ internal class ProjectFieldOperationsClientImpl(
     }
 
     public async Task<ProjectFieldSettingsViewModel> GetFieldSettings(ProjectIdentification projectId)
-        => await httpClient.GetFromJsonAsync<ProjectFieldSettingsViewModel>(
-            $"webapi/project-field-operations/getfieldsettings?projectId={projectId.Value}")
-           ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync(
+            $"webapi/project-field-operations/getfieldsettings?projectId={projectId.Value}"))
+            .ReadFromJsonOrThrowProblem<ProjectFieldSettingsViewModel>();
 
     public async Task SaveFieldSettings(ProjectFieldSettingsViewModel model)
     {
