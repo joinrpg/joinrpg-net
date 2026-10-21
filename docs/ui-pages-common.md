@@ -25,7 +25,7 @@ UI-проекты в `WebPortalShared` разделены по фичам/ауд
 2. **Репозиторий** (`JoinRpg.Data.Interfaces` + реализация в `JoinRpg.Dal.Impl.Repositories`) — доступ к данным; регистрируется в `JoinRpg.Dal.Impl/Module.cs`.
 3. **Web-клиент** (профильный `JoinRpg.Web.*` проект — см «Выбор UI-проекта») — интерфейс `I*Client` для Blazor-компонентов и ViewModel'и.
 4. **Серверная реализация клиента** (`JoinRpg.WebPortal.Managers`) — класс, реализующий `I*Client` через репозитории/сервисы; регистрируется в `JoinRpg.WebPortal.Managers.Registration.cs`.
-5. **Клиентская реализация (HTTP)** (`JoinRpg.Blazor.Client`) — реализация `I*Client` через `HttpClient`; регистрируется в `JoinRpg.Blazor.Client.ApiClients.HttpClientRegistration.cs`.
+5. **Клиентская реализация (HTTP)** (`JoinRpg.Blazor.Client`) — реализация `I*Client` через `HttpClient`; регистрируется в `JoinRpg.Blazor.Client.ApiClients.HttpClientRegistration.cs`. Ответ разбирать через `EnsureSuccessOrThrowProblem()` / `ReadFromJsonOrThrowProblem<T>()` — отказ сервера придёт в компонент как `ServerProblemException` с текстом для пользователя (см [editing-pages-guide.md](editing-pages-guide.md) §4).
 6. **WebAPI-контроллер** (`JoinRpg.Portal.Controllers.WebApi`) — маршрут `/webapi/{feature}/[action]`, авторизация по аудитории страницы (`[RequireMaster]` для мастерских).
 7. **Blazor-компоненты** (тот же профильный `JoinRpg.Web.*` проект, что и Web-клиент).
 8. **Razor-страница** (`JoinRpg.Portal/Pages/GamePages`) — минимальная страница, рендерящая Blazor-компонент. Маршрут вида `/{projectId:int}/...`.
