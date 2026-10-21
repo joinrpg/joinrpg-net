@@ -29,7 +29,7 @@ public class ReceiptData
     /// Date and time of fiscal document
     /// </summary>
     [JsonProperty("date")]
-    public DateTimeOffset Date { get; set; }
+    public DateTimeOffset? Date { get; set; }
 
     /// <summary>
     /// Money amount

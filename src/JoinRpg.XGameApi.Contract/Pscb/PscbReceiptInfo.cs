@@ -23,7 +23,7 @@ public class PscbReceiptInfo
     /// <summary>
     /// Date and time of the receipt
     /// </summary>
-    public DateTimeOffset Date { get; set; }
+    public DateTimeOffset? Date { get; set; }
 
     /// <summary>
     /// Receipt sum, RUR
