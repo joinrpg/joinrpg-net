@@ -18,7 +18,7 @@ internal static class ClaimInfoBuilder
         }
         if (dbUser.SelectedAvatarId is not null)
         {
-            //TODO: When we fix all avatars, it will be not required check
+            // Аватарка есть у каждого пользователя (#5602), кроме тех, у кого её не удалось сохранить при регистрации.
             yield return new Claim(JoinClaimTypes.AvatarId, dbUser.SelectedAvatarId.ToString()!);
         }
     }

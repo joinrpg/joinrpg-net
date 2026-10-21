@@ -254,34 +254,6 @@ public class UserServiceImpl(
         await UnitOfWork.SaveChangesAsync();
     }
 
-    /// <inheritdoc/>
-    async Task<AvatarIdentification> IAvatarService.EnsureAvatarPresent(int userId)
-    {
-        logger.LogDebug("Ensuring that user({userId}) has GrAvatar", userId);
-
-        var user = await UserRepository.WithProfile(userId);
-
-        if (user.SelectedAvatarId is int selectedAvatarId)
-        {
-            return new AvatarIdentification(selectedAvatarId);
-        }
-
-        if (
-            user.Avatars.FirstOrDefault(fd => fd.AvatarSource == AvatarSource.GrAvatar && fd.IsActive) is UserAvatar grAvatar
-            )
-        {
-            user.SelectedAvatar = grAvatar;
-            await UnitOfWork.SaveChangesAsync();
-            return new(grAvatar.UserAvatarId);
-        }
-
-        var userAvatar = user.AddGravatar();
-
-        await UnitOfWork.SaveChangesAsync();
-
-        return new(userAvatar.UserAvatarId);
-    }
-
     async Task IAvatarService.EnsureDefaultAvatars(IReadOnlyCollection<UserIdentification> userIds)
     {
         var users = await UserRepository.GetUsersWithAvatars(userIds);
