@@ -35,7 +35,7 @@ public class PscbPaymentsListResult
     /// <summary>
     /// Payments of the whole requested period. Empty when the request failed
     /// </summary>
-    public IReadOnlyCollection<PscbPaymentInfo> Payments { get; set; } = [];
+    public IReadOnlyCollection<PscbPaymentListRow> Payments { get; set; } = [];
 
     /// <summary>
     /// How many requests to the bank the period was split into

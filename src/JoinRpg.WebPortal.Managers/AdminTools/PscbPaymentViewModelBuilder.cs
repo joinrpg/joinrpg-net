@@ -12,16 +12,62 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 /// <remarks>
 /// <para>
 /// Отдельный статический класс по паттерну Builder из <c>docs/ui-pages-common.md</c>:
-/// преобразование проверяется тестами без банка и без репозиториев.
+/// преобразование проверяется тестами без банка и без репозиториев. Ссылки на пользователя и
+/// проект здесь не строятся — им нужны <c>IUriService</c> и поиск, это делает
+/// <see cref="PscbPaymentsViewService"/>.
 /// </para>
 /// <para>
-/// Кодированные значения — статус платежа, метод, вид записи, коды ошибок — отдаются строками,
-/// а не перечислениями: словарь значений принадлежит банку, и наше перечисление пришлось бы править
-/// каждый раз, когда банк добавляет значение. Имена полей при этом наши.
+/// Кодированные значения отдаются строками, а не перечислениями: словарь значений принадлежит
+/// банку, и наше перечисление пришлось бы править каждый раз, когда банк добавляет значение.
+/// Для вида записи и способа оплаты словарь нам известен, поэтому они переводятся в читаемый вид;
+/// статус платежа остаётся банковским идентификатором.
 /// </para>
 /// </remarks>
 internal static class PscbPaymentViewModelBuilder
 {
+    /// <summary>
+    /// Префикс назначения платежа, который JoinRpg формирует сам.
+    /// </summary>
+    /// <remarks>
+    /// Литерал задублирован намеренно: он живёт в <c>PaymentsService.GetPurpose</c>
+    /// (<c>src/JoinRpg.Services.Impl/PaymentsService.cs</c>), а тот метод помечен
+    /// <c>// TODO: We have to reimagine how we get payment purpose</c>. Выносить префикс в общую
+    /// константу означало бы трогать боевой путь платежей ради админского шлюза. Если формулировка
+    /// назначения платежа изменится, обрезка префикса просто перестанет срабатывать и колонка
+    /// покажет текст целиком — данные не потеряются.
+    /// </remarks>
+    internal const string TicketPurposePrefix = "Билет (организационный взнос) участника на ";
+
+    /// <summary>
+    /// Вид записи по-русски.
+    /// </summary>
+    private static readonly Dictionary<PscbPaymentType, string> KindNames = new()
+    {
+        [PscbPaymentType.Payment] = "Платёж",
+        [PscbPaymentType.Invoice] = "Счёт",
+    };
+
+    /// <summary>
+    /// Способ оплаты по-русски, по XML-описаниям членов <see cref="PscbPaymentMethod"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="PscbPaymentMethod.BankCardsShpa"/> (<c>ac-shpa</c>) не переведён намеренно:
+    /// в модели банка он описан как «Bank cards (WTF?)», то есть смысл значения неизвестен.
+    /// Неизвестный идентификатор отдаётся как есть — банковский код честнее выдуманного названия.
+    /// </remarks>
+    private static readonly Dictionary<PscbPaymentMethod, string> MethodNames = new()
+    {
+        [PscbPaymentMethod.BankCards] = "Банковская карта",
+        [PscbPaymentMethod.YandexMoney] = "Яндекс.Деньги",
+        [PscbPaymentMethod.Qiwi] = "QIWI-кошелёк",
+        [PscbPaymentMethod.WebMoney] = "WebMoney",
+        [PscbPaymentMethod.AlfaClick] = "Альфа-Клик",
+        [PscbPaymentMethod.PscbWebWallet] = "Кошелёк ПСБ",
+        [PscbPaymentMethod.PscbTerminal] = "Терминал ПСБ",
+        [PscbPaymentMethod.Mobile] = "Мобильный платёж",
+        [PscbPaymentMethod.FastPaymentsSystem] = "СБП",
+    };
+
     public static PscbPaymentsListResult BuildList(PaymentsListInfo info, int requestCount)
         => new()
         {
@@ -30,7 +76,7 @@ internal static class PscbPaymentViewModelBuilder
             ErrorDescription = info.ErrorDescription,
             RequestId = info.RequestId,
             RequestCount = requestCount,
-            Payments = info.Payments?.Select(payment => Build(payment)).ToList() ?? [],
+            Payments = info.Payments?.Select(payment => BuildListRow(payment)).ToList() ?? [],
         };
 
     public static PscbPaymentsListResult ListFailure(string message, int requestCount)
@@ -50,6 +96,41 @@ internal static class PscbPaymentViewModelBuilder
 
     public static PscbPaymentDetailsResult DetailsFailure(string message)
         => new() { IsSuccess = false, ErrorDescription = message };
+
+    /// <summary>
+    /// Строка списка платежей. Ссылки на пользователя и проект остаются незаполненными — их
+    /// проставляет сервис, у которого есть <c>IUriService</c> и поиск по проектам.
+    /// </summary>
+    public static PscbPaymentListRow BuildListRow(PaymentData payment)
+        => new()
+        {
+            OrderId = payment.OrderId,
+            DisplayOrderId = payment.OrderIdDisplayValue,
+            BankPaymentId = payment.Id,
+            TransactionId = payment.TransactionId,
+            ProjectName = StripTicketPrefix(payment.Details),
+            Amount = payment.Amount,
+            Fee = payment.Fee,
+            Status = Identifier(payment.Status),
+            StatusDate = payment.CurrentStatusDate,
+            PaymentKind = KindName(payment.Type),
+            PaymentMethod = MethodName(payment.PaymentMethod),
+            UserId = payment.CustomerAccount,
+            UserEmail = payment.CustomerEmail,
+            PayerComment = payment.CustomerComment,
+            ErrorCode = payment.LastError?.PaymentCode is { } code ? (int)code : null,
+            ErrorSubCode = payment.LastError?.ProcessingCode is { } subCode ? (int)subCode : null,
+            ErrorDescription = payment.LastError?.Description,
+        };
+
+    /// <summary>
+    /// Назначение платежа без билетного префикса — остаётся название проекта. Если префикса нет
+    /// (например, у рекуррентной подписки), текст возвращается как есть.
+    /// </summary>
+    public static string? StripTicketPrefix(string? details)
+        => details is not null && details.StartsWith(TicketPurposePrefix, StringComparison.Ordinal)
+            ? details[TicketPurposePrefix.Length..]
+            : details;
 
     public static PscbPaymentInfo Build(PaymentData payment)
         => new()
@@ -80,6 +161,12 @@ internal static class PscbPaymentViewModelBuilder
             Refunds = payment.Refunds?.Select(refund => Build(refund)).ToList() ?? [],
             Receipts = payment.Receipts?.Select(receipt => Build(receipt)).ToList() ?? [],
         };
+
+    private static string? KindName(PscbPaymentType? kind)
+        => kind is { } k ? KindNames.GetValueOrDefault(k, k.GetIdentifier()) : null;
+
+    private static string MethodName(PscbPaymentMethod method)
+        => MethodNames.GetValueOrDefault(method, method.GetIdentifier());
 
     private static PscbBankCardInfo Build(BankCardData card)
         => new()

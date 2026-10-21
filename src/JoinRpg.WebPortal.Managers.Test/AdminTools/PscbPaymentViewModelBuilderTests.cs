@@ -13,6 +13,32 @@ public class PscbPaymentViewModelBuilderTests
 {
     private static readonly DateTimeOffset StatusDate = new(2026, 1, 5, 10, 0, 0, TimeSpan.FromHours(3));
 
+    /// <summary>
+    /// Ровно те заголовки и ровно в том порядке, что заданы таблицей в ADR025. Порядок важен:
+    /// выгрузку сверяют с ней глазами.
+    /// </summary>
+    private static readonly string[] ExpectedCsvHeaders =
+    [
+        "Номер платежа",
+        "Отображаемый номер платежа",
+        "Номер в банке",
+        "Номер транзакции",
+        "Назначение платежа",
+        "Сумма",
+        "Комиссия",
+        "Статус",
+        "Дата",
+        "Вид",
+        "Способ",
+        "Пользователь",
+        "Ссылка на пользователя",
+        "Email пользователя",
+        "Комментарий плательщика",
+        "Код ошибки",
+        "Код процессинга",
+        "Состояние",
+    ];
+
     [Fact]
     public void MapsPaymentFieldsAndUsesBankIdentifiersForCodedValues()
     {
@@ -100,7 +126,7 @@ public class PscbPaymentViewModelBuilderTests
     /// не ошибка, а описание состояния — «Платеж завершен».
     /// </summary>
     [Fact]
-    public void MapsTheBankLastActionAndShowsItInCsv()
+    public void MapsTheBankLastActionIntoDetails()
     {
         var dto = PscbPaymentViewModelBuilder.Build(new PaymentData
         {
@@ -119,9 +145,6 @@ public class PscbPaymentViewModelBuilderTests
         dto.LastAction.Description.ShouldBe("Платеж завершен");
         dto.LastAction.PaymentsSystemCode.ShouldBe(0);
         dto.LastAction.ProcessingCenterCode.ShouldBe(0);
-
-        var columns = new PscbPaymentsCsvExporter().ParseColumns().ToList();
-        ByName(columns, "Описание состояния").ExtractValue(dto).ShouldBe("Платеж завершен");
     }
 
     /// <summary>
@@ -142,6 +165,149 @@ public class PscbPaymentViewModelBuilderTests
         dto.Refunds.ShouldBeEmpty();
         dto.Receipts.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void BuildsListRowFromTheBankPayment()
+    {
+        var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentData
+        {
+            Id = "1128001119",
+            TransactionId = "1128001119",
+            OrderId = "0000643617",
+            OrderIdDisplayValue = "0000643617",
+            Amount = 15000.00m,
+            Fee = 366.00m,
+            Status = PaymentStatus.Paid,
+            Type = PscbPaymentType.Payment,
+            PaymentMethod = PscbPaymentMethod.BankCards,
+            CurrentStatusDate = StatusDate,
+            CustomerAccount = "2658",
+            CustomerComment = "за Васю",
+            CustomerEmail = "payer@example.com",
+            Details = "Билет (организационный взнос) участника на Мастер-Блин 2026: участники",
+            LastError = new BankResponseInfo
+            {
+                Description = "Платеж завершен",
+                PaymentCode = PaymentsSystemResponseCode.Success,
+                ProcessingCode = ProcessingCenterResponseCode.Approved,
+            },
+        });
+
+        row.OrderId.ShouldBe("0000643617");
+        row.DisplayOrderId.ShouldBe("0000643617");
+        row.BankPaymentId.ShouldBe("1128001119");
+        row.TransactionId.ShouldBe("1128001119");
+        row.ProjectName.ShouldBe("Мастер-Блин 2026: участники");
+        row.Amount.ShouldBe(15000.00m);
+        row.Fee.ShouldBe(366.00m);
+        row.Status.ShouldBe("end");
+        row.StatusDate.ShouldBe(StatusDate);
+        row.PaymentKind.ShouldBe("Платёж");
+        row.PaymentMethod.ShouldBe("Банковская карта");
+        row.UserId.ShouldBe("2658");
+        row.UserEmail.ShouldBe("payer@example.com");
+        row.PayerComment.ShouldBe("за Васю");
+        row.ErrorCode.ShouldBe(0);
+        row.ErrorSubCode.ShouldBe(0);
+        row.ErrorDescription.ShouldBe("Платеж завершен");
+    }
+
+    /// <summary>
+    /// Ссылки проставляет сервис, у которого есть IUriService и поиск по проектам, — Builder
+    /// обязан оставить их пустыми, иначе их не отличить от настоящих.
+    /// </summary>
+    [Fact]
+    public void LeavesUrlsForTheServiceToFill()
+    {
+        var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentData
+        {
+            Id = "11",
+            OrderId = "0000000001",
+            CustomerAccount = "2658",
+            Details = "Билет (организационный взнос) участника на Проект",
+        });
+
+        row.UserUrl.ShouldBeNull();
+        row.ProjectUrl.ShouldBeNull();
+    }
+
+    [Fact]
+    public void SplitsTheBankLastErrorInThreeAndToleratesItsAbsence()
+    {
+        var withError = PscbPaymentViewModelBuilder.BuildListRow(new PaymentData
+        {
+            Id = "11",
+            OrderId = "0000000001",
+            LastError = new BankResponseInfo
+            {
+                Description = "Платеж обрабатывается",
+                PaymentCode = PaymentsSystemResponseCode.Success,
+                ProcessingCode = null,
+            },
+        });
+
+        withError.ErrorCode.ShouldBe(0);
+        withError.ErrorSubCode.ShouldBeNull();
+        withError.ErrorDescription.ShouldBe("Платеж обрабатывается");
+
+        var withoutError = PscbPaymentViewModelBuilder.BuildListRow(new PaymentData { Id = "11", OrderId = "0000000001" });
+
+        withoutError.ErrorCode.ShouldBeNull();
+        withoutError.ErrorSubCode.ShouldBeNull();
+        withoutError.ErrorDescription.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData("Билет (организационный взнос) участника на Мастер-Блин 2026: участники", "Мастер-Блин 2026: участники")]
+    [InlineData("Билет (организационный взнос) участника на ", "")]
+    // У рекуррентной подписки другое назначение, префикса в нём нет — текст остаётся как есть.
+    [InlineData("Подписка пользователя на Сервисы JoinRpg", "Подписка пользователя на Сервисы JoinRpg")]
+    [InlineData("", "")]
+    public void StripsTheTicketPrefixFromThePurpose(string details, string expected)
+        => PscbPaymentViewModelBuilder.StripTicketPrefix(details).ShouldBe(expected);
+
+    [Fact]
+    public void StripsNothingFromAMissingPurpose()
+        => PscbPaymentViewModelBuilder.StripTicketPrefix(null).ShouldBeNull();
+
+    [Theory]
+    [InlineData(PscbPaymentType.Payment, "Платёж")]
+    [InlineData(PscbPaymentType.Invoice, "Счёт")]
+    public void TranslatesTheRecordKind(PscbPaymentType type, string expected)
+        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentData { Id = "11", OrderId = "1", Type = type })
+            .PaymentKind.ShouldBe(expected);
+
+    [Fact]
+    public void LeavesTheRecordKindEmptyWhenTheBankOmitsIt()
+        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentData { Id = "11", OrderId = "1" })
+            .PaymentKind.ShouldBeNull();
+
+    [Theory]
+    [InlineData(PscbPaymentMethod.BankCards, "Банковская карта")]
+    [InlineData(PscbPaymentMethod.FastPaymentsSystem, "СБП")]
+    [InlineData(PscbPaymentMethod.PscbWebWallet, "Кошелёк ПСБ")]
+    [InlineData(PscbPaymentMethod.PscbTerminal, "Терминал ПСБ")]
+    [InlineData(PscbPaymentMethod.Mobile, "Мобильный платёж")]
+    [InlineData(PscbPaymentMethod.AlfaClick, "Альфа-Клик")]
+    [InlineData(PscbPaymentMethod.Qiwi, "QIWI-кошелёк")]
+    [InlineData(PscbPaymentMethod.YandexMoney, "Яндекс.Деньги")]
+    [InlineData(PscbPaymentMethod.WebMoney, "WebMoney")]
+    public void TranslatesTheKnownPaymentMethods(PscbPaymentMethod method, string expected)
+        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentData { Id = "11", OrderId = "1", PaymentMethod = method })
+            .PaymentMethod.ShouldBe(expected);
+
+    /// <summary>
+    /// Смысл <c>ac-shpa</c> неизвестен — в модели банка он описан как «Bank cards (WTF?)».
+    /// Выдуманное название хуже банковского кода, поэтому неизвестный способ проходит насквозь.
+    /// </summary>
+    [Fact]
+    public void PassesAnUnknownPaymentMethodThroughAsTheBankIdentifier()
+        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentData
+        {
+            Id = "11",
+            OrderId = "1",
+            PaymentMethod = PscbPaymentMethod.BankCardsShpa,
+        }).PaymentMethod.ShouldBe("ac-shpa");
 
     [Fact]
     public void BuildsSuccessfulList()
@@ -204,60 +370,69 @@ public class PscbPaymentViewModelBuilderTests
         error.ProcessingCenterCode.ShouldBe((int)ProcessingCenterResponseCode.NotSufficientFunds);
     }
 
+    /// <summary>
+    /// Все 15 полей строки обязательны в выгрузке, причём <c>account</c> даёт две колонки
+    /// (значение и ссылка рядом), а <c>lastError</c> — три.
+    /// </summary>
     [Fact]
-    public void CsvColumnsHaveRussianHeadersAndAreUnique()
+    public void CsvColumnsMatchTheAgreedHeadersAndOrder()
     {
         var columns = new PscbPaymentsCsvExporter().ParseColumns().ToList();
 
-        columns.ShouldNotBeEmpty();
-        columns.Select(c => c.Name).ShouldAllBe(name => !string.IsNullOrWhiteSpace(name));
-        columns.Select(c => c.Name).Distinct().Count().ShouldBe(columns.Count);
+        columns.Select(c => c.Name).ShouldBe(ExpectedCsvHeaders);
     }
 
     /// <summary>
-    /// Чеки и возвраты приходят не всегда, поэтому ни одна колонка не имеет права падать на пустом
-    /// платеже: выгрузка периода без флагов — обычный случай.
+    /// Банк возвращает разный набор полей, поэтому ни одна колонка не имеет права падать на пустой
+    /// строке — и не должна терять данные, если заполнено только обязательное.
     /// </summary>
     [Fact]
-    public void CsvColumnsTolerateAnEmptyPayment()
+    public void CsvColumnsTolerateAnEmptyRow()
     {
         var columns = new PscbPaymentsCsvExporter().ParseColumns().ToList();
-        var payment = new PscbPaymentInfo { OrderId = "0000000001", Amount = 100m };
+        var row = new PscbPaymentListRow { OrderId = "0000000001", Amount = 100m };
 
         foreach (var column in columns)
         {
-            Should.NotThrow(() => column.ExtractValue(payment));
+            Should.NotThrow(() => column.ExtractValue(row));
         }
 
-        ByName(columns, "Возвратов").ExtractValue(payment).ShouldBe(0);
-        ByName(columns, "Чеков").ExtractValue(payment).ShouldBe(0);
-        ByName(columns, "Номер карты").ExtractValue(payment).ShouldBeNull();
-        ByName(columns, "Описание состояния").ExtractValue(payment).ShouldBeNull();
+        ByName(columns, "Комиссия").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Ссылка на пользователя").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Состояние").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Код ошибки").ExtractValue(row).ShouldBeNull();
     }
 
     [Fact]
-    public void CsvColumnsRenderNestedCollectionsAsCountAndIds()
+    public void CsvColumnsRenderValuesInTheInvariantFormat()
     {
         var columns = new PscbPaymentsCsvExporter().ParseColumns().ToList();
-        var payment = new PscbPaymentInfo
+        var row = new PscbPaymentListRow
         {
-            OrderId = "0000000001",
+            OrderId = "0000643617",
+            BankPaymentId = "1128001119",
+            ProjectName = "Мастер-Блин 2026: участники",
+            ProjectUrl = "https://joinrpg.ru/42/home",
             Amount = 1250.50m,
+            Fee = 30.05m,
             StatusDate = StatusDate,
-            Refunds =
-            [
-                new PscbRefundInfo { RefundId = "RF-1", Amount = 100m },
-                new PscbRefundInfo { RefundId = "RF-2", Amount = 50m },
-            ],
-            Receipts = [new PscbReceiptInfo { ReceiptId = "RC-1" }],
+            PaymentKind = "Платёж",
+            PaymentMethod = "Банковская карта",
+            UserId = "2658",
+            UserUrl = "https://joinrpg.ru/user/2658",
+            ErrorCode = 0,
+            ErrorSubCode = 51,
+            ErrorDescription = "Платеж завершен",
         };
 
-        ByName(columns, "Сумма").ExtractValue(payment).ShouldBe("1250.5");
-        ByName(columns, "Возвратов").ExtractValue(payment).ShouldBe(2);
-        ByName(columns, "Возвраты").ExtractValue(payment).ShouldBe("RF-1 | RF-2");
-        ByName(columns, "Чеков").ExtractValue(payment).ShouldBe(1);
-        ByName(columns, "Чеки").ExtractValue(payment).ShouldBe("RC-1");
-        ByName(columns, "Дата статуса").ExtractValue(payment).ShouldBe("2026-01-05 10:00:00 +03:00");
+        ByName(columns, "Сумма").ExtractValue(row).ShouldBe("1250.5");
+        ByName(columns, "Комиссия").ExtractValue(row).ShouldBe("30.05");
+        ByName(columns, "Дата").ExtractValue(row).ShouldBe("2026-01-05 10:00:00 +03:00");
+        ByName(columns, "Пользователь").ExtractValue(row).ShouldBe("2658");
+        ByName(columns, "Ссылка на пользователя").ExtractValue(row).ShouldBe("https://joinrpg.ru/user/2658");
+        ByName(columns, "Код ошибки").ExtractValue(row).ShouldBe(0);
+        ByName(columns, "Код процессинга").ExtractValue(row).ShouldBe(51);
+        ByName(columns, "Состояние").ExtractValue(row).ShouldBe("Платеж завершен");
     }
 
     private static ITableColumn ByName(IReadOnlyCollection<ITableColumn> columns, string name)
