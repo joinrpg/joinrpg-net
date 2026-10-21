@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.DomainTypes.Notifications;
+using JoinRpg.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Testcontainers.PostgreSql;
@@ -12,7 +13,7 @@ namespace JoinRpg.Dal.Notifications.Test;
 /// </summary>
 public class NotificationLogTest : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer postgres = new PostgreSqlBuilder("postgres:16-alpine").Build();
+    private readonly PostgreSqlContainer postgres = new PostgreSqlBuilder(ProductionPostgres.Image).Build();
 
     private static readonly UserIdentification Alice = new(10);
     private static readonly UserIdentification Bob = new(20);
