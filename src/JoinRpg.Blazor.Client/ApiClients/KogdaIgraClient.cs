@@ -6,33 +6,24 @@ public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> log
     : IKogdaIgraSyncClient, IKogdaIgraBindClient
 {
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraCandidates()
-    {
-        return await httpClient.GetFromJsonAsync<KogdaIgraShortViewModel[]>("webapi/kogdaigra/GetKogdaIgraCandidates")
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync("webapi/kogdaigra/GetKogdaIgraCandidates"))
+            .ReadFromJsonOrThrowProblem<KogdaIgraShortViewModel[]>();
 
     public async Task<KogdaIgraShortViewModel[]> GetFutureKogdaIgraCandidates()
-    {
-        return await httpClient.GetFromJsonAsync<KogdaIgraShortViewModel[]>("webapi/kogdaigra/GetFutureKogdaIgraCandidates")
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync("webapi/kogdaigra/GetFutureKogdaIgraCandidates"))
+            .ReadFromJsonOrThrowProblem<KogdaIgraShortViewModel[]>();
+
     public async Task<KogdaIgraCardViewModel[]> GetKogdaIgraCards(IReadOnlyCollection<KogdaIgraIdentification> kogdaIgraIds)
-    {
-        return await httpClient.GetFromJsonAsync<KogdaIgraCardViewModel[]>($"webapi/kogdaigra/GetKogdaIgraCard?kogdaIgraId={string.Join(",", kogdaIgraIds.Select(x => x.ToString()))}")
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync($"webapi/kogdaigra/GetKogdaIgraCard?kogdaIgraId={string.Join(",", kogdaIgraIds.Select(x => x.ToString()))}"))
+            .ReadFromJsonOrThrowProblem<KogdaIgraCardViewModel[]>();
 
     public async Task<KogdaIgraShortViewModel[]> GetKogdaIgraNotUpdated()
-    {
-        return await httpClient.GetFromJsonAsync<KogdaIgraShortViewModel[]>("webapi/kogdaigra/GetKogdaIgraNotUpdated")
-           ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync("webapi/kogdaigra/GetKogdaIgraNotUpdated"))
+            .ReadFromJsonOrThrowProblem<KogdaIgraShortViewModel[]>();
 
     public async Task<SyncStatusViewModel> GetSyncStatus()
-    {
-        return await httpClient.GetFromJsonAsync<SyncStatusViewModel>("webapi/kogdaigra/GetSyncStatus")
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync("webapi/kogdaigra/GetSyncStatus"))
+            .ReadFromJsonOrThrowProblem<SyncStatusViewModel>();
 
     public async Task<ResyncOperationResultsViewModel> ResyncKograIgra()
     {
@@ -40,12 +31,7 @@ public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> log
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsync($"webapi/kogdaigra/Resync", content: null);
-
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<ResyncOperationResultsViewModel>()
-                ?? throw new Exception("Empty");
+            return await response.ReadFromJsonOrThrowProblem<ResyncOperationResultsViewModel>();
         }
         catch (Exception e)
         {
@@ -68,11 +54,7 @@ public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> log
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsJsonAsync("webapi/kogdaigra/ForceResync", gameIds);
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<ResyncOperationResultsViewModel>()
-                ?? throw new Exception("Empty");
+            return await response.ReadFromJsonOrThrowProblem<ResyncOperationResultsViewModel>();
         }
         catch (Exception e)
         {
@@ -95,11 +77,7 @@ public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> log
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsync($"webapi/kogdaigra/ScheduleUpdateAll", content: null);
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<ResyncOperationResultsViewModel>()
-                ?? throw new Exception("Empty");
+            return await response.ReadFromJsonOrThrowProblem<ResyncOperationResultsViewModel>();
         }
         catch (Exception e)
         {
@@ -122,11 +100,7 @@ public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> log
         {
             await csrfTokenProvider.SetCsrfToken(httpClient);
             var response = await httpClient.PostAsync($"webapi/kogdaigra/RunSyncJob", content: null);
-            return await response
-                .EnsureSuccessStatusCode()
-                .Content
-                .ReadFromJsonAsync<ResyncOperationResultsViewModel>()
-                ?? throw new Exception("Empty");
+            return await response.ReadFromJsonOrThrowProblem<ResyncOperationResultsViewModel>();
         }
         catch (Exception e)
         {
@@ -149,7 +123,7 @@ public class KogdaIgraClient(HttpClient httpClient, ILogger<KogdaIgraClient> log
         await csrfTokenProvider.SetCsrfToken(httpClient);
         var response = await httpClient.PostAsJsonAsync($"webapi/kogdaigra/UpdateBindings", command);
 
-        _ = response.EnsureSuccessStatusCode();
+        await response.EnsureSuccessOrThrowProblem();
     }
 
 }

@@ -5,23 +5,14 @@ namespace JoinRpg.Blazor.Client.ApiClients;
 public class CharacterGroupsClient(HttpClient httpClient) : ICharacterGroupsClient
 {
     public async Task<List<CharacterGroupDto>> GetRealCharacterGroups(int projectId)
-    {
-        return await httpClient.GetFromJsonAsync<List<CharacterGroupDto>>(
-            $"/webapi/character-groups/GetRealCharacterGroups?projectId={projectId}")
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync($"/webapi/character-groups/GetRealCharacterGroups?projectId={projectId}"))
+            .ReadFromJsonOrThrowProblem<List<CharacterGroupDto>>();
 
     public async Task<List<CharacterGroupDto>> GetCharacterGroupsWithSpecial(int projectId)
-    {
-        return await httpClient.GetFromJsonAsync<List<CharacterGroupDto>>(
-            $"/webapi/character-groups/GetCharacterGroupsWithSpecial?projectId={projectId}")
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync($"/webapi/character-groups/GetCharacterGroupsWithSpecial?projectId={projectId}"))
+            .ReadFromJsonOrThrowProblem<List<CharacterGroupDto>>();
 
     public async Task<List<CharacterGroupDto>> GetValidParentGroups(CharacterGroupIdentification groupId)
-    {
-        return await httpClient.GetFromJsonAsync<List<CharacterGroupDto>>(
-            $"/webapi/character-groups/GetValidParentGroups?projectId={groupId.ProjectId}&groupId={groupId}")
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync($"/webapi/character-groups/GetValidParentGroups?projectId={groupId.ProjectId}&groupId={groupId}"))
+            .ReadFromJsonOrThrowProblem<List<CharacterGroupDto>>();
 }

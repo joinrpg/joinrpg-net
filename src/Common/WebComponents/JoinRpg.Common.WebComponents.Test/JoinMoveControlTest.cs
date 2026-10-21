@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -7,7 +8,7 @@ namespace JoinRpg.Common.WebComponents.Test;
 
 /// <summary>
 /// Размер кнопок <see cref="JoinMoveControl{TItem}"/> без явного <see cref="JoinMoveControl{TItem}.Size"/>
-/// берётся из группы, в которой они стоят (#5305).
+/// берётся из группы, в которой они стоят (#5305). Ошибку перемещения контрол показывает сам (#5735).
 /// </summary>
 public class JoinMoveControlTest
 {
@@ -26,11 +27,11 @@ public class JoinMoveControlTest
 
     private static readonly IList<Item> Items = [new("1"), new("2"), new("3")];
 
-    private static BunitContext CreateContext()
+    private static BunitContext CreateContext(IMoveClient? moveClient = null)
     {
         var ctx = new BunitContext();
         ctx.Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
-        ctx.Services.AddSingleton<IMoveClient>(new NoMoveClient());
+        ctx.Services.AddSingleton(moveClient ?? new NoMoveClient());
         ctx.JSInterop.Mode = JSRuntimeMode.Loose;
         ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
         return ctx;
@@ -49,6 +50,45 @@ public class JoinMoveControlTest
                 .Add(x => x.Self, Items[1])
                 .Add(x => x.SkipGroup, skipGroup)
                 .Add(x => x.Size, size)));
+
+    private sealed class FailingMoveClient(Exception failure) : IMoveClient
+    {
+        public Task<string[]> MoveAfterAsync(string selfId, string parentId, string? moveAfterId)
+            => Task.FromException<string[]>(failure);
+    }
+
+    private static async Task<IRenderedComponent<JoinMoveControl<Item>>> ClickUp(BunitContext ctx)
+    {
+        var items = new List<Item>(Items);
+        var cut = ctx.Render<JoinMoveControl<Item>>(p => p
+            .Add(x => x.Items, items)
+            .Add(x => x.Self, items[1]));
+        await cut.Find("button[aria-label='Переместить вверх']").ClickAsync(new MouseEventArgs());
+        return cut;
+    }
+
+    /// <summary>Отказ сервера (например, проект заблокирован) показывается, а порядок не меняется (#5735).</summary>
+    [Fact]
+    public async Task ServerRefusal_IsShown()
+    {
+        using var ctx = CreateContext(new FailingMoveClient(new ServerProblemException("Проект заблокирован на время восстановления данных")));
+
+        var cut = await ClickUp(ctx);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Проект заблокирован на время восстановления данных"));
+        cut.Instance.Items.Select(i => i.Id).ShouldBe(["1", "2", "3"]);
+    }
+
+    [Fact]
+    public async Task UnexpectedFailure_ShowsGenericText()
+    {
+        using var ctx = CreateContext(new FailingMoveClient(new HttpRequestException("Response status code does not indicate success: 502 (Bad Gateway).")));
+
+        var cut = await ClickUp(ctx);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось переместить"));
+        cut.Markup.ShouldNotContain("Bad Gateway");
+    }
 
     [Fact]
     public void SkipGroup_WithoutOwnSize_TakesOuterGroupSize()

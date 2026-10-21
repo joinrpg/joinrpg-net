@@ -9,10 +9,11 @@ internal class GroupReportClientImpl(HttpClient httpClient) : IGroupReportClient
     {
         var response = await httpClient.GetAsync(
             $"webapi/group-report/get?projectId={groupId.ProjectId.Value}&characterGroupId={groupId.CharacterGroupId}");
+        // 404 — сервер не нашёл группу: это не отказ, а отсутствие отчёта
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
         }
-        return await response.Content.ReadFromJsonAsync<GroupReportViewModel>();
+        return await response.ReadFromJsonOrThrowProblem<GroupReportViewModel>();
     }
 }
