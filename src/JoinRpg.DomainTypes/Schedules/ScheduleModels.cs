@@ -97,6 +97,17 @@ public class ProgramItemPlaced
     public ProgramItem ProgramItem { get; set; }
 }
 
+/// <summary>
+/// Пункт программы, не размещённый в сетке целиком: нет помещения или слота (#5754),
+/// либо выбран удалённый вариант.
+/// </summary>
+/// <param name="Rooms">Выбранные помещения, включая удалённые — по ним видно, почему пункт не в сетке.</param>
+/// <param name="TimeSlots">Выбранные слоты, включая удалённые.</param>
+public record ProgramItemNotScheduled(
+    ProgramItem ProgramItem,
+    IReadOnlyList<ProjectFieldVariant> Rooms,
+    IReadOnlyList<ProjectFieldVariant> TimeSlots);
+
 public record class ScheduleItemAttribute
 {
     public MarkdownString? Description { get; }
@@ -143,7 +154,7 @@ public record class TimeSlot : ScheduleItemAttribute
 }
 
 public record ScheduleResult(
-    IReadOnlyList<ProgramItem> NotScheduled,
+    IReadOnlyList<ProgramItemNotScheduled> NotScheduled,
     IReadOnlyList<ScheduleRoom> Rooms,
 
     IReadOnlyList<TimeSlot> TimeSlots,

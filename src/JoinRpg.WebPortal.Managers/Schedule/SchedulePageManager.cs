@@ -45,7 +45,7 @@ public class SchedulePageManager(
             Rows = rows,
             Appointments = BuildAppointments(slots, columns, rows, conflicted, hasMasterAccess),
             Intersections = BuildIntersections(conflicted, hasMasterAccess),
-            NotAllocated = BuildNotAllocated(result.NotScheduled.ToViewModel(hasMasterAccess), columns, hasMasterAccess),
+            NotAllocated = BuildNotAllocated(result.NotScheduled, columns.Count, hasMasterAccess),
         };
     }
 
@@ -160,23 +160,40 @@ public class SchedulePageManager(
                 })
             .ToList();
 
-    private static List<AppointmentViewModel> BuildNotAllocated(
-        IReadOnlyCollection<ProgramItemViewModel> notScheduled,
-        IReadOnlyCollection<TableHeaderViewModel> columns,
+    /// <param name="roomCount">Сколько помещений в сетке — чтобы показать «все» вместо перечня.</param>
+    internal static List<AppointmentViewModel> BuildNotAllocated(
+        IReadOnlyCollection<ProgramItemNotScheduled> notScheduled,
+        int roomCount,
         bool hasMasterAccess)
         => notScheduled
             .Select(
-                source => new AppointmentViewModel()
+                source =>
                 {
-                    ErrorType = AppointmentErrorType.NotLocated,
-                    AllRooms = source.ColSpan == columns.Count,
-                    DisplayName = source.Name,
-                    Description = source.Description.ToHtmlString(),
-                    CharacterId = source.Id!,
-                    Users = source.Users,
-                    HasMasterAccess = hasMasterAccess,
+                    var item = source.ProgramItem.ToViewModel(hasMasterAccess);
+                    return new AppointmentViewModel()
+                    {
+                        ErrorType = AppointmentErrorType.NotLocated,
+                        // Удалённое помещение в выборе — повод перечислить их, а не писать «все»
+                        AllRooms = source.Rooms.Count == roomCount && source.Rooms.All(v => v.IsActive),
+                        DisplayName = item.Name,
+                        Description = item.Description.ToHtmlString(),
+                        CharacterId = item.Id!,
+                        Users = item.Users,
+                        HasMasterAccess = hasMasterAccess,
+                        // Выбранное мастером, даже если в сетку оно не легло (#5754)
+                        Rooms = [.. source.Rooms.Select(ToSelectedHeader)],
+                        Slots = [.. source.TimeSlots.Select(ToSelectedHeader)],
+                    };
                 })
             .ToList();
+
+    private static TableHeaderViewModel ToSelectedHeader(ProjectFieldVariant variant)
+        => new()
+        {
+            Id = variant.Id,
+            Name = variant.IsActive ? variant.Label : $"{variant.Label} (удалён)",
+            Description = variant.Description.ToHtmlString(),
+        };
 
     private static void MergeSlots(List<List<ProgramItemViewModel>> slots)
     {

@@ -53,7 +53,7 @@ public class ScheduleBuilder
 
     private ProjectFieldInfo RoomField { get; }
 
-    private HashSet<ProgramItem> NotScheduled { get; } = [];
+    private List<ProgramItemNotScheduled> NotScheduled { get; } = [];
 
     public class ProgramItemSlot(TimeSlot slot, ScheduleRoom room)
     {
@@ -80,15 +80,26 @@ public class ScheduleBuilder
         foreach (var character in characters.Where(ch => ch.CharacterType != CharacterType.Slot))
         {
             var programItem = new ProgramItem(character, authorUsers);
-            var slots = SelectSlots(programItem, character);
-            PutItem(programItem, slots);
-            if (slots.Any())
+            var fields = character.GetAllFields().ToDictionary(f => f.Field.Id);
+            ProjectFieldVariant[] selectedTimeSlots = [.. fields[TimeSlotField.Id].GetDropdownValues()];
+            ProjectFieldVariant[] selectedRooms = [.. fields[RoomField.Id].GetDropdownValues()];
+
+            var slots = SelectSlots(selectedTimeSlots, selectedRooms);
+
+            // Удалённого варианта нет в сетке, поэтому пункт с ним размещён не целиком
+            if (slots.Count == 0 || selectedTimeSlots.Concat(selectedRooms).Any(v => !v.IsActive))
             {
+                NotScheduled.Add(new ProgramItemNotScheduled(programItem, selectedRooms, selectedTimeSlots));
+            }
+
+            if (slots.Count > 0)
+            {
+                PutItem(programItem, slots);
                 allItems.Add(new ProgramItemPlaced(programItem, slots, projectInfo.TimeZone));
             }
         }
         return new ScheduleResult(
-            NotScheduled.ToList(),
+            NotScheduled,
             Rooms,
             TimeSlots,
             Conflicted.ToList(),
@@ -100,12 +111,6 @@ public class ScheduleBuilder
 
     private void PutItem(ProgramItem programItem, List<ProgramItemSlot> slots)
     {
-        if (!slots.Any())
-        {
-            _ = NotScheduled.Add(programItem);
-            return;
-        }
-
         var conflicts = (from slot in slots
                          where slot.ProgramItem != null
                          select slot.ProgramItem).Distinct().ToList();
@@ -127,25 +132,16 @@ public class ScheduleBuilder
         }
     }
 
-    private List<ProgramItemSlot> SelectSlots(ProgramItem programItem, CharacterInfo character)
+    private List<ProgramItemSlot> SelectSlots(
+        IReadOnlyCollection<ProjectFieldVariant> selectedTimeSlots,
+        IReadOnlyCollection<ProjectFieldVariant> selectedRooms)
     {
-        var fields = character.GetAllFields().ToDictionary(f => f.Field.Id);
+        // Удалённых вариантов в сетке нет — они сюда просто не попадают
+        static int[] GetSlotIndexes(IReadOnlyCollection<ProjectFieldVariant> selected, IEnumerable<ScheduleItemAttribute> items)
+            => [.. from item in items where selected.Any(variant => variant.Id == item.Id) select item.SeqId];
 
-        int[] GetSlotIndexes(FieldWithValue field, IEnumerable<ScheduleItemAttribute> items)
-        {
-            ProjectFieldVariantIdentification[] variantIds = [.. field.GetDropdownValues().Select(variant => variant.Id)];
-
-            int[] indexes = [.. (from item in items where variantIds.Contains(item.Id) select item.SeqId)];
-            if (indexes.Length < variantIds.Length) // Some variants not found, probably deleted
-            {
-                _ = NotScheduled.Add(programItem);
-            }
-
-            return indexes;
-        }
-
-        var slots = from timeSeqId in GetSlotIndexes(fields[TimeSlotField.Id], TimeSlots)
-                    from roomSeqId in GetSlotIndexes(fields[RoomField.Id], Rooms)
+        var slots = from timeSeqId in GetSlotIndexes(selectedTimeSlots, TimeSlots)
+                    from roomSeqId in GetSlotIndexes(selectedRooms, Rooms)
                     select Slots[timeSeqId][roomSeqId];
 
         return slots.ToList();
