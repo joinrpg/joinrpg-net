@@ -88,10 +88,15 @@ public async Task<ProjectRolesListViewModel> Create(ProjectIdentification projec
 {
     await csrfTokenProvider.SetCsrfToken(httpClient);
     var response = await httpClient.PostAsJsonAsync($"webapi/project-roles-list/create?projectId={projectId.Value}", model);
-    return await response.EnsureSuccessStatusCode().Content
-        .ReadFromJsonAsync<ProjectRolesListViewModel>() ?? throw new Exception("Empty");
+    return await response.ReadFromJsonOrThrowProblem<ProjectRolesListViewModel>();
 }
 ```
+
+Ответ разбирать через `EnsureSuccessOrThrowProblem()` / `ReadFromJsonOrThrowProblem<T>()`
+(`JoinRpg.Common.WebComponents`), а не через `EnsureSuccessStatusCode()`. Хелпер превращает объяснённый отказ сервера
+в `ServerProblemException` с русским текстом: ProblemDetails от `WebApiExceptionHandler` (проект заблокирован или в архиве,
+нет прав), `BadRequest("…")` из контроллера, голые 401/403. Остальное остаётся `HttpRequestException`.
+Свои типы исключений для отказа в клиенте не заводить.
 
 ## 5. Blazor-компоненты: список + форма + строка с откатом
 
@@ -107,13 +112,21 @@ async Task OnRemoveRow(ItemViewModel item)
     var idx = _model!.Items.IndexOf(item);
     _model.Items.RemoveAt(idx);
     try { await Client.Remove(item.Id); }
+    catch (ServerProblemException exc)
+    {
+        error = exc.Message; // причину отказа показываем как есть
+        _model.Items.Insert(idx, item); // откат
+    }
     catch (Exception exc)
     {
         logger.LogError(exc, "Ошибка при удалении");
+        error = "Произошла ошибка при удалении";
         _model.Items.Insert(idx, item); // откат
     }
 }
 ```
+
+`Message` произвольного исключения пользователю не показывать — там английский текст `HttpRequestException`.
 
 ## bUnit-тесты компонентов
 

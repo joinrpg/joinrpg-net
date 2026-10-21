@@ -150,6 +150,7 @@ public class Startup(WebApplicationBuilder builder)
 
         _ = services.AddProblemDetails();
         _ = services.AddExceptionHandler<WebApiExceptionHandler>();
+        _ = services.Configure<ApiBehaviorOptions>(WebApiClientErrorTitles.Configure);
 
         _ = services.AddUserServicesOnly();
 
