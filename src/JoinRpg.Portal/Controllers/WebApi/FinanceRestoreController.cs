@@ -1,4 +1,5 @@
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -42,7 +43,8 @@ public class FinanceRestoreController(IFinanceRestoreClient client) : Controller
         {
             return TypedResults.Ok(await client.Apply(request));
         }
-        catch (Exception ex) when (ex is JoinRpgBaseException or ArgumentException)
+        // Проект заблокирован, в архиве, нет прав — WebApiExceptionHandler отдаст их по-русски с 409/403
+        catch (Exception ex) when (ex is JoinRpgBaseException or ArgumentException && !WebApiExceptionHandler.IsExpectedRefusal(ex))
         {
             // Отказ сервиса — текстом, его показывают мастеру в строке плана.
             return TypedResults.BadRequest(ex.Message);
@@ -57,7 +59,7 @@ public class FinanceRestoreController(IFinanceRestoreClient client) : Controller
             await client.CreateOwnCash(projectId);
             return TypedResults.Ok();
         }
-        catch (Exception ex) when (ex is JoinRpgBaseException or ArgumentException)
+        catch (Exception ex) when (ex is JoinRpgBaseException or ArgumentException && !WebApiExceptionHandler.IsExpectedRefusal(ex))
         {
             return TypedResults.BadRequest(ex.Message);
         }

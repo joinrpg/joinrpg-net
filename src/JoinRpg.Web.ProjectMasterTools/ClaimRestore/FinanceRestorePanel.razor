@@ -1,5 +1,6 @@
 @using JoinRpg.Helpers
 @inject IFinanceRestoreClient Client
+@inject ILogger<FinanceRestorePanel> Logger
 @inject IUriLocator<ClaimIdentification> ClaimUriLocator
 
 <JoinPanel>
@@ -170,6 +171,9 @@
     private bool applying;
     private bool loading;
     private bool creatingCash;
+    /// <summary>Причина для сбоя, который сервер не объяснил (например, 5xx): его текст мастеру не показываем.</summary>
+    private const string GenericError = "произошла ошибка, попробуйте ещё раз";
+
     private string? errorMessage;
     private string? successMessage;
 
@@ -280,9 +284,15 @@
             model = await Client.GetPlan(ProjectId);
             return true;
         }
-        catch (Exception ex)
+        catch (ServerProblemException ex)
         {
             errorMessage = $"Не удалось построить план восстановления ручных оплат: {ex.Message}";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Не удалось построить план восстановления ручных оплат");
+            errorMessage = $"Не удалось построить план восстановления ручных оплат: {GenericError}";
             return false;
         }
         finally
@@ -304,9 +314,16 @@
         {
             await Client.CreateOwnCash(ProjectId);
         }
-        catch (Exception ex)
+        catch (ServerProblemException ex)
         {
             errorMessage = $"Не удалось создать тип оплаты «Наличные»: {ex.Message}";
+            creatingCash = false;
+            return;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Не удалось создать тип оплаты «Наличные»");
+            errorMessage = $"Не удалось создать тип оплаты «Наличные»: {GenericError}";
             creatingCash = false;
             return;
         }
@@ -362,10 +379,16 @@
                 inserted += result.Inserted;
                 outcomes[row.ClaimId] = (ResultText(result), null);
             }
-            catch (Exception ex)
+            catch (ServerProblemException ex)
             {
                 failed++;
                 outcomes[row.ClaimId] = (null, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Не удалось восстановить оплаты заявки {ClaimId}", row.ClaimId);
+                failed++;
+                outcomes[row.ClaimId] = (null, "Не удалось восстановить оплаты заявки — попробуйте ещё раз");
             }
             StateHasChanged();
         }

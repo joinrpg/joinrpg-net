@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Controllers.WebApi;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -43,6 +44,17 @@ public class CommentRestoreControllerTest
         var result = await Controller.Apply(ProjectId, new ClaimIdentification(ProjectId, 9));
 
         result.Result.ShouldBeOfType<BadRequest<string>>().Value.ShouldBe("Заявки нет в базе");
+    }
+
+    /// <summary>
+    /// Блокировку проекта отдаёт WebApiExceptionHandler — русским текстом с 409, а не английским Message в 400 (#5735).
+    /// </summary>
+    [Fact]
+    public async Task Apply_BlockedProject_GoesToCommonHandler()
+    {
+        client.ApplyError = new ProjectBlockedException(ProjectId);
+
+        _ = await Should.ThrowAsync<ProjectBlockedException>(Controller.Apply(ProjectId, new ClaimIdentification(ProjectId, 9)));
     }
 
     private sealed class FakeClient : ICommentRestoreClient

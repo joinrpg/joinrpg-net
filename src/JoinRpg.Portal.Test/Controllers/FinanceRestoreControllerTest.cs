@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Controllers.WebApi;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -56,6 +57,25 @@ public class FinanceRestoreControllerTest
         var result = await Controller.CreateOwnCash(ProjectId);
 
         result.Result.ShouldBeOfType<BadRequest<string>>().Value.ShouldBe("Проект не заблокирован");
+    }
+
+    /// <summary>
+    /// Блокировку проекта и архив отдаёт WebApiExceptionHandler — русским текстом с 409, а не английским Message в 400 (#5735).
+    /// </summary>
+    [Fact]
+    public async Task Apply_BlockedProject_GoesToCommonHandler()
+    {
+        client.Error = new ProjectBlockedException(ProjectId);
+
+        _ = await Should.ThrowAsync<ProjectBlockedException>(Controller.Apply(ProjectId, Request(ProjectId)));
+    }
+
+    [Fact]
+    public async Task CreateOwnCash_ArchivedProject_GoesToCommonHandler()
+    {
+        client.Error = new ProjectDeactivatedException(ProjectId);
+
+        _ = await Should.ThrowAsync<ProjectDeactivatedException>(Controller.CreateOwnCash(ProjectId));
     }
 
     private sealed class FakeClient : IFinanceRestoreClient

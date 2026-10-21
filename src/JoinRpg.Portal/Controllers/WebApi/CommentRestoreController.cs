@@ -1,4 +1,5 @@
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -35,7 +36,8 @@ public class CommentRestoreController(ICommentRestoreClient client) : Controller
         {
             return TypedResults.Ok(await client.Apply(claimId));
         }
-        catch (Exception ex) when (ex is JoinRpgBaseException or ArgumentException)
+        // Проект заблокирован, в архиве, нет прав — WebApiExceptionHandler отдаст их по-русски с 409/403
+        catch (Exception ex) when (ex is JoinRpgBaseException or ArgumentException && !WebApiExceptionHandler.IsExpectedRefusal(ex))
         {
             // Отказ сервиса — текстом, его показывают мастеру в строке плана.
             return TypedResults.BadRequest(ex.Message);

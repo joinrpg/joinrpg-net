@@ -2,6 +2,7 @@
 @using JoinRpg.Helpers
 @using JoinRpg.Web.Claims
 @inject IClaimRestoreClient Client
+@inject ILogger<ClaimRestorePanel> Logger
 @inject IUriLocator<ClaimIdentification> ClaimUriLocator
 @inject IUriLocator<CharacterGroupIdentification> GroupUriLocator
 @inject ICharacterUriLocator CharacterUriLocator
@@ -162,6 +163,9 @@
     private readonly List<string> uploadErrors = [];
     private bool applying;
     private bool uploading;
+    /// <summary>Причина для сбоя, который сервер не объяснил (например, 5xx): его текст мастеру не показываем.</summary>
+    private const string GenericError = "произошла ошибка, попробуйте ещё раз";
+
     private string? errorMessage;
     private string? successMessage;
 
@@ -240,12 +244,16 @@
         }
         catch (Exception ex)
         {
+            if (ex is not ServerProblemException)
+            {
+                Logger.LogError(ex, "Не удалось построить план восстановления");
+            }
             if (version != planVersion)
             {
                 return null;
             }
             planStale = model is not null;
-            return ex.Message;
+            return ex is ServerProblemException ? ex.Message : GenericError;
         }
         finally
         {
@@ -354,9 +362,14 @@
                     uploadErrors.Add($"{file.Name}: {result.Error?.GetDisplayName() ?? "не удалось разобрать"}.");
                 }
             }
-            catch (Exception ex)
+            catch (ServerProblemException ex)
             {
                 uploadErrors.Add($"{file.Name}: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Не удалось загрузить выгрузку {FileName}", file.Name);
+                uploadErrors.Add($"{file.Name}: не удалось загрузить файл — {GenericError}.");
             }
         }
 
@@ -922,7 +935,7 @@
         catch (Exception ex)
         {
             row.Succeeded = false;
-            row.Error = string.IsNullOrWhiteSpace(ex.Message) ? "Не удалось применить" : ex.Message;
+            row.Error = ApplyErrorText(ex);
             failedCount++;
             return false;
         }
@@ -978,11 +991,22 @@
                     _ = uncertainNewCharacters.Add(newCharacterName);
                 }
                 row.Succeeded = false;
-                row.Error = string.IsNullOrWhiteSpace(ex.Message) ? "Не удалось применить" : ex.Message;
+                row.Error = ApplyErrorText(ex);
                 failedCount++;
             }
             StateHasChanged();
         }
+    }
+
+    /// <summary>Пометка у строки, которую не удалось применить: причину отказа сервера показываем, прочий сбой — в лог.</summary>
+    private string ApplyErrorText(Exception ex)
+    {
+        if (ex is ServerProblemException)
+        {
+            return ex.Message;
+        }
+        Logger.LogError(ex, "Не удалось применить строку восстановления");
+        return $"Не удалось применить — {GenericError}";
     }
 
     // ---------- Заявки ----------

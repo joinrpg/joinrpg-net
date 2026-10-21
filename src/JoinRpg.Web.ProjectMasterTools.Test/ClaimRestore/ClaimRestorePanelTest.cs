@@ -8,6 +8,8 @@ using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Xunit;
 
@@ -32,6 +34,7 @@ public class ClaimRestorePanelTest : BunitContext
         Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeLocator());
         Services.AddSingleton<ICharacterUriLocator>(new FakeLocator());
         Services.AddSingleton<IUriLocator<CharacterGroupIdentification>>(new FakeLocator());
+        Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         JSInterop.Mode = JSRuntimeMode.Loose;
         // Выбор персонажа (SingleCharacterSelector) — bootstrap-select поверх JS-модуля.
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
@@ -623,6 +626,71 @@ public class ClaimRestorePanelTest : BunitContext
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("finance.xlsx: Это не выгрузка списка персонажей или заявок"));
     }
 
+    [Fact]
+    public void PlanRefused_ServerReasonShown()
+    {
+        client.PlanFailure = new ServerProblemException("Недостаточно прав для этого действия");
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        cut.Markup.ShouldContain("Не удалось построить план восстановления: Недостаточно прав для этого действия");
+    }
+
+    [Fact]
+    public void PlanFailedUnexpectedly_GenericTextInsteadOfExceptionMessage()
+    {
+        client.PlanFailure = new HttpRequestException("Response status code does not indicate success: 500 (Internal Server Error).");
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+
+        cut.Markup.ShouldContain("Не удалось построить план восстановления: произошла ошибка, попробуйте ещё раз");
+        cut.Markup.ShouldNotContain("Internal Server Error");
+    }
+
+    [Fact]
+    public void UploadFailedUnexpectedly_GenericTextInsteadOfExceptionMessage()
+    {
+        client.Plans.Enqueue(Plan());
+        client.Plans.Enqueue(Plan());
+        client.UploadFailure = new HttpRequestException("Response status code does not indicate success: 500 (Internal Server Error).");
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+        cut.FindComponent<Microsoft.AspNetCore.Components.Forms.InputFile>()
+            .UploadFiles(InputFileContent.CreateFromText("x", "roles.xlsx"));
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("roles.xlsx: не удалось загрузить файл"));
+        cut.Markup.ShouldNotContain("Internal Server Error");
+    }
+
+    [Fact]
+    public void ApplyRefused_ServerReasonShownInRow()
+    {
+        client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)));
+        client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)));
+        client.ApplyFailure = new ServerProblemException("Проект заблокирован, изменения запрещены");
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+        ClickApply(cut);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось применить: 1"));
+        cut.Markup.ShouldContain("Проект заблокирован, изменения запрещены");
+    }
+
+    [Fact]
+    public void ApplyFailedUnexpectedly_GenericTextInRowInsteadOfExceptionMessage()
+    {
+        client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)));
+        client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)));
+        client.ApplyFailure = new HttpRequestException("Response status code does not indicate success: 500 (Internal Server Error).");
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+        ClickApply(cut);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось применить: 1"));
+        cut.Markup.ShouldContain("Не удалось применить — произошла ошибка, попробуйте ещё раз");
+        cut.Markup.ShouldNotContain("Internal Server Error");
+    }
+
     /// <summary>Списки в record сравниваются по ссылке — сравниваем по содержимому.</summary>
     private sealed class CharacterRestoreApplyRequestComparer : IEqualityComparer<CharacterRestoreApplyRequest>
     {
@@ -663,17 +731,30 @@ public class ClaimRestorePanelTest : BunitContext
             {
                 return pending.Task;
             }
-            return Plans.TryDequeue(out var plan) ? Task.FromResult(plan) : throw new InvalidOperationException("нет связи");
+            if (PlanFailure is { } failure)
+            {
+                throw failure;
+            }
+            return Plans.TryDequeue(out var plan) ? Task.FromResult(plan) : throw new HttpRequestException("нет связи");
         }
 
+        /// <summary>Чем упадёт запрос плана: отказ сервера или сбой.</summary>
+        public Exception? PlanFailure { get; set; }
+
+        /// <summary>Чем упадёт загрузка выгрузки.</summary>
+        public Exception? UploadFailure { get; set; }
+
+        /// <summary>Чем упадёт применение заявки.</summary>
+        public Exception? ApplyFailure { get; set; }
+
         public Task<MasterExportUploadResult> ParseExport(ProjectIdentification projectId, string fileName, Stream content)
-            => Task.FromResult(Uploads.Dequeue());
+            => UploadFailure is { } failure ? throw failure : Task.FromResult(Uploads.Dequeue());
 
         public Task ApplyGroup(GroupRestoreApplyRequest request)
         {
             Log.Add(request);
             return FailGroups.Contains(request.GroupId.CharacterGroupId)
-                ? throw new InvalidOperationException("Сбой группы")
+                ? throw new ServerProblemException("Сбой группы")
                 : Task.CompletedTask;
         }
 
@@ -695,7 +776,11 @@ public class ClaimRestorePanelTest : BunitContext
             Applied.Add(request);
             if (FailOnce.Remove(request.ClaimId.ClaimId))
             {
-                throw new InvalidOperationException("Сбой после создания персонажа");
+                throw new HttpRequestException("Сбой после создания персонажа");
+            }
+            if (ApplyFailure is { } failure)
+            {
+                throw failure;
             }
             return Task.FromResult(new ClaimRestoreApplyResult(request.Character ?? Created));
         }

@@ -1,5 +1,6 @@
 @using JoinRpg.Helpers
 @inject ICommentRestoreClient Client
+@inject ILogger<CommentRestorePanel> Logger
 @inject IUriLocator<ClaimIdentification> ClaimUriLocator
 
 <JoinPanel>
@@ -155,6 +156,9 @@
     private List<RowEditor> rows = [];
     private bool applying;
     private bool loading;
+    /// <summary>Причина для сбоя, который сервер не объяснил (например, 5xx): его текст мастеру не показываем.</summary>
+    private const string GenericError = "произошла ошибка, попробуйте ещё раз";
+
     private string? errorMessage;
     private string? successMessage;
 
@@ -216,9 +220,15 @@
             })];
             return true;
         }
-        catch (Exception ex)
+        catch (ServerProblemException ex)
         {
             errorMessage = $"Не удалось построить план восстановления комментариев: {ex.Message}";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Не удалось построить план восстановления комментариев");
+            errorMessage = $"Не удалось построить план восстановления комментариев: {GenericError}";
             return false;
         }
         finally
@@ -271,10 +281,16 @@
                 inserted += result.Inserted;
                 row.ResultText = ResultText(result);
             }
-            catch (Exception ex)
+            catch (ServerProblemException ex)
             {
                 failed++;
                 row.Error = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Не удалось восстановить комментарии заявки {ClaimId}", row.Row.ClaimId);
+                failed++;
+                row.Error = "Не удалось восстановить комментарии заявки — попробуйте ещё раз";
             }
             outcomes[row.Row.ClaimId] = (row.ResultText, row.Error);
             StateHasChanged();
