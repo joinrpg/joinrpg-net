@@ -3,54 +3,63 @@
     Карточка мероприятия: в сетке расписания и в списках пересечений и не размещённых.
     С деталями (полноэкранная сетка) поверх карточки лежит кнопка-слой, которая открывает
     панель AppointmentDetails.
+
+    Подсказка с названием висит на всей карточке вместе с кнопкой-слоем: слой перекрывает
+    карточку, и курсор оказывается над ним. А панель деталей лежит вне подсказки: цель подсказки
+    скрипт ищет по DOM, и подсказка висела бы поверх открытой панели, пока курсор над ней.
 *@
 <div class="@ClassNames">
-    <div class="appointment-interior" title="@Title">
-        <div class="appointment-header">
-            <a href="@characterUriLocator.GetDetailsUri(Model.CharacterId)" target="@Target">@Model.DisplayName</a>
-            @if (Model.HasMasterAccess)
-            {
-                @* Пробел задан выражением, а не разметкой: Blazor, в отличие от cshtml,
-                   вырезает текстовые узлы из одних пробелов — и <text> </text> тоже. *@
-                @Space<a href="@characterUriLocator.GetEditUri(Model.CharacterId)">(ред.)</a>
-            }
-        </div>
+    <Tooltip Title="@Title" Placement="TooltipPlacement.Right" Block="true">
+        <div class="appointment-interior">
+            <div class="appointment-header">
+                <a href="@characterUriLocator.GetDetailsUri(Model.CharacterId)" target="@Target">@Model.DisplayName</a>
+                @if (Model.HasMasterAccess)
+                {
+                    @* Пробел задан выражением, а не разметкой: Blazor, в отличие от cshtml,
+                       вырезает текстовые узлы из одних пробелов — и <text> </text> тоже. *@
+                    @Space<a href="@characterUriLocator.GetEditUri(Model.CharacterId)">(ред.)</a>
+                }
+            </div>
 
-        @if (Model.ErrorType == AppointmentErrorType.NotLocated)
-        {
-            <div class="appointment-rooms">
-                <b>Комнаты: </b>
-                @if (Model.Rooms.Count > 0)
-                {
-                    @(Model.AllRooms ? "все" : Rooms)
-                }
-                else
-                {
-                    <b class="text-danger">нет</b>
-                }
-            </div>
-            <div class="appointment-slots">
-                <b>Слоты: </b>
-                @if (Model.Slots.Count > 0)
-                {
-                    @Slots
-                }
-                else
-                {
-                    <b class="text-danger">нет</b>
-                }
-            </div>
-        }
-        <div class="appointment-users">
-            @foreach (var user in Model.Users)
+            @if (Model.ErrorType == AppointmentErrorType.NotLocated)
             {
-                <UserLink Model="user" />
+                <div class="appointment-rooms">
+                    <b>Комнаты: </b>
+                    @if (Model.Rooms.Count > 0)
+                    {
+                        @(Model.AllRooms ? "все" : Rooms)
+                    }
+                    else
+                    {
+                        <b class="text-danger">нет</b>
+                    }
+                </div>
+                <div class="appointment-slots">
+                    <b>Слоты: </b>
+                    @if (Model.Slots.Count > 0)
+                    {
+                        @Slots
+                    }
+                    else
+                    {
+                        <b class="text-danger">нет</b>
+                    }
+                </div>
             }
+            <div class="appointment-users">
+                @foreach (var user in Model.Users)
+                {
+                    <UserLink Model="user" />
+                }
+            </div>
         </div>
-    </div>
+        @if (WithDetails)
+        {
+            <button type="button" class="appointment-click-overlay" popovertarget="@AppointmentDetails.GetId(Model)" aria-label="@Title"></button>
+        }
+    </Tooltip>
     @if (WithDetails)
     {
-        <button type="button" class="appointment-click-overlay" popovertarget="@AppointmentDetails.GetId(Model)" title="@Title"></button>
         <AppointmentDetails Model="Model" />
     }
 </div>
