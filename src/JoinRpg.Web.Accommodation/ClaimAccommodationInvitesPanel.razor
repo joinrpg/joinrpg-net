@@ -3,6 +3,7 @@
 @using JoinRpg.Helpers
 @inject IAccommodationInviteClient Client
 @inject NavigationManager NavigationManager
+@inject ILogger<ClaimAccommodationInvitesPanel> Logger
 
 @* Приглашений нет — панель не показываем вовсе *@
 @if (Invites.Count > 0)
@@ -30,14 +31,14 @@
                                                         Size="SizeStyleEnum.Small"
                                                         AutoConfirm="true"
                                                         AutoConfirmMessage="Принять приглашение к совместному проживанию?"
-                                                        OnClick="@(args => Act(args, () => Client.AcceptInvite(invite.InviteId)))" />
+                                                        OnClick="@(args => Act(args, () => Client.AcceptInvite(invite.InviteId), "Не удалось принять приглашение"))" />
                                         </span>
                                         <JoinButton Label="Отклонить"
                                                     Icon="JoinIconType.Decline"
                                                     Size="SizeStyleEnum.Small"
                                                     AutoConfirm="true"
                                                     AutoConfirmMessage="Отклонить приглашение к совместному проживанию?"
-                                                    OnClick="@(args => Act(args, () => Client.DeclineInvite(invite.InviteId)))" />
+                                                    OnClick="@(args => Act(args, () => Client.DeclineInvite(invite.InviteId), "Не удалось отклонить приглашение"))" />
                                     }
                                     else
                                     {
@@ -46,7 +47,7 @@
                                                     Size="SizeStyleEnum.Small"
                                                     AutoConfirm="true"
                                                     AutoConfirmMessage="Отменить приглашение к совместному проживанию?"
-                                                    OnClick="@(args => Act(args, () => Client.CancelInvite(invite.InviteId)))" />
+                                                    OnClick="@(args => Act(args, () => Client.CancelInvite(invite.InviteId), "Не удалось отозвать приглашение"))" />
                                     }
                                 </div>
                             </td>
@@ -82,7 +83,7 @@
         _ => throw new ArgumentOutOfRangeException(nameof(Direction)),
     };
 
-    private async Task Act(ButtonClickEventArgs args, Func<Task> action)
+    private async Task Act(ButtonClickEventArgs args, Func<Task> action, string failureText)
     {
         try
         {
@@ -90,9 +91,16 @@
             // Ответ на приглашение меняет и панель проживания, и оба списка — перезагружаем страницу целиком
             NavigationManager.Refresh(forceReload: true);
         }
+        catch (ServerProblemException exception)
+        {
+            // Отказ сервера (приглашение уже отозвано, проект в архиве) — с понятной игроку причиной
+            errorMessage = exception.Message;
+            args.ExitProgressState = true;
+        }
         catch (Exception exception)
         {
-            errorMessage = exception.Message;
+            Logger.LogError(exception, "Ошибка операции с приглашением к проживанию: {FailureText}", failureText);
+            errorMessage = $"{failureText}. Попробуйте ещё раз.";
             args.ExitProgressState = true;
         }
     }

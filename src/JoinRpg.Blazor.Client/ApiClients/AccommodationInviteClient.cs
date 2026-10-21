@@ -1,4 +1,3 @@
-using System.Net;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.Web.Accommodation;
 
@@ -8,9 +7,8 @@ public class AccommodationInviteClient(HttpClient httpClient, CsrfTokenProvider 
     : IAccommodationInviteClient, IAccommodationTypeClient
 {
     public async Task<AccommodationInviteTargetsViewModel> GetInviteTargets(ClaimIdentification claimId)
-        => await httpClient.GetFromJsonAsync<AccommodationInviteTargetsViewModel>(
-            $"webapi/AccommodationInvite/GetInviteTargets?claimId={claimId}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync($"webapi/AccommodationInvite/GetInviteTargets?claimId={claimId}"))
+            .ReadFromJsonOrThrowProblem<AccommodationInviteTargetsViewModel>();
 
     public async Task CreateInvite(ClaimIdentification claimId, AccommodationGroupIdentification target)
         => await Post($"webapi/AccommodationInvite/CreateInvite?claimId={claimId}&target={target}");
@@ -21,9 +19,8 @@ public class AccommodationInviteClient(HttpClient httpClient, CsrfTokenProvider 
     public async Task<IReadOnlyCollection<AccommodationInviteViewModel>> GetInvites(
         ClaimIdentification claimId,
         InviteDirection direction)
-        => await httpClient.GetFromJsonAsync<IReadOnlyCollection<AccommodationInviteViewModel>>(
-            $"webapi/AccommodationInvite/GetInvites?claimId={claimId}&direction={direction}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync($"webapi/AccommodationInvite/GetInvites?claimId={claimId}&direction={direction}"))
+            .ReadFromJsonOrThrowProblem<IReadOnlyCollection<AccommodationInviteViewModel>>();
 
     public async Task AcceptInvite(AccommodationInviteIdentification inviteId)
         => await Post($"webapi/AccommodationInvite/AcceptInvite?inviteId={inviteId}");
@@ -35,9 +32,8 @@ public class AccommodationInviteClient(HttpClient httpClient, CsrfTokenProvider 
         => await Post($"webapi/AccommodationInvite/CancelInvite?inviteId={inviteId}");
 
     public async Task<AccommodationTypeChoiceViewModel> GetAccommodationTypes(ClaimIdentification claimId)
-        => await httpClient.GetFromJsonAsync<AccommodationTypeChoiceViewModel>(
-            $"webapi/AccommodationInvite/GetAccommodationTypes?claimId={claimId}")
-            ?? throw new Exception("Couldn't get result from server");
+        => await (await httpClient.GetAsync($"webapi/AccommodationInvite/GetAccommodationTypes?claimId={claimId}"))
+            .ReadFromJsonOrThrowProblem<AccommodationTypeChoiceViewModel>();
 
     public async Task SetAccommodationType(ClaimIdentification claimId, AccommodationTypeIdentification typeId)
         => await Post($"webapi/AccommodationInvite/SetAccommodationType?claimId={claimId}&typeId={typeId}");
@@ -47,12 +43,7 @@ public class AccommodationInviteClient(HttpClient httpClient, CsrfTokenProvider 
         await csrfTokenProvider.SetCsrfToken(httpClient);
         var response = await httpClient.PostAsync(uri, content: null);
 
-        // Причина отказа приходит текстом, чтобы контрол мог показать её игроку
-        if (response.StatusCode == HttpStatusCode.BadRequest)
-        {
-            throw new InvalidOperationException(await response.Content.ReadAsStringAsync());
-        }
-
-        response.EnsureSuccessStatusCode();
+        // Причину отказа контрол показывает игроку
+        await response.EnsureSuccessOrThrowProblem();
     }
 }

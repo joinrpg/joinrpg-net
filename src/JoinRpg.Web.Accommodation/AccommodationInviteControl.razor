@@ -2,6 +2,7 @@
 @* Мастер с правом расселять не приглашает за игрока, а сразу поселяет вместе (#5656). *@
 @inject IAccommodationInviteClient Client
 @inject NavigationManager NavigationManager
+@inject ILogger<AccommodationInviteControl> Logger
 
 @if (errorMessage is not null)
 {
@@ -23,7 +24,7 @@
                         DisabledTitle="Сначала выберите, кого пригласить"
                         AutoConfirm="true"
                         AutoConfirmMessage="Отправить приглашение на совместное проживание?"
-                        OnClick="@(args => Act(args, Client.CreateInvite))" />
+                        OnClick="@(args => Act(args, Client.CreateInvite, "Не удалось отправить приглашение"))" />
         </span>
     }
     else if (mode == AccommodationInviteMode.Merge)
@@ -36,7 +37,7 @@
                         DisabledTitle="Сначала выберите, кого поселить вместе"
                         AutoConfirm="true"
                         AutoConfirmMessage="Объединить в одну группу проживания? Игроки получат уведомление."
-                        OnClick="@(args => Act(args, Client.MergeGroups))" />
+                        OnClick="@(args => Act(args, Client.MergeGroups, "Не удалось поселить вместе"))" />
         </span>
     }
 </div>
@@ -59,7 +60,8 @@
 
     private async Task Act(
         ButtonClickEventArgs args,
-        Func<ClaimIdentification, AccommodationGroupIdentification, Task> action)
+        Func<ClaimIdentification, AccommodationGroupIdentification, Task> action,
+        string failureText)
     {
         if (selectedTarget is null)
         {
@@ -73,9 +75,16 @@
             // Приглашение меняет панели «приглашения», объединение — соседей: перезагружаем страницу целиком
             NavigationManager.Refresh(forceReload: true);
         }
+        catch (ServerProblemException exception)
+        {
+            // Отказ сервера (мест не хватает, проект в архиве) — с понятной игроку причиной
+            errorMessage = exception.Message;
+            args.ExitProgressState = true;
+        }
         catch (Exception exception)
         {
-            errorMessage = exception.Message;
+            Logger.LogError(exception, "Ошибка приглашения к проживанию для заявки {ClaimId}: {FailureText}", ClaimId, failureText);
+            errorMessage = $"{failureText}. Попробуйте ещё раз.";
             args.ExitProgressState = true;
         }
     }

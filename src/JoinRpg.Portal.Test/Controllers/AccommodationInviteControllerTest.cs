@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Test.Controllers;
 
 /// <summary>
-/// Контроллер не накрыт <c>CaptureNoAccessExceptionFilter</c>, поэтому доменные отказы
-/// он раскладывает сам: игрок должен увидеть русскую причину, а не 500-ю (#5260).
+/// Отказ в приглашении контроллер отдаёт текстом, чтобы игрок увидел русскую причину, а не 500-ю (#5260).
+/// Архив, блокировку и нехватку прав разбирает <c>WebApiExceptionHandler</c> (#5735).
 /// </summary>
 public class AccommodationInviteControllerTest
 {
@@ -47,26 +47,30 @@ public class AccommodationInviteControllerTest
         return new AccommodationInviteController(client, client);
     }
 
+    /// <summary>
+    /// Блокировку проекта контроллер не выдаёт за архив: исключение уходит в <c>WebApiExceptionHandler</c>,
+    /// который отвечает 409 с текстом про блокировку (#5735).
+    /// </summary>
     [Theory]
     [MemberData(nameof(Actions))]
-    public async Task DeactivatedProjectIsBadRequestWithRussianReason(string action)
-    {
-        var result = await Invoke(Create(new ProjectDeactivatedException(ProjectId)), action);
-
-        result.ShouldBeOfType<BadRequestObjectResult>().Value
-            .ShouldBe("Проект находится в архиве, изменить проживание уже нельзя");
-    }
+    public async Task BlockedProjectIsNotSwallowed(string action)
+        => _ = await Should.ThrowAsync<ProjectBlockedException>(
+            () => Invoke(Create(new ProjectBlockedException(ProjectId)), action));
 
     [Theory]
     [MemberData(nameof(Actions))]
-    public async Task NoAccessIsBadRequestWithRussianReason(string action)
+    public async Task DeactivatedProjectIsLeftToExceptionHandler(string action)
+        => _ = await Should.ThrowAsync<ProjectDeactivatedException>(
+            () => Invoke(Create(new ProjectDeactivatedException(ProjectId)), action));
+
+    [Theory]
+    [MemberData(nameof(Actions))]
+    public async Task NoAccessIsLeftToExceptionHandler(string action)
     {
         var mock = new MockedProject();
 
-        var result = await Invoke(Create(new NoAccessToProjectException(mock.ProjectInfo, userId: 1)), action);
-
-        result.ShouldBeOfType<BadRequestObjectResult>().Value
-            .ShouldBe("Недостаточно прав для этого действия");
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => Invoke(Create(new NoAccessToProjectException(mock.ProjectInfo, userId: 1)), action));
     }
 
     [Fact]

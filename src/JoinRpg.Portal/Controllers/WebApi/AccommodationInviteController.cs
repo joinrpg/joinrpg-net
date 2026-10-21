@@ -1,4 +1,3 @@
-using JoinRpg.Domain;
 using JoinRpg.Web.Accommodation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -56,12 +55,11 @@ public class AccommodationInviteController(
         => await NotAllowedToBadRequest(() => typeClient.SetAccommodationType(claimId, typeId));
 
     /// <summary>
-    /// Причина отказа предназначена игроку, поэтому отдаём её текстом, а не 500-й.
+    /// Причина отказа в приглашении предназначена игроку, поэтому отдаём её текстом, а не 500-й.
     /// </summary>
     /// <remarks>
-    /// Контроллер наследует <see cref="ControllerBase"/>, и <c>CaptureNoAccessExceptionFilter</c>
-    /// его не накрывает. Тексты исключений проекта — английские и технические, поэтому русскую
-    /// формулировку держим здесь, рядом с кодом ответа (как в <c>JoinMvcControllerBase.AddModelException</c>).
+    /// Архив, блокировку и нехватку прав здесь не ловим: их с русским заголовком отдаёт
+    /// <c>WebApiExceptionHandler</c> (409/403), и различает блокировку и архив он же (#5735).
     /// </remarks>
     private async Task<ActionResult> NotAllowedToBadRequest(Func<Task> action)
     {
@@ -72,14 +70,6 @@ public class AccommodationInviteController(
         catch (AccommodationInviteNotAllowedException exception)
         {
             return BadRequest(exception.Message);
-        }
-        catch (ProjectDeactivatedException)
-        {
-            return BadRequest("Проект находится в архиве, изменить проживание уже нельзя");
-        }
-        catch (NoAccessToProjectException)
-        {
-            return BadRequest("Недостаточно прав для этого действия");
         }
 
         return Ok();
