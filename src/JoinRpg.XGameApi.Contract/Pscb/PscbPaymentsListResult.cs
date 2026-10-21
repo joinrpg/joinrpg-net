@@ -27,7 +27,8 @@ public class PscbPaymentsListResult
     public string? ErrorDescription { get; set; }
 
     /// <summary>
-    /// Bank's request identifier. Quote it when asking the bank's support
+    /// Bank's request identifier, to quote when asking the bank's support. The bank sends it only
+    /// on failure: a successful list response carries no envelope at all, so this stays null.
     /// </summary>
     public string? RequestId { get; set; }
 

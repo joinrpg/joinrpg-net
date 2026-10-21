@@ -63,6 +63,7 @@ internal static class PscbPaymentViewModelBuilder
             Fee = payment.Fee,
             Status = Identifier(payment.Status),
             SubStatus = IdentifierOf(payment.SubStatus),
+            LastAction = payment.LastError is { } lastAction ? Build(lastAction) : null,
             Kind = IdentifierOf(payment.Type),
             PaymentMethod = Identifier(payment.PaymentMethod),
             StatusDate = payment.CurrentStatusDate,
@@ -127,6 +128,11 @@ internal static class PscbPaymentViewModelBuilder
     /// <summary>
     /// Банк отвечает кодом HTTP 200 и на успех, и на отказ, поэтому статус смотрим в теле ответа.
     /// </summary>
+    /// <remarks>
+    /// При успехе банк ключ <c>status</c> не присылает вовсе — тело ответа начинается сразу с
+    /// <c>payments</c> (проверено на боевом API 2026-10-21). Отсутствие статуса поэтому означает
+    /// успех: <see cref="PaymentInfoQueryStatus.Success"/> — нулевое значение перечисления.
+    /// </remarks>
     private static bool IsSuccess(PaymentInfoBase info) => info.Status == PaymentInfoQueryStatus.Success;
 
     private static string Identifier<TEnum>(TEnum value) where TEnum : struct, Enum => value.GetIdentifier();

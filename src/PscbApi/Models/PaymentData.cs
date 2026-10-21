@@ -76,6 +76,17 @@ public class PaymentData
     public DateTimeOffset CurrentStatusDate { get; set; }
 
     /// <summary>
+    /// Outcome of the last action with the payment, in the bank's own words — for a finished
+    /// payment it reads "Платеж завершен" rather than describing an error.
+    /// </summary>
+    /// <remarks>
+    /// In the payments list the bank puts this key inside every element; in <c>checkPayment</c> it
+    /// is a top-level key of the envelope instead (see <see cref="PaymentInfo"/>).
+    /// </remarks>
+    [JsonProperty("lastError")]
+    public BankResponseInfo? LastError { get; set; }
+
+    /// <summary>
     /// Payment method. If not set, all payment methods will be used. User must to choose one
     /// at payment page
     /// </summary>

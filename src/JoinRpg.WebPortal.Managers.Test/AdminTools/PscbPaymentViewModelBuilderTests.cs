@@ -96,6 +96,35 @@ public class PscbPaymentViewModelBuilderTests
     }
 
     /// <summary>
+    /// В списке банк кладёт lastError внутрь каждого элемента, и для завершённого платежа это
+    /// не ошибка, а описание состояния — «Платеж завершен».
+    /// </summary>
+    [Fact]
+    public void MapsTheBankLastActionAndShowsItInCsv()
+    {
+        var dto = PscbPaymentViewModelBuilder.Build(new PaymentData
+        {
+            Id = "1128001119",
+            OrderId = "0000643617",
+            Status = PaymentStatus.Paid,
+            LastError = new BankResponseInfo
+            {
+                Description = "Платеж завершен",
+                PaymentCode = PaymentsSystemResponseCode.Success,
+                ProcessingCode = ProcessingCenterResponseCode.Approved,
+            },
+        });
+
+        dto.LastAction.ShouldNotBeNull();
+        dto.LastAction.Description.ShouldBe("Платеж завершен");
+        dto.LastAction.PaymentsSystemCode.ShouldBe(0);
+        dto.LastAction.ProcessingCenterCode.ShouldBe(0);
+
+        var columns = new PscbPaymentsCsvExporter().ParseColumns().ToList();
+        ByName(columns, "Описание состояния").ExtractValue(dto).ShouldBe("Платеж завершен");
+    }
+
+    /// <summary>
     /// Банк возвращает разный набор полей в зависимости от статуса платежа и флагов запроса,
     /// поэтому пустая модель обязана преобразовываться, а не падать.
     /// </summary>
@@ -105,6 +134,7 @@ public class PscbPaymentViewModelBuilderTests
         var dto = PscbPaymentViewModelBuilder.Build(new PaymentData { Id = "11", OrderId = "0000000001" });
 
         dto.Card.ShouldBeNull();
+        dto.LastAction.ShouldBeNull();
         dto.MerchantData.ShouldBeNull();
         dto.SubStatus.ShouldBeNull();
         dto.Kind.ShouldBeNull();
@@ -202,6 +232,7 @@ public class PscbPaymentViewModelBuilderTests
         ByName(columns, "Возвратов").ExtractValue(payment).ShouldBe(0);
         ByName(columns, "Чеков").ExtractValue(payment).ShouldBe(0);
         ByName(columns, "Номер карты").ExtractValue(payment).ShouldBeNull();
+        ByName(columns, "Описание состояния").ExtractValue(payment).ShouldBeNull();
     }
 
     [Fact]

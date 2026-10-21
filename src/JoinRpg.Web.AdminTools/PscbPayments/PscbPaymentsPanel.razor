@@ -182,6 +182,7 @@
                             <tr><th>Сумма</th><td>@payment.Amount</td></tr>
                             <tr><th>Комиссия плательщика</th><td>@payment.Fee</td></tr>
                             <tr><th>Статус</th><td>@payment.Status (@payment.SubStatus)</td></tr>
+                            <tr><th>Описание состояния</th><td>@payment.LastAction?.Description</td></tr>
                             <tr><th>Вид</th><td>@payment.Kind</td></tr>
                             <tr><th>Метод</th><td>@payment.PaymentMethod</td></tr>
                             <tr><th>Дата статуса</th><td>@payment.StatusDate.ToString("yyyy-MM-dd HH:mm:ss zzz")</td></tr>
@@ -227,7 +228,7 @@
                                                 @receipt.ReceiptId: @receipt.Type, @receipt.Amount,
                                                 ФД @receipt.DocumentNumber, ККТ @receipt.RegisterNumber,
                                                 ФН @receipt.FiscalNumber, смена @receipt.ShiftNumber, чек @receipt.ReceiptNumber,
-                                                @receipt.Date.ToString("yyyy-MM-dd HH:mm:ss")
+                                                @receipt.Date?.ToString("yyyy-MM-dd HH:mm:ss")
                                             </div>
                                         }
                                     </td>

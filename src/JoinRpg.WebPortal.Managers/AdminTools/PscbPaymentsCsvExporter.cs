@@ -43,6 +43,7 @@ public class PscbPaymentsCsvExporter : IGeneratorFrontend<PscbPaymentInfo>
         new Column("Комиссия плательщика", p => Money(p.Fee)),
         new Column("Статус", p => p.Status),
         new Column("Подстатус", p => p.SubStatus),
+        new Column("Описание состояния", p => p.LastAction?.Description),
         new Column("Вид", p => p.Kind),
         new Column("Метод", p => p.PaymentMethod),
         new Column("Дата статуса", p => Moment(p.StatusDate)),

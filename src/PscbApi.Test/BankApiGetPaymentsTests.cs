@@ -164,6 +164,45 @@ public class BankApiGetPaymentsTests
         result.Payments.ShouldBeNull();
     }
 
+    /// <summary>
+    /// В списке банк кладёт lastError внутрь каждого элемента, а не в конверт, как в checkPayment.
+    /// Без этого поля в модели описание состояния платежа молча терялось — найдено отладкой
+    /// на боевом API 2026-10-21.
+    /// </summary>
+    [Fact]
+    public async Task ParsesLastErrorInsideEachListElement()
+    {
+        var handler = new RecordingHandler(_ => Success(
+            """[{"orderId":"0000643617","paymentId":"1128001119","state":"end","lastError":{"code":"0","subCode":"00","description":"Платеж завершен"}}]"""));
+
+        var result = await CreateApi(handler).GetPaymentsAsync(From, From.AddDays(5));
+
+        var lastError = result.Payments!.Single().LastError;
+        lastError.ShouldNotBeNull();
+        lastError.Description.ShouldBe("Платеж завершен");
+        lastError.PaymentCode.ShouldBe(PaymentsSystemResponseCode.Success);
+        lastError.ProcessingCode.ShouldBe(ProcessingCenterResponseCode.Approved);
+    }
+
+    /// <summary>
+    /// Банк пишет в subCode текст "null", когда кода процессинга нет. Enum.Parse на таком тексте
+    /// ронял весь ответ списка — найдено на боевом API 2026-10-21 в payments[109].lastError.subCode.
+    /// </summary>
+    [Fact]
+    public async Task ToleratesTheLiteralTextNullInBankErrorCodes()
+    {
+        var handler = new RecordingHandler(_ => Success(
+            """[{"orderId":"0000643617","paymentId":"1128001119","state":"end","lastError":{"code":"0","subCode":"null","description":"Платеж завершен"}}]"""));
+
+        var result = await CreateApi(handler).GetPaymentsAsync(From, From.AddDays(5));
+
+        var lastError = result.Payments!.Single().LastError;
+        lastError.ShouldNotBeNull();
+        lastError.Description.ShouldBe("Платеж завершен");
+        lastError.PaymentCode.ShouldBe(PaymentsSystemResponseCode.Success);
+        lastError.ProcessingCode.ShouldBeNull();
+    }
+
     [Fact]
     public async Task NonSuccessHttpStatusThrows()
     {
