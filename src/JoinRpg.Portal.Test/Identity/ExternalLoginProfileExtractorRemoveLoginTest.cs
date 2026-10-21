@@ -167,6 +167,8 @@ public class ExternalLoginProfileExtractorRemoveLoginTest
 
         public Task SetVerificationFlag(int userId, bool verificationFlag) => throw new NotSupportedException();
 
+        public Task RemoveOwnVerification() => throw new NotSupportedException();
+
         public Task SetNameIfNotSetWithoutAccessChecks(int userId, UserFullName userFullName) => throw new NotSupportedException();
 
         public Task SetVkIfNotSetWithoutAccessChecks(int id, VkSocialLink vk, AvatarInfo? avatarInfo, CancellationToken ct = default) => throw new NotSupportedException();
