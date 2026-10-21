@@ -173,8 +173,15 @@
                 creating = false;
             }
         }
-        catch
+        catch (ServerProblemException exception)
         {
+            // Отказ сервера (например, ошибка валидации или сессия истекла) — причину показываем как есть
+            messageStore?.Add(() => Model, exception.Message);
+            creating = false;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка при создании проекта");
             messageStore?.Add(() => Model, "Неизвестная серверная ошибка при создании проекта");
             creating = false;
         }

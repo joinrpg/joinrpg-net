@@ -1,4 +1,5 @@
 @using JoinRpg.Web.Plots
+@using JoinRpg.Common.WebComponents.Dialog
 @inject ILogger<PlotElementControls> logger
 @inject IPlotClient plotClient
 @inject NavigationManager NavigationManager
@@ -58,6 +59,7 @@ else
 </JoinButtonGroup>
 
 <JoinPublishDialog @ref="publishDialogRef" PlotVersion="Model.CurrentVersion" />
+<JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
 
 @code{
     const string shouldHaveEditAccess = "У вас должны быть права редактора сюжетов для этого";
@@ -66,34 +68,56 @@ else
     public PlotElementControlsViewModel Model { get; set; } = default!;
 
     private JoinPublishDialog? publishDialogRef;
+    private JoinMessageDialog errorDialog = null!;
+    private string error = "";
 
     //TODO: Удалить рефреши отсюда, вместо них перерисовывать элемент.
-    private async Task UnpublishExecuted(EventArgs _)
-    {
-        await plotClient.UnPublishVersion(Model.CurrentVersion);
-        NavigationManager.Refresh(forceReload: true);
-    }
+    private Task UnpublishExecuted(ButtonClickEventArgs args)
+        => ExecuteAndRefresh(args, () => plotClient.UnPublishVersion(Model.CurrentVersion), "Не удалось скрыть вводную");
 
-    private async Task RestoreExecuted(EventArgs _)
-    {
-        await plotClient.UnDeleteElement(Model.PlotElementId);
-        NavigationManager.Refresh(forceReload: true);
-    }
+    private Task RestoreExecuted(ButtonClickEventArgs args)
+        => ExecuteAndRefresh(args, () => plotClient.UnDeleteElement(Model.PlotElementId), "Не удалось восстановить вводную");
 
-    private async Task DeleteExecuted(EventArgs _)
-    {
-        await plotClient.DeleteElement(Model.PlotElementId);
-        NavigationManager.Refresh(forceReload: true);
-    }
+    private Task DeleteExecuted(ButtonClickEventArgs args)
+        => ExecuteAndRefresh(args, () => plotClient.DeleteElement(Model.PlotElementId), "Не удалось удалить вводную");
 
-    private async Task OpenPublishDialog(EventArgs _)
+    private async Task OpenPublishDialog(ButtonClickEventArgs args)
     {
         var model = await publishDialogRef!.ShowModalAsync();
-        if (model is not null)
+        if (model is null)
         {
-            await plotClient.PublishVersion(model);
+            NavigationManager.Refresh(forceReload: true);
+            return;
         }
-        NavigationManager.Refresh(forceReload: true);
+        await ExecuteAndRefresh(args, () => plotClient.PublishVersion(model), "Не удалось опубликовать вводную");
+    }
+
+    private async Task ExecuteAndRefresh(ButtonClickEventArgs args, Func<Task> action, string failureText)
+    {
+        try
+        {
+            await action();
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (ServerProblemException exception)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            ShowError(args, exception.Message);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка операции над вводной {PlotElementId}", Model.PlotElementId);
+            ShowError(args, failureText);
+        }
+    }
+
+    private void ShowError(ButtonClickEventArgs args, string text)
+    {
+        error = text;
+        // Страница не перезагрузится — кнопку надо вывести из состояния «в процессе», иначе повторить нельзя.
+        args.ExitProgressState = true;
+        StateHasChanged();
+        _ = errorDialog.ShowModalAsync();
     }
 }
 

@@ -7,6 +7,7 @@
 @inject IProjectListClient ProjectListClient
 @inject IKogdaIgraBindClient BindClient
 @inject NavigationManager NavigationManager
+@inject ILogger<ProjectAdminControlPanel> logger
 
 
 @if (model is not null)
@@ -15,6 +16,10 @@
         <Header>Привязка к КогдаИгре</Header>
         <Body>
             <JoinButton Preset="ButtonPreset.Link" Title="Привязать..." OnClick="(args) => OpenBindDialogAsync(args)" />
+            @if (bindError is not null)
+            {
+                <JoinAlert Variation="VariationStyleEnum.Danger">@bindError</JoinAlert>
+            }
             <JoinFormDialog FormName="BindToKi" SubmitButtonPreset="ButtonPreset.Link" Model="model" @ref="dialog" Height="500px">
                 <FormRowFor For="@(() => model.DisableKogdaIgraMapping)">
                     <CheckboxInput @bind-Value="model.DisableKogdaIgraMapping" />
@@ -39,6 +44,7 @@
 
 
     private BindToKiModel model = null!;
+    private string? bindError;
     private JoinFormDialog<BindToKiModel> dialog = null!;
 
     protected override async Task OnParametersSetAsync()
@@ -51,12 +57,22 @@
     {
         try
         {
+            bindError = null;
             var result = await dialog.ShowModalAsync();
             if (result is not null)
             {
                 await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(Model.ProjectId, result.KogdaIgraIds, result.DisableKogdaIgraMapping));
                 NavigationManager.Refresh(forceReload: true);
             }
+        }
+        catch (ServerProblemException ex)
+        {
+            bindError = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при привязке проекта {ProjectId} к КогдаИгре", Model.ProjectId);
+            bindError = "Не удалось сохранить привязку к КогдаИгре";
         }
         finally
         {

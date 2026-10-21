@@ -19,6 +19,11 @@
     return;
 }
 
+@if (bindError is not null)
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@bindError</JoinAlert>
+}
+
 <JoinBorderedTable Items="Projects" Context="project">
     <HeadContent>
         <tr>
@@ -80,6 +85,7 @@
 {
     private bool isLoading = false;
     private bool isError = false;
+    private string? bindError;
 
     [Parameter]
     [EditorRequired]
@@ -137,6 +143,7 @@
     {
         try
         {
+            bindError = null;
             model = new BindToKiModel { JoinProject = project, KogdaIgraIds = project.KogdaIgraIds.ToArray(), DisableKogdaIgraMapping = project.DisableKogdaIgraMapping };
             var result = await dialog.ShowModalAsync();
             if (result is not null)
@@ -144,6 +151,15 @@
                 await BindClient.UpdateProjectKogdaIgraBindings(new KogdaIgraBindViewModel(project.ProjectId, result.KogdaIgraIds, result.DisableKogdaIgraMapping));
                 Projects = await LoadProjectsAsync();
             }
+        }
+        catch (ServerProblemException ex)
+        {
+            bindError = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при привязке проекта {ProjectId} к КогдаИгре", project.ProjectId);
+            bindError = "Не удалось сохранить привязку к КогдаИгре";
         }
         finally
         {

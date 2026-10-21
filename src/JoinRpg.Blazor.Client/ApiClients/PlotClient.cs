@@ -8,29 +8,22 @@ namespace JoinRpg.Blazor.Client.ApiClients;
 public class PlotClient(HttpClient httpClient) : IPlotClient
 {
     public async Task DeleteElement(PlotElementIdentification elementId)
-    {
-        _ = (await httpClient.PostAsync($"/webapi/plots/DeleteElement?projectId={elementId.ProjectId}&elementId={elementId}", new StringContent(""))).EnsureSuccessStatusCode();
-    }
+        => await (await httpClient.PostAsync($"/webapi/plots/DeleteElement?projectId={elementId.ProjectId}&elementId={elementId}", new StringContent("")))
+            .EnsureSuccessOrThrowProblem();
 
     public async Task UnDeleteElement(PlotElementIdentification elementId)
-    {
-        _ = (await httpClient.PostAsync($"/webapi/plots/UnDeleteElement?projectId={elementId.ProjectId}&elementId={elementId}", new StringContent(""))).EnsureSuccessStatusCode();
-    }
+        => await (await httpClient.PostAsync($"/webapi/plots/UnDeleteElement?projectId={elementId.ProjectId}&elementId={elementId}", new StringContent("")))
+            .EnsureSuccessOrThrowProblem();
 
     public async Task<PlotFolderDto[]> GetPlotFoldersList(ProjectIdentification projectId)
-    {
-        return await httpClient.GetFromJsonAsync<PlotFolderDto[]>(
-           $"/webapi/plots/GetPlotFoldersList?projectId={projectId.Value}")
-           ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync($"/webapi/plots/GetPlotFoldersList?projectId={projectId.Value}"))
+            .ReadFromJsonOrThrowProblem<PlotFolderDto[]>();
 
     public async Task PublishVersion(PublishPlotElementViewModel model)
-    {
-        (await httpClient.PostAsJsonAsync($"/webapi/plots/PublishVersion?projectId={model.ProjectId}", model)).EnsureSuccessStatusCode();
-    }
+        => await (await httpClient.PostAsJsonAsync($"/webapi/plots/PublishVersion?projectId={model.ProjectId}", model))
+            .EnsureSuccessOrThrowProblem();
 
     public async Task UnPublishVersion(PlotVersionIdentification version)
-    {
-        _ = (await httpClient.PostAsync($"/webapi/plots/UnPublishVersion?projectId={version.ProjectId}&plotVersion={version}", new StringContent(""))).EnsureSuccessStatusCode();
-    }
+        => await (await httpClient.PostAsync($"/webapi/plots/UnPublishVersion?projectId={version.ProjectId}&plotVersion={version}", new StringContent("")))
+            .EnsureSuccessOrThrowProblem();
 }

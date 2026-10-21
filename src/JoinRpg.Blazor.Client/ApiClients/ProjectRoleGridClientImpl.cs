@@ -6,18 +6,15 @@ namespace JoinRpg.Blazor.Client.ApiClients;
 internal class ProjectRoleGridClientImpl(HttpClient httpClient) : IProjectRoleGridClient
 {
     public async Task<ProjectRoleGridViewResult> GetRoleGrid(ProjectRolesListIdentification id)
-    {
-        return await httpClient.GetFromJsonAsync<ProjectRoleGridViewResult>(
-            $"webapi/project-role-grid/get?projectId={id.ProjectId.Value}&projectRolesListId={id.ProjectRolesListId}")
-            ?? throw new Exception("Couldn't get result from server");
-    }
+        => await (await httpClient.GetAsync(
+            $"webapi/project-role-grid/get?projectId={id.ProjectId.Value}&projectRolesListId={id.ProjectRolesListId}"))
+            .ReadFromJsonOrThrowProblem<ProjectRoleGridViewResult>();
 
     public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly = false)
     {
         var url = $"webapi/project-role-grid/getclassic?projectId={projectId.Value}"
             + (groupId is { } g ? $"&characterGroupId={g.CharacterGroupId}" : "")
             + (hotOnly ? "&hotOnly=true" : "");
-        return await httpClient.GetFromJsonAsync<ProjectRoleGridViewResult>(url)
-            ?? throw new Exception("Couldn't get result from server");
+        return await (await httpClient.GetAsync(url)).ReadFromJsonOrThrowProblem<ProjectRoleGridViewResult>();
     }
 }
