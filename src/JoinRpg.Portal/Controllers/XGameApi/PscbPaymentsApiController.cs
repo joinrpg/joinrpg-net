@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
 /// <summary>
-/// Шлюз к API ПСБ для внешних потребителей (ADR025). Только для админа сайта.
+/// Шлюз к API ПСКБ для внешних потребителей (ADR025). Только для админа сайта.
 /// </summary>
 /// <remarks>
 /// Отдаёт то, что сказал банк, своими типами и ничего не примешивает из данных JoinRpg.
@@ -56,7 +56,7 @@ public class PscbPaymentsApiController(IPscbPaymentsClient client, IExportDataSe
         if (string.Equals(format, PscbPaymentsRoutes.CsvFormat, StringComparison.OrdinalIgnoreCase))
         {
             return GeneratorResultHelper.Result(
-                $"Платежи ПСБ {dateFrom:yyyy-MM-dd}-{dateTo:yyyy-MM-dd}",
+                $"Платежи ПСКБ {dateFrom:yyyy-MM-dd}-{dateTo:yyyy-MM-dd}",
                 PscbPaymentsCsvExporter.CreateGenerator(exportDataService, result.Payments));
         }
 

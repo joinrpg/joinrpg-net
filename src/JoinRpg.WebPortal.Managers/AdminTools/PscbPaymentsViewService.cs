@@ -6,7 +6,7 @@ using PscbApi.Models;
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 
 /// <summary>
-/// Шлюз к API ПСБ для админки сайта (ADR025).
+/// Шлюз к API ПСКБ для админки сайта (ADR025).
 /// </summary>
 /// <remarks>
 /// <para>

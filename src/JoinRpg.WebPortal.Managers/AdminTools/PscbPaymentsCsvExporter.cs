@@ -5,7 +5,7 @@ using JoinRpg.XGameApi.Contract.Pscb;
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 
 /// <summary>
-/// Колонки выгрузки списка платежей ПСБ в CSV (ADR025).
+/// Колонки выгрузки списка платежей ПСКБ в CSV (ADR025).
 /// </summary>
 /// <remarks>
 /// Заголовки колонок — строки, видимые пользователю, поэтому они русские: так же сделано в

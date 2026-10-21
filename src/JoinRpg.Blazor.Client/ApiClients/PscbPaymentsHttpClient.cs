@@ -4,7 +4,7 @@ using JoinRpg.XGameApi.Contract.Pscb;
 namespace JoinRpg.Blazor.Client.ApiClients;
 
 /// <summary>
-/// WASM-клиент шлюза к API ПСБ (ADR025).
+/// WASM-клиент шлюза к API ПСКБ (ADR025).
 /// </summary>
 /// <remarks>
 /// Оба запроса — GET, поэтому токен antiforgery не нужен: глобальная проверка его касается только

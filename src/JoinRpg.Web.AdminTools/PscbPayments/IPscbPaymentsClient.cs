@@ -3,7 +3,7 @@ using JoinRpg.XGameApi.Contract.Pscb;
 namespace JoinRpg.Web.AdminTools.PscbPayments;
 
 /// <summary>
-/// Шлюз к API ПСБ: список платежей магазина и параметры одного платежа (ADR025).
+/// Шлюз к API ПСКБ: список платежей магазина и параметры одного платежа (ADR025).
 /// </summary>
 /// <remarks>
 /// Шлюз отдаёт то, что сказал банк, и ничего не примешивает из данных JoinRpg.

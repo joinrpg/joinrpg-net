@@ -3,7 +3,7 @@ using System.Globalization;
 namespace JoinRpg.Web.AdminTools.PscbPayments;
 
 /// <summary>
-/// Адреса ручек шлюза к API ПСБ и строка запроса к ним (ADR025).
+/// Адреса ручек шлюза к API ПСКБ и строка запроса к ним (ADR025).
 /// </summary>
 /// <remarks>
 /// Адрес нужен двум потребителям: WASM-клиенту, который ходит за данными, и острову, который
