@@ -260,6 +260,7 @@ internal class UriServiceImpl(
             // Комнаты сознательно без ссылки: отдельной страницы у комнаты нет, а список комнат
             // открыт только мастерам — игрок, тоже получающий уведомление, упрётся в отказ.
             ProjectIdentification p => (GetUri(p), "проект"),
+            MyClaimInProjectIdentification m => (GetUri(m), "ваша заявка"),
             _ => (null, null),
         };
 

@@ -57,7 +57,9 @@ public partial class MassProjectEmailService(
         var header = $"{project.ProjectName.Value}: {subject}";
 
         var notification = new NotificationEvent(NotificationClass.MassProjectEmails,
-                                                 project.ProjectId, // Казалось бы это заявка, но нет, письмо к заявке не имеет отношения, оно всем рассылается
+                                                 // Не конкретная заявка: к истории заявки письмо отношения не имеет, оно всем рассылается.
+                                                 // Но ссылка под письмом ведёт игрока в его заявку, а не на страницу проекта (#5752).
+                                                 myClaimId,
                                                  header,
                                                  template,
                                                  recipients,
