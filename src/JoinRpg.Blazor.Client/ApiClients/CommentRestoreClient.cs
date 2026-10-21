@@ -5,12 +5,8 @@ namespace JoinRpg.Blazor.Client.ApiClients;
 public class CommentRestoreClient(HttpClient httpClient, CsrfTokenProvider csrfTokenProvider) : ICommentRestoreClient
 {
     public async Task<CommentRestorePlanViewModel> GetPlan(ProjectIdentification projectId)
-    {
-        var response = await httpClient.GetAsync($"webapi/comment-restore/GetPlan?projectId={projectId.Value}");
-        await EnsureSuccess(response, "Не удалось получить план с сервера");
-        return await response.Content.ReadFromJsonAsync<CommentRestorePlanViewModel>()
-            ?? throw new Exception("Не удалось получить план с сервера");
-    }
+        => await (await httpClient.GetAsync($"webapi/comment-restore/GetPlan?projectId={projectId.Value}"))
+            .ReadFromJsonOrThrowProblem<CommentRestorePlanViewModel>();
 
     public async Task<CommentRestoreApplyResult> Apply(ClaimIdentification claimId)
     {
@@ -18,18 +14,6 @@ public class CommentRestoreClient(HttpClient httpClient, CsrfTokenProvider csrfT
         var response = await httpClient.PostAsync(
             $"webapi/comment-restore/Apply?projectId={claimId.ProjectId.Value}",
             JsonContent.Create(claimId));
-        await EnsureSuccess(response, "Не удалось восстановить комментарии заявки");
-        return await response.Content.ReadFromJsonAsync<CommentRestoreApplyResult>()
-            ?? throw new Exception("Не удалось получить результат с сервера");
-    }
-
-    private static async Task EnsureSuccess(HttpResponseMessage response, string defaultError)
-    {
-        if (!response.IsSuccessStatusCode)
-        {
-            // Причину отказа сервер отдаёт текстом — её показываем мастеру.
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            throw new Exception(string.IsNullOrWhiteSpace(errorMessage) ? defaultError : errorMessage.Trim('"'));
-        }
+        return await response.ReadFromJsonOrThrowProblem<CommentRestoreApplyResult>();
     }
 }

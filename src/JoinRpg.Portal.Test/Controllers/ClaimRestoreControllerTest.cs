@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Controllers.WebApi;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -69,6 +70,19 @@ public class ClaimRestoreControllerTest
         result.Result.ShouldBeOfType<BadRequest<string>>().Value.ShouldNotBeNull().ShouldContain("загрузите файл заново");
     }
 
+    /// <summary>
+    /// Блокировку проекта отдаёт WebApiExceptionHandler — русским текстом с 409, а не английским Message в 400 (#5735).
+    /// </summary>
+    [Fact]
+    public async Task ApplyClaimFields_BlockedProject_GoesToCommonHandler()
+    {
+        client.ApplyError = new ProjectBlockedException(ProjectId);
+
+        _ = await Should.ThrowAsync<ProjectBlockedException>(Controller.ApplyClaimFields(ProjectId, new ClaimFieldsRestoreApplyRequest(
+            new ClaimIdentification(ProjectId, 9),
+            [new RestoreFieldValueRequest(new ProjectFieldIdentification(ProjectId, 3), "x")])));
+    }
+
     private sealed class FakeClient : IClaimRestoreClient
     {
         public List<string> Calls { get; } = [];
@@ -88,10 +102,12 @@ public class ClaimRestoreControllerTest
 
         public Task ApplyClaimFields(ClaimFieldsRestoreApplyRequest request) => Record(nameof(ApplyClaimFields));
 
+        public Exception? ApplyError { get; set; }
+
         private Task Record(string call)
         {
             Calls.Add(call);
-            return Task.CompletedTask;
+            return ApplyError is { } error ? throw error : Task.CompletedTask;
         }
     }
 }

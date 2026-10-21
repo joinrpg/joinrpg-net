@@ -1,9 +1,12 @@
 using AngleSharp.Dom;
 using Bunit;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Xunit;
 
@@ -20,6 +23,7 @@ public class CommentRestorePanelTest : BunitContext
     {
         Services.AddSingleton<ICommentRestoreClient>(client);
         Services.AddSingleton<IUriLocator<ClaimIdentification>>(new FakeLocator());
+        Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
     }
 
     private static CommentRestoreCommentView Comment(string text)
@@ -108,6 +112,42 @@ public class CommentRestorePanelTest : BunitContext
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось по заявкам: 1"));
         client.Applied.Select(c => c.ClaimId).ShouldBe([5, 7]);
         cut.Markup.ShouldContain("Сбой заявки 5");
+    }
+
+    [Fact]
+    public void ApplyFailedUnexpectedly_GenericTextInsteadOfExceptionMessage()
+    {
+        client.Plans.Enqueue(Plan(Row(5, comments: 2)));
+        client.Plans.Enqueue(Plan(Row(5, comments: 2)));
+        client.Broken.Add(5);
+
+        var cut = RenderPanel();
+        Button(cut, "Применить выбранные").Click();
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось по заявкам: 1"));
+        cut.Markup.ShouldContain("Не удалось восстановить комментарии заявки — попробуйте ещё раз");
+        cut.Markup.ShouldNotContain("Internal Server Error");
+    }
+
+    [Fact]
+    public void PlanRefused_ServerReasonShown()
+    {
+        client.PlanFailure = new ServerProblemException("Недостаточно прав для этого действия");
+
+        var cut = RenderPanel();
+
+        cut.Markup.ShouldContain("Не удалось построить план восстановления комментариев: Недостаточно прав для этого действия");
+    }
+
+    [Fact]
+    public void PlanFailedUnexpectedly_GenericTextInsteadOfExceptionMessage()
+    {
+        client.PlanFailure = new HttpRequestException("Response status code does not indicate success: 500 (Internal Server Error).");
+
+        var cut = RenderPanel();
+
+        cut.Markup.ShouldContain("Не удалось построить план восстановления комментариев: произошла ошибка, попробуйте ещё раз");
+        cut.Markup.ShouldNotContain("Internal Server Error");
     }
 
     [Fact]
@@ -213,14 +253,28 @@ public class CommentRestorePanelTest : BunitContext
         public Task<CommentRestorePlanViewModel> GetPlan(ProjectIdentification projectId)
         {
             PlanRequests++;
-            return Plans.TryDequeue(out var plan) ? Task.FromResult(plan) : throw new InvalidOperationException("нет связи");
+            if (PlanFailure is { } failure)
+            {
+                throw failure;
+            }
+            return Plans.TryDequeue(out var plan) ? Task.FromResult(plan) : throw new HttpRequestException("нет связи");
         }
+
+        /// <summary>Чем упадёт запрос плана: отказ сервера или сбой.</summary>
+        public Exception? PlanFailure { get; set; }
+
+        /// <summary>Заявки, применение которых упадёт не отказом, а сбоем (например, 500).</summary>
+        public HashSet<int> Broken { get; } = [];
 
         public Task<CommentRestoreApplyResult> Apply(ClaimIdentification claimId)
         {
             Applied.Add(claimId);
+            if (Broken.Contains(claimId.ClaimId))
+            {
+                throw new HttpRequestException("Response status code does not indicate success: 500 (Internal Server Error).");
+            }
             return Failing.Contains(claimId.ClaimId)
-                ? throw new InvalidOperationException($"Сбой заявки {claimId.ClaimId}")
+                ? throw new ServerProblemException($"Сбой заявки {claimId.ClaimId}")
                 : Task.FromResult(Results.GetValueOrDefault(claimId.ClaimId) ?? new CommentRestoreApplyResult(1, 0, []));
         }
     }

@@ -2,9 +2,12 @@ using System.Text.Json;
 using AngleSharp.Dom;
 using Bunit;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using Xunit;
 
@@ -25,6 +28,7 @@ public class FinanceRestorePanelTest : BunitContext
     {
         Services.AddSingleton<IFinanceRestoreClient>(client);
         Services.AddSingleton<IUriLocator<ClaimIdentification>>(new FakeLocator());
+        Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
     }
 
     private static FinanceRestoreOperationView Op(string key, int? suggested, bool canApply = true)
@@ -244,6 +248,46 @@ public class FinanceRestorePanelTest : BunitContext
     }
 
     [Fact]
+    public void ApplyFailedUnexpectedly_GenericTextInsteadOfExceptionMessage()
+    {
+        client.Plans.Enqueue(Plan(Row(5, true, Op("a", Cash.PaymentTypeId))));
+        client.Plans.Enqueue(Plan(Row(5, true, Op("a", Cash.PaymentTypeId))));
+        client.Broken.Add(5);
+
+        var cut = RenderPanel();
+        Button(cut, "Применить выбранные").Click();
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось по заявкам: 1"));
+        cut.Markup.ShouldContain("Не удалось восстановить оплаты заявки — попробуйте ещё раз");
+        cut.Markup.ShouldNotContain("Internal Server Error");
+    }
+
+    [Fact]
+    public void CreateOwnCashRefused_ServerReasonShown()
+    {
+        client.Plans.Enqueue(Plan(Row(5, true, Op("a", null))) with { HasOwnCash = false });
+        client.CashFailure = new ServerProblemException("Проект заблокирован, изменения запрещены");
+
+        var cut = RenderPanel();
+        Button(cut, "Создать «Наличные» на меня").Click();
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось создать тип оплаты «Наличные»: Проект заблокирован, изменения запрещены"));
+    }
+
+    [Fact]
+    public void CreateOwnCashFailedUnexpectedly_GenericTextInsteadOfExceptionMessage()
+    {
+        client.Plans.Enqueue(Plan(Row(5, true, Op("a", null))) with { HasOwnCash = false });
+        client.CashFailure = new HttpRequestException("Response status code does not indicate success: 500 (Internal Server Error).");
+
+        var cut = RenderPanel();
+        Button(cut, "Создать «Наличные» на меня").Click();
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось создать тип оплаты «Наличные»: произошла ошибка, попробуйте ещё раз"));
+        cut.Markup.ShouldNotContain("Internal Server Error");
+    }
+
+    [Fact]
     public void AfterRestore_RowsWithNothingLeft_CollapsedIntoCounter()
     {
         client.Plans.Enqueue(Plan(Row(5, true, Op("a", Cash.PaymentTypeId)), Row(7, true, Op("e", Cash.PaymentTypeId))));
@@ -356,8 +400,14 @@ public class FinanceRestorePanelTest : BunitContext
         public Task<FinanceRestorePlanViewModel> GetPlan(ProjectIdentification projectId)
         {
             PlanRequests++;
-            return Plans.TryDequeue(out var plan) ? Task.FromResult(plan) : throw new InvalidOperationException("нет связи");
+            return Plans.TryDequeue(out var plan) ? Task.FromResult(plan) : throw new HttpRequestException("нет связи");
         }
+
+        /// <summary>Заявки, применение которых упадёт не отказом, а сбоем (например, 500).</summary>
+        public HashSet<int> Broken { get; } = [];
+
+        /// <summary>Чем упадёт создание «Наличных»: отказ сервера или сбой.</summary>
+        public Exception? CashFailure { get; set; }
 
         /// <summary>Итог применения вместо стандартного «вставлено по числу выбранных типов».</summary>
         public FinanceRestoreApplyResult? Result { get; set; }
@@ -365,15 +415,19 @@ public class FinanceRestorePanelTest : BunitContext
         public Task<FinanceRestoreApplyResult> Apply(FinanceRestoreApplyRequest request)
         {
             Applied.Add(request);
+            if (Broken.Contains(request.ClaimId.ClaimId))
+            {
+                throw new HttpRequestException("Response status code does not indicate success: 500 (Internal Server Error).");
+            }
             return Failing.Contains(request.ClaimId.ClaimId)
-                ? throw new InvalidOperationException($"Сбой заявки {request.ClaimId.ClaimId}")
+                ? throw new ServerProblemException($"Сбой заявки {request.ClaimId.ClaimId}")
                 : Task.FromResult(Result ?? new FinanceRestoreApplyResult(request.PaymentTypes.Count, 0, 0, 0, []));
         }
 
         public Task CreateOwnCash(ProjectIdentification projectId)
         {
             CashCreated++;
-            return Task.CompletedTask;
+            return CashFailure is { } failure ? throw failure : Task.CompletedTask;
         }
     }
 

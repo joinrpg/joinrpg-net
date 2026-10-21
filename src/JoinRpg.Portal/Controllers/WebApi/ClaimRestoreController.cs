@@ -1,4 +1,5 @@
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectMasterTools.ClaimRestore;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -150,5 +151,7 @@ public class ClaimRestoreController(IClaimRestoreClient client) : ControllerBase
     }
 
     // Сервисы восстановления отвергают так неверный ввод (персонаж из другого проекта, значение поля и т. п.).
-    private static bool IsRefusal(Exception ex) => ex is FormatException or JoinRpgBaseException or ArgumentException;
+    // Проект заблокирован, в архиве, нет прав — WebApiExceptionHandler отдаст их по-русски с 409/403.
+    private static bool IsRefusal(Exception ex)
+        => ex is FormatException or JoinRpgBaseException or ArgumentException && !WebApiExceptionHandler.IsExpectedRefusal(ex);
 }
