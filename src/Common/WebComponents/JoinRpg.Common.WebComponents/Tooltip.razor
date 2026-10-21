@@ -12,11 +12,27 @@
     return;
 }
 
-<span class="join-tooltip-container" data-join-tooltip-placement="@PlacementAttribute">
-    <span>
-        @ChildContent
+@if (Block)
+{
+    <div class="join-tooltip-container join-tooltip-block" data-join-tooltip-placement="@PlacementAttribute">
+        <div class="join-tooltip-target">
+            @ChildContent
+        </div>
+        @TooltipPopover
+    </div>
+}
+else
+{
+    <span class="join-tooltip-container" data-join-tooltip-placement="@PlacementAttribute">
+        <span>
+            @ChildContent
+        </span>
+        @TooltipPopover
     </span>
-    <span class="join-tooltip" popover="manual" role="tooltip">
+}
+
+@code {
+    private RenderFragment TooltipPopover => @<span class="join-tooltip" popover="manual" role="tooltip">
         @if (TooltipContent is not null)
         {
             @TooltipContent
@@ -25,10 +41,8 @@
         {
             @Title
         }
-    </span>
-</span>
+    </span>;
 
-@code {
     [Parameter]
     public string? Title { get; set; }
 
@@ -41,6 +55,14 @@
     /// <summary>С какой стороны от цели показывать подсказку. По умолчанию — снизу.</summary>
     [Parameter]
     public TooltipPlacement Placement { get; set; } = TooltipPlacement.Bottom;
+
+    /// <summary>
+    /// Цель — блок на весь размер родителя, а не строчный элемент по размеру содержимого.
+    /// Нужно, когда подсказка висит на целой карточке (мероприятие в сетке расписания):
+    /// строчная обёртка сжала бы карточку до её текста.
+    /// </summary>
+    [Parameter]
+    public bool Block { get; set; }
 
     private string PlacementAttribute => Placement switch
     {

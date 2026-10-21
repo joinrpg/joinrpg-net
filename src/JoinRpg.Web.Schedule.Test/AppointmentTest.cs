@@ -100,7 +100,7 @@ public class AppointmentTest
 
         cut.Find("div.scheduler-appointment").GetAttribute("class")
             .ShouldBe("scheduler-appointment appointment-intersection appointment-has-users");
-        cut.Find("div.appointment-interior").GetAttribute("title")
+        cut.Find(".join-tooltip").TextContent.Trim()
             .ShouldBe("Мастер-класс по фехтованию (имеются пересечения)");
     }
 
@@ -205,7 +205,7 @@ public class AppointmentTest
         var cut = Render(ctx, Model());
 
         cut.FindAll("button.appointment-click-overlay").ShouldBeEmpty();
-        cut.FindAll("[popover]").ShouldBeEmpty();
+        cut.FindAll("[popover]:not(.join-tooltip)").ShouldBeEmpty();
     }
 
     /// <summary>
@@ -222,5 +222,22 @@ public class AppointmentTest
         var target = cut.Find("button.appointment-click-overlay").GetAttribute("popovertarget");
         target.ShouldBe($"appointment{CharacterId.CharacterId}-0-0-details");
         cut.Find($"#{target}").HasAttribute("popover").ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Слой перекрывает карточку, поэтому подсказку с названием курсор видит только через него.
+    /// А панель деталей должна быть вне подсказки: цель подсказки скрипт ищет по DOM,
+    /// и над открытой панелью подсказка не скрылась бы.
+    /// </summary>
+    [Fact]
+    public void WithDetails_TooltipCoversOverlayButNotPanel()
+    {
+        using var ctx = CreateContext();
+
+        var cut = ctx.Render<Appointment>(p => p.Add(x => x.Model, Model()).Add(x => x.WithDetails, true));
+
+        cut.Find("button.appointment-click-overlay").Closest(".join-tooltip-container").ShouldNotBeNull();
+        var panelId = cut.Find("button.appointment-click-overlay").GetAttribute("popovertarget");
+        cut.Find($"#{panelId}").Closest(".join-tooltip-container").ShouldBeNull();
     }
 }

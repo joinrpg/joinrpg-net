@@ -2,6 +2,14 @@
   display: inline-block; /* Чтобы цель и подсказка располагались вместе */
 }
 
+/* Блочный режим (параметр Block): цель растянута на родителя, как содержимое, которое она оборачивает. */
+.join-tooltip-block,
+.join-tooltip-block > .join-tooltip-target {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /*
   Подсказка живёт в top layer (атрибут popover), поэтому её не обрезают предки
   с overflow: hidden и не перебивает чужой z-index. Координаты ставит скрипт
