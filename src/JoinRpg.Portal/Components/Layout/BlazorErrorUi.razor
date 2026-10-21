@@ -1,0 +1,15 @@
+@*
+    Плашка, которую показывает blazor.web.js, когда интерактивная часть страницы не смогла
+    загрузиться или упала (ошибка WebAssembly-рантайма, исключение в острове). Ищется по id,
+    кнопки — по классам reload и dismiss, обработчики на них вешает сам blazor.web.js.
+
+    Частый случай — вкладка, открытая до выката: сборок со старыми отпечатками на сервере
+    уже нет, и острова без этой плашки молча не грузятся.
+*@
+@using JoinRpg.Common.WebComponents
+@preservewhitespace true
+<div id="blazor-error-ui" class="alert alert-warning" role="alert" data-nosnippet>
+    <button type="button" class="close dismiss" aria-label="Закрыть"><JoinIcon Icon="JoinIconType.Close" /></button>
+    Часть страницы не загрузилась или перестала работать — возможно, сайт обновился.
+    <a href="" class="reload alert-link">Обновить страницу</a>
+</div>
