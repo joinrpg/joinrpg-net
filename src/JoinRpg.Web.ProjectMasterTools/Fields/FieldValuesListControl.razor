@@ -1,6 +1,7 @@
 @inject IProjectFieldUriLocator UriLocator
 @inject IProjectFieldOperationsClient ProjectFieldOperationsClient
 @inject NavigationManager NavigationManager
+@inject ILogger<FieldValuesListControl> Logger
 
 <div>
     <JoinButtonGroup>
@@ -44,6 +45,11 @@
         }
     </JoinButtonGroup>
 </div>
+
+@if (errorMessage is not null)
+{
+    <JoinErrorMessage>@errorMessage</JoinErrorMessage>
+}
 
 <div style="margin-top: 1em;">
     <JoinTableSimple>
@@ -130,12 +136,25 @@
 
     private int UnusedCount => Items.Count(i => i.IsActive && !i.WasEverUsed);
 
+    private string? errorMessage;
+
     private async Task SortByLabelAsync(ButtonClickEventArgs args)
     {
         try
         {
+            errorMessage = null;
             await ProjectFieldOperationsClient.SortVariantsByLabel(FieldId);
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при сортировке значений поля {FieldId} по алфавиту", FieldId);
+            errorMessage = "Не удалось отсортировать значения";
         }
         finally
         {
@@ -147,8 +166,19 @@
     {
         try
         {
+            errorMessage = null;
             await ProjectFieldOperationsClient.SortTimeSlotsByStartTime(FieldId);
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при сортировке таймслотов поля {FieldId} по времени начала", FieldId);
+            errorMessage = "Не удалось отсортировать значения";
         }
         finally
         {
@@ -160,8 +190,19 @@
     {
         try
         {
+            errorMessage = null;
             await ProjectFieldOperationsClient.DeleteUnusedVariants(FieldId);
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при удалении неиспользованных значений поля {FieldId}", FieldId);
+            errorMessage = "Не удалось удалить неиспользованные значения";
         }
         finally
         {
@@ -173,8 +214,19 @@
     {
         try
         {
+            errorMessage = null;
             await ProjectFieldOperationsClient.DeleteVariant(item.VariantId);
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при удалении значения {VariantId}", item.VariantId);
+            errorMessage = "Не удалось удалить значение";
         }
         finally
         {

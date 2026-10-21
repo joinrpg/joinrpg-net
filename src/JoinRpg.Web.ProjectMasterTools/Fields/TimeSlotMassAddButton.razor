@@ -126,6 +126,11 @@
                 result.BreakMinutes!.Value));
             NavigationManager.Refresh(forceReload: true);
         }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            errorMessage = ex.Message;
+        }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Ошибка при массовом добавлении таймслотов");

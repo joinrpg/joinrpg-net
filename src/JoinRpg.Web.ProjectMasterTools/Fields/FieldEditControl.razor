@@ -2,6 +2,7 @@
 @inject IProjectFieldOperationsClient ProjectFieldOperationsClient
 @inject IProjectFieldUriLocator UriLocator
 @inject NavigationManager NavigationManager
+@inject ILogger<FieldEditControl> Logger
 
 <JoinButtonGroup Size="SizeStyleEnum.Small">
     @if (Item.IsActive)
@@ -46,6 +47,11 @@
                       />
 }
 
+@if (errorMessage is not null)
+{
+    <JoinErrorMessage>@errorMessage</JoinErrorMessage>
+}
+
 @code {
     [Parameter, EditorRequired]
     public GameFieldListItemViewModel Item { get; set; } = null!;
@@ -53,12 +59,25 @@
     [Parameter, EditorRequired]
     public IList<GameFieldListItemViewModel> AllItems { get; set; } = null!;
 
+    private string? errorMessage;
+
     private async Task DeleteAsync(ButtonClickEventArgs args)
     {
         try
         {
+            errorMessage = null;
             await ProjectFieldOperationsClient.Delete(Item.Id);
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при удалении поля {FieldId}", Item.Id);
+            errorMessage = "Не удалось удалить поле";
         }
         finally
         {
