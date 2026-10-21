@@ -1,4 +1,5 @@
 @inject IMasterProfileClient profileClient
+@inject ILogger<MasterProfilePanel> logger
 @implements IDisposable
 
 @if (Model is null)
@@ -74,11 +75,22 @@
             await profileClient.SaveProfile(Model);
             success = true;
         }
-        catch
+        catch (ServerProblemException exception)
         {
-            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
-            editContext?.NotifyValidationStateChanged();
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            ShowError(exception.Message);
         }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка при сохранении профиля мастера в проекте {ProjectId}", ProjectId);
+            ShowError("Неизвестная серверная ошибка при сохранении");
+        }
+    }
+
+    private void ShowError(string text)
+    {
+        messageStore?.Add(() => Model, text);
+        editContext?.NotifyValidationStateChanged();
     }
 
     public void Dispose()

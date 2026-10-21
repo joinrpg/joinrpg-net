@@ -1,5 +1,6 @@
 @inject IMasterAccessClient accessClient
 @inject NavigationManager navigationManager
+@inject ILogger<AddMasterPanel> logger
 @implements IDisposable
 
 @if (Model is null)
@@ -83,13 +84,25 @@
         {
             await accessClient.AddMaster(Model!);
         }
-        catch
+        catch (ServerProblemException exception)
         {
-            messageStore?.Add(() => Model!, "Неизвестная серверная ошибка при добавлении мастера");
-            editContext?.NotifyValidationStateChanged();
+            // Отказ сервера (проект заблокирован, нет прав) — причину показываем как есть
+            ShowError(exception.Message);
+            return;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка при добавлении мастера в проект {ProjectId}", ProjectId);
+            ShowError("Неизвестная серверная ошибка при добавлении мастера");
             return;
         }
         navigationManager.NavigateTo(MastersUrl, forceLoad: true);
+    }
+
+    private void ShowError(string text)
+    {
+        messageStore?.Add(() => Model!, text);
+        editContext?.NotifyValidationStateChanged();
     }
 
     public void Dispose()
