@@ -157,6 +157,39 @@ public class IdentificationParseTest
         JsonSerializer.Serialize(id).ShouldBe("\"FinanceOperationId(1-2-3)\"");
     }
 
+    // MyClaimInProjectIdentification — 1 лист: projectId
+    [Theory]
+    [InlineData("MyClaimInProjectId(1)")]
+    [InlineData("MyClaimInProject(1)")]
+    [InlineData("MyClaimInProjectIdentification(1)")]
+    public void MyClaimInProjectShouldParse(string val)
+    {
+        MyClaimInProjectIdentification.TryParse(val, provider: null, out var result).ShouldBeTrue();
+        result.ShouldBe(new MyClaimInProjectIdentification(new ProjectIdentification(1)));
+    }
+
+    // Строковая форма хранится в базе уведомлений (EntityReference) — менять её нельзя.
+    [Fact]
+    public void MyClaimInProjectStringFormShouldBeStable()
+    {
+        var id = new MyClaimInProjectIdentification(new ProjectIdentification(12));
+        id.ToString().ShouldBe("MyClaimInProjectId(12)");
+        JsonSerializer.Serialize(id).ShouldBe("\"MyClaimInProjectId(12)\"");
+        id.ProjectId.ShouldBe(new ProjectIdentification(12));
+    }
+
+    // Оба — один int в скобках. Ссылка на проект и на «мою заявку» в нём не должны путаться:
+    // по первой в письме — страница проекта, по второй — заявка получателя.
+    [Fact]
+    public void MyClaimInProjectAndProjectShouldNotBeConfused()
+    {
+        ProjectEntityIdParser.TryParseId("MyClaimInProjectId(12)", out var myClaim).ShouldBeTrue();
+        myClaim.ShouldBe(new MyClaimInProjectIdentification(new ProjectIdentification(12)));
+
+        ProjectEntityIdParser.TryParseId(new ProjectIdentification(12).ToString(), out var project).ShouldBeTrue();
+        project.ShouldBe(new ProjectIdentification(12));
+    }
+
     // ForumCommentIdentification — 3 листа: projectId, threadId, commentId
     [Theory]
     [InlineData("ForumCommentId(1-2-3)")]

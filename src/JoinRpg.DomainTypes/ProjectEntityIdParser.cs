@@ -26,6 +26,12 @@ public static class ProjectEntityIdParser
             return true;
         }
 
+        if (MyClaimInProjectIdentification.TryParse(value, null, out var myClaim))
+        {
+            id = myClaim;
+            return true;
+        }
+
         if (ProjectRolesListIdentification.TryParse(value, null, out var prli))
         {
             id = prli;
