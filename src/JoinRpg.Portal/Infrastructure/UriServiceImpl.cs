@@ -52,6 +52,7 @@ internal class UriServiceImpl(
     IUriLocator<RoomCategoryIdentification>,
     IUriLocator<AccommodationInviteIdentification>,
     IUriLocator<AccommodationGroupIdentification>,
+    IUriLocator<MyClaimInProjectIdentification>,
     INotificationEntityLinkRenderer
 {
     public Uri GetUri(ILinkable linkable)
@@ -135,6 +136,7 @@ internal class UriServiceImpl(
     Uri IUriLocator<CharacterLinkSlimViewModel>.GetUri(CharacterLinkSlimViewModel target)
         => GetUri(new Linkable(target.CharacterId));
     public Uri GetUri(ProjectIdentification target) => GetUri(new Linkable(target));
+    public Uri GetUri(MyClaimInProjectIdentification target) => ((IProjectUriLocator)this).GetMyClaimUri(target.ProjectId);
     Uri IProjectUriLocator.GetMyClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("MyClaim", "Claim", new { ProjectId = projectId.Value }));
     Uri IProjectUriLocator.GetAddClaimUri(ProjectIdentification projectId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("AddForGroup", "Claim", new { ProjectId = projectId.Value }));
     public Uri GetDetailsUri(CharacterIdentification characterId) => new Uri(GetBaseDomain(), linkGenerator.GetPathByAction("Details", "Character", new { CharacterId = characterId.CharacterId, ProjectId = characterId.ProjectId.Value }));
