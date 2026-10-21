@@ -9,7 +9,7 @@ public class InvitePlayerClient(HttpClient httpClient, CsrfTokenProvider csrfTok
         await csrfTokenProvider.SetCsrfToken(httpClient);
 
         var response = await httpClient.PostAsync(
-            $"webapi/invite-player/Invite?projectId={CharacterId.ProjectId}&targetId={CharacterId}&UserLink={UserLink}&claimText={ClaimText}", null);
+            $"webapi/invite-player/Invite?projectId={CharacterId.ProjectId}&targetId={CharacterId}&UserLink={Uri.EscapeDataString(UserLink)}&claimText={Uri.EscapeDataString(ClaimText)}", null);
 
         if (!response.IsSuccessStatusCode)
         {
