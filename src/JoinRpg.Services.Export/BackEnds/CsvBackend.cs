@@ -34,5 +34,17 @@ internal class CsvBackend : IGeneratorBackend
           + "\"";
     }
 
-    public byte[] Generate() => Encoding.UTF8.GetBytes(Builder.ToString());
+    /// <remarks>
+    /// Пишем с преамбулой UTF-8: без неё Excel на русской локали открывает файл как CP1251,
+    /// и кириллица в выгрузке превращается в нечитаемые символы.
+    /// </remarks>
+    public byte[] Generate()
+    {
+        var content = Encoding.UTF8.GetBytes(Builder.ToString());
+        var preamble = Encoding.UTF8.GetPreamble();
+        var result = new byte[preamble.Length + content.Length];
+        preamble.CopyTo(result, 0);
+        content.CopyTo(result, preamble.Length);
+        return result;
+    }
 }
