@@ -26,6 +26,8 @@ internal partial class CreateProjectService
 
         // Первая созданная сетка ролей будет дефолтной
         await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Мероприятия", [description], RolesGridGroupsViewMode.Sections, ShowRolesFilter.All));
+
+        await AddRoleTimeRobot(projectId);
     }
 
     private async Task SetupConventionParticipant(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
