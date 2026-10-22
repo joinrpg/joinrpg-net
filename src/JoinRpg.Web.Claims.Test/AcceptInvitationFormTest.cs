@@ -26,9 +26,30 @@ public class AcceptInvitationFormTest : BunitContext
     {
         var cut = Render<AcceptInvitationForm>(parameters => parameters
             .Add(c => c.ClaimId, ClaimId)
-            .Add(c => c.SensitiveDataRequired, false));
+            .Add(c => c.RequestedSensitiveData, new RequestedSensitiveDataView(false, false, false)));
         await cut.Find("form").SubmitAsync();
         return cut;
+    }
+
+    // #5706: игрок видит, к каким именно данным просят доступ.
+    [Fact]
+    public void ConsentNamesRequestedData()
+    {
+        var cut = Render<AcceptInvitationForm>(parameters => parameters
+            .Add(c => c.ClaimId, ClaimId)
+            .Add(c => c.RequestedSensitiveData, new RequestedSensitiveDataView(Passport: true, RegistrationAddress: false, BirthDate: true)));
+
+        cut.Markup.ShouldContain("Мастера игры просят доступ к паспортным данным и дате рождения из вашего профиля.");
+    }
+
+    [Fact]
+    public void NoConsentCheckboxWhenNothingRequested()
+    {
+        var cut = Render<AcceptInvitationForm>(parameters => parameters
+            .Add(c => c.ClaimId, ClaimId)
+            .Add(c => c.RequestedSensitiveData, new RequestedSensitiveDataView(false, false, false)));
+
+        cut.Markup.ShouldNotContain("Предоставить доступ к защищённым данным");
     }
 
     [Fact]
