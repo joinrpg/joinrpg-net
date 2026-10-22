@@ -6,8 +6,13 @@ namespace JoinRpg.Portal.Controllers.Comments;
 
 internal static class CommentRedirectHelper
 {
-    public static ActionResult RedirectToDiscussion(IUrlHelper Url, CommentDiscussion discussion, int? commentId = null)
+    public static ActionResult RedirectToDiscussion(IUrlHelper Url, CommentDiscussion? discussion, int? commentId = null)
     {
+        if (discussion is null)
+        {
+            return new NotFoundResult();
+        }
+
         var extra = commentId != null ? $"#comment{commentId}" : null;
         var claim = discussion.GetClaim();
         if (claim != null)

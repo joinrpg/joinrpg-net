@@ -20,7 +20,12 @@ public class DiscussionRedirectController(
     [Authorize]
     public async Task<ActionResult> ToDiscussion(ProjectIdentification projectId, int commentDiscussionId)
     {
-        CommentDiscussion discussion = await forumRepository.GetDiscussion(projectId, commentDiscussionId);
+        CommentDiscussion? discussion = await forumRepository.GetDiscussion(projectId, commentDiscussionId);
+        if (discussion is null)
+        {
+            return NotFound();
+        }
+
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         if (!discussion.HasAnyAccess(currentUserAccessor.UserId, projectInfo))
@@ -35,7 +40,12 @@ public class DiscussionRedirectController(
     [Authorize]
     public async Task<ActionResult> ToComment(ProjectIdentification projectId, int commentid)
     {
-        CommentDiscussion discussion = await forumRepository.GetDiscussionByComment(projectId, commentid);
+        CommentDiscussion? discussion = await forumRepository.GetDiscussionByComment(projectId, commentid);
+        if (discussion is null)
+        {
+            return NotFound();
+        }
+
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         if (!discussion.HasAnyAccess(currentUserAccessor.UserId, projectInfo))
@@ -52,7 +62,12 @@ public class DiscussionRedirectController(
     {
         // Первичный ключ FinanceOperation — это CommentId связанного комментария,
         // поэтому financeOperationId совпадает с id комментария операции.
-        CommentDiscussion discussion = await forumRepository.GetDiscussionByComment(projectId, financeOperationId);
+        CommentDiscussion? discussion = await forumRepository.GetDiscussionByComment(projectId, financeOperationId);
+        if (discussion is null)
+        {
+            return NotFound();
+        }
+
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         if (!discussion.HasAnyAccess(currentUserAccessor.UserId, projectInfo))

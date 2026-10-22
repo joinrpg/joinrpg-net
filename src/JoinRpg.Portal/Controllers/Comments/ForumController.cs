@@ -109,14 +109,14 @@ public class ForumController(
     [HttpPost("~/{projectId}/forums/createcomment")]
     public async Task<ActionResult> CreateComment(AddCommentViewModel viewModel)
     {
-        CommentDiscussion discussion = await forumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
-        var discussionProjectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
-        discussion.RequestAnyAccess(currentUserAccessor.UserIdentification, discussionProjectInfo);
-
-        if (discussion == null)
+        CommentDiscussion? discussion = await forumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+        if (discussion is null)
         {
             return NotFound();
         }
+
+        var discussionProjectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
+        discussion.RequestAnyAccess(currentUserAccessor.UserIdentification, discussionProjectInfo);
 
         try
 
