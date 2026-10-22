@@ -33,13 +33,14 @@ internal static class ProjectInfoFixture
         IReadOnlyCollection<ProjectFeeSettingInfo>? feeSchedule = null,
         ProjectAccommodationSettings? accommodationSettings = null,
         bool scheduleEnabled = false,
-        string? mastersOrdering = null)
+        string? mastersOrdering = null,
+        ProjectFieldIdentification? nameField = null)
         => new(
             ProjectId,
             new ProjectName("Test"),
             ordering,
             fields ?? [],
-            new ProjectFieldSettings(null, null),
+            new ProjectFieldSettings(nameField, null),
             new ProjectFinanceSettings(
                 PreferentialFeeEnabled: false,
                 WarnOnOverPayment: true,
@@ -79,10 +80,12 @@ internal static class ProjectInfoFixture
         ProjectFieldVisibility visibility = ProjectFieldVisibility.Public,
         FieldBoundTo boundTo = FieldBoundTo.Character,
         string ordering = "",
-        IReadOnlyCollection<ProjectFieldVariant>? variants = null)
+        IReadOnlyCollection<ProjectFieldVariant>? variants = null,
+        string? name = null,
+        bool isActive = true)
         => new(
             new ProjectFieldIdentification(ProjectId, fieldId),
-            $"Field{fieldId}",
+            name ?? $"Field{fieldId}",
             type,
             boundTo,
             variants ?? [],
@@ -92,7 +95,7 @@ internal static class ProjectInfoFixture
             true,
             MandatoryStatus.Optional,
             true,
-            true,
+            isActive,
             [],
             null,
             null,

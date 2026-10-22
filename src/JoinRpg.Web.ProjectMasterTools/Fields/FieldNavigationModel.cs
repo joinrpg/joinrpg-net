@@ -16,6 +16,9 @@ public class FieldNavigationModel
     /// не показываем — игроцкая страница «выберите роль» мастеру тут ничем не поможет.
     /// </summary>
     public CharacterIdentification? DefaultTemplateCharacterId { get; set; }
+
+    /// <summary>Поля, похожие на имя персонажа, при невыбранном поле-имени — для предупреждения.</summary>
+    public IReadOnlyCollection<string> UnboundNameFieldCandidates { get; set; } = [];
 }
 
 /// <summary>
