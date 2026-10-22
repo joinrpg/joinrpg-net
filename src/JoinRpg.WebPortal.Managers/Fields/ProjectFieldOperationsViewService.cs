@@ -47,6 +47,7 @@ internal class ProjectFieldOperationsViewService(
             ProjectId = projectId,
             NameField = projectInfo.CharacterNameField?.Id,
             DescriptionField = projectInfo.CharacterDescriptionField?.Id,
+            NameFieldCandidates = [.. projectInfo.GetUnboundCharacterNameFieldCandidates().Select(f => f.Name)],
         };
     }
 

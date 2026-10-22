@@ -1,0 +1,37 @@
+@inject IProjectFieldUriLocator UriLocator
+@preservewhitespace true
+
+@* Поле-имя не выбрано, а поле с именем персонажа в проекте есть — так бывает после восстановления проекта,
+   и тогда все персонажи получают имена игроков. *@
+@if (FieldNames.Count > 0)
+{
+    <JoinAlert Variation="VariationStyleEnum.Warning">
+        @if (FieldNames.Count == 1)
+        {
+            <text>Поле «@FieldNames.Single()» похоже на имя персонажа,</text>
+        }
+        else
+        {
+            <text>Поля @string.Join(", ", FieldNames.Select(n => $"«{n}»")) похожи на имя персонажа,</text>
+        }
+        но имя сейчас привязано к имени игрока. Перепроверьте
+        @if (ProjectId is { } projectId)
+        {
+            <a href="@UriLocator.GetFieldSettingsUri(projectId)">настройки полей</a><text>.</text>
+        }
+        else
+        {
+            <text>настройки полей.</text>
+        }
+    </JoinAlert>
+}
+
+@code {
+    /// <summary>Названия полей, похожих на имя персонажа. Пусто — предупреждения нет.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyCollection<string> FieldNames { get; set; } = [];
+
+    /// <summary>Проект — для ссылки на настройки полей; null — без ссылки (на самой странице настроек).</summary>
+    [Parameter]
+    public ProjectIdentification? ProjectId { get; set; }
+}

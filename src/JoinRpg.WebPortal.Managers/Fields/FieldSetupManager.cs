@@ -97,6 +97,7 @@ public class FieldSetupManager
             Page = page,
             ProjectId = projectInfo.ProjectId,
             DefaultTemplateCharacterId = projectInfo.ClaimSettings.DefaultTemplate,
+            UnboundNameFieldCandidates = [.. projectInfo.GetUnboundCharacterNameFieldCandidates().Select(f => f.Name)],
         };
     }
 

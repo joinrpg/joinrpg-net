@@ -28,4 +28,11 @@
     }
 </ul>
 
+@* На странице настроек предупреждение показывает сама панель — и снимает его, как только поле-имя выбрано. *@
+@if (Model.Page != FieldNavigationPage.FieldSettings)
+{
+    @(await Html.RenderComponentAsync<UnboundCharacterNameFieldWarning>(RenderMode.Static,
+        new { FieldNames = Model.UnboundNameFieldCandidates, ProjectId = new ProjectIdentification(Model.ProjectId) }))
+}
+
 <h3>@ViewBag.Title</h3>
