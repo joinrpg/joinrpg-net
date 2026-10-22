@@ -169,6 +169,8 @@ internal class UriServiceImpl(
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ForClaims", "MassMail", new { ProjectId = projectId.Value, ClaimIds = new CompressedIntList(claimIds).ToString() }));
     Uri IProjectUriLocator.GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("CharacterList", "Print", new { ProjectId = projectId.Value, CharacterIds = new CompressedIntList(characterIds).ToString() }));
+    Uri IProjectUriLocator.GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Badges", "Print", new { ProjectId = projectId.Value, CharacterIds = new CompressedIntList(characterIds).ToString() }));
 
     public Uri GetUri(CharacterIdentification target) => GetUri(new Linkable(target));
 

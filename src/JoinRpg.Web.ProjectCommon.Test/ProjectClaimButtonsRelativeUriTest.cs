@@ -25,6 +25,7 @@ public class ProjectClaimButtonsRelativeUriTest
         public Uri GetCreateCharacterUri(ProjectIdentification projectId) => UriFor("character/create");
         public Uri GetMassMailUri(ProjectIdentification projectId, IReadOnlyCollection<ClaimIdentification> claimIds) => UriFor("massmail");
         public Uri GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) => UriFor("print");
+        public Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) => UriFor("badges");
     }
 
     private static BunitContext CreateContext()

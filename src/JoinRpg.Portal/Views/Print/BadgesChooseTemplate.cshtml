@@ -1,0 +1,22 @@
+@model JoinRpg.Web.Models.Print.BadgeTemplateChoiceViewModel
+
+@{
+    ViewBag.Title = "Печать бейджей";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@if (Model.Templates.Count == 0)
+{
+    <p>В проекте пока нет шаблонов бейджей — печатать не по чему.</p>
+}
+else
+{
+    <p>Выберите шаблон бейджа:</p>
+    <ul>
+        @foreach (var template in Model.Templates)
+        {
+            <li>@Html.ActionLink(template.Name, "Badges", new { Model.ProjectId, badgeTemplateId = template.BadgeTemplateId, Model.CharacterIds })</li>
+        }
+    </ul>
+}

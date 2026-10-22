@@ -99,6 +99,7 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         ["GetCreateCharacterUri", (Func<IProjectUriLocator, Uri>)(l => l.GetCreateCharacterUri(ProjectId))],
         ["GetMassMailUri", (Func<IProjectUriLocator, Uri>)(l => l.GetMassMailUri(ProjectId, [new(ProjectId, 13), new(ProjectId, 451), new(ProjectId, 452)]))],
         ["GetPrintCharactersUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintCharactersUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
+        ["GetPrintBadgesUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintBadgesUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
         // Большие разрывы между id дают в CompressedIntList запятую — проверяем, что обе стороны экранируют её одинаково.
         ["GetMassMailUri with comma", (Func<IProjectUriLocator, Uri>)(l => l.GetMassMailUri(ProjectId, [new(ProjectId, 100), new(ProjectId, 200), new(ProjectId, 300)]))],
     ];

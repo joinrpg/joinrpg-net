@@ -29,4 +29,7 @@ internal sealed class FakeProjectUriLocator : IProjectUriLocator
 
     public Uri GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
         => UriFor(projectId, "print-characters");
+
+    public Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
+        => UriFor(projectId, "print-badges");
 }

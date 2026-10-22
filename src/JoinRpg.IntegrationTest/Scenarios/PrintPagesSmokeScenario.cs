@@ -106,8 +106,60 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
     // MapStaticAssets вставляет в имя отпечаток: /JoinRpg.Portal.omll2v8u1y.styles.css
     private static bool IsScopedCssBundle(string url) => url.StartsWith("/JoinRpg.Portal.") && url.EndsWith(".styles.css");
 
-    private static string BadgesUrl(SeedContext context, int templateId)
-        => $"{context.ProjectId.Value}/print/badges?characterIds={Uri.EscapeDataString(new CompressedIntList([context.CharacterId.CharacterId]).ToString())}&badgeTemplateId={templateId}";
+    private static string BadgesUrl(SeedContext context, int? templateId)
+        => $"{context.ProjectId.Value}/print/badges?characterIds={Uri.EscapeDataString(new CompressedIntList([context.CharacterId.CharacterId]).ToString())}"
+            + (templateId is null ? "" : $"&badgeTemplateId={templateId}");
+
+    // Кнопка «Бейджи» над списком персонажей ведёт без шаблона: из нескольких шаблонов мастер выбирает.
+    [Fact]
+    public async Task Badges_WithoutTemplate_OffersChoiceWhenSeveral()
+    {
+        var context = await SeedAsync();
+        foreach (var name in new[] { "Шаблон для игроков", "Шаблон для мастеров" })
+        {
+            _ = await factory.Services.RunAsAsync(
+                context.MasterId,
+                sp => sp.GetRequiredService<IProjectBadgeTemplateService>().CreateAsync(
+                    context.ProjectId, name, new BadgeLayout(90, 55, null, [new BadgeLine(null, name, null, 10, 8, 20, Bold: false)])));
+        }
+
+        var text = await GetPrintPageText(context, "badges");
+
+        text.ShouldContain("Выберите шаблон бейджа");
+        text.ShouldContain("Шаблон для игроков");
+        text.ShouldContain("Шаблон для мастеров");
+
+        // Ссылки выбора несут и шаблон, и персонажей — по ним открывается сама печать.
+        var choice = await (await context.MasterClient.GetAsync(BadgesUrl(context, templateId: null))).AsHtmlDocument();
+        var link = WebUtility.HtmlDecode(choice.DocumentNode.SelectNodes("//a[contains(@href, 'badgeTemplateId=')]").First().GetAttributeValue("href", ""));
+        var printed = await (await context.MasterClient.GetAsync(link)).AsHtmlDocument();
+        printed.DocumentNode.SelectSingleNode("//title").InnerText.ShouldStartWith("Бейджи");
+        printed.DocumentNode.SelectNodes("//*[contains(@class, 'join-printable-badge-line')]").ShouldNotBeNull();
+    }
+
+    // Нет шаблонов — пояснение; ровно один — печать сразу, без страницы выбора.
+    [Fact]
+    public async Task Badges_WithoutTemplate_NoneOrSingle()
+    {
+        var context = await SeedAsync();
+        ProjectIdentification projectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, context.MasterId, "Проект без шаблонов бейджей");
+        }
+        var url = $"{projectId.Value}/print/badges?characterIds={Uri.EscapeDataString(new CompressedIntList([1]).ToString())}";
+
+        var none = await (await context.MasterClient.GetAsync(url)).AsHtmlDocument();
+        WebUtility.HtmlDecode(none.DocumentNode.InnerText).ShouldContain("нет шаблонов бейджей");
+
+        _ = await factory.Services.RunAsAsync(
+            context.MasterId,
+            sp => sp.GetRequiredService<IProjectBadgeTemplateService>().CreateAsync(
+                projectId, "Единственный шаблон", new BadgeLayout(90, 55, null, [])));
+
+        var single = await (await context.MasterClient.GetAsync(url)).AsHtmlDocument();
+        WebUtility.HtmlDecode(single.DocumentNode.SelectSingleNode("//title").InnerText).ShouldBe("Бейджи: Единственный шаблон");
+    }
 
     private static async Task<string> GetPrintPageText(SeedContext context, string action, string extraQuery = "")
     {
