@@ -166,6 +166,26 @@ public class ClaimListBuilderTest
         result.PassportData.ShouldBeNull();
     }
 
+    // Закрытый проект защищённых данных не получает, даже если согласие осталось:
+    // и в выгрузке, и на странице заявки решение одно — ClaimInfo.SensitiveData.
+    [Fact]
+    public void ArchivedProjectGetsNoSensitiveData()
+    {
+        Mock.Project.Details.RequirePassport = MandatoryStatus.Recommended;
+        Mock.Project.Details.RequireBirthDate = MandatoryStatus.Recommended;
+        Mock.Project.Active = false;
+        Mock.Project.IsAcceptingClaims = false;
+        Mock.ReInitProjectInfo();
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.PlayerAllowedSenstiveData = true;
+        var player = Mock.PlayerInfo with { PassportData = "паспорт", BirthDate = new DateOnly(2000, 2, 1) };
+        var claimInfo = new ClaimInfo(
+            new ClaimInCharacter(Mock.GetCharacterInfo(Mock.Character), claim.GetId()),
+            player);
+
+        claimInfo.SensitiveData.ShouldBe(new ClaimSensitiveData(false, null, false, null, false, null));
+    }
+
     // EF-версия списка отдавала пустую строку, если у игрока нет ФИО, а доменный
     // UserFullName.FullName — null. Колонка не nullable, прежнее поведение сохраняем.
     [Fact]
