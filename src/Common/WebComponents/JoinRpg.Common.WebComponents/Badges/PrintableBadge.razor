@@ -1,0 +1,73 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@*
+    Бейдж для печати: прямоугольник заданного размера в миллиметрах, фоновая картинка и строки по центру.
+
+    Размер шрифта каждой строки подбирает скрипт wwwroot/printable-badge.js: от MaxFontPt вниз, пока строка
+    не влезет в ширину, но не меньше MinFontPt. Если и на минимальном не влезает — строка переносится
+    (не больше двух строк). Без скрипта строка печатается MaxFontPt.
+
+    Скрипт нужен только страницам с бейджами. Интерактивный бейдж (превью в редакторе) подключает его сам
+    и перегоняет шрифт после каждой отрисовки; статическая страница печати подключает его тегом.
+
+    Фон — <img>, а не background-image: фоновые картинки браузер по умолчанию не печатает.
+*@
+<div class="join-printable-badge" style="width: @(WidthMm)mm; height: @(HeightMm)mm" @ref="badge">
+    @if (!string.IsNullOrWhiteSpace(BackgroundUrl))
+    {
+        <img class="join-printable-badge-background" src="@BackgroundUrl" alt="" />
+    }
+    @foreach (var line in Lines)
+    {
+        <div class="join-printable-badge-line"
+             style="top: @(line.TopMm)mm; font-size: @(line.MaxFontPt)pt; font-weight: @(line.Bold ? "bold" : "normal")"
+             data-min-font-pt="@line.MinFontPt"
+             data-max-font-pt="@line.MaxFontPt">@line.Text</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public int WidthMm { get; set; }
+
+    [Parameter, EditorRequired]
+    public int HeightMm { get; set; }
+
+    /// <summary>Ссылка на фоновую картинку; растягивается на весь бейдж с сохранением пропорций (обрезается)</summary>
+    [Parameter]
+    public string? BackgroundUrl { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<PrintableBadgeLine> Lines { get; set; } = [];
+
+    private ElementReference badge;
+    private Task<IJSObjectReference>? moduleTask;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // В статическом рендере (страница печати) JS-interop недоступен — там модуль подключён тегом.
+        if (!RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        moduleTask ??= JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.Common.WebComponents/printable-badge.js").AsTask();
+        var module = await moduleTask;
+        await module.InvokeVoidAsync("fitBadges", badge);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (moduleTask is not null)
+        {
+            try
+            {
+                await (await moduleTask).DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit уже закрыт — освобождать нечего.
+            }
+        }
+    }
+}
