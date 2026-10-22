@@ -182,11 +182,12 @@ public class BankApi
     /// <param name="orderId">Order to return info for</param>
     /// <param name="getCardData">true to read card data</param>
     /// <param name="getFiscalData">true to read fiscal data</param>
+    /// <param name="getClearingData">true to read clearing data (registry number and registry date)</param>
     /// <returns>Payment information object</returns>
     /// <remarks>
     /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-zapros-parametrov-platezha for details
     /// </remarks>
-    public async Task<T> GetPaymentInfoAsync<T>(string orderId, bool getCardData = false, bool getFiscalData = false)
+    public async Task<T> GetPaymentInfoAsync<T>(string orderId, bool getCardData = false, bool getFiscalData = false, bool getClearingData = false)
         where T : PaymentInfoBase, new()
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(orderId);
@@ -197,6 +198,7 @@ public class BankApi
             MerchantId = _configuration.MerchantId,
             GetCardData = getCardData,
             GetFiscalData = getFiscalData,
+            GetClearingData = getClearingData,
         };
 
         return await ApiRequestAsync<PaymentInfoQueryParams, T>(
@@ -204,12 +206,101 @@ public class BankApi
             queryParams);
     }
 
-    public async Task<PaymentInfo> GetPaymentInfoAsync(string orderId, bool getCardData = false, bool getFiscalData = false)
+    public async Task<PaymentInfo> GetPaymentInfoAsync(string orderId, bool getCardData = false, bool getFiscalData = false, bool getClearingData = false)
     {
-        logger.LogDebug("Getting payment info by {orderId}. GetCardData={getCardData}, GetFiscalData={getFiscalData}", orderId, getCardData, getFiscalData);
-        var result = await GetPaymentInfoAsync<PaymentInfo>(orderId, getCardData, getFiscalData);
+        logger.LogDebug("Getting payment info by {orderId}. GetCardData={getCardData}, GetFiscalData={getFiscalData}, GetClearingData={getClearingData}", orderId, getCardData, getFiscalData, getClearingData);
+        var result = await GetPaymentInfoAsync<PaymentInfo>(orderId, getCardData, getFiscalData, getClearingData);
         logger.LogInformation("Received payment info for {orderId} from bank, status={paymentStatus} ({paymentSubStatus})", orderId, result.Payment?.Status, result.Payment?.SubStatus);
         return result;
+    }
+
+    /// <summary>
+    /// Returns payments of the marketplace for a period
+    /// </summary>
+    /// <param name="dateFrom">Lower bound of the period, inclusive</param>
+    /// <param name="dateTo">Upper bound of the period, exclusive</param>
+    /// <param name="selectMode">Selection by payment status; when null the bank uses <see cref="PaymentsSelectMode.Paid"/></param>
+    /// <param name="paymentType">Selection by payment kind; when null the bank returns payments and invoices together</param>
+    /// <param name="requestFiscalData">true to read fiscal documents associated with the payments</param>
+    /// <param name="requestClearingData">true to read clearing data (registry number and registry date)</param>
+    /// <returns>Payments of the whole period, or the error the bank reported for the first failed chunk</returns>
+    /// <remarks>
+    /// <para>
+    /// The bank accepts at most one month per request and silently truncates a longer period
+    /// instead of reporting an error, so the period is split into chunks which are requested one
+    /// by one and merged. See <see cref="PaymentsPeriodSplitter"/> and ADR025.
+    /// </para>
+    /// <para>
+    /// A chunk that came back without <see cref="PaymentInfoQueryStatus.Success"/> fails the whole
+    /// request: a silently partial list in a reconciliation tool is worse than an error.
+    /// </para>
+    /// <para>
+    /// See https://docs.pscb.ru/oos/api.html#api-dopolnitelnyh-vozmozhnostej-zapros-spiska-platezhej for details
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">The period is empty or longer than <see cref="PaymentsPeriodSplitter.MaxPeriodLength"/></exception>
+    public async Task<PaymentsListInfo> GetPaymentsAsync(
+        DateTimeOffset dateFrom,
+        DateTimeOffset dateTo,
+        PaymentsSelectMode? selectMode = null,
+        PscbPaymentType? paymentType = null,
+        bool requestFiscalData = false,
+        bool requestClearingData = false)
+    {
+        var periods = PaymentsPeriodSplitter.Split(dateFrom, dateTo);
+        logger.LogDebug("Getting payments list for {dateFrom}..{dateTo}, {chunkCount} request(s) to the bank", dateFrom, dateTo, periods.Count);
+
+        var payments = new List<PaymentsListItem>();
+        // Chunks do not overlap, but a payment can change its state between two requests, and a
+        // duplicate in a reconciliation report costs more than this guard.
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var period in periods)
+        {
+            var queryParams = new PaymentsListQueryParams
+            {
+                MerchantId = _configuration.MerchantId,
+                DateFrom = period.From,
+                DateTo = period.To,
+                SelectMode = selectMode,
+                PaymentType = paymentType,
+                RequestFiscalData = requestFiscalData,
+                RequestClearingData = requestClearingData,
+            };
+
+            var chunk = await ApiRequestAsync<PaymentsListQueryParams, PaymentsListInfo>(
+                $"{ActualApiEndpoint}/merchantApi/getPayments",
+                queryParams);
+
+            if (chunk.Status != PaymentInfoQueryStatus.Success)
+            {
+                logger.LogWarning("Bank has failed the payments list request for {from}..{to}: {errorCode} {errorDescription}",
+                    period.From, period.To, chunk.ErrorCode, chunk.ErrorDescription);
+                return new PaymentsListInfo
+                {
+                    Status = chunk.Status,
+                    ErrorCode = chunk.ErrorCode,
+                    ErrorDescription = chunk.ErrorDescription,
+                    RequestId = chunk.RequestId,
+                };
+            }
+
+            if (chunk.Payments is null)
+            {
+                continue;
+            }
+
+            foreach (var payment in chunk.Payments)
+            {
+                if (seen.Add($"{payment.OrderId}|{payment.Id}"))
+                {
+                    payments.Add(payment);
+                }
+            }
+        }
+
+        logger.LogInformation("Received {paymentCount} payment(s) from bank for {dateFrom}..{dateTo}", payments.Count, dateFrom, dateTo);
+        return new PaymentsListInfo { Status = PaymentInfoQueryStatus.Success, Payments = payments };
     }
 
 

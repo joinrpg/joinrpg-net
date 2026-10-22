@@ -36,7 +36,7 @@
 - `JoinRpg.Common.WebComponents` — базовые Razor-компоненты. Для каждого компонента должны быть тесты на bUnit.
 
 ### DAL
-- `JoinRpg.DataModel` — EF-сущности (схема БД). Без логики. Логику — в `JoinRpg.PrimitiveTypes` или в `JoinRpg.Domain` как методы-расширения. Можно реализовать `IValidatableObject` для проверки перед сохранением. Ограничения БД всегда предпочтительнее. 
+- `JoinRpg.DataModel` — EF-сущности (схема БД). Без логики. Логику — в `JoinRpg.PrimitiveTypes` или в `JoinRpg.Domain` как методы-расширения. Можно реализовать `IValidatableObject` для проверки перед сохранением. Ограничения БД всегда предпочтительнее.
 - `JoinRpg.Data.Interfaces` — интерфейсы репозиториев (чтение). Использовать максимально специфичные методы, чтобы избежать lazy load. Избегать отдачи объектов DataModel
 - `JoinRpg.Data.Write.Interfaces` — `IUnitOfWork` для записи. Использовать только из сервисного слоя
 - `JoinRpg.Dal.Impl` — реализация репозиториев (EF + MS SQL). Не ссылаться снаружи
@@ -60,10 +60,10 @@
 - `JoinRpg.Services.Export` — экспорт в .xlsx (ClosedXML). Не знает ничего о специфике JoinRpg — универсальный компонент.
 - `JoinRpg.Services.Notifications` — оркестровка многоканальных уведомлений
 - `JoinRpg.Integrations.KogdaIgra` — бизнес-логика синхронизации с KogdaIgra
-- `PscbApi` — HTTP-клиент к платёжной системе ПСБ (Промсвязьбанк)
+- `PscbApi` — HTTP-клиент к платёжной системе ПСКБ
 
 ### Portal (основной сайт)
-- `JoinRpg.Portal` — основное ASP.NET Core приложение. Только UI, хранить тут как можно меньше кода. В идеале метод контроллера просто вызывает соот. ViewService внутри JoinRpg.WebPortal.Managers и отдает результат в View или редиректит в случае успеха. 
+- `JoinRpg.Portal` — основное ASP.NET Core приложение. Только UI, хранить тут как можно меньше кода. В идеале метод контроллера просто вызывает соот. ViewService внутри JoinRpg.WebPortal.Managers и отдает результат в View или редиректит в случае успеха.
 - `JoinRpg.CommonUI.Models` — общие перечисления для UI и email
 - `JoinRpg.WebPortal.Models` — legacy MVC ViewModels
 - `JoinRpg.WebPortal.Managers` — подготовка ViewModels для веб-портала
@@ -77,7 +77,7 @@
 - `JoinRpg.Web.CharacterGroups` — UI для групп персонажей
 - `JoinRpg.Web.CheckIn` — UI для регистрации игроков на игре
 - `JoinRpg.Web.Schedule` — UI расписания мероприятий игры
-- `JoinRpg.Web.ProjectMasterTools` — инструменты мастера игры, разнообразные инструменты, не видные игроку. 
+- `JoinRpg.Web.ProjectMasterTools` — инструменты мастера игры, разнообразные инструменты, не видные игроку.
 - `JoinRpg.Web.AdminTools` — инструменты администратора платформы
 - `JoinRpg.XGameApi.Contract` — DTO-контракты API для интеграции с внешними игровыми системами
 - `JoinRpg.Blazor.Client` — Blazor WebAssembly клиент (в процессе миграции страниц)

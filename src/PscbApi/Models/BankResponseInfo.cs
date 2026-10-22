@@ -24,11 +24,13 @@ public class BankResponseInfo
     /// Error code from the payments system
     /// </summary>
     [JsonProperty(PaymentsSystemCodeJsonName)]
+    [JsonConverter(typeof(NullableNumericEnumConverter))]
     public PaymentsSystemResponseCode? PaymentCode { get; set; }
 
     /// <summary>
     /// Error code from the processing center
     /// </summary>
     [JsonProperty(ProcessingCenterCodeJsonName)]
+    [JsonConverter(typeof(NullableNumericEnumConverter))]
     public ProcessingCenterResponseCode? ProcessingCode { get; set; }
 }

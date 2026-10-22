@@ -30,4 +30,10 @@ public class PaymentInfoBase
     /// </summary>
     [JsonProperty("requestId")]
     public string? RequestId { get; set; }
+
+    /// <summary>
+    /// Description of the current state of the payment. Returned by the bank on success
+    /// </summary>
+    [JsonProperty("description")]
+    public string? Description { get; set; }
 }

@@ -1,10 +1,16 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PscbApi.Models;
 
 /// <summary>
 /// Payment data
 /// </summary>
+/// <remarks>
+/// This is the shape <c>merchantApi/checkPayment</c> returns inside <c>payment</c>, and it is parsed
+/// by the live payment status path. Keys that only the payments list carries are declared in
+/// <see cref="PaymentsListItem"/> instead, so that they are never parsed there. See ADR025.
+/// </remarks>
 public class PaymentData
 {
     /// <summary>
@@ -12,6 +18,13 @@ public class PaymentData
     /// </summary>
     [JsonProperty("paymentId")]
     public string Id { get; set; } = null!;
+
+    /// <summary>
+    /// Payment Id in the payment system. Returned by the bank for payments in the
+    /// <see cref="PaymentStatus.Paid"/> or <see cref="PaymentStatus.Refunded"/> status
+    /// </summary>
+    [JsonProperty("transactionId")]
+    public string? TransactionId { get; set; }
 
     /// <summary>
     /// Order Id specified by store
@@ -32,6 +45,12 @@ public class PaymentData
     public decimal Amount { get; set; }
 
     /// <summary>
+    /// Commission paid by the Payer, in RUR
+    /// </summary>
+    [JsonProperty("fee")]
+    public decimal? Fee { get; set; }
+
+    /// <summary>
     /// Current payment status (at the moment of request)
     /// </summary>
     [JsonProperty("state")]
@@ -42,6 +61,18 @@ public class PaymentData
     /// </summary>
     [JsonProperty("subState")]
     public PaymentSubStatus? SubStatus { get; set; }
+
+    /// <summary>
+    /// Kind of the record: a payment or an invoice
+    /// </summary>
+    [JsonProperty("type")]
+    public PscbPaymentType? Type { get; set; }
+
+    /// <summary>
+    /// Marketplace the payment belongs to
+    /// </summary>
+    [JsonProperty("marketPlace")]
+    public string? MarketPlace { get; set; }
 
     /// <summary>
     /// Date and time when payment enters to its current status
@@ -87,6 +118,16 @@ public class PaymentData
     public string? Details { get; set; }
 
     /// <summary>
+    /// Arbitrary parameters attached to the payment by the store. Their structure is not defined by the bank
+    /// </summary>
+    /// <remarks>
+    /// Typed as <see cref="JToken"/>, not <see cref="JObject"/>: the shape belongs to whoever
+    /// created the payment, so a string or an array in it must not break parsing of the response.
+    /// </remarks>
+    [JsonProperty("merchantData")]
+    public JToken? MerchantData { get; set; }
+
+    /// <summary>
     /// Token for subsequent payments
     /// </summary>
     [JsonProperty("recurrencyToken")]
@@ -109,4 +150,18 @@ public class PaymentData
     /// </summary>
     [JsonProperty("paymentParams")]
     public BankCardData? Card { get; set; } // TODO: Implement object structure
+
+    /// <summary>
+    /// Number of the payments registry the money was settled by.
+    /// Returned only when clearing data was requested and the payment is finished
+    /// </summary>
+    [JsonProperty("registryId")]
+    public string? RegistryId { get; set; }
+
+    /// <summary>
+    /// Date of the payments registry the money was settled by.
+    /// Returned only when clearing data was requested and the payment is finished
+    /// </summary>
+    [JsonProperty("registryDate")]
+    public DateTimeOffset? RegistryDate { get; set; }
 }
