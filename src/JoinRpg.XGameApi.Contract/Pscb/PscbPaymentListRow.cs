@@ -19,6 +19,11 @@ namespace JoinRpg.XGameApi.Contract.Pscb;
 /// reported in <see cref="PscbPaymentsListResult.UnresolvedUsers"/> or
 /// <see cref="PscbPaymentsListResult.UnresolvedProjects"/>.
 /// </para>
+/// <para>
+/// The refund is reported by both sides: <see cref="Refunds"/> and <see cref="RefundedByBank"/>
+/// restate what the bank sent, while <see cref="RefundUrl"/> is ours — a link to the JoinRpg
+/// finance operation that recorded the refund.
+/// </para>
 /// </remarks>
 public class PscbPaymentListRow
 {
@@ -72,6 +77,26 @@ public class PscbPaymentListRow
     /// canceled, err, rej, undef, done.
     /// </summary>
     public string? Status { get; set; }
+
+    /// <summary>
+    /// True when the bank reports the payment as cancelled and completely refunded — its
+    /// <c>state</c> is "ref". A partially refunded payment keeps the status "end", so this flag
+    /// on its own does not cover partial refunds.
+    /// </summary>
+    public bool RefundedByBank { get; set; }
+
+    /// <summary>
+    /// Refunds of this payment as the bank reports them — «Возврат». The bank sends the array only
+    /// on the payments that actually have refunds, so it is empty for the rest.
+    /// </summary>
+    public IReadOnlyCollection<PscbRefundInfo> Refunds { get; set; } = [];
+
+    /// <summary>
+    /// Link to the JoinRpg finance operation that recorded the refund. Null when JoinRpg has no
+    /// approved refund for this payment, while the bank's own refund is in <see cref="Refunds"/> —
+    /// a discrepancy the page shows as such.
+    /// </summary>
+    public string? RefundUrl { get; set; }
 
     /// <summary>
     /// Moment when the payment entered its current status — «Дата».

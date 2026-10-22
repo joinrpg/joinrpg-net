@@ -23,4 +23,32 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
         var result = await query.ToArrayAsync();
         return [.. result.Select(r => new FinanceOperationIdentification(r.ProjectId, r.ClaimId, r.CommentId))];
     }
+
+    /// <summary>
+    /// Проведённые возвраты по заданным операциям
+    /// </summary>
+    /// <remarks>
+    /// Только <see cref="FinanceOperationState.Approved"/> — тот же критерий, по которому
+    /// <c>PaymentsService</c> проверяет, возвращена ли операция уже: возврат, который предложен,
+    /// но не подтверждён банком, деньгами ещё не стал.
+    /// </remarks>
+    public async Task<IReadOnlyCollection<ApprovedRefund>> GetApprovedRefunds(IReadOnlyCollection<int> refundedOperationIds)
+    {
+        if (refundedOperationIds.Count == 0)
+        {
+            return [];
+        }
+
+        var query = ctx.Set<FinanceOperation>()
+                .Where(fo => fo.OperationType == FinanceOperationType.Refund)
+                .Where(fo => fo.State == FinanceOperationState.Approved)
+                .Where(fo => fo.RefundedOperationId != null && refundedOperationIds.Contains(fo.RefundedOperationId.Value))
+                .Select(fo => new { fo.RefundedOperationId, fo.ProjectId, fo.ClaimId, fo.CommentId, fo.OperationDate });
+
+        var result = await query.ToArrayAsync();
+        return [.. result.Select(r => new ApprovedRefund(
+            r.RefundedOperationId!.Value,
+            new FinanceOperationIdentification(r.ProjectId, r.ClaimId, r.CommentId),
+            r.OperationDate))];
+    }
 }

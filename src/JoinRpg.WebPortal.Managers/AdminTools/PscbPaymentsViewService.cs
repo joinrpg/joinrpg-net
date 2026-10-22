@@ -1,5 +1,6 @@
 using System.Globalization;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.AdminTools.PscbPayments;
@@ -34,8 +35,10 @@ internal class PscbPaymentsViewService(
     IBankSecretsProvider bankSecrets,
     IHttpClientFactory httpClientFactory,
     IUriService uriService,
+    IUriLocator<FinanceOperationIdentification> financeOperationUri,
     ISearchService searchService,
     IUserRepository userRepository,
+    IFinanceOperationsRepository financeOperationsRepository,
     ILogger<PscbPaymentsViewService> logger) : IPscbPaymentsClient
 {
     public async Task<PscbPaymentsListResult> GetPayments(PscbPaymentsQuery query)
@@ -58,7 +61,7 @@ internal class PscbPaymentsViewService(
             var result = PscbPaymentViewModelBuilder.BuildList(info, requestCount);
             if (result.IsSuccess)
             {
-                await FillLinksAsync(result);
+                await EnrichAsync(result);
             }
             return result;
         }
@@ -97,22 +100,24 @@ internal class PscbPaymentsViewService(
     }
 
     /// <summary>
-    /// Проставляет ссылки на пользователя и проект и собирает то, что не нашлось.
+    /// Добавляет к данным банка то, что знает JoinRpg: ссылки на пользователя и проект, списки
+    /// тех, кого найти не удалось, и возвраты.
     /// </summary>
     /// <remarks>
-    /// Ссылки — дополнение к данным банка, а не их часть, поэтому их поломка не должна уносить
-    /// уже полученный список: ошибка логируется, ссылки и списки остаются пустыми.
+    /// Это дополнение к данным банка, а не их часть, поэтому его поломка не должна уносить уже
+    /// полученный список: ошибка логируется, ссылки и списки остаются пустыми.
     /// </remarks>
-    private async Task FillLinksAsync(PscbPaymentsListResult result)
+    private async Task EnrichAsync(PscbPaymentsListResult result)
     {
         try
         {
             await FillUserLinksAsync(result);
             await FillProjectLinksAsync(result);
+            await FillRefundsAsync(result.Payments);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to build user or project links for the payments list");
+            logger.LogWarning(ex, "Failed to enrich the payments list with the JoinRpg data");
         }
     }
 
@@ -264,6 +269,62 @@ internal class PscbPaymentsViewService(
             .OfType<string>()
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Ссылка на операцию возврата в JoinRpg. О самом возврате сообщает банк — массивом
+    /// <c>refunds[]</c> в элементе списка и статусом <c>ref</c>, — а наша операция возврата лежит
+    /// в базе, и на неё полезно уметь перейти.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>orderId</c> это <c>CommentId</c> финансовой операции, дополненный нулями до десяти
+    /// знаков, а операция возврата ссылается на возвращённую через <c>RefundedOperationId</c> —
+    /// поэтому соединение идёт по числу и одним запросом на весь список.
+    /// </para>
+    /// <para>
+    /// Значения вроде <c>__REPLACED_0000644272</c> числом не являются: так банк помечает
+    /// заброшенную попытку, чей <c>orderId</c> магазин использовал повторно. Ссылки такая строка
+    /// не получает — возврат относится к текущему платежу, а не к предыдущим попыткам.
+    /// </para>
+    /// </remarks>
+    private async Task FillRefundsAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
+    {
+        var operationIds = rows
+            .Select(row => ParseOperationId(row.OrderId))
+            .OfType<int>()
+            .Distinct()
+            .ToList();
+
+        if (operationIds.Count == 0)
+        {
+            return;
+        }
+
+        var refunds = await financeOperationsRepository.GetApprovedRefunds(operationIds);
+        if (refunds.Count == 0)
+        {
+            return;
+        }
+
+        // Возврат по операции один: повторный PaymentsService создать не даёт. Если их всё же
+        // несколько, ссылка ведёт на последний — по дате операции.
+        var byOperation = refunds
+            .GroupBy(refund => refund.RefundedOperationId)
+            .ToDictionary(
+                group => group.Key,
+                group => group.OrderByDescending(refund => refund.OperationDate).First());
+
+        foreach (var row in rows)
+        {
+            if (ParseOperationId(row.OrderId) is { } operationId && byOperation.TryGetValue(operationId, out var refund))
+            {
+                row.RefundUrl = financeOperationUri.GetUri(refund.RefundId).AbsoluteUri;
+            }
+        }
+    }
+
+    private static int? ParseOperationId(string? orderId)
+        => int.TryParse(orderId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var operationId) ? operationId : null;
 
     /// <summary>
     /// Ссылка на проект с точно таким названием.

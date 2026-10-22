@@ -109,8 +109,9 @@ internal static class PscbPaymentViewModelBuilder
         => new() { IsSuccess = false, ErrorDescription = message };
 
     /// <summary>
-    /// Строка списка платежей. Ссылки на пользователя и проект остаются незаполненными — их
-    /// проставляет сервис, у которого есть <c>IUriService</c> и поиск по проектам.
+    /// Строка списка платежей. Ссылки на пользователя и проект, а также сумма, дата и ссылка
+    /// возврата остаются незаполненными — их проставляет сервис, у которого есть база и
+    /// <c>IUriService</c>.
     /// </summary>
     public static PscbPaymentListRow BuildListRow(PaymentsListItem payment)
         => new()
@@ -123,6 +124,8 @@ internal static class PscbPaymentViewModelBuilder
             Amount = payment.Amount,
             Fee = payment.Fee,
             Status = Identifier(payment.Status),
+            RefundedByBank = payment.Status == PaymentStatus.Refunded,
+            Refunds = payment.Refunds?.Select(refund => Build(refund)).ToList() ?? [],
             StatusDate = payment.CurrentStatusDate,
             PaymentKind = KindName(payment.Type),
             PaymentMethod = MethodName(payment.PaymentMethod),

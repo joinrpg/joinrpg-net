@@ -191,6 +191,7 @@ public class PscbPaymentViewModelBuilderTests
         row.Amount.ShouldBe(15000.00m);
         row.Fee.ShouldBe(366.00m);
         row.Status.ShouldBe("end");
+        row.RefundedByBank.ShouldBeFalse();
         row.StatusDate.ShouldBe(StatusDate);
         row.PaymentKind.ShouldBe("Платёж");
         row.PaymentMethod.ShouldBe("Банковская карта");
@@ -200,6 +201,37 @@ public class PscbPaymentViewModelBuilderTests
         row.ErrorCode.ShouldBe(0);
         row.ErrorSubCode.ShouldBe(0);
         row.ErrorDescription.ShouldBe("Платеж завершен");
+    }
+
+    /// <summary>
+    /// Полный возврат банк помечает статусом <c>ref</c> и кладёт в элемент списка массив
+    /// <c>refunds</c> — с суммой, статусом и номером возврата (снято с боевого ответа за сентябрь
+    /// 2026). При частичном возврате статус остаётся <c>end</c>, поэтому признак говорит только
+    /// о полном возврате.
+    /// </summary>
+    [Fact]
+    public void MarksTheRowTheBankReportsAsRefunded()
+    {
+        var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem
+        {
+            Id = "1115155872",
+            OrderId = "0000637705",
+            Amount = 13450.00m,
+            Status = PaymentStatus.Refunded,
+            PaymentMethod = PscbPaymentMethod.BankCards,
+            CurrentStatusDate = StatusDate,
+            Refunds =
+            [
+                new RefundData { Id = "1115846166", Status = RefundStatus.Completed, Amount = 13450.00m },
+            ],
+        });
+
+        row.Status.ShouldBe("ref");
+        row.RefundedByBank.ShouldBeTrue();
+        var refund = row.Refunds.ShouldHaveSingleItem();
+        refund.RefundId.ShouldBe("1115846166");
+        refund.Status.ShouldBe("END");
+        refund.Amount.ShouldBe(13450.00m);
     }
 
     /// <summary>
@@ -219,6 +251,8 @@ public class PscbPaymentViewModelBuilderTests
 
         row.UserUrl.ShouldBeNull();
         row.ProjectUrl.ShouldBeNull();
+        row.RefundUrl.ShouldBeNull();
+        row.Refunds.ShouldBeEmpty();
     }
 
     [Fact]

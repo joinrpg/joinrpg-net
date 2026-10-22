@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes;
@@ -322,13 +323,103 @@ public class PscbPaymentsViewServiceTests
         search.Requests.ShouldBe(["Проект"]);
     }
 
+    /// <summary>
+    /// О возврате сообщает банк — массивом <c>refunds</c> в элементе списка (форма снята с боевого
+    /// ответа за сентябрь 2026), — а ссылка на операцию возврата приходит из нашей базы по
+    /// <c>orderId</c>, который и есть CommentId операции.
+    /// </summary>
+    [Fact]
+    public async Task FillsTheRefundFromTheDatabase()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddRefund(637705, new DateTime(2026, 9, 8, 23, 30, 0));
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(258),
+            finances,
+            Payment(
+                "0000637705",
+                account: "258",
+                details: null,
+                refunds: """[{"refundId":"1115846166","state":"END","amount":13450.0}]"""));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        var refund = row.Refunds.ShouldHaveSingleItem();
+        refund.RefundId.ShouldBe("1115846166");
+        refund.Status.ShouldBe("END");
+        refund.Amount.ShouldBe(13450.0m);
+        row.RefundUrl.ShouldBe("https://joinrpg.test/42/finance/9001");
+    }
+
+    /// <summary>
+    /// Заброшенную попытку платежа банк переименовывает сам, и её <c>orderId</c> числом не
+    /// является. Возврат относится к текущему платежу, а не к предыдущим попыткам.
+    /// </summary>
+    [Fact]
+    public async Task LeavesTheRefundOutForTheOrderIdTheBankHasReplaced()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddRefund(644272, new DateTime(2026, 5, 12));
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(42),
+            finances,
+            Payment("__REPLACED_0000644272", account: "42", details: null),
+            Payment("0000644272", account: "42", details: null));
+
+        var rows = (await service.GetPayments(Query())).Payments.ToList();
+
+        rows.Count.ShouldBe(2);
+        rows[0].RefundUrl.ShouldBeNull();
+        rows[1].RefundUrl.ShouldBe("https://joinrpg.test/42/finance/9001");
+    }
+
+    /// <summary>
+    /// Возвраты ищутся одним запросом на весь список, а не по одному на платёж.
+    /// </summary>
+    [Fact]
+    public async Task AsksForTheRefundsOnceForTheWholeList()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddRefund(2, new DateTime(2026, 5, 12));
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(42),
+            finances,
+            Payment("0000000001", account: "42", details: null),
+            Payment("0000000002", account: "42", details: null));
+
+        var result = await service.GetPayments(Query());
+
+        result.Payments.Count.ShouldBe(2);
+        finances.Requests.ShouldBe([1, 2]);
+    }
+
+    /// <summary>
+    /// Повторный возврат <c>PaymentsService</c> создать не даёт, но восстановленные из архива
+    /// операции могут дать несколько: ссылка ведёт на последнюю по дате.
+    /// </summary>
+    [Fact]
+    public async Task LinksTheLatestRefundOfOneOperation()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddRefund(1, new DateTime(2026, 5, 1), refundCommentId: 9001);
+        finances.AddRefund(1, new DateTime(2026, 6, 1), refundCommentId: 9002);
+        var service = CreateService(new FakeSearchService(), Users(42), finances, Payment("0000000001", account: "42", details: null));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.RefundUrl.ShouldBe("https://joinrpg.test/42/finance/9002");
+    }
+
     private static string TicketPurpose(string projectName)
         => PscbPaymentViewModelBuilder.TicketPurposePrefix + projectName;
 
     private static PscbPaymentsQuery Query() => new(From, From.AddDays(5), null, null, false);
 
-    private static string Payment(string orderId, string? account, string? details, string? email = null)
-        => $$"""{"orderId":"{{orderId}}","paymentId":"11","amount":100.0,"state":"end","account":{{Quote(account)}},"email":{{Quote(email)}},"details":{{Quote(details)}}}""";
+    private static string Payment(string orderId, string? account, string? details, string? email = null, string? refunds = null)
+        => $$"""{"orderId":"{{orderId}}","paymentId":"11","amount":100.0,"state":"end","account":{{Quote(account)}},"email":{{Quote(email)}},"details":{{Quote(details)}},"refunds":{{refunds ?? "null"}}}""";
 
     private static string Quote(string? value) => value is null ? "null" : "\"" + value + "\"";
 
@@ -344,12 +435,21 @@ public class PscbPaymentsViewServiceTests
     }
 
     private static PscbPaymentsViewService CreateService(FakeSearchService search, FakeUserRepository users, params string[] payments)
+        => CreateService(search, users, new FakeFinanceOperationsRepository(), payments);
+
+    private static PscbPaymentsViewService CreateService(
+        FakeSearchService search,
+        FakeUserRepository users,
+        FakeFinanceOperationsRepository finances,
+        params string[] payments)
         => new(
             new FakeBankSecrets(),
             new StubHttpClientFactory(payments),
             new FakeUriService(),
+            new FakeFinanceOperationUri(),
             search,
             users,
+            finances,
             NullLogger<PscbPaymentsViewService>.Instance);
 
     private sealed class FakeBankSecrets : IBankSecretsProvider
@@ -488,5 +588,41 @@ public class PscbPaymentsViewServiceTests
         public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotImplementedException();
         public Task<UserIdentification?> FindByVk(string vkId) => throw new NotImplementedException();
         public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Возвраты в базе: какие операции возвращены, на сколько и когда.
+    /// </summary>
+    private sealed class FakeFinanceOperationsRepository : IFinanceOperationsRepository
+    {
+        private readonly List<ApprovedRefund> refunds = [];
+
+        /// <summary>
+        /// Идентификаторы операций, по которым сервис спрашивал возвраты.
+        /// </summary>
+        public List<int> Requests { get; } = [];
+
+        public void AddRefund(int refundedOperationId, DateTime operationDate, int refundCommentId = 9001)
+            => refunds.Add(new ApprovedRefund(
+                refundedOperationId,
+                new FinanceOperationIdentification(42, 7, refundCommentId),
+                operationDate));
+
+        public Task<IReadOnlyCollection<ApprovedRefund>> GetApprovedRefunds(IReadOnlyCollection<int> refundedOperationIds)
+        {
+            Requests.AddRange(refundedOperationIds);
+
+            IReadOnlyCollection<ApprovedRefund> found = [.. refunds.Where(refund => refundedOperationIds.Contains(refund.RefundedOperationId))];
+            return Task.FromResult(found);
+        }
+
+        public Task<IReadOnlyCollection<FinanceOperationIdentification>> GetUnfinishedOperations(KeySetPagination? pagination = null)
+            => throw new NotImplementedException();
+    }
+
+    private sealed class FakeFinanceOperationUri : IUriLocator<FinanceOperationIdentification>
+    {
+        public Uri GetUri(FinanceOperationIdentification target)
+            => new($"https://joinrpg.test/{target.ProjectId.Value}/finance/{target.FinanceOperationId}", UriKind.Absolute);
     }
 }

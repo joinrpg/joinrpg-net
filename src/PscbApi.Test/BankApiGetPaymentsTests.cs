@@ -203,6 +203,33 @@ public class BankApiGetPaymentsTests
         lastError.ProcessingCode.ShouldBeNull();
     }
 
+    /// <summary>
+    /// На возвращённом платеже банк присылает в элементе списка массив <c>refunds</c> — с номером,
+    /// статусом и суммой возврата. Форма снята с боевого ответа за сентябрь 2026: документация
+    /// <c>getPayments</c> ответ не описывает вовсе, а в таблице ключей платежа у возврата нет
+    /// <c>amount</c>. Код в <c>lastError.code</c> при этом отрицательный и не входит в
+    /// <see cref="PaymentsSystemResponseCode"/> — значение проходит как есть, без падения.
+    /// </summary>
+    [Fact]
+    public async Task ParsesTheRefundsOfARefundedListElement()
+    {
+        var handler = new RecordingHandler(_ => Success(
+            """[{"orderId":"0000637705","paymentId":"1115155872","amount":13450.00,"state":"ref","refunds":[{"refundId":"1115846166","state":"END","amount":13450.00}],"lastError":{"code":"-7","subCode":"00","description":"Возврат на сумму 13450: ID 634305931"}}]"""));
+
+        var result = await CreateApi(handler).GetPaymentsAsync(From, From.AddDays(5));
+
+        var payment = result.Payments!.Single();
+        payment.Status.ShouldBe(PaymentStatus.Refunded);
+
+        var refund = payment.Refunds!.Single();
+        refund.Id.ShouldBe("1115846166");
+        refund.Status.ShouldBe(RefundStatus.Completed);
+        refund.Amount.ShouldBe(13450.00m);
+
+        payment.LastError!.Description.ShouldBe("Возврат на сумму 13450: ID 634305931");
+        payment.LastError.PaymentCode.ShouldBe((PaymentsSystemResponseCode)(-7));
+    }
+
     [Fact]
     public async Task NonSuccessHttpStatusThrows()
     {
