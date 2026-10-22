@@ -14,8 +14,7 @@ public partial class MassProjectEmailService(
     IProjectMetadataRepository projectMetadataRepository,
     INotificationService notificationService,
     ICurrentUserAccessor currentUserAccessor,
-    IUriLocator<ClaimIdentification> uriLocator,
-    IUriLocator<MyClaimInProjectIdentification> myClaimUriLocator
+    IUriLocator<ClaimIdentification> uriLocator
     ) : IMassProjectEmailService
 {
     public async Task MassMail(
@@ -42,15 +41,7 @@ public partial class MassProjectEmailService(
         }
 
         List<NotificationRecepient> recipients = CalculateRecepients(claims, project);
-        var myClaimId = new MyClaimInProjectIdentification(project.ProjectId);
-
-        // %CLAIM% — адрес «моей заявки», общий для всех: так он есть и у мастеров, которым тоже уходит рассылка,
-        // а игрока с несколькими заявками он отправит в их список, а не в случайную из них
-        var template = new NotificationEventTemplate(
-            ClaimPlaceholderRegex().Replace(
-                NamePlaceholderRegex().Replace(body.Contents, "%recepient.name%"),
-                myClaimUriLocator.GetUri(myClaimId).AbsoluteUri)
-            );
+        var template = new NotificationEventTemplate(NamePlaceholderRegex().Replace(body.Contents, "%recepient.name%"));
 
         // Тема, которую ввел мастер — только часть заголовка, перед ней всегда название проекта
         // (так же это показано в форме рассылки и так же устроены остальные письма проекта)
@@ -59,7 +50,7 @@ public partial class MassProjectEmailService(
         var notification = new NotificationEvent(NotificationClass.MassProjectEmails,
                                                  // Не конкретная заявка: к истории заявки письмо отношения не имеет, оно всем рассылается.
                                                  // Но ссылка под письмом ведёт игрока в его заявку, а не на страницу проекта (#5752).
-                                                 myClaimId,
+                                                 new MyClaimInProjectIdentification(project.ProjectId),
                                                  header,
                                                  template,
                                                  recipients,
@@ -131,7 +122,4 @@ public partial class MassProjectEmailService(
     }
     [GeneratedRegex("%NAME%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex NamePlaceholderRegex();
-
-    [GeneratedRegex("%CLAIM%", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    private static partial Regex ClaimPlaceholderRegex();
 }

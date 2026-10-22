@@ -30,8 +30,7 @@ public class MassProjectEmailServiceTest
             new FakeProjectMetadataRepository(mock),
             notificationService,
             new FakeCurrentUserAccessor(mock.Master.UserId),
-            new FakeClaimUriLocator(),
-            new FakeMyClaimUriLocator());
+            new FakeClaimUriLocator());
 
     [Fact]
     public async Task MassMail_HeaderStartsWithProjectName()
@@ -75,39 +74,6 @@ public class MassProjectEmailServiceTest
             .EntityReference.ShouldBe(projectId);
     }
 
-    [Fact]
-    public async Task MassMail_ClaimPlaceholder_LinksToMyClaim()
-    {
-        await CreateService().MassMail(
-            [Claim.ClaimId],
-            new MarkdownDbValue("Загляните в заявку %CLAIM%"),
-            "Тема рассылки",
-            alsoMailToMasters: false);
-
-        notificationService.Queued.Single().TemplateText.TemplateContents
-            .ShouldBe($"Загляните в заявку https://joinrpg.ru/{mock.Project.ProjectId}/myclaim");
-    }
-
-    /// <summary>
-    /// У мастеров своей заявки нет. Пока заявка подставлялась полем получателя, рассылка с галкой
-    /// «Также включить всех мастеров» падала на проверке полей (#5752).
-    /// </summary>
-    [Fact]
-    public async Task MassMail_ClaimPlaceholder_ToMasters_EveryRecipientHasClaimField()
-    {
-        await CreateService().MassMail(
-            [Claim.ClaimId],
-            new MarkdownDbValue("Загляните в заявку %CLAIM%"),
-            "Тема рассылки",
-            alsoMailToMasters: true);
-
-        notificationService.Queued.Count.ShouldBe(2);
-        foreach (var notification in notificationService.Queued.Where(n => n.TemplateText.TemplateContents.Contains("%recepient.claim%")))
-        {
-            notification.Recepients.ShouldAllBe(r => r.Fields.ContainsKey("claim"));
-        }
-    }
-
     /// <summary>Отдаёт заранее заготовленные заявки — рассылке больше ничего от репозитория не нужно.</summary>
     private sealed class FakeMassMailClaimsRepository(params ClaimWithPlayer[] claims) : IClaimsRepository
     {
@@ -133,11 +99,6 @@ public class MassProjectEmailServiceTest
         public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
         public Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotSupportedException();
-    }
-
-    private sealed class FakeMyClaimUriLocator : IUriLocator<MyClaimInProjectIdentification>
-    {
-        public Uri GetUri(MyClaimInProjectIdentification target) => new($"https://joinrpg.ru/{target.ProjectId.Value}/myclaim");
     }
 
     private sealed class FakeClaimUriLocator : IUriLocator<ClaimIdentification>
