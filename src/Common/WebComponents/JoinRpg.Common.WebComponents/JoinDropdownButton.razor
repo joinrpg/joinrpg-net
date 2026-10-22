@@ -1,0 +1,34 @@
+@*
+    Кнопка с выпадающим меню на нативном <details>: открывает браузер, без JS Bootstrap, поэтому работает
+    и в статическом рендере. Рядом с JoinButton в JoinButtonGroup даёт «кнопку с выпадашкой»: основное
+    действие — кнопкой, остальные — в меню. Пункты меню — JoinMenuItem.
+
+    Закрытие по клику мимо и по Esc — делегированный слушатель в JoinRpg.Common.WebComponents.lib.module.js;
+    без него меню закрывается повторным кликом по кнопке.
+*@
+<details class="join-dropdown">
+    <summary class="join-btn join-dropdown__toggle" aria-label="@AriaLabel" title="@AriaLabel">
+        @if (Label is not null)
+        {
+            <span class="join-dropdown__label">@Label</span>
+        }
+        <span class="join-dropdown__caret"></span>
+    </summary>
+    <ul class="join-dropdown__menu @(AlignRight ? "join-dropdown__menu--right" : "")">
+        @ChildContent
+    </ul>
+</details>
+
+@code {
+    /// <summary>Пункты меню — <see cref="JoinMenuItem"/>.</summary>
+    [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>Текст на кнопке. Без него — только стрелка (тогда обязательно задайте <see cref="AriaLabel"/>).</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Что за меню — для скринридера и подсказки, когда на кнопке одна стрелка.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>Прижать меню к правому краю кнопки — когда кнопка у правого края страницы.</summary>
+    [Parameter] public bool AlignRight { get; set; }
+}

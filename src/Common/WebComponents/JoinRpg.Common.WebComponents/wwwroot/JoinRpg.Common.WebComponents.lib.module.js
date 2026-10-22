@@ -1,4 +1,5 @@
-// Подсказки компонента Tooltip.razor и раскрытие JoinCollapsePanel.razor по якорю.
+// Подсказки компонента Tooltip.razor, раскрытие JoinCollapsePanel.razor по якорю и закрытие меню
+// JoinDropdownButton.razor по клику мимо и по Esc.
 //
 // Это JS-инициализатор Blazor: имя файла обязано совпадать с PackageId библиотеки, а сам файл
 // лежать в её wwwroot. Blazor импортирует такой модуль сам — и в Blazor Web App (Portal, IdPortal),
@@ -168,3 +169,40 @@ function decodeHash(hash) {
 
 openPanelFromHash();
 window.addEventListener('hashchange', openPanelFromHash);
+
+// Меню JoinDropdownButton.razor: открывает и закрывает их браузер (<details>), а здесь — только закрытие
+// по клику мимо меню и по Esc, как привыкли у выпадающих меню. Открытое меню одно: клик по другому
+// закрывает прежнее.
+
+const DROPDOWN_SELECTOR = 'details.join-dropdown[open]';
+
+function closeDropdowns(except) {
+    document.querySelectorAll(DROPDOWN_SELECTOR).forEach(dropdown => {
+        if (dropdown !== except) {
+            dropdown.open = false;
+        }
+    });
+}
+
+document.addEventListener('click', event => {
+    const target = event.target instanceof Element ? event.target : null;
+    // Клик по пункту меню тоже закрывает меню: пункт может и не уводить со страницы (скачивание, новая вкладка).
+    const keepOpen = target?.closest('.join-dropdown__menu a, .join-dropdown__menu button') ? null : target?.closest('details.join-dropdown');
+    closeDropdowns(keepOpen ?? null);
+});
+document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') {
+        return;
+    }
+    // Фокус внутри закрываемого меню иначе уходит на body, и Tab начинает обход с начала страницы.
+    const focused = document.activeElement?.closest('details.join-dropdown[open]');
+    closeDropdowns(null);
+    focused?.querySelector(':scope > summary')?.focus();
+});
+// Ушли Tab'ом из меню — закрываем, иначе оно висит поверх страницы.
+document.addEventListener('focusout', event => {
+    const dropdown = event.target instanceof Element ? event.target.closest('details.join-dropdown[open]') : null;
+    if (dropdown && event.relatedTarget instanceof Node && !dropdown.contains(event.relatedTarget)) {
+        dropdown.open = false;
+    }
+});

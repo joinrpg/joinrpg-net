@@ -1,0 +1,23 @@
+<h3>JoinDropdownButton</h3>
+
+<p>
+    Выпадающее меню на нативном <code>&lt;details&gt;</code>: работает и в статическом рендере, без JS Bootstrap.
+    Рядом с <code>JoinButton</code> в <code>JoinButtonGroup</code> — кнопка с выпадашкой: основное действие
+    кнопкой, остальные в меню. Закрывается по клику мимо и по Esc.
+</p>
+
+<JoinButtonGroup>
+    <JoinButton Link="#" Preset="ButtonPreset.Print" Label="Распечатать все" />
+    <JoinDropdownButton AriaLabel="Другие варианты печати">
+        <JoinMenuItem Href="#" Label="Распечатать бейджи" />
+        <JoinMenuItem Href="#" Label="Только раздатка" />
+    </JoinDropdownButton>
+</JoinButtonGroup>
+
+<h4>С подписью, меню у правого края</h4>
+<div style="text-align: right">
+    <JoinDropdownButton Label="Действия" AlignRight="true">
+        <JoinMenuItem Href="#" Icon="JoinIconType.Print" Label="Печать" />
+        <JoinMenuItem Href="#" Label="Скачать в Excel" />
+    </JoinDropdownButton>
+</div>
