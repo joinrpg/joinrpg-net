@@ -34,6 +34,7 @@ public class PscbPaymentsApiController(IPscbPaymentsClient client, IExportDataSe
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status502BadGateway)]
     [ProducesDefaultResponseType]
     public async Task<IActionResult> GetPayments(
         DateTimeOffset dateFrom,
@@ -55,6 +56,16 @@ public class PscbPaymentsApiController(IPscbPaymentsClient client, IExportDataSe
 
         if (string.Equals(format, PscbPaymentsRoutes.CsvFormat, StringComparison.OrdinalIgnoreCase))
         {
+            if (!result.IsSuccess)
+            {
+                // В CSV отказ банка положить некуда, а файл с одним заголовком потребитель прочитал
+                // бы как «платежей за период нет».
+                return Problem(
+                    title: PscbBankFailureHelper.PaymentsListTitle,
+                    detail: PscbBankFailureHelper.Describe(result),
+                    statusCode: StatusCodes.Status502BadGateway);
+            }
+
             return GeneratorResultHelper.Result(
                 $"Платежи ПСКБ {dateFrom:yyyy-MM-dd}-{dateTo:yyyy-MM-dd}",
                 PscbPaymentsCsvExporter.CreateGenerator(exportDataService, result.Payments));

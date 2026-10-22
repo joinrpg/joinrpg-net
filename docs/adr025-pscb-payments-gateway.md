@@ -269,6 +269,15 @@ distinct-название, а не один на платёж.
 `UNKNOWN_PAYMENT`, `ILLEGAL_ACTION`, `ILLEGAL_PAYMENT_STATE`, `REPEAT_REQUEST`, `PROCESSING`,
 `SERVER_ERROR`; все они уже есть в `PscbApi.Models.ApiErrorCode`.
 
+**В JSON и в CSV отказ отдаётся по-разному.** В JSON он остаётся в теле со статусом 200
+(`isSuccess=false`, `errorCode`, `errorDescription`, `requestId`) — остров показывает его алертом и
+не предлагает ссылку на CSV. В CSV ошибку положить некуда, а файл с одним заголовком читается как
+«платежей за период нет», то есть превращается ровно в ту тихую пустую выгрузку, которой шлюз
+избегает. Поэтому при `format=csv` и `isSuccess=false` обе поверхности возвращают `Problem(...)` со
+статусом **502 Bad Gateway**: запрос не выполнен вышестоящим сервисом, а не клиентом. Текст отказа
+собирает `JoinRpg.Portal/Helpers/PscbBankFailureHelper` — он один на два контроллера и живёт в слое
+UI, потому что это видимая пользователю строка.
+
 ### Конфигурация
 
 - `PaymentProviders:Pscb:BankApiEndpoint` → `https://paygates.ru`,
