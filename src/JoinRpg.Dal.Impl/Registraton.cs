@@ -49,6 +49,7 @@ public static class Registraton
             // же причине, что и ICharacterAggregateWriteRepository выше. Единственный способ его
             // получить — IUnitOfWork.GetRoomCategoryPlanWriteRepository().
             .AddTransient<IProjectRolesListRepository, ProjectRolesListRepository>()
+            .AddTransient<IProjectBadgeTemplateRepository, ProjectBadgeTemplateRepository>()
             .AddTransient<IFinanceOperationsRepository, FinanceOperationsRepository>()
             .AddTransient<IAdvertisementLogRepository, AdvertisementLogRepository>()
             .AddTransient<IUserMergeRepository, UserMergeRepository>()

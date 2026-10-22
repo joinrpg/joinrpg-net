@@ -179,6 +179,21 @@ erDiagram
         enum ShowRolesFilter
     }
 
+    ProjectBadgeTemplates {
+        int ProjectBadgeTemplateId PK
+        int ProjectId FK
+        string Name
+        int WidthMm
+        int HeightMm
+        string BackgroundUrl "внешняя ссылка на фон, null = без фона"
+        string LinesJson "строки бейджа JSON-ом, формат — ProjectBadgeTemplate.Lines"
+        bool IsActive "удалённый шаблон выключается, можно восстановить"
+        datetime CreatedAt
+        int CreatedById FK
+        datetime UpdatedAt
+        int UpdatedById FK
+    }
+
     GameReport2DTemplate {
         int GameReport2DTemplateId PK
         string GameReport2DTemplateName
@@ -227,6 +242,7 @@ erDiagram
     Projects ||--o{ ProjectAcls : ""
     Projects ||--o{ CaptainAccessRuleEntities : ""
     Projects ||--o{ ProjectRolesLists : ""
+    Projects ||--o{ ProjectBadgeTemplates : ""
     Projects ||--o{ GameReport2DTemplate : ""
     Projects ||--o{ AdvertisementLogEntries : ""
     Projects ||--o{ KogdaIgraGameProjects : ""

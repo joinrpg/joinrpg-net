@@ -66,6 +66,9 @@ public class Project : IProjectEntity
 
     public virtual ICollection<ProjectRolesList> ProjectRolesLists { get; set; }
 
+    /// <summary>Шаблоны бейджей. В <c>ProjectInfo</c> не загружаются — нужны редко, грузятся отдельно</summary>
+    public virtual ICollection<ProjectBadgeTemplate> ProjectBadgeTemplates { get; set; }
+
     /// <summary>
     /// Типы проживания проекта (палатка, домик, номер…). Только навигация поверх уже существующего
     /// FK <c>ProjectAccommodationTypes.ProjectId</c> — новых колонок нет (ADR015).
