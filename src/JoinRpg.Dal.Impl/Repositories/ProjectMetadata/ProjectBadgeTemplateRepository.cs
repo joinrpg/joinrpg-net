@@ -28,12 +28,12 @@ internal class ProjectBadgeTemplateRepository(MyDbContext ctx) : IProjectBadgeTe
     internal static ProjectBadgeTemplate ToDomain(DataModel.ProjectBadgeTemplate entity)
     {
         return new ProjectBadgeTemplate(
-            Id: new ProjectBadgeTemplateIdentification(new ProjectIdentification(entity.ProjectId), entity.ProjectBadgeTemplateId),
+            Id: entity.GetId(),
             Name: entity.Name,
             Layout: new BadgeLayout(
                 WidthMm: entity.WidthMm,
                 HeightMm: entity.HeightMm,
-                BackgroundUrl: entity.BackgroundUrl,
+                BackgroundUrl: entity.BackgroundUrl is null ? null : new Uri(entity.BackgroundUrl),
                 Lines: entity.Lines),
             IsActive: entity.IsActive);
     }

@@ -66,6 +66,7 @@ public static class Services
             .AddTransient<IAccommodationPropsService, AccommodationPropsService>()
             .AddTransient<ICaptainRuleService, CaptainRuleService>()
             .AddTransient<IProjectRolesListService, ProjectRolesListService>()
+            .AddTransient<IProjectBadgeTemplateService, ProjectBadgeTemplateService>()
             .AddTransient<IProjectAccessService, ProjectAccessService>()
             .AddTransient<IRespMasterRuleService, RespMasterRuleService>()
             .AddTransient<IProjectFinanceSettingsService, ProjectFinanceSettingsService>()

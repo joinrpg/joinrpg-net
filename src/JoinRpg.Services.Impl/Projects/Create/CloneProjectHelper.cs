@@ -1,5 +1,6 @@
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Data.Entity.Validation;
+using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
@@ -24,6 +25,8 @@ internal class CloneProjectHelper(
     ICharacterService characterService,
     IPlotService plotService,
     IProjectRolesListService projectRolesListService,
+    IProjectBadgeTemplateRepository badgeTemplateRepository,
+    IProjectBadgeTemplateService badgeTemplateService,
     ILogger logger)
 {
     private readonly Dictionary<CharacterIdentification, CharacterIdentification> CharacterMapping = [];
@@ -42,6 +45,9 @@ internal class CloneProjectHelper(
     public async Task<bool> Clone()
     {
         await CopyFields();
+
+        // Шаблоны бейджей зависят только от полей — копируются на любом уровне копирования.
+        await CopyBadgeTemplates();
 
         if (cloneRequest.CopySettings >= ProjectCopySettingsDto.SettingsFieldsGroupsAndTemplates)
         {
@@ -404,6 +410,32 @@ internal class CloneProjectHelper(
             catch (JoinRpgBaseException ex)
             {
                 logger.LogWarning(ex, "Не удалось скопировать сетку ролей {Name} в проект {projectId}. Копирование проекта будет продолжено.", originalList.Name, projectId);
+                everythingFine = false;
+            }
+        }
+    }
+
+    private async Task CopyBadgeTemplates()
+    {
+        foreach (var template in (await badgeTemplateRepository.GetForProjectAsync(original.ProjectId)).Where(t => t.IsActive))
+        {
+            try
+            {
+                // Строка с полем, которое не скопировалось, выпадает: ссылаться ей больше не на что.
+                var lines = template.Layout.Lines
+                    .Select(line => line.ProjectFieldId is not int fieldId
+                        ? line
+                        : FieldMapping.GetValueOrDefault(new ProjectFieldIdentification(original.ProjectId, fieldId)) is { } newField
+                            ? line with { ProjectFieldId = newField.ProjectFieldId }
+                            : null)
+                    .WhereNotNull()
+                    .ToList();
+
+                _ = await badgeTemplateService.CreateAsync(projectId, template.Name, template.Layout with { Lines = lines });
+            }
+            catch (JoinRpgBaseException ex)
+            {
+                logger.LogWarning(ex, "Не удалось скопировать шаблон бейджа {Name} в проект {projectId}. Копирование проекта будет продолжено.", template.Name, projectId);
                 everythingFine = false;
             }
         }

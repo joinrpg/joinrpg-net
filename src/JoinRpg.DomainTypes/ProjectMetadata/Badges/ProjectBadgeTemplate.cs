@@ -30,7 +30,7 @@ public record ProjectBadgeTemplate(
 public record BadgeLayout(
     int WidthMm,
     int HeightMm,
-    string? BackgroundUrl,
+    Uri? BackgroundUrl,
     IReadOnlyList<BadgeLine> Lines);
 
 /// <summary>
