@@ -40,7 +40,7 @@ public record class UserInfo(
             hasTelegram: Social.Telegram is not null,
             hasVerifiedVkontakte: Social.Vk?.IsVerified == true,
             PhoneNumber,
-            UserFullName.FullName,
+            UserFullName,
             PassportData,
             RegistrationAddress,
             BirthDate);
