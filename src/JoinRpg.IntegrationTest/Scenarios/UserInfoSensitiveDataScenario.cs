@@ -55,11 +55,11 @@ public class UserInfoSensitiveDataScenario(JoinApplicationFactory factory) : ICl
     }
 
     /// <summary>
-    /// У только что зарегистрированного пользователя <c>UserExtra</c> вообще нет, и проекция
-    /// обязана это переживать: опциональная навигация даёт LEFT JOIN, поля приезжают null.
+    /// Только что зарегистрированный пользователь паспорт и адрес не заполнял: регистрация создаёт
+    /// строку <c>UserExtra</c>, но колонки в ней null, и профиль должен считаться незаполненным.
     /// </summary>
     [Fact]
-    public async Task GetUserInfo_WithoutUserExtra_ReturnsNullsAndCountsItemsAsMissing()
+    public async Task GetUserInfo_NewUserWithoutProfile_ReturnsNullsAndCountsItemsAsMissing()
     {
         var userId = await CreateUserAsync();
 
