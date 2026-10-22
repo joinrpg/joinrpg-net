@@ -6,6 +6,11 @@ namespace PscbApi.Models;
 /// <summary>
 /// Payment data
 /// </summary>
+/// <remarks>
+/// This is the shape <c>merchantApi/checkPayment</c> returns inside <c>payment</c>, and it is parsed
+/// by the live payment status path. Keys that only the payments list carries are declared in
+/// <see cref="PaymentsListItem"/> instead, so that they are never parsed there. See ADR025.
+/// </remarks>
 public class PaymentData
 {
     /// <summary>
@@ -76,17 +81,6 @@ public class PaymentData
     public DateTimeOffset CurrentStatusDate { get; set; }
 
     /// <summary>
-    /// Outcome of the last action with the payment, in the bank's own words — for a finished
-    /// payment it reads "Платеж завершен" rather than describing an error.
-    /// </summary>
-    /// <remarks>
-    /// In the payments list the bank puts this key inside every element; in <c>checkPayment</c> it
-    /// is a top-level key of the envelope instead (see <see cref="PaymentInfo"/>).
-    /// </remarks>
-    [JsonProperty("lastError")]
-    public BankResponseInfo? LastError { get; set; }
-
-    /// <summary>
     /// Payment method. If not set, all payment methods will be used. User must to choose one
     /// at payment page
     /// </summary>
@@ -126,8 +120,12 @@ public class PaymentData
     /// <summary>
     /// Arbitrary parameters attached to the payment by the store. Their structure is not defined by the bank
     /// </summary>
+    /// <remarks>
+    /// Typed as <see cref="JToken"/>, not <see cref="JObject"/>: the shape belongs to whoever
+    /// created the payment, so a string or an array in it must not break parsing of the response.
+    /// </remarks>
     [JsonProperty("merchantData")]
-    public JObject? MerchantData { get; set; }
+    public JToken? MerchantData { get; set; }
 
     /// <summary>
     /// Token for subsequent payments

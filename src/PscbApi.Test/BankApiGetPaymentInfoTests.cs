@@ -163,6 +163,22 @@ public class BankApiGetPaymentInfoTests
     }
 
     /// <summary>
+    /// Структуру <c>merchantData</c> задаёт не банк, а тот, кто создавал платёж: JoinRpg его не
+    /// передаёт, но платёж из кабинета банка может прийти с чем угодно. Строка вместо объекта не
+    /// должна ронять разбор ответа — через него идёт боевой путь обновления статуса платежа.
+    /// </summary>
+    [Fact]
+    public async Task ToleratesAMerchantDataThatIsNotAnObject()
+    {
+        var handler = new RecordingHandler(_ =>
+            """{"status":"STATUS_SUCCESS","payment":{"orderId":"0000000001","merchantData":"claimId=42"}}""");
+
+        var result = await CreateApi(handler).GetPaymentInfoAsync("0000000001");
+
+        result.Payment!.MerchantData!.Value<string>().ShouldBe("claimId=42");
+    }
+
+    /// <summary>
     /// Разбирает тело запроса, не превращая даты в <see cref="DateTime"/>.
     /// </summary>
     private static JObject ParseBody(string json)

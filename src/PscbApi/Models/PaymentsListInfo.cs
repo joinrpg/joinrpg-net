@@ -14,5 +14,5 @@ public class PaymentsListInfo : PaymentInfoBase
     /// Payments matching the query. Absent when the request failed
     /// </summary>
     [JsonProperty("payments")]
-    public ICollection<PaymentData>? Payments { get; set; }
+    public ICollection<PaymentsListItem>? Payments { get; set; }
 }

@@ -64,13 +64,6 @@ public class PscbPaymentInfo
     public string? SubStatus { get; set; }
 
     /// <summary>
-    /// Outcome of the last action with the payment, in the bank's own words. The bank names this
-    /// key <c>lastError</c>, but for a finished payment it reads "Платеж завершен" rather than
-    /// describing an error. Null when the bank did not return it.
-    /// </summary>
-    public PscbBankErrorInfo? LastAction { get; set; }
-
-    /// <summary>
     /// Kind of the record: "payment" or "invoice"
     /// </summary>
     public string? Kind { get; set; }

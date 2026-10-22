@@ -250,7 +250,7 @@ public class BankApi
         var periods = PaymentsPeriodSplitter.Split(dateFrom, dateTo);
         logger.LogDebug("Getting payments list for {dateFrom}..{dateTo}, {chunkCount} request(s) to the bank", dateFrom, dateTo, periods.Count);
 
-        var payments = new List<PaymentData>();
+        var payments = new List<PaymentsListItem>();
         // Chunks do not overlap, but a payment can change its state between two requests, and a
         // duplicate in a reconciliation report costs more than this guard.
         var seen = new HashSet<string>(StringComparer.Ordinal);

@@ -112,7 +112,7 @@ internal static class PscbPaymentViewModelBuilder
     /// Строка списка платежей. Ссылки на пользователя и проект остаются незаполненными — их
     /// проставляет сервис, у которого есть <c>IUriService</c> и поиск по проектам.
     /// </summary>
-    public static PscbPaymentListRow BuildListRow(PaymentData payment)
+    public static PscbPaymentListRow BuildListRow(PaymentsListItem payment)
         => new()
         {
             OrderId = payment.OrderId,
@@ -158,7 +158,6 @@ internal static class PscbPaymentViewModelBuilder
             Fee = payment.Fee,
             Status = Identifier(payment.Status),
             SubStatus = IdentifierOf(payment.SubStatus),
-            LastAction = payment.LastError is { } lastAction ? Build(lastAction) : null,
             Kind = IdentifierOf(payment.Type),
             PaymentMethod = Identifier(payment.PaymentMethod),
             StatusDate = payment.CurrentStatusDate,
@@ -240,6 +239,6 @@ internal static class PscbPaymentViewModelBuilder
 
     private static string? IdentifierOf<TEnum>(TEnum? value) where TEnum : struct, Enum => value?.GetIdentifier();
 
-    private static string? CompactJson(JObject? merchantData)
+    private static string? CompactJson(JToken? merchantData)
         => merchantData?.ToString(Formatting.None);
 }

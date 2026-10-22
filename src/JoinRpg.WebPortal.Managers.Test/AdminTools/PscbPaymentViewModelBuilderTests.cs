@@ -122,32 +122,6 @@ public class PscbPaymentViewModelBuilderTests
     }
 
     /// <summary>
-    /// В списке банк кладёт lastError внутрь каждого элемента, и для завершённого платежа это
-    /// не ошибка, а описание состояния — «Платеж завершен».
-    /// </summary>
-    [Fact]
-    public void MapsTheBankLastActionIntoDetails()
-    {
-        var dto = PscbPaymentViewModelBuilder.Build(new PaymentData
-        {
-            Id = "1128001119",
-            OrderId = "0000643617",
-            Status = PaymentStatus.Paid,
-            LastError = new BankResponseInfo
-            {
-                Description = "Платеж завершен",
-                PaymentCode = PaymentsSystemResponseCode.Success,
-                ProcessingCode = ProcessingCenterResponseCode.Approved,
-            },
-        });
-
-        dto.LastAction.ShouldNotBeNull();
-        dto.LastAction.Description.ShouldBe("Платеж завершен");
-        dto.LastAction.PaymentsSystemCode.ShouldBe(0);
-        dto.LastAction.ProcessingCenterCode.ShouldBe(0);
-    }
-
-    /// <summary>
     /// Банк возвращает разный набор полей в зависимости от статуса платежа и флагов запроса,
     /// поэтому пустая модель обязана преобразовываться, а не падать.
     /// </summary>
@@ -157,7 +131,6 @@ public class PscbPaymentViewModelBuilderTests
         var dto = PscbPaymentViewModelBuilder.Build(new PaymentData { Id = "11", OrderId = "0000000001" });
 
         dto.Card.ShouldBeNull();
-        dto.LastAction.ShouldBeNull();
         dto.MerchantData.ShouldBeNull();
         dto.SubStatus.ShouldBeNull();
         dto.Kind.ShouldBeNull();
@@ -166,10 +139,27 @@ public class PscbPaymentViewModelBuilderTests
         dto.Receipts.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// merchantData приходит не обязательно объектом: его структуру задаёт тот, кто создавал платёж,
+    /// а не банк. Значение любого вида должно доехать до админа текстом.
+    /// </summary>
+    [Fact]
+    public void CompactsAMerchantDataThatIsNotAnObject()
+    {
+        var dto = PscbPaymentViewModelBuilder.Build(new PaymentData
+        {
+            Id = "11",
+            OrderId = "0000000001",
+            MerchantData = JValue.CreateString("claimId=42"),
+        });
+
+        dto.MerchantData.ShouldBe("\"claimId=42\"");
+    }
+
     [Fact]
     public void BuildsListRowFromTheBankPayment()
     {
-        var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentData
+        var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem
         {
             Id = "1128001119",
             TransactionId = "1128001119",
@@ -219,7 +209,7 @@ public class PscbPaymentViewModelBuilderTests
     [Fact]
     public void LeavesUrlsForTheServiceToFill()
     {
-        var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentData
+        var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem
         {
             Id = "11",
             OrderId = "0000000001",
@@ -234,7 +224,7 @@ public class PscbPaymentViewModelBuilderTests
     [Fact]
     public void SplitsTheBankLastErrorInThreeAndToleratesItsAbsence()
     {
-        var withError = PscbPaymentViewModelBuilder.BuildListRow(new PaymentData
+        var withError = PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem
         {
             Id = "11",
             OrderId = "0000000001",
@@ -250,7 +240,7 @@ public class PscbPaymentViewModelBuilderTests
         withError.ErrorSubCode.ShouldBeNull();
         withError.ErrorDescription.ShouldBe("Платеж обрабатывается");
 
-        var withoutError = PscbPaymentViewModelBuilder.BuildListRow(new PaymentData { Id = "11", OrderId = "0000000001" });
+        var withoutError = PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem { Id = "11", OrderId = "0000000001" });
 
         withoutError.ErrorCode.ShouldBeNull();
         withoutError.ErrorSubCode.ShouldBeNull();
@@ -277,12 +267,12 @@ public class PscbPaymentViewModelBuilderTests
     [InlineData(PscbPaymentType.Payment, "Платёж")]
     [InlineData(PscbPaymentType.Invoice, "Счёт")]
     public void TranslatesTheRecordKind(PscbPaymentType type, string expected)
-        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentData { Id = "11", OrderId = "1", Type = type })
+        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem { Id = "11", OrderId = "1", Type = type })
             .PaymentKind.ShouldBe(expected);
 
     [Fact]
     public void LeavesTheRecordKindEmptyWhenTheBankOmitsIt()
-        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentData { Id = "11", OrderId = "1" })
+        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem { Id = "11", OrderId = "1" })
             .PaymentKind.ShouldBeNull();
 
     [Theory]
@@ -296,7 +286,7 @@ public class PscbPaymentViewModelBuilderTests
     [InlineData(PscbPaymentMethod.YandexMoney, "Яндекс.Деньги")]
     [InlineData(PscbPaymentMethod.WebMoney, "WebMoney")]
     public void TranslatesTheKnownPaymentMethods(PscbPaymentMethod method, string expected)
-        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentData { Id = "11", OrderId = "1", PaymentMethod = method })
+        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem { Id = "11", OrderId = "1", PaymentMethod = method })
             .PaymentMethod.ShouldBe(expected);
 
     /// <summary>
@@ -305,7 +295,7 @@ public class PscbPaymentViewModelBuilderTests
     /// </summary>
     [Fact]
     public void PassesAnUnknownPaymentMethodThroughAsTheBankIdentifier()
-        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentData
+        => PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem
         {
             Id = "11",
             OrderId = "1",
@@ -320,7 +310,7 @@ public class PscbPaymentViewModelBuilderTests
             {
                 Status = PaymentInfoQueryStatus.Success,
                 RequestId = "TEST-1",
-                Payments = [new PaymentData { Id = "11", OrderId = "0000000001" }],
+                Payments = [new PaymentsListItem { Id = "11", OrderId = "0000000001" }],
             },
             requestCount: 2);
 
