@@ -1,0 +1,86 @@
+@using JoinRpg.Common.WebComponents.Badges
+@using JoinRpg.Web.ProjectMasterTools.Print
+@model BadgesPrintViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html moznomarginboxes mozdisallowselectionprint>
+<head>
+    <title>Бейджи: @Model.TemplateName</title>
+    <link rel="stylesheet" href="~/_content/JoinRpg.Common.WebComponents/css/roboto.css" />
+    @* Бандл scoped CSS: без него у строк бейджа нет позиционирования, и подгонка шрифта меряет не то *@
+    <link rel="stylesheet" href="~/JoinRpg.Portal.styles.css" />
+    @* Подгонка шрифта строк — только на этой странице, в общий скрипт компонентов она не входит *@
+    <script src="~/_content/JoinRpg.Common.WebComponents/printable-badge.js" type="module"></script>
+    <style>
+        @@page {
+            size: A4;
+            /* Под эти поля рассчитаны пределы размера бейджа в BadgeLayoutRules (200×287 мм) */
+            margin: 5mm;
+        }
+
+        body {
+            margin: 0;
+            font-family: Roboto, Arial, sans-serif;
+        }
+
+        .badges-sheet {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+
+        /* Пунктир по границе бейджа — линия разреза. Сдвинут внутрь на полтолщины, чтобы у соседних
+           бейджей линии легли друг на друга. Бейдж не сжимается под ширину листа — печатается своим размером. */
+        .badges-sheet > * {
+            flex: none;
+            outline: 0.2mm dashed #888;
+            outline-offset: -0.1mm;
+        }
+
+        .badges-warnings {
+            margin: 1em;
+            padding: 0.5em 1em;
+            border: 1px solid #e0b252;
+            background-color: #fcf8e3;
+        }
+
+        @@media print {
+            .badges-warnings {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    @if (Model.Warnings.Count > 0)
+    {
+        <div class="badges-warnings">
+            <b>Проверьте шаблон «@Model.TemplateName»</b> (это предупреждение не печатается):
+            <ul>
+                @foreach (var warning in Model.Warnings)
+                {
+                    <li>@warning</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="badges-sheet">
+        @foreach (var lines in Model.Badges)
+        {
+            <component type="typeof(PrintableBadge)"
+                       render-mode="Static"
+                       param-WidthMm="@Model.WidthMm"
+                       param-HeightMm="@Model.HeightMm"
+                       param-BackgroundUrl="@Model.BackgroundUrl?.AbsoluteUri"
+                       param-Lines="@lines" />
+        }
+    </div>
+</body>
+</html>

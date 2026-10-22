@@ -96,6 +96,36 @@
 
 <div class="panel panel-default">
     <div class="panel-heading">
+        Бейджи
+        @foreach (var template in Model.BadgeTemplates)
+        {
+            <br />
+            @template.Name<text>: </text>
+            @foreach (var chunk in @SplitByChunks())
+            {
+                @Html.ActionLink(chunk.Name, "Badges",
+                new { Model.ProjectId, badgeTemplateId = template.BadgeTemplateId, chunk.CharacterIds })
+                <text>&nbsp;</text>
+            }
+        }
+    </div>
+    <div class="panel-body">
+        @if (Model.BadgeTemplates.Count == 0)
+        {
+            <text>В проекте пока нет шаблонов бейджей.</text>
+        }
+        else
+        {
+            <text>
+                Распечатать бейджи всех активных персонажей по выбранному шаблону — сеткой на листах A4,
+                с пунктирными линиями для разрезания. Отключите в настройках печати колонтитулы.
+            </text>
+        }
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
         Конверты С5 <br />
         @Html.ActionLink("[печать]", "EnvelopesC5", new { Model.ProjectId })
     </div>

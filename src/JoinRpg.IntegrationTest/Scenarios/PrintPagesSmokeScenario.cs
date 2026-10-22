@@ -3,9 +3,11 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
+using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
@@ -64,10 +66,53 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         text.ShouldNotContain(PrintableFieldValue);
     }
 
-    private static async Task<string> GetPrintPageText(SeedContext context, string action)
+    [Fact]
+    public async Task Badges_PrintFieldValueAndStaticText()
+    {
+        var context = await SeedAsync();
+        const string staticText = "Текст на каждом бейдже";
+
+        var templateId = await factory.Services.RunAsAsync(
+            context.MasterId,
+            sp => sp.GetRequiredService<IProjectBadgeTemplateService>().CreateAsync(
+                context.ProjectId,
+                "Бейдж для печати",
+                new BadgeLayout(90, 55, null,
+                [
+                    new BadgeLine(context.PrintableFieldId.ProjectFieldId, null, null, 10, 8, 20, Bold: true),
+                    new BadgeLine(null, staticText, null, 40, 8, 12, Bold: false),
+                ])));
+
+        var text = await GetPrintPageText(context, "badges", $"&badgeTemplateId={templateId.ProjectBadgeTemplateId}");
+
+        text.ShouldContain(PrintableFieldValue);
+        text.ShouldContain(staticText);
+
+        // Страница без layout подключает модуль подгонки шрифта и бандл scoped CSS сама. Если путь к
+        // ним уедет, бейджи напечатаются без позиционирования и максимальным шрифтом — а страница
+        // по-прежнему отдаст 200.
+        var page = await (await context.MasterClient.GetAsync(BadgesUrl(context, templateId.ProjectBadgeTemplateId))).AsHtmlDocument();
+        var assets = page.DocumentNode.SelectNodes("//script[@src]|//link[@rel='stylesheet']")
+            .Select(node => node.GetAttributeValue("src", null) ?? node.GetAttributeValue("href", ""))
+            .ToList();
+        foreach (var asset in assets.Where(a => a.Contains("printable-badge") || IsScopedCssBundle(a)))
+        {
+            (await context.MasterClient.GetAsync(asset)).StatusCode.ShouldBe(HttpStatusCode.OK, asset);
+        }
+        assets.ShouldContain(a => a.Contains("printable-badge"));
+        assets.ShouldContain(a => IsScopedCssBundle(a), string.Join(" | ", assets));
+    }
+
+    // MapStaticAssets вставляет в имя отпечаток: /JoinRpg.Portal.omll2v8u1y.styles.css
+    private static bool IsScopedCssBundle(string url) => url.StartsWith("/JoinRpg.Portal.") && url.EndsWith(".styles.css");
+
+    private static string BadgesUrl(SeedContext context, int templateId)
+        => $"{context.ProjectId.Value}/print/badges?characterIds={Uri.EscapeDataString(new CompressedIntList([context.CharacterId.CharacterId]).ToString())}&badgeTemplateId={templateId}";
+
+    private static async Task<string> GetPrintPageText(SeedContext context, string action, string extraQuery = "")
     {
         var characterIds = new CompressedIntList([context.CharacterId.CharacterId]);
-        var url = $"{context.ProjectId.Value}/print/{action}?characterIds={Uri.EscapeDataString(characterIds.ToString())}";
+        var url = $"{context.ProjectId.Value}/print/{action}?characterIds={Uri.EscapeDataString(characterIds.ToString())}{extraQuery}";
 
         var response = await context.MasterClient.GetAsync(url);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -81,7 +126,9 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
     }
 
     private sealed record SeedContext(
+        UserIdentification MasterId,
         ProjectIdentification ProjectId,
+        ProjectFieldIdentification PrintableFieldId,
         CharacterIdentification CharacterId,
         string CharacterName,
         string PlotContent,
@@ -172,7 +219,9 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
             factory.CreateClient(), email, password);
 
         return new SeedContext(
+            masterId,
             projectId,
+            fieldId,
             seed.TargetCharacterId,
             seed.TargetCharacterName,
             seed.ElementContents[0],

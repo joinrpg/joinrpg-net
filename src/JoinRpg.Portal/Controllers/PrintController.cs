@@ -1,7 +1,9 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -25,6 +27,8 @@ public class PrintController(
     IUserRepository userRepository,
     CharacterPlotViewService characterPlotViewService,
     PrintViewService printViewService,
+    BadgePrintService badgePrintService,
+    IProjectBadgeTemplateRepository badgeTemplateRepository,
     JoinrpgMarkdownLinkRendererFactory linkRendererFactory
     ) : JoinControllerGameBase
 {
@@ -107,7 +111,12 @@ public class PrintController(
         // Странице нужны только идентификаторы ссылок, поэтому лёгкая проекция, а не агрегаты.
         var characters = await characterInfoRepository.GetCharactersForList(projectId, CharacterStatusSpec.Active);
 
-        return View(new PrintIndexViewModel(projectId, [.. characters.Select(character => character.Id)]));
+        var badgeTemplates = (await badgeTemplateRepository.GetForProjectAsync(projectId))
+            .Where(template => template.IsActive)
+            .Select(template => new BadgeTemplateLink(template.Id.ProjectBadgeTemplateId, template.Name))
+            .ToList();
+
+        return View(new PrintIndexViewModel(projectId, [.. characters.Select(character => character.Id)], badgeTemplates));
     }
 
     [MasterAuthorize()]
@@ -123,6 +132,17 @@ public class PrintController(
     [HttpGet]
     public async Task<ActionResult> Stickers(ProjectIdentification projectId, CompressedIntList characterIds)
         => View(await printViewService.GetEnvelopesForActiveCharacters(characterIds.ToCharacterIds(projectId)));
+
+    /// <summary>Бейджи перечисленных активных персонажей по шаблону, сеткой на A4.</summary>
+    [MasterAuthorize()]
+    [HttpGet]
+    public async Task<ActionResult> Badges(ProjectIdentification projectId, int badgeTemplateId, CompressedIntList characterIds)
+    {
+        var model = await badgePrintService.GetBadges(
+            new ProjectBadgeTemplateIdentification(projectId, badgeTemplateId),
+            characterIds.ToCharacterIds(projectId));
+        return model is null ? NotFound() : View(model);
+    }
 
     [MasterAuthorize()]
     [HttpGet]

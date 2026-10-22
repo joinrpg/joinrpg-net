@@ -8,6 +8,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Forums;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Interfaces;
@@ -162,6 +163,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             .Add("id", seeded.RolesListId.ProjectRolesListId, seeded.RolesListId)
             .Add("targetId", seeded.RolesListId.ProjectRolesListId, seeded.RolesListId)
             .Add("projectRolesListId", seeded.RolesListId.ProjectRolesListId, seeded.RolesListId)
+            .Add("badgeTemplateId", seeded.BadgeTemplateId.ProjectBadgeTemplateId, seeded.BadgeTemplateId)
             // Печать и массовая рассылка принимают пачку id одним сжатым параметром.
             .Add(
                 "characterIds",
@@ -316,6 +318,16 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                     [dropdownFieldId],
                     RolesGridGroupsViewMode.None));
 
+            // Строка с полем — чтобы страница печати бейджей подставляла значения, а не только текст.
+            var badgeTemplateId = await sp.GetRequiredService<IProjectBadgeTemplateService>().CreateAsync(
+                projectId,
+                "Смоук-бейдж",
+                new BadgeLayout(90, 55, null,
+                [
+                    new BadgeLine(dropdownFieldId.ProjectFieldId, null, null, 10, 8, 20, Bold: true),
+                    new BadgeLine(null, "Смоук-текст", null, 40, 8, 12, Bold: false),
+                ]));
+
             var subscriptionId = await SeedSubscriptionAsync(sp, projectId, groupId, ownerId);
             var paymentTypeId = await SeedFinancesAsync(sp, projectId, ownerId);
 
@@ -331,7 +343,8 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 rolesList.ProjectRolesListId
                     ?? throw new InvalidOperationException("Список ролей создан без id"),
                 subscriptionId,
-                paymentTypeId);
+                paymentTypeId,
+                badgeTemplateId);
         });
 
     /// <summary>Проставляет «смоук-поле» первому персонажу — до того, как на него подадут заявку.</summary>
@@ -725,7 +738,8 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
         int RoomTypeId,
         ProjectRolesListIdentification RolesListId,
         int SubscriptionId,
-        PaymentTypeIdentification PaymentTypeId);
+        PaymentTypeIdentification PaymentTypeId,
+        ProjectBadgeTemplateIdentification BadgeTemplateId);
 
     private sealed record SeededClaims(
         ClaimIdentification ApprovedClaimId,
