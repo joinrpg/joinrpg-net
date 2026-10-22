@@ -1,7 +1,9 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
@@ -172,6 +174,92 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             cloneB.ShowRolesFilter.ShouldBe(ShowRolesFilter.VacantOnly);
         });
     }
+
+    [Fact]
+    public async Task CloneProject_CopiesBadgeTemplatesWithRemappedFields()
+    {
+        UserIdentification masterId;
+        ProjectIdentification originalProjectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            originalProjectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Исходный проект с бейджами");
+        }
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var fieldSetupService = sp.GetRequiredService<IFieldSetupService>();
+            var badgeService = sp.GetRequiredService<IProjectBadgeTemplateService>();
+
+            var keptField = await AddStringField(fieldSetupService, originalProjectId, "Позывной");
+            var droppedField = await AddStringField(fieldSetupService, originalProjectId, "Удалённое поле");
+
+            await badgeService.CreateAsync(originalProjectId, "Игрок", new BadgeLayout(90, 55, null,
+            [
+                new BadgeLine(keptField.ProjectFieldId, null, null, 10, 8, 20, Bold: true),
+                new BadgeLine(null, "Каэр Морхен", null, 30, 8, 12, Bold: false),
+                new BadgeLine(droppedField.ProjectFieldId, null, null, 40, 8, 12, Bold: false),
+            ]));
+
+            // Поле уже в бейдже — удаление мягкое, а выключенные поля при клонировании не копируются.
+            await fieldSetupService.DeleteField(originalProjectId.Value, droppedField.ProjectFieldId);
+        });
+
+        var cloneProjectId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var result = await sp.GetRequiredService<ICreateProjectService>().CreateProject(
+                new CloneProjectRequest(
+                    new ProjectName("Клон проекта с бейджами"),
+                    originalProjectId,
+                    ProjectCopySettingsDto.SettingsAndFields,
+                    KogdaIgraLinkChoiceDto.ShouldNotBeOnKogdaIgra,
+                    null,
+                    null));
+
+            return result switch
+            {
+                SuccessCreateProjectResult r => r.ProjectId,
+                PartiallySuccessCreateProjectResult r => r.ProjectId,
+                _ => throw new InvalidOperationException($"Не удалось склонировать проект: {result}")
+            };
+        });
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var cloneInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(cloneProjectId);
+            var template = (await sp.GetRequiredService<IProjectBadgeTemplateRepository>().GetForProjectAsync(cloneProjectId))
+                .ShouldHaveSingleItem();
+
+            template.Name.ShouldBe("Игрок");
+            template.Layout.Lines.Count.ShouldBe(2);
+
+            var fieldLine = template.Layout.Lines[0];
+            var clonedField = cloneInfo.GetFieldById(new ProjectFieldIdentification(cloneProjectId, fieldLine.ProjectFieldId.ShouldNotBeNull()));
+            clonedField.Name.ShouldBe("Позывной");
+
+            template.Layout.Lines[1].StaticText.ShouldBe("Каэр Морхен");
+        });
+    }
+
+    private static Task<ProjectFieldIdentification> AddStringField(IFieldSetupService fieldSetupService, ProjectIdentification projectId, string name)
+        => fieldSetupService.AddField(new CreateFieldRequest(
+            projectId,
+            ProjectFieldType.String,
+            name,
+            fieldHint: "",
+            canPlayerEdit: false,
+            canPlayerView: true,
+            isPublic: true,
+            fieldBoundTo: FieldBoundTo.Character,
+            MandatoryStatus.Optional,
+            showForGroups: [],
+            validForNpc: false,
+            includeInPrint: false,
+            showForUnapprovedClaims: false,
+            price: 0,
+            masterFieldHint: "",
+            programmaticValue: null));
 
     [Fact]
     public async Task CloneProject_CopiesTimeZone()

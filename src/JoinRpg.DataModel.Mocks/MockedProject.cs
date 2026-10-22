@@ -144,6 +144,7 @@ public class MockedProject
             ProjectName = "Mocked project",
             KogdaIgraGames = [],
             ProjectRolesLists = [],
+            ProjectBadgeTemplates = [],
             ProjectAccommodationTypes = [],
             ProjectRoomCategories = [],
         };

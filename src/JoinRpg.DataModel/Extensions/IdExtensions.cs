@@ -1,6 +1,7 @@
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 
 namespace JoinRpg.DataModel.Extensions;
 
@@ -56,6 +57,10 @@ public static class IdExtensions
     /// <summary>Идентификатор группы, живущей (или желающей жить) вместе.</summary>
     public static AccommodationRequestIdentification GetId(this AccommodationRequest group)
         => new(group.ProjectId, group.Id);
+
+    /// <summary>Идентификатор шаблона бейджа.</summary>
+    public static ProjectBadgeTemplateIdentification GetId(this ProjectBadgeTemplate template)
+        => new(new ProjectIdentification(template.ProjectId), template.ProjectBadgeTemplateId);
 
     /// <summary>Идентификатор одобренной заявки персонажа, если она есть.</summary>
     public static ClaimIdentification? GetApprovedClaimIdOrDefault(this Character character)
