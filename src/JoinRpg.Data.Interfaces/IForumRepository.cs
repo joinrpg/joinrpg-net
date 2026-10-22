@@ -6,9 +6,9 @@ namespace JoinRpg.Data.Interfaces;
 public interface IForumRepository
 {
     Task<ForumThread> GetThread(ForumThreadIdentification forumThreadId);
-    Task<CommentDiscussion> GetDiscussion(int projectId, int commentDiscussionId);
+    Task<CommentDiscussion?> GetDiscussion(int projectId, int commentDiscussionId);
 
-    Task<CommentDiscussion> GetDiscussionByComment(int projectId, int commentId);
+    Task<CommentDiscussion?> GetDiscussionByComment(int projectId, int commentId);
 
     Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<int>? groupIds);
     Task<ForumThreadHeader> GetThreadHeader(ForumThreadIdentification threadId);

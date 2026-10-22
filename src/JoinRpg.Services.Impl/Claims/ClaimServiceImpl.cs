@@ -1173,13 +1173,14 @@ internal class ClaimServiceImpl(
         int commentDiscussionId)
     {
         var discussion = await ForumRepository.GetDiscussionByComment(projectId, commentId);
-        var childComments = discussion.Comments.Where(c => c.ParentCommentId == commentId);
-        var comment = discussion.Comments.FirstOrDefault(coment => coment.CommentId == commentId);
+        var comment = discussion?.Comments.FirstOrDefault(coment => coment.CommentId == commentId);
 
-        if (comment == null)
+        if (discussion is null || comment is null)
         {
             throw new JoinRpgEntityNotFoundException(commentId, nameof(Comment));
         }
+
+        var childComments = discussion.Comments.Where(c => c.ParentCommentId == commentId);
 
         // Права — по ProjectInfo, а не по comment.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
         // Скрывать комментарии можно и в архиве (ADR014), но не в заблокированном проекте (ADR023).

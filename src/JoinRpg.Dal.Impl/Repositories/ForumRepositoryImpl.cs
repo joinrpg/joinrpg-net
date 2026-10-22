@@ -34,7 +34,7 @@ internal class ForumRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx
             result.Select(ft => new ForumThreadHeader(ft.Header, new CharacterGroupIdentification(ft.ProjectId, ft.CharacterGroupId))).Single();
     }
 
-    public Task<CommentDiscussion> GetDiscussion(int projectId, int commentDiscussionId)
+    public Task<CommentDiscussion?> GetDiscussion(int projectId, int commentDiscussionId)
     {
         return
           Ctx.Set<CommentDiscussion>()
@@ -44,7 +44,7 @@ internal class ForumRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx
             .SingleOrDefaultAsync(thread => thread.ProjectId == projectId && thread.CommentDiscussionId == commentDiscussionId);
     }
 
-    public Task<CommentDiscussion> GetDiscussionByComment(int projectId, int commentId)
+    public Task<CommentDiscussion?> GetDiscussionByComment(int projectId, int commentId)
     {
         return
           Ctx.Set<CommentDiscussion>()
