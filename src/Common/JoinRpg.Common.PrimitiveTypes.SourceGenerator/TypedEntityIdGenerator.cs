@@ -460,6 +460,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         }
 
         sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof(global::JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<{info.TypeName}>))]");
+        sb.AppendLine($"[global::System.ComponentModel.TypeConverter(typeof(global::JoinRpg.Common.PrimitiveTypes.TypedEntityIdTypeConverter<{info.TypeName}>))]");
         sb.AppendLine($"public partial record {info.TypeName} : {string.Join(", ", interfaces)}");
         sb.AppendLine("{");
 
