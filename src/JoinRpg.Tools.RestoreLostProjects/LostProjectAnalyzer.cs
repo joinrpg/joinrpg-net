@@ -36,7 +36,7 @@ internal sealed class LostProjectAnalyzer(
     public static int? GetProjectId(string? entityReference)
         => entityReference is not null && ProjectEntityIdParser.TryParseId(entityReference, out var id) ? id.ProjectId.Value : null;
 
-    private static bool ReferencesProject(string entityReference)
+    private static bool IsProjectWide(string entityReference)
         => ProjectEntityIdParser.TryParseId(entityReference, out var id) && IsProjectWide(id);
 
     /// <summary>
@@ -253,7 +253,7 @@ internal sealed class LostProjectAnalyzer(
         // Одинаковые заголовки (одно событие многим получателям) — одно свидетельство.
         var headerGroups = notifications
             .Where(n => ProjectHeaderParser.TryParseAdminNewProject(n.Header) is null)
-            .GroupBy(n => (n.Header, MayBeMassMail: ProjectHeaderParser.MayBeMassMail(n.CreatedAt, ReferencesProject(n.EntityReference))))
+            .GroupBy(n => (n.Header, MayBeMassMail: ProjectHeaderParser.MayBeMassMail(n.CreatedAt, IsProjectWide(n.EntityReference))))
             .Select(g => (Candidates: ProjectHeaderParser.GetNameCandidates(g.Key.Header, g.Key.MayBeMassMail), Count: g.Count(), Last: g.Max(n => n.CreatedAt)))
             .Where(g => g.Candidates.Count > 0)
             .ToList();
