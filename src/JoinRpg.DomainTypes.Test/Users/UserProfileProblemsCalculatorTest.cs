@@ -51,6 +51,7 @@ public class UserProfileProblemsCalculatorTest
 
         problems.ShouldNotContain(p => p.ItemType == UserProfileItemType.Passport);
         problems.ShouldNotContain(p => p.ItemType == UserProfileItemType.RegistrationAddress);
+        problems.ShouldNotContain(p => p.ItemType == UserProfileItemType.BirthDate);
         problems.ShouldContain(p => p.ItemType == UserProfileItemType.RealName);
     }
 }

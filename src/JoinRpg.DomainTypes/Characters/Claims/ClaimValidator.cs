@@ -165,8 +165,8 @@ public static class ClaimValidator
         }
     }
 
-    // Passport/RegistrationAddress сюда на практике не долетают — ValidateContacts зовёт
-    // GetProblems с sensitiveDataAccessAllowed: false, так что эти два варианта недостижимы.
+    // Passport/RegistrationAddress/BirthDate сюда на практике не долетают — ValidateContacts зовёт
+    // GetProblems с sensitiveDataAccessAllowed: false, так что эти три варианта недостижимы.
     // Ветки оставлены ради полноты (см. тест ...IsDefinedForEveryUserProfileItemType) — как и
     // остальные exhaustive-switch'и в этом файле, на случай если UserProfileItemType когда-нибудь
     // будет собираться откуда-то ещё.
@@ -178,6 +178,7 @@ public static class ClaimValidator
         UserProfileItemType.RealName => AddClaimForbideReason.RealNameMissing,
         UserProfileItemType.Passport => AddClaimForbideReason.PassportMissing,
         UserProfileItemType.RegistrationAddress => AddClaimForbideReason.RegistrationAddressMissing,
+        UserProfileItemType.BirthDate => AddClaimForbideReason.BirthDateMissing,
         _ => throw new ArgumentOutOfRangeException(nameof(itemType)),
     };
 
@@ -288,7 +289,8 @@ public static class ClaimValidator
 
             AddClaimForbideReason.RealNameMissing or AddClaimForbideReason.PhoneMissing or
             AddClaimForbideReason.TelegramMissing or AddClaimForbideReason.VkontakteMissing or
-            AddClaimForbideReason.PassportMissing or AddClaimForbideReason.RegistrationAddressMissing => new InsufficientContactsException(),
+            AddClaimForbideReason.PassportMissing or AddClaimForbideReason.RegistrationAddressMissing or
+            AddClaimForbideReason.BirthDateMissing => new InsufficientContactsException(),
 
             _ => new ArgumentOutOfRangeException(nameof(reason), reason.Kind, message: null),
         };

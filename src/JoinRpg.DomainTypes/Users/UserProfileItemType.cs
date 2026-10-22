@@ -11,4 +11,5 @@ public enum UserProfileItemType
     RealName,
     Passport,
     RegistrationAddress,
+    BirthDate,
 }

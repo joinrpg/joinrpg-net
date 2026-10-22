@@ -35,6 +35,7 @@ public class ClaimForbiddenReasonTest
                 AddClaimForbideReason.VkontakteMissing,
                 AddClaimForbideReason.PassportMissing,
                 AddClaimForbideReason.RegistrationAddressMissing,
+                AddClaimForbideReason.BirthDateMissing,
             ],
             ignoreOrder: true);
     }

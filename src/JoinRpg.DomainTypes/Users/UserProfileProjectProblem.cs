@@ -48,6 +48,7 @@ public static class UserProfileProblemsCalculator
         {
             AddIfMissing(UserProfileItemType.Passport, ToSensitiveDataSeverity(requirementSettings.RequirePassport));
             AddIfMissing(UserProfileItemType.RegistrationAddress, ToSensitiveDataSeverity(requirementSettings.RequireRegistrationAddress));
+            AddIfMissing(UserProfileItemType.BirthDate, ToSensitiveDataSeverity(requirementSettings.RequireBirthDate));
         }
 
         return problems;

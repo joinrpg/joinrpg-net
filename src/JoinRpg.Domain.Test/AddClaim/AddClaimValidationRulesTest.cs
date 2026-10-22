@@ -241,6 +241,15 @@ public class AddClaimValidationRulesTest
         Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
     }
 
+    /// <summary>Дата рождения — такие же защищённые данные, как паспорт: подачу заявки не блокирует.</summary>
+    [Fact]
+    public void CanSendClaimEvenIfBirthDateRequiredAndMissing()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequireBirthDate = MandatoryStatus.Required });
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+    }
+
     private IReadOnlyCollection<AddClaimForbideReason> Kinds(Character claimSource)
         => claimSource.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds();
 

@@ -41,6 +41,7 @@ internal class ClaimContactsMissingFilter : IClaimProblemFilter
         UserProfileItemType.RealName => ClaimProblemType.MissingRealname,
         UserProfileItemType.Passport => ClaimProblemType.MissingPassport,
         UserProfileItemType.RegistrationAddress => ClaimProblemType.MissingRegistrationAddress,
+        UserProfileItemType.BirthDate => ClaimProblemType.MissingBirthDate,
         _ => throw new ArgumentOutOfRangeException(nameof(itemType)),
     };
 }

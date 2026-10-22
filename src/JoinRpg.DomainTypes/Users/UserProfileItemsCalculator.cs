@@ -34,7 +34,8 @@ public static class UserProfileItemsCalculator
         string? phoneNumber,
         string? fullName,
         string? passportData = null,
-        string? registrationAddress = null)
+        string? registrationAddress = null,
+        DateOnly? birthDate = null)
     {
         List<UserProfileItemType> missing = [];
 
@@ -61,6 +62,10 @@ public static class UserProfileItemsCalculator
         if (!IsCorrectSensitiveData(registrationAddress))
         {
             missing.Add(UserProfileItemType.RegistrationAddress);
+        }
+        if (birthDate is null)
+        {
+            missing.Add(UserProfileItemType.BirthDate);
         }
 
         return missing;
