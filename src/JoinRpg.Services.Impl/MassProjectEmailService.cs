@@ -14,7 +14,8 @@ public partial class MassProjectEmailService(
     IProjectMetadataRepository projectMetadataRepository,
     INotificationService notificationService,
     ICurrentUserAccessor currentUserAccessor,
-    IUriLocator<ClaimIdentification> uriLocator
+    IUriLocator<ClaimIdentification> uriLocator,
+    IUriLocator<MyClaimInProjectIdentification> myClaimUriLocator
     ) : IMassProjectEmailService
 {
     public async Task MassMail(
@@ -41,11 +42,14 @@ public partial class MassProjectEmailService(
         }
 
         List<NotificationRecepient> recipients = CalculateRecepients(claims, project);
+        var myClaimId = new MyClaimInProjectIdentification(project.ProjectId);
 
+        // %CLAIM% — адрес «моей заявки», общий для всех: так он есть и у мастеров, которым тоже уходит рассылка,
+        // а игрока с несколькими заявками он отправит в их список, а не в случайную из них
         var template = new NotificationEventTemplate(
             ClaimPlaceholderRegex().Replace(
                 NamePlaceholderRegex().Replace(body.Contents, "%recepient.name%"),
-                "%recepient.claim%")
+                myClaimUriLocator.GetUri(myClaimId).AbsoluteUri)
             );
 
         // Тема, которую ввел мастер — только часть заголовка, перед ней всегда название проекта
