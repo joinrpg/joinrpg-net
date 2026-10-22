@@ -8,6 +8,13 @@ internal class ClaimContactsMissingFilter : IClaimProblemFilter
 {
     public IEnumerable<ClaimProblem> GetProblems(ClaimInfo context)
     {
+        // Отклонённой, отозванной или стоящей в листе ожидания заявке контакты и защищённые
+        // данные игрока мастерам не нужны — требовать их не с чего.
+        if (!context.Claim.IsActive)
+        {
+            return [];
+        }
+
         // Доступ к паспорту/адресу — согласие на уровне заявки
         // (CharacterClaimInfo.PlayerAllowedSensitiveData), а не факт о профиле, поэтому не входит
         // в UserProfileItemType и передаётся в калькулятор отдельно: пока доступа нет, он не
