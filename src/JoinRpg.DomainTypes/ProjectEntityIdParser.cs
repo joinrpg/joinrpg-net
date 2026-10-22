@@ -5,6 +5,7 @@ using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.DomainTypes;
@@ -35,6 +36,12 @@ public static class ProjectEntityIdParser
         if (ProjectRolesListIdentification.TryParse(value, null, out var prli))
         {
             id = prli;
+            return true;
+        }
+
+        if (ProjectBadgeTemplateIdentification.TryParse(value, null, out var pbti))
+        {
+            id = pbti;
             return true;
         }
 

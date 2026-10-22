@@ -223,6 +223,8 @@ public static class UserReferences
         new("PaymentTypes", "UserId"),
         new("PlotElementTexts", "AuthorUserId"),
         new("ProjectAcls", "UserId"),
+        new("ProjectBadgeTemplates", "CreatedById"),
+        new("ProjectBadgeTemplates", "UpdatedById"),
         // Дубли отметок «прочитано» по одному обсуждению код терпит и сам подчищает.
         new("ReadCommentWatermarks", "UserId"),
         new("UserAvatars", "UserId"),
