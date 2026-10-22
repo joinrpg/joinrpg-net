@@ -50,6 +50,20 @@ internal static class ProjectRestorePlanViewBuilder
             .Where(id => !known.Contains(id))];
     }
 
+    /// <summary>
+    /// Предупреждать, только пока имя персонажа берётся из имени игрока: с выбранным полем-именем
+    /// восстановленные персонажи получат имена из уведомлений.
+    /// </summary>
+    private static CharacterNameMismatchView? ToNameMismatchView(ProjectInfo projectInfo, IEnumerable<ClaimNotificationEvent> events)
+    {
+        if (projectInfo.CharacterNameField is not null)
+        {
+            return null;
+        }
+        var stats = CharacterNameMismatchStats.FromEvents(events);
+        return stats.IsSuspicious ? new CharacterNameMismatchView(stats.ClaimCount, stats.MismatchedCount) : null;
+    }
+
     public static ClaimRestorePlanViewModel Build(
         ProjectInfo projectInfo,
         ProjectRestoreSource source,
@@ -121,6 +135,7 @@ internal static class ProjectRestorePlanViewBuilder
         return claims with
         {
             CanEditRoles = canEditRoles,
+            CharacterNameMismatch = ToNameMismatchView(projectInfo, source.Notifications.Events),
             Exports = [.. plan.Exports.Select(e => ToExportView(projectInfo, e))],
             // Совпадающие с базой строки без пометок не показываем — менять в них нечего.
             Groups = [.. plan.Groups

@@ -238,6 +238,49 @@ public class ProjectRestorePlanViewBuilderTest
         model.Notes.ShouldHaveSingleItem().RowNumber.ShouldBe(5);
     }
 
+    /// <summary>План с уведомлениями о принятии заявок: одна с расхождением имён и <paramref name="matching"/> без.</summary>
+    private ClaimRestorePlanViewModel BuildWithNameEvents(int matching = 1)
+    {
+        ClaimNotificationEvent Event(int claimId, string characterName)
+            => new(new ClaimIdentification(mock.ProjectInfo.ProjectId, claimId), new ClaimIdentification(mock.ProjectInfo.ProjectId, claimId),
+                At, new UserIdentification(1), ClaimNotificationKind.ClaimChange,
+                characterName, "Игрок", CommentExtraAction.ApproveByMaster, ClaimEventAuthor.Master, null, null, "", []);
+        var source = new ProjectRestoreSource(
+            mock.ProjectInfo,
+            ClaimRestorePlanBuilder.BuildSource(mock.ProjectInfo,
+                [.. Enumerable.Range(9100, matching).Select(id => Event(id, "Игрок")), Event(9002, "Персонаж")],
+                [.. mock.Project.Characters.Select(mock.GetCharacterInfo)], At),
+            [], [], new Dictionary<string, UserIdentification>(), At);
+        var plan = new ProjectRestorePlan([], [], [], [], [], [], []);
+        return ProjectRestorePlanViewBuilder.Build(mock.ProjectInfo, source, plan, [], new DrpOptions { BackupTakenAt = At, LostAt = At }, canEditRoles: true);
+    }
+
+    /// <summary>Имена персонажей расходились с именами игроков, а поле-имя не выбрано — предупреждаем.</summary>
+    [Fact]
+    public void Build_NameMismatchWithoutNameField_Warns()
+        => BuildWithNameEvents().CharacterNameMismatch.ShouldBe(new CharacterNameMismatchView(2, 1));
+
+    /// <summary>Расхождений не больше 10% — предупреждать не о чем.</summary>
+    [Fact]
+    public void Build_FewNameMismatches_NoWarning()
+        => BuildWithNameEvents(matching: 9).CharacterNameMismatch.ShouldBeNull();
+
+    /// <summary>С выбранным полем-именем персонажи получат имена из уведомлений — предупреждать не о чем.</summary>
+    [Fact]
+    public void Build_NameMismatchWithNameField_NoWarning()
+    {
+        var nameField = mock.AddField(field =>
+        {
+            field.FieldName = "Имя персонажа";
+            field.FieldType = ProjectFieldType.String;
+            field.FieldBoundTo = FieldBoundTo.Character;
+        });
+        mock.Project.Details.CharacterNameField = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == nameField.Id.ProjectFieldId);
+        mock.ReInitProjectInfo();
+
+        BuildWithNameEvents().CharacterNameMismatch.ShouldBeNull();
+    }
+
     /// <summary>Тип из «Занят?» доходит до строки создания; неизвестный — персонаж игрока, как раньше (#5645).</summary>
     [Fact]
     public void Build_CreationCarriesCharacterType()

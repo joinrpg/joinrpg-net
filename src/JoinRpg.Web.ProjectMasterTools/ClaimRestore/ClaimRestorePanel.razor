@@ -86,6 +86,11 @@
         }
         else
         {
+            @if (model.CharacterNameMismatch is { } nameMismatch)
+            {
+                <CharacterNameMismatchWarning Mismatch="nameMismatch" />
+            }
+
             @ExportsSection()
 
             @if (IsEmpty)

@@ -76,6 +76,11 @@ public static class ClaimRestoreWarningViewExtensions
         => warning is ClaimRestoreWarningView.CharacterFromSlot or ClaimRestoreWarningView.LooksLikeSlot;
 }
 
+/// <summary>Имена персонажей при принятии заявок расходились с именами игроков.</summary>
+/// <param name="ClaimCount">Заявок с уведомлением о принятии, где есть и имя персонажа, и имя игрока.</param>
+/// <param name="MismatchedCount">Из них — с разными именами.</param>
+public record CharacterNameMismatchView(int ClaimCount, int MismatchedCount);
+
 /// <summary>Расхождение уплаченного: «Уплачено» в выгрузке и сумма одобренных оплат в базе.</summary>
 public record ClaimRestoreFeePaidMismatchView(int Exported, int InDatabase);
 
@@ -151,6 +156,12 @@ public record ClaimRestorePlanViewModel(
     /// но не применяются.
     /// </summary>
     public bool CanEditRoles { get; init; }
+
+    /// <summary>
+    /// Имена персонажей по уведомлениям заметно расходились с именами игроков, а поле-имя не выбрано;
+    /// null — предупреждать не о чем.
+    /// </summary>
+    public CharacterNameMismatchView? CharacterNameMismatch { get; init; }
 
     /// <summary>Сопоставление колонок каждой выгрузки — от старой к новой.</summary>
     public IReadOnlyList<MasterExportPlanInfoView> Exports { get; init; } = [];

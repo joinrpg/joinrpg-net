@@ -1,0 +1,12 @@
+@preservewhitespace true
+
+<JoinAlert Variation="VariationStyleEnum.Warning">
+    До аварии в @Mismatch.MismatchedCount из @Mismatch.ClaimCount принятых заявок имя персонажа в уведомлениях отличалось от имени игрока,
+    а сейчас имя персонажа привязано к имени игрока. Похоже, в проекте было поле с именем персонажа: проверьте настройки полей
+    до восстановления, иначе восстановленные персонажи получат имена игроков.
+</JoinAlert>
+
+@code {
+    [Parameter, EditorRequired]
+    public CharacterNameMismatchView Mismatch { get; set; } = null!;
+}
