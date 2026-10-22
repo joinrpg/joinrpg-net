@@ -56,7 +56,8 @@ public record class ClaimInfo
         get
         {
             var requirements = ProjectInfo.ProfileRequirementSettings;
-            var access = Claim.PlayerAllowedSensitiveData && requirements.SensitiveDataRequired;
+            // Согласие действует, пока проект не в архиве: закрытой игре защищённые данные не нужны.
+            var access = Claim.PlayerAllowedSensitiveData && requirements.SensitiveDataRequired && !ProjectInfo.IsArchived;
             var showPassport = access && requirements.PassportRequested;
             var showAddress = access && requirements.RegistrationAddressRequested;
             var showBirthDate = access && requirements.BirthDateRequested;
