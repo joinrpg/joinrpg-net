@@ -163,6 +163,11 @@ public record ClaimRestorePlanViewModel(
     /// </summary>
     public CharacterNameMismatchView? CharacterNameMismatch { get; init; }
 
+    /// <summary>
+    /// Поля, похожие на имя персонажа, при невыбранном поле-имени: восстановленные персонажи получат имена игроков.
+    /// </summary>
+    public IReadOnlyCollection<string> UnboundNameFieldCandidates { get; init; } = [];
+
     /// <summary>Сопоставление колонок каждой выгрузки — от старой к новой.</summary>
     public IReadOnlyList<MasterExportPlanInfoView> Exports { get; init; } = [];
 

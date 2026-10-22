@@ -34,6 +34,7 @@ public class ClaimRestorePanelTest : BunitContext
         Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeLocator());
         Services.AddSingleton<ICharacterUriLocator>(new FakeLocator());
         Services.AddSingleton<IUriLocator<CharacterGroupIdentification>>(new FakeLocator());
+        Services.AddSingleton<IProjectFieldUriLocator>(new FakeLocator());
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         JSInterop.Mode = JSRuntimeMode.Loose;
         // Выбор персонажа (SingleCharacterSelector) — bootstrap-select поверх JS-модуля.
@@ -922,7 +923,8 @@ public class ClaimRestorePanelTest : BunitContext
         }
     }
 
-    private sealed class FakeLocator : IUriLocator<ClaimIdentification>, IUriLocator<UserLinkViewModel>, ICharacterUriLocator, IUriLocator<CharacterGroupIdentification>
+    private sealed class FakeLocator : IUriLocator<ClaimIdentification>, IUriLocator<UserLinkViewModel>, ICharacterUriLocator, IUriLocator<CharacterGroupIdentification>,
+        IProjectFieldUriLocator
     {
         public Uri GetUri(ClaimIdentification target) => new($"/claim/{target.ClaimId}", UriKind.Relative);
         public Uri GetUri(CharacterGroupIdentification target) => new($"/group/{target.CharacterGroupId}", UriKind.Relative);
@@ -930,5 +932,9 @@ public class ClaimRestorePanelTest : BunitContext
         public Uri GetDetailsUri(CharacterIdentification characterId) => new("/character", UriKind.Relative);
         public Uri GetAddClaimUri(CharacterIdentification characterId) => new("/character", UriKind.Relative);
         public Uri GetEditUri(CharacterIdentification characterId) => new("/character", UriKind.Relative);
+        public Uri GetEditUri(ProjectFieldIdentification fieldId) => new("/field", UriKind.Relative);
+        public Uri GetCreateVariantUri(ProjectFieldIdentification fieldId) => new("/field", UriKind.Relative);
+        public Uri GetEditVariantUri(ProjectFieldVariantIdentification variantId) => new("/field", UriKind.Relative);
+        public Uri GetFieldSettingsUri(ProjectIdentification projectId) => new("/fields/settings", UriKind.Relative);
     }
 }

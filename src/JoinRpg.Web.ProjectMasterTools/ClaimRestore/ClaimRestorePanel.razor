@@ -1,6 +1,7 @@
 @using JoinRpg.DomainTypes.Characters
 @using JoinRpg.Helpers
 @using JoinRpg.Web.Claims
+@using JoinRpg.Web.ProjectMasterTools.Fields
 @inject IClaimRestoreClient Client
 @inject ILogger<ClaimRestorePanel> Logger
 @inject IUriLocator<ClaimIdentification> ClaimUriLocator
@@ -86,6 +87,8 @@
         }
         else
         {
+            <UnboundCharacterNameFieldWarning FieldNames="model.UnboundNameFieldCandidates" ProjectId="ProjectId" />
+
             @if (model.CharacterNameMismatch is { } nameMismatch)
             {
                 <CharacterNameMismatchWarning Mismatch="nameMismatch" />

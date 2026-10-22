@@ -281,6 +281,22 @@ public class ProjectRestorePlanViewBuilderTest
         BuildWithNameEvents().CharacterNameMismatch.ShouldBeNull();
     }
 
+    /// <summary>Поле-имя не выбрано, а похожее поле есть — восстановленные персонажи получат имена игроков.</summary>
+    [Fact]
+    public void Build_WarnsAboutUnboundNameField()
+    {
+        _ = mock.CreateField("Имя персонажа");
+        var source = new ProjectRestoreSource(
+            mock.ProjectInfo,
+            ClaimRestorePlanBuilder.BuildSource(mock.ProjectInfo, [], [.. mock.Project.Characters.Select(mock.GetCharacterInfo)], At),
+            [], [], new Dictionary<string, UserIdentification>(), At);
+        var plan = new ProjectRestorePlan([], [], [], [], [], [], []);
+
+        var model = ProjectRestorePlanViewBuilder.Build(mock.ProjectInfo, source, plan, [], new DrpOptions { BackupTakenAt = At, LostAt = At }, canEditRoles: true);
+
+        model.UnboundNameFieldCandidates.ShouldBe(["Имя персонажа"]);
+    }
+
     /// <summary>Тип из «Занят?» доходит до строки создания; неизвестный — персонаж игрока, как раньше (#5645).</summary>
     [Fact]
     public void Build_CreationCarriesCharacterType()

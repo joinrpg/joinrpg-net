@@ -136,6 +136,7 @@ internal static class ProjectRestorePlanViewBuilder
         {
             CanEditRoles = canEditRoles,
             CharacterNameMismatch = ToNameMismatchView(projectInfo, source.Notifications.Events),
+            UnboundNameFieldCandidates = [.. projectInfo.GetUnboundCharacterNameFieldCandidates().Select(f => f.Name)],
             Exports = [.. plan.Exports.Select(e => ToExportView(projectInfo, e))],
             // Совпадающие с базой строки без пометок не показываем — менять в них нечего.
             Groups = [.. plan.Groups
