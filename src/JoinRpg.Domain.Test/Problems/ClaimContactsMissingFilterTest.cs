@@ -29,10 +29,15 @@ public class ClaimContactsMissingFilterTest
     private ClaimInfo MakeContext(
         ProjectInfo projectInfo,
         bool sensitiveDataAllowed = false,
-        UserInfo? player = null)
+        UserInfo? player = null,
+        ClaimStatus? status = null)
     {
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
         claim.PlayerAllowedSenstiveData = sensitiveDataAllowed;
+        if (status is { } s)
+        {
+            claim.ClaimStatus = s;
+        }
 
         // Агрегат собирается на тех же метаданных, что проверяет тест: конструктор CharacterInfo
         // требует ровно тот экземпляр ProjectInfo, к которому привязаны слои полей, а
@@ -227,6 +232,22 @@ public class ClaimContactsMissingFilterTest
         problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed);
         problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
         problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingRegistrationAddress);
+    }
+
+    [Theory]
+    [InlineData(ClaimStatus.DeclinedByMaster)]
+    [InlineData(ClaimStatus.DeclinedByUser)]
+    [InlineData(ClaimStatus.OnHold)]
+    public void NoProblemsForInactiveClaim(ClaimStatus status)
+    {
+        var projectInfo = WithRequirement(s => s with
+        {
+            RequirePhone = MandatoryStatus.Required,
+            RequirePassport = MandatoryStatus.Required,
+        });
+
+        Filter.GetProblems(MakeContext(projectInfo, sensitiveDataAllowed: false, status: status))
+            .ShouldBeEmpty();
     }
 
     /// <summary>
