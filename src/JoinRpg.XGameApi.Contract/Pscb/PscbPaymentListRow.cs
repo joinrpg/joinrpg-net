@@ -14,8 +14,8 @@ namespace JoinRpg.XGameApi.Contract.Pscb;
 /// own identifier because its vocabulary belongs to the bank.
 /// </para>
 /// <para>
-/// <see cref="UserUrl"/> and <see cref="ProjectUrl"/> are ours, not the bank's: they are built
-/// without checking that the user or the project actually exists.
+/// <see cref="UserUrl"/> and <see cref="ProjectUrl"/> are ours, not the bank's: both are looked up
+/// in the JoinRpg database, and a row whose payer or project was not found carries no link.
 /// </para>
 /// </remarks>
 public class PscbPaymentListRow
@@ -94,8 +94,9 @@ public class PscbPaymentListRow
     public string? UserId { get; set; }
 
     /// <summary>
-    /// Link to the user's profile, built from <see cref="UserId"/> without checking that the user
-    /// exists. Null when <see cref="UserId"/> is not a number.
+    /// Link to the payer's profile. The user is looked up in the database by <see cref="UserId"/>
+    /// and, when that finds nobody, by <see cref="UserEmail"/> — so the link may lead to a user
+    /// whose id differs from the one the bank returned. Null when neither lookup found anybody.
     /// </summary>
     public string? UserUrl { get; set; }
 

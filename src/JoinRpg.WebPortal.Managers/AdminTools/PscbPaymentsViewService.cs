@@ -1,4 +1,5 @@
 using System.Globalization;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.AdminTools.PscbPayments;
@@ -15,7 +16,8 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 /// <para>
 /// Данные платежа берутся у банка как есть, а ссылки — наши: <c>account</c> это id пользователя
 /// в нашей базе, а название проекта извлекается из назначения платежа, которое JoinRpg формирует
-/// сам. Ссылки строятся без проверки, что пользователь или проект существуют.
+/// сам. И пользователь, и проект ищутся в базе: строка, для которой ничего не нашлось, остаётся
+/// без ссылки.
 /// </para>
 /// <para>
 /// Права проверяет контроллер: шлюз показывает платежи магазина целиком, а не по проектам,
@@ -32,6 +34,7 @@ internal class PscbPaymentsViewService(
     IHttpClientFactory httpClientFactory,
     IUriService uriService,
     ISearchService searchService,
+    IUserRepository userRepository,
     ILogger<PscbPaymentsViewService> logger) : IPscbPaymentsClient
 {
     public async Task<PscbPaymentsListResult> GetPayments(PscbPaymentsQuery query)
@@ -103,7 +106,7 @@ internal class PscbPaymentsViewService(
     {
         try
         {
-            FillUserLinks(rows);
+            await FillUserLinksAsync(rows);
             await FillProjectLinksAsync(rows);
         }
         catch (Exception ex)
@@ -112,16 +115,89 @@ internal class PscbPaymentsViewService(
         }
     }
 
-    private void FillUserLinks(IEnumerable<PscbPaymentListRow> rows)
+    /// <summary>
+    /// Ссылка на плательщика: пользователь ищется в базе по id из платежа, а если такого id нет —
+    /// по email из того же платежа.
+    /// </summary>
+    /// <remarks>
+    /// Банк возвращает то, что ему передал магазин, поэтому id может вести в никуда: пользователь
+    /// удалён или объединён, а платёж создан не через JoinRpg. Найденный по email пользователь
+    /// может иметь другой id, и ссылка ведёт на него — база первоисточник, а не значение из платежа.
+    /// </remarks>
+    private async Task FillUserLinksAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
     {
+        var existingIds = await LoadExistingUserIdsAsync(rows);
+        var idsByEmail = await FindUsersByEmailAsync(rows, existingIds);
+
         foreach (var row in rows)
         {
-            if (int.TryParse(row.UserId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var userId))
+            if (ResolveUserId(row, existingIds, idsByEmail) is { } userId)
             {
                 row.UserUrl = uriService.Get(new UserLinkable(userId));
             }
         }
     }
+
+    /// <summary>
+    /// Какие из id плательщиков есть в базе — одним запросом на весь список.
+    /// </summary>
+    private async Task<IReadOnlySet<int>> LoadExistingUserIdsAsync(IEnumerable<PscbPaymentListRow> rows)
+    {
+        var ids = rows
+            .Select(row => ParseUserId(row.UserId))
+            .OfType<int>()
+            .Distinct()
+            .Select(id => new UserIdentification(id))
+            .ToList();
+
+        if (ids.Count == 0)
+        {
+            return new HashSet<int>();
+        }
+
+        HashSet<int> existing = [.. (await userRepository.GetUserInfoHeaders(ids)).Select(header => header.UserId.Value)];
+        return existing;
+    }
+
+    /// <summary>
+    /// Поиск по email — только для строк, где id не нашёлся, и по одному запросу на distinct-email.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, int>> FindUsersByEmailAsync(
+        IEnumerable<PscbPaymentListRow> rows,
+        IReadOnlySet<int> existingIds)
+    {
+        var found = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var email in rows
+                     .Where(row => ParseUserId(row.UserId) is not { } id || !existingIds.Contains(id))
+                     .Select(row => row.UserEmail)
+                     .OfType<string>()
+                     .Where(email => !string.IsNullOrWhiteSpace(email))
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (await userRepository.FindByEmail(email) is { } userId)
+            {
+                found[email] = userId.Value;
+            }
+        }
+
+        return found;
+    }
+
+    private static int? ResolveUserId(
+        PscbPaymentListRow row,
+        IReadOnlySet<int> existingIds,
+        IReadOnlyDictionary<string, int> idsByEmail)
+    {
+        if (ParseUserId(row.UserId) is { } id && existingIds.Contains(id))
+        {
+            return id;
+        }
+
+        return row.UserEmail is { } email && idsByEmail.TryGetValue(email, out var found) ? found : null;
+    }
+
+    private static int? ParseUserId(string? account)
+        => int.TryParse(account, NumberStyles.Integer, CultureInfo.InvariantCulture, out var userId) ? userId : null;
 
     private async Task FillProjectLinksAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
     {
