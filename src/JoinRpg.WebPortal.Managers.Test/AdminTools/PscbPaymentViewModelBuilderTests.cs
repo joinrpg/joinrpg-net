@@ -27,6 +27,10 @@ public class PscbPaymentViewModelBuilderTests
         "Сумма",
         "Комиссия",
         "Статус",
+        "Сумма возврата",
+        "Статус возврата",
+        "Номер возврата в банке",
+        "Ссылка на возврат",
         "Дата",
         "Вид",
         "Способ",
@@ -428,6 +432,10 @@ public class PscbPaymentViewModelBuilderTests
         ByName(columns, "Ссылка на пользователя").ExtractValue(row).ShouldBeNull();
         ByName(columns, "Состояние").ExtractValue(row).ShouldBeNull();
         ByName(columns, "Код ошибки").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Сумма возврата").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Статус возврата").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Номер возврата в банке").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Ссылка на возврат").ExtractValue(row).ShouldBeNull();
     }
 
     [Fact]
@@ -443,6 +451,8 @@ public class PscbPaymentViewModelBuilderTests
             Amount = 1250.50m,
             Fee = 30.05m,
             StatusDate = StatusDate,
+            Refunds = [new PscbRefundInfo { RefundId = "1115846166", Status = "END", Amount = 1250.50m }],
+            RefundUrl = "https://joinrpg.ru/42/claim/7/finance/9001",
             PaymentKind = "Платёж",
             PaymentMethod = "Банковская карта",
             UserId = "2658",
@@ -454,6 +464,10 @@ public class PscbPaymentViewModelBuilderTests
 
         ByName(columns, "Сумма").ExtractValue(row).ShouldBe("1250.5");
         ByName(columns, "Комиссия").ExtractValue(row).ShouldBe("30.05");
+        ByName(columns, "Сумма возврата").ExtractValue(row).ShouldBe("1250.5");
+        ByName(columns, "Статус возврата").ExtractValue(row).ShouldBe("END");
+        ByName(columns, "Номер возврата в банке").ExtractValue(row).ShouldBe("1115846166");
+        ByName(columns, "Ссылка на возврат").ExtractValue(row).ShouldBe("https://joinrpg.ru/42/claim/7/finance/9001");
         ByName(columns, "Дата").ExtractValue(row).ShouldBe("2026-01-05 10:00:00 +03:00");
         ByName(columns, "Пользователь").ExtractValue(row).ShouldBe("2658");
         ByName(columns, "Ссылка на пользователя").ExtractValue(row).ShouldBe("https://joinrpg.ru/user/2658");

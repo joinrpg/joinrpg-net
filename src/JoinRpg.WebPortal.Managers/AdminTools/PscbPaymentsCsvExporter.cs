@@ -14,6 +14,11 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 /// рядом с ним, а <c>lastError</c> банка расходится на три колонки.
 /// </para>
 /// <para>
+/// Сверх таблицы идут четыре колонки возврата: сумма, статус и номер — это данные банка из
+/// <c>refunds[]</c>, — и ссылка на операцию возврата в JoinRpg. Отдельной колонки под признак
+/// полного возврата нет: он и так виден в «Статусе» как <c>ref</c>.
+/// </para>
+/// <para>
 /// Заголовки — строки, видимые пользователю, поэтому они русские: так же сделано в
 /// <c>CustomExporter</c>. Заголовок «Назначение платежа» сохранён по таблице, хотя значение
 /// колонки — название проекта: JoinRpg формирует назначение как
@@ -49,6 +54,10 @@ public class PscbPaymentsCsvExporter : IGeneratorFrontend<PscbPaymentListRow>
         new Column("Сумма", p => Money(p.Amount)),
         new Column("Комиссия", p => Money(p.Fee)),
         new Column("Статус", p => p.Status),
+        new Column("Сумма возврата", p => RefundSum(p)),
+        new Column("Статус возврата", p => Join(p.Refunds.Select(refund => refund.Status))),
+        new Column("Номер возврата в банке", p => Join(p.Refunds.Select(refund => refund.RefundId))),
+        new Column("Ссылка на возврат", p => p.RefundUrl),
         new Column("Дата", p => Moment(p.StatusDate)),
         new Column("Вид", p => p.PaymentKind),
         new Column("Способ", p => p.PaymentMethod),
@@ -67,6 +76,19 @@ public class PscbPaymentsCsvExporter : IGeneratorFrontend<PscbPaymentListRow>
 
     private static string Moment(DateTimeOffset value)
         => value.ToString("yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Сумма возвратов по данным банка. Пустая ячейка, если возвратов нет: ноль означал бы
+    /// «возврат на ноль рублей», а не «возврата не было».
+    /// </summary>
+    private static string? RefundSum(PscbPaymentListRow row)
+        => row.Refunds.Count > 0 ? Money(row.Refunds.Sum(refund => refund.Amount)) : null;
+
+    private static string? Join(IEnumerable<string?> values)
+    {
+        var joined = string.Join("; ", values.Where(value => !string.IsNullOrWhiteSpace(value)));
+        return joined.Length > 0 ? joined : null;
+    }
 
     private sealed class Column(string name, Func<PscbPaymentListRow, object?> getter) : ITableColumn
     {

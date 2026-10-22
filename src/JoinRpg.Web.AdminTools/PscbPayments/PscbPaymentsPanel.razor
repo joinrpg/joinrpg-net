@@ -89,6 +89,7 @@
                                 <th>Номер в банке</th>
                                 <th>Назначение платежа</th>
                                 <th>Сумма</th>
+                                <th>Возврат</th>
                                 <th>Дата</th>
                                 <th>Способ</th>
                                 <th>Пользователь</th>
@@ -113,6 +114,20 @@
                                         }
                                     </td>
                                     <td>@payment.Amount</td>
+                                    <td>
+                                        @foreach (var refund in payment.Refunds)
+                                        {
+                                            <div>@refund.Amount ₽, @refund.Status, № @refund.RefundId</div>
+                                        }
+                                        @if (payment.RefundUrl is { } refundUrl)
+                                        {
+                                            <div><a href="@refundUrl">операция в JoinRpg</a></div>
+                                        }
+                                        else if (payment.RefundedByBank || payment.Refunds.Count > 0)
+                                        {
+                                            <div class="text-danger" title="Банк возврат зафиксировал, а проведённой операции возврата в JoinRpg нет">нет операции в JoinRpg</div>
+                                        }
+                                    </td>
                                     <td>@payment.StatusDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                     <td>@payment.PaymentMethod</td>
                                     <td>
