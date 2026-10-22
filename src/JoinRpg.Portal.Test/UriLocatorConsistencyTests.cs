@@ -76,6 +76,7 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         ["GetEditUri", (Func<IProjectFieldUriLocator, Uri>)(l => l.GetEditUri(FieldId))],
         ["GetCreateVariantUri", (Func<IProjectFieldUriLocator, Uri>)(l => l.GetCreateVariantUri(FieldId))],
         ["GetEditVariantUri", (Func<IProjectFieldUriLocator, Uri>)(l => l.GetEditVariantUri(VariantId))],
+        ["GetFieldSettingsUri", (Func<IProjectFieldUriLocator, Uri>)(l => l.GetFieldSettingsUri(ProjectId))],
     ];
 
     [Theory]

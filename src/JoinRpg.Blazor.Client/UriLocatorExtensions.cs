@@ -77,6 +77,9 @@ public static class UriLocatorExtensions
         Uri IProjectFieldUriLocator.GetEditVariantUri(ProjectFieldVariantIdentification variantId) =>
             new($"/{variantId.FieldId.ProjectId.Value}/fields/EditValue?projectFieldId={variantId.FieldId.ProjectFieldId}&valueId={variantId.ProjectFieldVariantId}", UriKind.Relative);
 
+        Uri IProjectFieldUriLocator.GetFieldSettingsUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/fields/Settings", UriKind.Relative);
+
         Uri IScheduleUriLocator.GetScheduleUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/schedule", UriKind.Relative);
 
