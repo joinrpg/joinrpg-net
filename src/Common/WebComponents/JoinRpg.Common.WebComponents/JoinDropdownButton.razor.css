@@ -1,0 +1,98 @@
+/* Размеры и цвета меню — как у .dropdown-menu из Bootstrap 3.4.0, чтобы выглядело так же, как прежние меню */
+.join-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/*
+ * Кнопка — свои стили (те же значения, что у JoinButton и .btn-default из Bootstrap 3.4.0), чтобы она
+ * выглядела кнопкой и без Bootstrap. Класс join-btn нужен JoinButtonGroup: по нему группа снимает
+ * скругления у соседних сегментов. Стили самой JoinButton сюда не приходят — они scoped.
+ */
+.join-dropdown__toggle {
+    list-style: none;
+    box-sizing: border-box;
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+    .join-dropdown__toggle:hover,
+    .join-dropdown__toggle:focus {
+        background-color: #e6e6e6;
+        border-color: #adadad;
+    }
+
+    .join-dropdown[open] > .join-dropdown__toggle {
+        background-color: #e6e6e6;
+        border-color: #adadad;
+        box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+    }
+
+/* Стрелка — треугольник из рамки, как .caret у Bootstrap 3 */
+.join-dropdown__caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    border-top: 4px solid;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+}
+
+    .join-dropdown__toggle::-webkit-details-marker {
+        display: none;
+    }
+
+/* Blazor вырезает пробел между подписью и стрелкой — отступ задаём явно */
+.join-dropdown__label {
+    margin-right: 4px;
+}
+
+.join-dropdown__menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, .15);
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+}
+
+.join-dropdown__menu--right {
+    left: auto;
+    right: 0;
+}
+
+    .join-dropdown__menu ::deep > li > a {
+        display: block;
+        padding: 3px 20px;
+        clear: both;
+        font-weight: normal;
+        line-height: 1.42857143;
+        color: #333;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+
+        .join-dropdown__menu ::deep > li > a:hover,
+        .join-dropdown__menu ::deep > li > a:focus {
+            color: #262626;
+            background-color: #f5f5f5;
+        }
