@@ -1,5 +1,7 @@
 @using JoinRpg.DomainTypes.Characters.Claims
 @using JoinRpg.Web.ProjectCommon.Claims
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Common.WebComponents
 @model JoinRpg.Web.Models.CheckIn.CheckInIndexViewModel
 
 @{
@@ -7,6 +9,21 @@
 }
 
 <h2>Регистрация</h2>
+
+@if (Model.JustCheckedIn is { } checkedIn)
+{
+  <div class="alert alert-success">
+    Зарегистрирован(а) <b>@checkedIn.PlayerName</b> — @checkedIn.CharacterName.
+    @if (checkedIn.CanPrintBadge)
+    {
+      <component type="typeof(JoinButton)"
+                 render-mode="Static"
+                 param-Link="@Url.Action("Badges", "Print", new { ProjectId = Model.ProjectId.Value, CharacterIds = new CompressedIntList([checkedIn.CharacterId]).ToString() })"
+                 param-Preset="@ButtonPreset.Print"
+                 param-Label="@("Напечатать бейдж")" />
+    }
+  </div>
+}
 
 @using (Html.BeginForm())
 {

@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -28,18 +29,37 @@ public class CheckInController(
     IClaimProblemValidator claimValidator,
     CharacterPlotViewService characterPlotViewService,
     ICurrentUserAccessor currentUserAccessor,
-    UserProfileDetailsBuilder cardBuilder
+    UserProfileDetailsBuilder cardBuilder,
+    IProjectBadgeTemplateRepository badgeTemplateRepository
         ) : JoinControllerGameBase
 {
-    [HttpGet]
-    public async Task<ActionResult> Index(ProjectIdentification projectId)
+    /// <param name="checkedInClaimId">Только что зарегистрированная заявка — показать баннер с печатью бейджа</param>
+    // Имя метода другое: та же сигнатура уже у POST Index (выбор заявки).
+    [HttpGet, ActionName("Index")]
+    public async Task<ActionResult> IndexPage(ProjectIdentification projectId, ClaimIdentification? checkedInClaimId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         if (!project.ProjectCheckInSettings.CheckInModuleEnabled || !project.ProjectCheckInSettings.InProgress)
         {
             return View("CheckInNotStarted");
         }
-        return View(new CheckInIndexViewModel(project));
+
+        CheckedInBannerViewModel? banner = null;
+        // Параметр остаётся в адресе (история, F5, правка руками) — поэтому «зарегистрирован» показываем,
+        // только если заявка и правда зарегистрирована.
+        if (checkedInClaimId is not null
+            && await claimInfoRepository.GetClaimInfoOrDefault(checkedInClaimId) is { } claimInfo
+            && claimInfo.Claim.Status == ClaimStatus.CheckedIn)
+        {
+            var hasBadgeTemplates = (await badgeTemplateRepository.GetForProjectAsync(projectId)).Any(t => t.IsActive);
+            banner = new CheckedInBannerViewModel(
+                claimInfo.Player.DisplayName.DisplayName,
+                claimInfo.Character.CharacterName,
+                claimInfo.Character.Id,
+                hasBadgeTemplates);
+        }
+
+        return View(new CheckInIndexViewModel(project, banner));
     }
 
     // claimId может не прийти вовсе: если заявок, готовых к регистрации, нет, селектор рендерит
@@ -114,7 +134,7 @@ public class CheckInController(
         try
         {
             await claimService.CheckInClaim(claimIdentification, feeAccepted == Checkbox.@on ? money : 0);
-            return RedirectToAction("Index", new { ProjectId = projectId.Value });
+            return RedirectToAction("Index", new { ProjectId = projectId.Value, checkedInClaimId = claimIdentification.ClaimId });
         }
         catch (Exception ex)
         {
