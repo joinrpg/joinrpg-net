@@ -8,7 +8,10 @@
 
 @if (Model.Templates.Count == 0)
 {
-    <p>В проекте пока нет шаблонов бейджей — печатать не по чему.</p>
+    <p>
+        В проекте пока нет шаблонов бейджей — печатать не по чему.
+        <a asp-page="/GamePages/BadgeTemplates" asp-route-projectId="@Model.ProjectId">Создать шаблон</a>
+    </p>
 }
 else
 {

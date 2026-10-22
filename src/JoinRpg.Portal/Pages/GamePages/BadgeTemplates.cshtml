@@ -1,0 +1,12 @@
+@page "/{projectId:int}/tools/badges"
+@using JoinRpg.Web.ProjectMasterTools.Badges
+
+@model JoinRpg.Portal.Pages.GamePages.BadgeTemplatesModel
+
+@{
+    ViewData["Title"] = "Шаблоны бейджей";
+}
+
+<h3>@ViewData["Title"]</h3>
+
+@(await Html.RenderComponentAsync<BadgeTemplateList>(RenderMode.WebAssemblyPrerendered, new { Model.ProjectId }))

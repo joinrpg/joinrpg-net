@@ -3,10 +3,12 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.ProjectMasterTools.Badges;
 using JoinRpg.Web.Schedule;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -111,6 +113,23 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         _ = caseName;
         var server = call(factory.Services.GetRequiredService<IProjectUriLocator>());
         var client = call(_clientServices.GetRequiredService<IProjectUriLocator>());
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    public static IEnumerable<object[]> BadgeTemplateCases() =>
+    [
+        ["GetListUri", (Func<IBadgeTemplateUriLocator, Uri>)(l => l.GetListUri(ProjectId))],
+        ["GetCreateUri", (Func<IBadgeTemplateUriLocator, Uri>)(l => l.GetCreateUri(ProjectId))],
+        ["GetEditUri", (Func<IBadgeTemplateUriLocator, Uri>)(l => l.GetEditUri(new ProjectBadgeTemplateIdentification(ProjectId, 7)))],
+    ];
+
+    [Theory]
+    [MemberData(nameof(BadgeTemplateCases))]
+    public void BadgeTemplateLocatorsShouldAgree(string caseName, Func<IBadgeTemplateUriLocator, Uri> call)
+    {
+        _ = caseName;
+        var server = call(factory.Services.GetRequiredService<IBadgeTemplateUriLocator>());
+        var client = call(_clientServices.GetRequiredService<IBadgeTemplateUriLocator>());
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
     }
 

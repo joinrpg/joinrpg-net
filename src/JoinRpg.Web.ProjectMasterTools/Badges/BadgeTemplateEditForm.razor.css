@@ -1,0 +1,18 @@
+/* Форма слева, превью справа; на узком экране превью уходит под форму */
+.badge-template-editor {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2em;
+    align-items: flex-start;
+}
+
+.badge-template-editor__form {
+    flex: 1 1 36em;
+    min-width: 0;
+}
+
+.badge-template-editor__preview {
+    flex: 0 1 auto;
+    position: sticky;
+    top: 1em;
+}

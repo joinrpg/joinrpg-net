@@ -1,0 +1,193 @@
+@using JoinRpg.Common.WebComponents
+@using JoinRpg.Common.WebComponents.Badges
+@using JoinRpg.DomainTypes.ProjectMetadata.Badges
+@using JoinRpg.Web.ProjectCommon.Fields
+@using Microsoft.AspNetCore.Components.Forms
+@inject IBadgeTemplateClient Client
+@inject IBadgeTemplateUriLocator UriLocator
+@inject IProjectFieldsClient FieldsClient
+@inject NavigationManager NavigationManager
+@inject ILogger<BadgeTemplateEditForm> Logger
+@*
+    Редактор шаблона бейджа. Справа — живое превью: вместо значений полей в нём названия полей,
+    размер шрифта подбирается так же, как на печати.
+*@
+
+<div class="badge-template-editor">
+    <div class="badge-template-editor__form">
+        <EditForm Model="model" OnValidSubmit="OnSave">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <FormHorizontal>
+                <FormRowFor For="@(() => model.Name)">
+                    <JoinTextInput @bind-Value="model.Name" />
+                </FormRowFor>
+                <FormRowFor For="@(() => model.WidthMm)">
+                    <JoinInputNumber @bind-Value="model.WidthMm" min="@BadgeLayoutRules.MinSizeMm" max="@BadgeLayoutRules.MaxWidthMm" ParsingErrorMessage="Укажите ширину бейджа целым числом миллиметров" />
+                </FormRowFor>
+                <FormRowFor For="@(() => model.HeightMm)">
+                    <JoinInputNumber @bind-Value="model.HeightMm" min="@BadgeLayoutRules.MinSizeMm" max="@BadgeLayoutRules.MaxHeightMm" ParsingErrorMessage="Укажите высоту бейджа целым числом миллиметров" />
+                </FormRowFor>
+                <FormRowFor For="@(() => model.BackgroundUrl)">
+                    <JoinTextInput @bind-Value="model.BackgroundUrl" />
+                </FormRowFor>
+            </FormHorizontal>
+
+            <JoinPanel>
+                <Header>Строки</Header>
+                <Body>
+                    <p class="help-block">
+                        Каждая строка выровнена по центру. Шрифт подбирается от максимального вниз, пока текст не влезет
+                        в ширину бейджа; если не влезает и на минимальном — переносится на вторую строку.
+                    </p>
+                    @* Без прокручиваемой обёртки: она обрезала бы выпадающий список полей *@
+                    <JoinTableSimple Responsive="false">
+                        <TableHeader>
+                            <th>Что выводить</th>
+                            <th>Отступ сверху, мм</th>
+                            <th>Шрифт от, пт</th>
+                            <th>до, пт</th>
+                            <th>Жирный</th>
+                            <th></th>
+                        </TableHeader>
+                        <TableBody>
+                            @foreach (var line in model.Lines)
+                            {
+                                <tr @key="line">
+                                    <td>
+                                        <EnumSelector TValue="BadgeLineSource" @bind-SelectedValue="line.Source" />
+                                        @if (line.Source == BadgeLineSource.Field)
+                                        {
+                                            @* Пустой пункт обязателен: без него браузер показывает первое поле, хотя оно не выбрано, а у строки
+                                               с удалённым полем — чужое поле вместо того, что напечатается *@
+                                            <SingleFieldSelector ProjectId="@ProjectId" @bind-SelectedFieldId="line.FieldId" AllowEmpty="true" EmptyText="(выберите поле)" />
+                                        }
+                                        else
+                                        {
+                                            <JoinTextInput @bind-Value="line.StaticText" />
+                                        }
+                                    </td>
+                                    <td><JoinInputNumber @bind-Value="line.TopMm" ParsingErrorMessage="Укажите отступ строки целым числом миллиметров" /></td>
+                                    <td><JoinInputNumber @bind-Value="line.MinFontPt" ParsingErrorMessage="Укажите минимальный шрифт целым числом пунктов" /></td>
+                                    <td><JoinInputNumber @bind-Value="line.MaxFontPt" ParsingErrorMessage="Укажите максимальный шрифт целым числом пунктов" /></td>
+                                    <td><CheckboxInput @bind-Value="line.Bold" /></td>
+                                    <td><JoinButton Preset="ButtonPreset.Delete" Label="Убрать" OnClick="@(() => model.Lines.Remove(line))" /></td>
+                                </tr>
+                            }
+                        </TableBody>
+                    </JoinTableSimple>
+                    <JoinButton Preset="ButtonPreset.Add" Label="Добавить строку" OnClick="AddLine" />
+                </Body>
+            </JoinPanel>
+
+            <JoinButton Preset="ButtonPreset.Save" Submit="true" Label="@(IsEditMode ? "Сохранить изменения" : "Создать шаблон")" Disabled="@saving" />
+            <JoinButton Preset="ButtonPreset.Cancel" Label="Назад к списку" Link="@ListUri" Disabled="@saving" />
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <JoinAlert Variation="VariationStyleEnum.Danger">@error</JoinAlert>
+            }
+        </EditForm>
+    </div>
+    <div class="badge-template-editor__preview">
+        <h4>Превью</h4>
+        @if (model.WidthMm >= BadgeLayoutRules.MinSizeMm && model.HeightMm >= BadgeLayoutRules.MinSizeMm)
+        {
+            <div style="overflow: auto; outline: 1px dashed silver; display: inline-block">
+                <PrintableBadge WidthMm="@model.WidthMm" HeightMm="@model.HeightMm" BackgroundUrl="@model.BackgroundUrl" Lines="@PreviewLines()" />
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    /// <summary>Шаблон для правки; <c>null</c> — создаём новый</summary>
+    [Parameter]
+    public ProjectBadgeTemplateIdentification? BadgeTemplateId { get; set; }
+
+    [Parameter]
+    public EditBadgeTemplateViewModel? Model { get; set; }
+
+    private EditBadgeTemplateViewModel model = new();
+    private Dictionary<ProjectFieldIdentification, string> fieldNames = [];
+    private bool saving;
+    private string? error;
+
+    private bool IsEditMode => BadgeTemplateId is not null;
+
+    private string ListUri => UriLocator.GetListUri(ProjectId).ToString();
+
+    protected override void OnParametersSet()
+    {
+        if (Model is not null)
+        {
+            model = Model;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            fieldNames = (await FieldsClient.GetProjectFields(ProjectId)).ToDictionary(f => f.FieldId, f => f.Name);
+        }
+        catch (Exception ex)
+        {
+            // Без названий полей превью покажет заглушки — редактировать это не мешает.
+            Logger.LogError(ex, "Не удалось загрузить поля проекта для превью бейджа");
+        }
+    }
+
+    private void AddLine()
+    {
+        var top = model.Lines.Count == 0 ? 10 : Math.Min(model.Lines.Max(l => l.TopMm) + 10, Math.Max(model.HeightMm - 5, 0));
+        model.Lines.Add(new EditBadgeLineViewModel { TopMm = top });
+    }
+
+    private IReadOnlyList<PrintableBadgeLine> PreviewLines()
+        => [.. model.Lines.Select(line => new PrintableBadgeLine(
+            PreviewText(line),
+            line.TopMm,
+            Math.Max(line.MinFontPt, BadgeLayoutRules.MinFontPt),
+            Math.Max(line.MaxFontPt, Math.Max(line.MinFontPt, BadgeLayoutRules.MinFontPt)),
+            line.Bold))];
+
+    private string PreviewText(EditBadgeLineViewModel line)
+        => line.Source == BadgeLineSource.Text
+            ? line.StaticText ?? ""
+            : line.FieldId is null ? "(поле не выбрано)" : fieldNames.GetValueOrDefault(line.FieldId) ?? "(удалённое поле)";
+
+    private async Task OnSave()
+    {
+        saving = true;
+        error = null;
+        try
+        {
+            if (BadgeTemplateId is { } id)
+            {
+                await Client.Update(id, model);
+            }
+            else
+            {
+                _ = await Client.Create(ProjectId, model);
+            }
+            NavigationManager.NavigateTo(ListUri);
+        }
+        catch (ServerProblemException ex)
+        {
+            // Отказ сервера (нет прав, поле удалено) — причину показываем как есть
+            error = $"Ошибка сохранения: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            error = "Не удалось сохранить шаблон бейджа";
+            Logger.LogError(ex, "Ошибка сохранения шаблона бейджа");
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+}

@@ -1,9 +1,11 @@
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.ProjectMasterTools.Badges;
 using JoinRpg.Web.Schedule;
 
 namespace JoinRpg.Blazor.Client;
@@ -15,8 +17,17 @@ public static class UriLocatorExtensions
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
         IUriLocator<CharacterGroupIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
-        IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator
+        IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator, IBadgeTemplateUriLocator
     {
+        Uri IBadgeTemplateUriLocator.GetListUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/tools/badges", UriKind.Relative);
+
+        Uri IBadgeTemplateUriLocator.GetCreateUri(ProjectIdentification projectId) =>
+            new($"/{projectId.Value}/tools/badges/edit", UriKind.Relative);
+
+        Uri IBadgeTemplateUriLocator.GetEditUri(ProjectBadgeTemplateIdentification id) =>
+            new($"/{id.ProjectId.Value}/tools/badges/edit/{id.ProjectBadgeTemplateId}", UriKind.Relative);
+
         public Uri GetUri(ClaimIdentification target) => new Uri($"/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Relative);
 
         public Uri GetUri(CharacterIdentification target) => new Uri($"/{target.ProjectId.Value}/character/{target.CharacterId}/details", UriKind.Relative);
@@ -173,6 +184,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IProjectUriLocator>(locator)
             .AddSingleton<IPlotUriLocator>(locator)
             .AddSingleton<IAccommodationUriLocator>(locator)
+            .AddSingleton<IBadgeTemplateUriLocator>(locator)
             ;
     }
 }
