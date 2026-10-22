@@ -105,6 +105,6 @@
         <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" />
         <PackageVersion Include="Xunit.SkippableFact" Version="1.5.85" />
         <!-- Using NuGet package instead of ProjectReference to avoid recompilation issues with language server -->
-        <PackageVersion Include="JoinRpg.Common.PrimitiveTypes.SourceGenerator" Version="2026.8.256" />
+        <PackageVersion Include="JoinRpg.Common.PrimitiveTypes.SourceGenerator" Version="2026.9.363" />
     </ItemGroup>
 </Project>
