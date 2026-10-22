@@ -61,7 +61,7 @@ public class ProgramItem
             return [];
         }
 
-        return character.GetAllFields().SingleOrDefault(f => f.Field.Id == authorField.Id)?.UserIds ?? [];
+        return character.GetFieldById(authorField.Id)?.UserIds ?? [];
     }
 }
 

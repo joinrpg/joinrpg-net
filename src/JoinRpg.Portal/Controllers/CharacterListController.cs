@@ -126,7 +126,7 @@ public class CharacterListController(
         return await MasterCharacterList(
           projectId,
           CharacterStatusSpec.Active,
-          character => character.GetAllFields().Single(f => f.Field.Id == field.Id).HasEditableValue,
+          character => character.GetFieldById(field.Id)?.HasEditableValue ?? false,
           export,
           "Поле (проставлено): " + field.Name);
     }
