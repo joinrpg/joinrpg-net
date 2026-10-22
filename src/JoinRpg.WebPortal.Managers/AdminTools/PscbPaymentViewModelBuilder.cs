@@ -39,6 +39,17 @@ internal static class PscbPaymentViewModelBuilder
     internal const string TicketPurposePrefix = "Билет (организационный взнос) участника на ";
 
     /// <summary>
+    /// Маркер режима отладки, который <see cref="BankApi"/> ставит перед назначением платежа.
+    /// </summary>
+    /// <remarks>
+    /// Задублирован по той же причине, что и <see cref="TicketPurposePrefix"/>: литерал живёт
+    /// в <c>BankApi.PrepareMessage</c> (<c>src/PscbApi/BankApi.cs</c>) в боевом пути платежей.
+    /// Маркер попадает в назначение только при <c>Debug=true</c>, то есть когда весь список
+    /// приходит из песочницы банка, поэтому отдельно в модели он не отмечается.
+    /// </remarks>
+    internal const string DebugPurposePrefix = "[Debug mode] ";
+
+    /// <summary>
     /// Вид записи по-русски.
     /// </summary>
     private static readonly Dictionary<PscbPaymentType, string> KindNames = new()
@@ -108,7 +119,7 @@ internal static class PscbPaymentViewModelBuilder
             DisplayOrderId = payment.OrderIdDisplayValue,
             BankPaymentId = payment.Id,
             TransactionId = payment.TransactionId,
-            ProjectName = StripTicketPrefix(payment.Details),
+            ProjectName = ProjectNameFromPurpose(payment.Details),
             Amount = payment.Amount,
             Fee = payment.Fee,
             Status = Identifier(payment.Status),
@@ -124,13 +135,16 @@ internal static class PscbPaymentViewModelBuilder
         };
 
     /// <summary>
-    /// Назначение платежа без билетного префикса — остаётся название проекта. Если префикса нет
-    /// (например, у рекуррентной подписки), текст возвращается как есть.
+    /// Название проекта из назначения платежа: без маркера режима отладки и без билетного
+    /// префикса. Если префикса нет (например, у рекуррентной подписки), текст возвращается как есть.
     /// </summary>
-    public static string? StripTicketPrefix(string? details)
-        => details is not null && details.StartsWith(TicketPurposePrefix, StringComparison.Ordinal)
-            ? details[TicketPurposePrefix.Length..]
-            : details;
+    public static string? ProjectNameFromPurpose(string? details)
+        => StripPrefix(StripPrefix(details, DebugPurposePrefix), TicketPurposePrefix);
+
+    private static string? StripPrefix(string? value, string prefix)
+        => value is not null && value.StartsWith(prefix, StringComparison.Ordinal)
+            ? value[prefix.Length..]
+            : value;
 
     public static PscbPaymentInfo Build(PaymentData payment)
         => new()

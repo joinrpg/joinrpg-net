@@ -129,6 +129,26 @@ public class PscbPaymentsViewServiceTests
         row.ProjectUrl.ShouldBeNull();
     }
 
+    /// <summary>
+    /// В режиме отладки <see cref="BankApi"/> добавляет перед назначением маркер
+    /// <c>[Debug mode] </c>: в поиск должно уйти чистое название проекта, иначе ссылки не будет.
+    /// </summary>
+    [Fact]
+    public async Task SearchesTheProjectByThePurposeWithoutTheDebugMarker()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var service = CreateService(
+            search,
+            Payment("1", account: "42", details: PscbPaymentViewModelBuilder.DebugPurposePrefix + TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.ProjectName.ShouldBe("Проект");
+        row.ProjectUrl.ShouldBe("https://joinrpg.test/7/home");
+        search.Requests.ShouldBe(["Проект"]);
+    }
+
     private static string TicketPurpose(string projectName)
         => PscbPaymentViewModelBuilder.TicketPurposePrefix + projectName;
 

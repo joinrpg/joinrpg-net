@@ -260,15 +260,18 @@ public class PscbPaymentViewModelBuilderTests
     [Theory]
     [InlineData("Билет (организационный взнос) участника на Мастер-Блин 2026: участники", "Мастер-Блин 2026: участники")]
     [InlineData("Билет (организационный взнос) участника на ", "")]
+    // В режиме отладки BankApi ставит перед назначением свой маркер.
+    [InlineData("[Debug mode] Билет (организационный взнос) участника на Мастер-Блин 2026", "Мастер-Блин 2026")]
+    [InlineData("[Debug mode] Подписка пользователя на Сервисы JoinRpg", "Подписка пользователя на Сервисы JoinRpg")]
     // У рекуррентной подписки другое назначение, префикса в нём нет — текст остаётся как есть.
     [InlineData("Подписка пользователя на Сервисы JoinRpg", "Подписка пользователя на Сервисы JoinRpg")]
     [InlineData("", "")]
-    public void StripsTheTicketPrefixFromThePurpose(string details, string expected)
-        => PscbPaymentViewModelBuilder.StripTicketPrefix(details).ShouldBe(expected);
+    public void StripsThePrefixesFromThePurpose(string details, string expected)
+        => PscbPaymentViewModelBuilder.ProjectNameFromPurpose(details).ShouldBe(expected);
 
     [Fact]
     public void StripsNothingFromAMissingPurpose()
-        => PscbPaymentViewModelBuilder.StripTicketPrefix(null).ShouldBeNull();
+        => PscbPaymentViewModelBuilder.ProjectNameFromPurpose(null).ShouldBeNull();
 
     [Theory]
     [InlineData(PscbPaymentType.Payment, "Платёж")]
