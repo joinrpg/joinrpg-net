@@ -42,6 +42,20 @@ public class NotificationEntityLinkRendererTests(IntegrationTestPortalFactory fa
     }
 
     [Fact]
+    public void RendersLinkForMyClaimInProject()
+    {
+        using var scope = factory.Services.CreateScope();
+        var renderer = Resolve(scope);
+
+        var link = renderer.RenderEntityLink(new MyClaimInProjectIdentification(new ProjectIdentification(1)));
+
+        link.ShouldNotBeNull();
+        link.Markdown.Value.ShouldStartWith("Подробнее: [ваша заявка](http");
+        link.Markdown.Value.ShouldEndWith("/1/myclaim)");
+        link.PlainText.ShouldStartWith("Подробнее: ваша заявка: http");
+    }
+
+    [Fact]
     public void NoLinkForAccommodationRoom()
     {
         using var scope = factory.Services.CreateScope();

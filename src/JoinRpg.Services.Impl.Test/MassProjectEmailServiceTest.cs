@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Services.Email;
 
 namespace JoinRpg.Services.Impl.Test;
@@ -55,6 +56,23 @@ public class MassProjectEmailServiceTest
 
         notificationService.Queued.Select(n => n.Header)
             .ShouldAllBe(header => header == "Mocked project: Тема рассылки");
+    }
+
+    /// <summary>Ссылка под письмом: игроку — на его заявку, мастерам — на проект (#5752).</summary>
+    [Fact]
+    public async Task MassMail_EntityReference_MyClaimForPlayers_ProjectForMasters()
+    {
+        await CreateService().MassMail(
+            [Claim.ClaimId],
+            new MarkdownDbValue("Текст рассылки"),
+            "Тема рассылки",
+            alsoMailToMasters: true);
+
+        var projectId = new ProjectIdentification(mock.Project.ProjectId);
+        notificationService.Queued.Single(n => n.NotificationClass == NotificationClass.MassProjectEmails)
+            .EntityReference.ShouldBe(new MyClaimInProjectIdentification(projectId));
+        notificationService.Queued.Single(n => n.NotificationClass == NotificationClass.MasterProject)
+            .EntityReference.ShouldBe(projectId);
     }
 
     [Fact]

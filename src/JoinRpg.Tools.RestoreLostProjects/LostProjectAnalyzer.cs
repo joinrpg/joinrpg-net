@@ -1,5 +1,6 @@
 using System.Globalization;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 
 namespace JoinRpg.Tools.RestoreLostProjects;
@@ -36,7 +37,13 @@ internal sealed class LostProjectAnalyzer(
         => entityReference is not null && ProjectEntityIdParser.TryParseId(entityReference, out var id) ? id.ProjectId.Value : null;
 
     private static bool ReferencesProject(string entityReference)
-        => ProjectEntityIdParser.TryParseId(entityReference, out var id) && id is ProjectIdentification;
+        => ProjectEntityIdParser.TryParseId(entityReference, out var id) && IsProjectWide(id);
+
+    /// <summary>
+    /// Уведомление на весь проект, а не на его часть: рассылки и письма проекта. Рассылка игрокам с #5752
+    /// ссылается на «мою заявку», мастерам и до того — на сам проект.
+    /// </summary>
+    private static bool IsProjectWide(IProjectEntityId id) => id is ProjectIdentification or MyClaimInProjectIdentification;
 
     /// <summary>
     /// Значения EntityReference, по которым надо дочитать уведомления.
@@ -327,7 +334,7 @@ internal sealed class LostProjectAnalyzer(
             }
             var initiatorIsMaster = n.MasterInitiated
                 || (ProjectEntityIdParser.TryParseId(n.EntityReference, out var id)
-                    && id is ProjectIdentification or PlotElementIdentification);
+                    && (IsProjectWide(id) || id is PlotElementIdentification));
             if (initiatorIsMaster)
             {
                 yield return (n.InitiatorUserId, n.CreatedAt);

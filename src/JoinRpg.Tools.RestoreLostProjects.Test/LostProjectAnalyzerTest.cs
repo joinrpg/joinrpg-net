@@ -212,6 +212,27 @@ public class LostProjectAnalyzerTest
         candidates.ShouldBe([new CreatorCandidate(SecondMasterId, 1, Day1), new CreatorCandidate(MasterId, 1, Day2)]);
     }
 
+    // С #5752 рассылка игрокам ссылается не на проект, а на «мою заявку» — это всё ещё рассылка мастера.
+    [Fact]
+    public void MassMailToMyClaimInitiatorIsMaster()
+    {
+        var candidates = CreateAnalyzer().GetCreatorCandidates(
+        [
+            Notification("MyClaimInProjectId(1001)", "Дюна: Сбор", MasterId, PlayerId, Day2),
+        ]);
+
+        candidates.ShouldBe([new CreatorCandidate(MasterId, 1, Day2)]);
+    }
+
+    [Fact]
+    public void MassMailToMyClaimIsANameSource()
+    {
+        var report = AnalyzeSingle(
+            Notification("MyClaimInProjectId(1001)", "Дюна: Сбор", MasterId, PlayerId, new DateTimeOffset(2026, 10, 21, 12, 0, 0, TimeSpan.Zero)));
+
+        report.Name.ShouldBe("Дюна");
+    }
+
     [Fact]
     public void NoMasterEvidenceMeansCreatorNotFound()
     {
