@@ -11,14 +11,14 @@ internal partial class CreateProjectService
     /// </summary>
     private async Task AddRoleTimeRobot(ProjectIdentification projectId)
     {
-        if (roleTimeOptions.Value.RobotUser is not { } robotUser)
+        if (roleTimeOptions.Value.RobotUserId is not { } robotUserId)
         {
             return;
         }
         await projectAccessService.GrantAccess(new GrantAccessRequest
         {
             ProjectId = projectId,
-            UserId = robotUser,
+            UserId = robotUserId,
             Permissions = [],
             Role = new("Робот: синхронизация с roletime.ru"),
             Description = new MarkdownString("Робот, который нужен для экспорта расписания в [«Расписание конвентов»](https://roletime.ru). Если он вам не нужен, удалите."),
