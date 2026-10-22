@@ -3,6 +3,7 @@ using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Markdown;
+using JoinRpg.Web.Claims;
 // В JoinRpg.DataModel есть своя ProjectDetails (EF-сущность), здесь нужна доменная.
 using ProjectDetails = JoinRpg.DomainTypes.ProjectMetadata.ProjectDetails;
 
@@ -50,12 +51,10 @@ public class AddClaimViewModel : IProjectIdAware
         => new AddClaimViewModel { CharacterId = character.Id.CharacterId }
             .Fill(character, userInfo, projectDetails, fieldUsers);
 
-    public bool SenstiveDataRequired { get; private set; }
+    public RequestedSensitiveDataView RequestedSensitiveData { get; private set; } = new(false, false, false);
 
-    [Display(Name = "Предоставить доступ к защищённым данным",
-     Description = "Мастера игры просят доступ к защищённым данным из вашего профиля — паспортным данным, адресу регистрации или дате рождения" +
-        " (только к тому, что запросил проект). Вероятно, это нужно для поселения. Вы все равно сможете отправить заявку," +
-        " даже если не предоставите доступ, но возможно, мастера отклонят вашу заявку. ")]
+    // Пояснение зависит от того, что запросил проект, — RequestedSensitiveData.ConsentDescription() в разметке.
+    [Display(Name = "Предоставить доступ к защищённым данным")]
     public bool SensitiveDataAllowed { get; set; }
 
     /// <param name="projectDetails">
@@ -94,7 +93,7 @@ public class AddClaimViewModel : IProjectIdAware
         HasMasterAccess = accessArguments.MasterAccess;
 
         Fields = new CustomFieldsViewModel(claimSource, accessArguments.WithoutMasterAccess(), fieldUsers, overrideValues);
-        SenstiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
+        RequestedSensitiveData = RequestedSensitiveDataView.From(projectInfo.ProfileRequirementSettings);
         return this;
     }
 

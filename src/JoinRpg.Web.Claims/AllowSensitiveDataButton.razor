@@ -6,7 +6,7 @@
   Preset="ButtonPreset.Profile"
   Label="Разрешить доступ к защищённым данным"
   AutoConfirm="true"
-  AutoConfirmMessage="Мастера игры получат доступ к тем данным из вашего профиля, которые запросил проект (паспортные данные, адрес регистрации, дата рождения), пока проект активен и ваша заявка не отозвана"
+  AutoConfirmMessage="@RequestedSensitiveData.AllowConfirmation()"
   OnClick="OnClick"
   />
 <JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
@@ -14,6 +14,10 @@
     [Parameter]
     [EditorRequired]
     public ProjectIdentification ProjectId { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public RequestedSensitiveDataView RequestedSensitiveData { get; set; } = null!;
 
     private JoinMessageDialog errorDialog = null!;
     private string error = "";
@@ -28,12 +32,12 @@
         catch (ServerProblemException exception)
         {
             // Например, проект заблокирован — причину показываем как есть
-            ShowError(args, $"Не удалось разрешить доступ к паспортным данным: {exception.Message}");
+            ShowError(args, $"Не удалось разрешить доступ к защищённым данным: {exception.Message}");
         }
         catch (Exception exception)
         {
-            Logger.LogError(exception, "Ошибка при разрешении доступа к паспортным данным в проекте {ProjectId}", ProjectId);
-            ShowError(args, "Не удалось разрешить доступ к паспортным данным");
+            Logger.LogError(exception, "Ошибка при разрешении доступа к защищённым данным в проекте {ProjectId}", ProjectId);
+            ShowError(args, "Не удалось разрешить доступ к защищённым данным");
         }
     }
 

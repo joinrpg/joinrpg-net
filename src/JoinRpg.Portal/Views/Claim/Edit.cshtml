@@ -230,7 +230,7 @@
         {
             <component type="typeof(AcceptInvitationForm)" render-mode="WebAssemblyPrerendered"
                        param-ClaimId="Model.ClaimIdentification"
-                       param-SensitiveDataRequired="Model.SensitiveDataRequired" />
+                       param-RequestedSensitiveData="Model.RequestedSensitiveData" />
         }
 
         @* Панели мастерских действий — при тех же условиях, что и кнопки, которые их раскрывают. *@
@@ -432,7 +432,7 @@
     }
     @if (Model.Problems.Any(x => x.ProfileRelated) && Model.IsMyClaim)
     {
-        <component type="typeof(ClaimContactRequirements)" render-mode="WebAssemblyPrerendered" param-ClaimProblems="@Model.Problems" param-ProjectId="Model.ClaimIdentification.ProjectId" />
+        <component type="typeof(ClaimContactRequirements)" render-mode="WebAssemblyPrerendered" param-ClaimProblems="@Model.Problems" param-ProjectId="Model.ClaimIdentification.ProjectId" param-RequestedSensitiveData="Model.RequestedSensitiveData" />
     }
     @if (Model.Fields.AnythingAccessible)
     {

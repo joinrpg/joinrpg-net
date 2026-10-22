@@ -13,7 +13,7 @@
             <JoinProfileButton />
             @if (ClaimProblems.Any(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed))
             {
-                <AllowSensitiveDataButton ProjectId="ProjectId" />
+                <AllowSensitiveDataButton ProjectId="ProjectId" RequestedSensitiveData="RequestedSensitiveData" />
             }
         </JoinButtonGroup>
     </Body>
@@ -28,4 +28,8 @@
     [Parameter]
     [EditorRequired]
     public ProjectIdentification ProjectId { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public RequestedSensitiveDataView RequestedSensitiveData { get; set; }
 }

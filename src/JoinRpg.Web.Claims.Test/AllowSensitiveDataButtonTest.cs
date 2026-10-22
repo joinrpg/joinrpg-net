@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace JoinRpg.Web.Claims.Test;
 
 /// <summary>
-/// Кнопка «Разрешить доступ к паспортным данным»: раньше ошибку не ловила вовсе, кнопка молча зависала.
+/// Кнопка «Разрешить доступ к защищённым данным»: раньше ошибку не ловила вовсе, кнопка молча зависала.
 /// Причину отказа сервера показывает, сырой текст неожиданной ошибки — нет (#5735).
 /// </summary>
 public class AllowSensitiveDataButtonTest : BunitContext
@@ -30,9 +30,13 @@ public class AllowSensitiveDataButtonTest : BunitContext
 
     private async Task<IRenderedComponent<AllowSensitiveDataButton>> ClickAndConfirm()
     {
-        var cut = Render<AllowSensitiveDataButton>(parameters => parameters.Add(c => c.ProjectId, ProjectId));
+        var cut = Render<AllowSensitiveDataButton>(parameters => parameters
+            .Add(c => c.ProjectId, ProjectId)
+            .Add(c => c.RequestedSensitiveData, new RequestedSensitiveDataView(Passport: false, RegistrationAddress: false, BirthDate: true)));
         var click = cut.Find("button").ClickAsync(new MouseEventArgs());
         var confirm = cut.FindAll("dialog").Single(d => d.TextContent.Contains("Мастера игры получат доступ"));
+        // #5706: в подтверждении — только то, что запросил проект.
+        confirm.TextContent.ShouldContain("Мастера игры получат доступ к дате рождения из вашего профиля");
         await confirm.QuerySelectorAll("button").Single(b => b.TextContent.Contains("Разрешить доступ")).ClickAsync(new MouseEventArgs());
         await cut.FindAll("dialog").Single(d => d.TextContent.Contains("Мастера игры получат доступ"))
             .TriggerEventAsync("onclose", EventArgs.Empty);
@@ -48,7 +52,7 @@ public class AllowSensitiveDataButtonTest : BunitContext
         var cut = await ClickAndConfirm();
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain(
-            "Не удалось разрешить доступ к паспортным данным: Проект находится в архиве, изменения в нём невозможны"));
+            "Не удалось разрешить доступ к защищённым данным: Проект находится в архиве, изменения в нём невозможны"));
     }
 
     [Fact]
@@ -58,7 +62,7 @@ public class AllowSensitiveDataButtonTest : BunitContext
 
         var cut = await ClickAndConfirm();
 
-        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось разрешить доступ к паспортным данным"));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось разрешить доступ к защищённым данным"));
         cut.Markup.ShouldNotContain("Bad Gateway");
     }
 }

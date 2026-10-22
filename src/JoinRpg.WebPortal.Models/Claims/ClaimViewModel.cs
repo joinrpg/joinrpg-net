@@ -87,7 +87,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     [ReadOnly(true)]
     public bool AllowToSetGroups { get; }
 
-    public bool SensitiveDataRequired { get; }
+    public RequestedSensitiveDataView RequestedSensitiveData { get; }
     public ClaimSensitiveData SensitiveData { get; }
 
     /// <param name="claim">
@@ -184,7 +184,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
             linkRenderer);
         AccommodationModel = accommodationModel;
 
-        SensitiveDataRequired = projectInfo.ProfileRequirementSettings.SensitiveDataRequired;
+        RequestedSensitiveData = RequestedSensitiveDataView.From(projectInfo.ProfileRequirementSettings);
         // Из уже загруженного профиля в ClaimInfo, а не по ленивой навигации claim.Player.Extra.
         SensitiveData = claimInfo.SensitiveData;
     }
