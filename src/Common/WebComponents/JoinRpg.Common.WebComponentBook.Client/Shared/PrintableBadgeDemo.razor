@@ -1,0 +1,42 @@
+@using JoinRpg.Common.WebComponents.Badges
+
+<h3>PrintableBadge</h3>
+
+<p>
+    Бейдж для печати. Размеры — в миллиметрах. Шрифт строки подбирается от максимального вниз,
+    пока строка не влезет в ширину; если не влезает и на минимальном — переносится на вторую строку.
+</p>
+
+<p>
+    <label>Имя: <input @bind="name" @bind:event="oninput" style="width: 30em" /></label>
+    <label>Ширина, мм: <input type="number" @bind="widthMm" @bind:event="oninput" min="10" max="200" /></label>
+</p>
+
+@* Пунктирная рамка — только в демо, чтобы был виден размер бейджа без фона *@
+<div class="printable-badge-demo" style="display: flex; gap: 1em; flex-wrap: wrap; align-items: flex-start">
+    <PrintableBadge WidthMm="@widthMm" HeightMm="55" Lines="@Lines(name)" />
+    <PrintableBadge WidthMm="@widthMm" HeightMm="55" Lines="@Lines("Геральт")" />
+    <PrintableBadge WidthMm="@widthMm" HeightMm="55" Lines="@Lines("Эмгыр вар Эмрейс, Белое Пламя, Пляшущее на Курганах Врагов")" />
+    <PrintableBadge WidthMm="@widthMm" HeightMm="55" BackgroundUrl="@SampleBackground" Lines="@Lines("С фоновой картинкой")" />
+</div>
+
+@code {
+    private string name = "Цирилла Фиона Элен Рианнон";
+    private int widthMm = 90;
+
+    private const string SampleBackground =
+        "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='55'><defs><linearGradient id='g'><stop offset='0' stop-color='%23f5deb3'/><stop offset='1' stop-color='%23deb887'/></linearGradient></defs><rect width='90' height='55' fill='url(%23g)'/><rect x='3' y='3' width='84' height='49' fill='none' stroke='%238b4513' stroke-width='1'/></svg>";
+
+    private static IReadOnlyList<PrintableBadgeLine> Lines(string name) =>
+    [
+        new("Ведьмак: Каэр Морхен", TopMm: 5, MinFontPt: 8, MaxFontPt: 10, Bold: false),
+        new(name, TopMm: 18, MinFontPt: 12, MaxFontPt: 32, Bold: true),
+        new("Игрок: Иван Петров", TopMm: 42, MinFontPt: 8, MaxFontPt: 12, Bold: false),
+    ];
+}
+
+<style>
+    .printable-badge-demo > * {
+        outline: 1px dashed silver;
+    }
+</style>
