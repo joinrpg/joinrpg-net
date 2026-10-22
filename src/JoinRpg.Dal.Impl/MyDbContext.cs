@@ -238,6 +238,16 @@ public class MyDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<JoinRpg.DataModel.ProjectRolesList>()
             .HasIndex(prl => prl.ProjectId);
 
+        modelBuilder.Entity<ProjectBadgeTemplate>()
+            .HasRequired(t => t.Project)
+            .WithMany(p => p.ProjectBadgeTemplates)
+            .HasForeignKey(t => t.ProjectId)
+            .WillCascadeOnDelete(true);
+        modelBuilder.Entity<ProjectBadgeTemplate>().HasRequired(t => t.CreatedBy)
+            .WithMany().HasForeignKey(t => t.CreatedById).WillCascadeOnDelete(false);
+        modelBuilder.Entity<ProjectBadgeTemplate>().HasRequired(t => t.UpdatedBy)
+            .WithMany().HasForeignKey(t => t.UpdatedById).WillCascadeOnDelete(false);
+
         // AdvertisementLogEntry configuration
         modelBuilder.Entity<JoinRpg.DataModel.AdvertisementLogEntryEntity>()
             .ToTable("AdvertisementLogEntries");

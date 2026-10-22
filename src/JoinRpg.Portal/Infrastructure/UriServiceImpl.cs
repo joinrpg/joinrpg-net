@@ -3,6 +3,7 @@ using JoinRpg.DomainTypes.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
@@ -46,6 +47,7 @@ internal class UriServiceImpl(
     IUriLocator<MoneyTransferIdentification>,
     IUriLocator<ForumCommentIdentification>,
     IUriLocator<ProjectRolesListIdentification>,
+    IUriLocator<ProjectBadgeTemplateIdentification>,
     IUriLocator<AccommodationTypeIdentification>,
     IUriLocator<AccommodationRequestIdentification>,
     IUriLocator<AccommodationRoomIdentification>,
@@ -226,6 +228,10 @@ internal class UriServiceImpl(
     public Uri GetUri(ProjectRolesListIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/ProjectRoleListView",
             values: new { ProjectId = target.ProjectId.Value, Id = target.ProjectRolesListId }));
+
+    // Редактора шаблонов бейджей ещё нет — ведём на страницу печати проекта.
+    public Uri GetUri(ProjectBadgeTemplateIdentification target) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "Print", new { ProjectId = target.ProjectId.Value }));
 
     // Отдельной страницы у заявки на проживание и у приглашения нет — ведём на список комнат проекта.
     public Uri GetUri(AccommodationTypeIdentification target) => GetRoomsUri(target.ProjectId);
