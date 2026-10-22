@@ -12,6 +12,7 @@ using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
+using JoinRpg.Web.ProjectMasterTools.Badges;
 using JoinRpg.Web.Schedule;
 using Microsoft.Extensions.Options;
 
@@ -48,6 +49,7 @@ internal class UriServiceImpl(
     IUriLocator<ForumCommentIdentification>,
     IUriLocator<ProjectRolesListIdentification>,
     IUriLocator<ProjectBadgeTemplateIdentification>,
+    IBadgeTemplateUriLocator,
     IUriLocator<AccommodationTypeIdentification>,
     IUriLocator<AccommodationRequestIdentification>,
     IUriLocator<AccommodationRoomIdentification>,
@@ -231,9 +233,17 @@ internal class UriServiceImpl(
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/ProjectRoleListView",
             values: new { ProjectId = target.ProjectId.Value, Id = target.ProjectRolesListId }));
 
-    // Редактора шаблонов бейджей ещё нет — ведём на страницу печати проекта.
-    public Uri GetUri(ProjectBadgeTemplateIdentification target) =>
-        new(GetBaseDomain(), linkGenerator.GetPathByAction("Index", "Print", new { ProjectId = target.ProjectId.Value }));
+    public Uri GetUri(ProjectBadgeTemplateIdentification target) => ((IBadgeTemplateUriLocator)this).GetEditUri(target);
+
+    Uri IBadgeTemplateUriLocator.GetListUri(ProjectIdentification projectId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/BadgeTemplates", values: new { ProjectId = projectId.Value }));
+
+    Uri IBadgeTemplateUriLocator.GetCreateUri(ProjectIdentification projectId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/BadgeTemplateEdit", values: new { ProjectId = projectId.Value }));
+
+    Uri IBadgeTemplateUriLocator.GetEditUri(ProjectBadgeTemplateIdentification id) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/BadgeTemplateEdit",
+            values: new { ProjectId = id.ProjectId.Value, BadgeTemplateId = id.ProjectBadgeTemplateId }));
 
     // Отдельной страницы у заявки на проживание и у приглашения нет — ведём на список комнат проекта.
     public Uri GetUri(AccommodationTypeIdentification target) => GetRoomsUri(target.ProjectId);

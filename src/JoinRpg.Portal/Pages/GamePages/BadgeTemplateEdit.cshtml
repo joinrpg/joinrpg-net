@@ -1,0 +1,17 @@
+@page "/{projectId:int}/tools/badges/edit/{badgeTemplateId:int?}"
+@using JoinRpg.Web.ProjectMasterTools.Badges
+
+@model JoinRpg.Portal.Pages.GamePages.BadgeTemplateEditModel
+
+@{
+    ViewData["Title"] = Model.TemplateId is null ? "Новый шаблон бейджа" : "Редактирование шаблона бейджа";
+}
+
+<h3>@ViewData["Title"]</h3>
+
+@(await Html.RenderComponentAsync<BadgeTemplateEditForm>(RenderMode.WebAssembly, new
+{
+    Model.ProjectId,
+    BadgeTemplateId = Model.TemplateId,
+    Model.Model,
+}))

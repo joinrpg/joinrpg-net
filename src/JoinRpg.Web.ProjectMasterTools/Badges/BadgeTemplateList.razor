@@ -1,0 +1,120 @@
+@using JoinRpg.Common.WebComponents
+@using JoinRpg.DomainTypes.ProjectMetadata.Badges
+@inject IBadgeTemplateClient Client
+@inject IBadgeTemplateUriLocator UriLocator
+@inject ILogger<BadgeTemplateList> Logger
+@*
+    Список шаблонов бейджей проекта. Удалённые шаблоны остаются в списке — их можно восстановить.
+*@
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <JoinAlert Variation="VariationStyleEnum.Danger">@error</JoinAlert>
+}
+
+@if (model is null)
+{
+    <JoinLoadingMessage />
+    return;
+}
+
+@if (model.HasEditAccess)
+{
+    <p><JoinButton Link="@UriLocator.GetCreateUri(ProjectId).ToString()" Preset="ButtonPreset.Add" Label="Добавить шаблон" /></p>
+}
+
+@if (model.Items.Count == 0)
+{
+    <p>Шаблонов бейджей пока нет.</p>
+}
+else
+{
+    <JoinTableSimple>
+        <TableHeader>
+            <th>Название</th>
+            <th>Размер</th>
+            <th></th>
+        </TableHeader>
+        <TableBody>
+            @foreach (var item in model.Items)
+            {
+                <tr class="@(item.IsActive ? "" : "text-muted")">
+                    <td>
+                        @if (model.HasEditAccess && item.IsActive)
+                        {
+                            <a href="@UriLocator.GetEditUri(item.Id)">@item.Name</a>
+                        }
+                        else
+                        {
+                            @item.Name
+                        }
+                        @if (!item.IsActive)
+                        {
+                            <text> (удалён)</text>
+                        }
+                    </td>
+                    <td>@item.WidthMm × @item.HeightMm мм</td>
+                    <td>
+                        @if (model.HasEditAccess)
+                        {
+                            @if (item.IsActive)
+                            {
+                                <JoinButton Preset="ButtonPreset.Delete" Label="Удалить" Disabled="@busy" OnClick="@(() => Change(item.Id, Client.Remove))" />
+                            }
+                            else
+                            {
+                                <JoinButton Preset="ButtonPreset.Restore" Label="Восстановить" Disabled="@busy" OnClick="@(() => Change(item.Id, Client.Restore))" />
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </TableBody>
+    </JoinTableSimple>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private BadgeTemplateListViewModel? model;
+    private string? error;
+    private bool busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            model = await Client.GetList(ProjectId);
+        }
+        catch (Exception ex)
+        {
+            error = "Не удалось загрузить шаблоны бейджей";
+            Logger.LogError(ex, "Ошибка загрузки шаблонов бейджей");
+        }
+    }
+
+    private async Task Change(ProjectBadgeTemplateIdentification id, Func<ProjectBadgeTemplateIdentification, Task> action)
+    {
+        busy = true;
+        error = null;
+        try
+        {
+            await action(id);
+            model = await Client.GetList(ProjectId);
+        }
+        catch (ServerProblemException ex)
+        {
+            error = $"Ошибка: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            error = "Не удалось изменить шаблон бейджа";
+            Logger.LogError(ex, "Ошибка изменения шаблона бейджа {Id}", id);
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

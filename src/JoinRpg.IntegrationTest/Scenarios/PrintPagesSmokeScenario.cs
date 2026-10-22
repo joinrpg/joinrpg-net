@@ -161,6 +161,34 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         WebUtility.HtmlDecode(single.DocumentNode.SelectSingleNode("//title").InnerText).ShouldBe("Бейджи: Единственный шаблон");
     }
 
+    // Права в WebApi проверяются по projectId из query — шаблон чужого проекта по своему projectId не отдаётся:
+    // ни по числу (его склеивают с проверенным проектом), ни по полному id (его отклоняет биндер типизированных id).
+    [Fact]
+    public async Task BadgeTemplateApi_DoesNotLeakOtherProjectTemplate()
+    {
+        var context = await SeedAsync();
+        const string secret = "Шаблон чужого проекта";
+        ProjectBadgeTemplateIdentification foreignId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var otherMaster = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            var otherProject = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, otherMaster, "Чужой проект с бейджами");
+            foreignId = await factory.Services.RunAsAsync(
+                otherMaster,
+                sp => sp.GetRequiredService<IProjectBadgeTemplateService>().CreateAsync(
+                    otherProject, secret, new BadgeLayout(90, 55, null, [])));
+        }
+
+        foreach (var templateParam in new[] { foreignId.ProjectBadgeTemplateId.ToString(), foreignId.ToString() })
+        {
+            var response = await context.MasterClient.GetAsync(
+                $"webapi/badge-template/getbyid?projectId={context.ProjectId.Value}&badgeTemplateId={Uri.EscapeDataString(templateParam)}");
+
+            response.StatusCode.ShouldNotBe(HttpStatusCode.OK, templateParam);
+            (await response.Content.ReadAsStringAsync()).ShouldNotContain(secret);
+        }
+    }
+
     private static async Task<string> GetPrintPageText(SeedContext context, string action, string extraQuery = "")
     {
         var characterIds = new CompressedIntList([context.CharacterId.CharacterId]);
