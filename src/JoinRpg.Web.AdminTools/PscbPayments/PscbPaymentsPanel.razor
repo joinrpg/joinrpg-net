@@ -132,6 +132,60 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if (list.UnresolvedProjects.Count > 0)
+                {
+                    <h4>Проекты, которые не удалось определить</h4>
+                    <p class="text-muted">
+                        Название из назначения платежа не нашлось или нашлось неоднозначно —
+                        в таблице выше такие платежи идут без ссылки на проект.
+                    </p>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Платежей</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var project in list.UnresolvedProjects)
+                            {
+                                <tr>
+                                    <td>@project.ProjectName</td>
+                                    <td>@project.PaymentCount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                @if (list.UnresolvedUsers.Count > 0)
+                {
+                    <h4>Пользователи, которые не найдены</h4>
+                    <p class="text-muted">
+                        Ни id из платежа, ни email плательщика в системе не нашлись — в таблице выше
+                        такие платежи идут без ссылки на пользователя.
+                    </p>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>id из платежа</th>
+                                <th>Email</th>
+                                <th>Платежей</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in list.UnresolvedUsers)
+                            {
+                                <tr>
+                                    <td>@user.UserId</td>
+                                    <td>@user.Email</td>
+                                    <td>@user.PaymentCount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
             }
         }
     </Body>

@@ -15,7 +15,9 @@ namespace JoinRpg.XGameApi.Contract.Pscb;
 /// </para>
 /// <para>
 /// <see cref="UserUrl"/> and <see cref="ProjectUrl"/> are ours, not the bank's: both are looked up
-/// in the JoinRpg database, and a row whose payer or project was not found carries no link.
+/// in the JoinRpg database, and a row whose payer or project was not found carries no link and is
+/// reported in <see cref="PscbPaymentsListResult.UnresolvedUsers"/> or
+/// <see cref="PscbPaymentsListResult.UnresolvedProjects"/>.
 /// </para>
 /// </remarks>
 public class PscbPaymentListRow

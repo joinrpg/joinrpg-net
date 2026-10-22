@@ -18,7 +18,8 @@ using PscbApi;
 namespace JoinRpg.WebPortal.Managers.Test.AdminTools;
 
 /// <summary>
-/// Простановка ссылок на пользователя и проект в списке платежей (ADR025).
+/// Простановка ссылок на пользователя и проект в списке платежей и списки тех, кого найти
+/// не удалось (ADR025).
 /// </summary>
 /// <remarks>
 /// На живой базе это не проверить: платежи приходят из боевого магазина, а проекты и пользователи
@@ -43,6 +44,8 @@ public class PscbPaymentsViewServiceTests
         row.ProjectName.ShouldBe("Проект");
         row.UserUrl.ShouldBe("https://joinrpg.test/user/42");
         row.ProjectUrl.ShouldBe("https://joinrpg.test/7/home");
+        result.UnresolvedUsers.ShouldBeEmpty();
+        result.UnresolvedProjects.ShouldBeEmpty();
     }
 
     [Fact]
@@ -76,6 +79,7 @@ public class PscbPaymentsViewServiceTests
         var row = result.Payments.ShouldHaveSingleItem();
         row.UserId.ShouldBe("999");
         row.UserUrl.ShouldBe("https://joinrpg.test/user/7");
+        result.UnresolvedUsers.ShouldBeEmpty();
     }
 
     /// <summary>
@@ -139,6 +143,82 @@ public class PscbPaymentsViewServiceTests
         users.IdRequests.ShouldBe([42, 43]);
     }
 
+    /// <summary>
+    /// Кого не нашли ни по id, ни по email — отдельным списком, по одному разу на плательщика
+    /// и со счётчиком его платежей.
+    /// </summary>
+    [Fact]
+    public async Task CollectsThePayersThatWereNotFound()
+    {
+        var service = CreateService(
+            new FakeSearchService(),
+            new FakeUserRepository(),
+            Payment("1", account: "999", details: null, email: "vasya@example.com"),
+            Payment("2", account: "999", details: null, email: "vasya@example.com"),
+            Payment("3", account: "not-a-number", details: null));
+
+        var result = await service.GetPayments(Query());
+
+        result.Payments.ShouldAllBe(row => row.UserUrl == null);
+
+        var unresolved = result.UnresolvedUsers.ToList();
+        unresolved.Count.ShouldBe(2);
+        unresolved[0].UserId.ShouldBe("999");
+        unresolved[0].Email.ShouldBe("vasya@example.com");
+        unresolved[0].PaymentCount.ShouldBe(2);
+        unresolved[1].UserId.ShouldBe("not-a-number");
+        unresolved[1].Email.ShouldBeNull();
+        unresolved[1].PaymentCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// id плательщика — число, поэтому и порядок в списке числовой: как текст «1181» встал бы
+    /// раньше «126». Значения, которые числом не являются, идут в конце — даже те, что как текст
+    /// встали бы первыми.
+    /// </summary>
+    [Fact]
+    public async Task OrdersThePayersByTheirIdAsANumber()
+    {
+        var service = CreateService(
+            new FakeSearchService(),
+            new FakeUserRepository(),
+            Payment("1", account: "1181", details: null),
+            Payment("2", account: "126", details: null),
+            Payment("3", account: "not-a-number", details: null),
+            Payment("4", account: "7", details: null),
+            Payment("5", account: "!broken", details: null));
+
+        var result = await service.GetPayments(Query());
+
+        result.UnresolvedUsers.Select(user => user.UserId).ShouldBe(["7", "126", "1181", "!broken", "not-a-number"]);
+    }
+
+    /// <summary>
+    /// Названия, которые не удалось связать с проектом, — отдельным списком со счётчиком платежей.
+    /// Сюда же попадает назначение, которое проектом не является вовсе (рекуррентная подписка).
+    /// </summary>
+    [Fact]
+    public async Task CollectsThePurposesThatWereNotResolvedIntoAProject()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var service = CreateService(
+            search,
+            Users(42),
+            Payment("1", account: "42", details: TicketPurpose("Проект")),
+            Payment("2", account: "42", details: TicketPurpose("Другой")),
+            Payment("3", account: "42", details: TicketPurpose("Другой")),
+            Payment("4", account: "42", details: "Подписка пользователя на Сервисы JoinRpg"));
+
+        var result = await service.GetPayments(Query());
+
+        result.UnresolvedProjects.Count.ShouldBe(2);
+        result.UnresolvedProjects.First().ProjectName.ShouldBe("Другой");
+        result.UnresolvedProjects.First().PaymentCount.ShouldBe(2);
+        result.UnresolvedProjects.Last().ProjectName.ShouldBe("Подписка пользователя на Сервисы JoinRpg");
+        result.UnresolvedProjects.Last().PaymentCount.ShouldBe(1);
+    }
+
     [Fact]
     public async Task LeavesTheProjectLinkEmptyWhenNothingWasFound()
     {
@@ -167,7 +247,8 @@ public class PscbPaymentsViewServiceTests
     }
 
     /// <summary>
-    /// При нескольких проектах с одним именем ссылка вела бы на случайный из них, поэтому её нет.
+    /// При нескольких проектах с одним именем ссылка вела бы на случайный из них, поэтому её нет,
+    /// а имя попадает в список неопознанных.
     /// </summary>
     [Fact]
     public async Task LeavesTheProjectLinkEmptyWhenTheNameIsAmbiguous()
@@ -177,9 +258,11 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(9, "Проект");
         var service = CreateService(search, Users(42), Payment("1", account: "42", details: TicketPurpose("Проект")));
 
-        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+        var result = await service.GetPayments(Query());
 
+        var row = result.Payments.ShouldHaveSingleItem();
         row.ProjectUrl.ShouldBeNull();
+        result.UnresolvedProjects.ShouldHaveSingleItem().ProjectName.ShouldBe("Проект");
     }
 
     /// <summary>

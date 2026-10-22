@@ -38,6 +38,19 @@ public class PscbPaymentsListResult
     public IReadOnlyCollection<PscbPaymentListRow> Payments { get; set; } = [];
 
     /// <summary>
+    /// Purposes that could not be linked to a project, one entry per distinct name. Empty when
+    /// every purpose resolved, or when the links could not be built at all
+    /// </summary>
+    public IReadOnlyCollection<PscbUnresolvedProject> UnresolvedProjects { get; set; } = [];
+
+    /// <summary>
+    /// Payers that were not found in JoinRpg, one entry per distinct payer. Their payments carry
+    /// no link to a profile. Ordered by the payer's id as a number — an id that is not a number
+    /// comes last
+    /// </summary>
+    public IReadOnlyCollection<PscbUnresolvedUser> UnresolvedUsers { get; set; } = [];
+
+    /// <summary>
     /// How many requests to the bank the period was split into
     /// </summary>
     public int RequestCount { get; set; }

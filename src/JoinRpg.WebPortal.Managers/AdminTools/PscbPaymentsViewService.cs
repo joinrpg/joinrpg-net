@@ -17,7 +17,8 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 /// Данные платежа берутся у банка как есть, а ссылки — наши: <c>account</c> это id пользователя
 /// в нашей базе, а название проекта извлекается из назначения платежа, которое JoinRpg формирует
 /// сам. И пользователь, и проект ищутся в базе: строка, для которой ничего не нашлось, остаётся
-/// без ссылки.
+/// без ссылки, а то, что не нашлось, отдаётся отдельными списками — по ним админ видит, какие
+/// платежи не удалось атрибутировать.
 /// </para>
 /// <para>
 /// Права проверяет контроллер: шлюз показывает платежи магазина целиком, а не по проектам,
@@ -57,7 +58,7 @@ internal class PscbPaymentsViewService(
             var result = PscbPaymentViewModelBuilder.BuildList(info, requestCount);
             if (result.IsSuccess)
             {
-                await FillLinksAsync(result.Payments);
+                await FillLinksAsync(result);
             }
             return result;
         }
@@ -96,18 +97,18 @@ internal class PscbPaymentsViewService(
     }
 
     /// <summary>
-    /// Проставляет ссылки на пользователя и проект.
+    /// Проставляет ссылки на пользователя и проект и собирает то, что не нашлось.
     /// </summary>
     /// <remarks>
     /// Ссылки — дополнение к данным банка, а не их часть, поэтому их поломка не должна уносить
-    /// уже полученный список: ошибка логируется, ссылки остаются пустыми.
+    /// уже полученный список: ошибка логируется, ссылки и списки остаются пустыми.
     /// </remarks>
-    private async Task FillLinksAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
+    private async Task FillLinksAsync(PscbPaymentsListResult result)
     {
         try
         {
-            await FillUserLinksAsync(rows);
-            await FillProjectLinksAsync(rows);
+            await FillUserLinksAsync(result);
+            await FillProjectLinksAsync(result);
         }
         catch (Exception ex)
         {
@@ -124,18 +125,43 @@ internal class PscbPaymentsViewService(
     /// удалён или объединён, а платёж создан не через JoinRpg. Найденный по email пользователь
     /// может иметь другой id, и ссылка ведёт на него — база первоисточник, а не значение из платежа.
     /// </remarks>
-    private async Task FillUserLinksAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
+    private async Task FillUserLinksAsync(PscbPaymentsListResult result)
     {
-        var existingIds = await LoadExistingUserIdsAsync(rows);
-        var idsByEmail = await FindUsersByEmailAsync(rows, existingIds);
+        var existingIds = await LoadExistingUserIdsAsync(result.Payments);
+        var idsByEmail = await FindUsersByEmailAsync(result.Payments, existingIds);
+        var unresolved = new Dictionary<string, PscbUnresolvedUser>(StringComparer.Ordinal);
 
-        foreach (var row in rows)
+        foreach (var row in result.Payments)
         {
             if (ResolveUserId(row, existingIds, idsByEmail) is { } userId)
             {
                 row.UserUrl = uriService.Get(new UserLinkable(userId));
+                continue;
+            }
+
+            // Нечего ни искать, ни показывать: строка не называет плательщика никак.
+            if (string.IsNullOrWhiteSpace(row.UserId) && string.IsNullOrWhiteSpace(row.UserEmail))
+            {
+                continue;
+            }
+
+            var key = $"{row.UserId}|{row.UserEmail}";
+            if (unresolved.TryGetValue(key, out var entry))
+            {
+                entry.PaymentCount++;
+            }
+            else
+            {
+                unresolved[key] = new PscbUnresolvedUser { UserId = row.UserId, Email = row.UserEmail, PaymentCount = 1 };
             }
         }
+
+        // id плательщика — число, поэтому и порядок числовой: как текст «1181» встал бы раньше «126».
+        // Значения, которые числом не являются, идут в конце, а email разбирает совпадения.
+        result.UnresolvedUsers = [.. unresolved.Values
+            .OrderBy(user => (NotANumber: ParseUserId(user.UserId) is null, Id: ParseUserId(user.UserId) ?? 0))
+            .ThenBy(user => user.UserId, StringComparer.Ordinal)
+            .ThenBy(user => user.Email, StringComparer.Ordinal)];
     }
 
     /// <summary>
@@ -199,28 +225,45 @@ internal class PscbPaymentsViewService(
     private static int? ParseUserId(string? account)
         => int.TryParse(account, NumberStyles.Integer, CultureInfo.InvariantCulture, out var userId) ? userId : null;
 
-    private async Task FillProjectLinksAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
+    private async Task FillProjectLinksAsync(PscbPaymentsListResult result)
     {
         // Поиск идёт по названию, а названий в выгрузке за месяц единицы при сотнях платежей,
         // поэтому запрос к базе один на distinct-название, а не один на платёж.
         var urls = new Dictionary<string, string?>(StringComparer.Ordinal);
-        foreach (var name in rows
-                     .Select(row => row.ProjectName)
-                     .OfType<string>()
-                     .Where(name => !string.IsNullOrWhiteSpace(name))
-                     .Distinct(StringComparer.Ordinal))
+        foreach (var name in DistinctProjectNames(result.Payments))
         {
             urls[name] = await FindProjectUrlAsync(name);
         }
 
-        foreach (var row in rows)
+        var unresolved = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var row in result.Payments)
         {
-            if (row.ProjectName is { } name && urls.TryGetValue(name, out var url))
+            if (row.ProjectName is not { } name || string.IsNullOrWhiteSpace(name))
+            {
+                continue;
+            }
+
+            if (urls.TryGetValue(name, out var url) && url is not null)
             {
                 row.ProjectUrl = url;
+                continue;
             }
+
+            unresolved[name] = unresolved.GetValueOrDefault(name) + 1;
         }
+
+        result.UnresolvedProjects = [.. unresolved
+            .OrderByDescending(pair => pair.Value)
+            .ThenBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair => new PscbUnresolvedProject { ProjectName = pair.Key, PaymentCount = pair.Value })];
     }
+
+    private static IEnumerable<string> DistinctProjectNames(IEnumerable<PscbPaymentListRow> rows)
+        => rows
+            .Select(row => row.ProjectName)
+            .OfType<string>()
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.Ordinal);
 
     /// <summary>
     /// Ссылка на проект с точно таким названием.
