@@ -1,8 +1,10 @@
 using JoinRpg.Services.Impl.Projects.Create;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Services.Impl.Projects;
 
@@ -17,7 +19,9 @@ internal partial class CreateProjectService
     ILogger<CreateProjectService> logger,
     CloneProjectHelperFactory cloneProjectHelperFactory,
     IProjectPropsService projectPropsService,
-    IAdminNotificationService adminNotificationService
+    IAdminNotificationService adminNotificationService,
+    IProjectAccessService projectAccessService,
+    IOptions<RoleTimeOptions> roleTimeOptions
     ) : ICreateProjectService
 {
 

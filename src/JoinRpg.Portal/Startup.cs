@@ -30,6 +30,7 @@ using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Services.Notifications;
 using JoinRpg.Services.Notifications.Senders;
 using JoinRpg.WebPortal.Managers;
@@ -58,6 +59,7 @@ public class Startup(WebApplicationBuilder builder)
             .Configure<TelegramLoginOptions>(Configuration.GetSection("Telegram"))
             .Configure<DonateOptions>(Configuration.GetSection("Donate"))
             .Configure<DrpOptions>(Configuration.GetSection("Drp"))
+            .Configure<RoleTimeOptions>(Configuration.GetSection("RoleTime"))
             .Configure<KogdaIgraOptions>(Configuration.GetSection("KogdaIgra"));
 
         services.AddOptions<RobotsTxtOptions>()
