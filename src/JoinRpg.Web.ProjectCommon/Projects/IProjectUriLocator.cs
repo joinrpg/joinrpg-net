@@ -17,4 +17,7 @@ public interface IProjectUriLocator
 
     /// <summary>Печать выбранных персонажей.</summary>
     Uri GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds);
+
+    /// <summary>Бейджи выбранных персонажей; шаблон выбирается на открывшейся странице, если их несколько.</summary>
+    Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds);
 }

@@ -23,6 +23,9 @@ public class ListOperationsButtonsTest
         public Uri GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
             => UriFor($"print/{characterIds.Count}");
 
+        public Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
+            => UriFor($"badges/{characterIds.Count}");
+
         public Uri GetClaimListUri(CharacterGroupIdentification groupId) => UriFor("claims");
         public Uri GetDiscussingClaimListUri(CharacterGroupIdentification groupId) => UriFor("discussing");
         public Uri GetCharacterListUri(CharacterGroupIdentification groupId) => UriFor("characters");
@@ -115,7 +118,7 @@ public class ListOperationsButtonsTest
     }
 
     [Fact]
-    public void Print_ForCharacters()
+    public void PrintAndBadges_ForCharacters()
     {
         using var ctx = CreateContext();
         var cut = ctx.Render<ListOperationsButtons>(p => p
@@ -123,6 +126,8 @@ public class ListOperationsButtonsTest
             .Add(x => x.ProjectId, ProjectId)
             .Add(x => x.CharacterIds, [new CharacterIdentification(ProjectId, 7)]));
 
-        Links(cut).ShouldBe(["/export", "https://example.org/print/1"]);
+        Links(cut).ShouldBe(["/export", "https://example.org/print/1", "https://example.org/badges/1"]);
+        // Основное действие — «Распечатать все», бейджи — в выпадающем меню рядом.
+        cut.Find("details.join-dropdown a").GetAttribute("href").ShouldBe("https://example.org/badges/1");
     }
 }

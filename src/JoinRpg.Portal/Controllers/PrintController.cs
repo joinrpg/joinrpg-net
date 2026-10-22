@@ -111,10 +111,7 @@ public class PrintController(
         // Странице нужны только идентификаторы ссылок, поэтому лёгкая проекция, а не агрегаты.
         var characters = await characterInfoRepository.GetCharactersForList(projectId, CharacterStatusSpec.Active);
 
-        var badgeTemplates = (await badgeTemplateRepository.GetForProjectAsync(projectId))
-            .Where(template => template.IsActive)
-            .Select(template => new BadgeTemplateLink(template.Id.ProjectBadgeTemplateId, template.Name))
-            .ToList();
+        var badgeTemplates = await GetActiveBadgeTemplates(projectId);
 
         return View(new PrintIndexViewModel(projectId, [.. characters.Select(character => character.Id)], badgeTemplates));
     }
@@ -133,16 +130,39 @@ public class PrintController(
     public async Task<ActionResult> Stickers(ProjectIdentification projectId, CompressedIntList characterIds)
         => View(await printViewService.GetEnvelopesForActiveCharacters(characterIds.ToCharacterIds(projectId)));
 
-    /// <summary>Бейджи перечисленных активных персонажей по шаблону, сеткой на A4.</summary>
+    /// <summary>
+    /// Бейджи перечисленных активных персонажей по шаблону, сеткой на A4. Без шаблона (кнопка над
+    /// списком персонажей): единственный шаблон проекта берётся сразу, из нескольких — выбрать.
+    /// </summary>
     [MasterAuthorize()]
     [HttpGet]
-    public async Task<ActionResult> Badges(ProjectIdentification projectId, int badgeTemplateId, CompressedIntList characterIds)
+    public async Task<ActionResult> Badges(ProjectIdentification projectId, int? badgeTemplateId, CompressedIntList? characterIds)
     {
+        if (characterIds is null)
+        {
+            return BadRequest();
+        }
+
+        if (badgeTemplateId is null)
+        {
+            var templates = await GetActiveBadgeTemplates(projectId);
+            if (templates.Count != 1)
+            {
+                return View("BadgesChooseTemplate", new BadgeTemplateChoiceViewModel(projectId, characterIds.ToString(), templates));
+            }
+            badgeTemplateId = templates.Single().BadgeTemplateId;
+        }
+
         var model = await badgePrintService.GetBadges(
-            new ProjectBadgeTemplateIdentification(projectId, badgeTemplateId),
+            new ProjectBadgeTemplateIdentification(projectId, badgeTemplateId.Value),
             characterIds.ToCharacterIds(projectId));
         return model is null ? NotFound() : View(model);
     }
+
+    private async Task<List<BadgeTemplateLink>> GetActiveBadgeTemplates(ProjectIdentification projectId)
+        => [.. (await badgeTemplateRepository.GetForProjectAsync(projectId))
+            .Where(template => template.IsActive)
+            .Select(template => new BadgeTemplateLink(template.Id.ProjectBadgeTemplateId, template.Name))];
 
     [MasterAuthorize()]
     [HttpGet]

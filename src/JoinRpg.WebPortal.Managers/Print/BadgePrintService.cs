@@ -44,13 +44,13 @@ public class BadgePrintService(
             .OrderBy(c => c.CharacterName, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
-        var values = characters.Select(c => c.GetAllFields(c.ApprovedClaim?.ClaimId).ToDictionary(f => f.Field.Id.ProjectFieldId)).ToList();
+        var values = characters.Select(c => c.GetAllFieldsDict(c.ApprovedClaim?.ClaimId)).ToList();
         var users = await userRepository.LoadFieldUserLinks(values.SelectMany(v => v.Values));
 
         var badges = values
             .Select(characterValues => (IReadOnlyList<PrintableBadgeLine>)[.. template.Layout.Lines.Select(line =>
                 new PrintableBadgeLine(
-                    LineText(line, characterValues, users),
+                    LineText(line, templateId.ProjectId, characterValues, users),
                     line.TopMm,
                     line.MinFontPt,
                     line.MaxFontPt,
@@ -68,7 +68,8 @@ public class BadgePrintService(
 
     private static string LineText(
         BadgeLine line,
-        IReadOnlyDictionary<int, FieldWithValue> characterValues,
+        ProjectIdentification templateProjectId,
+        IReadOnlyDictionary<ProjectFieldIdentification, FieldWithValue> characterValues,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> users)
     {
         if (line.ProjectFieldId is not int fieldId)
@@ -78,7 +79,7 @@ public class BadgePrintService(
 
         // Агрегат отдаёт и значения удалённых полей, но печатать их нельзя: страница предупреждает,
         // что строка будет пустой, — так мастер увидит проблему в шаблоне, а не старое значение.
-        if (characterValues.GetValueOrDefault(fieldId) is not { Field.IsActive: true } value)
+        if (characterValues.GetValueOrDefault(new ProjectFieldIdentification(templateProjectId, fieldId)) is not { Field.IsActive: true } value)
         {
             return "";
         }

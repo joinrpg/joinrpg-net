@@ -135,6 +135,9 @@ public static class UriLocatorExtensions
         Uri IProjectUriLocator.GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
             new($"/{projectId.Value}/print/CharacterList?CharacterIds={new CompressedIntList(characterIds)}", UriKind.Relative);
 
+        Uri IProjectUriLocator.GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
+            new($"/{projectId.Value}/print/Badges?CharacterIds={new CompressedIntList(characterIds)}", UriKind.Relative);
+
         Uri IPlotUriLocator.GetElementInFolderUri(PlotElementIdentification elementId) =>
             new($"/{elementId.ProjectId.Value}/plots/edit?PlotFolderId={elementId.PlotFolderId.PlotFolderId}#{PlotElementAnchor.For(elementId)}", UriKind.Relative);
 
