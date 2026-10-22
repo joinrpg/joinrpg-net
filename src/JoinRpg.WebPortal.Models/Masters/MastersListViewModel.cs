@@ -11,7 +11,12 @@ public class MastersListViewModel
     public IReadOnlyCollection<AclViewModel> Masters { get; }
 
     /// <summary>Те же мастера, в том же порядке, — для JoinMoveControl в каждой строке.</summary>
-    public IReadOnlyCollection<MasterMoveItemViewModel> MoveItems { get; }
+    /// <remarks>
+    /// Именно массив, а не <c>IReadOnlyCollection</c>: уходит параметром в WASM-остров, а Blazor
+    /// передаёт туда runtime-тип значения. Collection expression в интерфейс даёт
+    /// compiler-generated <c>&lt;&gt;z__ReadOnlyList</c> из этой сборки, которого в браузере нет (#5806).
+    /// </remarks>
+    public MasterMoveItemViewModel[] MoveItems { get; }
 
     public bool CanCurrentUserGrantRights { get; }
 

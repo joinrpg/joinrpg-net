@@ -47,6 +47,16 @@ public class MasterCardAccessReasonTest
         card.Email.ShouldBeNull();
     }
 
+    /// <summary>
+    /// MoveItems уходит параметром в WASM-остров вместе со своим runtime-типом. Тип из этой сборки
+    /// (например, compiler-generated <c>&lt;&gt;z__ReadOnlyList</c>) в браузере не находится — остров падает (#5806).
+    /// У массива сборка — это сборка элемента, она в WASM есть.
+    /// </summary>
+    [Fact]
+    public void MoveItems_HasRuntimeTypeAvailableInWasm()
+        => ListFor(ActiveGameMaster, OtherMaster).MoveItems.GetType().Assembly
+            .ShouldNotBe(typeof(MastersListViewModel).Assembly);
+
     /// <summary>Карточка в проекте (перегрузка билдера с ProjectInfo) тоже получает аватарку из UserInfo.</summary>
     [Fact]
     public void MasterCard_HasAvatarFromUserInfo()
