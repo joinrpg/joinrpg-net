@@ -32,7 +32,7 @@ public static class UserProfileProblemsCalculator
     /// не считаются недостающими — вызывающая сторона показывает вместо этого отдельную проблему
     /// про отсутствие доступа (см. <c>ClaimContactsMissingFilter</c>).
     /// </param>
-    public static IReadOnlyCollection<UserProfileProjectProblem> GetProblems(
+    internal static IReadOnlyCollection<UserProfileProjectProblem> GetProblems(
         IReadOnlyCollection<UserProfileItemType> missingItems,
         ProjectProfileRequirementSettings requirementSettings,
         bool sensitiveDataAccessAllowed = true)
@@ -69,10 +69,10 @@ public static class UserProfileProblemsCalculator
     /// иначе она не попадает в «Проблемные заявки». Подачу заявки это не блокирует —
     /// <c>ClaimValidator</c> паспорт/адрес не проверяет.
     /// </summary>
-    public static ProblemSeverity? ToSensitiveDataSeverity(MandatoryStatus requirement)
+    private static ProblemSeverity? ToSensitiveDataSeverity(MandatoryStatus requirement)
         => requirement == MandatoryStatus.Optional ? null : ProblemSeverity.Warning;
 
-    public static ProblemSeverity? ToSeverity(MandatoryStatus requirement) => requirement switch
+    internal static ProblemSeverity? ToSeverity(MandatoryStatus requirement) => requirement switch
     {
         MandatoryStatus.Optional => null,
         MandatoryStatus.Recommended => ProblemSeverity.Hint,

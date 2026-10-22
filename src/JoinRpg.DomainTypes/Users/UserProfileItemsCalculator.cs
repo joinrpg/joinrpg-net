@@ -4,21 +4,28 @@ namespace JoinRpg.DomainTypes.Users;
 /// Вычисляет, какие элементы профиля пользователя не заполнены. Не знает о настройках проекта —
 /// только о самих фактах (есть телеграм/вк/телефон/ФИО или нет).
 /// </summary>
-public static class UserProfileItemsCalculator
+internal static class UserProfileItemsCalculator
 {
     /// <summary>
-    /// Минимальная длина значения телефона/ФИО, при которой оно считается заполненным.
+    /// Минимальная длина телефона, при которой он считается заполненным.
     /// </summary>
-    public const int MinContactLength = 5;
+    private const int MinContactLength = 5;
 
     /// <summary>
     /// Минимальная длина паспортных данных/адреса регистрации, при которой они считаются
     /// заполненными. Серия с номером паспорта — уже 10 символов, поэтому общий порог контактов
     /// пропускал заведомо неполные значения.
     /// </summary>
-    public const int MinSensitiveDataLength = 20;
+    internal const int MinSensitiveDataLength = 20;
 
-    public static bool IsCorrectContact(string? value) => (value?.Length ?? 0) >= MinContactLength;
+    private static bool IsCorrectContact(string? value) => (value?.Length ?? 0) >= MinContactLength;
+
+    /// <summary>
+    /// ФИО заполнено, только если указаны все три части: имя, фамилия и отчество.
+    /// </summary>
+    // TODO(#5780): дать человеку указать, что отчества у него нет, — тогда без него ФИО тоже заполнено.
+    private static bool IsCorrectFullName(UserFullName fullName)
+        => fullName is { BornName: not null, SurName: not null, FatherName: not null };
 
     private static bool IsCorrectSensitiveData(string? value) => (value?.Length ?? 0) >= MinSensitiveDataLength;
 
@@ -32,7 +39,7 @@ public static class UserProfileItemsCalculator
         bool hasTelegram,
         bool hasVerifiedVkontakte,
         string? phoneNumber,
-        string? fullName,
+        UserFullName fullName,
         string? passportData = null,
         string? registrationAddress = null,
         DateOnly? birthDate = null)
@@ -51,7 +58,7 @@ public static class UserProfileItemsCalculator
         {
             missing.Add(UserProfileItemType.Phone);
         }
-        if (!IsCorrectContact(fullName))
+        if (!IsCorrectFullName(fullName))
         {
             missing.Add(UserProfileItemType.RealName);
         }

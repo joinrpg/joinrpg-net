@@ -222,9 +222,22 @@ public class AddClaimValidationRulesTest
             ProjectProfileRequirementSettings.AllNotRequired with { RequireRealName = MandatoryStatus.Required });
         var playerWithRealName = Mock.PlayerInfo with
         {
-            UserFullName = new UserFullName(new PrefferedName("Player"), new BornName("Иван"), new SurName("Иванов"), null),
+            UserFullName = new UserFullName(new PrefferedName("Player"), new BornName("Иван"), new SurName("Иванов"), new FatherName("Иванович")),
         };
         Mock.Character.ValidateIfCanAddClaim(Mock, playerWithRealName, projectInfo, ClaimOperation.AddByPlayer).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CantSendClaimIfRealNameRequiredButFatherNameMissing()
+    {
+        var projectInfo = Mock.ProjectInfo.WithProfileRequirementSettings(
+            ProjectProfileRequirementSettings.AllNotRequired with { RequireRealName = MandatoryStatus.Required });
+        var playerWithoutFatherName = Mock.PlayerInfo with
+        {
+            UserFullName = new UserFullName(new PrefferedName("Player"), new BornName("Иван"), new SurName("Иванов"), null),
+        };
+        Mock.Character.ValidateIfCanAddClaim(Mock, playerWithoutFatherName, projectInfo, ClaimOperation.AddByPlayer).Kinds()
+            .ShouldContain(AddClaimForbideReason.RealNameMissing);
     }
 
     /// <summary>

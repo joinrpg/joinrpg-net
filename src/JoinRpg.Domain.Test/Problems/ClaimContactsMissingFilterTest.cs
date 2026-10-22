@@ -104,11 +104,31 @@ public class ClaimContactsMissingFilterTest
                 PrefferedName.FromOptional("Player"),
                 BornName.FromOptional("Иван"),
                 SurName.FromOptional("Иванов"),
-                FatherName: null),
+                FatherName.FromOptional("Иванович")),
         };
 
         Filter.GetProblems(MakeContext(projectInfo, player: player))
             .ShouldNotContain(p => p.ProblemType == ClaimProblemType.MissingRealname);
+    }
+
+    [Theory]
+    [InlineData(null, "Иванов", "Иванович")]
+    [InlineData("Иван", null, "Иванович")]
+    [InlineData("Иван", "Иванов", null)]
+    public void RealNameMissingWhenPartiallyFilled(string? bornName, string? surName, string? fatherName)
+    {
+        var projectInfo = WithRequirement(s => s with { RequireRealName = MandatoryStatus.Required });
+        var player = Mock.PlayerInfo with
+        {
+            UserFullName = new UserFullName(
+                PrefferedName.FromOptional("Player"),
+                BornName.FromOptional(bornName),
+                SurName.FromOptional(surName),
+                FatherName.FromOptional(fatherName)),
+        };
+
+        Filter.GetProblems(MakeContext(projectInfo, player: player))
+            .ShouldContain(p => p.ProblemType == ClaimProblemType.MissingRealname);
     }
 
     [Fact]
