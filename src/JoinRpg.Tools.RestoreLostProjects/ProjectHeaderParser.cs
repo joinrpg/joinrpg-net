@@ -45,11 +45,13 @@ internal static class ProjectHeaderParser
     }
 
     /// <summary>
-    /// Может ли уведомление быть массовой рассылкой «{Проект}: {тема}»: рассылки ссылаются на сам
-    /// проект (ProjectId), а название проекта в заголовке у них только с 2026-09-28.
+    /// Может ли уведомление быть массовой рассылкой «{Проект}: {тема}». Рассылки ссылаются на весь проект,
+    /// а не на его часть: мастерам — на сам проект (ProjectId), игрокам с #5752 — на «мою заявку»
+    /// (MyClaimInProjectId). Название проекта в заголовке у них только с 2026-09-28.
     /// </summary>
-    public static bool MayBeMassMail(DateTimeOffset createdAt, bool referencesProject)
-        => referencesProject && createdAt >= ProjectInMassMailSince;
+    /// <param name="projectWide">Ссылается ли уведомление на весь проект — см. выше.</param>
+    public static bool MayBeMassMail(DateTimeOffset createdAt, bool projectWide)
+        => projectWide && createdAt >= ProjectInMassMailSince;
 
     /// <summary>
     /// Все варианты названия проекта, которые допускает заголовок, — от короткого к длинному.

@@ -85,7 +85,7 @@ public class ProjectHeaderParserTest
     [InlineData("2026-09-27T23:59:59Z", true, false)]
     [InlineData("2026-09-28T00:00:00Z", true, true)]
     [InlineData("2026-10-01T00:00:00Z", false, false)]
-    public void MassMailOnlyAfter20260928AndOnProject(string createdAt, bool referencesProject, bool expected)
-        => ProjectHeaderParser.MayBeMassMail(DateTimeOffset.Parse(createdAt, System.Globalization.CultureInfo.InvariantCulture), referencesProject)
+    public void MassMailOnlyAfter20260928AndProjectWide(string createdAt, bool projectWide, bool expected)
+        => ProjectHeaderParser.MayBeMassMail(DateTimeOffset.Parse(createdAt, System.Globalization.CultureInfo.InvariantCulture), projectWide)
             .ShouldBe(expected);
 }
