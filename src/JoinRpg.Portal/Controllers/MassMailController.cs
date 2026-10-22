@@ -36,7 +36,7 @@ public class MassMailController(
             ClaimIds = new CompressedIntList(filteredClaims.Select(c => c.ClaimId)),
             Claims = filteredClaims.ToClaimViewModels(),
             ToMyClaimsOnlyWarning = somethingFiltered,
-            Body = "Добрый день, %NAME%, \nспешим уведомить вас о всяком. \n Не забудьте заглянуть в свою заявку %CLAIM%",
+            Body = "Добрый день, %NAME%, \nспешим уведомить вас о всяком.",
         });
     }
 
