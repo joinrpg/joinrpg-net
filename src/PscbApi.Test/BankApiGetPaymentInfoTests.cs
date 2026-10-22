@@ -132,6 +132,37 @@ public class BankApiGetPaymentInfoTests
     }
 
     /// <summary>
+    /// В <c>checkPayment</c> банк кладёт <c>lastError</c> массивом в конверт, а не внутрь платежа,
+    /// как в списке. Объект при этом тот же, что и в <c>getPayments</c>, поэтому текст <c>null</c>
+    /// вместо кода процессинга ронял и боевой путь обновления статуса платежа — дефект был латентным
+    /// до появления шлюза (ADR025).
+    /// </summary>
+    [Fact]
+    public async Task ToleratesTheLiteralTextNullInTheEnvelopeErrors()
+    {
+        var handler = new RecordingHandler(_ =>
+            """
+            {
+              "status": "STATUS_SUCCESS",
+              "requestId": "TEST-3",
+              "description": "Платеж завершен",
+              "payment": { "orderId": "0000000001", "state": "end" },
+              "lastError": [
+                { "description": "Платеж завершен", "code": "0", "subCode": "null" }
+              ]
+            }
+            """);
+
+        var result = await CreateApi(handler).GetPaymentInfoAsync("0000000001");
+
+        result.Status.ShouldBe(PaymentInfoQueryStatus.Success);
+        var error = result.Errors.ShouldHaveSingleItem();
+        error.Description.ShouldBe("Платеж завершен");
+        error.PaymentCode.ShouldBe(PaymentsSystemResponseCode.Success);
+        error.ProcessingCode.ShouldBeNull();
+    }
+
+    /// <summary>
     /// Разбирает тело запроса, не превращая даты в <see cref="DateTime"/>.
     /// </summary>
     private static JObject ParseBody(string json)
