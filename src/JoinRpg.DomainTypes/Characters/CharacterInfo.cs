@@ -315,6 +315,17 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
         => GetFieldLayers(AccessArguments.None, claimId).GetAllFieldsForEdit();
 
     /// <summary>
+    /// То же, что <see cref="GetAllFields"/>, но по идентификатору поля — когда нужны значения конкретных
+    /// полей, а не обход всех по порядку. Порядок полей словарь не хранит: для показа по порядку — <see cref="GetAllFields"/>.
+    /// </summary>
+    public IReadOnlyDictionary<ProjectFieldIdentification, FieldWithValue> GetAllFieldsDict(ClaimIdentification? claimId = null)
+        => GetAllFields(claimId).ToDictionary(field => field.Field.Id);
+
+    /// <summary>Значение одного поля; <c>null</c> — такого поля в проекте нет.</summary>
+    public FieldWithValue? GetFieldById(ProjectFieldIdentification fieldId, ClaimIdentification? claimId = null)
+        => GetAllFields(claimId).SingleOrDefault(field => field.Field.Id == fieldId);
+
+    /// <summary>
     /// Поля, которые на этом уровне есть кому заполнять — вход расчёта проблемы «поле не заполнено».
     /// </summary>
     /// <param name="claimId">

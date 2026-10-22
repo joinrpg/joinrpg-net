@@ -209,7 +209,7 @@ internal static class ProjectRoleGridViewModelBuilder
             ? BuildGroupsCell(character, config.GroupsColumn)
             : null;
 
-        var fieldsDict = character.GetAllFields().ToDictionary(field => field.Field.Id);
+        var fieldsDict = character.GetAllFieldsDict();
         var fieldValues = firstCopy
             ? fields.Select(f => RenderFieldValue(fieldsDict[f.Id], fieldUsers)).ToList()
             : [];

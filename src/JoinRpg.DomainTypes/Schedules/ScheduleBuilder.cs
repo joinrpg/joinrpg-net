@@ -80,7 +80,7 @@ public class ScheduleBuilder
         foreach (var character in characters.Where(ch => ch.CharacterType != CharacterType.Slot))
         {
             var programItem = new ProgramItem(character, authorUsers);
-            var fields = character.GetAllFields().ToDictionary(f => f.Field.Id);
+            var fields = character.GetAllFieldsDict();
             ProjectFieldVariant[] selectedTimeSlots = [.. fields[TimeSlotField.Id].GetDropdownValues()];
             ProjectFieldVariant[] selectedRooms = [.. fields[RoomField.Id].GetDropdownValues()];
 
