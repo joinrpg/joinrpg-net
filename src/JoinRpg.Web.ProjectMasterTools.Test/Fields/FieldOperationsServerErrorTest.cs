@@ -231,6 +231,7 @@ public class FieldOperationsServerErrorTest : BunitContext
         public Uri GetEditUri(ProjectFieldIdentification fieldId) => new("https://localhost/field/edit");
         public Uri GetCreateVariantUri(ProjectFieldIdentification fieldId) => new("https://localhost/field/variant/create");
         public Uri GetEditVariantUri(ProjectFieldVariantIdentification variantId) => new("https://localhost/field/variant/edit");
+        public Uri GetFieldSettingsUri(ProjectIdentification projectId) => new("https://localhost/field/settings");
     }
 
     private class NotUsedMoveClient : IMoveClient
