@@ -51,10 +51,11 @@ public class BadgePrintService(
             .Select(characterValues => (IReadOnlyList<PrintableBadgeLine>)[.. template.Layout.Lines.Select(line =>
                 new PrintableBadgeLine(
                     LineText(line, templateId.ProjectId, characterValues, users),
-                    line.TopMm,
+                    line.OffsetMm,
                     line.MinFontPt,
                     line.MaxFontPt,
-                    line.Bold))])
+                    line.Bold,
+                    line.Anchor == BadgeLineAnchor.Bottom))])
             .ToList();
 
         return new BadgesPrintViewModel(

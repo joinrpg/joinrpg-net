@@ -31,8 +31,8 @@ public static class BadgeLayoutRules
     }
 
     /// <summary>
-    /// Ошибки шаблона бейджа проекта. Пусто — шаблон корректен. Строка шаблона проекта обязана брать
-    /// значение ровно из одного источника: поля проекта или статического текста.
+    /// Ошибки шаблона бейджа проекта. Пусто — шаблон корректен. У строки должно быть поле проекта или
+    /// статический текст; оба вместе тоже можно — тогда текст лишь пример для превью.
     /// </summary>
     // TODO[Localize]
     public static IEnumerable<string> GetErrors(string name, BadgeLayout layout)
@@ -70,14 +70,15 @@ public static class BadgeLayoutRules
             var number = i + 1;
             var hasField = line.ProjectFieldId is not null;
             var hasText = !string.IsNullOrWhiteSpace(line.StaticText);
-            if (hasField == hasText)
+            // Поле и текст вместе допустимы: текст тогда — пример для превью.
+            if (!hasField && !hasText)
             {
-                yield return $"Строка {number}: нужно выбрать либо поле проекта, либо статический текст";
+                yield return $"Строка {number}: нужно выбрать поле проекта или написать статический текст";
             }
 
-            if (line.TopMm < 0 || line.TopMm >= layout.HeightMm)
+            if (line.OffsetMm < 0 || line.OffsetMm >= layout.HeightMm)
             {
-                yield return $"Строка {number}: отступ сверху должен быть от 0 до высоты бейджа";
+                yield return $"Строка {number}: отступ от края должен быть от 0 до высоты бейджа";
             }
 
             if (line.MinFontPt < MinFontPt || line.MaxFontPt > MaxFontPt)

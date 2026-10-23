@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.Helpers;
 
@@ -44,9 +45,11 @@ public class ProjectBadgeTemplate : IProjectEntity, ICreatedUpdatedTrackedForEnt
 
     // Кириллицу пишем как есть, а не \uXXXX: так строки читаются в БД глазами. HTML-экранирование
     // здесь не нужно — в разметку значения попадают через Razor, который экранирует сам.
+    // Перечисления — строками: читаются в БД и не зависят от порядка значений в enum.
     private static readonly JsonSerializerOptions LinesJsonOptions = new(JsonSerializerDefaults.Web)
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Converters = { new JsonStringEnumConverter() },
     };
 
     /// <summary>Удалённый шаблон не удаляется из БД, а выключается — его можно восстановить</summary>

@@ -41,8 +41,8 @@ public class BadgeTemplateEditFormTest : BunitContext
         Name = "Игрок",
         Lines =
         [
-            new() { Source = BadgeLineSource.Field, FieldId = nameField, TopMm = 10 },
-            new() { Source = BadgeLineSource.Text, StaticText = "Каэр Морхен", TopMm = 40 },
+            new() { Source = BadgeLineSource.Field, FieldId = nameField, OffsetMm = 10 },
+            new() { Source = BadgeLineSource.Text, StaticText = "Каэр Морхен", OffsetMm = 40 },
         ],
     };
 

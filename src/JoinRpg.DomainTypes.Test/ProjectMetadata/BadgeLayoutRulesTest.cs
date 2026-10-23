@@ -4,7 +4,7 @@ namespace JoinRpg.DomainTypes.Test.ProjectMetadata;
 
 public class BadgeLayoutRulesTest
 {
-    private static readonly BadgeLine fieldLine = new(1, null, null, TopMm: 10, MinFontPt: 8, MaxFontPt: 20, Bold: false);
+    private static readonly BadgeLine fieldLine = new(1, null, null, OffsetMm: 10, MinFontPt: 8, MaxFontPt: 20, Bold: false);
 
     private static BadgeLayout Layout(params BadgeLine[] lines) => new(90, 55, null, lines);
 
@@ -32,9 +32,14 @@ public class BadgeLayoutRulesTest
     public void HttpsBackgroundIsNotError()
         => BadgeLayoutRules.GetErrors("Игрок", Layout() with { BackgroundUrl = new Uri("https://example.com/bg.png") }).ShouldBeEmpty();
 
+    // При выбранном поле статический текст — пример для превью, а не второй источник.
     [Fact]
-    public void LineWithBothSourcesIsError()
-        => BadgeLayoutRules.GetErrors("Игрок", Layout(fieldLine with { StaticText = "Текст" })).ShouldHaveSingleItem();
+    public void LineWithFieldAndSampleTextIsValid()
+        => BadgeLayoutRules.GetErrors("Игрок", Layout(fieldLine with { StaticText = "Цирилла" })).ShouldBeEmpty();
+
+    [Fact]
+    public void BottomAnchoredLineWithinBadgeIsValid()
+        => BadgeLayoutRules.GetErrors("Игрок", Layout(fieldLine with { OffsetMm = 5, Anchor = BadgeLineAnchor.Bottom })).ShouldBeEmpty();
 
     // Строка общего шаблона без привязки к полю допустима только там; в шаблоне проекта источник обязателен.
     [Fact]
@@ -58,9 +63,9 @@ public class BadgeLayoutRulesTest
     [InlineData(10, BadgeLayoutRules.MinFontPt - 1, 20)]
     [InlineData(10, 8, BadgeLayoutRules.MaxFontPt + 1)]
     public void LineOutOfRangeIsError(int topMm, int minFont, int maxFont)
-        => BadgeLayoutRules.GetErrors("Игрок", Layout(fieldLine with { TopMm = topMm, MinFontPt = minFont, MaxFontPt = maxFont })).ShouldHaveSingleItem();
+        => BadgeLayoutRules.GetErrors("Игрок", Layout(fieldLine with { OffsetMm = topMm, MinFontPt = minFont, MaxFontPt = maxFont })).ShouldHaveSingleItem();
 
     [Fact]
     public void LineBelowBadgeIsError()
-        => BadgeLayoutRules.GetErrors("Игрок", Layout(fieldLine with { TopMm = 55 })).ShouldHaveSingleItem();
+        => BadgeLayoutRules.GetErrors("Игрок", Layout(fieldLine with { OffsetMm = 55 })).ShouldHaveSingleItem();
 }

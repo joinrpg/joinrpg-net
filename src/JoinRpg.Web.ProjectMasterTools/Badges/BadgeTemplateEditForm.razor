@@ -67,7 +67,7 @@
                                             <JoinTextInput @bind-Value="line.StaticText" />
                                         }
                                     </td>
-                                    <td><JoinInputNumber @bind-Value="line.TopMm" ParsingErrorMessage="Укажите отступ строки целым числом миллиметров" /></td>
+                                    <td><JoinInputNumber @bind-Value="line.OffsetMm" ParsingErrorMessage="Укажите отступ строки целым числом миллиметров" /></td>
                                     <td><JoinInputNumber @bind-Value="line.MinFontPt" ParsingErrorMessage="Укажите минимальный шрифт целым числом пунктов" /></td>
                                     <td><JoinInputNumber @bind-Value="line.MaxFontPt" ParsingErrorMessage="Укажите максимальный шрифт целым числом пунктов" /></td>
                                     <td><CheckboxInput @bind-Value="line.Bold" /></td>
@@ -142,14 +142,14 @@
 
     private void AddLine()
     {
-        var top = model.Lines.Count == 0 ? 10 : Math.Min(model.Lines.Max(l => l.TopMm) + 10, Math.Max(model.HeightMm - 5, 0));
-        model.Lines.Add(new EditBadgeLineViewModel { TopMm = top });
+        var top = model.Lines.Count == 0 ? 10 : Math.Min(model.Lines.Max(l => l.OffsetMm) + 10, Math.Max(model.HeightMm - 5, 0));
+        model.Lines.Add(new EditBadgeLineViewModel { OffsetMm = top });
     }
 
     private IReadOnlyList<PrintableBadgeLine> PreviewLines()
         => [.. model.Lines.Select(line => new PrintableBadgeLine(
             PreviewText(line),
-            line.TopMm,
+            line.OffsetMm,
             Math.Max(line.MinFontPt, BadgeLayoutRules.MinFontPt),
             Math.Max(line.MaxFontPt, Math.Max(line.MinFontPt, BadgeLayoutRules.MinFontPt)),
             line.Bold))];

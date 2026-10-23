@@ -32,7 +32,7 @@ public class EditBadgeLineViewModel
 
     public string? StaticText { get; set; }
 
-    public int TopMm { get; set; } = 10;
+    public int OffsetMm { get; set; } = 10;
 
     public int MinFontPt { get; set; } = 10;
 
@@ -70,7 +70,7 @@ public class EditBadgeTemplateViewModel : IValidatableObject
                 ProjectFieldId: line.Source == BadgeLineSource.Field ? line.FieldId?.ProjectFieldId : null,
                 StaticText: line.Source == BadgeLineSource.Text ? line.StaticText : null,
                 SlotLabel: null,
-                line.TopMm,
+                line.OffsetMm,
                 line.MinFontPt,
                 line.MaxFontPt,
                 line.Bold))]);
@@ -87,7 +87,7 @@ public class EditBadgeTemplateViewModel : IValidatableObject
                 Source = line.ProjectFieldId is null ? BadgeLineSource.Text : BadgeLineSource.Field,
                 FieldId = line.ProjectFieldId is int fieldId ? new ProjectFieldIdentification(template.Id.ProjectId, fieldId) : null,
                 StaticText = line.StaticText,
-                TopMm = line.TopMm,
+                OffsetMm = line.OffsetMm,
                 MinFontPt = line.MinFontPt,
                 MaxFontPt = line.MaxFontPt,
                 Bold = line.Bold,

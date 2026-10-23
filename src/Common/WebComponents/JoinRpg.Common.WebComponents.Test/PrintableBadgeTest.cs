@@ -12,7 +12,7 @@ public class PrintableBadgeTest
 {
     private const string ModulePath = "/_content/JoinRpg.Common.WebComponents/printable-badge.js";
 
-    private static readonly PrintableBadgeLine geralt = new("Геральт", TopMm: 18, MinFontPt: 12, MaxFontPt: 32, Bold: true);
+    private static readonly PrintableBadgeLine geralt = new("Геральт", OffsetMm: 18, MinFontPt: 12, MaxFontPt: 32, Bold: true);
 
     private static BunitContext StaticContext()
     {
@@ -35,6 +35,21 @@ public class PrintableBadgeTest
         line.GetAttribute("style").ShouldNotBeNull().ShouldContain("font-size: 32pt");
         line.GetAttribute("data-min-font-pt").ShouldBe("12");
         line.GetAttribute("data-max-font-pt").ShouldBe("32");
+    }
+
+    // Строка у нижнего края прибита к низу — перенос на вторую строку растёт вверх, а не уезжает за край.
+    [Fact]
+    public void BottomLine_IsPositionedFromBottom()
+    {
+        using var ctx = StaticContext();
+        var cut = ctx.Render<PrintableBadge>(p => p
+            .Add(x => x.WidthMm, 90)
+            .Add(x => x.HeightMm, 55)
+            .Add(x => x.Lines, [geralt with { OffsetMm = 5, FromBottom = true }]));
+
+        var style = cut.Find(".join-printable-badge-line").GetAttribute("style").ShouldNotBeNull();
+        style.ShouldContain("bottom: 5mm");
+        style.ShouldNotContain("top:");
     }
 
     // Фоновые картинки (background-image) браузер по умолчанию не печатает, поэтому фон — <img>.
