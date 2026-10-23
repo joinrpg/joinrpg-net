@@ -8,6 +8,9 @@ public record CharacterTypeInfo
 
     public bool IsAcceptingClaims => CharacterType != CharacterType.NonPlayer;
 
+    /// <summary>Шаблон персонажа (слот): из него создаются персонажи по заявкам, сам он не играется и не печатается.</summary>
+    public bool IsSlot => CharacterType == CharacterType.Slot;
+
     public bool IsPublic => CharacterVisibility == CharacterVisibility.Public;
 
     /// <summary>
