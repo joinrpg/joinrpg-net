@@ -1,5 +1,6 @@
 @page "/{projectId:int}/tools/badges/edit/{badgeTemplateId:int?}"
 @using JoinRpg.Web.ProjectMasterTools.Badges
+@using JoinRpg.Web.Models.Print
 
 @model JoinRpg.Portal.Pages.GamePages.BadgeTemplateEditModel
 
@@ -8,6 +9,18 @@
 }
 
 <h3>@ViewData["Title"]</h3>
+
+@if (Model.TemplateId is { } templateId && Model.ActiveCharacterIds.Count > 0)
+{
+    <p>
+        <join-icon icon="Print" /> Напечатать бейджи всех активных персонажей этим шаблоном (печатается сохранённая версия):
+        @foreach (var chunk in PrintChunks.Split(Model.ActiveCharacterIds))
+        {
+            <a href="@Url.Action("Badges", "Print", new { ProjectId = Model.ProjectId.Value, badgeTemplateId = templateId.ProjectBadgeTemplateId, chunk.CharacterIds })" target="_blank">@chunk.Name</a>
+            <text>&nbsp;</text>
+        }
+    </p>
+}
 
 @(await Html.RenderComponentAsync<BadgeTemplateEditForm>(RenderMode.WebAssembly, new
 {
