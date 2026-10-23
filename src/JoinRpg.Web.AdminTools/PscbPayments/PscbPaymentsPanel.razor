@@ -81,11 +81,19 @@
                 <p>
                     Найдено платежей: <b>@list.Payments.Count</b>, запросов к банку: <b>@list.RequestCount</b>.
                 </p>
+                <p class="text-muted">
+                    «Сверка» — чем строка банка кончилась у нас: <span class="text-danger">потерян</span> —
+                    денег банк получил, а операции в JoinRpg нет; <span class="text-danger">нет возврата</span> —
+                    платёж проведён, а возврата у нас нет; <span class="text-warning">не проведён</span> —
+                    операция есть, но не проведена, и инструмент её не трогает. Номер платежа — ссылка
+                    на операцию, «заявка» под пользователем — на заявку, к которой она относится.
+                </p>
                 <div style="overflow-x: auto;">
                     <table class="table table-striped table-condensed">
                         <thead>
                             <tr>
                                 <th>Номер платежа</th>
+                                <th>Сверка</th>
                                 <th>Номер в банке</th>
                                 <th>Назначение платежа</th>
                                 <th>Сумма</th>
@@ -101,7 +109,22 @@
                             @foreach (var payment in list.Payments)
                             {
                                 <tr>
-                                    <td>@payment.OrderId</td>
+                                    <td>
+                                        @if (payment.OperationUrl is { } operationUrl)
+                                        {
+                                            <a href="@operationUrl">@payment.OrderId</a>
+                                        }
+                                        else
+                                        {
+                                            @payment.OrderId
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (payment.MatchStateText is { } matchStateText)
+                                        {
+                                            <span class="@MatchStateClass(payment.MatchState)">@matchStateText</span>
+                                        }
+                                    </td>
                                     <td>@payment.BankPaymentId</td>
                                     <td>
                                         @if (payment.ProjectUrl is { } projectUrl)
@@ -138,6 +161,10 @@
                                         else
                                         {
                                             @payment.UserId
+                                        }
+                                        @if (payment.ClaimUrl is { } claimUrl)
+                                        {
+                                            <div><a href="@claimUrl">заявка</a></div>
                                         }
                                     </td>
                                     <td>@payment.UserEmail</td>
@@ -420,6 +447,15 @@
     // DateTimeOffset(DateTime) для DateTimeKind.Unspecified берёт локальное смещение — в браузере
     // это часовой пояс админа, что и нужно для выборки по дню.
     private static DateTimeOffset StartOfDay(DateTime date) => new(date.Date);
+
+    // «Потерян» и «нет возврата» — то, ради чего страница существует, поэтому они видны сразу;
+    // «не проведён» — расхождение, которое инструмент не правит; остальное приглушено.
+    private static string MatchStateClass(PscbPaymentMatchState? matchState) => matchState switch
+    {
+        PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing => "text-danger",
+        PscbPaymentMatchState.NotSettled => "text-warning",
+        _ => "text-muted",
+    };
 
     private static TEnum? Parse<TEnum>(string value) where TEnum : struct, Enum
         => Enum.TryParse<TEnum>(value, ignoreCase: true, out var parsed) ? parsed : null;

@@ -24,6 +24,11 @@ namespace JoinRpg.XGameApi.Contract.Pscb;
 /// restate what the bank sent, while <see cref="RefundUrl"/> is ours — a link to the JoinRpg
 /// finance operation that recorded the refund.
 /// </para>
+/// <para>
+/// <see cref="MatchState"/>, <see cref="OperationUrl"/> and <see cref="ClaimUrl"/> are the
+/// reconciliation with our own database (ADR026): the bank's <c>orderId</c> is the
+/// <c>CommentId</c> of a finance operation, so a row either finds one or the payment is lost.
+/// </para>
 /// </remarks>
 public class PscbPaymentListRow
 {
@@ -99,6 +104,13 @@ public class PscbPaymentListRow
     public string? RefundUrl { get; set; }
 
     /// <summary>
+    /// Link to the JoinRpg finance operation the bank's <see cref="OrderId"/> points at —
+    /// «Ссылка на операцию». Null when there is no such operation, which is exactly what makes the
+    /// payment a lost one.
+    /// </summary>
+    public string? OperationUrl { get; set; }
+
+    /// <summary>
     /// Moment when the payment entered its current status — «Дата».
     /// </summary>
     public DateTimeOffset StatusDate { get; set; }
@@ -128,6 +140,13 @@ public class PscbPaymentListRow
     public string? UserUrl { get; set; }
 
     /// <summary>
+    /// Link to the claim the payment belongs to — «Ссылка на заявку». For a row that found its
+    /// finance operation the claim is the operation's own; there is no link where no operation was
+    /// found. Null when the reconciliation was not performed.
+    /// </summary>
+    public string? ClaimUrl { get; set; }
+
+    /// <summary>
     /// Payer's email — «Email пользователя».
     /// </summary>
     public string? UserEmail { get; set; }
@@ -153,4 +172,18 @@ public class PscbPaymentListRow
     /// finished payment this is not an error but a description, e.g. «Платеж завершен».
     /// </summary>
     public string? ErrorDescription { get; set; }
+
+    /// <summary>
+    /// What the reconciliation with the JoinRpg database made of this row — «Сверка» (ADR026).
+    /// Null when the reconciliation was not performed: enriching the list with our data is
+    /// best-effort, and an absent result must not read as one of the outcomes.
+    /// </summary>
+    public PscbPaymentMatchState? MatchState { get; set; }
+
+    /// <summary>
+    /// <see cref="MatchState"/> in human-readable Russian, the way <see cref="PaymentKind"/> and
+    /// <see cref="PaymentMethod"/> are given. The enumeration stays on the wire for the logic —
+    /// the restore button is enabled by it — while the text is what the page and the export show.
+    /// </summary>
+    public string? MatchStateText { get; set; }
 }

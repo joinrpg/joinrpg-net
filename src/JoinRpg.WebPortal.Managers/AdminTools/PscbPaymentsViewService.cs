@@ -11,7 +11,7 @@ using PscbApi.Models;
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 
 /// <summary>
-/// Шлюз к API ПСКБ для админки сайта (ADR025).
+/// Шлюз к API ПСКБ для админки сайта (ADR025) и сверка его списка с нашей базой (ADR026).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -20,6 +20,11 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 /// сам. И пользователь, и проект ищутся в базе: строка, для которой ничего не нашлось, остаётся
 /// без ссылки, а то, что не нашлось, отдаётся отдельными списками — по ним админ видит, какие
 /// платежи не удалось атрибутировать.
+/// </para>
+/// <para>
+/// Список ещё и сверяется с базой: <c>orderId</c> это <c>CommentId</c> финансовой операции,
+/// поэтому строка либо находит операцию — и получает ссылку на неё и на её заявку, — либо платёж
+/// потерян. Исход сверки проставляется в каждой строке.
 /// </para>
 /// <para>
 /// Права проверяет контроллер: шлюз показывает платежи магазина целиком, а не по проектам,
@@ -36,6 +41,7 @@ internal class PscbPaymentsViewService(
     IHttpClientFactory httpClientFactory,
     IUriService uriService,
     IUriLocator<FinanceOperationIdentification> financeOperationUri,
+    IUriLocator<ClaimIdentification> claimUri,
     ISearchService searchService,
     IUserRepository userRepository,
     IFinanceOperationsRepository financeOperationsRepository,
@@ -101,11 +107,14 @@ internal class PscbPaymentsViewService(
 
     /// <summary>
     /// Добавляет к данным банка то, что знает JoinRpg: ссылки на пользователя и проект, списки
-    /// тех, кого найти не удалось, и возвраты.
+    /// тех, кого найти не удалось, возвраты и исход сверки каждой строки с нашей базой.
     /// </summary>
     /// <remarks>
     /// Это дополнение к данным банка, а не их часть, поэтому его поломка не должна уносить уже
-    /// полученный список: ошибка логируется, ссылки и списки остаются пустыми.
+    /// полученный список: ошибка логируется, ссылки и списки остаются пустыми, а исход сверки —
+    /// неизвестным (<c>MatchState</c> равен <c>null</c>, а не какому-нибудь из значений).
+    /// Порядок значим: сверка идёт последней, потому что «нет возврата» определяется по ссылке
+    /// на операцию возврата, которую проставляет предыдущий шаг.
     /// </remarks>
     private async Task EnrichAsync(PscbPaymentsListResult result)
     {
@@ -114,6 +123,7 @@ internal class PscbPaymentsViewService(
             await FillUserLinksAsync(result);
             await FillProjectLinksAsync(result);
             await FillRefundsAsync(result.Payments);
+            await FillReconciliationAsync(result.Payments);
         }
         catch (Exception ex)
         {
@@ -290,7 +300,7 @@ internal class PscbPaymentsViewService(
     private async Task FillRefundsAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
     {
         var operationIds = rows
-            .Select(row => ParseOperationId(row.OrderId))
+            .Select(row => PscbPaymentViewModelBuilder.OperationIdFromOrderId(row.OrderId))
             .OfType<int>()
             .Distinct()
             .ToList();
@@ -316,15 +326,59 @@ internal class PscbPaymentsViewService(
 
         foreach (var row in rows)
         {
-            if (ParseOperationId(row.OrderId) is { } operationId && byOperation.TryGetValue(operationId, out var refund))
+            if (PscbPaymentViewModelBuilder.OperationIdFromOrderId(row.OrderId) is { } operationId
+                && byOperation.TryGetValue(operationId, out var refund))
             {
                 row.RefundUrl = financeOperationUri.GetUri(refund.RefundId).AbsoluteUri;
             }
         }
     }
 
-    private static int? ParseOperationId(string? orderId)
-        => int.TryParse(orderId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var operationId) ? operationId : null;
+    /// <summary>
+    /// Сверка каждой строки с нашей базой: операция по <c>orderId</c>, ссылки на неё и на её заявку
+    /// и исход — проведён, потерян, не проведён (ADR026).
+    /// </summary>
+    /// <remarks>
+    /// Найденная операция даёт и заявку, поэтому у строки с операцией ссылка на заявку есть, а у
+    /// потерянной — нет: заявку потерянного платежа ещё предстоит определить, и это делает
+    /// восстановление, а не сверка. Запрос к базе один на весь список и идёт по первичному ключу.
+    /// </remarks>
+    private async Task FillReconciliationAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
+    {
+        var operationIds = rows
+            .Select(row => PscbPaymentViewModelBuilder.OperationIdFromOrderId(row.OrderId))
+            .OfType<int>()
+            .Distinct()
+            .ToList();
+
+        Dictionary<int, MatchedOperation> found = [];
+        if (operationIds.Count > 0)
+        {
+            foreach (var operation in await financeOperationsRepository.GetOperationsByCommentIds(operationIds))
+            {
+                found[operation.OperationId.FinanceOperationId] = operation;
+            }
+        }
+
+        foreach (var row in rows)
+        {
+            var matched = PscbPaymentViewModelBuilder.OperationIdFromOrderId(row.OrderId) is { } operationId
+                ? found.GetValueOrDefault(operationId)
+                : null;
+
+            var matchState = PscbPaymentViewModelBuilder.Classify(row, matched?.State, matched?.OperationType);
+            row.MatchState = matchState;
+            row.MatchStateText = PscbPaymentViewModelBuilder.MatchStateName(matchState);
+
+            if (matched is null)
+            {
+                continue;
+            }
+
+            row.OperationUrl = financeOperationUri.GetUri(matched.OperationId).AbsoluteUri;
+            row.ClaimUrl = claimUri.GetUri(matched.OperationId.ClaimId).AbsoluteUri;
+        }
+    }
 
     /// <summary>
     /// Ссылка на проект с точно таким названием.

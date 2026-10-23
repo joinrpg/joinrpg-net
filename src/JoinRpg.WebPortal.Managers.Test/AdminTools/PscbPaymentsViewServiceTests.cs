@@ -6,6 +6,7 @@ using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
@@ -13,6 +14,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 using JoinRpg.Web.AdminTools.PscbPayments;
 using JoinRpg.WebPortal.Managers.AdminTools;
+using JoinRpg.XGameApi.Contract.Pscb;
 using Microsoft.Extensions.Logging.Abstractions;
 using PscbApi;
 
@@ -413,13 +415,178 @@ public class PscbPaymentsViewServiceTests
         row.RefundUrl.ShouldBe("https://joinrpg.test/42/finance/9002");
     }
 
+    /// <summary>
+    /// <c>orderId</c> банка это <c>CommentId</c> нашей операции, поэтому найденная операция даёт
+    /// и исход сверки, и ссылку на себя, и ссылку на свою заявку (ADR026).
+    /// </summary>
+    [Fact]
+    public async Task MarksTheRowWhoseOperationIsFoundAsSettled()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(643617);
+        var service = CreateService(new FakeSearchService(), Users(42), finances, Payment("0000643617", account: "42", details: null));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Settled);
+        row.MatchStateText.ShouldBe("проведён");
+        row.OperationUrl.ShouldBe("https://joinrpg.test/42/finance/643617");
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/42/claim/7/edit");
+    }
+
+    /// <summary>
+    /// Потерянный платёж — деньги у банка есть, а операции у нас нет. Заявки у такой строки тоже
+    /// нет: сверка её не определяет, это делает восстановление.
+    /// </summary>
+    [Fact]
+    public async Task MarksTheRowWithoutAnOperationAsLost()
+    {
+        var service = CreateService(new FakeSearchService(), Users(42), Payment("0000643617", account: "42", details: null));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.MatchStateText.ShouldBe("потерян");
+        row.OperationUrl.ShouldBeNull();
+        row.ClaimUrl.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Существующая операция не правится, но и молча не пропускается: <c>Declined</c> при
+    /// оплаченном платеже банка — расхождение, которое админ должен видеть (ADR026).
+    /// </summary>
+    [Fact]
+    public async Task MarksAnExistingButUnsettledOperationAsNotSettled()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(1, FinanceOperationState.Declined);
+        var service = CreateService(new FakeSearchService(), Users(42), finances, Payment("0000000001", account: "42", details: null));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.NotSettled);
+        row.MatchStateText.ShouldBe("не проведён");
+        row.OperationUrl.ShouldBe("https://joinrpg.test/42/finance/1");
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/42/claim/7/edit");
+    }
+
+    /// <summary>
+    /// Возврат банк зафиксировал, а проведённой операции возврата у нас нет: восстанавливается
+    /// только возврат, поэтому исход отдельный.
+    /// </summary>
+    [Fact]
+    public async Task MarksTheRefundWeHaveNotRecordedAsRefundMissing()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(637705);
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(258),
+            finances,
+            Payment(
+                "0000637705",
+                account: "258",
+                details: null,
+                refunds: """[{"refundId":"1115846166","state":"END","amount":100.0}]""",
+                state: "ref"));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.RefundedByBank.ShouldBeTrue();
+        row.RefundUrl.ShouldBeNull();
+        row.MatchState.ShouldBe(PscbPaymentMatchState.RefundMissing);
+        row.MatchStateText.ShouldBe("нет возврата");
+    }
+
+    [Fact]
+    public async Task MarksTheRefundWeHaveRecordedAsSettled()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(637705);
+        finances.AddRefund(637705, new DateTime(2026, 9, 8));
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(258),
+            finances,
+            Payment(
+                "0000637705",
+                account: "258",
+                details: null,
+                refunds: """[{"refundId":"1115846166","state":"END","amount":100.0}]""",
+                state: "ref"));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.RefundUrl.ShouldNotBeNull();
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Settled);
+    }
+
+    /// <summary>
+    /// Просроченный платёж денег не принёс, поэтому потерянным не считается: восстанавливать
+    /// нечего, даже если операции у нас нет.
+    /// </summary>
+    [Fact]
+    public async Task MarksTheExpiredPaymentAsNoMoney()
+    {
+        var service = CreateService(new FakeSearchService(), Users(42), Payment("0000000001", account: "42", details: null, state: "exp"));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.NoMoney);
+        row.MatchStateText.ShouldBe("денег нет");
+    }
+
+    /// <summary>
+    /// Заброшенную попытку банк переименовывает, и её <c>orderId</c> числом не является: операции
+    /// с таким номером быть не может, и сверять нечего.
+    /// </summary>
+    [Fact]
+    public async Task MarksTheReplacedOrderIdAsNoRecord()
+    {
+        var service = CreateService(new FakeSearchService(), Users(42), Payment("__REPLACED_0000644272", account: "42", details: null));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.NoRecord);
+        row.MatchStateText.ShouldBe("не платёж JoinRpg");
+    }
+
+    /// <summary>
+    /// Сверка спрашивает операции одним запросом на весь список, а не по одному на платёж,
+    /// и не спрашивает про номера, которые числом не являются.
+    /// </summary>
+    [Fact]
+    public async Task AsksForTheOperationsOnceForTheWholeList()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(2);
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(42),
+            finances,
+            Payment("0000000001", account: "42", details: null),
+            Payment("0000000002", account: "42", details: null),
+            Payment("__REPLACED_0000000003", account: "42", details: null));
+
+        var result = await service.GetPayments(Query());
+
+        result.Payments.Count.ShouldBe(3);
+        finances.OperationRequests.ShouldBe([1, 2]);
+    }
+
     private static string TicketPurpose(string projectName)
         => PscbPaymentViewModelBuilder.TicketPurposePrefix + projectName;
 
     private static PscbPaymentsQuery Query() => new(From, From.AddDays(5), null, null, false);
 
-    private static string Payment(string orderId, string? account, string? details, string? email = null, string? refunds = null)
-        => $$"""{"orderId":"{{orderId}}","paymentId":"11","amount":100.0,"state":"end","account":{{Quote(account)}},"email":{{Quote(email)}},"details":{{Quote(details)}},"refunds":{{refunds ?? "null"}}}""";
+    private static string Payment(
+        string orderId,
+        string? account,
+        string? details,
+        string? email = null,
+        string? refunds = null,
+        string state = "end")
+        => $$"""{"orderId":"{{orderId}}","paymentId":"11","amount":100.0,"state":"{{state}}","account":{{Quote(account)}},"email":{{Quote(email)}},"details":{{Quote(details)}},"refunds":{{refunds ?? "null"}}}""";
 
     private static string Quote(string? value) => value is null ? "null" : "\"" + value + "\"";
 
@@ -447,6 +614,7 @@ public class PscbPaymentsViewServiceTests
             new StubHttpClientFactory(payments),
             new FakeUriService(),
             new FakeFinanceOperationUri(),
+            new FakeClaimUri(),
             search,
             users,
             finances,
@@ -592,16 +760,22 @@ public class PscbPaymentsViewServiceTests
     }
 
     /// <summary>
-    /// Возвраты в базе: какие операции возвращены, на сколько и когда.
+    /// Операции и возвраты в базе: что находится по <c>orderId</c> из списка банка.
     /// </summary>
     private sealed class FakeFinanceOperationsRepository : IFinanceOperationsRepository
     {
         private readonly List<ApprovedRefund> refunds = [];
+        private readonly List<MatchedOperation> operations = [];
 
         /// <summary>
         /// Идентификаторы операций, по которым сервис спрашивал возвраты.
         /// </summary>
         public List<int> Requests { get; } = [];
+
+        /// <summary>
+        /// Идентификаторы операций, по которым сервис спрашивал сверку.
+        /// </summary>
+        public List<int> OperationRequests { get; } = [];
 
         public void AddRefund(int refundedOperationId, DateTime operationDate, int refundCommentId = 9001)
             => refunds.Add(new ApprovedRefund(
@@ -609,11 +783,34 @@ public class PscbPaymentsViewServiceTests
                 new FinanceOperationIdentification(42, 7, refundCommentId),
                 operationDate));
 
+        /// <summary>
+        /// Операция в базе: по умолчанию проведённый онлайн-платёж, то есть то, что сверка
+        /// обязана отличить от потерянного.
+        /// </summary>
+        public void AddOperation(
+            int commentId,
+            FinanceOperationState state = FinanceOperationState.Approved,
+            FinanceOperationType operationType = FinanceOperationType.Online,
+            int projectId = 42,
+            int claimId = 7)
+            => operations.Add(new MatchedOperation(
+                new FinanceOperationIdentification(projectId, claimId, commentId),
+                state,
+                operationType));
+
         public Task<IReadOnlyCollection<ApprovedRefund>> GetApprovedRefunds(IReadOnlyCollection<int> refundedOperationIds)
         {
             Requests.AddRange(refundedOperationIds);
 
             IReadOnlyCollection<ApprovedRefund> found = [.. refunds.Where(refund => refundedOperationIds.Contains(refund.RefundedOperationId))];
+            return Task.FromResult(found);
+        }
+
+        public Task<IReadOnlyCollection<MatchedOperation>> GetOperationsByCommentIds(IReadOnlyCollection<int> commentIds)
+        {
+            OperationRequests.AddRange(commentIds);
+
+            IReadOnlyCollection<MatchedOperation> found = [.. operations.Where(operation => commentIds.Contains(operation.OperationId.FinanceOperationId))];
             return Task.FromResult(found);
         }
 
@@ -625,5 +822,11 @@ public class PscbPaymentsViewServiceTests
     {
         public Uri GetUri(FinanceOperationIdentification target)
             => new($"https://joinrpg.test/{target.ProjectId.Value}/finance/{target.FinanceOperationId}", UriKind.Absolute);
+    }
+
+    private sealed class FakeClaimUri : IUriLocator<ClaimIdentification>
+    {
+        public Uri GetUri(ClaimIdentification target)
+            => new($"https://joinrpg.test/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Absolute);
     }
 }

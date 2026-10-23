@@ -1,3 +1,5 @@
+using System.Globalization;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.XGameApi.Contract.Pscb;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -21,6 +23,11 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 /// банку, и наше перечисление пришлось бы править каждый раз, когда банк добавляет значение.
 /// Для вида записи и способа оплаты словарь нам известен, поэтому они переводятся в читаемый вид;
 /// статус платежа остаётся банковским идентификатором.
+/// </para>
+/// <para>
+/// Здесь же считается исход сверки строки с нашей базой (ADR026). Правило чистое — строка плюс
+/// состояние и вид найденной операции, — поэтому оно живёт рядом с остальным преобразованием
+/// и проверяется тестами без репозиториев.
 /// </para>
 /// </remarks>
 internal static class PscbPaymentViewModelBuilder
@@ -77,6 +84,20 @@ internal static class PscbPaymentViewModelBuilder
         [PscbPaymentMethod.PscbTerminal] = "Терминал ПСБ",
         [PscbPaymentMethod.Mobile] = "Мобильный платёж",
         [PscbPaymentMethod.FastPaymentsSystem] = "СБП",
+    };
+
+    /// <summary>
+    /// Исход сверки по-русски (ADR026). Перечисление наше, а не банковское, поэтому переведены
+    /// все значения: тест обходит их и требует непустое имя для каждого.
+    /// </summary>
+    private static readonly Dictionary<PscbPaymentMatchState, string> MatchStateNames = new()
+    {
+        [PscbPaymentMatchState.NoRecord] = "не платёж JoinRpg",
+        [PscbPaymentMatchState.NoMoney] = "денег нет",
+        [PscbPaymentMatchState.Settled] = "проведён",
+        [PscbPaymentMatchState.NotSettled] = "не проведён",
+        [PscbPaymentMatchState.Lost] = "потерян",
+        [PscbPaymentMatchState.RefundMissing] = "нет возврата",
     };
 
     public static PscbPaymentsListResult BuildList(PaymentsListInfo info, int requestCount)
@@ -148,6 +169,78 @@ internal static class PscbPaymentViewModelBuilder
         => value is not null && value.StartsWith(prefix, StringComparison.Ordinal)
             ? value[prefix.Length..]
             : value;
+
+    /// <summary>
+    /// Исход сверки строки банка с нашей базой (ADR026).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Состояние и вид операции — <c>null</c>, когда операции с таким <c>orderId</c> в базе нет:
+    /// это и есть потерянный платёж. Проведённой считается онлайн-операция в состоянии
+    /// <see cref="FinanceOperationState.Approved"/> — тот же критерий, по которому ночная сверка
+    /// перестаёт спрашивать банк про платёж.
+    /// </para>
+    /// <para>
+    /// Пропущенный возврат виден по уже проставленной <see cref="PscbPaymentListRow.RefundUrl"/>:
+    /// ссылку сервис заполняет по проведённым возвратам из базы, то есть ровно по тому критерию,
+    /// по которому здесь считается проведённость платежа.
+    /// </para>
+    /// </remarks>
+    public static PscbPaymentMatchState Classify(
+        PscbPaymentListRow row,
+        FinanceOperationState? operationState,
+        FinanceOperationType? operationType)
+    {
+        // Значение вроде __REPLACED_0000644272 числом не является: так банк помечает заброшенную
+        // попытку, чей orderId магазин использовал повторно (ADR025).
+        if (OperationIdFromOrderId(row.OrderId) is null)
+        {
+            return PscbPaymentMatchState.NoRecord;
+        }
+
+        // Деньги банк получил только при end и ref: exp — платёж просрочен, err — не прошёл.
+        if (!MoneyReceived(row))
+        {
+            return PscbPaymentMatchState.NoMoney;
+        }
+
+        if (operationState is null || operationType is null)
+        {
+            return PscbPaymentMatchState.Lost;
+        }
+
+        if (operationType != FinanceOperationType.Online || operationState != FinanceOperationState.Approved)
+        {
+            return PscbPaymentMatchState.NotSettled;
+        }
+
+        return row.RefundedByBank && row.RefundUrl is null
+            ? PscbPaymentMatchState.RefundMissing
+            : PscbPaymentMatchState.Settled;
+    }
+
+    /// <summary>
+    /// Исход сверки по-русски. Неизвестное значение отдаётся как есть — по тому же правилу, что
+    /// и банковские идентификаторы: код честнее выдуманного названия.
+    /// </summary>
+    public static string? MatchStateName(PscbPaymentMatchState? matchState)
+        => matchState is { } state ? MatchStateNames.GetValueOrDefault(state, state.ToString()) : null;
+
+    /// <summary>
+    /// Номер финансовой операции из <c>orderId</c> банка: это <c>CommentId</c>, дополненный нулями
+    /// до десяти знаков (<c>PaymentsService.GetOrderId</c>).
+    /// </summary>
+    public static int? OperationIdFromOrderId(string? orderId)
+        => int.TryParse(orderId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var operationId)
+            ? operationId
+            : null;
+
+    /// <summary>
+    /// Дошёл ли платёж до денег: банк считает завершёнными и оплаченный <c>end</c>, и возвращённый
+    /// <c>ref</c>, а просроченный и ошибочный — нет.
+    /// </summary>
+    private static bool MoneyReceived(PscbPaymentListRow row)
+        => row.RefundedByBank || string.Equals(row.Status, Identifier(PaymentStatus.Paid), StringComparison.Ordinal);
 
     public static PscbPaymentInfo Build(PaymentData payment)
         => new()
