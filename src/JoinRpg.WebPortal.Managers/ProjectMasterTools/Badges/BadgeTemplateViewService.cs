@@ -24,7 +24,10 @@ internal class BadgeTemplateViewService(
                 .OrderByDescending(t => t.IsActive)
                 .ThenBy(t => t.Name, StringComparer.CurrentCultureIgnoreCase)
                 .Select(t => new BadgeTemplateListItemViewModel(t.Id, t.Name, t.Layout.WidthMm, t.Layout.HeightMm, t.IsActive))],
-            HasEditAccess: projectInfo.HasMasterAccess(currentUserAccessor.UserIdentification, Permission.CanChangeProjectProperties));
+            // Сервис шаблонов меняет их только в активном проекте (MustBeActive) — в архивном и заблокированном
+            // кнопки правки не показываем, иначе они ведут на отказ.
+            HasEditAccess: projectInfo.HasMasterAccess(currentUserAccessor.UserIdentification, Permission.CanChangeProjectProperties)
+                && projectInfo.IsActive);
     }
 
     public async Task<EditBadgeTemplateViewModel> GetById(ProjectBadgeTemplateIdentification id)

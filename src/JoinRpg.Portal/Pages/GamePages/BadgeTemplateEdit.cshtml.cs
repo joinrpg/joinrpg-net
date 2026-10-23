@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace JoinRpg.Portal.Pages.GamePages;
 
 [RequireMaster(Permission.CanChangeProjectProperties)]
-[ProjectShouldNotBeArchived]
+[ProjectShouldBeActive] // как и сервис шаблонов (MustBeActive): в заблокированном проекте сохранить нельзя
 public class BadgeTemplateEditModel(IBadgeTemplateClient client) : PageModel
 {
     [BindProperty(SupportsGet = true)]
