@@ -36,7 +36,7 @@ public class BadgeTemplateEditModel(IBadgeTemplateClient client) : PageModel
         }
         else
         {
-            Model = new EditBadgeTemplateViewModel();
+            Model = EditBadgeTemplateViewModel.CreateNew();
         }
         return Page();
     }

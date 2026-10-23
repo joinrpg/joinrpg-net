@@ -41,8 +41,8 @@ public class BadgeTemplateEditFormTest : BunitContext
         Name = "Игрок",
         Lines =
         [
-            new() { Source = BadgeLineSource.Field, FieldId = nameField, OffsetMm = 10 },
-            new() { Source = BadgeLineSource.Text, StaticText = "Каэр Морхен", OffsetMm = 40 },
+            new() { FieldId = nameField, OffsetMm = 10 },
+            new() { StaticText = "Каэр Морхен", OffsetMm = 40 },
         ],
     };
 
@@ -55,6 +55,32 @@ public class BadgeTemplateEditFormTest : BunitContext
         cut.WaitForAssertion(() =>
             cut.FindAll(".join-printable-badge-line").Select(l => l.TextContent)
                 .ShouldBe(["Имя персонажа", "Каэр Морхен"]));
+    }
+
+    // Пример значения у строки с полем — в превью вместо названия поля.
+    [Fact]
+    public void Preview_UsesSampleTextForFieldLine()
+    {
+        var model = ValidModel();
+        model.Lines[0].StaticText = "Цирилла Фиона Элен Рианнон";
+        var cut = RenderForm(model);
+
+        cut.WaitForAssertion(() =>
+            cut.FindAll(".join-printable-badge-line").Select(l => l.TextContent).First()
+                .ShouldBe("Цирилла Фиона Элен Рианнон"));
+    }
+
+    // На печати строка с удалённым полем пустая — превью не должно показывать вместо этого пример.
+    [Fact]
+    public void Preview_DeletedFieldWins_OverSampleText()
+    {
+        var model = ValidModel();
+        model.Lines[0].FieldId = new ProjectFieldIdentification(projectId, 999);
+        model.Lines[0].StaticText = "Пример";
+        var cut = RenderForm(model);
+
+        cut.WaitForAssertion(() =>
+            cut.FindAll(".join-printable-badge-line").Select(l => l.TextContent).First().ShouldBe("(удалённое поле)"));
     }
 
     [Fact]
