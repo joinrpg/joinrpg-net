@@ -1,9 +1,17 @@
 @using JoinRpg.Common.WebComponents.Badges
+@using JoinRpg.DomainTypes.ProjectMetadata.Badges
 @using JoinRpg.Web.ProjectMasterTools.Print
 @model BadgesPrintViewModel
 
 @{
     Layout = null;
+    // Бейджи раскладываются по листам здесь, а не браузером: отступ от края нужен на каждом листе,
+    // а поля страницы нулевые (иначе браузер печатает в них колонтитулы).
+    // Ряды — тоже здесь: при ширине ряда ровно 190 мм перенос flex из-за дробных пикселей мог бы унести
+    // последний бейдж в лишний ряд, и лист перелез бы на следующую страницу.
+    var perRow = BadgeLayoutRules.BadgesPerRow(Model.WidthMm);
+    var rowsPerSheet = BadgeLayoutRules.RowsPerSheet(Model.HeightMm);
+    var sheets = Model.Badges.Chunk(perRow).Chunk(rowsPerSheet).ToList();
 }
 
 <!DOCTYPE html>
@@ -17,10 +25,10 @@
     @* Подгонка шрифта строк — только на этой странице, в общий скрипт компонентов она не входит *@
     <script src="~/_content/JoinRpg.Common.WebComponents/printable-badge.js" type="module"></script>
     <style>
+        /* Нулевые поля: браузеру негде печатать колонтитулы (дату, адрес, номер страницы) */
         @@page {
             size: A4;
-            /* Под эти поля рассчитаны пределы размера бейджа в BadgeLayoutRules (200×287 мм) */
-            margin: 5mm;
+            margin: 0;
         }
 
         body {
@@ -28,15 +36,28 @@
             font-family: Roboto, Arial, sans-serif;
         }
 
+        /* Лист A4: отступ от края даёт он сам (BadgeLayoutRules.SheetMarginMm), каждый — с новой страницы.
+           Снизу отступа нет: следующий лист и так с новой страницы, а лист ровно в 297 мм из-за дробных
+           пикселей мог бы перелезть на долю пикселя и оставить пустую страницу. */
         .badges-sheet {
+            box-sizing: border-box;
+            width: @(BadgeLayoutRules.SheetWidthMm)mm;
+            padding: @(BadgeLayoutRules.SheetMarginMm)mm @(BadgeLayoutRules.SheetMarginMm)mm 0;
+            break-after: page;
+        }
+
+        .badges-row {
             display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
+            flex-wrap: nowrap;
+        }
+
+        .badges-sheet:last-child {
+            break-after: auto;
         }
 
         /* Пунктир по границе бейджа — линия разреза. Сдвинут внутрь на полтолщины, чтобы у соседних
            бейджей линии легли друг на друга. Бейдж не сжимается под ширину листа — печатается своим размером. */
-        .badges-sheet > * {
+        .badges-row > * {
             flex: none;
             outline: 0.2mm dashed #888;
             outline-offset: -0.1mm;
@@ -71,16 +92,24 @@
         </div>
     }
 
-    <div class="badges-sheet">
-        @foreach (var lines in Model.Badges)
-        {
-            <component type="typeof(PrintableBadge)"
-                       render-mode="Static"
-                       param-WidthMm="@Model.WidthMm"
-                       param-HeightMm="@Model.HeightMm"
-                       param-BackgroundUrl="@Model.BackgroundUrl?.AbsoluteUri"
-                       param-Lines="@lines" />
-        }
-    </div>
+    @foreach (var sheet in sheets)
+    {
+        <div class="badges-sheet">
+            @foreach (var row in sheet)
+            {
+                <div class="badges-row">
+                    @foreach (var lines in row)
+                    {
+                        <component type="typeof(PrintableBadge)"
+                                   render-mode="Static"
+                                   param-WidthMm="@Model.WidthMm"
+                                   param-HeightMm="@Model.HeightMm"
+                                   param-BackgroundUrl="@Model.BackgroundUrl?.AbsoluteUri"
+                                   param-Lines="@lines" />
+                    }
+                </div>
+            }
+        </div>
+    }
 </body>
 </html>
