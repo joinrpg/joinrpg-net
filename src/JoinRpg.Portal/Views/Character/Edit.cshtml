@@ -78,11 +78,20 @@
                                value="@(Model.IsActive ? "Сохранить персонажа" : "Восстановить персонажа")"
                                class="btn btn-success" />
 
-                        @if (Model.IsActive && Model.ActiveClaimsCount == 0 &&!Model.IsDefaultTemplate)
+                        @* Кнопку не прячем, а блокируем с причиной в подсказке — иначе мастер не понимает, почему удалить нельзя. *@
+                        @if (Model.IsActive)
                         {
-                            <a href="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)" class="btn btn-danger">
-                                <join-icon icon="Delete" title="удалить" /> Удалить персонажа
-                            </a>
+                            string? deleteDisabledReason =
+                                Model.ActiveClaimsCount > 0 ? "Удалить персонажа, пока на него есть активные заявки, нельзя. Отклоните или перенаправьте заявки."
+                                : Model.IsDefaultTemplate ? "Удалить персонажа, пока он является шаблоном по умолчанию, нельзя. Шаблон по умолчанию меняется в настройках проекта."
+                                : null;
+                            <component type="typeof(JoinButton)"
+                                       render-mode="Static"
+                                       param-Link="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)"
+                                       param-Preset="ButtonPreset.Delete"
+                                       param-Label="@("Удалить персонажа")"
+                                       param-Disabled="@(deleteDisabledReason is not null)"
+                                       param-DisabledTitle="@deleteDisabledReason" />
                         }
                     </div>
                 </div>
