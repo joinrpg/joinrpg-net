@@ -15,24 +15,28 @@ public record BadgeTemplateListViewModel(
     IReadOnlyList<BadgeTemplateListItemViewModel> Items,
     bool HasEditAccess);
 
-/// <summary>Откуда строка бейджа берёт текст</summary>
-public enum BadgeLineSource
+/// <summary>От какого края бейджа отсчитывается отступ строки — подписи для формы</summary>
+public enum BadgeLineEdgeView
 {
-    [Display(Name = "Поле проекта")]
-    Field,
-    [Display(Name = "Текст")]
-    Text,
+    [Display(Name = "от верха")]
+    Top,
+    [Display(Name = "от низа")]
+    Bottom,
 }
 
+/// <summary>
+/// Строка формы. Без поля текст печатается как есть; с полем печатается значение поля, а текст —
+/// пример для превью.
+/// </summary>
 public class EditBadgeLineViewModel
 {
-    public BadgeLineSource Source { get; set; } = BadgeLineSource.Field;
-
     public ProjectFieldIdentification? FieldId { get; set; }
 
     public string? StaticText { get; set; }
 
     public int OffsetMm { get; set; } = 10;
+
+    public BadgeLineEdgeView Edge { get; set; } = BadgeLineEdgeView.Top;
 
     public int MinFontPt { get; set; } = 10;
 
@@ -67,13 +71,33 @@ public class EditBadgeTemplateViewModel : IValidatableObject
             HeightMm,
             ParseBackground(),
             [.. Lines.Select(line => new BadgeLine(
-                ProjectFieldId: line.Source == BadgeLineSource.Field ? line.FieldId?.ProjectFieldId : null,
-                StaticText: line.Source == BadgeLineSource.Text ? line.StaticText : null,
+                ProjectFieldId: line.FieldId?.ProjectFieldId,
+                StaticText: string.IsNullOrWhiteSpace(line.StaticText) ? null : line.StaticText,
                 SlotLabel: null,
                 line.OffsetMm,
                 line.MinFontPt,
                 line.MaxFontPt,
-                line.Bold))]);
+                line.Bold,
+                line.Edge == BadgeLineEdgeView.Bottom ? BadgeLineAnchor.Bottom : BadgeLineAnchor.Top))]);
+
+    /// <summary>
+    /// Новый шаблон: сразу с подписью сайта у нижнего края — мастер может её убрать или поменять.
+    /// </summary>
+    public static EditBadgeTemplateViewModel CreateNew()
+        => new()
+        {
+            Lines =
+            [
+                new EditBadgeLineViewModel
+                {
+                    StaticText = "при помощи joinrpg.ru",
+                    OffsetMm = 5,
+                    Edge = BadgeLineEdgeView.Bottom,
+                    MinFontPt = 6,
+                    MaxFontPt = 6,
+                },
+            ],
+        };
 
     public static EditBadgeTemplateViewModel FromDomain(ProjectBadgeTemplate template)
         => new()
@@ -84,13 +108,13 @@ public class EditBadgeTemplateViewModel : IValidatableObject
             BackgroundUrl = template.Layout.BackgroundUrl?.AbsoluteUri,
             Lines = [.. template.Layout.Lines.Select(line => new EditBadgeLineViewModel
             {
-                Source = line.ProjectFieldId is null ? BadgeLineSource.Text : BadgeLineSource.Field,
                 FieldId = line.ProjectFieldId is int fieldId ? new ProjectFieldIdentification(template.Id.ProjectId, fieldId) : null,
                 StaticText = line.StaticText,
                 OffsetMm = line.OffsetMm,
                 MinFontPt = line.MinFontPt,
                 MaxFontPt = line.MaxFontPt,
                 Bold = line.Bold,
+                Edge = line.Anchor == BadgeLineAnchor.Bottom ? BadgeLineEdgeView.Bottom : BadgeLineEdgeView.Top,
             })],
         };
 

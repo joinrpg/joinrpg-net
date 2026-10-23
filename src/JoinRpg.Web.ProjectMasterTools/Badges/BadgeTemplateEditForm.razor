@@ -18,6 +18,9 @@
         <EditForm Model="model" OnValidSubmit="OnSave">
             <DataAnnotationsValidator />
             <ValidationSummary />
+            <JoinPanel>
+                <Header>Бейдж</Header>
+                <Body>
             <FormHorizontal>
                 <FormRowFor For="@(() => model.Name)">
                     <JoinTextInput @bind-Value="model.Name" />
@@ -32,19 +35,24 @@
                     <JoinTextInput @bind-Value="model.BackgroundUrl" />
                 </FormRowFor>
             </FormHorizontal>
+                </Body>
+            </JoinPanel>
 
             <JoinPanel>
                 <Header>Строки</Header>
                 <Body>
                     <p class="help-block">
                         Каждая строка выровнена по центру. Шрифт подбирается от максимального вниз, пока текст не влезет
-                        в ширину бейджа; если не влезает и на минимальном — переносится на вторую строку.
+                        в ширину бейджа; если не влезает и на минимальном — переносится на вторую строку
+                        (у строки «от низа» — вверх). Без поля печатается текст; с полем — значение поля, а текст служит
+                        примером для превью.
                     </p>
                     @* Без прокручиваемой обёртки: она обрезала бы выпадающий список полей *@
                     <JoinTableSimple Responsive="false">
                         <TableHeader>
-                            <th>Что выводить</th>
-                            <th>Отступ сверху, мм</th>
+                            <th>Поле</th>
+                            <th>Текст / пример</th>
+                            <th>Отступ, мм</th>
                             <th>Шрифт от, пт</th>
                             <th>до, пт</th>
                             <th>Жирный</th>
@@ -55,19 +63,15 @@
                             {
                                 <tr @key="line">
                                     <td>
-                                        <EnumSelector TValue="BadgeLineSource" @bind-SelectedValue="line.Source" />
-                                        @if (line.Source == BadgeLineSource.Field)
-                                        {
-                                            @* Пустой пункт обязателен: без него браузер показывает первое поле, хотя оно не выбрано, а у строки
-                                               с удалённым полем — чужое поле вместо того, что напечатается *@
-                                            <SingleFieldSelector ProjectId="@ProjectId" @bind-SelectedFieldId="line.FieldId" AllowEmpty="true" EmptyText="(выберите поле)" />
-                                        }
-                                        else
-                                        {
-                                            <JoinTextInput @bind-Value="line.StaticText" />
-                                        }
+                                        @* Пустой пункт обязателен: без него браузер показывает первое поле, хотя оно не выбрано, а у строки
+                                           с удалённым полем — чужое поле вместо того, что напечатается *@
+                                        <SingleFieldSelector ProjectId="@ProjectId" @bind-SelectedFieldId="line.FieldId" AllowEmpty="true" EmptyText="(без поля — текст)" />
                                     </td>
-                                    <td><JoinInputNumber @bind-Value="line.OffsetMm" ParsingErrorMessage="Укажите отступ строки целым числом миллиметров" /></td>
+                                    <td><JoinTextInput @bind-Value="line.StaticText" placeholder="@(line.FieldId is null ? "текст" : "пример для превью")" /></td>
+                                    <td>
+                                        <JoinInputNumber @bind-Value="line.OffsetMm" ParsingErrorMessage="Укажите отступ строки целым числом миллиметров" />
+                                        <EnumSelector TValue="BadgeLineEdgeView" @bind-SelectedValue="line.Edge" />
+                                    </td>
                                     <td><JoinInputNumber @bind-Value="line.MinFontPt" ParsingErrorMessage="Укажите минимальный шрифт целым числом пунктов" /></td>
                                     <td><JoinInputNumber @bind-Value="line.MaxFontPt" ParsingErrorMessage="Укажите максимальный шрифт целым числом пунктов" /></td>
                                     <td><CheckboxInput @bind-Value="line.Bold" /></td>
@@ -142,7 +146,9 @@
 
     private void AddLine()
     {
-        var top = model.Lines.Count == 0 ? 10 : Math.Min(model.Lines.Max(l => l.OffsetMm) + 10, Math.Max(model.HeightMm - 5, 0));
+        // Новую строку ставим под нижнюю из строк «от верха»: строки «от низа» (подпись сайта) тут не мешают.
+        var topLines = model.Lines.Where(l => l.Edge == BadgeLineEdgeView.Top).ToList();
+        var top = topLines.Count == 0 ? 10 : Math.Min(topLines.Max(l => l.OffsetMm) + 10, Math.Max(model.HeightMm - 5, 0));
         model.Lines.Add(new EditBadgeLineViewModel { OffsetMm = top });
     }
 
@@ -152,12 +158,23 @@
             line.OffsetMm,
             Math.Max(line.MinFontPt, BadgeLayoutRules.MinFontPt),
             Math.Max(line.MaxFontPt, Math.Max(line.MinFontPt, BadgeLayoutRules.MinFontPt)),
-            line.Bold))];
+            line.Bold,
+            FromBottom: line.Edge == BadgeLineEdgeView.Bottom))];
 
+    // Текст — и сам текст строки без поля, и пример значения у строки с полем; без примера — название поля.
+    // Удалённое поле — первым: на печати такая строка пустая, и пример тут ввёл бы мастера в заблуждение.
     private string PreviewText(EditBadgeLineViewModel line)
-        => line.Source == BadgeLineSource.Text
-            ? line.StaticText ?? ""
-            : line.FieldId is null ? "(поле не выбрано)" : fieldNames.GetValueOrDefault(line.FieldId) ?? "(удалённое поле)";
+    {
+        if (line.FieldId is not null && fieldNames.Count > 0 && !fieldNames.ContainsKey(line.FieldId))
+        {
+            return "(удалённое поле)";
+        }
+        if (!string.IsNullOrWhiteSpace(line.StaticText))
+        {
+            return line.StaticText;
+        }
+        return line.FieldId is null ? "(пустая строка)" : fieldNames.GetValueOrDefault(line.FieldId) ?? line.FieldId.ToString();
+    }
 
     private async Task OnSave()
     {

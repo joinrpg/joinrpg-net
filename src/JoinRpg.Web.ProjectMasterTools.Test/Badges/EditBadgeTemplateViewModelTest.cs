@@ -36,17 +36,40 @@ public class EditBadgeTemplateViewModelTest
     public void ShouldRoundTripLayout()
         => EditBadgeTemplateViewModel.FromDomain(template).ToLayout().Lines.ShouldBe(template.Layout.Lines);
 
-    // Переключили строку с текста на поле — старый текст не должен уехать на сервер вторым источником.
+    // У строки с полем текст сохраняется — это пример для превью.
     [Fact]
-    public void ToLayout_TakesOnlySelectedSource()
+    public void ToLayout_KeepsSampleTextWithField()
     {
         var model = EditBadgeTemplateViewModel.FromDomain(template);
-        model.Lines[1].Source = BadgeLineSource.Field;
         model.Lines[1].FieldId = new ProjectFieldIdentification(new ProjectIdentification(5), 8);
 
         var line = model.ToLayout().Lines[1];
 
         line.ProjectFieldId.ShouldBe(8);
-        line.StaticText.ShouldBeNull();
+        line.StaticText.ShouldBe("Каэр Морхен");
+    }
+
+    [Fact]
+    public void ShouldRoundTripBottomAnchor()
+    {
+        var bottom = template with
+        {
+            Layout = template.Layout with { Lines = [template.Layout.Lines[0] with { Anchor = BadgeLineAnchor.Bottom }] },
+        };
+
+        EditBadgeTemplateViewModel.FromDomain(bottom).ToLayout().Lines.ShouldBe(bottom.Layout.Lines);
+    }
+
+    // Новый шаблон сразу с подписью сайта у нижнего края: 5 мм от низа, шрифт 6 пт.
+    [Fact]
+    public void NewTemplate_HasSiteCreditAtBottom()
+    {
+        var line = EditBadgeTemplateViewModel.CreateNew().ToLayout().Lines.ShouldHaveSingleItem();
+
+        line.StaticText.ShouldBe("при помощи joinrpg.ru");
+        line.ProjectFieldId.ShouldBeNull();
+        line.Anchor.ShouldBe(BadgeLineAnchor.Bottom);
+        line.OffsetMm.ShouldBe(5);
+        (line.MinFontPt, line.MaxFontPt).ShouldBe((6, 6));
     }
 }

@@ -43,7 +43,7 @@ public class BadgeTemplateEditModel(IBadgeTemplateClient client, ICharacterInfoR
         }
         else
         {
-            Model = new EditBadgeTemplateViewModel();
+            Model = EditBadgeTemplateViewModel.CreateNew();
         }
         return Page();
     }
