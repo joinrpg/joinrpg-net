@@ -80,13 +80,13 @@ public class PrintViewService(
         return await GetEnvelopes([.. characters.Where(character => character.IsActive)]);
     }
 
-    /// <summary>Конверты всех активных персонажей проекта.</summary>
+    /// <summary>Конверты всех активных персонажей проекта, кроме шаблонов — их не печатают.</summary>
     public async Task<IReadOnlyCollection<EnvelopeViewModel>> GetEnvelopesForActiveCharacters(
         ProjectIdentification projectId)
     {
         var characters = await characterInfoRepository.GetAllCharacterInfos(projectId, CharacterStatusSpec.Active);
 
-        return await GetEnvelopes(characters);
+        return await GetEnvelopes([.. characters.Where(character => character.CharacterTypeInfo.CharacterType != CharacterType.Slot)]);
     }
 
     private static EnvelopeViewModel Build(

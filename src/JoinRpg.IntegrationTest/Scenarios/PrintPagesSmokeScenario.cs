@@ -211,6 +211,28 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         WebUtility.HtmlDecode(printed.DocumentNode.InnerText).ShouldContain(staticText);
     }
 
+    // Пачки на «Распечатках» и конверты С5 — без шаблонов (слотов): печатать их незачем.
+    // Шаблон «Хочу на игру» создаётся вместе с проектом.
+    [Fact]
+    public async Task PrintIndex_SkipsSlots()
+    {
+        var context = await SeedAsync();
+        const string slotName = "Хочу на игру";
+
+        var index = await (await context.MasterClient.GetAsync($"{context.ProjectId.Value}/print/index")).AsHtmlDocument();
+        var stickersLink = index.DocumentNode.SelectNodes("//a[contains(@href, '/print/stickers')]")
+            .ShouldNotBeNull("Нет ссылки на печать наклеек").First();
+        var stickers = await (await context.MasterClient.GetAsync(WebUtility.HtmlDecode(stickersLink.GetAttributeValue("href", "")))).AsHtmlDocument();
+        var stickersText = WebUtility.HtmlDecode(stickers.DocumentNode.InnerText);
+        stickersText.ShouldContain(context.CharacterName);
+        stickersText.ShouldNotContain(slotName);
+
+        var envelopes = await (await context.MasterClient.GetAsync($"{context.ProjectId.Value}/print/envelopesc5")).AsHtmlDocument();
+        var envelopesText = WebUtility.HtmlDecode(envelopes.DocumentNode.InnerText);
+        envelopesText.ShouldContain(context.CharacterName);
+        envelopesText.ShouldNotContain(slotName);
+    }
+
     private static async Task<string> GetPrintPageText(SeedContext context, string action, string extraQuery = "")
     {
         var characterIds = new CompressedIntList([context.CharacterId.CharacterId]);
