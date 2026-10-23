@@ -50,11 +50,10 @@
                     @* Без прокручиваемой обёртки: она обрезала бы выпадающий список полей *@
                     <JoinTableSimple Responsive="false">
                         <TableHeader>
-                            <th>Поле</th>
-                            <th>Текст / пример</th>
-                            <th>Отступ, мм</th>
-                            <th>Шрифт от, пт</th>
-                            <th>до, пт</th>
+                            <th class="badge-line-source">Поле / текст</th>
+                            <th class="badge-line-offset">Отступ, мм</th>
+                            <th class="badge-line-number">Шрифт от, пт</th>
+                            <th class="badge-line-number">до, пт</th>
                             <th>Жирный</th>
                             <th></th>
                         </TableHeader>
@@ -62,18 +61,20 @@
                             @foreach (var line in model.Lines)
                             {
                                 <tr @key="line">
-                                    <td>
+                                    <td class="badge-line-source">
                                         @* Пустой пункт обязателен: без него браузер показывает первое поле, хотя оно не выбрано, а у строки
                                            с удалённым полем — чужое поле вместо того, что напечатается *@
                                         <SingleFieldSelector ProjectId="@ProjectId" @bind-SelectedFieldId="line.FieldId" AllowEmpty="true" EmptyText="(без поля — текст)" />
+                                        <div class="badge-line-text">
+                                            <JoinTextInput @bind-Value="line.StaticText" placeholder="@(line.FieldId is null ? "текст" : "пример для превью")" />
+                                        </div>
                                     </td>
-                                    <td><JoinTextInput @bind-Value="line.StaticText" placeholder="@(line.FieldId is null ? "текст" : "пример для превью")" /></td>
-                                    <td>
+                                    <td class="badge-line-offset">
                                         <JoinInputNumber @bind-Value="line.OffsetMm" ParsingErrorMessage="Укажите отступ строки целым числом миллиметров" />
                                         <EnumSelector TValue="BadgeLineEdgeView" @bind-SelectedValue="line.Edge" />
                                     </td>
-                                    <td><JoinInputNumber @bind-Value="line.MinFontPt" ParsingErrorMessage="Укажите минимальный шрифт целым числом пунктов" /></td>
-                                    <td><JoinInputNumber @bind-Value="line.MaxFontPt" ParsingErrorMessage="Укажите максимальный шрифт целым числом пунктов" /></td>
+                                    <td class="badge-line-number"><JoinInputNumber @bind-Value="line.MinFontPt" ParsingErrorMessage="Укажите минимальный шрифт целым числом пунктов" /></td>
+                                    <td class="badge-line-number"><JoinInputNumber @bind-Value="line.MaxFontPt" ParsingErrorMessage="Укажите максимальный шрифт целым числом пунктов" /></td>
                                     <td><CheckboxInput @bind-Value="line.Bold" /></td>
                                     <td><JoinButton Preset="ButtonPreset.Delete" Label="Убрать" OnClick="@(() => model.Lines.Remove(line))" /></td>
                                 </tr>
