@@ -16,3 +16,25 @@
     position: sticky;
     top: 1em;
 }
+
+/* Колонки с числами — ровно под двузначное число со стрелками поля ввода: не сжимаются до нечитаемого
+   и не забирают место у колонки поля */
+.badge-line-number {
+    width: 6em;
+    min-width: 6em;
+}
+
+/* Отступ — число и выбор «от верха / от низа» */
+.badge-line-offset {
+    width: 9em;
+    min-width: 9em;
+}
+
+/* Поле и текст под ним — остальная ширина */
+.badge-line-source {
+    min-width: 12em;
+}
+
+.badge-line-text {
+    margin-top: 0.3em;
+}
