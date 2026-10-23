@@ -546,15 +546,9 @@ internal class PscbPaymentsViewService(
             return blocked;
         }
 
-        var onlineTypes = readiness.GetValueOrDefault(projectId)?.OnlinePaymentTypeIds;
-        if (onlineTypes is null || onlineTypes.Count == 0)
+        if (PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(readiness.GetValueOrDefault(projectId)).Reason is { } typeReason)
         {
-            return "в проекте нет активного типа онлайн-оплаты";
-        }
-
-        if (onlineTypes.Count > 1)
-        {
-            return "в проекте несколько активных типов онлайн-оплаты";
+            return typeReason;
         }
 
         return firstClaims.ContainsKey((projectId, userId)) ? null : "у плательщика нет заявки в проекте";

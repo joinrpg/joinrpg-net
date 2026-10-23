@@ -1,4 +1,5 @@
 using System.Globalization;
+using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.WebPortal.Managers.AdminTools;
@@ -312,6 +313,53 @@ public class PscbPaymentViewModelBuilderTests
             .ExtractValue(new PscbPaymentListRow { OrderId = "0000000001", RestoreBlockReason = "у плательщика нет заявки в проекте" })
             .ShouldBe("у плательщика нет заявки в проекте");
     }
+
+    /// <summary>
+    /// Тип оплаты для восстановленного платежа (ADR026): единственный активный подходит, активный
+    /// побеждает выключенный, а единственный выключенный подходит тоже — платёж случился, когда
+    /// онлайн-оплата работала, и тип оплаты удаляется только мягко.
+    /// </summary>
+    [Fact]
+    public void ChoosesTheSingleOnlinePaymentTypeEvenWhenItIsDisabled()
+    {
+        var active = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness(new OnlinePaymentType(3, IsActive: true)));
+        active.PaymentTypeId.ShouldBe(3);
+        active.Reason.ShouldBeNull();
+
+        var disabled = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness(new OnlinePaymentType(3, IsActive: false)));
+        disabled.PaymentTypeId.ShouldBe(3);
+        disabled.Reason.ShouldBeNull();
+
+        var mixed = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
+            Readiness(new OnlinePaymentType(3, IsActive: true), new OnlinePaymentType(4, IsActive: false)));
+        mixed.PaymentTypeId.ShouldBe(3);
+        mixed.Reason.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Неоднозначность восстанавливать нельзя: угадывать тип оплаты за админа инструмент не будет.
+    /// </summary>
+    [Fact]
+    public void RefusesToChooseBetweenSeveralOnlinePaymentTypes()
+    {
+        PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
+                Readiness(new OnlinePaymentType(3, IsActive: true), new OnlinePaymentType(4, IsActive: true)))
+            .Reason.ShouldBe("в проекте несколько активных типов онлайн-оплаты");
+
+        PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
+                Readiness(new OnlinePaymentType(3, IsActive: false), new OnlinePaymentType(4, IsActive: false)))
+            .Reason.ShouldBe("в проекте несколько типов онлайн-оплаты и ни один не активен");
+
+        PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness())
+            .Reason.ShouldBe("в проекте нет типа онлайн-оплаты");
+
+        // Проекта нет в ответе репозитория — восстанавливать некуда, как и при пустом наборе типов.
+        PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(null)
+            .Reason.ShouldBe("в проекте нет типа онлайн-оплаты");
+    }
+
+    private static ProjectPaymentsReadiness Readiness(params OnlinePaymentType[] paymentTypes)
+        => new(7, IsBlocked: false, paymentTypes);
 
     /// <summary>
     /// Исход сверки (ADR026): строка банка плюс то, что нашлось у нас по <c>orderId</c>.

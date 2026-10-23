@@ -83,8 +83,9 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
     /// Готовность проектов принять восстановленный онлайн-платёж
     /// </summary>
     /// <remarks>
-    /// Активные онлайн-типы оплаты выбираются подзапросом к той же строке проекта, поэтому
-    /// на весь набор проектов один поход в базу.
+    /// Типы онлайн-оплаты выбираются подзапросом к той же строке проекта, поэтому на весь набор
+    /// проектов один поход в базу. Отдаются и выключенные типы: платёж случился, когда онлайн-оплата
+    /// была включена, и тип мог быть удалён с тех пор (тип оплаты удаляется только мягко).
     /// </remarks>
     public async Task<IReadOnlyCollection<ProjectPaymentsReadiness>> GetPaymentsReadiness(IReadOnlyCollection<int> projectIds)
     {
@@ -99,13 +100,16 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
                 {
                     project.ProjectId,
                     project.IsBlocked,
-                    OnlinePaymentTypeIds = project.PaymentTypes
-                        .Where(paymentType => paymentType.IsActive && paymentType.TypeKind == PaymentTypeKind.Online)
-                        .Select(paymentType => paymentType.PaymentTypeId)
+                    OnlinePaymentTypes = project.PaymentTypes
+                        .Where(paymentType => paymentType.TypeKind == PaymentTypeKind.Online)
+                        .Select(paymentType => new { paymentType.PaymentTypeId, paymentType.IsActive })
                         .ToList(),
                 });
 
         var result = await query.ToArrayAsync();
-        return [.. result.Select(r => new ProjectPaymentsReadiness(r.ProjectId, r.IsBlocked, r.OnlinePaymentTypeIds))];
+        return [.. result.Select(r => new ProjectPaymentsReadiness(
+            r.ProjectId,
+            r.IsBlocked,
+            [.. r.OnlinePaymentTypes.Select(paymentType => new OnlinePaymentType(paymentType.PaymentTypeId, paymentType.IsActive))]))];
     }
 }

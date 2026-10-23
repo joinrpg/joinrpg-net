@@ -686,7 +686,47 @@ public class PscbPaymentsViewServiceTests
         var service = CreateService(search, Users(42), finances, claims, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
         (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
-            .RestoreBlockReason.ShouldBe("в проекте нет активного типа онлайн-оплаты");
+            .RestoreBlockReason.ShouldBe("в проекте нет типа онлайн-оплаты");
+    }
+
+    /// <summary>
+    /// Онлайн-оплату в проекте могли с тех пор выключить: тип оплаты удаляется только мягко,
+    /// а платёж случился, когда он работал. Единственный выключенный тип восстановлению не мешает.
+    /// </summary>
+    [Fact]
+    public async Task RestoresIntoADisabledOnlinePaymentType()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddProjectWithDisabledOnlinePaymentType(7);
+        var claims = new FakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, Users(42), finances, claims, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.RestoreBlockReason.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Два выключенных типа при ни одном активном — та же неоднозначность, что и два активных:
+    /// угадывать, на какой из них пришёл платёж, нельзя.
+    /// </summary>
+    [Fact]
+    public async Task RefusesToRestoreWhenTwoOnlinePaymentTypesAreDisabled()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddProjectWithTwoDisabledOnlinePaymentTypes(7);
+        var claims = new FakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, Users(42), finances, claims, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
+            .RestoreBlockReason.ShouldBe("в проекте несколько типов онлайн-оплаты и ни один не активен");
     }
 
     /// <summary>
@@ -1055,19 +1095,31 @@ public class PscbPaymentsViewServiceTests
                 paymentTypeId));
 
         /// <summary>
-        /// Проект готов принять восстановленный платёж: не заблокирован и онлайн-тип один.
+        /// Проект готов принять восстановленный платёж: не заблокирован, онлайн-тип один и активен.
         /// </summary>
         public void AddReadyProject(int projectId, int onlinePaymentTypeId = 3)
-            => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, [onlinePaymentTypeId]));
+            => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, [new OnlinePaymentType(onlinePaymentTypeId, IsActive: true)]));
 
         public void AddBlockedProject(int projectId)
-            => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: true, [3]));
+            => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: true, [new OnlinePaymentType(3, IsActive: true)]));
 
         public void AddProjectWithoutOnlinePaymentType(int projectId)
             => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, []));
 
         public void AddProjectWithTwoOnlinePaymentTypes(int projectId)
-            => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, [3, 4]));
+            => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false,
+                [new OnlinePaymentType(3, IsActive: true), new OnlinePaymentType(4, IsActive: true)]));
+
+        /// <summary>
+        /// Онлайн-оплату в проекте с тех пор выключили (тип оплаты удаляется только мягко) —
+        /// восстановлению это мешать не должно.
+        /// </summary>
+        public void AddProjectWithDisabledOnlinePaymentType(int projectId, int onlinePaymentTypeId = 3)
+            => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, [new OnlinePaymentType(onlinePaymentTypeId, IsActive: false)]));
+
+        public void AddProjectWithTwoDisabledOnlinePaymentTypes(int projectId)
+            => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false,
+                [new OnlinePaymentType(3, IsActive: false), new OnlinePaymentType(4, IsActive: false)]));
 
         public Task<IReadOnlyCollection<ProjectPaymentsReadiness>> GetPaymentsReadiness(IReadOnlyCollection<int> projectIds)
         {

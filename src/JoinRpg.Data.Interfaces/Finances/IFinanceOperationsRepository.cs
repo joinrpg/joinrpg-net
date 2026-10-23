@@ -63,6 +63,15 @@ public record MatchedOperation(
 /// <param name="ProjectId">Проект.</param>
 /// <param name="IsBlocked">Проект заблокирован на время восстановления данных (ADR023) — в нём
 /// боевой путь не даёт ни платить, ни проводить платежи.</param>
-/// <param name="OnlinePaymentTypeIds">Активные типы оплаты с <c>TypeKind = Online</c>. Онлайн-платёж
-/// пишется на единственный такой тип, поэтому и пустой набор, и набор из нескольких — отказ.</param>
-public record ProjectPaymentsReadiness(int ProjectId, bool IsBlocked, IReadOnlyCollection<int> OnlinePaymentTypeIds);
+/// <param name="OnlinePaymentTypes">Типы оплаты проекта с <c>TypeKind = Online</c>, активные
+/// и неактивные. Неактивные нужны: потерянный платёж случился, когда онлайн-оплата была включена,
+/// и тип мог быть с тех пор выключен.</param>
+public record ProjectPaymentsReadiness(int ProjectId, bool IsBlocked, IReadOnlyCollection<OnlinePaymentType> OnlinePaymentTypes);
+
+/// <summary>
+/// Тип онлайн-оплаты проекта.
+/// </summary>
+/// <param name="PaymentTypeId">Номер типа оплаты.</param>
+/// <param name="IsActive">Тип не выключен. Тип оплаты не удаляется физически никогда, поэтому
+/// <c>false</c> означает «был удалён» (soft-delete).</param>
+public record OnlinePaymentType(int PaymentTypeId, bool IsActive);

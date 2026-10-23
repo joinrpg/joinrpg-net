@@ -1,4 +1,5 @@
 using System.Globalization;
+using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.XGameApi.Contract.Pscb;
 using Newtonsoft.Json;
@@ -264,6 +265,43 @@ internal static class PscbPaymentViewModelBuilder
             > 1 => "несколько возвратов у одного платежа",
             _ => null,
         };
+    }
+
+    /// <summary>
+    /// Тип оплаты, на который ляжет восстановленный платёж, и причина отказа, если выбрать
+    /// однозначно нельзя (ADR026).
+    /// </summary>
+    /// <remarks>
+    /// Боевой путь берёт единственный **активный** онлайн-тип через <c>SingleOrDefault</c>. Для
+    /// восстановления этого мало: платёж случился, когда онлайн-оплата в проекте была включена,
+    /// и тип мог быть с тех пор удалён, — а удаляется тип оплаты только мягко, флагом
+    /// <c>IsActive</c>. Поэтому единственный выключенный тип подходит: деньги возвращаются туда,
+    /// где они были. Отказывает только неоднозначность — несколько активных типов, либо несколько
+    /// выключенных при ни одном активном.
+    /// </remarks>
+    public static (int? PaymentTypeId, string? Reason) ChooseOnlinePaymentType(ProjectPaymentsReadiness? readiness)
+    {
+        List<OnlinePaymentType> all = readiness?.OnlinePaymentTypes.ToList() ?? [];
+
+        var active = all.Where(paymentType => paymentType.IsActive).ToList();
+        if (active.Count == 1)
+        {
+            return (active[0].PaymentTypeId, null);
+        }
+
+        if (active.Count > 1)
+        {
+            return (null, "в проекте несколько активных типов онлайн-оплаты");
+        }
+
+        if (all.Count == 1)
+        {
+            return (all[0].PaymentTypeId, null);
+        }
+
+        return all.Count == 0
+            ? (null, "в проекте нет типа онлайн-оплаты")
+            : (null, "в проекте несколько типов онлайн-оплаты и ни один не активен");
     }
 
     /// <summary>
