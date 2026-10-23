@@ -10,7 +10,7 @@ public class ProjectBadgeTemplateServiceTest : ProjectMetadataServiceTestBase
     private ProjectBadgeTemplateService CreateService()
         => new(CreatePropsService(CreateCurrentUser()), NullLogger<ProjectBadgeTemplateService>.Instance);
 
-    private static BadgeLine FieldLine(int fieldId) => new(fieldId, null, null, TopMm: 10, MinFontPt: 8, MaxFontPt: 20, Bold: false);
+    private static BadgeLine FieldLine(int fieldId) => new(fieldId, null, null, OffsetMm: 10, MinFontPt: 8, MaxFontPt: 20, Bold: false);
 
     private static BadgeLayout Layout(params BadgeLine[] lines) => new(90, 55, new Uri("https://example.com/bg.png"), lines);
 

@@ -53,6 +53,42 @@ public class BadgePrintServiceTests
         model.Warnings.ShouldBeEmpty();
     }
 
+    // При выбранном поле статический текст — только пример для превью: печатается значение поля.
+    [Fact]
+    public async Task FieldLineWithSampleText_PrintsFieldValue()
+    {
+        var character = CreateCharacter("Первый", "Цитата первого");
+        var templateId = AddTemplate(lines: [FieldLine(mock.CharacterFieldInfo) with { StaticText = "Пример для превью" }]);
+
+        var model = (await CreateService().GetBadges(templateId, [character])).ShouldNotBeNull();
+
+        model.Badges.ShouldHaveSingleItem().ShouldHaveSingleItem().Text.ShouldBe("Цитата первого");
+    }
+
+    // Пример — только для превью: при пустом поле у персонажа строка печатается пустой, а не примером.
+    [Fact]
+    public async Task FieldLineWithSampleText_EmptyField_PrintsNothing()
+    {
+        var character = CreateCharacter("Первый", "");
+        var templateId = AddTemplate(lines: [FieldLine(mock.CharacterFieldInfo) with { StaticText = "Пример для превью" }]);
+
+        var model = (await CreateService().GetBadges(templateId, [character])).ShouldNotBeNull();
+
+        model.Badges.ShouldHaveSingleItem().ShouldHaveSingleItem().Text.ShouldBe("");
+    }
+
+    [Fact]
+    public async Task BottomAnchor_ReachesComponent()
+    {
+        var character = CreateCharacter("Первый", "раз");
+        var templateId = AddTemplate(lines: [TextLine("при помощи joinrpg.ru") with { OffsetMm = 5, Anchor = BadgeLineAnchor.Bottom }]);
+
+        var line = (await CreateService().GetBadges(templateId, [character])).ShouldNotBeNull().Badges.Single().Single();
+
+        line.FromBottom.ShouldBeTrue();
+        line.OffsetMm.ShouldBe(5);
+    }
+
     [Fact]
     public async Task Badges_SkipInactiveCharacters()
     {

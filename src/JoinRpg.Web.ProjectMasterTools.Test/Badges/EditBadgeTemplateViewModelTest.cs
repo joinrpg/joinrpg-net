@@ -13,8 +13,8 @@ public class EditBadgeTemplateViewModelTest
         "Игрок",
         new BadgeLayout(90, 55, new Uri("https://example.com/bg.png"),
         [
-            new BadgeLine(ProjectFieldId: 7, StaticText: null, SlotLabel: null, TopMm: 10, MinFontPt: 12, MaxFontPt: 32, Bold: true),
-            new BadgeLine(ProjectFieldId: null, StaticText: "Каэр Морхен", SlotLabel: null, TopMm: 40, MinFontPt: 8, MaxFontPt: 12, Bold: false),
+            new BadgeLine(ProjectFieldId: 7, StaticText: null, SlotLabel: null, OffsetMm: 10, MinFontPt: 12, MaxFontPt: 32, Bold: true),
+            new BadgeLine(ProjectFieldId: null, StaticText: "Каэр Морхен", SlotLabel: null, OffsetMm: 40, MinFontPt: 8, MaxFontPt: 12, Bold: false),
         ]),
         IsActive: true);
 

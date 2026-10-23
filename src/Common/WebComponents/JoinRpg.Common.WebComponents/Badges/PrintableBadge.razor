@@ -20,7 +20,7 @@
     @foreach (var line in Lines)
     {
         <div class="join-printable-badge-line"
-             style="top: @(line.TopMm)mm; font-size: @(line.MaxFontPt)pt; font-weight: @(line.Bold ? "bold" : "normal")"
+             style="@(line.FromBottom ? "bottom" : "top"): @(line.OffsetMm)mm; font-size: @(line.MaxFontPt)pt; font-weight: @(line.Bold ? "bold" : "normal")"
              data-min-font-pt="@line.MinFontPt"
              data-max-font-pt="@line.MaxFontPt">@line.Text</div>
     }

@@ -29,9 +29,10 @@
 
     private static IReadOnlyList<PrintableBadgeLine> Lines(string name) =>
     [
-        new("Ведьмак: Каэр Морхен", TopMm: 5, MinFontPt: 8, MaxFontPt: 10, Bold: false),
-        new(name, TopMm: 18, MinFontPt: 12, MaxFontPt: 32, Bold: true),
-        new("Игрок: Иван Петров", TopMm: 42, MinFontPt: 8, MaxFontPt: 12, Bold: false),
+        new("Ведьмак: Каэр Морхен", OffsetMm: 5, MinFontPt: 8, MaxFontPt: 10, Bold: false),
+        new(name, OffsetMm: 18, MinFontPt: 12, MaxFontPt: 32, Bold: true),
+        new("Игрок: Иван Петров", OffsetMm: 36, MinFontPt: 8, MaxFontPt: 12, Bold: false),
+        new("при помощи joinrpg.ru", OffsetMm: 5, MinFontPt: 6, MaxFontPt: 6, Bold: false, FromBottom: true),
     ];
 }
 

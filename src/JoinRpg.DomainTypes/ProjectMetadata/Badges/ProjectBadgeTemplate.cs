@@ -34,23 +34,34 @@ public record BadgeLayout(
     IReadOnlyList<BadgeLine> Lines);
 
 /// <summary>
-/// Строка бейджа. Значение берётся из поля проекта (<see cref="ProjectFieldId"/>) или из
-/// статического текста (<see cref="StaticText"/>) — ровно из одного источника. Строка общего шаблона
-/// ещё не привязана к полю: тогда оба источника пустые, а <see cref="SlotLabel"/> подсказывает,
-/// какое поле к ней привязать при копировании в проект.
+/// Строка бейджа. Значение берётся из поля проекта (<see cref="ProjectFieldId"/>), а без поля — из
+/// статического текста (<see cref="StaticText"/>). При выбранном поле статический текст — только пример
+/// для превью в редакторе, на печать он не попадает. Строка общего шаблона ещё не привязана к полю:
+/// тогда <see cref="SlotLabel"/> подсказывает, какое поле к ней привязать при копировании в проект.
 /// </summary>
 /// <param name="ProjectFieldId">Id поля проекта (без проекта — проект задаёт сам шаблон)</param>
-/// <param name="StaticText">Неизменный текст, одинаковый на всех бейджах</param>
+/// <param name="StaticText">Неизменный текст, одинаковый на всех бейджах; при выбранном поле — пример для превью</param>
 /// <param name="SlotLabel">Подпись строки в редакторе, например «Имя персонажа»</param>
-/// <param name="TopMm">Отступ верхнего края строки от верха бейджа, мм</param>
+/// <param name="OffsetMm">Отступ строки от края бейджа, мм: верхнего края строки от верха бейджа или нижнего — от низа (<see cref="Anchor"/>)</param>
 /// <param name="MinFontPt">Минимальный размер шрифта, пт. Если и на нём текст не влезает — переносится</param>
 /// <param name="MaxFontPt">Максимальный размер шрифта, пт. Короткий текст печатается им</param>
 /// <param name="Bold">Полужирный шрифт</param>
+/// <param name="Anchor">От какого края бейджа отсчитывается <see cref="OffsetMm"/>. В строках, сохранённых до появления привязки, его нет — значит, сверху</param>
 public record BadgeLine(
     int? ProjectFieldId,
     string? StaticText,
     string? SlotLabel,
-    int TopMm,
+    int OffsetMm,
     int MinFontPt,
     int MaxFontPt,
-    bool Bold);
+    bool Bold,
+    BadgeLineAnchor Anchor = BadgeLineAnchor.Top);
+
+/// <summary>От какого края бейджа отсчитывается отступ строки</summary>
+public enum BadgeLineAnchor
+{
+    /// <summary>Верх строки — на заданном расстоянии от верха бейджа</summary>
+    Top,
+    /// <summary>Низ строки — на заданном расстоянии от низа бейджа; перенесённая строка растёт вверх</summary>
+    Bottom,
+}
