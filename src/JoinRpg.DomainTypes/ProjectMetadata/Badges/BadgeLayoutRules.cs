@@ -13,8 +13,27 @@ public class BadgeTemplateInvalidException(ProjectIdentification projectId, IRea
 public static class BadgeLayoutRules
 {
     public const int MinSizeMm = 10;
-    public const int MaxWidthMm = 200;
-    public const int MaxHeightMm = 287;
+    /// <summary>Лист печати — A4</summary>
+    public const int SheetWidthMm = 210;
+    public const int SheetHeightMm = 297;
+
+    /// <summary>
+    /// Отступ бейджей от края листа. Поля самой страницы при печати нулевые — так браузер не печатает
+    /// колонтитулы (дату, адрес), а отступ даёт лист.
+    /// </summary>
+    public const int SheetMarginMm = 10;
+
+    public const int MaxWidthMm = SheetWidthMm - (2 * SheetMarginMm);
+    public const int MaxHeightMm = SheetHeightMm - (2 * SheetMarginMm);
+
+    /// <summary>Сколько бейджей такого размера влезает в ряд на листе печати</summary>
+    public static int BadgesPerRow(int widthMm) => Math.Max(1, MaxWidthMm / Math.Max(widthMm, 1));
+
+    /// <summary>Сколько рядов бейджей такого размера влезает на лист печати</summary>
+    public static int RowsPerSheet(int heightMm) => Math.Max(1, MaxHeightMm / Math.Max(heightMm, 1));
+
+    /// <summary>Сколько бейджей такого размера влезает на лист печати</summary>
+    public static int BadgesPerSheet(int widthMm, int heightMm) => BadgesPerRow(widthMm) * RowsPerSheet(heightMm);
     public const int MinFontPt = 4;
     public const int MaxFontPt = 200;
     public const int MaxNameLength = 100;

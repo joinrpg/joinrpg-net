@@ -68,4 +68,16 @@ public class BadgeLayoutRulesTest
     [Fact]
     public void LineBelowBadgeIsError()
         => BadgeLayoutRules.GetErrors("Игрок", Layout(fieldLine with { OffsetMm = 55 })).ShouldHaveSingleItem();
+
+    // A4 минус отступы 10 мм — 190×277 мм под бейджи.
+    [Theory]
+    [InlineData(90, 55, 10)]   // 2 в ряд × 5 рядов
+    [InlineData(190, 277, 1)]  // самый большой допустимый — один на лист
+    [InlineData(54, 86, 9)]    // вертикальная карточка: 3 × 3
+    public void BadgesPerSheet_FitsIntoA4WithMargins(int width, int height, int expected)
+        => BadgeLayoutRules.BadgesPerSheet(width, height).ShouldBe(expected);
+
+    [Fact]
+    public void MaxSize_IsA4MinusMargins()
+        => (BadgeLayoutRules.MaxWidthMm, BadgeLayoutRules.MaxHeightMm).ShouldBe((190, 277));
 }
