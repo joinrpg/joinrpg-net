@@ -109,7 +109,9 @@ public class PrintController(
     public async Task<ActionResult> Index(ProjectIdentification projectId)
     {
         // Странице нужны только идентификаторы ссылок, поэтому лёгкая проекция, а не агрегаты.
-        var characters = await characterInfoRepository.GetCharactersForList(projectId, CharacterStatusSpec.Active);
+        // Шаблоны (слоты) не печатают: ни конверта, ни бейджа у них нет.
+        var characters = (await characterInfoRepository.GetCharactersForList(projectId, CharacterStatusSpec.Active))
+            .Where(character => character.CharacterTypeInfo.CharacterType != CharacterType.Slot);
 
         var badgeTemplates = await GetActiveBadgeTemplates(projectId);
 

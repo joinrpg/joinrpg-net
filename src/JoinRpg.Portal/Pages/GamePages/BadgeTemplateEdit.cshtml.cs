@@ -34,7 +34,10 @@ public class BadgeTemplateEditModel(IBadgeTemplateClient client, ICharacterInfoR
             {
                 Model = await client.GetById(templateId);
                 // Лёгкая проекция, а не агрегаты: странице нужны только идентификаторы для ссылок.
-                ActiveCharacterIds = [.. (await characterInfoRepository.GetCharactersForList(ProjectId, CharacterStatusSpec.Active)).Select(c => c.Id)];
+                // Шаблоны (слоты) не печатают — бейдж у них не нужен.
+                ActiveCharacterIds = [.. (await characterInfoRepository.GetCharactersForList(ProjectId, CharacterStatusSpec.Active))
+                    .Where(c => c.CharacterTypeInfo.CharacterType != CharacterType.Slot)
+                    .Select(c => c.Id)];
             }
             catch (JoinRpgEntityNotFoundException)
             {
