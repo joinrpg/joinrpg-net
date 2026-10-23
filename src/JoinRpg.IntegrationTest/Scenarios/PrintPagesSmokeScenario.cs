@@ -189,6 +189,28 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         }
     }
 
+    // Со страницы шаблона — печать всех активных персонажей этим шаблоном.
+    [Fact]
+    public async Task TemplatePage_LinksToPrintingAllCharacters()
+    {
+        var context = await SeedAsync();
+        const string staticText = "Печать со страницы шаблона";
+        var templateId = await factory.Services.RunAsAsync(
+            context.MasterId,
+            sp => sp.GetRequiredService<IProjectBadgeTemplateService>().CreateAsync(
+                context.ProjectId,
+                "Шаблон для печати всех",
+                new BadgeLayout(90, 55, null, [new BadgeLine(null, staticText, null, 10, 8, 20, Bold: false)])));
+
+        var page = await (await context.MasterClient.GetAsync(
+            $"{context.ProjectId.Value}/tools/badges/edit/{templateId.ProjectBadgeTemplateId}")).AsHtmlDocument();
+        var link = page.DocumentNode.SelectNodes($"//a[contains(@href, 'badgeTemplateId={templateId.ProjectBadgeTemplateId}')]")
+            .ShouldNotBeNull("Нет ссылки на печать этим шаблоном").First();
+
+        var printed = await (await context.MasterClient.GetAsync(WebUtility.HtmlDecode(link.GetAttributeValue("href", "")))).AsHtmlDocument();
+        WebUtility.HtmlDecode(printed.DocumentNode.InnerText).ShouldContain(staticText);
+    }
+
     private static async Task<string> GetPrintPageText(SeedContext context, string action, string extraQuery = "")
     {
         var characterIds = new CompressedIntList([context.CharacterId.CharacterId]);

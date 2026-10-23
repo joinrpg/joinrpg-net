@@ -1,39 +1,6 @@
 @using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Web.Models.Print
 @model JoinRpg.Web.Models.Print.PrintIndexViewModel
-
-@functions
-{
-
-    class Chunk
-    {
-        public required string Name { get; set; }
-        public required string CharacterIds { get; set; }
-    }
-
-    IEnumerable<Chunk> SplitByChunks(int chunkSize = 100)
-    {
-        yield return new Chunk() { Name = "[все]", CharacterIds = new CompressedIntList(Model.CharacterIds).ToString() };
-
-        if (Model.CharacterIds.Count > chunkSize)
-        {
-
-            for (var i = 0; i < Model.CharacterIds.Count; i += chunkSize)
-            {
-                var characters = Model.CharacterIds.Skip(i).Take(chunkSize).ToArray();
-                if (!characters.Any())
-                {
-                    continue;
-                }
-                yield return new Chunk()
-                {
-                    Name = $"[{i + 1}–{i + characters.Length}]",
-                    CharacterIds = new CompressedIntList(characters).ToString(),
-                };
-            }
-        }
-    }
-
-}
 
 @{
     ViewBag.Title = "Распечатки";
@@ -44,7 +11,7 @@
 <div class="panel panel-default">
     <div class="panel-heading">
         Содержимое конвертов <br />
-        @foreach (var chunk in @SplitByChunks(30))
+        @foreach (var chunk in @PrintChunks.Split(Model.CharacterIds, 30))
         {
             @Html.ActionLink(chunk.Name, "CharacterList",
             new { Model.ProjectId, chunk.CharacterIds })
@@ -62,7 +29,7 @@
 <div class="panel panel-default">
     <div class="panel-heading">
         Только раздатка <br />
-        @foreach (var chunk in @SplitByChunks())
+        @foreach (var chunk in @PrintChunks.Split(Model.CharacterIds))
         {
             @Html.ActionLink(chunk.Name, "HandoutOnly",
             new { Model.ProjectId, chunk.CharacterIds })
@@ -79,7 +46,7 @@
 <div class="panel panel-default">
     <div class="panel-heading">
         Наклейки на конверты <br />
-        @foreach (var chunk in @SplitByChunks())
+        @foreach (var chunk in @PrintChunks.Split(Model.CharacterIds))
         {
             @Html.ActionLink(chunk.Name, "Stickers",
             new { Model.ProjectId, chunk.CharacterIds })
@@ -101,7 +68,7 @@
         {
             <br />
             @template.Name<text>: </text>
-            @foreach (var chunk in @SplitByChunks())
+            @foreach (var chunk in @PrintChunks.Split(Model.CharacterIds))
             {
                 @Html.ActionLink(chunk.Name, "Badges",
                 new { Model.ProjectId, badgeTemplateId = template.BadgeTemplateId, chunk.CharacterIds })
