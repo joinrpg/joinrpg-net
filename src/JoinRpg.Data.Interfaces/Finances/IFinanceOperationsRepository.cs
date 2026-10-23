@@ -22,6 +22,17 @@ public interface IFinanceOperationsRepository
     /// </remarks>
     /// <param name="commentIds">Идентификаторы операций (<c>FinanceOperation.CommentId</c>).</param>
     Task<IReadOnlyCollection<MatchedOperation>> GetOperationsByCommentIds(IReadOnlyCollection<int> commentIds);
+
+    /// <summary>
+    /// Готовность проектов принять восстановленный онлайн-платёж — одним запросом на весь набор.
+    /// </summary>
+    /// <remarks>
+    /// Блокировка проекта и его активные онлайн-типы оплаты лежат в одной строке проекта, поэтому
+    /// читаются вместе. Типов отдаётся набор, а не один: «нет ни одного» и «несколько» — разные
+    /// причины отказа, и админ должен видеть разницу.
+    /// </remarks>
+    /// <param name="projectIds">Проекты, которые надо проверить.</param>
+    Task<IReadOnlyCollection<ProjectPaymentsReadiness>> GetPaymentsReadiness(IReadOnlyCollection<int> projectIds);
 }
 
 /// <summary>
@@ -38,4 +49,20 @@ public record ApprovedRefund(int RefundedOperationId, FinanceOperationIdentifica
 /// <param name="OperationId">Идентификатор операции; он же даёт проект и заявку.</param>
 /// <param name="State">Состояние операции (<c>FinanceOperation.State</c>).</param>
 /// <param name="OperationType">Вид операции (<c>FinanceOperation.OperationType</c>).</param>
-public record MatchedOperation(FinanceOperationIdentification OperationId, FinanceOperationState State, FinanceOperationType OperationType);
+/// <param name="PaymentTypeId">Тип оплаты операции. Нужен восстановлению возврата: возврат пишется
+/// на тип исходного платежа, а не на тот, что активен в проекте сегодня.</param>
+public record MatchedOperation(
+    FinanceOperationIdentification OperationId,
+    FinanceOperationState State,
+    FinanceOperationType OperationType,
+    int? PaymentTypeId);
+
+/// <summary>
+/// Готов ли проект принять восстановленный платёж (ADR026).
+/// </summary>
+/// <param name="ProjectId">Проект.</param>
+/// <param name="IsBlocked">Проект заблокирован на время восстановления данных (ADR023) — в нём
+/// боевой путь не даёт ни платить, ни проводить платежи.</param>
+/// <param name="OnlinePaymentTypeIds">Активные типы оплаты с <c>TypeKind = Online</c>. Онлайн-платёж
+/// пишется на единственный такой тип, поэтому и пустой набор, и набор из нескольких — отказ.</param>
+public record ProjectPaymentsReadiness(int ProjectId, bool IsBlocked, IReadOnlyCollection<int> OnlinePaymentTypeIds);

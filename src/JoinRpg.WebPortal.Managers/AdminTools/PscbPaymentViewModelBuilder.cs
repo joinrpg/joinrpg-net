@@ -227,6 +227,46 @@ internal static class PscbPaymentViewModelBuilder
         => matchState is { } state ? MatchStateNames.GetValueOrDefault(state, state.ToString()) : null;
 
     /// <summary>
+    /// Почему строку нельзя восстановить — по самим данным банка, без базы (ADR026).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Сумма обязана быть целым положительным числом рублей: <c>FinanceOperation.MoneyAmount</c> —
+    /// <c>int</c>, а JoinRpg всегда отправляет банку целые рубли, поэтому копейки означают чужой
+    /// платёж, а округление исказило бы деньги.
+    /// </para>
+    /// <para>
+    /// Возврат обязан быть один и на всю сумму: частичных возвратов <c>PaymentsService</c>
+    /// не реализует (<c>NotImplementedException</c>), и операция возврата у нас одна на платёж.
+    /// </para>
+    /// </remarks>
+    public static string? RestoreBlockReasonFromBankData(PscbPaymentListRow row)
+    {
+        if (row.Amount <= 0)
+        {
+            return "сумма неположительная";
+        }
+
+        if (row.Amount != decimal.Truncate(row.Amount))
+        {
+            return "сумма с копейками, а операция хранит целые рубли";
+        }
+
+        if (!row.RefundedByBank)
+        {
+            return null;
+        }
+
+        return row.Refunds.Count switch
+        {
+            0 => "банк отметил возврат, но не прислал его данных",
+            1 when row.Refunds.Single().Amount != row.Amount => "частичный возврат",
+            > 1 => "несколько возвратов у одного платежа",
+            _ => null,
+        };
+    }
+
+    /// <summary>
     /// Номер финансовой операции из <c>orderId</c> банка: это <c>CommentId</c>, дополненный нулями
     /// до десяти знаков (<c>PaymentsService.GetOrderId</c>).
     /// </summary>

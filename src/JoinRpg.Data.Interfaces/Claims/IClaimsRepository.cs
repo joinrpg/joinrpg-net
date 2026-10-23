@@ -58,4 +58,26 @@ public interface IClaimsRepository : IDisposable
     /// </summary>
     Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
 
+    /// <summary>
+    /// Номера заявок перечисленных игроков в одном проекте — во всех статусах и без агрегатов.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Только номера: полный агрегат заявки догружает персонажа, операции и игрока, но не проект,
+    /// а сверке списка платежей с базой (ADR026) нужен один номер.
+    /// </para>
+    /// <para>
+    /// Отклонённые и снятые с обсуждения заявки отдаются тоже: потерянный платёж бывает и на
+    /// закрытой заявке. Выбирает из них вызывающий.
+    /// </para>
+    /// </remarks>
+    Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds);
+
 }
+
+/// <summary>
+/// Заявка игрока в проекте: кто и какая заявка.
+/// </summary>
+/// <param name="UserId">Игрок (<c>Claim.PlayerUserId</c>).</param>
+/// <param name="ClaimId">Номер заявки.</param>
+public record PlayerClaimId(int UserId, int ClaimId);

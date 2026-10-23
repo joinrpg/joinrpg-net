@@ -87,6 +87,8 @@
                     платёж проведён, а возврата у нас нет; <span class="text-warning">не проведён</span> —
                     операция есть, но не проведена, и инструмент её не трогает. Номер платежа — ссылка
                     на операцию, «заявка» под пользователем — на заявку, к которой она относится.
+                    Строка под исходом — причина, по которой восстановить автоматически нельзя;
+                    у «потерян» без такой строки восстановление сработает.
                 </p>
                 <div style="overflow-x: auto;">
                     <table class="table table-striped table-condensed">
@@ -123,6 +125,10 @@
                                         @if (payment.MatchStateText is { } matchStateText)
                                         {
                                             <span class="@MatchStateClass(payment.MatchState)">@matchStateText</span>
+                                        }
+                                        @if (payment.RestoreBlockReason is { } blockReason)
+                                        {
+                                            <div class="text-muted">@blockReason</div>
                                         }
                                     </td>
                                     <td>@payment.BankPaymentId</td>

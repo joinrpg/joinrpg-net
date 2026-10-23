@@ -1,3 +1,4 @@
+using System.Globalization;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.WebPortal.Managers.AdminTools;
@@ -46,6 +47,7 @@ public class PscbPaymentViewModelBuilderTests
         "Состояние",
         "Ссылка на операцию",
         "Сверка с JoinRpg",
+        "Восстановление",
     ];
 
     [Fact]
@@ -266,6 +268,49 @@ public class PscbPaymentViewModelBuilderTests
         row.ClaimUrl.ShouldBeNull();
         row.MatchState.ShouldBeNull();
         row.MatchStateText.ShouldBeNull();
+        row.RestoreBlockReason.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Отказы, которые видны по самим данным банка, до всякой базы (ADR026): сумма обязана быть
+    /// целым положительным числом рублей, потому что <c>FinanceOperation.MoneyAmount</c> — <c>int</c>,
+    /// а возврат — один и на всю сумму, потому что частичных возвратов у нас нет.
+    /// </summary>
+    [Theory]
+    [InlineData("100", false, new double[0], null)]
+    [InlineData("100.00", false, new double[0], null)]
+    [InlineData("100.50", false, new double[0], "сумма с копейками, а операция хранит целые рубли")]
+    [InlineData("0", false, new double[0], "сумма неположительная")]
+    [InlineData("-100", false, new double[0], "сумма неположительная")]
+    [InlineData("100", true, new[] { 100.0 }, null)]
+    [InlineData("100", true, new[] { 40.0 }, "частичный возврат")]
+    [InlineData("100", true, new double[0], "банк отметил возврат, но не прислал его данных")]
+    [InlineData("100", true, new[] { 50.0, 50.0 }, "несколько возвратов у одного платежа")]
+    public void ReportsTheRestoreBlockersVisibleInTheBankData(string amount, bool refundedByBank, double[] refundAmounts, string? expected)
+    {
+        var row = new PscbPaymentListRow
+        {
+            OrderId = "0000000001",
+            Amount = decimal.Parse(amount, CultureInfo.InvariantCulture),
+            RefundedByBank = refundedByBank,
+            Refunds = [.. refundAmounts.Select(refundAmount => new PscbRefundInfo { RefundId = "1", Status = "END", Amount = (decimal)refundAmount })],
+        };
+
+        PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row).ShouldBe(expected);
+    }
+
+    /// <summary>
+    /// Колонка «Восстановление» обязана донести причину до выгрузки: по ней админ понимает,
+    /// что разбирать руками.
+    /// </summary>
+    [Fact]
+    public void CsvRendersTheRestoreBlockReason()
+    {
+        var columns = new PscbPaymentsCsvExporter().ParseColumns().ToList();
+
+        ByName(columns, "Восстановление")
+            .ExtractValue(new PscbPaymentListRow { OrderId = "0000000001", RestoreBlockReason = "у плательщика нет заявки в проекте" })
+            .ShouldBe("у плательщика нет заявки в проекте");
     }
 
     /// <summary>
@@ -532,6 +577,7 @@ public class PscbPaymentViewModelBuilderTests
         ByName(columns, "Ссылка на заявку").ExtractValue(row).ShouldBeNull();
         ByName(columns, "Ссылка на операцию").ExtractValue(row).ShouldBeNull();
         ByName(columns, "Сверка с JoinRpg").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Восстановление").ExtractValue(row).ShouldBeNull();
     }
 
     [Fact]

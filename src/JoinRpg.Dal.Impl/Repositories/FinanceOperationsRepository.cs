@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using LinqKit;
 
@@ -68,12 +69,43 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
 
         var query = ctx.Set<FinanceOperation>()
                 .Where(fo => commentIds.Contains(fo.CommentId))
-                .Select(fo => new { fo.ProjectId, fo.ClaimId, fo.CommentId, fo.State, fo.OperationType });
+                .Select(fo => new { fo.ProjectId, fo.ClaimId, fo.CommentId, fo.State, fo.OperationType, fo.PaymentTypeId });
 
         var result = await query.ToArrayAsync();
         return [.. result.Select(r => new MatchedOperation(
             new FinanceOperationIdentification(r.ProjectId, r.ClaimId, r.CommentId),
             r.State,
-            r.OperationType))];
+            r.OperationType,
+            r.PaymentTypeId))];
+    }
+
+    /// <summary>
+    /// Готовность проектов принять восстановленный онлайн-платёж
+    /// </summary>
+    /// <remarks>
+    /// Активные онлайн-типы оплаты выбираются подзапросом к той же строке проекта, поэтому
+    /// на весь набор проектов один поход в базу.
+    /// </remarks>
+    public async Task<IReadOnlyCollection<ProjectPaymentsReadiness>> GetPaymentsReadiness(IReadOnlyCollection<int> projectIds)
+    {
+        if (projectIds.Count == 0)
+        {
+            return [];
+        }
+
+        var query = ctx.Set<Project>()
+                .Where(project => projectIds.Contains(project.ProjectId))
+                .Select(project => new
+                {
+                    project.ProjectId,
+                    project.IsBlocked,
+                    OnlinePaymentTypeIds = project.PaymentTypes
+                        .Where(paymentType => paymentType.IsActive && paymentType.TypeKind == PaymentTypeKind.Online)
+                        .Select(paymentType => paymentType.PaymentTypeId)
+                        .ToList(),
+                });
+
+        var result = await query.ToArrayAsync();
+        return [.. result.Select(r => new ProjectPaymentsReadiness(r.ProjectId, r.IsBlocked, r.OnlinePaymentTypeIds))];
     }
 }

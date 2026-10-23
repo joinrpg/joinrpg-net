@@ -281,4 +281,28 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
         return await MapToClaimWithPlayer(query);
     }
+
+    /// <summary>
+    /// Номера заявок игроков проекта — во всех статусах и без агрегатов (ADR026)
+    /// </summary>
+    public async Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
+    {
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        var players = userIds.Select(userId => userId.Value).ToList();
+        var predicate = PredicateBuilder.New<Claim>()
+            .And(ClaimPredicates.GetForProject(projectId))
+            .And(claim => players.Contains(claim.PlayerUserId));
+
+        var result = await Ctx.ClaimSet
+            .AsExpandable()
+            .Where(predicate)
+            .Select(claim => new { claim.PlayerUserId, claim.ClaimId })
+            .ToListAsync();
+
+        return [.. result.Select(claim => new PlayerClaimId(claim.PlayerUserId, claim.ClaimId))];
+    }
 }

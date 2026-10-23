@@ -62,6 +62,8 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
 
     public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
 
+    public Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
+
     /// <summary>Заголовок заявки из мока — так его собрал бы настоящий репозиторий.</summary>
     public static ClaimWithPlayer ToHeader(Claim claim)
         => new()

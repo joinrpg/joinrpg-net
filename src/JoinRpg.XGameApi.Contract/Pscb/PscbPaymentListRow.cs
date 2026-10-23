@@ -186,4 +186,11 @@ public class PscbPaymentListRow
     /// the restore button is enabled by it — while the text is what the page and the export show.
     /// </summary>
     public string? MatchStateText { get; set; }
+
+    /// <summary>
+    /// Why this row cannot be restored automatically, in human-readable Russian — «Восстановление».
+    /// Null both for a row that can be restored and for a row that needs no restore at all;
+    /// <see cref="MatchState"/> tells those apart.
+    /// </summary>
+    public string? RestoreBlockReason { get; set; }
 }

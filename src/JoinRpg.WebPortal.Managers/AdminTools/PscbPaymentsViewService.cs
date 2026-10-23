@@ -1,5 +1,6 @@
 using System.Globalization;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -45,6 +46,7 @@ internal class PscbPaymentsViewService(
     ISearchService searchService,
     IUserRepository userRepository,
     IFinanceOperationsRepository financeOperationsRepository,
+    IClaimsRepository claimsRepository,
     ILogger<PscbPaymentsViewService> logger) : IPscbPaymentsClient
 {
     public async Task<PscbPaymentsListResult> GetPayments(PscbPaymentsQuery query)
@@ -107,28 +109,47 @@ internal class PscbPaymentsViewService(
 
     /// <summary>
     /// Добавляет к данным банка то, что знает JoinRpg: ссылки на пользователя и проект, списки
-    /// тех, кого найти не удалось, возвраты и исход сверки каждой строки с нашей базой.
+    /// тех, кого найти не удалось, возвраты, исход сверки каждой строки с нашей базой и вердикт
+    /// восстановления.
     /// </summary>
     /// <remarks>
     /// Это дополнение к данным банка, а не их часть, поэтому его поломка не должна уносить уже
     /// полученный список: ошибка логируется, ссылки и списки остаются пустыми, а исход сверки —
     /// неизвестным (<c>MatchState</c> равен <c>null</c>, а не какому-нибудь из значений).
-    /// Порядок значим: сверка идёт последней, потому что «нет возврата» определяется по ссылке
-    /// на операцию возврата, которую проставляет предыдущий шаг.
+    /// Порядок значим: сверка идёт после возвратов, потому что «нет возврата» определяется по
+    /// ссылке на операцию возврата, а вердикт восстановления — последним, потому что ему нужны
+    /// и определённые плательщик с проектом, и исход сверки.
     /// </remarks>
     private async Task EnrichAsync(PscbPaymentsListResult result)
     {
         try
         {
-            await FillUserLinksAsync(result);
-            await FillProjectLinksAsync(result);
+            var resolution = new RowResolution();
+            await FillUserLinksAsync(result, resolution);
+            await FillProjectLinksAsync(result, resolution);
             await FillRefundsAsync(result.Payments);
-            await FillReconciliationAsync(result.Payments);
+            var operations = await FillReconciliationAsync(result.Payments);
+            await FillRestorePlanAsync(result.Payments, resolution, operations);
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to enrich the payments list with the JoinRpg data");
         }
+    }
+
+    /// <summary>
+    /// Что удалось определить по строке списка: нужно и для ссылок, и для вердикта восстановления.
+    /// </summary>
+    /// <remarks>
+    /// Ключ — сама строка. Строки не переопределяют равенство, поэтому сравнение идёт по ссылке:
+    /// <c>orderId</c> уникальным ключом не является (банк переименовывает заброшенные попытки,
+    /// и номер способен повториться), а плодить параллельные списки по индексу хрупко.
+    /// </remarks>
+    private sealed class RowResolution
+    {
+        public Dictionary<PscbPaymentListRow, int> UserIds { get; } = [];
+
+        public Dictionary<PscbPaymentListRow, int> ProjectIds { get; } = [];
     }
 
     /// <summary>
@@ -140,7 +161,7 @@ internal class PscbPaymentsViewService(
     /// удалён или объединён, а платёж создан не через JoinRpg. Найденный по email пользователь
     /// может иметь другой id, и ссылка ведёт на него — база первоисточник, а не значение из платежа.
     /// </remarks>
-    private async Task FillUserLinksAsync(PscbPaymentsListResult result)
+    private async Task FillUserLinksAsync(PscbPaymentsListResult result, RowResolution resolution)
     {
         var existingIds = await LoadExistingUserIdsAsync(result.Payments);
         var idsByEmail = await FindUsersByEmailAsync(result.Payments, existingIds);
@@ -151,6 +172,7 @@ internal class PscbPaymentsViewService(
             if (ResolveUserId(row, existingIds, idsByEmail) is { } userId)
             {
                 row.UserUrl = uriService.Get(new UserLinkable(userId));
+                resolution.UserIds[row] = userId;
                 continue;
             }
 
@@ -240,14 +262,14 @@ internal class PscbPaymentsViewService(
     private static int? ParseUserId(string? account)
         => int.TryParse(account, NumberStyles.Integer, CultureInfo.InvariantCulture, out var userId) ? userId : null;
 
-    private async Task FillProjectLinksAsync(PscbPaymentsListResult result)
+    private async Task FillProjectLinksAsync(PscbPaymentsListResult result, RowResolution resolution)
     {
         // Поиск идёт по названию, а названий в выгрузке за месяц единицы при сотнях платежей,
         // поэтому запрос к базе один на distinct-название, а не один на платёж.
-        var urls = new Dictionary<string, string?>(StringComparer.Ordinal);
+        var projects = new Dictionary<string, ResolvedProject?>(StringComparer.Ordinal);
         foreach (var name in DistinctProjectNames(result.Payments))
         {
-            urls[name] = await FindProjectUrlAsync(name);
+            projects[name] = await FindProjectAsync(name);
         }
 
         var unresolved = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -258,9 +280,10 @@ internal class PscbPaymentsViewService(
                 continue;
             }
 
-            if (urls.TryGetValue(name, out var url) && url is not null)
+            if (projects.TryGetValue(name, out var project) && project is not null)
             {
-                row.ProjectUrl = url;
+                row.ProjectUrl = project.Url;
+                resolution.ProjectIds[row] = project.ProjectId;
                 continue;
             }
 
@@ -339,11 +362,12 @@ internal class PscbPaymentsViewService(
     /// и исход — проведён, потерян, не проведён (ADR026).
     /// </summary>
     /// <remarks>
-    /// Найденная операция даёт и заявку, поэтому у строки с операцией ссылка на заявку есть, а у
-    /// потерянной — нет: заявку потерянного платежа ещё предстоит определить, и это делает
-    /// восстановление, а не сверка. Запрос к базе один на весь список и идёт по первичному ключу.
+    /// Найденная операция даёт и заявку, поэтому у строки с операцией ссылка на заявку есть сразу.
+    /// Запрос к базе один на весь список и идёт по первичному ключу. Найденные операции
+    /// возвращаются: вердикту восстановления нужен тип оплаты исходного платежа, чтобы вернуть
+    /// деньги на тот же тип, а не на тот, что активен в проекте сегодня.
     /// </remarks>
-    private async Task FillReconciliationAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
+    private async Task<IReadOnlyDictionary<int, MatchedOperation>> FillReconciliationAsync(IReadOnlyCollection<PscbPaymentListRow> rows)
     {
         var operationIds = rows
             .Select(row => PscbPaymentViewModelBuilder.OperationIdFromOrderId(row.OrderId))
@@ -378,25 +402,205 @@ internal class PscbPaymentsViewService(
             row.OperationUrl = financeOperationUri.GetUri(matched.OperationId).AbsoluteUri;
             row.ClaimUrl = claimUri.GetUri(matched.OperationId.ClaimId).AbsoluteUri;
         }
+
+        return found;
     }
 
     /// <summary>
-    /// Ссылка на проект с точно таким названием.
+    /// Вердикт восстановления для строк, которые сверка сочла потерянными (ADR026): ссылка
+    /// на заявку, куда платёж ляжет, и причина, если восстановить автоматически нельзя.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Правило заказчика: восстанавливать можно только то, что определилось однозначно. Платёж
+    /// пишется на заявку с наименьшим номером среди всех заявок плательщика в проекте — закрытые
+    /// и отклонённые подходят тоже, потому что потерянный платёж бывает и на них. Тип оплаты —
+    /// единственный активный <c>Online</c> в проекте; если их ноль или несколько, восстанавливать
+    /// некуда.
+    /// </para>
+    /// <para>
+    /// Строка с пропущенным возвратом заявку и тип оплаты берёт у найденной операции платежа,
+    /// поэтому плательщик и проект ей не нужны: деньги возвращаются туда, откуда пришли.
+    /// </para>
+    /// </remarks>
+    private async Task FillRestorePlanAsync(
+        IReadOnlyCollection<PscbPaymentListRow> rows,
+        RowResolution resolution,
+        IReadOnlyDictionary<int, MatchedOperation> operations)
+    {
+        var candidates = rows
+            .Where(row => row.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing)
+            .ToList();
+
+        if (candidates.Count == 0)
+        {
+            return;
+        }
+
+        var claims = await LoadFirstClaimIdsAsync(candidates, resolution);
+        var readiness = await LoadReadinessAsync(candidates, resolution, operations);
+
+        foreach (var row in candidates)
+        {
+            var matched = MatchedOperationOf(row, operations);
+            row.RestoreBlockReason = BlockReason(row, matched, resolution, claims, readiness);
+
+            // Заявка строки с пропущенным возвратом уже проставлена сверкой — она у операции платежа.
+            if (row.MatchState == PscbPaymentMatchState.Lost
+                && resolution.ProjectIds.TryGetValue(row, out var projectId)
+                && resolution.UserIds.TryGetValue(row, out var userId)
+                && claims.TryGetValue((projectId, userId), out var claimId))
+            {
+                row.ClaimUrl = claimUri.GetUri(new ClaimIdentification(projectId, claimId)).AbsoluteUri;
+            }
+        }
+    }
+
+    /// <summary>
+    /// По первой заявке на пару (проект, плательщик): заявок в любом статусе, выбирается наименьший
+    /// номер. Один запрос на проект, а не на строку.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<(int ProjectId, int UserId), int>> LoadFirstClaimIdsAsync(
+        IReadOnlyCollection<PscbPaymentListRow> candidates,
+        RowResolution resolution)
+    {
+        var firstClaims = new Dictionary<(int ProjectId, int UserId), int>();
+        foreach (var group in ResolvedPairs(candidates, resolution).GroupBy(pair => pair.ProjectId))
+        {
+            var userIds = group.Select(pair => new UserIdentification(pair.UserId)).Distinct().ToList();
+            foreach (var claim in await claimsRepository.GetClaimIdsForPlayers(new ProjectIdentification(group.Key), userIds))
+            {
+                var key = (group.Key, claim.UserId);
+                // Заявок у игрока в проекте бывает несколько; берём наименьший номер, как решил заказчик.
+                firstClaims[key] = Math.Min(firstClaims.GetValueOrDefault(key, int.MaxValue), claim.ClaimId);
+            }
+        }
+
+        return firstClaims;
+    }
+
+    /// <summary>
+    /// Готовность проектов принять восстановленный платёж: блокировка и активные онлайн-типы оплаты.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<int, ProjectPaymentsReadiness>> LoadReadinessAsync(
+        IReadOnlyCollection<PscbPaymentListRow> candidates,
+        RowResolution resolution,
+        IReadOnlyDictionary<int, MatchedOperation> operations)
+    {
+        var projectIds = ResolvedPairs(candidates, resolution).Select(pair => pair.ProjectId).ToHashSet();
+        foreach (var row in candidates)
+        {
+            // У строки с пропущенным возвратом проект определяется по операции платежа, а не по
+            // названию из назначения: операция первоисточник.
+            if (MatchedOperationOf(row, operations)?.OperationId.ProjectId.Value is { } operationProjectId)
+            {
+                _ = projectIds.Add(operationProjectId);
+            }
+        }
+
+        return (await financeOperationsRepository.GetPaymentsReadiness([.. projectIds]))
+            .ToDictionary(project => project.ProjectId);
+    }
+
+    /// <summary>
+    /// Причина, по которой строку нельзя восстановить автоматически, либо <c>null</c> — значит можно.
+    /// Причины проверяются по порядку от самых общих: админу важнее понять, чего не хватает,
+    /// чем увидеть все причины сразу.
+    /// </summary>
+    private static string? BlockReason(
+        PscbPaymentListRow row,
+        MatchedOperation? matched,
+        RowResolution resolution,
+        IReadOnlyDictionary<(int ProjectId, int UserId), int> firstClaims,
+        IReadOnlyDictionary<int, ProjectPaymentsReadiness> readiness)
+    {
+        if (PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row) is { } bankReason)
+        {
+            return bankReason;
+        }
+
+        // Возврат пишется туда же, откуда пришёл платёж: заявка и тип оплаты берутся у найденной
+        // операции, и ни плательщик, ни название проекта для этого не нужны.
+        if (row.MatchState == PscbPaymentMatchState.RefundMissing)
+        {
+            return matched switch
+            {
+                null => "операция платежа не найдена",
+                { PaymentTypeId: null } => "у операции платежа нет типа оплаты",
+                _ => IsBlocked(matched.OperationId.ProjectId.Value, readiness),
+            };
+        }
+
+        if (!resolution.UserIds.TryGetValue(row, out var userId))
+        {
+            return "плательщик не определён";
+        }
+
+        if (!resolution.ProjectIds.TryGetValue(row, out var projectId))
+        {
+            return "проект не определён";
+        }
+
+        if (IsBlocked(projectId, readiness) is { } blocked)
+        {
+            return blocked;
+        }
+
+        var onlineTypes = readiness.GetValueOrDefault(projectId)?.OnlinePaymentTypeIds;
+        if (onlineTypes is null || onlineTypes.Count == 0)
+        {
+            return "в проекте нет активного типа онлайн-оплаты";
+        }
+
+        if (onlineTypes.Count > 1)
+        {
+            return "в проекте несколько активных типов онлайн-оплаты";
+        }
+
+        return firstClaims.ContainsKey((projectId, userId)) ? null : "у плательщика нет заявки в проекте";
+    }
+
+    private static string? IsBlocked(int projectId, IReadOnlyDictionary<int, ProjectPaymentsReadiness> readiness)
+        => readiness.TryGetValue(projectId, out var project) && project.IsBlocked
+            ? "проект заблокирован, его восстанавливают инструментами DRP"
+            : null;
+
+    private static MatchedOperation? MatchedOperationOf(
+        PscbPaymentListRow row,
+        IReadOnlyDictionary<int, MatchedOperation> operations)
+        => PscbPaymentViewModelBuilder.OperationIdFromOrderId(row.OrderId) is { } operationId
+            ? operations.GetValueOrDefault(operationId)
+            : null;
+
+    /// <summary>
+    /// Пары (проект, плательщик), которые удалось определить, — по ним идут запросы к базе.
+    /// </summary>
+    private static IEnumerable<(int ProjectId, int UserId)> ResolvedPairs(
+        IReadOnlyCollection<PscbPaymentListRow> rows,
+        RowResolution resolution)
+        => rows
+            .Where(row => resolution.ProjectIds.ContainsKey(row) && resolution.UserIds.ContainsKey(row))
+            .Select(row => (resolution.ProjectIds[row], resolution.UserIds[row]))
+            .Distinct();
+
+    /// <summary>
+    /// Проект с точно таким названием: и ссылка, и номер — номер нужен вердикту восстановления.
     /// </summary>
     /// <remarks>
     /// Поиск по проектам ищет вхождением подстроки и не фильтрует по правам, поэтому совпадение
-    /// сверяется по полному имени. Ссылка ставится только при однозначном совпадении: при
-    /// нескольких проектах с одним именем она вела бы на случайный из них. Названия короче трёх
-    /// символов поиск не находит вовсе — это его собственное ограничение.
+    /// сверяется по полному имени. Проект определяется только при однозначном совпадении: при
+    /// нескольких проектах с одним именем ссылка вела бы на случайный из них, а восстанавливать
+    /// платёж в случайный проект нельзя. Названия короче трёх символов поиск не находит вовсе —
+    /// это его собственное ограничение.
     /// </remarks>
-    private async Task<string?> FindProjectUrlAsync(string projectName)
+    private async Task<ResolvedProject?> FindProjectAsync(string projectName)
     {
         var found = await searchService.SearchAsync(currentUserId: null, projectName, [LinkType.Project]);
         var matches = found
             .Where(result => result.ProjectId is not null && string.Equals(result.Name, projectName, StringComparison.Ordinal))
             .ToList();
 
-        return matches.Count == 1 ? uriService.Get(matches[0]) : null;
+        return matches.Count == 1 ? new ResolvedProject(matches[0].ProjectId!.Value, uriService.Get(matches[0])) : null;
     }
 
     /// <summary>
@@ -461,4 +665,9 @@ internal class PscbPaymentsViewService(
 
         public int? ProjectId => null;
     }
+
+    /// <summary>
+    /// Проект, который удалось однозначно определить по названию из назначения платежа.
+    /// </summary>
+    private sealed record ResolvedProject(int ProjectId, string Url);
 }
