@@ -70,7 +70,7 @@ internal class ClaimServiceImpl(
                         ?? throw new JoinRpgInvalidUserException();
 
                     // Деньги принимаются ДО смены статуса: приём гасит взнос, и только после него
-                    // validator.CanCheckInAtDesk может стать истинным.
+                    // validator.CanCheckInNow может стать истинным.
                     ctx.AcceptFee(".", ctx.Now, ctx.Request, paymentType);
                 }
                 else if (ctx.Request < 0)
@@ -78,7 +78,7 @@ internal class ClaimServiceImpl(
                     throw new InvalidOperationException();
                 }
 
-                if (!validator.CanCheckInAtDesk)
+                if (!validator.CanCheckInNow)
                 {
                     throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
                 }
