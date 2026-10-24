@@ -32,18 +32,4 @@ public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator cla
     public bool CanCheckInInPrinciple => NotCheckedInAlready && IsApproved && Problems.Count == 0;
 
     public bool CanCheckInNow => CanCheckInInPrinciple && FeeDue <= 0;
-
-    // TODO: временный хак — на проекте 1612 взнос при регистрации не отмечается. Взнос и долг
-    // заявки при этом не меняются, хак действует только на форму регистрации и её проверку в сервисе.
-    private bool SkipFeeOnCheckIn => context.ProjectInfo.ProjectId.Value == 1612;
-
-    /// <summary>
-    /// Сколько принять на стойке регистрации. Обычно это <see cref="FeeDue"/>.
-    /// </summary>
-    public int FeeToAcceptOnCheckIn => SkipFeeOnCheckIn ? 0 : FeeDue;
-
-    /// <summary>
-    /// Можно ли зарегистрировать игрока прямо сейчас — проверка самой операции регистрации.
-    /// </summary>
-    public bool CanCheckInAtDesk => CanCheckInInPrinciple && FeeToAcceptOnCheckIn <= 0;
 }
