@@ -27,14 +27,14 @@
 }
 
 <form asp-action="DoCheckIn" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-  <input type="hidden" name="money" id="money" value="@Model.Validator.FeeDue" />
+  <input type="hidden" name="money" id="money" value="@Model.Validator.FeeToAcceptOnCheckIn" />
 
   @Html.ValidationSummary()
-  @if (Model.Validator.FeeDue > 0)
+  @if (Model.Validator.FeeToAcceptOnCheckIn > 0)
   {
 
   <div class="panel panel-default">
-    <div class="panel-heading">Принять взнос @Model.Validator.FeeDue</div>
+    <div class="panel-heading">Принять взнос @Model.Validator.FeeToAcceptOnCheckIn</div>
     <div class="panel-body">
       @{
         var disableAcceptFeeCheckbox = Model.CanAcceptFee ? "" : "disabled";
@@ -48,7 +48,7 @@
       }
       <input type="checkbox" name="feeAccepted" id="feeAccepted" required="" @disableAcceptFeeCheckbox style="transform: scale(1.5); margin: 1em" />
       <label for="feeAccepted">
-        Я, @Model.CurrentUserFullName, принял оплату взноса в размере @Model.Validator.FeeDue рублей, эти деньги будут лежать у меня для передачи уполномоченному мастеру.
+        Я, @Model.CurrentUserFullName, принял оплату взноса в размере @Model.Validator.FeeToAcceptOnCheckIn рублей, эти деньги будут лежать у меня для передачи уполномоченному мастеру.
       </label>
     </div>
   </div>
