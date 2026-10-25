@@ -80,8 +80,9 @@ public class MasterProfileEditScenario(JoinApplicationFactory factory) : IClassF
             Permissions = [new() { Permission = Permission.CanGrantRights, Value = true }],
         });
 
-        // Отказ атрибута авторизации, а не сервиса (тот дал бы 500).
+        // Отказ атрибута авторизации, а не сервиса: сервис тоже отвечает 403, но с ProblemDetails, а у атрибута тело пустое.
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        response.Content.Headers.ContentType?.MediaType.ShouldNotBe("application/problem+json");
         (await client.GetAsync(AccessUrl(projectId, "GetPermissions") + $"?userId={masterId.Value}"))
             .StatusCode.ShouldBe(HttpStatusCode.Forbidden);
         (await GetProjectInfo(projectId)).HasMasterAccess(masterId, Permission.CanGrantRights).ShouldBeFalse();

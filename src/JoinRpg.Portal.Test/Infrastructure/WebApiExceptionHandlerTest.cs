@@ -2,6 +2,7 @@ using System.Text.Json;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Infrastructure;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -67,6 +68,36 @@ public class WebApiExceptionHandlerTest
         httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status500InternalServerError);
         problem.GetProperty("title").GetString().ShouldBe("Неизвестная ошибка на сервере");
         problem.GetRawText().ShouldNotContain("секрет");
+    }
+
+    /// <summary>
+    /// Так обработчик вызывает <c>UseExceptionHandler</c> со страницей ошибки: путь запроса уже переписан на
+    /// <c>/error</c>, исходный — в <see cref="IExceptionHandlerPathFeature"/>.
+    /// </summary>
+    [Fact]
+    public async Task WebApiPathRewrittenToErrorPage_StillHandled()
+    {
+        var httpContext = CreateHttpContext("/error");
+        httpContext.Features.Set<IExceptionHandlerPathFeature>(
+            new ExceptionHandlerFeature { Path = "/webapi/1611/project/SaveContactSettings", Error = new ProjectBlockedException(ProjectId) });
+
+        var (handled, problem) = await Handle(httpContext, new ProjectBlockedException(ProjectId));
+
+        handled.ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status409Conflict);
+        problem.GetProperty("title").GetString().ShouldStartWith("Проект заблокирован");
+    }
+
+    [Fact]
+    public async Task PageRewrittenToErrorPage_NotHandled()
+    {
+        var httpContext = CreateHttpContext("/error");
+        httpContext.Features.Set<IExceptionHandlerPathFeature>(
+            new ExceptionHandlerFeature { Path = "/1611/project/settings", Error = new ProjectBlockedException(ProjectId) });
+
+        var (handled, _) = await Handle(httpContext, new ProjectBlockedException(ProjectId));
+
+        handled.ShouldBeFalse();
     }
 
     [Fact]
