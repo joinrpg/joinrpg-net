@@ -370,7 +370,6 @@ internal class ClaimServiceImpl(
                         finance.State = FinanceOperationState.Declined;
                         extraAction = CommentExtraAction.RejectFinance;
                         break;
-                    case FinanceOperationAction.None:
                     default:
                         throw new ArgumentOutOfRangeException(nameof(financeAction), financeAction, null);
                 }

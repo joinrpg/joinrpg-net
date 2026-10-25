@@ -76,7 +76,6 @@ public interface IClaimService
 
 public enum FinanceOperationAction
 {
-    None,
     Approve,
     Decline,
 }
