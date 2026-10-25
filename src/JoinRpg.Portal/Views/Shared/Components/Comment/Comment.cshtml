@@ -109,12 +109,11 @@
                             }
                             else if (Model.Finance.State == FinanceOperationState.Proposed)
                             {
-                                if (comment.ShowFinanceModeration)
+                                if (comment.FinanceModeration is not null)
                                 {
-                    <a data-toggle="collapse"
-                       href="#answerComment@( comment.CommentId)" class="btn btn-warning btn-xs">
-                        Подтвердить / отклонить
-                    </a>
+                    <component type="typeof(JoinRpg.Web.Claims.Finance.FinanceModerationButton)"
+                               render-mode="WebAssemblyPrerendered"
+                               param-Operation="comment.FinanceModeration" />
                                 }
                                 else
                                 {
@@ -141,7 +140,6 @@
                           ProjectId = comment.ProjectId,
                           CommentDiscussionId = comment.CommentDiscussionId,
                           ParentCommentId = comment.CommentId,
-                          EnableFinanceAction = comment.ShowFinanceModeration,
                           EnableHideFromUser = comment.HasMasterAccess,
                           HideFromUser = !comment.IsVisibleToPlayer
                         };

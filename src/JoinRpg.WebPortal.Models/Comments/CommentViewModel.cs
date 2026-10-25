@@ -1,6 +1,7 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
+using JoinRpg.Web.Claims.Finance;
 using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models;
@@ -32,7 +33,11 @@ public class CommentViewModel
             .OrderBy(c => c.CreatedTime);
         ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?)comment.ExtraAction.Value;
         IsVisible = comment.IsVisibleTo(currentUserId.Value, projectInfo);
+        FinanceModeration = ShowFinanceModeration ? comment.Finance!.ToModerationView(projectInfo) : null;
     }
+
+    /// <summary>Сводка для диалога модерации, если текущий пользователь может подтвердить операцию.</summary>
+    public FinanceModerationOperationView? FinanceModeration { get; }
 
     public bool IsRead { get; }
     public bool IsVisibleToPlayer { get; }

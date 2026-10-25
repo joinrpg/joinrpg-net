@@ -198,6 +198,34 @@ public class FinanceModerationApiScenario(JoinApplicationFactory factory) : ICla
         return await client.PostJsonWithTokenHeaderAsync("webapi/claim-comment/AddComment", request, token);
     }
 
+    /// <summary>
+    /// Кнопка диалога на странице заявки — в комментарии с операцией. Остров пререндерится на сервере, так что
+    /// заодно видно, что его параметр собирается без ошибок и лишних загрузок.
+    /// </summary>
+    [Fact]
+    public async Task ClaimPage_ShowsModerationButton_OnlyToModerator()
+    {
+        var seed = await SeedAsync();
+        var master = await seed.MasterClientAsync(factory);
+        var player = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), seed.PlayerEmail);
+        var claimPage = $"{seed.OperationId.ProjectId.Value}/claim/{seed.OperationId.ClaimId.ClaimId}/edit";
+
+        var masterPage = await master.GetAsync(claimPage);
+        var playerPage = await player.GetAsync(claimPage);
+
+        masterPage.StatusCode.ShouldBe(HttpStatusCode.OK);
+        // Текст из окна острова, а не только с кнопки: у прежней ссылки-раскрывашки подпись была та же
+        (await PageTextAsync(masterPage)).ShouldContain("Оставить комментарий");
+        playerPage.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var playerText = await PageTextAsync(playerPage);
+        playerText.ShouldNotContain("Оставить комментарий");
+        playerText.ShouldContain("Ждет одобрения мастером");
+    }
+
+    /// <summary>Текст страницы: пререндер островов кодирует кириллицу HTML-сущностями.</summary>
+    private static async Task<string> PageTextAsync(HttpResponseMessage response)
+        => HtmlAgilityPack.HtmlEntity.DeEntitize((await response.AsHtmlDocument()).DocumentNode.InnerText);
+
     private static async Task<HttpResponseMessage> PostAsync<TBody>(HttpClient client, Seed seed, string action, TBody body)
     {
         var token = await client.GetAntiforgeryTokenAsync(AntiforgeryTokenPage);
