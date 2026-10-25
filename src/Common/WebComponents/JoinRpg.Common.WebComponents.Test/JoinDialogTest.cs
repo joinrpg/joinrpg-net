@@ -30,6 +30,39 @@ public class JoinDialogTest
         cut.WaitForAssertion(() => module.Invocations["showModal"].ShouldHaveSingleItem());
     }
 
+    /// <summary>
+    /// Свой футер вместо <see cref="JoinDialog.Buttons"/> нужен, когда кнопки не должны закрывать окно сразу —
+    /// например, при отказе сервера окно остаётся открытым с введённым текстом.
+    /// </summary>
+    [Fact]
+    public void RendersFooterContentWithoutButtons()
+    {
+        using var ctx = new BunitContext();
+        ctx.Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        ctx.Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        _ = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+
+        var cut = ctx.Render<JoinDialog>(parameters => parameters
+            .Add(d => d.ChildContent, (RenderFragment)(b => b.AddContent(0, "Диалог")))
+            .Add(d => d.FooterContent, (RenderFragment)(b => b.AddContent(0, "Свои кнопки"))));
+
+        cut.Find(".join-dialog-footer").TextContent.ShouldContain("Свои кнопки");
+    }
+
+    [Fact]
+    public void HasNoFooterWithoutButtonsAndFooterContent()
+    {
+        using var ctx = new BunitContext();
+        ctx.Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        ctx.Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        _ = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+
+        var cut = ctx.Render<JoinDialog>(parameters => parameters
+            .Add(d => d.ChildContent, (RenderFragment)(b => b.AddContent(0, "Диалог"))));
+
+        cut.FindAll(".join-dialog-footer").ShouldBeEmpty();
+    }
+
     private sealed class OpensDialogOnFirstRender : ComponentBase
     {
         private JoinDialog dialog = null!;
