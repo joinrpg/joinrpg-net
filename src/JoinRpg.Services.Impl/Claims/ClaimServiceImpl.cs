@@ -42,42 +42,26 @@ internal class ClaimServiceImpl(
     // Именно ChangeClaimAsync: у ChangeClaim есть перегрузка Func<ctx, TResult>, и async-лямбда
     // связалась бы с ней (TResult = Task), то есть внутренний Task никто бы не ждал — исключения
     // операции терялись бы, а сохранение не происходило.
-    public Task CheckInClaim(ClaimIdentification claimId, int money)
+    /// <remarks>
+    /// Деньги здесь не принимаются (#4890): взнос на стойке принимается отдельной операцией до
+    /// регистрации, и снимок заявки, по которому считает валидатор, его уже видит. Пока это была одна
+    /// операция, долг проверялся по снимку до приёма денег, и регистрация с приёмом взноса не проходила.
+    /// </remarks>
+    public Task CheckInClaim(ClaimIdentification claimId)
         => characterPropsService.ChangeClaimAsync(
             claimId,
             // TODO(#4891) нужно специфическое право. Перенесено как есть: до миграции это был
             // LoadClaimAsMaster(claimId) без дополнительных требований.
             ClaimAccessRequirement.AnyMaster,
             ProjectActiveRequirement.MustBeActive,
-            money,
+            claimId,
             async ctx =>
             {
-                // Проверяем заранее, а пишем статус после приёма денег — как и до миграции.
                 ctx.Claim.EnsureCanChangeStatus(ClaimStatus.CheckedIn);
 
                 // Правила регистрации считаются по доменным сущностям (#4892): персонаж и заявка
                 // уже лежат в контексте, профиль игрока нужен проблемам заявки целиком.
                 var validator = new ClaimCheckInValidator(await ctx.LoadClaimInfo(UserRepository), claimValidator);
-                if (!validator.CanCheckInInPrinciple)
-                {
-                    throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
-                }
-
-                if (ctx.Request > 0)
-                {
-                    var paymentType = ctx.ProjectInfo.ProjectFinanceSettings
-                        .GetCashPaymentType(ctx.CurrentUser.UserIdentification)
-                        ?? throw new JoinRpgInvalidUserException();
-
-                    // Деньги принимаются ДО смены статуса: приём гасит взнос, и только после него
-                    // validator.CanCheckInAtDesk может стать истинным.
-                    ctx.AcceptFee(".", ctx.Now, ctx.Request, paymentType);
-                }
-                else if (ctx.Request < 0)
-                {
-                    throw new InvalidOperationException();
-                }
-
                 if (!validator.CanCheckInAtDesk)
                 {
                     throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);

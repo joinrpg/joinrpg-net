@@ -4,7 +4,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces;
+using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.XGameApi.Contract;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +13,7 @@ namespace JoinRpg.Portal.Controllers.XGameApi;
 [Route("x-game-api/{projectId}/checkin"), XGameMasterAuthorize()]
 public class CheckInController(
     IClaimsRepository claimsRepository,
-    IClaimService claimsService,
+    CheckInDeskManager checkInDeskManager,
     IClaimProblemValidator claimValidator,
     IClaimInfoRepository claimInfoRepository) : XGameApiController
 {
@@ -113,7 +113,7 @@ public class CheckInController(
             return NotFound();
         }
 
-        await claimsService.CheckInClaim(claim.GetId(), command.MoneyPaid);
+        await checkInDeskManager.CheckIn(claim.GetId(), command.MoneyPaid);
         return "OK";
     }
 }

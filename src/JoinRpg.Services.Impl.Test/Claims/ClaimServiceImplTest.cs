@@ -1483,7 +1483,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     {
         var claim = CreateApprovedClaimForCheckIn();
 
-        await CreateService().CheckInClaim(claim.GetId(), money: 0);
+        await CreateService().CheckInClaim(claim.GetId());
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
         claim.CheckInDate.ShouldNotBeNull();
@@ -1496,58 +1496,19 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     /// <summary>
-    /// С деньгами уведомлений два, и порядок следует порядку операций: сначала приняли взнос, потом
-    /// зарегистрировали.
-    /// </summary>
-    /// <remarks>
-    /// До миграции рассылка шла наоборот — статусное письмо первым, финансовое вторым, — хотя
-    /// операции выполнялись в обратном порядке. Порядок выровнен по операциям сознательно.
-    /// </remarks>
-    [Fact]
-    public async Task CheckInClaim_WithMoney_SendsFinanceNotificationBeforeStatusOne()
-    {
-        _ = mock.CreateCashPaymentType();
-        var claim = CreateApprovedClaimForCheckIn();
-
-        await CreateService().CheckInClaim(claim.GetId(), money: 100);
-
-        claim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
-        claim.FinanceOperations.ShouldHaveSingleItem().MoneyAmount.ShouldBe(100);
-
-        SaveChangesCallCount.ShouldBe(1);
-        SentNotifications.Count.ShouldBe(2);
-        SentNotifications[0].ShouldBeOfType<ClaimSimpleChangedNotification>()
-            .CommentExtraAction.ShouldBe(CommentExtraAction.PaidFee);
-        SentNotifications[1].ShouldBeOfType<ClaimSimpleChangedNotification>()
-            .CommentExtraAction.ShouldBe(CommentExtraAction.CheckedIn);
-    }
-
-    /// <summary>
-    /// Наличных денег принять некому — у мастера нет наличного типа оплаты.
+    /// Взнос на стойке принимается отдельной операцией до регистрации (#4890), сама регистрация
+    /// с долгом не проходит.
     /// </summary>
     [Fact]
-    public async Task CheckInClaim_WithMoneyWithoutCashPaymentType_Throws_AndDoesNotSave()
+    public async Task CheckInClaim_WithFeeDue_Throws_AndDoesNotSave()
     {
         var claim = CreateApprovedClaimForCheckIn();
+        claim.CurrentFee = 100;
 
-        _ = await Should.ThrowAsync<JoinRpgInvalidUserException>(
-            () => CreateService().CheckInClaim(claim.GetId(), money: 100));
-
-        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
-        SaveChangesCallCount.ShouldBe(0);
-        SentNotifications.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public async Task CheckInClaim_WithNegativeMoney_Throws_AndDoesNotSave()
-    {
-        var claim = CreateApprovedClaimForCheckIn();
-
-        _ = await Should.ThrowAsync<InvalidOperationException>(
-            () => CreateService().CheckInClaim(claim.GetId(), money: -100));
+        _ = await Should.ThrowAsync<ClaimWrongStatusException>(
+            () => CreateService().CheckInClaim(claim.GetId()));
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
-        claim.Character.InGame.ShouldBeFalse();
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();
     }
@@ -1558,7 +1519,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var claim = CreateClaim(ClaimStatus.AddedByUser);
 
         _ = await Should.ThrowAsync<ClaimWrongStatusException>(
-            () => CreateService().CheckInClaim(claim.GetId(), money: 0));
+            () => CreateService().CheckInClaim(claim.GetId()));
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
         SaveChangesCallCount.ShouldBe(0);
@@ -1571,7 +1532,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var claim = CreateApprovedClaimForCheckIn();
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateService(mock.Player.UserId).CheckInClaim(claim.GetId(), money: 0));
+            () => CreateService(mock.Player.UserId).CheckInClaim(claim.GetId()));
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
         SaveChangesCallCount.ShouldBe(0);
