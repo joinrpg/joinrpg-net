@@ -33,20 +33,6 @@ public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator cla
 
     public bool CanCheckInNow => CanCheckInInPrinciple && FeeDue <= 0;
 
-    // TODO: временный хак — на проекте 1612 взнос при регистрации не отмечается. Взнос и долг
-    // заявки при этом не меняются, хак действует только на форму регистрации и её проверку в сервисе.
-    private bool SkipFeeOnCheckIn => context.ProjectInfo.ProjectId.Value == 1612;
-
-    /// <summary>
-    /// Сколько принять на стойке регистрации. Обычно это <see cref="FeeDue"/>.
-    /// </summary>
-    public int FeeToAcceptOnCheckIn => SkipFeeOnCheckIn ? 0 : FeeDue;
-
-    /// <summary>
-    /// Можно ли зарегистрировать игрока прямо сейчас — проверка самой операции регистрации.
-    /// </summary>
-    public bool CanCheckInAtDesk => CanCheckInInPrinciple && FeeToAcceptOnCheckIn <= 0;
-
     /// <summary>
     /// Регистрацией в обход не обойти: заявка должна быть одобрена и ещё не зарегистрирована.
     /// </summary>
@@ -57,7 +43,7 @@ public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator cla
     /// нечего (регистрация и так возможна) или обойти нельзя (заявка не одобрена или уже зарегистрирована).
     /// </summary>
     public CheckInOverride? RequiredOverride
-        => !CanCheckInWithOverrideInPrinciple || CanCheckInAtDesk
+        => !CanCheckInWithOverrideInPrinciple || CanCheckInNow
             ? null
             : new([.. Problems.Select(CheckInBlockerKey.From)], Math.Max(FeeDue, 0));
 

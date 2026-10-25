@@ -76,3 +76,10 @@
   <input type="submit" class="btn btn-success" value="Зарегистрировать игрока" />
   }
 </form>
+
+@if (checkIn.Override is { } checkInOverride)
+{
+  <component type="typeof(JoinRpg.Web.CheckIn.CheckInOverridePanel)" render-mode="Static"
+             param-Model="@checkInOverride"
+             param-Endpoint="@Url.Action("DoCheckIn", new { checkIn.ProjectId, checkIn.ClaimId })" />
+}
