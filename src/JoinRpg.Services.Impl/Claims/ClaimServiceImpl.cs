@@ -47,14 +47,14 @@ internal class ClaimServiceImpl(
     /// регистрации, и снимок заявки, по которому считает валидатор, его уже видит. Пока это была одна
     /// операция, долг проверялся по снимку до приёма денег, и регистрация с приёмом взноса не проходила.
     /// </remarks>
-    public Task CheckInClaim(ClaimIdentification claimId)
+    public Task CheckInClaim(ClaimIdentification claimId, CheckInOverride? checkInOverride = null)
         => characterPropsService.ChangeClaimAsync(
             claimId,
             // TODO(#4891) нужно специфическое право. Перенесено как есть: до миграции это был
             // LoadClaimAsMaster(claimId) без дополнительных требований.
             ClaimAccessRequirement.AnyMaster,
             ProjectActiveRequirement.MustBeActive,
-            claimId,
+            checkInOverride,
             async ctx =>
             {
                 ctx.Claim.EnsureCanChangeStatus(ClaimStatus.CheckedIn);
@@ -62,17 +62,61 @@ internal class ClaimServiceImpl(
                 // Правила регистрации считаются по доменным сущностям (#4892): персонаж и заявка
                 // уже лежат в контексте, профиль игрока нужен проблемам заявки целиком.
                 var validator = new ClaimCheckInValidator(await ctx.LoadClaimInfo(UserRepository), claimValidator);
-                if (!validator.CanCheckInAtDesk)
+
+                // Подтверждение обхода нужно, только если без него регистрация невозможна: лишнее
+                // подтверждение ничего не меняет и в историю не попадает.
+                var overridden = !validator.CanCheckInAtDesk;
+                if (overridden)
                 {
-                    throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+                    if (ctx.Request is not { } confirmedOverride)
+                    {
+                        throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+                    }
+                    if (!ctx.ProjectInfo.HasMasterAccess(ctx.CurrentUser.UserIdentification, Permission.CanManageClaims))
+                    {
+                        throw new NoAccessToProjectException(ctx.ProjectInfo, ctx.CurrentUser.UserId, Permission.CanManageClaims);
+                    }
+                    if (!validator.CanCheckInWithOverride(confirmedOverride))
+                    {
+                        throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
+                    }
                 }
 
                 ctx.ChangeStatus(ctx.Claim, ClaimStatus.CheckedIn);
                 ctx.MarkChanged(ctx.Character);
                 ctx.Character.InGame = true;
 
-                _ = ctx.AddComment("", CommentExtraAction.CheckedIn, ClaimOperationType.MasterVisibleChange);
+                _ = ctx.AddComment(
+                    overridden ? DescribeCheckInOverride(validator) : "",
+                    CommentExtraAction.CheckedIn,
+                    ClaimOperationType.MasterVisibleChange);
             });
+
+    /// <summary>
+    /// Запись в истории заявки о регистрации в обход: что именно пропустили. Кто зарегистрировал,
+    /// видно по автору записи.
+    /// </summary>
+    // TODO[Localize] текст истории собирается в сервисе.
+    private static string DescribeCheckInOverride(ClaimCheckInValidator validator)
+    {
+        var skipped = new List<string>();
+
+        var fields = validator.Problems.OfType<FieldRelatedProblem>().Select(p => $"«{p.Field.Name}»").Distinct().ToList();
+        if (fields.Count > 0)
+        {
+            skipped.Add("не в порядке поля " + string.Join(", ", fields));
+        }
+        if (validator.Problems.Any(p => p is not FieldRelatedProblem))
+        {
+            skipped.Add("не хватает данных профиля игрока");
+        }
+        if (validator.FeeDue > 0)
+        {
+            skipped.Add($"взнос не сдан, долг {validator.FeeDue} ₽");
+        }
+
+        return "Зарегистрирован в обход проверок: " + string.Join("; ", skipped) + ".";
+    }
 
     /// <summary>
     /// Выход на вторую роль: зарегистрированная заявка выходит из игры, а на другого персонажа

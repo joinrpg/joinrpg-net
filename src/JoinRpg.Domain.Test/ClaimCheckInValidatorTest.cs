@@ -23,10 +23,12 @@ public class ClaimCheckInValidatorTest
     /// </summary>
     private ProjectInfo PassportRequested() => WithRequirement(s => s with { RequirePassport = MandatoryStatus.Recommended });
 
-    private ClaimCheckInValidator MakeValidator(ProjectInfo projectInfo, bool sensitiveDataAllowed = false, UserInfo? player = null)
+    private ClaimCheckInValidator MakeValidator(ProjectInfo projectInfo, bool sensitiveDataAllowed = false, UserInfo? player = null, int? fee = null)
     {
         var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
         claim.PlayerAllowedSenstiveData = sensitiveDataAllowed;
+        claim.CurrentFee = fee;
+        claim.FinanceOperations = [];
 
         var character = Mock.GetCharacterInfo(Mock.Character, projectInfo);
         var context = new ClaimInfo(new ClaimInCharacter(character, claim.GetId()), player ?? Mock.PlayerInfo);
@@ -87,6 +89,39 @@ public class ClaimCheckInValidatorTest
         validator.CanCheckInInPrinciple.ShouldBeTrue();
         validator.Problems.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void NothingToOverrideWhenCheckInIsPossible()
+        => MakeValidator(WithRequirement(s => s)).RequiredOverride.ShouldBeNull();
+
+    [Fact]
+    public void OverrideListsProblemsAndFee()
+    {
+        var validator = MakeValidator(PassportRequested(), sensitiveDataAllowed: true, fee: 1000);
+
+        var required = validator.RequiredOverride.ShouldNotBeNull();
+        required.Problems.ShouldBe([new CheckInBlockerKey(ClaimProblemType.MissingPassport, null)]);
+        required.FeeDue.ShouldBe(1000);
+        validator.CanCheckInWithOverride(required).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void OverrideDoesNotCoverUnconfirmedProblem()
+        => MakeValidator(PassportRequested(), sensitiveDataAllowed: true)
+            .CanCheckInWithOverride(new CheckInOverride([], FeeDue: 0))
+            .ShouldBeFalse();
+
+    [Fact]
+    public void OverrideDoesNotCoverGreaterFee()
+        => MakeValidator(WithRequirement(s => s), fee: 1000)
+            .CanCheckInWithOverride(new CheckInOverride([], FeeDue: 500))
+            .ShouldBeFalse();
+
+    [Theory]
+    [InlineData("MissingPassport")]
+    [InlineData("FieldIsEmpty:123")]
+    public void BlockerKeyRoundTrips(string value)
+        => CheckInBlockerKey.Parse(value).ToString().ShouldBe(value);
 
     [Fact]
     public void MasterSideProblemsDoNotBlockCheckIn()

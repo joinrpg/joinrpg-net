@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -19,7 +20,8 @@ public class CheckInDeskManager(
     ICurrentUserAccessor currentUserAccessor)
 {
     /// <param name="money">Принятый взнос — сумма, которую мастеру показала форма регистрации.</param>
-    public async Task CheckIn(ClaimIdentification claimId, int money)
+    /// <param name="checkInOverride">Подтверждение регистрации в обход, см. <see cref="IClaimService.CheckInClaim"/>.</param>
+    public async Task CheckIn(ClaimIdentification claimId, int money, CheckInOverride? checkInOverride = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(money);
 
@@ -47,6 +49,6 @@ public class CheckInDeskManager(
             }
         }
 
-        await claimService.CheckInClaim(claimId);
+        await claimService.CheckInClaim(claimId, checkInOverride);
     }
 }
