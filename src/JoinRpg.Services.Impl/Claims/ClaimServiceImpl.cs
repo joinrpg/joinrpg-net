@@ -69,8 +69,7 @@ internal class ClaimServiceImpl(
                         .GetCashPaymentType(ctx.CurrentUser.UserIdentification)
                         ?? throw new JoinRpgInvalidUserException();
 
-                    // Деньги принимаются ДО смены статуса: приём гасит взнос, и только после него
-                    // validator.CanCheckInAtDesk может стать истинным.
+                    // Деньги принимаются ДО смены статуса — как и до миграции.
                     ctx.AcceptFee(".", ctx.Now, ctx.Request, paymentType);
                 }
                 else if (ctx.Request < 0)
@@ -78,7 +77,8 @@ internal class ClaimServiceImpl(
                     throw new InvalidOperationException();
                 }
 
-                if (!validator.CanCheckInAtDesk)
+                // Валидатор считает по снимку до приёма денег, поэтому принятое передаётся ему явно.
+                if (!validator.CanCheckInAtDesk(ctx.Request))
                 {
                     throw new ClaimWrongStatusException(ctx.Claim.GetId(), ctx.Claim.ClaimStatus);
                 }

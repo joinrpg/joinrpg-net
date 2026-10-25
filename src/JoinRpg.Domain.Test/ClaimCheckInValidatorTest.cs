@@ -23,10 +23,12 @@ public class ClaimCheckInValidatorTest
     /// </summary>
     private ProjectInfo PassportRequested() => WithRequirement(s => s with { RequirePassport = MandatoryStatus.Recommended });
 
-    private ClaimCheckInValidator MakeValidator(ProjectInfo projectInfo, bool sensitiveDataAllowed = false, UserInfo? player = null)
+    private ClaimCheckInValidator MakeValidator(ProjectInfo projectInfo, bool sensitiveDataAllowed = false, UserInfo? player = null, int? fee = null)
     {
         var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
         claim.PlayerAllowedSenstiveData = sensitiveDataAllowed;
+        claim.CurrentFee = fee;
+        claim.FinanceOperations = [];
 
         var character = Mock.GetCharacterInfo(Mock.Character, projectInfo);
         var context = new ClaimInfo(new ClaimInCharacter(character, claim.GetId()), player ?? Mock.PlayerInfo);
@@ -86,6 +88,21 @@ public class ClaimCheckInValidatorTest
 
         validator.CanCheckInInPrinciple.ShouldBeTrue();
         validator.Problems.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Взнос, принятый на стойке, гасит долг, хотя снимок заявки снят до приёма денег.
+    /// </summary>
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(400, false)]
+    [InlineData(1000, true)]
+    public void FeeAcceptedAtDeskAllowsCheckIn(int acceptedFee, bool expected)
+    {
+        var validator = MakeValidator(WithRequirement(s => s), fee: 1000);
+
+        validator.FeeDue.ShouldBe(1000);
+        validator.CanCheckInAtDesk(acceptedFee).ShouldBe(expected);
     }
 
     [Fact]

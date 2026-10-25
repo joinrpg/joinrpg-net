@@ -43,7 +43,12 @@ public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator cla
     public int FeeToAcceptOnCheckIn => SkipFeeOnCheckIn ? 0 : FeeDue;
 
     /// <summary>
-    /// Можно ли зарегистрировать игрока прямо сейчас — проверка самой операции регистрации.
+    /// Можно ли зарегистрировать игрока, приняв на стойке <paramref name="acceptedFee"/>, — проверка
+    /// самой операции регистрации.
     /// </summary>
-    public bool CanCheckInAtDesk => CanCheckInInPrinciple && FeeToAcceptOnCheckIn <= 0;
+    /// <remarks>
+    /// Принятое вычитается из долга здесь: валидатор считает по снимку заявки, снятому до приёма
+    /// денег, и сам приём в снимке не отражается.
+    /// </remarks>
+    public bool CanCheckInAtDesk(int acceptedFee) => CanCheckInInPrinciple && FeeToAcceptOnCheckIn - acceptedFee <= 0;
 }
