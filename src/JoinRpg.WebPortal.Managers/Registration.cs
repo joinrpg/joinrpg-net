@@ -50,6 +50,7 @@ public static class Registration
         .AddScoped<ICharacterGroupsClient, CharacterGroupList.CharacteGroupListViewService>()
         .AddScoped<ICharactersClient, CharacterGroupList.CharacterListViewService>()
         .AddScoped<ICheckInClient, CheckInViewService>()
+        .AddScoped<CheckInDeskManager>()
         .AddScoped<IResponsibleMasterRuleClient, ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService>()
         .AddScoped<ICaptainRuleClient, ProjectMasterTools.CaptainRules.CaptainRuleViewService>()
         .AddScoped<IProjectRolesListClient, ProjectRolesListViewService>()

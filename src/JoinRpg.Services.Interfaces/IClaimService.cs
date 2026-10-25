@@ -37,7 +37,11 @@ public interface IClaimService
 
     Task SaveFieldsFromClaim(ClaimIdentification claimId, FieldLayerContainer fieldsToSet);
 
-    Task CheckInClaim(ClaimIdentification claimId, int money);
+    /// <summary>
+    /// Регистрация игрока на полигоне. Взнос, принятый на стойке, принимается до неё отдельной
+    /// операцией (<see cref="IFinanceService.FeeAcceptedOperation"/>).
+    /// </summary>
+    Task CheckInClaim(ClaimIdentification claimId);
     Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText);
 
     /// <summary>

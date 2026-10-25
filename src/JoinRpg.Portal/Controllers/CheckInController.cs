@@ -12,6 +12,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.CheckIn;
 using JoinRpg.Web.UserProfile;
+using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +25,7 @@ public class CheckInController(
     IClaimsRepository claimsRepository,
     IClaimInfoRepository claimInfoRepository,
     IClaimService claimService,
+    CheckInDeskManager checkInDeskManager,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
     IClaimProblemValidator claimValidator,
@@ -124,22 +126,22 @@ public class CheckInController(
     public async Task<ActionResult> DoCheckIn(ProjectIdentification projectId, int claimId, int money, Checkbox? feeAccepted)
     {
         var claimIdentification = new ClaimIdentification(projectId, claimId);
-        // Грузим заранее: нужен и для 404, и для того, чтобы показать ту же форму при ошибке
-        // сохранения. Неудачная операция ничего не коммитит, поэтому снимок остаётся верным.
-        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(claimIdentification);
-        if (claimInfo is null)
+        if (await claimInfoRepository.GetClaimInfoOrDefault(claimIdentification) is null)
         {
             return NotFound();
         }
         try
         {
-            await claimService.CheckInClaim(claimIdentification, feeAccepted == Checkbox.@on ? money : 0);
+            await checkInDeskManager.CheckIn(claimIdentification, feeAccepted == Checkbox.@on ? money : 0);
             return RedirectToAction("Index", new { ProjectId = projectId.Value, checkedInClaimId = claimIdentification.ClaimId });
         }
         catch (Exception ex)
         {
             AddModelException(ex);
-            return await ShowCheckInForm(claimInfo);
+            // Перечитываем: взнос мог быть уже принят, хотя регистрация не прошла (#4890), — тогда
+            // форма должна показать, что долга больше нет.
+            var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(claimIdentification);
+            return claimInfo is null ? NotFound() : await ShowCheckInForm(claimInfo);
         }
     }
 
