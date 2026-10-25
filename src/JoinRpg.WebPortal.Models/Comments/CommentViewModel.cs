@@ -7,14 +7,14 @@ namespace JoinRpg.Web.Models;
 
 public class CommentViewModel
 {
-    public CommentViewModel(CommentDiscussion parent, Comment comment, int currentUserId, ProjectInfo projectInfo, int deepLevel)
+    public CommentViewModel(CommentDiscussion parent, Comment comment, UserIdentification currentUserId, ProjectInfo projectInfo, int deepLevel)
     {
         DeepLevel = deepLevel;
         IsVisibleToPlayer = comment.IsVisibleToPlayer;
         // Права — по ProjectInfo, а не по comment.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
-        HasMasterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
-        CanModerateFinance = projectInfo.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney) ||
-                             comment.Finance?.PaymentType?.UserId == currentUserId;
+        HasMasterAccess = projectInfo.HasMasterAccess(currentUserId);
+        CanModerateFinance = comment.Finance is not null
+            && projectInfo.CanModerateFinanceOperation(comment.Finance.GetPaymentTypeId(), currentUserId);
         IsCommentByPlayer = comment.IsCommentByPlayer;
         Author = comment.Author;
         AuthorAvatar = AvatarIdentification.FromOptional(comment.Author.SelectedAvatarId);
@@ -25,13 +25,13 @@ public class CommentViewModel
         CommentId = comment.CommentId;
         ProjectId = comment.ProjectId;
         CommentDiscussionId = comment.CommentDiscussionId;
-        IsRead = comment.IsReadByUser(currentUserId);
+        IsRead = comment.IsReadByUser(currentUserId.Value);
         ChildComments =
           parent.Comments.Where(c => c.ParentCommentId == comment.CommentId)
             .Select(c => new CommentViewModel(parent, c, currentUserId, projectInfo, deepLevel + 1))
             .OrderBy(c => c.CreatedTime);
         ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?)comment.ExtraAction.Value;
-        IsVisible = comment.IsVisibleTo(currentUserId, projectInfo);
+        IsVisible = comment.IsVisibleTo(currentUserId.Value, projectInfo);
     }
 
     public bool IsRead { get; }

@@ -1320,7 +1320,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     /// <summary>
     /// Комментарий с неодобренной финансовой операцией — то, что модерирует мастер.
     /// </summary>
-    private Comment CreateCommentWithProposedPayment(Claim claim, int money = 100)
+    private Comment CreateCommentWithProposedPayment(Claim claim, int money = 100, PaymentType? paymentType = null)
     {
         var comment = mock.CreateComment(claim, "внёс взнос");
         var finance = new FinanceOperation
@@ -1328,6 +1328,8 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
             Claim = claim,
             Comment = comment,
             ProjectId = mock.Project.ProjectId,
+            // Только скалярный id: владельца способа оплаты сервис берёт из метаданных проекта, а не из навигации
+            PaymentTypeId = paymentType?.PaymentTypeId,
             MoneyAmount = money,
             State = FinanceOperationState.Proposed,
             OperationType = FinanceOperationType.Submit,
@@ -1373,6 +1375,46 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         parent.Finance.State.ShouldBe(FinanceOperationState.Declined);
         claim.CommentDiscussion.Comments.Last().ExtraAction.ShouldBe(CommentExtraAction.RejectFinance);
         SaveChangesCallCount.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Мастер без права на деньги подтверждает поступления на свой способ оплаты, но не на чужой.
+    /// </summary>
+    [Fact]
+    public async Task ModerateFinanceOperation_PaymentTypeOwnerWithoutMoneyPermission_ApprovesOwnPaymentType()
+    {
+        var cashier = CreateMasterWithoutMoneyPermission();
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var parent = CreateCommentWithProposedPayment(claim, paymentType: mock.CreateCashPaymentType(cashier));
+
+        await CreateService(cashier.UserId).ModerateFinanceOperation(
+            claim.GetId(), parent.CommentId, "получил", FinanceOperationAction.Approve);
+
+        parent.Finance.State.ShouldBe(FinanceOperationState.Approved);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ModerateFinanceOperation_MasterWithoutMoneyPermission_OtherPaymentType_Throws_AndDoesNotSave()
+    {
+        var cashier = CreateMasterWithoutMoneyPermission();
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+        var parent = CreateCommentWithProposedPayment(claim, paymentType: mock.CreateCashPaymentType(mock.Master));
+
+        _ = await Should.ThrowAsync<NoAccessToProjectException>(
+            () => CreateService(cashier.UserId).ModerateFinanceOperation(
+                claim.GetId(), parent.CommentId, "получил", FinanceOperationAction.Approve));
+
+        parent.Finance.State.ShouldBe(FinanceOperationState.Proposed);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    private User CreateMasterWithoutMoneyPermission()
+    {
+        var master = mock.CreateMaster("Кассир");
+        mock.Project.ProjectAcls.Single(acl => acl.UserId == master.UserId).CanManageMoney = false;
+        mock.ReInitProjectInfo();
+        return master;
     }
 
     [Fact]

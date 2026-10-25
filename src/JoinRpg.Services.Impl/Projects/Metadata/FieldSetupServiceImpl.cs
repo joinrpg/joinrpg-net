@@ -3,7 +3,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
-using JoinRpg.Services.Impl;
 
 namespace JoinRpg.Services.Impl.Projects.Metadata;
 
