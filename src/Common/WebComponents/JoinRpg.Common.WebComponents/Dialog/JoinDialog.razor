@@ -308,6 +308,9 @@
 
         _hasHeader = ShowCloseButton || CaptionContent is not null;
 
+        // FooterContent рисуется и без Buttons — раньше футер включали только кнопки, и разметка молча пропадала
+        _hasFooter = FooterContent is not null || Buttons?.Count > 0;
+
         if (Buttons?.Count > 0)
         {
             List<DialogButton>? buttonsL = null;
@@ -345,8 +348,6 @@
                     _cancelButton = button;
                 }
             }
-
-            _hasFooter = true;
 
             _buttonsL = buttonsL;
             _buttonsR = buttonsR;
