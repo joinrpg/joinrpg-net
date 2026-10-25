@@ -3,17 +3,21 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Money;
 
-public class FinOperationListViewModel(ProjectIdentification projectId, IUriService urlHelper, IReadOnlyCollection<FinanceOperation> operations) : IOperationsAwareView
+public class FinOperationListViewModel(
+    ProjectInfo projectInfo,
+    IUriService urlHelper,
+    IReadOnlyCollection<FinanceOperation> operations,
+    UserIdentification? currentUser) : IOperationsAwareView
 {
     public IReadOnlyCollection<FinOperationListItemViewModel> Items { get; } = operations
           .OrderByDescending(f => f.CommentId)
-          .Select(f => new FinOperationListItemViewModel(f, urlHelper))
+          .Select(f => new FinOperationListItemViewModel(f, urlHelper, projectInfo, currentUser))
           .ToArray();
 
     IReadOnlyCollection<ClaimIdentification> IOperationsAwareView.ClaimIds { get; } = [.. operations.Select(c => new ClaimIdentification(c.ProjectId, c.ClaimId)).Distinct()];
 
     IReadOnlyCollection<CharacterIdentification> IOperationsAwareView.CharacterIds => [];
-    int? IOperationsAwareView.ProjectId { get; } = projectId;
+    int? IOperationsAwareView.ProjectId { get; } = projectInfo.ProjectId;
     bool IOperationsAwareView.ShowCharacterCreateButton => false;
 
     string? IOperationsAwareView.InlineTitle => "Список финансовых операций";

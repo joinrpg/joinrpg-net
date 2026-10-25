@@ -1,5 +1,9 @@
 ﻿@using JoinRpg.Web.Models.Money
 @model IEnumerable<JoinRpg.Web.Models.FinOperationListItemViewModel>
+@{
+    // Колонка нужна только списку на модерацию, и только тому, кто вправе подтверждать
+    var showModeration = Model.Any(item => item.FinanceModeration is not null);
+}
 
 <table class="table">
     <tr>
@@ -27,6 +31,10 @@
         <th>
             @Html.DisplayNameFor(model => model.MarkingMaster)
         </th>
+        @if (showModeration)
+        {
+            <th></th>
+        }
     </tr>
 
     @foreach (var item in Model)
@@ -57,6 +65,17 @@
             <td>
                 @Html.DisplayFor(modelItem => item.MarkingMaster)
             </td>
+            @if (showModeration)
+            {
+                <td>
+                    @if (item.FinanceModeration is not null)
+                    {
+                        <component type="typeof(JoinRpg.Web.Claims.Finance.FinanceModerationButton)"
+                                   render-mode="WebAssemblyPrerendered"
+                                   param-Operation="item.FinanceModeration" />
+                    }
+                </td>
+            }
         </tr>
     }
 

@@ -21,7 +21,7 @@ public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transf
             .OrderBy(f => f.Id)
             .Select(f => new MoneyTransferListItemViewModel(f, currentUserId)).ToArray();
 
-    public FinOperationListViewModel Operations { get; } = new FinOperationListViewModel(projectInfo.ProjectId, urlHelper, operations);
+    public FinOperationListViewModel Operations { get; } = new FinOperationListViewModel(projectInfo, urlHelper, operations, currentUserId.UserIdentificationOrDefault);
 
     public MasterBalanceViewModel Balance { get; } = new MasterBalanceViewModel(master, projectInfo.ProjectId, operations, transfers);
 

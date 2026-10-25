@@ -336,7 +336,7 @@ public class MasterExportRoundTripTest
             Comment = new Comment { Author = mock.Master },
             OperationDate = new DateTime(2026, 9, 1),
         };
-        var items = new[] { new FinOperationListItemViewModel(operation, new PortalLikeUriService()) };
+        var items = new[] { new FinOperationListItemViewModel(operation, new PortalLikeUriService(), mock.ProjectInfo, currentUser: null) };
         var bytes = ExportXlsx(items, new FinanceOperationExporter(new PortalLikeUriService(), mock.ProjectInfo));
 
         var ex = Should.Throw<MasterExportFormatException>(() => Parse(bytes));

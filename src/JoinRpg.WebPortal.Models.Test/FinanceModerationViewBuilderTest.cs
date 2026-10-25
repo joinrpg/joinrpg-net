@@ -56,4 +56,26 @@ public class FinanceModerationViewBuilderTest
 
         JsonSerializer.Deserialize<FinanceModerationOperationView>(json, JsonSerializerOptions.Web).ShouldBe(view);
     }
+
+    [Fact]
+    public void ProposedPaymentForModerator_HasView()
+    {
+        var operation = Operation(FinanceOperationType.Submit, 500, mock.CreateCashPaymentType(mock.Master));
+        operation.State = FinanceOperationState.Proposed;
+
+        operation.ToModerationViewIfAllowed(mock.ProjectInfo, new UserIdentification(mock.Master.UserId)).ShouldNotBeNull();
+        operation.ToModerationViewIfAllowed(mock.ProjectInfo, new UserIdentification(mock.Player.UserId)).ShouldBeNull();
+    }
+
+    /// <summary>
+    /// В списке «Взносы — на модерации» есть и незавершённые онлайн-оплаты, но подтверждать их мастеру нечего.
+    /// </summary>
+    [Fact]
+    public void ProposedOnlinePayment_HasNoView()
+    {
+        var operation = Operation(FinanceOperationType.Online, 500, paymentType: null);
+        operation.State = FinanceOperationState.Proposed;
+
+        operation.ToModerationViewIfAllowed(mock.ProjectInfo, new UserIdentification(mock.Master.UserId)).ShouldBeNull();
+    }
 }
