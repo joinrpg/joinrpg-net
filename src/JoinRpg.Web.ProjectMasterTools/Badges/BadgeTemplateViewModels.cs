@@ -54,7 +54,7 @@ public class EditBadgeTemplateViewModel : IValidatableObject
     [Display(Name = "Название")]
     public string Name { get; set; } = "";
 
-    [Display(Name = "Ширина, мм")]
+    [Display(Name = "Ширина, мм", Description = "Если вы будете вкладывать в пластиковые кармашки — советуем оставить 3-4 мм запаса по сравнению с заявленным.")]
     public int WidthMm { get; set; } = 90;
 
     [Display(Name = "Высота, мм")]
