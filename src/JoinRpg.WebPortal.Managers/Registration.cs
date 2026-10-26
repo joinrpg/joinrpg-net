@@ -82,6 +82,8 @@ public static class Registration
         .AddScoped<ICommentRestoreClient, Drp.CommentRestoreViewService>()
         .AddScoped<IFinanceRestoreClient, Drp.FinanceRestoreViewService>()
         .AddScoped<IMoneyTransferClient, MoneyTransferViewService>()
+        .AddScoped<IFinanceModerationClient, FinanceModerationViewService>()
+        .AddScoped<JoinRpg.Web.Claims.Comments.IClaimCommentClient, ClaimCommentViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IUserLinkResolveClient, UserLinkResolveViewService>()
         .AddScoped<IMoveClient, MoveViewService>()
