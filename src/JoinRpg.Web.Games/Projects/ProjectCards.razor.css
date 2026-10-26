@@ -1,6 +1,6 @@
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, 26em);
+  grid-template-columns: repeat(auto-fit, min(26em, 100%));
   gap: 18px;
   margin-top: 1em;
   margin-bottom: 1em;
@@ -8,6 +8,8 @@
 
 .card{
     width:26em;
+    /* Иначе на узком экране карточка шире страницы и уводит шапку с меню за правый край */
+    max-width: 100%;
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 12px;
