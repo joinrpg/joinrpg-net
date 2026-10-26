@@ -7,7 +7,7 @@ namespace JoinRpg.Common.WebComponents.Test;
 public class SupportInfoPanelTest
 {
     [Fact]
-    public void AllData_IsShown_WithCommitLink()
+    public void AllData_IsShown_CommitWithoutLink()
     {
         using var ctx = new BunitContext();
         var cut = ctx.Render<SupportInfoPanel>(p => p
@@ -17,18 +17,17 @@ public class SupportInfoPanelTest
             .Add(x => x.Referer, new Uri("https://joinrpg.ru/"))
             .Add(x => x.PodName, "joinrpg-portal-7c85f4cb58-b7b74")
             .Add(x => x.Version, "1.2.3")
-            .Add(x => x.CommitSha, "abc123")
-            .Add(x => x.CommitUrl, new Uri("https://github.com/joinrpg/joinrpg-net/commit/abc123")));
+            .Add(x => x.CommitSha, "abc123"));
 
         var text = cut.Find("div.panel-body").TextContent;
         text.ShouldContain("activity-1");
         text.ShouldContain("joinrpg-portal-7c85f4cb58-b7b74");
         text.ShouldContain("1.2.3 (коммит abc123)");
+        // Ссылка на коммит — только в админке (VersionPanel), со страницы ошибки на GitHub не ведём.
         cut.FindAll("a").Select(a => a.GetAttribute("href")).ShouldBe(
         [
             "https://joinrpg.ru/1/roles",
             "https://joinrpg.ru/",
-            "https://github.com/joinrpg/joinrpg-net/commit/abc123",
         ]);
     }
 
