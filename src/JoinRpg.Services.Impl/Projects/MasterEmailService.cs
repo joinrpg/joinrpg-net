@@ -7,7 +7,8 @@ namespace JoinRpg.Services.Impl.Projects;
 internal class MasterEmailService(
     INotificationService notificationService,
     IProjectMetadataRepository projectMetadataRepository,
-    IVirtualUsersService virtualUsersService
+    IVirtualUsersService virtualUsersService,
+    IUserRepository userRepository
     )
 {
 
@@ -35,13 +36,37 @@ internal class MasterEmailService(
         await SendToAllMasters(metadata, body, subject, email.Initiator);
     }
 
-    private async Task SendToAllMasters(ProjectInfo metadata, string body, string subject, UserIdentification initiator)
+    /// <summary>
+    /// Снятие блокировки необратимо: восстановление больше недоступно, заблокировать снова нельзя (ADR023).
+    /// Поэтому узнать должны все мастера проекта и все админы сайта.
+    /// </summary>
+    // TODO[Localize]
+    public async Task EmailProjectUnblocked(ProjectUnblockedMail email)
     {
-        var recipients = metadata.Masters.Select(master => new NotificationRecepient(master)).ToArray();
+        var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
+        var admins = await userRepository.GetAdminUserInfoHeaders();
+
+        var body = $@"{email.Initiator.DisplayName.DisplayName} снял(а) блокировку с проекта {metadata.ProjectName.Value}.
+
+Восстановление данных в проекте больше недоступно, заблокировать проект снова нельзя.";
+        var subject = $"{metadata.ProjectName.Value}: блокировка снята";
+
+        var masters = metadata.Masters.Select(master => new NotificationRecepient(master)).ToArray();
+        // Админ, который сам мастер проекта, получает одно уведомление — как мастер.
+        var masterIds = masters.Select(m => m.UserId).ToHashSet();
+        var otherAdmins = admins.Where(a => !masterIds.Contains(a.UserId)).Select(a => NotificationRecepient.Admin(a));
+
+        await Send(metadata, body, subject, email.Initiator.UserId, [.. masters, .. otherAdmins]);
+    }
+
+    private Task SendToAllMasters(ProjectInfo metadata, string body, string subject, UserIdentification initiator)
+        => Send(metadata, body, subject, initiator, [.. metadata.Masters.Select(master => new NotificationRecepient(master))]);
+
+    private async Task Send(ProjectInfo metadata, string body, string subject, UserIdentification initiator, NotificationRecepient[] recipients)
+    {
         var notification = new NotificationEvent(NotificationClass.MasterProject, metadata.ProjectId, subject,
             new NotificationEventTemplate("Добрый день, %recepient.name%!\n\n" + body), recipients, initiator);
         await notificationService.QueueNotification(notification);
-
     }
 
     public async Task EmailProjectClosedStale(ProjectClosedStaleMail email)

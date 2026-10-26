@@ -79,11 +79,31 @@ internal class ProjectService(
         });
     }
 
-    public Task UnblockProject(ProjectIdentification projectId)
-        => projectPropsService.ChangeProjectProperties(projectId,
+    public async Task UnblockProject(ProjectIdentification projectId)
+    {
+        var wasBlocked = false;
+        await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked,
             projectId,
-            ctx => ctx.Project.IsBlocked = false);
+            ctx =>
+            {
+                wasBlocked = ctx.Project.IsBlocked;
+                ctx.Project.IsBlocked = false;
+            });
+
+        // Блокировки не было — снимать нечего, и сообщать не о чем.
+        if (!wasBlocked)
+        {
+            return;
+        }
+
+        // Нотификация — ответственность вызывающего, после успешного сохранения (см. adr009).
+        await masterEmailService.EmailProjectUnblocked(new ProjectUnblockedMail()
+        {
+            ProjectId = projectId,
+            Initiator = currentUserAccessor.ToUserInfoHeader(),
+        });
+    }
 
     public async Task CloseProjectAsStale(ProjectIdentification projectId, DateOnly lastActiveDate)
     {

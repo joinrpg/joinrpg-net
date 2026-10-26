@@ -13,6 +13,14 @@ public class ProjectClosedMail : ProjectEmailModelBase
     public required UserIdentification Initiator { get; set; }
 }
 
+/// <summary>
+/// С проекта снята блокировка восстановления (ADR023) — уходит мастерам проекта и админам сайта.
+/// </summary>
+public class ProjectUnblockedMail : ProjectEmailModelBase
+{
+    public required UserInfoHeader Initiator { get; set; }
+}
+
 public class ProjectClosedStaleMail : ProjectEmailModelBase
 {
     public required DateOnly LastActiveDate { get; set; }
