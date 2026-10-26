@@ -1,7 +1,7 @@
 @using System.Linq.Expressions
 @if (Immediate)
 {
-    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @oninput="UpdateValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
+    <input type="text" id="@inputId" name="@FieldIdentifier.FieldName" value="@internalValue" @oninput="UpdateValue" @onblur="TrimDisplayedValue" class="form-control" placeholder="@Placeholder" @attributes="AdditionalAttributes" />
 }
 else
 {
@@ -31,6 +31,13 @@ else
     [Parameter]
     public bool Immediate { get; set; } = false;
 
+    /// <summary>
+    /// Обрезать пробелы по краям: наружу (в <see cref="ValueChanged"/>) значение уходит уже обрезанным,
+    /// поэтому валидация формы видит то же, что потом сохранит сервер.
+    /// </summary>
+    [Parameter]
+    public bool Trim { get; set; } = true;
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -44,7 +51,14 @@ else
 
     protected override void OnParametersSet()
     {
-        internalValue = Value;
+        // В режиме Immediate поле держит текст как набран (с пробелом в конце посреди ввода), а наружу ушёл обрезанный.
+        // Перезаписываем только если значение поменяли снаружи — иначе не напечатать пробел между словами.
+        // Value бывает null: @bind-Value к string? в вью-моделях.
+        var value = Value ?? "";
+        if (value != Normalize(internalValue))
+        {
+            internalValue = value;
+        }
         inputId = LabelTarget?.Claim(this, FormRowLabelTarget.ExplicitId(AdditionalAttributes));
         if (ValueExpression is not null)
         {
@@ -54,11 +68,16 @@ else
 
     private async Task UpdateValue(ChangeEventArgs eventArgs)
     {
-        internalValue = (string?)eventArgs.Value ?? "";
-        await ValueChanged.InvokeAsync(internalValue);
+        var rawValue = (string?)eventArgs.Value ?? "";
+        internalValue = Immediate ? rawValue : Normalize(rawValue);
+        await ValueChanged.InvokeAsync(Normalize(rawValue));
         if (ValueExpression is not null)
         {
             EditContext?.NotifyFieldChanged(FieldIdentifier);
         }
     }
+
+    private void TrimDisplayedValue() => internalValue = Normalize(internalValue);
+
+    private string Normalize(string value) => Trim ? value.Trim() : value;
 }
