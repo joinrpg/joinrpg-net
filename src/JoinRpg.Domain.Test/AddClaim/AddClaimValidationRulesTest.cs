@@ -123,6 +123,45 @@ public class AddClaimValidationRulesTest
     }
 
     /// <summary>
+    /// Из шаблона каждая заявка становится отдельным персонажем: на конвенте игрок подаёт две
+    /// заявки на шаблон «Мероприятие», чтобы провести два мероприятия (#5862).
+    /// </summary>
+    [Fact]
+    public void CanSendSecondClaimToSlotIfProjectAllowsManyCharacters()
+    {
+        var projectInfo = Mock.ProjectInfo.WithAllowManyClaims(strictlyOneCharacter: false);
+        var slot = Mock.CreateSlot("slot", slotLimit: 2);
+        _ = Mock.CreateClaim(slot, Mock.Player);
+
+        ShouldBeAllowed(slot, projectInfo);
+    }
+
+    /// <summary>
+    /// Если утвердить можно только одну заявку, вторая на тот же шаблон — почти наверняка ошибка.
+    /// </summary>
+    [Fact]
+    public void CantSendSecondClaimToSlotIfStrictlyOneCharacter()
+    {
+        var projectInfo = Mock.ProjectInfo.WithAllowManyClaims(strictlyOneCharacter: true);
+        var slot = Mock.CreateSlot("slot", slotLimit: 2);
+        _ = Mock.CreateClaim(slot, Mock.Player);
+
+        ShouldBeNotAllowed(slot, AddClaimForbideReason.AlreadySent, projectInfo);
+    }
+
+    /// <summary>
+    /// Послабление — только для шаблона: две заявки игрока на одну конкретную роль бессмысленны.
+    /// </summary>
+    [Fact]
+    public void CantSendSecondClaimToSameCharacterIfProjectAllowsManyCharacters()
+    {
+        var projectInfo = Mock.ProjectInfo.WithAllowManyClaims(strictlyOneCharacter: false);
+        _ = Mock.CreateClaim(Mock.Character, Mock.Player);
+
+        ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.AlreadySent, projectInfo);
+    }
+
+    /// <summary>
     /// Причины не вытесняют друг друга: игрок должен видеть их все сразу.
     /// </summary>
     [Fact]

@@ -121,7 +121,13 @@ public static class ClaimValidator
 
         if (userInfo is not null)
         {
-            if (target.HasActiveClaimOf(userInfo.UserId))
+            // Каждая заявка на шаблон при утверждении становится отдельным персонажем, так что вторая
+            // заявка на тот же шаблон — не дубль, а ещё одна роль (например, второе мероприятие на
+            // конвенте). Запрещать её имеет смысл, только если утвердить можно лишь одну заявку.
+            var allowsManyClaimsOnTarget = characterType == CharacterType.Slot
+                && !projectInfo.ClaimSettings.StrictlyOneCharacter;
+
+            if (!allowsManyClaimsOnTarget && target.HasActiveClaimOf(userInfo.UserId))
             {
                 yield return AddClaimForbideReason.AlreadySent;
             }
