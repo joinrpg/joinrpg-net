@@ -3,7 +3,6 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Helpers;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.Finance;
@@ -34,9 +33,6 @@ public class EnumTests
 
     [Fact]
     public void ClaimDenialStatus() => EnumerationTestComparer.EnsureSame<ClaimDenialStatusView, ClaimDenialReason>();
-
-    [Fact]
-    public void FinanceOperation() => EnumerationTestComparer.EnsureSame<FinanceOperationActionView, FinanceOperationAction>();
 
     [Fact]
     public void FinanceState()

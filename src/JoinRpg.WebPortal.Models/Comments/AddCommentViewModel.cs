@@ -22,16 +22,6 @@ public class AddCommentViewModel : CommentTextViewModel, IValidatableObject
         HideFromUser = false;
     }
 
-    public AddCommentViewModel(CommentViewModel source) : this()
-    {
-        ProjectId = source.ProjectId;
-        CommentDiscussionId = source.CommentDiscussionId;
-        ParentCommentId = source.CommentId;
-        EnableFinanceAction = source.ShowFinanceModeration;
-        EnableHideFromUser = source.HasMasterAccess;
-        HideFromUser = !source.IsVisibleToPlayer;
-    }
-
 
     public int ProjectId { get; set; }
 
@@ -46,12 +36,7 @@ public class AddCommentViewModel : CommentTextViewModel, IValidatableObject
 
     public bool EnableHideFromUser { get; set; }
 
-    public bool EnableFinanceAction { get; set; }
-
     public string ActionName { get; set; }
-
-    [Display(Name = "С финансовой операцией...")]
-    public FinanceOperationActionView FinanceAction { get; set; }
 
     public string AddButtonId { get; }
 
