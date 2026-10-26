@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.ProjectMetadata;
@@ -16,6 +17,8 @@ namespace JoinRpg.Services.Impl.Test.Projects;
 public class ProjectServiceTest : ProjectMetadataServiceTestBase
 {
     private readonly FakeNotificationService notifications = new();
+    private static readonly UserInfoHeader siteAdmin = new(new UserIdentification(100500), new UserDisplayName("Админ", null));
+    private IReadOnlyCollection<UserInfoHeader> admins = [siteAdmin];
 
     // Возвращаем интерфейс намеренно: SetPublishSettings — явная реализация IProjectService.
 #pragma warning disable CA1859
@@ -23,7 +26,8 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
 #pragma warning restore CA1859
     {
         var currentUser = CreateCurrentUser(currentUserId, isAdmin);
-        var masterEmailService = new MasterEmailService(notifications, metadataRepository, new FakeVirtualUsersService());
+        var masterEmailService = new MasterEmailService(notifications, metadataRepository, new FakeVirtualUsersService(),
+            FakeUserRepository.WithAdmins([.. admins]));
 
         return new ProjectService(
             currentUser,
@@ -266,6 +270,7 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         notifications.Queued.ShouldHaveSingleItem();
     }
 
+    // Блокировки не было — снимать нечего, и уведомлять не о чем.
     [Fact]
     public async Task UnblockProject_ActiveProject_DoesNothing()
     {
@@ -275,7 +280,7 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         notifications.Queued.ShouldBeEmpty();
     }
 
-    // ADR023: после снятия блокировки проект — как был, включая открытый приём заявок. Писем нет.
+    // ADR023: после снятия блокировки проект — как был, включая открытый приём заявок.
     [Fact]
     public async Task UnblockProject_RestoresPreviousStatus()
     {
@@ -285,7 +290,37 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
 
         mock.Project.IsBlocked.ShouldBeFalse();
         Result.ProjectStatus.ShouldBe(ProjectLifecycleStatus.ActiveClaimsOpen);
-        notifications.Queued.ShouldBeEmpty();
+    }
+
+    // Снятие блокировки необратимо (ADR023) — узнают все мастера проекта и админы сайта, со ссылкой на проект.
+    [Fact]
+    public async Task UnblockProject_Blocked_NotifiesMastersAndAdmins()
+    {
+        mock.Project.IsBlocked = true;
+        var masterIds = mock.ProjectInfo.Masters.Select(m => m.UserId).ToList();
+
+        await CreateService().UnblockProject(ProjectId);
+
+        var notification = notifications.Queued.ShouldHaveSingleItem();
+        notification.EntityReference.ShouldBe(ProjectId);
+        notification.Initiator.ShouldBe(new UserIdentification(mock.Master.UserId));
+        notification.TemplateText.TemplateContents.ShouldContain("Test снял(а) блокировку");
+        notification.Recepients.Select(r => r.UserId).ShouldBe([.. masterIds, siteAdmin.UserId], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task UnblockProject_AdminIsMaster_NotifiedOnce()
+    {
+        mock.Project.IsBlocked = true;
+        var masterAdmin = new UserInfoHeader(new UserIdentification(mock.Master.UserId), new UserDisplayName("Мастер-админ", null));
+        admins = [masterAdmin, siteAdmin];
+
+        await CreateService().UnblockProject(ProjectId);
+
+        var recipients = notifications.Queued.ShouldHaveSingleItem().Recepients;
+        recipients.Select(r => r.UserId).ShouldBeUnique();
+        recipients.ShouldContain(r => r.UserId == masterAdmin.UserId);
+        recipients.ShouldContain(r => r.UserId == siteAdmin.UserId);
     }
 
     [Fact]
