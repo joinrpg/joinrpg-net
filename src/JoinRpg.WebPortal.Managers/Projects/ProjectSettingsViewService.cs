@@ -8,9 +8,12 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
 {
     async Task<ProjectClaimSettingsViewModel> IProjectSettingsClient.GetClaimSettings(ProjectIdentification projectId)
     {
-        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        // Правила подачи — в ProjectDetails, а не в метаданных проекта (#5112).
+        var details = await projectMetadataRepository.GetProjectDetails(projectId);
+        var project = details.ProjectInfo;
         return new ProjectClaimSettingsViewModel()
         {
+            ClaimApplyRules = details.ClaimApplyRules.Value,
             ProjectId = projectId,
             ProjectName = project.ProjectName,
             ProjectStatus = project.ProjectStatus,
@@ -57,7 +60,7 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
     async Task IProjectSettingsClient.SaveClaimSettings(ProjectClaimSettingsViewModel model)
     {
         var settings = new ProjectClaimSettings(model.DefaultTemplateCharacterId, model.StrictlyOneCharacter, model.AutoAcceptClaims, model.IsAcceptingClaims, model.IsPublicProject);
-        await projectService.SetClaimSettings(model.ProjectId, settings);
+        await projectService.SetClaimSettings(model.ProjectId, settings, model.ClaimApplyRules);
     }
 
     async Task IProjectSettingsClient.SaveContactSettings(ProjectContactsSettingsViewModel model)

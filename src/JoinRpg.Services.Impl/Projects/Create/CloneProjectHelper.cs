@@ -73,7 +73,6 @@ internal class CloneProjectHelper(
         await projectService.EditProject(
             new EditProjectRequest()
             {
-                ClaimApplyRules = originalEntity.Details.ClaimApplyRules?.Contents ?? "",
                 ProjectAnnounce = originalEntity.Details.ProjectAnnounce?.Contents ?? "",
                 ProjectId = projectId,
                 ProjectName = cloneRequest.ProjectName,
@@ -90,7 +89,8 @@ internal class CloneProjectHelper(
 
         await projectService.SetTimeZone(projectId, original.TimeZone);
 
-        await projectService.SetClaimSettings(projectId, original.ClaimSettings with { DefaultTemplate = original.ClaimSettings.DefaultTemplate is not null ? CharacterMapping.GetValueOrDefault(original.ClaimSettings.DefaultTemplate) : null });
+        await projectService.SetClaimSettings(projectId, original.ClaimSettings with { DefaultTemplate = original.ClaimSettings.DefaultTemplate is not null ? CharacterMapping.GetValueOrDefault(original.ClaimSettings.DefaultTemplate) : null },
+            claimApplyRules: originalEntity.Details.ClaimApplyRules?.Contents ?? "");
 
         return everythingFine;
     }

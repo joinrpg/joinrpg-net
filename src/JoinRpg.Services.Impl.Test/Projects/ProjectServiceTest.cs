@@ -1,3 +1,4 @@
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects;
@@ -32,18 +33,16 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     }
 
     [Fact]
-    public async Task EditProject_ChangesNameAndTexts()
+    public async Task EditProject_ChangesNameAndAnnounce()
     {
         await CreateService().EditProject(new EditProjectRequest
         {
             ProjectId = ProjectId,
             ProjectName = "Новое название",
-            ClaimApplyRules = "Правила подачи",
             ProjectAnnounce = "Анонс",
         });
 
         Result.ProjectName.Value.ShouldBe("Новое название");
-        mock.Project.Details.ClaimApplyRules.Contents.ShouldBe("Правила подачи");
         mock.Project.Details.ProjectAnnounce.Contents.ShouldBe("Анонс");
         unitOfWork.SaveChangesCallCount.ShouldBe(1);
     }
@@ -223,6 +222,25 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     }
 
     [Fact]
+    public async Task SetClaimSettings_WithRules_ChangesRulesInSameSave()
+    {
+        await CreateService().SetClaimSettings(ProjectId, mock.ProjectInfo.ClaimSettings, claimApplyRules: "Правила подачи");
+
+        mock.Project.Details.ClaimApplyRules.Contents.ShouldBe("Правила подачи");
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task SetClaimSettings_WithoutRules_KeepsRules()
+    {
+        mock.Project.Details.ClaimApplyRules = new MarkdownDbValue("Старые правила");
+
+        await CreateService().SetClaimSettings(ProjectId, mock.ProjectInfo.ClaimSettings with { StrictlyOneCharacter = true });
+
+        mock.Project.Details.ClaimApplyRules.Contents.ShouldBe("Старые правила");
+    }
+
+    [Fact]
     public async Task CloseProject_DeactivatesProjectAndNotifiesMasters()
     {
         await CreateService().CloseProject(ProjectId, publishPlot: true);
@@ -325,7 +343,6 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         {
             ProjectId = ProjectId,
             ProjectName = "Новое название",
-            ClaimApplyRules = "",
             ProjectAnnounce = "",
         });
 
