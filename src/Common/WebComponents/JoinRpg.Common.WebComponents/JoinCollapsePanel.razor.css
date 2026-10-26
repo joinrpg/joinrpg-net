@@ -5,6 +5,9 @@
 */
 .join-collapse-panel__toggle {
   display: inline-block;
+  /* Якорь на панель (id стоит на <details>): иначе её заголовок прокручивается под фиксированную
+     шапку портала (~60px) вместе с отступом заголовка панели. */
+  scroll-margin-top: 80px;
 }
 
 .join-collapse-panel__summary {

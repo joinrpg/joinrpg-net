@@ -149,12 +149,64 @@ document.addEventListener('keydown', event => {
 // Сворачиваемые панели JoinCollapsePanel.razor: ссылка с якорем на панель её раскрывает.
 // Браузер сам прокручивает к <details>, но открывать его по якорю на сам элемент не обязан.
 
+// Панели в WebAssembly-островах без prerender появляются в DOM позже, чем выполняется модуль, —
+// тогда ждём появления элемента с этим id.
+let pendingHashObserver = null;
+
 function openPanelFromHash() {
+    pendingHashObserver?.disconnect();
+    pendingHashObserver = null;
+
     const id = decodeHash(location.hash.slice(1));
-    const target = id === '' ? null : document.getElementById(id);
+    if (id === '' || openPanel(id)) {
+        return;
+    }
+
+    pendingHashObserver = new MutationObserver(() => {
+        if (openPanel(id)) {
+            pendingHashObserver.disconnect();
+            pendingHashObserver = null;
+        }
+    });
+    pendingHashObserver.observe(document.documentElement, { childList: true, subtree: true });
+}
+
+// Возвращает true, когда элемент с id нашёлся (панель он или нет) — дальше ждать нечего.
+function openPanel(id) {
+    const target = document.getElementById(id);
+    if (target === null) {
+        return false;
+    }
     if (target instanceof HTMLDetailsElement) {
         target.open = true;
+        keepInView(target);
     }
+    return true;
+}
+
+// Браузер прокручивает к якорю, пока панель ещё свёрнута или её нет, а острова догружают содержимое
+// позже — страница растёт, и панель остаётся внизу окна. Поэтому держим её у верха окна, пока растёт
+// страница, но не дольше FOLLOW_MS и не после того, как пользователь сам взялся листать.
+const FOLLOW_MS = 5000;
+const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+let stopKeepingInView = null;
+
+function keepInView(target) {
+    stopKeepingInView?.();
+    target.scrollIntoView();
+
+    const resizeObserver = new ResizeObserver(() => target.scrollIntoView());
+    resizeObserver.observe(document.documentElement);
+    const timer = setTimeout(stop, FOLLOW_MS);
+    USER_SCROLL_EVENTS.forEach(type => window.addEventListener(type, stop, { capture: true, passive: true }));
+
+    function stop() {
+        resizeObserver.disconnect();
+        clearTimeout(timer);
+        USER_SCROLL_EVENTS.forEach(type => window.removeEventListener(type, stop, { capture: true }));
+        stopKeepingInView = null;
+    }
+    stopKeepingInView = stop;
 }
 
 // Битый якорь (#50%) не должен ронять модуль: он ещё и JS-инициализатор Blazor, и исключение
