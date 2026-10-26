@@ -14,6 +14,32 @@
     </JoinDropdownButton>
 </JoinButtonGroup>
 
+<h4>Split: меню выпадает из основной кнопки</h4>
+<p>
+    С <code>Split="true"</code> меню выравнивается по краю группы, а не стрелки, — как split button в Bootstrap.
+    Основную кнопку и стрелку кладут в свою группу; среди других кнопок — во вложенную.
+</p>
+
+<JoinButtonGroup>
+    <JoinButton Link="#" Preset="ButtonPreset.Download" Label="Скачать в Excel" />
+    <JoinButtonGroup>
+        <JoinButton Link="#" Preset="ButtonPreset.Print" Label="Распечатать все" />
+        <JoinDropdownButton AriaLabel="Другие варианты печати" Split="true">
+            <JoinMenuItem Href="#" Label="Распечатать бейджи" />
+            <JoinMenuItem Href="#" Label="Только раздатка" />
+        </JoinDropdownButton>
+    </JoinButtonGroup>
+</JoinButtonGroup>
+
+<div style="text-align: right">
+    <JoinButtonGroup>
+        <JoinButton Link="#" Preset="ButtonPreset.Print" Label="Распечатать все" />
+        <JoinDropdownButton AriaLabel="Другие варианты печати" Split="true" AlignRight="true">
+            <JoinMenuItem Href="#" Label="Распечатать бейджи" />
+        </JoinDropdownButton>
+    </JoinButtonGroup>
+</div>
+
 <h4>С подписью, меню у правого края</h4>
 <div style="text-align: right">
     <JoinDropdownButton Label="Действия" AlignRight="true">

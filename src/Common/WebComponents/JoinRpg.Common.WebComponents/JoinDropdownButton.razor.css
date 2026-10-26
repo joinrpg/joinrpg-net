@@ -80,6 +80,20 @@
     right: 0;
 }
 
+/*
+ * Split: меню позиционируется от ближайшего позиционированного предка — группы кнопок
+ * (.join-btn-group, position: relative), а не от <details>. Так оно выпадает из основной кнопки и
+ * шириной не меньше пары кнопок. Двойной класс — чтобы перебить position: relative, который группа
+ * ставит своим сегментам для z-index при наведении (z-index у flex-элемента работает и без него).
+ */
+.join-dropdown.join-dropdown--split {
+    position: static;
+}
+
+    .join-dropdown--split > .join-dropdown__menu {
+        min-width: max(160px, 100%);
+    }
+
     .join-dropdown__menu ::deep > li > a {
         display: block;
         padding: 3px 20px;

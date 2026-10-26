@@ -6,7 +6,7 @@
     Закрытие по клику мимо и по Esc — делегированный слушатель в JoinRpg.Common.WebComponents.lib.module.js;
     без него меню закрывается повторным кликом по кнопке.
 *@
-<details class="join-dropdown">
+<details class="join-dropdown @(Split ? "join-dropdown--split" : "")">
     <summary class="join-btn join-dropdown__toggle" aria-label="@AriaLabel" title="@AriaLabel">
         @if (Label is not null)
         {
@@ -31,4 +31,12 @@
 
     /// <summary>Прижать меню к правому краю кнопки — когда кнопка у правого края страницы.</summary>
     [Parameter] public bool AlignRight { get; set; }
+
+    /// <summary>
+    /// Половина «разделённой кнопки» (split button): меню выпадает не из стрелки, а из всей
+    /// <see cref="JoinButtonGroup"/>, в которой лежит кнопка, — выровненное по её левому краю
+    /// (или по правому с <see cref="AlignRight"/>) и не уже неё. Поэтому основную кнопку и эту кладут
+    /// в отдельную группу — вложенную, если рядом есть другие кнопки.
+    /// </summary>
+    [Parameter] public bool Split { get; set; }
 }
