@@ -35,7 +35,8 @@
              param-Name="@nameof(Model.ClaimId)"
              param-ProjectId="@Model.ProjectId"
              param-Spec="@(ClaimStatusSpec.ReadyForCheckIn)" />
-  
+  @Html.ValidationMessageFor(model => model.ClaimId, "", new { @class = "text-danger" })
+
   <input type="submit" class="btn btn-success" value="Зарегистрировать"/>
 }
 

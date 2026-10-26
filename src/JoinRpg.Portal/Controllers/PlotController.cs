@@ -131,9 +131,16 @@ public class PlotController(
     }
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, PlotFolderIdentification plotFolderId, string content,
+    public async Task<ActionResult> CreateElement(ProjectIdentification projectId, PlotFolderIdentification? plotFolderId, string content,
       string todoField, IReadOnlyCollection<CharacterIdentification> targetCharacters, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
     {
+        // Сюжет могли не выбрать: биндер на пустое значение молча даёт null, ошибки в ModelState нет.
+        if (plotFolderId is null)
+        {
+            ModelState.AddModelError("", "Выберите сюжет");
+            return await ShowFormAgain();
+        }
+
         // Биндер мог отвергнуть идентификатор цели (чужой проект, нераспознанная строка) — тогда
         // элемент просто не попал в коллекцию. Создавать вводную с молча урезанным списком целей
         // нельзя: показываем форму с ошибкой привязки.
@@ -163,8 +170,7 @@ public class PlotController(
         {
             // Папка запрашивается только чтобы отличить «нет такой папки» от ошибки создания:
             // так было и раньше, до перехода на DTO.
-            var folder = await plotRepository.GetPlotFolderDetails(plotFolderId);
-            if (folder == null)
+            if (plotFolderId is not null && await plotRepository.GetPlotFolderDetails(plotFolderId) == null)
             {
                 return NotFound();
             }
@@ -174,6 +180,7 @@ public class PlotController(
                 ProjectId = projectId,
                 PlotFolderId = plotFolderId,
                 ElementType = elementType,
+                IsMasterOnly = isMasterOnly,
                 Content = content,
                 TodoField = todoField,
                 TargetCharacters = [.. targetCharacters],

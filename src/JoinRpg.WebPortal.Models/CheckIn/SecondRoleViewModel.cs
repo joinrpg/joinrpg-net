@@ -32,5 +32,5 @@ public class SecondRoleViewModel
     public int ProjectId { get; set; }
 
     [Display(Name = "Новая роль")]
-    public CharacterIdentification CharacterId { get; set; }
+    public CharacterIdentification? CharacterId { get; set; }
 }

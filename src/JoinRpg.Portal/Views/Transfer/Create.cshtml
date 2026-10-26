@@ -27,6 +27,7 @@
                 <component type="typeof(JoinRpg.Web.ProjectCommon.MasterSelector)"
                            param-Name="nameof(Model.Sender)"
                            param-ProjectId="@Model.ProjectId"
+                           param-MasterId="Model.Sender"
                            render-mode="Static" />
                 @Html.ValidationMessageFor(model => model.Sender, "", new { @class = "text-danger" })
             </div>
@@ -38,6 +39,7 @@
                 <component type="typeof(JoinRpg.Web.ProjectCommon.MasterSelector)"
                            param-Name="nameof(Model.Receiver)"
                            param-ProjectId="@Model.ProjectId"
+                           param-MasterId="Model.Receiver"
                            render-mode="Static" />
                     @Html.ValidationMessageFor(model => model.Receiver, "", new { @class = "text-danger" })
                 </div>

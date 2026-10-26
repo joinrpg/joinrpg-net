@@ -20,6 +20,7 @@
   <form asp-action="TransferClaimPayment" asp-controller="Claim" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
 
       @Html.HiddenFor(model => model.OperationDate)
+      @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
       <div class="form-group">
         @Html.LabelFor(model => model.RecipientClaimId, new { @class = "col-md-3 control-label" })
@@ -30,6 +31,7 @@
                      param-ProjectId="@(new ProjectIdentification(Model.ProjectId))"
                      param-Spec="@(ClaimStatusSpec.ActiveOrOnHold)"
                      param-ExceptClaimId="@(new ClaimIdentification(Model.ProjectId, Model.ClaimId))" />
+          @Html.ValidationMessageFor(model => model.RecipientClaimId, "", new { @class = "text-danger" })
         </div>
       </div>
       <div class="form-group">

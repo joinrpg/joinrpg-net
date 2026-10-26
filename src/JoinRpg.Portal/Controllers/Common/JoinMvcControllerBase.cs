@@ -66,10 +66,17 @@ public abstract class JoinMvcControllerBase : Controller
             case ClaimAlreadyPresentException _:
             case ClaimTargetIsNotAcceptingClaims _:
             case InsufficientContactsException _:
-            case MasterHasResponsibleException _:
             // Сообщение собирается в самом исключении: оно перечисляет конкретные группы.
             case PublicGroupWithoutPublicPathException _:
                 ModelState.AddModelError("", exception.Message);
+                return;
+            case MasterHasResponsibleException _:
+                ModelState.AddModelError("",
+                    "Нельзя снять доступ мастеру, за которым числятся заявки или группы, — выберите нового ответственного мастера");
+                return;
+            case LastMasterWithGrantRightsException _:
+                ModelState.AddModelError("",
+                    "Нельзя снять доступ с последнего мастера, который может выдавать права, — иначе их больше никто не сможет выдать");
                 return;
             case JoinRpgNameFieldDeleteException _:
                 ModelState.AddModelError("",
