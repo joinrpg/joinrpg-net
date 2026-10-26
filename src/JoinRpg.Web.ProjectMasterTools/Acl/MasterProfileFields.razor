@@ -5,7 +5,7 @@
 </FormRowFor>
 
 <FormRowFor For="@(() => Model.Description)">
-    <JoinTextArea @bind-Value="Model.Description" />
+    <JoinMarkdownTextArea @bind-Value="Model.Description" />
 </FormRowFor>
 
 <FormRowFor For="@(() => Model.IsPublic)">

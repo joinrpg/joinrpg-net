@@ -24,7 +24,7 @@
                 <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
                     <FormHorizontal>
                         <FormRowFor For="@(() => model.CommentText)">
-                            <JoinTextArea @bind-Value="model.CommentText" Placeholder="Комментарий (необязательно)" />
+                            <JoinMarkdownTextArea @bind-Value="model.CommentText" Placeholder="Комментарий (необязательно)" />
                         </FormRowFor>
 
                         @if (RequestedSensitiveData.IsAnyRequested())

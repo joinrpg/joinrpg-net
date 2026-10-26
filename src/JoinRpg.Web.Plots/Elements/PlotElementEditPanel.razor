@@ -42,8 +42,8 @@
     }
     else
     {
-        <FormRow Label="Текст вводной" Description="Поддерживается Markdown">
-            <JoinTextArea Value="@Model.Content" ValueExpression="@(() => Model.Content)" Rows="20" />
+        <FormRow Label="Текст вводной">
+            <JoinMarkdownTextArea Value="@Model.Content" ValueExpression="@(() => Model.Content)" Rows="20" />
         </FormRow>
     }
 
