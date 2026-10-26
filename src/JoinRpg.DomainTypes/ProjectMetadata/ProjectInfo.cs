@@ -160,6 +160,27 @@ public record class ProjectInfo
     }
 
     /// <summary>
+    /// Вправе ли пользователь подтверждать и отклонять финансовую операцию, проведённую через способ оплаты
+    /// <paramref name="paymentTypeId"/>: мастер с правом на деньги — любую, мастер — владелец способа оплаты —
+    /// поступления на свой счёт.
+    /// </summary>
+    /// <remarks>
+    /// Нужна ли операции модерация вообще, здесь не проверяется — это свойство операции, а не прав.
+    /// Отключённые способы оплаты в <see cref="ProjectFinanceSettings"/> есть: их владелец подтверждает уже поданные операции.
+    /// </remarks>
+    public bool CanModerateFinanceOperation(PaymentTypeIdentification? paymentTypeId, UserIdentification? userId)
+    {
+        if (HasMasterAccess(userId, Permission.CanManageMoney))
+        {
+            return true;
+        }
+
+        return paymentTypeId is not null
+            && HasMasterAccess(userId)
+            && ProjectFinanceSettings.GetPaymentByIdOrDefault(paymentTypeId)?.User.UserId == userId;
+    }
+
+    /// <summary>
     /// Включённые способы оплаты, которыми пользователь может отметить оплату по заявке игрока.
     /// </summary>
     /// <remarks>

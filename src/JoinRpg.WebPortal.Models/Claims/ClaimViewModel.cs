@@ -123,7 +123,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         ClaimIdentification = claimInfo.ClaimId;
         AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
         CommentDiscussionId = claim.CommentDiscussionId;
-        RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId, projectInfo);
+        RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserIdentification, projectInfo);
         HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
         CanManageThisClaim = claim.HasAccess(currentUser.UserId,
             Permission.CanManageClaims,

@@ -303,10 +303,7 @@ internal class ClaimServiceImpl(
                     throw new ValueAlreadySetException("Finance entry is already moderated.");
                 }
 
-                // Модерирует либо мастер с правом на деньги, либо мастер — владелец способа
-                // оплаты: поступления на свой счёт он подтверждает сам.
-                if (!ctx.ProjectInfo.HasMasterAccess(ctx.CurrentUser, Permission.CanManageMoney)
-                    && finance.PaymentType?.UserId != ctx.CurrentUser.UserId)
+                if (!ctx.ProjectInfo.CanModerateFinanceOperation(finance.GetPaymentTypeId(), ctx.CurrentUser.UserIdentification))
                 {
                     throw new NoAccessToProjectException(ctx.ProjectInfo, ctx.CurrentUser.UserId);
                 }

@@ -25,12 +25,6 @@ public static class FinanceOperationExtensions
     public static string GetOrderId(this FinanceOperation fo) => GetOrderId(fo.CommentId);
 
     /// <summary>
-    /// Типизированный идентификатор финансовой операции (FinanceOperationId соответствует CommentId)
-    /// </summary>
-    public static FinanceOperationIdentification GetId(this FinanceOperation fo)
-        => new(new ClaimIdentification(fo.ProjectId, fo.ClaimId), fo.CommentId);
-
-    /// <summary>
     /// Creates the order id that is used to identify our payments on the bank side
     /// </summary>
 

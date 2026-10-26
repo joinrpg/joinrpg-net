@@ -2,6 +2,7 @@ using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.DataModel.Extensions;
 
@@ -61,6 +62,14 @@ public static class IdExtensions
     /// <summary>Идентификатор шаблона бейджа.</summary>
     public static ProjectBadgeTemplateIdentification GetId(this ProjectBadgeTemplate template)
         => new(new ProjectIdentification(template.ProjectId), template.ProjectBadgeTemplateId);
+
+    /// <summary>Идентификатор финансовой операции (FinanceOperationId соответствует CommentId).</summary>
+    public static FinanceOperationIdentification GetId(this FinanceOperation operation)
+        => new(new ClaimIdentification(operation.ProjectId, operation.ClaimId), operation.CommentId);
+
+    /// <summary>Способ оплаты финансовой операции, если он у неё есть (у переводов и льгот его нет).</summary>
+    public static PaymentTypeIdentification? GetPaymentTypeId(this FinanceOperation operation)
+        => PaymentTypeIdentification.FromOptional(new ProjectIdentification(operation.ProjectId), operation.PaymentTypeId);
 
     /// <summary>Идентификатор одобренной заявки персонажа, если она есть.</summary>
     public static ClaimIdentification? GetApprovedClaimIdOrDefault(this Character character)
