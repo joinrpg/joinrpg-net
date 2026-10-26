@@ -1,4 +1,4 @@
-﻿@model string
+@model string
 @{
     int LoginWidgetJsVersion = 22;
     string containerId = $"telegram-login-widget-{Guid.NewGuid():N}";
@@ -12,7 +12,7 @@
             data-request-access="write"
             data-auth-url="/manage/LinkTelegramLoginCallback"></script>
     <p class="text-warning telegram-vpn-warning" style="display:none">
-        Кнопка привязки Telegram может не отображаться, если у вас выключен VPN
+        Эта кнопка может не отображаться, если телеграмм заблокирован в вашей стране. Реклама средств обхода блокировок запрещена законом.
     </p>
 </div>
 <script>
