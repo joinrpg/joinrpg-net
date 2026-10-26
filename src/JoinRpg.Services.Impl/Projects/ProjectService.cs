@@ -115,7 +115,7 @@ internal class ProjectService(
             ctx =>
             {
                 ctx.Project.Details.ProjectAnnounce = new MarkdownDbValue(ctx.Request.ProjectAnnounce);
-                ctx.Project.ProjectName = ServiceValidation.Required(ctx.Request.ProjectName);
+                ctx.Project.ProjectName = ctx.Request.ProjectName.Value;
             });
     }
 

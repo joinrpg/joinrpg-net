@@ -21,7 +21,8 @@ internal class ProjectCreateViewService(
 
         try
         {
-            var request = CreateProjectRequest.Create(new ProjectName(model.ProjectName),
+            // Приведение, а не new: оно обрезает пробелы и проверяет длину (#5855), его сообщение уходит пользователю.
+            var request = CreateProjectRequest.Create((ProjectName)model.ProjectName,
                 (ProjectTypeDto)model.ProjectType,
                 model.CopyFromProjectId,
                 (ProjectCopySettingsDto)model.CopySettings,

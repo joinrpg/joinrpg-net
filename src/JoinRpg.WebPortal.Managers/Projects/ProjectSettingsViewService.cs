@@ -27,7 +27,8 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
         await projectService.EditProject(new EditProjectRequest
         {
             ProjectId = model.ProjectId,
-            ProjectName = model.ProjectName,
+            // Приведение, а не new: оно обрезает пробелы и проверяет длину (#5855).
+            ProjectName = (ProjectName)model.ProjectName,
             ProjectAnnounce = model.ProjectAnnounce,
         });
         await projectService.SetAccommodationSettings(model.ProjectId, model.EnableAccommodation);
