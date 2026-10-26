@@ -204,7 +204,12 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         sb.AppendLine($"public partial record {info.TypeName}{interfaceString}");
         sb.AppendLine("{");
 
-
+        // Границы длины — константами, чтобы на них ссылались [StringLength] во вью-моделях, а не дублировали числа
+        sb.AppendLine("    /// <summary>Минимальная длина значения (после обрезки пробелов, если она включена).</summary>");
+        sb.AppendLine($"    public const int MinLength = {info.MinLength};");
+        sb.AppendLine("    /// <summary>Максимальная длина значения; <see cref=\"int.MaxValue\"/> — без ограничения.</summary>");
+        sb.AppendLine($"    public const int MaxLength = {info.MaxLength};");
+        sb.AppendLine();
 
         // Статический метод ValidateAndCanonicalize
         sb.AppendLine($"    private static string ValidateAndCanonicalize(string value)");
@@ -213,14 +218,14 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         {
             sb.AppendLine("        value = value.Trim();");
         }
-        sb.AppendLine($"        if (value.Length < {info.MinLength})");
+        sb.AppendLine("        if (value.Length < MinLength)");
         sb.AppendLine("        {");
         sb.AppendLine($"            throw new ArgumentException($\"Значение должно быть не короче {info.MinLength} символов\", nameof(value));");
         sb.AppendLine("        }");
         // MaxLength = int.MaxValue означает «ограничения нет» — проверку не генерируем вовсе
         if (info.MaxLength != int.MaxValue)
         {
-            sb.AppendLine($"        if (value.Length > {info.MaxLength})");
+            sb.AppendLine("        if (value.Length > MaxLength)");
             sb.AppendLine("        {");
             sb.AppendLine($"            throw new ArgumentException($\"Значение должно быть не длиннее {info.MaxLength} символов\", nameof(value));");
             sb.AppendLine("        }");
