@@ -17,7 +17,7 @@ public class PaymentTransferViewModel : AddCommentViewModel
     /// <summary>
     /// Id of a claim to transfer money to
     /// </summary>
-    [Required]
+    [Required(ErrorMessage = "Выберите заявку для перевода")]
     [Display(Name = "Заявка для перевода взноса")]
     public ClaimIdentification? RecipientClaimId { get; set; }
 

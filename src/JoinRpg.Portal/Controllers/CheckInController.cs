@@ -66,13 +66,18 @@ public class CheckInController(
         return View(new CheckInIndexViewModel(project, banner));
     }
 
-    // claimId может не прийти вовсе: если заявок, готовых к регистрации, нет, селектор рендерит
-    // <select> без опций, и браузер не отправляет поле. Тогда просто возвращаемся на страницу выбора.
+    // claimId может не прийти вовсе: заявку не выбрали, или заявок, готовых к регистрации, нет —
+    // тогда браузер не отправляет поле. Показываем страницу выбора с подсказкой.
     [HttpPost]
-    public ActionResult Index(ProjectIdentification projectId, ClaimIdentification? claimId)
-        => claimId is null
-            ? RedirectToAction("Index", new { projectId = projectId.Value })
-            : RedirectToAction("CheckIn", new { projectId = claimId.ProjectId.Value, claimId = claimId.ClaimId });
+    public async Task<ActionResult> Index(ProjectIdentification projectId, ClaimIdentification? claimId)
+    {
+        if (claimId is null)
+        {
+            ModelState.AddModelError(nameof(CheckInIndexViewModel.ClaimId), "Выберите заявку");
+            return await IndexPage(projectId, checkedInClaimId: null);
+        }
+        return RedirectToAction("CheckIn", new { projectId = claimId.ProjectId.Value, claimId = claimId.ClaimId });
+    }
 
     [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
     public async Task<ActionResult> Setup(ProjectIdentification projectId)
@@ -191,6 +196,13 @@ public class CheckInController(
         if (claim == null)
         {
             return NotFound();
+        }
+        // Биндер на пустое значение молча даёт null, ошибки в ModelState нет.
+        if (model.CharacterId is null)
+        {
+            // В общую сводку: представление выводит полную сводку, у поля сообщение задвоилось бы.
+            ModelState.AddModelError("", "Выберите персонажа");
+            return await ShowSecondRole(new(model.ProjectId), model.ClaimId);
         }
         try
         {

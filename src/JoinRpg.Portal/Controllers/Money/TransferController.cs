@@ -49,7 +49,17 @@ public class TransferController(
 
         Fill(viewModel, project);
 
-        if (!ModelState.IsValid)
+        // Биндер на пустое значение молча даёт null, ошибки в ModelState нет.
+        if (viewModel.Sender is null)
+        {
+            ModelState.AddModelError(nameof(viewModel.Sender), "Выберите, от кого перевод");
+        }
+        if (viewModel.Receiver is null)
+        {
+            ModelState.AddModelError(nameof(viewModel.Receiver), "Выберите, кому перевод");
+        }
+
+        if (!ModelState.IsValid || viewModel.Sender is null || viewModel.Receiver is null)
         {
             return View(viewModel);
         }

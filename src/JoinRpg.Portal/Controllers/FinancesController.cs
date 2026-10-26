@@ -36,11 +36,13 @@ public class FinancesController(
 
     [HttpGet]
     [MasterAuthorize]
-    public async Task<ActionResult> Setup(int projectid)
+    public async Task<ActionResult> Setup(int projectid) => await ShowSetup(projectid);
+
+    private async Task<ActionResult> ShowSetup(int projectid)
     {
         var project = await projectRepository.GetProjectForFinanceSetup(projectid);
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-        return View(new FinanceSetupViewModel(project, projectInfo, currentUserAccessor.UserId, currentUserAccessor.IsAdmin, vpu.PaymentsUser));
+        return View("Setup", new FinanceSetupViewModel(project, projectInfo, currentUserAccessor.UserId, currentUserAccessor.IsAdmin, vpu.PaymentsUser));
     }
 
     [HttpGet]
@@ -145,6 +147,13 @@ public class FinancesController(
     [RequireMasterOrAdmin(Permission.CanManageMoney)]
     public async Task<ActionResult> CreatePaymentType(CreatePaymentTypeViewModel viewModel)
     {
+        // Форма — модальный диалог на странице настроек: ошибку показываем сводкой над страницей.
+        if (viewModel.UserId is null)
+        {
+            ModelState.AddModelError("", "Не удалось добавить способ оплаты: выберите мастера");
+            return await ShowSetup(viewModel.ProjectId);
+        }
+
         try
         {
             await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest

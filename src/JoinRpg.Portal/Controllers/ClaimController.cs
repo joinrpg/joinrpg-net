@@ -299,7 +299,7 @@ public class ClaimController(
     [HttpPost]
     [MasterAuthorize]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> RestoreByMaster(int projectId, ClaimIdentification claimId, ClaimOperationViewModel viewModel, CharacterIdentification characterId)
+    public async Task<ActionResult> RestoreByMaster(int projectId, ClaimIdentification claimId, ClaimOperationViewModel viewModel, CharacterIdentification? characterId)
     {
         var claim = await claimsRepository.GetClaim(claimId);
         if (claim == null)
@@ -309,7 +309,11 @@ public class ClaimController(
 
         try
         {
-            if (!ModelState.IsValid)
+            if (characterId is null)
+            {
+                ModelState.AddModelError("", "Выберите персонажа");
+            }
+            if (!ModelState.IsValid || characterId is null)
             {
                 return await ShowClaim(claim);
             }
@@ -383,7 +387,7 @@ public class ClaimController(
 
     [MasterAuthorize()]
     [HttpPost]
-    public async Task<ActionResult> Move(int projectId, ClaimIdentification claimId, MoveClaimOperationViewModel viewModel, CharacterIdentification characterId)
+    public async Task<ActionResult> Move(int projectId, ClaimIdentification claimId, MoveClaimOperationViewModel viewModel, CharacterIdentification? characterId)
     {
         var claim = await claimsRepository.GetClaim(claimId);
         if (claim == null)
@@ -393,7 +397,11 @@ public class ClaimController(
 
         try
         {
-            if (!ModelState.IsValid)
+            if (characterId is null)
+            {
+                ModelState.AddModelError("", "Выберите персонажа");
+            }
+            if (!ModelState.IsValid || characterId is null)
             {
                 return await ShowClaim(claim);
             }
@@ -477,6 +485,12 @@ public class ClaimController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> TransferClaimPayment(PaymentTransferViewModel data)
     {
+        // Заявку-получателя могли не выбрать — [Required] на RecipientClaimId кладёт ошибку в ModelState.
+        if (!ModelState.IsValid || data.RecipientClaimId is null)
+        {
+            return await ShowTransferClaimPayment(data.ProjectId, data.ClaimId);
+        }
+
         try
         {
             await financeService.TransferPaymentAsync(
@@ -484,8 +498,7 @@ public class ClaimController(
                 {
                     ProjectId = data.ProjectId,
                     ClaimId = data.ClaimId,
-                    ToClaimId = data.RecipientClaimId?.ClaimId
-                        ?? throw new InvalidOperationException("Не выбрана заявка для перевода"),
+                    ToClaimId = data.RecipientClaimId.ClaimId,
                     CommentText = data.CommentText,
                     OperationDate = data.OperationDate,
                     Money = data.Money,
@@ -646,7 +659,12 @@ public class ClaimController(
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult> TransferClaimPayment(int projectId, int claimId)
+    public async Task<ActionResult> TransferClaimPayment(int projectId, int claimId) => await ShowTransferClaimPayment(projectId, claimId);
+
+    /// <summary>
+    /// Форма перевода. При повторном показе после ошибки введённые значения берутся из ModelState.
+    /// </summary>
+    private async Task<ActionResult> ShowTransferClaimPayment(int projectId, int claimId)
     {
         var claim = await claimsRepository.GetClaim(new ClaimIdentification(projectId, claimId));
         if (claim == null)

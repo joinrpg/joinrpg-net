@@ -118,14 +118,19 @@ public class AclController(
                 new UserIdentification(viewModel.UserId),
                 viewModel.ResponsibleMasterId);
         }
-        catch
+        catch (MasterHasResponsibleException) when (viewModel.ResponsibleMasterId is null)
         {
-            if (await GetAclViewModel(projectId, new(viewModel.UserId)) is not { } aclViewModel)
-            {
-                return NotFound();
-            }
-            viewModel.InnerModel = aclViewModel;
-            return View(viewModel);
+            // Нового ответственного не выбрали, а у мастера есть заявки или группы.
+            // В общую сводку: селектор ответственного (и сообщение у него) представление выводит по своему условию,
+            // и для групп оно не совпадает с проверкой сервиса — сообщение у поля могло бы не показаться вовсе.
+            ModelState.AddModelError("",
+                "Выберите нового ответственного мастера: за этим мастером числятся заявки или группы");
+            return await ShowDeleteAgain();
+        }
+        catch (Exception exception)
+        {
+            AddModelException(exception);
+            return await ShowDeleteAgain();
         }
         if (viewModel.UserId == currentUserAccessor.UserId)
         {
@@ -133,6 +138,19 @@ public class AclController(
             return RedirectToIndex(projectId);
         }
         return RedirectToAction(nameof(Manage), "Acl", new { viewModel.ProjectId });
+
+        async Task<ActionResult> ShowDeleteAgain()
+        {
+            if (await GetAclViewModel(projectId, new(viewModel.UserId)) is not { } aclViewModel)
+            {
+                return NotFound();
+            }
+            viewModel.InnerModel = aclViewModel;
+            // SelfRemove не постится: без него «Покинуть пост мастера» превратилось бы в «Снять доступ».
+            viewModel.SelfRemove = viewModel.UserId == currentUserAccessor.UserId;
+            // Явное имя: сюда же приходит RemoveYourself, своего представления у него нет.
+            return View("Delete", viewModel);
+        }
     }
 
     [HttpGet("leave")]

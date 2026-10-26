@@ -19,10 +19,10 @@ public class CreateMoneyTransferViewModel : MoneyTransferViewModelBase, IValidat
     public bool HasAdminAccess { get; set; }
 
     [Display(Name = "От")]
-    public UserIdentification Sender { get; set; } = null!;
+    public UserIdentification? Sender { get; set; }
 
     [Display(Name = "Кому")]
-    public UserIdentification Receiver { get; set; } = null!;
+    public UserIdentification? Receiver { get; set; }
 
     [Required(ErrorMessage = "Заполните текст комментария"),
      Display(
@@ -34,7 +34,8 @@ public class CreateMoneyTransferViewModel : MoneyTransferViewModelBase, IValidat
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (Receiver == Sender)
+        // Пустые значения проверяет контроллер: два null равны, но это «не выбрано», а не перевод самому себе.
+        if (Sender is not null && Receiver == Sender)
         {
             yield return new ValidationResult("Нельзя принять деньги у самого себя",
                 new[] { nameof(Sender), nameof(Receiver) });

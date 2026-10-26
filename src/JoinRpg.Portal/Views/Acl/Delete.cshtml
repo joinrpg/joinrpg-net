@@ -24,6 +24,7 @@
         @Html.AntiForgeryToken()
         @Html.HiddenFor(model => model.ProjectId)
         @Html.HiddenFor(model => model.UserId)
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
         if (Model.InnerModel.ClaimsCount > 0 || Model.InnerModel.ResponsibleFor.Count > 0)
         {
@@ -35,6 +36,7 @@
                       param-ProjectId="@Model.ProjectId"
                       param-IdsToRemove="@(new UserIdentification[] {new UserIdentification(Model.UserId)})"
                       render-mode="Static" />
+                    @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
                 </div>
             </div>
         }

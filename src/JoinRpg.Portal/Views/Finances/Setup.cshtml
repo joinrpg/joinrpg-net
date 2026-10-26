@@ -10,6 +10,8 @@
 
 <h2>@ViewBag.Title</h2>
 
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
 @if (Model.PaymentTypes.Any() && !Model.FeeSettings.Any())
 {
     <div class="join alert alert-danger"><join-icon icon="Alert" />
