@@ -25,10 +25,12 @@
         }
         @if (CharacterIds.Count > 0)
         {
-            <JoinButton Link="@ProjectUriLocator.GetPrintCharactersUri(ProjectId, CharacterIds).ToString()" Preset="ButtonPreset.Print" Label="Распечатать все" />
-            <JoinDropdownButton AriaLabel="Другие варианты печати">
-                <JoinMenuItem Href="@ProjectUriLocator.GetPrintBadgesUri(ProjectId, CharacterIds).ToString()" Icon="JoinIconType.Print" Label="Распечатать бейджи" />
-            </JoinDropdownButton>
+            <JoinButtonGroup>
+                <JoinButton Link="@ProjectUriLocator.GetPrintCharactersUri(ProjectId, CharacterIds).ToString()" Preset="ButtonPreset.Print" Label="Распечатать все" />
+                <JoinDropdownButton AriaLabel="Другие варианты печати" Split="true">
+                    <JoinMenuItem Href="@ProjectUriLocator.GetPrintBadgesUri(ProjectId, CharacterIds).ToString()" Icon="JoinIconType.Print" Label="Распечатать бейджи" />
+                </JoinDropdownButton>
+            </JoinButtonGroup>
         }
     }
 </JoinButtonGroup>

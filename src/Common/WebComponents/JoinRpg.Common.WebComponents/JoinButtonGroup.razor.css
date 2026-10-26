@@ -11,7 +11,9 @@
  * Кнопкой считаются и JoinButton (.join-btn), и ручные кнопки Bootstrap (.btn): в группах
  * встречаются и те и другие (ссылки a.btn, выпадающие меню JoinDotsMenu/TypedDropdownButton).
  */
+/* position: relative — от группы выпадает меню JoinDropdownButton в режиме Split */
 .join-btn-group {
+    position: relative;
     display: inline-flex;
     flex-wrap: nowrap;
     align-items: center;
