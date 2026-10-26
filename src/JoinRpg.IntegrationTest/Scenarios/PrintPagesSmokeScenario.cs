@@ -1,6 +1,7 @@
 using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
@@ -212,12 +213,11 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
     }
 
     // Пачки на «Распечатках» и конверты С5 — без шаблонов (слотов): печатать их незачем.
-    // Шаблон «Хочу на игру» создаётся вместе с проектом.
     [Fact]
     public async Task PrintIndex_SkipsSlots()
     {
         var context = await SeedAsync();
-        const string slotName = "Хочу на игру";
+        const string slotName = DefaultSlotName;
 
         var index = await (await context.MasterClient.GetAsync($"{context.ProjectId.Value}/print/index")).AsHtmlDocument();
         var stickersLink = index.DocumentNode.SelectNodes("//a[contains(@href, '/print/stickers')]")
@@ -231,6 +231,54 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         var envelopesText = WebUtility.HtmlDecode(envelopes.DocumentNode.InnerText);
         envelopesText.ShouldContain(context.CharacterName);
         envelopesText.ShouldNotContain(slotName);
+    }
+
+    // «Распечатать все» над списком персонажей шлёт весь список, а в нём бывают шаблоны — печать их отсекает сама.
+    [Theory]
+    [InlineData("characterlist")]
+    [InlineData("handoutonly")]
+    [InlineData("stickers")]
+    public async Task PrintByIds_SkipsSlots(string action)
+    {
+        var context = await SeedAsync();
+
+        var response = await context.MasterClient.GetAsync(
+            $"{context.ProjectId.Value}/print/{action}?characterIds={await CharacterAndSlotIds(context)}");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var text = WebUtility.HtmlDecode((await response.AsHtmlDocument()).DocumentNode.InnerText);
+
+        text.ShouldContain(context.CharacterName);
+        text.ShouldNotContain(DefaultSlotName);
+    }
+
+    [Fact]
+    public async Task BadgesByIds_SkipSlots()
+    {
+        var context = await SeedAsync();
+        var templateId = await factory.Services.RunAsAsync(
+            context.MasterId,
+            sp => sp.GetRequiredService<IProjectBadgeTemplateService>().CreateAsync(
+                context.ProjectId,
+                "Бейдж без шаблонов персонажей",
+                new BadgeLayout(90, 55, null, [new BadgeLine(null, "Бейдж", null, 10, 8, 20, Bold: false)])));
+
+        var page = await (await context.MasterClient.GetAsync(
+            $"{context.ProjectId.Value}/print/badges?characterIds={await CharacterAndSlotIds(context)}&badgeTemplateId={templateId.ProjectBadgeTemplateId}"))
+            .AsHtmlDocument();
+
+        page.DocumentNode.SelectNodes("//div[@class='join-printable-badge']").ShouldNotBeNull().Count.ShouldBe(1);
+    }
+
+    // Шаблон, который создаётся вместе с проектом.
+    private const string DefaultSlotName = "Хочу на игру";
+
+    private async Task<string> CharacterAndSlotIds(SeedContext context)
+    {
+        var slotId = await factory.Services.RunAsAsync(
+            context.MasterId,
+            async sp => (await sp.GetRequiredService<ICharacterInfoRepository>().GetCharactersForList(context.ProjectId))
+                .Single(character => character.CharacterName == DefaultSlotName).Id);
+        return Uri.EscapeDataString(new CompressedIntList([context.CharacterId.CharacterId, slotId.CharacterId]).ToString());
     }
 
     private static async Task<string> GetPrintPageText(SeedContext context, string action, string extraQuery = "")

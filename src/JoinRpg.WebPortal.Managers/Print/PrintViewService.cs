@@ -70,14 +70,14 @@ public class PrintViewService(
     }
 
     /// <summary>
-    /// Конверты активных персонажей из перечисленных — для печати наклеек пачкой.
+    /// Конверты активных персонажей из перечисленных, кроме шаблонов, — для печати наклеек пачкой.
     /// </summary>
     public async Task<IReadOnlyCollection<EnvelopeViewModel>> GetEnvelopesForActiveCharacters(
         IReadOnlyCollection<CharacterIdentification> characterIds)
     {
         var characters = await characterInfoRepository.GetCharacterInfos(characterIds);
 
-        return await GetEnvelopes([.. characters.Where(character => character.IsActive)]);
+        return await GetEnvelopes([.. characters.Where(character => character.IsActive && !character.CharacterTypeInfo.IsSlot)]);
     }
 
     /// <summary>Конверты всех активных персонажей проекта, кроме шаблонов — их не печатают.</summary>
@@ -86,7 +86,7 @@ public class PrintViewService(
     {
         var characters = await characterInfoRepository.GetAllCharacterInfos(projectId, CharacterStatusSpec.Active);
 
-        return await GetEnvelopes([.. characters.Where(character => character.CharacterTypeInfo.CharacterType != CharacterType.Slot)]);
+        return await GetEnvelopes([.. characters.Where(character => !character.CharacterTypeInfo.IsSlot)]);
     }
 
     private static EnvelopeViewModel Build(

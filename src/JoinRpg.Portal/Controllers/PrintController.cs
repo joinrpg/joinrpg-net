@@ -78,10 +78,12 @@ public class PrintController(
 
     private async Task<PrintCharacterViewModel[]> LoadCharactersToPrint(ProjectIdentification projectId, CompressedIntList characterIds)
     {
-        IReadOnlyCollection<CharacterIdentification> characterIdsList = characterIds.ToCharacterIds(projectId);
-
         // Агрегаты одним запросом на всю пачку — на них живёт и вью-модель печати, и конверт (ADR013).
-        var characters = await characterInfoRepository.GetCharacterInfos(characterIdsList);
+        // Шаблоны отсекаются здесь, а не в ссылке: «Распечатать все» над списком персонажей шлёт весь список.
+        var characters = (await characterInfoRepository.GetCharacterInfos(characterIds.ToCharacterIds(projectId)))
+            .Where(character => !character.CharacterTypeInfo.IsSlot)
+            .ToList();
+        IReadOnlyCollection<CharacterIdentification> characterIdsList = [.. characters.Select(character => character.Id)];
 
         var plots = await characterPlotViewService.GetPlotForCharacters(characterIdsList, CharacterAccessMode.Print);
         var handouts = await characterPlotViewService.GetHandoutsForCharacters(characterIdsList);
@@ -111,7 +113,7 @@ public class PrintController(
         // Странице нужны только идентификаторы ссылок, поэтому лёгкая проекция, а не агрегаты.
         // Шаблоны (слоты) не печатают: ни конверта, ни бейджа у них нет.
         var characters = (await characterInfoRepository.GetCharactersForList(projectId, CharacterStatusSpec.Active))
-            .Where(character => character.CharacterTypeInfo.CharacterType != CharacterType.Slot);
+            .Where(character => !character.CharacterTypeInfo.IsSlot);
 
         var badgeTemplates = await GetActiveBadgeTemplates(projectId);
 

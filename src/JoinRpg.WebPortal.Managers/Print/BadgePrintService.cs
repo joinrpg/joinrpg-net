@@ -40,7 +40,7 @@ public class BadgePrintService(
         // По алфавиту имён: порядок списка до сюда не доходит (CompressedIntList в ссылке сортирует id),
         // а нарезанные бейджи по алфавиту легче раздавать на регистрации.
         var characters = (await characterInfoRepository.GetCharacterInfos(characterIds))
-            .Where(c => c.IsActive)
+            .Where(c => c.IsActive && !c.CharacterTypeInfo.IsSlot) // шаблонам бейдж не нужен
             .OrderBy(c => c.CharacterName, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
