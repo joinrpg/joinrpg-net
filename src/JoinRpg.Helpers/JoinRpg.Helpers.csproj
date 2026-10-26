@@ -5,7 +5,4 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Tasks.Git" />
-  </ItemGroup>
 </Project>
