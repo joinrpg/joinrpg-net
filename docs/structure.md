@@ -65,7 +65,11 @@
 ### Portal (основной сайт)
 - `JoinRpg.Portal` — основное ASP.NET Core приложение. Только UI, хранить тут как можно меньше кода. В идеале метод контроллера просто вызывает соот. ViewService внутри JoinRpg.WebPortal.Managers и отдает результат в View или редиректит в случае успеха.
 - `JoinRpg.CommonUI.Models` — общие перечисления для UI и email
-- `JoinRpg.WebPortal.Models` — legacy MVC ViewModels
+- `JoinRpg.WebPortal.Models` — legacy MVC ViewModels. Новых ссылок отсюда на `JoinRpg.Web.*` не добавлять:
+  если компоненту из `Web.*` нужна модель, которую собирает класс отсюда, — перенести модель в этот `Web.*`-проект
+  (без доменных зависимостей), билдер — в `JoinRpg.WebPortal.Managers`. То, что остаётся здесь (навигация
+  персонажа, вводные), сводится с ней в модель страницы в `JoinRpg.Portal/Models`. Образец — форма регистрации
+  (#5840): `CheckInClaimViewModel`, `CheckInClaimViewModelBuilder`, `CheckInClaimPageModel`.
 - `JoinRpg.WebPortal.Managers` — подготовка ViewModels для веб-портала
 
 ### WebPortalShared (разделяемые UI-компоненты)
