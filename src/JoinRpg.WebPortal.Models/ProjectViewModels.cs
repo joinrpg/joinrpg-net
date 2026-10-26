@@ -12,21 +12,8 @@ public class EditProjectViewModel
 {
     public int ProjectId { get; set; }
 
-    [DisplayName("Название проекта"), Required,
- StringLength(60,
-     ErrorMessage = "Название проекта должно быть длиной от 5 до 60 букв.",
-     MinimumLength = 5)]
-    public string ProjectName { get; set; }
-
-    [Display(Name = "Анонс проекта",
-        Description = "Не надо дублировать в этом поле данные из КогдаИгры — даты, МГ, регион и ссылки на сайт и соцсети."),
-        UIHint("MarkdownString")]
-    public string ProjectAnnounce { get; set; }
-
     [ReadOnly(true)]
     public string OriginalName { get; set; }
-    [Display(Name = "Включить систему поселения")]
-    public bool EnableAccomodation { get; set; }
 
     public bool Active { get; set; }
 

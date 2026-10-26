@@ -10,6 +10,19 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 [ApiController]
 public class ProjectOperationsController(IProjectSettingsClient client) : ControllerBase
 {
+    [HttpGet]
+    public async Task<ActionResult<ProjectMainSettingsViewModel>> GetMainSettings(ProjectIdentification projectId)
+        => Ok(await client.GetMainSettings(projectId));
+
+    [HttpPost]
+    public async Task<ActionResult> SaveMainSettings(
+        ProjectIdentification projectId,
+        ProjectMainSettingsViewModel model)
+    {
+        model.ProjectId = projectId;
+        await client.SaveMainSettings(model);
+        return Ok();
+    }
 
     [HttpGet]
     public async Task<ActionResult<ProjectPublishSettingsViewModel>> GetPublishSettings(ProjectIdentification projectId)

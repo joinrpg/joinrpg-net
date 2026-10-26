@@ -13,49 +13,6 @@ param-ProjectId="new ProjectIdentification (Model.ProjectId)"
 param-Active="Model.Active"
 param-Blocked="Model.Blocked" />
 <hr/>
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.ProjectId)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.ProjectName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.ProjectName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.ProjectName, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.ProjectAnnounce, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.ProjectAnnounce, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.DescriptionFor(model => model.ProjectAnnounce)
-                @Html.ValidationMessageFor(model => model.ProjectAnnounce, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        @if (Model.Active)
-        {
-            <div class="form-group">
-                @Html.LabelFor(model => model.EnableAccomodation, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.EnableAccomodation)
-                    @Html.ValidationMessageFor(model => model.EnableAccomodation, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        }
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Сохранить" class="btn btn-success" />
-            </div>
-        </div>
-    </div>
-}
 
 @* Каждая панель — свой остров; аккордеон из них собирает общее имя группы у JoinCollapsePanel,
    а panel-group лишь сближает свёрнутые панели. *@
@@ -63,6 +20,9 @@ param-Blocked="Model.Blocked" />
     @* В архиве эти панели скрываются сами, но только после загрузки — без условия заголовки мелькали бы. *@
     @if (Model.Active)
     {
+        <component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectMainSettingsPanel)" render-mode="WebAssembly"
+                   param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
+
         <component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectClaimSettingsPanel)" render-mode="WebAssembly"
                    param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
 

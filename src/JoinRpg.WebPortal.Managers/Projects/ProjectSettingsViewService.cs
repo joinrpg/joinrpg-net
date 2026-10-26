@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 
@@ -6,6 +7,32 @@ namespace JoinRpg.WebPortal.Managers.Projects;
 
 internal class ProjectSettingsViewService(IProjectMetadataRepository projectMetadataRepository, IProjectService projectService) : IProjectSettingsClient
 {
+    async Task<ProjectMainSettingsViewModel> IProjectSettingsClient.GetMainSettings(ProjectIdentification projectId)
+    {
+        // Анонс — в ProjectDetails, а не в метаданных проекта (#5112).
+        var details = await projectMetadataRepository.GetProjectDetails(projectId);
+        var project = details.ProjectInfo;
+        return new ProjectMainSettingsViewModel()
+        {
+            ProjectId = projectId,
+            ProjectStatus = project.ProjectStatus,
+            ProjectName = project.ProjectName.Value,
+            ProjectAnnounce = details.ProjectDescription.Value,
+            EnableAccommodation = project.AccommodationSettings.Enabled,
+        };
+    }
+
+    async Task IProjectSettingsClient.SaveMainSettings(ProjectMainSettingsViewModel model)
+    {
+        await projectService.EditProject(new EditProjectRequest
+        {
+            ProjectId = model.ProjectId,
+            ProjectName = model.ProjectName,
+            ProjectAnnounce = model.ProjectAnnounce,
+        });
+        await projectService.SetAccommodationSettings(model.ProjectId, model.EnableAccommodation);
+    }
+
     async Task<ProjectClaimSettingsViewModel> IProjectSettingsClient.GetClaimSettings(ProjectIdentification projectId)
     {
         // Правила подачи — в ProjectDetails, а не в метаданных проекта (#5112).
