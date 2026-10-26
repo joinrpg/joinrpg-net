@@ -8,9 +8,10 @@ public interface IGroupReportClient
     Task<GroupReportViewModel?> GetReport(CharacterGroupIdentification groupId);
 }
 
+/// <param name="CheckInInProgress">Идёт регистрация — показывать колонки «В игре» и «Заехало»</param>
 public record GroupReportViewModel(
     CharacterGroupIdentification GroupId,
-    bool CheckinModuleEnabled,
+    bool CheckInInProgress,
     IReadOnlyList<GroupReportRowViewModel> Rows);
 
 /// <summary>

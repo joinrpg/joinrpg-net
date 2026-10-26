@@ -23,13 +23,13 @@ else
             <th>NPC</th>
             <th>Занято</th>
             <th>Свободно</th>
-            @if (_result.CheckinModuleEnabled)
+            @if (_result.CheckInInProgress)
             {
                 <th>В игре</th>
             }
             <th>Всего заявок</th>
             <th>Принято</th>
-            @if (_result.CheckinModuleEnabled)
+            @if (_result.CheckInInProgress)
             {
                 <th>Заехало</th>
             }
@@ -63,7 +63,7 @@ else
                 <td style="text-align: right">@row.TotalNpcCharacters</td>
                 <td style="text-align: right">@row.TotalCharactersWithPlayers</td>
                 <td style="text-align: right">@row.TotalFreeSlots</td>
-                @if (_result.CheckinModuleEnabled)
+                @if (_result.CheckInInProgress)
                 {
                     <td style="text-align: right">@row.TotalInGameCharacters</td>
                 }
@@ -71,7 +71,7 @@ else
                         <a href="@UriLocator.GetClaimListUri(row.Group.CharacterGroupId)">@row.TotalActiveClaims</a>
                 </td>
                 <td style="text-align: right">@row.TotalAcceptedClaims</td>
-                @if (_result.CheckinModuleEnabled)
+                @if (_result.CheckInInProgress)
                 {
                     <td style="text-align: right">@row.TotalCheckedInClaims</td>
                 }

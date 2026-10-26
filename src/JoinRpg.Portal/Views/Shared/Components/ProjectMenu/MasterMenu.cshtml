@@ -184,10 +184,7 @@
                                 Настройки капитанов команд
                             </a>
                         </li>
-                        @if (Model.CheckInModuleEnabled)
-                        {
-                            <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
-                        }
+                        <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
 
                         <li asp-is-disabled="!@Model.Permissions.Contains(Permission.CanChangeProjectProperties)">
                             <a asp-action="Edit" asp-controller="Game" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.Permissions.Contains(Permission.CanChangeProjectProperties)">

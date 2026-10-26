@@ -13,6 +13,6 @@ internal class GroupReportViewService(IProjectRepository projectRepository) : IG
             return null;
         }
 
-        return GroupReportViewModelBuilder.Build(field, field.Project.Details.EnableCheckInModule);
+        return GroupReportViewModelBuilder.Build(field);
     }
 }

@@ -13,10 +13,7 @@ public class ClaimListItemViewModelExporter(IUriService uriService, ProjectInfo 
         yield return EnumColumn(x => x.ClaimFullStatusView.ClaimDenialStatus);
         yield return DateTimeColumn(x => x.UpdateDate);
         yield return DateTimeColumn(x => x.CreateDate);
-        if (projectInfo.ProjectCheckInSettings.CheckInModuleEnabled)
-        {
-            yield return DateTimeColumn(x => x.CheckInDate);
-        }
+        yield return DateTimeColumn(x => x.CheckInDate);
         yield return IntColumn(x => x.TotalFee);
         yield return IntColumn(x => x.FeeDue);
         yield return IntColumn(x => x.FeePaid);

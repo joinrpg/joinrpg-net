@@ -237,11 +237,13 @@ public class MasterExportRoundTripTest
         _ = pending.ClaimUpdatedAt.ShouldNotBeNull();
     }
 
-    /// <summary>Все модули, добавляющие колонки: заезд, льготный взнос, поселение, паспорт и адрес, дата рождения.</summary>
+    /// <summary>
+    /// Все модули, добавляющие колонки: льготный взнос, поселение, паспорт и адрес, дата рождения.
+    /// Дата заезда выгружается всегда, но проверяется здесь же — заодно со всеми необязательными колонками.
+    /// </summary>
     [Fact]
     public void ClaimsWithAllModulesRoundTrip()
     {
-        mock.Project.Details.EnableCheckInModule = true;
         mock.Project.Details.PreferentialFeeEnabled = true;
         mock.Project.Details.EnableAccommodation = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
