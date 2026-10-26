@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DomainTypes.Characters;
@@ -35,11 +36,20 @@ public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? Problem
     public virtual bool PlayerCanFix => false;
 
     /// <summary>
-    /// Проблему можно показать игроку. По умолчанию — нельзя: работа мастеров с заявкой игрока
-    /// не касается, и новый тип проблемы не должен утечь к нему, пока о нём не решили явно.
+    /// Проблему можно показать игроку, подавшему заявку. По умолчанию — нельзя: работа мастеров
+    /// с заявкой игрока не касается, и новый тип проблемы не должен утечь к нему, пока о нём не
+    /// решили явно. Исключение — деньги самого игрока.
     /// </summary>
-    [JsonIgnore]
-    public virtual bool VisibleToPlayer => false;
+    /// <param name="claimStatus">
+    /// Статус заявки: от него зависит, какие поля игрок видит (см. <see cref="FieldRelatedProblem"/>).
+    /// Для остальных проблем не важен.
+    /// </param>
+    public virtual bool VisibleToPlayer(ClaimStatus claimStatus) => ProblemType switch
+    {
+        ClaimProblemType.FeePaidPartially => true,
+        ClaimProblemType.UnApprovedClaimPayment => true,
+        _ => false,
+    };
 }
 
 public enum ClaimProblemType
@@ -104,10 +114,10 @@ public record class FieldRelatedProblem(ClaimProblemType ProblemType, ProblemSev
     public override bool PlayerCanFix => Field.CanPlayerEdit;
 
     /// <summary>
-    /// Только если игрок видит само поле: в тексте проблемы его название, а название скрытого
-    /// мастерского поля игроку показывать нельзя.
+    /// Только если игрок видит само поле на заявке в этом статусе: в тексте проблемы его название,
+    /// а название скрытого от игрока поля показывать нельзя.
     /// </summary>
-    public override bool VisibleToPlayer => Field.CanPlayerView;
+    public override bool VisibleToPlayer(ClaimStatus claimStatus) => Field.IsVisibleToClaimPlayer(claimStatus);
 }
 
 public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemSeverity ProblemSeverity) : ClaimProblem(ProblemType, ProblemSeverity)
@@ -126,5 +136,5 @@ public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemS
     /// <summary>
     /// Это профиль самого игрока — ему и показываем.
     /// </summary>
-    public override bool VisibleToPlayer => true;
+    public override bool VisibleToPlayer(ClaimStatus claimStatus) => true;
 }

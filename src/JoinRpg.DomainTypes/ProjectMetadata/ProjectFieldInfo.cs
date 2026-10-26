@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 
@@ -123,6 +124,25 @@ public record class ProjectFieldInfo(
             ProjectFieldVisibility.Public => true,
             _ => throw new ArgumentOutOfRangeException(ProjectFieldVisibility.ToString())
         };
+    }
+
+    /// <summary>
+    /// Видит ли поле игрок на своей заявке в этом статусе: может прочитать или поправить его.
+    /// Права игрока собираются так же, как для владельца заявки: доступ к персонажу — только
+    /// у утверждённой заявки. Поэтому поле, скрытое на непринятой заявке
+    /// (<see cref="ShowOnUnApprovedClaims"/>), до утверждения игроку не видно.
+    /// </summary>
+    public bool IsVisibleToClaimPlayer(ClaimStatus claimStatus)
+    {
+        var claimPlayer = new AccessArguments(
+            MasterAccess: false,
+            PlayerAccessToCharacter: claimStatus.IsApproved(),
+            PlayerAccesToClaim: true,
+            EditAllowed: true,
+            Published: false,
+            CharacterPublic: false,
+            IsCapitan: false);
+        return HasViewAccess(claimPlayer) || HasEditAccess(claimPlayer);
     }
 
     public bool IsPublic => ProjectFieldVisibility == ProjectFieldVisibility.Public;

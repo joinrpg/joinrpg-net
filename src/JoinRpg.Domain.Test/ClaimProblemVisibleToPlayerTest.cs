@@ -7,7 +7,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 namespace JoinRpg.Domain.Test;
 
 /// <summary>
-/// Какие проблемы заявки можно показать игроку (<see cref="ClaimProblem.VisibleToPlayer"/>).
+/// Какие проблемы заявки можно показать игроку (<see cref="ClaimProblem.VisibleToPlayer(ClaimStatus)"/>).
 /// </summary>
 public class ClaimProblemVisibleToPlayerTest
 {
@@ -17,6 +17,8 @@ public class ClaimProblemVisibleToPlayerTest
     {
         /// <summary>Работа мастеров с заявкой — игроку не показываем.</summary>
         Hidden,
+        /// <summary>Касается самого игрока (его денег) — показываем при любом статусе заявки.</summary>
+        Shown,
         /// <summary>Профиль самого игрока — показываем.</summary>
         Profile,
         /// <summary>Проблема поля — показываем, только если игрок видит поле.</summary>
@@ -38,9 +40,9 @@ public class ClaimProblemVisibleToPlayerTest
         ClaimProblemType.TooManyMoney => PlayerVisibility.Hidden,
         ClaimProblemType.ClaimDiscussionStopped => PlayerVisibility.Hidden,
         ClaimProblemType.NoCharacterOnApprovedClaim => PlayerVisibility.Hidden,
-        // Игроку про недоплаченный взнос знать полезно, но взнос он видит в блоке финансов.
-        ClaimProblemType.FeePaidPartially => PlayerVisibility.Hidden,
-        ClaimProblemType.UnApprovedClaimPayment => PlayerVisibility.Hidden,
+        // Деньги самого игрока.
+        ClaimProblemType.FeePaidPartially => PlayerVisibility.Shown,
+        ClaimProblemType.UnApprovedClaimPayment => PlayerVisibility.Shown,
         ClaimProblemType.ClaimWorkStopped => PlayerVisibility.Hidden,
         ClaimProblemType.NoParentGroup => PlayerVisibility.Hidden,
         ClaimProblemType.GroupIsBroken => PlayerVisibility.Hidden,
@@ -70,30 +72,53 @@ public class ClaimProblemVisibleToPlayerTest
             return;
         }
 
-        switch (Decision(problemType))
+        var decision = Decision(problemType);
+
+        foreach (var status in Enum.GetValues<ClaimStatus>())
         {
-            case PlayerVisibility.Hidden:
-                new ClaimProblem(problemType, ProblemSeverity.Error).VisibleToPlayer.ShouldBeFalse();
-                break;
-            case PlayerVisibility.Profile:
-                new ProfileRelatedProblem(problemType, ProblemSeverity.Warning).VisibleToPlayer.ShouldBeTrue();
-                break;
-            case PlayerVisibility.IfPlayerSeesField:
-                new FieldRelatedProblem(problemType, ProblemSeverity.Warning, Mock.CharacterFieldInfo).VisibleToPlayer.ShouldBeTrue();
-                new FieldRelatedProblem(problemType, ProblemSeverity.Warning, Mock.MasterOnlyFieldInfo).VisibleToPlayer.ShouldBeFalse();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(problemType));
+            switch (decision)
+            {
+                case PlayerVisibility.Hidden:
+                    new ClaimProblem(problemType, ProblemSeverity.Error).VisibleToPlayer(status).ShouldBeFalse();
+                    break;
+                case PlayerVisibility.Shown:
+                    new ClaimProblem(problemType, ProblemSeverity.Error).VisibleToPlayer(status).ShouldBeTrue();
+                    break;
+                case PlayerVisibility.Profile:
+                    new ProfileRelatedProblem(problemType, ProblemSeverity.Warning).VisibleToPlayer(status).ShouldBeTrue();
+                    break;
+                case PlayerVisibility.IfPlayerSeesField:
+                    new FieldRelatedProblem(problemType, ProblemSeverity.Warning, Mock.CharacterFieldInfo).VisibleToPlayer(status).ShouldBeTrue();
+                    new FieldRelatedProblem(problemType, ProblemSeverity.Warning, Mock.MasterOnlyFieldInfo).VisibleToPlayer(status).ShouldBeFalse();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(problemType));
+            }
         }
     }
 
     [Fact]
     public void EmptyMasterOnlyFieldIsHiddenFromPlayer()
-        => EmptyFieldProblem(ProjectFieldVisibility.MasterOnly).VisibleToPlayer.ShouldBeFalse();
+        => EmptyFieldProblem(Mock.CreateField("Мастерское", ProjectFieldVisibility.MasterOnly, mandatoryStatus: MandatoryStatus.Required))
+            .VisibleToPlayer(ClaimStatus.Approved).ShouldBeFalse();
 
     [Fact]
     public void EmptyFieldVisibleToPlayerIsShownToPlayer()
-        => EmptyFieldProblem(ProjectFieldVisibility.PlayerAndMaster).VisibleToPlayer.ShouldBeTrue();
+        => EmptyFieldProblem(Mock.CreateField("Игроцкое", ProjectFieldVisibility.PlayerAndMaster, mandatoryStatus: MandatoryStatus.Required))
+            .VisibleToPlayer(ClaimStatus.Approved).ShouldBeTrue();
+
+    [Theory]
+    [InlineData(ClaimStatus.AddedByUser, false)]
+    [InlineData(ClaimStatus.Discussed, false)]
+    [InlineData(ClaimStatus.Approved, true)]
+    [InlineData(ClaimStatus.CheckedIn, true)]
+    public void FieldHiddenOnUnapprovedClaimIsShownOnlyAfterApproval(ClaimStatus claimStatus, bool expected)
+    {
+        var field = Mock.CreateField("Только для принятых", ProjectFieldVisibility.PlayerAndMaster,
+            canPlayerEdit: true, showOnUnApprovedClaims: false, mandatoryStatus: MandatoryStatus.Required);
+
+        EmptyFieldProblem(field).VisibleToPlayer(claimStatus).ShouldBe(expected);
+    }
 
     [Fact]
     public void MissingProfileDataIsShownToPlayer()
@@ -106,7 +131,7 @@ public class ClaimProblemVisibleToPlayerTest
 
         problems.ShouldContain(p => p.ProblemType == ClaimProblemType.MissingPassport);
         problems.ShouldContain(p => p.ProblemType == ClaimProblemType.MissingPhone);
-        problems.ShouldAllBe(p => p.VisibleToPlayer);
+        problems.ShouldAllBe(p => p.VisibleToPlayer(ClaimStatus.AddedByUser));
     }
 
     [Fact]
@@ -115,15 +140,14 @@ public class ClaimProblemVisibleToPlayerTest
         var passportRequested = ProjectProfileRequirementSettings.AllNotRequired with { RequirePassport = MandatoryStatus.Recommended };
 
         ProfileProblems(passportRequested, sensitiveDataAllowed: false)
-            .ShouldContain(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed && p.VisibleToPlayer);
+            .ShouldContain(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed && p.VisibleToPlayer(ClaimStatus.AddedByUser));
     }
 
     /// <summary>
     /// Проблема незаполненного обязательного поля — от настоящего фильтра.
     /// </summary>
-    private FieldRelatedProblem EmptyFieldProblem(ProjectFieldVisibility visibility)
+    private FieldRelatedProblem EmptyFieldProblem(ProjectFieldInfo field)
     {
-        var field = Mock.CreateField("Обязательное поле", visibility, mandatoryStatus: MandatoryStatus.Required);
         var character = Mock.GetCharacterInfo(Mock.Character, Mock.ProjectInfo);
 
         return new FieldNotSetFilter().CheckField(character, new FieldWithValue(field, value: null)).ShouldHaveSingleItem();
