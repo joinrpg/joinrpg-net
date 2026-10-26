@@ -24,10 +24,11 @@
 
         <p>
             <b>Версия</b>: @Version
-            @if (CommitSha is not null && CommitUrl is not null)
+            @if (CommitSha is not null)
             {
-                @* Пробел перед скобкой — выражением: Blazor вырезает пробелы вокруг @if. *@
-                @(" ")<text>(коммит <a href="@CommitUrl" target="_blank">@CommitSha</a>)</text>
+                @* Пробел перед скобкой — выражением: Blazor вырезает пробелы вокруг @if.
+                   Без ссылки на GitHub: ссылка на коммит есть только в админке (VersionPanel). *@
+                @(" ")<text>(коммит @CommitSha)</text>
             }
         </p>
     </Body>
@@ -51,6 +52,4 @@
     [Parameter, EditorRequired] public required string Version { get; set; }
 
     [Parameter] public string? CommitSha { get; set; }
-
-    [Parameter] public Uri? CommitUrl { get; set; }
 }
