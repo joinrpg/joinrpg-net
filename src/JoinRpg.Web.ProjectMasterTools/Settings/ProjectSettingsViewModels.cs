@@ -2,6 +2,24 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.ProjectMasterTools.Settings;
 
+public class ProjectMainSettingsViewModel
+{
+    public required ProjectIdentification ProjectId { get; set; }
+    public required ProjectLifecycleStatus ProjectStatus { get; init; }
+
+    [Display(Name = "Название проекта")]
+    [Required(ErrorMessage = "Укажите название проекта")]
+    [StringLength(60, MinimumLength = 5, ErrorMessage = "Название проекта должно быть длиной от 5 до 60 букв.")]
+    public required string ProjectName { get; set; }
+
+    [Display(Name = "Анонс проекта",
+        Description = "Не надо дублировать в этом поле данные из КогдаИгры — даты, МГ, регион и ссылки на сайт и соцсети.")]
+    public required string ProjectAnnounce { get; set; }
+
+    [Display(Name = "Включить систему поселения")]
+    public required bool EnableAccommodation { get; set; }
+}
+
 public class ProjectPublishSettingsViewModel
 {
     public required ProjectIdentification ProjectId { get; set; }

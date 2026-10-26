@@ -1,0 +1,51 @@
+@inherits SettingsPanelBase<ProjectMainSettingsViewModel>
+@inject IProjectSettingsClient settingsClient
+
+@if (Model is { ProjectStatus: ProjectLifecycleStatus.Archived })
+{
+    return;
+}
+
+<JoinCollapsePanel Group="project-settings" Id="settings-main">
+    <Header>Основное</Header>
+    <ChildContent>
+        @if (Model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
+        <EditForm FormName="ProjectMainSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+            <FormHorizontal>
+                <ValidationSummary />
+                <DataAnnotationsValidator />
+
+                <FormRowFor For="@(() => Model.ProjectName)">
+                    <JoinTextInput @bind-Value="Model.ProjectName" Immediate="true" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.ProjectAnnounce)">
+                    <JoinMarkdownTextArea @bind-Value="Model.ProjectAnnounce" Rows="6" />
+                </FormRowFor>
+                <FormRowFor For="@(() => Model.EnableAccommodation)">
+                    <CheckboxInput @bind-Value="Model.EnableAccommodation" />
+                </FormRowFor>
+
+                <FormRow>
+                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
+                </FormRow>
+            </FormHorizontal>
+        </EditForm>
+        @if (success)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">Основные настройки сохранены</JoinAlert>
+        }
+    </ChildContent>
+</JoinCollapsePanel>
+
+@code {
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    protected override Task<ProjectMainSettingsViewModel> LoadModel() => settingsClient.GetMainSettings(ProjectId);
+
+    protected override Task SaveModel(ProjectMainSettingsViewModel model) => settingsClient.SaveMainSettings(model);
+}

@@ -103,8 +103,40 @@ public class ProjectSettingsPanelTest : BunitContext
         client.SavedClaimSettings.ShouldNotBeNull().ClaimApplyRules.ShouldBe(ClaimApplyRules);
     }
 
+    // Название проекта короче 5 букв сервер не примет — сохранить его нельзя уже в форме.
+    [Fact]
+    public void TooShortProjectNameIsNotSaved()
+    {
+        var cut = Render<ProjectMainSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+
+        cut.Find("input[type=text]").Input("Тест");
+        cut.Find("button[type=submit]").HasAttribute("disabled").ShouldBeTrue();
+        cut.Find("form").Submit();
+
+        client.SavedMainSettings.ShouldBeNull();
+    }
+
     private class FakeSettingsClient : IProjectSettingsClient
     {
+        public ProjectMainSettingsViewModel? SavedMainSettings { get; private set; }
+
+        public Task<ProjectMainSettingsViewModel> GetMainSettings(ProjectIdentification projectId)
+            => Task.FromResult(new ProjectMainSettingsViewModel
+            {
+                ProjectId = projectId,
+                ProjectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
+                ProjectName = "Тестовый проект",
+                ProjectAnnounce = "",
+                EnableAccommodation = false,
+            });
+
+        public Task SaveMainSettings(ProjectMainSettingsViewModel model)
+        {
+            SavedMainSettings = model;
+            SavedCount++;
+            return Task.CompletedTask;
+        }
+
         public bool FailNextSave { get; set; }
         public int SavedCount { get; private set; }
 

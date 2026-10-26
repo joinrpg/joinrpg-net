@@ -34,6 +34,14 @@ public class ProjectCreateClient(HttpClient httpClient) : IProjectCreateClient
 
 public class ProjectSettingsClient(HttpClient httpClient) : IProjectSettingsClient
 {
+    async Task<ProjectMainSettingsViewModel> IProjectSettingsClient.GetMainSettings(ProjectIdentification projectId)
+        => await (await httpClient.GetAsync($"webapi/{projectId.Value}/project/GetMainSettings")).ReadFromJsonOrThrowProblem<ProjectMainSettingsViewModel>();
+    async Task IProjectSettingsClient.SaveMainSettings(ProjectMainSettingsViewModel model)
+    {
+        var response = await httpClient.PostAsJsonAsync($"/webapi/{model.ProjectId.Value}/project/SaveMainSettings", model);
+        await response.EnsureSuccessOrThrowProblem();
+    }
+
     async Task<ProjectPublishSettingsViewModel> IProjectSettingsClient.GetPublishSettings(ProjectIdentification projectId)
         => await (await httpClient.GetAsync($"webapi/{projectId.Value}/project/GetPublishSettings")).ReadFromJsonOrThrowProblem<ProjectPublishSettingsViewModel>();
     async Task IProjectSettingsClient.SavePublishSettings(ProjectPublishSettingsViewModel model)

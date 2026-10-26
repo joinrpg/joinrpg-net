@@ -7,7 +7,6 @@ using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.Models;
@@ -67,52 +66,15 @@ public class GameController(
     [MasterAuthorize(Permission.CanChangeProjectProperties)]
     public async Task<IActionResult> Edit(ProjectIdentification projectId)
     {
-        // Анонс — в ProjectDetails, остальное — в метаданных проекта:
-        // с EF-сущности Project.Details догружался бы лениво (#5112).
-        var details = await projectMetadataRepository.GetProjectDetails(projectId);
-        var project = details.ProjectInfo;
+        // Сами настройки грузят и сохраняют острова-панели на странице.
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
         return View(new EditProjectViewModel
         {
-            ProjectAnnounce = details.ProjectDescription.Value,
             ProjectId = projectId.Value,
-            ProjectName = project.ProjectName,
             OriginalName = project.ProjectName,
             Active = !project.IsArchived,
             Blocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked,
-            EnableAccomodation = project.AccommodationSettings.Enabled,
         });
-    }
-
-    [HttpPost("/{projectId}/project/settings")]
-    [MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(EditProjectViewModel viewModel)
-    {
-        ProjectIdentification projectId = new(viewModel.ProjectId);
-
-        try
-        {
-            await
-                projectService.EditProject(new EditProjectRequest
-                {
-                    ProjectId = projectId,
-                    ProjectAnnounce = viewModel.ProjectAnnounce,
-                    ProjectName = viewModel.ProjectName,
-                });
-
-            await projectService.SetAccommodationSettings(projectId, viewModel.EnableAccomodation);
-
-            return RedirectTo(projectId);
-        }
-        catch (Exception ex)
-        {
-            // В заблокированном проекте (ADR023) сохранение — штатный отказ, его надо показать.
-            AddModelException(ex);
-            var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-            viewModel.OriginalName = project.ProjectName;
-            viewModel.Active = !project.IsArchived;
-            viewModel.Blocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked;
-            return View(viewModel);
-        }
     }
 
     [HttpGet("/{projectId}/unblock")]
