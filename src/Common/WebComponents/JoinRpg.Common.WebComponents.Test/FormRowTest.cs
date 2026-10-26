@@ -42,6 +42,7 @@ public class FormRowTest
     [Theory]
     [InlineData(nameof(JoinTextInput), "INPUT")]
     [InlineData(nameof(JoinTextArea), "TEXTAREA")]
+    [InlineData(nameof(JoinMarkdownTextArea), "TEXTAREA")]
     [InlineData(nameof(CheckboxInput), "INPUT")]
     [InlineData(nameof(NumberInput), "INPUT")]
     [InlineData(nameof(JoinInputNumber<>), "INPUT")]
@@ -141,6 +142,10 @@ public class FormRowTest
             case nameof(JoinTextArea):
                 builder.OpenComponent<JoinTextArea>(0);
                 builder.AddComponentParameter(1, nameof(JoinTextArea.Value), model.Text);
+                break;
+            case nameof(JoinMarkdownTextArea):
+                builder.OpenComponent<JoinMarkdownTextArea>(0);
+                builder.AddComponentParameter(1, nameof(JoinMarkdownTextArea.Value), model.Text);
                 break;
             case nameof(CheckboxInput):
                 builder.OpenComponent<CheckboxInput>(0);
