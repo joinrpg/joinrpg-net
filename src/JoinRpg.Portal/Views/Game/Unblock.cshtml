@@ -40,7 +40,15 @@
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
+            @Html.LabelFor(model => model.Confirmation, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
+                @Html.TextBoxFor(model => model.Confirmation, new { @class = "form-control", autocomplete = "off" })
+                @Html.ValidationMessageFor(model => model.Confirmation, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.Confirmation)
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Разблокировать" class="btn btn-primary" />
             </div>
         </div>

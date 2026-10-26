@@ -21,8 +21,11 @@ public class EditProjectViewModel
     public bool Blocked { get; set; }
 }
 
-public class UnblockProjectViewModel
+public class UnblockProjectViewModel : IValidatableObject
 {
+    /// <summary>Фраза, которую надо ввести, чтобы подтвердить разблокировку.</summary>
+    public const string ConfirmationPhrase = "все восстановлено";
+
     public int ProjectId { get; set; }
 
     [ReadOnly(true)]
@@ -30,6 +33,32 @@ public class UnblockProjectViewModel
 
     [ReadOnly(true)]
     public bool IsBlocked { get; set; }
+
+    [Display(Name = "Подтверждение", Description = "Введите «" + ConfirmationPhrase + "», чтобы подтвердить, что все нужные данные восстановлены.")]
+    public string? Confirmation { get; set; }
+
+    /// <summary>
+    /// Терпимое сравнение с <see cref="ConfirmationPhrase"/>: без пробелов по краям, без учёта регистра, «ё» = «е».
+    /// </summary>
+    public static bool IsConfirmationPhraseValid(string? confirmation)
+    {
+        if (confirmation is null)
+        {
+            return false;
+        }
+        var normalized = confirmation.Trim().ToLowerInvariant().Replace('ё', 'е');
+        return normalized == ConfirmationPhrase;
+    }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!IsConfirmationPhraseValid(Confirmation))
+        {
+            yield return new ValidationResult(
+                "Введите «" + ConfirmationPhrase + "», чтобы подтвердить разблокировку",
+                [nameof(Confirmation)]);
+        }
+    }
 }
 
 public class CloseProjectViewModel
