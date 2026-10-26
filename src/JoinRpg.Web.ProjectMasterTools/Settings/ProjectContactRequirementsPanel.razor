@@ -16,7 +16,7 @@
         }
         <EditForm FormName="ProjectContractRequirementsSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
-                <ValidationSummary />
+                <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
                 <FormRowFor For="@(() => Model.Telegram)">
                     <EnumRadioButtonGroup @bind-SelectedValue="Model.Telegram" />

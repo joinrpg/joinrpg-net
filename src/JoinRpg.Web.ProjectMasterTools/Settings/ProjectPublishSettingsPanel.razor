@@ -11,7 +11,7 @@
         }
         <EditForm FormName="ProjectPublishSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
-                <ValidationSummary />
+                <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
                 @if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
                 {

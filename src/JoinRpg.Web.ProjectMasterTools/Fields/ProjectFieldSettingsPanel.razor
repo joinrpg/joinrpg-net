@@ -10,7 +10,7 @@
 
 <EditForm FormName="ProjectFieldSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
     <FormHorizontal>
-        <ValidationSummary />
+        <ValidationSummary Model="Model" />
         <DataAnnotationsValidator />
 
         @if (Model.NameField is null)
