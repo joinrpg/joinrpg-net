@@ -1,0 +1,28 @@
+@*
+    Текстовое поле для Markdown: JoinTextArea с подсказкой о разметке под ним,
+    как у MVC-шаблона MarkdownString.cshtml.
+*@
+@using System.Linq.Expressions
+@* Иначе Blazor склеит текст подсказки со ссылкой и тегами. *@
+@preservewhitespace true
+
+<JoinTextArea Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" Rows="@Rows" @attributes="AdditionalAttributes" />
+<div class="help-block">Можно использовать <a href="https://commonmark.org/help/" target="_blank">Markdown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string Value { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<string>>? ValueExpression { get; set; }
+
+    [Parameter]
+    public int Rows { get; set; } = 4;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+}
