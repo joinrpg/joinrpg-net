@@ -1,3 +1,4 @@
+using System.Reflection;
 using Shouldly;
 using Xunit;
 
@@ -55,5 +56,24 @@ public class AppVersionInfoTest
 
         info.Version.ShouldBe("неизвестна");
         info.CommitSha.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Сборка из git-клона должна нести sha коммита и адрес репозитория. Их кладёт встроенный в SDK
+    /// SourceLink; ссылка на пакет Microsoft.SourceLink.* его молча выключала (#5628).
+    /// </summary>
+    [Fact]
+    public void BuildEmbedsCommitAndRepository()
+    {
+        var assembly = typeof(AppVersionInfoTest).Assembly;
+        var repositoryUrl = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "RepositoryUrl")?.Value;
+
+        var info = AppVersionInfo.Parse(
+            assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
+            repositoryUrl);
+
+        info.CommitSha.ShouldNotBeNullOrEmpty();
+        repositoryUrl.ShouldNotBeNullOrEmpty();
     }
 }

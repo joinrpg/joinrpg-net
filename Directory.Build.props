@@ -40,7 +40,11 @@
 
         <ImplicitUsings>enable</ImplicitUsings>
 
-        <!-- Внедряет commit sha в AssemblyInformationalVersion через Microsoft.SourceLink.GitHub -->
+        <!--
+        Commit sha в AssemblyInformationalVersion и RepositoryUrl в метаданные сборки кладёт встроенный
+        в SDK SourceLink. Пакеты Microsoft.SourceLink.* не подключать: ссылка на них выключает встроенный
+        SourceLink, а свои цели пакет 10.x не подключает (exclude="Build" у зависимостей) — sha пропадает (#5628).
+        -->
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
         <!-- Версия контейнера совпадает с версией приложения -->
@@ -61,6 +65,5 @@
     </ItemGroup>
     <ItemGroup>
         <GlobalPackageReference Include="ReferenceTrimmer" Version="3.5.7" />
-        <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     </ItemGroup>
 </Project>
