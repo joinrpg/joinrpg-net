@@ -90,8 +90,7 @@ public class CheckInController(
         }
         try
         {
-            await projectService.SetCheckInSettings(new(model.ProjectId), model.CheckInProgress,
-              model.EnableCheckInModule, model.AllowSecondRoles);
+            await projectService.SetCheckInSettings(new(model.ProjectId), new ProjectCheckInSettings(model.CheckInProgress, model.AllowSecondRoles));
             return RedirectToAction("Setup", new { model.ProjectId });
         }
         catch (Exception ex)

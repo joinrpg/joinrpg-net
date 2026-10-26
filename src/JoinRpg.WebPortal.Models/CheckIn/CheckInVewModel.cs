@@ -32,8 +32,6 @@ public class CheckInListItemViewModel(ClaimWithPlayer claim)
 
 public class CheckInSetupModel
 {
-    [Display(Name = "Включить модуль регистрации", Description = "Начнет отображать игрокам информацию о готовности заявок к регистрации")]
-    public bool EnableCheckInModule { get; set; }
     [Display(Name = "Регистрация в процессе", Description = "Заезд и регистрация игроков идет. Включить кнопку регистрации.")]
     public bool CheckInProgress { get; set; }
     [Display(Name = "Разрешить выпуск вторыми ролями", Description = "Включить соответствующую кнопку.")]
@@ -44,7 +42,6 @@ public class CheckInSetupModel
     public CheckInSetupModel(ProjectInfo project)
     {
         ProjectId = project.ProjectId;
-        EnableCheckInModule = project.ProjectCheckInSettings.CheckInModuleEnabled;
         CheckInProgress = project.ProjectCheckInSettings.InProgress;
         AllowSecondRoles = project.ProjectCheckInSettings.AllowSecondRoles;
     }

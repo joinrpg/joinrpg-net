@@ -23,10 +23,7 @@ public interface IProjectService
 
     Task CloseProjectAsStale(ProjectIdentification projectId, DateOnly lastActiveDate);
 
-    Task SetCheckInSettings(ProjectIdentification projectId,
-        bool checkInProgress,
-        bool enableCheckInModule,
-        bool modelAllowSecondRoles);
+    Task SetCheckInSettings(ProjectIdentification projectId, ProjectCheckInSettings settings);
 
     Task SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled);
     Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings);

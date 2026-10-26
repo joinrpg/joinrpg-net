@@ -90,6 +90,10 @@ public class ProjectClaimSettingsViewModel
     [Display(Name = "Правила подачи заявок",
         Description = "Показываются игроку при подаче заявки")]
     public required string ClaimApplyRules { get; set; }
+
+    [Display(Name = "Показывать игрокам незаполненные поля заявки",
+        Description = "Игрок увидит на странице заявки, каких полей в ней не хватает (в том числе для быстрой регистрации).")]
+    public required bool ShowFieldProblemsToPlayers { get; set; }
 }
 
 public class ProjectTimeZoneSettingsViewModel

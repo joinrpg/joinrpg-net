@@ -19,7 +19,7 @@
 <div>
 
 
-    @if (Model.CheckInModuleEnabled && Model.Validator.NotCheckedInAlready)
+    @if (Model.ShowFieldProblemsToPlayers && Model.Validator.NotCheckedInAlready)
     {
         @await Html.PartialAsync("_CheckInStatusBoard", Model.Validator)
     }

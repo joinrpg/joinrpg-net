@@ -63,7 +63,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             masters: CreateMasterList(project),
             mastersOrdering: project.Details.MastersOrdering,
             publishPlot: project.Details.PublishPlot,
-            projectCheckInSettings: new ProjectCheckInSettings(project.Details.EnableCheckInModule, project.Details.CheckInProgress, project.Details.AllowSecondRoles),
+            projectCheckInSettings: new ProjectCheckInSettings(project.Details.CheckInProgress, project.Details.AllowSecondRoles),
             projectStatus: status,
             projectScheduleSettings: new ProjectScheduleSettings(project.Details.ScheduleEnabled),
             projectCloneSettings: project.Details.ProjectCloneSettings,
@@ -76,7 +76,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 StrictlyOneCharacter: !project.Details.EnableManyCharacters,
                 AutoAcceptClaims: project.Details.AutoAcceptClaims,
                 IsAcceptingClaims: project.IsAcceptingClaims,
-                IsPublicProject: project.Details.IsPublicProject
+                IsPublicProject: project.Details.IsPublicProject,
+                ShowFieldProblemsToPlayers: project.Details.EnableCheckInModule
                 ),
             projectRolesLists: CreateRolesLists(project),
             defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId),

@@ -13,7 +13,7 @@ internal partial class CreateProjectService
         var defaultChar = await CreateTopLevelCharacterSlot(projectId, rootCharacterGroupId, "Хочу заявить мероприятие", name);
 
         await projectService.SetClaimSettings(projectId,
-            new ProjectClaimSettings(defaultChar, StrictlyOneCharacter: false, AutoAcceptClaims: false, IsAcceptingClaims: false, IsPublicProject: true));
+            new ProjectClaimSettings(defaultChar, StrictlyOneCharacter: false, AutoAcceptClaims: false, IsAcceptingClaims: false, IsPublicProject: true, ShowFieldProblemsToPlayers: true));
 
         var description = await CreateField(projectId, "Описание мероприятия", ProjectFieldType.Text, canPlayerEdit: true);
         await fieldSetupService.SetFieldSettingsAsync(new FieldSettingsRequest() { ProjectId = projectId, DescriptionField = description, NameField = name });
@@ -44,7 +44,7 @@ internal partial class CreateProjectService
         await projectService.SetAccommodationSettings(projectId, enableAccommodation: true);
 
         await projectService.SetClaimSettings(projectId,
-            new ProjectClaimSettings(defaultChar, StrictlyOneCharacter: true, AutoAcceptClaims: true, IsAcceptingClaims: false, IsPublicProject: true));
+            new ProjectClaimSettings(defaultChar, StrictlyOneCharacter: true, AutoAcceptClaims: true, IsAcceptingClaims: false, IsPublicProject: true, ShowFieldProblemsToPlayers: true));
 
         _ = await accommodationTypeService.CreateAccommodationType(
             projectId,
@@ -69,7 +69,7 @@ internal partial class CreateProjectService
         var defaultChar = await CreateTopLevelCharacterSlot(projectId, rootCharacterGroupId, "Хочу на игру", name);
 
         await projectService.SetClaimSettings(projectId,
-            new ProjectClaimSettings(defaultChar, StrictlyOneCharacter: true, AutoAcceptClaims: false, IsAcceptingClaims: false, IsPublicProject: true));
+            new ProjectClaimSettings(defaultChar, StrictlyOneCharacter: true, AutoAcceptClaims: false, IsAcceptingClaims: false, IsPublicProject: true, ShowFieldProblemsToPlayers: true));
 
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended });
 

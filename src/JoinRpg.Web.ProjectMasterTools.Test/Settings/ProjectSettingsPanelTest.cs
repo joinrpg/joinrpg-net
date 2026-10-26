@@ -129,6 +129,18 @@ public class ProjectSettingsPanelTest : BunitContext
             .ShouldBe(1);
     }
 
+    // Незаполненные поля касаются и уже поданных заявок — флаг настраивается и при закрытом приёме.
+    [Fact]
+    public void ShowFieldProblemsToPlayersEditableWhileClaimsClosed()
+    {
+        var cut = Render<ProjectClaimSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+
+        cut.Find("input[type=checkbox][name=ShowFieldProblemsToPlayers]").Change(true);
+        cut.Find("form").Submit();
+
+        client.SavedClaimSettings.ShouldNotBeNull().ShowFieldProblemsToPlayers.ShouldBeTrue();
+    }
+
     private class FakeSettingsClient : IProjectSettingsClient
     {
         public ProjectMainSettingsViewModel? SavedMainSettings { get; private set; }
@@ -221,6 +233,7 @@ public class ProjectSettingsPanelTest : BunitContext
                 AutoAcceptClaims = false,
                 StrictlyOneCharacter = false,
                 ClaimApplyRules = ClaimApplyRules,
+                ShowFieldProblemsToPlayers = false,
             });
         public Task SaveTimeZoneSettings(ProjectTimeZoneSettingsViewModel model) => throw new NotImplementedException();
         public Task<ProjectTimeZoneSettingsViewModel> GetTimeZoneSettings(ProjectIdentification projectId) => throw new NotImplementedException();

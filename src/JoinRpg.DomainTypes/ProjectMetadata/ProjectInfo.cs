@@ -389,9 +389,15 @@ public record ProjectProfileRequirementSettings(
         || (BirthDateRequested && !previous.BirthDateRequested);
 }
 
+/// <param name="ShowFieldProblemsToPlayers">
+/// Показывать ли игрокам проблемы с незаполненными полями заявки: игрок видит на странице заявки,
+/// каких полей не хватает (в том числе для быстрой регистрации). Проблемы профиля и денег игрок видит всегда.
+/// В БД — колонка <c>ProjectDetails.EnableCheckInModule</c> (историческое имя).
+/// </param>
 public record ProjectClaimSettings(
     CharacterIdentification? DefaultTemplate,
     bool StrictlyOneCharacter,
     bool AutoAcceptClaims,
     bool IsAcceptingClaims,
-    bool IsPublicProject);
+    bool IsPublicProject,
+    bool ShowFieldProblemsToPlayers);

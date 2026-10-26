@@ -85,29 +85,23 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     }
 
     [Fact]
-    public async Task SetCheckInSettings_EnablesModuleAndProgress()
+    public async Task SetCheckInSettings_EnablesProgressAndSecondRoles()
     {
-        await CreateService().SetCheckInSettings(ProjectId,
-            checkInProgress: true,
-            enableCheckInModule: true,
-            modelAllowSecondRoles: true);
+        await CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: true));
 
-        Result.ProjectCheckInSettings.CheckInModuleEnabled.ShouldBeTrue();
         Result.ProjectCheckInSettings.InProgress.ShouldBeTrue();
         Result.ProjectCheckInSettings.AllowSecondRoles.ShouldBeTrue();
     }
 
+    // Флаг «показывать незаполненные поля» живёт в настройках заявок, регистрация его не трогает.
     [Fact]
-    public async Task SetCheckInSettings_WithoutModule_DisablesDependentFlags()
+    public async Task SetCheckInSettings_KeepsShowFieldProblemsToPlayers()
     {
-        await CreateService().SetCheckInSettings(ProjectId,
-            checkInProgress: true,
-            enableCheckInModule: false,
-            modelAllowSecondRoles: true);
+        mock.Project.Details.EnableCheckInModule = true;
 
-        Result.ProjectCheckInSettings.CheckInModuleEnabled.ShouldBeFalse();
-        Result.ProjectCheckInSettings.InProgress.ShouldBeFalse();
-        Result.ProjectCheckInSettings.AllowSecondRoles.ShouldBeFalse();
+        await CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: false, AllowSecondRoles: false));
+
+        Result.ClaimSettings.ShowFieldProblemsToPlayers.ShouldBeTrue();
     }
 
     [Fact]
@@ -210,15 +204,30 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
             StrictlyOneCharacter: true,
             AutoAcceptClaims: true,
             IsAcceptingClaims: true,
-            IsPublicProject: true);
+            IsPublicProject: true,
+            ShowFieldProblemsToPlayers: true);
 
         await CreateService().SetClaimSettings(ProjectId, settings);
 
         Result.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
         Result.ClaimSettings.AutoAcceptClaims.ShouldBeTrue();
         Result.ClaimSettings.IsPublicProject.ShouldBeTrue();
+        Result.ClaimSettings.ShowFieldProblemsToPlayers.ShouldBeTrue();
         // IsAcceptingClaims разрешается только для активного проекта; мок активен.
         Result.ClaimSettings.IsAcceptingClaims.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task SetClaimSettings_ChangesShowFieldProblemsToPlayers(bool before, bool after)
+    {
+        mock.Project.Details.EnableCheckInModule = before;
+
+        await CreateService().SetClaimSettings(ProjectId, mock.ProjectInfo.ClaimSettings with { ShowFieldProblemsToPlayers = after });
+
+        Result.ClaimSettings.ShowFieldProblemsToPlayers.ShouldBe(after);
+        mock.Project.Details.EnableCheckInModule.ShouldBe(after);
     }
 
     [Fact]
@@ -380,7 +389,8 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
             StrictlyOneCharacter: true,
             AutoAcceptClaims: false,
             IsAcceptingClaims: true,
-            IsPublicProject: false));
+            IsPublicProject: false,
+            ShowFieldProblemsToPlayers: false));
 
         Result.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
         Result.ProjectStatus.ShouldBe(ProjectLifecycleStatus.Blocked);
@@ -413,10 +423,7 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     {
         mock.Project.IsBlocked = true;
 
-        await Should.ThrowAsync<ProjectBlockedException>(() => CreateService().SetCheckInSettings(ProjectId,
-            checkInProgress: true,
-            enableCheckInModule: true,
-            modelAllowSecondRoles: true));
+        await Should.ThrowAsync<ProjectBlockedException>(() => CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: true)));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }
