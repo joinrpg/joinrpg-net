@@ -13,7 +13,7 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        if (!httpContext.Request.Path.IsInternalApiPath())
+        if (!GetOriginalPath(httpContext).IsInternalApiPath())
         {
             return false;
         }
@@ -27,6 +27,17 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
             ProblemDetails = new ProblemDetails { Status = status, Title = title },
         });
     }
+
+    /// <summary>
+    /// Путь, на котором случилось исключение. <c>UseExceptionHandler</c> с путём страницы ошибки переписывает
+    /// <see cref="HttpRequest.Path"/> на <c>/error</c> ещё до вызова обработчиков, поэтому исходный путь — только в
+    /// <see cref="IExceptionHandlerPathFeature"/>. По <see cref="HttpRequest.Path"/> обработчик не узнавал /webapi
+    /// никогда, и штатные отказы уходили 500-й с HTML-страницей.
+    /// </summary>
+    private static PathString GetOriginalPath(HttpContext httpContext)
+        => httpContext.Features.Get<IExceptionHandlerPathFeature>()?.Path is { } path
+            ? new PathString(path)
+            : httpContext.Request.Path;
 
     /// <summary>
     /// Штатный отказ в операции — не сбой сервера, его не надо логировать как необработанное исключение.
