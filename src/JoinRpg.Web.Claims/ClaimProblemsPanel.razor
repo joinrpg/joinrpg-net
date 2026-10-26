@@ -1,0 +1,65 @@
+@preservewhitespace true
+@if (Problems.Count > 0 || HasHiddenCheckInBlockers)
+{
+<JoinPanel Variation="VariationStyleEnum.Warning">
+    <Header>Проблемы заявки</Header>
+    <Body>
+        @if (Problems.Count > 0)
+        {
+            <ul>
+                @foreach (var problem in Problems)
+                {
+                    <li>
+                        <ProblemBadge Model="problem" />
+                        @if (problem.BlocksCheckIn)
+                        {
+                            <small class="text-muted check-in-blocker">— держит регистрацию</small>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        @if (HasHiddenCheckInBlockers)
+        {
+            <p class="hidden-check-in-blockers">Не заполнены скрытые мастерские поля. Обратитесь к ответственному мастеру за дозаполнением заявки.</p>
+        }
+        @if (OwnerActions is not null && Problems.Any(p => p.ProfileRelated))
+        {
+            <JoinButtonGroup>
+                <JoinProfileButton />
+                @if (Problems.Any(p => p.ProblemType == ClaimProblemType.SensitiveDataNotAllowed))
+                {
+                    <AllowSensitiveDataButton ProjectId="ProjectId" RequestedSensitiveData="OwnerActions" />
+                }
+            </JoinButtonGroup>
+        }
+    </Body>
+</JoinPanel>
+}
+
+@code
+{
+    /// <summary>
+    /// Проблемы, которые видит зритель: мастер — все, игрок — только свои (без скрытых мастерских полей).
+    /// </summary>
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyCollection<ProblemViewModel> Problems { get; set; } = null!;
+
+    /// <summary>
+    /// Регистрацию держат поля, которых игрок не видит: сказать, что они есть, но не какие.
+    /// </summary>
+    [Parameter]
+    public bool HasHiddenCheckInBlockers { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    /// <summary>
+    /// Задано, если смотрит владелец заявки: тогда при проблемах профиля показываются кнопки
+    /// «в профиль» и «разрешить доступ к защищённым данным» (для неё — что именно запросил проект).
+    /// </summary>
+    [Parameter]
+    public RequestedSensitiveDataView? OwnerActions { get; set; }
+}

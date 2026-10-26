@@ -2,8 +2,13 @@ using System.Text.Json.Serialization;
 
 namespace JoinRpg.Web.Claims;
 
+/// <param name="BlocksCheckIn">
+/// Проблема не даёт зарегистрировать игрока на полигоне. Конструктор из <see cref="ClaimProblem"/> копирует
+/// <see cref="ClaimProblem.BlocksCheckIn"/> «сырым», без учёта статуса заявки; с поправкой на то, предстоит ли
+/// заявке регистрация, его выставляет только виджет «Проблемы заявки» (<c>ClaimProblemsPanelModel</c>).
+/// </param>
 [method: JsonConstructor]
-public record class ProblemViewModel(string ProblemTypeText, ClaimProblemType ProblemType, DateTime? ProblemTime, ProblemSeverity Severity, bool ProfileRelated, string? Extra)
+public record class ProblemViewModel(string ProblemTypeText, ClaimProblemType ProblemType, DateTime? ProblemTime, ProblemSeverity Severity, bool ProfileRelated, string? Extra, bool BlocksCheckIn)
 {
     //Mass usage of Display(Name) turns out too slow...
     private static readonly Dictionary<ClaimProblemType, string> Types = new()
@@ -39,7 +44,7 @@ public record class ProblemViewModel(string ProblemTypeText, ClaimProblemType Pr
       {ClaimProblemType.SensitiveDataNotAllowed, "Не разрешен доступ к защищённым данным" },
     };
 
-    public ProblemViewModel(ClaimProblem problem) : this(Types[problem.ProblemType], problem.ProblemType, problem.ProblemTime, problem.Severity, problem is ProfileRelatedProblem, problem.ExtraInfo)
+    public ProblemViewModel(ClaimProblem problem) : this(Types[problem.ProblemType], problem.ProblemType, problem.ProblemTime, problem.Severity, problem is ProfileRelatedProblem, problem.ExtraInfo, problem.BlocksCheckIn)
     {
 
     }
