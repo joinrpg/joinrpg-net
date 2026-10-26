@@ -33,4 +33,48 @@ public interface IClaimProblemValidator
     /// </summary>
     IEnumerable<ClaimProblem> ValidatePlayerToFill(ClaimInfo context)
         => ValidateCheckInBlockers(context).Where(problem => problem.PlayerCanFix);
+
+    /// <summary>
+    /// Проблемы заявки, которые можно показать самому игроку.
+    /// </summary>
+    /// <remarks>
+    /// Берутся те, что видны игроку при текущем статусе заявки (<see cref="ClaimProblem.VisibleToPlayer"/>).
+    /// Проблемы полей дополнительно ограничены настройкой проекта
+    /// <see cref="ProjectClaimSettings.ShowFieldProblemsToPlayers"/>: без неё игрок их не видит вовсе,
+    /// а профиль и деньги игрока показываются независимо от неё.
+    /// </remarks>
+    PlayerClaimProblems ValidateForPlayer(ClaimInfo context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var claimStatus = context.Claim.Status;
+        var showFieldProblems = context.ProjectInfo.ClaimSettings.ShowFieldProblemsToPlayers;
+
+        var problems = Validate(context).ToList();
+
+        var visible = problems
+            .Where(problem => problem.VisibleToPlayer(claimStatus))
+            .Where(problem => showFieldProblems || problem is not FieldRelatedProblem)
+            .ToList();
+
+        var hasHiddenCheckInBlockers = showFieldProblems
+            && claimStatus == ClaimStatus.Approved
+            && problems.Any(problem => problem is FieldRelatedProblem { BlocksCheckIn: true } && !problem.VisibleToPlayer(claimStatus));
+
+        return new PlayerClaimProblems(visible, hasHiddenCheckInBlockers);
+    }
 }
+
+/// <summary>
+/// Проблемы заявки глазами игрока (см. <see cref="IClaimProblemValidator.ValidateForPlayer"/>).
+/// </summary>
+/// <param name="Problems">Проблемы, которые можно показать игроку.</param>
+/// <param name="HasHiddenCheckInBlockers">
+/// Регистрацию держат проблемы полей, которых игрок не видит: ему можно сказать, что они есть,
+/// но не какие. Считается, только если проект показывает игрокам проблемы полей
+/// (<see cref="ProjectClaimSettings.ShowFieldProblemsToPlayers"/>) и регистрация заявке ещё предстоит
+/// (принята, но не зарегистрирована): на непринятой мастерские поля держат её лишь формально,
+/// у зарегистрированной держать уже нечего, и совет обратиться к мастеру ввёл бы игрока
+/// в заблуждение. Иначе всегда <c>false</c>.
+/// </param>
+public record PlayerClaimProblems(IReadOnlyCollection<ClaimProblem> Problems, bool HasHiddenCheckInBlockers);
