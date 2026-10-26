@@ -43,7 +43,7 @@ public class CheckInController(
     public async Task<ActionResult> IndexPage(ProjectIdentification projectId, ClaimIdentification? checkedInClaimId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-        if (!project.ProjectCheckInSettings.CheckInModuleEnabled || !project.ProjectCheckInSettings.InProgress)
+        if (!project.ProjectCheckInSettings.InProgress)
         {
             return View("CheckInNotStarted");
         }

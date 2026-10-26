@@ -30,7 +30,6 @@ public class MasterMenuViewModel(ProjectInfo projectInfo, ICurrentUserAccessor c
     : MenuViewModelBase(projectInfo, currentUserAccessor)
 {
     public Permission[] Permissions { get; set; } = permissions;
-    public bool CheckInModuleEnabled { get; } = projectInfo.ProjectCheckInSettings.CheckInModuleEnabled;
     public CharacterGroupLinkSlimViewModel[] BigGroups { get; } = [.. LoadBigGroups(projectInfo)];
 
     private static IEnumerable<CharacterGroupLinkSlimViewModel> LoadBigGroups(ProjectInfo projectInfo)

@@ -30,7 +30,7 @@ public class CheckInListItemViewModel(ClaimWithPlayer claim)
     public int ClaimId { get; } = claim.ClaimId.ClaimId;
 }
 
-public class CheckInSetupModel : IValidatableObject
+public class CheckInSetupModel
 {
     [Display(Name = "Включить модуль регистрации", Description = "Начнет отображать игрокам информацию о готовности заявок к регистрации")]
     public bool EnableCheckInModule { get; set; }
@@ -50,18 +50,4 @@ public class CheckInSetupModel : IValidatableObject
     }
 
     public CheckInSetupModel() { }
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (!EnableCheckInModule)
-        {
-            if (CheckInProgress)
-            {
-                yield return new ValidationResult("Включите сначала модуль регистрации", new[] { nameof(CheckInProgress) });
-            }
-            if (AllowSecondRoles)
-            {
-                yield return new ValidationResult("Включите сначала модуль регистрации", new[] { nameof(AllowSecondRoles) });
-            }
-        }
-    }
 }
