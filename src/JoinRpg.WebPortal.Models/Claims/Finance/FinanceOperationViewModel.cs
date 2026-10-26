@@ -51,6 +51,9 @@ public class FinanceOperationViewModel
     /// </summary>
     public string? ExternalUrl { get; init; }
 
+    /// <summary>Сводка для диалога модерации, если текущий пользователь может подтвердить операцию.</summary>
+    public FinanceModerationOperationView? FinanceModeration { get; init; }
+
     public bool IsTransfer => OperationType is FinanceOperationTypeViewModel.TransferFrom or FinanceOperationTypeViewModel.TransferTo;
 
     public FinanceOperationViewModel(Claim claim, FinanceOperation source, bool isMaster, bool isPlayer)

@@ -94,7 +94,11 @@ public class ClaimFeeViewModel
             .Select(
                 fo => new FinanceOperationViewModel(claim, fo, HasMasterAccess, isMyClaim)
                 {
-                    ExternalUrl = HasFeeAdminAccess ? externalPaymentUrlFactory(fo.BankDetails?.BankOperationKey) : null
+                    ExternalUrl = HasFeeAdminAccess ? externalPaymentUrlFactory(fo.BankDetails?.BankOperationKey) : null,
+                    FinanceModeration = fo.RequireModeration
+                        && projectInfo.CanModerateFinanceOperation(fo.GetPaymentTypeId(), currentUser)
+                        ? fo.ToModerationView(projectInfo)
+                        : null,
                 });
         VisibleFinanceOperations = FinanceOperations
             .Where(fo => fo.IsVisible);

@@ -31,6 +31,12 @@
         @Html.ActionLink("Обновить статус", "UpdateClaimPayment", "Payments", new { projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.Id }, new { @class = "btn btn-default btn-xs " })
       }
       <span>@Model.Description</span>
+      @if (Model.FinanceModeration is not null)
+      {
+        <component type="typeof(JoinRpg.Web.Claims.Finance.FinanceModerationButton)"
+                   render-mode="WebAssemblyPrerendered"
+                   param-Operation="Model.FinanceModeration" />
+      }
       @if (Model.CanRefund)
       {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#refundOnlinePaymentDialog" onclick="setRefunded@(Model.Id)()">Возврат&hellip;</button>
