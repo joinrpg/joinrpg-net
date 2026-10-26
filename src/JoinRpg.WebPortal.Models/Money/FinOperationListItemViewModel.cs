@@ -4,6 +4,7 @@ using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Claims.Finance;
 
 namespace JoinRpg.Web.Models;
 
@@ -46,7 +47,10 @@ public class FinOperationListItemViewModel : ILinkable
 
     public int ClaimId { get; }
 
-    public FinOperationListItemViewModel(FinanceOperation fo, IUriService uriService)
+    /// <summary>Сводка для диалога модерации, если текущий пользователь может подтвердить операцию прямо из списка.</summary>
+    public FinanceModerationOperationView? FinanceModeration { get; }
+
+    public FinOperationListItemViewModel(FinanceOperation fo, IUriService uriService, ProjectInfo projectInfo, UserIdentification? currentUser)
     {
         ProjectId = fo.ProjectId;
         PaymentMaster = fo.PaymentType?.User;
@@ -61,5 +65,7 @@ public class FinOperationListItemViewModel : ILinkable
         Player = fo.Claim.Player;
         ClaimLink = uriService.Get(fo.Claim);
         ClaimId = fo.ClaimId;
+        // Онлайн-оплаты в списке «на модерации» есть, но модерации не требуют — у них кнопки не будет
+        FinanceModeration = fo.ToModerationViewIfAllowed(projectInfo, currentUser);
     }
 }

@@ -56,8 +56,10 @@ public class FinancesController(
     private async Task<ActionResult> GetFinanceOperationsList(ProjectIdentification projectid, string export, Func<FinanceOperation, bool> predicate)
     {
         var project = await projectRepository.GetProjectWithFinances(projectid);
-        var viewModel = new FinOperationListViewModel(projectid, uriService,
-            project.FinanceOperations.Where(predicate).ToArray());
+        var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+        var viewModel = new FinOperationListViewModel(metadata, uriService,
+            project.FinanceOperations.Where(predicate).ToArray(),
+            currentUserAccessor.UserIdentificationOrDefault);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
@@ -67,7 +69,6 @@ public class FinancesController(
         }
         else
         {
-            var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectid));
             var frontend = new FinanceOperationExporter(uriService, metadata);
 
             var generator = exportDataService.GetGenerator(exportType.Value, viewModel.Items, frontend);
