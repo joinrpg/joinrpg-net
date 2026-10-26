@@ -120,7 +120,7 @@ public record class CharacterClaimInfo(
     public UserIdentification PlayerId => Player.UserId;
 
     /// <summary>Заявка утверждена (в том числе если игрок уже зарегистрирован на игре).</summary>
-    public bool IsApproved => Status is ClaimStatus.Approved or ClaimStatus.CheckedIn;
+    public bool IsApproved => Status.IsApproved();
 
     /// <summary>С заявкой ещё идёт работа.</summary>
     public bool IsActive => Status.IsActive();
