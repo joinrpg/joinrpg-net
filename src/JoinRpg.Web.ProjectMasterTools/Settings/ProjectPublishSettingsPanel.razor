@@ -1,14 +1,9 @@
 @inherits SettingsPanelBase<ProjectPublishSettingsViewModel>
 @inject IProjectSettingsClient settingsClient
 
-@if (success)
-{
-    <JoinAlert Variation="VariationStyleEnum.Success">Настройки публикации сохранены</JoinAlert>
-}
-
-<JoinPanel>
+<JoinCollapsePanel Group="project-settings" Id="settings-publish">
     <Header>Настройки публикации проекта</Header>
-    <Body>
+    <ChildContent>
         @if (Model is null)
         {
             <JoinLoadingMessage />
@@ -32,8 +27,12 @@
                 </FormRow>
             </FormHorizontal>
         </EditForm>
-    </Body>
-</JoinPanel>
+        @if (success)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">Настройки публикации сохранены</JoinAlert>
+        }
+    </ChildContent>
+</JoinCollapsePanel>
 
 @code {
     [Parameter]

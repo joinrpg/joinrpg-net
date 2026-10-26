@@ -65,14 +65,22 @@ param-Blocked="Model.Blocked" />
     </div>
 }
 
-<component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectClaimSettingsPanel)" render-mode="WebAssembly"
-           param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
+@* Каждая панель — свой остров; аккордеон из них собирает общее имя группы у JoinCollapsePanel,
+   а panel-group лишь сближает свёрнутые панели. *@
+<div class="panel-group">
+    @* В архиве эти панели скрываются сами, но только после загрузки — без условия заголовки мелькали бы. *@
+    @if (Model.Active)
+    {
+        <component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectClaimSettingsPanel)" render-mode="WebAssembly"
+                   param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
 
-<component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectPublishSettingsPanel)" render-mode="WebAssembly"
-           param-ProjectId="new ProjectIdentification (Model.ProjectId)" />
+        <component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectContactRequirementsPanel)" render-mode="WebAssembly"
+                   param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
 
-<component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectContactRequirementsPanel)" render-mode="WebAssembly"
-           param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
+        <component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectTimeZonePanel)" render-mode="WebAssembly"
+                   param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
+    }
 
-<component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectTimeZonePanel)" render-mode="WebAssembly"
-           param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
+    <component type="typeof(JoinRpg.Web.ProjectMasterTools.Settings.ProjectPublishSettingsPanel)" render-mode="WebAssembly"
+               param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
+</div>
