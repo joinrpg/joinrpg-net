@@ -81,13 +81,9 @@ public class GameController(
     [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
     public async Task<IActionResult> Unblock(ProjectIdentification projectId)
     {
-        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-        return View(new UnblockProjectViewModel
-        {
-            ProjectId = projectId.Value,
-            OriginalName = project.ProjectName,
-            IsBlocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked,
-        });
+        var viewModel = new UnblockProjectViewModel { ProjectId = projectId.Value };
+        await FillUnblockViewModel(viewModel, projectId);
+        return View(viewModel);
     }
 
     [HttpPost("/{projectId}/unblock")]
@@ -95,6 +91,11 @@ public class GameController(
     public async Task<IActionResult> Unblock(UnblockProjectViewModel viewModel)
     {
         ProjectIdentification projectId = new(viewModel.ProjectId);
+        if (!ModelState.IsValid)
+        {
+            await FillUnblockViewModel(viewModel, projectId);
+            return View(viewModel);
+        }
         try
         {
             await projectService.UnblockProject(projectId);
@@ -103,11 +104,16 @@ public class GameController(
         catch (Exception ex)
         {
             AddModelException(ex);
-            var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-            viewModel.OriginalName = project.ProjectName;
-            viewModel.IsBlocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked;
+            await FillUnblockViewModel(viewModel, projectId);
             return View(viewModel);
         }
+    }
+
+    private async Task FillUnblockViewModel(UnblockProjectViewModel viewModel, ProjectIdentification projectId)
+    {
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        viewModel.OriginalName = project.ProjectName;
+        viewModel.IsBlocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked;
     }
 
     [HttpGet("/{projectId}/close")]
