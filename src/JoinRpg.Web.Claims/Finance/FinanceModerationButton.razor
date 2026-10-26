@@ -1,0 +1,175 @@
+@* Подтверждение и отклонение финансовой операции (#3366). Раньше — селект «С финансовой операцией...» в форме ответа на комментарий. *@
+@using JoinRpg.Common.WebComponents.Dialog
+@using Microsoft.AspNetCore.Components.Forms
+@using JoinRpg.DomainTypes.Claims
+@using JoinRpg.Web.Claims.Comments
+@inject IFinanceModerationClient Client
+@inject IClaimCommentClient CommentClient
+@inject NavigationManager NavigationManager
+@inject ILogger<FinanceModerationButton> Logger
+
+<JoinButton Label="Подтвердить / отклонить…"
+            Style="VariationStyleEnum.Warning"
+            Size="SizeStyleEnum.ExtraSmall"
+            AutoProgress="false"
+            OnClick="OpenDialog" />
+
+@* Кнопка своя, а не Buttons диалога: те закрывают окно сразу, а при отказе сервера окно должно остаться с введённым текстом *@
+<JoinDialog @ref="dialog" Caption="Финансовая операция" Width="600px" MaxWidth="95%" ShowCloseButton="@(!inProgress)">
+    <ChildContent>
+        <p>
+            <b>@Operation.Title</b>@if (Operation.Money != 0)
+            {
+                @(": ")<PriceElement Price="@Operation.Money" />
+            },
+            @Operation.OperationDate.ToString("dd.MM.yyyy")
+            @if (Operation.PaymentTypeName is not null)
+            {
+                <br />@Operation.PaymentTypeName
+            }
+        </p>
+
+        @if (errorMessage is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@errorMessage</JoinAlert>
+        }
+
+        @* У .form-group в .form-horizontal (Bootstrap 3) поля -15px: без обрезки окно получает горизонтальную прокрутку *@
+        <div style="overflow-x: hidden;">
+        <EditForm Model="@form">
+            <FormHorizontal>
+                <FormRow Label="Действие">
+                    <EnumRadioButtonGroup @bind-SelectedValue="form.Action" />
+                </FormRow>
+                <FormRow Label="@CommentLabel">
+                    <JoinTextArea @bind-Value="form.CommentText" Rows="4" Placeholder="@CommentPlaceholder" />
+                    <div class="help-block">@CommentHelp</div>
+                </FormRow>
+                @if (form.Action == FinanceModerationAction.Comment)
+                {
+                    @* Подтверждение и отклонение игрок видит всегда, скрыть можно только простой комментарий *@
+                    <FormRow Label="Только другим мастерам">
+                        <CheckboxInput @bind-Value="form.HideFromPlayer" />
+                    </FormRow>
+                }
+            </FormHorizontal>
+        </EditForm>
+        </div>
+    </ChildContent>
+    <FooterContent>
+        @* Стили футера JoinDialog — scoped и на эту разметку не действуют; перенос нужен на узком экране *@
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: flex-end; flex: 1 1 auto; min-width: 0;">
+        <JoinButton Preset="ButtonPreset.Cancel" AutoProgress="false" Disabled="@inProgress" OnClick="CloseDialog" />
+        <JoinButton Label="@SubmitLabel" Icon="@SubmitIcon" Style="@SubmitStyle" AutoProgress="false"
+                    InProgress="@inProgress" Disabled="@inProgress" OnClick="Submit" />
+        </div>
+    </FooterContent>
+</JoinDialog>
+
+@code {
+    [Parameter, EditorRequired]
+    public FinanceModerationOperationView Operation { get; set; } = null!;
+
+    private JoinDialog dialog = default!;
+    private readonly FormModel form = new();
+    private string? errorMessage;
+    private bool inProgress;
+
+    private sealed class FormModel
+    {
+        /// <summary>Чаще всего мастер подтверждает оплату — это и предлагаем.</summary>
+        public FinanceModerationAction Action { get; set; } = FinanceModerationAction.Approve;
+        public string CommentText { get; set; } = "";
+        public bool HideFromPlayer { get; set; }
+    }
+
+    private string CommentLabel => form.Action == FinanceModerationAction.Decline ? "Причина отказа" : "Комментарий";
+
+    private string CommentPlaceholder => form.Action switch
+    {
+        FinanceModerationAction.Approve => "Необязательно",
+        FinanceModerationAction.Decline => "Почему операция отклонена",
+        _ => "Текст комментария",
+    };
+
+    private string CommentHelp => form.Action switch
+    {
+        FinanceModerationAction.Approve => "Игрок увидит подтверждение и этот комментарий.",
+        FinanceModerationAction.Decline => "Обязательно: игрок увидит отказ и этот комментарий.",
+        _ => "Операция останется неподтверждённой.",
+    };
+
+    private string SubmitLabel => form.Action switch
+    {
+        FinanceModerationAction.Approve => "Подтвердить",
+        FinanceModerationAction.Decline => "Отклонить",
+        _ => "Отправить комментарий",
+    };
+
+    private JoinIconType? SubmitIcon => form.Action switch
+    {
+        FinanceModerationAction.Approve => JoinIconType.Ok,
+        FinanceModerationAction.Decline => JoinIconType.Remove,
+        _ => null,
+    };
+
+    private VariationStyleEnum SubmitStyle => form.Action switch
+    {
+        FinanceModerationAction.Approve => VariationStyleEnum.Success,
+        FinanceModerationAction.Decline => VariationStyleEnum.Danger,
+        _ => VariationStyleEnum.Primary,
+    };
+
+    private void OpenDialog()
+    {
+        errorMessage = null;
+        dialog.ShowModal();
+    }
+
+    private void CloseDialog() => dialog.Close();
+
+    private async Task Submit()
+    {
+        var text = form.CommentText.Trim();
+        if (text.Length == 0 && form.Action != FinanceModerationAction.Approve)
+        {
+            // Тот же отказ даст и сервер; здесь — чтобы не гонять запрос ради него
+            errorMessage = form.Action == FinanceModerationAction.Decline
+                ? "Напишите, почему операция отклонена — игрок увидит этот комментарий."
+                : "Напишите текст комментария.";
+            return;
+        }
+
+        errorMessage = null;
+        inProgress = true;
+        try
+        {
+            await (form.Action switch
+            {
+                // Простой комментарий — обычный ответ на комментарий, в котором заведена операция
+                FinanceModerationAction.Comment => CommentClient.AddComment(new AddClaimCommentRequest(
+                    Operation.OperationId.ClaimId,
+                    new ClaimCommentIdentification(Operation.OperationId.ClaimId, Operation.OperationId.FinanceOperationId),
+                    text,
+                    IsVisibleToPlayer: !form.HideFromPlayer)),
+                FinanceModerationAction.Approve => Client.Approve(Operation.OperationId, new FinanceModerationDecisionRequest(text)),
+                FinanceModerationAction.Decline => Client.Decline(Operation.OperationId, new FinanceModerationDecisionRequest(text)),
+                _ => throw new ArgumentOutOfRangeException(nameof(form.Action), form.Action, null),
+            });
+            // Решение меняет статус операции и баланс заявки на странице, поэтому перезагружаем её целиком
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (ServerProblemException exception)
+        {
+            // Ожидаемый отказ сервера (операция уже обработана, нет прав) — текст предназначен мастеру
+            errorMessage = exception.Message;
+            inProgress = false;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Не удалось сохранить решение по финансовой операции {OperationId}", Operation.OperationId);
+            errorMessage = "Не удалось сохранить. Обновите страницу и попробуйте ещё раз.";
+            inProgress = false;
+        }
+    }
+}
