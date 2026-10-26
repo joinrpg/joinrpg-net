@@ -51,4 +51,14 @@ public static class FinanceDisplayExtensions
         return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
     }
 
+    /// <summary>
+    /// Название способа оплаты из метаданных проекта: «Наличными — мастер», своё имя у произвольного способа.
+    /// </summary>
+    public static string GetDisplayName(this PaymentTypeInfo paymentType)
+    {
+        ArgumentNullException.ThrowIfNull(paymentType);
+
+        return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
+    }
+
 }

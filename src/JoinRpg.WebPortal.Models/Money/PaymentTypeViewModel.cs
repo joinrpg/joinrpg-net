@@ -16,7 +16,7 @@ public class PaymentTypeViewModel : PaymentTypeViewModelBase
         PaymentTypeId = source.PaymentTypeId.PaymentTypeId;
         IsDefault = source.IsDefault;
         TypeKind = (PaymentTypeKindViewModel)source.TypeKind;
-        Name = source.TypeKind.GetDisplayName(source.User, source.Name);
+        Name = source.GetDisplayName();
         ProjectId = source.PaymentTypeId.ProjectId;
         UserId = source.User.UserId.Value;
     }
