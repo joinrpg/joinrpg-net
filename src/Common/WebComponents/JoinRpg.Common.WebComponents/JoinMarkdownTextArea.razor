@@ -6,7 +6,7 @@
 @* Иначе Blazor склеит текст подсказки со ссылкой и тегами. *@
 @preservewhitespace true
 
-<JoinTextArea Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" Rows="@Rows" @attributes="AdditionalAttributes" />
+<JoinTextArea Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" Rows="@Rows" Placeholder="@Placeholder" @attributes="AdditionalAttributes" />
 <div class="help-block">Можно использовать <a href="https://commonmark.org/help/" target="_blank">Markdown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>
 
 @code {
@@ -22,6 +22,9 @@
 
     [Parameter]
     public int Rows { get; set; } = 4;
+
+    [Parameter]
+    public string? Placeholder { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }

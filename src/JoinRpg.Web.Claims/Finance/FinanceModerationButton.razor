@@ -42,7 +42,7 @@
                     <EnumRadioButtonGroup @bind-SelectedValue="form.Action" />
                 </FormRow>
                 <FormRow Label="@CommentLabel">
-                    <JoinTextArea @bind-Value="form.CommentText" Rows="4" Placeholder="@CommentPlaceholder" />
+                    <JoinMarkdownTextArea @bind-Value="form.CommentText" Rows="4" Placeholder="@CommentPlaceholder" />
                     <div class="help-block">@CommentHelp</div>
                 </FormRow>
                 @if (form.Action == FinanceModerationAction.Comment)

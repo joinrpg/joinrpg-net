@@ -16,4 +16,16 @@ public class JoinMarkdownTextAreaTest
 
         captured.ShouldBe("**текст**");
     }
+
+    [Fact]
+    public void Placeholder_IsPassedToTextArea()
+    {
+        using var ctx = new BunitContext();
+        ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        var cut = ctx.Render<JoinMarkdownTextArea>(p => p
+            .Add(x => x.Value, "")
+            .Add(x => x.Placeholder, "Комментарий"));
+
+        cut.Find("textarea").GetAttribute("placeholder").ShouldBe("Комментарий");
+    }
 }

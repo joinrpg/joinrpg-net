@@ -107,8 +107,7 @@ else
                 </FormRowFor>
 
                 <FormRowFor For="@(() => model.Description)">
-                    <JoinTextArea @bind-Value="model.Description" cols="100" />
-                    <div class="help-block">Можно использовать <a href="https://commonmark.org/help/" target="_blank">MarkDown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>
+                    <JoinMarkdownTextArea @bind-Value="model.Description" cols="100" />
                 </FormRowFor>
 
                 <FormRow Label="">
