@@ -47,4 +47,10 @@ public class CheckInClaimViewModel
     public required IReadOnlyCollection<CheckInProblemViewModel> Problems { get; init; }
 
     public required string CurrentUserFullName { get; init; }
+
+    /// <summary>
+    /// Что подтвердить, чтобы зарегистрировать игрока в обход. <c>null</c> — обходить нечего, обойти
+    /// нельзя или у мастера нет права администратора заявок.
+    /// </summary>
+    public required CheckInOverrideViewModel? Override { get; init; }
 }

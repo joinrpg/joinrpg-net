@@ -26,6 +26,8 @@ public class CheckInClaimViewModelBuilder(
         var claim = claimInfo.Claim;
         var validator = new ClaimCheckInValidator(claimInfo, claimValidator);
         var responsibleMaster = projectInfo.GetMasterById(claim.ResponsibleMasterId);
+        var problems = validator.Problems.Select(p => new CheckInProblemViewModel(p)).ToList();
+        var currentUserFullName = currentUserAccessor.DisplayName.FullName ?? "";
 
         return new CheckInClaimViewModel
         {
@@ -38,10 +40,18 @@ public class CheckInClaimViewModelBuilder(
             CheckedInAlready = !validator.NotCheckedInAlready,
             IsApproved = validator.IsApproved,
             CanCheckInInPrinciple = validator.CanCheckInInPrinciple,
-            FeeDue = validator.FeeToAcceptOnCheckIn,
+            FeeDue = validator.FeeDue,
             CanAcceptFee = projectInfo.ProjectFinanceSettings.CanAcceptCash(currentUserAccessor.UserIdentification),
-            Problems = [.. validator.Problems.Select(p => new CheckInProblemViewModel(p))],
-            CurrentUserFullName = currentUserAccessor.DisplayName.FullName ?? "",
+            Problems = problems,
+            CurrentUserFullName = currentUserFullName,
+            Override = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentification, Permission.CanManageClaims)
+                       && validator.RequiredOverride is { } requiredOverride
+                ? new CheckInOverrideViewModel(
+                    [.. problems.Select(p => p.Details is null ? p.Title : $"{p.Title} — {p.Details}")],
+                    [.. requiredOverride.Problems.Select(key => key.ToString())],
+                    requiredOverride.FeeDue,
+                    currentUserFullName)
+                : null,
         };
     }
 }

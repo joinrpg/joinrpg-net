@@ -121,8 +121,18 @@ public class CheckInController(
         return View("CheckIn", model);
     }
 
+    /// <param name="overrideConfirmed">Мастер отметил «регистрирую, несмотря на перечисленное».</param>
+    /// <param name="overrideProblems">Препятствия, которые мастер видел на форме (<see cref="CheckInBlockerKey"/>).</param>
+    /// <param name="overrideFeeDue">Долг, который мастер видел на форме.</param>
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<ActionResult> DoCheckIn(ProjectIdentification projectId, int claimId, int money, Checkbox? feeAccepted)
+    public async Task<ActionResult> DoCheckIn(
+        ProjectIdentification projectId,
+        int claimId,
+        int money,
+        Checkbox? feeAccepted,
+        Checkbox? overrideConfirmed,
+        string[]? overrideProblems,
+        int overrideFeeDue)
     {
         var claimIdentification = new ClaimIdentification(projectId, claimId);
         if (await claimInfoRepository.GetClaimInfoOrDefault(claimIdentification) is null)
@@ -131,7 +141,10 @@ public class CheckInController(
         }
         try
         {
-            await checkInDeskManager.CheckIn(claimIdentification, feeAccepted == Checkbox.@on ? money : 0);
+            var checkInOverride = overrideConfirmed == Checkbox.@on
+                ? new CheckInOverride([.. (overrideProblems ?? []).Select(CheckInBlockerKey.Parse)], overrideFeeDue)
+                : null;
+            await checkInDeskManager.CheckIn(claimIdentification, feeAccepted == Checkbox.@on ? money : 0, checkInOverride);
             return RedirectToAction("Index", new { ProjectId = projectId.Value, checkedInClaimId = claimIdentification.ClaimId });
         }
         catch (Exception ex)

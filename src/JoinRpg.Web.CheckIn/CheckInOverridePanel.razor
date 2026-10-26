@@ -1,0 +1,43 @@
+@* Отдельная форма: регистрация в обход не принимает деньги и не зависит от галочки взноса. *@
+<form method="post" action="@Endpoint">
+    <AntiforgeryToken />
+    <input type="hidden" name="money" value="0" />
+    @foreach (var key in Model.BlockerKeys)
+    {
+        <input type="hidden" name="overrideProblems" value="@key" />
+    }
+    <input type="hidden" name="overrideFeeDue" value="@Model.FeeDue" />
+    <JoinPanel Variation="VariationStyleEnum.Warning">
+        <Header>Зарегистрировать, несмотря на это</Header>
+        <Body>
+            <p>Вы администратор заявок и можете зарегистрировать игрока в обход проверок. Будет пропущено:</p>
+            <ul>
+                @foreach (var problem in Model.SkippedProblems)
+                {
+                    <li>@problem</li>
+                }
+                @if (Model.FeeDue > 0)
+                {
+                    <li>Взнос не сдан: долг @Model.FeeDue рублей. Долг останется на заявке.</li>
+                }
+            </ul>
+            <input type="checkbox" name="overrideConfirmed" id="overrideConfirmed" required style="transform: scale(1.5); margin: 1em" />
+            <label for="overrideConfirmed">
+                Я, @Model.MasterFullName, регистрирую игрока, несмотря на перечисленное.
+            </label>
+            <br />
+            <JoinButton Submit="true" Style="VariationStyleEnum.Warning" Label="Зарегистрировать в обход" />
+        </Body>
+    </JoinPanel>
+</form>
+
+@code {
+    [Parameter, EditorRequired]
+    public CheckInOverrideViewModel Model { get; set; } = null!;
+
+    /// <summary>
+    /// Куда отправить форму — действие регистрации на стойке.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Endpoint { get; set; } = null!;
+}

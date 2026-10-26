@@ -65,7 +65,7 @@ internal class ClaimServiceImpl(
 
                 // Подтверждение обхода нужно, только если без него регистрация невозможна: лишнее
                 // подтверждение ничего не меняет и в историю не попадает.
-                var overridden = !validator.CanCheckInAtDesk;
+                var overridden = !validator.CanCheckInNow;
                 if (overridden)
                 {
                     if (ctx.Request is not { } confirmedOverride)

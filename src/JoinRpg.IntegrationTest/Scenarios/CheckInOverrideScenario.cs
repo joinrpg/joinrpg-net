@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using System.Net;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
@@ -14,6 +15,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.Projects;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 
@@ -83,6 +85,58 @@ public class CheckInOverrideScenario(JoinApplicationFactory factory) : IClassFix
         _ = await Should.ThrowAsync<ClaimWrongStatusException>(() => CheckIn(seed.ClaimsAdminId, seed.ClaimId, stale));
     }
 
+    /// <summary>
+    /// Администратор заявок видит на странице регистрации панель обхода и регистрирует ею игрока.
+    /// </summary>
+    [Fact]
+    public async Task ClaimsAdmin_ChecksInWithOverridePanel()
+    {
+        var seed = await SeedAsync();
+        var client = await LoginAsync(seed.ClaimsAdminEmail);
+        var pageUrl = $"{seed.ClaimId.ProjectId.Value}/claim/{seed.ClaimId.ClaimId}/checkin";
+
+        var form = (await GetCheckInPageAsync(client, pageUrl)).DocumentNode
+            .SelectSingleNode("//form[.//input[@name='overrideFeeDue']]").ShouldNotBeNull();
+        // Форма панели — статический компонент: токен антифорджери он кладёт сам, иначе браузер получит 400.
+        form.SelectSingleNode($".//input[@name='{AntiforgeryPostHelpers.FormFieldName}']").ShouldNotBeNull();
+        var hiddenFields = form.SelectNodes(".//input[@type='hidden']")
+            .Select(input => (Name: input.GetAttributeValue("name", ""), Value: WebUtility.HtmlDecode(input.GetAttributeValue("value", ""))))
+            .Where(field => field.Name != AntiforgeryPostHelpers.FormFieldName);
+        var token = await client.GetAntiforgeryTokenAsync(pageUrl);
+
+        var response = await client.PostFormAsync(
+            WebUtility.HtmlDecode(form.GetAttributeValue("action", "")),
+            token,
+            [.. hiddenFields, ("overrideConfirmed", "on")]);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Found, await response.DescribeValidationErrorsAsync());
+        (await LoadClaimAsync(seed)).Claim.Status.ShouldBe(ClaimStatus.CheckedIn);
+    }
+
+    [Fact]
+    public async Task MasterWithoutManageClaims_DoesNotSeeOverridePanel()
+    {
+        var seed = await SeedAsync();
+        var client = await LoginAsync(seed.PlainMasterEmail);
+
+        var page = await GetCheckInPageAsync(client, $"{seed.ClaimId.ProjectId.Value}/claim/{seed.ClaimId.ClaimId}/checkin");
+
+        page.DocumentNode.SelectSingleNode("//input[@name='overrideFeeDue']").ShouldBeNull();
+    }
+
+    private static async Task<HtmlAgilityPack.HtmlDocument> GetCheckInPageAsync(HttpClient client, string pageUrl)
+    {
+        var response = await client.GetAsync(pageUrl);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        return await response.AsHtmlDocument();
+    }
+
+    private Task<HttpClient> LoginAsync(string email)
+        => TestUserProjectHelpers.CreateAuthenticatedClientAsync(
+            factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
+            email,
+            followsRedirects: false);
+
     private Task CheckIn(UserIdentification userId, ClaimIdentification claimId, CheckInOverride? checkInOverride)
         => factory.Services.RunAsAsync(userId, sp => sp.GetRequiredService<IClaimService>().CheckInClaim(claimId, checkInOverride));
 
@@ -98,7 +152,13 @@ public class CheckInOverrideScenario(JoinApplicationFactory factory) : IClassFix
         => factory.Services.RunAsAsync(seed.OwnerId, async sp =>
             (await sp.GetRequiredService<IClaimInfoRepository>().GetClaimInfoOrDefault(seed.ClaimId)).ShouldNotBeNull());
 
-    private sealed record Seed(UserIdentification OwnerId, UserIdentification ClaimsAdminId, UserIdentification PlainMasterId, ClaimIdentification ClaimId);
+    private sealed record Seed(
+        UserIdentification OwnerId,
+        UserIdentification ClaimsAdminId,
+        string ClaimsAdminEmail,
+        UserIdentification PlainMasterId,
+        string PlainMasterEmail,
+        ClaimIdentification ClaimId);
 
     /// <summary>
     /// Одобренная заявка, которую не зарегистрировать: проект требует паспорт, а его нет, и взнос не сдан.
@@ -107,8 +167,8 @@ public class CheckInOverrideScenario(JoinApplicationFactory factory) : IClassFix
     {
         var (ownerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(factory.Services);
         var projectId = await TestUserProjectHelpers.CreateProjectAsync(factory.Services, ownerId, "Регистрация в обход");
-        var (claimsAdminId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(factory.Services);
-        var (plainMasterId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(factory.Services);
+        var (claimsAdminId, claimsAdminEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(factory.Services);
+        var (plainMasterId, plainMasterEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(factory.Services);
 
         var characterId = await factory.Services.RunAsAsync(ownerId, async sp =>
         {
@@ -156,6 +216,6 @@ public class CheckInOverrideScenario(JoinApplicationFactory factory) : IClassFix
             await sp.GetRequiredService<IFinanceService>().ChangeFee(claimId, Fee);
         });
 
-        return new Seed(ownerId, claimsAdminId, plainMasterId, claimId);
+        return new Seed(ownerId, claimsAdminId, claimsAdminEmail, plainMasterId, plainMasterEmail, claimId);
     }
 }
