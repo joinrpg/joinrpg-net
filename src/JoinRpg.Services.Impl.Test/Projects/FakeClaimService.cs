@@ -1,3 +1,4 @@
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Interfaces;
@@ -28,7 +29,7 @@ internal sealed class FakeClaimService : IClaimService
     public Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId) => throw new NotSupportedException();
     public Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId) => throw new NotSupportedException();
     public Task SaveFieldsFromClaim(ClaimIdentification claimId, FieldLayerContainer fieldsToSet) => throw new NotSupportedException();
-    public Task CheckInClaim(ClaimIdentification claimId) => throw new NotSupportedException();
+    public Task CheckInClaim(ClaimIdentification claimId, CheckInOverride? checkInOverride = null) => throw new NotSupportedException();
     public Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText) => throw new NotSupportedException();
     public Task SetAccommodationType(int projectId, int claimId, int accommodationTypeId) => throw new NotSupportedException();
     public Task LeaveAccommodationGroupAsync(int projectId, int claimId) => throw new NotSupportedException();

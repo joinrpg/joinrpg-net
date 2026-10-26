@@ -46,4 +46,27 @@ public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator cla
     /// Можно ли зарегистрировать игрока прямо сейчас — проверка самой операции регистрации.
     /// </summary>
     public bool CanCheckInAtDesk => CanCheckInInPrinciple && FeeToAcceptOnCheckIn <= 0;
+
+    /// <summary>
+    /// Регистрацией в обход не обойти: заявка должна быть одобрена и ещё не зарегистрирована.
+    /// </summary>
+    public bool CanCheckInWithOverrideInPrinciple => NotCheckedInAlready && IsApproved;
+
+    /// <summary>
+    /// Что придётся подтвердить, чтобы зарегистрировать игрока в обход. <c>null</c> — если обходить
+    /// нечего (регистрация и так возможна) или обойти нельзя (заявка не одобрена или уже зарегистрирована).
+    /// </summary>
+    public CheckInOverride? RequiredOverride
+        => !CanCheckInWithOverrideInPrinciple || CanCheckInAtDesk
+            ? null
+            : new([.. Problems.Select(CheckInBlockerKey.From)], Math.Max(FeeDue, 0));
+
+    /// <summary>
+    /// Можно ли зарегистрировать игрока в обход с этим подтверждением: всё, что держит регистрацию
+    /// сейчас, мастер подтвердил.
+    /// </summary>
+    public bool CanCheckInWithOverride(CheckInOverride checkInOverride)
+        => CanCheckInWithOverrideInPrinciple
+           && Problems.All(problem => checkInOverride.Problems.Contains(CheckInBlockerKey.From(problem)))
+           && FeeDue <= checkInOverride.FeeDue;
 }

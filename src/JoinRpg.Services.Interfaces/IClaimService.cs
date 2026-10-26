@@ -1,3 +1,4 @@
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 
@@ -41,7 +42,12 @@ public interface IClaimService
     /// Регистрация игрока на полигоне. Взнос, принятый на стойке, принимается до неё отдельной
     /// операцией (<see cref="IFinanceService.FeeAcceptedOperation"/>).
     /// </summary>
-    Task CheckInClaim(ClaimIdentification claimId);
+    /// <param name="checkInOverride">
+    /// Явное подтверждение регистрации в обход незаполненных данных и несданного взноса. Требует
+    /// права <see cref="Permission.CanManageClaims"/> и должно покрывать всё, что держит регистрацию
+    /// сейчас. Долг при этом остаётся на заявке.
+    /// </param>
+    Task CheckInClaim(ClaimIdentification claimId, CheckInOverride? checkInOverride = null);
     Task<int> MoveToSecondRole(ClaimIdentification claimId, CharacterIdentification characterId, string secondRoleCommentText);
 
     /// <summary>
