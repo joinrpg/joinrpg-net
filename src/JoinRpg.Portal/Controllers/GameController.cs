@@ -67,13 +67,12 @@ public class GameController(
     [MasterAuthorize(Permission.CanChangeProjectProperties)]
     public async Task<IActionResult> Edit(ProjectIdentification projectId)
     {
-        // Анонс и правила подачи — в ProjectDetails, остальное — в метаданных проекта:
+        // Анонс — в ProjectDetails, остальное — в метаданных проекта:
         // с EF-сущности Project.Details догружался бы лениво (#5112).
         var details = await projectMetadataRepository.GetProjectDetails(projectId);
         var project = details.ProjectInfo;
         return View(new EditProjectViewModel
         {
-            ClaimApplyRules = details.ClaimApplyRules.Value,
             ProjectAnnounce = details.ProjectDescription.Value,
             ProjectId = projectId.Value,
             ProjectName = project.ProjectName,
@@ -96,7 +95,6 @@ public class GameController(
                 projectService.EditProject(new EditProjectRequest
                 {
                     ProjectId = projectId,
-                    ClaimApplyRules = viewModel.ClaimApplyRules,
                     ProjectAnnounce = viewModel.ProjectAnnounce,
                     ProjectName = viewModel.ProjectName,
                 });

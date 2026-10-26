@@ -23,9 +23,6 @@ public class EditProjectViewModel
         UIHint("MarkdownString")]
     public string ProjectAnnounce { get; set; }
 
-    [DisplayName("Правила подачи заявок"), UIHint("MarkdownString")]
-    public string ClaimApplyRules { get; set; }
-
     [ReadOnly(true)]
     public string OriginalName { get; set; }
     [Display(Name = "Включить систему поселения")]

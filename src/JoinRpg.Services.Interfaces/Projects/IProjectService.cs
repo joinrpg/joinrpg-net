@@ -30,7 +30,8 @@ public interface IProjectService
 
     Task SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled);
     Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings);
-    Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings);
+    /// <param name="claimApplyRules">Правила подачи заявок (Markdown); <c>null</c> — не менять.</param>
+    Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings, string? claimApplyRules = null);
     Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation);
 
     /// <summary>Сменить часовой пояс проекта. Пояс должен иметь IANA-идентификатор.</summary>

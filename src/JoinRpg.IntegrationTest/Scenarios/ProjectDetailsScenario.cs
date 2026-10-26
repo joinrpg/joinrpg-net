@@ -26,13 +26,15 @@ public class ProjectDetailsScenario(JoinApplicationFactory factory) : IClassFixt
 
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
-            await sp.GetRequiredService<IProjectService>().EditProject(new EditProjectRequest
+            var projectService = sp.GetRequiredService<IProjectService>();
+            await projectService.EditProject(new EditProjectRequest
             {
                 ProjectId = projectId,
                 ProjectName = "Проект с правилами подачи заявки",
-                ClaimApplyRules = claimApplyRules,
                 ProjectAnnounce = projectAnnounce,
             });
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            await projectService.SetClaimSettings(projectId, projectInfo.ClaimSettings, claimApplyRules);
         });
 
         await factory.Services.RunAsAsync(masterId, async sp =>

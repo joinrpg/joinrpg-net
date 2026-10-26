@@ -68,6 +68,10 @@ public class ProjectClaimSettingsViewModel
     Description =
         "Если эта опция включена, при принятии заявки какого-то игрока на одну роль все другие заявки этого игрока будут автоматически отклонены.")]
     public required bool StrictlyOneCharacter { get; set; }
+
+    [Display(Name = "Правила подачи заявок",
+        Description = "Показываются игроку при подаче заявки")]
+    public required string ClaimApplyRules { get; set; }
 }
 
 public class ProjectTimeZoneSettingsViewModel

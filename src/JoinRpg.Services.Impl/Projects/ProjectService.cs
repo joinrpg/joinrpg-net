@@ -114,7 +114,6 @@ internal class ProjectService(
             request,
             ctx =>
             {
-                ctx.Project.Details.ClaimApplyRules = new MarkdownDbValue(ctx.Request.ClaimApplyRules);
                 ctx.Project.Details.ProjectAnnounce = new MarkdownDbValue(ctx.Request.ProjectAnnounce);
                 ctx.Project.ProjectName = ServiceValidation.Required(ctx.Request.ProjectName);
             });
@@ -186,18 +185,22 @@ internal class ProjectService(
             });
     }
 
-    public async Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings)
+    public async Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings, string? claimApplyRules = null)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
-            settings,
+            (settings, ClaimApplyRulesChanged: claimApplyRules is not null), // аргументы уходят в лог — без текста правил
             ctx =>
             {
-                ctx.Project.Details.EnableManyCharacters = !ctx.Request.StrictlyOneCharacter;
-                ctx.Project.Details.IsPublicProject = ctx.Request.IsPublicProject;
-                ctx.Project.IsAcceptingClaims = ctx.Request.IsAcceptingClaims && ctx.Project.Active;
-                ctx.Project.Details.AutoAcceptClaims = ctx.Request.AutoAcceptClaims;
-                ctx.Project.Details.DefaultTemplateCharacterId = ctx.Request.DefaultTemplate?.CharacterId;
+                ctx.Project.Details.EnableManyCharacters = !ctx.Request.settings.StrictlyOneCharacter;
+                ctx.Project.Details.IsPublicProject = ctx.Request.settings.IsPublicProject;
+                ctx.Project.IsAcceptingClaims = ctx.Request.settings.IsAcceptingClaims && ctx.Project.Active;
+                ctx.Project.Details.AutoAcceptClaims = ctx.Request.settings.AutoAcceptClaims;
+                ctx.Project.Details.DefaultTemplateCharacterId = ctx.Request.settings.DefaultTemplate?.CharacterId;
+                if (claimApplyRules is not null)
+                {
+                    ctx.Project.Details.ClaimApplyRules = new MarkdownDbValue(claimApplyRules);
+                }
             });
     }
 

@@ -89,6 +89,20 @@ public class ProjectSettingsPanelTest : BunitContext
         cut.Markup.ShouldNotContain(NewSensitiveDataWarning);
     }
 
+    private const string ClaimApplyRules = "Заявки только от совершеннолетних";
+
+    // Правила подачи видны только при включённом приёме заявок, но скрытые не должны стираться при сохранении.
+    [Fact]
+    public void HiddenClaimApplyRulesAreSavedUnchanged()
+    {
+        var cut = Render<ProjectClaimSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+        cut.FindAll("textarea").ShouldBeEmpty();
+
+        cut.Find("form").Submit();
+
+        client.SavedClaimSettings.ShouldNotBeNull().ClaimApplyRules.ShouldBe(ClaimApplyRules);
+    }
+
     private class FakeSettingsClient : IProjectSettingsClient
     {
         public bool FailNextSave { get; set; }
@@ -140,8 +154,29 @@ public class ProjectSettingsPanelTest : BunitContext
                 RegistrationAddress = MandatorySenstiveContactsView.Optional,
                 BirthDate = MandatorySenstiveContactsView.Optional,
             });
-        public Task SaveClaimSettings(ProjectClaimSettingsViewModel model) => throw new NotImplementedException();
-        public Task<ProjectClaimSettingsViewModel> GetClaimSettings(ProjectIdentification projectId) => throw new NotImplementedException();
+        public ProjectClaimSettingsViewModel? SavedClaimSettings { get; private set; }
+
+        public Task SaveClaimSettings(ProjectClaimSettingsViewModel model)
+        {
+            SavedClaimSettings = model;
+            SavedCount++;
+            return Task.CompletedTask;
+        }
+
+        // Приём заявок выключен: так панель не рисует выбор шаблона, которому нужен JS-модуль.
+        public Task<ProjectClaimSettingsViewModel> GetClaimSettings(ProjectIdentification projectId)
+            => Task.FromResult(new ProjectClaimSettingsViewModel
+            {
+                ProjectId = projectId,
+                ProjectName = new ProjectName("Тест"),
+                ProjectStatus = ProjectLifecycleStatus.ActiveClaimsClosed,
+                IsAcceptingClaims = false,
+                IsPublicProject = false,
+                DefaultTemplateCharacterId = null,
+                AutoAcceptClaims = false,
+                StrictlyOneCharacter = false,
+                ClaimApplyRules = ClaimApplyRules,
+            });
         public Task SaveTimeZoneSettings(ProjectTimeZoneSettingsViewModel model) => throw new NotImplementedException();
         public Task<ProjectTimeZoneSettingsViewModel> GetTimeZoneSettings(ProjectIdentification projectId) => throw new NotImplementedException();
     }
