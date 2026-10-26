@@ -33,6 +33,13 @@ public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? Problem
     /// </summary>
     [JsonIgnore]
     public virtual bool PlayerCanFix => false;
+
+    /// <summary>
+    /// Проблему можно показать игроку. По умолчанию — нельзя: работа мастеров с заявкой игрока
+    /// не касается, и новый тип проблемы не должен утечь к нему, пока о нём не решили явно.
+    /// </summary>
+    [JsonIgnore]
+    public virtual bool VisibleToPlayer => false;
 }
 
 public enum ClaimProblemType
@@ -95,6 +102,12 @@ public record class FieldRelatedProblem(ClaimProblemType ProblemType, ProblemSev
     public override bool BlocksCheckIn => true;
 
     public override bool PlayerCanFix => Field.CanPlayerEdit;
+
+    /// <summary>
+    /// Только если игрок видит само поле: в тексте проблемы его название, а название скрытого
+    /// мастерского поля игроку показывать нельзя.
+    /// </summary>
+    public override bool VisibleToPlayer => Field.CanPlayerView;
 }
 
 public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemSeverity ProblemSeverity) : ClaimProblem(ProblemType, ProblemSeverity)
@@ -109,4 +122,9 @@ public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemS
     /// Профиль и согласие на доступ к нему — только сам игрок.
     /// </summary>
     public override bool PlayerCanFix => true;
+
+    /// <summary>
+    /// Это профиль самого игрока — ему и показываем.
+    /// </summary>
+    public override bool VisibleToPlayer => true;
 }
