@@ -3,14 +3,16 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.Domain;
-using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.Portal.Models;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
+using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CheckIn;
+using JoinRpg.Web.Models.Print;
 using JoinRpg.Web.UserProfile;
 using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.WebPortal.Managers.Plots;
@@ -28,7 +30,7 @@ public class CheckInController(
     CheckInDeskManager checkInDeskManager,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository,
-    IClaimProblemValidator claimValidator,
+    CheckInClaimViewModelBuilder checkInClaimViewModelBuilder,
     CharacterPlotViewService characterPlotViewService,
     ICurrentUserAccessor currentUserAccessor,
     UserProfileDetailsBuilder cardBuilder,
@@ -112,13 +114,10 @@ public class CheckInController(
         var characterId = claimInfo.Character.Id;
         var handouts = await characterPlotViewService.GetHandoutsForCharacters([characterId]);
 
-        var model = new CheckInClaimModel(
-            claimInfo,
-            handouts[characterId],
-            claimValidator,
-            currentUserAccessor,
-            cardBuilder
-          );
+        var model = new CheckInClaimPageModel(
+            checkInClaimViewModelBuilder.Build(claimInfo),
+            CharacterNavigationViewModel.FromClaim(claimInfo.Character, claimInfo.ClaimId, currentUserAccessor.UserIdentification, CharacterNavigationPage.None),
+            [.. handouts[characterId].Select(e => new HandoutListItemViewModel(e))]);
         return View("CheckIn", model);
     }
 
