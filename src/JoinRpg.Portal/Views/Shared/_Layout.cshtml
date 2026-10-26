@@ -7,12 +7,10 @@
 
   <environment include="Development">
     <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.css" />
-    <link rel="stylesheet" href="~/_content/JoinRpg.Common.WebComponents/lib/bootstrap-select/css/bootstrap-select.css" />
     <link rel="stylesheet" href="~/css/site.css" />
   </environment>
   <environment exclude="Development">
     <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/lib/bootstrap-select/css/bootstrap-select.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
   </environment>
   @* Scoped CSS (*.razor.css) всех подключённых razor-библиотек. Бандл собирает SDK
@@ -32,12 +30,10 @@
   <environment include="Development">
     <script src="~/lib/jquery/jquery.js"></script>
     <script src="~/lib/twitter-bootstrap/js/bootstrap.js"></script>
-    <script src="~/lib/bootstrap-select/js/bootstrap-select.js"></script>
   </environment>
   <environment exclude="Development">
     <script src="~/lib/jquery/jquery.min.js"></script>
     <script src="~/lib/twitter-bootstrap/js/bootstrap.min.js"></script>
-     <script src="~/lib/bootstrap-select/js/bootstrap-select.min.js"></script>
   </environment>
   <partial name="_ValidationScriptsPartial" />
 </head>
