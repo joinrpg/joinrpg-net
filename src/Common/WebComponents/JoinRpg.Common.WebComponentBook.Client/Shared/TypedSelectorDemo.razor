@@ -1,18 +1,54 @@
 <h3>TypedSelectorDemo</h3>
 
+<h4>Multiple="true"</h4>
 <TypedSelector TKey="int" TItem="Variant"
                Name="int"
                Items="@variants"
                KeySelector="@(v => v.Id)"
-               ToListItem="@(v => TypedSelectList.CreateItem(Value: v.Id, Text: v.Name))"
+               ToListItem="@ToListItem"
                @bind-SelectedValues="@Selected"
                Multiple="true"
                />
+<p>Выбрано: @string.Join(", ", Selected)</p>
+
+<h4>Одиночный выбор, AllowEmpty, больше 10 пунктов — с поиском</h4>
+<TypedSelector TKey="int" TItem="Variant"
+               Name="single"
+               Items="@manyVariants"
+               KeySelector="@(v => v.Id)"
+               ToListItem="@ToListItem"
+               @bind-SelectedValues="@SelectedSingle"
+               AllowEmpty="true"
+               EmptyText="(не выбран)"
+               />
+<p>Выбрано: @string.Join(", ", SelectedSingle)</p>
+
+<h4>Width="30em", без пустого пункта</h4>
+<TypedSelector TKey="int" TItem="Variant"
+               Items="@manyVariants"
+               KeySelector="@(v => v.Id)"
+               ToListItem="@ToListItem"
+               Width="30em"
+               />
 
 @code {
-  private sealed record Variant(int Id, string Name);
+  private sealed record Variant(int Id, string Name, string Subtext = "", string ExtraSearch = "", bool Disabled = false);
 
-  private readonly Variant[] variants = [new(1, "Test"), new(2, "Maybe")];
+  private readonly Variant[] variants = [new(1, "Test"), new(2, "Maybe"), new(3, "Недоступный", Disabled: true)];
+
+  private readonly Variant[] manyVariants =
+  [
+      new(1, "Алёна", Subtext: "Северный клан"),
+      new(2, "Йорген", ExtraSearch: "кузнец"),
+      new(3, "Борис", Subtext: "очень длинная подсказка, которая не помещается в ширину кнопки"),
+      new(4, "Недоступный персонаж", Disabled: true),
+      .. Enumerable.Range(5, 20).Select(i => new Variant(i, $"Персонаж {i}")),
+  ];
+
+  private static TypedSelectListItem<int> ToListItem(Variant v)
+      => TypedSelectList.CreateItem(Value: v.Id, Text: v.Name, Subtext: v.Subtext, ExtraSearch: v.ExtraSearch, Disabled: v.Disabled);
 
   private int[] Selected { get; set; } = [1, 2];
+
+  private int[] SelectedSingle { get; set; } = [];
 }

@@ -98,7 +98,7 @@ public class TransferClaimPaymentScenario(JoinApplicationFactory factory) : ICla
         var html = await page.AsHtmlDocument();
 
         var options = html.DocumentNode
-            .SelectNodes("//select[@name='RecipientClaimId']/option")
+            .SelectNodes("//details[contains(@class, 'join-select')]//input[@name='RecipientClaimId']")
             .ShouldNotBeNull()
             .Select(o => o.GetAttributeValue("value", ""))
             .ToArray();

@@ -90,6 +90,29 @@ public class JoinMoveControlTest
         cut.Markup.ShouldNotContain("Bad Gateway");
     }
 
+    /// <summary>
+    /// Контрол стоит в каждой строке сетки ролей, а в диалоге «Переместить» — список всех соседей строки.
+    /// Пока кнопку не нажали, диалога на странице нет, иначе разметка сетки растёт квадратично.
+    /// </summary>
+    [Fact]
+    public void SortDialog_RenderedOnlyAfterButtonClick()
+    {
+        using var ctx = CreateContext();
+        var dialogModule = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
+        dialogModule.SetupVoid("showModal", _ => true).SetVoidResult();
+        var cut = ctx.Render<JoinMoveControl<Item>>(p => p
+            .Add(x => x.Items, Items)
+            .Add(x => x.Self, Items[1]));
+
+        cut.FindAll("dialog").ShouldBeEmpty();
+
+        _ = cut.Find("button[aria-label='Переместить в любую позицию']").ClickAsync(new MouseEventArgs());
+
+        // Диалог сначала появляется в разметке и только потом открывается: showModal нужен уже отрисованный <dialog>.
+        cut.WaitForAssertion(() => dialogModule.VerifyInvoke("showModal"));
+        cut.FindAll(".join-select__list input:not([value=''])").Select(i => i.GetAttribute("value")).ShouldBe(["1", "3"]);
+    }
+
     [Fact]
     public void SkipGroup_WithoutOwnSize_TakesOuterGroupSize()
     {

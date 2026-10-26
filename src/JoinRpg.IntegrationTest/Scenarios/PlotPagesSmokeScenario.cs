@@ -90,8 +90,8 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
                     .ShouldNotBeNull($"На странице {url} нет ссылки на таргет-персонажа");
                 break;
             case PlotPage.EditElement or PlotPage.CreateElementCopy:
-                // CharacterSelector рисует таргет выбранным пунктом списка.
-                body.SelectNodes("//option[@selected]")
+                // CharacterSelector рисует таргет отмеченным пунктом списка.
+                body.SelectNodes("//details[contains(@class, 'join-select')]//input[@checked]")
                     .ShouldNotBeNull($"На странице {url} нет выбранных таргетов")
                     .Select(o => o.GetAttributeValue("value", ""))
                     .ShouldContain(seed.TargetCharacterId.ToString());

@@ -24,7 +24,6 @@ public class ClaimRestorePanelTest : BunitContext
 
     private readonly FakeClient client = new();
     private readonly FakeCharactersClient charactersClient = new();
-    private readonly BunitJSModuleInterop selectModule;
 
     public ClaimRestorePanelTest()
     {
@@ -37,11 +36,8 @@ public class ClaimRestorePanelTest : BunitContext
         Services.AddSingleton<IProjectFieldUriLocator>(new FakeLocator());
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         JSInterop.Mode = JSRuntimeMode.Loose;
-        // Выбор персонажа (SingleCharacterSelector) — bootstrap-select поверх JS-модуля.
+        // Панель — интерактивный остров; выбор персонажа (SingleCharacterSelector) читает режим рендера.
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
-        selectModule = JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
-        _ = selectModule.SetupVoid("initBootstrapSelect", _ => true);
-        _ = selectModule.SetupVoid("refreshBootstrapSelect", _ => true);
     }
 
     private static readonly CharacterIdentification Created = new(ProjectId, 777);
@@ -328,7 +324,7 @@ public class ClaimRestorePanelTest : BunitContext
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
 
         cut.Find("table.restore-claims .planned-character").TextContent.ShouldBe("будет создан: Потерянный (№ 900)");
-        cut.FindAll("table.restore-claims select.selectpicker").ShouldBeEmpty();
+        cut.FindAll("table.restore-claims details.join-select").ShouldBeEmpty();
         cut.Find(".export-responsible").TextContent.ShouldContain("ответственный по выгрузке: Мастер — назначьте после восстановления");
     }
 
@@ -798,10 +794,10 @@ public class ClaimRestorePanelTest : BunitContext
 
         var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
 
-        var picker = cut.Find("select.selectpicker");
-        var options = picker.QuerySelectorAll("option");
-        options[0].TextContent.ShouldBe("Новый персонаж");
-        options[0].HasAttribute("selected").ShouldBeTrue();
+        var picker = cut.Find("details.join-select");
+        var options = picker.QuerySelectorAll(".join-select__item");
+        options[0].QuerySelector(".join-select__text")!.TextContent.ShouldBe("Новый персонаж");
+        options[0].QuerySelector("input")!.HasAttribute("checked").ShouldBeTrue();
         cut.Markup.ShouldContain("подходят по имени");
         cut.FindAll("input[placeholder='Имя нового персонажа']").ShouldHaveSingleItem();
         // План ищет персонажей только среди активных — и выбор должен предлагать только их,
@@ -809,9 +805,8 @@ public class ClaimRestorePanelTest : BunitContext
         charactersClient.RequestedListTypes.ShouldAllBe(t => t == CharacterListType.Active);
         charactersClient.RequestedListTypes.ShouldNotBeEmpty();
 
-        var twinValue = options.Single(o => o.TextContent.Contains("Близнец")).GetAttribute("value")!;
-        selectModule.Setup<List<string>>("getSelectedValues", _ => true).SetResult([twinValue]);
-        cut.Find("select.selectpicker").Change(twinValue);
+        var twinValue = options.Single(o => o.TextContent.Contains("Близнец")).QuerySelector("input")!.GetAttribute("value")!;
+        cut.Find($"details.join-select input[value='{twinValue}']").Change(true);
 
         cut.FindAll("input[placeholder='Имя нового персонажа']").ShouldBeEmpty();
         ClickApply(cut);

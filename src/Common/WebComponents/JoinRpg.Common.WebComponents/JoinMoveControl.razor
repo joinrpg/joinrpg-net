@@ -30,23 +30,28 @@
         }
 </JoinButtonGroup>
 
-<JoinDialog @ref="_sortDialog"
-            Caption="Переместить"
-            Buttons="SortDialogButtons"
-            MinWidth="22em"
-            MinHeight="30em">
-    <ChildContent>
-        <label class="control-label">Поместить после</label>
-        <TypedSelector TKey="string" TItem="TItem"
-                       Items="selectorItems"
-                       KeySelector="@(i => i.Id)"
-                       ToListItem="@(i => TypedSelectList.CreateItem(Value: i.Id, Text: i.DisplayText, Subtext: i.Subtext))"
-                       SelectedValues="@(_selectedTarget is null ? [] : [_selectedTarget])"
-                       SelectedValuesChanged="v => _selectedTarget = v.FirstOrDefault()"
-                       AllowEmpty="true"
-                       EmptyText="Поставить в начало" />
-    </ChildContent>
-</JoinDialog>
+@* Контрол стоит в каждой строке сетки ролей, а в диалоге — список всех соседей строки: без этого условия
+   разметка сетки росла бы квадратично. Диалог добавляем на страницу, только когда нажали кнопку. *@
+@if (_sortDialogOpen)
+{
+    <JoinDialog @ref="_sortDialog"
+                Caption="Переместить"
+                Buttons="SortDialogButtons"
+                MinWidth="22em"
+                MinHeight="30em">
+        <ChildContent>
+            <label class="control-label">Поместить после</label>
+            <TypedSelector TKey="string" TItem="TItem"
+                           Items="selectorItems"
+                           KeySelector="@(i => i.Id)"
+                           ToListItem="@(i => TypedSelectList.CreateItem(Value: i.Id, Text: i.DisplayText, Subtext: i.Subtext))"
+                           SelectedValues="@(_selectedTarget is null ? [] : [_selectedTarget])"
+                           SelectedValuesChanged="v => _selectedTarget = v.FirstOrDefault()"
+                           AllowEmpty="true"
+                           EmptyText="Поставить в начало" />
+        </ChildContent>
+    </JoinDialog>
+}
 
 @* Контрол стоит в каждой строке сетки ролей — диалог ошибки рендерим, только когда она случилась *@
 @if (_error is not null)
@@ -81,6 +86,9 @@
     private TItem? targetIfUp, targetIfDown;
     private TItem[] selectorItems = [];
     private string? _selectedTarget;
+    private bool _sortDialogOpen;
+    /// <summary>Диалог сортировки отрисован — можно открывать (см. <see cref="OnAfterRender"/>).</summary>
+    private TaskCompletionSource? _sortDialogRendered;
     private JoinDialog? _sortDialog;
     private JoinMessageDialog? _errorDialog;
     private string? _error;
@@ -129,9 +137,14 @@
 
     private async Task OpenSortDialogAsync(ButtonClickEventArgs args)
     {
+        _sortDialogOpen = true;
+        _sortDialogRendered = new TaskCompletionSource();
+        StateHasChanged();
         try
         {
+            await _sortDialogRendered.Task;
             var result = await _sortDialog!.ShowModalAsync();
+            _sortDialogOpen = false;
             if (result == nameof(ButtonPreset.Sort))
             {
                 await ExecuteMoveAsync(_selectedTarget);
@@ -139,12 +152,20 @@
         }
         finally
         {
+            _sortDialogOpen = false;
+            _sortDialogRendered = null;
             args.ExitProgressState = true;
         }
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
+        // Диалог сортировки появился в разметке — открыть его можно только теперь
+        if (_sortDialogOpen && _sortDialog is not null)
+        {
+            _ = _sortDialogRendered?.TrySetResult();
+        }
+
         // Диалог появляется в разметке только с ошибкой — открыть его можно после отрисовки
         if (_showErrorPending && _errorDialog is not null)
         {

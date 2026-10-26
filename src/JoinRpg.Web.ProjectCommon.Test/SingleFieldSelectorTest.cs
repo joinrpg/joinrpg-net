@@ -30,7 +30,7 @@ public class SingleFieldSelectorTest
     {
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<IProjectFieldsClient>(new StubFieldsClient());
-        // Non-interactive: TypedSelector не пытается импортировать JS-модуль bootstrap-select.
+        // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return ctx;
     }
@@ -45,8 +45,9 @@ public class SingleFieldSelectorTest
             .Add(x => x.FieldType, ProjectFieldType.String)
             .Add(x => x.BoundTo, FieldBoundTo.Character));
 
-        cut.FindAll("option").Select(o => o.TextContent).ShouldBe(["Строка персонажа"]);
-        cut.Find("select").HasAttribute("multiple").ShouldBeFalse();
+        cut.FindAll(".join-select__list .join-select__text").Select(o => o.TextContent).ShouldBe(["Строка персонажа"]);
+        // Одиночный выбор — radio, а не checkbox.
+        cut.FindAll(".join-select__list input").Select(i => i.GetAttribute("type")).ShouldBe(["radio"]);
     }
 
     [Fact]
@@ -59,9 +60,8 @@ public class SingleFieldSelectorTest
             .Add(x => x.AllowEmpty, true)
             .Add(x => x.EmptyText, EmptyText));
 
-        var options = cut.FindAll("option");
-        options[0].TextContent.ShouldBe(EmptyText);
-        options[0].HasAttribute("selected").ShouldBeTrue();
+        cut.FindAll(".join-select__list .join-select__text")[0].TextContent.ShouldBe(EmptyText);
+        cut.FindAll(".join-select__list input")[0].HasAttribute("checked").ShouldBeTrue();
     }
 
     [Fact]
@@ -75,8 +75,8 @@ public class SingleFieldSelectorTest
             .Add(x => x.AllowEmpty, true)
             .Add(x => x.EmptyText, EmptyText));
 
-        var options = cut.FindAll("option");
-        options[0].HasAttribute("selected").ShouldBeFalse();
-        options[1].HasAttribute("selected").ShouldBeTrue();
+        var options = cut.FindAll(".join-select__list input");
+        options[0].HasAttribute("checked").ShouldBeFalse();
+        options[1].HasAttribute("checked").ShouldBeTrue();
     }
 }
