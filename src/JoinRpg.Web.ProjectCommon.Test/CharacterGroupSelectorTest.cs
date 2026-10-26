@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,7 @@ public class CharacterGroupSelectorTest
         var ctx = new BunitContext();
         var client = new FakeCharacterGroupsClient();
         ctx.Services.AddSingleton<ICharacterGroupsClient>(client);
+        _ = ctx.Services.AddJoinRpgWebComponents();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return (ctx, client);

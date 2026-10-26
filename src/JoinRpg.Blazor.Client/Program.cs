@@ -15,6 +15,8 @@ public class Program
 
         builder.Services.AddUriLocator();
 
+        _ = builder.Services.AddJoinRpgWebComponents();
+
         await builder.Build().RunAsync();
     }
 

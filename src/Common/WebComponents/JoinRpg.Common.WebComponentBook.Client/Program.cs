@@ -16,6 +16,7 @@ public class Program
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
         builder.Services.AddSingleton<IUserLinkResolveClient, DemoUserLinkResolveClient>();
         builder.Services.AddSingleton<IUriLocator<UserLinkViewModel>, DemoUserLinkLocator>();
+        _ = builder.Services.AddJoinRpgWebComponents();
 
         await builder.Build().RunAsync();
     }

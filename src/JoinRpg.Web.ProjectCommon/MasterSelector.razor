@@ -1,6 +1,7 @@
 @using JoinRpg.Common.PrimitiveTypes
 @using JoinRpg.Common.PrimitiveTypes.Users
 @inject IMasterClient client
+@inject SelectorListCache cache
 
 <TypedSelector TKey="UserIdentification" TItem="UserInfoHeader"
     Name="@Name"
@@ -32,7 +33,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var masters = await client.GetMasters(ProjectId);
+        var masters = await cache.GetOrLoad<UserInfoHeader>($"masters:{ProjectId}",
+            async () => await client.GetMasters(ProjectId));
         items = [.. masters.Where(master => !IdsToRemove.Contains(master.UserId))];
     }
 

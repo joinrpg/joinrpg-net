@@ -1,4 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Components;
@@ -30,6 +31,7 @@ public class ClaimSelectorTest
     {
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<IClaimListClient>(new FakeClaimListClient());
+        _ = ctx.Services.AddJoinRpgWebComponents();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return ctx;

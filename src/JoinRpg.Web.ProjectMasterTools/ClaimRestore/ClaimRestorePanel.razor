@@ -7,6 +7,7 @@
 @inject IUriLocator<ClaimIdentification> ClaimUriLocator
 @inject IUriLocator<CharacterGroupIdentification> GroupUriLocator
 @inject ICharacterUriLocator CharacterUriLocator
+@inject SelectorListCache SelectorListCache
 
 <JoinPanel>
     <Header>Восстановление проекта</Header>
@@ -876,6 +877,8 @@
             _ = await ApplyRow(row, dependencies.ClaimProblem(row.Row.ClaimId), () => Client.ApplyClaimFields(row.ToApplyRequest()));
         }
 
+        // Применение создаёт персонажей; селекторы в новых строках плана должны их увидеть.
+        SelectorListCache.Clear();
         var reloadError = await LoadPlan() is { } error
             ? $"Не удалось обновить план: {error}. Обновите страницу."
             : null;

@@ -1,5 +1,6 @@
 @using System.Linq.Expressions
 @inject ICharacterGroupsClient groupsClient
+@inject SelectorListCache cache
 
 <TypedSelector TKey="CharacterGroupIdentification" TItem="CharacterGroupDto"
                Name="@Name"
@@ -68,11 +69,16 @@
         // когда изменилось то, от чего он зависит.
         if (loadedFor != (ProjectId, IncludeSpecial, ExcludeGroupId))
         {
-            groups = ExcludeGroupId is not null
-                ? [.. await groupsClient.GetValidParentGroups(ExcludeGroupId)]
+            var excludeGroupId = ExcludeGroupId;
+            groups = excludeGroupId is not null
+                ? [.. await cache.GetOrLoad<CharacterGroupDto>(
+                    $"character-groups:valid-parents:{excludeGroupId.ProjectId.Value}:{excludeGroupId.CharacterGroupId}",
+                    async () => await groupsClient.GetValidParentGroups(excludeGroupId))]
                 : IncludeSpecial
-                    ? [.. await groupsClient.GetCharacterGroupsWithSpecial(ProjectId)]
-                    : [.. await groupsClient.GetRealCharacterGroups(ProjectId)];
+                    ? [.. await cache.GetOrLoad<CharacterGroupDto>($"character-groups:with-special:{ProjectId}",
+                        async () => await groupsClient.GetCharacterGroupsWithSpecial(ProjectId))]
+                    : [.. await cache.GetOrLoad<CharacterGroupDto>($"character-groups:real:{ProjectId}",
+                        async () => await groupsClient.GetRealCharacterGroups(ProjectId))];
             loadedFor = (ProjectId, IncludeSpecial, ExcludeGroupId);
         }
 
