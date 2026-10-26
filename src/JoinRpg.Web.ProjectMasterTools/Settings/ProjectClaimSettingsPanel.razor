@@ -17,7 +17,7 @@
         }
         <EditForm FormName="ProjectClaimSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
-                <ValidationSummary />
+                <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
 
                 <FormRowFor For="@(() => Model.IsAcceptingClaims)">

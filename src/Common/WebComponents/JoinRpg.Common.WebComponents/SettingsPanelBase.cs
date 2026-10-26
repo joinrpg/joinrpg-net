@@ -6,6 +6,8 @@ namespace JoinRpg.Common.WebComponents;
 /// <summary>
 /// Основа простой формы изменения настроек: загрузка модели, валидация и сохранение с показом серверной ошибки.
 /// Наследник даёт разметку (EditForm с EditContext="@editContext" и OnSubmit="HandleSubmit") и способ загрузить/сохранить модель.
+/// Серверная ошибка относится к модели целиком: её показывает <c>&lt;ValidationSummary Model="Model" /&gt;</c>,
+/// а ошибки полей — FormRowFor под самим полем, без дубля в сводке.
 /// </summary>
 public abstract class SettingsPanelBase<TModel> : ComponentBase, IDisposable
     where TModel : class
@@ -69,12 +71,12 @@ public abstract class SettingsPanelBase<TModel> : ComponentBase, IDisposable
         catch (ServerProblemException exception)
         {
             success = false;
-            messageStore?.Add(() => Model, exception.Message);
+            messageStore?.Add(new FieldIdentifier(Model, string.Empty), exception.Message);
         }
         catch
         {
             success = false;
-            messageStore?.Add(() => Model, "Неизвестная серверная ошибка при сохранении");
+            messageStore?.Add(new FieldIdentifier(Model, string.Empty), "Неизвестная серверная ошибка при сохранении");
         }
         editContext.NotifyValidationStateChanged();
     }

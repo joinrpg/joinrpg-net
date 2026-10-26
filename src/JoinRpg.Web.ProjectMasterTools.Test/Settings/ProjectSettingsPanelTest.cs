@@ -116,6 +116,19 @@ public class ProjectSettingsPanelTest : BunitContext
         client.SavedMainSettings.ShouldBeNull();
     }
 
+    // Ошибку поля показывает FormRowFor под полем; сводка над формой — только для ошибок всей модели (серверных).
+    [Fact]
+    public void FieldErrorIsShownOnce()
+    {
+        var cut = Render<ProjectMainSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+
+        cut.Find("input[type=text]").Input("Тест");
+
+        cut.FindAll(".validation-message, .validation-errors li")
+            .Count(e => e.TextContent.Contains("Название проекта должно быть длиной"))
+            .ShouldBe(1);
+    }
+
     private class FakeSettingsClient : IProjectSettingsClient
     {
         public ProjectMainSettingsViewModel? SavedMainSettings { get; private set; }
