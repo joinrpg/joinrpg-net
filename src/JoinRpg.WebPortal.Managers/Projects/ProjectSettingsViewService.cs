@@ -1,12 +1,20 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.ProjectMasterTools.Settings;
 
 namespace JoinRpg.WebPortal.Managers.Projects;
 
-internal class ProjectSettingsViewService(IProjectMetadataRepository projectMetadataRepository, IProjectService projectService) : IProjectSettingsClient
+internal class ProjectSettingsViewService(
+    IProjectMetadataRepository projectMetadataRepository,
+    IProjectService projectService,
+    ICurrentUserAccessor currentUserAccessor) : IProjectSettingsClient
 {
+    /// <summary>Смотреть настройки может любой мастер, менять — только с правом (сервисы проверяют его сами).</summary>
+    private bool HasEditAccess(ProjectInfo project) => project.HasMasterAccess(currentUserAccessor, Permission.CanChangeProjectProperties);
+
     async Task<ProjectMainSettingsViewModel> IProjectSettingsClient.GetMainSettings(ProjectIdentification projectId)
     {
         // Анонс — в ProjectDetails, а не в метаданных проекта (#5112).
@@ -16,6 +24,7 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
         {
             ProjectId = projectId,
             ProjectStatus = project.ProjectStatus,
+            HasEditAccess = HasEditAccess(project),
             ProjectName = project.ProjectName.Value,
             ProjectAnnounce = details.ProjectDescription.Value,
             EnableAccommodation = project.AccommodationSettings.Enabled,
@@ -45,6 +54,7 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             ProjectId = projectId,
             ProjectName = project.ProjectName,
             ProjectStatus = project.ProjectStatus,
+            HasEditAccess = HasEditAccess(project),
             AutoAcceptClaims = project.ClaimSettings.AutoAcceptClaims,
             DefaultTemplateCharacterId = project.ClaimSettings.DefaultTemplate,
             // Из флага, а не из статуса: у заблокированного проекта он сохраняется до снятия блокировки (ADR023).
@@ -63,6 +73,7 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             ProjectId = projectId,
             ProjectName = project.ProjectName,
             ProjectStatus = project.ProjectStatus,
+            HasEditAccess = HasEditAccess(project),
             Fio = (MandatoryContactsView)project.ProfileRequirementSettings.RequireRealName,
             Phone = (MandatoryContactsView)project.ProfileRequirementSettings.RequirePhone,
             Telegram = (MandatoryContactsView)project.ProfileRequirementSettings.RequireTelegram,
@@ -82,6 +93,7 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
             ProjectId = projectId,
             ProjectName = project.ProjectName,
             ProjectStatus = project.ProjectStatus,
+            HasEditAccess = HasEditAccess(project),
             PublishEnabled = project.PublishPlot,
         };
     }
@@ -117,6 +129,7 @@ internal class ProjectSettingsViewService(IProjectMetadataRepository projectMeta
         {
             ProjectId = projectId,
             ProjectStatus = project.ProjectStatus,
+            HasEditAccess = HasEditAccess(project),
             TimeZoneId = project.TimeZone.Id,
         };
     }

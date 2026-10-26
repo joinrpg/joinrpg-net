@@ -19,6 +19,9 @@ public class EditProjectViewModel
 
     /// <summary>Заблокирован на время восстановления данных (ADR023).</summary>
     public bool Blocked { get; set; }
+
+    /// <summary>Есть право настраивать проект: без него страница только для просмотра.</summary>
+    public bool HasEditAccess { get; set; }
 }
 
 public class UnblockProjectViewModel : IValidatableObject

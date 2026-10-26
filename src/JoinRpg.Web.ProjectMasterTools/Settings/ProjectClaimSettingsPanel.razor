@@ -19,43 +19,41 @@
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
-
-                <FormRowFor For="@(() => Model.IsAcceptingClaims)">
-                    <CheckboxInput @bind-Value="Model.IsAcceptingClaims" />
-                </FormRowFor>
-                <FormRowFor For="@(() => Model.IsPublicProject)">
-                    <CheckboxInput @bind-Value="Model.IsPublicProject" />
-                </FormRowFor>
-
-                @if (Model.IsAcceptingClaims)
-                {
-                    <FormRowFor For="@(() => Model.DefaultTemplateCharacterId)">
-                        <SingleCharacterSelector
-                        ProjectId="Model.ProjectId"
-                        @bind-SelectedCharacterId="@Model.DefaultTemplateCharacterId"
-                        ListType="@CharacterListType.AllTemplates"
-                        AllowEmpty="true"
-                        />
+                <fieldset disabled="@(!Model.HasEditAccess)">
+                    <FormRowFor For="@(() => Model.IsAcceptingClaims)">
+                        <CheckboxInput @bind-Value="Model.IsAcceptingClaims" />
                     </FormRowFor>
-                    <FormRowFor For="@(() => Model.AutoAcceptClaims)">
-                        <CheckboxInput @bind-Value="Model.AutoAcceptClaims" />
+                    <FormRowFor For="@(() => Model.IsPublicProject)">
+                        <CheckboxInput @bind-Value="Model.IsPublicProject" />
                     </FormRowFor>
-                    <FormRowFor For="@(() => Model.StrictlyOneCharacter)">
-                        <CheckboxInput @bind-Value="Model.StrictlyOneCharacter" />
-                    </FormRowFor>
-                    @* Пока заявки не принимаются, правила скрыты, но не стираются: значение уходит на сервер как было. *@
-                    <FormRowFor For="@(() => Model.ClaimApplyRules)">
-                        <JoinMarkdownTextArea @bind-Value="Model.ClaimApplyRules" Rows="8" />
-                    </FormRowFor>
-                }
 
-                <FormRowFor For="@(() => Model.ShowFieldProblemsToPlayers)">
-                    <CheckboxInput @bind-Value="Model.ShowFieldProblemsToPlayers" />
-                </FormRowFor>
+                    @if (Model.IsAcceptingClaims)
+                    {
+                        <FormRowFor For="@(() => Model.DefaultTemplateCharacterId)">
+                            <SingleCharacterSelector
+                            ProjectId="Model.ProjectId"
+                            @bind-SelectedCharacterId="@Model.DefaultTemplateCharacterId"
+                            ListType="@CharacterListType.AllTemplates"
+                            AllowEmpty="true"
+                            />
+                        </FormRowFor>
+                        <FormRowFor For="@(() => Model.AutoAcceptClaims)">
+                            <CheckboxInput @bind-Value="Model.AutoAcceptClaims" />
+                        </FormRowFor>
+                        <FormRowFor For="@(() => Model.StrictlyOneCharacter)">
+                            <CheckboxInput @bind-Value="Model.StrictlyOneCharacter" />
+                        </FormRowFor>
+                        @* Пока заявки не принимаются, правила скрыты, но не стираются: значение уходит на сервер как было. *@
+                        <FormRowFor For="@(() => Model.ClaimApplyRules)">
+                            <JoinMarkdownTextArea @bind-Value="Model.ClaimApplyRules" Rows="8" />
+                        </FormRowFor>
+                    }
 
-                <FormRow>
-                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
-                </FormRow>
+                    <FormRowFor For="@(() => Model.ShowFieldProblemsToPlayers)">
+                        <CheckboxInput @bind-Value="Model.ShowFieldProblemsToPlayers" />
+                    </FormRowFor>
+                </fieldset>
+                <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>
         </EditForm>
         @if (success)
