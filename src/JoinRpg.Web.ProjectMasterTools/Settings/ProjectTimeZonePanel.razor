@@ -1,20 +1,19 @@
 @inherits SettingsPanelBase<ProjectTimeZoneSettingsViewModel>
 @inject IProjectSettingsClient settingsClient
 
-@if (Model is null)
-{
-    <JoinLoadingMessage />
-    return;
-}
-
-@if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
+@if (Model is { ProjectStatus: ProjectLifecycleStatus.Archived })
 {
     return;
 }
 
-<JoinPanel>
+<JoinCollapsePanel Group="project-settings" Id="settings-timezone">
     <Header>Часовой пояс</Header>
-    <Body>
+    <ChildContent>
+        @if (Model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
         <EditForm FormName="ProjectTimeZoneSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary />
@@ -29,13 +28,12 @@
                 </FormRow>
             </FormHorizontal>
         </EditForm>
-    </Body>
-</JoinPanel>
-
-@if (success)
-{
-    <JoinAlert Variation="VariationStyleEnum.Success">Часовой пояс сохранён</JoinAlert>
-}
+        @if (success)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">Часовой пояс сохранён</JoinAlert>
+        }
+    </ChildContent>
+</JoinCollapsePanel>
 
 @code {
     [Parameter]

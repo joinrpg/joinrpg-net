@@ -1,20 +1,19 @@
 @inherits SettingsPanelBase<ProjectContactsSettingsViewModel>
 @inject IProjectSettingsClient settingsClient
 
-@if (Model is null)
-{
-    <JoinLoadingMessage />
-    return;
-}
-
-@if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
+@if (Model is { ProjectStatus: ProjectLifecycleStatus.Archived })
 {
     return;
 }
 
-<JoinPanel>
+<JoinCollapsePanel Group="project-settings" Id="settings-contacts">
     <Header>Настройки требований к контактам</Header>
-    <Body>
+    <ChildContent>
+        @if (Model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
         <EditForm FormName="ProjectContractRequirementsSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
             <FormHorizontal>
                 <ValidationSummary />
@@ -57,13 +56,12 @@
                 </FormRow>
             </FormHorizontal>
         </EditForm>
-    </Body>
-</JoinPanel>
-
-@if (success)
-{
-    <JoinAlert Variation="VariationStyleEnum.Success">Настройки контактов сохранены</JoinAlert>
-}
+        @if (success)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">Настройки контактов сохранены</JoinAlert>
+        }
+    </ChildContent>
+</JoinCollapsePanel>
 
 @code {
     [Parameter]
