@@ -31,6 +31,15 @@ public class TypedStringValueMaxLengthTests
         generated.ShouldContain("999");
     }
 
+    [Fact]
+    public void LengthBoundsAreGeneratedAsConstants()
+    {
+        var generated = Generate("MinLength = 5, MaxLength = 60");
+
+        generated.ShouldContain("public const int MinLength = 5;");
+        generated.ShouldContain("public const int MaxLength = 60;");
+    }
+
     private static string Generate(string attributeArguments)
     {
         var source = $$"""
