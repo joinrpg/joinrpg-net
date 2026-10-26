@@ -14,7 +14,7 @@ internal class OAuthProtocolExceptionHandler : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        if (!OAuthServerRegistration.IsProtocolPath(httpContext.Request.Path))
+        if (!OAuthServerRegistration.IsProtocolPath(GetOriginalPath(httpContext)))
         {
             return false;
         }
@@ -29,4 +29,15 @@ internal class OAuthProtocolExceptionHandler : IExceptionHandler
         }, cancellationToken);
         return true;
     }
+
+    /// <summary>
+    /// Путь, на котором случилось исключение. <c>UseExceptionHandler("/Error")</c> (вне Development) переписывает
+    /// <see cref="HttpRequest.Path"/> на <c>/Error</c> ещё до вызова обработчиков, поэтому исходный путь — только в
+    /// <see cref="IExceptionHandlerPathFeature"/>. По <see cref="HttpRequest.Path"/> обработчик протокольных путей на
+    /// проде не узнавал. Та же ошибка была в Portal (#5832).
+    /// </summary>
+    private static PathString GetOriginalPath(HttpContext httpContext)
+        => httpContext.Features.Get<IExceptionHandlerPathFeature>()?.Path is { } path
+            ? new PathString(path)
+            : httpContext.Request.Path;
 }
