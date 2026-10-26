@@ -336,7 +336,8 @@ internal class UriServiceImpl(
             new { ProjectId = variantId.FieldId.ProjectId.Value, projectFieldId = variantId.FieldId.ProjectFieldId, valueId = variantId.ProjectFieldVariantId }));
 
     Uri IProjectFieldUriLocator.GetFieldSettingsUri(ProjectIdentification projectId) =>
-        new(GetBaseDomain(), linkGenerator.GetPathByAction("Settings", "GameField", new { ProjectId = projectId.Value }));
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Game", new { ProjectId = projectId.Value },
+            fragment: new FragmentString("#settings-fields")));
 
     private record Linkable(LinkType LinkType, int? ProjectId, string? Identification) : ILinkable
     {

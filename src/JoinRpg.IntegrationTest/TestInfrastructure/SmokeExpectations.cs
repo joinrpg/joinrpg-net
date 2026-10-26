@@ -115,6 +115,9 @@ internal static class SmokeExpectations
             // userId в смоуке — владелец, он уже мастер: добавление ведёт на страницу правки (ADR019, §1).
             ["{projectId}/masters/add/{userId}"] = HttpStatusCode.Redirect,
 
+            // Настройки полей переехали панелью на страницу настроек проекта — старый адрес туда редиректит.
+            ["{ProjectId}/fields/Settings"] = HttpStatusCode.Redirect,
+
             // Вторая роль предлагается только по заявке, прошедшей чек-ин.
             ["{ProjectId}/claim/{ClaimId}/secondrole"] = HttpStatusCode.Redirect,
 

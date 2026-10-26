@@ -32,11 +32,14 @@ public class ProjectFieldSettingsPanelTest : BunitContext
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
     }
 
-    private IRenderedComponent<ProjectFieldSettingsPanel> Render(ProjectFieldIdentification? nameField)
+    private const string NameFieldWarning = "похоже на имя персонажа";
+
+    private IRenderedComponent<ProjectFieldSettingsPanel> Render(ProjectFieldIdentification? nameField, bool hasEditAccess = true)
     {
         client.Settings = new ProjectFieldSettingsViewModel
         {
             ProjectId = ProjectId,
+            HasEditAccess = hasEditAccess,
             NameField = nameField,
             DescriptionField = null,
             NameFieldCandidates = ["Имя персонажа"],
@@ -44,13 +47,27 @@ public class ProjectFieldSettingsPanelTest : BunitContext
         return Render<ProjectFieldSettingsPanel>(p => p.Add(c => c.ProjectId, ProjectId));
     }
 
+    private static string Text(IRenderedComponent<ProjectFieldSettingsPanel> cut)
+        => string.Concat(cut.Nodes.Select(n => n.TextContent));
+
     [Fact]
     public void NameFieldNotSelected_Warns()
-        => Render(nameField: null).Find(".alert-warning").TextContent.ShouldContain("«Имя персонажа»", Case.Sensitive);
+        => Text(Render(nameField: null)).ShouldContain($"Поле «Имя персонажа» {NameFieldWarning}", Case.Sensitive);
 
     [Fact]
     public void NameFieldSelected_NoWarning()
-        => Render(NameFieldId).FindAll(".alert-warning").ShouldBeEmpty();
+        => Text(Render(NameFieldId)).ShouldNotContain(NameFieldWarning);
+
+    // Панель стоит на странице настроек проекта, которую видит любой мастер; менять поля можно только с правом.
+    [Fact]
+    public void WithoutEditAccess_ReadOnly()
+    {
+        var cut = Render(NameFieldId, hasEditAccess: false);
+
+        cut.FindAll("button[type=submit]").ShouldBeEmpty();
+        cut.Find("fieldset").HasAttribute("disabled").ShouldBeTrue();
+        Text(cut).ShouldContain("«Настраивать поля персонажа»");
+    }
 
     private sealed class StubFieldsClient : IProjectFieldsClient
     {

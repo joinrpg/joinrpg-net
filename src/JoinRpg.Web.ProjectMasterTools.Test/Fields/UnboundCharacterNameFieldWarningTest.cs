@@ -30,7 +30,7 @@ public class UnboundCharacterNameFieldWarningTest : BunitContext
         Text(cut).ShouldContain(
             "Поле «Имя персонажа» похоже на имя персонажа, но имя сейчас привязано к имени игрока. Перепроверьте настройки полей.",
             Case.Sensitive);
-        cut.Find("a").GetAttribute("href").ShouldBe("https://localhost/1/fields/settings");
+        cut.Find("a").GetAttribute("href").ShouldBe("https://localhost/1/project/settings#settings-fields");
     }
 
     [Fact]
@@ -52,6 +52,6 @@ public class UnboundCharacterNameFieldWarningTest : BunitContext
         public Uri GetEditUri(ProjectFieldIdentification fieldId) => throw new NotSupportedException();
         public Uri GetCreateVariantUri(ProjectFieldIdentification fieldId) => throw new NotSupportedException();
         public Uri GetEditVariantUri(ProjectFieldVariantIdentification variantId) => throw new NotSupportedException();
-        public Uri GetFieldSettingsUri(ProjectIdentification projectId) => new($"https://localhost/{projectId.Value}/fields/settings");
+        public Uri GetFieldSettingsUri(ProjectIdentification projectId) => new($"https://localhost/{projectId.Value}/project/settings#settings-fields");
     }
 }

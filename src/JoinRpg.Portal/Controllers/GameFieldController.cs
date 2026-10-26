@@ -54,13 +54,11 @@ public class GameFieldController(
         return ViewIfFound(model);
     }
 
+    /// <summary>Настройки полей переехали панелью на страницу настроек проекта — старые ссылки ведём туда.</summary>
     [HttpGet]
-    [MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> Settings()
-    {
-        var model = await Manager.SettingsPagesAsync();
-        return ViewIfFound(model);
-    }
+    [MasterAuthorize]
+    public ActionResult Settings(ProjectIdentification projectId)
+        => RedirectToAction("Edit", "Game", new { projectId = projectId.Value }, "settings-fields");
 
     [HttpPost]
     [ValidateAntiForgeryToken]

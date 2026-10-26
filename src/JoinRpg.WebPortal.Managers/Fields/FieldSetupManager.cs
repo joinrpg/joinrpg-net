@@ -71,15 +71,6 @@ public class FieldSetupManager
         return FillFromProject(projectInfo, model);
     }
 
-    /// <summary>
-    /// Page with field settings
-    /// </summary>
-    public async Task<FieldSettingsViewModel?> SettingsPagesAsync()
-    {
-        var projectInfo = await ProjectMetadataRepository.GetProjectMetadata(CurrentProject.ProjectId);
-        return FillFromProject(projectInfo, new FieldSettingsViewModel());
-    }
-
     private async Task<GameFieldListViewModel?> GetFieldsImpl(
         FieldNavigationPage page,
         Func<ProjectFieldInfo, bool> predicate)

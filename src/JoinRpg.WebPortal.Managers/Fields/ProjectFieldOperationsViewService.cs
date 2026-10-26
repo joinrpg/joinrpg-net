@@ -1,4 +1,6 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.ProjectMasterTools.Fields;
 
@@ -6,7 +8,8 @@ namespace JoinRpg.WebPortal.Managers.Fields;
 
 internal class ProjectFieldOperationsViewService(
     IFieldSetupService fieldSetupService,
-    IProjectMetadataRepository projectMetadataRepository) : IProjectFieldOperationsClient
+    IProjectMetadataRepository projectMetadataRepository,
+    ICurrentUserAccessor currentUserAccessor) : IProjectFieldOperationsClient
 {
     public async Task Delete(ProjectFieldIdentification fieldId)
         => await fieldSetupService.DeleteField(fieldId.ProjectId.Value, fieldId.ProjectFieldId);
@@ -45,6 +48,7 @@ internal class ProjectFieldOperationsViewService(
         return new ProjectFieldSettingsViewModel()
         {
             ProjectId = projectId,
+            HasEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanChangeFields),
             NameField = projectInfo.CharacterNameField?.Id,
             DescriptionField = projectInfo.CharacterDescriptionField?.Id,
             NameFieldCandidates = [.. projectInfo.GetUnboundCharacterNameFieldCandidates().Select(f => f.Name)],
