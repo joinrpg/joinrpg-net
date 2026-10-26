@@ -1,4 +1,7 @@
-@model JoinRpg.Web.Models.CheckIn.CheckInClaimModel
+@model JoinRpg.Portal.Models.CheckInClaimPageModel
+@{
+  var checkIn = Model.CheckIn;
+}
 
 @{
   ViewBag.Title = "Регистрация игрока";
@@ -6,40 +9,40 @@
 
 <h2>Регистрация игрока</h2>
 @await Html.PartialAsync("CharacterNavigation", Model.Navigation)
-<component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@Model.PlayerDetails" />
+<component type="typeof(UserProfilePanel)" render-mode="Static" param-Model="@checkIn.PlayerDetails" />
 <dl>
-  <dt>@Html.LabelFor(model => model.Master)</dt>
-  <dd>@Html.DisplayFor(model => model.Master)</dd>
+  <dt>@Html.LabelFor(model => model.CheckIn.Master)</dt>
+  <dd>@Html.DisplayFor(model => model.CheckIn.Master)</dd>
 </dl>
-@if (!Model.Validator.NotCheckedInAlready)
+@if (checkIn.CheckedInAlready)
 {
   <div class="alert alert-danger">
-    Игрок уже прошел регистрацию @Html.DisplayFor(model => model.CheckInTime).
+    Игрок уже прошел регистрацию @Html.DisplayFor(model => model.CheckIn.CheckInTime).
   </div>
 }
 
-@if (!Model.Validator.IsApproved && Model.Validator.NotCheckedInAlready)
+@if (!checkIn.IsApproved && !checkIn.CheckedInAlready)
 {
   <div class="alert alert-danger">
-    Заявка находится в статусе @Html.DisplayFor(model => model.ClaimStatus). Регистрация невозможна.
+    Заявка находится в статусе @Html.DisplayFor(model => model.CheckIn.ClaimStatus). Регистрация невозможна.
     <br/>Обратитесь к ответственному мастеру.
   </div>
 }
 
-<form asp-action="DoCheckIn" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
-  <input type="hidden" name="money" id="money" value="@Model.Validator.FeeToAcceptOnCheckIn" />
+<form asp-action="DoCheckIn" asp-route-projectId="@checkIn.ProjectId" asp-route-claimId="@checkIn.ClaimId" method="post">
+  <input type="hidden" name="money" id="money" value="@checkIn.FeeDue" />
 
   @Html.ValidationSummary()
-  @if (Model.Validator.FeeToAcceptOnCheckIn > 0)
+  @if (checkIn.FeeDue > 0)
   {
 
   <div class="panel panel-default">
-    <div class="panel-heading">Принять взнос @Model.Validator.FeeToAcceptOnCheckIn</div>
+    <div class="panel-heading">Принять взнос @checkIn.FeeDue</div>
     <div class="panel-body">
       @{
-        var disableAcceptFeeCheckbox = Model.CanAcceptFee ? "" : "disabled";
+        var disableAcceptFeeCheckbox = checkIn.CanAcceptFee ? "" : "disabled";
       }
-      @if (!Model.CanAcceptFee)
+      @if (!checkIn.CanAcceptFee)
       {
         <div class="alert alert-danger">
           У вас нет прав отметить оплату взноса.
@@ -48,27 +51,27 @@
       }
       <input type="checkbox" name="feeAccepted" id="feeAccepted" required="" @disableAcceptFeeCheckbox style="transform: scale(1.5); margin: 1em" />
       <label for="feeAccepted">
-        Я, @Model.CurrentUserFullName, принял оплату взноса в размере @Model.Validator.FeeToAcceptOnCheckIn рублей, эти деньги будут лежать у меня для передачи уполномоченному мастеру.
+        Я, @checkIn.CurrentUserFullName, принял оплату взноса в размере @checkIn.FeeDue рублей, эти деньги будут лежать у меня для передачи уполномоченному мастеру.
       </label>
     </div>
   </div>
   }
-  @if (Model.Problems.Any())
+  @if (checkIn.Problems.Any())
   {
   <div class="alert alert-danger">
     Не хватает данных для регистрации:
     <ul>
-      @foreach (var problem in Model.Problems)
+      @foreach (var problem in checkIn.Problems)
       {
         <li><b>@problem.Title</b>@(problem.Details is null ? "" : " — " + problem.Details) (@Html.DisplayFor(modelField => problem.WhoWillFill))</li>
       }
     </ul>
-    Поля заполняются на @Html.ActionLink("заявке", "Edit", "Claim", new { Model.ClaimId, Model.ProjectId }, null), с полями мастера поможет ответственный мастер @Html.DisplayFor(model => model.Master).
+    Поля заполняются на @Html.ActionLink("заявке", "Edit", "Claim", new { checkIn.ClaimId, checkIn.ProjectId }, null), с полями мастера поможет ответственный мастер @Html.DisplayFor(model => model.CheckIn.Master).
     Данные профиля игрок заполняет сам в своём профиле.
   </div>
   }
   @await Html.PartialAsync("..\\Print\\_CharacterHandout", Model.Handouts)
-  @if (Model.Validator.CanCheckInInPrinciple)
+  @if (checkIn.CanCheckInInPrinciple)
   {
   <input type="submit" class="btn btn-success" value="Зарегистрировать игрока" />
   }
