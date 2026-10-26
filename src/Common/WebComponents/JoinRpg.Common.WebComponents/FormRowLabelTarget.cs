@@ -19,6 +19,12 @@ public sealed class FormRowLabelTarget
         this.onClaimed = onClaimed;
     }
 
+    /// <summary>
+    /// id самой подписи. Нужен полям, которые не являются labelable-элементом (у <see cref="TypedSelector{TKey, TItem}"/>
+    /// кнопка — <c>&lt;summary&gt;</c>): <c>&lt;label for&gt;</c> им имя не даёт, и они ссылаются на подпись через <c>aria-labelledby</c>.
+    /// </summary>
+    public string LabelId => $"{generatedId}-label";
+
     /// <summary>id поля, на которое ссылается подпись. <c>null</c> — ни одно поле его не забрало.</summary>
     public string? InputId { get; private set; }
 

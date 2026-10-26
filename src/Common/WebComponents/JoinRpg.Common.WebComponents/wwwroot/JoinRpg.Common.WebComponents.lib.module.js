@@ -293,6 +293,21 @@ function normalizeSearch(text) {
     return result.normalize('NFC');
 }
 
+// Подпись FormRow ссылается на <summary> списка (label for), но <summary> не labelable — браузер по клику
+// на подпись ничего не сделает. Открываем список сами и ставим фокус в поиск, а без поиска — на кнопку.
+// Слушатель закрытия меню выше зарегистрирован раньше: он закроет другие открытые списки, а этот откроем здесь.
+document.addEventListener('click', event => {
+    const label = event.target instanceof Element ? event.target.closest('label[for]') : null;
+    const summary = label ? document.getElementById(label.htmlFor) : null;
+    const select = summary?.matches(`${SELECT_SELECTOR} > summary`) ? summary.parentElement : null;
+    if (!select) {
+        return;
+    }
+    event.preventDefault();
+    select.open = true;
+    (select.querySelector('.join-select__search') ?? summary).focus();
+});
+
 function filterStaticSelect(select) {
     const search = select.querySelector('.join-select__search');
     const words = normalizeSearch(search?.value ?? '').split(' ').filter(word => word !== '');
@@ -310,7 +325,9 @@ function refreshStaticSummary(select) {
     const value = summary?.querySelector('.join-select__value');
     if (value) {
         value.textContent = text;
-        summary.title = text;
+        if (!summary.hasAttribute('aria-labelledby')) {
+            summary.title = text; // У подписанного списка значение уже в имени, title читался бы дважды.
+        }
     }
 }
 
