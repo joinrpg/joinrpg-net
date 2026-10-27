@@ -40,7 +40,7 @@ public interface IClaimProblemValidator
     /// <remarks>
     /// Берутся те, что видны игроку при текущем статусе заявки (<see cref="ClaimProblem.VisibleToPlayer"/>).
     /// Проблемы полей и взноса дополнительно ограничены настройкой проекта
-    /// <see cref="ProjectClaimSettings.ShowCheckInBlockersToPlayers"/>: без неё игрок их не видит вовсе,
+    /// <see cref="ProjectCheckInSettings.ShowCheckInBlockersToPlayers"/>: без неё игрок их не видит вовсе,
     /// а проблемы профиля показываются независимо от неё.
     /// </remarks>
     PlayerClaimProblems ValidateForPlayer(ClaimInfo context)
@@ -48,7 +48,7 @@ public interface IClaimProblemValidator
         ArgumentNullException.ThrowIfNull(context);
 
         var claimStatus = context.Claim.Status;
-        var showCheckInBlockers = context.ProjectInfo.ClaimSettings.ShowCheckInBlockersToPlayers;
+        var showCheckInBlockers = context.ProjectInfo.ProjectCheckInSettings.ShowCheckInBlockersToPlayers;
 
         var problems = Validate(context).ToList();
 
@@ -72,7 +72,7 @@ public interface IClaimProblemValidator
 /// <param name="HasHiddenCheckInBlockers">
 /// Регистрацию держат проблемы полей, которых игрок не видит: ему можно сказать, что они есть,
 /// но не какие. Считается, только если проект показывает игрокам проблемы полей
-/// (<see cref="ProjectClaimSettings.ShowCheckInBlockersToPlayers"/>) и регистрация заявке ещё предстоит
+/// (<see cref="ProjectCheckInSettings.ShowCheckInBlockersToPlayers"/>) и регистрация заявке ещё предстоит
 /// (принята, но не зарегистрирована): на непринятой мастерские поля держат её лишь формально,
 /// у зарегистрированной держать уже нечего, и совет обратиться к мастеру ввёл бы игрока
 /// в заблуждение. Иначе всегда <c>false</c>.

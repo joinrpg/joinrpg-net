@@ -18,7 +18,7 @@ public class ProjectDetails : IValidatableObject
     public MarkdownDbValue PreferentialFeeConditions { get; set; } = new MarkdownDbValue();
 
     /// <summary>
-    /// Показывать игроку, что мешает его регистрации на игре (в домене — <c>ProjectClaimSettings.ShowCheckInBlockersToPlayers</c>).
+    /// Показывать игроку, что мешает его регистрации на игре (в домене — <c>ProjectCheckInSettings.ShowCheckInBlockersToPlayers</c>).
     /// Имя историческое: раньше флаг включал модуль регистрации.
     /// </summary>
     public bool EnableCheckInModule { get; set; } = false;

@@ -169,6 +169,7 @@ internal class ProjectService(
             {
                 ctx.Project.Details.CheckInProgress = ctx.Request.InProgress;
                 ctx.Project.Details.AllowSecondRoles = ctx.Request.AllowSecondRoles;
+                ctx.Project.Details.EnableCheckInModule = ctx.Request.ShowCheckInBlockersToPlayers;
             });
     }
 
@@ -214,7 +215,6 @@ internal class ProjectService(
                 ctx.Project.IsAcceptingClaims = ctx.Request.settings.IsAcceptingClaims && ctx.Project.Active;
                 ctx.Project.Details.AutoAcceptClaims = ctx.Request.settings.AutoAcceptClaims;
                 ctx.Project.Details.DefaultTemplateCharacterId = ctx.Request.settings.DefaultTemplate?.CharacterId;
-                ctx.Project.Details.EnableCheckInModule = ctx.Request.settings.ShowCheckInBlockersToPlayers;
                 if (claimApplyRules is not null)
                 {
                     ctx.Project.Details.ClaimApplyRules = new MarkdownDbValue(claimApplyRules);

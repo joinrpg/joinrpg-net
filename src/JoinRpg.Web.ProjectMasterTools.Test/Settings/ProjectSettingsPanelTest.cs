@@ -132,16 +132,15 @@ public class ProjectSettingsPanelTest : BunitContext
             .ShouldBe(1);
     }
 
-    // Незаполненные поля касаются и уже поданных заявок — флаг настраивается и при закрытом приёме.
     [Fact]
-    public void ShowCheckInBlockersToPlayersEditableWhileClaimsClosed()
+    public void ShowCheckInBlockersToPlayersIsSavedWithCheckInSettings()
     {
-        var cut = Render<ProjectClaimSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+        var cut = Render<ProjectCheckInSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
 
         cut.Find("input[type=checkbox][name=ShowCheckInBlockersToPlayers]").Change(true);
         cut.Find("form").Submit();
 
-        client.SavedClaimSettings.ShouldNotBeNull().ShowCheckInBlockersToPlayers.ShouldBeTrue();
+        client.SavedCheckInSettings.ShouldNotBeNull().ShowCheckInBlockersToPlayers.ShouldBeTrue();
     }
 
     // Настройки регистрации переехали со страницы /checkin/setup панелью на страницу настроек проекта.
@@ -270,7 +269,6 @@ public class ProjectSettingsPanelTest : BunitContext
                 AutoAcceptClaims = false,
                 StrictlyOneCharacter = false,
                 ClaimApplyRules = ClaimApplyRules,
-                ShowCheckInBlockersToPlayers = false,
             });
         public Task SaveTimeZoneSettings(ProjectTimeZoneSettingsViewModel model) => throw new NotImplementedException();
 
@@ -292,6 +290,7 @@ public class ProjectSettingsPanelTest : BunitContext
                 HasEditAccess = HasEditAccess,
                 InProgress = false,
                 AllowSecondRoles = true,
+                ShowCheckInBlockersToPlayers = false,
             });
         public Task<ProjectTimeZoneSettingsViewModel> GetTimeZoneSettings(ProjectIdentification projectId) => throw new NotImplementedException();
     }

@@ -98,10 +98,6 @@ public class ProjectClaimSettingsViewModel
     [Display(Name = "Правила подачи заявок",
         Description = "Показываются игроку при подаче заявки")]
     public required string ClaimApplyRules { get; set; }
-
-    [Display(Name = "Показывать игроку, что мешает его регистрации на игре",
-        Description = "Игрок увидит на странице заявки незаполненные поля и несданный взнос, а также какие из проблем держат его регистрацию. Проблемы профиля игрок видит всегда.")]
-    public required bool ShowCheckInBlockersToPlayers { get; set; }
 }
 
 public class ProjectCheckInSettingsViewModel
@@ -116,6 +112,10 @@ public class ProjectCheckInSettingsViewModel
 
     [Display(Name = "Разрешить выпуск вторыми ролями", Description = "Включить соответствующую кнопку.")]
     public required bool AllowSecondRoles { get; set; }
+
+    [Display(Name = "Показывать игроку, что мешает его регистрации на игре",
+        Description = "Игрок увидит на странице заявки незаполненные поля и несданный взнос, а также какие из проблем держат его регистрацию. Проблемы профиля игрок видит всегда.")]
+    public required bool ShowCheckInBlockersToPlayers { get; set; }
 }
 
 public class ProjectTimeZoneSettingsViewModel

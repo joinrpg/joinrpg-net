@@ -323,10 +323,10 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
         {
             var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(originalProjectId);
             // Новый проект показывает незаполненные поля; клон должен скопировать выключенный флаг, а не взять дефолт.
-            projectInfo.ClaimSettings.ShowCheckInBlockersToPlayers.ShouldBeTrue();
-            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+            projectInfo.ProjectCheckInSettings.ShowCheckInBlockersToPlayers.ShouldBeTrue();
+            await sp.GetRequiredService<IProjectService>().SetCheckInSettings(
                 originalProjectId,
-                projectInfo.ClaimSettings with { ShowCheckInBlockersToPlayers = false });
+                projectInfo.ProjectCheckInSettings with { ShowCheckInBlockersToPlayers = false });
         });
 
         var cloneProjectId = await factory.Services.RunAsAsync(masterId, async sp =>
@@ -351,7 +351,7 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
             var cloneInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(cloneProjectId);
-            cloneInfo.ClaimSettings.ShowCheckInBlockersToPlayers.ShouldBeFalse();
+            cloneInfo.ProjectCheckInSettings.ShowCheckInBlockersToPlayers.ShouldBeFalse();
         });
     }
 }

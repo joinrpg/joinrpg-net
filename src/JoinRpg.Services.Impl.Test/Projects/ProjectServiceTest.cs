@@ -91,21 +91,23 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     [Fact]
     public async Task SetCheckInSettings_EnablesProgressAndSecondRoles()
     {
-        await CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: true));
+        await CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: true, ShowCheckInBlockersToPlayers: false));
 
         Result.ProjectCheckInSettings.InProgress.ShouldBeTrue();
         Result.ProjectCheckInSettings.AllowSecondRoles.ShouldBeTrue();
     }
 
-    // Флаг «показывать незаполненные поля» живёт в настройках заявок, регистрация его не трогает.
-    [Fact]
-    public async Task SetCheckInSettings_KeepsShowCheckInBlockersToPlayers()
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task SetCheckInSettings_ChangesShowCheckInBlockersToPlayers(bool before, bool after)
     {
-        mock.Project.Details.EnableCheckInModule = true;
+        mock.Project.Details.EnableCheckInModule = before;
 
-        await CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: false, AllowSecondRoles: false));
+        await CreateService().SetCheckInSettings(ProjectId, mock.ProjectInfo.ProjectCheckInSettings with { ShowCheckInBlockersToPlayers = after });
 
-        Result.ClaimSettings.ShowCheckInBlockersToPlayers.ShouldBeTrue();
+        Result.ProjectCheckInSettings.ShowCheckInBlockersToPlayers.ShouldBe(after);
+        mock.Project.Details.EnableCheckInModule.ShouldBe(after);
     }
 
     [Fact]
@@ -208,30 +210,26 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
             StrictlyOneCharacter: true,
             AutoAcceptClaims: true,
             IsAcceptingClaims: true,
-            IsPublicProject: true,
-            ShowCheckInBlockersToPlayers: true);
+            IsPublicProject: true);
 
         await CreateService().SetClaimSettings(ProjectId, settings);
 
         Result.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
         Result.ClaimSettings.AutoAcceptClaims.ShouldBeTrue();
         Result.ClaimSettings.IsPublicProject.ShouldBeTrue();
-        Result.ClaimSettings.ShowCheckInBlockersToPlayers.ShouldBeTrue();
         // IsAcceptingClaims разрешается только для активного проекта; мок активен.
         Result.ClaimSettings.IsAcceptingClaims.ShouldBeTrue();
     }
 
-    [Theory]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    public async Task SetClaimSettings_ChangesShowCheckInBlockersToPlayers(bool before, bool after)
+    // Флаг «что мешает регистрации» живёт в настройках регистрации, настройки заявок его не трогают.
+    [Fact]
+    public async Task SetClaimSettings_KeepsShowCheckInBlockersToPlayers()
     {
-        mock.Project.Details.EnableCheckInModule = before;
+        mock.Project.Details.EnableCheckInModule = true;
 
-        await CreateService().SetClaimSettings(ProjectId, mock.ProjectInfo.ClaimSettings with { ShowCheckInBlockersToPlayers = after });
+        await CreateService().SetClaimSettings(ProjectId, mock.ProjectInfo.ClaimSettings);
 
-        Result.ClaimSettings.ShowCheckInBlockersToPlayers.ShouldBe(after);
-        mock.Project.Details.EnableCheckInModule.ShouldBe(after);
+        mock.Project.Details.EnableCheckInModule.ShouldBeTrue();
     }
 
     [Fact]
@@ -424,8 +422,7 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
             StrictlyOneCharacter: true,
             AutoAcceptClaims: false,
             IsAcceptingClaims: true,
-            IsPublicProject: false,
-            ShowCheckInBlockersToPlayers: false));
+            IsPublicProject: false));
 
         Result.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
         Result.ProjectStatus.ShouldBe(ProjectLifecycleStatus.Blocked);
@@ -458,7 +455,7 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     {
         mock.Project.IsBlocked = true;
 
-        await Should.ThrowAsync<ProjectBlockedException>(() => CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: true)));
+        await Should.ThrowAsync<ProjectBlockedException>(() => CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: true, ShowCheckInBlockersToPlayers: true)));
 
         unitOfWork.SaveChangesCallCount.ShouldBe(0);
     }

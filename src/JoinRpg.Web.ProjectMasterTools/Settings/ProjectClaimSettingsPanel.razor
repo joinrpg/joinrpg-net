@@ -48,10 +48,6 @@
                             <JoinMarkdownTextArea @bind-Value="Model.ClaimApplyRules" Rows="8" />
                         </FormRowFor>
                     }
-
-                    <FormRowFor For="@(() => Model.ShowCheckInBlockersToPlayers)">
-                        <CheckboxInput @bind-Value="Model.ShowCheckInBlockersToPlayers" />
-                    </FormRowFor>
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>
