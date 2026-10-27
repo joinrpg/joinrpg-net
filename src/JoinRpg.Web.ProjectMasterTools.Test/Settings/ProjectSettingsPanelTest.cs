@@ -104,12 +104,15 @@ public class ProjectSettingsPanelTest : BunitContext
     }
 
     // Название проекта короче 5 букв сервер не примет — сохранить его нельзя уже в форме.
-    [Fact]
-    public void TooShortProjectNameIsNotSaved()
+    // Пробелы по краям сервер обрежет, поэтому и в форме они в длину не идут (#5855).
+    [Theory]
+    [InlineData("Тест")]
+    [InlineData("   Тест   ")]
+    public void TooShortProjectNameIsNotSaved(string projectName)
     {
         var cut = Render<ProjectMainSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
 
-        cut.Find("input[type=text]").Input("Тест");
+        cut.Find("input[type=text]").Input(projectName);
         cut.Find("button[type=submit]").HasAttribute("disabled").ShouldBeTrue();
         cut.Find("form").Submit();
 
