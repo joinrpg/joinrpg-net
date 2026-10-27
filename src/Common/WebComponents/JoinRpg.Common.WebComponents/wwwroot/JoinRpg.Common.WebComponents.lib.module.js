@@ -269,6 +269,16 @@ document.addEventListener('focusout', event => {
 // поиска каждого пункта (data-search) уже нормализовал сервер.
 
 const SELECT_SELECTOR = 'details.join-select';
+
+// Внутри отключённого <fieldset> (панель настроек без права) пункты отключает сам браузер, а <summary> — нет,
+// и список раскрывался бы. Enter и пробел на <summary> тоже приходят сюда кликом.
+document.addEventListener('click', event => {
+    const summary = event.target instanceof Element ? event.target.closest(`${SELECT_SELECTOR} > summary`) : null;
+    if (summary?.closest('fieldset:disabled')) {
+        event.preventDefault();
+    }
+}, true);
+
 const STATIC_SELECT_SELECTOR = 'details.join-select[data-join-select-static]';
 
 // Повторяет TypedSelectSearch.Normalize на C#: менять вместе.
