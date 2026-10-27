@@ -92,7 +92,7 @@ public class CheckInFeeAtDeskScenario(JoinApplicationFactory factory) : IClassFi
             var projectService = sp.GetRequiredService<IProjectService>();
             var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
             await projectService.SetClaimSettings(projectId, projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
-            await projectService.SetCheckInSettings(projectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: false));
+            await projectService.SetCheckInSettings(projectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: false, ShowCheckInBlockersToPlayers: true));
             if (passportRequired)
             {
                 await projectService.SetContactSettings(projectId,

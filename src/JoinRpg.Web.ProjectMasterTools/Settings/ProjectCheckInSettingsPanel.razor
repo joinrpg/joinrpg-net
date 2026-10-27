@@ -26,6 +26,9 @@
                     <FormRowFor For="@(() => Model.AllowSecondRoles)">
                         <CheckboxInput @bind-Value="Model.AllowSecondRoles" />
                     </FormRowFor>
+                    <FormRowFor For="@(() => Model.ShowCheckInBlockersToPlayers)">
+                        <CheckboxInput @bind-Value="Model.ShowCheckInBlockersToPlayers" />
+                    </FormRowFor>
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>

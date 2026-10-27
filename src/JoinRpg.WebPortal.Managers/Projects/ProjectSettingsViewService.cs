@@ -61,7 +61,6 @@ internal class ProjectSettingsViewService(
             IsAcceptingClaims = project.ClaimSettings.IsAcceptingClaims,
             IsPublicProject = project.ClaimSettings.IsPublicProject,
             StrictlyOneCharacter = project.ClaimSettings.StrictlyOneCharacter,
-            ShowCheckInBlockersToPlayers = project.ClaimSettings.ShowCheckInBlockersToPlayers,
         };
     }
 
@@ -100,7 +99,7 @@ internal class ProjectSettingsViewService(
 
     async Task IProjectSettingsClient.SaveClaimSettings(ProjectClaimSettingsViewModel model)
     {
-        var settings = new ProjectClaimSettings(model.DefaultTemplateCharacterId, model.StrictlyOneCharacter, model.AutoAcceptClaims, model.IsAcceptingClaims, model.IsPublicProject, model.ShowCheckInBlockersToPlayers);
+        var settings = new ProjectClaimSettings(model.DefaultTemplateCharacterId, model.StrictlyOneCharacter, model.AutoAcceptClaims, model.IsAcceptingClaims, model.IsPublicProject);
         await projectService.SetClaimSettings(model.ProjectId, settings, model.ClaimApplyRules);
     }
 
@@ -132,11 +131,12 @@ internal class ProjectSettingsViewService(
             HasEditAccess = HasEditAccess(project),
             InProgress = project.ProjectCheckInSettings.InProgress,
             AllowSecondRoles = project.ProjectCheckInSettings.AllowSecondRoles,
+            ShowCheckInBlockersToPlayers = project.ProjectCheckInSettings.ShowCheckInBlockersToPlayers,
         };
     }
 
     async Task IProjectSettingsClient.SaveCheckInSettings(ProjectCheckInSettingsViewModel model)
-        => await projectService.SetCheckInSettings(model.ProjectId, new ProjectCheckInSettings(model.InProgress, model.AllowSecondRoles));
+        => await projectService.SetCheckInSettings(model.ProjectId, new ProjectCheckInSettings(model.InProgress, model.AllowSecondRoles, model.ShowCheckInBlockersToPlayers));
 
     async Task<ProjectTimeZoneSettingsViewModel> IProjectSettingsClient.GetTimeZoneSettings(ProjectIdentification projectId)
     {

@@ -389,15 +389,9 @@ public record ProjectProfileRequirementSettings(
         || (BirthDateRequested && !previous.BirthDateRequested);
 }
 
-/// <param name="ShowCheckInBlockersToPlayers">
-/// Показывать ли игроку, что мешает его регистрации на игре: незаполненные поля заявки, несданный взнос
-/// и пометку, что проблема держит регистрацию. Проблемы профиля игрок видит всегда.
-/// В БД — колонка <c>ProjectDetails.EnableCheckInModule</c> (историческое имя).
-/// </param>
 public record ProjectClaimSettings(
     CharacterIdentification? DefaultTemplate,
     bool StrictlyOneCharacter,
     bool AutoAcceptClaims,
     bool IsAcceptingClaims,
-    bool IsPublicProject,
-    bool ShowCheckInBlockersToPlayers);
+    bool IsPublicProject);

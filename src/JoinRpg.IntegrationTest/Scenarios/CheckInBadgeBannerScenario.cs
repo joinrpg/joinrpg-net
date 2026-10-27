@@ -68,7 +68,7 @@ public class CheckInBadgeBannerScenario(JoinApplicationFactory factory) : IClass
             var projectService = sp.GetRequiredService<IProjectService>();
             var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
             await projectService.SetClaimSettings(projectId, projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
-            await projectService.SetCheckInSettings(projectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: false));
+            await projectService.SetCheckInSettings(projectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: false, ShowCheckInBlockersToPlayers: true));
 
             var nameField = projectInfo.CharacterNameField ?? throw new InvalidOperationException("В проекте нет поля имени");
 
