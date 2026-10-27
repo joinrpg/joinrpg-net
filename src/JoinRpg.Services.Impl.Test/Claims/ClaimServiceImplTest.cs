@@ -1272,12 +1272,29 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SentNotifications.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Родителя нет в этой заявке (устаревшая страница, ошибочный id) — отказ, а не ответ в корень (#5853).
+    /// </summary>
+    [Fact]
+    public async Task AddComment_WithMissingParentComment_Throws_AndDoesNotSave()
+    {
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        _ = await Should.ThrowAsync<ParentCommentNotFoundException>(
+            () => CreateService().AddComment(
+                claim.GetId(), parentCommentId: 12345, isVisibleToPlayer: true, "отвечаю"));
+
+        claim.CommentDiscussion.Comments.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+        SentNotifications.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task ModerateFinanceOperation_WithoutParentComment_Throws_AndDoesNotSave()
     {
         var claim = CreateClaim(ClaimStatus.AddedByUser);
 
-        _ = await Should.ThrowAsync<InvalidOperationException>(
+        _ = await Should.ThrowAsync<ParentCommentNotFoundException>(
             () => CreateService().ModerateFinanceOperation(
                 claim.GetId(), parentCommentId: 12345, "принято", FinanceOperationAction.Approve));
 

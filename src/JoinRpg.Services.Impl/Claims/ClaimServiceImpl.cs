@@ -336,8 +336,7 @@ internal class ClaimServiceImpl(
                 FinanceAction: financeAction),
             ctx =>
             {
-                var parentComment = FindParentComment(ctx, ctx.Request.ParentCommentId)
-                    ?? throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
+                var parentComment = FindParentComment(ctx, ctx.Request.ParentCommentId);
 
                 var finance = parentComment.Finance
                     ?? throw new InvalidOperationException("Requested to moderate comment without finance operation");
@@ -378,14 +377,16 @@ internal class ClaimServiceImpl(
             });
 
     /// <summary>
-    /// Родительский комментарий этой же дискуссии, если он есть.
+    /// Родительский комментарий этой же дискуссии.
     /// </summary>
     /// <remarks>
     /// Комментарии дискуссии грузит write-хэндл (<c>Include(c => c.CommentDiscussion.Comments)</c>),
     /// иначе родителя было бы не найти и финансовая модерация тихо ломалась бы.
+    /// Не нашли — отказ, а не ответ в корень заявки (#5853).
     /// </remarks>
-    private static Comment? FindParentComment(ClaimMutationContext ctx, int parentCommentId)
-        => ctx.Claim.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
+    private static Comment FindParentComment(ClaimMutationContext ctx, int parentCommentId)
+        => ctx.Claim.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId)
+            ?? throw new ParentCommentNotFoundException(parentCommentId);
 
     /// <summary>
     /// Общая часть обеих операций комментирования: сам комментарий и привязка к родителю.

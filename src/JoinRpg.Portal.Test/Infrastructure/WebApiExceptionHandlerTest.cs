@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Infrastructure;
@@ -55,6 +56,18 @@ public class WebApiExceptionHandlerTest
         handled.ShouldBeTrue();
         httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
         problem.GetProperty("title").GetString().ShouldBe("Проект не найден");
+    }
+
+    [Fact]
+    public async Task ParentCommentNotFound_InWebApi_ReturnsNotFoundWithReason()
+    {
+        var httpContext = CreateHttpContext("/webapi/claim-comment/AddComment");
+
+        var (handled, problem) = await Handle(httpContext, new ParentCommentNotFoundException(12345));
+
+        handled.ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+        problem.GetProperty("title").GetString().ShouldStartWith("Комментарий, на который вы отвечаете, не найден");
     }
 
     [Fact]
