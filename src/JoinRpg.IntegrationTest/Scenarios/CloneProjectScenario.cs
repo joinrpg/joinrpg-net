@@ -306,4 +306,52 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             cloneInfo.TimeZone.Id.ShouldBe("Asia/Yekaterinburg");
         });
     }
+
+    [Fact]
+    public async Task CloneProject_CopiesShowFieldProblemsToPlayers()
+    {
+        UserIdentification masterId;
+        ProjectIdentification originalProjectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            originalProjectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Исходный проект без показа незаполненных полей");
+        }
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(originalProjectId);
+            // Новый проект показывает незаполненные поля; клон должен скопировать выключенный флаг, а не взять дефолт.
+            projectInfo.ClaimSettings.ShowFieldProblemsToPlayers.ShouldBeTrue();
+            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                originalProjectId,
+                projectInfo.ClaimSettings with { ShowFieldProblemsToPlayers = false });
+        });
+
+        var cloneProjectId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var result = await sp.GetRequiredService<ICreateProjectService>().CreateProject(
+                new CloneProjectRequest(
+                    new ProjectName("Клон проекта без показа незаполненных полей"),
+                    originalProjectId,
+                    ProjectCopySettingsDto.SettingsAndFields,
+                    KogdaIgraLinkChoiceDto.ShouldNotBeOnKogdaIgra,
+                    null,
+                    null));
+
+            return result switch
+            {
+                SuccessCreateProjectResult r => r.ProjectId,
+                PartiallySuccessCreateProjectResult r => r.ProjectId,
+                _ => throw new InvalidOperationException($"Не удалось склонировать проект: {result}")
+            };
+        });
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var cloneInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(cloneProjectId);
+            cloneInfo.ClaimSettings.ShowFieldProblemsToPlayers.ShouldBeFalse();
+        });
+    }
 }

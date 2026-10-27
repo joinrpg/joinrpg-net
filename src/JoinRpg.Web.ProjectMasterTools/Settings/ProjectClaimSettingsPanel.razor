@@ -49,6 +49,10 @@
                     </FormRowFor>
                 }
 
+                <FormRowFor For="@(() => Model.ShowFieldProblemsToPlayers)">
+                    <CheckboxInput @bind-Value="Model.ShowFieldProblemsToPlayers" />
+                </FormRowFor>
+
                 <FormRow>
                     <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
                 </FormRow>

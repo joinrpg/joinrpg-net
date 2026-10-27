@@ -175,7 +175,7 @@ public class CheckInOverrideScenario(JoinApplicationFactory factory) : IClassFix
             var projectService = sp.GetRequiredService<IProjectService>();
             var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
             await projectService.SetClaimSettings(projectId, projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
-            await projectService.SetCheckInSettings(projectId, checkInProgress: true, enableCheckInModule: true, modelAllowSecondRoles: false);
+            await projectService.SetCheckInSettings(projectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: false));
             await projectService.SetContactSettings(projectId,
                 ProjectProfileRequirementSettings.AllNotRequired with { RequirePassport = MandatoryStatus.Required });
 

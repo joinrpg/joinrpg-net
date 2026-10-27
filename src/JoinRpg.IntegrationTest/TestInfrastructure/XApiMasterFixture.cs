@@ -153,7 +153,8 @@ public class XApiMasterFixture : IAsyncLifetime
                     StrictlyOneCharacter: false,
                     AutoAcceptClaims: false,
                     IsAcceptingClaims: true,
-                    IsPublicProject: true)));
+                    IsPublicProject: true,
+                    ShowFieldProblemsToPlayers: false)));
 
     /// <summary>
     /// Заявку подаёт сам игрок: заявку, добавленную мастером, мастер же утвердить не может —

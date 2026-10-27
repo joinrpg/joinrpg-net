@@ -80,10 +80,7 @@ internal class CloneProjectHelper(
 
         await projectService.SetPublishSettings(projectId, ProjectCloneSettings.CloneDisabled, publishEnabled: false);
         await projectService.SetContactSettings(projectId, original.ProfileRequirementSettings);
-        await projectService.SetCheckInSettings(projectId,
-            checkInProgress: false,
-            original.ProjectCheckInSettings.CheckInModuleEnabled,
-            original.ProjectCheckInSettings.AllowSecondRoles);
+        await projectService.SetCheckInSettings(projectId, original.ProjectCheckInSettings with { InProgress = false });
 
         await projectService.SetAccommodationSettings(projectId, original.AccommodationSettings.Enabled);
 

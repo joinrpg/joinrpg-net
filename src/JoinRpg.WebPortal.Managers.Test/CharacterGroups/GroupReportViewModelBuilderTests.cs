@@ -129,13 +129,10 @@ public class GroupReportViewModelBuilderTests
     }
 
     [Theory]
-    [InlineData(false, false, false)]
-    [InlineData(true, false, false)]
-    [InlineData(false, true, true)]
-    [InlineData(true, true, true)]
-    public void Build_CheckedInCountersShownOnlyWhileCheckInInProgress(bool checkInModuleEnabled, bool checkInProgress, bool expected)
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    public void Build_CheckedInCountersShownOnlyWhileCheckInInProgress(bool checkInProgress, bool expected)
     {
-        _mock.Project.Details.EnableCheckInModule = checkInModuleEnabled;
         _mock.Project.Details.CheckInProgress = checkInProgress;
 
         var result = GroupReportViewModelBuilder.Build(RootGroup);

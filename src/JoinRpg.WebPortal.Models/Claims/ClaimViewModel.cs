@@ -166,7 +166,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         PlayerDetails = cardBuilder.Build(playerInfo, projectInfo, currentUser.UserIdentificationOrDefault, currentUser.IsAdmin);
         ProjectActive = projectInfo.IsActive;
         CheckInStarted = projectInfo.ProjectCheckInSettings.InProgress;
-        CheckInModuleEnabled = projectInfo.ProjectCheckInSettings.CheckInModuleEnabled;
+        ShowFieldProblemsToPlayers = projectInfo.ClaimSettings.ShowFieldProblemsToPlayers;
         Validator = new ClaimCheckInValidator(claimInfo, problemValidator);
 
         AccommodationEnabled = projectInfo.AccommodationSettings.Enabled;
@@ -191,7 +191,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     public int CommentDiscussionId { get; }
     public bool CheckInStarted { get; }
-    public bool CheckInModuleEnabled { get; }
+    /// <summary>Показывать ли игрокам незаполненные поля заявки (сейчас — светофор готовности к регистрации).</summary>
+    public bool ShowFieldProblemsToPlayers { get; }
     public ClaimCheckInValidator Validator { get; }
     public bool AccommodationEnabled { get; }
     public string ProjectName { get; set; }

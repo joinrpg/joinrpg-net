@@ -51,7 +51,8 @@ internal class ProjectService(
                     ProjectName = ctx.Request.projectName,
                     CharacterGroups = [rootGroup,],
                     ProjectAcls = [ProjectAcl.CreateRootAcl(ctx.CurrentUser.UserId, ctx.Request.ownerRole, isOwner: true),],
-                    Details = new DataModel.ProjectDetails() { ClonedFromProjectId = ctx.Request.cloneFrom?.Value, },
+                    // Незаполненные поля заявки новый проект игрокам показывает; клон затем копирует флаг оригинала.
+                    Details = new DataModel.ProjectDetails() { ClonedFromProjectId = ctx.Request.cloneFrom?.Value, EnableCheckInModule = true, },
                     ProjectFields = [],
                 };
 
@@ -159,19 +160,15 @@ internal class ProjectService(
             });
     }
 
-    public async Task SetCheckInSettings(ProjectIdentification projectId,
-       bool checkInProgress,
-       bool enableCheckInModule,
-       bool modelAllowSecondRoles)
+    public async Task SetCheckInSettings(ProjectIdentification projectId, ProjectCheckInSettings settings)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.MustBeActive,
-            (checkInProgress, enableCheckInModule, modelAllowSecondRoles),
+            settings,
             ctx =>
             {
-                ctx.Project.Details.CheckInProgress = ctx.Request.checkInProgress && ctx.Request.enableCheckInModule;
-                ctx.Project.Details.EnableCheckInModule = ctx.Request.enableCheckInModule;
-                ctx.Project.Details.AllowSecondRoles = ctx.Request.modelAllowSecondRoles && ctx.Request.enableCheckInModule;
+                ctx.Project.Details.CheckInProgress = ctx.Request.InProgress;
+                ctx.Project.Details.AllowSecondRoles = ctx.Request.AllowSecondRoles;
             });
     }
 
@@ -217,6 +214,7 @@ internal class ProjectService(
                 ctx.Project.IsAcceptingClaims = ctx.Request.settings.IsAcceptingClaims && ctx.Project.Active;
                 ctx.Project.Details.AutoAcceptClaims = ctx.Request.settings.AutoAcceptClaims;
                 ctx.Project.Details.DefaultTemplateCharacterId = ctx.Request.settings.DefaultTemplate?.CharacterId;
+                ctx.Project.Details.EnableCheckInModule = ctx.Request.settings.ShowFieldProblemsToPlayers;
                 if (claimApplyRules is not null)
                 {
                     ctx.Project.Details.ClaimApplyRules = new MarkdownDbValue(claimApplyRules);
