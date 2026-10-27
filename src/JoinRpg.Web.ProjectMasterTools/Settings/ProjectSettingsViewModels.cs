@@ -9,7 +9,7 @@ public class ProjectMainSettingsViewModel
 
     [Display(Name = "Название проекта")]
     [Required(ErrorMessage = "Укажите название проекта")]
-    [StringLength(60, MinimumLength = 5, ErrorMessage = "Название проекта должно быть длиной от 5 до 60 букв.")]
+    [StringLength(DomainTypes.ProjectMetadata.ProjectName.MaxLength, MinimumLength = DomainTypes.ProjectMetadata.ProjectName.MinLength, ErrorMessage = "Название проекта должно быть длиной от {2} до {1} букв.")]
     public required string ProjectName { get; set; }
 
     [Display(Name = "Анонс проекта",

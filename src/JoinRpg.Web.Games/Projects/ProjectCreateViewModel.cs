@@ -6,9 +6,9 @@ namespace JoinRpg.Web.Games.Projects;
 public class ProjectCreateViewModel
 {
     [DisplayName("Название игры"), Required,
-     StringLength(60,
-         ErrorMessage = "Название игры должно быть длиной от 5 до 60 букв.",
-         MinimumLength = 5)]
+     StringLength(DomainTypes.ProjectMetadata.ProjectName.MaxLength,
+         ErrorMessage = "Название игры должно быть длиной от {2} до {1} букв.",
+         MinimumLength = DomainTypes.ProjectMetadata.ProjectName.MinLength)]
     public string ProjectName { get; set; } = default!;
 
     [Display(Name = "Согласен с правилами")]
