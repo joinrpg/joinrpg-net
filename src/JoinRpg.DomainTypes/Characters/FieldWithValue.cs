@@ -3,30 +3,25 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DomainTypes.Characters;
 
+/// <summary>
+/// Значение поля. Неизменяемо: новое значение — новый объект, см. <see cref="WithValue"/>.
+/// </summary>
 public sealed class FieldWithValue
 {
-    private IReadOnlyList<int> SelectedIds { get; set; } = [];
+    private IReadOnlyList<int> SelectedIds { get; }
 
     public FieldWithValue(ProjectFieldInfo field, string? value)
     {
         Field = field;
         Value = value;
+        SelectedIds = field.HasValueList ? value?.ParseToIntList() ?? [] : [];
     }
 
     public ProjectFieldInfo Field { get; }
 
-    public string? Value
-    {
-        get;
-        set
-        {
-            field = value;
-            if (Field.HasValueList)
-            {
-                SelectedIds = Value?.ParseToIntList() ?? [];
-            }
-        }
-    }
+    public string? Value { get; }
+
+    public FieldWithValue WithValue(string? value) => new(Field, value);
 
     public string DisplayString
     {

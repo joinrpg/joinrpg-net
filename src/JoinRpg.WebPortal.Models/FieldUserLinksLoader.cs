@@ -76,18 +76,13 @@ public static class FieldUserLinksLoader
                 ? new UserLinkViewModel(user)
                 : UserLinkViewModel.Deleted).ToList();
 
-    /// <remarks>
-    /// Значение из формы накладывается на новый <see cref="FieldWithValue"/>, а не на переданный:
-    /// <c>GetAllFieldsForEdit</c> отдаёт объекты прямо из слоёв агрегата, и правка на месте
-    /// протекла бы во всех, кто читает тот же агрегат в этом запросе.
-    /// </remarks>
     private static IReadOnlyList<UserIdentification> UserIdsWithOverride(
         FieldWithValue field,
         Dictionary<int, string?>? overrideValues)
     {
         if (overrideValues?.TryGetValue(field.Field.Id.ProjectFieldId, out var overrideValue) == true)
         {
-            return new FieldWithValue(field.Field, overrideValue).UserIds;
+            return field.WithValue(overrideValue).UserIds;
         }
         return field.UserIds;
     }

@@ -28,27 +28,14 @@ public static class CustomFieldsExtensions
 
     private static ReadOnlyCollection<FieldWithValue> GetFieldsForContainers(ProjectInfo project, params FieldLayerContainer?[] containers)
     {
-        var fields = project.SortedFields.Select(pf => new FieldWithValue(pf, value: null)).ToList();
-
-        foreach (var characterFieldValue in fields)
-        {
-            foreach (var container in containers.WhereNotNull())
-            {
-                if (container.LayerData.TryGetValue(characterFieldValue.Field.Id, out var layerField))
-                {
-                    try
-                    {
-                        characterFieldValue.Value = layerField.Value;
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception($"Problem parsing field value for field = {characterFieldValue.Field.Id}, Value = {layerField.Value}", e);
-                    }
-                }
-            }
-        }
-
-        return fields.AsReadOnly();
+        // Побеждает последний слой, где поле есть
+        return project.SortedFields
+            .Select(field => containers.WhereNotNull()
+                .Select(container => container.LayerData.GetValueOrDefault(field.Id))
+                .LastOrDefault(layerField => layerField is not null)
+                ?? new FieldWithValue(field, value: null))
+            .ToList()
+            .AsReadOnly();
     }
 
     /// <remarks>

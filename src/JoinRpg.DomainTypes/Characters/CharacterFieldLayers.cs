@@ -41,13 +41,9 @@ public record class CharacterFieldLayers(FieldLayerContainer? ClaimLayer, FieldL
     /// В отличие от <see cref="GetSortedFieldsForView"/> возвращает запись для КАЖДОГО поля (в т.ч. пустую).
     /// </summary>
     /// <remarks>
-    /// Отдаются КОПИИ значений, а не объекты самих слоёв: <see cref="FieldWithValue"/> изменяем, и
-    /// вызывающие его правят (стратегии сохранения присваивают новые значения, вьюмодель формы
-    /// заявки — подставляет значения из POST). Если бы отдавались объекты слоя, присваивание
-    /// меняло бы «значение до операции» прямо в слое. Так и было: публичное character-bound поле
-    /// попадало в слой персонажа, стратегия <c>SaveToClaimOnlyStrategy</c> сравнивала новое
-    /// значение с ним же — считала, что игрок ничего не менял, и значение из заявки не
-    /// сохранялось (показывалось значение из шаблона).
+    /// Объекты слоёв отдаются как есть: <see cref="FieldWithValue"/> неизменяем, и правка
+    /// вызывающего (стратегии сохранения, вьюмодели формы заявки) — это новый объект, а не
+    /// присваивание в слой.
     /// </remarks>
     public IReadOnlyCollection<FieldWithValue> GetAllFieldsForEdit()
     {
@@ -62,7 +58,7 @@ public record class CharacterFieldLayers(FieldLayerContainer? ClaimLayer, FieldL
                     ?? CharacterLayer.LayerData.GetValueOrDefault(field.Id),
                 _ => throw new InvalidOperationException(),
             };
-            result.Add(new FieldWithValue(field, resolved?.Value));
+            result.Add(resolved ?? new FieldWithValue(field, null));
         }
         return result;
     }
