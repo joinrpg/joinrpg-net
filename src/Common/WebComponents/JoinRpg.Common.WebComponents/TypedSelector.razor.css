@@ -37,6 +37,16 @@
         border-color: #adadad;
     }
 
+/* Внутри отключённого <fieldset> — как отключённый .form-control: пункты отключает сам браузер, а раскрыть
+   список не даёт lib.module.js. */
+fieldset:disabled .join-select__toggle,
+fieldset:disabled .join-select__toggle:hover,
+fieldset:disabled .join-select__toggle:focus {
+    background-color: #eee;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
     .join-select[open] > .join-select__toggle {
         background-color: #e6e6e6;
         border-color: #adadad;
