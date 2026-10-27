@@ -1,5 +1,5 @@
 ﻿<div class="form-group" @attributes="@InputAttributes">
-  <label class="control-label col-md-2" for="@labelTarget.InputId">@Label</label>
+  <label id="@labelTarget.LabelId" class="control-label col-md-2" for="@labelTarget.InputId">@Label</label>
   <div class="col-md-10">
     <CascadingValue Value="labelTarget" IsFixed="true">
       @ChildContent

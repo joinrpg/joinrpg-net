@@ -50,10 +50,12 @@ public class FormRowTest
     [InlineData(nameof(JoinRpgTimePicker), "INPUT")]
     [InlineData(nameof(EnumSelector<>), "SELECT")]
     [InlineData(nameof(StringInput), "INPUT")]
+    [InlineData(nameof(TimeZoneSelector), "SUMMARY")] // клик по подписи открывает список скриптом — см. TypedSelector
     public void FormRowFor_LinksLabelToField(string field, string tagName)
     {
         using var ctx = new BunitContext();
         ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
         var model = new Model();
         var cut = ctx.Render<FormRowFor<string>>(p => p
             .Add(x => x.For, () => model.Text)
@@ -62,6 +64,43 @@ public class FormRowTest
         var target = cut.Find("label").GetAttribute("for");
         target.ShouldNotBeNullOrEmpty();
         cut.FindAll($"[id='{target}']").ShouldHaveSingleItem().TagName.ShouldBe(tagName);
+    }
+
+    /// <summary>
+    /// &lt;summary&gt; списка не labelable, имя от &lt;label for&gt; он не получит. Скринридер должен прочитать
+    /// подпись и выбранное значение — через aria-labelledby (#5443).
+    /// </summary>
+    [Fact]
+    public void TypedSelectorInFormRow_NamedByLabelAndValue()
+    {
+        using var ctx = new BunitContext();
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        var model = new Model();
+        var cut = ctx.Render<FormRowFor<string>>(p => p
+            .Add(x => x.For, () => model.Text)
+            .AddChildContent(Field(nameof(TimeZoneSelector), model)));
+
+        var ids = cut.Find("summary").GetAttribute("aria-labelledby").ShouldNotBeNull().Split(' ');
+        ids.Length.ShouldBe(2);
+        cut.Find($"[id='{ids[0]}']").TextContent.ShouldBe("Текст");
+        cut.Find($"[id='{ids[1]}']").TextContent.ShouldBe("(не выбран)");
+    }
+
+    /// <summary>Подпись строки подписывает первое поле; список вторым полем ею не называется.</summary>
+    [Fact]
+    public void TypedSelectorAsSecondField_NotNamedByRowLabel()
+    {
+        using var ctx = new BunitContext();
+        ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        var cut = ctx.Render<FormRow>(p => p
+            .Add(x => x.Label, "Когда")
+            .AddChildContent<JoinRpgDatePicker>(f => f.Add(x => x.Name, "date"))
+            .AddChildContent<TimeZoneSelector>());
+
+        var summary = cut.Find("summary");
+        summary.HasAttribute("id").ShouldBeFalse();
+        summary.HasAttribute("aria-labelledby").ShouldBeFalse();
+        cut.Find("label").GetAttribute("for").ShouldBe(cut.Find("input[type=date]").Id);
     }
 
     [Fact]
@@ -172,6 +211,9 @@ public class FormRowTest
                 break;
             case nameof(StringInput):
                 builder.OpenComponent<StringInput>(0);
+                break;
+            case nameof(TimeZoneSelector):
+                builder.OpenComponent<TimeZoneSelector>(0);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(field), field, null);

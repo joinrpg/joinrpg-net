@@ -26,8 +26,11 @@ else
              style="@WidthStyle"
              data-join-select-static="@(RendererInfo.IsInteractive ? null : "")"
              data-empty-text="@EmptyText">
-        <summary class="join-select__toggle" title="@summaryText">
-            <span class="join-select__value">@summaryText</span>
+        <summary class="join-select__toggle"
+                 id="@toggleId"
+                 title="@(toggleId is null ? summaryText : null)"
+                 aria-labelledby="@(toggleId is null ? null : $"{LabelTarget!.LabelId} {ValueId}")">
+            <span class="join-select__value" id="@ValueId">@summaryText</span>
             <span class="join-select__caret"></span>
         </summary>
         <div class="join-select__panel">
@@ -99,6 +102,15 @@ else
     /// <summary>CSS-ширина, например <c>"30em"</c> или <c>"100%"</c>. null — ширина по умолчанию (220px, как была у bootstrap-select).</summary>
     [Parameter] public string? Width { get; set; }
 
+    /// <summary>
+    /// Подпись строки формы. &lt;summary&gt; не labelable: <c>&lt;label for&gt;</c> на нём фокус не ставит и имени не даёт.
+    /// Поэтому клик по подписи открывает список скриптом (lib.module.js), а имя — через aria-labelledby: подпись и выбранное значение.
+    /// </summary>
+    [CascadingParameter] private FormRowLabelTarget? LabelTarget { get; set; }
+
+    private string? toggleId;
+    private string ValueId => $"{generatedName}-value";
+
     /// <summary>Поиск появляется, когда пунктов больше этого числа (как data-live-search у bootstrap-select).</summary>
     private const int SearchThreshold = 10;
 
@@ -120,6 +132,10 @@ else
 
     protected override void OnParametersSet()
     {
+        // Пока список грузится, <summary> нет — подпись не должна ссылаться на несуществующий id.
+        // Вторым полем строки id не достанется: тогда и подпись строки не наша, имя берётся из содержимого.
+        // title при подписи не нужен: имя и так содержит значение, а title скринридер прочитал бы второй раз.
+        toggleId = Items is null ? null : LabelTarget?.Claim(this);
         hasSearch = Items is { Length: > SearchThreshold };
         // Нормализация не бесплатная, а без поля поиска строки пунктов не нужны (селектор бывает в каждой строке сетки).
         options = Items is null
