@@ -63,7 +63,10 @@
     <ul>
       @foreach (var problem in checkIn.Problems)
       {
-        <li><b>@problem.Title</b>@(problem.Details is null ? "" : " — " + problem.Details) (@Html.DisplayFor(modelField => problem.WhoWillFill))</li>
+        <li>
+          <component type="typeof(JoinRpg.Web.Claims.ProblemBadge)" render-mode="Static" param-Model="@problem" />
+          (@Html.DisplayFor(modelField => problem.WhoWillFill))
+        </li>
       }
     </ul>
     Поля заполняются на @Html.ActionLink("заявке", "Edit", "Claim", new { checkIn.ClaimId, checkIn.ProjectId }, null), с полями мастера поможет ответственный мастер @Html.DisplayFor(model => model.CheckIn.Master).
