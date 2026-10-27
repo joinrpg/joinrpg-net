@@ -1,7 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
@@ -25,7 +25,7 @@ public class FinOperationListItemViewModel : ILinkable
     public string PaymentTypeName { get; }
 
     [Display(Name = "Отметил"), Required]
-    public UserInfo MarkingMaster { get; }
+    public UserInfoHeader MarkingMaster { get; }
 
     [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
     public DateTime OperationDate { get; }
@@ -37,7 +37,13 @@ public class FinOperationListItemViewModel : ILinkable
     public string ClaimLink { get; }
 
     [Display(Name = "Игрок"), Required]
-    public UserInfo Player { get; }
+    public UserInfoHeader Player { get; }
+
+    /// <summary>
+    /// Полный профиль игрока с контактами — только для выгрузки; при показе страницы не загружается.
+    /// </summary>
+    [Display(Name = "Игрок")]
+    public UserInfo? PlayerProfile { get; }
 
     LinkType ILinkable.LinkType => LinkType.Claim;
 
@@ -53,13 +59,14 @@ public class FinOperationListItemViewModel : ILinkable
     public FinanceModerationOperationView? FinanceModeration { get; }
 
     /// <summary>
-    /// Строка списка операций. Из самой операции читаются только скаляры: заявка с персонажем и игроком,
-    /// автор операции и способ оплаты приходят снимками, загруженными на весь список сразу (#5852).
+    /// Строка списка операций. Из самой операции читаются только скаляры: заголовок заявки с игроком, автор
+    /// операции и способ оплаты приходят заголовками, загруженными на весь список сразу (#5852).
     /// </summary>
     public FinOperationListItemViewModel(
         FinanceOperation fo,
-        ClaimInfo claim,
-        UserInfo markingMaster,
+        ClaimWithPlayer claim,
+        UserInfoHeader markingMaster,
+        UserInfo? playerProfile,
         IUriService uriService,
         ProjectInfo projectInfo,
         UserIdentification? currentUser)
@@ -73,12 +80,13 @@ public class FinOperationListItemViewModel : ILinkable
         PaymentTypeName =
             paymentType?.GetDisplayName()                                           // If this is a payment, get payment type
             ?? ((FinanceOperationTypeViewModel)fo.OperationType).GetDisplayName();  // if this is other operation type, just display operation type
-        Claim = claim.Character.CharacterName;
+        Claim = claim.CharacterName;
         Money = fo.MoneyAmount;
         OperationDate = fo.OperationDate;
         FinanceOperationId = fo.CommentId;
         MarkingMaster = markingMaster;
         Player = claim.Player;
+        PlayerProfile = playerProfile;
         ClaimId = fo.ClaimId;
         ClaimLink = uriService.Get(this);
         // Онлайн-оплаты в списке «на модерации» есть, но модерации не требуют — у них кнопки не будет

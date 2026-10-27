@@ -14,7 +14,7 @@ public class FinanceOperationExporter(IUriService uriService, ProjectInfo projec
         yield return DateTimeColumn(x => x.OperationDate);
         yield return StringColumn(x => x.Claim);
         yield return UriColumn(x => x);
-        foreach (var c in UserColumn(x => x.Player, projectInfo))
+        foreach (var c in UserColumn(x => x.PlayerProfile, projectInfo))
         {
             yield return c;
         }

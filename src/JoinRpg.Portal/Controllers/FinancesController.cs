@@ -1,5 +1,5 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
@@ -30,7 +30,7 @@ public class FinancesController(
     ICurrentUserAccessor currentUserAccessor,
     ILogger<FinancesController> logger,
     IProjectMetadataRepository projectMetadataRepository,
-    IClaimInfoRepository claimInfoRepository,
+    IClaimsRepository claimsRepository,
     UserProfileDetailsBuilder cardBuilder
         ) : JoinControllerGameBase
 {
@@ -62,12 +62,11 @@ public class FinancesController(
         var project = await projectRepository.GetProjectWithFinances(projectid);
         var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectid));
         var operations = project.FinanceOperations.Where(predicate).ToArray();
+        var exportType = ExportTypeNameParserHelper.ToExportType(export);
         var viewModel = new FinOperationListViewModel(metadata, uriService,
             operations,
-            await LoadOperationListData(operations),
+            await LoadOperationListData(operations, withPlayerProfiles: exportType is not null),
             currentUserAccessor.UserIdentificationOrDefault);
-
-        var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
         if (exportType == null)
         {
@@ -340,7 +339,7 @@ public class FinancesController(
             user,
             uriService,
             operations,
-            await LoadOperationListData(operations),
+            await LoadOperationListData(operations, withPlayerProfiles: false),
             payments,
             currentUserAccessor,
             projectInfo,
@@ -349,14 +348,21 @@ public class FinancesController(
     }
 
     /// <summary>
-    /// Заявки с персонажами и игроками и авторы операций — пачкой на весь список, а не навигациями каждой операции (#5852).
+    /// Заголовки заявок с игроками и авторы операций — пачкой на весь список, а не навигациями каждой операции (#5852).
+    /// Полные профили игроков с контактами — только для выгрузки.
     /// </summary>
-    private async Task<FinOperationListData> LoadOperationListData(IReadOnlyCollection<FinanceOperation> operations)
+    private async Task<FinOperationListData> LoadOperationListData(IReadOnlyCollection<FinanceOperation> operations, bool withPlayerProfiles)
     {
-        var claims = await claimInfoRepository.GetClaimInfos(
+        var claims = await claimsRepository.GetClaimHeadersWithPlayer(
             [.. operations.Select(fo => new ClaimIdentification(fo.ProjectId, fo.ClaimId)).Distinct()]);
-        var authors = await UserRepository.GetRequiredUserInfos(
+        var authors = await UserRepository.GetRequiredUserInfoHeaders(
             [.. operations.Select(fo => new UserIdentification(fo.Comment.AuthorUserId)).Distinct()]);
-        return new FinOperationListData(claims, authors.ToDictionary(u => u.UserId));
+        var playerProfiles = withPlayerProfiles
+            ? (await UserRepository.GetRequiredUserInfos([.. claims.Select(c => c.Player.UserId).Distinct()])).ToDictionary(u => u.UserId)
+            : null;
+        return new FinOperationListData(
+            claims.ToDictionary(c => c.ClaimId),
+            authors.ToDictionary(u => u.UserId),
+            playerProfiles);
     }
 }

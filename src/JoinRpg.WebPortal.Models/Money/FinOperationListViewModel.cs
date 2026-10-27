@@ -1,16 +1,22 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Money;
 
 /// <summary>
-/// Снимки, нужные строкам списка операций: заявки с персонажами и игроками и авторы операций.
+/// Данные, нужные строкам списка операций: заголовки заявок с игроками и авторы операций.
 /// Загружаются пачкой на весь список, чтобы строка не ходила за навигациями операции.
 /// </summary>
+/// <param name="PlayerProfiles">
+/// Полные профили игроков — только для выгрузки, где нужны контакты. При показе страницы <c>null</c>:
+/// профиль тяжёлый, а странице хватает заголовка.
+/// </param>
 public record FinOperationListData(
-    IReadOnlyDictionary<ClaimIdentification, ClaimInfo> Claims,
-    IReadOnlyDictionary<UserIdentification, UserInfo> Authors);
+    IReadOnlyDictionary<ClaimIdentification, ClaimWithPlayer> Claims,
+    IReadOnlyDictionary<UserIdentification, UserInfoHeader> Authors,
+    IReadOnlyDictionary<UserIdentification, UserInfo>? PlayerProfiles = null);
 
 public class FinOperationListViewModel(
     ProjectInfo projectInfo,
@@ -25,6 +31,7 @@ public class FinOperationListViewModel(
               f,
               data.Claims[new ClaimIdentification(f.ProjectId, f.ClaimId)],
               data.Authors[new UserIdentification(f.Comment.AuthorUserId)],
+              data.PlayerProfiles?[data.Claims[new ClaimIdentification(f.ProjectId, f.ClaimId)].Player.UserId],
               urlHelper,
               projectInfo,
               currentUser))

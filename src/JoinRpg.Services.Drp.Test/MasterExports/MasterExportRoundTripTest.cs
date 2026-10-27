@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.DataModel.Mocks;
@@ -85,6 +86,16 @@ public class MasterExportRoundTripTest
 
     private ClaimInfo ClaimInfoOf(Claim claim)
         => new(new ClaimInCharacter(mock.GetCharacterInfo(claim.Character), claim.GetId()), mock.PlayerInfo);
+
+    private ClaimWithPlayer ClaimHeaderOf(Claim claim) => new()
+    {
+        ClaimId = claim.GetId(),
+        CharacterName = claim.Character.CharacterName,
+        Player = mock.PlayerInfo.ToUserInfoHeader(),
+        ExtraNicknames = null,
+        ResponsibleMasterUserId = new UserIdentification(claim.ResponsibleMasterUserId),
+        CharacterId = claim.Character.GetId(),
+    };
 
     private byte[] ExportCharacters(params Character[] extraCharacters)
     {
@@ -338,7 +349,7 @@ public class MasterExportRoundTripTest
             Comment = new Comment { Author = mock.Master },
             OperationDate = new DateTime(2026, 9, 1),
         };
-        var items = new[] { new FinOperationListItemViewModel(operation, ClaimInfoOf(approvedClaim), mock.MasterInfo, new PortalLikeUriService(), mock.ProjectInfo, currentUser: null) };
+        var items = new[] { new FinOperationListItemViewModel(operation, ClaimHeaderOf(approvedClaim), mock.MasterInfo.ToUserInfoHeader(), mock.PlayerInfo, new PortalLikeUriService(), mock.ProjectInfo, currentUser: null) };
         var bytes = ExportXlsx(items, new FinanceOperationExporter(new PortalLikeUriService(), mock.ProjectInfo));
 
         var ex = Should.Throw<MasterExportFormatException>(() => Parse(bytes));
