@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
@@ -29,6 +30,7 @@ public class FinancesController(
     ICurrentUserAccessor currentUserAccessor,
     ILogger<FinancesController> logger,
     IProjectMetadataRepository projectMetadataRepository,
+    IClaimInfoRepository claimInfoRepository,
     UserProfileDetailsBuilder cardBuilder
         ) : JoinControllerGameBase
 {
@@ -59,8 +61,10 @@ public class FinancesController(
     {
         var project = await projectRepository.GetProjectWithFinances(projectid);
         var metadata = await projectMetadataRepository.GetProjectMetadata(new(projectid));
+        var operations = project.FinanceOperations.Where(predicate).ToArray();
         var viewModel = new FinOperationListViewModel(metadata, uriService,
-            project.FinanceOperations.Where(predicate).ToArray(),
+            operations,
+            await LoadOperationListData(operations),
             currentUserAccessor.UserIdentificationOrDefault);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
@@ -336,10 +340,23 @@ public class FinancesController(
             user,
             uriService,
             operations,
+            await LoadOperationListData(operations),
             payments,
             currentUserAccessor,
             projectInfo,
             cardBuilder);
         return View(viewModel);
+    }
+
+    /// <summary>
+    /// Заявки с персонажами и игроками и авторы операций — пачкой на весь список, а не навигациями каждой операции (#5852).
+    /// </summary>
+    private async Task<FinOperationListData> LoadOperationListData(IReadOnlyCollection<FinanceOperation> operations)
+    {
+        var claims = await claimInfoRepository.GetClaimInfos(
+            [.. operations.Select(fo => new ClaimIdentification(fo.ProjectId, fo.ClaimId)).Distinct()]);
+        var authors = await UserRepository.GetRequiredUserInfos(
+            [.. operations.Select(fo => new UserIdentification(fo.Comment.AuthorUserId)).Distinct()]);
+        return new FinOperationListData(claims, authors.ToDictionary(u => u.UserId));
     }
 }

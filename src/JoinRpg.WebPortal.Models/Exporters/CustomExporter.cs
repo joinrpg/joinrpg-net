@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Reflection;
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -216,6 +217,18 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     /// </remarks>
     [Pure]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserInfo?>> func, string? name = null)
+    {
+        name ??= CombineName(func.AsPropertyAccess());
+        var getter = func.Compile();
+        return new TableColumn<string>(name, row => getter(row)?.DisplayName.DisplayName);
+    }
+
+    /// <summary>
+    /// Та же колонка, что и версия для <see cref="UserInfo"/>, но поверх <see cref="UserInfoHeader"/> —
+    /// например, владельца способа оплаты из метаданных проекта.
+    /// </summary>
+    [Pure]
+    protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserInfoHeader?>> func, string? name = null)
     {
         name ??= CombineName(func.AsPropertyAccess());
         var getter = func.Compile();
