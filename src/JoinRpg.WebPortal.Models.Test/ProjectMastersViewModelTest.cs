@@ -1,13 +1,15 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DataModel.Mocks.Fakes;
-using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Web.Games.Projects;
 using JoinRpg.Web.UserProfile;
 
 namespace JoinRpg.WebPortal.Models.Test;
 
-/// <summary>Публичная страница мастеров: контакты в карточке — по правилам профиля пользователя.</summary>
+/// <summary>
+/// Публичная страница мастеров одинакова для всех: в карточке только публичные контакты, даже если смотрящему
+/// доступно больше.
+/// </summary>
 public class ProjectMastersViewModelTest
 {
     private readonly MockedProject mock = new();
@@ -25,7 +27,7 @@ public class ProjectMastersViewModelTest
     [Fact]
     public void Anonymous_SeesCardWithoutContacts()
     {
-        var card = BuildFor(viewer: null, Profiles, Users).Masters.ShouldHaveSingleItem();
+        var card = BuildFor(viewerId: null).Masters.ShouldHaveSingleItem();
 
         card.Role.ShouldBe("Главный мастер");
         card.Details.User.UserId.ShouldBe(mock.MasterInfo.UserId);
@@ -34,62 +36,45 @@ public class ProjectMastersViewModelTest
     }
 
     [Fact]
-    public void Admin_SeesContactsLikeInProfile()
+    public void Master_SeesOwnCardWithoutContacts()
     {
-        var admin = mock.PlayerInfo with { UserId = new UserIdentification(100500), IsAdmin = true };
-
-        var card = BuildFor(admin, Profiles, Users).Masters.ShouldHaveSingleItem();
-
-        card.Details.Reason.ShouldBe(AccessReasonView.Administrator);
-        card.Details.Email.ShouldBe(mock.MasterInfo.Email);
-    }
-
-    [Fact]
-    public void PlayerWithClaimInProject_SeesNoContacts()
-    {
-        // Заявка игрока в этом проекте доступа к контактам мастера не даёт — как и в профиле мастера.
-        var card = BuildFor(mock.PlayerInfo, Profiles, Users).Masters.ShouldHaveSingleItem();
+        // Даже свою карточку мастер видит так же, как игроки.
+        var card = BuildFor(mock.MasterInfo.UserId).Masters.ShouldHaveSingleItem();
 
         card.Details.Reason.ShouldBe(AccessReasonView.NoAccess);
         card.Details.Email.ShouldBeNull();
     }
 
     [Fact]
-    public void CoMasterOfAnotherProject_SeesContacts()
+    public void PublicSocialNetworks_AreShown()
     {
-        var otherProject = new ProjectIdentification(100500);
-        var master = mock.MasterInfo with { ActiveProjects = [mock.ProjectInfo.ProjectId, otherProject] };
-        var coMaster = mock.PlayerInfo with { UserId = new UserIdentification(100501), ActiveProjects = [otherProject] };
+        var master = mock.MasterInfo with
+        {
+            Social = mock.MasterInfo.Social with { SocialNetworksAccess = ContactsAccessType.Public },
+        };
 
-        var card = BuildFor(coMaster, Profiles, new Dictionary<UserIdentification, UserInfo> { [master.UserId] = master })
+        var card = ProjectMastersViewModel.Build(mock.ProjectInfo, viewerId: null, Profiles, new Dictionary<UserIdentification, UserInfo> { [master.UserId] = master }, CardBuilder)
             .Masters.ShouldHaveSingleItem();
 
-        card.Details.Reason.ShouldBe(AccessReasonView.CoMaster);
-        card.Details.Email.ShouldBe(master.Email);
+        card.Details.HasSocialAccess.ShouldBeTrue();
+        card.Details.Email.ShouldBeNull();
     }
 
     [Fact]
     public void LinkToManagement_OnlyForProjectMaster()
     {
-        BuildFor(mock.MasterInfo, Profiles, Users).ViewerIsMaster.ShouldBeTrue();
-        BuildFor(mock.PlayerInfo, Profiles, Users).ViewerIsMaster.ShouldBeFalse();
-        BuildFor(viewer: null, Profiles, Users).ViewerIsMaster.ShouldBeFalse();
+        BuildFor(mock.MasterInfo.UserId).ViewerIsMaster.ShouldBeTrue();
+        BuildFor(mock.PlayerInfo.UserId).ViewerIsMaster.ShouldBeFalse();
+        BuildFor(viewerId: null).ViewerIsMaster.ShouldBeFalse();
     }
-
-    /// <summary>Ссылка на мастерскую страницу — по id смотрящего, даже если его профиль не загрузился.</summary>
-    [Fact]
-    public void LinkToManagement_DoesNotNeedViewerProfile()
-        => ProjectMastersViewModel.Build(mock.ProjectInfo, mock.MasterInfo.UserId, viewer: null, Profiles, Users, new UserProfileDetailsBuilder(new FakeAvatarUriResolver()))
-            .ViewerIsMaster.ShouldBeTrue();
-
-    private ProjectMastersViewModel BuildFor(
-        UserInfo? viewer,
-        IReadOnlyDictionary<UserIdentification, ProjectMasterProfileViewModel> profiles,
-        IReadOnlyDictionary<UserIdentification, UserInfo> users)
-        => ProjectMastersViewModel.Build(mock.ProjectInfo, viewer?.UserId, viewer, profiles, users, new UserProfileDetailsBuilder(new FakeAvatarUriResolver()));
 
     [Fact]
     public void MasterWithoutLoadedUser_IsSkipped()
-        => BuildFor(viewer: null, Profiles, users: new Dictionary<UserIdentification, UserInfo>())
+        => ProjectMastersViewModel.Build(mock.ProjectInfo, viewerId: null, Profiles, new Dictionary<UserIdentification, UserInfo>(), CardBuilder)
             .Masters.ShouldBeEmpty();
+
+    private static UserProfileDetailsBuilder CardBuilder => new(new FakeAvatarUriResolver());
+
+    private ProjectMastersViewModel BuildFor(UserIdentification? viewerId)
+        => ProjectMastersViewModel.Build(mock.ProjectInfo, viewerId, Profiles, Users, CardBuilder);
 }

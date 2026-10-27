@@ -96,6 +96,8 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
         html.ShouldNotContain(MasterOnlyMarker);
         html.ShouldContain(ManageLinkText);
         html.ShouldContain($"/{projectId.Value}/masters/manage");
+        // Контакты — только публичные, как у игроков: даже свой email мастер здесь не видит.
+        html.ShouldNotContain(ownerEmail);
     }
 
     [Fact]
@@ -117,10 +119,10 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
     }
 
     [Fact]
-    public async Task AdminNotMaster_SeesPublicPageWithContacts()
+    public async Task AdminNotMaster_SeesPublicPageWithoutContacts()
     {
         // Админ сайта, не будучи мастером проекта, видит публичную страницу, а не мастерскую таблицу.
-        // Контакты мастеров — как в их профилях: админу видны.
+        // Контакты мастеров — только публичные, как у всех; полные — в профиле пользователя.
         using var scope = factory.Services.CreateScope();
         var (ownerId, ownerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
         var projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, ownerId);
@@ -139,7 +141,7 @@ public class MastersPageAccessScenario(JoinApplicationFactory factory) : IClassF
         var html = await GetMastersPage(client, projectId);
 
         html.ShouldNotContain(MasterOnlyMarker);
-        html.ShouldContain(ownerEmail);
+        html.ShouldNotContain(ownerEmail);
         html.ShouldNotContain(ManageLinkText);
 
         // Мастерская страница — только мастерам проекта, админ сайта сам по себе её не открывает.
