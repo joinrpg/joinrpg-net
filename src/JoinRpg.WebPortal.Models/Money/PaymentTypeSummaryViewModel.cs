@@ -1,26 +1,32 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Web.Models;
 
 public class PaymentTypeSummaryViewModel
 {
-    public PaymentTypeSummaryViewModel(PaymentType pt, ICollection<FinanceOperation> projectFinanceOperations)
+    public PaymentTypeSummaryViewModel(PaymentTypeInfo pt, IEnumerable<FinanceOperation> projectFinanceOperations)
     {
         Name = pt.GetDisplayName();
         Master = pt.User;
-        Total = projectFinanceOperations
-            .Where(fo => fo.PaymentTypeId == pt.PaymentTypeId && fo.Approved)
+        var operations = projectFinanceOperations
+            .Where(fo => fo.GetPaymentTypeId() == pt.PaymentTypeId)
+            .ToArray();
+
+        Total = operations
+            .Where(fo => fo.Approved)
             .Sum(fo => fo.MoneyAmount);
 
-        Moderation = projectFinanceOperations
-            .Where(fo => fo.PaymentTypeId == pt.PaymentTypeId && fo.RequireModeration)
+        Moderation = operations
+            .Where(fo => fo.RequireModeration)
             .Sum(fo => fo.MoneyAmount);
     }
 
     [Display(Name = "Способ приема оплаты")]
     public string Name { get; }
     [Display(Name = "Мастер")]
-    public User Master { get; }
+    public UserInfoHeader Master { get; }
     [Display(Name = "Итого")]
     public int Total { get; }
     [Display(Name = "На модерации")]

@@ -24,7 +24,7 @@ public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transf
 
     public FinOperationListViewModel Operations { get; } = new FinOperationListViewModel(projectInfo, urlHelper, operations, operationsData, currentUserId.UserIdentificationOrDefault);
 
-    public MasterBalanceViewModel Balance { get; } = new MasterBalanceViewModel(master, projectInfo.ProjectId, operations, transfers);
+    public MasterBalanceViewModel Balance { get; } = new MasterBalanceViewModel(master, projectInfo, operations, transfers);
 
     public IReadOnlyCollection<PaymentTypeSummaryViewModel> PaymentTypeSummary { get; } = payments;
 }

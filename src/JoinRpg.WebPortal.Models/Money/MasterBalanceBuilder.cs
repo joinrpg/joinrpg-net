@@ -8,24 +8,23 @@ public static class MasterBalanceBuilder
 {
     public static IReadOnlyCollection<UserIdentification> GetMasterIds(
         IReadOnlyCollection<FinanceOperation> masterOperations,
-        IReadOnlyCollection<MoneyTransfer> masterTransfers)
-        => masterOperations.Select(fo => fo.PaymentType)
+        IReadOnlyCollection<MoneyTransfer> masterTransfers,
+        ProjectInfo projectInfo)
+        => masterOperations.Select(fo => fo.GetPaymentMasterId(projectInfo))
             .WhereNotNull()
-            .Select(pt => pt.UserId)
-            .Concat(masterTransfers.Select(mt => mt.ReceiverId))
-            .Concat(masterTransfers.Select(mt => mt.SenderId))
+            .Concat(masterTransfers.Select(mt => new UserIdentification(mt.ReceiverId)))
+            .Concat(masterTransfers.Select(mt => new UserIdentification(mt.SenderId)))
             .Distinct()
-            .Select(userId => new UserIdentification(userId))
             .ToArray();
 
     public static IReadOnlyCollection<MasterBalanceViewModel> ToMasterBalanceViewModels(
         IReadOnlyCollection<UserInfo> masters,
         IReadOnlyCollection<FinanceOperation> masterOperations,
         IReadOnlyCollection<MoneyTransfer> masterTransfers,
-        int projectId)
+        ProjectInfo projectInfo)
     {
         var summary = masters.Select(master =>
-                new MasterBalanceViewModel(master, projectId, masterOperations, masterTransfers))
+                new MasterBalanceViewModel(master, projectInfo, masterOperations, masterTransfers))
             .Where(fr => fr.AnythingEverHappens())
             .OrderBy(fr => fr.Master.DisplayName.DisplayName);
         return summary.ToArray();

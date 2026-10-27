@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Services.Interfaces;
@@ -35,7 +36,7 @@ public class MoneySummaryByMasterExporterTest
             HasPassword: false);
 
     private static MasterBalanceViewModel BuildBalance(UserInfo master)
-        => new MasterBalanceViewModel(master, projectId: 1,
+        => new MasterBalanceViewModel(master, new MockedProject().ProjectInfo,
             masterOperations: Array.Empty<FinanceOperation>(),
             masterTransfers: Array.Empty<MoneyTransfer>());
 
