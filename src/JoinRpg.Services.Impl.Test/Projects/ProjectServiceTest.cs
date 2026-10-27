@@ -99,13 +99,13 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
 
     // Флаг «показывать незаполненные поля» живёт в настройках заявок, регистрация его не трогает.
     [Fact]
-    public async Task SetCheckInSettings_KeepsShowFieldProblemsToPlayers()
+    public async Task SetCheckInSettings_KeepsShowCheckInBlockersToPlayers()
     {
         mock.Project.Details.EnableCheckInModule = true;
 
         await CreateService().SetCheckInSettings(ProjectId, new ProjectCheckInSettings(InProgress: false, AllowSecondRoles: false));
 
-        Result.ClaimSettings.ShowFieldProblemsToPlayers.ShouldBeTrue();
+        Result.ClaimSettings.ShowCheckInBlockersToPlayers.ShouldBeTrue();
     }
 
     [Fact]
@@ -209,14 +209,14 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
             AutoAcceptClaims: true,
             IsAcceptingClaims: true,
             IsPublicProject: true,
-            ShowFieldProblemsToPlayers: true);
+            ShowCheckInBlockersToPlayers: true);
 
         await CreateService().SetClaimSettings(ProjectId, settings);
 
         Result.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
         Result.ClaimSettings.AutoAcceptClaims.ShouldBeTrue();
         Result.ClaimSettings.IsPublicProject.ShouldBeTrue();
-        Result.ClaimSettings.ShowFieldProblemsToPlayers.ShouldBeTrue();
+        Result.ClaimSettings.ShowCheckInBlockersToPlayers.ShouldBeTrue();
         // IsAcceptingClaims разрешается только для активного проекта; мок активен.
         Result.ClaimSettings.IsAcceptingClaims.ShouldBeTrue();
     }
@@ -224,13 +224,13 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     [Theory]
     [InlineData(false, true)]
     [InlineData(true, false)]
-    public async Task SetClaimSettings_ChangesShowFieldProblemsToPlayers(bool before, bool after)
+    public async Task SetClaimSettings_ChangesShowCheckInBlockersToPlayers(bool before, bool after)
     {
         mock.Project.Details.EnableCheckInModule = before;
 
-        await CreateService().SetClaimSettings(ProjectId, mock.ProjectInfo.ClaimSettings with { ShowFieldProblemsToPlayers = after });
+        await CreateService().SetClaimSettings(ProjectId, mock.ProjectInfo.ClaimSettings with { ShowCheckInBlockersToPlayers = after });
 
-        Result.ClaimSettings.ShowFieldProblemsToPlayers.ShouldBe(after);
+        Result.ClaimSettings.ShowCheckInBlockersToPlayers.ShouldBe(after);
         mock.Project.Details.EnableCheckInModule.ShouldBe(after);
     }
 
@@ -425,7 +425,7 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
             AutoAcceptClaims: false,
             IsAcceptingClaims: true,
             IsPublicProject: false,
-            ShowFieldProblemsToPlayers: false));
+            ShowCheckInBlockersToPlayers: false));
 
         Result.ClaimSettings.StrictlyOneCharacter.ShouldBeTrue();
         Result.ProjectStatus.ShouldBe(ProjectLifecycleStatus.Blocked);

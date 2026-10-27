@@ -33,7 +33,7 @@ internal static class XApiClaimHelpers
                     AutoAcceptClaims: false,
                     IsAcceptingClaims: true,
                     IsPublicProject: true,
-                    ShowFieldProblemsToPlayers: false)));
+                    ShowCheckInBlockersToPlayers: false)));
 
     /// <summary>
     /// Заявку подаёт сам игрок: заявку, добавленную мастером, мастер же утвердить не может —

@@ -77,7 +77,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 AutoAcceptClaims: project.Details.AutoAcceptClaims,
                 IsAcceptingClaims: project.IsAcceptingClaims,
                 IsPublicProject: project.Details.IsPublicProject,
-                ShowFieldProblemsToPlayers: project.Details.EnableCheckInModule
+                ShowCheckInBlockersToPlayers: project.Details.EnableCheckInModule
                 ),
             projectRolesLists: CreateRolesLists(project),
             defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId),

@@ -208,7 +208,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
 
             await projectService.SetClaimSettings(
                 projectId,
-                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true, ShowFieldProblemsToPlayers = true });
+                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true, ShowCheckInBlockersToPlayers = true });
             await projectService.SetAccommodationSettings(projectId, enableAccommodation: true);
             await projectService.SetCheckInSettings(projectId, new ProjectCheckInSettings(InProgress: true, AllowSecondRoles: true));
         });
