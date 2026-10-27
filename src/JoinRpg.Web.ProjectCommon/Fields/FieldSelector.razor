@@ -1,4 +1,5 @@
 @inject IProjectFieldsClient fieldsClient
+@inject SelectorListCache cache
 
 <TypedSelector TKey="ProjectFieldIdentification" TItem="ProjectFieldDto"
     Items="_items"
@@ -42,7 +43,8 @@
         // когда изменился проект.
         if (_loadedFor != ProjectId)
         {
-            _loaded = [.. await fieldsClient.GetProjectFields(ProjectId)];
+            _loaded = [.. await cache.GetOrLoad<ProjectFieldDto>($"project-fields:{ProjectId.Value}",
+                async () => await fieldsClient.GetProjectFields(ProjectId))];
             _loadedFor = ProjectId;
         }
         _items = _loaded?

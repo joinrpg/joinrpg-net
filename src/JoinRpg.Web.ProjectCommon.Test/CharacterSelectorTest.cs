@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,6 +32,7 @@ public class CharacterSelectorTest
         var ctx = new BunitContext();
         var client = new CountingCharactersClient();
         ctx.Services.AddSingleton<ICharactersClient>(client);
+        _ = ctx.Services.AddJoinRpgWebComponents();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return (ctx, client);
@@ -85,6 +87,30 @@ public class CharacterSelectorTest
         cut.Render(p => p.Add(x => x.ProjectId, new ProjectIdentification(2)));
 
         client.Calls.Count.ShouldBe(2);
+    }
+
+    /// <summary>
+    /// Регрессия #5524: несколько селекторов на одной странице (например, по строке таблицы восстановления заявок)
+    /// делали каждый свой одинаковый запрос.
+    /// </summary>
+    [Fact]
+    public void SeveralSelectorsOnPage_RequestCharactersOnce()
+    {
+        var (ctx, client) = CreateContext();
+        using var _ = ctx;
+
+        var first = ctx.Render<CharacterSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.ListType, CharacterListType.Active));
+        var second = ctx.Render<CharacterSelector>(p => p
+            .Add(x => x.ProjectId, ProjectId)
+            .Add(x => x.ListType, CharacterListType.Active)
+            .Add(x => x.ExcludeCharacterIds, [new CharacterIdentification(ProjectId, 10)]));
+
+        client.Calls.Count.ShouldBe(1);
+        first.Markup.ShouldContain("Первый");
+        second.Markup.ShouldNotContain("Первый");
+        second.Markup.ShouldContain("Второй");
     }
 
     [Fact]

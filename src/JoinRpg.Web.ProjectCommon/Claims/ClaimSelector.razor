@@ -1,5 +1,6 @@
 @using JoinRpg.DomainTypes.Characters.Claims
 @inject IClaimListClient client
+@inject SelectorListCache cache
 
 <TypedSelector TKey="ClaimIdentification" TItem="ClaimLinkViewModel"
                Name="@Name"
@@ -33,7 +34,8 @@
     private ClaimLinkViewModel[]? claims;
 
     protected override async Task OnInitializedAsync()
-        => claims = [.. (await client.GetClaims(ProjectId, Spec)).Where(c => c.ClaimId != ExceptClaimId)];
+        => claims = [.. (await cache.GetOrLoad<ClaimLinkViewModel>($"claims:{ProjectId.Value}:{Spec}",
+            async () => await client.GetClaims(ProjectId, Spec))).Where(c => c.ClaimId != ExceptClaimId)];
 
     protected override void OnParametersSet()
     {

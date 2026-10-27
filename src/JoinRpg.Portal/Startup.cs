@@ -4,6 +4,7 @@ using JoinRpg.BlobStorage;
 using JoinRpg.Common.BastiliaRatingClient;
 using JoinRpg.Common.KogdaIgraClient;
 using JoinRpg.Common.Telegram;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Common.WebInfrastructure.Logging.Filters;
 using JoinRpg.Dal.Impl;
@@ -170,6 +171,7 @@ public class Startup(WebApplicationBuilder builder)
         services.AddOptions<DonateOptions>();
 
         services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
+        _ = services.AddJoinRpgWebComponents();
     }
 
     /// <summary>

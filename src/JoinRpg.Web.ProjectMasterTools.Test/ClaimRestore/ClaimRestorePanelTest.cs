@@ -28,6 +28,7 @@ public class ClaimRestorePanelTest : BunitContext
     public ClaimRestorePanelTest()
     {
         Services.AddSingleton<ICharactersClient>(charactersClient);
+        _ = Services.AddJoinRpgWebComponents();
         Services.AddSingleton<IClaimRestoreClient>(client);
         Services.AddSingleton<IUriLocator<ClaimIdentification>>(new FakeLocator());
         Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeLocator());
@@ -819,6 +820,27 @@ public class ClaimRestorePanelTest : BunitContext
     private static readonly CharacterIdentification Hero = new(ProjectId, 100);
     private static readonly CharacterIdentification Twin = new(ProjectId, 101);
 
+    /// <summary>
+    /// Применение создаёт персонажей без перезагрузки страницы, а селекторы берут список из общего кэша.
+    /// Выбор персонажа в строке нового плана должен знать созданного, а не показывать список до применения.
+    /// </summary>
+    [Fact]
+    public void AfterApply_CharacterPickerInNewRowSeesCreatedCharacter()
+    {
+        client.Plans.Enqueue(Plan(Row(2, ClaimRestoreActionView.Create, "Новый", status: ClaimStatusView.Discussed)));
+        client.Plans.Enqueue(Plan(Row(4, ClaimRestoreActionView.Create, "Ещё новый", status: ClaimStatusView.Discussed)));
+
+        var cut = Render<ClaimRestorePanel>(p => p.Add(c => c.ProjectId, ProjectId));
+        // Не по разметке селектора: она меняется с переходом TypedSelector на нативный выбор (#5186).
+        cut.Find("table.restore-claims").TextContent.ShouldNotContain("Созданный применением");
+
+        charactersClient.Characters.Add(new CharacterDto(Created, "Созданный применением", "", IsPublic: true));
+        ClickApply(cut);
+
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Применено строк: 1"));
+        cut.Find("table.restore-claims").TextContent.ShouldContain("Созданный применением");
+    }
+
     [Fact]
     public void MixedSlotChoiceInOneName_LaterRowGoesToCreatedSlot()
     {
@@ -907,14 +929,17 @@ public class ClaimRestorePanelTest : BunitContext
     {
         public List<CharacterListType> RequestedListTypes { get; } = [];
 
+        /// <summary>Персонажи проекта; тест может добавить сюда созданных применением.</summary>
+        public List<CharacterDto> Characters { get; } =
+        [
+            new CharacterDto(Hero, "Новый", "", IsPublic: true),
+            new CharacterDto(Twin, "Новый (Близнец)", "", IsPublic: true),
+        ];
+
         public Task<List<CharacterDto>> GetCharacters(ProjectIdentification projectId, CharacterListType listType = CharacterListType.All)
         {
             RequestedListTypes.Add(listType);
-            return Task.FromResult<List<CharacterDto>>(
-            [
-                new CharacterDto(Hero, "Новый", "", IsPublic: true),
-                new CharacterDto(Twin, "Новый (Близнец)", "", IsPublic: true),
-            ]);
+            return Task.FromResult<List<CharacterDto>>([.. Characters]);
         }
     }
 

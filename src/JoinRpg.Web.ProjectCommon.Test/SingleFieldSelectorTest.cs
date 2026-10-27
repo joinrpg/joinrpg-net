@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon.Fields;
 using Microsoft.AspNetCore.Components;
@@ -30,6 +31,7 @@ public class SingleFieldSelectorTest
     {
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<IProjectFieldsClient>(new StubFieldsClient());
+        _ = ctx.Services.AddJoinRpgWebComponents();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return ctx;

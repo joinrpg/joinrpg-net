@@ -26,6 +26,7 @@ public class BadgeTemplateEditFormTest : BunitContext
         Services.AddSingleton<IBadgeTemplateClient>(client);
         Services.AddSingleton<IBadgeTemplateUriLocator>(new UriLocator());
         Services.AddSingleton<IProjectFieldsClient>(new FieldsClient(new ProjectFieldDto(nameField, "Имя персонажа", ProjectFieldType.String, FieldBoundTo.Character)));
+        _ = Services.AddJoinRpgWebComponents();
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         JSInterop.Mode = JSRuntimeMode.Loose;
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));

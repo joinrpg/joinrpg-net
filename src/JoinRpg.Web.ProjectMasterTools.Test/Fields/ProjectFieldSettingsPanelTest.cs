@@ -1,4 +1,5 @@
 using Bunit;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon;
@@ -25,6 +26,7 @@ public class ProjectFieldSettingsPanelTest : BunitContext
     {
         Services.AddSingleton<IProjectFieldOperationsClient>(client);
         Services.AddSingleton<IProjectFieldsClient>(new StubFieldsClient());
+        _ = Services.AddJoinRpgWebComponents();
         Services.AddSingleton<IProjectFieldUriLocator>(new NotUsedLocator());
         // TypedSelector читает RendererInfo — без него bUnit падает при рендере.
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));

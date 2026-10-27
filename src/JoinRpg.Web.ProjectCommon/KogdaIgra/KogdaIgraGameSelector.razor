@@ -1,4 +1,5 @@
 @inject IKogdaIgraSyncClient client
+@inject SelectorListCache cache
 
 <TypedSelector TKey="KogdaIgraIdentification" TItem="KogdaIgraShortViewModel"
                Name="@Name"
@@ -35,7 +36,9 @@
     protected override async Task OnInitializedAsync()
     {
         itemModels = InitialList ?? (FutureOnly
-            ? await client.GetFutureKogdaIgraCandidates()
-            : await client.GetKogdaIgraCandidates());
+            ? [.. await cache.GetOrLoad<KogdaIgraShortViewModel>("kogda-igra:future",
+                async () => await client.GetFutureKogdaIgraCandidates())]
+            : [.. await cache.GetOrLoad<KogdaIgraShortViewModel>("kogda-igra:all",
+                async () => await client.GetKogdaIgraCandidates())]);
     }
 }

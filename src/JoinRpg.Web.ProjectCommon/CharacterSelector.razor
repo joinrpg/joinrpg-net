@@ -1,5 +1,6 @@
 @using System.Linq.Expressions
 @inject ICharactersClient client
+@inject SelectorListCache cache
 
 <TypedSelector TKey="CharacterIdentification" TItem="CharacterDto"
                Name="@Name"
@@ -76,7 +77,8 @@
         // зависит. Остальное — фильтрация исключённых, подсветка выбранных — делается локально.
         if (loadedFor != (ProjectId, ListType))
         {
-            loadedChars = [.. await client.GetCharacters(ProjectId, ListType)];
+            loadedChars = [.. await cache.GetOrLoad<CharacterDto>($"characters:{ProjectId.Value}:{ListType}",
+                async () => await client.GetCharacters(ProjectId, ListType))];
             loadedFor = (ProjectId, ListType);
         }
 
