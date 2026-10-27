@@ -27,16 +27,28 @@ public class ClaimCheckInValidator(ClaimInfo context, IClaimProblemValidator cla
     /// Что не даёт зарегистрировать игрока: незаполненные поля заявки и данные профиля, которые
     /// требует проект (#5708).
     /// </summary>
-    public IReadOnlyCollection<ClaimProblem> Problems { get; } = [.. claimValidator.ValidateCheckInBlockers(context)];
+    /// <remarks>
+    /// Считается при первом обращении: странице заявки нужны только статусные свойства
+    /// (<see cref="NotCheckedInAlready"/>, <see cref="CheckInAhead"/>), полный проход валидации ей ни к чему.
+    /// </remarks>
+    public IReadOnlyCollection<ClaimProblem> Problems => problems.Value;
+
+    private readonly Lazy<IReadOnlyCollection<ClaimProblem>> problems =
+        new(() => [.. claimValidator.ValidateCheckInBlockers(context)]);
 
     public bool CanCheckInInPrinciple => NotCheckedInAlready && IsApproved && Problems.Count == 0;
 
     public bool CanCheckInNow => CanCheckInInPrinciple && FeeDue <= 0;
 
     /// <summary>
+    /// Регистрация по заявке ещё предстоит: заявка одобрена и ещё не зарегистрирована.
+    /// </summary>
+    public bool CheckInAhead => NotCheckedInAlready && IsApproved;
+
+    /// <summary>
     /// Регистрацией в обход не обойти: заявка должна быть одобрена и ещё не зарегистрирована.
     /// </summary>
-    public bool CanCheckInWithOverrideInPrinciple => NotCheckedInAlready && IsApproved;
+    public bool CanCheckInWithOverrideInPrinciple => CheckInAhead;
 
     /// <summary>
     /// Что придётся подтвердить, чтобы зарегистрировать игрока в обход. <c>null</c> — если обходить

@@ -19,9 +19,13 @@
 <div>
 
 
-    @if (Model.ShowFieldProblemsToPlayers && Model.Validator.NotCheckedInAlready)
+    @if (!Model.ProblemsPanel.IsEmpty)
     {
-        @await Html.PartialAsync("_CheckInStatusBoard", Model.Validator)
+        <component type="typeof(ClaimProblemsPanel)" render-mode="WebAssemblyPrerendered"
+                   param-Problems="@Model.ProblemsPanel.Problems"
+                   param-HasHiddenCheckInBlockers="@Model.ProblemsPanel.HasHiddenCheckInBlockers"
+                   param-ProjectId="Model.ClaimIdentification.ProjectId"
+                   param-OwnerActions="Model.ProblemsPanel.OwnerActions" />
     }
 
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
@@ -30,19 +34,6 @@
             @await Html.PartialAsync("CharacterNavigation", Model.Navigation)
         </div>
         <div class="panel-body">
-            @if (Model.HasMasterAccess && Model.Problems.Any())
-            {
-                <div class="join alert alert-warning">
-                    <b>Проблемы:</b>
-                    <div style="margin-left: 0.5em;">
-                        @foreach (var pr in Model.Problems)
-                        {
-                            @Html.DisplayFor(modelItem => pr)
-                        }
-                    </div>
-                </div>
-            }
-
             <dl class="dl-horizontal">
                 <dt>
                     @Html.DisplayNameFor(model => model.Player)
@@ -429,10 +420,6 @@
         {
             @await Html.PartialAsync("_ClaimAccommodationReadOnly", Model.AccommodationModel);
         }
-    }
-    @if (Model.Problems.Any(x => x.ProfileRelated) && Model.IsMyClaim)
-    {
-        <component type="typeof(ClaimContactRequirements)" render-mode="WebAssemblyPrerendered" param-ClaimProblems="@Model.Problems" param-ProjectId="Model.ClaimIdentification.ProjectId" param-RequestedSensitiveData="Model.RequestedSensitiveData" />
     }
     @if (Model.Fields.AnythingAccessible)
     {

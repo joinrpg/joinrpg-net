@@ -73,8 +73,8 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     [Display(Name = "Взнос")]
     public ClaimFeeViewModel ClaimFee { get; set; }
 
-    [ReadOnly(true)]
-    public IEnumerable<ProblemViewModel> Problems { get; }
+    /// <summary>Виджет «Проблемы заявки»: что видит текущий зритель.</summary>
+    public ClaimProblemsPanelModel ProblemsPanel { get; }
 
     public UserProfileDetailsViewModel PlayerDetails { get; set; }
 
@@ -159,15 +159,14 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
                 claimInfo.ClaimId,
                 currentUser.UserIdentification,
                 CharacterNavigationPage.Claim);
-        Problems = problemValidator.Validate(claimInfo).Select(p => new ProblemViewModel(p)).ToList();
+        Validator = new ClaimCheckInValidator(claimInfo, problemValidator);
+        ProblemsPanel = ClaimProblemsPanelModel.Create(claimInfo, problemValidator, Validator, HasMasterAccess, IsMyClaim);
         // playerInfo уже прочитан репозиторием одним запросом. Старый claim.GetUserInfo() лез
         // по навигациям EF-сущности игрока (Extra, Auth, Allrpg, ExternalLogins, Claims, ProjectAcls),
         // а на ProjectAcls ещё и дёргал .Project по одному на проект — до 48 догрузок за запрос (#4960).
         PlayerDetails = cardBuilder.Build(playerInfo, projectInfo, currentUser.UserIdentificationOrDefault, currentUser.IsAdmin);
         ProjectActive = projectInfo.IsActive;
         CheckInStarted = projectInfo.ProjectCheckInSettings.InProgress;
-        ShowFieldProblemsToPlayers = projectInfo.ClaimSettings.ShowFieldProblemsToPlayers;
-        Validator = new ClaimCheckInValidator(claimInfo, problemValidator);
 
         AccommodationEnabled = projectInfo.AccommodationSettings.Enabled;
 
@@ -191,8 +190,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
     public int CommentDiscussionId { get; }
     public bool CheckInStarted { get; }
-    /// <summary>Показывать ли игрокам незаполненные поля заявки (сейчас — светофор готовности к регистрации).</summary>
-    public bool ShowFieldProblemsToPlayers { get; }
     public ClaimCheckInValidator Validator { get; }
     public bool AccommodationEnabled { get; }
     public string ProjectName { get; set; }
