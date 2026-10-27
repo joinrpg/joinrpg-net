@@ -39,10 +39,6 @@ public enum FieldNavigationPage
     /// </summary>
     DeletedFieldsList = 2,
     /// <summary>
-    /// Field settings
-    /// </summary>
-    FieldSettings = 3,
-    /// <summary>
     /// Adding field
     /// </summary>
     AddField = 4,

@@ -9,9 +9,6 @@
     <nav-link asp-controller="GameField" asp-action="DeletedList" asp-route-ProjectId="@Model.ProjectId" title="Только поля, использованные хотя бы один раз">
         Удаленные
     </nav-link>
-    <nav-link asp-controller="GameField" asp-action="Settings" asp-route-ProjectId="@Model.ProjectId">
-        Настройки полей
-    </nav-link>
     <nav-link asp-controller="GameField" asp-action="Create" asp-route-ProjectId="@Model.ProjectId">
         <join-icon icon="Add" />Добавить новое поле
     </nav-link>
@@ -28,11 +25,7 @@
     }
 </ul>
 
-@* На странице настроек предупреждение показывает сама панель — и снимает его, как только поле-имя выбрано. *@
-@if (Model.Page != FieldNavigationPage.FieldSettings)
-{
-    @(await Html.RenderComponentAsync<UnboundCharacterNameFieldWarning>(RenderMode.Static,
-        new { FieldNames = Model.UnboundNameFieldCandidates, ProjectId = new ProjectIdentification(Model.ProjectId) }))
-}
+@(await Html.RenderComponentAsync<UnboundCharacterNameFieldWarning>(RenderMode.Static,
+    new { FieldNames = Model.UnboundNameFieldCandidates, ProjectId = new ProjectIdentification(Model.ProjectId) }))
 
 <h3>@ViewBag.Title</h3>

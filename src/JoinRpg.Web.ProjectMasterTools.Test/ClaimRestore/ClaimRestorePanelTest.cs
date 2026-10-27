@@ -955,6 +955,6 @@ public class ClaimRestorePanelTest : BunitContext
         public Uri GetEditUri(ProjectFieldIdentification fieldId) => new("/field", UriKind.Relative);
         public Uri GetCreateVariantUri(ProjectFieldIdentification fieldId) => new("/field", UriKind.Relative);
         public Uri GetEditVariantUri(ProjectFieldVariantIdentification variantId) => new("/field", UriKind.Relative);
-        public Uri GetFieldSettingsUri(ProjectIdentification projectId) => new("/fields/settings", UriKind.Relative);
+        public Uri GetFieldSettingsUri(ProjectIdentification projectId) => new("/project/settings#settings-fields", UriKind.Relative);
     }
 }

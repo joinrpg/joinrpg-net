@@ -1,51 +1,61 @@
 @using JoinRpg.Web.ProjectCommon.Fields
+@using JoinRpg.Web.ProjectMasterTools.Settings
 @inherits SettingsPanelBase<ProjectFieldSettingsViewModel>
 @inject IProjectFieldOperationsClient fieldOperationsClient
+@preservewhitespace true
 
-@if (Model is null)
-{
-    <JoinLoadingMessage />
-    return;
-}
-
-<EditForm FormName="ProjectFieldSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
-    <FormHorizontal>
-        <ValidationSummary Model="Model" />
-        <DataAnnotationsValidator />
-
-        @if (Model.NameField is null)
+<JoinCollapsePanel Group="project-settings" Id="settings-fields">
+    <Header>Настройки полей</Header>
+    <ChildContent>
+        @if (Model is null)
         {
-            <UnboundCharacterNameFieldWarning FieldNames="Model.NameFieldCandidates" />
+            <JoinLoadingMessage />
+            return;
         }
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            По умолчанию в этом разделе все настроено оптимальным образом согласно выбору при создании проекта (игра/конвент).
+            Прежде чем менять что-то в этом разделе, стоит внимательно ознакомиться
+            со <HelpLink Link="fields/settings_for_role_list.html" Message="справкой о связи полей и сетки ролей" />.
+        </JoinAlert>
 
-        <FormRowFor For="@(() => Model.NameField)">
-            <SingleFieldSelector ProjectId="Model.ProjectId"
-                                 @bind-SelectedFieldId="Model.NameField"
-                                 FieldType="ProjectFieldType.String"
-                                 BoundTo="FieldBoundTo.Character"
-                                 AllowEmpty="true"
-                                 EmptyText="Имя персонажа берется из имени игрока" />
-        </FormRowFor>
+        <EditForm FormName="ProjectFieldSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+            <FormHorizontal>
+                <ValidationSummary Model="Model" />
+                <DataAnnotationsValidator />
+                <fieldset disabled="@(!Model.HasEditAccess)">
+                    @if (Model.NameField is null)
+                    {
+                        <UnboundCharacterNameFieldWarning FieldNames="Model.NameFieldCandidates" />
+                    }
 
-        <FormRowFor For="@(() => Model.DescriptionField)">
-            <SingleFieldSelector ProjectId="Model.ProjectId"
-                                 @bind-SelectedFieldId="Model.DescriptionField"
-                                 FieldType="ProjectFieldType.Text"
-                                 BoundTo="FieldBoundTo.Character"
-                                 AllowEmpty="true"
-                                 EmptyText="Нет поля с описанием персонажа" />
-        </FormRowFor>
+                    <FormRowFor For="@(() => Model.NameField)">
+                        <SingleFieldSelector ProjectId="Model.ProjectId"
+                                             @bind-SelectedFieldId="Model.NameField"
+                                             FieldType="ProjectFieldType.String"
+                                             BoundTo="FieldBoundTo.Character"
+                                             AllowEmpty="true"
+                                             EmptyText="Имя персонажа берется из имени игрока" />
+                    </FormRowFor>
 
-        <FormRow>
-            <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
-        </FormRow>
-    </FormHorizontal>
-</EditForm>
+                    <FormRowFor For="@(() => Model.DescriptionField)">
+                        <SingleFieldSelector ProjectId="Model.ProjectId"
+                                             @bind-SelectedFieldId="Model.DescriptionField"
+                                             FieldType="ProjectFieldType.Text"
+                                             BoundTo="FieldBoundTo.Character"
+                                             AllowEmpty="true"
+                                             EmptyText="Нет поля с описанием персонажа" />
+                    </FormRowFor>
+                </fieldset>
+                <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Permission="Permission.CanChangeFields" Disabled="@formInvalid" />
+            </FormHorizontal>
+        </EditForm>
 
-@if (success)
-{
-    <JoinAlert Variation="VariationStyleEnum.Success">Настройки полей сохранены</JoinAlert>
-}
+        @if (success)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">Настройки полей сохранены</JoinAlert>
+        }
+    </ChildContent>
+</JoinCollapsePanel>
 
 @code {
     [Parameter]

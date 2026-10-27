@@ -8,13 +8,14 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 
 [Route("/webapi/project-field-operations/[action]")]
 [IgnoreAntiforgeryToken]
-[MasterAuthorize(Permission.CanChangeFields)]
+[MasterAuthorize] // смотреть настройки полей может любой мастер, а менять — только с правом (на каждом изменяющем методе)
 public class ProjectFieldOperationsController(
     IFieldSetupService fieldSetupService,
     IProjectFieldOperationsClient fieldOperationsClient,
     IProjectMetadataRepository projectMetadataRepository) : ControllerBase
 {
     [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> CreateTimeSlots([FromQuery] ProjectIdentification projectId, [FromBody] TimeSlotMassAddRequest request)
     {
         if (request.FieldId.ProjectId != projectId)
@@ -27,6 +28,7 @@ public class ProjectFieldOperationsController(
     }
 
     [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> Delete([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldIdentification fieldId)
     {
         if (fieldId.ProjectId != projectId)
@@ -39,6 +41,7 @@ public class ProjectFieldOperationsController(
     }
 
     [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> DeleteVariant([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldVariantIdentification variantId)
     {
         if (variantId.FieldId.ProjectId != projectId)
@@ -51,6 +54,7 @@ public class ProjectFieldOperationsController(
     }
 
     [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> DeleteUnusedVariants([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldIdentification fieldId)
     {
         if (fieldId.ProjectId != projectId)
@@ -63,6 +67,7 @@ public class ProjectFieldOperationsController(
     }
 
     [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> SortTimeSlotsByStartTime([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldIdentification fieldId)
     {
         if (fieldId.ProjectId != projectId)
@@ -81,6 +86,7 @@ public class ProjectFieldOperationsController(
     }
 
     [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> SortVariantsByLabel([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldIdentification fieldId)
     {
         if (fieldId.ProjectId != projectId)
@@ -99,6 +105,7 @@ public class ProjectFieldOperationsController(
     }
 
     [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> CreateVariants([FromQuery] ProjectIdentification projectId, [FromBody] FieldValuesMassAddRequest request)
     {
         if (request.FieldId.ProjectId != projectId)
@@ -121,6 +128,7 @@ public class ProjectFieldOperationsController(
         => Ok(await fieldOperationsClient.GetFieldSettings(projectId));
 
     [HttpPost]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> SaveFieldSettings([FromQuery] ProjectIdentification projectId, [FromBody] ProjectFieldSettingsViewModel model)
     {
         if (model.ProjectId != projectId
