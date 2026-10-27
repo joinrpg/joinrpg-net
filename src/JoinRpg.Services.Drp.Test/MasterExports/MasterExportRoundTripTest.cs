@@ -324,6 +324,7 @@ public class MasterExportRoundTripTest
     [Fact]
     public void FinanceExport_IsRejected()
     {
+        var paymentType = mock.CreateCashPaymentType();
         var operation = new FinanceOperation
         {
             ProjectId = mock.Project.ProjectId,
@@ -331,12 +332,13 @@ public class MasterExportRoundTripTest
             ClaimId = approvedClaim.ClaimId,
             Claim = approvedClaim,
             MoneyAmount = 1500,
-            PaymentType = mock.CreateCashPaymentType(),
+            PaymentTypeId = paymentType.PaymentTypeId,
+            PaymentType = paymentType,
             CommentId = 1,
             Comment = new Comment { Author = mock.Master },
             OperationDate = new DateTime(2026, 9, 1),
         };
-        var items = new[] { new FinOperationListItemViewModel(operation, new PortalLikeUriService(), mock.ProjectInfo, currentUser: null) };
+        var items = new[] { new FinOperationListItemViewModel(operation, ClaimInfoOf(approvedClaim), mock.MasterInfo, new PortalLikeUriService(), mock.ProjectInfo, currentUser: null) };
         var bytes = ExportXlsx(items, new FinanceOperationExporter(new PortalLikeUriService(), mock.ProjectInfo));
 
         var ex = Should.Throw<MasterExportFormatException>(() => Parse(bytes));

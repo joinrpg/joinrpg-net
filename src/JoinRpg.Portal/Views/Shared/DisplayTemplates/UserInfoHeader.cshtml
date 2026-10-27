@@ -1,0 +1,11 @@
+@using JoinRpg.Common.WebComponents
+@model JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader
+@if (Model == null)
+{
+    <span>нет</span>
+    return;
+}
+<component
+  type="typeof(UserLink)"
+  render-mode="Static"
+  param-Model="@(new UserLinkViewModel(Model))" />
