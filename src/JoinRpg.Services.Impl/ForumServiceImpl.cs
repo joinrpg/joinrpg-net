@@ -67,7 +67,10 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         var (forumThread, projectInfo) = await GetForumThread(forumThreadId);
         _ = projectInfo.EnsureProjectActive();
 
-        var parentComment = forumThread.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
+        var parentComment = parentCommentId is int parentId
+            ? forumThread.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentId)
+                ?? throw new ParentCommentNotFoundException(parentId)
+            : null;
 
         var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
 

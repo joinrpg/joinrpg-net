@@ -182,6 +182,15 @@ public class JoinRpgConcealCommentException : JoinRpgBaseException
     {
     }
 }
+/// <summary>
+/// Комментарий, на который отвечают, не найден в этой дискуссии: устаревшая страница или ошибочный id.
+/// Отвечать в корень вместо него нельзя — ответ повис бы не под тем комментарием.
+/// </summary>
+public class ParentCommentNotFoundException(int parentCommentId) : JoinRpgEntityNotFoundException(parentCommentId, "Comment")
+{
+    public int ParentCommentId { get; } = parentCommentId;
+}
+
 public class JoinRpgAccountOperationFailedException(string message) : JoinRpgBaseException(message) { }
 
 public class JoinRpgProjectMisconfiguredException(ProjectIdentification projectId, string message) : JoinRpgProjectException(projectId, message);
