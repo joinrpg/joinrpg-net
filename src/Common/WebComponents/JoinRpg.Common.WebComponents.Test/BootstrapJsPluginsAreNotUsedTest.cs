@@ -1,7 +1,7 @@
 namespace JoinRpg.Common.WebComponents.Test;
 
 /// <summary>
-/// Храповик переезда с JS-плагинов Bootstrap 3 (dropdown, collapse, modal) на компоненты
+/// Храповик переезда с JS-плагинов Bootstrap 3 (dropdown, collapse, modal, bootstrap-select) на компоненты
 /// <c>JoinRpg.Common.WebComponents</c>. Новые места на этих плагинах добавлять нельзя, а список
 /// исключений только сокращается: когда файл переведён, его надо убрать из исключений —
 /// иначе тест тоже упадёт.
@@ -27,6 +27,9 @@ public class BootstrapJsPluginsAreNotUsedTest
 
     private const string Modal =
         "Модальное окно Bootstrap — используйте JoinDialog / JoinMessageDialog / JoinFormDialog.";
+
+    private const string Select =
+        "Выпадающий список — используйте TypedSelector (или обёртку над ним).";
 
     private static readonly ForbiddenMarker[] ForbiddenMarkers =
     [
@@ -78,6 +81,11 @@ public class BootstrapJsPluginsAreNotUsedTest
             ThisTest,
             "src/JoinRpg.Portal/Views/Finances/Setup.cshtml",
             "src/JoinRpg.Portal/Views/Finances/_TogglePaymentTypeDialog.cshtml"),
+        new("selectpicker", Select,
+            ThisTest),
+        // Путь, а не просто имя библиотеки: в комментариях TypedSelector имя упоминается как образец поведения.
+        new("/bootstrap-select", Select,
+            ThisTest),
     ];
 
     private static readonly string[] ScannedExtensions = [".razor", ".cshtml", ".cs", ".js", ".html"];
