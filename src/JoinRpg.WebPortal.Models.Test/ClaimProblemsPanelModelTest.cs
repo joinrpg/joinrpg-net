@@ -24,7 +24,7 @@ public class ClaimProblemsPanelModelTest
 
     public ClaimProblemsPanelModelTest()
     {
-        // Флаг ShowFieldProblemsToPlayers читается из сущности проекта — пересобираем метаданные до заведения поля.
+        // Флаг ShowCheckInBlockersToPlayers читается из сущности проекта — пересобираем метаданные до заведения поля.
         mock.Project.Details.EnableCheckInModule = true;
         mock.ReInitProjectInfo();
         masterField = mock.CreateField("Мастерское", ProjectFieldVisibility.MasterOnly, mandatoryStatus: MandatoryStatus.Required);
@@ -89,6 +89,24 @@ public class ClaimProblemsPanelModelTest
             new ClaimCheckInValidator(claimInfo, fieldValidator), hasMasterAccess: false, isMyClaim: true);
 
         model.Problems.ShouldHaveSingleItem().BlocksCheckIn.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Без настройки «что мешает регистрации» игрок видит проблему профиля, но не пометку, что она
+    /// держит регистрацию; мастеру пометка остаётся.
+    /// </summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    public void FlagOffHidesCheckInMarkFromPlayerOnly(bool hasMasterAccess, bool expectedMark)
+    {
+        mock.Project.Details.EnableCheckInModule = false;
+        mock.ReInitProjectInfo();
+        var info = ToClaimInfo(mock.CreateApprovedClaim(mock.CreateCharacter("Без настройки"), mock.Player));
+
+        var model = Create(info, hasMasterAccess, isMyClaim: true);
+
+        model.Problems.Single(p => p.ProblemType == ClaimProblemType.MissingPhone).BlocksCheckIn.ShouldBe(expectedMark);
     }
 
     [Fact]

@@ -20,9 +20,9 @@ public class ClaimProblemsForPlayerTest
 
     public enum ClaimState { NotApproved, Approved, CheckedIn }
 
-    private PlayerClaimProblems ValidateForPlayer(bool showFieldProblemsToPlayers, ClaimState state = ClaimState.Approved)
+    private PlayerClaimProblems ValidateForPlayer(bool showCheckInBlockersToPlayers, ClaimState state = ClaimState.Approved)
     {
-        Mock.Project.Details.EnableCheckInModule = showFieldProblemsToPlayers;
+        Mock.Project.Details.EnableCheckInModule = showCheckInBlockersToPlayers;
 
         // Поля заявки, а не персонажа: их проверяют при любом статусе заявки, поля персонажа — только
         // у принятой. Именно AddField: он кладёт поле в Project и пересобирает метаданные, подхватывая флаг.
@@ -67,25 +67,30 @@ public class ClaimProblemsForPlayerTest
         => problem is FieldRelatedProblem { ProblemType: ClaimProblemType.FieldIsEmpty } fieldProblem && fieldProblem.Field.Id == field.Id;
 
     [Fact]
-    public void FlagOffHidesFieldProblemsButShowsProfileAndMoney()
+    public void FlagOffShowsOnlyProfileProblems()
     {
-        var result = ValidateForPlayer(showFieldProblemsToPlayers: false);
+        var result = ValidateForPlayer(showCheckInBlockersToPlayers: false);
 
         result.Problems.ShouldNotContain(p => p is FieldRelatedProblem);
+        result.Problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.FeePaidPartially);
         result.Problems.ShouldContain(p => p.ProblemType == ClaimProblemType.MissingPhone);
-        result.Problems.ShouldContain(p => p.ProblemType == ClaimProblemType.FeePaidPartially);
         result.HasHiddenCheckInBlockers.ShouldBeFalse();
     }
 
     [Fact]
+    public void FlagOnShowsFee()
+        => ValidateForPlayer(showCheckInBlockersToPlayers: true)
+            .Problems.ShouldContain(p => p.ProblemType == ClaimProblemType.FeePaidPartially);
+
+    [Fact]
     public void FlagOnShowsEmptyPlayerField()
-        => ValidateForPlayer(showFieldProblemsToPlayers: true)
+        => ValidateForPlayer(showCheckInBlockersToPlayers: true)
             .Problems.ShouldContain(p => IsEmptyField(p, PlayerField));
 
     [Fact]
     public void FlagOnHidesEmptyMasterFieldButReportsHiddenBlocker()
     {
-        var result = ValidateForPlayer(showFieldProblemsToPlayers: true);
+        var result = ValidateForPlayer(showCheckInBlockersToPlayers: true);
 
         result.Problems.ShouldNotContain(p => IsEmptyField(p, MasterField));
         result.HasHiddenCheckInBlockers.ShouldBeTrue();
@@ -100,14 +105,14 @@ public class ClaimProblemsForPlayerTest
     [InlineData(ClaimState.NotApproved)]
     [InlineData(ClaimState.CheckedIn)]
     public void NoCheckInAheadDoesNotReportHiddenBlocker(ClaimState state)
-        => ValidateForPlayer(showFieldProblemsToPlayers: true, state)
+        => ValidateForPlayer(showCheckInBlockersToPlayers: true, state)
             .HasHiddenCheckInBlockers.ShouldBeFalse();
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void MasterSideProblemsAreNeverShown(bool showFieldProblemsToPlayers)
-        => ValidateForPlayer(showFieldProblemsToPlayers)
+    public void MasterSideProblemsAreNeverShown(bool showCheckInBlockersToPlayers)
+        => ValidateForPlayer(showCheckInBlockersToPlayers)
             .Problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.NoResponsibleMaster);
 
     /// <summary>

@@ -99,9 +99,9 @@ public class ProjectClaimSettingsViewModel
         Description = "Показываются игроку при подаче заявки")]
     public required string ClaimApplyRules { get; set; }
 
-    [Display(Name = "Показывать игрокам незаполненные поля заявки",
-        Description = "Игрок увидит на странице заявки, каких полей в ней не хватает (в том числе для быстрой регистрации).")]
-    public required bool ShowFieldProblemsToPlayers { get; set; }
+    [Display(Name = "Показывать игроку, что мешает его регистрации на игре",
+        Description = "Игрок увидит на странице заявки незаполненные поля и несданный взнос, а также какие из проблем держат его регистрацию. Проблемы профиля игрок видит всегда.")]
+    public required bool ShowCheckInBlockersToPlayers { get; set; }
 }
 
 public class ProjectTimeZoneSettingsViewModel

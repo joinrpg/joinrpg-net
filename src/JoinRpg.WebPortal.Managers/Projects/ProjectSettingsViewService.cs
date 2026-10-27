@@ -61,7 +61,7 @@ internal class ProjectSettingsViewService(
             IsAcceptingClaims = project.ClaimSettings.IsAcceptingClaims,
             IsPublicProject = project.ClaimSettings.IsPublicProject,
             StrictlyOneCharacter = project.ClaimSettings.StrictlyOneCharacter,
-            ShowFieldProblemsToPlayers = project.ClaimSettings.ShowFieldProblemsToPlayers,
+            ShowCheckInBlockersToPlayers = project.ClaimSettings.ShowCheckInBlockersToPlayers,
         };
     }
 
@@ -100,7 +100,7 @@ internal class ProjectSettingsViewService(
 
     async Task IProjectSettingsClient.SaveClaimSettings(ProjectClaimSettingsViewModel model)
     {
-        var settings = new ProjectClaimSettings(model.DefaultTemplateCharacterId, model.StrictlyOneCharacter, model.AutoAcceptClaims, model.IsAcceptingClaims, model.IsPublicProject, model.ShowFieldProblemsToPlayers);
+        var settings = new ProjectClaimSettings(model.DefaultTemplateCharacterId, model.StrictlyOneCharacter, model.AutoAcceptClaims, model.IsAcceptingClaims, model.IsPublicProject, model.ShowCheckInBlockersToPlayers);
         await projectService.SetClaimSettings(model.ProjectId, settings, model.ClaimApplyRules);
     }
 

@@ -49,8 +49,8 @@
                         </FormRowFor>
                     }
 
-                    <FormRowFor For="@(() => Model.ShowFieldProblemsToPlayers)">
-                        <CheckboxInput @bind-Value="Model.ShowFieldProblemsToPlayers" />
+                    <FormRowFor For="@(() => Model.ShowCheckInBlockersToPlayers)">
+                        <CheckboxInput @bind-Value="Model.ShowCheckInBlockersToPlayers" />
                     </FormRowFor>
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />

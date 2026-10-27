@@ -21,7 +21,8 @@ public record ClaimProblemsPanelModel(
 
     /// <param name="checkIn">
     /// Регистрация той же заявки: пометка «держит регистрацию» ставится, только если регистрация
-    /// ещё предстоит (<see cref="ClaimCheckInValidator.CheckInAhead"/>).
+    /// ещё предстоит (<see cref="ClaimCheckInValidator.CheckInAhead"/>), а игроку — ещё и при настройке
+    /// <see cref="DomainTypes.ProjectMetadata.ProjectClaimSettings.ShowCheckInBlockersToPlayers"/>.
     /// </param>
     public static ClaimProblemsPanelModel Create(
         ClaimInfo claimInfo,
@@ -47,12 +48,14 @@ public record ClaimProblemsPanelModel(
         if (isMyClaim)
         {
             var forPlayer = problemValidator.ValidateForPlayer(claimInfo);
-            return new(ToViewModels(forPlayer.Problems, checkInAhead), forPlayer.HasHiddenCheckInBlockers, ownerActions);
+            // Без настройки игроку не говорим, что мешает регистрации, — и пометку «держит регистрацию» тоже не ставим.
+            var markBlockers = checkInAhead && claimInfo.ProjectInfo.ClaimSettings.ShowCheckInBlockersToPlayers;
+            return new(ToViewModels(forPlayer.Problems, markBlockers), forPlayer.HasHiddenCheckInBlockers, ownerActions);
         }
 
         return new([], HasHiddenCheckInBlockers: false, OwnerActions: null);
     }
 
-    private static List<ProblemViewModel> ToViewModels(IEnumerable<ClaimProblem> problems, bool checkInAhead)
-        => [.. problems.Select(p => new ProblemViewModel(p) with { BlocksCheckIn = p.BlocksCheckIn && checkInAhead })];
+    private static List<ProblemViewModel> ToViewModels(IEnumerable<ClaimProblem> problems, bool markBlockers)
+        => [.. problems.Select(p => new ProblemViewModel(p) with { BlocksCheckIn = p.BlocksCheckIn && markBlockers })];
 }
