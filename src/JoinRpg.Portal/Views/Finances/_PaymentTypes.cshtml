@@ -22,7 +22,7 @@
         <td>
             @Html.DisplayFor(modelItem => item.Name)
         </td>
-        <td>@Html.DisplayFor(modelItem => item.Master)</td>
+        <td><component type="typeof(UserLink)" render-mode="Static" param-Model="@(new UserLinkViewModel(item.Master))" /></td>
         <td>
             @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.Total }))
         </td>

@@ -96,12 +96,13 @@ public class FinancesController(
         var transfers =
             await financeReportRepository.GetAllMoneyTransfers(projectId);
 
-        var payments = project.PaymentTypes
-            .Select(pt => new PaymentTypeSummaryViewModel(pt, project.FinanceOperations))
+        var operations = project.FinanceOperations.ToArray();
+
+        var payments = projectInfo.ProjectFinanceSettings.PaymentTypes
+            .Select(pt => new PaymentTypeSummaryViewModel(pt, operations))
             .Where(m => m.Total != 0).OrderByDescending(m => m.Total).ToArray();
 
-        var operations = project.FinanceOperations.ToArray();
-        var masterIds = MasterBalanceBuilder.GetMasterIds(operations, transfers);
+        var masterIds = MasterBalanceBuilder.GetMasterIds(operations, transfers, projectInfo);
         var masters = await UserRepository.GetRequiredUserInfos(masterIds);
 
         var viewModel = new MoneyInfoTotalViewModel(projectInfo,
@@ -273,15 +274,17 @@ public class FinancesController(
             return Content("Unauthorized");
         }
 
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+
         var masterOperations = project.FinanceOperations.ToArray();
 
         var masterTransfers = await financeReportRepository.GetAllMoneyTransfers(projectId);
 
-        var masterIds = MasterBalanceBuilder.GetMasterIds(masterOperations, masterTransfers);
+        var masterIds = MasterBalanceBuilder.GetMasterIds(masterOperations, masterTransfers, projectInfo);
         var masters = await UserRepository.GetRequiredUserInfos(masterIds);
 
         var summary =
-            MasterBalanceBuilder.ToMasterBalanceViewModels(masters, masterOperations, masterTransfers, projectId);
+            MasterBalanceBuilder.ToMasterBalanceViewModels(masters, masterOperations, masterTransfers, projectInfo);
 
         var generator = exportDataService.GetGenerator(ExportType.Csv, summary,
     new MoneySummaryByMasterExporter(uriService));
@@ -324,11 +327,11 @@ public class FinancesController(
 
         var operations = project.FinanceOperations
             .Where(fo => fo.State == FinanceOperationState.Approved)
-            .Where(fo => fo.PaymentType?.UserId == masterId)
+            .Where(fo => fo.GetPaymentMasterId(projectInfo) == user.UserId)
             .ToArray();
 
-        var payments = project.PaymentTypes
-            .Where(pt => pt.UserId == masterId)
+        var payments = projectInfo.ProjectFinanceSettings.PaymentTypes
+            .Where(pt => pt.User.UserId == user.UserId)
             .Select(pt => new PaymentTypeSummaryViewModel(pt, project.FinanceOperations))
             .Where(m => m.Total != 0)
             .OrderByDescending(m => m.Total)

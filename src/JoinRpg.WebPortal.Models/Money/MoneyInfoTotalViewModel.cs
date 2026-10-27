@@ -23,7 +23,7 @@ public class MoneyInfoTotalViewModel
     {
         ProjectId = project.ProjectId;
 
-        Balance = MasterBalanceBuilder.ToMasterBalanceViewModels(masters, operations, transfers, project.ProjectId);
+        Balance = MasterBalanceBuilder.ToMasterBalanceViewModels(masters, operations, transfers, project);
 
         Transfers = transfers.Select(transfer =>
             new MoneyTransferListItemViewModel(transfer, currentUserId)).ToArray();

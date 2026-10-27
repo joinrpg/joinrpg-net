@@ -28,7 +28,7 @@ public class MasterBalanceViewModel
 
     public MasterBalanceViewModel(
         UserInfo master,
-        int projectId,
+        ProjectInfo projectInfo,
         IReadOnlyCollection<FinanceOperation> masterOperations,
         IReadOnlyCollection<MoneyTransfer> masterTransfers)
     {
@@ -37,17 +37,17 @@ public class MasterBalanceViewModel
         ArgumentNullException.ThrowIfNull(masterTransfers);
 
         Master = master;
-        ProjectId = projectId;
+        ProjectId = projectInfo.ProjectId;
         ReceiveBalance = masterTransfers.ReceivedByMasterSum(master.UserId);
         SendBalance = masterTransfers.SendedByMasterSum(master.UserId);
         FeeBalance = masterOperations
             .Where(fo => fo.Approved)
-            .Where(fo => fo.PaymentType?.UserId == master.UserId.Value)
+            .Where(fo => fo.GetPaymentMasterId(projectInfo) == master.UserId)
             .Sum(fo => fo.MoneyAmount);
 
         ModerationBalance = masterOperations
             .Where(fo => fo.RequireModeration)
-            .Where(fo => fo.PaymentType?.UserId == master.UserId.Value)
+            .Where(fo => fo.GetPaymentMasterId(projectInfo) == master.UserId)
             .Sum(fo => fo.MoneyAmount);
 
         Total = FeeBalance + ReceiveBalance + SendBalance;
