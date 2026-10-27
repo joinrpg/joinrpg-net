@@ -25,6 +25,7 @@ public class ProjectRolesListEditFormTest : BunitContext
         Services.AddSingleton<ICharacterGroupsClient>(new EmptyCharacterGroupsClient());
         Services.AddSingleton<IProjectFieldsClient>(new EmptyFieldsClient());
         _ = Services.AddJoinRpgWebComponents();
+        _ = AddBunitPersistentComponentState();
         Services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         JSInterop.Mode = JSRuntimeMode.Loose;
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));

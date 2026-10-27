@@ -1,4 +1,8 @@
+using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JoinRpg.Common.WebComponents.Test;
 
@@ -6,7 +10,9 @@ public class SelectorListCacheTest
 {
     private readonly TestNavigationManager navigationManager = new();
 
-    private SelectorListCache CreateCache() => new(navigationManager);
+    // Состояние без данных пререндера: так кэш живёт на сервере и в WebAssembly без пререндера.
+    private SelectorListCache CreateCache()
+        => new(navigationManager, new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance).State, NullLogger<SelectorListCache>.Instance);
 
     [Fact]
     public async Task ConcurrentCallsWithSameKeyLoadOnce()
@@ -150,6 +156,121 @@ public class SelectorListCacheTest
 
         result.ShouldBe([1, 2]);
         result.ShouldBeAssignableTo<ICollection<int>>()!.IsReadOnly.ShouldBeTrue();
+    }
+
+    // Ключ в состоянии пререндера. Сервер и WebAssembly строят его одним кодом, но формат зафиксирован здесь:
+    // если он поменяется, прод на время выкатки получит страницы, где клиент не узнает списки сервера.
+    private const string PersistKey = "SelectorListCache:System.Int32:key";
+
+    private static (BunitContext Context, BunitPersistentComponentState State, SelectorListCache Cache) CreatePersistentCache()
+    {
+        var ctx = new BunitContext();
+        var state = ctx.AddBunitPersistentComponentState();
+        var cache = new SelectorListCache(
+            ctx.Services.GetRequiredService<NavigationManager>(),
+            ctx.Services.GetRequiredService<PersistentComponentState>(),
+            NullLogger<SelectorListCache>.Instance);
+        return (ctx, state, cache);
+    }
+
+    /// <summary>
+    /// На сервере список, загруженный при пререндере, попадает в состояние страницы, — чтобы WebAssembly
+    /// не грузил его второй раз (#4119).
+    /// </summary>
+    [Fact]
+    public async Task LoadedListIsPersisted()
+    {
+        var (ctx, state, cache) = CreatePersistentCache();
+        using var context = ctx;
+
+        _ = await cache.GetOrLoad<int>("key", () => Task.FromResult<IEnumerable<int>>([1, 2]));
+        state.TriggerOnPersisting();
+
+        state.TryTake<int[]>(PersistKey, out var persisted).ShouldBeTrue();
+        persisted.ShouldBe([1, 2]);
+    }
+
+    /// <summary>
+    /// Состояние едет в самом HTML, закодированное дважды, и плохо сжимается: длинный список (все персонажи
+    /// крупного проекта) клиенту дешевле догрузить отдельным запросом.
+    /// </summary>
+    [Fact]
+    public async Task LongListIsNotPersisted()
+    {
+        var (ctx, state, cache) = CreatePersistentCache();
+        using var context = ctx;
+
+        _ = await cache.GetOrLoad<int>("key", () => Task.FromResult(Enumerable.Range(1, 201)));
+        _ = await cache.GetOrLoad<int>("short", () => Task.FromResult(Enumerable.Range(1, 200)));
+        state.TriggerOnPersisting();
+
+        state.TryTake<int[]>(PersistKey, out _).ShouldBeFalse();
+        state.TryTake<int[]>("SelectorListCache:System.Int32:short", out var persisted).ShouldBeTrue();
+        persisted!.Length.ShouldBe(200);
+    }
+
+    /// <summary>
+    /// Список с пререндера не прочитался (тип элемента изменился между версиями сервера и клиента) —
+    /// селектор не падает, а грузит список сам.
+    /// </summary>
+    [Fact]
+    public async Task UnreadablePersistedListFallsBackToLoad()
+    {
+        var (ctx, state, cache) = CreatePersistentCache();
+        using var context = ctx;
+        state.Persist(PersistKey, new { Unexpected = "shape" });
+
+        (await cache.GetOrLoad<int>("key", () => Task.FromResult<IEnumerable<int>>([7]))).ShouldBe([7]);
+    }
+
+    /// <summary>Незаконченная и упавшая загрузки в состояние не попадают — клиент загрузит их сам.</summary>
+    [Fact]
+    public async Task UnfinishedOrFailedLoadIsNotPersisted()
+    {
+        var (ctx, state, cache) = CreatePersistentCache();
+        using var context = ctx;
+
+        _ = cache.GetOrLoad("pending", () => new TaskCompletionSource<IEnumerable<int>>().Task);
+        _ = await Should.ThrowAsync<InvalidOperationException>(
+            () => cache.GetOrLoad<int>("key", () => throw new InvalidOperationException("Сеть упала")));
+        state.TriggerOnPersisting();
+
+        state.TryTake<int[]>(PersistKey, out _).ShouldBeFalse();
+        state.TryTake<int[]>("SelectorListCache:System.Int32:pending", out _).ShouldBeFalse();
+    }
+
+    /// <summary>В WebAssembly список из состояния пререндера берётся вместо загрузки.</summary>
+    [Fact]
+    public async Task PersistedListIsUsedInsteadOfLoad()
+    {
+        var (ctx, state, cache) = CreatePersistentCache();
+        using var context = ctx;
+        state.Persist(PersistKey, new[] { 1, 2 });
+        var loads = 0;
+
+        var first = await cache.GetOrLoad<int>("key", () => { loads++; return Task.FromResult<IEnumerable<int>>([3]); });
+        var second = await cache.GetOrLoad<int>("key", () => { loads++; return Task.FromResult<IEnumerable<int>>([3]); });
+
+        first.ShouldBe([1, 2]);
+        second.ShouldBe([1, 2]);
+        loads.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Состояние пререндера описывает только первую отрисовку: после сброса кэша (переход, изменение данных)
+    /// список грузится заново, а не берётся снова из устаревшего состояния.
+    /// </summary>
+    [Fact]
+    public async Task PersistedListIsTakenOnce()
+    {
+        var (ctx, state, cache) = CreatePersistentCache();
+        using var context = ctx;
+        state.Persist(PersistKey, new[] { 1, 2 });
+
+        (await cache.GetOrLoad<int>("key", () => Task.FromResult<IEnumerable<int>>([3]))).ShouldBe([1, 2]);
+        cache.Clear();
+
+        (await cache.GetOrLoad<int>("key", () => Task.FromResult<IEnumerable<int>>([3]))).ShouldBe([3]);
     }
 
     /// <summary>Переходы без браузера: каждый NavigateTo сразу сообщает о смене адреса.</summary>

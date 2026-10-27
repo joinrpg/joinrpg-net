@@ -43,6 +43,7 @@ public class CharacterGroupSelectorTest
         var client = new FakeCharacterGroupsClient();
         ctx.Services.AddSingleton<ICharacterGroupsClient>(client);
         _ = ctx.Services.AddJoinRpgWebComponents();
+        _ = ctx.AddBunitPersistentComponentState();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return (ctx, client);

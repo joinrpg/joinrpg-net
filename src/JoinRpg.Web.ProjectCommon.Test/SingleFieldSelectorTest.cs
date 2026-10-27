@@ -32,6 +32,7 @@ public class SingleFieldSelectorTest
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<IProjectFieldsClient>(new StubFieldsClient());
         _ = ctx.Services.AddJoinRpgWebComponents();
+        _ = ctx.AddBunitPersistentComponentState();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return ctx;
