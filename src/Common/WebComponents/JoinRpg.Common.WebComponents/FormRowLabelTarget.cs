@@ -7,15 +7,15 @@ namespace JoinRpg.Common.WebComponents;
 /// </summary>
 public sealed class FormRowLabelTarget
 {
-    private static long counter;
-
     private readonly string generatedId;
     private readonly Action onClaimed;
     private object? owner;
 
     internal FormRowLabelTarget(string? fieldName, Action onClaimed)
     {
-        generatedId = $"formrow-{fieldName ?? "field"}-{Interlocked.Increment(ref counter)}";
+        // Guid, а не счётчик: статические строки нумерует сервер, острова — WASM, и на одной странице
+        // счётчики могли совпасть — тогда подпись ссылалась бы на чужое поле.
+        generatedId = $"formrow-{fieldName ?? "field"}-{Guid.NewGuid():N}";
         this.onClaimed = onClaimed;
     }
 
