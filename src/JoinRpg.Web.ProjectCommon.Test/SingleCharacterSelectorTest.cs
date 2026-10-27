@@ -29,6 +29,7 @@ public class SingleCharacterSelectorTest
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<ICharactersClient>(new StubCharactersClient());
         _ = ctx.Services.AddJoinRpgWebComponents();
+        _ = ctx.AddBunitPersistentComponentState();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return ctx;
@@ -39,6 +40,7 @@ public class SingleCharacterSelectorTest
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<ICharactersClient>(new StubCharactersClient());
         _ = ctx.Services.AddJoinRpgWebComponents();
+        _ = ctx.AddBunitPersistentComponentState();
         ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
         return ctx;
     }

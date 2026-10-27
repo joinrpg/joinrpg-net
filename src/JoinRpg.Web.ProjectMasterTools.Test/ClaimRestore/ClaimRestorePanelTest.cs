@@ -29,6 +29,7 @@ public class ClaimRestorePanelTest : BunitContext
     {
         Services.AddSingleton<ICharactersClient>(charactersClient);
         _ = Services.AddJoinRpgWebComponents();
+        _ = AddBunitPersistentComponentState();
         Services.AddSingleton<IClaimRestoreClient>(client);
         Services.AddSingleton<IUriLocator<ClaimIdentification>>(new FakeLocator());
         Services.AddSingleton<IUriLocator<UserLinkViewModel>>(new FakeLocator());

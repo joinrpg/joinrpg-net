@@ -32,6 +32,7 @@ public class ClaimSelectorTest
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<IClaimListClient>(new FakeClaimListClient());
         _ = ctx.Services.AddJoinRpgWebComponents();
+        _ = ctx.AddBunitPersistentComponentState();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return ctx;

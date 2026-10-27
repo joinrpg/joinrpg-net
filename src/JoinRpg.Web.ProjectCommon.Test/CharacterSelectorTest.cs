@@ -33,6 +33,7 @@ public class CharacterSelectorTest
         var client = new CountingCharactersClient();
         ctx.Services.AddSingleton<ICharactersClient>(client);
         _ = ctx.Services.AddJoinRpgWebComponents();
+        _ = ctx.AddBunitPersistentComponentState();
         // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return (ctx, client);

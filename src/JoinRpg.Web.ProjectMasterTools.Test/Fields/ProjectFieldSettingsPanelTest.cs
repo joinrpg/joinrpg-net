@@ -27,6 +27,7 @@ public class ProjectFieldSettingsPanelTest : BunitContext
         Services.AddSingleton<IProjectFieldOperationsClient>(client);
         Services.AddSingleton<IProjectFieldsClient>(new StubFieldsClient());
         _ = Services.AddJoinRpgWebComponents();
+        _ = AddBunitPersistentComponentState();
         Services.AddSingleton<IProjectFieldUriLocator>(new NotUsedLocator());
         // TypedSelector читает RendererInfo — без него bUnit падает при рендере.
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
