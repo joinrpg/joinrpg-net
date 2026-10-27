@@ -91,12 +91,35 @@ public class FinanceOperationListScenario(JoinApplicationFactory factory) : ICla
         }
     }
 
+    /// <summary>
+    /// Странице хватает заголовков игроков, а выгрузке нужны контакты — профили грузятся только для неё.
+    /// </summary>
+    [Fact]
+    public async Task Moderation_Export_ContainsPlayerContacts()
+    {
+        var seed = await SeedAsync();
+        var master = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), seed.MasterEmail);
+
+        var response = await master.GetAsync($"{seed.ProjectId.Value}/money/Moderation?export=csv");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var csv = await response.Content.ReadAsStringAsync();
+        csv.ShouldContain("Игрок.Email");
+        foreach (var email in seed.PlayerEmails)
+        {
+            csv.ShouldContain(email);
+        }
+    }
+
     /// <summary>Текст страницы: пререндер островов кодирует кириллицу HTML-сущностями.</summary>
     private static async Task<string> PageTextAsync(HttpResponseMessage response)
         => HtmlAgilityPack.HtmlEntity.DeEntitize((await response.AsHtmlDocument()).DocumentNode.InnerText);
 
-    /// <param name="PlayerNames">Отображаемые имена игроков: без ФИО в профиле это часть email до «@».</param>
-    private sealed record Seed(ProjectIdentification ProjectId, UserIdentification MasterId, string MasterEmail, IReadOnlyCollection<string> PlayerNames);
+    private sealed record Seed(ProjectIdentification ProjectId, UserIdentification MasterId, string MasterEmail, IReadOnlyCollection<string> PlayerEmails)
+    {
+        /// <summary>Отображаемые имена игроков: без ФИО в профиле это часть email до «@».</summary>
+        public IEnumerable<string> PlayerNames => PlayerEmails.Select(email => email.Split('@')[0]);
+    }
 
     /// <summary>
     /// Проект с кассой мастера и двумя заявками разных игроков. По каждой заявке игрок заявил платёж
@@ -161,7 +184,7 @@ public class FinanceOperationListScenario(JoinApplicationFactory factory) : ICla
             await AddPaymentAsync(masterId, claimId, masterId, "Принял наличными");
         }
 
-        return new Seed(projectId, masterId, masterEmail, [.. players.Select(p => p.Email.Split('@')[0])]);
+        return new Seed(projectId, masterId, masterEmail, [.. players.Select(p => p.Email)]);
 
         Task AddPaymentAsync(UserIdentification author, ClaimIdentification claimId, UserIdentification cashOwner, string contents)
             => factory.Services.RunAsAsync(author, async sp =>
