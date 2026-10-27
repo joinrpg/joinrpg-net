@@ -19,7 +19,7 @@ public class AccommodationInviteControlTest : BunitContext
 
     public AccommodationInviteControlTest()
     {
-        // bootstrap-select и диалоги подтверждения ходят в JS — в тестах он не нужен
+        // Диалоги подтверждения ходят в JS — в тестах он не нужен
         Services.AddSingleton<IAccommodationInviteClient>(client);
         JSInterop.Mode = JSRuntimeMode.Loose;
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
@@ -63,7 +63,7 @@ public class AccommodationInviteControlTest : BunitContext
         var cut = RenderControl();
 
         cut.Markup.ShouldNotContain("Пока еще нельзя никого пригласить");
-        cut.FindAll("select").ShouldBeEmpty();
+        cut.FindAll("details.join-select").ShouldBeEmpty();
         cut.FindAll("button").ShouldBeEmpty();
     }
 
@@ -75,7 +75,7 @@ public class AccommodationInviteControlTest : BunitContext
 
         var cut = RenderControl();
 
-        var options = cut.FindAll("select option");
+        var options = cut.FindAll(".join-select__list input");
         // Пустая строка «(выберите, кого пригласить)» плюс две цели
         options.Count.ShouldBe(3);
         cut.Markup.ShouldContain("(группа проживающих)");
@@ -94,7 +94,7 @@ public class AccommodationInviteControlTest : BunitContext
 
         var cut = RenderControl();
 
-        var values = cut.FindAll("select option")
+        var values = cut.FindAll(".join-select__list input")
             .Select(option => option.GetAttribute("value"))
             .ToArray();
 
@@ -167,7 +167,7 @@ public class AccommodationInviteControlTest : BunitContext
 
         var cut = RenderControl();
 
-        cut.FindAll("select").ShouldBeEmpty();
+        cut.FindAll("details.join-select").ShouldBeEmpty();
         cut.FindAll("button").ShouldBeEmpty();
         cut.Markup.ShouldNotContain("Пока");
     }
@@ -176,11 +176,9 @@ public class AccommodationInviteControlTest : BunitContext
     {
         var target = SingleTarget(11);
         client.NextTargets = new AccommodationInviteTargetsViewModel(SenderRequestId, RoomFreeSpace: 3, Targets: [target], mode);
-        var module = JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
-        _ = module.Setup<List<string>>("getSelectedValues", _ => true).SetResult([target.TargetId.ToString()]);
 
         var cut = RenderControl();
-        cut.Find("select").Change(target.TargetId.ToString());
+        cut.Find($"input[value='{target.TargetId}']").Change(true);
 
         if (mode == AccommodationInviteMode.Merge)
         {

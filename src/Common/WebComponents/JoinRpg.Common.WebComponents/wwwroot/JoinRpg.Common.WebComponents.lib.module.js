@@ -1,5 +1,5 @@
-// Подсказки компонента Tooltip.razor, раскрытие JoinCollapsePanel.razor по якорю и закрытие меню
-// JoinDropdownButton.razor по клику мимо и по Esc.
+// Подсказки компонента Tooltip.razor, раскрытие JoinCollapsePanel.razor по якорю, закрытие меню
+// JoinDropdownButton.razor и списков TypedSelector.razor по клику мимо и по Esc, поиск в статических TypedSelector.
 //
 // Это JS-инициализатор Blazor: имя файла обязано совпадать с PackageId библиотеки, а сам файл
 // лежать в её wwwroot. Blazor импортирует такой модуль сам — и в Blazor Web App (Portal, IdPortal),
@@ -222,16 +222,18 @@ function decodeHash(hash) {
 openPanelFromHash();
 window.addEventListener('hashchange', openPanelFromHash);
 
-// Меню JoinDropdownButton.razor: открывает и закрывает их браузер (<details>), а здесь — только закрытие
-// по клику мимо меню и по Esc, как привыкли у выпадающих меню. Открытое меню одно: клик по другому
-// закрывает прежнее.
+// Меню JoinDropdownButton.razor и выпадающие списки TypedSelector.razor: открывает и закрывает их браузер
+// (<details>), а здесь — только закрытие по клику мимо и по Esc, как привыкли у выпадающих меню.
+// Открытое меню одно: клик по другому закрывает прежнее. Атрибут open Blazor не рендерит,
+// поэтому трогать его можно и в интерактивных островах.
 
-const DROPDOWN_SELECTOR = 'details.join-dropdown[open]';
+const POPUP_SELECTOR = 'details.join-dropdown, details.join-select';
+const OPEN_POPUP_SELECTOR = 'details.join-dropdown[open], details.join-select[open]';
 
-function closeDropdowns(except) {
-    document.querySelectorAll(DROPDOWN_SELECTOR).forEach(dropdown => {
-        if (dropdown !== except) {
-            dropdown.open = false;
+function closePopups(except) {
+    document.querySelectorAll(OPEN_POPUP_SELECTOR).forEach(popup => {
+        if (popup !== except) {
+            popup.open = false;
         }
     });
 }
@@ -239,22 +241,135 @@ function closeDropdowns(except) {
 document.addEventListener('click', event => {
     const target = event.target instanceof Element ? event.target : null;
     // Клик по пункту меню тоже закрывает меню: пункт может и не уводить со страницы (скачивание, новая вкладка).
-    const keepOpen = target?.closest('.join-dropdown__menu a, .join-dropdown__menu button') ? null : target?.closest('details.join-dropdown');
-    closeDropdowns(keepOpen ?? null);
+    // У списка клик внутри панели не закрывает: в нём ищут и отмечают несколько пунктов.
+    const keepOpen = target?.closest('.join-dropdown__menu a, .join-dropdown__menu button') ? null : target?.closest(POPUP_SELECTOR);
+    closePopups(keepOpen ?? null);
 });
 document.addEventListener('keydown', event => {
-    if (event.key !== 'Escape') {
+    if (event.key !== 'Escape' || document.querySelector(OPEN_POPUP_SELECTOR) === null) {
         return;
     }
+    // Внутри модального <dialog> Esc иначе закроет заодно и диалог (JoinMoveControl в JoinDialog).
+    event.preventDefault();
     // Фокус внутри закрываемого меню иначе уходит на body, и Tab начинает обход с начала страницы.
-    const focused = document.activeElement?.closest('details.join-dropdown[open]');
-    closeDropdowns(null);
+    const focused = document.activeElement?.closest(OPEN_POPUP_SELECTOR);
+    closePopups(null);
     focused?.querySelector(':scope > summary')?.focus();
 });
 // Ушли Tab'ом из меню — закрываем, иначе оно висит поверх страницы.
 document.addEventListener('focusout', event => {
-    const dropdown = event.target instanceof Element ? event.target.closest('details.join-dropdown[open]') : null;
-    if (dropdown && event.relatedTarget instanceof Node && !dropdown.contains(event.relatedTarget)) {
-        dropdown.open = false;
+    const popup = event.target instanceof Element ? event.target.closest(OPEN_POPUP_SELECTOR) : null;
+    if (popup && event.relatedTarget instanceof Node && !popup.contains(event.relatedTarget)) {
+        popup.open = false;
+    }
+});
+
+// TypedSelector.razor. В интерактивном режиме поиск и текст на кнопке ведёт C#. В статическом
+// (data-join-select-static) Blazor в браузере не исполняется — это делают слушатели ниже, а строку
+// поиска каждого пункта (data-search) уже нормализовал сервер.
+
+const SELECT_SELECTOR = 'details.join-select';
+const STATIC_SELECT_SELECTOR = 'details.join-select[data-join-select-static]';
+
+// Повторяет TypedSelectSearch.Normalize на C#: менять вместе.
+function normalizeSearch(text) {
+    let result = '';
+    let pendingSpace = false;
+    for (const ch of text.toLowerCase().normalize('NFD')) {
+        const code = ch.charCodeAt(0);
+        if (code >= 0x300 && code <= 0x36F) {
+            continue; // Диакритика: бреве у «й», диерезис у «ё».
+        }
+        if (ch.trim() === '') {
+            pendingSpace = result.length > 0;
+            continue;
+        }
+        if (pendingSpace) {
+            result += ' ';
+            pendingSpace = false;
+        }
+        result += ch;
+    }
+    return result.normalize('NFC');
+}
+
+function filterStaticSelect(select) {
+    const search = select.querySelector('.join-select__search');
+    const words = normalizeSearch(search?.value ?? '').split(' ').filter(word => word !== '');
+    select.querySelectorAll('.join-select__list > li').forEach(item => {
+        const itemSearch = item.dataset.search ?? '';
+        item.hidden = !words.every(word => itemSearch.includes(word));
+    });
+}
+
+function refreshStaticSummary(select) {
+    const texts = [...select.querySelectorAll('.join-select__list input:checked')]
+        .map(checked => checked.closest('label')?.querySelector('.join-select__text')?.textContent ?? '');
+    const text = texts.length === 0 ? select.dataset.emptyText ?? '' : texts.join(', ');
+    const summary = select.querySelector(':scope > summary');
+    const value = summary?.querySelector('.join-select__value');
+    if (value) {
+        value.textContent = text;
+        summary.title = text;
+    }
+}
+
+// Браузер при F5 и «назад» восстанавливает отмеченный пункт и текст поиска без события change/input —
+// кнопка и фильтр должны соответствовать тому, что уйдёт в форму.
+function refreshStaticSelects() {
+    document.querySelectorAll(STATIC_SELECT_SELECTOR).forEach(select => {
+        filterStaticSelect(select);
+        refreshStaticSummary(select);
+    });
+}
+
+refreshStaticSelects();
+window.addEventListener('pageshow', refreshStaticSelects);
+
+document.addEventListener('input', event => {
+    const search = event.target instanceof HTMLInputElement && event.target.classList.contains('join-select__search') ? event.target : null;
+    const select = search?.closest(STATIC_SELECT_SELECTOR);
+    if (select) {
+        filterStaticSelect(select);
+    }
+});
+
+// Стрелки в группе radio сами отмечают соседний пункт и шлют change — это переход по списку, а не выбор,
+// закрывать по нему панель нельзя. Флаг ставим на keydown, change приходит следом.
+let arrowNavigation = false;
+
+document.addEventListener('keydown', event => {
+    const input = event.target instanceof HTMLInputElement ? event.target : null;
+    if (!input?.closest(SELECT_SELECTOR)) {
+        return;
+    }
+    if (input.classList.contains('join-select__search')) {
+        if (event.key !== 'Enter') {
+            return;
+        }
+        // Enter в поле поиска иначе отправит всю форму. Как у bootstrap-select — выбираем первый найденный пункт.
+        event.preventDefault();
+        const first = [...input.closest(SELECT_SELECTOR).querySelectorAll('.join-select__list > li:not([hidden]) input:not(:disabled)')][0];
+        first?.click();
+        return;
+    }
+    arrowNavigation = event.key.startsWith('Arrow');
+});
+
+document.addEventListener('change', event => {
+    const input = event.target instanceof HTMLInputElement ? event.target : null;
+    const select = input?.closest(SELECT_SELECTOR);
+    if (!select || input.classList.contains('join-select__search')) {
+        return;
+    }
+    if (select.matches(STATIC_SELECT_SELECTOR)) {
+        refreshStaticSummary(select);
+    }
+    const byArrow = arrowNavigation;
+    arrowNavigation = false;
+    // Одиночный выбор сделан — закрываем, как закрывался обычный <select>. Несколько пунктов отмечают с открытой панелью.
+    if (input.type === 'radio' && !byArrow) {
+        select.open = false;
+        select.querySelector(':scope > summary')?.focus();
     }
 });

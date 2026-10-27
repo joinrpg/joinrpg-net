@@ -31,7 +31,7 @@ public class CharacterSelectorTest
         var ctx = new BunitContext();
         var client = new CountingCharactersClient();
         ctx.Services.AddSingleton<ICharactersClient>(client);
-        // Non-interactive: TypedSelector не пытается импортировать JS-модуль bootstrap-select.
+        // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return (ctx, client);
     }

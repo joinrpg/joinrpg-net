@@ -27,21 +27,17 @@ public class SingleCharacterSelectorTest
     {
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<ICharactersClient>(new StubCharactersClient());
-        // Non-interactive: TypedSelector не пытается импортировать JS-модуль bootstrap-select.
+        // Non-interactive: так TypedSelector рендерится в MVC-формах (render-mode="Static").
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         return ctx;
     }
 
-    private static (BunitContext Context, BunitJSModuleInterop Module) CreateInteractiveContext()
+    private static BunitContext CreateInteractiveContext()
     {
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<ICharactersClient>(new StubCharactersClient());
         ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
-        var module = ctx.JSInterop.SetupModule("/_content/JoinRpg.Common.WebComponents/component-interop.js");
-        _ = module.SetupVoid("initBootstrapSelect", _ => true);
-        _ = module.SetupVoid("refreshBootstrapSelect", _ => true);
-        module.SetupVoid("destroyBootstrapSelect", _ => true).SetVoidResult();
-        return (ctx, module);
+        return ctx;
     }
 
     [Fact]
@@ -51,7 +47,7 @@ public class SingleCharacterSelectorTest
 
         var cut = ctx.Render<SingleCharacterSelector>(p => p.Add(x => x.ProjectId, ProjectId));
 
-        var options = cut.FindAll("option");
+        var options = cut.FindAll(".join-select__list input");
         options.Count.ShouldBe(2);
         cut.Markup.ShouldNotContain(NewCharacterText);
     }
@@ -65,11 +61,11 @@ public class SingleCharacterSelectorTest
             .Add(x => x.ProjectId, ProjectId)
             .Add(x => x.NewCharacterOptionText, NewCharacterText));
 
-        var options = cut.FindAll("option");
+        var options = cut.FindAll(".join-select__list input");
         options.Count.ShouldBe(3);
-        options[0].TextContent.ShouldBe(NewCharacterText);
+        cut.FindAll(".join-select__list .join-select__text")[0].TextContent.ShouldBe(NewCharacterText);
         options[0].GetAttribute("value").ShouldBe("");
-        options[0].HasAttribute("selected").ShouldBeTrue();
+        options[0].HasAttribute("checked").ShouldBeTrue();
     }
 
     [Fact]
@@ -82,16 +78,15 @@ public class SingleCharacterSelectorTest
             .Add(x => x.SelectedCharacterId, FirstId)
             .Add(x => x.NewCharacterOptionText, NewCharacterText));
 
-        var options = cut.FindAll("option");
-        options[0].HasAttribute("selected").ShouldBeFalse();
-        options[1].HasAttribute("selected").ShouldBeTrue();
+        var options = cut.FindAll(".join-select__list input");
+        options[0].HasAttribute("checked").ShouldBeFalse();
+        options[1].HasAttribute("checked").ShouldBeTrue();
     }
 
     [Fact]
     public void ChoosingNewCharacterThenCharacter_ReportsNullThenId()
     {
-        var (ctx, module) = CreateInteractiveContext();
-        using var _ = ctx;
+        using var ctx = CreateInteractiveContext();
         var reported = new List<CharacterIdentification?>();
 
         var cut = ctx.Render<SingleCharacterSelector>(p => p
@@ -99,19 +94,13 @@ public class SingleCharacterSelectorTest
             .Add(x => x.SelectedCharacterId, FirstId)
             .Add(x => x.SelectedCharacterIdChanged, (CharacterIdentification? id) => reported.Add(id))
             .Add(x => x.NewCharacterOptionText, NewCharacterText));
-        cut.WaitForAssertion(() => module.Invocations["initBootstrapSelect"].ShouldHaveSingleItem());
+        var firstValue = cut.FindAll(".join-select__list input")[1].GetAttribute("value")!;
 
-        var firstValue = cut.FindAll("option")[1].GetAttribute("value")!;
-
-        var getSelected = module.Setup<List<string>>("getSelectedValues", _ => true);
-        getSelected.SetResult([""]);
-        cut.Find("select").Change("");
+        cut.Find(".join-select__list input[value='']").Change(true);
 
         reported.ShouldBe([null]);
 
-        getSelected = module.Setup<List<string>>("getSelectedValues", _ => true);
-        getSelected.SetResult([firstValue]);
-        cut.Find("select").Change(firstValue);
+        cut.Find($"input[value='{firstValue}']").Change(true);
 
         reported.ShouldBe([null, FirstId]);
     }

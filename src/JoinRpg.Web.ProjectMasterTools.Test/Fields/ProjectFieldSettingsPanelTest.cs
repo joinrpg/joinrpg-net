@@ -26,7 +26,7 @@ public class ProjectFieldSettingsPanelTest : BunitContext
         Services.AddSingleton<IProjectFieldOperationsClient>(client);
         Services.AddSingleton<IProjectFieldsClient>(new StubFieldsClient());
         Services.AddSingleton<IProjectFieldUriLocator>(new NotUsedLocator());
-        // Non-interactive: TypedSelector не пытается импортировать JS-модуль bootstrap-select.
+        // TypedSelector читает RendererInfo — без него bUnit падает при рендере.
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
     }
 

@@ -1,8 +1,20 @@
-@using System.Globalization
-@typeparam TKey where TKey : notnull, ISpanParsable<TKey>
+@*
+    Выбор из списка на нативном <details>: в раскрывающейся панели — поиск (если пунктов больше 10)
+    и radio/checkbox с name, поэтому обычная форма постит выбранное сама, без скриптов.
+    value пункта — KeySelector(item).ToString(): полный идентификатор вроде CharacterGroupId(5-10),
+    его разбирает ProjectEntityIdModelBinder.
+
+    Пока ничего не выбрано, ничего и не отмечено — даже без AllowEmpty. Нативный <select> тут молча выбирал
+    первый пункт, и форма постила то, чего человек не выбирал. Теперь форма не постит под этим именем ничего,
+    и экшен, принимающий значение, обязан это проверить.
+
+    В интерактивном режиме поиск и текст на кнопке ведёт C#. В статическом (render-mode="Static" в MVC-формах)
+    Blazor в браузере не исполняется — там то же самое делает делегированный слушатель в
+    wwwroot/JoinRpg.Common.WebComponents.lib.module.js, только для корней с data-join-select-static.
+    Открытие и закрытие панели (клик мимо, Esc, выбор одиночного пункта) — тот же скрипт в обоих режимах.
+*@
+@typeparam TKey where TKey : notnull
 @typeparam TItem
-@inject IJSRuntime JS
-@implements IAsyncDisposable
 
 @if (Items is null)
 {
@@ -10,36 +22,68 @@
 }
 else
 {
-    <select class="selectpicker"
-            data-live-search="@(Items.Length > 10 ? "true" : "false")"
-            data-live-search-normalize="true"
-            data-size="10"
-            data-none-selected-text="@EmptyText"
-            data-width="@Width"
-            name="@Name"
-            multiple="@Multiple"
-            @ref="selectRef"
-            @onchange="OnSelectionChangedAsync"
-            >
-      @if (AllowEmpty)
-      {
-        <option value="" selected="@(SelectedValues.Length == 0)">@EmptyText</option>
-      }
-      @foreach (var (key, val) in options)
-      {
-        var selected = SelectedValues.Contains(key);
-        <option
-                data-tokens="@($"{val.Text} {val.ExtraSearch}")"
-                data-subtext="@(val.Subtext)"
-                value="@key"
-                selected="@selected"
-                disabled="@val.Disabled">@val.Text</option>
-      }
-    </select>
+    <details class="join-select"
+             style="@WidthStyle"
+             data-join-select-static="@(RendererInfo.IsInteractive ? null : "")"
+             data-empty-text="@EmptyText">
+        <summary class="join-select__toggle" title="@summaryText">
+            <span class="join-select__value">@summaryText</span>
+            <span class="join-select__caret"></span>
+        </summary>
+        <div class="join-select__panel">
+            @if (HasSearch)
+            {
+                <input type="search"
+                       class="join-select__search"
+                       placeholder="Поиск"
+                       aria-label="Поиск по списку"
+                       autocomplete="off"
+                       value="@query"
+                       @oninput="OnQueryChanged" />
+            }
+            <ul class="join-select__list">
+                @if (ShowEmptyItem)
+                {
+                    <li hidden="@(HasSearch && !TypedSelectSearch.Matches(emptySearch, query))"
+                        data-search="@(HasSearch ? emptySearch : null)">
+                        <label class="join-select__item">
+                            <input type="radio"
+                                   name="@InputName"
+                                   value=""
+                                   checked="@(!options.Any(o => IsChecked(o.Key)))"
+                                   @onchange="SelectEmptyAsync" />
+                            <span class="join-select__text">@EmptyText</span>
+                        </label>
+                    </li>
+                }
+                @foreach (var option in options)
+                {
+                    var selected = IsChecked(option.Key);
+                    <li @key="option.Key"
+                        hidden="@(HasSearch && !TypedSelectSearch.Matches(option.Search, query))"
+                        data-search="@(HasSearch ? option.Search : null)">
+                        <label class="join-select__item @(option.Item.Disabled ? "join-select__item--disabled" : "")">
+                            <input type="@(Multiple ? "checkbox" : "radio")"
+                                   name="@InputName"
+                                   value="@option.Key"
+                                   checked="@selected"
+                                   disabled="@option.Item.Disabled"
+                                   @onchange="args => ToggleAsync(option.Key, args)" />
+                            <span class="join-select__text">@option.Item.Text</span>
+                            @if (!string.IsNullOrEmpty(option.Item.Subtext))
+                            {
+                                <small class="join-select__subtext">@option.Item.Subtext</small>
+                            }
+                        </label>
+                    </li>
+                }
+            </ul>
+        </div>
+    </details>
 }
 
 @code {
-
+    /// <summary>Имя поля формы. Без него radio получают сгенерированное имя — чтобы группировались между собой.</summary>
     [Parameter] public string? Name { get; set; } = null;
     [Parameter] [EditorRequired] public TItem[]? Items { get; set; }
     [Parameter] [EditorRequired] public Func<TItem, TKey> KeySelector { get; set; } = null!;
@@ -48,122 +92,90 @@ else
     [Parameter] public EventCallback<TKey[]> SelectedValuesChanged { get; set; }
     [Parameter] public EventCallback<TItem[]> SelectedItemsChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = false;
+    /// <summary>Добавить пустой пункт с текстом <see cref="EmptyText"/>. Для <see cref="Multiple"/> не нужен: там пусто — это ничего не отмечено.</summary>
     [Parameter] public bool AllowEmpty { get; set; } = false;
+    /// <summary>Текст пустого пункта и текст на кнопке, когда ничего не выбрано.</summary>
     [Parameter] public string EmptyText { get; set; } = "(нет)";
-    /// <summary>Ширина bootstrap-select (data-width): например, "auto" — по самому длинному пункту. null — ширина по умолчанию.</summary>
+    /// <summary>CSS-ширина, например <c>"30em"</c> или <c>"100%"</c>. null — ширина по умолчанию (220px, как была у bootstrap-select).</summary>
     [Parameter] public string? Width { get; set; }
 
-    private ElementReference selectRef;
-    private IJSObjectReference? module;
-    private bool selectInitialized;
+    /// <summary>Поиск появляется, когда пунктов больше этого числа (как data-live-search у bootstrap-select).</summary>
+    private const int SearchThreshold = 10;
 
-    private (TKey Key, TypedSelectListItem<TKey> Item)[] options = [];
-    private SelectSnapshot? renderedSnapshot;
-    private bool needsRefresh;
+    // Guid, а не счётчик: статические корни нумерует сервер, острова — WASM, и счётчики совпали бы.
+    private readonly string generatedName = $"join-select-{Guid.NewGuid():N}";
 
-    /// <summary>
-    /// То, что bootstrap-select вычитывает из разметки. Родитель передаёт новые лямбды и массивы при каждой своей
-    /// перерисовке, поэтому сравниваем не ссылки на параметры, а получившиеся пункты.
-    /// </summary>
-    private sealed record SelectSnapshot(
-        (TKey Key, TypedSelectListItem<TKey> Item)[] Options,
-        TKey[] SelectedValues,
-        bool Multiple,
-        bool AllowEmpty,
-        string EmptyText,
-        string? Width)
-    {
-      public bool Equals(SelectSnapshot? other)
-        => other is not null
-           && Options.SequenceEqual(other.Options)
-           && SelectedValues.SequenceEqual(other.SelectedValues)
-           && Multiple == other.Multiple
-           && AllowEmpty == other.AllowEmpty
-           && EmptyText == other.EmptyText
-           && Width == other.Width;
+    private (TKey Key, TypedSelectListItem<TKey> Item, string Search)[] options = [];
+    private TKey[] currentSelection = [];
+    private TKey[]? lastSelectedValues;
+    private string summaryText = "";
+    private string emptySearch = "";
+    private bool hasSearch;
+    private string query = "";
 
-      public override int GetHashCode() => Options.Length;
-    }
+    private string InputName => Name ?? generatedName;
+    private bool HasSearch => hasSearch;
+    private bool ShowEmptyItem => AllowEmpty && !Multiple;
+    private string? WidthStyle => Width is null ? null : $"width: {Width}";
 
     protected override void OnParametersSet()
     {
-      options = Items is null ? [] : [.. Items.Select(item => (KeySelector(item), ToListItem(item)))];
-      var snapshot = Items is null ? null : new SelectSnapshot(options, SelectedValues, Multiple, AllowEmpty, EmptyText, Width);
-      if (!Equals(snapshot, renderedSnapshot))
-      {
-        // selectpicker('refresh') над сотнями <option> дорог — зовём его, только если разметка select действительно поменялась.
-        needsRefresh = true;
-        renderedSnapshot = snapshot;
-      }
-    }
+        hasSearch = Items is { Length: > SearchThreshold };
+        // Нормализация не бесплатная, а без поля поиска строки пунктов не нужны (селектор бывает в каждой строке сетки).
+        options = Items is null
+            ? []
+            : [.. Items.Select(item =>
+            {
+                var listItem = ToListItem(item);
+                return (KeySelector(item), listItem, hasSearch ? TypedSelectSearch.ForItem(listItem) : "");
+            })];
+        emptySearch = hasSearch ? TypedSelectSearch.Normalize(EmptyText) : "";
 
-    private async Task OnSelectionChangedAsync(ChangeEventArgs eventArgs)
-    {
-      var values = await module!.InvokeAsync<List<string>>("getSelectedValues", selectRef);
-      var selectedKeys = values
-          .Where(v => !string.IsNullOrEmpty(v))
-          .Select(v => TKey.Parse(v, CultureInfo.InvariantCulture))
-          .ToArray();
-      await SelectedValuesChanged.InvokeAsync(selectedKeys);
-      if (SelectedItemsChanged.HasDelegate)
-      {
-        await SelectedItemsChanged.InvokeAsync([.. Items!.Where(i => selectedKeys.Contains(KeySelector(i)))]);
-      }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-      if (firstRender && RendererInfo.IsInteractive)
-      {
-        // Импорт JS-модуля не зависит от Items — запускаем сразу, параллельно с загрузкой данных снаружи.
-        // RendererInfo.IsInteractive исключает вызов во время серверного prerender-прохода (JS interop там недоступен).
-        module = await JS.InvokeAsync<IJSObjectReference>("import", "/_content/JoinRpg.Common.WebComponents/component-interop.js");
-      }
-
-      if (module is null)
-      {
-        return; // Prerender-проход: JS-модуль ещё не импортирован, инициализировать select нечем.
-      }
-
-      if (Items is null)
-      {
-        return; // <select> ещё не отрендерен — инициализировать нечего.
-      }
-
-      if (!selectInitialized)
-      {
-        // Флаги ставим до await: пока идёт инициализация, может прийти следующий рендер, и он не должен инициализировать повторно.
-        selectInitialized = true;
-        needsRefresh = false;
-        await module.InvokeVoidAsync("initBootstrapSelect", selectRef, SelectedValues.Select(v => v.ToString()).ToArray());
-      }
-      else if (needsRefresh)
-      {
-        needsRefresh = false;
-        await module.InvokeVoidAsync("refreshBootstrapSelect", selectRef);
-      }
-    }
-
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-      if (module is null)
-      {
-        return; // Prerender-проход или JS-модуль так и не импортирован — bootstrap-select не инициализировался.
-      }
-      try
-      {
-        if (selectInitialized)
+        // Родитель может не вернуть выбор обратно в SelectedValues (слушает только SelectedItemsChanged).
+        // Тогда выбор живёт здесь, а SelectedValues перечитываем, только когда родитель и правда передал другие.
+        if (lastSelectedValues is null || !lastSelectedValues.SequenceEqual(SelectedValues))
         {
-          // bootstrap-select обернул <select> в свой div с кнопкой; Blazor удалит только <select>,
-          // поэтому обёртку убираем сами — иначе кнопка останется на странице до перезагрузки.
-          await module.InvokeVoidAsync("destroyBootstrapSelect", selectRef);
+            currentSelection = SelectedValues;
+            lastSelectedValues = SelectedValues;
         }
-        await module.DisposeAsync();
-      }
-      catch (JSDisconnectedException)
-      {
-        // Соединение с браузером уже разорвано (страницу закрыли) — убирать на клиенте нечего.
-      }
+
+        RefreshSummary();
     }
 
+    private bool IsChecked(TKey key) => currentSelection.Contains(key);
+
+    private void RefreshSummary()
+    {
+        var texts = options.Where(o => IsChecked(o.Key)).Select(o => o.Item.Text).ToArray();
+        summaryText = texts.Length == 0 ? EmptyText : string.Join(", ", texts);
+    }
+
+    private void OnQueryChanged(ChangeEventArgs args) => query = args.Value?.ToString() ?? "";
+
+    private Task SelectEmptyAsync() => SetSelectionAsync([]);
+
+    private Task ToggleAsync(TKey key, ChangeEventArgs args)
+    {
+        if (!Multiple)
+        {
+            return SetSelectionAsync([key]);
+        }
+        var isChecked = args.Value is true || (args.Value is string text && bool.TryParse(text, out var parsed) && parsed);
+        TKey[] newSelection = isChecked
+            ? [.. currentSelection.Where(k => !k.Equals(key)), key]
+            : [.. currentSelection.Where(k => !k.Equals(key))];
+        // Порядок — как в списке, а не как кликали.
+        return SetSelectionAsync([.. options.Select(o => o.Key).Where(newSelection.Contains)]);
+    }
+
+    private async Task SetSelectionAsync(TKey[] selection)
+    {
+        currentSelection = selection;
+        RefreshSummary();
+        await SelectedValuesChanged.InvokeAsync(selection);
+        if (SelectedItemsChanged.HasDelegate)
+        {
+            await SelectedItemsChanged.InvokeAsync([.. Items!.Where(i => selection.Contains(KeySelector(i)))]);
+        }
+    }
 }
