@@ -63,8 +63,7 @@ public class AclController(
             p => p.UserId,
             p => new ProjectMasterProfileViewModel(p.Role.Value, p.Description is null ? null : p.Description.ToHtmlString()));
         var users = (await userRepository.GetUserInfos([.. visible])).ToDictionary(u => u.UserId);
-        var viewer = viewerId is null ? null : await userRepository.GetUserInfo(viewerId);
-        var model = ProjectMastersViewModel.Build(projectInfo, viewerId, viewer, publicProfiles, users, cardBuilder);
+        var model = ProjectMastersViewModel.Build(projectInfo, viewerId, publicProfiles, users, cardBuilder);
         return View(model);
     }
 
