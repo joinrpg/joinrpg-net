@@ -63,7 +63,7 @@ public class GameController(
     private RedirectToActionResult RedirectTo(ProjectIdentification project) => RedirectToAction("Details", new { ProjectId = project.Value });
 
     [HttpGet("/{projectId}/project/settings")]
-    [MasterAuthorize(Permission.CanChangeProjectProperties)]
+    [MasterAuthorize] // смотреть настройки может любой мастер, панель без права — только для просмотра
     public async Task<IActionResult> Edit(ProjectIdentification projectId)
     {
         // Сами настройки грузят и сохраняют острова-панели на странице.
@@ -74,6 +74,7 @@ public class GameController(
             OriginalName = project.ProjectName,
             Active = !project.IsArchived,
             Blocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked,
+            HasEditAccess = project.HasMasterAccess(currentUserAccessor, Permission.CanChangeProjectProperties),
         });
     }
 

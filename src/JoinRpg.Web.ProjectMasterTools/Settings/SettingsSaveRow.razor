@@ -1,0 +1,24 @@
+@using JoinRpg.Web.ProjectCommon.Masters
+@* Низ панели настроек: кнопка сохранения или, если права нет, объяснение, почему панель только для просмотра. *@
+<FormRow>
+    @if (HasEditAccess)
+    {
+        <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@Disabled" />
+    }
+    else
+    {
+        <JoinAlert Variation="VariationStyleEnum.Info">
+            Только просмотр: чтобы менять эти настройки, нужно право «@(new PermissionBadgeViewModel(Permission, true).DisplayName)».
+        </JoinAlert>
+    }
+</FormRow>
+
+@code {
+    [Parameter, EditorRequired] public bool HasEditAccess { get; set; }
+
+    /// <summary>Право, которое нужно для изменения, — его называем мастеру без права.</summary>
+    [Parameter] public Permission Permission { get; set; } = Permission.CanChangeProjectProperties;
+
+    /// <summary>Кнопка неактивна (форма не прошла валидацию).</summary>
+    [Parameter] public bool Disabled { get; set; }
+}

@@ -18,14 +18,12 @@
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
-
-                <FormRowFor For="@(() => Model.TimeZoneId)">
-                    <TimeZoneSelector @bind-Value="Model.TimeZoneId" />
-                </FormRowFor>
-
-                <FormRow>
-                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
-                </FormRow>
+                <fieldset disabled="@(!Model.HasEditAccess)">
+                    <FormRowFor For="@(() => Model.TimeZoneId)">
+                        <TimeZoneSelector @bind-Value="Model.TimeZoneId" />
+                    </FormRowFor>
+                </fieldset>
+                <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>
         </EditForm>
         @if (success)

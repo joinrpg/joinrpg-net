@@ -52,6 +52,7 @@ public class ProjectTimeZoneScenario(JoinApplicationFactory factory) : IClassFix
             {
                 ProjectId = projectId,
                 ProjectStatus = initial.ProjectStatus,
+                HasEditAccess = initial.HasEditAccess,
                 TimeZoneId = "Asia/Vladivostok",
             }));
 

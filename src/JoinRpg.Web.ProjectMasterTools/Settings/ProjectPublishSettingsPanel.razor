@@ -13,18 +13,18 @@
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
-                @if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
-                {
-                    <FormRowFor For="@(() => Model.PublishEnabled)">
-                        <CheckboxInput @bind-Value="Model.PublishEnabled" />
+                <fieldset disabled="@(!Model.HasEditAccess)">
+                    @if (Model.ProjectStatus == ProjectLifecycleStatus.Archived)
+                    {
+                        <FormRowFor For="@(() => Model.PublishEnabled)">
+                            <CheckboxInput @bind-Value="Model.PublishEnabled" />
+                        </FormRowFor>
+                    }
+                    <FormRowFor For="@(() => Model.CloneSettings)">
+                        <EnumRadioButtonGroup @bind-SelectedValue="Model.CloneSettings" />
                     </FormRowFor>
-                }
-                <FormRowFor For="@(() => Model.CloneSettings)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.CloneSettings" />
-                </FormRowFor>
-                <FormRow>
-                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
-                </FormRow>
+                </fieldset>
+                <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>
         </EditForm>
         @if (success)

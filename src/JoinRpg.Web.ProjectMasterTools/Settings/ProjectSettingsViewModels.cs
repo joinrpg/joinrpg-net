@@ -6,6 +6,8 @@ public class ProjectMainSettingsViewModel
 {
     public required ProjectIdentification ProjectId { get; set; }
     public required ProjectLifecycleStatus ProjectStatus { get; init; }
+    /// <summary>Есть право менять эти настройки; без него панель только для просмотра.</summary>
+    public required bool HasEditAccess { get; init; }
 
     [Display(Name = "Название проекта")]
     [Required(ErrorMessage = "Укажите название проекта")]
@@ -25,6 +27,8 @@ public class ProjectPublishSettingsViewModel
     public required ProjectIdentification ProjectId { get; set; }
     public required ProjectName ProjectName { get; init; }
     public required ProjectLifecycleStatus ProjectStatus { get; init; }
+    /// <summary>Есть право менять эти настройки; без него панель только для просмотра.</summary>
+    public required bool HasEditAccess { get; init; }
 
     [Display(Name = "Опубликовать сюжет всем",
     Description =
@@ -41,6 +45,8 @@ public class ProjectContactsSettingsViewModel
     public required ProjectIdentification ProjectId { get; set; }
     public required ProjectName ProjectName { get; init; }
     public required ProjectLifecycleStatus ProjectStatus { get; init; }
+    /// <summary>Есть право менять эти настройки; без него панель только для просмотра.</summary>
+    public required bool HasEditAccess { get; init; }
 
     [Display(Name = "Требовать телеграмм")]
     public required MandatoryContactsView Telegram { get; set; }
@@ -67,6 +73,8 @@ public class ProjectClaimSettingsViewModel
     public required ProjectIdentification ProjectId { get; set; }
     public required ProjectName ProjectName { get; init; }
     public required ProjectLifecycleStatus ProjectStatus { get; init; }
+    /// <summary>Есть право менять эти настройки; без него панель только для просмотра.</summary>
+    public required bool HasEditAccess { get; init; }
 
     [Display(Name = "Принимать заявки",
         Description = "Игроки смогут отсылать заявки на проект.")]
@@ -100,6 +108,8 @@ public class ProjectTimeZoneSettingsViewModel
 {
     public required ProjectIdentification ProjectId { get; set; }
     public required ProjectLifecycleStatus ProjectStatus { get; init; }
+    /// <summary>Есть право менять эти настройки; без него панель только для просмотра.</summary>
+    public required bool HasEditAccess { get; init; }
 
     [Display(Name = "Часовой пояс проекта",
         Description = "В этом часовом поясе показываются время и даты игры (расписание и т. п.)")]

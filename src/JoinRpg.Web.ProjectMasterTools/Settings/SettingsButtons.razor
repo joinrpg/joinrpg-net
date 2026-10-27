@@ -1,13 +1,17 @@
 <JoinButtonGroup>
     <JoinButton Preset="ButtonPreset.Setup" Link="@FieldsLink" Label="Настройки полей" />
-    <JoinButton Preset="ButtonPreset.Setup" Link="@CheckinSetupLink" Label="Настройки регистрации" />
-    @if (Blocked)
+    @* Без права настраивать проект эти страницы мастера не пустят — не ведём туда. *@
+    @if (HasEditAccess)
     {
-        <JoinButton Preset="ButtonPreset.Setup" Link="@UnblockLink" Label="Снять блокировку" />
-    }
-    @if (Active)
-    {
-        <JoinButton Preset="ButtonPreset.Delete" Link="@CloseLink" Label="Закрыть проект" />
+        <JoinButton Preset="ButtonPreset.Setup" Link="@CheckinSetupLink" Label="Настройки регистрации" />
+        @if (Blocked)
+        {
+            <JoinButton Preset="ButtonPreset.Setup" Link="@UnblockLink" Label="Снять блокировку" />
+        }
+        @if (Active)
+        {
+            <JoinButton Preset="ButtonPreset.Delete" Link="@CloseLink" Label="Закрыть проект" />
+        }
     }
 </JoinButtonGroup>
 
@@ -23,6 +27,11 @@
     /// <summary>Заблокирован на время восстановления данных (ADR023).</summary>
     [Parameter]
     public bool Blocked { get; set; }
+
+    /// <summary>Есть право настраивать проект.</summary>
+    [Parameter]
+    [EditorRequired]
+    public bool HasEditAccess { get; set; }
 
     public string FieldsLink => $"/{ProjectId.Value}/fields";
     public string CheckinSetupLink => $"/{ProjectId.Value}/checkin/setup";

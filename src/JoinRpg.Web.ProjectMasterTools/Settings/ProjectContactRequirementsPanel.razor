@@ -18,42 +18,42 @@
             <FormHorizontal>
                 <ValidationSummary Model="Model" />
                 <DataAnnotationsValidator />
-                <FormRowFor For="@(() => Model.Telegram)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Telegram" />
-                </FormRowFor>
-                <FormRowFor For="@(() => Model.Vkontakte)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Vkontakte" />
-                </FormRowFor>
-                <FormRowFor For="@(() => Model.Fio)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Fio" />
-                </FormRowFor>
-                <FormRowFor For="@(() => Model.Phone)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Phone" />
-                </FormRowFor>
-                <FormRow>
-                  <h4>Защищенные данные</h4>
-                  Не запрашивайте эти данные, если они вам не абсолютно необходимы (например, для поселения). 
-                </FormRow>
-                <FormRowFor For="@(() => Model.Passport)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.Passport" />
-                </FormRowFor>
-                <FormRowFor For="@(() => Model.RegistrationAddress)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.RegistrationAddress" />
-                </FormRowFor>
-                <FormRowFor For="@(() => Model.BirthDate)">
-                    <EnumRadioButtonGroup @bind-SelectedValue="Model.BirthDate" />
-                </FormRowFor>
-                @if (RequestsNewSensitiveData)
-                {
+                <fieldset disabled="@(!Model.HasEditAccess)">
+                    <FormRowFor For="@(() => Model.Telegram)">
+                        <EnumRadioButtonGroup @bind-SelectedValue="Model.Telegram" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.Vkontakte)">
+                        <EnumRadioButtonGroup @bind-SelectedValue="Model.Vkontakte" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.Fio)">
+                        <EnumRadioButtonGroup @bind-SelectedValue="Model.Fio" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.Phone)">
+                        <EnumRadioButtonGroup @bind-SelectedValue="Model.Phone" />
+                    </FormRowFor>
                     <FormRow>
-                        <JoinAlert Variation="VariationStyleEnum.Warning">
-                            Вы запрашиваете новые защищенные данные. Если игрок ранее давал вам согласие, вам нужно будет запрашивать его снова.
-                        </JoinAlert>
+                      <h4>Защищенные данные</h4>
+                      Не запрашивайте эти данные, если они вам не абсолютно необходимы (например, для поселения). 
                     </FormRow>
-                }
-                <FormRow>
-                    <JoinButton Preset="ButtonPreset.Save" Submit="true" Disabled="@formInvalid" />
-                </FormRow>
+                    <FormRowFor For="@(() => Model.Passport)">
+                        <EnumRadioButtonGroup @bind-SelectedValue="Model.Passport" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.RegistrationAddress)">
+                        <EnumRadioButtonGroup @bind-SelectedValue="Model.RegistrationAddress" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.BirthDate)">
+                        <EnumRadioButtonGroup @bind-SelectedValue="Model.BirthDate" />
+                    </FormRowFor>
+                    @if (RequestsNewSensitiveData)
+                    {
+                        <FormRow>
+                            <JoinAlert Variation="VariationStyleEnum.Warning">
+                                Вы запрашиваете новые защищенные данные. Если игрок ранее давал вам согласие, вам нужно будет запрашивать его снова.
+                            </JoinAlert>
+                        </FormRow>
+                    }
+                </fieldset>
+                <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>
         </EditForm>
         @if (success)

@@ -144,8 +144,23 @@ public class ProjectSettingsPanelTest : BunitContext
         client.SavedClaimSettings.ShouldNotBeNull().ShowFieldProblemsToPlayers.ShouldBeTrue();
     }
 
+    // Страницу настроек видит любой мастер: без права панель показывает настройки, но изменить их не даёт.
+    [Fact]
+    public void WithoutEditAccessPanelIsReadOnly()
+    {
+        client.HasEditAccess = false;
+        var cut = Render<ProjectMainSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+
+        cut.FindAll("button[type=submit]").ShouldBeEmpty();
+        cut.Find("fieldset").HasAttribute("disabled").ShouldBeTrue();
+        cut.Find("input[type=text]").GetAttribute("value").ShouldBe("Тестовый проект");
+        cut.Markup.ShouldContain("Только просмотр");
+    }
+
     private class FakeSettingsClient : IProjectSettingsClient
     {
+        public bool HasEditAccess { get; set; } = true;
+
         public ProjectMainSettingsViewModel? SavedMainSettings { get; private set; }
 
         public Task<ProjectMainSettingsViewModel> GetMainSettings(ProjectIdentification projectId)
@@ -153,6 +168,7 @@ public class ProjectSettingsPanelTest : BunitContext
             {
                 ProjectId = projectId,
                 ProjectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
+                HasEditAccess = HasEditAccess,
                 ProjectName = "Тестовый проект",
                 ProjectAnnounce = "",
                 EnableAccommodation = false,
@@ -174,6 +190,7 @@ public class ProjectSettingsPanelTest : BunitContext
                 ProjectId = projectId,
                 ProjectName = new ProjectName("Тест"),
                 ProjectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
+                HasEditAccess = HasEditAccess,
                 PublishEnabled = false,
                 CloneSettings = ProjectCloneSettingsView.CloneDisabled,
             });
@@ -206,6 +223,7 @@ public class ProjectSettingsPanelTest : BunitContext
                 ProjectId = projectId,
                 ProjectName = new ProjectName("Тест"),
                 ProjectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
+                HasEditAccess = HasEditAccess,
                 Telegram = MandatoryContactsView.Optional,
                 Phone = MandatoryContactsView.Optional,
                 Vkontakte = MandatoryContactsView.Optional,
@@ -230,6 +248,7 @@ public class ProjectSettingsPanelTest : BunitContext
                 ProjectId = projectId,
                 ProjectName = new ProjectName("Тест"),
                 ProjectStatus = ProjectLifecycleStatus.ActiveClaimsClosed,
+                HasEditAccess = HasEditAccess,
                 IsAcceptingClaims = false,
                 IsPublicProject = false,
                 DefaultTemplateCharacterId = null,
