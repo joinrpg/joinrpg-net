@@ -66,7 +66,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
     /// <summary>
     /// Returns true is the value has changed
     /// </summary>
-    private bool AssignFieldValue(FieldWithValue field, string? newValue)
+    private bool AssignFieldValue(Dictionary<int, FieldWithValue> fields, FieldWithValue field, string? newValue)
     {
         if (field.Value == newValue)
         {
@@ -77,7 +77,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
         UpdatedFields[field.Field.Id] = updated;
 
-        field.Value = newValue;
+        fields[field.Field.Id.ProjectFieldId] = updated.New;
 
         return true;
     }
@@ -94,15 +94,16 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
 
     private void GenerateDefaultValues(Dictionary<int, FieldWithValue> fields)
     {
+        // Снимок: присваивание заменяет элементы словаря, перебирать его самого при этом нельзя
         foreach (var field in fields.Values.Where(
             f => !f.HasEditableValue && f.Field.CanHaveValue &&
-                 f.Field.IsAvailableForTarget(AvailabilityTarget)))
+                 f.Field.IsAvailableForTarget(AvailabilityTarget)).ToList())
         {
             var newValue = GenerateDefaultValue(field);
 
             var normalizedValue = field.NormalizeValueBeforeAssign(newValue);
 
-            _ = AssignFieldValue(field, normalizedValue);
+            _ = AssignFieldValue(fields, field, normalizedValue);
         }
     }
 
@@ -131,7 +132,7 @@ internal abstract class FieldSaveStrategyBase(Claim? claim,
                 return;
             }
 
-            _ = AssignFieldValue(field, normalizedValue);
+            _ = AssignFieldValue(fields, field, normalizedValue);
         }
     }
 

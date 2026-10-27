@@ -360,13 +360,9 @@ public class CustomFieldsViewModel
         return result;
 
         FieldWithValue TryOverrideValue(FieldWithValue ch)
-        {
-            if (overrideValues?.GetValueOrDefault(ch.Field.Id.ProjectFieldId) is string overrideValue)
-            {
-                ch.Value = overrideValue;
-            }
-            return ch;
-        }
+            => overrideValues?.GetValueOrDefault(ch.Field.Id.ProjectFieldId) is string overrideValue
+                ? ch.WithValue(overrideValue)
+                : ch;
     }
 
     public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
