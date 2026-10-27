@@ -12,4 +12,6 @@ public interface IProjectSettingsClient
     Task<ProjectClaimSettingsViewModel> GetClaimSettings(ProjectIdentification projectId);
     Task SaveTimeZoneSettings(ProjectTimeZoneSettingsViewModel model);
     Task<ProjectTimeZoneSettingsViewModel> GetTimeZoneSettings(ProjectIdentification projectId);
+    Task SaveCheckInSettings(ProjectCheckInSettingsViewModel model);
+    Task<ProjectCheckInSettingsViewModel> GetCheckInSettings(ProjectIdentification projectId);
 }

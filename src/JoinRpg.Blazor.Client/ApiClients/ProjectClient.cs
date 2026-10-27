@@ -73,6 +73,14 @@ public class ProjectSettingsClient(HttpClient httpClient) : IProjectSettingsClie
     }
     async Task<ProjectTimeZoneSettingsViewModel> IProjectSettingsClient.GetTimeZoneSettings(ProjectIdentification projectId)
         => await (await httpClient.GetAsync($"webapi/{projectId.Value}/project/GetTimeZoneSettings")).ReadFromJsonOrThrowProblem<ProjectTimeZoneSettingsViewModel>();
+
+    async Task IProjectSettingsClient.SaveCheckInSettings(ProjectCheckInSettingsViewModel model)
+    {
+        var response = await httpClient.PostAsJsonAsync($"/webapi/{model.ProjectId.Value}/project/SaveCheckInSettings", model);
+        await response.EnsureSuccessOrThrowProblem();
+    }
+    async Task<ProjectCheckInSettingsViewModel> IProjectSettingsClient.GetCheckInSettings(ProjectIdentification projectId)
+        => await (await httpClient.GetAsync($"webapi/{projectId.Value}/project/GetCheckInSettings")).ReadFromJsonOrThrowProblem<ProjectCheckInSettingsViewModel>();
 }
 
 public class ProjectInfoClient(HttpClient httpClient) : IProjectInfoClient

@@ -80,4 +80,18 @@ public class ProjectOperationsController(IProjectSettingsClient client) : Contro
         await client.SaveTimeZoneSettings(model);
         return Ok();
     }
+
+    [HttpGet]
+    public async Task<ActionResult<ProjectCheckInSettingsViewModel>> GetCheckInSettings(ProjectIdentification projectId)
+        => Ok(await client.GetCheckInSettings(projectId));
+
+    [HttpPost]
+    public async Task<ActionResult> SaveCheckInSettings(
+        ProjectIdentification projectId,
+        ProjectCheckInSettingsViewModel model)
+    {
+        model.ProjectId = projectId;
+        await client.SaveCheckInSettings(model);
+        return Ok();
+    }
 }
