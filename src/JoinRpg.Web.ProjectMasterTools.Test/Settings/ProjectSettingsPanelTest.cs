@@ -144,6 +144,21 @@ public class ProjectSettingsPanelTest : BunitContext
         client.SavedClaimSettings.ShouldNotBeNull().ShowFieldProblemsToPlayers.ShouldBeTrue();
     }
 
+    // Настройки регистрации переехали со страницы /checkin/setup панелью на страницу настроек проекта.
+    [Fact]
+    public void CheckInSettingsAreSaved()
+    {
+        var cut = Render<ProjectCheckInSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+
+        cut.Find("input[type=checkbox][name=InProgress]").Change(true);
+        cut.Find("form").Submit();
+
+        var saved = client.SavedCheckInSettings.ShouldNotBeNull();
+        saved.InProgress.ShouldBeTrue();
+        saved.AllowSecondRoles.ShouldBeTrue();
+        cut.Markup.ShouldContain("Настройки регистрации сохранены");
+    }
+
     // Страницу настроек видит любой мастер: без права панель показывает настройки, но изменить их не даёт.
     [Fact]
     public void WithoutEditAccessPanelIsReadOnly()
@@ -258,6 +273,26 @@ public class ProjectSettingsPanelTest : BunitContext
                 ShowFieldProblemsToPlayers = false,
             });
         public Task SaveTimeZoneSettings(ProjectTimeZoneSettingsViewModel model) => throw new NotImplementedException();
+
+        public ProjectCheckInSettingsViewModel? SavedCheckInSettings { get; private set; }
+
+        public Task SaveCheckInSettings(ProjectCheckInSettingsViewModel model)
+        {
+            SavedCheckInSettings = model;
+            SavedCount++;
+            return Task.CompletedTask;
+        }
+
+        // Вторые роли уже разрешены — проверяем, что непотроганный флаг уходит на сервер как был.
+        public Task<ProjectCheckInSettingsViewModel> GetCheckInSettings(ProjectIdentification projectId)
+            => Task.FromResult(new ProjectCheckInSettingsViewModel
+            {
+                ProjectId = projectId,
+                ProjectStatus = ProjectLifecycleStatus.ActiveClaimsOpen,
+                HasEditAccess = HasEditAccess,
+                InProgress = false,
+                AllowSecondRoles = true,
+            });
         public Task<ProjectTimeZoneSettingsViewModel> GetTimeZoneSettings(ProjectIdentification projectId) => throw new NotImplementedException();
     }
 }

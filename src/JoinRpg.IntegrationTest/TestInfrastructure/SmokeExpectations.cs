@@ -118,6 +118,9 @@ internal static class SmokeExpectations
             // Настройки полей переехали панелью на страницу настроек проекта — старый адрес туда редиректит.
             ["{ProjectId}/fields/Settings"] = HttpStatusCode.Redirect,
 
+            // Настройки регистрации — тоже панелью на странице настроек проекта.
+            ["{projectId}/checkin/Setup"] = HttpStatusCode.Redirect,
+
             // Вторая роль предлагается только по заявке, прошедшей чек-ин.
             ["{ProjectId}/claim/{ClaimId}/secondrole"] = HttpStatusCode.Redirect,
 

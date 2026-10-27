@@ -3,7 +3,6 @@
     @* Без права настраивать проект эти страницы мастера не пустят — не ведём туда. *@
     @if (HasEditAccess)
     {
-        <JoinButton Preset="ButtonPreset.Setup" Link="@CheckinSetupLink" Label="Настройки регистрации" />
         @if (Blocked)
         {
             <JoinButton Preset="ButtonPreset.Setup" Link="@UnblockLink" Label="Снять блокировку" />
@@ -34,7 +33,6 @@
     public bool HasEditAccess { get; set; }
 
     public string FieldsLink => $"/{ProjectId.Value}/fields";
-    public string CheckinSetupLink => $"/{ProjectId.Value}/checkin/setup";
     public string CloseLink => $"/{ProjectId.Value}/close";
     public string UnblockLink => $"/{ProjectId.Value}/unblock";
 

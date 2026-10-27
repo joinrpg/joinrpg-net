@@ -9,10 +9,10 @@ using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Portal.Models;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CheckIn;
 using JoinRpg.Web.Models.Print;
+using JoinRpg.Web.ProjectMasterTools.Settings;
 using JoinRpg.Web.UserProfile;
 using JoinRpg.WebPortal.Managers.CheckIn;
 using JoinRpg.WebPortal.Managers.Plots;
@@ -23,7 +23,6 @@ namespace JoinRpg.Portal.Controllers;
 [Route("{projectId}/checkin/[action]")]
 [MasterAuthorize()] //TODO specific permission
 public class CheckInController(
-    IProjectService projectService,
     IClaimsRepository claimsRepository,
     IClaimInfoRepository claimInfoRepository,
     IClaimService claimService,
@@ -79,31 +78,13 @@ public class CheckInController(
         return RedirectToAction("CheckIn", new { projectId = claimId.ProjectId.Value, claimId = claimId.ClaimId });
     }
 
-    [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
-    public async Task<ActionResult> Setup(ProjectIdentification projectId)
-    {
-        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-        return View(new CheckInSetupModel(project));
-    }
-
-    [HttpPost, MasterAuthorize(Permission.CanChangeProjectProperties)]
-    public async Task<ActionResult> Setup(CheckInSetupModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
-        try
-        {
-            await projectService.SetCheckInSettings(new(model.ProjectId), new ProjectCheckInSettings(model.CheckInProgress, model.AllowSecondRoles));
-            return RedirectToAction("Setup", new { model.ProjectId });
-        }
-        catch (Exception ex)
-        {
-            AddModelException(ex);
-            return View(model);
-        }
-    }
+    /// <summary>
+    /// Настройки регистрации переехали панелью на страницу настроек проекта — старый адрес
+    /// оставлен для закладок и ведёт на эту панель.
+    /// </summary>
+    [HttpGet]
+    public ActionResult Setup(ProjectIdentification projectId)
+        => RedirectToAction("Edit", "Game", new { projectId = projectId.Value }, ProjectCheckInSettingsPanel.AnchorId);
 
     [HttpGet("~/{ProjectId}/claim/{ClaimId}/checkin")]
     public async Task<ActionResult> CheckIn(ClaimIdentification claimId)

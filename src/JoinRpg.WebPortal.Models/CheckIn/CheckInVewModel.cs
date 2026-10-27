@@ -29,22 +29,3 @@ public class CheckInListItemViewModel(ClaimWithPlayer claim)
 
     public int ClaimId { get; } = claim.ClaimId.ClaimId;
 }
-
-public class CheckInSetupModel
-{
-    [Display(Name = "Регистрация в процессе", Description = "Заезд и регистрация игроков идет. Включить кнопку регистрации.")]
-    public bool CheckInProgress { get; set; }
-    [Display(Name = "Разрешить выпуск вторыми ролями", Description = "Включить соответствующую кнопку.")]
-    public bool AllowSecondRoles { get; set; }
-
-    public int ProjectId { get; set; }
-
-    public CheckInSetupModel(ProjectInfo project)
-    {
-        ProjectId = project.ProjectId;
-        CheckInProgress = project.ProjectCheckInSettings.InProgress;
-        AllowSecondRoles = project.ProjectCheckInSettings.AllowSecondRoles;
-    }
-
-    public CheckInSetupModel() { }
-}

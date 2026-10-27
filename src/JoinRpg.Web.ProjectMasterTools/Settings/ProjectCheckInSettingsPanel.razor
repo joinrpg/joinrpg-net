@@ -1,0 +1,50 @@
+@inherits SettingsPanelBase<ProjectCheckInSettingsViewModel>
+@inject IProjectSettingsClient settingsClient
+
+@if (Model is { ProjectStatus: ProjectLifecycleStatus.Archived })
+{
+    return;
+}
+
+@* Ссылки на панель (в т. ч. редирект со старой страницы /checkin/setup) ведут на якорь settings-checkin. *@
+<JoinCollapsePanel Group="project-settings" Id="@AnchorId">
+    <Header>Регистрация</Header>
+    <ChildContent>
+        @if (Model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
+        <EditForm FormName="ProjectCheckInSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+            <FormHorizontal>
+                <ValidationSummary Model="Model" />
+                <DataAnnotationsValidator />
+                <fieldset disabled="@(!Model.HasEditAccess)">
+                    <FormRowFor For="@(() => Model.InProgress)">
+                        <CheckboxInput @bind-Value="Model.InProgress" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.AllowSecondRoles)">
+                        <CheckboxInput @bind-Value="Model.AllowSecondRoles" />
+                    </FormRowFor>
+                </fieldset>
+                <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
+            </FormHorizontal>
+        </EditForm>
+        @if (success)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">Настройки регистрации сохранены</JoinAlert>
+        }
+    </ChildContent>
+</JoinCollapsePanel>
+
+@code {
+    /// <summary>Якорь панели на странице настроек проекта.</summary>
+    public const string AnchorId = "settings-checkin";
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    protected override Task<ProjectCheckInSettingsViewModel> LoadModel() => settingsClient.GetCheckInSettings(ProjectId);
+
+    protected override Task SaveModel(ProjectCheckInSettingsViewModel model) => settingsClient.SaveCheckInSettings(model);
+}

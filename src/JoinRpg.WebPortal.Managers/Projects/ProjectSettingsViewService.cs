@@ -122,6 +122,22 @@ internal class ProjectSettingsViewService(
         await projectService.SetPublishSettings(model.ProjectId, (ProjectCloneSettings)model.CloneSettings, model.PublishEnabled);
     }
 
+    async Task<ProjectCheckInSettingsViewModel> IProjectSettingsClient.GetCheckInSettings(ProjectIdentification projectId)
+    {
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return new ProjectCheckInSettingsViewModel()
+        {
+            ProjectId = projectId,
+            ProjectStatus = project.ProjectStatus,
+            HasEditAccess = HasEditAccess(project),
+            InProgress = project.ProjectCheckInSettings.InProgress,
+            AllowSecondRoles = project.ProjectCheckInSettings.AllowSecondRoles,
+        };
+    }
+
+    async Task IProjectSettingsClient.SaveCheckInSettings(ProjectCheckInSettingsViewModel model)
+        => await projectService.SetCheckInSettings(model.ProjectId, new ProjectCheckInSettings(model.InProgress, model.AllowSecondRoles));
+
     async Task<ProjectTimeZoneSettingsViewModel> IProjectSettingsClient.GetTimeZoneSettings(ProjectIdentification projectId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);

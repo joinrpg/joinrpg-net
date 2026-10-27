@@ -104,6 +104,20 @@ public class ProjectClaimSettingsViewModel
     public required bool ShowFieldProblemsToPlayers { get; set; }
 }
 
+public class ProjectCheckInSettingsViewModel
+{
+    public required ProjectIdentification ProjectId { get; set; }
+    public required ProjectLifecycleStatus ProjectStatus { get; init; }
+    /// <summary>Есть право менять эти настройки; без него панель только для просмотра.</summary>
+    public required bool HasEditAccess { get; init; }
+
+    [Display(Name = "Регистрация в процессе", Description = "Заезд и регистрация игроков идет. Включить кнопку регистрации.")]
+    public required bool InProgress { get; set; }
+
+    [Display(Name = "Разрешить выпуск вторыми ролями", Description = "Включить соответствующую кнопку.")]
+    public required bool AllowSecondRoles { get; set; }
+}
+
 public class ProjectTimeZoneSettingsViewModel
 {
     public required ProjectIdentification ProjectId { get; set; }
