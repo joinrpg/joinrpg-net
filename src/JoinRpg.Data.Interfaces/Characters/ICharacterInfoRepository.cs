@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 
 namespace JoinRpg.Data.Interfaces.Characters;
 
@@ -34,6 +35,22 @@ public interface ICharacterInfoRepository
     /// два запроса вместо одного.
     /// </remarks>
     Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByClaims(IReadOnlyCollection<ClaimIdentification> claimIds);
+
+    /// <summary>
+    /// Персонажи проекта, на которых у игрока есть заявки в статусе <paramref name="claimStatusSpec"/> — одним
+    /// запросом.
+    /// </summary>
+    /// <remarks>
+    /// Нужен, например, проверке доступа игрока к теме форума (ADR026 §1): видна ли тема, решают
+    /// группы персонажей его принятых заявок. Отдельный метод, а не связка «заголовки заявок игрока,
+    /// потом их персонажи», — по той же причине, что и <see cref="GetCharacterInfosByClaims"/>.
+    /// Заявки в агрегате — все, включая заявки других игроков: статус фильтрует только выбор
+    /// персонажей.
+    /// </remarks>
+    Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByPlayer(
+        ProjectIdentification projectId,
+        UserIdentification playerId,
+        ClaimStatusSpec claimStatusSpec);
 
     /// <summary>
     /// Персонаж одной заявки. <c>null</c>, если такой заявки нет.

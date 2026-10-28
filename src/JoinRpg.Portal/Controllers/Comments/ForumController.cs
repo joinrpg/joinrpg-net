@@ -1,14 +1,17 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.Comments;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Comments;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Comments;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
+using JoinRpg.WebPortal.Managers.Comments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +26,9 @@ public class ForumController(
     IForumRepository forumRepository,
     IClaimsRepository claimsRepository,
     ICurrentUserAccessor currentUserAccessor,
-    IClaimService claimService) : JoinControllerGameBase
+    IClaimService claimService,
+    CommentDiscussionOwnerLoader ownerLoader,
+    ICommentDiscussionRepository commentDiscussionRepository) : JoinControllerGameBase
 {
     [HttpGet("~/{projectId}/roles/{charactergroupid}/create-thread")]
     [ProjectShouldBeActive]
@@ -120,49 +125,50 @@ public class ForumController(
     [HttpPost("~/{projectId}/forums/createcomment")]
     public async Task<ActionResult> CreateComment(AddCommentViewModel viewModel)
     {
-        CommentDiscussion? discussion = await forumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
-        if (discussion is null)
+        var access = await ownerLoader.GetOwnerOrDefault(
+            new ProjectIdentification(viewModel.ProjectId),
+            new CommentDiscussionId(viewModel.CommentDiscussionId));
+        if (access is null)
         {
             return NotFound();
         }
 
-        var discussionProjectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(viewModel.ProjectId));
-        discussion.RequestAnyAccess(currentUserAccessor.UserIdentification, discussionProjectInfo);
+        if (!access.HasAccess)
+        {
+            throw new NoAccessToProjectException(access.ProjectInfo, currentUserAccessor.UserIdentification);
+        }
 
         try
-
         {
             if (viewModel.HideFromUser)
             {
-                _ = discussionProjectInfo.RequestMasterAccess(currentUserAccessor.UserIdentification);
+                _ = access.ProjectInfo.RequestMasterAccess(currentUserAccessor.UserIdentification);
             }
 
-            var claim = discussion.GetClaim();
-            if (claim != null)
+            switch (access.Owner)
             {
-                // Подтверждение и отклонение финопераций — в диалоге модерации (FinanceModerationButton), не здесь
-                await claimService.AddComment(
-                    claim.GetId(),
-                    viewModel.ParentCommentId,
-                    !viewModel.HideFromUser,
-                    viewModel.CommentText);
-            }
-            else
-            {
-                var forumThread = discussion.GetForumThread();
-                if (forumThread != null)
-                {
-                    await forumService.AddComment(forumThread.GetId(), viewModel.ParentCommentId,
+                case ClaimDiscussionOwner claimOwner:
+                    // Подтверждение и отклонение финопераций — в диалоге модерации (FinanceModerationButton), не здесь
+                    await claimService.AddComment(
+                        claimOwner.ClaimId,
+                        viewModel.ParentCommentId,
+                        !viewModel.HideFromUser,
+                        viewModel.CommentText);
+                    break;
+                case ForumDiscussionOwner forumOwner:
+                    await forumService.AddComment(forumOwner.ThreadId, viewModel.ParentCommentId,
                       !viewModel.HideFromUser, viewModel.CommentText);
-                }
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown comment discussion owner {access.Owner}");
             }
 
-            return CommentRedirectHelper.RedirectToDiscussion(Url, discussion);
+            return CommentRedirectHelper.RedirectToDiscussion(Url, access.Owner);
         }
         catch
         {
             //TODO: Message that comment is not added
-            return CommentRedirectHelper.RedirectToDiscussion(Url, discussion);
+            return CommentRedirectHelper.RedirectToDiscussion(Url, access.Owner);
         }
 
     }
@@ -207,8 +213,12 @@ public class ForumController(
     public async Task<ActionResult> ConcealComment(ProjectIdentification projectid, int commentid, int commentDiscussionId)
     {
         await claimService.ConcealComment(projectid, commentid, commentDiscussionId);
-        var discussion =
-               await forumRepository.GetDiscussion(projectid, commentDiscussionId);
-        return CommentRedirectHelper.RedirectToDiscussion(Url, discussion);
+        // Владелец — только для адреса перехода: права на скрытие проверил сервис.
+        var owner = await commentDiscussionRepository.GetOwnerOrDefault(new CommentDiscussionId(commentDiscussionId));
+        if (owner is null || owner.ProjectId != projectid)
+        {
+            return NotFound();
+        }
+        return CommentRedirectHelper.RedirectToDiscussion(Url, owner);
     }
 }

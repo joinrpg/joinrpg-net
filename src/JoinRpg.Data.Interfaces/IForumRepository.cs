@@ -6,7 +6,6 @@ namespace JoinRpg.Data.Interfaces;
 public interface IForumRepository
 {
     Task<ForumThread> GetThread(ForumThreadIdentification forumThreadId);
-    Task<CommentDiscussion?> GetDiscussion(int projectId, int commentDiscussionId);
 
     Task<CommentDiscussion?> GetDiscussionByComment(int projectId, int commentId);
 

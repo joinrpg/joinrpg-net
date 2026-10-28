@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
@@ -36,6 +37,20 @@ public sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacter
     public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByClaims(IReadOnlyCollection<ClaimIdentification> claimIds)
         => Task.FromResult<IReadOnlyCollection<CharacterInfo>>(
             [.. All().Where(character => character.Claims.Any(claim => claimIds.Contains(claim.ClaimId)))]);
+
+    /// <remarks>Поддержан только <see cref="ClaimStatusSpec.Approved"/> (включая CheckedIn — как в БД).</remarks>
+    public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByPlayer(
+        ProjectIdentification projectId,
+        UserIdentification playerId,
+        ClaimStatusSpec claimStatusSpec)
+    {
+        if (claimStatusSpec != ClaimStatusSpec.Approved)
+        {
+            throw new NotSupportedException();
+        }
+        return Task.FromResult<IReadOnlyCollection<CharacterInfo>>(
+            [.. All().Where(character => character.Claims.Any(claim => claim.PlayerId == playerId && claim.IsApproved))]);
+    }
 
     public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(
         ProjectIdentification projectId,
