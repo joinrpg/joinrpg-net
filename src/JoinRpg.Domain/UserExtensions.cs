@@ -1,4 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Users;
 
@@ -36,22 +35,6 @@ public static class UserExtensions
             user.Extra?.RegistrationAddress
             );
     }
-
-    public static UserFullName ExtractFullName(this User user)
-    {
-        return new UserFullName(
-            PrefferedName.FromOptional(user.PrefferedName),
-            BornName.FromOptional(user.BornName),
-            SurName.FromOptional(user.SurName),
-            FatherName.FromOptional(user.FatherName));
-    }
-
-    public static UserDisplayName ExtractDisplayName(this User user)
-    {
-        return new UserDisplayName(user.ExtractFullName(), new Email(user.Email));
-    }
-
-    public static UserInfoHeader ToUserInfoHeader(this User user) => new(new UserIdentification(user.UserId), user.ExtractDisplayName());
 
     /// <summary>
     /// Returns display name of a user

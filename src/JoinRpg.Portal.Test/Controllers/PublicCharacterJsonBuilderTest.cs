@@ -18,7 +18,7 @@ namespace JoinRpg.Portal.Test.Controllers;
 public class PublicCharacterJsonBuilderTest
 {
     private static readonly UserInfoHeader Player =
-        new(new UserIdentification(42), new UserDisplayName("Василий Пупкин", "Василий Пупкин"));
+        new(new UserIdentification(42), new UserDisplayName("Василий Пупкин", "Василий Пупкин"), Avatar: null);
 
     [Fact]
     public void VisiblePlayerIsSerialized()

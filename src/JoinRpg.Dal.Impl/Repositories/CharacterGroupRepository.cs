@@ -44,12 +44,14 @@ internal class CharacterGroupRepository(
                 CreatedSur = cg.CreatedBy.SurName,
                 CreatedFather = cg.CreatedBy.FatherName,
                 CreatedEmail = cg.CreatedBy.Email,
+                CreatedAvatarId = cg.CreatedBy.SelectedAvatarId,
                 UpdatedById = (int?)cg.UpdatedBy.UserId,
                 UpdatedPreffered = cg.UpdatedBy.PrefferedName,
                 UpdatedBorn = cg.UpdatedBy.BornName,
                 UpdatedSur = cg.UpdatedBy.SurName,
                 UpdatedFather = cg.UpdatedBy.FatherName,
                 UpdatedEmail = cg.UpdatedBy.Email,
+                UpdatedAvatarId = cg.UpdatedBy.SelectedAvatarId,
                 CharacterCount = ctx.Set<Character>().Count(c =>
                     c.ProjectId == projectId.Value &&
                     SqlFunctions.CharIndex(
@@ -70,9 +72,9 @@ internal class CharacterGroupRepository(
             MarkdownString? description = row.Contents is null ? null : new MarkdownString(row.Contents);
             var marks = new CreateUpdateMarksInfo(
                 row.CreatedAt,
-                BuildUserInfo(row.CreatedById, row.CreatedPreffered, row.CreatedBorn, row.CreatedSur, row.CreatedFather, row.CreatedEmail),
+                BuildUserInfo(row.CreatedById, row.CreatedPreffered, row.CreatedBorn, row.CreatedSur, row.CreatedFather, row.CreatedEmail, row.CreatedAvatarId),
                 row.UpdatedAt,
-                BuildUserInfo(row.UpdatedById, row.UpdatedPreffered, row.UpdatedBorn, row.UpdatedSur, row.UpdatedFather, row.UpdatedEmail));
+                BuildUserInfo(row.UpdatedById, row.UpdatedPreffered, row.UpdatedBorn, row.UpdatedSur, row.UpdatedFather, row.UpdatedEmail, row.UpdatedAvatarId));
 
             result.Add(new CharacterGroupFullInfo(groupInfo, row.CharacterCount, description, marks));
         }
@@ -102,7 +104,7 @@ internal class CharacterGroupRepository(
         return [.. projectIds.Select(id => new ProjectIdentification(id))];
     }
 
-    private static UserInfoHeader? BuildUserInfo(int? userId, string? preffered, string? born, string? sur, string? father, string? email)
+    private static UserInfoHeader? BuildUserInfo(int? userId, string? preffered, string? born, string? sur, string? father, string? email, int? avatarId)
     {
         if (userId is null || email is null)
         {
@@ -117,6 +119,7 @@ internal class CharacterGroupRepository(
                     BornName.FromOptional(born),
                     SurName.FromOptional(sur),
                     FatherName.FromOptional(father)),
-                new Email(email)));
+                new Email(email)),
+            AvatarIdentification.FromOptional(avatarId));
     }
 }

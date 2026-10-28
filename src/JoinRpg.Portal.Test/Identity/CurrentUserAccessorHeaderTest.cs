@@ -37,7 +37,7 @@ public class CurrentUserAccessorHeaderTest
         accessor.DisplayName.ShouldBe(new UserDisplayName("Ник", "Иван Иванов"), source);
         accessor.Avatar.ShouldBe(new AvatarIdentification(42), source);
         ((ICurrentUserAccessor)accessor).ToUserInfoHeader().ShouldBe(
-            new UserInfoHeader(new UserIdentification(3), new UserDisplayName("Ник", "Иван Иванов")), source);
+            new UserInfoHeader(new UserIdentification(3), new UserDisplayName("Ник", "Иван Иванов"), new AvatarIdentification(42)), source);
     }
 
     [Fact]

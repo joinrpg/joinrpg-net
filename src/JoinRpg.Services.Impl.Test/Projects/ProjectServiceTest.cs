@@ -18,7 +18,7 @@ namespace JoinRpg.Services.Impl.Test.Projects;
 public class ProjectServiceTest : ProjectMetadataServiceTestBase
 {
     private readonly FakeNotificationService notifications = new();
-    private static readonly UserInfoHeader siteAdmin = new(new UserIdentification(100500), new UserDisplayName("Админ", null));
+    private static readonly UserInfoHeader siteAdmin = new(new UserIdentification(100500), new UserDisplayName("Админ", null), Avatar: null);
     private IReadOnlyCollection<UserInfoHeader> admins = [siteAdmin];
 
     // Возвращаем интерфейс намеренно: SetPublishSettings — явная реализация IProjectService.
@@ -346,7 +346,7 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     public async Task UnblockProject_AdminIsMaster_NotifiedOnce()
     {
         mock.Project.IsBlocked = true;
-        var masterAdmin = new UserInfoHeader(new UserIdentification(mock.Master.UserId), new UserDisplayName("Мастер-админ", null));
+        var masterAdmin = new UserInfoHeader(new UserIdentification(mock.Master.UserId), new UserDisplayName("Мастер-админ", null), Avatar: null);
         admins = [masterAdmin, siteAdmin];
 
         await CreateService().UnblockProject(ProjectId);

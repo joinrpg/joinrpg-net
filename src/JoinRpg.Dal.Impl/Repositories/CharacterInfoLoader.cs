@@ -73,6 +73,7 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                     PlayerSurName = claim.Player.SurName,
                     PlayerFatherName = claim.Player.FatherName,
                     PlayerEmail = claim.Player.Email,
+                    PlayerSelectedAvatarId = claim.Player.SelectedAvatarId,
                     ClaimStatus = claim.ClaimStatus,
                     ClaimDenialStatus = claim.ClaimDenialStatus,
                     ResponsibleMasterUserId = claim.ResponsibleMasterUserId,

@@ -1,4 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
@@ -34,7 +33,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                     pt => new PaymentTypeInfo(
                         pt.TypeKind,
                         pt.IsActive,
-                        new UserInfoHeader(new UserIdentification(pt.User.UserId), pt.User.ExtractDisplayName()),
+                        pt.User.ToUserInfoHeader(),
                         new PaymentTypeIdentification(pt.ProjectId, pt.PaymentTypeId),
                         pt.Name,
                         pt.IsDefault
@@ -87,6 +86,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             return [.. project.ProjectAcls.Select(acl => new ProjectMasterInfo(
                 new UserIdentification(acl.User.UserId),
                 acl.User.ExtractDisplayName(),
+                AvatarIdentification.FromOptional(acl.User.SelectedAvatarId),
                 new Email(acl.User.Email),
                 acl.GetPermissions(),
                 acl.IsOwner,

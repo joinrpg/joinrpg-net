@@ -1,5 +1,5 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.DataModel.Extensions;
 using Claim = System.Security.Claims.Claim;
 using ClaimTypes = System.Security.Claims.ClaimTypes;
 

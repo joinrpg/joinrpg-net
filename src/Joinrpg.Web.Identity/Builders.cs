@@ -1,5 +1,5 @@
-using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Extensions;
 
 namespace Joinrpg.Web.Identity;
 

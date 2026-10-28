@@ -727,7 +727,7 @@ public class CharacterInfoTest
             DefaultMasterId);
 
     private static UserInfoHeader MakePlayer(UserIdentification userId)
-        => new(userId, new UserDisplayName($"Игрок{userId.Value}", null));
+        => new(userId, new UserDisplayName($"Игрок{userId.Value}", null), Avatar: null);
 
     private static CharacterClaimInfo MakeClaim(
         ProjectInfo projectInfo,

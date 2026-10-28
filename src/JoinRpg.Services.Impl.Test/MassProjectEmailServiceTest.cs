@@ -20,7 +20,7 @@ public class MassProjectEmailServiceTest
         CharacterId = new CharacterIdentification(mock.Project.ProjectId, 1),
         CharacterName = "CharacterName",
         ExtraNicknames = "",
-        Player = new UserInfoHeader(new UserIdentification(mock.Player.UserId), new UserDisplayName("Player", null)),
+        Player = new UserInfoHeader(new UserIdentification(mock.Player.UserId), new UserDisplayName("Player", null), Avatar: null),
         ResponsibleMasterUserId = new UserIdentification(mock.Master.UserId),
     };
 

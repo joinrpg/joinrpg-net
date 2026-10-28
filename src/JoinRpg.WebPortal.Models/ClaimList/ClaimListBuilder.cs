@@ -1,7 +1,6 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;

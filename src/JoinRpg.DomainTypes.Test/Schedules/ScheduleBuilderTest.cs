@@ -438,12 +438,12 @@ public class ScheduleBuilderTest
     private static Dictionary<UserIdentification, UserInfoHeader> MakeAuthorUsers(params int[] userIds)
         => userIds.ToDictionary(
             id => new UserIdentification(id),
-            id => new UserInfoHeader(new UserIdentification(id), new UserDisplayName($"Ведущий {id}", null)));
+            id => new UserInfoHeader(new UserIdentification(id), new UserDisplayName($"Ведущий {id}", null), Avatar: null));
 
     private static CharacterClaimInfo MakeApprovedClaim(ProjectInfo projectInfo)
         => new(
             new ClaimIdentification(ProjectId, 1),
-            new UserInfoHeader(new UserIdentification(200), new UserDisplayName("Автор", null)),
+            new UserInfoHeader(new UserIdentification(200), new UserDisplayName("Автор", null), Avatar: null),
             ClaimStatus.Approved,
             DenialStatus: null,
             DefaultMasterId,

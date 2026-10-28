@@ -297,7 +297,7 @@ public class CustomFieldsViewModelTest
         // В словаре только седьмой: всё остальное на экране считается удалённым пользователем.
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> users = new Dictionary<UserIdentification, UserInfoHeader>
         {
-            [new UserIdentification(7)] = new(new UserIdentification(7), new UserDisplayName("Седьмой", null)),
+            [new UserIdentification(7)] = new(new UserIdentification(7), new UserDisplayName("Седьмой", null), Avatar: null),
         };
 
         var vm = new CustomFieldsViewModel(

@@ -437,7 +437,8 @@ public class MockedProject
             claim.GetId(),
             new UserInfoHeader(
                 new UserIdentification(claim.PlayerUserId),
-                new UserDisplayName(new UserFullName(PrefferedName.FromOptional(claim.Player.PrefferedName), null, null, null), new Email(claim.Player.Email))),
+                new UserDisplayName(new UserFullName(PrefferedName.FromOptional(claim.Player.PrefferedName), null, null, null), new Email(claim.Player.Email)),
+                AvatarIdentification.FromOptional(claim.Player.SelectedAvatarId)),
             claim.ClaimStatus,
             claim.ClaimDenialStatus,
             new UserIdentification(claim.ResponsibleMasterUserId),

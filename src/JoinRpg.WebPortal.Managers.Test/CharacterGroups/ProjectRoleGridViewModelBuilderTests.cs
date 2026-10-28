@@ -307,7 +307,7 @@ public class ProjectRoleGridViewModelBuilderTests
         var field = _mock.CreateField("Кураторы", fieldType: ProjectFieldType.MultiUserLink);
         var character = _mock.CreateCharacter("Вася");
         MockedProject.AssignFieldValues(character, new FieldWithValue(field, "7,8"));
-        var curator = new UserInfoHeader(new UserIdentification(7), new UserDisplayName("Куратор", null));
+        var curator = new UserInfoHeader(new UserIdentification(7), new UserDisplayName("Куратор", null), Avatar: null);
 
         var result = BuildGrid(
             Config(fields: [field.Id]),

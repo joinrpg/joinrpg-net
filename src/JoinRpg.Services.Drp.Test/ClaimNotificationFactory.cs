@@ -21,7 +21,7 @@ internal static class ClaimNotificationFactory
     public static readonly UserInfoHeader Master = User(20, "Мастер Мастеров");
     public static readonly UserInfoHeader OtherMaster = User(21, "Другой Мастер");
 
-    public static UserInfoHeader User(int id, string name) => new(new UserIdentification(id), new UserDisplayName(name, null));
+    public static UserInfoHeader User(int id, string name) => new(new UserIdentification(id), new UserDisplayName(name, null), Avatar: null);
 
     private static readonly ClaimNotificationTextBuilder TextBuilder = new();
 
