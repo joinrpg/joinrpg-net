@@ -1,6 +1,12 @@
 ﻿@using System.Linq.Expressions
-<input type="hidden" name="@Name" value="@(internalValue ? "true" : "false" )" />
-<input type="checkbox" id="@inputId" name="@Name" @onchange="UpdateValue" checked="@internalValue" @attributes="AdditionalAttributes"/>
+@*
+    Классическая схема MVC: checkbox со значением true стоит ПЕРЕД hidden. MVC биндит bool по первому значению,
+    поэтому отмеченная галочка постит ["true", "false"], снятая — ["false"]. Так правка галочки доходит до сервера
+    и без JS — пока остров пререндерен, а WASM ещё не загрузился.
+    Отключённый checkbox не постится, поэтому тогда hidden несёт текущее значение, а не false.
+*@
+<input type="checkbox" id="@inputId" name="@Name" value="true" @onchange="UpdateValue" checked="@internalValue" @attributes="AdditionalAttributes"/>
+<input type="hidden" name="@Name" value="@(IsDisabled && internalValue ? "true" : "false")" />
 
 @code {
     [CascadingParameter]
@@ -33,6 +39,12 @@
     private bool internalValue;
     private string? inputId;
 
+    /// <summary>
+    /// Blazor не выводит атрибут со значением false/null, так что disabled="@false" чекбокс не отключает.
+    /// </summary>
+    private bool IsDisabled
+        => AdditionalAttributes?.TryGetValue("disabled", out var disabled) == true && disabled is not (null or false);
+
     protected override void OnParametersSet()
         => inputId = LabelTarget?.Claim(this, FormRowLabelTarget.ExplicitId(AdditionalAttributes));
 
@@ -45,7 +57,7 @@
 
     private async Task UpdateValue(ChangeEventArgs eventArgs)
     {
-        internalValue = !internalValue;
+        internalValue = eventArgs.Value is bool isChecked ? isChecked : !internalValue;
         await ValueChanged.InvokeAsync(internalValue);
         EditContext?.NotifyFieldChanged(FieldIdentifier);
     }
