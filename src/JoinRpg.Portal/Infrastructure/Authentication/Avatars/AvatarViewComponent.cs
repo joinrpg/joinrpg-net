@@ -1,5 +1,5 @@
-using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;

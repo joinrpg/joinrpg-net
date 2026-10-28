@@ -15,7 +15,7 @@
 
 ### Кросс-слойные интерфейсы (`JoinRpg.Interfaces`)
 
-`ICurrentUserAccessor` — текущий пользователь, `INotificationService` — очередь уведомлений, `IDailyJob` — фоновые задачи.
+`ICurrentUserAccessor` — текущий пользователь, `INotificationService` — очередь уведомлений, `IDailyJob` — фоновые задачи, `IAvatarLoader` — адрес аватарки по её id.
 
 ## Правила локализации
 
