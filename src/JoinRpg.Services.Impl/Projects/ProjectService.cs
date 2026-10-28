@@ -1,4 +1,6 @@
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Services.Interfaces.Projects;
 
@@ -8,7 +10,8 @@ internal class ProjectService(
     ICurrentUserAccessor currentUserAccessor,
     MasterEmailService masterEmailService,
     ILogger<ProjectService> logger,
-    IProjectPropsService projectPropsService
+    IProjectPropsService projectPropsService,
+    ICharacterInfoRepository characterInfoRepository
     ) : IProjectService
 {
     /// <param name="ownerRole">Роль создателя проекта на странице мастеров (ADR019).</param>
@@ -205,6 +208,15 @@ internal class ProjectService(
 
     public async Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings, string? claimApplyRules = null)
     {
+        // На шаблон по умолчанию ведёт «Подать заявку в проект» — закрытый для игроков шаблон её бы сломал (#3303).
+        // Персонаж читается до мутации: операция над свойствами проекта не грузит персонажей.
+        if (settings.DefaultTemplate is { } defaultTemplate
+            && defaultTemplate.ProjectId == projectId
+            && await characterInfoRepository.GetCharacterInfoOrDefault(defaultTemplate) is { CharacterTypeInfo.IsAcceptingClaims: false })
+        {
+            throw new DefaultTemplateMustAcceptClaimsException(defaultTemplate);
+        }
+
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
             (settings, ClaimApplyRulesChanged: claimApplyRules is not null), // аргументы уходят в лог — без текста правил

@@ -194,8 +194,10 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
             PlotElementOrderData, Claims, ApprovedClaimId, CreatedAt, CreatedById, UpdatedAt, UpdatedById);
 
     /// <summary>
-    /// Инвариант: тип персонажа нельзя менять, пока у него есть активные заявки. Проверяется по
-    /// доменному снимку, а не по EF-графу, поэтому живёт здесь, а не в сервисном слое.
+    /// Инварианты смены настроек типа. Проверяются по доменному снимку, а не по EF-графу,
+    /// поэтому живут здесь, а не в сервисном слое:
+    /// - тип персонажа нельзя менять, пока у него есть активные заявки;
+    /// - шаблон по умолчанию нельзя закрыть для заявок игроков — на него ведёт «Подать заявку в проект» (#3303).
     /// </summary>
     /// <param name="target">Настройки типа, которые собираются применить к персонажу.</param>
     public void EnsureCanChangeTypeTo(CharacterTypeInfo target)
@@ -203,6 +205,11 @@ public record class CharacterInfo : IFieldAvailabilityTarget, IClaimTarget
         if (HasActiveClaims && target.CharacterType != CharacterTypeInfo.CharacterType)
         {
             throw new CharacterTypeChangeWithActiveClaimsException(Id);
+        }
+
+        if (ProjectInfo.ClaimSettings.DefaultTemplate == Id && !target.IsAcceptingClaims)
+        {
+            throw new DefaultTemplateMustAcceptClaimsException(Id);
         }
     }
 

@@ -1,6 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Interfaces;
@@ -33,7 +34,8 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
             currentUser,
             masterEmailService,
             NullLogger<ProjectService>.Instance,
-            CreatePropsService(currentUser));
+            CreatePropsService(currentUser),
+            new FakeCharacterInfoRepository(mock));
     }
 
     [Fact]
@@ -219,6 +221,31 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         Result.ClaimSettings.IsPublicProject.ShouldBeTrue();
         // IsAcceptingClaims разрешается только для активного проекта; мок активен.
         Result.ClaimSettings.IsAcceptingClaims.ShouldBeTrue();
+    }
+
+    // На шаблон по умолчанию ведёт «Подать заявку в проект» (#3303).
+    [Fact]
+    public async Task SetClaimSettings_DefaultTemplateClosedForPlayers_Throws()
+    {
+        var slot = mock.CreateSlot("Шаблон");
+        slot.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+        var settings = mock.ProjectInfo.ClaimSettings with { DefaultTemplate = slot.GetId() };
+
+        _ = await Should.ThrowAsync<DefaultTemplateMustAcceptClaimsException>(
+            () => CreateService().SetClaimSettings(ProjectId, settings));
+    }
+
+    [Fact]
+    public async Task SetClaimSettings_DefaultTemplateOpenForPlayers_Applies()
+    {
+        var slot = mock.CreateSlot("Шаблон");
+        mock.ReInitProjectInfo();
+        var settings = mock.ProjectInfo.ClaimSettings with { DefaultTemplate = slot.GetId() };
+
+        await CreateService().SetClaimSettings(ProjectId, settings);
+
+        Result.ClaimSettings.DefaultTemplate.ShouldBe(slot.GetId());
     }
 
     // Флаг «что мешает регистрации» живёт в настройках регистрации, настройки заявок его не трогают.

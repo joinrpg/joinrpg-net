@@ -1,6 +1,7 @@
 using System.Text.Json;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
@@ -56,6 +57,21 @@ public class WebApiExceptionHandlerTest
         handled.ShouldBeTrue();
         httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
         problem.GetProperty("title").GetString().ShouldBe("Проект не найден");
+    }
+
+    // Остров настроек заявок показывает причину, если шаблоном по умолчанию выбран закрытый для игроков (#3303).
+    [Fact]
+    public async Task DefaultTemplateMustAcceptClaims_InWebApi_ReturnsConflictWithReason()
+    {
+        var httpContext = CreateHttpContext("/webapi/1611/project/SaveClaimSettings");
+        var exception = new DefaultTemplateMustAcceptClaimsException(new CharacterIdentification(ProjectId, 5));
+
+        var (handled, problem) = await Handle(httpContext, exception);
+
+        handled.ShouldBeTrue();
+        WebApiExceptionHandler.IsExpectedRefusal(exception).ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status409Conflict);
+        problem.GetProperty("title").GetString().ShouldStartWith("Шаблон по умолчанию должен принимать заявки игроков");
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Characters;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -50,6 +51,7 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
         ProjectDeactivatedException => (StatusCodes.Status409Conflict, "Проект находится в архиве, изменения в нём невозможны"),
         NoAccessToProjectException => (StatusCodes.Status403Forbidden, "Недостаточно прав для этого действия"),
         ProjectNotFoundException => (StatusCodes.Status404NotFound, "Проект не найден"),
+        DefaultTemplateMustAcceptClaimsException => (StatusCodes.Status409Conflict, "Шаблон по умолчанию должен принимать заявки игроков — выберите другой шаблон или откройте этот для заявок"),
         ParentCommentNotFoundException => (StatusCodes.Status404NotFound, "Комментарий, на который вы отвечаете, не найден. Обновите страницу и попробуйте ещё раз."),
         _ => null,
     };

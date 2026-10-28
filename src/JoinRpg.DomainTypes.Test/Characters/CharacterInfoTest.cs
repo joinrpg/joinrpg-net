@@ -560,6 +560,49 @@ public class CharacterInfoTest
         Should.NotThrow(() => character.EnsureCanChangeTypeTo(MakeTypeInfo(CharacterType.NonPlayer)));
     }
 
+    [Fact]
+    public void ShouldNotAllowToCloseDefaultTemplateForPlayers()
+    {
+        var characterId = new CharacterIdentification(ProjectId, 1);
+        var projectInfo = ProjectInfoFixture.Build(defaultTemplate: characterId);
+        var character = MakeCharacter(projectInfo, characterTypeInfo: MakeTypeInfo(CharacterType.Slot), id: characterId);
+
+        _ = Should.Throw<DefaultTemplateMustAcceptClaimsException>(() => character.EnsureCanChangeTypeTo(
+            new CharacterTypeInfo(CharacterType.Slot, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public, IsAcceptingClaims: false)));
+    }
+
+    [Fact]
+    public void ShouldAllowToEditOpenDefaultTemplate()
+    {
+        var characterId = new CharacterIdentification(ProjectId, 1);
+        var projectInfo = ProjectInfoFixture.Build(defaultTemplate: characterId);
+        var character = MakeCharacter(projectInfo, characterTypeInfo: MakeTypeInfo(CharacterType.Slot), id: characterId);
+
+        Should.NotThrow(() => character.EnsureCanChangeTypeTo(MakeTypeInfo(CharacterType.Slot)));
+    }
+
+    // У NPC флаг всегда снят — превратить шаблон по умолчанию в NPC тоже значит закрыть его.
+    [Fact]
+    public void ShouldNotAllowToTurnDefaultTemplateIntoNpc()
+    {
+        var characterId = new CharacterIdentification(ProjectId, 1);
+        var projectInfo = ProjectInfoFixture.Build(defaultTemplate: characterId);
+        var character = MakeCharacter(projectInfo, characterTypeInfo: MakeTypeInfo(CharacterType.Slot), id: characterId);
+
+        _ = Should.Throw<DefaultTemplateMustAcceptClaimsException>(
+            () => character.EnsureCanChangeTypeTo(MakeTypeInfo(CharacterType.NonPlayer)));
+    }
+
+    [Fact]
+    public void ShouldAllowToCloseOrdinaryTemplateForPlayers()
+    {
+        var projectInfo = MakeProject(MakeField(1));
+        var character = MakeCharacter(projectInfo, characterTypeInfo: MakeTypeInfo(CharacterType.Slot));
+
+        Should.NotThrow(() => character.EnsureCanChangeTypeTo(
+            new CharacterTypeInfo(CharacterType.Slot, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public, IsAcceptingClaims: false)));
+    }
+
     private static CharacterTypeInfo MakeTypeInfo(CharacterType type)
         => new(type, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public);
 
