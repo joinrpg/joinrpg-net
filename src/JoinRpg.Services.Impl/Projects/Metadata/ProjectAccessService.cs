@@ -94,6 +94,18 @@ internal class ProjectAccessService(
             _ = projectInfo.RequestMasterAccess(currentUserAccessor, requiredPermission);
         }
 
+        // Отказы проверяем до переназначения заявок: каждая заявка сохраняется отдельной операцией,
+        // и отказ при снятии доступа ниже их уже не откатит (#5898). Внутри снятия проверки повторяются
+        // по свежему Project — на случай гонки.
+        if (!projectInfo.Masters.Any(m => m.UserId == userId))
+        {
+            throw new InvalidOperationException("Мастер уже снят с проекта."); // TODO[Localize]
+        }
+        if (!projectInfo.Masters.Any(m => m.UserId != userId && m.Permissions.Contains(Permission.CanGrantRights)))
+        {
+            throw new LastMasterWithGrantRightsException(projectId, userId);
+        }
+
         var claims = await claimsRepository.GetClaimsForMaster(projectId, userId, ClaimStatusSpec.Any);
         var hasResponsibleGroups = projectInfo.GroupTree.ResponsibleMasterRules.Any(g => g.ResponsibleMasterId == userId);
 
