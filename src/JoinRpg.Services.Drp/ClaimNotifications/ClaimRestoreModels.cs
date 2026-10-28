@@ -76,8 +76,9 @@ public record ExistingCharacterInfo(
     public DateTimeOffset UpdatedAt { get; init; } = DateTimeOffset.MinValue;
 
     /// <summary>
-    /// Тип персонажа — для сверки с «Занят?» выгрузки (#5645); null — не передан, тогда не сверяется.
-    /// Нужно только при восстановлении по выгрузке.
+    /// Тип персонажа — для сверки с «Занят?» выгрузки (#5645) и для пояснения, что потерянная заявка
+    /// сделает NPC персонажем игрока (<see cref="ClaimRestoreWarning.BecomesPlayerCharacter"/>, #5907);
+    /// null — не передан, тогда ни то, ни другое не проверяется.
     /// </summary>
     public CharacterType? CharacterType { get; init; }
 
@@ -152,6 +153,12 @@ public enum ClaimRestoreWarning
     /// (<see cref="ClaimRestorePlanRow.NewCharacterIsSlot"/>), мастер может это снять.
     /// </summary>
     LooksLikeSlot,
+
+    /// <summary>
+    /// Пояснение: заявка подана после бэкапа, не отклонена и подаётся на NPC — восстановление сделает его
+    /// персонажем игрока (#5907). Скорее всего, тип мастер сменил уже после бэкапа.
+    /// </summary>
+    BecomesPlayerCharacter,
 
     /// <summary>По уведомлениям не понять, в каком статусе заявка.</summary>
     StatusUnknown,

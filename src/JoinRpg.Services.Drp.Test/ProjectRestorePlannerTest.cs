@@ -253,6 +253,19 @@ public class ProjectRestorePlannerTest
         fields.ApplyByDefault.ShouldBeTrue();
     }
 
+    /// <summary>Потерянная заявка из выгрузки на NPC из базы — пояснение, что он станет персонажем игрока (#5907).</summary>
+    [Fact]
+    public void LostClaimFromExportOnNonPlayerMakesPlayerCharacter()
+    {
+        var plan = Plan(
+            [ClaimExport(Day(5), ClaimRow(3000, "Призрак", ClaimStatus.Discussed))],
+            characters: [DbCharacter(101, "Призрак") with { CharacterType = CharacterType.NonPlayer }]);
+
+        var row = plan.Claims.ShouldHaveSingleItem();
+        row.Character.ShouldBe(CharacterId(101));
+        row.Warnings.ShouldContain(ClaimRestoreWarning.BecomesPlayerCharacter);
+    }
+
     [Fact]
     public void UnapprovedClaimKeepsPlayerSuggestionsForCharacterFields()
     {
