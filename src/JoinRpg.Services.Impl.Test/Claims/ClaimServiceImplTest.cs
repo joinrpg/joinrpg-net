@@ -2110,6 +2110,46 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     /// <summary>
+    /// Выпадашка предлагает только свободных активных персонажей-игроков, но POST можно отправить
+    /// и вручную. Занятому персонажу это стоило бы его утверждённой заявки.
+    /// </summary>
+    [Theory]
+    [InlineData("busy")]
+    [InlineData("npc")]
+    [InlineData("inactive")]
+    [InlineData("own")]
+    public async Task MoveToSecondRole_ToUnavailableCharacter_Throws_AndDoesNotSave(string kind)
+    {
+        var (oldClaim, target) = CreateSecondRoleSetup();
+        Claim? targetClaim = null;
+        switch (kind)
+        {
+            // Своя же старая роль: на ней лежит утверждённая (зарегистрированная) заявка игрока.
+            case "own":
+                target = oldClaim.Character;
+                targetClaim = oldClaim;
+                break;
+            case "busy":
+                targetClaim = mock.CreateApprovedClaim(target, mock.Master);
+                break;
+            case "npc":
+                target.CharacterType = CharacterType.NonPlayer;
+                break;
+            case "inactive":
+                target.IsActive = false;
+                break;
+        }
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ClaimTargetIsNotAcceptingClaims>(
+            () => CreateService().MoveToSecondRole(oldClaim.GetId(), target.GetId(), "вторая роль"));
+
+        target.ApprovedClaim.ShouldBe(targetClaim);
+        oldClaim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
     /// Разрешение на чувствительные данные переносится со старой заявки: его даёт игрок, а мастер за
     /// него не может, так что иначе проект потребовал бы паспорт заново у того же игрока.
     /// </summary>
