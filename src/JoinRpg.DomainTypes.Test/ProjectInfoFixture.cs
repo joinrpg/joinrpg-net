@@ -34,7 +34,8 @@ internal static class ProjectInfoFixture
         ProjectAccommodationSettings? accommodationSettings = null,
         bool scheduleEnabled = false,
         string? mastersOrdering = null,
-        ProjectFieldIdentification? nameField = null)
+        ProjectFieldIdentification? nameField = null,
+        CharacterIdentification? defaultTemplate = null)
         => new(
             ProjectId,
             new ProjectName("Test"),
@@ -57,7 +58,7 @@ internal static class ProjectInfoFixture
             ProjectCloneSettings.CloneDisabled,
             new DateOnly(2024, 1, 1),
             ProjectProfileRequirementSettings.AllNotRequired,
-            new ProjectClaimSettings(null, false, false, false, false),
+            new ProjectClaimSettings(defaultTemplate, false, false, false, false),
             [],
             null,
             ProjectTimeZone);

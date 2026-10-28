@@ -91,6 +91,9 @@ public abstract class JoinMvcControllerBase : Controller
             case CharacterTypeChangeWithActiveClaimsException _:
                 ModelState.AddModelError("", "Нельзя менять тип персонажа, пока на него есть активные заявки");
                 return;
+            case DefaultTemplateMustAcceptClaimsException _:
+                ModelState.AddModelError("", "Это шаблон по умолчанию: на него игроки подают заявку в проект, закрыть его для заявок нельзя. Шаблон по умолчанию можно поменять в настройках проекта");
+                return;
             case CharacterGroupsNotFoundException notFound:
                 ModelState.AddModelError("",
                     $"Группы не найдены в проекте (возможно, удалены): {string.Join(", ", notFound.GroupIds.Select(g => g.CharacterGroupId))}");

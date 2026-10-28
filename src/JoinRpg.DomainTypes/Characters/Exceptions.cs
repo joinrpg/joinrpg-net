@@ -21,6 +21,15 @@ public class DefaultTemplateCharacterCannotBeDeletedException(CharacterIdentific
 }
 
 /// <summary>
+/// Шаблон по умолчанию должен принимать заявки игроков: на него ведёт «Подать заявку в проект» (#3303).
+/// </summary>
+public class DefaultTemplateMustAcceptClaimsException(CharacterIdentification characterId)
+    : JoinRpgProjectException(characterId.ProjectId, $"Character {characterId} is the default template of the project and must accept claims from players")
+{
+    public CharacterIdentification CharacterId { get; } = characterId;
+}
+
+/// <summary>
 /// В операцию передана спецгруппа там, где допустимы только обычные группы:
 /// спецгруппы проставляются автоматически по значениям полей, вручную их указывать нельзя.
 /// </summary>
