@@ -1,3 +1,5 @@
+using JoinRpg.Domain;
+
 namespace JoinRpg.Tools.RestoreLostUsers;
 
 /// <summary>
@@ -9,6 +11,11 @@ namespace JoinRpg.Tools.RestoreLostUsers;
 /// </param>
 internal record NewUserRow(int UserId, string Email, string? PrefferedName, DateTime RegisterDateUtc, string SecurityStamp)
 {
+    /// <summary>
+    /// Адрес аватарки по умолчанию — тот же Gravatar, что при регистрации заводит UserAvatarExtensions.AddGravatar.
+    /// </summary>
+    public string DefaultAvatarUri => GravatarHelper.GetLink(Email, GravatarHelper.DefaultAvatarSize).AbsoluteUri;
+
     public static NewUserRow From(LostUserDecision decision, Guid securityStamp)
     {
         if (decision.Kind != DecisionKind.Create || decision.Email is null)

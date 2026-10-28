@@ -18,7 +18,7 @@ public static class UserAvatarExtensions
             AvatarSource = AvatarSource.GrAvatar,
             IsActive = true,
             ProviderId = null,
-            OriginalUri = GravatarHelper.GetLink(user.Email, 64).AbsoluteUri,
+            OriginalUri = GravatarHelper.GetLink(user.Email, GravatarHelper.DefaultAvatarSize).AbsoluteUri,
             CachedUri = null,
             User = user,
         };
@@ -30,6 +30,28 @@ public static class UserAvatarExtensions
         }
 
         return avatar;
+    }
+
+    /// <summary>
+    /// Выбирает аватарку по умолчанию пользователю, у которого выбранной нет: активный Gravatar, если он уже заведён,
+    /// иначе заводит новый. Пользователя с выбранной аватаркой не трогает, поэтому повторный вызов ничего не добавляет.
+    /// Аватарки пользователя должны быть загружены. Пользователь уже должен быть записан в базу (см. <see cref="AddGravatar"/>).
+    /// </summary>
+    public static void EnsureDefaultAvatar(this User user)
+    {
+        if (user.SelectedAvatarId is not null || user.SelectedAvatar is not null)
+        {
+            return;
+        }
+
+        if (user.Avatars.FirstOrDefault(a => a.AvatarSource == AvatarSource.GrAvatar && a.IsActive) is UserAvatar grAvatar)
+        {
+            user.SelectedAvatar = grAvatar;
+        }
+        else
+        {
+            _ = user.AddGravatar();
+        }
     }
 
     /// <summary>

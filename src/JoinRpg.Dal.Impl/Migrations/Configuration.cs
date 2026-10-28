@@ -1,4 +1,5 @@
 using System.Data.Entity.Migrations;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Dal.Impl.Migrations;
 
@@ -14,7 +15,24 @@ public sealed class Configuration : DbMigrationsConfiguration<MyDbContext>
     {
         EnsureUserExists(context, User.OnlinePaymentVirtualUser, "Online payments");
         EnsureUserExists(context, User.RobotVirtualUser, "Robot", isAdmin: true);
+
+        // Аватарка есть у каждого пользователя (ADR026), виртуальные — не исключение. Заводится отдельным
+        // сохранением: за один SaveChanges EF6 не вставит пользователя и аватарку, которые ссылаются друг на друга.
+        _ = context.SaveChanges();
+        EnsureDefaultAvatar(context, User.OnlinePaymentVirtualUser);
+        EnsureDefaultAvatar(context, User.RobotVirtualUser);
+
         base.Seed(context);
+    }
+
+    /// <summary>
+    /// Сид выполняется при каждой миграции: аватарку получает только пользователь без выбранной,
+    /// повторный прогон ничего не добавляет.
+    /// </summary>
+    private static void EnsureDefaultAvatar(MyDbContext context, string userName)
+    {
+        var user = context.Set<User>().Include(u => u.Avatars).Single(u => u.UserName == userName);
+        user.EnsureDefaultAvatar();
     }
 
     private static void EnsureUserExists(MyDbContext context, string userName, string prefferedName, bool isAdmin = false)

@@ -101,6 +101,60 @@ public class UserAvatarExtensionsTest
         user.SelectedAvatar.ShouldBe(fresh);
     }
 
+    [Fact]
+    public void EnsureDefaultAvatar_NoAvatars_AddsGravatar()
+    {
+        var user = new User { Email = "somebody@example.com" };
+
+        user.EnsureDefaultAvatar();
+
+        user.SelectedAvatar.ShouldNotBeNull().AvatarSource.ShouldBe(AvatarSource.GrAvatar);
+        user.Avatars.ShouldBe([user.SelectedAvatar]);
+    }
+
+    [Fact]
+    public void EnsureDefaultAvatar_UnselectedGravatar_SelectsItWithoutNewOne()
+    {
+        var user = new User { Email = "somebody@example.com" };
+        var gravatar = user.AddGravatar();
+        user.SelectedAvatar = null!;
+
+        user.EnsureDefaultAvatar();
+
+        user.SelectedAvatar.ShouldBe(gravatar);
+        user.Avatars.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void EnsureDefaultAvatar_OnlyInactiveGravatar_AddsNew()
+    {
+        var user = new User { Email = "somebody@example.com" };
+        var old = user.AddGravatar();
+        old.IsActive = false;
+        user.SelectedAvatar = null!;
+
+        user.EnsureDefaultAvatar();
+
+        user.SelectedAvatar.ShouldNotBe(old);
+        user.SelectedAvatar.IsActive.ShouldBeTrue();
+        user.Avatars.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void EnsureDefaultAvatar_Selected_KeepsSelection()
+    {
+        // Сид вызывает метод при каждой миграции — у пользователя с аватаркой ничего не меняется.
+        var social = CreateSocialAvatar();
+        var user = new User { Email = "somebody@example.com", SelectedAvatar = social, SelectedAvatarId = 1 };
+        user.Avatars.Add(social);
+
+        user.EnsureDefaultAvatar();
+        user.EnsureDefaultAvatar();
+
+        user.SelectedAvatar.ShouldBe(social);
+        user.Avatars.ShouldBe([social]);
+    }
+
     private static UserAvatar CreateSocialAvatar() => new()
     {
         AvatarSource = AvatarSource.SocialNetwork,
