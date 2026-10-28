@@ -102,7 +102,7 @@ public enum ProblemSeverity
 }
 
 public record class FieldRelatedProblem(ClaimProblemType ProblemType, ProblemSeverity Severity, ProjectFieldInfo Field, string? ExtraInfo = null)
-    : ClaimProblem(ProblemType, Severity, Field.Name + ExtraInfo ?? "")
+    : ClaimProblem(ProblemType, Severity, Field.Name + ExtraInfo)
 {
     public ProjectFieldInfo Field { get; } = Field ?? throw new ArgumentNullException(nameof(Field));
 
