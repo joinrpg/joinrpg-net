@@ -1,9 +1,9 @@
 using System.Security.Claims;
-using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.DomainTypes.Users;
+using JoinRpg.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
