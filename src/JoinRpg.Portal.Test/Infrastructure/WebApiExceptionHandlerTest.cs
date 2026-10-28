@@ -4,6 +4,7 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Web.AdminTools;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -84,6 +85,20 @@ public class WebApiExceptionHandlerTest
         handled.ShouldBeTrue();
         httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
         problem.GetProperty("title").GetString().ShouldStartWith("Комментарий, на который вы отвечаете, не найден");
+    }
+
+    // Отказ Identity при смене email в админке — штатный, не 500 (#5891)
+    [Fact]
+    public async Task UserAdminActionRefused_InWebApi_ReturnsBadRequestWithMessage()
+    {
+        var httpContext = CreateHttpContext("/webapi/UserAdmin/ChangeEmail");
+
+        var (handled, problem) = await Handle(httpContext, new UserAdminActionRefusedException("Этот email уже используется другим пользователем"));
+
+        handled.ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        problem.GetProperty("title").GetString().ShouldBe("Этот email уже используется другим пользователем");
+        WebApiExceptionHandler.IsExpectedRefusal(new UserAdminActionRefusedException("")).ShouldBeTrue();
     }
 
     [Fact]

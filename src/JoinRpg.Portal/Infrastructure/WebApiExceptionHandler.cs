@@ -1,5 +1,6 @@
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.Web.AdminTools;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,6 +54,8 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
         ProjectNotFoundException => (StatusCodes.Status404NotFound, "Проект не найден"),
         DefaultTemplateMustAcceptClaimsException => (StatusCodes.Status409Conflict, "Шаблон по умолчанию должен принимать заявки игроков — выберите другой шаблон или откройте этот для заявок"),
         ParentCommentNotFoundException => (StatusCodes.Status404NotFound, "Комментарий, на который вы отвечаете, не найден. Обновите страницу и попробуйте ещё раз."),
+        // Текст отказа собирается в админском сервисе и уже на русском
+        UserAdminActionRefusedException refused => (StatusCodes.Status400BadRequest, refused.Message),
         _ => null,
     };
 }
