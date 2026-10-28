@@ -56,6 +56,12 @@ public abstract class JoinMvcControllerBase : Controller
                 ModelState.AddModelError("", errorMessage);
                 ModelState.AddModelError(Web.Models.FieldValueViewModel.HtmlIdPrefix + required.FieldId.ProjectFieldId, errorMessage);
                 return;
+            // Форма устарела: вариант выключили или значение поменяли, пока её заполняли (#5891)
+            case FieldValueInvalidException invalid:
+                var invalidMessage = $"В поле «{invalid.FieldName}» выбран вариант, который больше недоступен (его отключили или удалили), — выберите другой";
+                ModelState.AddModelError("", invalidMessage);
+                ModelState.AddModelError(Web.Models.FieldValueViewModel.HtmlIdPrefix + invalid.FieldId.ProjectFieldId, invalidMessage);
+                return;
             case FieldRequiredException required:
                 var errorMessage1 = GetErrorMessage(required);
                 ModelState.AddModelError("", errorMessage1);

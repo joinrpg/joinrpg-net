@@ -177,7 +177,7 @@ public record class ProjectFieldInfo(
 
             if (!allIds.Contains(id) || (!allowInactiveVariants && !existingVariantIds.Contains(id)))
             {
-                throw new FieldValueInvalidException(Id, id);
+                throw new FieldValueInvalidException(Id, Name, id);
             }
         }
     }
