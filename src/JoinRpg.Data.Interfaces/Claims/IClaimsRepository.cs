@@ -53,6 +53,9 @@ public interface IClaimsRepository : IDisposable
     /// </remarks>
     Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId);
 
-    Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
+    /// <summary>
+    /// Число непрочитанных пользователем комментариев в обсуждении каждой заявки проекта.
+    /// </summary>
+    Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
 
 }

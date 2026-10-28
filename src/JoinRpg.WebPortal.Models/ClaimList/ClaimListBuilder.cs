@@ -20,7 +20,7 @@ public static class ClaimListBuilder
     /// </param>
     /// <param name="claimInfo">Та же заявка как доменный тип — всё остальное берётся отсюда.</param>
     internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId,
-       IClaimProblemValidator claimValidator, ClaimInfo claimInfo, Dictionary<int, int> unreadComments)
+       IClaimProblemValidator claimValidator, ClaimInfo claimInfo, Dictionary<CommentDiscussionId, int> unreadComments)
     {
         var accessArguments = AccessArgumentsFactory.Create(claimInfo, currentUserId.UserIdentificationOrDefault);
         var balance = claimInfo.ClaimInCharacter.CalculateBalance();
@@ -42,7 +42,7 @@ public static class ClaimListBuilder
             new UserLinkViewModel(lastModifiedBy),
             claimInfo.ClaimId,
             claimValidator.Validate(claimInfo).Select(p => new ProblemViewModel(p)).ToList(),
-            unreadComments.GetValueOrDefault(claimInfo.Claim.CommentDiscussionId.Value),
+            unreadComments.GetValueOrDefault(claimInfo.Claim.CommentDiscussionId),
             GetPlayerFullName(claimInfo)
             );
     }

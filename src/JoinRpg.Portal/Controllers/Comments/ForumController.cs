@@ -1,9 +1,11 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Comments;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Comments;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Comments;
 using JoinRpg.Portal.Controllers.Common;
@@ -27,7 +29,8 @@ public class ForumController(
     ICurrentUserAccessor currentUserAccessor,
     ICommentDiscussionService commentDiscussionService,
     CommentDiscussionOwnerLoader ownerLoader,
-    ICommentDiscussionRepository commentDiscussionRepository) : JoinControllerGameBase
+    ICommentDiscussionRepository commentDiscussionRepository,
+    ICharacterInfoRepository characterInfoRepository) : JoinControllerGameBase
 {
     [HttpGet("~/{projectId}/roles/{charactergroupid}/create-thread")]
     [ProjectShouldBeActive]
@@ -173,7 +176,7 @@ public class ForumController(
 
             groupIds = claims.SelectMany(claim => claim.Character.GetParentGroupIdsToTop(project).Select(g => g.CharacterGroupId));
         }
-        var threads = await forumRepository.GetThreads(projectid.Value, isMaster, groupIds);
+        var threads = await forumRepository.GetThreads(projectid.Value, currentUserAccessor.UserIdentification, isMaster, groupIds);
         var viewModel = new ForumThreadListViewModel(project, threads, currentUserAccessor.UserIdentification);
         return View(viewModel);
     }
@@ -188,8 +191,20 @@ public class ForumController(
         }
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
         var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
-        var threads = await forumRepository.GetThreads(projectid.Value, isMaster, new[] { characterGroupId });
-        var viewModel = new ForumThreadListForGroupViewModel(projectInfo, charGroupFullInfo, threads.Where(t => t.HasAnyAccess(currentUserAccessor.UserIdentification, projectInfo)), currentUserAccessor.UserIdentification);
+        var userId = currentUserAccessor.UserIdentification;
+        IEnumerable<IForumThreadListItem> threads = await forumRepository.GetThreads(projectid.Value, userId, isMaster, new[] { characterGroupId });
+        if (!isMaster && threads.Any())
+        {
+            // То же правило, что у владельца обсуждения (ForumDiscussionOwner.HasPlayerAccess в
+            // CommentDiscussionOwnerLoader), — по персонажам принятых заявок игрока одним запросом,
+            // а не через догрузку Project.Claims на каждой теме.
+            var characters = await characterInfoRepository.GetCharacterInfosByPlayer(projectid, userId, ClaimStatusSpec.Approved);
+            threads = threads
+                .Where(thread => new ForumDiscussionOwner(thread.Id, new CharacterGroupIdentification(projectid, thread.CharacterGroupId), thread.IsVisibleToPlayer)
+                    .HasPlayerAccess(characters, userId))
+                .ToList();
+        }
+        var viewModel = new ForumThreadListForGroupViewModel(projectInfo, charGroupFullInfo, threads, userId);
         return View(viewModel);
     }
 
