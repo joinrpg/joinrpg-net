@@ -3,8 +3,17 @@ using System.Text;
 
 namespace JoinRpg.Domain;
 
-internal static class GravatarHelper
+/// <summary>
+/// Ссылка на Gravatar. Публичный, потому что её строят и мимо EF:
+/// сырой SQL в Tools.RestoreLostUsers должен заводить ту же аватарку, что и регистрация.
+/// </summary>
+public static class GravatarHelper
 {
+    /// <summary>
+    /// Размер, с которым аватарка по умолчанию заводится пользователю.
+    /// </summary>
+    public const int DefaultAvatarSize = 64;
+
     /// <summary>
     /// Get link to gravatar.com
     /// </summary>

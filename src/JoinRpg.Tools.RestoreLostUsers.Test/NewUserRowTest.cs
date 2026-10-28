@@ -37,6 +37,13 @@ public class NewUserRowTest
             new NewUserRow(1001, "lost@example.com", "Иван", new DateTime(2026, 6, 1, 12, 0, 0), Guid.Empty.ToString()));
 
     [Fact]
+    public void DefaultAvatarIsGravatarLikeOnRegistration()
+        // Тот же адрес, что UserAvatarExtensions.AddGravatar заводит при регистрации (см. UserAvatarExtensionsTest):
+        // sha256 от email в нижнем регистре, размер 64.
+        => NewUserRow.From(Decision(email: "Somebody@Example.com"), Guid.Empty).DefaultAvatarUri.ShouldBe(
+            "https://www.gravatar.com/avatar/787d5b7c06ca0a21c96436cc7c8117e6fe046d0fd7dedcae8c93bfc14b8e5df7?d=robohash&s=64");
+
+    [Fact]
     public void RefusesDecisionOtherThanCreate()
         => Should.Throw<ArgumentException>(() => NewUserRow.From(Decision(DecisionKind.EmailTaken), Guid.NewGuid()));
 }

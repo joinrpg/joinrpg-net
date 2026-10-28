@@ -1,4 +1,5 @@
 using System.Data;
+using JoinRpg.DataModel;
 using Microsoft.Data.SqlClient;
 
 namespace JoinRpg.Tools.RestoreLostUsers;
@@ -9,9 +10,7 @@ namespace JoinRpg.Tools.RestoreLostUsers;
 /// </summary>
 internal sealed class MainDatabase(string connectionString)
 {
-    // Совпадают с User.RobotVirtualUser и User.OnlinePaymentVirtualUser в JoinRpg.DataModel.
-    // DataModel не подключаем, чтобы не тянуть EF6 в консольный инструмент.
-    public static readonly string[] VirtualUserEmails = ["robot@joinrpg.ru", "payments@joinrpg.ru"];
+    public static readonly string[] VirtualUserEmails = [User.RobotVirtualUser, User.OnlinePaymentVirtualUser];
 
     public async Task<IReadOnlyList<ExistingUser>> GetUsers(CancellationToken ct)
     {
@@ -39,8 +38,9 @@ internal sealed class MainDatabase(string connectionString)
 
     /// <summary>
     /// Создаёт заготовки пользователей с заданными id в одной транзакции. Строки — как у только что
-    /// зарегистрированного пользователя (MyUserStore.CreateImpl), но почта подтверждена, пароля нет,
-    /// а штамп безопасности случайный (см. <see cref="NewUserRow"/>).
+    /// зарегистрированного пользователя (MyUserStore.CreateImpl): с UserExtra и выбранной аватаркой Gravatar
+    /// (UserAvatarExtensions.AddGravatar), но почта подтверждена, пароля нет, а штамп безопасности случайный
+    /// (см. <see cref="NewUserRow"/>).
     /// Пользователь, чей id или адрес почты уже занят, пропускается — повторный запуск ничего не меняет.
     /// </summary>
     /// <returns>Id созданных пользователей.</returns>
@@ -63,6 +63,13 @@ internal sealed class MainDatabase(string connectionString)
                 VALUES (@id, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                     0, 1, 1, NULL, NULL);
 
+                -- Аватарка по умолчанию, как в UserAvatarExtensions.AddGravatar: AvatarSource 0 = GrAvatar.
+                -- Ссылается на пользователя, поэтому вставляется после него, а выбирается отдельным UPDATE.
+                INSERT INTO dbo.UserAvatars (UserId, AvatarSource, ProviderId, OriginalUri, CachedUri, IsActive)
+                VALUES (@id, 0, NULL, @avatarUri, NULL, 1);
+
+                UPDATE dbo.Users SET SelectedAvatarId = SCOPE_IDENTITY() WHERE UserId = @id;
+
                 SELECT CAST(1 AS bit);
             END
             ELSE
@@ -84,6 +91,7 @@ internal sealed class MainDatabase(string connectionString)
                 command.Parameters.Add("@name", SqlDbType.NVarChar, -1).Value = (object?)user.PrefferedName ?? DBNull.Value;
                 command.Parameters.Add("@registerDate", SqlDbType.DateTime).Value = user.RegisterDateUtc;
                 command.Parameters.Add("@securityStamp", SqlDbType.NVarChar, -1).Value = user.SecurityStamp;
+                command.Parameters.Add("@avatarUri", SqlDbType.NVarChar, -1).Value = user.DefaultAvatarUri;
 
                 if (await command.ExecuteScalarAsync(ct) is true)
                 {

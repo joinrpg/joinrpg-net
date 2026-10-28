@@ -270,16 +270,9 @@ public class UserServiceImpl(
     async Task IAvatarService.EnsureDefaultAvatars(IReadOnlyCollection<UserIdentification> userIds)
     {
         var users = await UserRepository.GetUsersWithAvatars(userIds);
-        foreach (var user in users.Where(u => u.SelectedAvatarId is null))
+        foreach (var user in users)
         {
-            if (user.Avatars.FirstOrDefault(a => a.AvatarSource == AvatarSource.GrAvatar && a.IsActive) is UserAvatar grAvatar)
-            {
-                user.SelectedAvatar = grAvatar;
-            }
-            else
-            {
-                _ = user.AddGravatar();
-            }
+            user.EnsureDefaultAvatar();
         }
         await UnitOfWork.SaveChangesAsync();
     }

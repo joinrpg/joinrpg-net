@@ -11,6 +11,8 @@
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
+    <!-- Только для сида миграций: виртуальным пользователям аватарка заводится тем же кодом, что и при регистрации. -->
+    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
