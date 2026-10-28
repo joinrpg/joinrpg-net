@@ -67,10 +67,15 @@ public class PublicGroupWithoutPublicPathException(
 public class PaymentTypeInfoDeactivatedException(PaymentTypeIdentification paymentTypeIdentification)
     : JoinRpgProjectException(paymentTypeIdentification.ProjectId, $"{paymentTypeIdentification} деактивирован");
 
-public class FieldValueInvalidException(ProjectFieldIdentification fieldId, int variantId)
-    : JoinRpgBaseException($"Поле {fieldId}: значение {variantId} не является допустимым вариантом")
+/// <summary>
+/// Вариант не принадлежит полю или неактивен и не был выбран раньше. Штатно бывает при сохранении
+/// устаревшей формы: вариант выключили или значение поменяли, пока форма была открыта.
+/// </summary>
+public class FieldValueInvalidException(ProjectFieldIdentification fieldId, string fieldName, int variantId)
+    : JoinRpgBaseException($"Поле «{fieldName}» ({fieldId}): значение {variantId} не является допустимым вариантом")
 {
     public ProjectFieldIdentification FieldId { get; } = fieldId;
+    public string FieldName { get; } = fieldName;
     public int VariantId { get; } = variantId;
 }
 

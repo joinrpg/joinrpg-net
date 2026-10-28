@@ -1,6 +1,8 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Controllers.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -78,6 +80,29 @@ public class JoinMvcControllerBaseTest
         controller.ModelState.IsValid.ShouldBeFalse();
         var error = controller.ModelState[""]!.Errors.ShouldHaveSingleItem();
         error.ErrorMessage.ShouldBe("Для отправки заявки необходимы контакты");
+        logger.ErrorCount.ShouldBe(0);
+    }
+
+    // Регрессия: FieldValueInvalidException (форма устарела — выбранный вариант выключили, пока её
+    // заполняли) уходила в default-ветку с LogError и "Неожиданная ошибка". См. #5891.
+    [Fact]
+    public void AddModelException_FieldValueInvalidException_ShouldAddFriendlyErrorAtFieldWithoutLoggingError()
+    {
+        var logger = new RecordingLogger();
+        var controller = new TestController
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = CreateHttpContext(logger),
+            },
+        };
+        var fieldId = new ProjectFieldIdentification(new ProjectIdentification(1), 42);
+
+        controller.CallAddModelException(new FieldValueInvalidException(fieldId, "Заезд", 15802));
+
+        var expected = "В поле «Заезд» выбран вариант, который больше недоступен (его отключили или удалили), — выберите другой";
+        controller.ModelState[""]!.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(expected);
+        controller.ModelState[Web.Models.FieldValueViewModel.HtmlIdPrefix + 42]!.Errors.ShouldHaveSingleItem().ErrorMessage.ShouldBe(expected);
         logger.ErrorCount.ShouldBe(0);
     }
 
