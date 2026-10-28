@@ -41,7 +41,22 @@
   }
 }
 
-@if (!HasApprovedClaim && (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot))
+@if (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot)
+{
+  @* Показывается и у занятой роли: если заявку отклонят, роль снова станет свободной. Скрытое поле не постится,
+     и биндинг подставил бы «можно», так что прятать галочку нельзя — значение бы затёрлось. *@
+  <FormRow Label="Игрок может подать заявку"
+           Description="Если выключить — игрок не сможет подать заявку, но мастера смогут пригласить игрока или перенести заявку.">
+    @* На шаблон по умолчанию ведёт кнопка «Подать заявку в проект» — закрыть его для игроков значит сломать её. *@
+    <CheckboxInput @bind-Value="@isAcceptingClaims" Name="@(Name + ".IsAcceptingClaims")" disabled="@IsDefaultTemplate" />
+    @if (IsDefaultTemplate)
+    {
+      <JoinIcon Icon="JoinIconType.Info" Title="На шаблон по умолчанию игроки подают заявку в проект, закрыть его для заявок нельзя. Шаблон по умолчанию можно поменять в настройках" />
+    }
+  </FormRow>
+}
+
+@if (!HasApprovedClaim && isAcceptingClaims && (characterType == CharacterTypeView.Player || characterType == CharacterTypeView.Slot))
 {
   <FormRow Label="Горячая роль">
     <ChildContent>
@@ -77,6 +92,7 @@
     private CharacterTypeView characterType;
     private CharacterVisibilityView characterVisibility;
     private bool isHot;
+    private bool isAcceptingClaims;
     private int? characterSlotLimit;
     private string? slotName;
 
@@ -90,7 +106,15 @@
         ArgumentNullException.ThrowIfNull(InitialModel);
 
         CharacterType ct;
-        (ct, isHot, characterSlotLimit, bool x, slotName, _, _) = InitialModel;
+        (ct, isHot, characterSlotLimit, isAcceptingClaims, slotName, _, _) = InitialModel;
+
+        // У NPC флаг всегда снят. Если мастер переключит тип на игрока, по умолчанию заявки открыты.
+        // Шаблон по умолчанию закрытым быть не должен (на него ведёт «Подать заявку в проект»),
+        // а галочка у него заблокирована — форма сама вернёт флаг, если он оказался снят.
+        if (ct == CharacterType.NonPlayer || IsDefaultTemplate)
+        {
+            isAcceptingClaims = true;
+        }
 
         if (!CharactersHaveNameField && ActiveClaimsCount == 0)
         {
