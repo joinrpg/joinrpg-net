@@ -3,7 +3,7 @@
 @model GameRolesViewModel
 
 @{
-    ViewBag.Title = "Горячие роли: " + Model.ProjectName;
+    ViewBag.Title = "Горячие роли";
 }
 @* Тело сетки строит остров ProjectRoleGrid в классическом режиме с фильтром HotRolesOnly. *@
 @(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.WebAssembly, new { Model.ProjectId, ClassicGroupId = Model.GridGroupId, HotRolesOnly = true }))

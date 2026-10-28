@@ -4,9 +4,7 @@
 @using JoinRpg.Web.ProjectCommon.Projects
 @inject ICurrentUserAccessor currentUserAccessor 
 @model ProjectDetailsViewModel
-@{
-    ViewBag.Title = Model.Title;
-}
+@* Своего заголовка нет: во вкладке будет название проекта, его добавляет PageTitleViewComponent *@
 
 <component type="typeof(ProjectHomePanel)" render-mode="Static" param-Model="@Model" />
 
