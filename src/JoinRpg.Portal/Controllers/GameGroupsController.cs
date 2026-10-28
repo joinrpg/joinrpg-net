@@ -36,7 +36,6 @@ public class GameGroupsController(
             return View(
               new GameRolesViewModel
               {
-                  ProjectName = projectInfo.ProjectName,
                   ProjectId = projectId,
                   RolesListId = defaultRolesListId,
               });
@@ -54,7 +53,6 @@ public class GameGroupsController(
         return View(
           new GameRolesViewModel
           {
-              ProjectName = projectInfo.ProjectName,
               ShowEditControls = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentificationOrDefault),
               ProjectId = projectId,
               GridGroupId = explicitGroupId,
@@ -84,7 +82,6 @@ public class GameGroupsController(
         return View(
           new GameRolesViewModel
           {
-              ProjectName = projectInfo.ProjectName,
               ShowEditControls = projectInfo.HasEditRolesAccess(currentUserAccessor.UserIdentificationOrDefault),
               ProjectId = projectIdentification,
               GridGroupId = explicitGroupId,

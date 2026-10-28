@@ -12,9 +12,6 @@ public class EditProjectViewModel
 {
     public int ProjectId { get; set; }
 
-    [ReadOnly(true)]
-    public string OriginalName { get; set; }
-
     public bool Active { get; set; }
 
     /// <summary>Заблокирован на время восстановления данных (ADR023).</summary>
@@ -30,9 +27,6 @@ public class UnblockProjectViewModel : IValidatableObject
     public const string ConfirmationPhrase = "все восстановлено";
 
     public int ProjectId { get; set; }
-
-    [ReadOnly(true)]
-    public string OriginalName { get; set; } = "";
 
     [ReadOnly(true)]
     public bool IsBlocked { get; set; }
@@ -67,9 +61,6 @@ public class UnblockProjectViewModel : IValidatableObject
 public class CloseProjectViewModel
 {
     public int ProjectId { get; set; }
-
-    [ReadOnly(true)]
-    public string OriginalName { get; set; }
 
     [Display(Name = "Опубликовать сюжет всем",
         Description =

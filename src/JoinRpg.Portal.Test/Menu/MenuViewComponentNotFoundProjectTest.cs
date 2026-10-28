@@ -17,8 +17,8 @@ namespace JoinRpg.Portal.Test.Menu;
 
 /// <summary>
 /// Заход на несуществующий проект (например, бот пришёл на /2024) — штатная ситуация:
-/// отдаём 404, но projectId остаётся в HttpContext.Items и меню всё равно рисуется на странице
-/// ошибки. Такое не должно шуметь в error-мониторинге.
+/// отдаём 404, но projectId остаётся в HttpContext.Items и меню с заголовком страницы всё равно
+/// рисуются на странице ошибки. Такое не должно шуметь в error-мониторинге.
 /// </summary>
 public class MenuViewComponentNotFoundProjectTest
 {
@@ -59,6 +59,23 @@ public class MenuViewComponentNotFoundProjectTest
         var result = await component.InvokeAsync();
 
         _ = result.ShouldBeOfType<ViewViewComponentResult>();
+        logger.LoggedLevels.ShouldNotContain(LogLevel.Error);
+    }
+
+    [Fact]
+    public async Task PageTitle_ProjectNotFound_ShouldNotLogError()
+    {
+        var logger = new RecordingLogger<PageTitleViewComponent>();
+        var context = CreateViewComponentContext();
+        context.ViewData["Title"] = "Проект не найден";
+        var component = new PageTitleViewComponent(new NotFoundProjectMetadataRepository(), logger)
+        {
+            ViewComponentContext = context,
+        };
+
+        var result = await component.InvokeAsync();
+
+        result.ShouldBeOfType<ContentViewComponentResult>().Content.ShouldBe("Проект не найден — JoinRpg");
         logger.LoggedLevels.ShouldNotContain(LogLevel.Error);
     }
 

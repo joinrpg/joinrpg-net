@@ -71,7 +71,6 @@ public class GameController(
         return View(new EditProjectViewModel
         {
             ProjectId = projectId.Value,
-            OriginalName = project.ProjectName,
             Active = !project.IsArchived,
             Blocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked,
             HasEditAccess = project.HasMasterAccess(currentUserAccessor, Permission.CanChangeProjectProperties),
@@ -113,7 +112,6 @@ public class GameController(
     private async Task FillUnblockViewModel(UnblockProjectViewModel viewModel, ProjectIdentification projectId)
     {
         var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-        viewModel.OriginalName = project.ProjectName;
         viewModel.IsBlocked = project.ProjectStatus == ProjectLifecycleStatus.Blocked;
     }
 
@@ -125,7 +123,6 @@ public class GameController(
         var isMaster = project.HasMasterAccess(currentUserAccessor, Permission.CanChangeProjectProperties);
         return View(new CloseProjectViewModel()
         {
-            OriginalName = project.ProjectName,
             ProjectId = projectid,
             PublishPlot = isMaster,
             IsMaster = isMaster,
@@ -152,7 +149,6 @@ public class GameController(
         {
             AddModelException(ex);
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
-            viewModel.OriginalName = project.ProjectName;
             viewModel.IsMaster = project.HasMasterAccess(currentUserAccessor, Permission.CanChangeProjectProperties);
             return View(viewModel);
         }

@@ -4,9 +4,6 @@ namespace JoinRpg.Web.Models;
 
 public class GameRolesViewModel
 {
-
-    public required string ProjectName { get; set; }
-
     /// <summary>
     /// Нужны ли кнопки правки в обрамлении группы. Только для классической сетки: на сетке по
     /// умолчанию обрамления нет, а свои кнопки остров показывает по собственным правам.
