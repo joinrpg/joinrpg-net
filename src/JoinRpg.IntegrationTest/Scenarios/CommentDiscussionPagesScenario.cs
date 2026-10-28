@@ -31,7 +31,7 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// на доменный снимок.
 /// </para>
 /// <para>
-/// Каждый тест сеет свой проект: страница заявки сдвигает отметку прочтения, и порядок тестов
+/// Каждый тест сеет свой проект: страницы заявки и темы сдвигают отметку прочтения, и порядок тестов
 /// не должен влиять на пометку «новое».
 /// </para>
 /// </remarks>
@@ -101,7 +101,8 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
     /// <c>UpdateReadCommentWatermark</c> в <c>ClaimController.ShowClaim</c>. Тест это не подтвердил —
     /// ответ помечен новым. Коллекция отметок <c>Discussion.Watermarks</c> загружается ещё до
     /// обновления (проверкой «есть ли непрочитанное»), а отметку <c>ClaimService</c> пишет в другом
-    /// транзиентном <c>MyDbContext</c> — граф заявки её не видит. Тест фиксирует поведение, которое
+    /// транзиентном <c>MyDbContext</c> — граф заявки её не видит. С шага 3 ответы строятся сразу,
+    /// вместе с корнями, и от раздельных контекстов это больше не зависит. Тест фиксирует поведение, которое
     /// должен сохранить перевод страницы на доменный снимок, где «новое» считается до обновления отметки.
     /// </remarks>
     [Fact]
@@ -119,6 +120,33 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
         var reopenedPage = await GetPageAsync(secondMaster, seed.ClaimPageUrl);
         IsMarkedNew(reopenedPage, seed.MasterRootCommentId).ShouldBeFalse("Прочитанный комментарий не должен быть новым");
         IsMarkedNew(reopenedPage, seed.MasterReplyCommentId).ShouldBeFalse("Прочитанный ответ не должен быть новым");
+    }
+
+    /// <summary>
+    /// Второй мастер впервые открывает тему форума: корневой комментарий и ответ первого мастера для
+    /// него новые, а после просмотра — уже нет (ADR026, шаг 3).
+    /// </summary>
+    /// <remarks>
+    /// До шага 3 <c>ForumController.ViewThread</c> отметку прочтения не сдвигал, и «новое» на форуме
+    /// не гасло никогда. Этот тест ловит пропавший сдвиг отметки, но не порядок «модель, потом
+    /// отметка»: сервис пишет её в другом транзиентном <c>MyDbContext</c>, и граф темы её не видит.
+    /// Порядок закрепляет юнит-тест <c>CommentViewModelTest</c>.
+    /// </remarks>
+    [Fact]
+    public async Task ForumThreadPage_MarksRootAndReplyAsNew_OnlyUntilViewed()
+    {
+        var seed = await SeedAsync();
+        var secondMaster = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), seed.SecondMasterEmail);
+
+        var threadPage = await GetPageAsync(secondMaster, seed.ThreadPageUrl);
+
+        IsMarkedNew(threadPage, seed.ForumRootCommentId).ShouldBeTrue("Корневой комментарий темы должен быть новым");
+        IsMarkedNew(threadPage, seed.ForumMasterReplyCommentId).ShouldBeTrue("Ответ в теме должен быть новым");
+
+        // Первое открытие сдвинуло отметку прочтения — при повторном ничего нового нет.
+        var reopenedPage = await GetPageAsync(secondMaster, seed.ThreadPageUrl);
+        IsMarkedNew(reopenedPage, seed.ForumRootCommentId).ShouldBeFalse("Прочитанный комментарий темы не должен быть новым");
+        IsMarkedNew(reopenedPage, seed.ForumMasterReplyCommentId).ShouldBeFalse("Прочитанный ответ в теме не должен быть новым");
     }
 
     /// <summary>
@@ -165,6 +193,8 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
         ForumThreadIdentification ThreadId,
         int MasterRootCommentId,
         int MasterReplyCommentId,
+        int ForumRootCommentId,
+        int ForumMasterReplyCommentId,
         string MasterEmail,
         string SecondMasterEmail,
         string PlayerEmail)
@@ -179,7 +209,7 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
     /// Проект с двумя мастерами и игроком. У принятой заявки игрока — дерево комментариев (комментарий
     /// мастера, ответ мастера на него, ответ игрока), скрытый от игрока комментарий и неподтверждённый
     /// платёж игрока на кассу мастера. У темы форума — ответ мастера, ответ игрока и скрытый комментарий.
-    /// Второй мастер ничего не пишет и ничего не открывает: для него вся заявка — новая.
+    /// Второй мастер ничего не пишет и ничего не открывает: для него вся заявка и вся тема — новые.
     /// </summary>
     private async Task<Seed> SeedAsync()
     {
@@ -275,10 +305,11 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
 
         var forumFirstId = GetCommentId(threadDiscussionId, ForumTexts.First);
         await AddForumComment(masterId, threadId, forumFirstId, ForumTexts.MasterReply);
+        var forumMasterReplyId = GetCommentId(threadDiscussionId, ForumTexts.MasterReply);
         await AddForumComment(playerId, threadId, forumFirstId, ForumTexts.PlayerReply);
         await AddForumComment(masterId, threadId, parentCommentId: null, ForumTexts.HiddenFromPlayer, isVisibleToPlayer: false);
 
-        return new Seed(projectId, claimId, threadId, masterRootId, masterReplyId, masterEmail, secondMasterEmail, playerEmail);
+        return new Seed(projectId, claimId, threadId, masterRootId, masterReplyId, forumFirstId, forumMasterReplyId, masterEmail, secondMasterEmail, playerEmail);
     }
 
     private Task AddClaimComment(

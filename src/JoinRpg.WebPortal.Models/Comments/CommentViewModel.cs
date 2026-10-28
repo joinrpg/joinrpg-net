@@ -27,10 +27,13 @@ public class CommentViewModel
         ProjectId = comment.ProjectId;
         CommentDiscussionId = comment.CommentDiscussionId;
         IsRead = comment.IsReadByUser(currentUserId.Value);
+        // Ответы строятся сразу, а не отложенно при рендере: контроллер сдвигает отметку прочтения
+        // после построения модели, и «новое» у ответов должно считаться до этого (ADR026, шаг 3).
         ChildComments =
           parent.Comments.Where(c => c.ParentCommentId == comment.CommentId)
             .Select(c => new CommentViewModel(parent, c, currentUserId, projectInfo, deepLevel + 1))
-            .OrderBy(c => c.CreatedTime);
+            .OrderBy(c => c.CreatedTime)
+            .ToList();
         ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?)comment.ExtraAction.Value;
         IsVisible = comment.IsVisibleTo(currentUserId.Value, projectInfo);
         FinanceModeration = ShowFinanceModeration ? comment.Finance!.ToModerationView(projectInfo) : null;
@@ -52,7 +55,7 @@ public class CommentViewModel
     public FinanceOperation? Finance { get; }
     public JoinHtmlString CommentText { get; }
     public int CommentId { get; }
-    public IEnumerable<CommentViewModel> ChildComments { get; }
+    public IReadOnlyList<CommentViewModel> ChildComments { get; }
     public int ProjectId { get; }
     public int CommentDiscussionId { get; }
     public CommentExtraAction? ExtraAction { get; set; }
