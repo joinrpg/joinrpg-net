@@ -42,7 +42,7 @@ public class RegisterScenario(JoinApplicationFactory factory) : IClassFixture<Jo
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         HtmlDocument doc = await response.AsHtmlDocument();
 
-        doc.GetTitle().ShouldBe("Регистрация успешна - JoinRpg.Portal");
+        doc.GetTitle().ShouldBe("Регистрация успешна — JoinRpg");
     }
 
 
