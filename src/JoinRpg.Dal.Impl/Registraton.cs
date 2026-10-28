@@ -1,11 +1,13 @@
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Dal.Impl.Repositories.Accommodation;
 using JoinRpg.Dal.Impl.Repositories.Characters;
+using JoinRpg.Dal.Impl.Repositories.Comments;
 using JoinRpg.Dal.Impl.Repositories.ProjectMetadata;
 using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.Data.Interfaces.AdminTools;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.Comments;
 using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.Data.Interfaces.Subscribe;
@@ -40,6 +42,7 @@ public static class Registraton
             // Единственный способ его получить — IUnitOfWork.GetCharacterAggregateWriteRepository().
             .AddTransient<IPlotRepository, PlotRepositoryImpl>()
             .AddTransient<IForumRepository, ForumRepositoryImpl>()
+            .AddTransient<ICommentDiscussionRepository, CommentDiscussionRepository>()
             .AddTransient<IFinanceReportRepository, FinanceReportRepositoryImpl>()
             .AddTransient<IClaimsRepository, ClaimsRepositoryImpl>()
             .AddTransient<IAccommodationInviteRepository, AccommodationInviteRepositoryImpl>()
