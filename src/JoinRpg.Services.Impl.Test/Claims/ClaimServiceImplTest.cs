@@ -2039,6 +2039,25 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     /// <summary>
+    /// Утверждённая заявка не может лежать на шаблоне: из шаблона создаётся персонаж при принятии,
+    /// а вторая роль выдаётся сразу утверждённой, мимо этого шага.
+    /// </summary>
+    [Fact]
+    public async Task MoveToSecondRole_ToSlot_Throws_AndDoesNotSave()
+    {
+        var (oldClaim, _) = CreateSecondRoleSetup();
+        var slot = mock.CreateSlot("Шаблон");
+        mock.ReInitProjectInfo();
+
+        _ = await Should.ThrowAsync<ClaimTargetIsNotAcceptingClaims>(
+            () => CreateService().MoveToSecondRole(oldClaim.GetId(), slot.GetId(), "вторая роль"));
+
+        slot.ApprovedClaim.ShouldBeNull();
+        oldClaim.ClaimStatus.ShouldBe(ClaimStatus.CheckedIn);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    /// <summary>
     /// Разрешение на чувствительные данные переносится со старой заявки: его даёт игрок, а мастер за
     /// него не может, так что иначе проект потребовал бы паспорт заново у того же игрока.
     /// </summary>
