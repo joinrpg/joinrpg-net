@@ -797,6 +797,15 @@ internal class ClaimRestoreService(
                     EnsureCanBeApprovedOn(newCharacterInfo, claimSnapshot.ClaimId);
                 }
 
+                // Потерянная заявка подана после бэкапа, и раз она на NPC, то, скорее всего, после бэкапа
+                // мастер сделал его персонажем игрока (#5907). Старые живые заявки на NPC (до 2021 года это
+                // было нормой) сюда не попадают: они есть в бэкапе. Статус — только заданный в цели, как
+                // в плане: без него у оболочки статус по умолчанию, а не восстановленный. Повтор после
+                // обрыва (оболочка уже вставлена) идёт не созданием — тип тогда не меняется.
+                var becomesPlayerCharacter = isCreation
+                    && ctx.Request.Status is not (null or ClaimStatus.DeclinedByMaster or ClaimStatus.DeclinedByUser)
+                    && newCharacterInfo.CharacterTypeInfo.CharacterType == CharacterType.NonPlayer;
+
                 // 2. Мутации.
                 var changes = new List<string>();
 
@@ -805,6 +814,18 @@ internal class ClaimRestoreService(
                     ctx.Claim.CharacterId = newCharacterInfo.Id.CharacterId;
                     ctx.Claim.Character = newCharacter;
                     changes.Add($"персонаж — {newCharacter.CharacterName}");
+                }
+
+                if (becomesPlayerCharacter)
+                {
+                    ctx.SetRestoredCharacterSettings(newCharacter, new CharacterTypeInfo(
+                        CharacterType.Player,
+                        IsHot: false,
+                        SlotLimit: null,
+                        SlotName: null,
+                        newCharacterInfo.CharacterTypeInfo.CharacterVisibility));
+                    // TODO[Localize]
+                    changes.Add($"персонаж «{newCharacter.CharacterName}» стал персонажем игрока");
                 }
 
                 if (fromSlot)

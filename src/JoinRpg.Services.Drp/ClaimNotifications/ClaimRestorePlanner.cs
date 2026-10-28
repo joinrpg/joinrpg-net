@@ -1,5 +1,6 @@
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Drp.MasterExports;
 
@@ -533,7 +534,23 @@ public static class ClaimRestorePlanner
         // Одобрение слота создало персонажа с его именем, он и потерян: заявка подаётся на слот, и
         // восстановление, как одобрение, создаст его заново.
         CheckApprovedOnSlot(p, status, character, null, warnings);
+        CheckLostClaimOnNonPlayer(p, status, character, warnings);
         return (character, candidates);
+    }
+
+    /// <summary>
+    /// Потерянная заявка (подана после бэкапа) не отклонена и подаётся на NPC — пояснить, что восстановление
+    /// сделает его персонажем игрока (#5907): скорее всего, мастер сменил тип после бэкапа.
+    /// </summary>
+    private static void CheckLostClaimOnNonPlayer(
+        Planning p, ClaimStatus? status, CharacterIdentification? character, List<ClaimRestoreWarning> warnings)
+    {
+        if (status is not (null or ClaimStatus.DeclinedByMaster or ClaimStatus.DeclinedByUser)
+            && character is { } id
+            && p.Characters.GetValueOrDefault(id)?.CharacterType == CharacterType.NonPlayer)
+        {
+            warnings.Add(ClaimRestoreWarning.BecomesPlayerCharacter);
+        }
     }
 
     /// <summary>

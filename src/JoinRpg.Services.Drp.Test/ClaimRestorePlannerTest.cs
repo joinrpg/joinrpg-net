@@ -1,4 +1,5 @@
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Services.Drp.MasterExports;
@@ -69,6 +70,47 @@ public class ClaimRestorePlannerTest
         row.ResponsibleMaster.ShouldBe(Hamlet.DefaultResponsibleMaster);
         row.FirstActivity.ShouldBe(Day(1));
         row.Warnings.ShouldBeEmpty();
+    }
+
+    private static readonly ExistingCharacterInfo Ghost = Character(3, "Призрак") with { CharacterType = CharacterType.NonPlayer };
+
+    /// <summary>Потерянная заявка на NPC — пояснение: восстановление сделает его персонажем игрока (#5907).</summary>
+    [Fact]
+    public void LostClaimOnNonPlayerMakesPlayerCharacter()
+    {
+        var row = Plan([], [Ghost],
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, Player, [Master], characterName: "Призрак"),
+            ClaimChange(Day(2), CommentExtraAction.ApproveByMaster, Master, [Player], characterName: "Призрак"))
+            .ShouldHaveSingleItem();
+
+        row.Character.ShouldBe(Ghost.CharacterId);
+        row.Warnings.ShouldBe([ClaimRestoreWarning.BecomesPlayerCharacter]);
+    }
+
+    /// <summary>Отклонённая заявка тип не меняет — и пояснения нет.</summary>
+    [Fact]
+    public void DeclinedLostClaimOnNonPlayerKeepsType()
+    {
+        var row = Plan([], [Ghost],
+            ClaimChange(Day(1), CommentExtraAction.NewClaim, Player, [Master], characterName: "Призрак"),
+            ClaimChange(Day(2), CommentExtraAction.DeclineByMaster, Master, [Player], characterName: "Призрак"))
+            .ShouldHaveSingleItem();
+
+        row.Character.ShouldBe(Ghost.CharacterId);
+        row.Warnings.ShouldNotContain(ClaimRestoreWarning.BecomesPlayerCharacter);
+    }
+
+    /// <summary>Статус неизвестен — сервис без статуса в цели тип не меняет, пояснения нет.</summary>
+    [Fact]
+    public void LostClaimOnNonPlayerWithUnknownStatusKeepsType()
+    {
+        var row = Plan([], [Ghost],
+            ClaimChange(Day(1), action: null, Master, [Player], characterName: "Призрак"))
+            .ShouldHaveSingleItem();
+
+        row.Character.ShouldBe(Ghost.CharacterId);
+        row.Warnings.ShouldContain(ClaimRestoreWarning.StatusUnknown);
+        row.Warnings.ShouldNotContain(ClaimRestoreWarning.BecomesPlayerCharacter);
     }
 
     [Fact]

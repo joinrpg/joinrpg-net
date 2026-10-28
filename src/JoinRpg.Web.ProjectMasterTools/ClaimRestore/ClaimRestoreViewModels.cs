@@ -49,6 +49,10 @@ public enum ClaimRestoreWarningView
     [Display(Name = "Похоже на шаблон: принятые заявки на это имя у нескольких игроков — новый персонаж будет создан шаблоном")]
     LooksLikeSlot,
 
+    /// <summary>Пояснение, не предупреждение (<see cref="ClaimRestoreWarningViewExtensions.IsNote"/>).</summary>
+    [Display(Name = "Заявка на NPC — персонаж станет персонажем игрока")]
+    BecomesPlayerCharacter,
+
     [Display(Name = "Статус заявки по уведомлениям не понять")]
     StatusUnknown,
 
@@ -73,7 +77,9 @@ public static class ClaimRestoreWarningViewExtensions
     /// видел, что произойдёт.
     /// </summary>
     public static bool IsNote(this ClaimRestoreWarningView warning)
-        => warning is ClaimRestoreWarningView.CharacterFromSlot or ClaimRestoreWarningView.LooksLikeSlot;
+        => warning is ClaimRestoreWarningView.CharacterFromSlot
+            or ClaimRestoreWarningView.LooksLikeSlot
+            or ClaimRestoreWarningView.BecomesPlayerCharacter;
 }
 
 /// <summary>Имена персонажей при принятии заявок расходились с именами игроков.</summary>

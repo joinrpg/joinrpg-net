@@ -835,6 +835,75 @@ public class ClaimRestoreServiceTest : ClaimServiceTestBase
     }
 
     /// <summary>
+    /// Потерянная заявка подана после бэкапа: раз она на NPC, мастер, скорее всего, сделал его персонажем
+    /// игрока уже после бэкапа (#5907). Отклонённая заявка тип не меняет.
+    /// </summary>
+    [Theory]
+    [InlineData(ClaimStatus.Approved)]
+    [InlineData(ClaimStatus.Discussed)]
+    [InlineData(ClaimStatus.OnHold)]
+    public async Task RestoreLostClaim_OnNonPlayer_ActiveClaimMakesPlayerCharacter(ClaimStatus status)
+    {
+        var npc = CreateNonPlayer();
+
+        await CreateService().RestoreLostClaim(LostClaim(
+            character: npc.GetId(),
+            target: Target(status: status, statusChangedAt: StatusChangedAt)));
+
+        npc.CharacterType.ShouldBe(CharacterType.Player);
+#pragma warning disable CS0618 // Устаревшая колонка должна остаться согласованной с типом
+        npc.IsAcceptingClaims.ShouldBeTrue();
+#pragma warning restore CS0618
+        RestoreComments(LostClaimInMock).ShouldHaveSingleItem().CommentText.Text.Contents.ShouldNotBeNull()
+            .ShouldContain("персонаж «NPC» стал персонажем игрока");
+    }
+
+    /// <summary>
+    /// Отклонённая заявка тип не меняет. Без статуса в цели — тоже: в плане у такой строки статус
+    /// неизвестен и пояснения нет.
+    /// </summary>
+    [Theory]
+    [InlineData(ClaimStatus.DeclinedByMaster)]
+    [InlineData(ClaimStatus.DeclinedByUser)]
+    [InlineData(null)]
+    public async Task RestoreLostClaim_OnNonPlayer_DeclinedOrUnknownStatus_KeepsType(ClaimStatus? status)
+    {
+        var npc = CreateNonPlayer();
+
+        await CreateService().RestoreLostClaim(LostClaim(
+            character: npc.GetId(),
+            target: Target(status: status, statusChangedAt: status is null ? null : StatusChangedAt)));
+
+        npc.CharacterType.ShouldBe(CharacterType.NonPlayer);
+        RestoreComments(LostClaimInMock).ShouldHaveSingleItem().CommentText.Text.Contents.ShouldNotBeNull()
+            .ShouldNotContain("стал персонажем игрока");
+    }
+
+    private Character CreateNonPlayer()
+    {
+        var npc = mock.CreateCharacter("NPC");
+        npc.CharacterType = CharacterType.NonPlayer;
+#pragma warning disable CS0618 // Так NPC хранится в БД
+        npc.IsAcceptingClaims = false;
+#pragma warning restore CS0618
+        BlockProject();
+        return npc;
+    }
+
+    /// <summary>Заявка из бэкапа на NPC — нормальна для старых проектов: перенос на NPC тип не меняет.</summary>
+    [Fact]
+    public async Task ExistingClaim_MovedToNonPlayer_KeepsType()
+    {
+        var claim = CreateClaim(ClaimStatus.Discussed);
+        var npc = CreateNonPlayer();
+
+        await CreateService().ApplyRestoredState(claim.GetId(), Target(character: npc.GetId()));
+
+        claim.CharacterId.ShouldBe(npc.CharacterId);
+        npc.CharacterType.ShouldBe(CharacterType.NonPlayer);
+    }
+
+    /// <summary>
     /// Восстановленные строки несут исторические даты, а дата последнего обновления проекта — максимум по
     /// заявкам, комментариям и т.п. Если её не поднять, после снятия блокировки проект сочтут давно
     /// не обновлявшимся и <c>ProjectPerformCloseJob</c> его закроет (требование в #5481, ADR023).

@@ -285,6 +285,7 @@ public class ClaimRestoreRowEditorTest
     [Theory]
     [InlineData(ClaimRestoreWarningView.CharacterFromSlot)]
     [InlineData(ClaimRestoreWarningView.LooksLikeSlot)]
+    [InlineData(ClaimRestoreWarningView.BecomesPlayerCharacter)]
     public void RowWithNote_SelectedByDefault(ClaimRestoreWarningView note)
     {
         var editor = new ClaimRestoreRowEditor(Row(character: Hero, player: Player, responsible: Master, warnings: [note]));

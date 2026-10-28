@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.Services.Impl.Claims;
 
 namespace JoinRpg.Services.Impl.Characters;
 
@@ -36,6 +37,16 @@ internal static class CharacterOperationContextExtensions
     /// </summary>
     public static void SetCharacterSettings(
         this CharacterCreationContext ctx,
+        Character character,
+        CharacterTypeInfo characterTypeInfo)
+        => ApplySettings(character, characterTypeInfo, ctx.ProjectInfo);
+
+    /// <summary>
+    /// То же для персонажа заявки при восстановлении после потери данных: оно повторяет уже случившееся,
+    /// поэтому инвариант смены типа не проверяется.
+    /// </summary>
+    public static void SetRestoredCharacterSettings(
+        this ClaimMutationContext ctx,
         Character character,
         CharacterTypeInfo characterTypeInfo)
         => ApplySettings(character, characterTypeInfo, ctx.ProjectInfo);

@@ -195,6 +195,7 @@ internal static class ClaimRestorePlanBuilder
         ClaimRestoreWarning.CharacterRenamed => ClaimRestoreWarningView.CharacterRenamed,
         ClaimRestoreWarning.CharacterFromSlot => ClaimRestoreWarningView.CharacterFromSlot,
         ClaimRestoreWarning.LooksLikeSlot => ClaimRestoreWarningView.LooksLikeSlot,
+        ClaimRestoreWarning.BecomesPlayerCharacter => ClaimRestoreWarningView.BecomesPlayerCharacter,
         ClaimRestoreWarning.StatusUnknown => ClaimRestoreWarningView.StatusUnknown,
         ClaimRestoreWarning.LostClaimNotSubmittedAfterBackup => ClaimRestoreWarningView.LostClaimNotSubmittedAfterBackup,
         ClaimRestoreWarning.ChangedAfterRestore => ClaimRestoreWarningView.ChangedAfterRestore,
