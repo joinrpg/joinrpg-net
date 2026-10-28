@@ -4,7 +4,7 @@
   "GET /{ProjectId}/goto/discussion/{CommentDiscussionId}": 2,
   "GET /{ProjectId}/goto/finance-operation/{FinanceOperationId:int}": 1,
   "GET /{projectId}/character/{characterid}/Edit": 1,
-  "GET /{projectId}/forums/{forumThreadId}/ViewThread": 3,
+  "GET /{projectId}/forums/{forumThreadId}/ViewThread": 5,
   "POST /webapi/accommodation-rooms/OccupyRoom": 1,
   "POST /webapi/accommodation-rooms/UnOccupyAll": 1,
   "POST /webapi/accommodation-rooms/UnOccupyGroup": 1,
