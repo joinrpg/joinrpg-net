@@ -22,7 +22,7 @@ internal class CommentHelper(ICurrentUserAccessor currentUserAccessor)
       string commentText,
       ProjectInfo projectInfo, ClaimOperationType claimOperationType)
     {
-        var commentCommand = new CommentCommand(claimOperationType, commentText, CommentExtraAction: null, createdAt.Date, projectInfo);
+        var commentCommand = new CommentCommand(claimOperationType, commentText, CommentExtraAction: null, createdAt, projectInfo);
 
         return CreateCommentForDiscussion(forumThread.CommentDiscussion, commentCommand);
     }
