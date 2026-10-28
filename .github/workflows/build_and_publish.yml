@@ -169,6 +169,18 @@ jobs:
           done
         done
 
+    # deploy_dev_auto берёт отсюда версию и деплоит её, а не latest, который мог уже уйти вперёд (#5906).
+    - name: Save image version
+      run: echo "${{ env.CALCULATED_VERSION }}" > image-version.txt
+
+    - name: Upload image version
+      uses: actions/upload-artifact@v7
+      with:
+        name: image-version
+        path: image-version.txt
+        # Артефакты общие для всех попыток прогона: без overwrite повторный запуск publish упадёт с 409.
+        overwrite: true
+
     # TODO: убрать, когда деплой переедет на Selectel
     - name: Push images to Yandex
       env:
