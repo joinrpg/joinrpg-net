@@ -1,0 +1,373 @@
+using System.Net;
+using System.Text;
+using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.Data.Interfaces.Finances;
+using JoinRpg.DataModel;
+using JoinRpg.DataModel.Users;
+using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.Interfaces;
+using JoinRpg.DomainTypes.Users;
+using JoinRpg.Interfaces;
+using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Search;
+using JoinRpg.Web.AdminTools.PscbPayments;
+using JoinRpg.WebPortal.Managers.AdminTools;
+using PscbApi;
+
+namespace JoinRpg.WebPortal.Managers.Test.AdminTools.Pscb;
+
+/// <summary>
+/// Подставные данные списка платежей ПСКБ: банк подменён тем же приёмом, что и в
+/// <c>PscbApi.Test</c> — к сети тесты не ходят.
+/// </summary>
+internal static class PscbPaymentsTestData
+{
+    internal static readonly DateTimeOffset From = new(2026, 10, 1, 0, 0, 0, TimeSpan.FromHours(3));
+
+    public static PscbPaymentsQuery Query() => new(From, From.AddDays(5), null, null, false);
+
+    public static string TicketPurpose(string projectName)
+        => PscbPaymentViewModelBuilder.TicketPurposePrefix + projectName;
+
+    public static string Payment(
+        string orderId,
+        string? account,
+        string? details,
+        string? email = null,
+        string? refunds = null,
+        string state = "end",
+        string amount = "100.0",
+        string? statusDate = null)
+        => $$"""{"orderId":"{{orderId}}","paymentId":"11","amount":{{amount}},"state":"{{state}}","account":{{Quote(account)}},"email":{{Quote(email)}},"details":{{Quote(details)}},"refunds":{{refunds ?? "null"}},"stateDate":{{Quote(statusDate ?? DefaultStatusDate)}}}""";
+
+    /// <summary>
+    /// Дата статуса по умолчанию: банк всегда присылает её, а <c>CurrentStatusDate</c> не
+    /// допускает <c>null</c> — сериализатор на null бросает.
+    /// </summary>
+    private const string DefaultStatusDate = "2026-05-10T15:00:00+03:00";
+
+    public static string Quote(string? value) => value is null ? "null" : "\"" + value + "\"";
+
+    public static PscbFakeUserRepository Users(params int[] existingIds)
+    {
+        var users = new PscbFakeUserRepository();
+        foreach (var id in existingIds)
+        {
+            users.AddExisting(id);
+        }
+
+        return users;
+    }
+}
+
+internal sealed class FakeBankSecrets : IBankSecretsProvider
+{
+    public bool Debug => false;
+
+    public bool DebugOutput => false;
+
+    public string ApiEndpoint => "https://bank.example.invalid";
+
+    public string ApiDebugEndpoint => "https://demo.bank.example.invalid";
+
+    public string MerchantId => "47607";
+
+    public string ApiKey => "secret-key";
+
+    public string ApiDebugKey => "debug-secret-key";
+
+    public string BankSystemPaymentUrl => "https://bank.example.invalid/payment/{0}";
+
+    public string BankSystemDebugPaymentUrl => "https://demo.bank.example.invalid/payment/{0}";
+}
+
+internal sealed class StubHttpClientFactory(string[] payments) : IHttpClientFactory
+{
+    public HttpClient CreateClient(string name)
+        => new(new SingleResponseHandler($$"""{"payments":[{{string.Join(",", payments)}}]}"""));
+
+    private sealed class SingleResponseHandler(string body) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json"),
+            });
+    }
+}
+
+internal sealed class FakeUriService : IUriService
+{
+    public string Get(ILinkable link) => GetUri(link).AbsoluteUri;
+
+    public Uri GetUri(ILinkable link) => link.LinkType switch
+    {
+        LinkType.ResultUser => new($"https://joinrpg.test/user/{link.Identification}", UriKind.Absolute),
+        LinkType.Project => new($"https://joinrpg.test/{link.ProjectId}/home", UriKind.Absolute),
+        _ => throw new ArgumentOutOfRangeException(nameof(link), link.LinkType, null),
+    };
+}
+
+internal sealed class FakeSearchService : ISearchService
+{
+    private readonly List<(int ProjectId, string Name)> projects = [];
+
+    public List<string> Requests { get; } = [];
+
+    public void AddProject(int projectId, string name) => projects.Add((projectId, name));
+
+    public Task<IReadOnlyCollection<SearchResult>> SearchAsync(
+        int? currentUserId,
+        string searchString,
+        IReadOnlyCollection<LinkType>? linkTypes = null,
+        ProjectIdentification? projectId = null)
+    {
+        Requests.Add(searchString);
+
+        // Как и настоящий провайдер, ищем вхождением подстроки — тест обязан показать,
+        // что сервис не полагается на точное совпадение со стороны поиска.
+        IReadOnlyCollection<SearchResult> found = [.. projects
+            .Where(p => p.Name.Contains(searchString, StringComparison.Ordinal))
+            .Select(p => new SearchResult
+            {
+                LinkType = LinkType.Project,
+                Name = p.Name,
+                Description = new MarkdownDbValue(""),
+                Identification = p.ProjectId.ToString(),
+                ProjectId = p.ProjectId,
+                IsPublic = true,
+                IsActive = true,
+            })];
+
+        return Task.FromResult(found);
+    }
+}
+
+/// <summary>
+/// Пользователи в базе: кто существует по id и кто находится по email. Остальные члены
+/// интерфейса шлюзу не нужны.
+/// </summary>
+internal sealed class PscbFakeUserRepository : IUserRepository
+{
+    private readonly HashSet<int> existingIds = [];
+    private readonly Dictionary<string, int> idsByEmail = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Запрошенные id — в том порядке, в котором их прислал сервис.
+    /// </summary>
+    public List<int> IdRequests { get; } = [];
+
+    /// <summary>
+    /// Email'ы, по которым сервис искал пользователя.
+    /// </summary>
+    public List<string> EmailRequests { get; } = [];
+
+    public void AddExisting(int userId) => existingIds.Add(userId);
+
+    public void AddByEmail(string email, int userId) => idsByEmail[email] = userId;
+
+    public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds)
+    {
+        IdRequests.AddRange(userIds.Select(id => id.Value));
+
+        IReadOnlyCollection<UserInfoHeader> found = [.. userIds
+            .Where(id => existingIds.Contains(id.Value))
+            .Select(id => new UserInfoHeader(id, new UserDisplayName($"Пользователь {id.Value}", null)))];
+
+        return Task.FromResult(found);
+    }
+
+    public Task<UserIdentification?> FindByEmail(string email)
+    {
+        EmailRequests.Add(email);
+        UserIdentification? found = idsByEmail.TryGetValue(email, out var userId) ? new UserIdentification(userId) : null;
+        return Task.FromResult(found);
+    }
+
+    public Task<User> GetById(int id) => throw new NotImplementedException();
+    public Task<User> WithProfile(int userId) => throw new NotImplementedException();
+    public Task<User> GetWithSubscribe(int userId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
+    public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotImplementedException();
+    public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
+    public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotImplementedException();
+    public Task<UserIdentification?> FindByVk(string vkId) => throw new NotImplementedException();
+    public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotImplementedException();
+}
+
+/// <summary>
+/// База глазами сверки: операции, возвраты и готовность проектов принять платёж.
+/// </summary>
+internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsRepository
+{
+    private readonly List<ApprovedRefund> refunds = [];
+    private readonly List<MatchedOperation> operations = [];
+    private readonly List<ProjectPaymentsReadiness> readiness = [];
+
+    /// <summary>
+    /// Идентификаторы операций, по которым сервис спрашивал возвраты.
+    /// </summary>
+    public List<int> Requests { get; } = [];
+
+    /// <summary>
+    /// Идентификаторы операций, по которым сервис спрашивал сверку.
+    /// </summary>
+    public List<int> OperationRequests { get; } = [];
+
+    /// <summary>
+    /// Проекты, по которым сервис спрашивал готовность принять восстановленный платёж.
+    /// </summary>
+    public List<int> ReadinessRequests { get; } = [];
+
+    public void AddRefund(int refundedOperationId, DateTime operationDate, int refundCommentId = 9001)
+        => refunds.Add(new ApprovedRefund(
+            refundedOperationId,
+            new FinanceOperationIdentification(42, 7, refundCommentId),
+            operationDate));
+
+    /// <summary>
+    /// Операция в базе: по умолчанию проведённый онлайн-платёж, то есть то, что сверка
+    /// обязана отличить от потерянного.
+    /// </summary>
+    public void AddOperation(
+        int commentId,
+        FinanceOperationState state = FinanceOperationState.Approved,
+        FinanceOperationType operationType = FinanceOperationType.Online,
+        int projectId = 42,
+        int claimId = 7,
+        int? paymentTypeId = 3,
+        DateTime? operationDate = null)
+        => operations.Add(new MatchedOperation(
+            new FinanceOperationIdentification(projectId, claimId, commentId),
+            state,
+            operationType,
+            paymentTypeId,
+            operationDate ?? new DateTime(2026, 5, 10, 12, 0, 0, DateTimeKind.Utc)));
+
+    /// <summary>
+    /// Проект готов принять восстановленный платёж: не заблокирован, онлайн-тип один и активен.
+    /// </summary>
+    public void AddReadyProject(int projectId, int onlinePaymentTypeId = 3)
+        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, [new OnlinePaymentType(onlinePaymentTypeId, IsActive: true)]));
+
+    public void AddBlockedProject(int projectId)
+        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: true, [new OnlinePaymentType(3, IsActive: true)]));
+
+    public void AddProjectWithoutOnlinePaymentType(int projectId)
+        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, []));
+
+    public void AddProjectWithTwoOnlinePaymentTypes(int projectId)
+        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false,
+            [new OnlinePaymentType(3, IsActive: true), new OnlinePaymentType(4, IsActive: true)]));
+
+    /// <summary>
+    /// Онлайн-оплату в проекте с тех пор выключили (тип оплаты удаляется только мягко) —
+    /// восстановлению это мешать не должно.
+    /// </summary>
+    public void AddProjectWithDisabledOnlinePaymentType(int projectId, int onlinePaymentTypeId = 3)
+        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, [new OnlinePaymentType(onlinePaymentTypeId, IsActive: false)]));
+
+    public void AddProjectWithTwoDisabledOnlinePaymentTypes(int projectId)
+        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false,
+            [new OnlinePaymentType(3, IsActive: false), new OnlinePaymentType(4, IsActive: false)]));
+
+    public Task<IReadOnlyCollection<ProjectPaymentsReadiness>> GetPaymentsReadiness(IReadOnlyCollection<int> projectIds)
+    {
+        ReadinessRequests.AddRange(projectIds);
+
+        IReadOnlyCollection<ProjectPaymentsReadiness> found = [.. readiness.Where(project => projectIds.Contains(project.ProjectId))];
+        return Task.FromResult(found);
+    }
+
+    public Task<IReadOnlyCollection<ApprovedRefund>> GetApprovedRefunds(IReadOnlyCollection<int> refundedOperationIds)
+    {
+        Requests.AddRange(refundedOperationIds);
+
+        IReadOnlyCollection<ApprovedRefund> found = [.. refunds.Where(refund => refundedOperationIds.Contains(refund.RefundedOperationId))];
+        return Task.FromResult(found);
+    }
+
+    public Task<IReadOnlyCollection<MatchedOperation>> GetOperationsByCommentIds(IReadOnlyCollection<int> commentIds)
+    {
+        OperationRequests.AddRange(commentIds);
+
+        IReadOnlyCollection<MatchedOperation> found = [.. operations.Where(operation => commentIds.Contains(operation.OperationId.FinanceOperationId))];
+        return Task.FromResult(found);
+    }
+
+    public Task<IReadOnlyCollection<FinanceOperationIdentification>> GetUnfinishedOperations(KeySetPagination? pagination = null)
+        => throw new NotImplementedException();
+}
+
+internal sealed class FakeFinanceOperationUri : IUriLocator<FinanceOperationIdentification>
+{
+    public Uri GetUri(FinanceOperationIdentification target)
+        => new($"https://joinrpg.test/{target.ProjectId.Value}/finance/{target.FinanceOperationId}", UriKind.Absolute);
+}
+
+/// <summary>
+/// Заявки игроков в проекте — то, на что встанет потерянный платёж.
+/// </summary>
+/// <remarks>
+/// Остальные члены интерфейса бросают намеренно: сверке нужен один запрос, и поход
+/// за незапланированными данными должен быть виден сразу.
+/// </remarks>
+internal sealed class PscbFakeClaimsRepository : IClaimsRepository
+{
+    private readonly List<(int ProjectId, PlayerClaimId Claim)> claims = [];
+
+    /// <summary>
+    /// Запросы к заявкам: проект и номера плательщиков, которых спрашивали одним вызовом.
+    /// </summary>
+    public List<(int ProjectId, int[] UserIds)> Requests { get; } = [];
+
+    public void AddClaim(int projectId, int userId, int claimId)
+        => claims.Add((projectId, new PlayerClaimId(userId, claimId)));
+
+    public Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
+    {
+        Requests.Add((projectId.Value, [.. userIds.Select(userId => userId.Value)]));
+
+        IReadOnlyCollection<PlayerClaimId> found =
+        [
+            .. claims
+                .Where(entry => entry.ProjectId == projectId.Value && userIds.Contains(new UserIdentification(entry.Claim.UserId)))
+                .Select(entry => entry.Claim),
+        ];
+        return Task.FromResult(found);
+    }
+
+    public void Dispose() { }
+
+    public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => throw new NotImplementedException();
+    public Task<Claim?> GetClaim(ClaimIdentification claimId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<MyClaimShortInfo>> GetMyActiveClaimsInActiveProjects(UserIdentification userId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(ProjectIdentification projectId, UserIdentification userId, ClaimStatusSpec status) => throw new NotImplementedException();
+    public Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(ProjectIdentification projectId, ClaimStatusSpec approved) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec, UserIdentification userId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec status, int? roomTypeId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
+    public Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotImplementedException();
+}
+
+internal sealed class FakeClaimUri : IUriLocator<ClaimIdentification>
+{
+    public Uri GetUri(ClaimIdentification target)
+        => new($"https://joinrpg.test/{target.ProjectId.Value}/claim/{target.ClaimId}/edit", UriKind.Absolute);
+}

@@ -3,6 +3,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DomainTypes.Interfaces;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.AdminTools.PscbPayments;
 using JoinRpg.XGameApi.Contract.Pscb;
@@ -50,6 +51,18 @@ internal class PscbPaymentsViewService(
     ILogger<PscbPaymentsViewService> logger) : IPscbPaymentsClient
 {
     public async Task<PscbPaymentsListResult> GetPayments(PscbPaymentsQuery query)
+        => (await GetPaymentsWithRestorePlan(query)).Result;
+
+    /// <summary>
+    /// Тот же список, что и <see cref="GetPayments"/>, плюс план восстановления каждой строки,
+    /// которой вердикт разрешил автоматическое восстановление (ADR026).
+    /// </summary>
+    /// <remarks>
+    /// Метод для сервиса восстановления из той же сборки: строка списка несёт только ссылки,
+    /// а записи операции нужны номера заявки и типа оплаты, которые определяет вердикт.
+    /// Скачивание и обогащение одни на оба потребления — список не ходит в банк дважды.
+    /// </remarks>
+    internal async Task<PscbPaymentsListWithRestorePlan> GetPaymentsWithRestorePlan(PscbPaymentsQuery query)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -67,18 +80,22 @@ internal class PscbPaymentsViewService(
                 query.RequestFiscalData);
 
             var result = PscbPaymentViewModelBuilder.BuildList(info, requestCount);
-            if (result.IsSuccess)
-            {
-                await EnrichAsync(result);
-            }
-            return result;
+            var plans = result.IsSuccess
+                ? await EnrichAsync(result)
+                : NoPlans;
+            return new PscbPaymentsListWithRestorePlan(result, plans);
         }
         catch (PscbApiExceptionBase ex)
         {
             logger.LogError(ex, "Request to the bank for the payments list has failed");
-            return PscbPaymentViewModelBuilder.ListFailure(Describe(ex), requestCount);
+            return new PscbPaymentsListWithRestorePlan(
+                PscbPaymentViewModelBuilder.ListFailure(Describe(ex), requestCount),
+                NoPlans);
         }
     }
+
+    private static readonly IReadOnlyDictionary<PscbPaymentListRow, RowRestorePlan> NoPlans
+        = new Dictionary<PscbPaymentListRow, RowRestorePlan>();
 
     public async Task<PscbPaymentDetailsResult> GetPaymentInfo(PscbPaymentDetailsQuery query)
     {
@@ -110,7 +127,8 @@ internal class PscbPaymentsViewService(
     /// <summary>
     /// Добавляет к данным банка то, что знает JoinRpg: ссылки на пользователя и проект, списки
     /// тех, кого найти не удалось, возвраты, исход сверки каждой строки с нашей базой и вердикт
-    /// восстановления.
+    /// восстановления. Возвращает планы восстановления строк, которым вердикт разрешил
+    /// автоматическое восстановление.
     /// </summary>
     /// <remarks>
     /// Это дополнение к данным банка, а не их часть, поэтому его поломка не должна уносить уже
@@ -120,7 +138,7 @@ internal class PscbPaymentsViewService(
     /// ссылке на операцию возврата, а вердикт восстановления — последним, потому что ему нужны
     /// и определённые плательщик с проектом, и исход сверки.
     /// </remarks>
-    private async Task EnrichAsync(PscbPaymentsListResult result)
+    private async Task<IReadOnlyDictionary<PscbPaymentListRow, RowRestorePlan>> EnrichAsync(PscbPaymentsListResult result)
     {
         try
         {
@@ -129,11 +147,12 @@ internal class PscbPaymentsViewService(
             await FillProjectLinksAsync(result, resolution);
             await FillRefundsAsync(result.Payments);
             var operations = await FillReconciliationAsync(result.Payments);
-            await FillRestorePlanAsync(result.Payments, resolution, operations);
+            return await FillRestorePlanAsync(result.Payments, resolution, operations);
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to enrich the payments list with the JoinRpg data");
+            return NoPlans;
         }
     }
 
@@ -408,7 +427,8 @@ internal class PscbPaymentsViewService(
 
     /// <summary>
     /// Вердикт восстановления для строк, которые сверка сочла потерянными (ADR026): ссылка
-    /// на заявку, куда платёж ляжет, и причина, если восстановить автоматически нельзя.
+    /// на заявку, куда платёж ляжет, причина, если восстановить автоматически нельзя, и план
+    /// восстановления — заявка и тип оплаты — для строк без причины.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -420,10 +440,11 @@ internal class PscbPaymentsViewService(
     /// </para>
     /// <para>
     /// Строка с пропущенным возвратом заявку и тип оплаты берёт у найденной операции платежа,
-    /// поэтому плательщик и проект ей не нужны: деньги возвращаются туда, откуда пришли.
+    /// поэтому плательщик и проект ей не нужны: деньги возвращаются туда, откуда пришли. Ей же
+    /// план несёт дату денег исходного платежа — она идёт в текст комментария возврата.
     /// </para>
     /// </remarks>
-    private async Task FillRestorePlanAsync(
+    private async Task<IReadOnlyDictionary<PscbPaymentListRow, RowRestorePlan>> FillRestorePlanAsync(
         IReadOnlyCollection<PscbPaymentListRow> rows,
         RowResolution resolution,
         IReadOnlyDictionary<int, MatchedOperation> operations)
@@ -434,12 +455,13 @@ internal class PscbPaymentsViewService(
 
         if (candidates.Count == 0)
         {
-            return;
+            return NoPlans;
         }
 
         var claims = await LoadFirstClaimIdsAsync(candidates, resolution);
         var readiness = await LoadReadinessAsync(candidates, resolution, operations);
 
+        Dictionary<PscbPaymentListRow, RowRestorePlan> plans = [];
         foreach (var row in candidates)
         {
             var matched = MatchedOperationOf(row, operations);
@@ -451,9 +473,28 @@ internal class PscbPaymentsViewService(
                 && resolution.UserIds.TryGetValue(row, out var userId)
                 && claims.TryGetValue((projectId, userId), out var claimId))
             {
-                row.ClaimUrl = claimUri.GetUri(new ClaimIdentification(projectId, claimId)).AbsoluteUri;
+                var lostClaimId = new ClaimIdentification(projectId, claimId);
+                row.ClaimUrl = claimUri.GetUri(lostClaimId).AbsoluteUri;
+
+                // Причина отсутствует ровно тогда, когда тип оплаты выбран однозначно.
+                if (row.RestoreBlockReason is null
+                    && PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(readiness.GetValueOrDefault(projectId)).PaymentTypeId is { } paymentTypeId)
+                {
+                    plans[row] = new RowRestorePlan(lostClaimId, new PaymentTypeIdentification(projectId, paymentTypeId), RefundedOperationDate: null);
+                }
+            }
+            else if (row.MatchState == PscbPaymentMatchState.RefundMissing
+                && row.RestoreBlockReason is null
+                && matched is { PaymentTypeId: { } refundedPaymentTypeId })
+            {
+                plans[row] = new RowRestorePlan(
+                    matched.OperationId.ClaimId,
+                    new PaymentTypeIdentification(matched.OperationId.ProjectId, refundedPaymentTypeId),
+                    matched.OperationDate);
             }
         }
+
+        return plans;
     }
 
     /// <summary>
