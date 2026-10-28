@@ -164,6 +164,14 @@ internal class ClaimServiceImpl(
             (ClaimId: claimId, CommentText: secondRoleCommentText),
             async ctx =>
             {
+                // Общих правил эта операция не считает (ClaimOperation.ValidatesClaimTarget), но
+                // утверждённая заявка на шаблоне ломает модель: персонаж из шаблона создаётся при
+                // принятии, а вторая роль выдаётся сразу утверждённой.
+                if (ctx.Character.CharacterType == CharacterType.Slot)
+                {
+                    throw new ClaimTargetIsNotAcceptingClaims();
+                }
+
                 var oldClaim = await ctx.LoadOtherClaim(ctx.Request.ClaimId);
                 oldClaim.EnsureStatus(ClaimStatus.CheckedIn);
 
