@@ -164,10 +164,14 @@ internal class ClaimServiceImpl(
             (ClaimId: claimId, CommentText: secondRoleCommentText),
             async ctx =>
             {
-                // Общих правил эта операция не считает (ClaimOperation.ValidatesClaimTarget), но
-                // утверждённая заявка на шаблоне ломает модель: персонаж из шаблона создаётся при
-                // принятии, а вторая роль выдаётся сразу утверждённой.
-                if (ctx.Character.CharacterType == CharacterType.Slot)
+                // Общих правил эта операция не считает (ClaimOperation.ValidatesClaimTarget, #4744),
+                // но цель обязана быть той, что предлагает выпадашка (AvailableNonSlotsForMaster):
+                // - шаблон: персонаж из него создаётся при принятии, а вторая роль выдаётся сразу утверждённой;
+                // - занятый персонаж: новая заявка молча перезаписала бы его утверждённую заявку;
+                // - NPC и неактивный персонаж: на них не сажают и обычным путём.
+                if (ctx.Character.CharacterType is CharacterType.Slot or CharacterType.NonPlayer
+                    || ctx.Character.ApprovedClaimId is not null
+                    || !ctx.Character.IsActive)
                 {
                     throw new ClaimTargetIsNotAcceptingClaims();
                 }
