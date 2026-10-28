@@ -9,14 +9,16 @@ public class MoveClaimValidationRulesTest
 {
     private MockedProject Mock { get; } = new MockedProject();
 
+    // Перенос выполняет мастер, а лимит шаблона он обходит (#4743): принять такую заявку всё равно
+    // не выйдет, пока лимит не поднимут.
     [Fact]
-    public void DisallowMoveClaimFromCharacterToEmptySlot()
+    public void AllowMoveClaimFromCharacterToExhaustedSlot()
     {
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
         var slot = Mock.CreateCharacter("slot");
         slot.CharacterType = CharacterType.Slot;
         slot.CharacterSlotLimit = 0;
-        ShouldDisAllowMove(claim, slot, AddClaimForbideReason.SlotsExhausted);
+        ShouldAllowMove(claim, slot);
     }
 
     [Fact]

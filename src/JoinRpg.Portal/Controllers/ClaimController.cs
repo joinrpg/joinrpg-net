@@ -406,6 +406,16 @@ public class ClaimController(
                 return await ShowClaim(claim);
             }
 
+            // Перенести в исчерпанный шаблон мастер вправе (#4743), а принять там заявку нельзя.
+            // Проверяем до переноса: иначе заявка переедет, а мастер увидит только ошибку принятия.
+            if (viewModel.AcceptAfterMove
+                && await characterInfoRepository.GetCharacterInfoOrDefault(characterId) is { CharacterTypeInfo: { IsSlot: true, SlotLimit: 0 } } target)
+            {
+                ModelState.AddModelError("",
+                    $"В шаблоне «{target.CharacterName}» не осталось мест: перенести заявку можно, а принять — нет. Снимите отметку «Принять заявку» или увеличьте лимит шаблона.");
+                return await ShowClaim(claim);
+            }
+
             await claimService.MoveByMaster(claimId, viewModel.CommentText, characterId);
 
             if (viewModel.AcceptAfterMove)

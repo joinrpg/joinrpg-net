@@ -53,16 +53,15 @@ public class CharacterListViewServiceTest
         => (await GetNames(CharacterListType.AvailableForMaster)).ShouldContain(Mock.Character.CharacterName);
 
     /// <summary>
-    /// Главный регресс: когда доступность считал SQL-предикат, он про лимит слота не знал, и
-    /// исчерпанный слот доезжал до выпадашки — мастер выбирал его и получал SlotsExhausted
-    /// только при отправке.
+    /// Мастер вправе пригласить игрока в шаблон сверх лимита или перенести туда заявку (#4743),
+    /// поэтому исчерпанный шаблон в его выпадашке есть: список совпадает с тем, что пропустит отправка.
     /// </summary>
     [Fact]
-    public async Task ExhaustedSlotIsNotAvailable()
+    public async Task ExhaustedSlotIsAvailableForMaster()
     {
         var slot = CreateSlot("exhausted", slotLimit: 0);
 
-        (await GetNames(CharacterListType.AvailableForMaster)).ShouldNotContain(slot.CharacterName);
+        (await GetNames(CharacterListType.AvailableForMaster)).ShouldContain(slot.CharacterName);
     }
 
     [Fact]
@@ -161,12 +160,14 @@ public class CharacterListViewServiceTest
         names.ShouldBe([slot.CharacterName]);
     }
 
+    // Список шаблонов питает приглашение сразу нескольких игроков — тоже мастерская операция,
+    // и лимит шаблона она обходит (#4743).
     [Fact]
-    public async Task ExhaustedSlotIsNotInTemplatesList()
+    public async Task ExhaustedSlotIsInTemplatesList()
     {
         var slot = CreateSlot("exhausted", slotLimit: 0);
 
-        (await GetNames(CharacterListType.AvailableTemplatesForMaster)).ShouldNotContain(slot.CharacterName);
+        (await GetNames(CharacterListType.AvailableTemplatesForMaster)).ShouldContain(slot.CharacterName);
     }
 
     // Списки без "ForMaster" доменными правилами не фильтруются — они не про доступность.

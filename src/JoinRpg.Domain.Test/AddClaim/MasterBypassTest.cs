@@ -65,7 +65,32 @@ public class MasterBypassTest
             .ShouldBe([AddClaimForbideReason.ProjectNotActive]);
     }
 
-    // См. https://github.com/joinrpg/joinrpg-net/issues/4743 — пока это осознанно запрет.
+    // Лимит шаблона — саморегуляция игроков: мастер вправе пригласить сверх него (#4743).
+    [Fact]
+    public void MasterCanInviteIntoExhaustedSlot()
+    {
+        MakeExhaustedSlot();
+
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void PlayerStillCantSendClaimIntoExhaustedSlot()
+    {
+        MakeExhaustedSlot();
+
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
+            .ShouldBe([AddClaimForbideReason.SlotsExhausted]);
+    }
+
+    private void MakeExhaustedSlot()
+    {
+        Mock.Character.CharacterType = CharacterType.Slot;
+        Mock.Character.CharacterSlotLimit = 0;
+    }
+
+    // Сажать игрока в NPC нельзя и мастеру — решено в https://github.com/joinrpg/joinrpg-net/issues/4743.
     [Fact]
     public void MasterCantInviteIntoNpc()
     {

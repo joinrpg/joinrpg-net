@@ -40,10 +40,15 @@ public record class ClaimForbiddenReason(
         AddClaimForbideReason.ProjectClaimsClosed
             => new(kind, MasterCanOverride: true, ProblemSeverity.Fatal),
 
-        // Свойства самого персонажа. Мастер может поменять их руками, но пока это осознанно
-        // жёсткие запреты — см. https://github.com/joinrpg/joinrpg-net/issues/4743.
-        AddClaimForbideReason.SlotsExhausted or AddClaimForbideReason.Npc
-            or AddClaimForbideReason.Busy or AddClaimForbideReason.CharacterInactive
+        // Лимит шаблона — инструмент саморегуляции игроков, а не жёсткое ограничение: мастер вправе
+        // пригласить игрока или перенести заявку сверх лимита. Принять такую заявку всё равно нельзя,
+        // пока мастер не поднимет лимит, — это проверяется при принятии.
+        AddClaimForbideReason.SlotsExhausted
+            => new(kind, MasterCanOverride: true, ProblemSeverity.Error),
+
+        // Свойства самого персонажа. Мастер может поменять их руками, но сажать игрока в NPC или
+        // в неактивного персонажа нельзя и ему — решено в https://github.com/joinrpg/joinrpg-net/issues/4743.
+        AddClaimForbideReason.Npc or AddClaimForbideReason.Busy or AddClaimForbideReason.CharacterInactive
             => new(kind, MasterCanOverride: false, ProblemSeverity.Error),
 
         // Ограничения целостности: две заявки на одного персонажа или две утверждённые заявки
