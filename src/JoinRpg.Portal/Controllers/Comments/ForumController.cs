@@ -86,7 +86,18 @@ public class ForumController(
             return NotFound();
         }
 
+        // Модель (с пометками «новое» на всём дереве) строится целиком до сдвига отметки прочтения.
         var viewModel = new ForumThreadViewModel(forumThread, charGroupFullInfo, projectInfo, currentUserAccessor.UserIdentification);
+
+        // Как на странице заявки (ClaimController.ShowClaim): в заблокированном проекте (ADR023)
+        // сервис молча не пишет отметку. Доступ к теме уже проверил GetForumThread.
+        var comments = forumThread.CommentDiscussion.Comments;
+        if (comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
+        {
+            await claimService.UpdateReadCommentWatermark(projectid.Value, forumThread.CommentDiscussionId,
+                comments.Max(c => c.CommentId));
+        }
+
         return View(viewModel);
     }
 
