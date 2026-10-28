@@ -532,6 +532,43 @@ public class ProjectAccessServiceTest
     }
 
     [Fact]
+    public async Task RemoveAccess_LastMasterWithCanGrantRights_WithClaims_DoesNotReassign()
+    {
+        // Регрессия #5898: заявки переназначались отдельными операциями до отказа «последний мастер с правом выдавать доступ».
+        // mock.Master — единственный с CanGrantRights.
+        AddMaster(50, canGrantRights: false);
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.ResponsibleMasterUserId = mock.Master.UserId;
+        claimsRepository.ClaimsByResponsibleMaster[(mock.Project.ProjectId, mock.Master.UserId)] = [claim];
+
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<LastMasterWithGrantRightsException>(
+            () => service.RemoveAccess(ProjectId, new UserIdentification(mock.Master.UserId), new UserIdentification(50)));
+
+        claimService.ResponsibleChanges.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RemoveAccess_AlreadyRemovedMaster_WithClaims_DoesNotReassign()
+    {
+        // Регрессия #5898: за снятым мастером «застряла» заявка — отказ не должен её переназначать.
+        var former = AddMaster(50, canGrantRights: false);
+        former.Status = ProjectAclStatus.Removed;
+        mock.ReInitProjectInfo();
+        var claim = mock.CreateClaim(mock.Character, mock.Player);
+        claim.ResponsibleMasterUserId = 50;
+        claimsRepository.ClaimsByResponsibleMaster[(mock.Project.ProjectId, 50)] = [claim];
+
+        var service = CreateService(99, isAdmin: true);
+
+        await Should.ThrowAsync<InvalidOperationException>(
+            () => service.RemoveAccess(ProjectId, new UserIdentification(50), new UserIdentification(mock.Master.UserId)));
+
+        claimService.ResponsibleChanges.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task GrantFullAccess_AsAdmin_GrantsAllPermissionsToSelf()
     {
         var service = CreateService(99, isAdmin: true);
