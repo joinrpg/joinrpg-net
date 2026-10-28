@@ -104,7 +104,7 @@ internal sealed class DomainHost : IManualFinanceDomain, IAsyncDisposable
         using var scope = factory.Services.CreateScope();
         var sp = scope.ServiceProvider;
         var impersonator = sp.GetRequiredService<IImpersonateAccessor>();
-        impersonator.StartImpersonate(userId, new UserDisplayName($"Пользователь {userId.Value}", null), IsAdmin: false);
+        impersonator.StartImpersonate(userId, new UserDisplayName($"Пользователь {userId.Value}", null), avatar: null, IsAdmin: false);
         try
         {
             return await action(sp);

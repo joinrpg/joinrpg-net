@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Common.WebInfrastructure;
 using JoinRpg.Data.Interfaces;
@@ -328,6 +329,8 @@ public static class OAuthServerRegistration
             // нашему /mcp, а не взято из запроса: joinrpg.*-токен больше нигде не применим, а
             // клиент, попросивший чужой resource, и так отлетит на ValidateResourcePermissions.
             identity.SetResources(JoinRpgResources.Mcp(hostNameOptions.Value));
+
+            AddUserHeaderClaims(identity, principal);
         }
 
         if (grantedProjectIds.Length > 0)
@@ -335,19 +338,52 @@ public static class OAuthServerRegistration
             identity.SetClaim(OAuthConsent.ProjectsClaimType, OAuthConsent.FormatProjectIds(grantedProjectIds));
         }
 
-        identity.SetDestinations(static claim => claim.Type switch
-        {
-            Claims.Subject
-                => [Destinations.AccessToken, Destinations.IdentityToken],
-            Claims.Name when claim.Subject?.HasScope(Scopes.Profile) == true
-                => [Destinations.AccessToken, Destinations.IdentityToken],
-            OAuthConsent.ProjectsClaimType
-                => [Destinations.AccessToken],
-            _ => [Destinations.AccessToken]
-        });
+        identity.SetDestinations(GetDestinations);
 
         return TypedResults.SignIn(new ClaimsPrincipal(identity), authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
+
+    /// <summary>
+    /// Имя и аватарка пользователя для <c>ICurrentUserAccessor</c> в Portal (ADR026 §1): без них под
+    /// MCP-токеном падают <c>DisplayName</c> и <c>ToUserInfoHeader()</c>. Берутся из cookie IdPortal,
+    /// куда их кладёт <c>ClaimInfoBuilder</c> через <c>GetClaimsAsync</c>, — те же claims и в том же
+    /// виде, что у cookie Portal и JWT x-api, поэтому Portal разбирает их одним кодом.
+    /// </summary>
+    /// <remarks>
+    /// Устаревают до повторной авторизации клиента: refresh переиспользует этот principal, а
+    /// refresh-токены rolling со sliding expiration, так что активный клиент может не
+    /// переавторизовываться вовсе. По той же причине токены, выданные до появления этих claims,
+    /// их так и не получат. Cookie IdPortal пересобирается раз в интервал SecurityStampValidator
+    /// (по умолчанию 30 минут) — на фоне сказанного это не важно. Email из cookie сюда не
+    /// копируется — шапке он не нужен, а клиенту отдаётся только по scope email через user_info.
+    /// </remarks>
+    public static void AddUserHeaderClaims(ClaimsIdentity identity, ClaimsPrincipal source)
+    {
+        foreach (var claimType in JoinClaimTypes.UserHeaderClaimTypes)
+        {
+            if (source.FindFirst(claimType)?.Value is { } value)
+            {
+                identity.SetClaim(claimType, value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Куда попадает каждый claim. Claim без destinations OpenIddict в токены не кладёт вовсе.
+    /// </summary>
+    private static IEnumerable<string> GetDestinations(Claim claim) => claim.Type switch
+    {
+        Claims.Subject
+            => [Destinations.AccessToken, Destinations.IdentityToken],
+        Claims.Name when claim.Subject?.HasScope(Scopes.Profile) == true
+            => [Destinations.AccessToken, Destinations.IdentityToken],
+        OAuthConsent.ProjectsClaimType
+            => [Destinations.AccessToken],
+        // Сюда же попадают claims шапки (AddUserHeaderClaims) — только в access-токен: он зашифрован
+        // (encryption-сертификат), и прочитать его может лишь resource server из аудитории — через
+        // интроспекцию. В id_token имя не уходит: клиенту оно не нужно, а id_token не шифруется.
+        _ => [Destinations.AccessToken]
+    };
 
     private static string BuildAccessDeniedRedirectUri(OpenIddictRequest request)
     {

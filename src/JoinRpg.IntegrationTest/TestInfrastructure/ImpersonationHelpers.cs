@@ -22,7 +22,7 @@ public static class ImpersonationHelpers
         bool isAdmin = false)
     {
         var impersonator = scopedServices.GetRequiredService<IImpersonateAccessor>();
-        impersonator.StartImpersonate(userId, displayName ?? DefaultDisplayName, isAdmin);
+        impersonator.StartImpersonate(userId, displayName ?? DefaultDisplayName, avatar: null, isAdmin);
         try
         {
             return await action();
