@@ -4,7 +4,6 @@ using JoinRpg.Data.Interfaces.Comments;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
-using JoinRpg.DomainTypes.Comments;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Comments;
 using JoinRpg.Portal.Controllers.Common;
@@ -26,7 +25,7 @@ public class ForumController(
     IForumRepository forumRepository,
     IClaimsRepository claimsRepository,
     ICurrentUserAccessor currentUserAccessor,
-    IClaimService claimService,
+    ICommentDiscussionService commentDiscussionService,
     CommentDiscussionOwnerLoader ownerLoader,
     ICommentDiscussionRepository commentDiscussionRepository) : JoinControllerGameBase
 {
@@ -99,8 +98,8 @@ public class ForumController(
         var comments = forumThread.CommentDiscussion.Comments;
         if (comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
         {
-            await claimService.UpdateReadCommentWatermark(projectid.Value, forumThread.CommentDiscussionId,
-                comments.Max(c => c.CommentId));
+            await commentDiscussionService.UpdateReadCommentWatermark(new CommentDiscussionId(forumThread.CommentDiscussionId),
+                new CommentId(comments.Max(c => c.CommentId)));
         }
 
         return View(viewModel);
@@ -140,28 +139,13 @@ public class ForumController(
 
         try
         {
-            if (viewModel.HideFromUser)
-            {
-                _ = access.ProjectInfo.RequestMasterAccess(currentUserAccessor.UserIdentification);
-            }
-
-            switch (access.Owner)
-            {
-                case ClaimDiscussionOwner claimOwner:
-                    // Подтверждение и отклонение финопераций — в диалоге модерации (FinanceModerationButton), не здесь
-                    await claimService.AddComment(
-                        claimOwner.ClaimId,
-                        viewModel.ParentCommentId,
-                        !viewModel.HideFromUser,
-                        viewModel.CommentText);
-                    break;
-                case ForumDiscussionOwner forumOwner:
-                    await forumService.AddComment(forumOwner.ThreadId, viewModel.ParentCommentId,
-                      !viewModel.HideFromUser, viewModel.CommentText);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown comment discussion owner {access.Owner}");
-            }
+            // Подтверждение и отклонение финопераций — в диалоге модерации (FinanceModerationButton), не здесь.
+            // Скрыть от игрока может только мастер — это, как и остальные правила, проверяет сервис.
+            await commentDiscussionService.AddComment(
+                new CommentDiscussionId(viewModel.CommentDiscussionId),
+                viewModel.ParentCommentId is int parentId ? new CommentId(parentId) : null,
+                !viewModel.HideFromUser,
+                viewModel.CommentText);
 
             return CommentRedirectHelper.RedirectToDiscussion(Url, access.Owner);
         }
@@ -210,15 +194,21 @@ public class ForumController(
     }
 
     [HttpPost("~/{projectId}/forums/concealcomment")]
-    public async Task<ActionResult> ConcealComment(ProjectIdentification projectid, int commentid, int commentDiscussionId)
+    public async Task<ActionResult> ConcealComment(ProjectIdentification projectid, CommentId? commentid)
     {
-        await claimService.ConcealComment(projectid, commentid, commentDiscussionId);
-        // Владелец — только для адреса перехода: права на скрытие проверил сервис.
-        var owner = await commentDiscussionRepository.GetOwnerOrDefault(new CommentDiscussionId(commentDiscussionId));
+        // Голое число из формы биндится через TypeConverter типа (см. CommentIdModelBindingTest).
+        if (commentid is null)
+        {
+            return NotFound();
+        }
+
+        // Владелец — для сверки с проектом маршрута и адреса перехода: права на скрытие проверяет сервис.
+        var owner = await commentDiscussionRepository.GetOwnerByCommentOrDefault(commentid);
         if (owner is null || owner.ProjectId != projectid)
         {
             return NotFound();
         }
+        await commentDiscussionService.ConcealComment(commentid);
         return CommentRedirectHelper.RedirectToDiscussion(Url, owner);
     }
 }

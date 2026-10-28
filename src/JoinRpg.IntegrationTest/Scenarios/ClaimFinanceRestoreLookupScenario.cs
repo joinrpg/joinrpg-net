@@ -61,8 +61,8 @@ public class ClaimFinanceRestoreLookupScenario(JoinApplicationFactory factory)
         {
             var claimService = sp.GetRequiredService<IClaimService>();
             await claimService.ModerateFinanceOperation(claimId, playerOperationId, "Пришло", FinanceOperationAction.Approve);
-            await claimService.AddComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Обычный");
-            await claimService.AddComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
+            await sp.AddClaimComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Обычный");
+            await sp.AddClaimComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
         });
 
         var createdAt = new DateTime(2026, 7, 2, 10, 0, 0, DateTimeKind.Utc);
@@ -153,15 +153,13 @@ public class ClaimFinanceRestoreLookupScenario(JoinApplicationFactory factory)
 
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
-            var claimService = sp.GetRequiredService<IClaimService>();
-            await claimService.AddComment(byMasterClaimId, parentCommentId: null, isVisibleToPlayer: true, "Мастер");
-            await claimService.AddComment(byMasterClaimId, parentCommentId: null, isVisibleToPlayer: true, "Мастер, инструмент");
-            await claimService.AddComment(byToolsClaimId, parentCommentId: null, isVisibleToPlayer: true, "Уведомления");
-            await claimService.AddComment(byToolsClaimId, parentCommentId: null, isVisibleToPlayer: true, "Выгрузка");
-            await claimService.AddComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
+            await sp.AddClaimComment(byMasterClaimId, parentCommentId: null, isVisibleToPlayer: true, "Мастер");
+            await sp.AddClaimComment(byMasterClaimId, parentCommentId: null, isVisibleToPlayer: true, "Мастер, инструмент");
+            await sp.AddClaimComment(byToolsClaimId, parentCommentId: null, isVisibleToPlayer: true, "Уведомления");
+            await sp.AddClaimComment(byToolsClaimId, parentCommentId: null, isVisibleToPlayer: true, "Выгрузка");
+            await sp.AddClaimComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
         });
-        await factory.Services.RunAsAsync(playerId, sp => sp.GetRequiredService<IClaimService>()
-            .AddComment(byPlayerClaimId, parentCommentId: null, isVisibleToPlayer: true, "Игрок"));
+        await factory.Services.RunAsAsync(playerId, sp => sp.AddClaimComment(byPlayerClaimId, parentCommentId: null, isVisibleToPlayer: true, "Игрок"));
 
         var since = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
         var masterAt = since.AddDays(1);

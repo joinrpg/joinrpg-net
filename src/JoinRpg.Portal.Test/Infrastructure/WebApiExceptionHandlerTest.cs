@@ -102,6 +102,18 @@ public class WebApiExceptionHandlerTest
     }
 
     [Fact]
+    public async Task VisibleReplyToHiddenComment_InWebApi_ReturnsConflictWithReason()
+    {
+        var httpContext = CreateHttpContext("/webapi/claim-comment/AddComment");
+
+        var (handled, problem) = await Handle(httpContext, new VisibleReplyToHiddenCommentException(12345));
+
+        handled.ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status409Conflict);
+        problem.GetProperty("title").GetString().ShouldStartWith("Ответ на комментарий, скрытый от игрока");
+    }
+
+    [Fact]
     public async Task UnknownException_InWebApi_ReturnsServerErrorProblem()
     {
         var httpContext = CreateHttpContext("/webapi/1611/project/SaveContactSettings");

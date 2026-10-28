@@ -65,9 +65,9 @@ public class FormerMastersBackfillScenario(JoinApplicationFactory factory) : ICl
 
         // Мастер пишет в заявку (IsCommentByPlayer = false), игрок отвечает (true).
         await factory.Services.RunAsAsync(formerMasterId, sp =>
-            sp.GetRequiredService<IClaimService>().AddComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Комментарий мастера"));
+            sp.AddClaimComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Комментарий мастера"));
         await factory.Services.RunAsAsync(playerId, sp =>
-            sp.GetRequiredService<IClaimService>().AddComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Ответ игрока"));
+            sp.AddClaimComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Ответ игрока"));
 
         // Так снимали мастеров до ADR019 — физическим удалением строки.
         using (var scope = factory.Services.CreateScope())
