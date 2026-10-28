@@ -104,10 +104,19 @@ jobs:
   # Образы публикуются только с master и тегов: ручной запуск с другой ветки не должен перезаписать latest.
   # PR и merge queue сюда тоже не попадают — их ref не master и не тег.
   # В registry логинимся секретами, GITHUB_TOKEN нужен только на чтение.
+  # Публикации с master идут по очереди: параллельные пуши одних и тех же слоёв в Selectel CR ломали
+  # pull в кластере (#5906). GitHub держит в очереди одну ожидающую джобу и отменяет промежуточные —
+  # это нормально, их коммиты войдут в следующую сборку. Очередь выстраивается по моменту, когда
+  # закончились format и test, а не по порядку коммитов, так что latest от более старого коммита всё ещё
+  # возможен, если его тесты закончились позже.
+  # Теги в общую очередь не попадают: публикацию релиза отменять нельзя.
   publish:
     name: Publish images
     if: github.ref == 'refs/heads/master' || github.ref_type == 'tag'
     needs: [format, test]
+    concurrency:
+      group: ${{ github.ref == 'refs/heads/master' && 'publish-master' || format('publish-{0}', github.run_id) }}
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -176,6 +185,9 @@ jobs:
 
   # Обязательная проверка в branch protection называется "Build and publish" — это имя этого джоба.
   # Он собирает результаты остальных; skipped (verify-publish на master, publish на PR) не считается ошибкой.
+  # Отменённый publish — тоже не ошибка: так очередь пропускает промежуточные коммиты master (#5906).
+  # Ручная отмена publish поэтому тоже оставит эту проверку зелёной. Сам прогон при этом завершается
+  # как cancelled, и deploy_dev_auto для него ничего не деплоит.
   build:
     name: Build and publish
     needs: [format, test, verify-publish, publish]
@@ -183,7 +195,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - name: Check results
-      if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+      if: contains(needs.*.result, 'failure') || needs.format.result == 'cancelled' || needs.test.result == 'cancelled' || needs.verify-publish.result == 'cancelled'
       run: exit 1
 
   report:

@@ -5,14 +5,15 @@ on:
     types: [completed]
     branches: [master]
 
-concurrency:
-  group: development
-  cancel-in-progress: true
-
 jobs:
   deploy:
     # Только push в master: «Build and publish» идёт и на PR, а у PR из форка head_branch тоже может быть master.
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'master' }}
+    # concurrency на джобе, а не на workflow: иначе прогон по сборке, у которой очередь отменила publish,
+    # оборвал бы идущий деплой и сам ничего не задеплоил (#5906).
+    concurrency:
+      group: development
+      cancel-in-progress: true
     permissions:
       contents: read
     uses: ./.github/workflows/deploy_reusable_workflow.yml
