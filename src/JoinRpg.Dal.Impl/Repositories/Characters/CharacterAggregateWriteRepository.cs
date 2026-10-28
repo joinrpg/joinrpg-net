@@ -395,6 +395,154 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         public int OperationId { get; set; }
     }
 
+    /// <inheritdoc />
+    public async Task<RestoredFinanceOperationInsert> InsertLostPayment(LostPaymentRow payment)
+    {
+        // Всё, что можно проверить до записи, проверяется до неё: ошибка должна называть параметр,
+        // а не приходить из SQL. Тот же порядок, что у InsertRestoredFinanceOperation.
+        if (payment.OperationType is not (FinanceOperationType.Online or FinanceOperationType.Refund))
+        {
+            throw new ArgumentOutOfRangeException(nameof(payment), payment.OperationType, "Восстанавливаются только онлайн-платёж и его возврат");
+        }
+
+        var isPayment = payment.OperationType == FinanceOperationType.Online;
+        if (isPayment && (payment.OperationId is null || payment.RefundedOperationId is not null))
+        {
+            throw new ArgumentException("Платежу нужен прежний номер операции и не нужен номер возвращаемой", nameof(payment));
+        }
+
+        if (!isPayment && (payment.OperationId is not null || payment.RefundedOperationId is null))
+        {
+            throw new ArgumentException("Возврату нужен номер возвращаемой операции и не нужен прежний номер", nameof(payment));
+        }
+
+        if (isPayment ? payment.MoneyAmount <= 0 : payment.MoneyAmount >= 0)
+        {
+            throw new ArgumentException("Сумма платежа положительна, сумма возврата отрицательна", nameof(payment));
+        }
+
+        if (!isPayment && string.IsNullOrWhiteSpace(payment.BankRefundKey))
+        {
+            throw new ArgumentException("Возврату нужен номер возврата в банке", nameof(payment));
+        }
+
+        if (payment.PaymentTypeId.ProjectId != payment.ClaimId.ProjectId)
+        {
+            throw new ArgumentException($"Тип оплаты {payment.PaymentTypeId} не из проекта заявки {payment.ClaimId}", nameof(payment));
+        }
+
+        if (!await ClaimExists(payment.ClaimId))
+        {
+            throw new JoinRpgEntityNotFoundException(payment.ClaimId.ClaimId, "claim");
+        }
+
+        // Каркас тот же, что у InsertRestoredFinanceOperation: один батч своей транзакцией, проверка
+        // занятости номера с блокировкой диапазона, IDENTITY_INSERT выключается и при ошибке, всё
+        // значением — параметрами. Отличия: вид операции Online/Refund, ExtraAction пустой (у боевого
+        // онлайн-платежа его нет, а PaidFee означал бы взнос, принятый мастером руками) и строка
+        // банковских реквизитов. Возврат своего номера в банке не имеет, поэтому вставляется с новым
+        // и ссылается на исходную операцию; его повтор узнаётся по проведённому возврату той же
+        // операции — тот же критерий, по которому боевой RefundAsync отказывает во втором возврате.
+        var sql = $"""
+            SET XACT_ABORT ON;
+            BEGIN TRY
+                BEGIN TRANSACTION;
+                DECLARE @createdAt datetime = @p6;
+                DECLARE @discussionId int;
+                SELECT @discussionId = CommentDiscussionId FROM dbo.Claims WHERE ClaimId = @p0 AND ProjectId = @p1;
+                IF @discussionId IS NULL
+                    THROW 50000, N'Claim is not found in the project', 1;
+                IF NOT EXISTS (SELECT 1 FROM dbo.PaymentTypes WHERE PaymentTypeId = @p10 AND ProjectId = @p1)
+                    THROW 50000, N'Payment type is not found in the project', 1;
+                DECLARE @operationId int;
+                IF @p15 = 1
+                BEGIN
+                    DECLARE @commentId int = @p2;
+                    DECLARE @existingDiscussionId int;
+                    SELECT @existingDiscussionId = CommentDiscussionId FROM dbo.Comments WITH (UPDLOCK, HOLDLOCK) WHERE CommentId = @commentId;
+                    IF @existingDiscussionId IS NOT NULL
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT CASE
+                                WHEN @existingDiscussionId = @discussionId AND EXISTS (SELECT 1 FROM dbo.FinanceOperations WHERE CommentId = @commentId)
+                                THEN {(int)RestoredCommentInsertResult.AlreadyExists}
+                                ELSE {(int)RestoredCommentInsertResult.TakenElsewhere}
+                            END AS Result,
+                            @commentId AS OperationId;
+                        RETURN;
+                    END;
+                    IF @commentId <= 0 OR @commentId >= ISNULL(IDENT_CURRENT('dbo.Comments'), 0)
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT {(int)RestoredCommentInsertResult.NotLostId} AS Result, @commentId AS OperationId;
+                        RETURN;
+                    END;
+                    SET IDENTITY_INSERT dbo.Comments ON;
+                    INSERT INTO dbo.Comments (CommentId, ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
+                        LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
+                    VALUES (@commentId, @p1, @discussionId, NULL, @createdAt, @createdAt, @p4, @p5, 1, NULL);
+                    SET IDENTITY_INSERT dbo.Comments OFF;
+                    SET @operationId = @commentId;
+                END
+                ELSE
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM dbo.FinanceOperations WHERE CommentId = @p3)
+                        THROW 50000, N'Source payment operation is not found', 1;
+                    DECLARE @existingRefundId int;
+                    SELECT TOP 1 @existingRefundId = CommentId FROM dbo.FinanceOperations WITH (UPDLOCK, HOLDLOCK)
+                    WHERE RefundedOperationId = @p3
+                        AND OperationType = {(int)FinanceOperationType.Refund}
+                        AND State = {(int)FinanceOperationState.Approved};
+                    IF @existingRefundId IS NOT NULL
+                    BEGIN
+                        COMMIT TRANSACTION;
+                        SELECT {(int)RestoredCommentInsertResult.AlreadyExists} AS Result, @existingRefundId AS OperationId;
+                        RETURN;
+                    END;
+                    INSERT INTO dbo.Comments (ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
+                        LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
+                    VALUES (@p1, @discussionId, NULL, @createdAt, @createdAt, @p4, @p5, 1, NULL);
+                    SET @operationId = CAST(SCOPE_IDENTITY() AS int);
+                END;
+                INSERT INTO dbo.CommentTexts (CommentId, Text_Contents) VALUES (@operationId, @p12);
+                INSERT INTO dbo.FinanceOperations (CommentId, ProjectId, ClaimId, MoneyAmount, PaymentTypeId, Created,
+                    Changed, OperationDate, State, OperationType, RefundedOperationId)
+                VALUES (@operationId, @p1, @p0, @p9, @p10, @createdAt, @p7, @p8,
+                    {(int)FinanceOperationState.Approved}, @p11, @p3);
+                INSERT INTO dbo.FinanceOperationBankDetails (CommentId, BankOperationKey, BankRefundKey)
+                VALUES (@operationId, @p13, @p14);
+                COMMIT TRANSACTION;
+                SELECT {(int)RestoredCommentInsertResult.Inserted} AS Result, @operationId AS OperationId;
+            END TRY
+            BEGIN CATCH
+                IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                SET IDENTITY_INSERT dbo.Comments OFF;
+                THROW;
+            END CATCH;
+            """;
+
+        var row = await ctx.Database.SqlQuery<RestoredFinanceOperationInsertRow>(
+                sql,
+                payment.ClaimId.ClaimId,
+                payment.ClaimId.ProjectId.Value,
+                (object?)payment.OperationId ?? DBNull.Value,
+                (object?)payment.RefundedOperationId ?? DBNull.Value,
+                payment.AuthorId.Value,
+                payment.IsCommentByPlayer,
+                payment.CreatedAt,
+                payment.ChangedAt,
+                payment.OperationDate,
+                payment.MoneyAmount,
+                payment.PaymentTypeId.PaymentTypeId,
+                (int)payment.OperationType,
+                payment.Text,
+                payment.BankOperationKey,
+                (object?)payment.BankRefundKey ?? DBNull.Value,
+                isPayment)
+            .SingleAsync();
+        return new RestoredFinanceOperationInsert((RestoredCommentInsertResult)row.Result, row.OperationId);
+    }
+
     /// <summary>Пустой набор полей — так его сериализует сохранение полей (<c>SerializeFields</c>).</summary>
     private const string EmptyFieldsJson = "{}";
 

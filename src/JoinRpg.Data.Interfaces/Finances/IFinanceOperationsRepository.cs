@@ -51,11 +51,14 @@ public record ApprovedRefund(int RefundedOperationId, FinanceOperationIdentifica
 /// <param name="OperationType">Вид операции (<c>FinanceOperation.OperationType</c>).</param>
 /// <param name="PaymentTypeId">Тип оплаты операции. Нужен восстановлению возврата: возврат пишется
 /// на тип исходного платежа, а не на тот, что активен в проекте сегодня.</param>
+/// <param name="OperationDate">Дата денег исходной операции. Идёт в текст комментария восстановленного
+/// возврата — так же, как боевой возврат пишет дату возвращаемого платежа.</param>
 public record MatchedOperation(
     FinanceOperationIdentification OperationId,
     FinanceOperationState State,
     FinanceOperationType OperationType,
-    int? PaymentTypeId);
+    int? PaymentTypeId,
+    DateTime OperationDate);
 
 /// <summary>
 /// Готов ли проект принять восстановленный платёж (ADR026).

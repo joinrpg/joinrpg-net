@@ -1087,12 +1087,14 @@ public class PscbPaymentsViewServiceTests
             FinanceOperationType operationType = FinanceOperationType.Online,
             int projectId = 42,
             int claimId = 7,
-            int? paymentTypeId = 3)
+            int? paymentTypeId = 3,
+            DateTime? operationDate = null)
             => operations.Add(new MatchedOperation(
                 new FinanceOperationIdentification(projectId, claimId, commentId),
                 state,
                 operationType,
-                paymentTypeId));
+                paymentTypeId,
+                operationDate ?? new DateTime(2026, 5, 10, 12, 0, 0, DateTimeKind.Utc)));
 
         /// <summary>
         /// Проект готов принять восстановленный платёж: не заблокирован, онлайн-тип один и активен.

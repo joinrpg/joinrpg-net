@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
@@ -239,6 +240,90 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.Inserted, commentId));
     }
 
+    /// <summary>
+    /// Потерянный платёж так же, как в бою (ADR026): платёж — с прежним номером, возврат — с новым
+    /// и со ссылкой на исходную операцию. Повтор платежа узнаётся по занятому номеру, повтор
+    /// возврата — по уже проведённому возврату той же операции.
+    /// </summary>
+    public Task<RestoredFinanceOperationInsert> InsertLostPayment(LostPaymentRow payment)
+    {
+        var claim = mock.Project.Claims.SingleOrDefault(
+                c => c.ClaimId == payment.ClaimId.ClaimId && c.ProjectId == payment.ClaimId.ProjectId.Value)
+            ?? throw new JoinRpgEntityNotFoundException(payment.ClaimId.ClaimId, "claim");
+        var paymentType = mock.Project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == payment.PaymentTypeId.PaymentTypeId
+                && payment.PaymentTypeId.ProjectId == payment.ClaimId.ProjectId)
+            ?? throw new InvalidOperationException($"Типа оплаты {payment.PaymentTypeId} нет в проекте");
+        var discussion = claim.CommentDiscussion;
+        var allComments = AllClaimComments();
+
+        int commentId;
+        if (payment.OperationId is { } id)
+        {
+            if (allComments.FirstOrDefault(c => c.CommentId == id) is { } existing)
+            {
+                return Task.FromResult(new RestoredFinanceOperationInsert(
+                    discussion.Comments.Contains(existing) && existing.Finance is not null
+                        ? RestoredCommentInsertResult.AlreadyExists
+                        : RestoredCommentInsertResult.TakenElsewhere,
+                    id));
+            }
+            if (id <= 0 || id >= CommentIdentityCurrent)
+            {
+                return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.NotLostId, id));
+            }
+            commentId = id;
+        }
+        else
+        {
+            var refundedId = payment.RefundedOperationId
+                ?? throw new ArgumentException("Возврату нужен номер возвращаемой операции", nameof(payment));
+            if (allComments.Select(c => c.Finance).OfType<FinanceOperation>()
+                    .FirstOrDefault(f => f.RefundedOperationId == refundedId
+                        && f.OperationType == FinanceOperationType.Refund
+                        && f.State == FinanceOperationState.Approved) is { } existingRefund)
+            {
+                return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.AlreadyExists, existingRefund.CommentId));
+            }
+            commentId = NextCommentId(allComments);
+        }
+
+        // ExtraAction пустой намеренно: у боевого онлайн-платежа его нет, а PaidFee означал бы
+        // взнос, принятый мастером руками.
+        var comment = NewComment(discussion, commentId, payment.AuthorId, payment.IsCommentByPlayer, isVisibleToPlayer: true,
+            extraAction: null, payment.CreatedAt, payment.Text,
+            // Служебный пользователь онлайн-платежей в моке проекта не живёт, а в реальной базе
+            // есть (его создаёт сид миграций), поэтому автор здесь — вне мока.
+            authorOverride: mock.TryGetUser(payment.AuthorId.Value) ?? new User { UserId = payment.AuthorId.Value });
+        var finance = new FinanceOperation
+        {
+            CommentId = commentId,
+            Comment = comment,
+            ProjectId = claim.ProjectId,
+            Project = mock.Project,
+            ClaimId = claim.ClaimId,
+            Claim = claim,
+            MoneyAmount = payment.MoneyAmount,
+            PaymentTypeId = paymentType.PaymentTypeId,
+            PaymentType = paymentType,
+            Created = payment.CreatedAt,
+            Changed = payment.ChangedAt,
+            OperationDate = payment.OperationDate,
+            State = FinanceOperationState.Approved,
+            OperationType = payment.OperationType,
+            RefundedOperationId = payment.RefundedOperationId,
+            BankDetails = new FinanceOperationBankDetails
+            {
+                CommentId = commentId,
+                BankOperationKey = payment.BankOperationKey,
+                BankRefundKey = payment.BankRefundKey,
+            },
+        };
+        comment.Finance = finance;
+        claim.FinanceOperations ??= [];
+        claim.FinanceOperations.Add(finance);
+        return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.Inserted, commentId));
+    }
+
     private List<Comment> AllClaimComments() => [.. mock.Project.Claims.SelectMany(c => c.CommentDiscussion.Comments)];
 
     /// <summary>Новый id комментария — выше счётчика, как выдала бы IDENTITY.</summary>
@@ -246,7 +331,7 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         => Math.Max(CommentIdentityCurrent, allComments.Select(c => c.CommentId).DefaultIfEmpty().Max()) + 1;
 
     private Comment NewComment(CommentDiscussion discussion, int commentId, UserIdentification authorId, bool isCommentByPlayer,
-        bool isVisibleToPlayer, CommentExtraAction? extraAction, DateTime createdAt, string text)
+        bool isVisibleToPlayer, CommentExtraAction? extraAction, DateTime createdAt, string text, User? authorOverride = null)
     {
         var comment = new Comment
         {
@@ -256,7 +341,8 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             CommentDiscussionId = discussion.CommentDiscussionId,
             Discussion = discussion,
             ParentCommentId = null,
-            Author = mock.TryGetUser(authorId.Value)
+            Author = authorOverride
+                ?? mock.TryGetUser(authorId.Value)
                 ?? throw new JoinRpgEntityNotFoundException(authorId.Value, "user"),
             AuthorUserId = authorId.Value,
             CommentText = new CommentText { CommentId = commentId, Text = new MarkdownDbValue(text) },

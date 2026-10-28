@@ -69,14 +69,15 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
 
         var query = ctx.Set<FinanceOperation>()
                 .Where(fo => commentIds.Contains(fo.CommentId))
-                .Select(fo => new { fo.ProjectId, fo.ClaimId, fo.CommentId, fo.State, fo.OperationType, fo.PaymentTypeId });
+                .Select(fo => new { fo.ProjectId, fo.ClaimId, fo.CommentId, fo.State, fo.OperationType, fo.PaymentTypeId, fo.OperationDate });
 
         var result = await query.ToArrayAsync();
         return [.. result.Select(r => new MatchedOperation(
             new FinanceOperationIdentification(r.ProjectId, r.ClaimId, r.CommentId),
             r.State,
             r.OperationType,
-            r.PaymentTypeId))];
+            r.PaymentTypeId,
+            r.OperationDate))];
     }
 
     /// <summary>
