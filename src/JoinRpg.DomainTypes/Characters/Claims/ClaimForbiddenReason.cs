@@ -46,6 +46,10 @@ public record class ClaimForbiddenReason(
         AddClaimForbideReason.SlotsExhausted
             => new(kind, MasterCanOverride: true, ProblemSeverity.Error),
 
+        // Роль «только по приглашению»: ровно для того, чтобы на неё сажал мастер.
+        AddClaimForbideReason.ByInvitationOnly
+            => new(kind, MasterCanOverride: true, ProblemSeverity.Error),
+
         // Свойства самого персонажа. Мастер может поменять их руками, но сажать игрока в NPC или
         // в неактивного персонажа нельзя и ему — решено в https://github.com/joinrpg/joinrpg-net/issues/4743.
         AddClaimForbideReason.Npc or AddClaimForbideReason.Busy or AddClaimForbideReason.CharacterInactive

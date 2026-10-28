@@ -30,6 +30,7 @@ public class ClaimForbiddenReasonTest
             [
                 AddClaimForbideReason.ProjectClaimsClosed,
                 AddClaimForbideReason.SlotsExhausted,
+                AddClaimForbideReason.ByInvitationOnly,
                 AddClaimForbideReason.RealNameMissing,
                 AddClaimForbideReason.PhoneMissing,
                 AddClaimForbideReason.TelegramMissing,

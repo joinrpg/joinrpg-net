@@ -6,7 +6,11 @@ public record CharacterTypeInfo
 
     public bool IsHot { get; }
 
-    public bool IsAcceptingClaims => CharacterType != CharacterType.NonPlayer;
+    /// <summary>
+    /// Игрок может сам подать заявку на этого персонажа. Если нет — попасть на него можно только
+    /// через мастера: приглашением или переносом заявки. У NPC всегда <c>false</c>.
+    /// </summary>
+    public bool IsAcceptingClaims { get; }
 
     /// <summary>Шаблон персонажа (слот): из него создаются персонажи по заявкам, сам он не играется и не печатается.</summary>
     public bool IsSlot => CharacterType == CharacterType.Slot;
@@ -34,7 +38,10 @@ public record CharacterTypeInfo
         bool IsHot,
         int? SlotLimit,
         string? SlotName,
-        CharacterVisibility CharacterVisibility)
+        CharacterVisibility CharacterVisibility,
+        // Дефолт true держит MVC-биндинг формы персонажа: не запостила поле — заявки открыты, а не
+        // молча закрыты (и горячая роль не падает на инварианте ниже).
+        bool IsAcceptingClaims = true)
     {
         this.CharacterType = CharacterType;
         if (IsHot && CharacterType == CharacterType.NonPlayer)
@@ -52,6 +59,16 @@ public record CharacterTypeInfo
             throw new ArgumentException("Not-slots could not have slot names", nameof(SlotLimit));
         }
 
+        // NPC заявок не принимает по определению, флаг для него не имеет смысла.
+        IsAcceptingClaims = IsAcceptingClaims && CharacterType != CharacterType.NonPlayer;
+
+        // Горячую роль рекламируют с кнопкой «Подать заявку» — на закрытой для игроков роли она бы врала.
+        if (IsHot && !IsAcceptingClaims)
+        {
+            throw new ArgumentException("Hot role should accept claims from players", nameof(IsHot));
+        }
+
+        this.IsAcceptingClaims = IsAcceptingClaims;
         this.IsHot = IsHot;
         this.SlotLimit = SlotLimit;
         this.SlotName = SlotName;
@@ -69,13 +86,15 @@ public record CharacterTypeInfo
         int? characterSlotLimit,
         string characterName,
         bool isPublic,
-        bool hidePlayerForCharacter)
+        bool hidePlayerForCharacter,
+        bool isAcceptingClaims)
         => new(
             characterType,
             isHot,
             characterSlotLimit,
             characterType == CharacterType.Slot ? characterName : null,
-            GetVisibility(isPublic, hidePlayerForCharacter));
+            GetVisibility(isPublic, hidePlayerForCharacter),
+            isAcceptingClaims);
 
     /// <summary>
     /// Маппинг пары флагов в видимость. Асимметричен: при <paramref name="isPublic"/> == false
@@ -127,7 +146,7 @@ public record CharacterTypeInfo
         characterType = CharacterType;
         isHot = IsHot;
         slotLimit = SlotLimit;
-        isAcceptingClaims = CharacterType != CharacterType.NonPlayer;
+        isAcceptingClaims = IsAcceptingClaims;
         slotName = SlotName;
         (isPublic, isPlayerHidden) = GetVisibilityFlags(CharacterVisibility);
     }

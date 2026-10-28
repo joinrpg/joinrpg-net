@@ -569,6 +569,22 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     [Fact]
+    public async Task ApproveByMaster_OfClaimToInvitationOnlySlot_CreatesInvitationOnlyCharacter()
+    {
+        var slot = mock.CreateSlot("Слот", slotLimit: 3);
+        slot.IsAcceptingClaims = false;
+        var claim = mock.CreateClaim(slot, mock.Player);
+        claim.ClaimStatus = ClaimStatus.Discussed;
+        mock.ReInitProjectInfo();
+
+        await CreateService().ApproveByMaster(claim.GetId(), "принято");
+
+        // Если заявку потом отклонят, игрок не должен суметь заявиться на освободившуюся роль сам.
+        claim.Character.ShouldNotBe(slot);
+        claim.Character.IsAcceptingClaims.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task ApproveByMaster_OfClaimToSlot_CreatesCharacterFromSlot()
     {
         var slot = mock.CreateSlot("Слот", slotLimit: 3);

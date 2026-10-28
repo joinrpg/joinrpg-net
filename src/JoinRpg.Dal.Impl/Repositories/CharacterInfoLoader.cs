@@ -47,6 +47,7 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                 CharacterSlotLimit = character.CharacterSlotLimit,
                 IsPublic = character.IsPublic,
                 HidePlayerForCharacter = character.HidePlayerForCharacter,
+                IsAcceptingClaims = character.IsAcceptingClaims,
                 IsActive = character.IsActive,
                 InGame = character.InGame,
                 AutoCreated = character.AutoCreated,

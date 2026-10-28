@@ -36,6 +36,7 @@ public class CharacterInfoMapperTest
         int? characterSlotLimit = null,
         bool isPublic = true,
         bool hidePlayerForCharacter = false,
+        bool isAcceptingClaims = true,
         bool isActive = true,
         bool inGame = true,
         bool autoCreated = false,
@@ -59,6 +60,7 @@ public class CharacterInfoMapperTest
             CharacterSlotLimit = characterSlotLimit,
             IsPublic = isPublic,
             HidePlayerForCharacter = hidePlayerForCharacter,
+            IsAcceptingClaims = isAcceptingClaims,
             IsActive = isActive,
             InGame = inGame,
             AutoCreated = autoCreated,
@@ -464,6 +466,39 @@ public class CharacterInfoMapperTest
         var fromExtension = character.ToCharacterTypeInfo();
 
         mapped.CharacterTypeInfo.ShouldBe(fromExtension);
+    }
+
+    // 7а. ТЕСТ-СТРАЖ: флаг «игрок может подать заявку» (#3303) маппится так же, как в Character.ToCharacterTypeInfo().
+    [Theory]
+    [InlineData(CharacterType.Player, false)]
+    [InlineData(CharacterType.Slot, false)]
+    [InlineData(CharacterType.NonPlayer, true)]
+    public void Map_IsAcceptingClaims_ShouldMatchCharacterToCharacterTypeInfoExtension(
+        CharacterType characterType,
+        bool isAcceptingClaims)
+    {
+        const string name = "Персонаж-страж";
+
+        var row = MakeRow(
+            characterName: name,
+            characterType: characterType,
+            isPublic: true,
+            hidePlayerForCharacter: false,
+            isAcceptingClaims: isAcceptingClaims);
+
+        var mapped = CharacterInfoMapper.Map(row, ProjectInfo);
+
+        var character = _mock.CreateCharacter(name);
+        character.CharacterType = characterType;
+        character.IsPublic = true;
+        character.HidePlayerForCharacter = false;
+        character.IsAcceptingClaims = isAcceptingClaims;
+
+        var fromExtension = character.ToCharacterTypeInfo();
+
+        mapped.CharacterTypeInfo.ShouldBe(fromExtension);
+        // У NPC флаг не имеет смысла — снят независимо от колонки.
+        mapped.CharacterTypeInfo.IsAcceptingClaims.ShouldBeFalse();
     }
 
     // 8. ТЕСТ-СТРАЖ: ClaimPredicates.GetClaimStatusPredicate(Active) должен совпадать с CharacterClaimInfo.IsActive

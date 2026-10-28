@@ -72,7 +72,9 @@ internal static class SlotCharacterFactory
             DirectlyRelatedPlotElements = [.. plots],
             HidePlayerForCharacter = slot.HidePlayerForCharacter,
             InGame = false,
-            IsAcceptingClaims = true,
+            // Шаблон «только по приглашению» порождает таких же персонажей: если заявку на него
+            // потом отклонят, игрок не должен суметь заявиться сам.
+            IsAcceptingClaims = slot.IsAcceptingClaims,
             IsActive = true,
             IsHot = false,
             IsPublic = slot.IsPublic,
