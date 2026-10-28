@@ -56,6 +56,18 @@ public class IsAvailableForPlayerTest
         Mock.Character.IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeFalse();
     }
 
+    // Роль «только по приглашению» (#3303): от этого зависят кнопка в сетке ролей и публичный JSON.
+    [Theory]
+    [InlineData(CharacterType.Player)]
+    [InlineData(CharacterType.Slot)]
+    public void InvitationOnlyCharacterIsNotAvailable(CharacterType characterType)
+    {
+        Mock.Character.CharacterType = characterType;
+        Mock.Character.IsAcceptingClaims = false;
+
+        Mock.Character.IsAvailableForPlayer(Mock, Mock.ProjectInfo).ShouldBeFalse();
+    }
+
     [Fact]
     public void InactiveCharacterIsNotAvailable()
     {

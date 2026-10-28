@@ -350,7 +350,7 @@ erDiagram
         bool InGame "играет прямо сейчас"
         bool HidePlayerForCharacter
         bool AutoCreated
-        bool IsAcceptingClaims "obsolete, см. CharacterType"
+        bool IsAcceptingClaims "игрок может подать заявку сам; у NPC всегда 0"
         int ApprovedClaimId FK "принятая заявка"
         int CharacterSlotLimit "для CharacterType = Slot"
         int OriginalCharacterSlot_CharacterId FK "из какого слота создан"

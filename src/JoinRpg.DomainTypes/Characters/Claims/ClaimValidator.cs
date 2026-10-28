@@ -106,6 +106,12 @@ public static class ClaimValidator
                 break;
         }
 
+        // У NPC флаг всегда снят, но для него уже есть своя причина — вторая только зашумит.
+        if (characterType != CharacterType.NonPlayer && !target.CharacterTypeInfo.IsAcceptingClaims)
+        {
+            yield return AddClaimForbideReason.ByInvitationOnly;
+        }
+
         if (operation.IsMove())
         {
             if (movedClaim?.IsApproved == true && characterType == CharacterType.Slot)
@@ -285,6 +291,7 @@ public static class ClaimValidator
 
             AddClaimForbideReason.ProjectClaimsClosed or AddClaimForbideReason.SlotsExhausted
                 or AddClaimForbideReason.Busy or AddClaimForbideReason.Npc or AddClaimForbideReason.CharacterInactive
+                or AddClaimForbideReason.ByInvitationOnly
                     => new ClaimTargetIsNotAcceptingClaims(),
 
             AddClaimForbideReason.AlreadySent => new ClaimAlreadyPresentException(),

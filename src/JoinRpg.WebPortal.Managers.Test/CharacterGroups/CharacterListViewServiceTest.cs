@@ -90,8 +90,8 @@ public class CharacterListViewServiceTest
     }
 
     /// <summary>
-    /// NPC отсекается доменными правилами по <c>CharacterType</c>, независимо от легаси-колонки
-    /// <c>Character.IsAcceptingClaims</c>, которая у старых записей могла с ним разъехаться.
+    /// NPC отсекается доменными правилами по <c>CharacterType</c>, независимо от колонки
+    /// <c>Character.IsAcceptingClaims</c>: у NPC она не имеет смысла.
     /// </summary>
     [Fact]
     public async Task NpcIsNotAvailableEvenWithStaleLegacyFlag()
@@ -101,6 +101,16 @@ public class CharacterListViewServiceTest
         npc.IsAcceptingClaims = true;
 
         (await GetNames(CharacterListType.AvailableForMaster)).ShouldNotContain(npc.CharacterName);
+    }
+
+    // Роль «только по приглашению» (#3303) закрыта для игроков, но мастер в неё приглашает.
+    [Fact]
+    public async Task InvitationOnlyCharacterIsAvailableForMaster()
+    {
+        var character = Mock.CreateCharacter("invitation only");
+        character.IsAcceptingClaims = false;
+
+        (await GetNames(CharacterListType.AvailableForMaster)).ShouldContain(character.CharacterName);
     }
 
     [Fact]

@@ -84,6 +84,41 @@ public class MasterBypassTest
             .ShouldBe([AddClaimForbideReason.SlotsExhausted]);
     }
 
+    // Роль «только по приглашению» (#3303): игрок сам не заявится, мастер пригласит.
+    [Theory]
+    [InlineData(CharacterType.Player)]
+    [InlineData(CharacterType.Slot)]
+    public void MasterCanInviteIntoInvitationOnlyCharacter(CharacterType characterType)
+    {
+        Mock.Character.CharacterType = characterType;
+        Mock.Character.IsAcceptingClaims = false;
+
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster)
+            .ShouldBeEmpty();
+    }
+
+    // Обе причины обходимые: закрытый приём заявок не мешает пригласить на роль «только по приглашению».
+    [Fact]
+    public void MasterCanInviteIntoInvitationOnlyCharacterWhenClaimsClosed()
+    {
+        Mock.Character.IsAcceptingClaims = false;
+
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, ClaimsClosed, ClaimOperation.AddByMaster)
+            .ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(CharacterType.Player)]
+    [InlineData(CharacterType.Slot)]
+    public void PlayerCantSendClaimIntoInvitationOnlyCharacter(CharacterType characterType)
+    {
+        Mock.Character.CharacterType = characterType;
+        Mock.Character.IsAcceptingClaims = false;
+
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
+            .ShouldBe([AddClaimForbideReason.ByInvitationOnly]);
+    }
+
     private void MakeExhaustedSlot()
     {
         Mock.Character.CharacterType = CharacterType.Slot;
@@ -97,6 +132,17 @@ public class MasterBypassTest
         Mock.Character.CharacterType = CharacterType.NonPlayer;
 
         Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByMaster).Kinds()
+            .ShouldBe([AddClaimForbideReason.Npc]);
+    }
+
+    // У NPC колонка тоже false, но причина у него одна — Npc, без дубля ByInvitationOnly.
+    [Fact]
+    public void NpcHasSingleReason()
+    {
+        Mock.Character.CharacterType = CharacterType.NonPlayer;
+        Mock.Character.IsAcceptingClaims = false;
+
+        Mock.Character.ValidateIfCanAddClaim(Mock, Mock.PlayerInfo, Mock.ProjectInfo, ClaimOperation.AddByPlayer).Kinds()
             .ShouldBe([AddClaimForbideReason.Npc]);
     }
 

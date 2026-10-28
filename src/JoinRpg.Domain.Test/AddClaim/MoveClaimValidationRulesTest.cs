@@ -22,6 +22,15 @@ public class MoveClaimValidationRulesTest
     }
 
     [Fact]
+    public void AllowMoveClaimToInvitationOnlyCharacter()
+    {
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        var another = Mock.CreateCharacter("another");
+        another.IsAcceptingClaims = false;
+        ShouldAllowMove(claim, another);
+    }
+
+    [Fact]
     public void AllowMoveClaimFromCharacterToCharacter()
     {
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);

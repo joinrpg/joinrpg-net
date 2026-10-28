@@ -28,6 +28,12 @@
             Возможно, выбрать другую роль из <a href="@ProjectUriLocator.GetRolesListUri(ProjectId)">сетки ролей</a>?
         </JoinAlert>
         break;
+    case AddClaimForbideReason.ByInvitationOnly:
+        <JoinAlert Variation="VariationStyleEnum.Warning">
+            На роль «@CharacterName» нельзя подать заявку самостоятельно — на неё приглашают мастера.
+            Возможно, выбрать другую роль из <a href="@ProjectUriLocator.GetRolesListUri(ProjectId)">сетки ролей</a>?
+        </JoinAlert>
+        break;
     case AddClaimForbideReason.Busy:
         <JoinAlert Variation="VariationStyleEnum.Warning">
             Роль «@CharacterName» уже занята.

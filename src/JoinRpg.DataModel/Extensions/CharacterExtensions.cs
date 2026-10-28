@@ -14,7 +14,8 @@ public static class CharacterExtensions
                 character.CharacterSlotLimit,
                 character.CharacterName,
                 character.IsPublic,
-                character.HidePlayerForCharacter);
+                character.HidePlayerForCharacter,
+                character.IsAcceptingClaims);
         }
         catch (ArgumentException ex)
         {

@@ -20,6 +20,7 @@ internal sealed class CharacterInfoRow
     public required int? CharacterSlotLimit { get; init; }
     public required bool IsPublic { get; init; }
     public required bool HidePlayerForCharacter { get; init; }
+    public required bool IsAcceptingClaims { get; init; }
     public required bool IsActive { get; init; }
     public required bool InGame { get; init; }
     public required bool AutoCreated { get; init; }

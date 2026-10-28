@@ -11,7 +11,8 @@ public class CharacterTypeInfoTest
             characterSlotLimit: null,
             characterName: "Вася",
             isPublic,
-            hidePlayerForCharacter);
+            hidePlayerForCharacter,
+            isAcceptingClaims: true);
 
     [Fact]
     public void PublicCharacterHasPublicName()
@@ -36,6 +37,33 @@ public class CharacterTypeInfoTest
         typeInfo.CharacterVisibility.ShouldBe(CharacterVisibility.PlayerHidden);
         typeInfo.IsPublic.ShouldBeFalse();
         typeInfo.IsNamePublic.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(CharacterType.Player)]
+    [InlineData(CharacterType.Slot)]
+    public void ClaimsCanBeClosedForPlayers(CharacterType characterType)
+        => new CharacterTypeInfo(characterType, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public, IsAcceptingClaims: false)
+            .IsAcceptingClaims.ShouldBeFalse();
+
+    [Fact]
+    public void NpcNeverAcceptsClaims()
+        => new CharacterTypeInfo(CharacterType.NonPlayer, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public, IsAcceptingClaims: true)
+            .IsAcceptingClaims.ShouldBeFalse();
+
+    // Горячую роль рекламируют с кнопкой «Подать заявку».
+    [Fact]
+    public void HotRoleMustAcceptClaims()
+        => Should.Throw<ArgumentException>(
+            () => new CharacterTypeInfo(CharacterType.Player, IsHot: true, SlotLimit: null, SlotName: null, CharacterVisibility.Public, IsAcceptingClaims: false));
+
+    [Fact]
+    public void DeconstructReturnsStoredFlag()
+    {
+        var (_, _, _, isAcceptingClaims, _, _, _) =
+            new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public, IsAcceptingClaims: false);
+
+        isAcceptingClaims.ShouldBeFalse();
     }
 
     [Theory]

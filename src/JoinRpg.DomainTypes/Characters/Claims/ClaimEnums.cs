@@ -45,6 +45,8 @@ public enum AddClaimForbideReason
     /// <summary>Проект заблокирован на время восстановления данных (ADR023).</summary>
     ProjectBlocked,
     BirthDateMissing,
+    /// <summary>Игрок не может заявиться сам — только мастер приглашает или переносит заявку (#3303).</summary>
+    ByInvitationOnly,
 }
 
 // Более широкий вариант статуса, подразумевает комбинацию нескольких статусов.

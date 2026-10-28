@@ -45,6 +45,7 @@ internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataReposito
                 character.IsHot,
                 character.CharacterSlotLimit,
                 character.HidePlayerForCharacter,
+                character.IsAcceptingClaims,
                 character.ApprovedClaimId,
                 ActiveClaimPlayerIds = character.Claims
                     .Where(claim => activeClaims.Invoke(claim))
@@ -66,7 +67,8 @@ internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataReposito
                 row.CharacterSlotLimit,
                 row.CharacterName,
                 row.IsPublic,
-                row.HidePlayerForCharacter),
+                row.HidePlayerForCharacter,
+                row.IsAcceptingClaims),
             ClaimIdentification.FromOptional(projectId, row.ApprovedClaimId),
             [.. row.ActiveClaimPlayerIds.Select(id => new UserIdentification(id))]))];
     }

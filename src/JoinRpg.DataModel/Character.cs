@@ -34,9 +34,10 @@ public class Character : IWorldObject, IFieldContainter, ICreatedUpdatedTrackedF
     public bool IsPublic { get; set; }
 
     /// <summary>
-    /// TODO удалить
+    /// Игрок может сам подать заявку на персонажа (#3303). Если нет — попасть на него можно только
+    /// через мастера. Читать через <see cref="CharacterTypeInfo.IsAcceptingClaims"/>:
+    /// у NPC колонка всегда <c>false</c>.
     /// </summary>
-    [Obsolete("Использовать CharacterType или ClaimSourceExtensions.IsAcceptingClaims()")]
     public bool IsAcceptingClaims { get; set; }
 
     /// <summary>
