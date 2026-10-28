@@ -18,7 +18,7 @@ public class ClaimForbiddenReasonTest
     // Список причин, которые мастер вправе обойти, заморожен намеренно: если в
     // AddClaimForbideReason появится новое значение, решение «может ли мастер его обойти»
     // должно приниматься осознанно, а не достаться по умолчанию.
-    // См. https://github.com/joinrpg/joinrpg-net/issues/4743 про Npc/CharacterInactive/SlotsExhausted.
+    // Про Npc/CharacterInactive/SlotsExhausted решено в https://github.com/joinrpg/joinrpg-net/issues/4743.
     [Fact]
     public void OnlyExpectedReasonsCanBeOverridenByMaster()
     {
@@ -29,6 +29,7 @@ public class ClaimForbiddenReasonTest
         overridable.ShouldBe(
             [
                 AddClaimForbideReason.ProjectClaimsClosed,
+                AddClaimForbideReason.SlotsExhausted,
                 AddClaimForbideReason.RealNameMissing,
                 AddClaimForbideReason.PhoneMissing,
                 AddClaimForbideReason.TelegramMissing,

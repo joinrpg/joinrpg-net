@@ -782,6 +782,22 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SaveChangesCallCount.ShouldBe(2);
     }
 
+    // Лимит шаблона мастер обходит (#4743): заявка создаётся, а принять её можно будет, когда лимит поднимут.
+    [Fact]
+    public async Task AddClaimFromMaster_ToExhaustedSlot_CreatesClaim()
+    {
+        var slot = mock.CreateSlot("Шаблон");
+        slot.CharacterSlotLimit = 0;
+        mock.ReInitProjectInfo();
+        var fields = FieldLayerContainer.Empty(mock.ProjectInfo);
+
+        _ = await CreateService()
+            .AddClaimFromMaster(slot.GetId(), mock.Player.GetId(), "приглашаю", fields);
+
+        mock.Project.Claims.ShouldHaveSingleItem().ClaimStatus.ShouldBe(ClaimStatus.AddedByMaster);
+        slot.CharacterSlotLimit.ShouldBe(0);
+    }
+
     /// <summary>
     /// Занятость роли мастер обойти не может — у этой причины <c>MasterCanOverride == false</c>.
     /// </summary>
@@ -999,6 +1015,26 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         SaveChangesCallCount.ShouldBe(2);
         SentNotifications.Count.ShouldBe(2);
         impersonateAccessor.Impersonated.ShouldBe([mock.Master.GetId()]);
+    }
+
+    /// <summary>
+    /// Мастер вправе пригласить игрока в шаблон сверх лимита (#4743), а принять такую заявку нельзя.
+    /// Автоприём не должен на этом падать: приглашение уже принято и сохранено, и ошибка игроку
+    /// была бы ложной. Заявка остаётся в обсуждении, пока мастер не поднимет лимит.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvitation_ToExhaustedSlot_WithAutoAccept_LeavesClaimDiscussed()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        var claim = CreateClaim(ClaimStatus.AddedByMaster, toSlot: true);
+        claim.Character.CharacterSlotLimit = 0;
+
+        await CreateService(mock.Player.UserId)
+            .AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed: false);
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
+        SaveChangesCallCount.ShouldBe(1);
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
     }
 
     #endregion

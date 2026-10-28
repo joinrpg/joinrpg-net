@@ -535,6 +535,17 @@ internal class ClaimServiceImpl(
             return;
         }
 
+        // Мастер вправе пригласить игрока в шаблон сверх лимита (#4743), а принять такую заявку
+        // нельзя, пока лимит не поднимут. Приглашение к этому моменту уже сохранено, так что падать
+        // здесь — показать игроку ложную ошибку.
+        if (claim.Character.CharacterSlotLimit == 0)
+        {
+            logger.LogInformation(
+                "Claim ({claimId}) was not auto-approved: slot limit is exhausted",
+                claimId);
+            return;
+        }
+
         // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
         if (!claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
         {
