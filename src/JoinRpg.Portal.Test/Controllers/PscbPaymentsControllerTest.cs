@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes;
 using JoinRpg.Portal.Controllers.WebApi;
 using JoinRpg.Portal.Controllers.XGameApi;
 using JoinRpg.Portal.Helpers;
@@ -5,6 +6,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.AdminTools.PscbPayments;
 using JoinRpg.XGameApi.Contract.Pscb;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Test.Controllers;
@@ -25,7 +27,7 @@ public class PscbPaymentsControllerTest
     [Fact]
     public async Task CsvIsReplacedWithTheBankRefusal()
     {
-        var controller = new PscbPaymentsController(new FakeClient(Refused()), new FakeExportDataService());
+        var controller = new PscbPaymentsController(new FakeClient(Refused()), new FakeExportDataService(), new FakeRestoreClient());
 
         var result = await controller.GetPayments(From, To, null, null, requestFiscalData: false, format: "csv");
 
@@ -55,7 +57,7 @@ public class PscbPaymentsControllerTest
     [Fact]
     public async Task CsvIsReturnedWhenTheBankAnswered()
     {
-        var controller = new PscbPaymentsController(new FakeClient(Succeeded()), new FakeExportDataService());
+        var controller = new PscbPaymentsController(new FakeClient(Succeeded()), new FakeExportDataService(), new FakeRestoreClient());
 
         var result = await controller.GetPayments(From, To, null, null, requestFiscalData: false, format: "csv");
 
@@ -69,12 +71,56 @@ public class PscbPaymentsControllerTest
     [Fact]
     public async Task JsonKeepsTheRefusalInTheBody()
     {
-        var controller = new PscbPaymentsController(new FakeClient(Refused()), new FakeExportDataService());
+        var controller = new PscbPaymentsController(new FakeClient(Refused()), new FakeExportDataService(), new FakeRestoreClient());
 
         var result = await controller.GetPayments(From, To, null, null, requestFiscalData: false, format: null);
 
         var ok = result.ShouldBeOfType<OkObjectResult>();
         ok.Value.ShouldBeOfType<PscbPaymentsListResult>().IsSuccess.ShouldBeFalse();
+    }
+
+    /// <summary>
+    /// Восстановление отдаёт итог сервиса как есть и отправляет сервису тот же запрос, что прислал остров (ADR026).
+    /// </summary>
+    [Fact]
+    public async Task RestoreReturnsTheServiceResult()
+    {
+        var restore = new FakeRestoreClient();
+        var controller = new PscbPaymentsController(new FakeClient(Succeeded()), new FakeExportDataService(), restore);
+        var query = new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false);
+
+        var result = await controller.Restore(query);
+
+        result.Result.ShouldBeOfType<Ok<PscbRestoreResult>>().Value.ShouldBe(restore.Result);
+        restore.Queries.ShouldBe([query]);
+    }
+
+    /// <summary>
+    /// Отказ доменного сервиса становится текстом в 400 — остров показывает его админу.
+    /// </summary>
+    [Fact]
+    public async Task RestoreServiceRefusalBecomesBadRequest()
+    {
+        var restore = new FakeRestoreClient { Error = new JoinValidationException("Записей больше лимита") };
+        var controller = new PscbPaymentsController(new FakeClient(Succeeded()), new FakeExportDataService(), restore);
+
+        var result = await controller.Restore(new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false));
+
+        result.Result.ShouldBeOfType<BadRequest<string>>().Value.ShouldBe("Записей больше лимита");
+    }
+
+    /// <summary>
+    /// Нарушение ограничений периода — тоже отказ текстом: сервис кидает <see cref="ArgumentException"/>.
+    /// </summary>
+    [Fact]
+    public async Task RestoreArgumentFailureBecomesBadRequest()
+    {
+        var restore = new FakeRestoreClient { Error = new ArgumentException("Период длиннее 730 дней") };
+        var controller = new PscbPaymentsController(new FakeClient(Succeeded()), new FakeExportDataService(), restore);
+
+        var result = await controller.Restore(new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false));
+
+        result.Result.ShouldBeOfType<BadRequest<string>>().Value.ShouldBe("Период длиннее 730 дней");
     }
 
     private static PscbPaymentsListResult Refused() => new()
@@ -98,6 +144,21 @@ public class PscbPaymentsControllerTest
 
         public Task<PscbPaymentDetailsResult> GetPaymentInfo(PscbPaymentDetailsQuery query)
             => throw new NotSupportedException();
+    }
+
+    private sealed class FakeRestoreClient : IPscbPaymentsRestoreClient
+    {
+        public PscbRestoreResult Result { get; } = new() { RestoredPaymentsCount = 2, RestoredRefundsCount = 1 };
+
+        public Exception? Error { get; set; }
+
+        public List<PscbPaymentsQuery> Queries { get; } = [];
+
+        public Task<PscbRestoreResult> Restore(PscbPaymentsQuery query)
+        {
+            Queries.Add(query);
+            return Error is { } error ? throw error : Task.FromResult(Result);
+        }
     }
 
     private sealed class FakeExportDataService : IExportDataService

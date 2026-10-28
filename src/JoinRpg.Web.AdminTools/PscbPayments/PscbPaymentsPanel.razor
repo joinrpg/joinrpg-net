@@ -1,5 +1,6 @@
 @using JoinRpg.XGameApi.Contract.Pscb
 @inject IPscbPaymentsClient Client
+@inject IPscbPaymentsRestoreClient RestoreClient
 
 <JoinPanel>
     <Header>Список платежей</Header>
@@ -15,7 +16,7 @@
             <JoinAlert Variation="VariationStyleEnum.Danger">@listError</JoinAlert>
         }
 
-        <fieldset class="form-horizontal" disabled="@listLoading">
+        <fieldset class="form-horizontal" disabled="@(listLoading || restoring)">
             <div class="form-group">
                 <label class="control-label col-md-3">Период с</label>
                 <div class="col-md-3">
@@ -180,6 +181,33 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if (RestoreCandidateCount > 0)
+                {
+                    <p>
+                        <JoinButton Label="Восстановить потерянные" ProgressLabel="Восстанавливаем..."
+                                    AutoConfirm="true" AutoConfirmMessage="@RestoreConfirmMessage"
+                                    OnClick="RestoreLost" InProgress="restoring" AutoProgress="false"
+                                    Disabled="listLoading" />
+                    </p>
+                }
+                @if (restoreResult is { } restore)
+                {
+                    <p class="pscb-restore-summary">
+                        Восстановлено платежей: <b>@restore.RestoredPaymentsCount</b>, возвратов: <b>@restore.RestoredRefundsCount</b>.
+                        Не восстановлено: <b>@FailedRowCount(restore)</b> — причины ниже.
+                    </p>
+                    <ul class="pscb-restore-rows">
+                        @foreach (var row in restore.Rows)
+                        {
+                            <li class="@RestoreRowClass(row.Outcome)">@row.OrderId: @row.Message</li>
+                        }
+                    </ul>
+                }
+                @if (restoreError is not null)
+                {
+                    <JoinAlert Variation="VariationStyleEnum.Danger">@restoreError</JoinAlert>
+                }
 
                 @if (list.UnresolvedProjects.Count > 0)
                 {
@@ -383,6 +411,13 @@
     private string? listError;
     private string? csvHref;
 
+    // Запрос, которым список был загружен успешно в последний раз: восстановление отправляет
+    // серверу именно его — сервер заново скачивает период и работает от свежих данных банка.
+    private PscbPaymentsQuery? lastQuery;
+    private bool restoring;
+    private PscbRestoreResult? restoreResult;
+    private string? restoreError;
+
     private string? orderId;
     private bool detailsRequestCardData;
     private bool detailsRequestFiscalData;
@@ -414,16 +449,66 @@
         {
             list = await Client.GetPayments(query);
             csvHref = PscbPaymentsRoutes.GetPaymentsUri(query, PscbPaymentsRoutes.CsvFormat);
+            lastQuery = list.IsSuccess ? query : null;
         }
         catch (Exception ex)
         {
             listError = ex.Message;
+            lastQuery = null;
         }
         finally
         {
             listLoading = false;
         }
     }
+
+    // Строки, которые восстановление считает кандидатами: видимость кнопки не зависит от
+    // RestoreBlockReason — что восстанавливать, решает сервер по свежим данным банка.
+    private int RestoreCandidateCount
+        => list is { IsSuccess: true } loaded
+            ? loaded.Payments.Count(p => p.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing)
+            : 0;
+
+    private string RestoreConfirmMessage
+        => $"Восстановить строк: {RestoreCandidateCount}? Сервер заново скачает период из банка и создаст недостающие операции и возвраты. Отменить результат нельзя.";
+
+    private async Task RestoreLost()
+    {
+        if (lastQuery is not { } query || restoring)
+        {
+            return;
+        }
+        restoring = true;
+        restoreResult = null;
+        restoreError = null;
+        try
+        {
+            restoreResult = await RestoreClient.Restore(query);
+        }
+        catch (Exception ex)
+        {
+            restoreError = ex.Message;
+        }
+        finally
+        {
+            restoring = false;
+        }
+        if (restoreResult is not null)
+        {
+            // Тем же запросом: восстановленные строки становятся ссылками на операции.
+            await LoadPayments();
+        }
+    }
+
+    private static int FailedRowCount(PscbRestoreResult result)
+        => result.Rows.Count(row => row.Outcome == PscbRestoreRowOutcome.Failed);
+
+    private static string RestoreRowClass(PscbRestoreRowOutcome outcome) => outcome switch
+    {
+        PscbRestoreRowOutcome.Failed => "text-danger",
+        PscbRestoreRowOutcome.Restored => "text-success",
+        _ => "text-muted",
+    };
 
     private async Task LoadPaymentInfo()
     {

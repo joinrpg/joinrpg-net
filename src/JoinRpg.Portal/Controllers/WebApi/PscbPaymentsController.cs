@@ -1,25 +1,37 @@
+using JoinRpg.Helpers;
 using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.AdminTools.PscbPayments;
 using JoinRpg.WebPortal.Managers.AdminTools;
 using JoinRpg.XGameApi.Contract.Pscb;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.WebApi;
 
 /// <summary>
-/// Шлюз к API ПСКБ для админки сайта (ADR025). Отдаёт то, что сказал банк, без данных JoinRpg.
+/// Шлюз к API ПСКБ для админки сайта (ADR025). Отдаёт то, что сказал банк, без данных JoinRpg,
+/// и восстанавливает потерянные платежи (ADR026).
 /// </summary>
 /// <remarks>
+/// <para>
 /// Та же логика доступна внешним потребителям по JWT на <c>x-api/pscb/payments</c>
 /// (<see cref="XGameApi.PscbPaymentsApiController"/>): остров Blazor ходит с кукой, а
 /// <c>[XAdminAuthorize]</c> жёстко задаёт схему JWT, поэтому одной ручкой обойтись нельзя.
+/// </para>
+/// <para>
+/// <c>[IgnoreAntiforgeryToken]</c> на <see cref="Restore"/> нет сознательно: глобальная проверка
+/// остаётся, а остров присылает токен заголовком — как <c>FinanceRestoreController.Apply</c>.
+/// </para>
 /// </remarks>
 [ApiController]
 [Route("/webapi/PscbPayments/[action]")]
 [AdminAuthorize]
-public class PscbPaymentsController(IPscbPaymentsClient client, IExportDataService exportDataService) : ControllerBase
+public class PscbPaymentsController(
+    IPscbPaymentsClient client,
+    IExportDataService exportDataService,
+    IPscbPaymentsRestoreClient restoreClient) : ControllerBase
 {
     /// <summary>
     /// Список платежей магазина за период. Банк принимает не больше месяца за запрос, поэтому
@@ -96,6 +108,25 @@ public class PscbPaymentsController(IPscbPaymentsClient client, IExportDataServi
         catch (ArgumentOutOfRangeException ex)
         {
             return Problem(title: ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    /// <summary>
+    /// Восстановление потерянных платежей периода (ADR026). Сервер заново скачивает диапазон
+    /// и работает от свежих данных банка: суммы, даты и возвраты из клиентского JSON не берутся.
+    /// </summary>
+    /// <param name="query">Параметры периода — те же, которыми остров загрузил список.</param>
+    [HttpPost]
+    public async Task<Results<Ok<PscbRestoreResult>, BadRequest<string>>> Restore([FromBody] PscbPaymentsQuery query)
+    {
+        try
+        {
+            return TypedResults.Ok(await restoreClient.Restore(query));
+        }
+        // Отказ сервиса — текстом, остров показывает его админу, а не роняет в JoinAlert исключением.
+        catch (Exception ex) when (ex is JoinRpgBaseException or ArgumentException)
+        {
+            return TypedResults.BadRequest(ex.Message);
         }
     }
 }
