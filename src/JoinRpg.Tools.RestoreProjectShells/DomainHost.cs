@@ -53,6 +53,7 @@ internal sealed class DomainHost : IAsyncDisposable
         impersonator.StartImpersonate(
             new UserIdentification(creatorUserId),
             new UserDisplayName($"Пользователь {creatorUserId}", null),
+            avatar: null,
             IsAdmin: false);
         try
         {

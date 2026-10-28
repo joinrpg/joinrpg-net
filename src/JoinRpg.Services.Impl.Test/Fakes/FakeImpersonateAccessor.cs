@@ -32,7 +32,7 @@ internal sealed class FakeImpersonateAccessor : IImpersonateAccessor
         return accessor;
     }
 
-    public void StartImpersonate(UserIdentification userId, UserDisplayName displayName, bool IsAdmin)
+    public void StartImpersonate(UserIdentification userId, UserDisplayName displayName, AvatarIdentification? avatar, bool IsAdmin)
     {
         Impersonated.Add(userId);
         saved.Clear();

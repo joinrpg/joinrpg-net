@@ -26,6 +26,8 @@ public interface ICurrentUserAccessor
 
 public interface IImpersonateAccessor
 {
-    void StartImpersonate(UserIdentification userId, UserDisplayName displayName, bool IsAdmin);
+    /// <param name="avatar">Аватарка пользователя, если она известна. <c>null</c> — для синтетических
+    /// пользователей инструментов, у которых нет ни настоящего имени, ни аватарки.</param>
+    void StartImpersonate(UserIdentification userId, UserDisplayName displayName, AvatarIdentification? avatar, bool IsAdmin);
     void StopImpersonate();
 }

@@ -560,7 +560,7 @@ internal class ClaimServiceImpl(
         var responsibleMaster = await UserRepository.GetRequiredUserInfo(
             new UserIdentification(claim.ResponsibleMasterUserId));
 
-        impersonateAccessor.StartImpersonate(responsibleMaster.UserId, responsibleMaster.DisplayName, responsibleMaster.IsAdmin);
+        impersonateAccessor.StartImpersonate(responsibleMaster.UserId, responsibleMaster.DisplayName, responsibleMaster.SelectedAvatarId, responsibleMaster.IsAdmin);
         try
         {
             //TODO[Localize]

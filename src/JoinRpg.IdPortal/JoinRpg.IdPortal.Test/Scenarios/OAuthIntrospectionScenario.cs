@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Joinrpg.Web.Identity;
 using JoinRpg.IdPortal.OAuthServer;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -40,6 +41,21 @@ public class OAuthIntrospectionScenario(IdPortalApplicationFactory factory)
 
         payload.GetProperty("active").GetBoolean().ShouldBeTrue();
         payload.GetProperty("scope").GetString().ShouldNotBeNull().ShouldContain(JoinRpgScopes.Read);
+    }
+
+    [Fact]
+    public async Task ResourceServer_GetsUserHeaderClaims()
+    {
+        // Portal собирает из этих claims ICurrentUserAccessor.DisplayName и Avatar (ADR026 §1).
+        // Проверяем именно интроспекцию: claim без destination в токен не попадёт, а чужие
+        // claims OpenIddict отдаёт только стороне из аудитории.
+        var token = await IssueTokenAsync();
+        var secret = await CreateResourceServerAsync(McpResource);
+
+        var payload = await IntrospectAsync(McpResource, secret, token);
+
+        payload.GetProperty(JoinClaimTypes.DisplayName).GetString().ShouldBe(IdPortalApplicationFactory.TestDisplayName);
+        payload.TryGetProperty("email", out _).ShouldBeFalse("email шапке не нужен и в access-токен не копируется");
     }
 
     [Fact]

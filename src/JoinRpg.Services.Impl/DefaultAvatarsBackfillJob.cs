@@ -43,7 +43,7 @@ internal class DefaultAvatarsBackfillJob(
             // Имперсонация робота (её ставит JobRunner) живёт в scope — в новом её надо повторить.
             using var scope = scopeFactory.CreateScope();
             var impersonate = scope.ServiceProvider.GetRequiredService<IImpersonateAccessor>();
-            impersonate.StartImpersonate(currentUserAccessor.UserIdentification, currentUserAccessor.DisplayName, currentUserAccessor.IsAdmin);
+            impersonate.StartImpersonate(currentUserAccessor.UserIdentification, currentUserAccessor.DisplayName, currentUserAccessor.Avatar, currentUserAccessor.IsAdmin);
             try
             {
                 await scope.ServiceProvider.GetRequiredService<IAvatarService>().EnsureDefaultAvatars(batch);

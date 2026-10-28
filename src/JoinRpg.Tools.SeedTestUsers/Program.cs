@@ -127,7 +127,7 @@ internal static class Program
     private static async Task<ProjectIdentification> CreateProjectAsync(IServiceProvider sp, UserIdentification masterId)
     {
         var impersonator = sp.GetRequiredService<IImpersonateAccessor>();
-        impersonator.StartImpersonate(masterId, new UserDisplayName("Тестовый Мастер", null), IsAdmin: false);
+        impersonator.StartImpersonate(masterId, new UserDisplayName("Тестовый Мастер", null), avatar: null, IsAdmin: false);
         try
         {
             var createProjectService = sp.GetRequiredService<ICreateProjectService>();

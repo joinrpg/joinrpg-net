@@ -11,7 +11,7 @@ internal class JobRunner<TJob>(IVirtualUsersService virtualUsersService, IImpers
         try
         {
             DataModel.User robotUser = virtualUsersService.RobotUser;
-            currentUser.StartImpersonate(robotUser.GetId(), robotUser.ExtractDisplayName(), robotUser.Auth.IsAdmin);
+            currentUser.StartImpersonate(robotUser.GetId(), robotUser.ExtractDisplayName(), AvatarIdentification.FromOptional(robotUser.SelectedAvatarId), robotUser.Auth.IsAdmin);
             var job = serviceScope.ServiceProvider.GetRequiredService<TJob>();
             await job.RunOnce(cancellationToken);
         }
