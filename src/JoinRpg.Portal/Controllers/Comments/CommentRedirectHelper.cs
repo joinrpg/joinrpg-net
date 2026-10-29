@@ -1,31 +1,23 @@
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.DomainTypes.Comments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.Comments;
 
 internal static class CommentRedirectHelper
 {
-    public static ActionResult RedirectToDiscussion(IUrlHelper Url, CommentDiscussion? discussion, int? commentId = null)
+    /// <summary>Переход на страницу владельца обсуждения — заявку или тему форума.</summary>
+    /// <param name="commentId">Комментарий, к которому прокрутить страницу; <c>null</c> — к началу.</param>
+    public static ActionResult RedirectToDiscussion(IUrlHelper Url, CommentDiscussionOwner owner, CommentId? commentId = null)
     {
-        if (discussion is null)
+        var extra = commentId is not null ? $"#comment{commentId.Value}" : null;
+        var actionLink = owner switch
         {
-            return new NotFoundResult();
-        }
-
-        var extra = commentId != null ? $"#comment{commentId}" : null;
-        var claim = discussion.GetClaim();
-        if (claim != null)
-        {
-            var actionLink = Url.Action("Edit", "Claim", new { claim.ClaimId, discussion.ProjectId });
-            return new RedirectResult(actionLink + extra);
-        }
-        var forumThread = discussion.GetForumThread();
-        if (forumThread != null)
-        {
-            var actionLink = Url.Action("ViewThread", "Forum", new { discussion.ProjectId, forumThread.ForumThreadId });
-            return new RedirectResult(actionLink + extra);
-        }
-        return new NotFoundResult();
+            ClaimDiscussionOwner claimOwner
+                => Url.Action("Edit", "Claim", new { claimOwner.ClaimId.ClaimId, ProjectId = claimOwner.ProjectId.Value }),
+            ForumDiscussionOwner forumOwner
+                => Url.Action("ViewThread", "Forum", new { ProjectId = forumOwner.ProjectId.Value, ForumThreadId = forumOwner.ThreadId.ThreadId }),
+            _ => throw new InvalidOperationException($"Unknown comment discussion owner {owner}"),
+        };
+        return new RedirectResult(actionLink + extra);
     }
 }

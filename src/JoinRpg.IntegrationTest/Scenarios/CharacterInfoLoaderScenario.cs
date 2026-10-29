@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
@@ -169,5 +170,67 @@ public class CharacterInfoLoaderScenario(JoinApplicationFactory factory)
             // Выбор типа завёл группу: ссылка из колонки Claims.AccommodationRequest_Id (ADR022).
             _ = claim.AccommodationGroupId.AsAccommodationRequestId().ShouldNotBeNull();
         }
+    }
+
+    /// <summary>
+    /// <see cref="ICharacterInfoRepository.GetCharacterInfosByPlayer"/>: предикат по заявкам
+    /// (игрок + статус) переводится в SQL и выбирает только персонажей, на которых у
+    /// игрока принятая заявка, — не обсуждаемая и не чужая принятая.
+    /// </summary>
+    [Fact]
+    public async Task GetCharacterInfosByPlayer_ReturnsCharactersOfApprovedClaimsOfPlayer()
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectId;
+        UserIdentification playerId;
+        UserIdentification otherPlayerId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId);
+            playerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            otherPlayerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+        }
+
+        var (approvedCharacter, discussedCharacter, otherCharacter) = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                projectId,
+                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
+
+            var characterService = sp.GetRequiredService<ICharacterService>();
+            async Task<CharacterIdentification> AddCharacter() => await characterService.AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
+            return (await AddCharacter(), await AddCharacter(), await AddCharacter());
+        });
+
+        async Task<ClaimIdentification> AddClaim(UserIdentification player, CharacterIdentification character)
+            => await factory.Services.RunAsAsync(player, async sp =>
+            {
+                var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+                return await sp.GetRequiredService<IClaimService>().AddClaimFromUser(
+                    character, "Хочу эту роль", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
+            });
+
+        var approvedClaim = await AddClaim(playerId, approvedCharacter);
+        _ = await AddClaim(playerId, discussedCharacter);
+        var otherClaim = await AddClaim(otherPlayerId, otherCharacter);
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var claimService = sp.GetRequiredService<IClaimService>();
+            await claimService.ApproveByMaster(approvedClaim, "Принято");
+            await claimService.ApproveByMaster(otherClaim, "Принято");
+        });
+
+        using var scope2 = factory.Services.CreateScope();
+        var characters = await scope2.ServiceProvider.GetRequiredService<ICharacterInfoRepository>()
+            .GetCharacterInfosByPlayer(projectId, playerId, ClaimStatusSpec.Approved);
+
+        characters.ShouldHaveSingleItem().Id.ShouldBe(approvedCharacter);
     }
 }

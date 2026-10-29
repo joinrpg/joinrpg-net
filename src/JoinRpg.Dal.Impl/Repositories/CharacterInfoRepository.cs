@@ -117,6 +117,17 @@ internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataReposito
         return await GetCoreAsync(projectId, character => character.Claims.Any(claim => claimIntIds.Contains(claim.ClaimId)));
     }
 
+    public async Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByPlayer(
+        ProjectIdentification projectId,
+        UserIdentification playerId,
+        ClaimStatusSpec claimStatusSpec)
+    {
+        Expression<Func<Claim, bool>> claimPredicate = PredicateBuilder.New(ClaimPredicates.GetForUser(playerId))
+            .And(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec));
+
+        return await GetCoreAsync(projectId, character => character.Claims.Any(claim => claimPredicate.Invoke(claim)));
+    }
+
     public async Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(
         ProjectIdentification projectId,
         IReadOnlyCollection<CharacterGroupIdentification> groupIds,

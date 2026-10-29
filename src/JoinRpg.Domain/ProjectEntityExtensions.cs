@@ -131,40 +131,6 @@ public static class ProjectEntityExtensions
     public static T EnsureProjectActive<T>(this T entity)
   where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivatedException(entity.ProjectIdentification) : entity;
 
-    [Obsolete]
-    public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId, ProjectInfo projectInfo)
-    {
-        if (!discussion.HasAnyAccess(currentUserId, projectInfo))
-        {
-            throw new NoAccessToProjectException(projectInfo, currentUserId);
-        }
-    }
-
-    [Obsolete]
-    public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId, ProjectInfo projectInfo)
-        // Мастерский доступ — по ProjectInfo, а не по discussion.Project.ProjectAcls: навигация стоила
-        // ленивой догрузки ACL на каждом переходе к обсуждению (#4989).
-        => projectInfo.HasMasterAccess(new UserIdentification(currentUserId)) || discussion.HasPlayerAccess(currentUserId, projectInfo);
-
-    [Obsolete]
-    public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId, ProjectInfo projectInfo)
-    {
-        var forumThread =
-          commentDiscussion.GetForumThread();
-
-        var claim =
-          commentDiscussion.GetClaim();
-        if (forumThread != null)
-        {
-            return forumThread.HasPlayerAccess(currentUserId, projectInfo);
-        }
-        if (claim != null)
-        {
-            return claim.HasPlayerAccesToClaim(currentUserId);
-        }
-        throw new InvalidOperationException();
-    }
-
     [Pure]
     public static bool HasPlayerAccess(this IForumThread forumThread, int? currentUserId, ProjectInfo projectInfo)
     {
@@ -182,19 +148,5 @@ public static class ProjectEntityExtensions
         ArgumentNullException.ThrowIfNull(forumThread);
 
         return projectInfo.HasMasterAccess(UserIdentification.FromOptional(currentUserId)) || forumThread.HasPlayerAccess(currentUserId, projectInfo);
-    }
-
-    [Pure]
-    public static Claim? GetClaim(this CommentDiscussion commentDiscussion)
-    {
-        return commentDiscussion.Project.Claims.SingleOrDefault(
-          c => c.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
-    }
-
-    [Pure]
-    public static ForumThread? GetForumThread(this CommentDiscussion commentDiscussion)
-    {
-        return commentDiscussion.Project.ForumThreads.SingleOrDefault(
-          ft => ft.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
     }
 }
