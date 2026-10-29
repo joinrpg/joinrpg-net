@@ -27,7 +27,10 @@ public record class ProjectFieldInfo(
     ProjectFieldVisibility ProjectFieldVisibility,
     CharacterGroupIdentification? SpecialGroupId,
     bool WasEverUsed,
-    TimeZoneInfo ProjectTimeZone)
+    TimeZoneInfo ProjectTimeZone,
+    // Правка вариантов тоже считается правкой поля — у вариантов своих отметок нет.
+    // Автор — из мастеров проекта; правившего админа сайта без мастерской записи здесь нет (null).
+    CreateUpdateMarksInfo Marks)
     : IProjectEntityWithId
 {
     private const string CheckboxValueOn = "on";

@@ -65,6 +65,35 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         field.UpdatedById.ShouldBe(mock.Master.UserId);
     }
 
+    [Fact]
+    public async Task AddField_MarksAreVisibleInProjectInfo()
+    {
+        var service = CreateService(mock.Master.UserId);
+
+        var fieldId = await service.AddField(CreateFieldRequest());
+
+        var marks = Result.GetFieldById(fieldId).Marks;
+        marks.CreatedBy.ShouldNotBeNull().UserId.Value.ShouldBe(mock.Master.UserId);
+        marks.UpdatedBy.ShouldNotBeNull().UserId.Value.ShouldBe(mock.Master.UserId);
+        marks.UpdatedAt.ShouldBe(marks.CreatedAt);
+    }
+
+    /// <summary>
+    /// Автора ищем среди мастеров проекта: правившего админа сайта без мастерской записи там нет.
+    /// </summary>
+    [Fact]
+    public void FieldMarks_AuthorNotAMaster_IsNull()
+    {
+        var fieldInfo = mock.AddField(f =>
+        {
+            f.CreatedById = mock.Master.UserId;
+            f.UpdatedById = mock.Player.UserId;
+        });
+
+        fieldInfo.Marks.CreatedBy.ShouldNotBeNull().UserId.Value.ShouldBe(mock.Master.UserId);
+        fieldInfo.Marks.UpdatedBy.ShouldBeNull();
+    }
+
     /// <summary>
     /// У вариантов своих отметок нет: их правка обновляет отметку поля, иначе внешние клиенты
     /// (расписание в x-game-api) не узнают, что слот сдвинули или зал переименовали.
