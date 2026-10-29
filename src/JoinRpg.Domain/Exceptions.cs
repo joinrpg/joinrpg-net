@@ -191,6 +191,16 @@ public class ParentCommentNotFoundException(int parentCommentId) : JoinRpgEntity
     public int ParentCommentId { get; } = parentCommentId;
 }
 
+/// <summary>
+/// Ответ на скрытый от игрока комментарий просят сделать видимым игроку (ADR026 §5): игрок увидел бы
+/// ответ на то, чего сам не видит. Отказ, а не молчаливое скрытие ответа.
+/// </summary>
+public class VisibleReplyToHiddenCommentException(int parentCommentId)
+    : JoinRpgBaseException($"Reply to comment {parentCommentId} hidden from player can't be visible to player")
+{
+    public int ParentCommentId { get; } = parentCommentId;
+}
+
 public class JoinRpgAccountOperationFailedException(string message) : JoinRpgBaseException(message) { }
 
 public class JoinRpgProjectMisconfiguredException(ProjectIdentification projectId, string message) : JoinRpgProjectException(projectId, message);

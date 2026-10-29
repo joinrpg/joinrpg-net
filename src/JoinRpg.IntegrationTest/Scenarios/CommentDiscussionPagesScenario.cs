@@ -100,7 +100,7 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
     /// отложенным <c>Select</c> (<c>CommentViewModel.ChildComments</c>) уже при рендере, после
     /// <c>UpdateReadCommentWatermark</c> в <c>ClaimController.ShowClaim</c>. Тест это не подтвердил —
     /// ответ помечен новым. Коллекция отметок <c>Discussion.Watermarks</c> загружается ещё до
-    /// обновления (проверкой «есть ли непрочитанное»), а отметку <c>ClaimService</c> пишет в другом
+    /// обновления (проверкой «есть ли непрочитанное»), а отметку сервис (сейчас <c>ICommentDiscussionService</c>) пишет в другом
     /// транзиентном <c>MyDbContext</c> — граф заявки её не видит. С шага 3 ответы строятся сразу,
     /// вместе с корнями, и от раздельных контекстов это больше не зависит. Тест фиксирует поведение, которое
     /// должен сохранить перевод страницы на доменный снимок, где «новое» считается до обновления отметки.
@@ -319,7 +319,7 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
         string text,
         bool isVisibleToPlayer = true)
         => factory.Services.RunAsAsync(authorId, sp =>
-            sp.GetRequiredService<IClaimService>().AddComment(claimId, parentCommentId, isVisibleToPlayer, text));
+            sp.AddClaimComment(claimId, ToCommentId(parentCommentId), isVisibleToPlayer, text));
 
     private Task AddForumComment(
         UserIdentification authorId,
@@ -328,7 +328,9 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
         string text,
         bool isVisibleToPlayer = true)
         => factory.Services.RunAsAsync(authorId, sp =>
-            sp.GetRequiredService<IForumService>().AddComment(threadId, parentCommentId, isVisibleToPlayer, text));
+            sp.AddThreadComment(threadId, ToCommentId(parentCommentId), isVisibleToPlayer, text));
+
+    private static CommentId? ToCommentId(int? commentId) => commentId is int id ? new CommentId(id) : null;
 
     private int GetClaimDiscussionId(ClaimIdentification claimId)
     {

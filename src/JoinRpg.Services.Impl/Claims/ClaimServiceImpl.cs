@@ -8,14 +8,17 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
+using JoinRpg.Services.Impl.Comments;
 using JoinRpg.Services.Impl.Projects;
 
 namespace JoinRpg.Services.Impl.Claims;
 
 /// <summary>
 /// Сервис заявок. После миграции на <see cref="ICharacterPropsService"/> (ADR014) базового класса у
-/// него нет: почти всё делается внутри <c>ChangeClaim</c>, а трём немигрированным методам хватает
-/// репозиториев, взятых напрямую из <see cref="IUnitOfWork"/>.
+/// него нет: почти всё делается внутри <c>ChangeClaim</c>, а немигрированным методам хватает
+/// репозиториев, взятых напрямую из <see cref="IUnitOfWork"/>. Отметка прочтения и сокрытие
+/// комментария — операции обсуждения, а не заявки (ADR014 §8), и живут в
+/// <c>CommentDiscussionServiceImpl</c> (ADR026 §5).
 /// </summary>
 internal class ClaimServiceImpl(
     IUnitOfWork unitOfWork,
@@ -27,16 +30,14 @@ internal class ClaimServiceImpl(
     IImpersonateAccessor impersonateAccessor,
     UserFieldValidator userFieldValidator,
     IFieldSetupService fieldSetupService
-    ) : IClaimService
+    ) : IClaimService, IClaimCommentOperation
 {
     // Репозитории берутся из UnitOfWork, а не из DI: MyDbContext транзиентен, и DI-экземпляр
     // работал бы с другим контекстом, чем SaveChangesAsync этого сервиса.
     private readonly Lazy<IUserRepository> userRepository = new(unitOfWork.GetUsersRepository);
-    private readonly Lazy<IForumRepository> forumRepository = new(unitOfWork.GetForumRepository);
     private readonly Lazy<IClaimsRepository> claimsRepository = new(unitOfWork.GetClaimsRepository);
 
     private IUserRepository UserRepository => userRepository.Value;
-    private IForumRepository ForumRepository => forumRepository.Value;
     private IClaimsRepository ClaimsRepository => claimsRepository.Value;
 
     // Именно ChangeClaimAsync: у ChangeClaim есть перегрузка Func<ctx, TResult>, и async-лямбда
@@ -291,6 +292,10 @@ internal class ClaimServiceImpl(
     /// Единственная claim-операция с <see cref="ProjectActiveRequirement.AllowArchived"/>: по ADR014
     /// комментирование в архивном проекте остаётся разрешённым — обсуждение игры продолжается после
     /// её конца, и форма комментария в UI намеренно не спрятана.
+    /// Снаружи вызывается только через <see cref="ICommentDiscussionService"/> (ADR026 §5): общие
+    /// правила обсуждения — родитель из этого обсуждения, видимый ответ на скрытый, скрытие только
+    /// мастером — проверяет он. Проверки родителя здесь не дубль: у не-мастера сервис их пропускает,
+    /// чтобы они шли после проверки доступа.
     /// </remarks>
     public Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText)
         => characterPropsService.ChangeClaim(
@@ -1056,71 +1061,6 @@ internal class ClaimServiceImpl(
                     .Decorate(notification => notification with { AnotherCharacterId = oldCharacterId });
             });
 
-    /// <summary>
-    /// Отметка «прочитано до такого-то комментария».
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <b>Намеренно не мигрирована на <c>ICharacterPropsService</c></b> (ADR014). Метод работает не с
-    /// заявкой, а с дискуссией: та же отметка ставится и на форумных тредах, у которых заявки нет
-    /// вовсе. Натягивать на неё агрегат персонажа означало бы требовать <c>ClaimIdentification</c>
-    /// там, где его может не существовать, — и либо завести второй путь для форума, либо потерять
-    /// отметку на форуме.
-    /// </para>
-    /// <para>
-    /// По требованиям ADR014 это <c>AllowArchived</c> (отметка «прочитано» — по смыслу чтение), и
-    /// именно так метод себя и ведёт: проверки активности здесь нет. Отсутствие проверки доступа —
-    /// известная дыра из списка «что сознательно не чиним».
-    /// </para>
-    /// <para>
-    /// Из базовых классов метод не берёт ничего: <c>DbContext</c> и текущий пользователь приходят
-    /// из собственных зависимостей сервиса, поэтому будущее удаление <c>ClaimImplBase</c> ему не
-    /// мешает.
-    /// </para>
-    /// </remarks>
-    public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
-    {
-        // Отметку прочтения пишет просмотр заявки, поэтому в заблокированном проекте (ADR023) не бросаем,
-        // а молча не пишем: просмотр должен работать, а строки в проекте на восстановлении — не появляться.
-        if ((await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).ProjectStatus == ProjectLifecycleStatus.Blocked)
-        {
-            return;
-        }
-
-        var currentUserId = currentUserAccessor.UserId;
-        var watermarks =
-          unitOfWork.GetDbSet<ReadCommentWatermark>()
-            .Where(w => w.CommentDiscussionId == commentDiscussionId && w.UserId == currentUserId)
-            .OrderByDescending(wm => wm.ReadCommentWatermarkId)
-            .ToList();
-
-        //Sometimes watermarks can duplicate. If so, let's remove them.
-        foreach (var wm in watermarks.Skip(1))
-        {
-            _ = unitOfWork.GetDbSet<ReadCommentWatermark>().Remove(wm);
-        }
-
-        var watermark = watermarks.FirstOrDefault();
-
-        if (watermark == null)
-        {
-            watermark = new ReadCommentWatermark()
-            {
-                CommentDiscussionId = commentDiscussionId,
-                ProjectId = projectId,
-                UserId = currentUserId,
-            };
-            _ = unitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
-        }
-
-        if (watermark.CommentId > maxCommentId)
-        {
-            return;
-        }
-        watermark.CommentId = maxCommentId;
-        await unitOfWork.SaveChangesAsync();
-    }
-
     public Task SetResponsible(ClaimIdentification claimId, UserIdentification responsibleMasterId)
         => characterPropsService.ChangeClaimAsync(
             claimId,
@@ -1195,56 +1135,6 @@ internal class ClaimServiceImpl(
                     CommentExtraAction.OnHoldByMaster,
                     ClaimOperationType.MasterVisibleChange);
             });
-
-    /// <summary>
-    /// Сокрытие комментария от игрока.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <b>Намеренно не мигрировано на <c>ICharacterPropsService</c></b> (ADR014) — по той же причине,
-    /// что и <see cref="UpdateReadCommentWatermark"/>: операция работает с комментарием в дискуссии,
-    /// а дискуссия может быть форумной. Модерация форума — не мутация агрегата персонажа, и
-    /// требовать здесь <c>ClaimIdentification</c> было бы неправдой о предметной области.
-    /// </para>
-    /// <para>
-    /// По ADR014 это <c>AllowArchived</c>: модерация должна работать всюду, где работает
-    /// комментирование, а комментирование в архивном проекте разрешено. Проверки активности здесь
-    /// нет — то есть требование уже выполнено.
-    /// </para>
-    /// <para>
-    /// Права проверяются по метаданным проекта (<c>ProjectInfo.HasMasterAccess</c>), а не через
-    /// <c>LoadClaimAs*</c>, поэтому будущее удаление <c>ClaimImplBase</c> методу не мешает.
-    /// </para>
-    /// </remarks>
-    public async Task ConcealComment(int projectId,
-        int commentId,
-        int commentDiscussionId)
-    {
-        var discussion = await ForumRepository.GetDiscussionByComment(projectId, commentId);
-        var comment = discussion?.Comments.FirstOrDefault(coment => coment.CommentId == commentId);
-
-        if (discussion is null || comment is null)
-        {
-            throw new JoinRpgEntityNotFoundException(commentId, nameof(Comment));
-        }
-
-        var childComments = discussion.Comments.Where(c => c.ParentCommentId == commentId);
-
-        // Права — по ProjectInfo, а не по comment.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
-        // Скрывать комментарии можно и в архиве (ADR014), но не в заблокированном проекте (ADR023).
-        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(projectId))).EnsureNotBlocked();
-
-        if (projectInfo.HasMasterAccess(currentUserAccessor) && !childComments.Any() &&
-            comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
-        {
-            comment.IsVisibleToPlayer = false;
-            await unitOfWork.SaveChangesAsync();
-        }
-        else
-        {
-            throw new JoinRpgConcealCommentException();
-        }
-    }
 
     /// <summary>
     /// Игрок разрешает доступ к чувствительным данным. Ни комментария, ни уведомления здесь нет —

@@ -1,28 +1,26 @@
-using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
-using JoinRpg.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Claims.Comments;
 
 namespace JoinRpg.WebPortal.Managers.Claims;
 
+/// <summary>
+/// Комментарий к заявке из острова (<c>FinanceModerationButton</c>). Запрос — в терминах заявки, а
+/// запись идёт через общий вход обсуждения (ADR026 §5): права и правила, включая «скрыть может только
+/// мастер», проверяет он.
+/// </summary>
 internal class ClaimCommentViewService(
-    IClaimService claimService,
-    IProjectMetadataRepository projectMetadataRepository,
-    ICurrentUserAccessor currentUserAccessor) : IClaimCommentClient
+    ICommentDiscussionService commentDiscussionService,
+    IClaimInfoRepository claimInfoRepository) : IClaimCommentClient
 {
     public async Task AddComment(AddClaimCommentRequest request)
     {
-        if (!request.IsVisibleToPlayer)
-        {
-            // Скрыть комментарий от игрока может только мастер — как в форме комментария (ForumController)
-            var projectInfo = await projectMetadataRepository.GetProjectMetadata(request.ClaimId.ProjectId);
-            _ = projectInfo.RequestMasterAccess(currentUserAccessor);
-        }
+        var claim = await claimInfoRepository.GetClaimInCharacterOrDefault(request.ClaimId)
+            ?? throw new JoinRpgEntityNotFoundException(request.ClaimId.ClaimId, nameof(ClaimIdentification));
 
-        await claimService.AddComment(
-            request.ClaimId,
-            request.ParentCommentId?.CommentId,
+        await commentDiscussionService.AddComment(
+            claim.Claim.CommentDiscussionId,
+            request.ParentCommentId is { } parent ? new CommentId(parent.CommentId) : null,
             request.IsVisibleToPlayer,
             request.CommentText);
     }

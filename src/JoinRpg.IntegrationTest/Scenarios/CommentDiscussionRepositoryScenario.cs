@@ -92,10 +92,10 @@ public class CommentDiscussionRepositoryScenario(JoinApplicationFactory factory)
         var discussionId = new CommentDiscussionId(GetClaimDiscussionId(claimId));
 
         await factory.Services.RunAsAsync(masterId, sp =>
-            sp.GetRequiredService<IClaimService>().AddComment(claimId, parentCommentId: null, isVisibleToPlayer: false, "Скрытый комментарий"));
+            sp.AddClaimComment(claimId, parentCommentId: null, isVisibleToPlayer: false, "Скрытый комментарий"));
         var hiddenId = GetCommentId(discussionId, "Скрытый комментарий");
         await factory.Services.RunAsAsync(masterId, sp =>
-            sp.GetRequiredService<IClaimService>().AddComment(claimId, hiddenId.Value, isVisibleToPlayer: false, "Ответ на скрытый"));
+            sp.AddClaimComment(claimId, hiddenId, isVisibleToPlayer: false, "Ответ на скрытый"));
         var replyId = GetCommentId(discussionId, "Ответ на скрытый");
 
         using var scope2 = factory.Services.CreateScope();
@@ -158,7 +158,7 @@ public class CommentDiscussionRepositoryScenario(JoinApplicationFactory factory)
         var threadId = await CreateThreadAsync(masterId, projectId, hideFromUser: false);
         var discussionId = new CommentDiscussionId(GetThreadDiscussionId(threadId));
         await factory.Services.RunAsAsync(masterId, sp =>
-            sp.GetRequiredService<IForumService>().AddComment(threadId, parentCommentId: null, isVisibleToPlayer: true, "Второй"));
+            sp.AddThreadComment(threadId, parentCommentId: null, isVisibleToPlayer: true, "Второй"));
         var firstId = GetCommentId(discussionId, "Первый комментарий в теме");
         var secondId = GetCommentId(discussionId, "Второй");
 

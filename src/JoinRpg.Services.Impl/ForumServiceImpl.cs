@@ -4,6 +4,7 @@ using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.Services.Impl.Claims;
+using JoinRpg.Services.Impl.Comments;
 
 namespace JoinRpg.Services.Impl;
 
@@ -12,7 +13,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
                                 ForumNotificationService forumNotificationService,
                                 IProjectMetadataRepository projectMetadataRepository,
                                 CommentHelper commentHelper
-    ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IForumService
+    ) : DbServiceImplBase(unitOfWork, currentUserAccessor), IForumService, IForumCommentOperation
 {
     public async Task<ForumThreadIdentification> CreateThread(CharacterGroupIdentification characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
     {
@@ -62,6 +63,12 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         return forumThread.GetId();
     }
 
+    /// <remarks>
+    /// Снаружи вызывается только через <see cref="ICommentDiscussionService"/> (ADR026 §5): общие
+    /// правила обсуждения — родитель из этого обсуждения, видимый ответ на скрытый, скрытие только
+    /// мастером — проверяет он. Проверки родителя здесь не дубль: у не-мастера сервис их пропускает,
+    /// чтобы они шли после проверки доступа. Раньше видимый ответ на скрытый здесь молча становился скрытым.
+    /// </remarks>
     public async Task AddComment(ForumThreadIdentification forumThreadId, int? parentCommentId, bool isVisibleToPlayer, string commentText)
     {
         var (forumThread, projectInfo) = await GetForumThread(forumThreadId);
@@ -72,13 +79,16 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
                 ?? throw new ParentCommentNotFoundException(parentId)
             : null;
 
-        var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
+        if (isVisibleToPlayer && parentComment?.IsVisibleToPlayer == false)
+        {
+            throw new VisibleReplyToHiddenCommentException(parentComment.CommentId);
+        }
 
         var comment = commentHelper.CreateCommentForForumThread(forumThread,
             Now,
             commentText,
             projectInfo,
-            GetOperationType(!visibleToPlayerUpdated, projectInfo));
+            GetOperationType(!isVisibleToPlayer, projectInfo));
 
         comment.Parent = parentComment;
 

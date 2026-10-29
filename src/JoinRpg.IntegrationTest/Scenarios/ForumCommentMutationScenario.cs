@@ -81,7 +81,7 @@ public class ForumCommentMutationScenario(JoinApplicationFactory factory) : ICla
 
         token = await client.GetAntiforgeryTokenAsync(threadUrl);
         var concealed = await client.PostFormAsync(
-            $"{project}/forums/concealcomment?commentId={commentId}&commentDiscussionId={discussionId}",
+            $"{project}/forums/concealcomment?commentId={commentId}",
             token);
         concealed.StatusCode.ShouldBe(HttpStatusCode.Found);
 
@@ -90,7 +90,7 @@ public class ForumCommentMutationScenario(JoinApplicationFactory factory) : ICla
 
     /// <summary>
     /// Та же ручка <c>forums/createcomment</c> обслуживает и обсуждение заявки — там комментарий уходит
-    /// в <see cref="IClaimService.AddComment"/>, и на проде этот путь догружал свой набор таблиц
+    /// в операцию заявки (через <see cref="ICommentDiscussionService.AddComment"/>), и на проде этот путь догружал свой набор таблиц
     /// (<c>Claims</c>, <c>FinanceOperations</c>, #4986).
     /// </summary>
     [Fact]

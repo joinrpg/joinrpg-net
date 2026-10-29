@@ -605,7 +605,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
                 ClaimDenialReason.NotSuitable,
                 "Роль уже занята",
                 deleteCharacter: false);
-            await claimService.AddComment(
+            await sp.AddClaimComment(
                 claims[2], parentCommentId: null, isVisibleToPlayer: true, "Обсуждаем");
             await claimService.OnHoldByMaster(claims[3], "Пока подумаем");
 

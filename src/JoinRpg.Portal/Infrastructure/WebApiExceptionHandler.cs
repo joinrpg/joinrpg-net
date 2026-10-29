@@ -56,6 +56,7 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
         ParentCommentNotFoundException => (StatusCodes.Status404NotFound, "Комментарий, на который вы отвечаете, не найден. Обновите страницу и попробуйте ещё раз."),
         // Текст отказа собирается в админском сервисе и уже на русском
         UserAdminActionRefusedException refused => (StatusCodes.Status400BadRequest, refused.Message),
+        VisibleReplyToHiddenCommentException => (StatusCodes.Status409Conflict, "Ответ на комментарий, скрытый от игрока, тоже должен быть скрыт от игрока"),
         _ => null,
     };
 }

@@ -69,9 +69,8 @@ public class RestoredClaimCommentsScenario(JoinApplicationFactory factory)
         // 2. Эталон — доменное добавление видимого комментария мастером; и комментарий в чужой заявке
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
-            var claimService = sp.GetRequiredService<IClaimService>();
-            await claimService.AddComment(claimId, parentCommentId: null, isVisibleToPlayer: true, ReferenceText);
-            await claimService.AddComment(otherClaimId, parentCommentId: null, isVisibleToPlayer: true, "Чужая заявка");
+            await sp.AddClaimComment(claimId, parentCommentId: null, isVisibleToPlayer: true, ReferenceText);
+            await sp.AddClaimComment(otherClaimId, parentCommentId: null, isVisibleToPlayer: true, "Чужая заявка");
         });
 
         // 3. Дырка в счётчике комментариев (как после сдвига счётчиков, #5460); проект «с майскими датами»
@@ -294,11 +293,10 @@ public class RestoredClaimCommentsScenario(JoinApplicationFactory factory)
 
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
-            var claimService = sp.GetRequiredService<IClaimService>();
-            await claimService.AddComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Свежий");
-            await claimService.AddComment(claimId, parentCommentId: null, isVisibleToPlayer: false, "Старый");
-            await claimService.AddComment(neighbourClaimId, parentCommentId: null, isVisibleToPlayer: true, "Соседняя заявка");
-            await claimService.AddComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
+            await sp.AddClaimComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Свежий");
+            await sp.AddClaimComment(claimId, parentCommentId: null, isVisibleToPlayer: false, "Старый");
+            await sp.AddClaimComment(neighbourClaimId, parentCommentId: null, isVisibleToPlayer: true, "Соседняя заявка");
+            await sp.AddClaimComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
         });
 
         var freshAt = new DateTime(2026, 7, 2, 10, 0, 0, DateTimeKind.Utc);

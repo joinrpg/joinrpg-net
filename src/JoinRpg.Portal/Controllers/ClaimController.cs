@@ -26,6 +26,7 @@ namespace JoinRpg.Portal.Controllers;
 public class ClaimController(
     IProjectRepository ProjectRepository,
     IClaimService claimService,
+    ICommentDiscussionService commentDiscussionService,
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterInfoRepository characterInfoRepository,
@@ -159,8 +160,8 @@ public class ClaimController(
         if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
         {
             await
-              claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
-                claim.CommentDiscussion.Comments.Max(c => c.CommentId)).ConfigureAwait(false);
+              commentDiscussionService.UpdateReadCommentWatermark(new CommentDiscussionId(claim.CommentDiscussion.CommentDiscussionId),
+                new CommentId(claim.CommentDiscussion.Comments.Max(c => c.CommentId))).ConfigureAwait(false);
         }
 
         return View("Edit", claimViewModel);

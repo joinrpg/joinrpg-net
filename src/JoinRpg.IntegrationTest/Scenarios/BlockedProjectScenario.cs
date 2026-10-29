@@ -129,7 +129,7 @@ public class BlockedProjectScenario(JoinApplicationFactory factory) : IClassFixt
 
         await factory.Services.RunAsAsync(masterId, async sp =>
             _ = await Should.ThrowAsync<ProjectBlockedException>(() =>
-                sp.GetRequiredService<IForumService>().AddComment(
+                sp.AddThreadComment(
                     threadId,
                     parentCommentId: null,
                     isVisibleToPlayer: true,

@@ -14,9 +14,6 @@ public interface IClaimService
 
     Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, FieldLayerContainer fields);
 
-    /// <summary>Обычный комментарий к заявке.</summary>
-    Task AddComment(ClaimIdentification claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText);
-
     /// <summary>
     /// Модерация финансовой операции, предложенной в комментарии <paramref name="parentCommentId"/>:
     /// одобрение или отклонение. Сопровождается комментарием мастера — всегда видимым игроку и
@@ -33,8 +30,6 @@ public interface IClaimService
     Task RestoreByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId);
 
     Task MoveByMaster(ClaimIdentification claimId, string commentText, CharacterIdentification characterId);
-
-    Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId);
 
     Task SaveFieldsFromClaim(ClaimIdentification claimId, FieldLayerContainer fieldsToSet);
 
@@ -68,7 +63,6 @@ public interface IClaimService
     /// <param name="claimId">Database Id of a claim</param>
     Task LeaveAccommodationGroupAsync(int projectId, int claimId);
 
-    Task ConcealComment(int projectId, int commentId, int commentDiscussionId);
     Task AllowSensitiveData(ClaimIdentification projectId);
     Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed);
     Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId);

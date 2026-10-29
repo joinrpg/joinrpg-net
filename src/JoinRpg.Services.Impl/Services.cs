@@ -3,6 +3,7 @@ using JoinRpg.Services.Email;
 using JoinRpg.Services.Impl.Accommodation;
 using JoinRpg.Services.Impl.Characters;
 using JoinRpg.Services.Impl.Claims;
+using JoinRpg.Services.Impl.Comments;
 using JoinRpg.Services.Impl.Projects;
 using JoinRpg.Services.Impl.Projects.Create;
 using JoinRpg.Services.Impl.Projects.Metadata;
@@ -73,6 +74,9 @@ public static class Services
             .AddTransient<IAccommodationTypeService, AccommodationTypeService>()
             .AddTransient<IPaymentsService, PaymentsService>()
             .AddTransient<CommentHelper>()
+            // Операции заявки и форума (IClaimCommentOperation, IForumCommentOperation) регистрируются
+            // вместе с ClaimServiceImpl и ForumServiceImpl в GetTypes — как все их интерфейсы.
+            .AddTransient<ICommentDiscussionService, CommentDiscussionServiceImpl>()
             .AddTransient<IMassProjectEmailService, MassProjectEmailService>()
             .AddTransient<IClaimNotificationService, ClaimNotificationService>()
             .AddTransient<IClaimRestoreService, ClaimRestoreService>()
