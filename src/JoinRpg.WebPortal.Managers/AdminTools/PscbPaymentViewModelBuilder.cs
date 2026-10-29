@@ -1,6 +1,6 @@
 using System.Globalization;
-using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.XGameApi.Contract.Pscb;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -275,15 +275,17 @@ internal static class PscbPaymentViewModelBuilder
     /// Боевой путь берёт единственный **активный** онлайн-тип через <c>SingleOrDefault</c>. Для
     /// восстановления этого мало: платёж случился, когда онлайн-оплата в проекте была включена,
     /// и тип мог быть с тех пор удалён, — а удаляется тип оплаты только мягко, флагом
-    /// <c>IsActive</c>. Поэтому единственный выключенный тип подходит: деньги возвращаются туда,
-    /// где они были. Отказывает только неоднозначность — несколько активных типов, либо несколько
-    /// выключенных при ни одном активном.
+    /// <c>IsActive</c> (<see cref="PaymentTypeInfo.Enabled"/> в метаданных проекта). Поэтому
+    /// единственный выключенный тип подходит: деньги возвращаются туда, где они были. Отказывает
+    /// только неоднозначность — несколько активных типов, либо несколько выключенных при ни одном
+    /// активном. На входе — типы оплаты проекта уже отобранные вызывающим по
+    /// <see cref="PaymentTypeKind.Online"/>; <c>null</c> означает, что метаданных проекта нет.
     /// </remarks>
-    public static (int? PaymentTypeId, string? Reason) ChooseOnlinePaymentType(ProjectPaymentsReadiness? readiness)
+    public static (PaymentTypeIdentification? PaymentTypeId, string? Reason) ChooseOnlinePaymentType(IReadOnlyCollection<PaymentTypeInfo>? onlinePaymentTypes)
     {
-        List<OnlinePaymentType> all = readiness?.OnlinePaymentTypes.ToList() ?? [];
+        List<PaymentTypeInfo> all = onlinePaymentTypes?.ToList() ?? [];
 
-        var active = all.Where(paymentType => paymentType.IsActive).ToList();
+        var active = all.Where(paymentType => paymentType.Enabled).ToList();
         if (active.Count == 1)
         {
             return (active[0].PaymentTypeId, null);

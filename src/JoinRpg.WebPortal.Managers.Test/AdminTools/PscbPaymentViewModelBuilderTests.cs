@@ -1,6 +1,8 @@
 using System.Globalization;
-using JoinRpg.Data.Interfaces.Finances;
+using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.WebPortal.Managers.AdminTools;
 using JoinRpg.XGameApi.Contract.Pscb;
@@ -322,17 +324,17 @@ public class PscbPaymentViewModelBuilderTests
     [Fact]
     public void ChoosesTheSingleOnlinePaymentTypeEvenWhenItIsDisabled()
     {
-        var active = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness(new OnlinePaymentType(3, IsActive: true)));
-        active.PaymentTypeId.ShouldBe(3);
+        var active = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness(OnlinePaymentType(3, isActive: true)));
+        active.PaymentTypeId.ShouldBe(new PaymentTypeIdentification(7, 3));
         active.Reason.ShouldBeNull();
 
-        var disabled = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness(new OnlinePaymentType(3, IsActive: false)));
-        disabled.PaymentTypeId.ShouldBe(3);
+        var disabled = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness(OnlinePaymentType(3, isActive: false)));
+        disabled.PaymentTypeId.ShouldBe(new PaymentTypeIdentification(7, 3));
         disabled.Reason.ShouldBeNull();
 
         var mixed = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
-            Readiness(new OnlinePaymentType(3, IsActive: true), new OnlinePaymentType(4, IsActive: false)));
-        mixed.PaymentTypeId.ShouldBe(3);
+            Readiness(OnlinePaymentType(3, isActive: true), OnlinePaymentType(4, isActive: false)));
+        mixed.PaymentTypeId.ShouldBe(new PaymentTypeIdentification(7, 3));
         mixed.Reason.ShouldBeNull();
     }
 
@@ -343,23 +345,36 @@ public class PscbPaymentViewModelBuilderTests
     public void RefusesToChooseBetweenSeveralOnlinePaymentTypes()
     {
         PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
-                Readiness(new OnlinePaymentType(3, IsActive: true), new OnlinePaymentType(4, IsActive: true)))
+                Readiness(OnlinePaymentType(3, isActive: true), OnlinePaymentType(4, isActive: true)))
             .Reason.ShouldBe("в проекте несколько активных типов онлайн-оплаты");
 
         PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
-                Readiness(new OnlinePaymentType(3, IsActive: false), new OnlinePaymentType(4, IsActive: false)))
+                Readiness(OnlinePaymentType(3, isActive: false), OnlinePaymentType(4, isActive: false)))
             .Reason.ShouldBe("в проекте несколько типов онлайн-оплаты и ни один не активен");
 
         PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness())
             .Reason.ShouldBe("в проекте нет типа онлайн-оплаты");
 
-        // Проекта нет в ответе репозитория — восстанавливать некуда, как и при пустом наборе типов.
+        // Метаданных проекта нет — восстанавливать некуда, как и при пустом наборе типов.
         PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(null)
             .Reason.ShouldBe("в проекте нет типа онлайн-оплаты");
     }
 
-    private static ProjectPaymentsReadiness Readiness(params OnlinePaymentType[] paymentTypes)
-        => new(7, IsBlocked: false, paymentTypes);
+    /// <summary>
+    /// Набор онлайн-типов проекта 7 — ровно то, что сервис передаёт выбору, отфильтровав
+    /// метаданные проекта по <see cref="PaymentTypeKind.Online"/>.
+    /// </summary>
+    private static PaymentTypeInfo[] Readiness(params PaymentTypeInfo[] paymentTypes)
+        => paymentTypes;
+
+    private static PaymentTypeInfo OnlinePaymentType(int paymentTypeId, bool isActive)
+        => new(
+            PaymentTypeKind.Online,
+            isActive,
+            new UserInfoHeader(new UserIdentification(1), new UserDisplayName("Мастер", null), Avatar: null),
+            new PaymentTypeIdentification(7, paymentTypeId),
+            "Онлайн",
+            IsDefault: false);
 
     /// <summary>
     /// Исход сверки (ADR027): строка банка плюс то, что нашлось у нас по <c>orderId</c>.

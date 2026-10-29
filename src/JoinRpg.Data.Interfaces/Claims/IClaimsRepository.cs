@@ -79,5 +79,5 @@ public interface IClaimsRepository : IDisposable
 /// Заявка игрока в проекте: кто и какая заявка.
 /// </summary>
 /// <param name="UserId">Игрок (<c>Claim.PlayerUserId</c>).</param>
-/// <param name="ClaimId">Номер заявки.</param>
-public record PlayerClaimId(int UserId, int ClaimId);
+/// <param name="ClaimId">Идентификатор заявки.</param>
+public record PlayerClaimId(UserIdentification UserId, ClaimIdentification ClaimId);

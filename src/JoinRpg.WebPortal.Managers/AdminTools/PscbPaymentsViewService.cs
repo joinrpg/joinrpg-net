@@ -48,6 +48,7 @@ internal class PscbPaymentsViewService(
     IUserRepository userRepository,
     IFinanceOperationsRepository financeOperationsRepository,
     IClaimsRepository claimsRepository,
+    IProjectMetadataRepository projectMetadataRepository,
     ILogger<PscbPaymentsViewService> logger) : IPscbPaymentsClient
 {
     public async Task<PscbPaymentsListResult> GetPayments(PscbPaymentsQuery query)
@@ -166,9 +167,9 @@ internal class PscbPaymentsViewService(
     /// </remarks>
     private sealed class RowResolution
     {
-        public Dictionary<PscbPaymentListRow, int> UserIds { get; } = [];
+        public Dictionary<PscbPaymentListRow, UserIdentification> UserIds { get; } = [];
 
-        public Dictionary<PscbPaymentListRow, int> ProjectIds { get; } = [];
+        public Dictionary<PscbPaymentListRow, ProjectIdentification> ProjectIds { get; } = [];
     }
 
     /// <summary>
@@ -191,7 +192,7 @@ internal class PscbPaymentsViewService(
             if (ResolveUserId(row, existingIds, idsByEmail) is { } userId)
             {
                 row.UserUrl = uriService.Get(new UserLinkable(userId));
-                resolution.UserIds[row] = userId;
+                resolution.UserIds[row] = new UserIdentification(userId);
                 continue;
             }
 
@@ -302,7 +303,7 @@ internal class PscbPaymentsViewService(
             if (projects.TryGetValue(name, out var project) && project is not null)
             {
                 row.ProjectUrl = project.Url;
-                resolution.ProjectIds[row] = project.ProjectId;
+                resolution.ProjectIds[row] = new ProjectIdentification(project.ProjectId);
                 continue;
             }
 
@@ -459,28 +460,27 @@ internal class PscbPaymentsViewService(
         }
 
         var claims = await LoadFirstClaimIdsAsync(candidates, resolution);
-        var readiness = await LoadReadinessAsync(candidates, resolution, operations);
+        var projects = await LoadProjectInfosAsync(candidates, resolution, operations);
 
         Dictionary<PscbPaymentListRow, RowRestorePlan> plans = [];
         foreach (var row in candidates)
         {
             var matched = MatchedOperationOf(row, operations);
-            row.RestoreBlockReason = BlockReason(row, matched, resolution, claims, readiness);
+            row.RestoreBlockReason = BlockReason(row, matched, resolution, claims, projects);
 
             // Заявка строки с пропущенным возвратом уже проставлена сверкой — она у операции платежа.
             if (row.MatchState == PscbPaymentMatchState.Lost
                 && resolution.ProjectIds.TryGetValue(row, out var projectId)
                 && resolution.UserIds.TryGetValue(row, out var userId)
-                && claims.TryGetValue((projectId, userId), out var claimId))
+                && claims.TryGetValue((projectId, userId), out var lostClaimId))
             {
-                var lostClaimId = new ClaimIdentification(projectId, claimId);
                 row.ClaimUrl = claimUri.GetUri(lostClaimId).AbsoluteUri;
 
                 // Причина отсутствует ровно тогда, когда тип оплаты выбран однозначно.
                 if (row.RestoreBlockReason is null
-                    && PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(readiness.GetValueOrDefault(projectId)).PaymentTypeId is { } paymentTypeId)
+                    && PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(OnlinePaymentTypesOf(projects.GetValueOrDefault(projectId))).PaymentTypeId is { } paymentTypeId)
                 {
-                    plans[row] = new RowRestorePlan(lostClaimId, new PaymentTypeIdentification(projectId, paymentTypeId), RefundedOperationDate: null);
+                    plans[row] = new RowRestorePlan(lostClaimId, paymentTypeId, RefundedOperationDate: null);
                 }
             }
             else if (row.MatchState == PscbPaymentMatchState.RefundMissing
@@ -489,7 +489,7 @@ internal class PscbPaymentsViewService(
             {
                 plans[row] = new RowRestorePlan(
                     matched.OperationId.ClaimId,
-                    new PaymentTypeIdentification(matched.OperationId.ProjectId, refundedPaymentTypeId),
+                    refundedPaymentTypeId,
                     matched.OperationDate);
             }
         }
@@ -501,19 +501,22 @@ internal class PscbPaymentsViewService(
     /// По первой заявке на пару (проект, плательщик): заявок в любом статусе, выбирается наименьший
     /// номер. Один запрос на проект, а не на строку.
     /// </summary>
-    private async Task<IReadOnlyDictionary<(int ProjectId, int UserId), int>> LoadFirstClaimIdsAsync(
+    private async Task<IReadOnlyDictionary<(ProjectIdentification ProjectId, UserIdentification UserId), ClaimIdentification>> LoadFirstClaimIdsAsync(
         IReadOnlyCollection<PscbPaymentListRow> candidates,
         RowResolution resolution)
     {
-        var firstClaims = new Dictionary<(int ProjectId, int UserId), int>();
+        var firstClaims = new Dictionary<(ProjectIdentification ProjectId, UserIdentification UserId), ClaimIdentification>();
         foreach (var group in ResolvedPairs(candidates, resolution).GroupBy(pair => pair.ProjectId))
         {
-            var userIds = group.Select(pair => new UserIdentification(pair.UserId)).Distinct().ToList();
-            foreach (var claim in await claimsRepository.GetClaimIdsForPlayers(new ProjectIdentification(group.Key), userIds))
+            var userIds = group.Select(pair => pair.UserId).Distinct().ToList();
+            foreach (var claim in await claimsRepository.GetClaimIdsForPlayers(group.Key, userIds))
             {
                 var key = (group.Key, claim.UserId);
                 // Заявок у игрока в проекте бывает несколько; берём наименьший номер, как решил заказчик.
-                firstClaims[key] = Math.Min(firstClaims.GetValueOrDefault(key, int.MaxValue), claim.ClaimId);
+                if (!firstClaims.TryGetValue(key, out var existing) || claim.ClaimId.ClaimId < existing.ClaimId)
+                {
+                    firstClaims[key] = claim.ClaimId;
+                }
             }
         }
 
@@ -521,9 +524,11 @@ internal class PscbPaymentsViewService(
     }
 
     /// <summary>
-    /// Готовность проектов принять восстановленный платёж: блокировка и активные онлайн-типы оплаты.
+    /// Метаданные проектов-кандидатов: блокировка (ADR023) и типы оплаты живут в
+    /// <see cref="ProjectInfo"/>, поэтому готовность проекта принять платёж читается из них.
+    /// Запрос — только когда есть что терять: полностью проведённому списку метаданные не нужны.
     /// </summary>
-    private async Task<IReadOnlyDictionary<int, ProjectPaymentsReadiness>> LoadReadinessAsync(
+    private async Task<IReadOnlyDictionary<ProjectIdentification, ProjectInfo>> LoadProjectInfosAsync(
         IReadOnlyCollection<PscbPaymentListRow> candidates,
         RowResolution resolution,
         IReadOnlyDictionary<int, MatchedOperation> operations)
@@ -533,15 +538,29 @@ internal class PscbPaymentsViewService(
         {
             // У строки с пропущенным возвратом проект определяется по операции платежа, а не по
             // названию из назначения: операция первоисточник.
-            if (MatchedOperationOf(row, operations)?.OperationId.ProjectId.Value is { } operationProjectId)
+            if (MatchedOperationOf(row, operations)?.OperationId.ProjectId is { } operationProjectId)
             {
                 _ = projectIds.Add(operationProjectId);
             }
         }
 
-        return (await financeOperationsRepository.GetPaymentsReadiness([.. projectIds]))
-            .ToDictionary(project => project.ProjectId);
+        Dictionary<ProjectIdentification, ProjectInfo> projects = [];
+        foreach (var projectId in projectIds)
+        {
+            projects[projectId] = await projectMetadataRepository.GetProjectMetadata(projectId);
+        }
+
+        return projects;
     }
+
+    /// <summary>
+    /// Онлайн-типы оплаты проекта из его метаданных. <c>null</c>, когда метаданных нет, —
+    /// для вердикта это неотличимо от «типов нет», и причина отказа та же.
+    /// </summary>
+    private static IReadOnlyCollection<PaymentTypeInfo>? OnlinePaymentTypesOf(ProjectInfo? project)
+        => project is null
+            ? null
+            : [.. project.ProjectFinanceSettings.PaymentTypes.Where(paymentType => paymentType.TypeKind == PaymentTypeKind.Online)];
 
     /// <summary>
     /// Причина, по которой строку нельзя восстановить автоматически, либо <c>null</c> — значит можно.
@@ -552,8 +571,8 @@ internal class PscbPaymentsViewService(
         PscbPaymentListRow row,
         MatchedOperation? matched,
         RowResolution resolution,
-        IReadOnlyDictionary<(int ProjectId, int UserId), int> firstClaims,
-        IReadOnlyDictionary<int, ProjectPaymentsReadiness> readiness)
+        IReadOnlyDictionary<(ProjectIdentification ProjectId, UserIdentification UserId), ClaimIdentification> firstClaims,
+        IReadOnlyDictionary<ProjectIdentification, ProjectInfo> projects)
     {
         if (PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row) is { } bankReason)
         {
@@ -568,7 +587,7 @@ internal class PscbPaymentsViewService(
             {
                 null => "операция платежа не найдена",
                 { PaymentTypeId: null } => "у операции платежа нет типа оплаты",
-                _ => IsBlocked(matched.OperationId.ProjectId.Value, readiness),
+                _ => IsBlocked(matched.OperationId.ProjectId, projects),
             };
         }
 
@@ -582,12 +601,12 @@ internal class PscbPaymentsViewService(
             return "проект не определён";
         }
 
-        if (IsBlocked(projectId, readiness) is { } blocked)
+        if (IsBlocked(projectId, projects) is { } blocked)
         {
             return blocked;
         }
 
-        if (PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(readiness.GetValueOrDefault(projectId)).Reason is { } typeReason)
+        if (PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(OnlinePaymentTypesOf(projects.GetValueOrDefault(projectId))).Reason is { } typeReason)
         {
             return typeReason;
         }
@@ -595,8 +614,12 @@ internal class PscbPaymentsViewService(
         return firstClaims.ContainsKey((projectId, userId)) ? null : "у плательщика нет заявки в проекте";
     }
 
-    private static string? IsBlocked(int projectId, IReadOnlyDictionary<int, ProjectPaymentsReadiness> readiness)
-        => readiness.TryGetValue(projectId, out var project) && project.IsBlocked
+    /// <remarks>
+    /// Та же проверка, что в <see cref="ProjectInfo.EnsureNotBlocked"/>, но булевой формой:
+    /// причина отказа — текст в строке списка, поэтому бросать исключение здесь нельзя.
+    /// </remarks>
+    private static string? IsBlocked(ProjectIdentification projectId, IReadOnlyDictionary<ProjectIdentification, ProjectInfo> projects)
+        => projects.TryGetValue(projectId, out var project) && project.ProjectStatus == ProjectLifecycleStatus.Blocked
             ? "проект заблокирован, его восстанавливают инструментами DRP"
             : null;
 
@@ -610,7 +633,7 @@ internal class PscbPaymentsViewService(
     /// <summary>
     /// Пары (проект, плательщик), которые удалось определить, — по ним идут запросы к базе.
     /// </summary>
-    private static IEnumerable<(int ProjectId, int UserId)> ResolvedPairs(
+    private static IEnumerable<(ProjectIdentification ProjectId, UserIdentification UserId)> ResolvedPairs(
         IReadOnlyCollection<PscbPaymentListRow> rows,
         RowResolution resolution)
         => rows

@@ -10,6 +10,8 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.Interfaces;
+using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -204,13 +206,12 @@ internal sealed class PscbFakeUserRepository : IUserRepository
 }
 
 /// <summary>
-/// База глазами сверки: операции, возвраты и готовность проектов принять платёж.
+/// База глазами сверки: операции и возвраты.
 /// </summary>
 internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsRepository
 {
     private readonly List<ApprovedRefund> refunds = [];
     private readonly List<MatchedOperation> operations = [];
-    private readonly List<ProjectPaymentsReadiness> readiness = [];
 
     /// <summary>
     /// Идентификаторы операций, по которым сервис спрашивал возвраты.
@@ -222,11 +223,6 @@ internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsReposi
     /// </summary>
     public List<int> OperationRequests { get; } = [];
 
-    /// <summary>
-    /// Проекты, по которым сервис спрашивал готовность принять восстановленный платёж.
-    /// </summary>
-    public List<int> ReadinessRequests { get; } = [];
-
     public void AddRefund(int refundedOperationId, DateTime operationDate, int refundCommentId = 9001)
         => refunds.Add(new ApprovedRefund(
             refundedOperationId,
@@ -235,7 +231,7 @@ internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsReposi
 
     /// <summary>
     /// Операция в базе: по умолчанию проведённый онлайн-платёж, то есть то, что сверка
-    /// обязана отличить от потерянного.
+    /// обязана отличить от потерянного. Тип оплаты по умолчанию — №3 в проекте операции.
     /// </summary>
     public void AddOperation(
         int commentId,
@@ -243,49 +239,14 @@ internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsReposi
         FinanceOperationType operationType = FinanceOperationType.Online,
         int projectId = 42,
         int claimId = 7,
-        int? paymentTypeId = 3,
+        PaymentTypeIdentification? paymentTypeId = null,
         DateTime? operationDate = null)
         => operations.Add(new MatchedOperation(
             new FinanceOperationIdentification(projectId, claimId, commentId),
             state,
             operationType,
-            paymentTypeId,
+            paymentTypeId ?? new PaymentTypeIdentification(projectId, 3),
             operationDate ?? new DateTime(2026, 5, 10, 12, 0, 0, DateTimeKind.Utc)));
-
-    /// <summary>
-    /// Проект готов принять восстановленный платёж: не заблокирован, онлайн-тип один и активен.
-    /// </summary>
-    public void AddReadyProject(int projectId, int onlinePaymentTypeId = 3)
-        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, [new OnlinePaymentType(onlinePaymentTypeId, IsActive: true)]));
-
-    public void AddBlockedProject(int projectId)
-        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: true, [new OnlinePaymentType(3, IsActive: true)]));
-
-    public void AddProjectWithoutOnlinePaymentType(int projectId)
-        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, []));
-
-    public void AddProjectWithTwoOnlinePaymentTypes(int projectId)
-        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false,
-            [new OnlinePaymentType(3, IsActive: true), new OnlinePaymentType(4, IsActive: true)]));
-
-    /// <summary>
-    /// Онлайн-оплату в проекте с тех пор выключили (тип оплаты удаляется только мягко) —
-    /// восстановлению это мешать не должно.
-    /// </summary>
-    public void AddProjectWithDisabledOnlinePaymentType(int projectId, int onlinePaymentTypeId = 3)
-        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false, [new OnlinePaymentType(onlinePaymentTypeId, IsActive: false)]));
-
-    public void AddProjectWithTwoDisabledOnlinePaymentTypes(int projectId)
-        => readiness.Add(new ProjectPaymentsReadiness(projectId, IsBlocked: false,
-            [new OnlinePaymentType(3, IsActive: false), new OnlinePaymentType(4, IsActive: false)]));
-
-    public Task<IReadOnlyCollection<ProjectPaymentsReadiness>> GetPaymentsReadiness(IReadOnlyCollection<int> projectIds)
-    {
-        ReadinessRequests.AddRange(projectIds);
-
-        IReadOnlyCollection<ProjectPaymentsReadiness> found = [.. readiness.Where(project => projectIds.Contains(project.ProjectId))];
-        return Task.FromResult(found);
-    }
 
     public Task<IReadOnlyCollection<ApprovedRefund>> GetApprovedRefunds(IReadOnlyCollection<int> refundedOperationIds)
     {
@@ -305,6 +266,127 @@ internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsReposi
 
     public Task<IReadOnlyCollection<FinanceOperationIdentification>> GetUnfinishedOperations(KeySetPagination? pagination = null)
         => throw new NotImplementedException();
+}
+
+/// <summary>
+/// Метаданные проектов для вердикта восстановления: блокировка (ADR023) и типы оплаты.
+/// </summary>
+/// <remarks>
+/// Проект, которого тест явно не завёл, отдаётся незаблокированным и без типов оплаты — так же,
+/// как отсутствие записи в словаре готовности означало «нет типа онлайн-оплаты», когда вердикт
+/// читал его из базы напрямую.
+/// </remarks>
+internal sealed class PscbFakeProjectMetadataRepository : IProjectMetadataRepository
+{
+    private readonly Dictionary<ProjectIdentification, ProjectInfo> projects = [];
+
+    /// <summary>
+    /// Проекты, по которым сервис спрашивал метаданные.
+    /// </summary>
+    public List<int> Requests { get; } = [];
+
+    /// <summary>
+    /// Проект готов принять восстановленный платёж: не заблокирован, онлайн-тип один и активен.
+    /// </summary>
+    public void AddReadyProject(int projectId, int onlinePaymentTypeId = 3)
+        => AddProject(projectId, isBlocked: false, OnlinePaymentType(projectId, onlinePaymentTypeId));
+
+    public void AddBlockedProject(int projectId)
+        => AddProject(projectId, isBlocked: true, OnlinePaymentType(projectId, 3));
+
+    public void AddProjectWithoutOnlinePaymentType(int projectId)
+        => AddProject(projectId, isBlocked: false);
+
+    public void AddProjectWithTwoOnlinePaymentTypes(int projectId)
+        => AddProject(projectId, isBlocked: false,
+            OnlinePaymentType(projectId, 3), OnlinePaymentType(projectId, 4));
+
+    /// <summary>
+    /// Онлайн-оплату в проекте с тех пор выключили (тип оплаты удаляется только мягко) —
+    /// восстановлению это мешать не должно.
+    /// </summary>
+    public void AddProjectWithDisabledOnlinePaymentType(int projectId, int onlinePaymentTypeId = 3)
+        => AddProject(projectId, isBlocked: false, OnlinePaymentType(projectId, onlinePaymentTypeId, enabled: false));
+
+    public void AddProjectWithTwoDisabledOnlinePaymentTypes(int projectId)
+        => AddProject(projectId, isBlocked: false,
+            OnlinePaymentType(projectId, 3, enabled: false), OnlinePaymentType(projectId, 4, enabled: false));
+
+    private void AddProject(int projectId, bool isBlocked, params PaymentTypeInfo[] paymentTypes)
+        => projects[new ProjectIdentification(projectId)] = CreateProjectInfo(new ProjectIdentification(projectId), isBlocked, paymentTypes);
+
+    public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
+    {
+        Requests.Add(projectId.Value);
+        return Task.FromResult(projects.TryGetValue(projectId, out var info)
+            ? info
+            : CreateProjectInfo(projectId, isBlocked: false, []));
+    }
+
+    public Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
+        => throw new NotImplementedException();
+
+    public void PrimeCache(ProjectInfo projectInfo) => throw new NotImplementedException();
+
+    /// <summary>Владелец типов оплаты — метаданные несут его, вердикту он не нужен.</summary>
+    private static readonly UserInfoHeader PaymentTypeOwner =
+        new(new UserIdentification(1), new UserDisplayName("Мастер", null), Avatar: null);
+
+    private static PaymentTypeInfo OnlinePaymentType(int projectId, int paymentTypeId, bool enabled = true)
+        => new(
+            PaymentTypeKind.Online,
+            enabled,
+            PaymentTypeOwner,
+            new PaymentTypeIdentification(projectId, paymentTypeId),
+            "Онлайн",
+            IsDefault: false);
+
+    /// <summary>
+    /// Минимальный <see cref="ProjectInfo"/>: вердикт читает только статус проекта и его типы
+    /// оплаты, остальное заполнено заглушками.
+    /// </summary>
+    private static ProjectInfo CreateProjectInfo(
+        ProjectIdentification projectId,
+        bool isBlocked,
+        IReadOnlyCollection<PaymentTypeInfo> paymentTypes)
+    {
+        var rootGroupId = new CharacterGroupIdentification(projectId, 1);
+        var rootGroup = new CharacterGroupInfo(
+            rootGroupId,
+            "Корень",
+            IsActive: true,
+            IsPublic: true,
+            DirectChildGroupIds: [],
+            ChildCharactersOrdering: "",
+            DirectParentGroupIds: [],
+            AllChildGroups: [],
+            AllParentGroups: [],
+            CharacterGroupType.Root,
+            ResponsibleMasterId: null);
+
+        return new ProjectInfo(
+            projectId,
+            new ProjectName($"Проект {projectId.Value}"),
+            ordering: "",
+            unsortedFields: [],
+            new ProjectFieldSettings(NameField: null, DescriptionField: null),
+            new ProjectFinanceSettings(PreferentialFeeEnabled: false, WarnOnOverPayment: false, paymentTypes, FeeSchedule: []),
+            new ProjectAccommodationSettings(Enabled: false, Types: [], RoomCategories: []),
+            new ProjectGroupTree(rootGroupId, new Dictionary<CharacterGroupIdentification, CharacterGroupInfo> { [rootGroupId] = rootGroup }),
+            masters: [],
+            mastersOrdering: null,
+            publishPlot: false,
+            new ProjectCheckInSettings(InProgress: false, AllowSecondRoles: false, ShowCheckInBlockersToPlayers: false),
+            isBlocked ? ProjectLifecycleStatus.Blocked : ProjectLifecycleStatus.ActiveClaimsOpen,
+            new ProjectScheduleSettings(ScheduleEnabled: false),
+            ProjectCloneSettings.CloneDisabled,
+            DateOnly.MinValue,
+            ProjectProfileRequirementSettings.AllNotRequired,
+            new ProjectClaimSettings(DefaultTemplate: null, StrictlyOneCharacter: false, AutoAcceptClaims: false, IsAcceptingClaims: true, IsPublicProject: true),
+            projectRolesLists: [],
+            defaultRolesListId: null,
+            TimeZoneInfo.Utc);
+    }
 }
 
 internal sealed class FakeFinanceOperationUri : IUriLocator<FinanceOperationIdentification>
@@ -330,7 +412,9 @@ internal sealed class PscbFakeClaimsRepository : IClaimsRepository
     public List<(int ProjectId, int[] UserIds)> Requests { get; } = [];
 
     public void AddClaim(int projectId, int userId, int claimId)
-        => claims.Add((projectId, new PlayerClaimId(userId, claimId)));
+        => claims.Add((projectId, new PlayerClaimId(
+            new UserIdentification(userId),
+            new ClaimIdentification(projectId, claimId))));
 
     public Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
     {
@@ -339,7 +423,7 @@ internal sealed class PscbFakeClaimsRepository : IClaimsRepository
         IReadOnlyCollection<PlayerClaimId> found =
         [
             .. claims
-                .Where(entry => entry.ProjectId == projectId.Value && userIds.Contains(new UserIdentification(entry.Claim.UserId)))
+                .Where(entry => entry.ProjectId == projectId.Value && userIds.Contains(entry.Claim.UserId))
                 .Select(entry => entry.Claim),
         ];
         return Task.FromResult(found);

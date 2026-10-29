@@ -303,6 +303,8 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             .Select(claim => new { claim.PlayerUserId, claim.ClaimId })
             .ToListAsync();
 
-        return [.. result.Select(claim => new PlayerClaimId(claim.PlayerUserId, claim.ClaimId))];
+        return [.. result.Select(claim => new PlayerClaimId(
+            new UserIdentification(claim.PlayerUserId),
+            new ClaimIdentification(projectId, claim.ClaimId)))];
     }
 }

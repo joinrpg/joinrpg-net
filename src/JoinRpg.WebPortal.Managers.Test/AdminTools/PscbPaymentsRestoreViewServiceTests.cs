@@ -80,7 +80,7 @@ public class PscbPaymentsRestoreViewServiceTests
     {
         var scenario = new Scenario();
         scenario.Finances.AddOperation(637705, claimId: 9, operationDate: new DateTime(2026, 4, 1, 9, 0, 0, DateTimeKind.Utc));
-        scenario.Finances.AddReadyProject(42);
+        scenario.Projects.AddReadyProject(42);
         scenario.Payments =
         [
             Payment(
@@ -258,6 +258,7 @@ public class PscbPaymentsRestoreViewServiceTests
             Users(42),
             new FakeFinanceOperationsRepository(),
             new PscbFakeClaimsRepository(),
+            new PscbFakeProjectMetadataRepository(),
             NullLogger<PscbPaymentsViewService>.Instance);
         var domain = new FakeLostPaymentsRestoreService();
         var service = CreateRestoreService(view, domain);
@@ -274,7 +275,7 @@ public class PscbPaymentsRestoreViewServiceTests
         var scenario = new Scenario();
         scenario.Search.AddProject(7, "Проект");
         scenario.Users.AddExisting(42);
-        scenario.Finances.AddReadyProject(7);
+        scenario.Projects.AddReadyProject(7);
         scenario.Claims.AddClaim(7, 42, claimId: 55);
         scenario.Payments = [LostPaymentJson()];
         return scenario;
@@ -295,6 +296,7 @@ public class PscbPaymentsRestoreViewServiceTests
             scenario.Users,
             scenario.Finances,
             scenario.Claims,
+            scenario.Projects,
             NullLogger<PscbPaymentsViewService>.Instance);
         var domain = new FakeLostPaymentsRestoreService();
         return (CreateRestoreService(view, domain), domain);
@@ -319,6 +321,8 @@ public class PscbPaymentsRestoreViewServiceTests
         public FakeFinanceOperationsRepository Finances { get; } = new();
 
         public PscbFakeClaimsRepository Claims { get; set; } = new();
+
+        public PscbFakeProjectMetadataRepository Projects { get; } = new();
 
         public string[] Payments { get; set; } = [];
     }

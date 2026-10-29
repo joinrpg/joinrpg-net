@@ -267,12 +267,12 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
         // Все заявки игрока проекта — в любом статусе, включая отклонённые; чужие заявки не отдаются.
         claims.ShouldBe(
         [
-            new PlayerClaimId(playerId.Value, addedClaimId.ClaimId),
-            new PlayerClaimId(playerId.Value, approvedClaimId.ClaimId),
-            new PlayerClaimId(playerId.Value, declinedByMasterClaimId.ClaimId),
-            new PlayerClaimId(playerId.Value, declinedByPlayerClaimId.ClaimId),
+            new PlayerClaimId(playerId, addedClaimId),
+            new PlayerClaimId(playerId, approvedClaimId),
+            new PlayerClaimId(playerId, declinedByMasterClaimId),
+            new PlayerClaimId(playerId, declinedByPlayerClaimId),
         ], ignoreOrder: true);
-        claims.ShouldNotContain(c => c.ClaimId == otherPlayerClaimId.ClaimId);
+        claims.ShouldNotContain(c => c.ClaimId == otherPlayerClaimId);
     }
 
     private async Task<(UserIdentification MasterId, ProjectIdentification ProjectId, PaymentTypeIdentification OnlineTypeId)> CreateProjectWithOnlinePaymentType()

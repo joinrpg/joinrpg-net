@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 
 namespace JoinRpg.Data.Interfaces.Finances;
@@ -22,17 +23,6 @@ public interface IFinanceOperationsRepository
     /// </remarks>
     /// <param name="commentIds">Идентификаторы операций (<c>FinanceOperation.CommentId</c>).</param>
     Task<IReadOnlyCollection<MatchedOperation>> GetOperationsByCommentIds(IReadOnlyCollection<int> commentIds);
-
-    /// <summary>
-    /// Готовность проектов принять восстановленный онлайн-платёж — одним запросом на весь набор.
-    /// </summary>
-    /// <remarks>
-    /// Блокировка проекта и его активные онлайн-типы оплаты лежат в одной строке проекта, поэтому
-    /// читаются вместе. Типов отдаётся набор, а не один: «нет ни одного» и «несколько» — разные
-    /// причины отказа, и админ должен видеть разницу.
-    /// </remarks>
-    /// <param name="projectIds">Проекты, которые надо проверить.</param>
-    Task<IReadOnlyCollection<ProjectPaymentsReadiness>> GetPaymentsReadiness(IReadOnlyCollection<int> projectIds);
 }
 
 /// <summary>
@@ -57,24 +47,5 @@ public record MatchedOperation(
     FinanceOperationIdentification OperationId,
     FinanceOperationState State,
     FinanceOperationType OperationType,
-    int? PaymentTypeId,
+    PaymentTypeIdentification? PaymentTypeId,
     DateTime OperationDate);
-
-/// <summary>
-/// Готов ли проект принять восстановленный платёж (ADR027).
-/// </summary>
-/// <param name="ProjectId">Проект.</param>
-/// <param name="IsBlocked">Проект заблокирован на время восстановления данных (ADR023) — в нём
-/// боевой путь не даёт ни платить, ни проводить платежи.</param>
-/// <param name="OnlinePaymentTypes">Типы оплаты проекта с <c>TypeKind = Online</c>, активные
-/// и неактивные. Неактивные нужны: потерянный платёж случился, когда онлайн-оплата была включена,
-/// и тип мог быть с тех пор выключен.</param>
-public record ProjectPaymentsReadiness(int ProjectId, bool IsBlocked, IReadOnlyCollection<OnlinePaymentType> OnlinePaymentTypes);
-
-/// <summary>
-/// Тип онлайн-оплаты проекта.
-/// </summary>
-/// <param name="PaymentTypeId">Номер типа оплаты.</param>
-/// <param name="IsActive">Тип не выключен. Тип оплаты не удаляется физически никогда, поэтому
-/// <c>false</c> означает «был удалён» (soft-delete).</param>
-public record OnlinePaymentType(int PaymentTypeId, bool IsActive);

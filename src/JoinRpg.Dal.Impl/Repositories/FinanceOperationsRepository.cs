@@ -76,41 +76,7 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
             new FinanceOperationIdentification(r.ProjectId, r.ClaimId, r.CommentId),
             r.State,
             r.OperationType,
-            r.PaymentTypeId,
+            r.PaymentTypeId is { } paymentTypeId ? new PaymentTypeIdentification(r.ProjectId, paymentTypeId) : null,
             r.OperationDate))];
-    }
-
-    /// <summary>
-    /// Готовность проектов принять восстановленный онлайн-платёж
-    /// </summary>
-    /// <remarks>
-    /// Типы онлайн-оплаты выбираются подзапросом к той же строке проекта, поэтому на весь набор
-    /// проектов один поход в базу. Отдаются и выключенные типы: платёж случился, когда онлайн-оплата
-    /// была включена, и тип мог быть удалён с тех пор (тип оплаты удаляется только мягко).
-    /// </remarks>
-    public async Task<IReadOnlyCollection<ProjectPaymentsReadiness>> GetPaymentsReadiness(IReadOnlyCollection<int> projectIds)
-    {
-        if (projectIds.Count == 0)
-        {
-            return [];
-        }
-
-        var query = ctx.Set<Project>()
-                .Where(project => projectIds.Contains(project.ProjectId))
-                .Select(project => new
-                {
-                    project.ProjectId,
-                    project.IsBlocked,
-                    OnlinePaymentTypes = project.PaymentTypes
-                        .Where(paymentType => paymentType.TypeKind == PaymentTypeKind.Online)
-                        .Select(paymentType => new { paymentType.PaymentTypeId, paymentType.IsActive })
-                        .ToList(),
-                });
-
-        var result = await query.ToArrayAsync();
-        return [.. result.Select(r => new ProjectPaymentsReadiness(
-            r.ProjectId,
-            r.IsBlocked,
-            [.. r.OnlinePaymentTypes.Select(paymentType => new OnlinePaymentType(paymentType.PaymentTypeId, paymentType.IsActive))]))];
     }
 }
