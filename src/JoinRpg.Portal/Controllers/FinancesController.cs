@@ -292,29 +292,6 @@ public class FinancesController(
         return GeneratorResultHelper.Result(project.ProjectName + ": Финансы", generator);
     }
 
-    [MasterAuthorize(Permission.CanManageMoney)]
-    [HttpPost]
-    public async Task<ActionResult> ChangeSettings(FinanceGlobalSettingsViewModel viewModel)
-    {
-        try
-        {
-            await financeSettingsService.SaveGlobalSettings(new SetFinanceSettingsRequest
-            {
-                ProjectId = new(viewModel.ProjectId),
-                WarnOnOverPayment = viewModel.WarnOnOverPayment,
-                PreferentialFeeEnabled = viewModel.PreferentialFeeEnabled,
-                PreferentialFeeConditions = viewModel.PreferentialFeeConditions,
-            });
-            return RedirectToAction("Setup", new { viewModel.ProjectId });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Ошибка");
-            //TODO: Message that comment is not added
-            return RedirectToAction("Setup", new { viewModel.ProjectId });
-        }
-    }
-
     [MasterAuthorize()]
     [HttpGet]
     public async Task<ActionResult> ByMaster(ProjectIdentification projectId, int masterId)

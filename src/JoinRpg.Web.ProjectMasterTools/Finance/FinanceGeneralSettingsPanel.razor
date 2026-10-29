@@ -1,0 +1,54 @@
+@using JoinRpg.Web.ProjectMasterTools.Settings
+@inherits SettingsPanelBase<FinanceGeneralSettingsViewModel>
+@inject IFinanceSettingsClient settingsClient
+
+@* В архиве сохранить нельзя — панель не показываем, как и панели настроек проекта. *@
+@if (Model is { ProjectStatus: ProjectLifecycleStatus.Archived })
+{
+    return;
+}
+
+<JoinCollapsePanel Group="@FinanceSettingsPanels.Group" Id="@AnchorId">
+    <Header>Общие настройки</Header>
+    <ChildContent>
+        @if (Model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
+        <EditForm FormName="FinanceGeneralSettings" EditContext="@editContext" OnSubmit="HandleSubmit">
+            <FormHorizontal>
+                <ValidationSummary Model="Model" />
+                <DataAnnotationsValidator />
+                <fieldset disabled="@(!Model.HasEditAccess)">
+                    <FormRowFor For="@(() => Model.WarnOnOverPayment)">
+                        <CheckboxInput @bind-Value="Model.WarnOnOverPayment" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.PreferentialFeeEnabled)">
+                        <CheckboxInput @bind-Value="Model.PreferentialFeeEnabled" />
+                    </FormRowFor>
+                    <FormRowFor For="@(() => Model.PreferentialFeeConditions)">
+                        <JoinMarkdownTextArea @bind-Value="Model.PreferentialFeeConditions" Rows="4" />
+                    </FormRowFor>
+                </fieldset>
+                <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Permission="Permission.CanManageMoney" Disabled="@formInvalid" />
+            </FormHorizontal>
+        </EditForm>
+        @if (success)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Success">Общие настройки финансов сохранены</JoinAlert>
+        }
+    </ChildContent>
+</JoinCollapsePanel>
+
+@code {
+    /// <summary>Якорь панели на странице настройки финансов.</summary>
+    public const string AnchorId = "finance-general";
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    protected override Task<FinanceGeneralSettingsViewModel> LoadModel() => settingsClient.GetGeneralSettings(ProjectId);
+
+    protected override Task SaveModel(FinanceGeneralSettingsViewModel model) => settingsClient.SaveGeneralSettings(model);
+}
