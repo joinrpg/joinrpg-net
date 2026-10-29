@@ -77,20 +77,36 @@ jobs:
     - name: Pack NuGet packages
       shell: pwsh
       run: |
+        # CDN nuget.org изредка отвечает ошибкой — повторяем.
+        # 404 повтором не лечится: пакет ещё не публиковался.
+        function Invoke-NuGet([string] $uri, [string] $outFile) {
+          for ($attempt = 1; ; $attempt++) {
+            try {
+              if ($outFile) { return Invoke-WebRequest $uri -OutFile $outFile }
+              return Invoke-RestMethod $uri
+            }
+            catch {
+              if ($_.Exception.Response.StatusCode -eq 404 -or $attempt -ge 3) { throw }
+              Write-Host "::warning::$uri — $($_.Exception.Message), попытка $attempt"
+              Start-Sleep -Seconds (5 * $attempt)
+            }
+          }
+        }
+
         $projects = Get-ChildItem src -Recurse -Filter *.csproj |
           Where-Object { (Get-Content $_.FullName -Raw).Contains('<IsPackable>true</IsPackable>') }
         foreach ($project in $projects) {
           $baseline = @()
           $id = $project.BaseName.ToLowerInvariant()
           try {
-            $version = (Invoke-RestMethod "https://api.nuget.org/v3-flatcontainer/$id/index.json").versions |
+            $version = (Invoke-NuGet "https://api.nuget.org/v3-flatcontainer/$id/index.json").versions |
               Where-Object { -not $_.Contains('-') } |
               Sort-Object { [version] $_ } |
               Select-Object -Last 1
             if ($version) {
               # Свойство с версией не годится: SDK качает базовый пакет при restore, а --no-build пропускает restore.
               $nupkg = Join-Path $env:RUNNER_TEMP "$id.$version.nupkg"
-              Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/$id/$version/$id.$version.nupkg" -OutFile $nupkg
+              Invoke-NuGet "https://api.nuget.org/v3-flatcontainer/$id/$version/$id.$version.nupkg" $nupkg
               $baseline = @("-p:PackageValidationBaselinePath=$nupkg")
             }
           }
