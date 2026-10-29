@@ -19,8 +19,11 @@ public class ClaimListController(IClaimListClient claimClient, IUnifiedGridClien
 
     [HttpGet]
     [Authorize]
-    public async Task<IReadOnlyCollection<UgItemForCaptainViewModel>> GetForCaptain([FromQuery] ProjectIdentification projectId, [FromQuery] UgStatusFilterView filter)
+    public async Task<IReadOnlyCollection<UgItemViewModel>> GetGrid(
+        [FromQuery] ProjectIdentification projectId,
+        [FromQuery] UgScopeView scope,
+        [FromQuery] UgStatusFilterView status)
     {
-        return await claimGridClient.GetForCaptain(projectId, filter);
+        return await claimGridClient.GetGrid(projectId, scope, new UgFilterView(status));
     }
 }

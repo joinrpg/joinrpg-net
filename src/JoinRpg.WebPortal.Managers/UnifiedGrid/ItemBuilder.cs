@@ -17,19 +17,28 @@ public static class ItemBuilder
     /// <param name="claims">
     /// Заявки, которые надо показать: агрегат несёт их все, а грид показывает отобранные фильтром.
     /// </param>
-    public static UgItemForCaptainViewModel? BuildItemForCaptain(
+    /// <param name="scope">
+    /// В капитанском скоупе текущий пользователь — капитан этих персонажей (это проверил сервис),
+    /// в мастерском права дают обычные правила доступа.
+    /// </param>
+    public static UgItemViewModel? BuildItem(
         CharacterInfo character,
         IReadOnlyCollection<CharacterClaimInfo> claims,
-        ICurrentUserAccessor currentUserId)
+        ICurrentUserAccessor currentUserId,
+        UgScopeView scope)
     {
-        var accessArguments = AccessArgumentsFactory.Create(character, currentUserId) with { IsCapitan = true };
+        var accessArguments = AccessArgumentsFactory.Create(character, currentUserId);
+        if (scope == UgScopeView.Captain)
+        {
+            accessArguments = accessArguments with { IsCapitan = true };
+        }
 
         if (!accessArguments.CanViewCharacterName)
         {
             return null;
         }
 
-        var characterViewModel = new UgCharacterForCaptainViewModel(
+        var characterViewModel = new UgCharacterViewModel(
            new CharacterLinkSlimViewModel(
                character.Id, character.CharacterName, character.IsActive, ViewModeSelector.Create(character.IsPublic, accessArguments.CanViewCharacterName)),
            new CharacterApplyViewModel(
@@ -41,20 +50,20 @@ public static class ItemBuilder
            [] // TODO
            );
 
-        return new UgItemForCaptainViewModel(
+        return new UgItemViewModel(
             characterViewModel,
             [.. claims.Select(claim => BuildClaimItem(new ClaimInCharacter(character, claim), accessArguments))]
             );
     }
 
-    private static UgClaimForCaptainViewModel BuildClaimItem(ClaimInCharacter claimInCharacter, AccessArguments accessArguments)
+    private static UgClaimViewModel BuildClaimItem(ClaimInCharacter claimInCharacter, AccessArguments accessArguments)
     {
         var claim = claimInCharacter.Claim;
         var lastModifiedAt = ClaimListBuilder.GetLastCommentTime(claim, accessArguments);
 
         var respMaster = claimInCharacter.ProjectInfo.GetMasterById(claim.ResponsibleMasterId).UserInfo;
 
-        return new UgClaimForCaptainViewModel(
+        return new UgClaimViewModel(
             new UserLinkViewModel(claim.Player),
             ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,

@@ -10,8 +10,9 @@ using JoinRpg.WebPortal.Managers.UnifiedGrid;
 namespace JoinRpg.WebPortal.Managers.Test.UnifiedGrid;
 
 /// <summary>
-/// Кабинет капитана работает поверх доменного агрегата (ADR013): отбор персонажей и заявок под
-/// выбранный фильтр считается в памяти, а не SQL-предикатами (<c>ByUgStatus</c>), которых больше нет.
+/// Объединённый грид (ADR027) работает поверх доменного агрегата (ADR013): отбор персонажей и заявок
+/// под выбранный фильтр считается в памяти. Сами правила статусов — в <c>UnifiedGridStatusTest</c>,
+/// здесь — скоуп и сборка строк.
 /// </summary>
 public class UnifiedGridViewServiceTest
 {
@@ -20,16 +21,20 @@ public class UnifiedGridViewServiceTest
     /// <summary>Последний фейк репозитория — по нему видно, о чём сервис его попросил.</summary>
     private FakeCharacterInfoRepository characterInfoRepository = null!;
 
-    private async Task<IReadOnlyCollection<UgItemForCaptainViewModel>> GetItems(UgStatusFilterView filter)
+    private async Task<IReadOnlyCollection<UgItemViewModel>> GetItems(
+        UgStatusFilterView filter,
+        UgScopeView scope = UgScopeView.Captain,
+        int? userId = null,
+        FakeCaptainRulesRepository? captainRules = null)
     {
         characterInfoRepository = new FakeCharacterInfoRepository(Mock);
         IUnifiedGridClient service = new UnifiedGridViewService(
-            new FakeCurrentUserAccessor(Mock.Master.UserId),
-            new FakeCaptainRulesRepository(Mock),
+            new FakeCurrentUserAccessor(userId ?? Mock.Master.UserId),
+            captainRules ?? new FakeCaptainRulesRepository(Mock),
             new FakeProjectMetadataRepository(Mock),
             characterInfoRepository);
 
-        return await service.GetForCaptain(Mock.ProjectInfo.ProjectId, filter);
+        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter));
     }
 
     /// <summary>
@@ -37,13 +42,17 @@ public class UnifiedGridViewServiceTest
     /// отклонённых заявок); остальным удалённых не надо даже загружать.
     /// </summary>
     [Theory]
-    [InlineData(UgStatusFilterView.Active, CharacterStatusSpec.Active)]
-    [InlineData(UgStatusFilterView.Vacant, CharacterStatusSpec.Active)]
-    [InlineData(UgStatusFilterView.Discussion, CharacterStatusSpec.Active)]
-    [InlineData(UgStatusFilterView.Archive, CharacterStatusSpec.Any)]
-    public async Task RepositoryIsAskedForRightCharacters(UgStatusFilterView filter, CharacterStatusSpec expected)
+    [InlineData(UgScopeView.Captain, UgStatusFilterView.Active, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Captain, UgStatusFilterView.Vacant, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Captain, UgStatusFilterView.Discussion, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Captain, UgStatusFilterView.Archive, CharacterStatusSpec.Any)]
+    [InlineData(UgScopeView.Master, UgStatusFilterView.Active, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Master, UgStatusFilterView.Vacant, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Master, UgStatusFilterView.Discussion, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Master, UgStatusFilterView.Archive, CharacterStatusSpec.Any)]
+    public async Task RepositoryIsAskedForRightCharacters(UgScopeView scope, UgStatusFilterView filter, CharacterStatusSpec expected)
     {
-        _ = await GetItems(filter);
+        _ = await GetItems(filter, scope);
 
         characterInfoRepository.RequestedSpec.ShouldBe(expected);
     }
@@ -238,17 +247,66 @@ public class UnifiedGridViewServiceTest
 
     [Fact]
     public async Task NoCaptainRulesMeansEmptyGrid()
-    {
-        IUnifiedGridClient service = new UnifiedGridViewService(
-            new FakeCurrentUserAccessor(Mock.Player.UserId),
-            new FakeCaptainRulesRepository(Mock, hasRules: false),
-            new FakeProjectMetadataRepository(Mock),
-            new FakeCharacterInfoRepository(Mock));
+        => (await GetItems(
+            UgStatusFilterView.Active,
+            userId: Mock.Player.UserId,
+            captainRules: new FakeCaptainRulesRepository(Mock, hasRules: false)))
+            .ShouldBeEmpty();
 
-        (await service.GetForCaptain(Mock.ProjectInfo.ProjectId, UgStatusFilterView.Active)).ShouldBeEmpty();
+    /// <summary>
+    /// Капитан видит только поддеревья групп из своих правил.
+    /// </summary>
+    [Fact]
+    public async Task CaptainSeesOnlyRuleGroups()
+    {
+        var inGroup = Mock.CreateCharacter("in group");
+        inGroup.ParentCharacterGroupIds = [Mock.Group.CharacterGroupId];
+
+        var names = (await GetItems(
+            UgStatusFilterView.Active,
+            captainRules: new FakeCaptainRulesRepository(Mock, groupId: Mock.Group.CharacterGroupId)))
+            .Select(item => item.Character.Name.Name);
+
+        names.ShouldBe([inGroup.CharacterName]);
     }
 
-    private sealed class FakeCaptainRulesRepository(MockedProject mock, bool hasRules = true) : ICaptainRulesRepository
+    /// <summary>
+    /// Капитан, который не мастер, видит и непубличных персонажей своей команды: права ему даёт
+    /// правило капитана, а не доступ мастера.
+    /// </summary>
+    [Fact]
+    public async Task CaptainWhoIsNotMasterSeesHiddenCharacter()
+    {
+        var hidden = Mock.CreateCharacter("hidden");
+        hidden.IsPublic = false;
+
+        (await GetItems(UgStatusFilterView.Active, userId: Mock.Player.UserId))
+            .Select(item => item.Character.Name.Name)
+            .ShouldContain(hidden.CharacterName);
+    }
+
+    /// <summary>
+    /// Мастеру правила капитана не нужны: он видит весь проект.
+    /// </summary>
+    [Fact]
+    public async Task MasterSeesWholeProject()
+        => (await GetItems(
+            UgStatusFilterView.Active,
+            UgScopeView.Master,
+            captainRules: new FakeCaptainRulesRepository(Mock, hasRules: false)))
+            .Select(item => item.Character.Name.Name)
+            .ShouldContain(Mock.Character.CharacterName);
+
+    /// <summary>
+    /// Мастерский скоуп просит страница, но права проверяет сервер: капитан, не мастер, через него
+    /// весь проект не увидит.
+    /// </summary>
+    [Fact]
+    public async Task MasterScopeRequiresMasterAccess()
+        => (await GetItems(UgStatusFilterView.Active, UgScopeView.Master, userId: Mock.Player.UserId))
+            .ShouldBeEmpty();
+
+    private sealed class FakeCaptainRulesRepository(MockedProject mock, bool hasRules = true, int? groupId = null) : ICaptainRulesRepository
     {
         public Task<IReadOnlyCollection<CaptainAccessRule>> GetCaptainRules(ProjectIdentification projectIdentification)
             => throw new NotImplementedException();
@@ -257,7 +315,7 @@ public class UnifiedGridViewServiceTest
             => Task.FromResult<IReadOnlyCollection<CaptainAccessRule>>(
                 hasRules
                     ? [new CaptainAccessRule(
-                        new CharacterGroupIdentification(projectIdentification, mock.Project.CharacterGroups.Single(g => g.IsRoot).CharacterGroupId),
+                        new CharacterGroupIdentification(projectIdentification, groupId ?? mock.Project.CharacterGroups.Single(g => g.IsRoot).CharacterGroupId),
                         userId,
                         CanApprove: true)]
                     : []);
