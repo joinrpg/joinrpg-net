@@ -7,7 +7,8 @@ public record ProjectDetails(
     MarkdownString ProjectDescription,
     MarkdownString ClaimApplyRules,
     IReadOnlyCollection<KogdaIgraGameData> KogdaIgraCards,
-    bool DisableKogdaIgraMapping)
+    bool DisableKogdaIgraMapping,
+    MarkdownString PreferentialFeeConditions)
 {
     public KogdaIgraGameData? NearestFutureKogdaIgraCard =>
         KogdaIgraCards

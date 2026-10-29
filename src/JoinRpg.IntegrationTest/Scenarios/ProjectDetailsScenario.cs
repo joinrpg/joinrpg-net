@@ -45,4 +45,40 @@ public class ProjectDetailsScenario(JoinApplicationFactory factory) : IClassFixt
             details.ProjectDescription.Value.ShouldBe(projectAnnounce);
         });
     }
+
+    [Fact]
+    public async Task GetProjectDetails_ReturnsPreferentialFeeConditions()
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Проект с льготным взносом");
+        }
+
+        var conditions = "Студентам дневных отделений";
+
+        // Условий в БД ещё нет — домен получает пустой markdown, а не null.
+        await factory.Services.RunAsAsync(masterId, async sp =>
+            (await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectDetails(projectId))
+                .PreferentialFeeConditions.Value.ShouldBe(""));
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+            await sp.GetRequiredService<IProjectFinanceSettingsService>().SaveGlobalSettings(new SetFinanceSettingsRequest
+            {
+                ProjectId = projectId,
+                WarnOnOverPayment = true,
+                PreferentialFeeEnabled = true,
+                PreferentialFeeConditions = conditions,
+            }));
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var details = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectDetails(projectId);
+
+            details.PreferentialFeeConditions.Value.ShouldBe(conditions);
+        });
+    }
 }
