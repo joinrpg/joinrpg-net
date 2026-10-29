@@ -74,10 +74,29 @@ internal class LostPaymentsRestoreService(
         LostRefundRestoreResult? refund = null;
         if (payment.Refund is { } lostRefund)
         {
-            refund = await InsertRefundAsync(lostRefund);
-            if (refund.Status == LostOperationRestoreStatus.Restored)
+            // Сбой возврата не уносит уже записанный платёж: взнос пересчитывается на полную сумму,
+            // письмо о платеже отправляется, а возврат строка отчёта помечает отдельным исходом;
+            // повторный прогон восстановит его как RefundMissing.
+            try
             {
-                paymentAdded -= lostRefund.MoneyAmount;
+                refund = await InsertRefundAsync(lostRefund);
+                if (refund.Status == LostOperationRestoreStatus.Restored)
+                {
+                    paymentAdded -= lostRefund.MoneyAmount;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,
+                    "Возврат платежа {OrderId} заявки {ClaimId} не записан, хотя сам платёж восстановлен. Админ {AdminUserId}",
+                    payment.OperationId,
+                    payment.ClaimId,
+                    currentUserAccessor.UserId);
+                refund = new LostRefundRestoreResult(
+                    LostOperationRestoreStatus.Failed,
+                    OperationId: null,
+                    FeeRecalculated: true,
+                    ex.Message);
             }
         }
 
@@ -85,10 +104,10 @@ internal class LostPaymentsRestoreService(
         LogRestored(payment.ClaimId, payment.OperationId, payment.MoneyAmount, payment.BankPaymentId, isRefund: false);
         await NotifyAsync(claim, payment.MoneyAmount, payment.OperationId, isRefund: false);
 
-        if (refund is { Status: LostOperationRestoreStatus.Restored } restoredRefund && payment.Refund is { } notified)
+        if (refund is { Status: LostOperationRestoreStatus.Restored, OperationId: { } refundOperationId } && payment.Refund is { } notified)
         {
-            LogRestored(payment.ClaimId, restoredRefund.OperationId, -notified.MoneyAmount, notified.BankRefundId, isRefund: true);
-            await NotifyAsync(claim, notified.MoneyAmount, restoredRefund.OperationId, isRefund: true);
+            LogRestored(payment.ClaimId, refundOperationId, -notified.MoneyAmount, notified.BankRefundId, isRefund: true);
+            await NotifyAsync(claim, notified.MoneyAmount, refundOperationId, isRefund: true);
         }
 
         // Взнос пересчитывается один раз на пару платёж+возврат, поэтому признак у возврата тот же.
@@ -107,7 +126,7 @@ internal class LostPaymentsRestoreService(
         var snapshot = await LoadSnapshotAsync(claim);
 
         var result = await InsertRefundAsync(refund);
-        if (result.Status != LostOperationRestoreStatus.Restored)
+        if (result is not { Status: LostOperationRestoreStatus.Restored, OperationId: { } operationId })
         {
             logger.LogWarning(
                 "Возврат платежа {RefundedOperationId} заявки {ClaimId} не восстановлен: {Status}. Админ {AdminUserId}",
@@ -118,9 +137,9 @@ internal class LostPaymentsRestoreService(
             return result;
         }
 
-        var feeRecalculated = await TrySettleAsync(claim, snapshot, refund.OperationDate, paymentAdded: -refund.MoneyAmount, result.OperationId);
-        LogRestored(refund.ClaimId, result.OperationId, -refund.MoneyAmount, refund.BankRefundId, isRefund: true);
-        await NotifyAsync(claim, refund.MoneyAmount, result.OperationId, isRefund: true);
+        var feeRecalculated = await TrySettleAsync(claim, snapshot, refund.OperationDate, paymentAdded: -refund.MoneyAmount, operationId);
+        LogRestored(refund.ClaimId, operationId, -refund.MoneyAmount, refund.BankRefundId, isRefund: true);
+        await NotifyAsync(claim, refund.MoneyAmount, operationId, isRefund: true);
 
         return result with { FeeRecalculated = feeRecalculated };
     }
@@ -157,7 +176,12 @@ internal class LostPaymentsRestoreService(
         string text,
         string bankOperationKey,
         string? bankRefundKey)
-        => await unitOfWork.GetCharacterAggregateWriteRepository().InsertLostPayment(new LostPaymentRow(
+    {
+        // Время создания и правки записи операции — момент восстановления (единственный след того,
+        // когда запись появилась в базе), а время комментария батч берёт из OperationDate — момента
+        // денег, чтобы комментарий встал в историю обсуждения заявки на своё место.
+        var now = DateTime.UtcNow;
+        return await unitOfWork.GetCharacterAggregateWriteRepository().InsertLostPayment(new LostPaymentRow(
             claimId,
             operationType,
             operationId,
@@ -172,14 +196,13 @@ internal class LostPaymentsRestoreService(
             IsCommentByPlayer: true,
             moneyAmount,
             paymentTypeId,
-            // Время рождения записи — момент денег, а не момент восстановления: так комментарий
-            // встаёт в обсуждение заявки на своё место в истории.
-            CreatedAt: operationDate,
-            ChangedAt: DateTime.UtcNow,
+            CreatedAt: now,
+            ChangedAt: now,
             operationDate,
             text,
             bankOperationKey,
             bankRefundKey));
+    }
 
     /// <summary>
     /// Пересчёт взноса, который не уносит уже созданную операцию: она вставлена своей транзакцией

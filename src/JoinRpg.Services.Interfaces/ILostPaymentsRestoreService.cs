@@ -28,8 +28,16 @@ public interface ILostPaymentsRestoreService
     /// Восстанавливает потерянный платёж, а если банк зафиксировал возврат — и возврат следом.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Повторный вызов ничего не вставляет: номер уже занят нашей же операцией, и исход будет
     /// <see cref="LostOperationRestoreStatus.AlreadyRestored"/>.
+    /// </para>
+    /// <para>
+    /// Сбой вставки возврата не уносит уже записанный платёж: взнос пересчитывается на полную сумму,
+    /// уведомление о платеже отправляется, а возврат получает исход
+    /// <see cref="LostOperationRestoreStatus.Failed"/> с текстом сбоя — повторный прогон восстановит
+    /// его как пропущенный возврат.
+    /// </para>
     /// </remarks>
     /// <exception cref="ProjectBlockedException">Проект заблокирован (ADR023): его восстанавливают
     /// инструменты DRP, а не этот сервис.</exception>
@@ -95,13 +103,28 @@ public enum LostOperationRestoreStatus
 
     /// <summary>Номер не ниже текущего счётчика комментариев, такая вставка сдвинула бы счётчик.</summary>
     NumberNotLost,
+
+    /// <summary>
+    /// Вставка не удалась (сбой). Используется для возврата, вставляемого вместе с платёжом, когда
+    /// сам платёж уже записан: сбой возврата не уносит платёж, а повторный прогон восстановит
+    /// возврат как пропущенный (<c>RefundMissing</c>).
+    /// </summary>
+    Failed,
 }
 
 /// <summary>Исход восстановления возврата.</summary>
-/// <param name="OperationId">Номер операции возврата — созданной или уже существовавшей.</param>
+/// <param name="OperationId">
+/// Номер операции возврата — созданной или уже существовавшей; при <see cref="LostOperationRestoreStatus.Failed"/>
+/// — <c>null</c>, записи нет.
+/// </param>
 /// <param name="FeeRecalculated">Взнос заявки пересчитан и сохранён. <c>false</c> означает, что
 /// операция создана, а пересчёт не сохранился: запись в базе есть, и чинить взнос придётся вручную.</param>
-public record LostRefundRestoreResult(LostOperationRestoreStatus Status, int OperationId, bool FeeRecalculated);
+/// <param name="FailureMessage">Текст сбоя для отчёта админу; <c>null</c>, если вставка не падала.</param>
+public record LostRefundRestoreResult(
+    LostOperationRestoreStatus Status,
+    int? OperationId,
+    bool FeeRecalculated,
+    string? FailureMessage = null);
 
 /// <summary>Исход восстановления платежа.</summary>
 /// <param name="OperationId">Номер операции платежа — созданный, уже существовавший либо запрошенный.</param>

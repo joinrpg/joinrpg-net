@@ -1,4 +1,5 @@
 using System.Data.Entity;
+using System.Data.SqlClient;
 using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
@@ -24,8 +25,9 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// Восстановление потерянных онлайн-платежей PSCB (ADR027) на настоящем SQL Server: платёж
 /// вставляется с прежним номером (<c>orderId</c> банка — это <c>CommentId</c>) строго ниже счётчика
 /// комментариев вместе со строкой <c>FinanceOperationBankDetails</c>, занятый номер даёт отказ, а не
-/// вставку с новым, номер не ниже счётчика — не потерянный, повторный прогон узнаётся, а возврат
-/// вставляется с новым номером и ссылкой на исходную операцию. Отдельно —
+/// вставку с новым, номер не ниже счётчика — не потерянный, повторный прогон узнаётся, наличный тип
+/// оплаты отсекается батчем до записи, а возврат вставляется с новым номером и ссылкой на исходную
+/// операцию. Отдельно —
 /// <see cref="IClaimsRepository.GetClaimIdsForPlayers"/> отдаёт заявки в любом статусе, включая
 /// отклонённые: фильтра по статусу в запросе нет, и это единственное место, где факт проверяется
 /// по-настоящему.
@@ -35,7 +37,8 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
 {
     private static readonly DateTime PaymentAt = new(2026, 7, 5, 10, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime RefundAt = new(2026, 8, 2, 14, 0, 0, DateTimeKind.Utc);
-    // Момент восстановления — время правки операции; время создания записи — момент денег.
+    // Момент восстановления — время создания и правки записи операции; время комментария —
+    // момент денег (OperationDate): комментарий встаёт в историю обсуждения на своё место.
     private static readonly DateTime RestoredAt = new(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc);
     private const string PaymentText = "[восстановлено] Онлайн-оплата подтверждена.";
     private const string RefundText = "[восстановлено] Оформлен возврат платежа.";
@@ -82,9 +85,9 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             IsCommentByPlayer: true,
             Money,
             onlineTypeId,
-            CreatedAt: PaymentAt,
+            CreatedAt: RestoredAt,
             ChangedAt: RestoredAt,
-            OperationDate: PaymentAt.Date,
+            OperationDate: PaymentAt,
             PaymentText,
             BankPaymentKey,
             BankRefundKey: null);
@@ -121,9 +124,11 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             operation.MoneyAmount.ShouldBe(Money);
             operation.PaymentTypeId.ShouldBe(onlineTypeId.PaymentTypeId);
             operation.RefundedOperationId.ShouldBeNull();
-            operation.Created.ShouldBe(PaymentAt);
+            // Время разделено (ADR027): запись операции помнит момент восстановления, а её
+            // OperationDate и время комментария — момент денег.
+            operation.Created.ShouldBe(RestoredAt);
             operation.Changed.ShouldBe(RestoredAt);
-            operation.OperationDate.ShouldBe(PaymentAt.Date);
+            operation.OperationDate.ShouldBe(PaymentAt);
 
             var bankDetails = await db.Set<FinanceOperationBankDetails>().AsNoTracking()
                 .SingleAsync(b => b.CommentId == lostOrderId);
@@ -155,7 +160,46 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             (await db.Set<FinanceOperationBankDetails>().CountAsync(b => b.CommentId != lostOrderId)).ShouldBe(0);
         }
 
-        // 7. Возврат: своего номера в банке нет — вставляется с новым номером и ссылкой на исходный
+        // 7. Последний рубеж обороны перед записью денег: наличный тип мастера не пройдёт в
+        // онлайн-операцию — батч отказывает до вставки, иначе сверка мастера рассинхронизировалась бы.
+        var cashTypeId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            await sp.GetRequiredService<IProjectFinanceSettingsService>().CreatePaymentType(new CreatePaymentTypeRequest
+            {
+                ProjectId = projectId,
+                TargetMasterId = masterId,
+                TypeKind = PaymentTypeKind.Cash,
+                Name = null,
+            });
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            return projectInfo.ProjectFinanceSettings.PaymentTypes
+                .Single(pt => pt.TypeKind == PaymentTypeKind.Cash).PaymentTypeId;
+        });
+        var cashException = await Should.ThrowAsync<SqlException>(() => InsertLostPayment(masterId, new LostPaymentRow(
+            claimId,
+            FinanceOperationType.Online,
+            lostOrderId + 1,
+            RefundedOperationId: null,
+            paymentsUserId,
+            IsCommentByPlayer: true,
+            Money,
+            cashTypeId,
+            CreatedAt: RestoredAt,
+            ChangedAt: RestoredAt,
+            OperationDate: PaymentAt,
+            PaymentText,
+            BankPaymentKey,
+            BankRefundKey: null)));
+        cashException.Message.ShouldContain("Online payment type is not found");
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            // Отказ до вставки: ни операции, ни комментария с запрошенным номером.
+            (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(1);
+            (await db.Set<Comment>().AnyAsync(c => c.CommentId == lostOrderId + 1)).ShouldBeFalse();
+        }
+
+        // 8. Возврат: своего номера в банке нет — вставляется с новым номером и ссылкой на исходный
         // платёж, сумма отрицательная, в реквизитах оба ключа.
         LostPaymentRow refundRow = new(
             claimId,
@@ -166,9 +210,9 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             IsCommentByPlayer: true,
             -Money,
             onlineTypeId,
-            CreatedAt: RefundAt,
+            CreatedAt: RestoredAt,
             ChangedAt: RestoredAt,
-            OperationDate: RefundAt.Date,
+            OperationDate: RefundAt,
             RefundText,
             BankOperationKey: BankPaymentKey,
             BankRefundKey);
@@ -189,6 +233,7 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             refundComment.IsVisibleToPlayer.ShouldBeTrue();
             refundComment.ExtraAction.ShouldBeNull();
             refundComment.CreatedAt.ShouldBe(RefundAt);
+            refundComment.LastEditTime.ShouldBe(RefundAt);
 
             var refundOperation = await db.Set<FinanceOperation>().AsNoTracking().SingleAsync(f => f.CommentId == refundId);
             refundOperation.ClaimId.ShouldBe(claimId.ClaimId);
@@ -196,7 +241,10 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             refundOperation.State.ShouldBe(FinanceOperationState.Approved);
             refundOperation.MoneyAmount.ShouldBe(-Money);
             refundOperation.RefundedOperationId.ShouldBe(lostOrderId);
-            refundOperation.OperationDate.ShouldBe(RefundAt.Date);
+            // То же разделение времени, что и у платежа.
+            refundOperation.Created.ShouldBe(RestoredAt);
+            refundOperation.Changed.ShouldBe(RestoredAt);
+            refundOperation.OperationDate.ShouldBe(RefundAt);
 
             var refundBankDetails = await db.Set<FinanceOperationBankDetails>().AsNoTracking()
                 .SingleAsync(b => b.CommentId == refundId);
@@ -206,7 +254,7 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             (await GetCommentsIdentityAsync(db)).ShouldBe(identityBefore + 1);
         }
 
-        // 8. Повторный прогон возврата узнаётся по уже проведённому возврату той же операции.
+        // 9. Повторный прогон возврата узнаётся по уже проведённому возврату той же операции.
         (await InsertLostPayment(masterId, refundRow))
             .ShouldBe(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.AlreadyExists, refundId));
         using (var scope = factory.Services.CreateScope())

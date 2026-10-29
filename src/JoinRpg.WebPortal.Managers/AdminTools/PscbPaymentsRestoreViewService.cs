@@ -131,6 +131,12 @@ internal class PscbPaymentsRestoreViewService(
         if (result.Refund is { } refund)
         {
             _ = message.Append("; ").Append(RefundOutcomeText(refund.Status));
+            // Сбой возврата не меняет исход строки — её диктует платёж, а сообщение объясняет,
+            // что случилось с возвратом и почему его придётся доделать.
+            if (refund.FailureMessage is { } failure)
+            {
+                _ = message.Append(": ").Append(failure);
+            }
         }
 
         if (!result.FeeRecalculated)
@@ -164,6 +170,7 @@ internal class PscbPaymentsRestoreViewService(
     {
         LostOperationRestoreStatus.Restored => PscbRestoreRowOutcome.Restored,
         LostOperationRestoreStatus.AlreadyRestored => PscbRestoreRowOutcome.AlreadySettled,
+        LostOperationRestoreStatus.Failed => PscbRestoreRowOutcome.Failed,
         _ => PscbRestoreRowOutcome.Failed,
     };
 
@@ -173,6 +180,9 @@ internal class PscbPaymentsRestoreViewService(
         LostOperationRestoreStatus.AlreadyRestored => "операция уже в базе — повторный прогон ничего не записал",
         LostOperationRestoreStatus.NumberTaken => "номер операции занят другой записью — восстанавливать вручную",
         LostOperationRestoreStatus.NumberNotLost => "номер операции не ниже текущего счётчика — восстанавливать вручную",
+        // Платёж с таким исходом не возвращается: сбой вставки платежа пробрасывается исключением,
+        // а сбой возврата строку не проваливает. Ветка — ради полноты перебора.
+        LostOperationRestoreStatus.Failed => "платёж не записан",
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
     };
 
@@ -182,6 +192,7 @@ internal class PscbPaymentsRestoreViewService(
         LostOperationRestoreStatus.AlreadyRestored => "возврат уже в базе — повторный прогон ничего не записал",
         LostOperationRestoreStatus.NumberTaken => "возврат не восстановлен: номер операции занят",
         LostOperationRestoreStatus.NumberNotLost => "возврат не восстановлен: номер операции не ниже счётчика",
+        LostOperationRestoreStatus.Failed => "возврат не записан — восстановите вручную",
         _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
     };
 

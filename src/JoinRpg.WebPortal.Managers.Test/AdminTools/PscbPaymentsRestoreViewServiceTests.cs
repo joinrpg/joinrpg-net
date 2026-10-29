@@ -72,6 +72,28 @@ public class PscbPaymentsRestoreViewServiceTests
     }
 
     /// <summary>
+    /// Сбой вставки возврата не проваливает строку: исход диктует платёж, он восстановлен,
+    /// а сообщение объясняет, что возврат не записан и почему — возврат доделает повторный прогон.
+    /// </summary>
+    [Fact]
+    public async Task ReportsTheFailedRefundWithoutFailingTheRestoredPayment()
+    {
+        var scenario = LostPaymentScenario();
+        scenario.Payments = [LostPaymentJson(refunds: """[{"refundId":"1115846166","state":"END","amount":1500.0}]""", state: "ref")];
+        var (service, domain) = CreateService(scenario);
+        domain.RefundStatus = LostOperationRestoreStatus.Failed;
+        domain.RefundFailureMessage = "Source online payment operation of the claim is not found";
+
+        var result = await service.Restore(Query());
+
+        result.RestoredPaymentsCount.ShouldBe(1);
+        result.RestoredRefundsCount.ShouldBe(0);
+        var row = result.Rows.ShouldHaveSingleItem();
+        row.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
+        row.Message.ShouldBe("платёж восстановлен; возврат не записан — восстановите вручную: Source online payment operation of the claim is not found");
+    }
+
+    /// <summary>
     /// Пропущенный возврат: платёж проведён, а возврата у нас нет. Заявка, тип оплаты и дата
     /// исходного платежа берутся у найденной операции — деньги возвращаются туда, откуда пришли.
     /// </summary>
@@ -338,6 +360,9 @@ public class PscbPaymentsRestoreViewServiceTests
 
         public LostOperationRestoreStatus RefundStatus { get; set; } = LostOperationRestoreStatus.Restored;
 
+        /// <summary>Текст сбоя возврата — попадает в <c>FailureMessage</c> при исходе <c>Failed</c>.</summary>
+        public string? RefundFailureMessage { get; set; }
+
         public bool FeeRecalculated { get; set; } = true;
 
         /// <summary>Исключение на каждый вызов — например, отказ доступа.</summary>
@@ -363,7 +388,10 @@ public class PscbPaymentsRestoreViewServiceTests
                 PaymentStatus,
                 payment.OperationId,
                 PaymentStatus == LostOperationRestoreStatus.Restored && payment.Refund is not null
-                    ? new LostRefundRestoreResult(RefundStatus, payment.OperationId + 1000, FeeRecalculated)
+                    ? RefundStatus == LostOperationRestoreStatus.Failed
+                        // Сбой возврата: записи нет — ни номера, ни пересчёта по возврату, только текст сбоя.
+                        ? new LostRefundRestoreResult(LostOperationRestoreStatus.Failed, OperationId: null, FeeRecalculated, RefundFailureMessage)
+                        : new LostRefundRestoreResult(RefundStatus, payment.OperationId + 1000, FeeRecalculated)
                     : null,
                 FeeRecalculated));
         }

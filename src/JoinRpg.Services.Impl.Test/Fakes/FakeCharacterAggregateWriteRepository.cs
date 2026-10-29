@@ -241,12 +241,24 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
     }
 
     /// <summary>
+    /// Исключение на вставку потерянного возврата — рычаг для проверки «сбой возврата не уносит
+    /// уже записанный платёж». <see cref="FakeUnitOfWork"/> создаёт репозиторий заново на каждое
+    /// обращение, поэтому рычаг статический; сбрасывает его тот же тест, что и выставил.
+    /// </summary>
+    internal static Exception? ThrowOnLostRefundInsert { get; set; }
+
+    /// <summary>
     /// Потерянный платёж так же, как в бою (ADR027): платёж — с прежним номером, возврат — с новым
     /// и со ссылкой на исходную операцию. Повтор платежа узнаётся по занятому номеру, повтор
     /// возврата — по уже проведённому возврату той же операции.
     /// </summary>
     public Task<RestoredFinanceOperationInsert> InsertLostPayment(LostPaymentRow payment)
     {
+        if (ThrowOnLostRefundInsert is { } failure && payment.OperationType == FinanceOperationType.Refund)
+        {
+            throw failure;
+        }
+
         var claim = mock.Project.Claims.SingleOrDefault(
                 c => c.ClaimId == payment.ClaimId.ClaimId && c.ProjectId == payment.ClaimId.ProjectId.Value)
             ?? throw new JoinRpgEntityNotFoundException(payment.ClaimId.ClaimId, "claim");
@@ -288,9 +300,11 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         }
 
         // ExtraAction пустой намеренно: у боевого онлайн-платежа его нет, а PaidFee означал бы
-        // взнос, принятый мастером руками.
+        // взнос, принятый мастером руками. Время комментария — момент денег (OperationDate), как
+        // в боевом батче: запись операции несёт момент восстановления, а комментарий встаёт
+        // в историю обсуждения на своё место.
         var comment = NewComment(discussion, commentId, payment.AuthorId, payment.IsCommentByPlayer, isVisibleToPlayer: true,
-            extraAction: null, payment.CreatedAt, payment.Text,
+            extraAction: null, payment.OperationDate, payment.Text,
             // Служебный пользователь онлайн-платежей в моке проекта не живёт, а в реальной базе
             // есть (его создаёт сид миграций), поэтому автор здесь — вне мока.
             authorOverride: mock.TryGetUser(payment.AuthorId.Value) ?? new User { UserId = payment.AuthorId.Value });

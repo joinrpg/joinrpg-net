@@ -141,6 +141,13 @@ public interface ICharacterAggregateWriteRepository
     /// по уже существующему проведённому возврату той же операции.
     /// </para>
     /// <para>
+    /// Время разделено: комментарий встаёт в обсуждение заявки датой денег
+    /// (<see cref="LostPaymentRow.OperationDate"/>) — на своё место в истории, а запись операции
+    /// несёт момент восстановления (<see cref="LostPaymentRow.CreatedAt"/> и
+    /// <see cref="LostPaymentRow.ChangedAt"/>) — единственный след того, когда строка появилась
+    /// в базе.
+    /// </para>
+    /// <para>
     /// Выполняется сразу, одной своей транзакцией, мимо <c>SaveChanges</c>, тем же каркасом батча,
     /// что и <see cref="InsertRestoredFinanceOperation"/>. Отличается видом операции (<c>Online</c>
     /// и <c>Refund</c> вместо <c>Submit</c>), пустым действием комментария (у боевого онлайн-платежа
@@ -229,9 +236,14 @@ public record RestoredFinanceOperationInsert(RestoredCommentInsertResult Result,
 /// <c>true</c>; при <c>false</c> его автор попал бы в кандидаты в бывшие мастера (ADR019, §6).
 /// </param>
 /// <param name="MoneyAmount">Со знаком: у платежа положительная, у возврата отрицательная.</param>
-/// <param name="CreatedAt">Момент восстановления (UTC) — время создания записи, а не денег.</param>
-/// <param name="ChangedAt">Момент восстановления (UTC).</param>
-/// <param name="OperationDate">Дата денег — <c>stateDate</c> банка в UTC.</param>
+/// <param name="CreatedAt">
+/// Момент восстановления (UTC) — время создания записи операции, а не денег; время создания и
+/// правки комментария берётся вместо него из <c>OperationDate</c>.
+/// </param>
+/// <param name="ChangedAt">Момент восстановления (UTC) — время правки записи операции.</param>
+/// <param name="OperationDate">
+/// Дата денег — <c>stateDate</c> банка в UTC; она же — время создания и правки комментария.
+/// </param>
 /// <param name="BankOperationKey">Номер платежа в банке (<c>paymentId</c>).</param>
 /// <param name="BankRefundKey">Номер возврата в банке (<c>refundId</c>); только для возврата.</param>
 public record LostPaymentRow(

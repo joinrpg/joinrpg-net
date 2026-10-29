@@ -4,6 +4,7 @@ using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Dal.Impl.Repositories.Characters;
 
@@ -443,17 +444,29 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         // банковских реквизитов. Возврат своего номера в банке не имеет, поэтому вставляется с новым
         // и ссылается на исходную операцию; его повтор узнаётся по проведённому возврату той же
         // операции — тот же критерий, по которому боевой RefundAsync отказывает во втором возврате.
+        //
+        // Время разделено (ADR027): комментарий встаёт в обсуждение заявки датой денег
+        // (@operationDate), на своё место в истории, а запись операции несёт момент восстановления
+        // (@createdAt/@p7) — единственный след того, когда строка появилась в базе.
+        //
+        // Проверки в батче — последний рубеж обороны перед записью денег: доменный сервис доверяет
+        // плану восстановления, поэтому тип оплаты проверяется на онлайн (наличный тип мастера
+        // попал бы в операцию Online и рассинхронизировал бы сверку мастера; OnlineSubscription
+        // не годится тоже — подписки восстановлением не проводятся), а исходная операция возврата —
+        // на онлайн-операцию той же заявки: возврат на чужую заявку или на не-онлайн операцию
+        // пройти не должен.
         var sql = $"""
             SET XACT_ABORT ON;
             BEGIN TRY
                 BEGIN TRANSACTION;
                 DECLARE @createdAt datetime = @p6;
+                DECLARE @operationDate datetime = @p8;
                 DECLARE @discussionId int;
                 SELECT @discussionId = CommentDiscussionId FROM dbo.Claims WHERE ClaimId = @p0 AND ProjectId = @p1;
                 IF @discussionId IS NULL
                     THROW 50000, N'Claim is not found in the project', 1;
-                IF NOT EXISTS (SELECT 1 FROM dbo.PaymentTypes WHERE PaymentTypeId = @p10 AND ProjectId = @p1)
-                    THROW 50000, N'Payment type is not found in the project', 1;
+                IF NOT EXISTS (SELECT 1 FROM dbo.PaymentTypes WHERE PaymentTypeId = @p10 AND ProjectId = @p1 AND TypeKind = {(int)PaymentTypeKind.Online})
+                    THROW 50000, N'Online payment type is not found in the project', 1;
                 DECLARE @operationId int;
                 IF @p15 = 1
                 BEGIN
@@ -480,14 +493,14 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                     SET IDENTITY_INSERT dbo.Comments ON;
                     INSERT INTO dbo.Comments (CommentId, ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
                         LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
-                    VALUES (@commentId, @p1, @discussionId, NULL, @createdAt, @createdAt, @p4, @p5, 1, NULL);
+                    VALUES (@commentId, @p1, @discussionId, NULL, @operationDate, @operationDate, @p4, @p5, 1, NULL);
                     SET IDENTITY_INSERT dbo.Comments OFF;
                     SET @operationId = @commentId;
                 END
                 ELSE
                 BEGIN
-                    IF NOT EXISTS (SELECT 1 FROM dbo.FinanceOperations WHERE CommentId = @p3)
-                        THROW 50000, N'Source payment operation is not found', 1;
+                    IF NOT EXISTS (SELECT 1 FROM dbo.FinanceOperations WHERE CommentId = @p3 AND ClaimId = @p0 AND ProjectId = @p1 AND OperationType = {(int)FinanceOperationType.Online})
+                        THROW 50000, N'Source online payment operation of the claim is not found', 1;
                     DECLARE @existingRefundId int;
                     SELECT TOP 1 @existingRefundId = CommentId FROM dbo.FinanceOperations WITH (UPDLOCK, HOLDLOCK)
                     WHERE RefundedOperationId = @p3
@@ -501,7 +514,7 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                     END;
                     INSERT INTO dbo.Comments (ProjectId, CommentDiscussionId, ParentCommentId, CreatedTime,
                         LastEditTime, AuthorUserId, IsCommentByPlayer, IsVisibleToPlayer, ExtraAction)
-                    VALUES (@p1, @discussionId, NULL, @createdAt, @createdAt, @p4, @p5, 1, NULL);
+                    VALUES (@p1, @discussionId, NULL, @operationDate, @operationDate, @p4, @p5, 1, NULL);
                     SET @operationId = CAST(SCOPE_IDENTITY() AS int);
                 END;
                 INSERT INTO dbo.CommentTexts (CommentId, Text_Contents) VALUES (@operationId, @p12);

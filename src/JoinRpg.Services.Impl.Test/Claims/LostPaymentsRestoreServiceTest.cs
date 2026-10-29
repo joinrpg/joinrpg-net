@@ -49,6 +49,21 @@ public class LostPaymentsRestoreServiceTest : ClaimServiceTestBase
         return claim;
     }
 
+    /// <summary>
+    /// Заявка в проекте с расписанием взносов: при полной оплате взнос фиксируется — так эффект
+    /// <c>UpdateClaimFeeIfRequired</c> виден по <see cref="Claim.CurrentFee"/>.
+    /// </summary>
+    private Claim CreateClaimWithFee(int fee)
+    {
+        mock.Project.ProjectFeeSettings.Add(new ProjectFeeSetting
+        {
+            StartDate = new DateTime(2026, 1, 1),
+            Fee = fee,
+            PreferentialFee = fee,
+        });
+        return CreateClaim();
+    }
+
     private PaymentTypeIdentification CreateOnlinePaymentType(bool isActive = true)
     {
         var online = new PaymentType(PaymentTypeKind.Online, mock.Project.ProjectId, mock.Master.UserId)
@@ -128,8 +143,10 @@ public class LostPaymentsRestoreServiceTest : ClaimServiceTestBase
         comment.IsCommentByPlayer.ShouldBeTrue();
         comment.IsVisibleToPlayer.ShouldBeTrue();
         comment.ExtraAction.ShouldBeNull();
-        // Время рождения записи — момент денег: комментарий встаёт в историю на своё место.
+        // Время комментария — момент денег (OperationDate), а не момент восстановления:
+        // так он встаёт в историю обсуждения на своё место.
         comment.CreatedAt.ShouldBe(OperationDate);
+        comment.LastEditTime.ShouldBe(OperationDate);
         comment.CommentText.Text.Contents.ShouldBe(
             $"[восстановлено] Онлайн-оплата на сумму {Money:F2}₽ подтверждена.{Environment.NewLine}{Environment.NewLine}за Васю");
     }
@@ -166,6 +183,46 @@ public class LostPaymentsRestoreServiceTest : ClaimServiceTestBase
 
         // Деньги пришли и ушли: на взнос заявки полный возврат не влияет.
         claim.CurrentFee.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Сбой вставки возврата после вставки платежа не уносит уже записанный платёж: взнос
+    /// пересчитывается на полную сумму (возврат не записан — деньги остались), письмо о платеже
+    /// отправляется, а возврат получает отдельный исход <c>Failed</c> с текстом сбоя; повторный
+    /// прогон восстановит его как RefundMissing.
+    /// </summary>
+    [Fact]
+    public async Task KeepsThePaymentWhenTheRefundInsertFails()
+    {
+        var claim = CreateClaimWithFee(Money);
+        var paymentType = CreateOnlinePaymentType();
+        FakeCharacterAggregateWriteRepository.ThrowOnLostRefundInsert = new InvalidOperationException("Исходная операция не найдена");
+        try
+        {
+            var result = await CreateService().RestorePaymentAsync(
+                Payment(claim.GetId(), paymentType, Refund(claim.GetId(), paymentType, LostOperationId)));
+
+            result.Status.ShouldBe(LostOperationRestoreStatus.Restored);
+            result.FeeRecalculated.ShouldBeTrue();
+            var refund = result.Refund.ShouldNotBeNull();
+            refund.Status.ShouldBe(LostOperationRestoreStatus.Failed);
+            refund.OperationId.ShouldBeNull();
+            refund.FailureMessage.ShouldNotBeNull().ShouldContain("Исходная операция не найдена");
+            refund.FeeRecalculated.ShouldBeTrue();
+
+            // Возврат не записан — взнос фиксируется на полную сумму платежа.
+            claim.FinanceOperations.Count.ShouldBe(1);
+            claim.CurrentFee.ShouldBe(Money);
+
+            // Письмо о платеже ушло, письма о возврате нет.
+            var notification = claimNotifications.OnlinePayments.ShouldHaveSingleItem();
+            notification.Text.TemplateContents.ShouldBe($"Онлайн-оплата на сумму {Money:F2}₽ вновь отражена в вашей заявке.");
+            notification.FinanceOperationId.FinanceOperationId.ShouldBe(LostOperationId);
+        }
+        finally
+        {
+            FakeCharacterAggregateWriteRepository.ThrowOnLostRefundInsert = null;
+        }
     }
 
     /// <summary>
@@ -366,5 +423,53 @@ public class LostPaymentsRestoreServiceTest : ClaimServiceTestBase
         result.Status.ShouldBe(LostOperationRestoreStatus.Restored);
         result.FeeRecalculated.ShouldBeFalse();
         claim.FinanceOperations.Count.ShouldBe(1);
+    }
+
+    /// <summary>
+    /// Пересчёт взноса положительным исходом: платёж с полным возвратом в остальных тестах
+    /// обнуляется сам, поэтому здесь один платёж на полную цену расписания — взнос фиксируется.
+    /// </summary>
+    [Fact]
+    public async Task FixesTheFeeByTheSingleRestoredPayment()
+    {
+        var claim = CreateClaimWithFee(Money);
+        var paymentType = CreateOnlinePaymentType();
+
+        var result = await CreateService().RestorePaymentAsync(Payment(claim.GetId(), paymentType));
+
+        result.Status.ShouldBe(LostOperationRestoreStatus.Restored);
+        result.FeeRecalculated.ShouldBeTrue();
+        claim.CurrentFee.ShouldBe(Money);
+    }
+
+    /// <summary>
+    /// Взнос фиксируется по цене на дату денег, а не на сегодняшнюю: расписание с тех пор
+    /// подорожало, но восстановленный платёж закрывает старую цену — <c>GetFeeToFix</c> берёт
+    /// расписание на дату операции.
+    /// </summary>
+    [Fact]
+    public async Task FixesTheFeeAtThePriceOfTheMoneyDate()
+    {
+        const int oldPrice = 1000;
+        mock.Project.ProjectFeeSettings.Add(new ProjectFeeSetting
+        {
+            StartDate = new DateTime(2026, 1, 1),
+            Fee = oldPrice,
+            PreferentialFee = oldPrice,
+        });
+        mock.Project.ProjectFeeSettings.Add(new ProjectFeeSetting
+        {
+            StartDate = OperationDate.AddMonths(1),
+            Fee = Money,
+            PreferentialFee = Money,
+        });
+        var claim = CreateClaim();
+        var paymentType = CreateOnlinePaymentType();
+
+        var result = await CreateService().RestorePaymentAsync(Payment(claim.GetId(), paymentType, money: oldPrice));
+
+        result.Status.ShouldBe(LostOperationRestoreStatus.Restored);
+        result.FeeRecalculated.ShouldBeTrue();
+        claim.CurrentFee.ShouldBe(oldPrice);
     }
 }
