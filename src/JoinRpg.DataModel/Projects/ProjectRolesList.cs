@@ -42,6 +42,8 @@ public class ProjectRolesList : IProjectEntity, IValidatableObject
 
     public ShowRolesFilter ShowRolesFilter { get; set; }
 
+    public PlayerAvatarMode PlayerAvatar { get; set; }
+
     #region interface implementations
 
     int IOrderableEntity.Id => ProjectId;
@@ -62,6 +64,14 @@ public class ProjectRolesList : IProjectEntity, IValidatableObject
             yield return new ValidationResult(
                 "В публичной сетке ролей нельзя показывать все контакты",
                 [nameof(ContactsColumn)]);
+        }
+
+        if (PlayerAvatar != PlayerAvatarMode.None && ContactsColumn == PlayerColumnMode.None)
+        {
+            // TODO[Localize]
+            yield return new ValidationResult(
+                "Аватарка показывается в колонке «Игрок» — без колонки её негде показать",
+                [nameof(PlayerAvatar)]);
         }
     }
 }

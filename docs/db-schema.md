@@ -177,6 +177,7 @@ erDiagram
         enum GroupsColumn
         enum GroupsViewMode "RolesGridGroupsViewMode"
         enum ShowRolesFilter
+        enum PlayerAvatar "PlayerAvatarMode"
     }
 
     ProjectBadgeTemplates {

@@ -22,6 +22,9 @@
         <FormRowFor For="@(() => _model.ContactsColumn)">
             <EnumRadioButtonGroup @bind-SelectedValue="_model.ContactsColumn" />
         </FormRowFor>
+        <FormRowFor For="@(() => _model.PlayerAvatar)">
+            <EnumRadioButtonGroup @bind-SelectedValue="_model.PlayerAvatar" />
+        </FormRowFor>
         <FormRowFor For="@(() => _model.GroupsColumn)">
             <EnumRadioButtonGroup @bind-SelectedValue="_model.GroupsColumn" />
         </FormRowFor>

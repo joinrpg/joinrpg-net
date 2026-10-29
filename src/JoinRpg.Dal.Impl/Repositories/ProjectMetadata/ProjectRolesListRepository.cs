@@ -38,7 +38,8 @@ internal class ProjectRolesListRepository(MyDbContext ctx) : IProjectRolesListRe
             ContactsColumn: entity.ContactsColumn,
             GroupsColumn: entity.GroupsColumn,
             GroupsViewMode: entity.GroupsViewMode,
-            ShowRolesFilter: entity.ShowRolesFilter
+            ShowRolesFilter: entity.ShowRolesFilter,
+            PlayerAvatar: entity.PlayerAvatar
         );
     }
 }

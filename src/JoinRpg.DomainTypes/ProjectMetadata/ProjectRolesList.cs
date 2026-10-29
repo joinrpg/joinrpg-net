@@ -25,6 +25,18 @@ public enum PlayerColumnMode
     NameOnly = 3,
 }
 
+/// <summary>Аватарка игрока в колонке «Игрок» сетки ролей</summary>
+/// <remarks>Значения хранятся в БД числами — не перенумеровывать.</remarks>
+public enum PlayerAvatarMode
+{
+    /// <summary>Без аватарки</summary>
+    None = 0,
+    /// <summary>Маленькая аватарка рядом с именем игрока</summary>
+    Small = 1,
+    /// <summary>Большая аватарка рядом с именем игрока</summary>
+    Large = 2,
+}
+
 /// <summary>Режим показа групп в сетке ролей</summary>
 public enum RolesGridGroupsViewMode
 {
@@ -50,6 +62,7 @@ public enum RolesGridGroupsViewMode
 /// <param name="GroupsColumn">Показывать ли специальную колонку «интересные группы» (нет, только публичные группы, все группы)</param>
 /// <param name="GroupsViewMode">Как показывать группы: не показывать, секциями в таблице, деревом</param>
 /// <param name="ShowRolesFilter">Какие роли показывать: все, только вакантные, только горячие</param>
+/// <param name="PlayerAvatar">Показывать ли аватарку игрока в колонке «Игрок»</param>
 [method: JsonConstructor]
 public record class ProjectRolesList(
     ProjectRolesListIdentification? ProjectRolesListId,
@@ -60,7 +73,8 @@ public record class ProjectRolesList(
     PlayerColumnMode ContactsColumn,
     ProjectRolesListVisibilityMode GroupsColumn,
     RolesGridGroupsViewMode GroupsViewMode,
-    ShowRolesFilter ShowRolesFilter
+    ShowRolesFilter ShowRolesFilter,
+    PlayerAvatarMode PlayerAvatar = PlayerAvatarMode.None
     )
 {
     public ProjectRolesList(

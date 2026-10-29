@@ -138,6 +138,7 @@ internal class ProjectRolesListService(
         entity.GroupsColumn = model.GroupsColumn;
         entity.GroupsViewMode = model.GroupsViewMode;
         entity.ShowRolesFilter = model.ShowRolesFilter;
+        entity.PlayerAvatar = model.PlayerAvatar;
     }
 
     private static ProjectRolesList ToDomain(DataModel.ProjectRolesList entity)
@@ -158,7 +159,8 @@ internal class ProjectRolesListService(
             ContactsColumn: entity.ContactsColumn,
             GroupsColumn: entity.GroupsColumn,
             GroupsViewMode: entity.GroupsViewMode,
-            ShowRolesFilter: entity.ShowRolesFilter
+            ShowRolesFilter: entity.ShowRolesFilter,
+            PlayerAvatar: entity.PlayerAvatar
         );
     }
 
