@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
@@ -27,7 +28,7 @@ public class FinanceSetupViewModel
     [ReadOnly(true)]
     public bool IsAdmin { get; }
 
-    public FinanceSetupViewModel(Project project, ProjectInfo projectInfo, int currentUserId, bool isAdmin, User virtualPaymentsUser)
+    public FinanceSetupViewModel(Project project, ProjectInfo projectInfo, int currentUserId, bool isAdmin, UserInfoHeader virtualPaymentsUser)
     {
         IsAdmin = isAdmin;
         ProjectName = project.ProjectName;
@@ -38,7 +39,6 @@ public class FinanceSetupViewModel
         // (UserInfoHeader), поэтому не приходится ходить по EF-навигациям PaymentType.User
         // и ProjectAcl.User — каждая из них тянула отдельный запрос к Users (#4998).
         var financeSettings = projectInfo.ProjectFinanceSettings;
-        var virtualPaymentsUserInfo = virtualPaymentsUser.ToUserInfoHeader();
 
         var potentialCashPaymentTypes =
             projectInfo.Masters
@@ -57,10 +57,10 @@ public class FinanceSetupViewModel
         {
             financeSettings.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.Online)
                 .Select(pt => new PaymentTypeListItemViewModel(pt))
-                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.Online, virtualPaymentsUserInfo, projectInfo.ProjectId),
+                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.Online, virtualPaymentsUser, projectInfo.ProjectId),
             financeSettings.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.OnlineSubscription)
                 .Select(pt => new PaymentTypeListItemViewModel(pt))
-                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.OnlineSubscription, virtualPaymentsUserInfo, projectInfo.ProjectId),
+                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.OnlineSubscription, virtualPaymentsUser, projectInfo.ProjectId),
         };
 
         PaymentTypes =

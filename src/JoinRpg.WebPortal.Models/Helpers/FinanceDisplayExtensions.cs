@@ -11,12 +11,6 @@ public static class FinanceDisplayExtensions
     /// <summary>
     /// Returns display name of the payment type kind
     /// </summary>
-    public static string GetDisplayName(this PaymentTypeKindViewModel kind, User? user, string? defaultName = null)
-        => kind.GetDisplayName(user?.ToUserInfoHeader(), defaultName);
-
-    /// <summary>
-    /// Returns display name of the payment type kind
-    /// </summary>
     public static string GetDisplayName(this PaymentTypeKindViewModel kind, UserInfoHeader? user, string? defaultName = null)
     {
         return kind switch
@@ -32,12 +26,6 @@ public static class FinanceDisplayExtensions
     /// <summary>
     /// Returns display name of the payment type kind
     /// </summary>
-    public static string GetDisplayName(this PaymentTypeKind kind, User user, string? defaultName = null)
-        => ((PaymentTypeKindViewModel)kind).GetDisplayName(user, defaultName);
-
-    /// <summary>
-    /// Returns display name of the payment type kind
-    /// </summary>
     public static string GetDisplayName(this PaymentTypeKind kind, UserInfoHeader user, string? defaultName = null)
         => ((PaymentTypeKindViewModel)kind).GetDisplayName(user, defaultName);
 
@@ -48,7 +36,7 @@ public static class FinanceDisplayExtensions
     {
         ArgumentNullException.ThrowIfNull(paymentType);
 
-        return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
+        return paymentType.TypeKind.GetDisplayName(paymentType.User.ToUserInfoHeader(), paymentType.Name);
     }
 
     /// <summary>
