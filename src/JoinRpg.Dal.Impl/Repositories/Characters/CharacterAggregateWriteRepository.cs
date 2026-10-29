@@ -131,9 +131,9 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         }
         var (isPublic, hidePlayerForCharacter) = CharacterTypeInfo.GetVisibilityFlags(shell.Visibility);
 
-        // Поля — как у доменного создания (CharacterServiceImpl.AddCharacter → ApplySettings и
+        // Поля — как у доменного создания (CharacterServiceImpl.AddCharacter → ApplyTypeSettings и
         // SaveFields с пустым слоем): тип, «горячесть» и видимость из оболочки (флаги видимости — как
-        // их пишет ApplySettings), заявки принимает (IsAcceptingClaims = 1 у всех, кроме NPC: выгрузка
+        // их пишет ApplyTypeSettings), заявки принимает (IsAcceptingClaims = 1 у всех, кроме NPC: выгрузка
         // мастера флаг «игрок может подать заявку» не несёт, восстанавливаем значение по умолчанию),
         // без лимита слота, активный; поля — пустой JSON-объект, как сериализует пустой слой;
         // группы — только корневая; аудит — сейчас. Порядок персонажей в группе не трогается.

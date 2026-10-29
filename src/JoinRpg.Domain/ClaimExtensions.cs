@@ -86,6 +86,24 @@ public static class ClaimExtensions
         }
     }
 
+    /// <summary>
+    /// Помечает персонажа изменённым, если заявка утверждена: правка утверждённой заявки — это правка
+    /// персонажа.
+    /// </summary>
+    /// <param name="claim">Заявка, которую меняет операция.</param>
+    /// <param name="fallbackCharacter">Персонаж операции — на случай, если у заявки персонаж не загружен.</param>
+    /// <param name="now">Время операции.</param>
+    /// <param name="userId">Кто меняет.</param>
+    public static void MarkCharacterChangedIfApproved(this Claim claim, Character fallbackCharacter, DateTime now, int userId)
+    {
+        if (claim.ClaimStatus == ClaimStatus.Approved)
+        {
+            // Персонаж берётся из заявки, а не из хэндла: при утверждении заявки на слот заявка
+            // к этому моменту уже переехала на только что созданного персонажа.
+            EntityAudit.MarkChanged(claim.Character ?? fallbackCharacter, now, userId);
+        }
+    }
+
     public static IEnumerable<Claim> OfUserActive(this IEnumerable<Claim> enumerable, int? currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.ClaimStatus.IsActive());
 
     public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
