@@ -26,6 +26,14 @@ public class UnifiedGridViewServiceTest
         UgScopeView scope = UgScopeView.Captain,
         int? userId = null,
         FakeCaptainRulesRepository? captainRules = null)
+        => (await GetPage(filter, scope, userId, captainRules)).Items;
+
+    private async Task<UgPageViewModel> GetPage(
+        UgStatusFilterView filter,
+        UgScopeView scope = UgScopeView.Captain,
+        int? userId = null,
+        FakeCaptainRulesRepository? captainRules = null,
+        int page = 1)
     {
         characterInfoRepository = new FakeCharacterInfoRepository(Mock);
         IUnifiedGridClient service = new UnifiedGridViewService(
@@ -34,7 +42,7 @@ public class UnifiedGridViewServiceTest
             new FakeProjectMetadataRepository(Mock),
             characterInfoRepository);
 
-        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter));
+        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter), page);
     }
 
     /// <summary>
@@ -305,6 +313,102 @@ public class UnifiedGridViewServiceTest
     public async Task MasterScopeRequiresMasterAccess()
         => (await GetItems(UgStatusFilterView.Active, UgScopeView.Master, userId: Mock.Player.UserId))
             .ShouldBeEmpty();
+
+    /// <summary>
+    /// Свежие заявки — наверх, как в старом гриде мастера; персонажи без показанных заявок — в конце,
+    /// по имени.
+    /// </summary>
+    [Fact]
+    public async Task SortedByUpdateDateThenByName()
+    {
+        // Алфавит идёт против даты — иначе тест прошёл бы и с сортировкой по имени.
+        var old = Mock.CreateCharacter("a old");
+        Mock.CreateClaim(old, Mock.Player).CreateDate = At(1);
+        var fresh = Mock.CreateCharacter("z fresh");
+        Mock.CreateClaim(fresh, Mock.Player).CreateDate = At(2);
+        var vacantB = Mock.CreateCharacter("b vacant");
+        var vacantA = Mock.CreateCharacter("a vacant");
+
+        var names = await GetNames(UgStatusFilterView.Active);
+
+        names.ShouldBe([fresh.CharacterName, old.CharacterName, vacantA.CharacterName, vacantB.CharacterName, Mock.Character.CharacterName]);
+    }
+
+    /// <summary>
+    /// Дата персонажа — самая свежая из его заявок: одна старая заявка его вниз не тянет.
+    /// </summary>
+    [Fact]
+    public async Task CharacterDateIsItsFreshestClaim()
+    {
+        var neighbour = Mock.CreateCharacter("a neighbour");
+        Mock.CreateClaim(neighbour, Mock.Player).CreateDate = At(2);
+        var twoClaims = Mock.CreateCharacter("b two claims");
+        Mock.CreateClaim(twoClaims, Mock.Player).CreateDate = At(1);
+        Mock.CreateClaim(twoClaims, Mock.Master).CreateDate = At(3);
+
+        (await GetNames(UgStatusFilterView.Discussion)).ShouldBe([twoClaims.CharacterName, neighbour.CharacterName]);
+    }
+
+    /// <summary>
+    /// При одинаковых имени и дате порядок задаёт id — иначе страницы теряли бы и дублировали строки.
+    /// </summary>
+    [Fact]
+    public async Task SameNamesOrderedById()
+    {
+        var first = Mock.CreateCharacter("Стражник");
+        var second = Mock.CreateCharacter("Стражник");
+
+        var ids = (await GetItems(UgStatusFilterView.Active))
+            .Where(item => item.Character.Name.Name == "Стражник")
+            .Select(item => item.Character.Name.CharacterId.CharacterId);
+
+        ids.ShouldBe([first.CharacterId, second.CharacterId]);
+    }
+
+    private static DateTime At(int month) => new(2026, month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+    /// <summary>
+    /// Страница режется по персонажам, а номер за пределами диапазона прижимается к последней странице.
+    /// </summary>
+    [Fact]
+    public async Task PagesAreCutByCharacters()
+    {
+        for (var i = 0; i < UnifiedGridViewService.PageSize; i++)
+        {
+            _ = Mock.CreateCharacter($"character {i:D3}");
+        }
+        var total = UnifiedGridViewService.PageSize + 1; // плюс Mock.Character
+
+        var first = await GetPage(UgStatusFilterView.Active);
+        var beyond = await GetPage(UgStatusFilterView.Active, page: 10);
+
+        first.Items.Count.ShouldBe(UnifiedGridViewService.PageSize);
+        first.TotalPages.ShouldBe(2);
+        first.TotalCharacters.ShouldBe(total);
+        beyond.Page.ShouldBe(2);
+        beyond.Items.ShouldHaveSingleItem();
+        first.Items.Concat(beyond.Items).Select(item => item.Character.Name.CharacterId).Distinct().Count().ShouldBe(total);
+    }
+
+    [Theory]
+    [InlineData(-5)]
+    [InlineData(0)]
+    public async Task PageBeforeFirstIsFirst(int page)
+        => (await GetPage(UgStatusFilterView.Active, page: page)).Page.ShouldBe(1);
+
+    [Fact]
+    public async Task EmptyGridIsOnePageWithoutItems()
+    {
+        var page = await GetPage(
+            UgStatusFilterView.Active,
+            captainRules: new FakeCaptainRulesRepository(Mock, hasRules: false),
+            page: 3);
+
+        page.Items.ShouldBeEmpty();
+        page.Page.ShouldBe(1);
+        page.TotalPages.ShouldBe(0);
+        page.TotalCharacters.ShouldBe(0);
+    }
 
     private sealed class FakeCaptainRulesRepository(MockedProject mock, bool hasRules = true, int? groupId = null) : ICaptainRulesRepository
     {

@@ -133,10 +133,13 @@ Task<UgPageViewModel> GetGrid(ProjectIdentification projectId, UgScopeView scope
 
 ```csharp
 record UgPageViewModel(
-    IReadOnlyCollection<UgItemViewModel> Items,   // текущая страница
+    IReadOnlyList<UgItemViewModel> Items,   // текущая страница
+    int Page,                               // отданная страница: запрошенная, прижатая к диапазону
+    int TotalPages,
     int TotalCharacters,
     IReadOnlyCollection<ClaimIdentification> OperationClaimIds,         // весь результат фильтра,
-    IReadOnlyCollection<CharacterIdentification> OperationCharacterIds); // см. §5; у капитана пусто
+    IReadOnlyCollection<CharacterIdentification> OperationCharacterIds); // см. §5; у капитана пусто.
+                                                                         // Оба — с шага 6
 ```
 
 Пейджинг сокращает ответ и время рендера на клиенте, **но не нагрузку на БД**. Отбор по проблемам и по
