@@ -24,6 +24,11 @@ public interface IUserRepository
     Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds);
     Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId);
 
+    /// <summary>
+    /// Аватарки пачкой, одним запросом. Отсутствующих в БД в ответе нет; повторы во входе не размножают ответ.
+    /// </summary>
+    Task<IReadOnlyCollection<UserAvatar>> LoadAvatars(IReadOnlyCollection<AvatarIdentification> avatarIds);
+
     Task<UserInfo?> GetUserInfo(UserIdentification userId);
 
     Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds);

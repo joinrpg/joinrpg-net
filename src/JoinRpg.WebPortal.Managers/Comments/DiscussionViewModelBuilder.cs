@@ -24,7 +24,8 @@ namespace JoinRpg.WebPortal.Managers.Comments;
 /// </para>
 /// <para>
 /// Запросов три, независимо от длины обсуждения: шапки авторов одной пачкой, отметка прочтения и
-/// аватарки (из кеша <see cref="IAvatarLoader"/>, БД — раз на аватарку за жизнь процесса).
+/// аватарки — одним вызовом <see cref="IAvatarLoader.GetAvatars"/> (вечный кеш, промахи — одним
+/// запросом к БД, #5774).
 /// </para>
 /// </remarks>
 public sealed class DiscussionViewModelBuilder(
@@ -84,7 +85,7 @@ public sealed class DiscussionViewModelBuilder(
             return new CommentViewModel(
                 comment.Id,
                 new UserLinkViewModel(author),
-                author.Avatar is { } avatarId ? avatars[avatarId] : null,
+                author.Avatar is { } avatarId ? avatars.GetValueOrDefault(avatarId) : null,
                 new DateTimeOffset(DateTime.SpecifyKind(comment.CreatedAt, DateTimeKind.Utc)),
                 comment.IsCommentByPlayer,
                 comment.IsVisibleToPlayer,
@@ -128,14 +129,18 @@ public sealed class DiscussionViewModelBuilder(
         return headers.ToDictionary(header => header.UserId);
     }
 
+    /// <summary>
+    /// Адреса аватарок авторов. Аватарки, которой нет в БД, в словаре нет — у автора тогда не будет картинки.
+    /// </summary>
     private async Task<IReadOnlyDictionary<AvatarIdentification, Uri>> LoadAvatars(IEnumerable<UserInfoHeader> authors)
     {
-        var result = new Dictionary<AvatarIdentification, Uri>();
-        foreach (var avatarId in authors.Select(author => author.Avatar).OfType<AvatarIdentification>().Distinct())
+        var avatarIds = authors.Select(author => author.Avatar).OfType<AvatarIdentification>().Distinct().ToList();
+        if (avatarIds.Count == 0)
         {
-            result[avatarId] = (await avatarLoader.GetAvatar(avatarId, AvatarSize)).Uri;
+            return new Dictionary<AvatarIdentification, Uri>();
         }
-        return result;
+        var avatars = await avatarLoader.GetAvatars(avatarIds, AvatarSize);
+        return avatars.ToDictionary(pair => pair.Key, pair => pair.Value.Uri);
     }
 
     private static CommentFinanceViewModel ToFinanceViewModel(CommentFinanceInfo finance, ProjectInfo projectInfo, UserIdentification currentUserId)

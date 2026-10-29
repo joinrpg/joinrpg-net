@@ -54,6 +54,12 @@ public class GetUserInfoMethodTest
 
         Task<AvatarInfo> IAvatarLoader.GetAvatar(AvatarIdentification userAvatarId, int recommendedSize)
             => Task.FromResult(new AvatarInfo(_uri, recommendedSize));
+
+        Task<IReadOnlyDictionary<AvatarIdentification, AvatarInfo>> IAvatarLoader.GetAvatars(
+            IReadOnlyCollection<AvatarIdentification> avatarIds,
+            int recommendedSize)
+            => Task.FromResult<IReadOnlyDictionary<AvatarIdentification, AvatarInfo>>(
+                avatarIds.Distinct().ToDictionary(id => id, _ => new AvatarInfo(_uri, recommendedSize)));
     }
 
     private static ClaimsPrincipal BuildPrincipal(string? subClaim, params string[] scopes)

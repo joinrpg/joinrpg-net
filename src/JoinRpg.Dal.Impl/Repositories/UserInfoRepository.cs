@@ -88,6 +88,22 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         => ctx.Set<User>()
             .SelectMany(user => user.Avatars)
             .SingleOrDefaultAsync(a => a.UserAvatarId == userAvatarId.Value);
+
+    async Task<IReadOnlyCollection<UserAvatar>> IUserRepository.LoadAvatars(IReadOnlyCollection<AvatarIdentification> avatarIds)
+    {
+        if (avatarIds.Count == 0)
+        {
+            return [];
+        }
+
+        var ids = avatarIds.Select(x => x.Value).Distinct().ToList();
+        return await ctx.Set<User>()
+            .AsNoTracking()
+            .SelectMany(user => user.Avatars)
+            .Where(a => ids.Contains(a.UserAvatarId))
+            .ToListAsync();
+    }
+
     public async Task<UserInfo?> GetUserInfo(UserIdentification userId) => (await GetUserInfosByPredicate(user => user.UserId == userId.Value)).SingleOrDefault();
 
     public async Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds)

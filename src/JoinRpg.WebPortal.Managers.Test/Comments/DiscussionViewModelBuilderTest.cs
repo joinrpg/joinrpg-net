@@ -19,11 +19,16 @@ public class DiscussionViewModelBuilderTest
 {
     private static readonly CommentDiscussionId DiscussionId = new(700);
     private static readonly AvatarIdentification MasterAvatar = new(55);
+    private static readonly AvatarIdentification PlayerAvatar = new(56);
     private static readonly DateTime Start = new(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc);
 
     private readonly MockedProject mock = new();
     private readonly FakeCommentDiscussionRepository discussions = new();
     private readonly List<CommentInfo> comments = [];
+    private readonly FakeAvatarLoader avatarLoader = new();
+
+    /// <summary>Аватарка игрока; по умолчанию у игрока мока её нет.</summary>
+    private AvatarIdentification? playerAvatar;
 
     private UserIdentification Master => new(mock.Master.UserId);
     private UserIdentification Player => new(mock.Player.UserId);
@@ -62,8 +67,10 @@ public class DiscussionViewModelBuilderTest
         var users = new FakeUserRepository(userId =>
             userId == Master
                 ? mock.MasterInfo with { SelectedAvatar = new UserAvatarSource(MasterAvatar, null, "https://example.com/master.png") }
-                : mock.TryGetUserInfo(userId));
-        var builder = new DiscussionViewModelBuilder(users, discussions, new FakeAvatarLoader(), new FakeCurrentUserAccessor(currentUser));
+                : userId == Player && playerAvatar is { } avatar
+                    ? mock.PlayerInfo with { SelectedAvatar = new UserAvatarSource(avatar, null, "https://example.com/player.png") }
+                    : mock.TryGetUserInfo(userId));
+        var builder = new DiscussionViewModelBuilder(users, discussions, avatarLoader, new FakeCurrentUserAccessor(currentUser));
         return await builder.Build(Snapshot(), mock.ProjectInfo);
     }
 
@@ -181,6 +188,36 @@ public class DiscussionViewModelBuilderTest
     }
 
     [Fact]
+    public async Task Avatars_AreLoadedInSingleBatch()
+    {
+        playerAvatar = PlayerAvatar;
+        _ = AddComment(1, Master);
+        _ = AddComment(2, Player);
+        _ = AddComment(3, Master);
+
+        var model = await Build(Master);
+
+        // Одна пачка на всё обсуждение, каждая аватарка — один раз, сколько бы ни было комментариев автора.
+        avatarLoader.BatchRequests.ShouldHaveSingleItem().ShouldBe([MasterAvatar, PlayerAvatar], ignoreOrder: true);
+        Find(model, 2).AuthorAvatarUri.ShouldBe(FakeAvatarLoader.UriFor(PlayerAvatar));
+    }
+
+    [Fact]
+    public async Task AvatarMissingInDatabase_AuthorWithoutAvatar()
+    {
+        playerAvatar = PlayerAvatar;
+        avatarLoader.Missing.Add(PlayerAvatar);
+        _ = AddComment(1, Master);
+        _ = AddComment(2, Player);
+
+        var model = await Build(Master);
+
+        // Раньше отсутствующая аватарка роняла всю модель; теперь у автора просто нет картинки.
+        Find(model, 2).AuthorAvatarUri.ShouldBeNull();
+        Find(model, 1).AuthorAvatarUri.ShouldBe(FakeAvatarLoader.UriFor(MasterAvatar));
+    }
+
+    [Fact]
     public async Task Text_IsSanitizedHtml()
     {
         _ = AddComment(1, Master);
@@ -266,9 +303,27 @@ public class DiscussionViewModelBuilderTest
 
     private sealed class FakeAvatarLoader : IAvatarLoader
     {
+        private readonly List<IReadOnlyCollection<AvatarIdentification>> batchRequests = [];
+
         public static Uri UriFor(AvatarIdentification avatarId) => new($"https://avatars.example.com/{avatarId.Value}.png");
 
+        /// <summary>Какие аватарки просили — по записи на каждый вызов <see cref="GetAvatars"/>.</summary>
+        public IReadOnlyList<IReadOnlyCollection<AvatarIdentification>> BatchRequests => batchRequests;
+
+        /// <summary>Аватарки, которых «нет в БД»: в ответ <see cref="GetAvatars"/> они не попадают.</summary>
+        public HashSet<AvatarIdentification> Missing { get; } = [];
+
         public Task<AvatarInfo> GetAvatar(AvatarIdentification userAvatarId, int recommendedSize)
-            => Task.FromResult(new AvatarInfo(UriFor(userAvatarId), recommendedSize));
+            => throw new NotSupportedException("Построитель обсуждения должен брать аватарки пачкой через GetAvatars");
+
+        public Task<IReadOnlyDictionary<AvatarIdentification, AvatarInfo>> GetAvatars(
+            IReadOnlyCollection<AvatarIdentification> avatarIds,
+            int recommendedSize)
+        {
+            batchRequests.Add([.. avatarIds]);
+            return Task.FromResult<IReadOnlyDictionary<AvatarIdentification, AvatarInfo>>(
+                avatarIds.Distinct().Where(id => !Missing.Contains(id))
+                    .ToDictionary(id => id, id => new AvatarInfo(UriFor(id), recommendedSize)));
+        }
     }
 }

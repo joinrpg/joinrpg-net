@@ -582,6 +582,7 @@ public class PscbPaymentsViewServiceTests
         public Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotImplementedException();
+        public Task<IReadOnlyCollection<UserAvatar>> LoadAvatars(IReadOnlyCollection<AvatarIdentification> avatarIds) => throw new NotImplementedException();
         public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
         public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();

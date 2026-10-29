@@ -21,12 +21,19 @@ namespace JoinRpg.DataModel.Mocks.Fakes;
 /// <param name="users">Источник EF-сущностей <see cref="User"/> для <see cref="GetById"/>.</param>
 /// <param name="admins">Что отдавать на <see cref="GetAdminUserInfoHeaders"/>.</param>
 /// <param name="mustNotBeCalledReason">Почему обращения быть не должно — попадёт в сообщение исключения.</param>
+/// <param name="avatars">Аватарки в «БД» для <see cref="LoadAvatars"/>.</param>
+/// <param name="beforeAvatarsLoad">Что дождаться перед ответом <see cref="LoadAvatars"/> — чтобы придержать
+/// запрос (проверка конкурентности) или уронить его (сбой БД).</param>
 public sealed class FakeUserRepository(
     Func<UserIdentification, UserInfo?>? userInfos = null,
     Func<int, User?>? users = null,
     IReadOnlyCollection<UserInfoHeader>? admins = null,
-    string? mustNotBeCalledReason = null) : IUserRepository
+    string? mustNotBeCalledReason = null,
+    IReadOnlyCollection<UserAvatar>? avatars = null,
+    Func<Task>? beforeAvatarsLoad = null) : IUserRepository
 {
+    private readonly List<IReadOnlyCollection<AvatarIdentification>> avatarRequests = [];
+
     /// <summary>
     /// Репозиторий поверх мока: знает ровно известных моку игрока, мастера и добавленных тестом
     /// мастеров. Остального (аватарок, поиска по соцсетям, списка админов) мок не знает, и
@@ -58,6 +65,11 @@ public sealed class FakeUserRepository(
     /// по разу на значение.
     /// </summary>
     public int CallCount { get; private set; }
+
+    /// <summary>
+    /// Какие аватарки запрашивали — по записи на каждый вызов <see cref="LoadAvatars"/>.
+    /// </summary>
+    public IReadOnlyList<IReadOnlyCollection<AvatarIdentification>> AvatarRequests => avatarRequests;
 
     public Task<UserInfo?> GetUserInfo(UserIdentification userId)
     {
@@ -105,6 +117,19 @@ public sealed class FakeUserRepository(
     public Task<User> WithProfile(int userId) => throw NotConfigured("профиль пользователя");
     public Task<User> GetWithSubscribe(int currentUserId) => throw NotConfigured("подписки пользователя");
     public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw NotConfigured("аватарки");
+
+    public async Task<IReadOnlyCollection<UserAvatar>> LoadAvatars(IReadOnlyCollection<AvatarIdentification> avatarIds)
+    {
+        CallCount++;
+        avatarRequests.Add([.. avatarIds]);
+        var source = avatars ?? throw NotConfigured("аватарки");
+        if (beforeAvatarsLoad is not null)
+        {
+            await beforeAvatarsLoad();
+        }
+        var ids = avatarIds.Select(x => x.Value).ToHashSet();
+        return [.. source.Where(a => ids.Contains(a.UserAvatarId))];
+    }
     public Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination) => throw NotConfigured("пользователи без аватарки");
     public Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw NotConfigured("аватарки пользователей");
     public Task<UserIdentification?> FindByVk(string vkId) => throw NotConfigured("поиск по ВК");
