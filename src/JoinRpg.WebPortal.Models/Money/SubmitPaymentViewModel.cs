@@ -12,5 +12,6 @@ public class SubmitPaymentViewModel : PaymentViewModelBase
         ActionName = "Отметить взнос";
         PaymentTypes = claim.ClaimFee.PaymentTypes.GetUserSelectablePaymentTypes();
         CommentText = "Сдан взнос";
+        HideCancelButton = true;
     }
 }

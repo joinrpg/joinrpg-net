@@ -16,6 +16,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Helpers;
 using JoinRpg.Web.UserProfile;
+using JoinRpg.WebPortal.Managers.Comments;
 using JoinRpg.WebPortal.Managers.Plots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,6 @@ namespace JoinRpg.Portal.Controllers;
 public class ClaimController(
     IProjectRepository ProjectRepository,
     IClaimService claimService,
-    ICommentDiscussionService commentDiscussionService,
     IClaimsRepository claimsRepository,
     IFinanceService financeService,
     ICharacterInfoRepository characterInfoRepository,
@@ -39,7 +39,8 @@ public class ClaimController(
     CharacterPlotViewService characterPlotViewService,
     JoinrpgMarkdownLinkRendererFactory linkRendererFactory,
     IRoomCategoryPlanRepository roomCategoryPlanRepository,
-    UserProfileDetailsBuilder cardBuilder
+    UserProfileDetailsBuilder cardBuilder,
+    DiscussionViewService discussionViewService
     ) : JoinControllerGameBase
 {
     [HttpGet("/{projectid}/character/{CharacterId}/apply")]
@@ -144,9 +145,15 @@ public class ClaimController(
             ? await ShowAccommodationModel(claimInfo.Claim, projectInfo)
             : null;
 
+        // Обсуждение — доменным снимком, а не графом EF-заявки (ADR026, шаг 8). Доступ к заявке проверил
+        // WithClaim; снимок, модель и отметка прочтения — в сервисе.
+        var discussionModel = await discussionViewService.ShowDiscussion(claimInfo.Claim.CommentDiscussionId, projectInfo)
+            ?? throw new InvalidOperationException($"Discussion {claimInfo.Claim.CommentDiscussionId} of claim {claimInfo.ClaimId} is not found");
+
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
             claimInfo,
+            discussionModel,
             plots,
             claimValidator,
             paymentsService.GetExternalPaymentUrl,
@@ -156,13 +163,6 @@ public class ClaimController(
                 : JoinrpgMarkdownLinkRendererFactory.NoDirectives,
             await UserRepository.LoadFieldUserLinks(claim, projectInfo),
             cardBuilder);
-
-        if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
-        {
-            await
-              commentDiscussionService.UpdateReadCommentWatermark(new CommentDiscussionId(claim.CommentDiscussion.CommentDiscussionId),
-                new CommentId(claim.CommentDiscussion.Comments.Max(c => c.CommentId))).ConfigureAwait(false);
-        }
 
         return View("Edit", claimViewModel);
     }

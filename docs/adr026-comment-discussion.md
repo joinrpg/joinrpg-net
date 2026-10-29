@@ -240,7 +240,10 @@ render-mode="Static" />`. Формы добавления и ответа — о
 Интерактивны только точечные острова внутри статического дерева, по образцу `RoomTypeListPage` →
 `UnOccupyAllButton`. Тот остров — `prerender: false`, а `FinanceModerationButton` сейчас
 `WebAssemblyPrerendered`; вложенный пререндеренный остров в статическом компоненте прецедента не
-имеет, и это проверяется в шаге 8.
+имел, и это проверялось в шаге 8. Проверено: `ClaimDiscussion` ставит его как
+`InteractiveWebAssemblyRenderMode(prerender: true)`, кнопка приходит в HTML сервера вместе с маркером
+компонента (это закрепляет `CommentDiscussionPagesScenario`), а в браузере остров оживает —
+открывает диалог и подтверждает операцию.
 
 **Финблок — только у заявки.** У комментариев форума финопераций нет, а остров
 `FinanceModerationButton` и его модель (`FinanceModerationOperationView`) живут в `Web.Claims`.
@@ -400,20 +403,30 @@ render-mode="Static" />`. Формы добавления и ответа — о
    (EF6 дублирует каждый из-за `?? 0`), — та же форма, что была у `GetUnreadDiscussionsForClaims`
    на проде до шага 7. SQL и план сверить на большом проекте. Независимо.
 8. **Страница заявки** на новом дереве: обёртка `ClaimDiscussion` с финблоком и островом,
-   `ClaimController.ShowClaim` грузит снимок и отметку прочтения и передаёт обёртке
+   `ClaimController.ShowClaim` грузит снимок и отметку прочтения (через `DiscussionViewService`) и передаёт обёртке
    `ClaimIdentification` (для id финоперации в диалоге модерации); из `GetClaimWithDetails` уходит
    `Include` комментариев. Технически зависит только от шага 5; после шага 6 — чтобы пилот на
-   форуме обкатал компоненты.
+   форуме обкатал компоненты. Сделано так: снимок, модель и сдвиг отметки (строго после модели) делает
+   `DiscussionViewService` в `WebPortal.Managers`, его зовут и `ShowClaim`, и `ForumController.ViewThread`
+   — доступ каждый проверяет сам. Обсуждение — свойство `ClaimViewModel.Discussion`, а не отдельная
+   модель страницы, как у форума: `Edit.cshtml` и его партиалы обращаются к `ClaimViewModel` почти
+   сотней мест, а ссылка `WebPortal.Models` → `Web.*` допустима (запрещена обратная, structure.md).
+   `ClaimViewModel` больше не реализует `IEntityWithCommentsViewModel`. Из
+   `GetClaimWithDetails` ушёл и `LoadProjectClaims`: из всех заявок проекта странице был нужен только
+   игрок этой заявки, он теперь в `Include`.
 9. **Снос легаси:** `CommentViewModel`, `CommentViewModelExtensions`, `IEntityWithCommentsViewModel`
-   (вместе с реализацией и `RootComments` в `ClaimViewModel` / `ForumThreadViewModel`) и
+   (у `ClaimViewModel` реализацию и `RootComments` снял шаг 8, у `ForumThreadViewModel` — шаг 6) и
    конструктор `AddCommentViewModel(IEntityWithCommentsViewModel)`, `CommentViewComponent`,
    `Comment.cshtml`, `CommentsListPartial.cshtml`, `_CommentPartial.cshtml`,
    `_AddCommentFormPartial.cshtml`, `CommentExtensions.IsReadByUser`. Для каждого удаляемого члена
    — `find_references`. `_AddCommentPartial` остаётся: его переиспользует
    `_SubmitPaymentDialog.cshtml`. Его «Отмена» зовёт `toggleCommentEditor`, который определён только в
    `CommentsListPartial`, — поэтому уже в шаге 8 (когда страница заявки перестаёт подключать
-   `CommentsListPartial`) кнопку надо перевести на собственный обработчик, иначе в диалоге оплаты
-   она бросит `ReferenceError`.
+   `CommentsListPartial`) кнопку из диалога оплаты надо убрать, иначе она бросит `ReferenceError`.
+   В шаге 8 модель диалога ставит `AddCommentViewModel.HideCancelButton`, и своей «Отмены» в окне
+   нет — оно закрывается крестиком в заголовке. Новых `data-dismiss` не
+   заводим (#5304), а сам диалог на Bootstrap-модалке переводится отдельно. Ветка с
+   `toggleCommentEditor` уходит вместе с `CommentsListPartial`.
 
 Не делаем:
 ==
