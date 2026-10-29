@@ -38,6 +38,13 @@ public class CharacterNavigationViewModel
     public bool CanManageClaims { get; }
 
     public bool CanAddClaim { get; private set; }
+
+    /// <summary>
+    /// Мастер может пригласить игрока на этого персонажа. Считается по мастерским правилам, а не по
+    /// <see cref="CanAddClaim"/>: на роль «только по приглашению» (#3303) или в проект с закрытым
+    /// приёмом заявок игрок сам не заявится, а мастер пригласить вправе.
+    /// </summary>
+    public bool CanInvitePlayer { get; private set; }
     public int? ClaimId { get; private set; }
     public int CharacterId { get; }
     public int ProjectId { get; }
@@ -62,6 +69,9 @@ public class CharacterNavigationViewModel
             // здесь дали бы «заявиться можно» в проекте с закрытым приёмом заявок.
             CanAddClaim = ClaimValidator
                 .Validate(character, userInfo: null, movedClaim: null, character.ProjectInfo, ClaimOperation.DisplayForPlayer)
+                .Count == 0,
+            CanInvitePlayer = ClaimValidator
+                .Validate(character, userInfo: null, movedClaim: null, character.ProjectInfo, ClaimOperation.AddByMaster)
                 .Count == 0,
             ClaimId = SelectClaimToShow(character, currentUserId)?.ClaimId.ClaimId,
             Page = page,
