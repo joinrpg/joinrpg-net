@@ -163,6 +163,7 @@ public class CharacterControllerCreateTest
         public Task<Project> GetProjectWithFinances(int projectid) => throw new NotSupportedException();
 
         public Task<Project> GetProjectForFinanceSetup(int projectid) => throw new NotSupportedException();
+        public Task<Guid?> GetMasterExportToken(ProjectIdentification projectId, UserIdentification userId) => throw new NotSupportedException();
 
         public Task<ICollection<Character>> GetCharacterByGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds) => throw new NotSupportedException();
 

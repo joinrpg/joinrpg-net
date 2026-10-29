@@ -1,0 +1,35 @@
+@inject IFinanceSettingsClient settingsClient
+
+<JoinCollapsePanel Group="@FinanceSettingsPanels.Group" Id="@AnchorId">
+    <Header>Синхронизация с GoogleDocs</Header>
+    <ChildContent>
+        @if (model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
+        <p>
+            Для тех мастерских групп, которые ведут свой бюджет в <a href="https://docs.google.com/spreadsheets/">Google Таблицах</a>.
+            Создайте в вашем бюджете отдельную вкладку (например, взносы из Joinrpg).
+            В любой ячейке (например, А1), введите
+        </p>
+        <p><code>=IMPORTDATA("@model.ExportUri.AbsoluteUri")</code></p>
+        <p>
+            Ссылка личная: по ней сводку по деньгам проекта можно получить без входа на сайт, не публикуйте её.
+            Учтите, что обновление происходит с некоторой задержкой (раз в несколько часов). Подробности можно узнать
+            в <a href="https://support.google.com/docs/answer/3093335?hl=ru">справке Google Таблиц</a>.
+        </p>
+    </ChildContent>
+</JoinCollapsePanel>
+
+@code {
+    /// <summary>Якорь панели на странице настройки финансов.</summary>
+    public const string AnchorId = "finance-google-docs";
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private FinanceGoogleDocsExportViewModel? model;
+
+    protected override async Task OnInitializedAsync() => model = await settingsClient.GetGoogleDocsExport(ProjectId);
+}

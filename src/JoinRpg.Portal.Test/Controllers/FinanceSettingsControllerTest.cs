@@ -132,6 +132,7 @@ public class FinanceSettingsControllerTest
         public Task SaveGeneralSettings(FinanceGeneralSettingsViewModel model) => throw new NotSupportedException();
         public Task<FinanceFeeSettingsViewModel> GetFeeSettings(ProjectIdentification projectId) => throw new NotSupportedException();
         public Task<FinancePaymentTypesViewModel> GetPaymentTypes(ProjectIdentification projectId) => throw new NotSupportedException();
+        public Task<FinanceGoogleDocsExportViewModel> GetGoogleDocsExport(ProjectIdentification projectId) => throw new NotSupportedException();
 
         public NewPaymentTypeViewModel? Created { get; private set; }
 

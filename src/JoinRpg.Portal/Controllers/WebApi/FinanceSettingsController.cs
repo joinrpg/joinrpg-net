@@ -64,6 +64,10 @@ public class FinanceSettingsController(IFinanceSettingsClient client) : Controll
     public async Task<ActionResult> TogglePaymentType(ProjectIdentification projectId, [FromQuery] int paymentTypeId)
         => await PaymentTypeRefusalToBadRequest(() => client.TogglePaymentType(new PaymentTypeIdentification(projectId, paymentTypeId)));
 
+    [HttpGet]
+    public async Task<ActionResult<FinanceGoogleDocsExportViewModel>> GetGoogleDocsExport(ProjectIdentification projectId)
+        => Ok(await client.GetGoogleDocsExport(projectId));
+
     /// <summary>Отказы сервиса по методам оплаты — текстом: остров показывает его мастеру.</summary>
     private async Task<ActionResult> PaymentTypeRefusalToBadRequest(Func<Task> action)
     {

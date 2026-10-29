@@ -86,6 +86,13 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         .Include(p => p.FinanceOperations)
         .SingleOrDefaultAsync(p => p.ProjectId == projectid);
 
+    public Task<Guid?> GetMasterExportToken(ProjectIdentification projectId, UserIdentification userId)
+      => Ctx.Set<ProjectAcl>()
+        // Снятый мастер (ADR019) токена не получает: SummaryByMaster его и не пустит
+        .Where(acl => acl.ProjectId == projectId.Value && acl.UserId == userId.Value && acl.Status == ProjectAclStatus.Active)
+        .Select(acl => (Guid?)acl.Token)
+        .SingleOrDefaultAsync();
+
     public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(
         DateTime inActiveSince)
     {
