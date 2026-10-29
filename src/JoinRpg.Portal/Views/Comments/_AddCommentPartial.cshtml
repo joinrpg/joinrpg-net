@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.AddCommentViewModel
+@model JoinRpg.Web.Models.AddCommentViewModel
   @{
       Model.ActionName = Model.ActionName ?? "Отправить";
   }
@@ -43,7 +43,13 @@
 
 <div class="form-group">
   <div class="col-md-12">
-   <button type="button" class="btn btn-default" onclick="toggleCommentEditor(@(Model.FormIndex), false)">Отмена</button>
+   @* В модальном окне (_SubmitPaymentDialog) toggleCommentEditor нет: он живёт в CommentsListPartial,
+      а страница заявки его больше не подключает (ADR026, шаг 8). Своей «Отмены» там не рисуем —
+      окно закрывается крестиком в заголовке. *@
+   @if (!Model.HideCancelButton)
+   {
+     <button type="button" class="btn btn-default" onclick="toggleCommentEditor(@(Model.FormIndex), false)">Отмена</button>
+   }
     <button type="submit" class="btn btn-success">@Model.ActionName</button>
   </div>
 </div>

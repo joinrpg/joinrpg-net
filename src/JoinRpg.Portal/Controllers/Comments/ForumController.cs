@@ -32,7 +32,7 @@ public class ForumController(
     CommentDiscussionOwnerLoader ownerLoader,
     ICommentDiscussionRepository commentDiscussionRepository,
     ICharacterInfoRepository characterInfoRepository,
-    DiscussionViewModelBuilder discussionViewModelBuilder) : JoinControllerGameBase
+    DiscussionViewService discussionViewService) : JoinControllerGameBase
 {
     [HttpGet("~/{projectId}/roles/{charactergroupid}/create-thread")]
     [ProjectShouldBeActive]
@@ -109,25 +109,16 @@ public class ForumController(
         }
 
         var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(thread.CharacterGroupId);
-        var discussion = await commentDiscussionRepository.GetDiscussionOrDefault(thread.CommentDiscussionId);
-        if (charGroupFullInfo is null || discussion is null)
+        if (charGroupFullInfo is null)
         {
             return NotFound();
         }
 
-        // Модель (с пометками «новое» на всём дереве) строится целиком до сдвига отметки прочтения:
-        // построитель читает отметку сам, и сдвиг после него на пометки уже не влияет.
-        var discussionModel = await discussionViewModelBuilder.Build(discussion, access.ProjectInfo);
-
-        // Как на странице заявки (ClaimController.ShowClaim): в заблокированном проекте (ADR023)
-        // сервис молча не пишет отметку. Доступ к теме проверен выше. Непрочитанное ищем среди видимого
-        // пользователю: если у игрока новые только скрытые комментарии, отметку не трогаем — на счётчики
-        // это не влияет, а при первом видимом новом она всё равно уйдёт на последний комментарий.
-        if (discussionModel.HasUnread())
+        // Доступ к теме проверен выше; снимок, модель и отметка прочтения — в сервисе.
+        var discussionModel = await discussionViewService.ShowDiscussion(thread.CommentDiscussionId, access.ProjectInfo);
+        if (discussionModel is null)
         {
-            await commentDiscussionService.UpdateReadCommentWatermark(
-                discussion.Id,
-                discussion.Comments.MaxBy(comment => comment.Id.Value)!.Id);
+            return NotFound();
         }
 
         return View(new ForumThreadPageModel(

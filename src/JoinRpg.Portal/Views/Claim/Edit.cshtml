@@ -453,7 +453,9 @@
       <div class="panel-heading"><h5>Комментарии к заявке</h5></div>
 
       <div class="panel-body">
-        @await Html.PartialAsync("..\\Comments\\CommentsListPartial", Model)
+        <component type="typeof(JoinRpg.Web.Claims.Comments.ClaimDiscussion)" render-mode="Static"
+                   param-Model="@Model.Discussion"
+                   param-ClaimId="@Model.ClaimIdentification" />
       </div>
     </div>
   </div>

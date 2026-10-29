@@ -123,13 +123,14 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         await LoadProjectFields(claimId.ProjectId);
         await LoadMasters(claimId.ProjectId);
         await LoadProjectGroups(claimId.ProjectId);
-        await LoadProjectClaims(claimId.ProjectId);
 
         return
           await
-            Ctx.ClaimSet.Include(c => c.CommentDiscussion.Comments.Select(com => com.Finance))
-              .Include(c => c.CommentDiscussion.Comments.Select(com => com.Author))
-              .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
+            // Комментарии сюда не входят: обсуждение страница заявки грузит доменным снимком (ADR026, шаг 8).
+            // Все заявки проекта (LoadProjectClaims) тоже не грузим: из них странице был нужен только
+            // игрок этой заявки.
+            Ctx.ClaimSet
+              .Include(c => c.Player)
               .Include(c => c.Character)
               .SingleOrDefaultAsync(e => e.ClaimId == claimId.ClaimId && e.ProjectId == claimId.ProjectId.Value);
     }

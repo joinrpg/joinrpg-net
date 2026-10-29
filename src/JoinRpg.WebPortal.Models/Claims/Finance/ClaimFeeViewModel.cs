@@ -223,6 +223,12 @@ public class ClaimFeeViewModel
     public IEnumerable<FinanceOperationViewModel> FinanceOperations { get; }
 
     /// <summary>
+    /// Есть операция, которая ждёт модерации и которую текущий пользователь вправе подтвердить или
+    /// отклонить, — по ней диалог оплаты предупреждает о неразобранном платеже игрока.
+    /// </summary>
+    public bool HasModeratableFinanceOperations => FinanceOperations.Any(fo => fo.FinanceModeration is not null);
+
+    /// <summary>
     /// List of finance operations to be displayed in payments list
     /// </summary>
     public IEnumerable<FinanceOperationViewModel> VisibleFinanceOperations { get; }

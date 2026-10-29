@@ -38,6 +38,12 @@ public class AddCommentViewModel : CommentTextViewModel, IValidatableObject
 
     public string ActionName { get; set; }
 
+    /// <summary>
+    /// Не рисовать кнопку «Отмена»: форма стоит в модальном окне (диалог оплаты), у которого свой
+    /// крестик, а сворачивать редактор комментария там нечем (ADR026, шаг 8).
+    /// </summary>
+    public bool HideCancelButton { get; set; }
+
     public string AddButtonId { get; }
 
     public string FormId { get; }

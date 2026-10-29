@@ -28,7 +28,7 @@ namespace JoinRpg.WebPortal.Managers.Comments;
 /// запросом к БД, #5774).
 /// </para>
 /// </remarks>
-public sealed class DiscussionViewModelBuilder(
+internal sealed class DiscussionViewModelBuilder(
     IUserRepository userRepository,
     ICommentDiscussionRepository discussionRepository,
     IAvatarLoader avatarLoader,
