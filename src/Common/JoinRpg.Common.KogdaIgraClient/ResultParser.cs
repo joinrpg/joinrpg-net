@@ -29,9 +29,26 @@ internal static class ResultParser
         return [.. deserializeResult.Select(x => x.ToMarker()).WhereNotNull()];
     }
 
-    internal static KogdaIgraGameInfo? TryParseGameInfo(string strResult)
+    internal static KogdaIgraGameInfo? TryParseGameInfo(string strResult, int gameId)
     {
-        var parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult, serializerOptions) ?? throw new Exception("Failed to parse result");
+        if (string.IsNullOrWhiteSpace(strResult))
+        {
+            throw new KogdaIgraEmptyResponseException();
+        }
+
+        kogda_igra_game_data? parsedResult;
+        try
+        {
+            parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult, serializerOptions);
+        }
+        catch (JsonException e)
+        {
+            throw new KogdaIgraParseException(gameId, $"Не удалось разобрать JSON от КогдаИгры: {e.Message}");
+        }
+        if (parsedResult is null)
+        {
+            throw new KogdaIgraParseException(gameId, "КогдаИгра вернула JSON-литерал null вместо игры");
+        }
         if (parsedResult.id is 0 || parsedResult.time is 0)
         {
             return null;

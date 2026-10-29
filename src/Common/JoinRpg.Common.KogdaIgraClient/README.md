@@ -34,7 +34,6 @@ services.Configure<KogdaIgraOptions>(configuration.GetSection("KogdaIgra"));
 ## Ошибки
 
 - `KogdaIgraConnectException` — сеть, таймаут или код ответа не 2xx.
-- `KogdaIgraParseException` — не разобрался список изменений (`Id` = 0) или вместо карточки
-  пришла чужая запись (`Id` — запрошенная игра).
-- `KogdaIgraEmptyResponseException` — пустой ответ вместо JSON, только у `GetChangedGamesSince`.
-  `GetGameInfo` на битом или пустом JSON кидает `JsonException`, на `null` — `Exception`.
+- `KogdaIgraParseException` — ответ не разобрался или вместо карточки пришла чужая запись;
+  в `Id` — запрошенная игра (0 для списка изменений).
+- `KogdaIgraEmptyResponseException` — пустой ответ вместо JSON.
