@@ -35,7 +35,7 @@
     {
         await base.OnParametersSetAsync();
 
-        var userAvatarId = AvatarId ?? (await userRepository.GetUserInfo(new UserIdentification(UserId)))?.SelectedAvatarId;
+        var userAvatarId = AvatarId ?? (await userRepository.GetUserInfoHeaders([new UserIdentification(UserId)])).SingleOrDefault()?.Avatar;
         AvatarUri = userAvatarId is null ? null : (await avatarProvider.GetAvatar(userAvatarId, Size)).Uri;
     }
 

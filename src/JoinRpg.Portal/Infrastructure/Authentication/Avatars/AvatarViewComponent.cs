@@ -6,15 +6,19 @@ namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 
 public class AvatarViewComponent(IAvatarLoader avatarProvider, IUserRepository userRepository) : ViewComponent
 {
+    /// <param name="userId">
+    /// Чью аватарку дочитать из базы, если <paramref name="userAvatarIdOrNull"/> не пришёл. Нужен только шапке:
+    /// там id берётся из cookie, а её пересобирает валидатор штампа через несколько секунд после того, как аватарку
+    /// завели. Кто взял id из базы (комментарий, список аватарок), его не передаёт — второй запрос вернул бы то же.
+    /// </param>
     public async Task<IViewComponentResult> InvokeAsync(
         AvatarIdentification? userAvatarIdOrNull,
         int recommendedSize,
-        int userId)
+        int? userId = null)
     {
-        // Без id аватарки приходит шапка, пока cookie не пересобрана валидатором штампа (несколько секунд после
-        // того, как аватарку завели), и комментарий автора, у которого её нет. Тогда только читаем — на GET
-        // аватарку не заводим, она есть у каждого пользователя (#5602).
-        var userAvatarId = userAvatarIdOrNull ?? (await userRepository.GetUserInfo(new UserIdentification(userId)))?.SelectedAvatarId;
+        // Только читаем — на GET аватарку не заводим, она есть у каждого пользователя (#5602).
+        var userAvatarId = userAvatarIdOrNull
+            ?? (userId is int id ? (await userRepository.GetUserInfoHeaders([new UserIdentification(id)])).SingleOrDefault()?.Avatar : null);
         if (userAvatarId is null)
         {
             return Content("");

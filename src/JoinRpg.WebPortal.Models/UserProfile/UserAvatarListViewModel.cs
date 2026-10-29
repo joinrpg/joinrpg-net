@@ -5,7 +5,7 @@ namespace JoinRpg.Web.Models.UserProfile;
 
 #nullable enable
 public record UserAvatarListViewModel
-    (IReadOnlyList<UserAvatarListItemViewModel> Avatars, string Email, int UserId)
+    (IReadOnlyList<UserAvatarListItemViewModel> Avatars, string Email)
 {
     public UserAvatarListViewModel(User user, IAvatarUriResolver avatarUriResolver) : this(
         Avatars:
@@ -13,8 +13,7 @@ public record UserAvatarListViewModel
                 .Avatars
                 .Where(a => a.IsActive)
                 .Select(ua => new UserAvatarListItemViewModel(ua, avatarUriResolver)).ToList(),
-        Email: user.Email,
-        UserId: user.UserId
+        Email: user.Email
         )
     {
 
