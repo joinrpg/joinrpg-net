@@ -17,23 +17,35 @@ internal class ForumRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx
     }
 
     public async Task<ForumThreadHeader> GetThreadHeader(ForumThreadIdentification threadId)
+        => await GetThreadHeaderOrDefault(threadId)
+            ?? throw new InvalidOperationException($"Forum thread {threadId} not found");
+
+    public async Task<ForumThreadHeader?> GetThreadHeaderOrDefault(ForumThreadIdentification threadId)
     {
+        int projectId = threadId.ProjectId;
+        var forumThreadId = threadId.ThreadId;
         var result = await
          Ctx.Set<ForumThread>()
+           .Where(thread => thread.ProjectId == projectId && thread.ForumThreadId == forumThreadId)
            .Select(ft =>
            new
            {
-               ft.ProjectId,
-               ft.ForumThreadId,
                ft.Header,
-               ft.CharacterGroupId
+               ft.CharacterGroupId,
+               ft.CommentDiscussionId,
+               ft.IsVisibleToPlayer,
            }
            )
-           .Where(thread => thread.ProjectId == threadId.ProjectId && thread.ForumThreadId == threadId.ThreadId)
-           .ToListAsync();
+           .SingleOrDefaultAsync();
 
-        return
-            result.Select(ft => new ForumThreadHeader(ft.Header, new CharacterGroupIdentification(ft.ProjectId, ft.CharacterGroupId))).Single();
+        return result is null
+            ? null
+            : new ForumThreadHeader(
+                threadId,
+                result.Header,
+                new CharacterGroupIdentification(threadId.ProjectId, result.CharacterGroupId),
+                new CommentDiscussionId(result.CommentDiscussionId),
+                result.IsVisibleToPlayer);
     }
 
     public Task<CommentDiscussion?> GetDiscussionByComment(int projectId, int commentId)

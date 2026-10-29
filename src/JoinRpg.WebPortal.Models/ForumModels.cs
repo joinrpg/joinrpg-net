@@ -1,24 +1,21 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models;
 
-public class ForumThreadViewModel(ForumThread forumThread, CharacterGroupFullInfo characterGroup, ProjectInfo projectInfo, UserIdentification currentUserId) : IEntityWithCommentsViewModel
+/// <summary>
+/// Шапка страницы темы форума: группа и название. Само обсуждение строится отдельно из доменного
+/// снимка (ADR026, шаг 6) и сводится с шапкой в модель страницы в <c>JoinRpg.Portal</c>.
+/// </summary>
+public class ForumThreadViewModel(ForumThreadHeader thread, CharacterGroupFullInfo characterGroup, ProjectInfo projectInfo, UserIdentification currentUserId)
 {
     public CharacterGroupDetailsViewModel GroupDetails { get; } = new CharacterGroupDetailsViewModel(characterGroup, projectInfo, currentUserId, GroupNavigationPage.None);
 
-    public IReadOnlyCollection<CommentViewModel> RootComments { get; } = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId, projectInfo);
+    public int ProjectId { get; } = thread.ThreadId.ProjectId;
 
-    public int ProjectId { get; } = forumThread.ProjectId;
-    public bool HasMasterAccess { get; } = projectInfo.HasMasterAccess(currentUserId);
-
-    public string ProjectName { get; } = forumThread.Project.ProjectName;
-    public string Header { get; } = forumThread.Header;
-
-    public int CommentDiscussionId { get; } = forumThread.CommentDiscussionId;
+    public string Header { get; } = thread.Header;
 }
 
 public class CreateForumThreadViewModel

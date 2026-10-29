@@ -44,7 +44,11 @@ public sealed class CommentDiscussionOwnerLoader(
     public async Task<CommentDiscussionOwnerAccess?> GetOwnerByCommentOrDefault(ProjectIdentification projectId, CommentId commentId)
         => await CheckAccess(projectId, await discussionRepository.GetOwnerByCommentOrDefault(commentId));
 
-    private async Task<CommentDiscussionOwnerAccess?> CheckAccess(ProjectIdentification projectId, CommentDiscussionOwner? owner)
+    /// <summary>
+    /// Доступ к уже известному владельцу — когда страница сама загрузила его заголовок (тема форума) и
+    /// второй запрос за владельцем не нужен.
+    /// </summary>
+    public async Task<CommentDiscussionOwnerAccess?> CheckAccess(ProjectIdentification projectId, CommentDiscussionOwner? owner)
     {
         if (owner is null || owner.ProjectId != projectId)
         {

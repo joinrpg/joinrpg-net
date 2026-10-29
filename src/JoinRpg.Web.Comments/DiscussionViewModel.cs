@@ -18,7 +18,14 @@ public record DiscussionViewModel(
     ProjectIdentification ProjectId,
     CommentDiscussionId DiscussionId,
     bool HasMasterAccess,
-    IReadOnlyList<CommentViewModel> RootComments);
+    IReadOnlyList<CommentViewModel> RootComments)
+{
+    /// <summary>
+    /// Есть ли в обсуждении непрочитанное — среди того, что текущему пользователю видно. По нему
+    /// страница решает, сдвигать ли отметку прочтения.
+    /// </summary>
+    public bool HasUnread() => RootComments.Any(comment => comment.HasUnreadInThread());
+}
 
 /// <summary>Комментарий обсуждения с ответами (ADR026 §3).</summary>
 /// <param name="CommentId">Комментарий.</param>
@@ -55,6 +62,9 @@ public record CommentViewModel(
     /// <summary>Сдвигать ли комментарий вправо относительно родителя.</summary>
     [JsonIgnore]
     public bool IsIndented => Depth is > 0 and <= MaxIndentedDepth;
+
+    /// <summary>Не прочитан ли сам комментарий или что-то из ответов на него.</summary>
+    public bool HasUnreadInThread() => !IsRead || Replies.Any(reply => reply.HasUnreadInThread());
 }
 
 /// <summary>
