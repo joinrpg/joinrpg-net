@@ -1,12 +1,13 @@
-﻿@model JoinRpg.Web.Models.ForumThreadViewModel
+@using JoinRpg.Web.Comments
+@model JoinRpg.Portal.Models.ForumThreadPageModel
 
 @{
-    ViewBag.Title = Model.Header;
+    ViewBag.Title = Model.Thread.Header;
 }
-@Html.DisplayFor(model => model.GroupDetails)
+@Html.DisplayFor(model => model.Thread.GroupDetails)
 
 <div>
-    <h4>Форумы @Html.ActionLink(Model.GroupDetails.Name, "ListThreadsByGroup", new { Model.ProjectId, Model.GroupDetails.CharacterGroupId }) → @Model.Header</h4>
+    <h4>Форумы @Html.ActionLink(Model.Thread.GroupDetails.Name, "ListThreadsByGroup", new { Model.Thread.ProjectId, Model.Thread.GroupDetails.CharacterGroupId }) → @Model.Thread.Header</h4>
     <hr />
-    @await Html.PartialAsync("..\\Comments\\CommentsListPartial", Model)
+    <component type="typeof(Discussion)" render-mode="Static" param-Model="@Model.Discussion" />
 </div>

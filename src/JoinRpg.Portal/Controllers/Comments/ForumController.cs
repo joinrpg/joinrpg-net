@@ -2,14 +2,15 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Comments;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Comments;
+using JoinRpg.DomainTypes.Forums;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Comments;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.Portal.Models;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.WebPortal.Managers.Comments;
@@ -30,7 +31,8 @@ public class ForumController(
     ICommentDiscussionService commentDiscussionService,
     CommentDiscussionOwnerLoader ownerLoader,
     ICommentDiscussionRepository commentDiscussionRepository,
-    ICharacterInfoRepository characterInfoRepository) : JoinControllerGameBase
+    ICharacterInfoRepository characterInfoRepository,
+    DiscussionViewModelBuilder discussionViewModelBuilder) : JoinControllerGameBase
 {
     [HttpGet("~/{projectId}/roles/{charactergroupid}/create-thread")]
     [ProjectShouldBeActive]
@@ -79,49 +81,58 @@ public class ForumController(
     }
 
     [HttpGet]
-    public async Task<ActionResult> ViewThread(ProjectIdentification projectid, int forumThreadId)
+    public async Task<ActionResult> ViewThread(ForumThreadIdentification? forumThreadId)
     {
-        var (forumThread, projectInfo) = await GetForumThread(projectid, forumThreadId);
-        if (forumThread == null)
+        // Голое число из маршрута {forumThreadId} биндер склеивает с проектом маршрута; не распознал — null.
+        if (forumThreadId is null)
         {
             return NotFound();
         }
 
-        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(new CharacterGroupIdentification(projectid, forumThread.CharacterGroupId));
-        if (charGroupFullInfo is null)
+        // Заголовок темы без комментариев: обсуждение грузится доменным снимком ниже, один раз (ADR026, шаг 6).
+        var thread = await forumRepository.GetThreadHeaderOrDefault(forumThreadId);
+        if (thread is null)
         {
             return NotFound();
         }
 
-        // Модель (с пометками «новое» на всём дереве) строится целиком до сдвига отметки прочтения.
-        var viewModel = new ForumThreadViewModel(forumThread, charGroupFullInfo, projectInfo, currentUserAccessor.UserIdentification);
+        // Доступ — по владельцу обсуждения, как у CreateComment: мастер или игрок с принятой заявкой
+        // на персонажа из группы видимой игрокам темы (ForumDiscussionOwner.HasPlayerAccess).
+        var access = await ownerLoader.CheckAccess(forumThreadId.ProjectId, thread.ToDiscussionOwner());
+        if (access is null)
+        {
+            return NotFound();
+        }
+        if (!access.HasAccess)
+        {
+            throw new NoAccessToProjectException(access.ProjectInfo, currentUserAccessor.UserIdentification);
+        }
+
+        var charGroupFullInfo = await charGroupRepository.GetCharacterGroupFullInfo(thread.CharacterGroupId);
+        var discussion = await commentDiscussionRepository.GetDiscussionOrDefault(thread.CommentDiscussionId);
+        if (charGroupFullInfo is null || discussion is null)
+        {
+            return NotFound();
+        }
+
+        // Модель (с пометками «новое» на всём дереве) строится целиком до сдвига отметки прочтения:
+        // построитель читает отметку сам, и сдвиг после него на пометки уже не влияет.
+        var discussionModel = await discussionViewModelBuilder.Build(discussion, access.ProjectInfo);
 
         // Как на странице заявки (ClaimController.ShowClaim): в заблокированном проекте (ADR023)
-        // сервис молча не пишет отметку. Доступ к теме уже проверил GetForumThread.
-        var comments = forumThread.CommentDiscussion.Comments;
-        if (comments.Any(c => !c.IsReadByUser(currentUserAccessor.UserId)))
+        // сервис молча не пишет отметку. Доступ к теме проверен выше. Непрочитанное ищем среди видимого
+        // пользователю: если у игрока новые только скрытые комментарии, отметку не трогаем — на счётчики
+        // это не влияет, а при первом видимом новом она всё равно уйдёт на последний комментарий.
+        if (discussionModel.HasUnread())
         {
-            await commentDiscussionService.UpdateReadCommentWatermark(new CommentDiscussionId(forumThread.CommentDiscussionId),
-                new CommentId(comments.Max(c => c.CommentId)));
+            await commentDiscussionService.UpdateReadCommentWatermark(
+                discussion.Id,
+                discussion.Comments.MaxBy(comment => comment.Id.Value)!.Id);
         }
 
-        return View(viewModel);
-    }
-
-    private async Task<(ForumThread, ProjectInfo)> GetForumThread(ProjectIdentification projectid, int forumThreadId)
-    {
-        var forumThread = await forumRepository.GetThread(new(projectid, forumThreadId));
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectid);
-        var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
-        var isPlayer = forumThread.IsVisibleToPlayer &&
-                       (await claimsRepository.GetClaimsForPlayer(projectid, currentUserAccessor.UserIdentification, ClaimStatusSpec.Approved)).Any(
-                         claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId, projectInfo));
-
-        if (!isMaster && !isPlayer)
-        {
-            throw new NoAccessToProjectException(projectInfo, currentUserAccessor.UserIdentification);
-        }
-        return (forumThread, projectInfo);
+        return View(new ForumThreadPageModel(
+            new ForumThreadViewModel(thread, charGroupFullInfo, access.ProjectInfo, currentUserAccessor.UserIdentification),
+            discussionModel));
     }
 
     [HttpPost("~/{projectId}/forums/createcomment")]

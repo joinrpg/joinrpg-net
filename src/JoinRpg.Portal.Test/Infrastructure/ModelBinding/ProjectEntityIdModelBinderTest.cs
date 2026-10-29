@@ -1,5 +1,6 @@
 using System.Globalization;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Portal.Infrastructure.ModelBinding;
@@ -134,6 +135,17 @@ public class ProjectEntityIdModelBinderTest
 
         result.IsModelSet.ShouldBeTrue();
         result.Model.ShouldBe(id);
+    }
+
+    // ForumController.ViewThread берёт тему из маршрута {forumThreadId} голым числом.
+    [Fact]
+    public async Task ForumThreadId_PlainNumber_ShouldMapToCurrentProject()
+    {
+        var result = await BindAsync<ForumThreadIdentification>(
+            allowAnotherProject: false, "5", CurrentProjectId, "forumThreadId");
+
+        result.IsModelSet.ShouldBeTrue();
+        result.Model.ShouldBe(new ForumThreadIdentification(CurrentProjectId, 5));
     }
 
     // PlotElementIdentification вложен на два уровня (ProjectId -> PlotFolderId -> PlotElementId),

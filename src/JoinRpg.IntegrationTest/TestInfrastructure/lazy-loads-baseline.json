@@ -1,7 +1,6 @@
 {
   "GET /{ProjectId}/claim/{ClaimId}/Edit": 6,
   "GET /{projectId}/character/{characterid}/Edit": 1,
-  "GET /{projectId}/forums/{forumThreadId}/ViewThread": 5,
   "POST /webapi/accommodation-rooms/OccupyRoom": 1,
   "POST /webapi/accommodation-rooms/UnOccupyAll": 1,
   "POST /webapi/accommodation-rooms/UnOccupyGroup": 1,

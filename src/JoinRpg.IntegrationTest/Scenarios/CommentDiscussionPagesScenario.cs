@@ -128,9 +128,9 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
     /// </summary>
     /// <remarks>
     /// До шага 3 <c>ForumController.ViewThread</c> отметку прочтения не сдвигал, и «новое» на форуме
-    /// не гасло никогда. Этот тест ловит пропавший сдвиг отметки, но не порядок «модель, потом
-    /// отметка»: сервис пишет её в другом транзиентном <c>MyDbContext</c>, и граф темы её не видит.
-    /// Порядок закрепляет юнит-тест <c>CommentViewModelTest</c>.
+    /// не гасло никогда. С шага 6 тема рисуется по доменному снимку: <c>DiscussionViewModelBuilder</c>
+    /// читает отметку прочтения сам, и <c>ViewThread</c> сдвигает её только после построения модели —
+    /// иначе и корень, и ответ здесь потеряли бы пометку «новое» уже при первом открытии.
     /// </remarks>
     [Fact]
     public async Task ForumThreadPage_MarksRootAndReplyAsNew_OnlyUntilViewed()
@@ -150,14 +150,65 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
     }
 
     /// <summary>
+    /// Тему видят мастер и игрок с принятой заявкой на персонажа из её группы — пользователь без заявки
+    /// получает страницу «нет доступа», а не обсуждение (ADR026, шаг 6: доступ по владельцу обсуждения).
+    /// </summary>
+    [Fact]
+    public async Task ForumThreadPage_DeniesUserWithoutApprovedClaim()
+    {
+        var seed = await SeedAsync();
+        string strangerEmail;
+        using (var scope = factory.Services.CreateScope())
+        {
+            (_, strangerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        }
+        var stranger = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), strangerEmail);
+
+        var threadText = TextOf(await GetPageAsync(stranger, seed.ThreadPageUrl));
+
+        threadText.ShouldNotContain(ForumTexts.First);
+        threadText.ShouldNotContain(ForumTexts.MasterReply);
+    }
+
+    /// <summary>
+    /// Тема ищется в проекте из маршрута: под чужим проектом (даже своим как мастера) и с
+    /// несуществующим id — 404, а не обсуждение и не падение.
+    /// </summary>
+    [Fact]
+    public async Task ForumThreadPage_IsNotFound_InOtherProjectOrMissing()
+    {
+        var seed = await SeedAsync();
+        ProjectIdentification otherProjectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            otherProjectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, seed.MasterId, "Другой проект мастера");
+        }
+        var master = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), seed.MasterEmail);
+
+        (await master.GetAsync($"{otherProjectId.Value}/forums/{seed.ThreadId.ThreadId}/ViewThread"))
+            .StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await master.GetAsync($"{seed.ProjectId.Value}/forums/{int.MaxValue}/ViewThread"))
+            .StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await master.GetAsync($"{seed.ProjectId.Value}/forums/not-a-thread/ViewThread"))
+            .StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
     /// Помечен ли комментарий значком «новое». Блок комментария (<c>div#comment{id}</c>) содержит
-    /// и вложенные ответы, поэтому значок ищем только в собственной таблице комментария.
+    /// и вложенные ответы, поэтому значок ищем только в собственном тексте комментария, без ответов.
     /// </summary>
     private static bool IsMarkedNew(HtmlDocument page, int commentId)
     {
-        var header = page.DocumentNode.SelectSingleNode($"//div[@id='comment{commentId}']/table")
+        var id = $"comment{commentId}";
+        _ = page.DocumentNode.SelectSingleNode($"//*[@id='{id}']")
             ?? throw new ShouldAssertException($"Комментарий {commentId} не найден на странице");
-        return WebUtility.HtmlDecode(header.InnerText).Contains(NewCommentBadgeTitle);
+        // Только текст самого комментария: ближайший предок с id «comment…» — он сам, а не вложенный ответ.
+        // Так селектор не зависит от разметки внутри блока (таблица в старом дереве заявки, div в Web.Comments).
+        var ownText = page.DocumentNode.SelectNodes(
+            $"//*[@id='{id}']//text()[ancestor::*[starts-with(@id, 'comment')][1][@id='{id}']]");
+        return ownText is not null
+            && ownText.Any(node => WebUtility.HtmlDecode(node.InnerText).Contains(NewCommentBadgeTitle));
     }
 
     private static async Task<HtmlDocument> GetPageAsync(HttpClient client, string url)
@@ -195,6 +246,7 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
         int MasterReplyCommentId,
         int ForumRootCommentId,
         int ForumMasterReplyCommentId,
+        UserIdentification MasterId,
         string MasterEmail,
         string SecondMasterEmail,
         string PlayerEmail)
@@ -309,7 +361,7 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
         await AddForumComment(playerId, threadId, forumFirstId, ForumTexts.PlayerReply);
         await AddForumComment(masterId, threadId, parentCommentId: null, ForumTexts.HiddenFromPlayer, isVisibleToPlayer: false);
 
-        return new Seed(projectId, claimId, threadId, masterRootId, masterReplyId, forumFirstId, forumMasterReplyId, masterEmail, secondMasterEmail, playerEmail);
+        return new Seed(projectId, claimId, threadId, masterRootId, masterReplyId, forumFirstId, forumMasterReplyId, masterId, masterEmail, secondMasterEmail, playerEmail);
     }
 
     private Task AddClaimComment(
