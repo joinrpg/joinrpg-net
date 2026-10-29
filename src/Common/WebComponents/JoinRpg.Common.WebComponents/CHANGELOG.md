@@ -20,6 +20,7 @@
 - `TypedSelector`: в `<fieldset disabled>` не раскрывается. ([#5874](https://github.com/joinrpg/joinrpg-net/pull/5874))
 - `FormRow`: id поля уникален и при статической строке рядом с островом. ([#5900](https://github.com/joinrpg/joinrpg-net/pull/5900))
 - `CheckboxInput`: галочка постится формой и до загрузки WASM, отключённая постит текущее значение. ([#5923](https://github.com/joinrpg/joinrpg-net/pull/5923))
+- `TypedSelector` в модальном `<dialog>`: клик по тексту пункта выбирает его — раньше список закрывался на нажатии, и срабатывал только клик точно по галочке. ([#5967](https://github.com/joinrpg/joinrpg-net/pull/5967))
 
 ## 2026.9.438
 
