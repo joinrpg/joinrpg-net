@@ -1,0 +1,69 @@
+@*
+    Форма нового комментария или ответа. Статическая: обычный POST в ForumController.CreateComment с теми же
+    именами полей, что у _AddCommentPartial.cshtml (ProjectId, CommentDiscussionId, ParentCommentId,
+    CommentText, HideFromUser). Живёт в теле JoinCollapsePanel — «Отмена» её сворачивает.
+*@
+@inject ICommentUriLocator UriLocator
+@* Иначе Blazor может склеить кнопки «Отмена» и «Отправить». *@
+@preservewhitespace true
+
+<form method="post" action="@UriLocator.GetCreateCommentUri(Discussion.ProjectId)">
+    <AntiforgeryToken />
+    <input type="hidden" name="ProjectId" value="@Discussion.ProjectId.Value" />
+    <input type="hidden" name="CommentDiscussionId" value="@Discussion.DiscussionId.Value" />
+    @if (ReplyTo is not null)
+    {
+        <input type="hidden" name="ParentCommentId" value="@ReplyTo.CommentId.Value" />
+    }
+
+    <FormHorizontal>
+        <FormRow Label="Текст комментария" FieldName="CommentText">
+            @* Имя поля — из выражения: CommentText. *@
+            <JoinMarkdownTextArea Value="" ValueExpression="() => CommentText" required="@true" />
+        </FormRow>
+
+        @if (Discussion.HasMasterAccess)
+        {
+            @if (IsHideForced)
+            {
+                @* Видимый ответ на скрытый комментарий сервис отклонит, а форма молча вернёт в обсуждение
+                   и текст потеряется (ADR026 §3) — поэтому галочка отмечена и не снимается.
+                   Отключённый чекбокс не постится, значение несёт его скрытое поле. *@
+                <FormRow Label="Только другим мастерам" FieldName="HideFromUser" Description="Ответ на скрытый от игрока комментарий тоже скрыт">
+                    <CheckboxInput Value="true" ValueExpression="() => HideFromUser" disabled="@true" />
+                </FormRow>
+            }
+            else
+            {
+                <FormRow Label="Только другим мастерам" FieldName="HideFromUser">
+                    <CheckboxInput Value="false" ValueExpression="() => HideFromUser" />
+                </FormRow>
+            }
+        }
+
+        <FormRow>
+            @* Сворачивает панель общий скрипт JoinRpg.Common.WebComponents.lib.module.js: обработчиков Blazor
+               в статическом рендеринге нет. *@
+            <JoinButton Label="Отмена" data-join-collapse-close="" />
+            <JoinButton Label="Отправить" Submit="true" Style="VariationStyleEnum.Success" />
+        </FormRow>
+    </FormHorizontal>
+</form>
+
+@code {
+    /// <summary>Обсуждение, в которое пишем.</summary>
+    [Parameter, EditorRequired]
+    public DiscussionViewModel Discussion { get; set; } = null!;
+
+    /// <summary>Комментарий, на который отвечаем; <c>null</c> — новый комментарий верхнего уровня.</summary>
+    [Parameter]
+    public CommentViewModel? ReplyTo { get; set; }
+
+    /// <summary>Ответ на скрытый от игрока комментарий обязан быть скрыт и сам.</summary>
+    private bool IsHideForced => ReplyTo is { IsVisibleToPlayer: false };
+
+    // Источники имён полей формы для компонентов ввода: значения не читаются, форма постится как есть.
+    private string CommentText { get; } = "";
+
+    private bool HideFromUser { get; }
+}

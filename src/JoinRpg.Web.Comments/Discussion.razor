@@ -1,0 +1,37 @@
+@*
+    Обсуждение заявки или темы форума. Рендеринг статический: страница остаётся cshtml и вставляет
+    <component type="typeof(Discussion)" render-mode="Static" /> (ADR026 §3).
+*@
+
+<div class="join-discussion">
+    <JoinCollapsePanel>
+        <Header>Добавить комментарий</Header>
+        <ChildContent><AddCommentForm Discussion="Model" /></ChildContent>
+    </JoinCollapsePanel>
+
+    <div class="join-discussion__comments">
+        @foreach (var comment in Model.RootComments)
+        {
+            <CommentItem Discussion="Model" Comment="comment" ExtraContent="ExtraContent" />
+        }
+    </div>
+
+    @if (Model.RootComments.Count > 0)
+    {
+        <JoinCollapsePanel>
+            <Header>Добавить комментарий</Header>
+            <ChildContent><AddCommentForm Discussion="Model" /></ChildContent>
+        </JoinCollapsePanel>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public DiscussionViewModel Model { get; set; } = null!;
+
+    /// <summary>
+    /// Дополнительное содержимое каждого комментария — например, финблок заявки (ADR026 §3).
+    /// </summary>
+    [Parameter]
+    public RenderFragment<CommentViewModel>? ExtraContent { get; set; }
+}

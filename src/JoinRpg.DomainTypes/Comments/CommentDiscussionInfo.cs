@@ -70,4 +70,17 @@ public record CommentFinanceInfo(
     FinanceOperationType OperationType,
     FinanceOperationState State,
     DateTime OperationDate,
-    PaymentTypeIdentification? PaymentType);
+    PaymentTypeIdentification? PaymentType)
+{
+    /// <summary>
+    /// Операция ждёт ручного решения мастера: предложенная оплата наличными или своим способом и запрос
+    /// льготного взноса. Онлайн-оплату в состоянии «предложена» подтверждает банк, а не мастер.
+    /// </summary>
+    /// <remarks>
+    /// То же правило, что <c>FinanceOperation.RequireModeration</c> в DataModel. Кто вправе её
+    /// подтвердить — отдельно, по <c>ProjectInfo.CanModerateFinanceOperation</c>.
+    /// </remarks>
+    public bool RequireModeration =>
+        State == FinanceOperationState.Proposed
+        && OperationType is FinanceOperationType.Submit or FinanceOperationType.PreferentialFeeRequest;
+}

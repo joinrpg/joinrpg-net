@@ -1,6 +1,7 @@
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.Comments;
 using Shouldly;
 using Xunit;
 
@@ -49,5 +50,21 @@ public class FinancePredicatesTest
         var fromPredicate = FinancePredicates.RequireModeration().Compile()(operation);
 
         fromPredicate.ShouldBe(operation.RequireModeration);
+    }
+
+    /// <summary>
+    /// Третья копия правила — у мини-снимка финоперации комментария (ADR026): обсуждение строится без EF.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(AllCombinations))]
+    public void CommentFinanceInfoRequireModeration_ShouldMatchEntityProperty(
+        FinanceOperationState state,
+        FinanceOperationType operationType)
+    {
+        var operation = new FinanceOperation { State = state, OperationType = operationType };
+
+        var snapshot = new CommentFinanceInfo(0, operationType, state, default, PaymentType: null);
+
+        snapshot.RequireModeration.ShouldBe(operation.RequireModeration);
     }
 }

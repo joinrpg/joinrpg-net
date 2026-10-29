@@ -1,0 +1,92 @@
+@*
+    Комментарий с ответами (рекурсивно). Рендеринг статический: формы — обычные POST, раскрытие формы
+    ответа — JoinCollapsePanel (нативный <details>). Видимость и «новое» уже посчитаны построителем.
+*@
+@inject ICommentUriLocator UriLocator
+@* Иначе Blazor склеит «Мастер», ссылку на автора, «написал(а)» и время в одно слово. *@
+@preservewhitespace true
+
+<div class="join-comment" id="comment@(Comment.CommentId.Value)">
+    <div class="join-comment__row">
+        <div class="join-comment__avatar">
+            @if (Comment.AuthorAvatarUri is { } avatarUri)
+            {
+                <JoinAvatar Uri="avatarUri" Size="AvatarSize" />
+            }
+        </div>
+        <div class="join-comment__main @(Comment.IsVisibleToPlayer ? null : "world-object-hidden")">
+            <div class="join-comment__header">
+                <span>@(Comment.IsCommentByPlayer ? "Игрок" : "Мастер")</span>
+                <UserLink Model="Comment.Author" />
+                написал(а)
+                <EventTime Model="Comment.CreatedAt" />
+
+                @if (!Comment.IsVisibleToPlayer)
+                {
+                    <strong>другим мастерам</strong>
+                }
+
+                @if (!Comment.IsRead)
+                {
+                    <JoinBadge Title="Новый комментарий" Text="New" />
+                }
+
+                <a href="@UriLocator.GetCommentUri(Discussion.ProjectId, Comment.CommentId)" title="Ссылка на комментарий">#</a>
+
+                @if (Comment.CanConceal)
+                {
+                    <form class="join-comment__conceal" method="post" action="@UriLocator.GetConcealCommentUri(Discussion.ProjectId)">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="commentId" value="@Comment.CommentId.Value" />
+                        <JoinButton Submit="true" Icon="JoinIconType.Hidden" Size="SizeStyleEnum.ExtraSmall" Title="Скрыть комментарий от игрока" />
+                    </form>
+                }
+            </div>
+
+            @ExtraContent?.Invoke(Comment)
+
+            @if (Comment.ExtraActionText is not null)
+            {
+                <b>@Comment.ExtraActionText</b>
+            }
+
+            <div>@((MarkupString)Comment.TextHtml)</div>
+
+            <JoinCollapsePanel>
+                <Header>Ответить</Header>
+                <ChildContent><AddCommentForm Discussion="Discussion" ReplyTo="Comment" /></ChildContent>
+            </JoinCollapsePanel>
+        </div>
+    </div>
+
+    @if (Comment.Replies.Count > 0)
+    {
+        <div class="join-comment__replies">
+            @foreach (var reply in Comment.Replies)
+            {
+                <div class="@(reply.IsIndented ? "join-comment__reply--indented" : null)">
+                    <CommentItem Discussion="Discussion" Comment="reply" ExtraContent="ExtraContent" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private const int AvatarSize = 64;
+
+    /// <summary>Обсуждение, которому принадлежит комментарий — для форм и ссылок.</summary>
+    [Parameter, EditorRequired]
+    public DiscussionViewModel Discussion { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public CommentViewModel Comment { get; set; } = null!;
+
+    /// <summary>
+    /// Дополнительное содержимое комментария под строкой автора — например, финблок заявки (ADR026 §3).
+    /// Вызывается для каждого комментария; что показывать, решает сам фрагмент (например, по
+    /// <see cref="CommentViewModel.Finance"/>).
+    /// </summary>
+    [Parameter]
+    public RenderFragment<CommentViewModel>? ExtraContent { get; set; }
+}
