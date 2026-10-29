@@ -5,7 +5,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel;
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
-public class ForumThread : IValidatableObject, IForumThread
+public class ForumThread : IValidatableObject, IProjectEntity
 {
     public int ForumThreadId { get; set; }
     public int CharacterGroupId { get; set; }
@@ -47,12 +47,6 @@ public class ForumThread : IValidatableObject, IForumThread
     int IOrderableEntity.Id => ForumThreadId;
     public virtual ICollection<UserForumSubscription> Subscriptions { get; set; } = new List<UserForumSubscription>();
 
-}
-
-public interface IForumThread : IProjectEntity
-{
-    bool IsVisibleToPlayer { get; }
-    int CharacterGroupId { get; }
 }
 
 //TODO В форумах есть подписка, мы ее никогда не ставим. Когда сделаем, поправить также SubscribeCalculator.cs 

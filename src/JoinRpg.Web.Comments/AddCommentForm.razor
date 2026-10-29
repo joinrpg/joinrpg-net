@@ -1,7 +1,7 @@
 @*
-    Форма нового комментария или ответа. Статическая: обычный POST в ForumController.CreateComment с теми же
-    именами полей, что у _AddCommentPartial.cshtml (ProjectId, CommentDiscussionId, ParentCommentId,
-    CommentText, HideFromUser). Живёт в теле JoinCollapsePanel — «Отмена» её сворачивает.
+    Форма нового комментария или ответа. Статическая: обычный POST в ForumController.CreateComment с именами
+    полей AddCommentViewModel (ProjectId, CommentDiscussionId, ParentCommentId, CommentText, HideFromUser);
+    id постятся голыми числами, typed id из них собирает TypeConverter. Живёт в теле JoinCollapsePanel — «Отмена» её сворачивает.
 *@
 @inject ICommentUriLocator UriLocator
 @* Иначе Blazor может склеить кнопки «Отмена» и «Отправить». *@

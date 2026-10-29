@@ -58,7 +58,6 @@ public class PaymentTransferViewModel : AddCommentViewModel
         ClaimId = claim.ClaimId.ClaimId;
         ClaimName = claim.Character.CharacterName;
         ProjectId = claim.ClaimId.ProjectId.Value;
-        CommentDiscussionId = claim.Claim.CommentDiscussionId.Value;
         MaxMoney = claim.Claim.Finance.FeePaid;
     }
 }

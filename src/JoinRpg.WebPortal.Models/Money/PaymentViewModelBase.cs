@@ -17,9 +17,7 @@ public class PaymentViewModelBase : FinanceViewModelBase
     {
         CommentText = "";
         ProjectId = claim.ProjectId;
-        CommentDiscussionId = claim.ClaimId;
         ClaimId = claim.ClaimId;
-        ParentCommentId = null;
         EnableHideFromUser = false;
         HideFromUser = false;
         OperationDate = DateOnly.FromDateTime(DateTime.Today);

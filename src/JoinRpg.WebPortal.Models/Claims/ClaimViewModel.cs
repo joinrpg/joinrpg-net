@@ -129,7 +129,6 @@ public class ClaimViewModel
 
         ClaimIdentification = claimInfo.ClaimId;
         AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
-        CommentDiscussionId = claim.CommentDiscussionId;
         Discussion = discussion;
         HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
         CanManageThisClaim = claim.HasAccess(currentUser.UserId,
@@ -195,7 +194,6 @@ public class ClaimViewModel
         SensitiveData = claimInfo.SensitiveData;
     }
 
-    public int CommentDiscussionId { get; }
     public bool CheckInStarted { get; }
     public ClaimCheckInValidator Validator { get; }
     public bool AccommodationEnabled { get; }
