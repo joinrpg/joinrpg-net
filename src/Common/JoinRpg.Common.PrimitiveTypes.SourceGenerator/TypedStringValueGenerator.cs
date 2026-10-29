@@ -245,6 +245,7 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         // Неявное преобразование из string
         if (!info.HasImplicitOperatorFromString)
         {
+            sb.AppendLine("    /// <summary>Неявно приводит строку к значению, проверив и нормализовав её; на недопустимой строке бросает <see cref=\"ArgumentException\"/>.</summary>");
             sb.AppendLine($"    public static implicit operator {info.TypeName}(string value) => new {info.TypeName}(ValidateAndCanonicalize(value));");
         }
         sb.AppendLine();
@@ -252,6 +253,7 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         // Неявное преобразование в string
         if (!info.HasImplicitOperatorToString)
         {
+            sb.AppendLine("    /// <summary>Неявно приводит значение к его строке <see cref=\"Value\"/>.</summary>");
             sb.AppendLine($"    public static implicit operator string({info.TypeName} self) => self.Value;");
         }
         sb.AppendLine();
@@ -259,6 +261,7 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         // IEquatable<string>
         if (!info.HasIEquatableString)
         {
+            sb.AppendLine("    /// <inheritdoc/>");
             sb.AppendLine($"    public bool Equals(string? other) => Value == other;");
             sb.AppendLine();
         }
@@ -266,6 +269,7 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         // IComparable<T>
         if (!info.HasIComparable)
         {
+            sb.AppendLine("    /// <inheritdoc/>");
             sb.AppendLine($"    public int CompareTo({info.TypeName}? other) => Value.CompareTo(other?.Value);");
             sb.AppendLine();
         }
@@ -273,6 +277,7 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         // FromOptional
         if (!info.HasFromOptionalMethod)
         {
+            sb.AppendLine("    /// <summary>Создаёт значение; если строка null, пустая или из одних пробелов, возвращает null. На недопустимой строке бросает <see cref=\"ArgumentException\"/>.</summary>");
             sb.AppendLine($"    public static {info.TypeName}? FromOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : new {info.TypeName}(ValidateAndCanonicalize(value));");
         }
         sb.AppendLine();
@@ -280,6 +285,7 @@ public class TypedStringValueGenerator : IIncrementalGenerator
         // ToString
         if (!info.HasToStringMethod)
         {
+            sb.AppendLine($"    /// <summary>Строка вида <c>{info.TypeName}(…)</c> — для отладки; для вывода — <see cref=\"Value\"/>.</summary>");
             sb.AppendLine($"    public override string ToString() => $\"{info.TypeName}({{Value}})\";");
         }
         sb.AppendLine();
@@ -296,18 +302,23 @@ public class TypedStringValueGenerator : IIncrementalGenerator
 
     private static void GenerateISpanParsable(StringBuilder sb, TypeGenerationInfo info)
     {
+        sb.AppendLine("    /// <inheritdoc/>");
         sb.AppendLine($"    public static {info.TypeName} Parse(ReadOnlySpan<char> value, IFormatProvider? provider)");
         sb.AppendLine($"        => TryParse(value, provider, out var result) ? result : throw new ArgumentException(\"Could not parse supplied value.\", nameof(value));");
         sb.AppendLine();
+        sb.AppendLine("    /// <inheritdoc/>");
         sb.AppendLine($"    public static {info.TypeName} Parse(string value, IFormatProvider? provider = null)");
         sb.AppendLine($"        => TryParse(value.AsSpan(), provider, out var result) ? result : throw new ArgumentException(\"Could not parse supplied value.\", nameof(value));");
         sb.AppendLine();
         sb.AppendLine($"    static bool IParsable<{info.TypeName}>.TryParse([NotNullWhen(true)] string? value, IFormatProvider? provider, [MaybeNullWhen(false)] out {info.TypeName} result)");
         sb.AppendLine($"        => TryParse(value.AsSpan(), provider, out result);");
         sb.AppendLine();
+        // Не реализация интерфейса (её закрывает явная выше), поэтому свой summary, а не inheritdoc
+        sb.AppendLine("    /// <summary>Пробует разобрать строку, допуская префикс с именем типа; при неудаче возвращает false.</summary>");
         sb.AppendLine($"    public static bool TryParse(string? value, IFormatProvider? provider, [MaybeNullWhen(false)] out {info.TypeName} result)");
         sb.AppendLine($"        => TryParse(value.AsSpan(), provider, out result);");
         sb.AppendLine();
+        sb.AppendLine("    /// <inheritdoc/>");
         sb.AppendLine($"    public static bool TryParse(ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out {info.TypeName} result)");
         sb.AppendLine("    {");
         sb.AppendLine("        // Удаляем префикс типа, если есть");
