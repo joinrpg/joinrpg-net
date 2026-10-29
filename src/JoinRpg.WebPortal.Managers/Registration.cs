@@ -41,6 +41,7 @@ public static class Registration
     {
         return services.AddScoped<ProjectListManager>()
         .AddScoped<IProjectSettingsClient, ProjectSettingsViewService>()
+        .AddScoped<Web.ProjectMasterTools.Finance.IFinanceSettingsClient, FinanceSettingsViewService>()
         .AddScoped<IMasterProfileClient, ProjectMasterTools.MasterProfileViewService>()
         .AddScoped<IMasterAccessClient, ProjectMasterTools.MasterAccessViewService>()
         .AddScoped<IProjectInfoClient, ProjectInfoViewService>()

@@ -57,7 +57,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
                             <th>
                                 @Html.DisplayNameFor(model => firstFee!.Fee)
                             </th>
-                            @if (Model.GlobalSettings.PreferentialFeeEnabled)
+                            @if (Model.PreferentialFeeEnabled)
                             {
                                 <th>
                                     @Html.DisplayNameFor(model => firstFee!.PreferentialFee)
@@ -75,7 +75,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
                                 <td>
                                     @Html.DisplayFor(modelItem => item.Fee)
                                 </td>
-                                @if (Model.GlobalSettings.PreferentialFeeEnabled)
+                                @if (Model.PreferentialFeeEnabled)
                                 {
                                     <td>
                                         @(item.PreferentialFee ?? item.Fee)
@@ -129,61 +129,10 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
             </div>
         </div>
     </div>
-    @if (Model.HasEditAccess)
-    {
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4>
-                    <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#changeSettings">
-                        Общие настройки
-                    </a>
-                </h4>
-
-            </div>
-            <div class="panel-collapse collapse" role="tabpanel" id="changeSettings">
-              <div class="panel-body">
-                <form asp-action="ChangeSettings" asp-controller="Finances" asp-route-projectId="@Model.ProjectId" method="post">
-                  @{
-                    var model = Model.GlobalSettings;
-
-                    <div class="form-group">
-                      @Html.LabelFor(item => model.WarnOnOverPayment, htmlAttributes: new { @class = "control-label col-md-4" })
-                      <div class="col-md-8">
-                        @Html.EditorFor(item => model.WarnOnOverPayment)
-                        @Html.ValidationMessageFor(item => model.WarnOnOverPayment, "", new { @class = "text-danger" })
-                        @Html.DescriptionFor(item => model.WarnOnOverPayment)
-                      </div>
-                    </div>
-
-                    <div class="form-group">
-                      @Html.LabelFor(item => model.PreferentialFeeEnabled, htmlAttributes: new { @class = "control-label col-md-4" })
-                      <div class="col-md-8">
-                        @Html.EditorFor(item => model.PreferentialFeeEnabled)
-                        @Html.ValidationMessageFor(item => model.PreferentialFeeEnabled, "", new { @class = "text-danger" })
-                        @Html.DescriptionFor(item => model.PreferentialFeeEnabled)
-                      </div>
-                    </div>
-
-                    <div class="form-group">
-                      @Html.LabelFor(item => model.PreferentialFeeConditions, htmlAttributes: new { @class = "control-label col-md-4" })
-                      <div class="col-md-8">
-                        @Html.EditorFor(item => model.PreferentialFeeConditions)
-                        @Html.ValidationMessageFor(item => model.PreferentialFeeConditions, "", new { @class = "text-danger" })
-                        @Html.DescriptionFor(item => model.PreferentialFeeConditions)
-                      </div>
-                    </div>
-
-                    <div class="form-group">
-                      <div class="col-md-offset-4 col-md-8">
-                        <input type="submit" value="Сохранить" class="btn btn-success" />
-                      </div>
-                    </div>
-                  }
-                  </form>
-              </div>
-            </div>
-        </div>
-    }
+    @* Панели по одной переезжают на острова; пока переезд не закончен, старые панели на data-toggle
+       и новые на JoinCollapsePanel стоят в одном аккордеоне. *@
+    <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinanceGeneralSettingsPanel)" render-mode="WebAssembly"
+               param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4>
@@ -215,7 +164,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
       <div class="modal-content">
           <form asp-action="CreateFeeSetting"  asp-controller="Finances" asp-route-projectId="@Model.ProjectId" method="post">
           @{
-            var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId, PreferentialFeeEnabled = Model.GlobalSettings.PreferentialFeeEnabled, StartDate = DateOnly.FromDateTime(DateTime.UtcNow) };
+            var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId, PreferentialFeeEnabled = Model.PreferentialFeeEnabled, StartDate = DateOnly.FromDateTime(DateTime.UtcNow) };
 
 
             <div class="modal-header">

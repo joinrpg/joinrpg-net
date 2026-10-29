@@ -23,7 +23,7 @@ public class FinanceSetupViewModel
 
     public string CurrentUserToken { get; }
 
-    public FinanceGlobalSettingsViewModel GlobalSettings { get; }
+    public bool PreferentialFeeEnabled { get; }
 
     [ReadOnly(true)]
     public bool IsAdmin { get; }
@@ -78,12 +78,6 @@ public class FinanceSetupViewModel
         CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId)
             .Token.ToHexString();
 
-        GlobalSettings = new FinanceGlobalSettingsViewModel
-        {
-            ProjectId = ProjectId,
-            WarnOnOverPayment = financeSettings.WarnOnOverPayment,
-            PreferentialFeeEnabled = financeSettings.PreferentialFeeEnabled,
-            PreferentialFeeConditions = project.Details.PreferentialFeeConditions.Contents,
-        };
+        PreferentialFeeEnabled = financeSettings.PreferentialFeeEnabled;
     }
 }
