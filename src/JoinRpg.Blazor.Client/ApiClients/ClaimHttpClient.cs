@@ -30,6 +30,6 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
 
     async Task<UgPageViewModel> IUnifiedGridClient.GetGrid(ProjectIdentification projectId, UgScopeView scope, UgFilterView filter, int page)
         => await (await httpClient.GetAsync(
-            $"webapi/claim-list/GetGrid?projectId={projectId.Value}&scope={scope}&status={filter.Status}&page={page}"))
+            $"webapi/claim-list/GetGrid?projectId={projectId.Value}&scope={scope}&status={filter.Status}&onlyWithProblems={filter.OnlyWithProblems}&page={page}"))
             .ReadFromJsonOrThrowProblem<UgPageViewModel>();
 }
