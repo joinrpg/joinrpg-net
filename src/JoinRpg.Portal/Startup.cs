@@ -95,6 +95,7 @@ public class Startup(WebApplicationBuilder builder)
                 options.Filters.Add(new AddFullUriFilter());
 
                 options.ModelBinderProviders.Insert(0, new ProjectEntityIdModelBinderProvider());
+                options.ModelBinderProviders.Insert(0, new CharacterTypeInfoModelBinderProvider());
 
                 //TODO need to fix this
                 options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
