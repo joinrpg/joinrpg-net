@@ -99,8 +99,8 @@ public class MenuViewComponentNotFoundProjectTest
         public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
             => throw new ProjectNotFoundException(projectId);
 
-        public Task<ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
-            => throw new ProjectNotFoundException(projectId);
+        public Task<ProjectDetails> GetProjectDetails(ProjectInfo projectInfo)
+            => throw new ProjectNotFoundException(projectInfo.ProjectId);
 
         public void PrimeCache(ProjectInfo projectInfo) { }
     }

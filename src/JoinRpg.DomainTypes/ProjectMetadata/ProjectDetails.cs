@@ -2,6 +2,10 @@ namespace JoinRpg.DomainTypes.ProjectMetadata;
 /// <summary>
 /// Сюда добавляем те свойства проекта, которые большие и нет смысла грузить на каждой странице, например анонс, связи с КогдаИгрой etc
 /// </summary>
+/// <remarks>
+/// В <see cref="ProjectInfo"/> такие поля не кладём: он собирается на каждый запрос. Получать —
+/// через <c>IProjectMetadataRepository.GetProjectDetails</c>, а не с EF-сущности (docs/project-entities.md).
+/// </remarks>
 public record ProjectDetails(
     ProjectInfo ProjectInfo,
     MarkdownString ProjectDescription,
