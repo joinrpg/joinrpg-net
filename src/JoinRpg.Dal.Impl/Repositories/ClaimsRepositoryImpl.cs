@@ -225,6 +225,29 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         return rows.ToDictionary(x => new CommentDiscussionId(x.CommentDiscussionId), x => x.UnreadCommentsCount);
     }
 
+    public async Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId)
+    {
+        var claims = Ctx.Set<Claim>()
+            .AsExpandable()
+            .Where(ClaimPredicates.GetForUser(playerId));
+
+        var unreadCount = CommentDiscussionPredicates.UnreadCount;
+        var masterAccess = ProjectPredicates.MasterAccess(viewerId);
+
+        // Список кросспроектный: признак мастера смотрящего — свой у каждого проекта.
+        var query =
+            from claim in claims
+            select
+            new
+            {
+                claim.CommentDiscussionId,
+                UnreadCommentsCount = unreadCount.Invoke(claim.CommentDiscussion, viewerId.Value, masterAccess.Invoke(claim.Project)),
+            };
+
+        var rows = await query.ToListAsync();
+        return rows.ToDictionary(x => new CommentDiscussionId(x.CommentDiscussionId), x => x.UnreadCommentsCount);
+    }
+
     public async Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status)
     {
         var predicateBuilder = PredicateBuilder.New<Claim>()

@@ -30,11 +30,12 @@ public class UnreadCommentsCountScenario(JoinApplicationFactory factory) : IClas
     public async Task UnreadCount_InSql_MatchesInMemoryRule()
     {
         UserIdentification masterId, playerId, otherId, readerId;
+        string playerEmail;
         ProjectIdentification projectId;
         using (var scope = factory.Services.CreateScope())
         {
             masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
-            playerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            (playerId, playerEmail) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
             otherId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
             readerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
             projectId = await TestUserProjectHelpers.CreateProjectAsync(
@@ -70,24 +71,56 @@ public class UnreadCommentsCountScenario(JoinApplicationFactory factory) : IClas
                 characterId, "Хочу эту роль", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
         });
 
+        // Второй проект, где masterId не мастер: «Мои заявки» кросспроектные, и признак мастера
+        // должен браться по проекту заявки, а не «мастер хоть где-то».
+        ProjectIdentification foreignProjectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            foreignProjectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, otherId, "Чужой проект для счётчика непрочитанного");
+        }
+        var foreignCharacterId = await factory.Services.RunAsAsync(otherId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(foreignProjectId);
+            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                foreignProjectId,
+                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
+            return await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                foreignProjectId,
+                ParentCharacterGroupIds: [],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: FieldLayerContainer.Empty(projectInfo)));
+        });
+        var foreignClaimId = await factory.Services.RunAsAsync(playerId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(foreignProjectId);
+            return await sp.GetRequiredService<IClaimService>().AddClaimFromUser(
+                foreignCharacterId, "Хочу и эту роль", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
+        });
+
         var threadDiscussionId = GetThreadDiscussionId(threadId);
         var claimDiscussionId = GetClaimDiscussionId(claimId);
+        var foreignClaimDiscussionId = GetClaimDiscussionId(foreignClaimId);
 
         SeedDiscussion(projectId, threadDiscussionId, masterId, playerId, otherId);
         SeedDiscussion(projectId, claimDiscussionId, masterId, playerId, otherId);
+        SeedDiscussion(foreignProjectId, foreignClaimDiscussionId, masterId, playerId, otherId);
 
         var users = new[] { masterId, playerId, readerId };
 
         foreach (var userId in users)
         {
-            var (projectInfo, threads, unreadClaims) = await factory.Services.RunAsAsync(userId, async sp =>
+            var (projectInfo, threads, unreadClaims, unreadPlayerClaims) = await factory.Services.RunAsAsync(userId, async sp =>
             {
                 var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
                 var isMaster = projectInfo.HasMasterAccess(userId);
                 var threads = await sp.GetRequiredService<IForumRepository>().GetThreads(projectId.Value, userId, isMaster, groupIds: null);
-                var unreadClaims = await sp.GetRequiredService<IClaimsRepository>().GetUnreadDiscussionsForClaims(
+                var claimsRepository = sp.GetRequiredService<IClaimsRepository>();
+                var unreadClaims = await claimsRepository.GetUnreadDiscussionsForClaims(
                     projectId.Value, ClaimStatusSpec.Any, userId.Value, isMaster);
-                return (projectInfo, threads, unreadClaims);
+                // «Мои заявки» на профиле игрока: признак мастера считается в запросе по проекту заявки.
+                var unreadPlayerClaims = await claimsRepository.GetUnreadDiscussionsForPlayerClaims(playerId, userId);
+                return (projectInfo, threads, unreadClaims, unreadPlayerClaims);
             });
 
             var thread = threads.ShouldHaveSingleItem();
@@ -100,7 +133,26 @@ public class UnreadCommentsCountScenario(JoinApplicationFactory factory) : IClas
             var claimDiscussion = LoadDiscussion(claimDiscussionId);
             unreadClaims[new CommentDiscussionId(claimDiscussionId)]
                 .ShouldBe(ExpectedUnread(claimDiscussion, userId, isMaster), $"заявка, пользователь {userId}");
+            unreadPlayerClaims.Count.ShouldBe(2, $"мои заявки, пользователь {userId}");
+            unreadPlayerClaims[new CommentDiscussionId(claimDiscussionId)]
+                .ShouldBe(ExpectedUnread(claimDiscussion, userId, isMaster), $"мои заявки, пользователь {userId}");
+            // Ни один из смотрящих не мастер чужого проекта: скрытые от игроков комментарии там не в счёт.
+            unreadPlayerClaims[new CommentDiscussionId(foreignClaimDiscussionId)]
+                .ShouldBe(ExpectedUnread(LoadDiscussion(foreignClaimDiscussionId), userId, isMaster: false),
+                    $"мои заявки, чужой проект, пользователь {userId}");
         }
+
+        // У мастера первого проекта в чужом проекте число другое: иначе проверка выше не отличила бы
+        // признак мастера по проекту заявки от «мастер хоть в одном проекте».
+        ExpectedUnread(LoadDiscussion(foreignClaimDiscussionId), masterId, isMaster: false)
+            .ShouldNotBe(ExpectedUnread(LoadDiscussion(foreignClaimDiscussionId), masterId, isMaster: true));
+
+        // Бейдж на «Моих заявках» в профиле игрока: раньше в модель списка шёл константный 0.
+        var playerUnread = ExpectedUnread(LoadDiscussion(claimDiscussionId), playerId, isMaster: false);
+        playerUnread.ShouldBeGreaterThan(0);
+        var profilePage = await (await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), playerEmail))
+            .GetStringAsync($"user/{playerId.Value}");
+        profilePage.ShouldContain($"title=\"Непрочитанные комментарии\">{playerUnread}</span>");
 
         // Числа руками по теме: первый комментарий мастера (c0), затем SeedDiscussion (c1–c8).
         // Мастер: отметка — max(свои c0, c2, c5; отметки c1, c1) = c5, выше — c6, c7, c8.
