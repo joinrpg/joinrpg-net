@@ -219,46 +219,6 @@ public class FinancesController(
         }
     }
 
-    [MasterAuthorize(Permission.CanManageMoney)]
-    [HttpPost]
-    public async Task<ActionResult> CreateFeeSetting(CreateProjectFeeSettingViewModel viewModel)
-    {
-        try
-        {
-            await financeSettingsService.CreateFeeSetting(new CreateFeeSettingRequest()
-            {
-                ProjectId = new(viewModel.ProjectId),
-                Fee = viewModel.Fee,
-                PreferentialFee = viewModel.PreferentialFee,
-                StartDate = viewModel.StartDate.ToDateTime(TimeOnly.MinValue),
-            });
-            return RedirectToAction("Setup", new { viewModel.ProjectId });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Ошибка");
-            //TODO: Message that comment is not added
-            return RedirectToAction("Setup", new { viewModel.ProjectId });
-        }
-    }
-
-    [HttpPost, ValidateAntiForgeryToken]
-    [MasterAuthorize(Permission.CanManageMoney)]
-    public async Task<ActionResult> DeleteFeeSetting(int projectid, int projectFeeSettingId)
-    {
-        try
-        {
-            await financeSettingsService.DeleteFeeSetting(new(projectid), projectFeeSettingId);
-            return RedirectToAction("Setup", new { projectid });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Ошибка");
-            //TODO: Message that comment is not added
-            return RedirectToAction("Setup", new { projectid });
-        }
-    }
-
     [HttpGet, AllowAnonymous]
     public async Task<ActionResult> SummaryByMaster(string token, int projectId)
     {

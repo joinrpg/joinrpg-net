@@ -444,6 +444,10 @@ EF6 не даст сохранить сущность с пустым `[Required
   ловит `catch (Exception)`, логирует и делает redirect, так что пользователь и
   сегодня ошибки не видит — настройка просто не создаётся; после переключения она
   будет создаваться с мусорным значением.
+  ~~`ProjectFeeSettingViewModelBase` без `[Range]`, `catch (Exception)` с redirect~~ — сняты
+  при переводе панели «Взнос и сроки» на остров: у `CreateFeeSettingViewModel` есть `[Range]`,
+  его проверяет `[ApiController]`, отказ сервиса показывается мастеру. Сервис знак взноса
+  по-прежнему не проверяет — пункт остаётся для прямых вызовов сервиса.
 - **Комната поселения с пустым именем.** `ProjectAccommodation.Name` помечен
   `[Required]`, а в `AccommodationServiceImpl.AddRooms` прямо стоит
   `//TODO: Implement rooms names checking`: строка комнат режется по запятой без

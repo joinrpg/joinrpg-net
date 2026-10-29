@@ -15,15 +15,13 @@ public class FinanceSetupViewModel
 
     public IReadOnlyList<PaymentTypeListItemViewModel> PaymentTypes { get; }
 
-    public IReadOnlyList<ProjectFeeSettingListItemViewModel> FeeSettings { get; }
+    public bool HasFeeSettings { get; }
 
     public bool HasEditAccess { get; }
 
     public int ProjectId { get; }
 
     public string CurrentUserToken { get; }
-
-    public bool PreferentialFeeEnabled { get; }
 
     [ReadOnly(true)]
     public bool IsAdmin { get; }
@@ -72,12 +70,9 @@ public class FinanceSetupViewModel
                     .ThenBy(li => li.Name))
                 .ToList();
 
-        FeeSettings = [.. projectInfo.ProjectFinanceSettings.FeeScheduleOrdered
-            .Select(fs => new ProjectFeeSettingListItemViewModel(fs, projectInfo.ProjectId))];
+        HasFeeSettings = financeSettings.FeeSchedule.Any();
 
         CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId)
             .Token.ToHexString();
-
-        PreferentialFeeEnabled = financeSettings.PreferentialFeeEnabled;
     }
 }

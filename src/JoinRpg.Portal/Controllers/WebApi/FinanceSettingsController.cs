@@ -1,3 +1,4 @@
+using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectMasterTools.Finance;
 using Microsoft.AspNetCore.Mvc;
@@ -28,5 +29,39 @@ public class FinanceSettingsController(IFinanceSettingsClient client) : Controll
         model.ProjectId = projectId;
         await client.SaveGeneralSettings(model);
         return Ok();
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<FinanceFeeSettingsViewModel>> GetFeeSettings(ProjectIdentification projectId)
+        => Ok(await client.GetFeeSettings(projectId));
+
+    [HttpPost]
+    public async Task<ActionResult> CreateFeeSetting(ProjectIdentification projectId, CreateFeeSettingViewModel model)
+        => await FeeRefusalToBadRequest(() => client.CreateFeeSetting(projectId, model));
+
+    [HttpPost]
+    public async Task<ActionResult> DeleteFeeSetting(ProjectIdentification projectId, [FromQuery] int projectFeeSettingId)
+        => await FeeRefusalToBadRequest(() => client.DeleteFeeSetting(projectId, projectFeeSettingId));
+
+    /// <summary>Отказы сервиса по расписанию взносов — текстом: остров показывает его мастеру.</summary>
+    private async Task<ActionResult> FeeRefusalToBadRequest(Func<Task> action)
+    {
+        try
+        {
+            await action();
+            return Ok();
+        }
+        catch (CannotPerformOperationInPast)
+        {
+            return BadRequest("Нельзя менять взнос, который уже вступил в силу, или вводить его задним числом");
+        }
+        catch (PreferentialFeeNotEnabled)
+        {
+            return BadRequest("Льготный взнос в проекте выключен — включите его в общих настройках");
+        }
+        catch (JoinRpgEntityNotFoundException)
+        {
+            return BadRequest("Взнос не найден. Обновите страницу и попробуйте ещё раз.");
+        }
     }
 }
