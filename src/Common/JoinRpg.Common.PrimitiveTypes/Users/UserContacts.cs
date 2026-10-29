@@ -5,4 +5,15 @@ namespace JoinRpg.Common.PrimitiveTypes;
 /// компонентами (<c>EmailLink</c>, <c>VkLink</c>, <c>TelegramLink</c>, <c>LiveJournalLink</c>);
 /// пустые опускаются.
 /// </summary>
-public record UserContacts(Email? Email, VkSocialLink? Vk, TelegramSocialLink? Telegram, LiveJournalId? LiveJournal);
+public record UserContacts(Email? Email, VkSocialLink? Vk, TelegramSocialLink? Telegram, LiveJournalId? LiveJournal)
+{
+    /// <summary>
+    /// Контакты, если есть хотя бы один; иначе <c>null</c>. Пустой <see cref="UserContacts"/>
+    /// отображать нечего — вызывающий код рисует вокруг контактов обрамление (скобки)
+    /// по одному факту их наличия.
+    /// </summary>
+    public static UserContacts? CreateIfAny(Email? email, VkSocialLink? vk, TelegramSocialLink? telegram, LiveJournalId? liveJournal)
+        => email is null && vk is null && telegram is null && liveJournal is null
+            ? null
+            : new UserContacts(email, vk, telegram, liveJournal);
+}

@@ -231,13 +231,30 @@ public class ProjectRoleGridViewModelBuilderTests
     public void Build_PublicOnly_ShowsContactsWhenPlayerAllowed()
     {
         var character = _mock.CreateCharacter("Вася");
-        _mock.Player.Extra = new UserExtra { SocialNetworksAccess = ContactsAccessType.Public };
+        _mock.Player.Extra = new UserExtra { Vk = "id4455", SocialNetworksAccess = ContactsAccessType.Public };
         _mock.CreateApprovedClaim(character, _mock.Player);
 
         var result = BuildGrid(Config(contacts: PlayerColumnMode.PublicOnly), [character]);
 
         result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
-            .Player!.Contacts.ShouldNotBeNull();
+            .Player!.Contacts.ShouldNotBeNull().Vk.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Build_PublicOnly_PlayerHasNoContacts_ContactsNull()
+    {
+        // Игрок открыл контакты, но ни одной соцсети не указал, а email в PublicOnly не показываем —
+        // показывать нечего. Пустой UserContacts превращался в ячейке в «Димон ()».
+        var character = _mock.CreateCharacter("Вася");
+        _mock.Player.Extra = new UserExtra { SocialNetworksAccess = ContactsAccessType.Public };
+        _mock.CreateApprovedClaim(character, _mock.Player);
+
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.PublicOnly), [character]);
+
+        var player = result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player.ShouldNotBeNull();
+        player.Link.ShouldNotBeNull().DisplayName.ShouldBe("Player");
+        player.Contacts.ShouldBeNull();
     }
 
     [Fact]
