@@ -5,7 +5,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace JoinRpg.Dal.DataProtection.Migrations;
 
-public partial class Initial : Migration
+internal partial class Initial : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
