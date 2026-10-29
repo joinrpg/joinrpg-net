@@ -1,17 +1,17 @@
-﻿@inject IUriLocator<UserLinkViewModel> userLinkLocator
+@inject IUriLocator<UserLinkViewModel> userLinkLocator
     @switch (Model.ViewMode)
     {
         case JoinRpg.Common.WebComponents.ViewMode.Show:
-            <a class="join-user" href="@ProfileUri">@Icon@Model.DisplayName</a>
+            <a class="join-user" href="@ProfileUri">@if (ShowIcon) {<JoinIcon Icon="JoinIconType.User" />}@Model.DisplayName</a>
             break;
         case JoinRpg.Common.WebComponents.ViewMode.ShowAsPrivate:
-            <a class="join-user world-object-hidden" href="@ProfileUri">@Icon@Model.DisplayName</a>
+            <a class="join-user world-object-hidden" href="@ProfileUri">@if (ShowIcon) {<JoinIcon Icon="JoinIconType.User" />}@Model.DisplayName</a>
             break;
         case JoinRpg.Common.WebComponents.ViewMode.Hide:
-            @Icon<i>занято</i>
+            @if (ShowIcon) {<JoinIcon Icon="JoinIconType.User" />}<i>занято</i>
             break;
         case JoinRpg.Common.WebComponents.ViewMode.Deleted:
-            @Icon<i>@Model.DisplayName</i>
+            @if (ShowIcon) {<JoinIcon Icon="JoinIconType.User" />}<i>@Model.DisplayName</i>
             break;
     }
 
@@ -25,6 +25,4 @@
     public bool ShowIcon { get; set; } = true;
 
     public Uri ProfileUri => userLinkLocator.GetUri(Model);
-
-    private RenderFragment? Icon => ShowIcon ? @<JoinIcon Icon="JoinIconType.User" /> : null;
 }
