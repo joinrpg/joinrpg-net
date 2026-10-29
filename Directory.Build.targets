@@ -17,4 +17,19 @@
         -->
         <NoWarn>$(NoWarn);CS1573</NoWarn>
     </PropertyGroup>
+
+    <!-- Общие метаданные NuGet-пакетов. Порядок публикации и документации — docs/nuget-packages.md. -->
+    <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+        <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
+        <RepositoryUrl Condition="'$(RepositoryUrl)' == ''">https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
+        <RepositoryType Condition="'$(RepositoryType)' == ''">git</RepositoryType>
+        <PackageLicenseExpression Condition="'$(PackageLicenseExpression)' == ''">MIT</PackageLicenseExpression>
+        <PackageReadmeFile Condition="'$(PackageReadmeFile)' == '' And Exists('$(MSBuildProjectDirectory)/README.md')">README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(IsPackable)' == 'true'">
+        <None Remove="README.md;CHANGELOG.md" />
+        <None Include="README.md" Condition="Exists('$(MSBuildProjectDirectory)/README.md')" Pack="true" PackagePath="\" />
+        <None Include="CHANGELOG.md" Condition="Exists('$(MSBuildProjectDirectory)/CHANGELOG.md')" Pack="true" PackagePath="\" />
+    </ItemGroup>
 </Project>

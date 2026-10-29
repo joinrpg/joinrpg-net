@@ -72,6 +72,13 @@ jobs:
     - name: Build portal
       run: dotnet build --no-restore -c Release  --property:Version=${{ env.CALCULATED_VERSION }}
 
+    # NuGet-пакеты публикуются вручную (nuget-publish.yml), поэтому ошибку упаковки ловим здесь, а не при публикации.
+    - name: Pack NuGet packages
+      run: |
+        for project in $(grep -rlF --include=*.csproj '<IsPackable>true</IsPackable>' src); do
+          dotnet pack "$project" --no-build -c Release -p:Version=${{ env.CALCULATED_VERSION }}
+        done
+
     - name: Test
       run: dotnet test -c Release --no-build --logger trx --results-directory ./TestResults
 
