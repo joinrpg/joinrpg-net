@@ -42,7 +42,7 @@ internal class KogdaIgraApiClient(HttpClient httpClient) : IKogdaIgraApiClient
             throw new KogdaIgraConnectException(e);
         }
         var strResult = await result.Content.ReadAsStringAsync();
-        var ret = ResultParser.TryParseGameInfo(strResult);
+        var ret = ResultParser.TryParseGameInfo(strResult, gameId);
         if (ret is null || ret.Id == 0)
         {
             return null;
