@@ -247,6 +247,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             new MarkdownString(project.Details.ProjectAnnounce?.Contents ?? ""),
             new MarkdownString(project.Details.ClaimApplyRules?.Contents ?? ""),
             [.. project.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
-            project.Details.DisableKogdaIgraMapping);
+            project.Details.DisableKogdaIgraMapping,
+            new MarkdownString(project.Details.PreferentialFeeConditions?.Contents ?? ""));
     }
 }
