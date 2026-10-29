@@ -12,12 +12,16 @@ using static JoinRpg.WebPortal.Managers.Test.AdminTools.Pscb.PscbPaymentsTestDat
 namespace JoinRpg.WebPortal.Managers.Test.AdminTools;
 
 /// <summary>
-/// Оркестрация восстановления потерянных платежей ПСКБ (ADR027): заново скачанный список,
-/// кандидаты по вердикту сверки, одна строка — одна запись доменного сервиса, продолжение после
-/// ошибки и отчёт по каждой строке. Банк подменён, доменный сервис — рукописный фейк.
+/// Оркестрация восстановления потерянных платежей ПСКБ (ADR027): один запрос — одна строка
+/// заново скачанного списка, найденная по <c>orderId</c>. Отказ всего прогона (банк не вернул
+/// список, сверка с базой не удалась) приходит исключением, исход строки — результатом.
+/// Продолжение прогона после сбоя строки живёт в острове (<c>PscbPaymentsPanelTest</c>).
+/// Банк подменён, доменный сервис — рукописный фейк.
 /// </summary>
 public class PscbPaymentsRestoreViewServiceTests
 {
+    private const string LostPaymentOrderId = "0000063617";
+
     private const string StatusDateIso = "2026-05-10T15:00:00+03:00";
 
     private static readonly DateTime StatusDateUtc = new(2026, 5, 10, 12, 0, 0, DateTimeKind.Utc);
@@ -28,7 +32,7 @@ public class PscbPaymentsRestoreViewServiceTests
     {
         var (service, domain) = CreateService(LostPaymentScenario());
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         var input = domain.Payments.ShouldHaveSingleItem();
         input.OperationId.ShouldBe(63617);
@@ -39,17 +43,16 @@ public class PscbPaymentsRestoreViewServiceTests
         input.BankPaymentId.ShouldBe("11");
         input.Refund.ShouldBeNull();
 
+        result.OrderId.ShouldBe(LostPaymentOrderId);
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
+        result.Message.ShouldBe("платёж восстановлен");
         result.RestoredPaymentsCount.ShouldBe(1);
         result.RestoredRefundsCount.ShouldBe(0);
-        var row = result.Rows.ShouldHaveSingleItem();
-        row.OrderId.ShouldBe("0000063617");
-        row.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
-        row.Message.ShouldBe("платёж восстановлен");
     }
 
     /// <summary>
     /// Банк зафиксировал возврат потерянного платежа (state=ref): возврат восстанавливается
-    /// тем же прогоном, вторым записыванием.
+    /// тем же запросом, вторым записыванием — строка отчитывается обеими записями.
     /// </summary>
     [Fact]
     public async Task RestoresTheLostPaymentTogetherWithItsRefund()
@@ -58,7 +61,7 @@ public class PscbPaymentsRestoreViewServiceTests
         scenario.Payments = [LostPaymentJson(refunds: """[{"refundId":"1115846166","state":"END","amount":1500.0}]""", state: "ref")];
         var (service, domain) = CreateService(scenario);
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         var refund = domain.Payments.ShouldHaveSingleItem().Refund.ShouldNotBeNull();
         refund.RefundedOperationId.ShouldBe(63617);
@@ -68,7 +71,7 @@ public class PscbPaymentsRestoreViewServiceTests
 
         result.RestoredPaymentsCount.ShouldBe(1);
         result.RestoredRefundsCount.ShouldBe(1);
-        result.Rows.ShouldHaveSingleItem().Message.ShouldBe("платёж восстановлен; возврат восстановлен");
+        result.Message.ShouldBe("платёж восстановлен; возврат восстановлен");
     }
 
     /// <summary>
@@ -84,13 +87,12 @@ public class PscbPaymentsRestoreViewServiceTests
         domain.RefundStatus = LostOperationRestoreStatus.Failed;
         domain.RefundFailureMessage = "Source online payment operation of the claim is not found";
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         result.RestoredPaymentsCount.ShouldBe(1);
         result.RestoredRefundsCount.ShouldBe(0);
-        var row = result.Rows.ShouldHaveSingleItem();
-        row.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
-        row.Message.ShouldBe("платёж восстановлен; возврат не записан — восстановите вручную: Source online payment operation of the claim is not found");
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
+        result.Message.ShouldBe("платёж восстановлен; возврат не записан — восстановите вручную: Source online payment operation of the claim is not found");
     }
 
     /// <summary>
@@ -115,7 +117,7 @@ public class PscbPaymentsRestoreViewServiceTests
         ];
         var (service, domain) = CreateService(scenario);
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), "0000637705");
 
         domain.Payments.ShouldBeEmpty();
         var refund = domain.Refunds.ShouldHaveSingleItem();
@@ -128,70 +130,70 @@ public class PscbPaymentsRestoreViewServiceTests
 
         result.RestoredPaymentsCount.ShouldBe(0);
         result.RestoredRefundsCount.ShouldBe(1);
-        result.Rows.ShouldHaveSingleItem().Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
     }
 
     /// <summary>
-    /// Строка, которой вердикт отказал, в прогон не попадает вовсе: доменный сервис о ней
-    /// не спрашивают, а причина остаётся в таблице списка.
+    /// Строка, которой вердикт отказал, доменным сервисом не трогается: запрос возвращает отказ
+    /// с причиной вердикта — той же, что видна в таблице списка.
     /// </summary>
     [Fact]
-    public async Task SkipsTheRowsBlockedByTheVerdict()
+    public async Task ReportsTheBlockReasonInsteadOfRestoring()
     {
         var scenario = LostPaymentScenario();
         scenario.Claims = new PscbFakeClaimsRepository(); // заявок нет — вердикт отказывает
         var (service, domain) = CreateService(scenario);
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         domain.Payments.ShouldBeEmpty();
         domain.Refunds.ShouldBeEmpty();
-        result.Rows.ShouldBeEmpty();
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Failed);
+        result.Message.ShouldBe("у плательщика нет заявки в проекте");
         result.RestoredPaymentsCount.ShouldBe(0);
+        result.RestoredRefundsCount.ShouldBe(0);
     }
 
-    /// <summary>Проведённые строки прогон не трогает: восстанавливать нечего — пустой успех.</summary>
+    /// <summary>
+    /// Проведённая строка не пишется повторно: запрос возвращает «уже в базе» — идемпотентность,
+    /// на которой держится повторный прогон.
+    /// </summary>
     [Fact]
-    public async Task RestoresNothingWhenNoRowIsLost()
+    public async Task ReportsTheSettledRowAsAlreadySettled()
     {
         var scenario = LostPaymentScenario();
         scenario.Finances.AddOperation(63617);
         var (service, domain) = CreateService(scenario);
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         domain.Payments.ShouldBeEmpty();
-        result.Rows.ShouldBeEmpty();
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.AlreadySettled);
+        result.Message.ShouldBe("операция уже в базе — повторный прогон ничего не записал");
         result.RestoredPaymentsCount.ShouldBe(0);
+        result.RestoredRefundsCount.ShouldBe(0);
     }
 
     /// <summary>
-    /// Обработка по одной строке: падение одной не уносит остальные — как в FinanceRestorePanel.
+    /// Доменный сервис упал на строке — запрос не бросает: исход строки становится отказом
+    /// с текстом сбоя. Продолжение прогона после этого — забота острова.
     /// </summary>
     [Fact]
-    public async Task ContinuesWithTheNextRowAfterAFailure()
+    public async Task ConvertsARowFailureIntoAFailedOutcome()
     {
-        var scenario = LostPaymentScenario();
-        scenario.Payments =
-        [
-            LostPaymentJson(),
-            Payment("0000063618", account: "42", details: TicketPurpose("Проект"), statusDate: StatusDateIso),
-        ];
-        var (service, domain) = CreateService(scenario);
-        domain.ThrowByOperationId[63617] = new InvalidOperationException("База недоступна");
+        var (service, domain) = CreateService(LostPaymentScenario());
+        domain.Throw = new InvalidOperationException("База недоступна");
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
-        domain.Payments.Count.ShouldBe(2);
-        result.Rows.Count.ShouldBe(2);
-        result.Rows.First().Outcome.ShouldBe(PscbRestoreRowOutcome.Failed);
-        result.Rows.First().Message.ShouldBe("База недоступна");
-        result.Rows.Last().Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
-        result.RestoredPaymentsCount.ShouldBe(1);
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Failed);
+        result.Message.ShouldBe("База недоступна");
+        result.RestoredPaymentsCount.ShouldBe(0);
+        result.RestoredRefundsCount.ShouldBe(0);
     }
 
     /// <summary>
-    /// Нет админских прав — отказ всего прогона, а не по строке: домен бросает
+    /// Нет админских прав — отказ всего прогона, а не строки: домен бросает
     /// <c>MustBeAdminException</c>, и оркестратор его не проглатывает.
     /// </summary>
     [Fact]
@@ -200,22 +202,22 @@ public class PscbPaymentsRestoreViewServiceTests
         var (service, domain) = CreateService(LostPaymentScenario());
         domain.Throw = new MustBeAdminException();
 
-        await Should.ThrowAsync<MustBeAdminException>(() => service.Restore(Query()));
+        await Should.ThrowAsync<MustBeAdminException>(() => service.RestoreRow(Query(), LostPaymentOrderId));
     }
 
-    /// <summary>Повторный прогон идемпотентен: операция уже в базе — ничего не записано.</summary>
+    /// <summary>Повторный запрос идемпотентен: операция уже в базе — ничего не записано.</summary>
     [Fact]
     public async Task ReportsTheAlreadyRestoredRowWithoutCountingIt()
     {
         var (service, domain) = CreateService(LostPaymentScenario());
         domain.PaymentStatus = LostOperationRestoreStatus.AlreadyRestored;
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         result.RestoredPaymentsCount.ShouldBe(0);
-        var row = result.Rows.ShouldHaveSingleItem();
-        row.Outcome.ShouldBe(PscbRestoreRowOutcome.AlreadySettled);
-        row.Message.ShouldBe("операция уже в базе — повторный прогон ничего не записал");
+        result.RestoredRefundsCount.ShouldBe(0);
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.AlreadySettled);
+        result.Message.ShouldBe("операция уже в базе — повторный прогон ничего не записал");
     }
 
     /// <summary>
@@ -228,13 +230,12 @@ public class PscbPaymentsRestoreViewServiceTests
         var (service, domain) = CreateService(LostPaymentScenario());
         domain.PaymentStatus = LostOperationRestoreStatus.Attached;
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         result.RestoredPaymentsCount.ShouldBe(1);
         result.RestoredRefundsCount.ShouldBe(0);
-        var row = result.Rows.ShouldHaveSingleItem();
-        row.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
-        row.Message.ShouldBe("платёж записан в уже существующий комментарий заявки");
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
+        result.Message.ShouldBe("платёж записан в уже существующий комментарий заявки");
     }
 
     /// <summary>Номер занят чужим комментарием: строка уходит человеку, а не пишется с новым номером.</summary>
@@ -244,12 +245,11 @@ public class PscbPaymentsRestoreViewServiceTests
         var (service, domain) = CreateService(LostPaymentScenario());
         domain.PaymentStatus = LostOperationRestoreStatus.NumberTaken;
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         result.RestoredPaymentsCount.ShouldBe(0);
-        var row = result.Rows.ShouldHaveSingleItem();
-        row.Outcome.ShouldBe(PscbRestoreRowOutcome.Failed);
-        row.Message.ShouldContain("занят");
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Failed);
+        result.Message.ShouldContain("занят");
     }
 
     /// <summary>
@@ -262,27 +262,10 @@ public class PscbPaymentsRestoreViewServiceTests
         var (service, domain) = CreateService(LostPaymentScenario());
         domain.FeeRecalculated = false;
 
-        var result = await service.Restore(Query());
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
         result.RestoredPaymentsCount.ShouldBe(1);
-        result.Rows.ShouldHaveSingleItem().Message.ShouldContain("взнос заявки не пересчитан");
-    }
-
-    /// <summary>
-    /// Ограничение на прогон: больше ста записей — отказ целиком, до первой записи,
-    /// с предложением сузить диапазон.
-    /// </summary>
-    [Fact]
-    public async Task RefusesTheWholeRunWhenThereAreTooManyRecords()
-    {
-        var scenario = LostPaymentScenario();
-        scenario.Payments = [.. Enumerable.Range(63617, 101).Select(id => Payment(id.ToString("D10"), account: "42", details: TicketPurpose("Проект")))];
-        var (service, domain) = CreateService(scenario);
-
-        var ex = await Should.ThrowAsync<JoinValidationException>(() => service.Restore(Query()));
-
-        ex.Message.ShouldContain("Сузьте диапазон");
-        domain.Payments.ShouldBeEmpty();
+        result.Message.ShouldContain("взнос заявки не пересчитан");
     }
 
     /// <summary>Банк не вернул список — прогон отказывается целиком: восстанавливать нечего сверять.</summary>
@@ -304,9 +287,54 @@ public class PscbPaymentsRestoreViewServiceTests
         var domain = new FakeLostPaymentsRestoreService();
         var service = CreateRestoreService(view, domain);
 
-        var ex = await Should.ThrowAsync<JoinValidationException>(() => service.Restore(Query()));
+        var ex = await Should.ThrowAsync<JoinValidationException>(() => service.RestoreRow(Query(), LostPaymentOrderId));
 
         ex.Message.ShouldStartWith("Банк не вернул список платежей");
+        domain.Payments.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Сверка с базой не удалась — прогон отказывается целиком: список без исходов сверки
+    /// молча прочитался бы как «нечего восстанавливать».
+    /// </summary>
+    [Fact]
+    public async Task RefusesTheRunWhenTheReconciliationFailed()
+    {
+        var scenario = LostPaymentScenario();
+        scenario.Finances.Throw = new InvalidOperationException("База недоступна");
+        var (service, domain) = CreateService(scenario);
+
+        var ex = await Should.ThrowAsync<JoinValidationException>(() => service.RestoreRow(Query(), LostPaymentOrderId));
+
+        ex.Message.ShouldContain("Сверка списка с базой не удалась");
+        domain.Payments.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Строки нет в свежем списке банка (период изменился, заказ переименован) — отказ строки
+    /// с предложением обновить список, а не тихий ноль.
+    /// </summary>
+    [Fact]
+    public async Task ReportsTheRowMissingFromTheBankList()
+    {
+        var (service, domain) = CreateService(LostPaymentScenario());
+
+        var result = await service.RestoreRow(Query(), "0000999999");
+
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Failed);
+        result.Message.ShouldContain("не найдена");
+        domain.Payments.ShouldBeEmpty();
+        domain.Refunds.ShouldBeEmpty();
+    }
+
+    /// <summary>Пустой orderId отклоняется до первого обращения к банку.</summary>
+    [Fact]
+    public async Task RefusesABlankOrderId()
+    {
+        var (service, domain) = CreateService(LostPaymentScenario());
+
+        _ = await Should.ThrowAsync<ArgumentOutOfRangeException>(() => service.RestoreRow(Query(), " "));
+
         domain.Payments.ShouldBeEmpty();
     }
 
@@ -387,20 +415,12 @@ public class PscbPaymentsRestoreViewServiceTests
         /// <summary>Исключение на каждый вызов — например, отказ доступа.</summary>
         public Exception? Throw { get; set; }
 
-        /// <summary>Исключение на платёж с конкретным номером — для проверки продолжения прогона.</summary>
-        public Dictionary<int, Exception> ThrowByOperationId { get; } = [];
-
         public Task<LostPaymentRestoreResult> RestorePaymentAsync(LostPaymentToRestore payment)
         {
             Payments.Add(payment);
             if (Throw is not null)
             {
                 throw Throw;
-            }
-
-            if (ThrowByOperationId.TryGetValue(payment.OperationId, out var exception))
-            {
-                throw exception;
             }
 
             return Task.FromResult(new LostPaymentRestoreResult(

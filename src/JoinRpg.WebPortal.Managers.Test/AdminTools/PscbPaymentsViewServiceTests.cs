@@ -896,6 +896,31 @@ public class PscbPaymentsViewServiceTests
         projects.Requests.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Поломка обогащения не уносит список: строки банка остаются, исход сверки неизвестен,
+    /// а сбой виден по <c>ReconciliationFailed</c> — восстановление по такому списку отказывает,
+    /// иначе молчание прочиталось бы как «нечего восстанавливать».
+    /// </summary>
+    [Fact]
+    public async Task ReportsTheReconciliationFailureWithoutLosingTheList()
+    {
+        var finances = new FakeFinanceOperationsRepository { Throw = new InvalidOperationException("База недоступна") };
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(42),
+            finances,
+            Payment("0000000001", account: "42", details: null));
+
+        var result = await service.GetPayments(Query());
+
+        result.IsSuccess.ShouldBeTrue();
+        result.ReconciliationFailed.ShouldBeTrue();
+        var row = result.Payments.ShouldHaveSingleItem();
+        row.OrderId.ShouldBe("0000000001");
+        row.MatchState.ShouldBeNull();
+        row.MatchStateText.ShouldBeNull();
+    }
+
     private static PscbPaymentsViewService CreateService(FakeSearchService search, PscbFakeUserRepository users, params string[] payments)
         => CreateService(search, users, new FakeFinanceOperationsRepository(), payments);
 

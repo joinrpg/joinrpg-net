@@ -80,45 +80,46 @@ public class PscbPaymentsControllerTest
     }
 
     /// <summary>
-    /// Восстановление отдаёт итог сервиса как есть и отправляет сервису тот же запрос, что прислал остров (ADR027).
+    /// Восстановление строки отдаёт итог сервиса как есть и отправляет сервису тот же запрос,
+    /// что прислал остров (ADR027).
     /// </summary>
     [Fact]
-    public async Task RestoreReturnsTheServiceResult()
+    public async Task RestoreRowReturnsTheServiceResult()
     {
         var restore = new FakeRestoreClient();
         var controller = new PscbPaymentsController(new FakeClient(Succeeded()), new FakeExportDataService(), restore);
-        var query = new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false);
+        var request = new PscbRestoreRowRequest(new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false), "0000063617");
 
-        var result = await controller.Restore(query);
+        var result = await controller.RestoreRow(request);
 
-        result.Result.ShouldBeOfType<Ok<PscbRestoreResult>>().Value.ShouldBe(restore.Result);
-        restore.Queries.ShouldBe([query]);
+        result.Result.ShouldBeOfType<Ok<PscbRestoreRowResult>>().Value.ShouldBe(restore.Result);
+        restore.Requests.ShouldBe([request]);
     }
 
     /// <summary>
-    /// Отказ доменного сервиса становится текстом в 400 — остров показывает его админу.
+    /// Отказ сервиса становится текстом в 400 — остров показывает его админу и обрывает прогон.
     /// </summary>
     [Fact]
-    public async Task RestoreServiceRefusalBecomesBadRequest()
+    public async Task RestoreRowServiceRefusalBecomesBadRequest()
     {
-        var restore = new FakeRestoreClient { Error = new JoinValidationException("Записей больше лимита") };
+        var restore = new FakeRestoreClient { Error = new JoinValidationException("Сверка списка с базой не удалась") };
         var controller = new PscbPaymentsController(new FakeClient(Succeeded()), new FakeExportDataService(), restore);
 
-        var result = await controller.Restore(new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false));
+        var result = await controller.RestoreRow(new PscbRestoreRowRequest(new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false), "0000063617"));
 
-        result.Result.ShouldBeOfType<BadRequest<string>>().Value.ShouldBe("Записей больше лимита");
+        result.Result.ShouldBeOfType<BadRequest<string>>().Value.ShouldBe("Сверка списка с базой не удалась");
     }
 
     /// <summary>
     /// Нарушение ограничений периода — тоже отказ текстом: сервис кидает <see cref="ArgumentException"/>.
     /// </summary>
     [Fact]
-    public async Task RestoreArgumentFailureBecomesBadRequest()
+    public async Task RestoreRowArgumentFailureBecomesBadRequest()
     {
         var restore = new FakeRestoreClient { Error = new ArgumentException("Период длиннее 730 дней") };
         var controller = new PscbPaymentsController(new FakeClient(Succeeded()), new FakeExportDataService(), restore);
 
-        var result = await controller.Restore(new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false));
+        var result = await controller.RestoreRow(new PscbRestoreRowRequest(new PscbPaymentsQuery(From, To, null, null, RequestFiscalData: false), "0000063617"));
 
         result.Result.ShouldBeOfType<BadRequest<string>>().Value.ShouldBe("Период длиннее 730 дней");
     }
@@ -148,15 +149,22 @@ public class PscbPaymentsControllerTest
 
     private sealed class FakeRestoreClient : IPscbPaymentsRestoreClient
     {
-        public PscbRestoreResult Result { get; } = new() { RestoredPaymentsCount = 2, RestoredRefundsCount = 1 };
+        public PscbRestoreRowResult Result { get; } = new()
+        {
+            OrderId = "0000063617",
+            Outcome = PscbRestoreRowOutcome.Restored,
+            Message = "платёж восстановлен; возврат восстановлен",
+            RestoredPaymentsCount = 1,
+            RestoredRefundsCount = 1,
+        };
 
         public Exception? Error { get; set; }
 
-        public List<PscbPaymentsQuery> Queries { get; } = [];
+        public List<PscbRestoreRowRequest> Requests { get; } = [];
 
-        public Task<PscbRestoreResult> Restore(PscbPaymentsQuery query)
+        public Task<PscbRestoreRowResult> RestoreRow(PscbRestoreRowRequest request)
         {
-            Queries.Add(query);
+            Requests.Add(request);
             return Error is { } error ? throw error : Task.FromResult(Result);
         }
     }

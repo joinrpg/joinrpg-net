@@ -54,4 +54,11 @@ public class PscbPaymentsListResult
     /// How many requests to the bank the period was split into
     /// </summary>
     public int RequestCount { get; set; }
+
+    /// <summary>
+    /// Set when matching the bank's list against the JoinRpg database failed, so
+    /// <see cref="PscbPaymentListRow.MatchState"/> is unknown for every row; the list itself is
+    /// still the bank's data. Restoration must refuse while this is set.
+    /// </summary>
+    public bool ReconciliationFailed { get; set; }
 }

@@ -223,6 +223,9 @@ internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsReposi
     /// </summary>
     public List<int> OperationRequests { get; } = [];
 
+    /// <summary>Исключение на каждый вызов — для проверки отказа обогащения списка.</summary>
+    public Exception? Throw { get; set; }
+
     public void AddRefund(int refundedOperationId, DateTime operationDate, int refundCommentId = 9001)
         => refunds.Add(new ApprovedRefund(
             refundedOperationId,
@@ -250,6 +253,11 @@ internal sealed class FakeFinanceOperationsRepository : IFinanceOperationsReposi
 
     public Task<IReadOnlyCollection<ApprovedRefund>> GetApprovedRefunds(IReadOnlyCollection<int> refundedOperationIds)
     {
+        if (Throw is not null)
+        {
+            throw Throw;
+        }
+
         Requests.AddRange(refundedOperationIds);
 
         IReadOnlyCollection<ApprovedRefund> found = [.. refunds.Where(refund => refundedOperationIds.Contains(refund.RefundedOperationId))];

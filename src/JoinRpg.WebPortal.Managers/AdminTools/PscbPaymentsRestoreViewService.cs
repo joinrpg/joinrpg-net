@@ -8,20 +8,19 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 
 /// <summary>
 /// Восстановление потерянных платежей ПСКБ из списка банка (ADR027): заново скачивает период,
-/// берёт строки, которым сверка вынесла вердикт «можно восстановить автоматически», и пишет их
-/// по одной доменным сервисом <see cref="ILostPaymentsRestoreService"/>.
+/// находит в нём одну строку по <c>orderId</c> и, если сверка вынесла ей вердикт «можно
+/// восстановить автоматически», пишет её доменным сервисом <see cref="ILostPaymentsRestoreService"/>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Обработка по одной строке с продолжением после ошибки — как в <c>ManualFinanceApplier</c>
-/// и <c>FinanceRestorePanel</c>: отказ одной строки не уносит остальные, а исход каждой попадает
-/// в отчёт. Исключение — отсутствие админских прав: это отказ всего прогона, а не строки,
-/// поэтому <c>MustBeAdminException</c> пробрасывается контроллеру.
+/// Один запрос — одна строка — своя область DI: упавшая строка оставляет следующей чистый
+/// <c>DbContext</c>, а общий трекер не несёт грязную заявку, отравляющую каждый последующий
+/// <c>SaveChangesAsync</c> — причина именно такой формы. Прогон по всем строкам собирает остров
+/// (<c>PscbPaymentsPanel</c>), как <c>FinanceRestorePanel.ApplySelected</c>.
 /// </para>
 /// <para>
-/// Ограничение на прогон: не больше <see cref="MaxRecordsPerRun"/> записей. При превышении прогон
-/// отказывается целиком, до первой записи — частичное восстановление молча оставило бы вопрос
-/// «доделано ли».
+/// Период скачивается заново на каждую строку — сознательно: надёжность важнее скорости, а суммы
+/// и даты сервер берёт только у банка, никогда из клиентского JSON.
 /// </para>
 /// <para>
 /// В банк при восстановлении не ходим: первоисточник — скачанный список. Повторный прогон
@@ -34,14 +33,28 @@ internal class PscbPaymentsRestoreViewService(
     ICurrentUserAccessor currentUserAccessor,
     ILogger<PscbPaymentsRestoreViewService> logger) : IPscbPaymentsRestoreClient
 {
-    /// <summary>Максимум записей (платежей и возвратов вместе) за один прогон.</summary>
-    private const int MaxRecordsPerRun = 100;
-
     private const string FeeWarning = "; взнос заявки не пересчитан — операция записана, зафиксируйте взнос вручную";
 
-    public async Task<PscbRestoreResult> Restore(PscbPaymentsQuery query)
+    /// <inheritdoc />
+    public Task<PscbRestoreRowResult> RestoreRow(PscbRestoreRowRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return RestoreRow(request.Query, request.OrderId);
+    }
+
+    /// <summary>
+    /// Восстанавливает одну строку скачанного периода: отказ всего прогона (банк не вернул список,
+    /// сверка с базой не удалась) бросает исключением, а исход строки возвращает результатом.
+    /// Отсутствие админских прав — тоже отказ прогона: <c>MustBeAdminException</c> пробрасывается
+    /// контроллеру, а не превращается в исход строки.
+    /// </summary>
+    public async Task<PscbRestoreRowResult> RestoreRow(PscbPaymentsQuery query, string orderId)
     {
         ArgumentNullException.ThrowIfNull(query);
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            throw new ArgumentOutOfRangeException(nameof(orderId), "Не указан orderId строки");
+        }
 
         var (list, plans) = await paymentsViewService.GetPaymentsWithRestorePlan(query);
         if (!list.IsSuccess)
@@ -49,64 +62,53 @@ internal class PscbPaymentsRestoreViewService(
             throw new JoinValidationException(BankFailure(list));
         }
 
-        var candidates = list.Payments
-            .Where(row => row.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing
-                && row.RestoreBlockReason is null)
-            .ToList();
-
-        var recordCount = candidates.Sum(RecordsIn);
-        if (recordCount > MaxRecordsPerRun)
+        if (list.ReconciliationFailed)
         {
-            throw new JoinValidationException(
-                $"За один прогон восстанавливается не больше {MaxRecordsPerRun} записей, а в списке их {recordCount}. Сузьте диапазон.");
+            throw new JoinValidationException("Сверка списка с базой не удалась — восстановление невозможно. Обновите список и попробуйте ещё раз.");
         }
 
-        var rows = new List<PscbRestoreRowResult>(candidates.Count);
-        var payments = 0;
-        var refunds = 0;
-        foreach (var row in candidates)
+        var row = list.Payments.FirstOrDefault(payment => string.Equals(payment.OrderId, orderId, StringComparison.Ordinal));
+        PscbRestoreRowResult result;
+        if (row is null)
         {
-            var (result, restoredPayments, restoredRefunds) = await RestoreRowAsync(row, plans);
-            rows.Add(result);
-            payments += restoredPayments;
-            refunds += restoredRefunds;
+            result = Failed(orderId, "строка не найдена в списке банка — обновите список");
+        }
+        else
+        {
+            result = await RestoreRowAsync(row, plans);
         }
 
-        // Одна строка на прогон — как аудит слияния пользователей (ADR024): кто, за какой период
-        // и чем прогон кончился. По записям и отказам доменный сервис логирует сам.
+        // Одна строка на запрос — аудит по строке: кто, за какой период и чем строка кончилась.
+        // По записанным операциям доменный сервис логирует сам.
         logger.LogWarning(
-            "Восстановление потерянных платежей ПСКБ за период {DateFrom}–{DateTo} админом {AdminUserId}: "
-            + "кандидатов {Candidates}, восстановлено платежей {Payments} и возвратов {Refunds}, отказов {Failed}",
+            "Восстановление потерянного платежа ПСКБ, строка {OrderId} за период {DateFrom}–{DateTo} админом {AdminUserId}: {Outcome}",
+            orderId,
             query.DateFrom,
             query.DateTo,
             currentUserAccessor.UserId,
-            candidates.Count,
-            payments,
-            refunds,
-            rows.Count(row => row.Outcome == PscbRestoreRowOutcome.Failed));
+            result.Outcome);
 
-        return new PscbRestoreResult
-        {
-            RestoredPaymentsCount = payments,
-            RestoredRefundsCount = refunds,
-            Rows = rows,
-        };
+        return result;
     }
 
-    /// <summary>Сколько записей напишет строка: платёж и, если банк зафиксировал, его возврат.</summary>
-    private static int RecordsIn(PscbPaymentListRow row)
-        => row.MatchState == PscbPaymentMatchState.RefundMissing || !row.RefundedByBank ? 1 : 2;
-
-    private async Task<(PscbRestoreRowResult Row, int Payments, int Refunds)> RestoreRowAsync(
+    private async Task<PscbRestoreRowResult> RestoreRowAsync(
         PscbPaymentListRow row,
         IReadOnlyDictionary<PscbPaymentListRow, RowRestorePlan> plans)
     {
         try
         {
+            // Строка перестала быть кандидатом между скачиванием списка и запросом — нормально:
+            // прогон идёт по строке, и каждая заново сверяется со свежими данными банка.
+            if (row.MatchState is not (PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing)
+                || row.RestoreBlockReason is not null)
+            {
+                return NotACandidate(row);
+            }
+
             if (!plans.TryGetValue(row, out var plan))
             {
                 // Вердикт разрешил, а плана нет — рассогласование обогащения; строка уходит человеку.
-                return (Failed(row, "план восстановления не построен — обновите список"), 0, 0);
+                return Failed(row, "план восстановления не построен — обновите список");
             }
 
             return row.MatchState == PscbPaymentMatchState.RefundMissing
@@ -117,11 +119,32 @@ internal class PscbPaymentsRestoreViewService(
         catch (Exception ex) when (ex is not MustBeAdminException)
         {
             logger.LogError(ex, "Строка {OrderId} списка ПСКБ не восстановлена", row.OrderId);
-            return (Failed(row, ex.Message), 0, 0);
+            return Failed(row, ex.Message);
         }
     }
 
-    private async Task<(PscbRestoreRowResult, int Payments, int Refunds)> RestorePaymentRowAsync(
+    /// <summary>Исход строки, которая к моменту запроса не подлежит автоматическому восстановлению.</summary>
+    private static PscbRestoreRowResult NotACandidate(PscbPaymentListRow row)
+    {
+        if (row.MatchState == PscbPaymentMatchState.Settled)
+        {
+            return new PscbRestoreRowResult
+            {
+                OrderId = row.OrderId,
+                Outcome = PscbRestoreRowOutcome.AlreadySettled,
+                Message = PaymentOutcomeText(LostOperationRestoreStatus.AlreadyRestored),
+            };
+        }
+
+        if (row.RestoreBlockReason is { } reason)
+        {
+            return Failed(row, reason);
+        }
+
+        return Failed(row, $"строка не подлежит автоматическому восстановлению ({row.MatchStateText ?? "сверка не определила исход"})");
+    }
+
+    private async Task<PscbRestoreRowResult> RestorePaymentRowAsync(
         PscbPaymentListRow row,
         RowRestorePlan plan)
     {
@@ -144,27 +167,36 @@ internal class PscbPaymentsRestoreViewService(
             _ = message.Append(FeeWarning);
         }
 
-        return (
-            new PscbRestoreRowResult { OrderId = row.OrderId, Outcome = ToOutcome(result.Status), Message = message.ToString() },
-            result.Status is LostOperationRestoreStatus.Restored or LostOperationRestoreStatus.Attached ? 1 : 0,
-            result.Refund?.Status == LostOperationRestoreStatus.Restored ? 1 : 0);
+        return new PscbRestoreRowResult
+        {
+            OrderId = row.OrderId,
+            Outcome = ToOutcome(result.Status),
+            Message = message.ToString(),
+            RestoredPaymentsCount = result.Status is LostOperationRestoreStatus.Restored or LostOperationRestoreStatus.Attached ? 1 : 0,
+            RestoredRefundsCount = result.Refund?.Status == LostOperationRestoreStatus.Restored ? 1 : 0,
+        };
     }
 
-    private async Task<(PscbRestoreRowResult, int Payments, int Refunds)> RestoreRefundRowAsync(
+    private async Task<PscbRestoreRowResult> RestoreRefundRowAsync(
         PscbPaymentListRow row,
         RowRestorePlan plan)
     {
         var result = await lostPaymentsRestoreService.RestoreRefundAsync(PscbLostPaymentInputBuilder.BuildRefund(row, plan));
 
         var message = RefundOutcomeText(result.Status) + (result.FeeRecalculated ? "" : FeeWarning);
-        return (
-            new PscbRestoreRowResult { OrderId = row.OrderId, Outcome = ToOutcome(result.Status), Message = message },
-            0,
-            result.Status == LostOperationRestoreStatus.Restored ? 1 : 0);
+        return new PscbRestoreRowResult
+        {
+            OrderId = row.OrderId,
+            Outcome = ToOutcome(result.Status),
+            Message = message,
+            RestoredRefundsCount = result.Status == LostOperationRestoreStatus.Restored ? 1 : 0,
+        };
     }
 
-    private static PscbRestoreRowResult Failed(PscbPaymentListRow row, string message)
-        => new() { OrderId = row.OrderId, Outcome = PscbRestoreRowOutcome.Failed, Message = message };
+    private static PscbRestoreRowResult Failed(PscbPaymentListRow row, string message) => Failed(row.OrderId, message);
+
+    private static PscbRestoreRowResult Failed(string? orderId, string message)
+        => new() { OrderId = orderId, Outcome = PscbRestoreRowOutcome.Failed, Message = message };
 
     private static PscbRestoreRowOutcome ToOutcome(LostOperationRestoreStatus status) => status switch
     {

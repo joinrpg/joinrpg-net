@@ -20,4 +20,16 @@ public class PscbRestoreRowResult
     /// several records (a payment and its refund) reports both in this text.
     /// </summary>
     public string Message { get; set; } = "";
+
+    /// <summary>
+    /// How many lost payments this row has written: one, or none when the row was not restored.
+    /// </summary>
+    public int RestoredPaymentsCount { get; set; }
+
+    /// <summary>
+    /// How many refunds this row has written — the refund of a restored lost payment, or a refund
+    /// restored on its own. A lost payment the bank also refunded writes two records, so both
+    /// counters can be one on the same row.
+    /// </summary>
+    public int RestoredRefundsCount { get; set; }
 }

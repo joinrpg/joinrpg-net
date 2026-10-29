@@ -14,10 +14,10 @@ namespace JoinRpg.Blazor.Client.ApiClients;
 public class PscbPaymentsRestoreHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenProvider) : IPscbPaymentsRestoreClient
 {
     /// <inheritdoc />
-    public async Task<PscbRestoreResult> Restore(PscbPaymentsQuery query)
+    public async Task<PscbRestoreRowResult> RestoreRow(PscbRestoreRowRequest request)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);
-        var response = await httpClient.PostAsync(PscbPaymentsRoutes.Restore, JsonContent.Create(query));
-        return await response.ReadFromJsonOrThrowProblem<PscbRestoreResult>();
+        var response = await httpClient.PostAsync(PscbPaymentsRoutes.RestoreRow, JsonContent.Create(request));
+        return await response.ReadFromJsonOrThrowProblem<PscbRestoreRowResult>();
     }
 }

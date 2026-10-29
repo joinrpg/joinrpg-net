@@ -191,14 +191,14 @@
                                     Disabled="listLoading" />
                     </p>
                 }
-                @if (restoreResult is { } restore)
+                @if (restoreRows.Count > 0)
                 {
                     <p class="pscb-restore-summary">
-                        Восстановлено платежей: <b>@restore.RestoredPaymentsCount</b>, возвратов: <b>@restore.RestoredRefundsCount</b>.
-                        Не восстановлено: <b>@FailedRowCount(restore)</b> — причины ниже.
+                        Восстановлено платежей: <b>@restoreRows.Sum(row => row.RestoredPaymentsCount)</b>, возвратов: <b>@restoreRows.Sum(row => row.RestoredRefundsCount)</b>.
+                        Не восстановлено: <b>@FailedRowCount</b> — причины ниже.
                     </p>
                     <ul class="pscb-restore-rows">
-                        @foreach (var row in restore.Rows)
+                        @foreach (var row in restoreRows)
                         {
                             <li class="@RestoreRowClass(row.Outcome)">@row.OrderId: @row.Message</li>
                         }
@@ -415,8 +415,12 @@
     // серверу именно его — сервер заново скачивает период и работает от свежих данных банка.
     private PscbPaymentsQuery? lastQuery;
     private bool restoring;
-    private PscbRestoreResult? restoreResult;
+    private List<PscbRestoreRowResult> restoreRows = [];
     private string? restoreError;
+
+    // Защита со стороны острова, чтобы админ не запустил огромный прогон: каждая строка
+    // атомарна и отчитывается сама, поэтому это ограничитель удобства, а не безопасности.
+    private const int MaxRecordsPerRun = 100;
 
     private string? orderId;
     private bool detailsRequestCardData;
@@ -469,8 +473,22 @@
             ? loaded.Payments.Count(p => p.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing)
             : 0;
 
+    // Строки, по которым прогон действительно отправит запрос: заблокированные уже показали
+    // причину в таблице, и запрос по ним лишь потратил бы ещё одно скачивание банка впустую.
+    private IReadOnlyCollection<PscbPaymentListRow> RestoreRowsToRequest
+        => list is { IsSuccess: true } loaded
+            ? [.. loaded.Payments.Where(p => p.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing
+                && p.RestoreBlockReason is null)]
+            : [];
+
+    // Сколько записей напишет строка — то же правило, что на сервере: потерянный платёж,
+    // который банк ещё и вернул, пишет две записи. Должно оставаться в синхроне с серверным
+    // подсчётом в PscbPaymentsRestoreViewService.
+    private static int RecordsIn(PscbPaymentListRow row)
+        => row.MatchState == PscbPaymentMatchState.RefundMissing || !row.RefundedByBank ? 1 : 2;
+
     private string RestoreConfirmMessage
-        => $"Восстановить строк: {RestoreCandidateCount}? Сервер заново скачает период из банка и создаст недостающие операции и возвраты. Отменить результат нельзя.";
+        => $"Восстановить строк: {RestoreCandidateCount}? Каждая строка — отдельный запрос: сервер заново скачает период из банка и создаст недостающие операции и возвраты. Отменить результат нельзя.";
 
     private async Task RestoreLost()
     {
@@ -479,29 +497,60 @@
             return;
         }
         restoring = true;
-        restoreResult = null;
+        restoreRows = [];
         restoreError = null;
         try
         {
-            restoreResult = await RestoreClient.Restore(query);
-        }
-        catch (Exception ex)
-        {
-            restoreError = ex.Message;
+            var rows = RestoreRowsToRequest;
+            var recordCount = rows.Sum(RecordsIn);
+            if (recordCount > MaxRecordsPerRun)
+            {
+                restoreError = $"За один прогон восстанавливается не больше {MaxRecordsPerRun} записей, а в списке их {recordCount}. Сузьте диапазон.";
+                return;
+            }
+
+            // По одной строке на запрос, в порядке списка: после неудачной следующая начинается
+            // с чистого контекста на сервере — как в FinanceRestorePanel.ApplySelected.
+            foreach (var row in rows)
+            {
+                try
+                {
+                    var rowResult = await RestoreClient.RestoreRow(new PscbRestoreRowRequest(query, row.OrderId!));
+                    restoreRows.Add(rowResult);
+                }
+                // BadRequest от контроллера — отказ всего прогона (банк не вернул список, сверка
+                // не удалась): строкам после него идти бессмысленно.
+                catch (ServerProblemException ex)
+                {
+                    restoreError = ex.Message;
+                    break;
+                }
+                // Сбой одной строки не уносит остальные: исход попадает в отчёт, прогон продолжается.
+                catch (Exception ex)
+                {
+                    restoreRows.Add(new PscbRestoreRowResult
+                    {
+                        OrderId = row.OrderId,
+                        Outcome = PscbRestoreRowOutcome.Failed,
+                        Message = ex.Message,
+                    });
+                }
+                // Прогресс виден по ходу прогона, а не только в конце.
+                StateHasChanged();
+            }
         }
         finally
         {
             restoring = false;
         }
-        if (restoreResult is not null)
+        if (restoreRows.Count > 0)
         {
             // Тем же запросом: восстановленные строки становятся ссылками на операции.
             await LoadPayments();
         }
     }
 
-    private static int FailedRowCount(PscbRestoreResult result)
-        => result.Rows.Count(row => row.Outcome == PscbRestoreRowOutcome.Failed);
+    private int FailedRowCount => restoreRows.Count(row => row.Outcome == PscbRestoreRowOutcome.Failed);
 
     private static string RestoreRowClass(PscbRestoreRowOutcome outcome) => outcome switch
     {

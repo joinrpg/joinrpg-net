@@ -21,7 +21,7 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 /// <c>[XAdminAuthorize]</c> жёстко задаёт схему JWT, поэтому одной ручкой обойтись нельзя.
 /// </para>
 /// <para>
-/// <c>[IgnoreAntiforgeryToken]</c> на <see cref="Restore"/> нет сознательно: глобальная проверка
+/// <c>[IgnoreAntiforgeryToken]</c> на <see cref="RestoreRow"/> нет сознательно: глобальная проверка
 /// остаётся, а остров присылает токен заголовком — как <c>FinanceRestoreController.Apply</c>.
 /// </para>
 /// </remarks>
@@ -112,16 +112,18 @@ public class PscbPaymentsController(
     }
 
     /// <summary>
-    /// Восстановление потерянных платежей периода (ADR027). Сервер заново скачивает диапазон
-    /// и работает от свежих данных банка: суммы, даты и возвраты из клиентского JSON не берутся.
+    /// Восстановление одной потерянной строки периода (ADR027). Сервер заново скачивает диапазон
+    /// и работает от свежих данных банка: суммы, даты и возвраты из клиентского JSON не берутся,
+    /// клиент присылает только параметры периода и <c>orderId</c> строки. Прогон по всем строкам
+    /// собирает остров — по одному запросу на строку.
     /// </summary>
-    /// <param name="query">Параметры периода — те же, которыми остров загрузил список.</param>
+    /// <param name="request">Параметры периода — те же, которыми остров загрузил список, — и orderId строки.</param>
     [HttpPost]
-    public async Task<Results<Ok<PscbRestoreResult>, BadRequest<string>>> Restore([FromBody] PscbPaymentsQuery query)
+    public async Task<Results<Ok<PscbRestoreRowResult>, BadRequest<string>>> RestoreRow([FromBody] PscbRestoreRowRequest request)
     {
         try
         {
-            return TypedResults.Ok(await restoreClient.Restore(query));
+            return TypedResults.Ok(await restoreClient.RestoreRow(request));
         }
         // Отказ сервиса — текстом, остров показывает его админу, а не роняет в JoinAlert исключением.
         catch (Exception ex) when (ex is JoinRpgBaseException or ArgumentException)
