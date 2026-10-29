@@ -6,8 +6,11 @@ namespace JoinRpg.IdPortal.Test.Infrastructure;
 public static class HtmlFormHelpers
 {
     /// <summary>
-    /// Extracts all input fields from the form (including hidden Blazor SSR handler fields and antiforgery token).
+    /// Extracts input fields that the browser would post (including hidden Blazor SSR handler fields and antiforgery token).
     /// Optionally filters by form name attribute or first found form.
+    /// Как браузер, пропускает disabled и неотмеченные checkbox/radio. Повторы имени, в отличие от браузера,
+    /// схлопывает в первое значение — так биндит MVC (на этом держится <c>CheckboxInput</c>: checkbox перед hidden).
+    /// Как маппер форм Blazor SSR обходится с повторами, хелпер не воспроизводит.
     /// </summary>
     public static Dictionary<string, string?> GetFormFields(this HtmlDocument doc, string? formSelector = null)
     {
@@ -24,11 +27,20 @@ public static class HtmlFormHelpers
         foreach (var input in form.SelectNodes(".//input") ?? Enumerable.Empty<HtmlNode>())
         {
             var name = input.GetAttributeValue("name", string.Empty);
-            var value = input.GetAttributeValue("value", string.Empty);
-            if (!string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name) || input.Attributes.Contains("disabled"))
             {
-                result[name] = value;
+                continue;
             }
+
+            var isCheckable = input.GetAttributeValue("type", string.Empty).ToLowerInvariant() is "checkbox" or "radio";
+            if (isCheckable && !input.Attributes.Contains("checked"))
+            {
+                continue;
+            }
+
+            // Отмеченный checkbox без value браузер постит как "on".
+            var value = input.GetAttributeValue("value", isCheckable ? "on" : string.Empty);
+            result.TryAdd(name, WebUtility.HtmlDecode(value));
         }
         return result;
     }
