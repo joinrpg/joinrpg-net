@@ -51,6 +51,16 @@
         <AdditionalFiles Include="PublicAPI.Shipped.txt;PublicAPI.Unshipped.txt" />
     </ItemGroup>
 
+    <!--
+    Package validation: базовый пакет с nuget.org передаёт CI (build_and_publish.yml). Ненужные
+    подавления не ошибка: после публикации CompatibilitySuppressions.xml устаревает, и иначе CI
+    падал бы на всех PR, пока файл не удалят.
+    -->
+    <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <ApiCompatPermitUnnecessarySuppressions>true</ApiCompatPermitUnnecessarySuppressions>
+    </PropertyGroup>
+
     <!-- README пакета читают на nuget.org и агенты потребителя, пакет без него не собираем. -->
     <Target Name="JoinRequirePackageReadme" BeforeTargets="GenerateNuspec"
             Condition="'$(IsPackable)' == 'true' And !Exists('$(MSBuildProjectDirectory)/README.md')">

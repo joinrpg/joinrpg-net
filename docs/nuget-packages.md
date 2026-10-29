@@ -28,7 +28,9 @@
   `dotnet pack` падает. README показывается на nuget.org, а после восстановления лежит в
   `~/.nuget/packages/<id в нижнем регистре>/<версия>/`;
 - PublicApiAnalyzers: публичный API перечислен в `PublicAPI.*.txt`, см.
-  [Публичный API](#публичный-api).
+  [Публичный API](#публичный-api);
+- package validation: CI сравнивает пакет с последней версией на nuget.org, см.
+  [Ломающее изменение](#ломающее-изменение).
 
 В `.csproj` пакета остаются `IsPackable`, `Description` (по-английски — для поиска на nuget.org)
 и то, что отличает именно его. Значения из `Directory.Build.targets` пакет может переопределить.
@@ -72,6 +74,9 @@ CI пакует все пакеты на каждом PR (шаг «Pack NuGet pa
 - Правка генератора доходит до API `JoinRpg.Common.PrimitiveTypes` только после бампа генератора
   в `Directory.Packages.props`: запись в PrimitiveTypes — в PR с бампом.
 
+Если PR меняет `PublicAPI.*.txt` пакета, а его `CHANGELOG.md` — нет, CI (job «NuGet changelog»)
+падает.
+
 ## Публичный API
 
 Публичный API каждого пакета, кроме генератора, перечислен в `PublicAPI.Shipped.txt` и
@@ -92,3 +97,19 @@ pwsh scripts/Update-PublicApi.ps1 -Project src/Common/JoinRpg.Common.PrimitiveTy
 В `Shipped` — опубликованное на nuget.org; после публикации строки из `Unshipped` переносятся
 туда (пока вручную). После скрипта проверять `dotnet build --no-incremental`: инкрементальная
 сборка может не показать RS0016.
+
+## Ломающее изменение
+
+CI падает с ошибкой CP*, если код, собранный против опубликованной версии, перестанет
+компилироваться или запускаться с новой (CP0002 — удалён публичный метод или свойство). Если так и
+задумано — запиши изменение в «Ломающие изменения» CHANGELOG и создай рядом с `.csproj` файл
+`CompatibilitySuppressions.xml`:
+
+```powershell
+dotnet pack <путь к .csproj> -c Release -p:Version=9999.0.0 -p:PackageValidationBaselineVersion=<последняя версия на nuget.org> -p:GenerateCompatibilitySuppressionFile=true
+```
+
+`Version` — любая выше опубликованной, без неё в файл попадёт лишний CP0003.
+
+После публикации файл устаревает: базой становится новая версия. Ошибкой это не считается; удалить файл можно в
+любом следующем PR. Генератор так не проверяется — у его пакета нет `lib/`, сравнивать нечего.
