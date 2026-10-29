@@ -343,12 +343,12 @@ internal class ClaimServiceImpl(
     /// телу: <see cref="Permission.CanManageMoney"/> либо владелец способа оплаты, и то, и другое
     /// возможно только у мастера, отсюда <see cref="ClaimAccessRequirement.AnyMaster"/> снаружи.
     /// </remarks>
-    public Task ModerateFinanceOperation(ClaimIdentification claimId, int parentCommentId, string commentText, FinanceOperationAction financeAction)
+    public Task ModerateFinanceOperation(FinanceOperationIdentification operationId, string commentText, FinanceOperationAction financeAction)
         => characterPropsService.ChangeClaim(
-            claimId,
+            operationId.ClaimId,
             ClaimAccessRequirement.AnyMaster,
             ProjectActiveRequirement.AllowArchived,
-            (ParentCommentId: parentCommentId,
+            (ParentCommentId: operationId.FinanceOperationId,
                 CommentText: commentText,
                 FinanceAction: financeAction),
             ctx =>
