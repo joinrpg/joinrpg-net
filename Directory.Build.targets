@@ -33,6 +33,24 @@
         <None Include="CHANGELOG.md" Condition="Exists('$(MSBuildProjectDirectory)/CHANGELOG.md')" Pack="true" PackagePath="\" />
     </ItemGroup>
 
+    <!--
+    Учёт публичного API пакетов — docs/nuget-packages.md#публичный-api. RS0036/RS0037 — символ
+    записан без nullable-аннотаций. RS0026/RS0027 (перегрузки с необязательными параметрами) —
+    правила дизайна API, а не учёта; RS0041 даёт код без nullable-контекста: Razor-компоненты,
+    миграции EF (`~` в Shipped). Генератор исключён: его типы никто не вызывает, компилятор только загружает.
+    -->
+    <!-- JoinPublicApiAsWarnings выставляет scripts/Update-PublicApi.ps1: иначе ошибка в одном пакете не даст собрать зависящие от него. -->
+    <PropertyGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true' And '$(JoinPublicApiAsWarnings)' != 'true'">
+        <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017;RS0036;RS0037</WarningsAsErrors>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true'">
+        <NoWarn>$(NoWarn);RS0026;RS0027;RS0041</NoWarn>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true'">
+        <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+        <AdditionalFiles Include="PublicAPI.Shipped.txt;PublicAPI.Unshipped.txt" />
+    </ItemGroup>
+
     <!-- README пакета читают на nuget.org и агенты потребителя, пакет без него не собираем. -->
     <Target Name="JoinRequirePackageReadme" BeforeTargets="GenerateNuspec"
             Condition="'$(IsPackable)' == 'true' And !Exists('$(MSBuildProjectDirectory)/README.md')">

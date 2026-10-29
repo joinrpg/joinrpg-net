@@ -26,12 +26,15 @@
 - адрес репозитория, лицензия MIT;
 - `README.md` и `CHANGELOG.md` из каталога проекта кладутся в пакет, без README
   `dotnet pack` падает. README показывается на nuget.org, а после восстановления лежит в
-  `~/.nuget/packages/<id в нижнем регистре>/<версия>/`.
+  `~/.nuget/packages/<id в нижнем регистре>/<версия>/`;
+- PublicApiAnalyzers: публичный API перечислен в `PublicAPI.*.txt`, см.
+  [Публичный API](#публичный-api).
 
 В `.csproj` пакета остаются `IsPackable`, `Description` (по-английски — для поиска на nuget.org)
 и то, что отличает именно его. Значения из `Directory.Build.targets` пакет может переопределить.
 
-Новый пакет нужно ещё добавить в матрицу `.github/workflows/nuget-publish.yml`.
+Новый пакет нужно ещё добавить в матрицу `.github/workflows/nuget-publish.yml` и запустить
+`scripts/Update-PublicApi.ps1`.
 
 ## Версия и публикация
 
@@ -68,3 +71,24 @@ CI пакует все пакеты на каждом PR (шаг «Pack NuGet pa
   сценарий, который работал. У каждого — «Переход: ...».
 - Правка генератора доходит до API `JoinRpg.Common.PrimitiveTypes` только после бампа генератора
   в `Directory.Packages.props`: запись в PrimitiveTypes — в PR с бампом.
+
+## Публичный API
+
+Публичный API каждого пакета, кроме генератора, перечислен в `PublicAPI.Shipped.txt` и
+`PublicAPI.Unshipped.txt` рядом с `.csproj` (формат —
+[PublicApiAnalyzers](https://github.com/dotnet/roslyn/blob/main/src/RoslynAnalyzers/PublicApiAnalyzers/PublicApiAnalyzers.Help.md)).
+Публичный символ без строки в этих файлах — ошибка RS0016, строка без символа — RS0017, поэтому
+изменение API видно в диффе PR.
+
+Файлы правит скрипт: код-фикс анализатора пропускает сгенерированный код (Razor-компоненты,
+`[TypedEntityId]`).
+
+```powershell
+pwsh scripts/Update-PublicApi.ps1                       # все пакеты
+pwsh scripts/Update-PublicApi.ps1 -Project src/Common/JoinRpg.Common.PrimitiveTypes/JoinRpg.Common.PrimitiveTypes.csproj
+```
+
+Новое попадает в `Unshipped`, удалённое из `Shipped` — строкой `*REMOVED*...` в `Unshipped`.
+В `Shipped` — опубликованное на nuget.org; после публикации строки из `Unshipped` переносятся
+туда (пока вручную). После скрипта проверять `dotnet build --no-incremental`: инкрементальная
+сборка может не показать RS0016.
