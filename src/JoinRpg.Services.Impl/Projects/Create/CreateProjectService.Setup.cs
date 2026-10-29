@@ -58,7 +58,11 @@ internal partial class CreateProjectService
         await projectService.SetContactSettings(projectId, ProjectProfileRequirementSettings.AllNotRequired with { RequireTelegram = MandatoryStatus.Recommended, RequireRealName = MandatoryStatus.Required });
 
         // Первая созданная сетка ролей будет дефолтной
-        await projectRolesListService.CreateAsync(new ProjectRolesList(projectId, "Участники", [], RolesGridGroupsViewMode.Sections, ShowRolesFilter.All));
+        await projectRolesListService.CreateAsync(
+            new ProjectRolesList(projectId, "Участники", [], RolesGridGroupsViewMode.Sections, ShowRolesFilter.All)
+            {
+                PlayerAvatar = PlayerAvatarMode.Large,
+            });
     }
 
     private async Task SetupLarp(CreateProjectRequest request, ProjectIdentification projectId, CharacterGroupIdentification rootCharacterGroupId)
