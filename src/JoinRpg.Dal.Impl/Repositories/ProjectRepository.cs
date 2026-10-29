@@ -15,8 +15,6 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
 
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
-    public Task<Project?> GetProjectWithFieldsAsync(int project) => ProjectLoaderCommon.GetProjectWithFieldsAsync(Ctx, project, skipCache: false);
-
     public async Task<Project> GetProjectForMarkdownRendering(ProjectIdentification projectId)
     {
         // Директивы %список/%контакты печатают игрока персонажа, то есть ходят по

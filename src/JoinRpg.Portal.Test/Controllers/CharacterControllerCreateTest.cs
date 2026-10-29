@@ -154,8 +154,6 @@ public class CharacterControllerCreateTest
 
         public Task<Project> GetProjectAsync(int project) => Task.FromResult(mock.Project);
 
-        public Task<Project?> GetProjectWithFieldsAsync(int project) => throw new NotSupportedException();
-
         public Task<Project> GetProjectForMarkdownRendering(ProjectIdentification projectId) => throw new NotSupportedException();
 
         public Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null) => throw new NotSupportedException();
