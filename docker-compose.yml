@@ -17,7 +17,7 @@ services:
       PGDATA: '/var/lib/postgresql/data/pgdata'
 
   sql-server:
-    # Должно совпадать с версией на проде и с ProductionSqlServer.Image в src/JoinRpg.TestHelpers
+    # Должно совпадать с версией на проде и с ProductionSqlServer.Image в src/JoinRpg.TestHelpers.SqlServer
     image: 'mcr.microsoft.com/mssql/server:2019-CU32-GDR11-ubuntu-20.04'
     volumes:
       - joinrpg-pg-data:/var/opt/mssql

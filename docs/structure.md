@@ -96,6 +96,7 @@
 
 ### Tests
 - `JoinRpg.TestHelpers` — общие тестовые утилиты
+- `JoinRpg.TestHelpers.SqlServer` — SQL Server для тестов на Testcontainers: образ и база с параметрами прода. Отдельно, чтобы Testcontainers не тянулся во все тестовые проекты
 - `JoinRpg.DataModel.Mocks` — моки DataModel
 - Тестовые проекты для каждого слоя: Domain, Services.Impl, Portal, IdPortal, Managers, Models, PrimitiveTypes, PrimitiveTypes.SourceGenerator, Markdown, Helpers, Notifications, KogdaIgra, CommonUI.Models, EntityFrameworkCore
 

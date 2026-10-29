@@ -11,6 +11,7 @@ using JoinRpg.IdPortal.OAuthServer.Cimd;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.TestHelpers;
+using JoinRpg.TestHelpers.SqlServer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -30,6 +31,9 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
         .Build();
 
     private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder(ProductionSqlServer.Image).Build();
+
+    /// <summary>Строка подключения к тестовой базе на <see cref="_msSqlContainer"/>, не к его <c>master</c>.</summary>
+    private string? _sqlConnectionString;
 
     public CaptureEmailService CaptureEmail { get; } = new();
 
@@ -59,10 +63,11 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
         await Task.WhenAll(_postgresContainer.StartAsync(), _msSqlContainer.StartAsync());
         Log("Containers started.");
 
+        _sqlConnectionString = await ProductionDatabaseParity.CreateDatabaseAsync(_msSqlContainer, "joinrpg_idportal_test");
+
         Log("Running EF6 migrations on SQL Server...");
         var migConfig = new Configuration();
-        migConfig.TargetDatabase = new DbConnectionInfo(
-            _msSqlContainer.GetConnectionString(), "System.Data.SqlClient");
+        migConfig.TargetDatabase = new DbConnectionInfo(_sqlConnectionString, "System.Data.SqlClient");
         new DbMigrator(migConfig).Update();
         Log("EF6 migrations done.");
 
@@ -165,7 +170,8 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
         builder.UseSetting("ConnectionStrings:IdPortal", _postgresContainer.GetConnectionString());
         builder.UseSetting("ConnectionStrings:DataProtection", "");
         builder.UseSetting("ConnectionStrings:Notifications", "");
-        builder.UseSetting("ConnectionStrings:DefaultConnection", _msSqlContainer.GetConnectionString());
+        builder.UseSetting("ConnectionStrings:DefaultConnection", _sqlConnectionString
+            ?? throw new InvalidOperationException("Тестовая база SQL Server ещё не создана"));
         builder.UseSetting("JoinRpgHostNames:IdHost", "localhost");
         builder.UseSetting("JoinRpgHostNames:MainHost", "localhost");
         builder.UseSetting("JoinRpgHostNames:KogdaIgraHost", "localhost");
