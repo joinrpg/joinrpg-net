@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.Web.ProjectMasterTools.Finance;
 
@@ -42,6 +43,49 @@ public record FinanceFeeSettingItemViewModel(
     int? PreferentialFee,
     DateOnly StartDate,
     bool CanDelete);
+
+public class FinancePaymentTypesViewModel
+{
+    public required ProjectIdentification ProjectId { get; init; }
+    public required ProjectLifecycleStatus ProjectStatus { get; init; }
+    /// <summary>Есть право менять методы оплаты; без него панель только для просмотра.</summary>
+    public required bool HasEditAccess { get; init; }
+    /// <summary>В проекте настроен взнос — тогда без активного метода оплаты игроки не могут сдать деньги.</summary>
+    public required bool HasFeeSettings { get; init; }
+    /// <summary>Активные выше выключенных, основной первым, затем по виду и названию.</summary>
+    public required IReadOnlyList<FinancePaymentTypeItemViewModel> PaymentTypes { get; init; }
+}
+
+/// <param name="PaymentTypeId"><c>null</c> — метода ещё нет в проекте (наличные мастера или онлайн-оплата): «Включить» создаёт его.</param>
+/// <param name="Master">Ответственный мастер; у онлайн-оплаты — служебный пользователь платёжной системы.</param>
+/// <param name="CanToggle">Текущий пользователь может включить или выключить метод: онлайн-оплату включает только админ сайта.</param>
+public record FinancePaymentTypeItemViewModel(
+    PaymentTypeIdentification? PaymentTypeId,
+    PaymentTypeKind Kind,
+    string Name,
+    bool IsActive,
+    bool IsDefault,
+    UserLinkViewModel Master,
+    bool CanToggle)
+{
+    public bool IsOnline => Kind is PaymentTypeKind.Online or PaymentTypeKind.OnlineSubscription;
+}
+
+public class AddPaymentTypeViewModel
+{
+    [Display(Name = "Название")]
+    [Required(ErrorMessage = "Укажите название метода оплаты")]
+    public string Name { get; set; } = "";
+
+    [Display(Name = "Ответственный", Description = "Мастер, который принимает деньги этим методом")]
+    [Required(ErrorMessage = "Выберите ответственного мастера")]
+    public UserIdentification? MasterId { get; set; }
+}
+
+/// <summary>Включить метод, которого ещё нет в проекте: наличные мастера, онлайн-оплату или произвольный метод.</summary>
+/// <param name="MasterId">Ответственный мастер; у онлайн-оплаты не нужен.</param>
+/// <param name="Name">Название; нужно только произвольному методу.</param>
+public record NewPaymentTypeViewModel(PaymentTypeKind Kind, UserIdentification? MasterId, string? Name);
 
 public class CreateFeeSettingViewModel
 {

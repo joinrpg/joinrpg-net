@@ -1,4 +1,6 @@
+using System.Data;
 using JoinRpg.Domain;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.ProjectMasterTools.Finance;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +44,51 @@ public class FinanceSettingsController(IFinanceSettingsClient client) : Controll
     [HttpPost]
     public async Task<ActionResult> DeleteFeeSetting(ProjectIdentification projectId, [FromQuery] int projectFeeSettingId)
         => await FeeRefusalToBadRequest(() => client.DeleteFeeSetting(projectId, projectFeeSettingId));
+
+    [HttpGet]
+    public async Task<ActionResult<FinancePaymentTypesViewModel>> GetPaymentTypes(ProjectIdentification projectId)
+        => Ok(await client.GetPaymentTypes(projectId));
+
+    [HttpPost]
+    public async Task<ActionResult> CreatePaymentType(ProjectIdentification projectId, NewPaymentTypeViewModel model)
+    {
+        // Без имени сервис бросит ArgumentException, а ловить его целиком — значит прятать любой другой сбой
+        if (model.Kind == PaymentTypeKind.Custom && string.IsNullOrWhiteSpace(model.Name))
+        {
+            return BadRequest("Укажите название метода оплаты");
+        }
+        return await PaymentTypeRefusalToBadRequest(() => client.CreatePaymentType(projectId, model));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> TogglePaymentType(ProjectIdentification projectId, [FromQuery] int paymentTypeId)
+        => await PaymentTypeRefusalToBadRequest(() => client.TogglePaymentType(new PaymentTypeIdentification(projectId, paymentTypeId)));
+
+    /// <summary>Отказы сервиса по методам оплаты — текстом: остров показывает его мастеру.</summary>
+    private async Task<ActionResult> PaymentTypeRefusalToBadRequest(Func<Task> action)
+    {
+        try
+        {
+            await action();
+            return Ok();
+        }
+        catch (MustBeAdminException)
+        {
+            return BadRequest("Включить онлайн-оплату может только администратор сайта");
+        }
+        catch (JoinRpgInvalidUserException)
+        {
+            return BadRequest("У этого мастера уже есть метод оплаты «Наличными». Обновите страницу.");
+        }
+        catch (DataException)
+        {
+            return BadRequest("Этот метод оплаты в проекте уже есть. Обновите страницу.");
+        }
+        catch (JoinRpgEntityNotFoundException)
+        {
+            return BadRequest("Метод оплаты не найден. Обновите страницу и попробуйте ещё раз.");
+        }
+    }
 
     /// <summary>Отказы сервиса по расписанию взносов — текстом: остров показывает его мастеру.</summary>
     private async Task<ActionResult> FeeRefusalToBadRequest(Func<Task> action)

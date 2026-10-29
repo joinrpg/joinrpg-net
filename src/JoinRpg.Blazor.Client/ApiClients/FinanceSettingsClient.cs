@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Web.ProjectMasterTools.Finance;
 
 namespace JoinRpg.Blazor.Client.ApiClients;
@@ -31,6 +32,25 @@ internal class FinanceSettingsClient(HttpClient httpClient, CsrfTokenProvider cs
         await csrfTokenProvider.SetCsrfToken(httpClient);
         var response = await httpClient.PostAsync(
             $"webapi/{projectId.Value}/finance-settings/DeleteFeeSetting?projectFeeSettingId={projectFeeSettingId}", content: null);
+        await response.EnsureSuccessOrThrowProblem();
+    }
+
+    async Task<FinancePaymentTypesViewModel> IFinanceSettingsClient.GetPaymentTypes(ProjectIdentification projectId)
+        => await (await httpClient.GetAsync($"webapi/{projectId.Value}/finance-settings/GetPaymentTypes"))
+            .ReadFromJsonOrThrowProblem<FinancePaymentTypesViewModel>();
+
+    async Task IFinanceSettingsClient.CreatePaymentType(ProjectIdentification projectId, NewPaymentTypeViewModel model)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = await httpClient.PostAsJsonAsync($"webapi/{projectId.Value}/finance-settings/CreatePaymentType", model);
+        await response.EnsureSuccessOrThrowProblem();
+    }
+
+    async Task IFinanceSettingsClient.TogglePaymentType(PaymentTypeIdentification paymentTypeId)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = await httpClient.PostAsync(
+            $"webapi/{paymentTypeId.ProjectId.Value}/finance-settings/TogglePaymentType?paymentTypeId={paymentTypeId.PaymentTypeId}", content: null);
         await response.EnsureSuccessOrThrowProblem();
     }
 }

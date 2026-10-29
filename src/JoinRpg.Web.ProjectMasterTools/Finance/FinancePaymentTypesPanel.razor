@@ -1,0 +1,187 @@
+@using JoinRpg.Common.WebComponents.Dialog
+@using JoinRpg.DomainTypes.ProjectMetadata.Payments
+@inject IFinanceSettingsClient settingsClient
+@inject IFinanceSettingsUriLocator uriLocator
+@inject ILogger<FinancePaymentTypesPanel> logger
+
+<JoinCollapsePanel Group="@FinanceSettingsPanels.Group" Id="@AnchorId">
+    <Header>Методы оплаты</Header>
+    <HeaderExtra>
+        @* Виден и в свёрнутой панели: взнос есть, а сдать его нечем. *@
+        @if (NoActivePaymentTypes)
+        {
+            <JoinBadge Variation="VariationStyleEnum.Warning" Text="Нет методов оплаты" />
+        }
+    </HeaderExtra>
+    <ChildContent>
+        @if (model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
+        @if (NoActivePaymentTypes)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Warning" Icon="JoinIconType.Alert">
+                Игроки не могут сдавать взносы, пока не настроен ни один метод оплаты.
+            </JoinAlert>
+        }
+        @if (CanEdit)
+        {
+            <JoinButton Preset="ButtonPreset.Add" Label="Добавить метод оплаты…" OnClick="Add" />
+        }
+        <JoinTableSimple>
+            <TableHeader>
+                <th>Название</th>
+                <th>Ответственный</th>
+                @if (CanEdit)
+                {
+                    <th></th>
+                }
+            </TableHeader>
+            <TableBody>
+                @foreach (var item in model.PaymentTypes)
+                {
+                    <tr @key="RowKey(item)">
+                        <td>
+                            @if (item.IsDefault)
+                            {
+                                <JoinBadge Text="Основной" />
+                            }
+                            <span class="@(item.IsActive ? "" : "deleted")">@item.Name</span>
+                        </td>
+                        <td><UserLink Model="item.Master" /></td>
+                        @if (CanEdit)
+                        {
+                            <td>
+                                @if (item.IsActive && item.Kind == PaymentTypeKind.Custom && item.PaymentTypeId is { } editId)
+                                {
+                                    <JoinButton Label="Изменить" Size="SizeStyleEnum.Small" Link="@uriLocator.GetEditPaymentTypeUri(editId).ToString()" />
+                                }
+                                @if (item.CanToggle)
+                                {
+                                    var action = item.IsActive ? "Выключить" : "Включить";
+                                    <JoinButton Label="@action" Size="SizeStyleEnum.Small"
+                                                Style="@(item.IsActive ? VariationStyleEnum.Danger : VariationStyleEnum.Success)"
+                                                AutoConfirm="true"
+                                                AutoConfirmMessage="@($"{action} метод оплаты «{item.Name}»?")"
+                                                OnClick="args => Toggle(args, item)" />
+                                }
+                                else if (!item.IsActive && item.IsOnline)
+                                {
+                                    <JoinButton Label="Узнать, как включить" Size="SizeStyleEnum.Small" Style="VariationStyleEnum.Info"
+                                                Link="@uriLocator.GetOnlinePaymentsInfoUri().ToString()" target="_blank" />
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </TableBody>
+        </JoinTableSimple>
+
+        <JoinFormDialog @ref="addDialog"
+                        TViewModel="AddPaymentTypeViewModel"
+                        Caption="Добавление безналичного метода оплаты"
+                        FormName="AddPaymentType"
+                        SubmitButtonPreset="ButtonPreset.Add"
+                        Model="newPaymentType">
+            <p>Выберите название и ответственного за это мастера.</p>
+            <FormRowFor For="@(() => newPaymentType.Name)">
+                <JoinTextInput @bind-Value="newPaymentType.Name" Immediate="true" />
+            </FormRowFor>
+            <FormRowFor For="@(() => newPaymentType.MasterId)">
+                <MasterSelector ProjectId="ProjectId.Value" @bind-MasterId="newPaymentType.MasterId" />
+            </FormRowFor>
+        </JoinFormDialog>
+        <JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
+    </ChildContent>
+</JoinCollapsePanel>
+
+@code {
+    /// <summary>Якорь панели на странице настройки финансов.</summary>
+    public const string AnchorId = "finance-payment-types";
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private FinancePaymentTypesViewModel? model;
+    private AddPaymentTypeViewModel newPaymentType = new();
+    private JoinFormDialog<AddPaymentTypeViewModel> addDialog = null!;
+    private JoinMessageDialog errorDialog = null!;
+    private string error = "";
+
+    // В архиве сервис изменения запрещает — кнопок нет, список остаётся для справки.
+    private bool CanEdit => model is { HasEditAccess: true } && model.ProjectStatus != ProjectLifecycleStatus.Archived;
+
+    private bool NoActivePaymentTypes => model is { HasFeeSettings: true } && !model.PaymentTypes.Any(pt => pt.IsActive);
+
+    // У ещё не созданных методов id нет: наличные различаются мастером, онлайн-оплата — видом.
+    private static object RowKey(FinancePaymentTypeItemViewModel item)
+        => item.PaymentTypeId as object ?? (item.Kind, item.Master.UserId);
+
+    protected override async Task OnInitializedAsync() => model = await settingsClient.GetPaymentTypes(ProjectId);
+
+    private async Task Add(ButtonClickEventArgs args)
+    {
+        // Страница не перезагружается — кнопку надо вывести из состояния «в процессе» при любом исходе,
+        // в том числе когда диалог отменили.
+        try
+        {
+            // Новый экземпляр модели — новый EditContext у формы: сообщения прошлого показа не остаются.
+            newPaymentType = new AddPaymentTypeViewModel();
+            StateHasChanged();
+            if (await addDialog.ShowModalAsync() is { } result)
+            {
+                await Mutate(
+                    () => settingsClient.CreatePaymentType(ProjectId, new NewPaymentTypeViewModel(PaymentTypeKind.Custom, result.MasterId, result.Name.Trim())),
+                    "Не удалось добавить метод оплаты");
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task Toggle(ButtonClickEventArgs args, FinancePaymentTypeItemViewModel item)
+    {
+        try
+        {
+            await Mutate(
+                () => item.PaymentTypeId is { } paymentTypeId
+                    ? settingsClient.TogglePaymentType(paymentTypeId)
+                    // Метода ещё нет — «Включить» создаёт его
+                    : settingsClient.CreatePaymentType(ProjectId, new NewPaymentTypeViewModel(item.Kind, item.IsOnline ? null : item.Master.UserId, Name: null)),
+                "Не удалось изменить метод оплаты");
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task Mutate(Func<Task> action, string failMessage)
+    {
+        try
+        {
+            await action();
+            // Страницу не перезагружаем — панель свернулась бы. Перечитываем только список.
+            model = await settingsClient.GetPaymentTypes(ProjectId);
+        }
+        catch (ServerProblemException exception)
+        {
+            ShowError(exception.Message);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка при изменении методов оплаты проекта {ProjectId}", ProjectId);
+            ShowError(failMessage);
+        }
+    }
+
+    private void ShowError(string text)
+    {
+        error = text;
+        StateHasChanged();
+        _ = errorDialog.ShowModalAsync();
+    }
+}
