@@ -28,8 +28,9 @@
 `triggers`, `identity_columns`, `extended_properties`, `objects`, `databases`.
 **Ни одной строки данных прочитано не было.**
 
-**Б — свежая база.** Локальный SQL Server из `docker compose` (тот же образ и
-та же серверная коллация `Cyrillic_General_CI_AS`, что на проде), пустая база,
+**Б — свежая база.** Локальный SQL Server из `docker compose` (тогда
+`2019-latest` с серверной коллацией `Cyrillic_General_CI_AS`; на проде так настроена
+база, а у сервера `SQL_Latin1_General_CP1_CI_AS`), пустая база,
 накат настоящих EF6-миграций: `dotnet run --project src/Joinrpg.Dal.Migrate`
 с `ConnectionStrings__DefaultConnection`, указывающей на неё.
 
@@ -114,8 +115,9 @@ nullability, PK, аннотации индексов `customannotation:Index`, �
 | `compatibility_level` | **110** (SQL Server 2012) | 150 | Провайдер SQL Server в EF Core смотрит на уровень совместимости и меняет генерируемый SQL. Часть конструкций (`OPENJSON`, `STRING_AGG`, `TRIM`) требует ≥ 130. Тесты на свежей базе будут проверять **другой** диалект, чем работает на проде |
 | `READ_COMMITTED_SNAPSHOT` / `ALLOW_SNAPSHOT_ISOLATION` | **включены** | выключены | Прод работает в снапшотной изоляции, тестовая база — в блокировочной. Гонки, дедлоки и видимость незакоммиченных изменений ведут себя по-разному. Для golden-master тестов из P0 это прямое расхождение среды |
 
-Обе базы — одна серверная коллация `Cyrillic_General_CI_AS` (задана
-в `docker-compose.yml`), 81 колонка с явной коллацией, совпадают.
+У обеих баз коллация `Cyrillic_General_CI_AS` (у локальной она пришла от сервера,
+заданного в `docker-compose.yml`), 81 колонка с явной коллацией, совпадают. Серверная
+коллация отличается: на проде `SQL_Latin1_General_CP1_CI_AS`.
 
 ### В. Снапшот EF6 против обеих баз (дрейф модели, не прода)
 

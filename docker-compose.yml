@@ -17,7 +17,8 @@ services:
       PGDATA: '/var/lib/postgresql/data/pgdata'
 
   sql-server:
-    image: 'mcr.microsoft.com/mssql/server:2019-latest'
+    # Должно совпадать с версией на проде и с ProductionSqlServer.Image в src/JoinRpg.TestHelpers
+    image: 'mcr.microsoft.com/mssql/server:2019-CU32-GDR11-ubuntu-20.04'
     volumes:
       - joinrpg-pg-data:/var/opt/mssql
 
@@ -28,6 +29,9 @@ services:
       ACCEPT_EULA: 'Y'
       MSSQL_SA_PASSWORD: 'MsSqlPass1!'
       MSSQL_PID: 'Express'
+      # На проде так настроена база, а у сервера SQL_Latin1_General_CP1_CI_AS. Здесь коллейшн задан
+      # серверу, потому что базу создаёт мигратор EF6 с коллейшном сервера. Поэтому tempdb локально
+      # не как на проде. Применяется только при создании тома.
       MSSQL_COLLATION: 'Cyrillic_General_CI_AS'
       MSSQL_LCID: '1033'
 volumes:

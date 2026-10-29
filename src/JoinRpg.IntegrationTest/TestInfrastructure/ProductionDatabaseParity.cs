@@ -22,7 +22,7 @@ internal static class ProductionDatabaseParity
 {
     /// <summary>
     /// Уровень совместимости прода: 110 — это SQL Server 2012.
-    /// Да, в 2026 году и на образе SQL Server 2022. Так на проде.
+    /// Да, в 2026 году и на SQL Server 2019. Так на проде.
     /// </summary>
     public const int CompatibilityLevel = 110;
 

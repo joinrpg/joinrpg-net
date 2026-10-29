@@ -34,7 +34,7 @@ internal static class SharedSqlServerContainer
         var databaseName = $"joinrpg_test_{Interlocked.Increment(ref databaseCounter)}";
         await ExecuteAsync(
             sqlServer,
-            $"CREATE DATABASE [{databaseName}]",
+            $"CREATE DATABASE [{databaseName}] COLLATE {ProductionSqlServer.DatabaseCollation}",
             $"Не удалось создать тестовую базу {databaseName}");
 
         // Выравниваем по проду до наката миграций, чтобы их DDL выполнялся на том же
@@ -77,7 +77,7 @@ internal static class SharedSqlServerContainer
             if (container is null)
             {
                 Log("Starting shared SQL Server container...");
-                var newContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
+                var newContainer = new MsSqlBuilder(ProductionSqlServer.Image).Build();
                 await newContainer.StartAsync();
                 container = newContainer;
                 Log("Shared SQL Server container started.");

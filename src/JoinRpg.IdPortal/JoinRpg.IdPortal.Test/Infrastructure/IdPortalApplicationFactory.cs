@@ -29,7 +29,7 @@ public class IdPortalApplicationFactory : WebApplicationFactory<Program>, IAsync
     private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder(ProductionPostgres.Image)
         .Build();
 
-    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
+    private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder(ProductionSqlServer.Image).Build();
 
     public CaptureEmailService CaptureEmail { get; } = new();
 
