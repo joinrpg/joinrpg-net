@@ -12,6 +12,13 @@ namespace JoinRpg.Services.Impl.Claims;
 /// </summary>
 /// <remarks>
 /// <para>
+/// Сами правила живут глубже: таблица переходов и «статус после ответа» — в
+/// <see cref="ClaimStatusExtensions"/> (<c>DomainTypes</c>), запись статуса и дат в сущность — в
+/// <see cref="ClaimStatusTransitionExtensions"/> (<c>Domain</c>). Здесь только обёртки, которые
+/// подставляют время операции и текущего пользователя: так вся операция штампует одно время
+/// (ADR014, §7).
+/// </para>
+/// <para>
 /// Заявка передаётся <b>всегда явно</b>: в <c>ApproveByMaster</c> рядом меняются статусы двух разных
 /// заявок, и умолчание «текущая» там читается неоднозначно. Перегрузки «без заявки» быть не должно.
 /// По той же причине методы перехода принимают базовый
@@ -24,109 +31,31 @@ namespace JoinRpg.Services.Impl.Claims;
 /// </remarks>
 internal static class ClaimStatusTransition
 {
-    /// <summary>
-    /// Переводит заявку в <paramref name="target"/>: проверяет допустимость перехода, пишет статус,
-    /// проставляет отметку даты, соответствующую целевому статусу, и обновляет
-    /// <see cref="Claim.LastUpdateDateTime"/>.
-    /// </summary>
-    /// <exception cref="ClaimWrongStatusException">Переход из текущего статуса запрещён.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Неизвестный целевой статус.</exception>
+    /// <inheritdoc cref="ClaimStatusTransitionExtensions.ChangeStatus" path="/summary|/exception"/>
     public static void ChangeStatus(this CharacterOperationContext ctx, Claim claim, ClaimStatus target)
-    {
-        claim.EnsureCanChangeStatus(target);
+        => claim.ChangeStatus(target, ctx.Now);
 
-        claim.ClaimStatus = target;
-        StampDate(claim, target, ctx.Now);
-        claim.LastUpdateDateTime = ctx.Now;
-    }
-
-    /// <summary>
-    /// То же, но без единой отметки времени. Нужен там, где перезаписывать отметку нельзя: возврат
-    /// <see cref="ClaimStatus.CheckedIn"/> → <see cref="ClaimStatus.Approved"/> при выходе на вторую
-    /// роль не должен затирать <see cref="Claim.MasterAcceptedDate"/> — он виден в отчётах.
-    /// </summary>
-    /// <inheritdoc cref="ChangeStatus" path="/exception"/>
+    /// <inheritdoc cref="ClaimStatusTransitionExtensions.ChangeStatusKeepingTimestamps" path="/summary|/exception"/>
     public static void ChangeStatusKeepingTimestamps(this CharacterOperationContext ctx, Claim claim, ClaimStatus target)
-    {
-        claim.EnsureCanChangeStatus(target);
-
-        claim.ClaimStatus = target;
-    }
+        => claim.ChangeStatusKeepingTimestamps(target);
 
     /// <summary>
     /// Восстанавливает статус, который у заявки уже был, — по базе уведомлений после потери основной
-    /// БД (DRP, #5481). Таблица переходов не проверяется: это не новое решение мастера, а повтор
-    /// случившегося, и промежуточных шагов восстановление не знает. Отметка даты — время события
-    /// <paramref name="at"/>, а не время восстановления.
+    /// БД (DRP, #5481). Время события проверяется как время операции восстановления.
     /// </summary>
+    /// <remarks>Что именно пишется — <see cref="ClaimStatusTransitionExtensions.RestoreStatus"/>.</remarks>
     public static void RestoreStatus(this ClaimMutationContext ctx, ClaimStatus target, DateTime at)
     {
         ctx.CheckOperationDate(at);
 
-        if (target != ClaimStatus.DeclinedByMaster)
-        {
-            // Причина отказа есть только у отклонённой мастером; при отказе её уведомления не знают.
-            ctx.Claim.ClaimDenialStatus = null;
-        }
-        ctx.Claim.ClaimStatus = target;
-        StampDate(ctx.Claim, target, at);
-        ctx.Claim.LastUpdateDateTime = ctx.Now;
+        ctx.Claim.RestoreStatus(target, at, ctx.Now);
     }
 
     /// <summary>
     /// Перенос <c>ClaimServiceImpl.SetDiscussed</c>: любое действие по заявке выводит её из
     /// «приглашена»/«подана» в «обсуждается», если отвечает противоположная сторона.
     /// </summary>
-    /// <remarks>
-    /// <see cref="Claim.LastUpdateDateTime"/> здесь пишется повторно — то же самое делает
-    /// <c>CommentHelper.SetClaimTimes</c>. Оба получают одно и то же время операции, поведение
-    /// идемпотентно; ADR014 фиксирует это как известное дублирование, которое не чинится.
-    /// </remarks>
+    /// <remarks>Правило — <see cref="ClaimStatusTransitionExtensions.MarkDiscussed"/>.</remarks>
     public static void MarkDiscussed(this ClaimMutationContext ctx, bool isVisibleToPlayer)
-    {
-        var claim = ctx.Claim;
-        var currentUserId = ctx.CurrentUser.UserId;
-
-        claim.LastUpdateDateTime = ctx.Now;
-
-        if (claim.ClaimStatus == ClaimStatus.AddedByMaster && currentUserId == claim.PlayerUserId)
-        {
-            claim.ClaimStatus = ClaimStatus.Discussed;
-        }
-
-        if (claim.ClaimStatus == ClaimStatus.AddedByUser && currentUserId != claim.PlayerUserId && isVisibleToPlayer)
-        {
-            claim.ClaimStatus = ClaimStatus.Discussed;
-        }
-    }
-
-    /// <summary>
-    /// Таблица отметок: у каждого целевого статуса ровно одна своя дата, у остальных — ни одной
-    /// (так было и до миграции).
-    /// </summary>
-    private static void StampDate(Claim claim, ClaimStatus target, DateTime now)
-    {
-        switch (target)
-        {
-            case ClaimStatus.Approved:
-                claim.MasterAcceptedDate = now;
-                break;
-            case ClaimStatus.DeclinedByMaster:
-                claim.MasterDeclinedDate = now;
-                break;
-            case ClaimStatus.DeclinedByUser:
-                claim.PlayerDeclinedDate = now;
-                break;
-            case ClaimStatus.CheckedIn:
-                claim.CheckInDate = now;
-                break;
-            case ClaimStatus.OnHold:
-            case ClaimStatus.AddedByMaster:
-            case ClaimStatus.AddedByUser:
-            case ClaimStatus.Discussed:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(target), target, null);
-        }
-    }
+        => ctx.Claim.MarkDiscussed(ctx.CurrentUser.UserId, isVisibleToPlayer, ctx.Now);
 }

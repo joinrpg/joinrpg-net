@@ -172,14 +172,19 @@ ADR009 «метаданные меняются только через `ProjectP
 Остаются два именованных метода, оба принимают заявку **явно** — потому что в `ApproveByMaster`
 рядом меняются статусы двух разных заявок, и умолчание «текущая» там читается неоднозначно:
 
-- `ctx.ChangeStatus(claim, target)` — проверка по таблице переходов (`ClaimExtensions.CanChangeTo`),
+- `ctx.ChangeStatus(claim, target)` — проверка по таблице переходов (`ClaimStatusExtensions.CanChangeTo`),
   запись статуса, отметка даты по целевому статусу, `LastUpdateDateTime`;
 - `ctx.ChangeStatusKeepingTimestamps(claim, target)` — то же без отметки даты. Единственное
   применение — возврат `CheckedIn` → `Approved` при выходе на вторую роль: перезаписывать там
   `MasterAcceptedDate` нельзя, он виден в отчётах.
 
-Различие выражено именем, а не `bool`-параметром. Плюс `ctx.EnsureCanChangeStatus(...)` (регистрация
-проверяет заранее, а пишет после приёма денег) и `ctx.MarkDiscussed(...)` (перенос `SetDiscussed`).
+Различие выражено именем, а не `bool`-параметром. Плюс `claim.EnsureCanChangeStatus(...)` — расширение заявки без
+обёртки на контексте, времени ему не нужно (регистрация проверяет заранее, а пишет после приёма денег) и `ctx.MarkDiscussed(...)` (перенос `SetDiscussed`).
+
+Методы перехода на контексте — только обёртки, подставляющие время операции и текущего пользователя (§7);
+сами правила лежат глубже (#4970). Чистые решения над статусом — таблица переходов `CanChangeTo` и
+«статус после ответа» `AfterReply` — в `DomainTypes` (`ClaimStatusExtensions`), запись статуса и
+дат в сущность — в `Domain` (`ClaimStatusTransitionExtensions`) с явным `now`.
 
 Известное дублирование, которое **не чиним**: `LastUpdateDateTime` пишется дважды — в
 `CommentHelper.SetClaimTimes` и в `SetDiscussed`. Оба получают одно и то же время, поведение
