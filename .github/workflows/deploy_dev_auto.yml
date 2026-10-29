@@ -6,9 +6,37 @@ on:
     branches: [master]
 
 jobs:
-  deploy:
+  # Деплоим ровно ту версию, которую опубликовала запустившая нас сборка, а не latest:
+  # при пачке пушей в master latest к этому моменту может принадлежать другой сборке (#5906).
+  version:
     # Только push в master: «Build and publish» идёт и на PR, а у PR из форка head_branch тоже может быть master.
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'master' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+    outputs:
+      version: ${{ steps.read.outputs.version }}
+    steps:
+      - name: Download image version
+        uses: actions/download-artifact@v8
+        with:
+          name: image-version
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Read image version
+        id: read
+        run: |
+          set -euo pipefail
+          version=$(tr -d '[:space:]' < image-version.txt)
+          if [ -z "${version}" ]; then
+            echo "image-version.txt is empty" >&2
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: version
     # concurrency на джобе, а не на workflow: иначе прогон по сборке, у которой очередь отменила publish,
     # оборвал бы идущий деплой и сам ничего не задеплоил (#5906).
     concurrency:
@@ -18,7 +46,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/deploy_reusable_workflow.yml
     with:
-      deployVersion: latest 
+      deployVersion: ${{ needs.version.outputs.version }}
       environment: dev
       environment_url: https://dev.joinrpg.ru
     secrets: inherit
