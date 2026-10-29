@@ -4,6 +4,9 @@
 
 ## Не выпущено
 
+### Ломающие изменения
+- Миграция `JoinRpg.Dal.DataProtection.Migrations.Initial` стала `internal`. Переход: не ссылаться на неё — EF находит миграцию сам. ([#5960](https://github.com/joinrpg/joinrpg-net/pull/5960))
+
 ### Добавлено
 - Пакет: CHANGELOG.md, лицензия MIT. ([#5948](https://github.com/joinrpg/joinrpg-net/pull/5948))
 

@@ -1,0 +1,1132 @@
+#nullable enable
+JoinRpg.Common.WebComponents.Badges.PrintableBadge
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.BackgroundUrl.get -> string?
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.BackgroundUrl.set -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.DisposeAsync() -> System.Threading.Tasks.ValueTask
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.HeightMm.get -> int
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.HeightMm.set -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.Lines.get -> System.Collections.Generic.IReadOnlyList<JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine!>!
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.Lines.set -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.PrintableBadge() -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.WidthMm.get -> int
+JoinRpg.Common.WebComponents.Badges.PrintableBadge.WidthMm.set -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.Bold.get -> bool
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.Bold.init -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.Deconstruct(out string! Text, out int OffsetMm, out int MinFontPt, out int MaxFontPt, out bool Bold, out bool FromBottom) -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.FromBottom.get -> bool
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.FromBottom.init -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.MaxFontPt.get -> int
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.MaxFontPt.init -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.MinFontPt.get -> int
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.MinFontPt.init -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.OffsetMm.get -> int
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.OffsetMm.init -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.PrintableBadgeLine(JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine! original) -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.PrintableBadgeLine(string! Text, int OffsetMm, int MinFontPt, int MaxFontPt, bool Bold, bool FromBottom = false) -> void
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.Text.get -> string!
+JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.Text.init -> void
+JoinRpg.Common.WebComponents.BooleanRequiredAttribute
+JoinRpg.Common.WebComponents.BooleanRequiredAttribute.BooleanRequiredAttribute() -> void
+JoinRpg.Common.WebComponents.ButtonClickEventArgs
+JoinRpg.Common.WebComponents.ButtonClickEventArgs.ButtonClickEventArgs() -> void
+JoinRpg.Common.WebComponents.ButtonClickEventArgs.EnterDisabledState.get -> bool
+JoinRpg.Common.WebComponents.ButtonClickEventArgs.EnterDisabledState.set -> void
+JoinRpg.Common.WebComponents.ButtonClickEventArgs.ExitProgressState.get -> bool?
+JoinRpg.Common.WebComponents.ButtonClickEventArgs.ExitProgressState.set -> void
+JoinRpg.Common.WebComponents.ButtonClickEventArgs.MouseEvent.get -> Microsoft.AspNetCore.Components.Web.MouseEventArgs?
+JoinRpg.Common.WebComponents.ButtonClickEventArgs.MouseEvent.set -> void
+JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Add = 1 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Cancel = 5 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Claim = 27 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Copy = 15 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Create = 6 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Delete = 7 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Donate = 30 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Down = 17 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Download = 8 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Edit = 18 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Email = 12 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Hide = 10 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.HotClaim = 28 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Link = 26 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Login = 23 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Logout = 22 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.No = 4 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.None = 0 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Ok = 2 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Print = 11 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Profile = 29 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Publish = 14 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Restore = 13 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Save = 20 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Setup = 19 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Sort = 31 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Understand = 21 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Unlink = 25 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Up = 16 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Update = 9 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Vkontakte = 24 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.ButtonPreset.Yes = 3 -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.CheckboxInput
+JoinRpg.Common.WebComponents.CheckboxInput.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.CheckboxInput.AdditionalAttributes.set -> void
+JoinRpg.Common.WebComponents.CheckboxInput.CheckboxInput() -> void
+JoinRpg.Common.WebComponents.CheckboxInput.FieldIdentifier.get -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
+JoinRpg.Common.WebComponents.CheckboxInput.FieldIdentifier.set -> void
+JoinRpg.Common.WebComponents.CheckboxInput.Name.get -> string!
+JoinRpg.Common.WebComponents.CheckboxInput.Name.set -> void
+JoinRpg.Common.WebComponents.CheckboxInput.Value.get -> bool
+JoinRpg.Common.WebComponents.CheckboxInput.Value.set -> void
+JoinRpg.Common.WebComponents.CheckboxInput.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+JoinRpg.Common.WebComponents.CheckboxInput.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.CheckboxInput.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<bool>!>!
+JoinRpg.Common.WebComponents.CheckboxInput.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.ContactLink
+JoinRpg.Common.WebComponents.ContactLink.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.ContactLink.ChildContent.set -> void
+JoinRpg.Common.WebComponents.ContactLink.Collapse.get -> bool
+JoinRpg.Common.WebComponents.ContactLink.Collapse.set -> void
+JoinRpg.Common.WebComponents.ContactLink.ContactLink() -> void
+JoinRpg.Common.WebComponents.ContactLink.Href.get -> string?
+JoinRpg.Common.WebComponents.ContactLink.Href.set -> void
+JoinRpg.Common.WebComponents.ContactLink.Icon.get -> JoinRpg.Common.WebComponents.JoinIconType?
+JoinRpg.Common.WebComponents.ContactLink.Icon.set -> void
+JoinRpg.Common.WebComponents.ContactLink.Prefix.get -> string?
+JoinRpg.Common.WebComponents.ContactLink.Prefix.set -> void
+JoinRpg.Common.WebComponents.ContactLink.Title.get -> string?
+JoinRpg.Common.WebComponents.ContactLink.Title.set -> void
+JoinRpg.Common.WebComponents.DateRangeDisplay
+JoinRpg.Common.WebComponents.DateRangeDisplay.DateRangeDisplay() -> void
+JoinRpg.Common.WebComponents.DateRangeDisplay.End.get -> System.DateOnly
+JoinRpg.Common.WebComponents.DateRangeDisplay.End.set -> void
+JoinRpg.Common.WebComponents.DateRangeDisplay.HideCurrentYear.get -> bool
+JoinRpg.Common.WebComponents.DateRangeDisplay.HideCurrentYear.set -> void
+JoinRpg.Common.WebComponents.DateRangeDisplay.Start.get -> System.DateOnly
+JoinRpg.Common.WebComponents.DateRangeDisplay.Start.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Buttons.get -> System.Collections.Generic.IReadOnlyCollection<JoinRpg.Common.WebComponents.DialogButton!>?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Buttons.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Caption.get -> string?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Caption.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.CaptionContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.CaptionContent.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.ChildContent.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Close() -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.DisableSumbit.get -> bool
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.DisableSumbit.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.FooterContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.FooterContent.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Height.get -> string?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Height.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.JoinDialog() -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.MaxHeight.get -> string?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.MaxHeight.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.MaxWidth.get -> string?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.MaxWidth.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.MinHeight.get -> string?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.MinHeight.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.MinWidth.get -> string?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.MinWidth.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback<JoinRpg.Common.WebComponents.DialogCloseEventArgs!>
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.OnClose.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.ShowBoolModalAsync() -> System.Threading.Tasks.Task<bool>!
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.ShowCloseButton.get -> bool
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.ShowCloseButton.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.ShowModal() -> void
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.ShowModalAsync() -> System.Threading.Tasks.Task<string!>!
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Width.get -> string?
+JoinRpg.Common.WebComponents.Dialog.JoinDialog.Width.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.Buttons.get -> System.Collections.Generic.IReadOnlyCollection<JoinRpg.Common.WebComponents.DialogButton!>?
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.Buttons.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.Caption.get -> string?
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.Caption.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.ChildContent.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.Close() -> void
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.JoinMessageDialog() -> void
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.ShowBoolModalAsync() -> System.Threading.Tasks.Task<bool>!
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.ShowModalAsync() -> System.Threading.Tasks.Task<string!>!
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.Type.get -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.Type.set -> void
+JoinRpg.Common.WebComponents.Dialog.JoinMessageIcon
+JoinRpg.Common.WebComponents.Dialog.JoinMessageIcon.JoinMessageIcon() -> void
+JoinRpg.Common.WebComponents.Dialog.JoinMessageIcon.Type.get -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.Dialog.JoinMessageIcon.Type.set -> void
+JoinRpg.Common.WebComponents.DialogButton
+JoinRpg.Common.WebComponents.DialogButton.Alignment.get -> JoinRpg.Common.WebComponents.DialogButtonAlignment
+JoinRpg.Common.WebComponents.DialogButton.Alignment.set -> void
+JoinRpg.Common.WebComponents.DialogButton.Cancel.get -> bool
+JoinRpg.Common.WebComponents.DialogButton.Cancel.set -> void
+JoinRpg.Common.WebComponents.DialogButton.DialogButton(JoinRpg.Common.WebComponents.ButtonPreset preset, JoinRpg.Common.WebComponents.DialogButtonAlignment alignment = JoinRpg.Common.WebComponents.DialogButtonAlignment.Right, bool disabled = false, string? label = null, JoinRpg.Common.WebComponents.JoinIconType? icon = null, JoinRpg.Common.WebComponents.VariationStyleEnum? style = null, bool cancel = false) -> void
+JoinRpg.Common.WebComponents.DialogButton.DialogButton(string! name, string! label, JoinRpg.Common.WebComponents.JoinIconType? icon = null, JoinRpg.Common.WebComponents.VariationStyleEnum? style = null, JoinRpg.Common.WebComponents.DialogButtonAlignment alignment = JoinRpg.Common.WebComponents.DialogButtonAlignment.Right, bool disabled = false, bool cancel = false) -> void
+JoinRpg.Common.WebComponents.DialogButton.Disabled.get -> bool
+JoinRpg.Common.WebComponents.DialogButton.Disabled.set -> void
+JoinRpg.Common.WebComponents.DialogButton.Icon.get -> JoinRpg.Common.WebComponents.JoinIconType?
+JoinRpg.Common.WebComponents.DialogButton.Icon.set -> void
+JoinRpg.Common.WebComponents.DialogButton.Label.get -> string?
+JoinRpg.Common.WebComponents.DialogButton.Label.set -> void
+JoinRpg.Common.WebComponents.DialogButton.Name.get -> string!
+JoinRpg.Common.WebComponents.DialogButton.Name.set -> void
+JoinRpg.Common.WebComponents.DialogButton.Preset.get -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.DialogButton.Preset.set -> void
+JoinRpg.Common.WebComponents.DialogButton.Style.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.DialogButton.Style.set -> void
+JoinRpg.Common.WebComponents.DialogButtonAlignment
+JoinRpg.Common.WebComponents.DialogButtonAlignment.Centered = 2 -> JoinRpg.Common.WebComponents.DialogButtonAlignment
+JoinRpg.Common.WebComponents.DialogButtonAlignment.Left = 1 -> JoinRpg.Common.WebComponents.DialogButtonAlignment
+JoinRpg.Common.WebComponents.DialogButtonAlignment.Right = 0 -> JoinRpg.Common.WebComponents.DialogButtonAlignment
+JoinRpg.Common.WebComponents.DialogButtons
+JoinRpg.Common.WebComponents.DialogCloseEventArgs
+JoinRpg.Common.WebComponents.DialogCloseEventArgs.ButtonName.get -> string?
+JoinRpg.Common.WebComponents.DialogCloseEventArgs.DialogCloseEventArgs() -> void
+JoinRpg.Common.WebComponents.DialogClosingEventArgs
+JoinRpg.Common.WebComponents.DialogClosingEventArgs.Allow.get -> bool
+JoinRpg.Common.WebComponents.DialogClosingEventArgs.Allow.set -> void
+JoinRpg.Common.WebComponents.DialogClosingEventArgs.DialogClosingEventArgs() -> void
+JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel
+JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.Deconstruct(out string! ElementIdentification, out string? MoveAfterIdentification) -> void
+JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ElementIdentification.get -> string!
+JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ElementIdentification.init -> void
+JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ElementMoveCommandViewModel(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel! original) -> void
+JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ElementMoveCommandViewModel(string! ElementIdentification, string? MoveAfterIdentification) -> void
+JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.MoveAfterIdentification.get -> string?
+JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.MoveAfterIdentification.init -> void
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.Endpoint.get -> string!
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.Endpoint.set -> void
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.ItemIds.get -> string![]!
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.ItemIds.set -> void
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.JoinMoveControlNonInteractive() -> void
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.SelfId.get -> string!
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.SelfId.set -> void
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.SkipGroup.get -> bool
+JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.SkipGroup.set -> void
+JoinRpg.Common.WebComponents.EmailLink
+JoinRpg.Common.WebComponents.EmailLink.Collapse.get -> bool
+JoinRpg.Common.WebComponents.EmailLink.Collapse.set -> void
+JoinRpg.Common.WebComponents.EmailLink.Contact.get -> JoinRpg.Common.PrimitiveTypes.Email?
+JoinRpg.Common.WebComponents.EmailLink.Contact.set -> void
+JoinRpg.Common.WebComponents.EmailLink.EmailLink() -> void
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.EditContext.set -> void
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.EnumRadioButtonGroup() -> void
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Name.get -> string!
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Name.set -> void
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValue.get -> TValue
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValue.set -> void
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueChanged.set -> void
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>!
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.SelectedValueExpression.set -> void
+JoinRpg.Common.WebComponents.EnumSelector<TValue>
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.EditContext.set -> void
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.EnumSelector() -> void
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.Name.get -> string!
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.Name.set -> void
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.SelectedValue.get -> TValue
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.SelectedValue.set -> void
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.SelectedValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.SelectedValueChanged.set -> void
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.SelectedValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>!
+JoinRpg.Common.WebComponents.EnumSelector<TValue>.SelectedValueExpression.set -> void
+JoinRpg.Common.WebComponents.EventTime
+JoinRpg.Common.WebComponents.EventTime.EventTime() -> void
+JoinRpg.Common.WebComponents.EventTime.Model.get -> System.DateTimeOffset?
+JoinRpg.Common.WebComponents.EventTime.Model.set -> void
+JoinRpg.Common.WebComponents.FormHorizontal
+JoinRpg.Common.WebComponents.FormHorizontal.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.FormHorizontal.ChildContent.set -> void
+JoinRpg.Common.WebComponents.FormHorizontal.FormHorizontal() -> void
+JoinRpg.Common.WebComponents.FormRow
+JoinRpg.Common.WebComponents.FormRow.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.FormRow.ChildContent.set -> void
+JoinRpg.Common.WebComponents.FormRow.Description.get -> string?
+JoinRpg.Common.WebComponents.FormRow.Description.set -> void
+JoinRpg.Common.WebComponents.FormRow.DescriptionFragment.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.FormRow.DescriptionFragment.set -> void
+JoinRpg.Common.WebComponents.FormRow.FieldName.get -> string?
+JoinRpg.Common.WebComponents.FormRow.FieldName.set -> void
+JoinRpg.Common.WebComponents.FormRow.FormRow() -> void
+JoinRpg.Common.WebComponents.FormRow.InputAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>!
+JoinRpg.Common.WebComponents.FormRow.InputAttributes.set -> void
+JoinRpg.Common.WebComponents.FormRow.Label.get -> string!
+JoinRpg.Common.WebComponents.FormRow.Label.set -> void
+JoinRpg.Common.WebComponents.FormRowFor<T>
+JoinRpg.Common.WebComponents.FormRowFor<T>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.FormRowFor<T>.ChildContent.set -> void
+JoinRpg.Common.WebComponents.FormRowFor<T>.For.get -> System.Linq.Expressions.Expression<System.Func<T>!>!
+JoinRpg.Common.WebComponents.FormRowFor<T>.For.set -> void
+JoinRpg.Common.WebComponents.FormRowFor<T>.FormRowFor() -> void
+JoinRpg.Common.WebComponents.FormRowFor<T>.InputAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>!
+JoinRpg.Common.WebComponents.FormRowFor<T>.InputAttributes.set -> void
+JoinRpg.Common.WebComponents.FormRowLabelTarget
+JoinRpg.Common.WebComponents.FormRowLabelTarget.Claim(object! field, string? explicitId = null) -> string?
+JoinRpg.Common.WebComponents.FormRowLabelTarget.InputId.get -> string?
+JoinRpg.Common.WebComponents.FormRowLabelTarget.LabelId.get -> string!
+JoinRpg.Common.WebComponents.HelpLink
+JoinRpg.Common.WebComponents.HelpLink.HelpLink() -> void
+JoinRpg.Common.WebComponents.HelpLink.Link.get -> string!
+JoinRpg.Common.WebComponents.HelpLink.Link.set -> void
+JoinRpg.Common.WebComponents.HelpLink.Message.get -> string!
+JoinRpg.Common.WebComponents.HelpLink.Message.set -> void
+JoinRpg.Common.WebComponents.HelpLink.Title.get -> string?
+JoinRpg.Common.WebComponents.HelpLink.Title.set -> void
+JoinRpg.Common.WebComponents.HttpResponseProblemExtensions
+JoinRpg.Common.WebComponents.IMoveClient
+JoinRpg.Common.WebComponents.IMoveClient.MoveAfterAsync(string! selfId, string! parentId, string? moveAfterId) -> System.Threading.Tasks.Task<string![]!>!
+JoinRpg.Common.WebComponents.IMoveableListItem
+JoinRpg.Common.WebComponents.IMoveableListItem.DisplayText.get -> string!
+JoinRpg.Common.WebComponents.IMoveableListItem.Id.get -> string!
+JoinRpg.Common.WebComponents.IMoveableListItem.ParentId.get -> string!
+JoinRpg.Common.WebComponents.IMoveableListItem.Subtext.get -> string!
+JoinRpg.Common.WebComponents.IUserLinkResolveClient
+JoinRpg.Common.WebComponents.IUserLinkResolveClient.ResolveUserLink(string! userLink) -> System.Threading.Tasks.Task<JoinRpg.Common.WebComponents.UserLinkViewModel!>!
+JoinRpg.Common.WebComponents.JoinAdminAuthorizeView
+JoinRpg.Common.WebComponents.JoinAdminAuthorizeView.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinAdminAuthorizeView.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinAdminAuthorizeView.JoinAdminAuthorizeView() -> void
+JoinRpg.Common.WebComponents.JoinAdminAuthorizeView.Roles.get -> string!
+JoinRpg.Common.WebComponents.JoinAdminAuthorizeView.Roles.set -> void
+JoinRpg.Common.WebComponents.JoinAlert
+JoinRpg.Common.WebComponents.JoinAlert.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinAlert.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinAlert.Icon.get -> JoinRpg.Common.WebComponents.JoinIconType?
+JoinRpg.Common.WebComponents.JoinAlert.Icon.set -> void
+JoinRpg.Common.WebComponents.JoinAlert.JoinAlert() -> void
+JoinRpg.Common.WebComponents.JoinAlert.Variation.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinAlert.Variation.set -> void
+JoinRpg.Common.WebComponents.JoinAvatar
+JoinRpg.Common.WebComponents.JoinAvatar.JoinAvatar() -> void
+JoinRpg.Common.WebComponents.JoinAvatar.Size.get -> int
+JoinRpg.Common.WebComponents.JoinAvatar.Size.set -> void
+JoinRpg.Common.WebComponents.JoinAvatar.Uri.get -> System.Uri!
+JoinRpg.Common.WebComponents.JoinAvatar.Uri.set -> void
+JoinRpg.Common.WebComponents.JoinBadge
+JoinRpg.Common.WebComponents.JoinBadge.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinBadge.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinBadge.For.get -> bool?
+JoinRpg.Common.WebComponents.JoinBadge.For.set -> void
+JoinRpg.Common.WebComponents.JoinBadge.ForExpression.get -> System.Linq.Expressions.Expression<System.Func<bool>!>?
+JoinRpg.Common.WebComponents.JoinBadge.ForExpression.set -> void
+JoinRpg.Common.WebComponents.JoinBadge.InputAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinBadge.InputAttributes.set -> void
+JoinRpg.Common.WebComponents.JoinBadge.JoinBadge() -> void
+JoinRpg.Common.WebComponents.JoinBadge.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.JoinBadge.Size.set -> void
+JoinRpg.Common.WebComponents.JoinBadge.Text.get -> string?
+JoinRpg.Common.WebComponents.JoinBadge.Text.set -> void
+JoinRpg.Common.WebComponents.JoinBadge.Title.get -> string!
+JoinRpg.Common.WebComponents.JoinBadge.Title.set -> void
+JoinRpg.Common.WebComponents.JoinBadge.Variation.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinBadge.Variation.set -> void
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.EmptyContent.set -> void
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.HeadContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.HeadContent.set -> void
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>!
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.ItemTemplate.set -> void
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.Items.set -> void
+JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.JoinBorderedTable() -> void
+JoinRpg.Common.WebComponents.JoinButton
+JoinRpg.Common.WebComponents.JoinButton.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinButton.AdditionalAttributes.set -> void
+JoinRpg.Common.WebComponents.JoinButton.AutoConfirm.get -> bool
+JoinRpg.Common.WebComponents.JoinButton.AutoConfirm.set -> void
+JoinRpg.Common.WebComponents.JoinButton.AutoConfirmMessage.get -> string?
+JoinRpg.Common.WebComponents.JoinButton.AutoConfirmMessage.set -> void
+JoinRpg.Common.WebComponents.JoinButton.AutoProgress.get -> bool
+JoinRpg.Common.WebComponents.JoinButton.AutoProgress.set -> void
+JoinRpg.Common.WebComponents.JoinButton.CascadingEditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.JoinButton.CascadingEditContext.set -> void
+JoinRpg.Common.WebComponents.JoinButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinButton.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Disabled.get -> bool
+JoinRpg.Common.WebComponents.JoinButton.Disabled.set -> void
+JoinRpg.Common.WebComponents.JoinButton.DisabledTitle.get -> string?
+JoinRpg.Common.WebComponents.JoinButton.DisabledTitle.set -> void
+JoinRpg.Common.WebComponents.JoinButton.EditContextValidationStateChanged(object? sender, Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs? _) -> void
+JoinRpg.Common.WebComponents.JoinButton.GroupSize.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.JoinButton.GroupSize.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Icon.get -> JoinRpg.Common.WebComponents.JoinIconType?
+JoinRpg.Common.WebComponents.JoinButton.Icon.set -> void
+JoinRpg.Common.WebComponents.JoinButton.InProgress.get -> bool
+JoinRpg.Common.WebComponents.JoinButton.InProgress.set -> void
+JoinRpg.Common.WebComponents.JoinButton.JoinButton() -> void
+JoinRpg.Common.WebComponents.JoinButton.Label.get -> string?
+JoinRpg.Common.WebComponents.JoinButton.Label.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Link.get -> string?
+JoinRpg.Common.WebComponents.JoinButton.Link.set -> void
+JoinRpg.Common.WebComponents.JoinButton.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<JoinRpg.Common.WebComponents.ButtonClickEventArgs!>
+JoinRpg.Common.WebComponents.JoinButton.OnClick.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Preset.get -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.JoinButton.Preset.set -> void
+JoinRpg.Common.WebComponents.JoinButton.ProgressIcon.get -> JoinRpg.Common.WebComponents.JoinIconType?
+JoinRpg.Common.WebComponents.JoinButton.ProgressIcon.set -> void
+JoinRpg.Common.WebComponents.JoinButton.ProgressLabel.get -> string?
+JoinRpg.Common.WebComponents.JoinButton.ProgressLabel.set -> void
+JoinRpg.Common.WebComponents.JoinButton.ProgressText.get -> string?
+JoinRpg.Common.WebComponents.JoinButton.ProgressText.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.JoinButton.Size.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Style.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinButton.Style.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Submit.get -> bool
+JoinRpg.Common.WebComponents.JoinButton.Submit.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Title.get -> string?
+JoinRpg.Common.WebComponents.JoinButton.Title.set -> void
+JoinRpg.Common.WebComponents.JoinButton.TitleContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinButton.TitleContent.set -> void
+JoinRpg.Common.WebComponents.JoinButton.Variation.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinButton.Variation.set -> void
+JoinRpg.Common.WebComponents.JoinButtonGroup
+JoinRpg.Common.WebComponents.JoinButtonGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinButtonGroup.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinButtonGroup.JoinButtonGroup() -> void
+JoinRpg.Common.WebComponents.JoinButtonGroup.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum
+JoinRpg.Common.WebComponents.JoinButtonGroup.Size.set -> void
+JoinRpg.Common.WebComponents.JoinButtonGroup.SkipGroup.get -> bool
+JoinRpg.Common.WebComponents.JoinButtonGroup.SkipGroup.set -> void
+JoinRpg.Common.WebComponents.JoinButtonGroup.Vertical.get -> bool
+JoinRpg.Common.WebComponents.JoinButtonGroup.Vertical.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanel
+JoinRpg.Common.WebComponents.JoinCollapsePanel.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinCollapsePanel.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Group.get -> string?
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Group.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Header.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Header.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanel.HeaderExtra.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinCollapsePanel.HeaderExtra.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Id.get -> string?
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Id.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanel.JoinCollapsePanel() -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Open.get -> bool
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Open.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Variation.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinCollapsePanel.Variation.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanelGroup
+JoinRpg.Common.WebComponents.JoinCollapsePanelGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinCollapsePanelGroup.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanelGroup.JoinCollapsePanelGroup() -> void
+JoinRpg.Common.WebComponents.JoinCollapsePanelGroup.Name.get -> string?
+JoinRpg.Common.WebComponents.JoinCollapsePanelGroup.Name.set -> void
+JoinRpg.Common.WebComponents.JoinDotsMenu
+JoinRpg.Common.WebComponents.JoinDotsMenu.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinDotsMenu.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinDotsMenu.JoinDotsMenu() -> void
+JoinRpg.Common.WebComponents.JoinDotsMenu.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum
+JoinRpg.Common.WebComponents.JoinDotsMenu.Size.set -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton
+JoinRpg.Common.WebComponents.JoinDropdownButton.AlignRight.get -> bool
+JoinRpg.Common.WebComponents.JoinDropdownButton.AlignRight.set -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton.AriaLabel.get -> string?
+JoinRpg.Common.WebComponents.JoinDropdownButton.AriaLabel.set -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinDropdownButton.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton.JoinDropdownButton() -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton.Label.get -> string?
+JoinRpg.Common.WebComponents.JoinDropdownButton.Label.set -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton.Split.get -> bool
+JoinRpg.Common.WebComponents.JoinDropdownButton.Split.set -> void
+JoinRpg.Common.WebComponents.JoinErrorMessage
+JoinRpg.Common.WebComponents.JoinErrorMessage.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinErrorMessage.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinErrorMessage.JoinErrorMessage() -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.Caption.get -> string?
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.Caption.set -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.FormName.get -> string!
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.FormName.set -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.Height.get -> string?
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.Height.set -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.JoinFormDialog() -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.MaxHeight.get -> string?
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.MaxHeight.set -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.MaxWidth.get -> string?
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.MaxWidth.set -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.Model.get -> TViewModel!
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.Model.set -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.ShowModalAsync() -> System.Threading.Tasks.Task<TViewModel?>!
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.SubmitButtonPreset.get -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.SubmitButtonPreset.set -> void
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.Width.get -> string?
+JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.Width.set -> void
+JoinRpg.Common.WebComponents.JoinIcon
+JoinRpg.Common.WebComponents.JoinIcon.Icon.get -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIcon.Icon.set -> void
+JoinRpg.Common.WebComponents.JoinIcon.InputAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinIcon.InputAttributes.set -> void
+JoinRpg.Common.WebComponents.JoinIcon.JoinIcon() -> void
+JoinRpg.Common.WebComponents.JoinIcon.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.JoinIcon.Size.set -> void
+JoinRpg.Common.WebComponents.JoinIcon.Title.get -> string?
+JoinRpg.Common.WebComponents.JoinIcon.Title.set -> void
+JoinRpg.Common.WebComponents.JoinIconButton
+JoinRpg.Common.WebComponents.JoinIconButton.Icon.get -> JoinRpg.Common.WebComponents.JoinIconType?
+JoinRpg.Common.WebComponents.JoinIconButton.Icon.set -> void
+JoinRpg.Common.WebComponents.JoinIconButton.JoinIconButton() -> void
+JoinRpg.Common.WebComponents.JoinIconButton.Link.get -> string!
+JoinRpg.Common.WebComponents.JoinIconButton.Link.set -> void
+JoinRpg.Common.WebComponents.JoinIconButton.Preset.get -> JoinRpg.Common.WebComponents.ButtonPreset
+JoinRpg.Common.WebComponents.JoinIconButton.Preset.set -> void
+JoinRpg.Common.WebComponents.JoinIconButton.Title.get -> string?
+JoinRpg.Common.WebComponents.JoinIconButton.Title.set -> void
+JoinRpg.Common.WebComponents.JoinIconHtml
+JoinRpg.Common.WebComponents.JoinIconHtml.CssClass.get -> string!
+JoinRpg.Common.WebComponents.JoinIconHtml.CssClass.init -> void
+JoinRpg.Common.WebComponents.JoinIconHtml.Deconstruct(out string! CssClass, out string? InlineStyle, out string! SymbolHref) -> void
+JoinRpg.Common.WebComponents.JoinIconHtml.Equals(JoinRpg.Common.WebComponents.JoinIconHtml other) -> bool
+JoinRpg.Common.WebComponents.JoinIconHtml.InlineStyle.get -> string?
+JoinRpg.Common.WebComponents.JoinIconHtml.InlineStyle.init -> void
+JoinRpg.Common.WebComponents.JoinIconHtml.JoinIconHtml() -> void
+JoinRpg.Common.WebComponents.JoinIconHtml.JoinIconHtml(string! CssClass, string? InlineStyle, string! SymbolHref) -> void
+JoinRpg.Common.WebComponents.JoinIconHtml.SymbolHref.get -> string!
+JoinRpg.Common.WebComponents.JoinIconHtml.SymbolHref.init -> void
+JoinRpg.Common.WebComponents.JoinIconMarkup
+JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Accommodation = 29 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Achievement = 65 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Add = 0 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Alert = 27 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Approve = 36 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Award = 64 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Back = 38 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Calendar = 40 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.CheckIn = 50 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.CheckboxChecked = 43 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.CheckboxUnchecked = 44 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Claim = 17 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Close = 56 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Closed = 7 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Copy = 11 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Decline = 37 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Delete = 2 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.DialogAlert = 60 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.DialogFail = 61 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.DialogInfo = 58 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.DialogQuestion = 57 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.DialogSuccess = 59 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Download = 3 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Edit = 14 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Email = 9 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Evict = 30 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.EvictAll = 31 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Export = 4 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.FeePaid = 32 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Forbidden = 62 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.FullScreen = 69 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.GoToFirst = 51 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.GoToNext = 53 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.GoToPrev = 52 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.HasAccess = 47 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Help = 34 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Hidden = 42 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Hide = 6 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Home = 67 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Hot = 18 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Info = 24 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.List = 63 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.MandatoryStar = 54 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.MenuHorizontal = 46 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.MenuVertical = 45 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Money = 20 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Move = 49 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.MoveDown = 13 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.MoveUp = 12 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.NoAccess = 48 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Ok = 1 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Phone = 35 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Print = 8 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Progress = 23 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Project = 66 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Publish = 10 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.RecommendedStar = 55 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Refresh = 5 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Remove = 28 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Search = 39 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Setup = 15 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Sort = 21 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.SortByAlphabet = 22 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Subscribe = 25 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Telegram = 33 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Tools = 16 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.User = 19 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Visible = 41 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Vk = 68 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinIconType.Warning = 26 -> JoinRpg.Common.WebComponents.JoinIconType
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>
+JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.JoinInputNumber() -> void
+JoinRpg.Common.WebComponents.JoinLoadingMessage
+JoinRpg.Common.WebComponents.JoinLoadingMessage.JoinLoadingMessage() -> void
+JoinRpg.Common.WebComponents.JoinLoadingMessage.Message.get -> string!
+JoinRpg.Common.WebComponents.JoinLoadingMessage.Message.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.AdditionalAttributes.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.JoinMarkdownTextArea() -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Placeholder.get -> string?
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Placeholder.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Rows.get -> int
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Rows.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Value.get -> string!
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.Value.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<string!>!>?
+JoinRpg.Common.WebComponents.JoinMarkdownTextArea.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.JoinMenuHeader
+JoinRpg.Common.WebComponents.JoinMenuHeader.JoinMenuHeader() -> void
+JoinRpg.Common.WebComponents.JoinMenuHeader.Label.get -> string!
+JoinRpg.Common.WebComponents.JoinMenuHeader.Label.set -> void
+JoinRpg.Common.WebComponents.JoinMenuItem
+JoinRpg.Common.WebComponents.JoinMenuItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinMenuItem.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinMenuItem.Href.get -> string!
+JoinRpg.Common.WebComponents.JoinMenuItem.Href.set -> void
+JoinRpg.Common.WebComponents.JoinMenuItem.Icon.get -> JoinRpg.Common.WebComponents.JoinIconType?
+JoinRpg.Common.WebComponents.JoinMenuItem.Icon.set -> void
+JoinRpg.Common.WebComponents.JoinMenuItem.JoinMenuItem() -> void
+JoinRpg.Common.WebComponents.JoinMenuItem.Label.get -> string?
+JoinRpg.Common.WebComponents.JoinMenuItem.Label.set -> void
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.AutoRefresh.get -> bool
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.AutoRefresh.set -> void
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.Items.get -> System.Collections.Generic.IList<TItem!>!
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.Items.set -> void
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.JoinMoveControl() -> void
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.OnMoveCompleted.get -> Microsoft.AspNetCore.Components.EventCallback
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.OnMoveCompleted.set -> void
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.Self.get -> TItem!
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.Self.set -> void
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.Size.set -> void
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.SkipGroup.get -> bool
+JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.SkipGroup.set -> void
+JoinRpg.Common.WebComponents.JoinPanel
+JoinRpg.Common.WebComponents.JoinPanel.Body.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinPanel.Body.set -> void
+JoinRpg.Common.WebComponents.JoinPanel.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinPanel.ChildContent.set -> void
+JoinRpg.Common.WebComponents.JoinPanel.Footer.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinPanel.Footer.set -> void
+JoinRpg.Common.WebComponents.JoinPanel.Header.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinPanel.Header.set -> void
+JoinRpg.Common.WebComponents.JoinPanel.JoinPanel() -> void
+JoinRpg.Common.WebComponents.JoinPanel.Variation.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinPanel.Variation.set -> void
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Body.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Body.set -> void
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Header.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Header.set -> void
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>?
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.ItemTemplate.set -> void
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Items.set -> void
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.JoinPanelWithList() -> void
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Variation.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.Variation.set -> void
+JoinRpg.Common.WebComponents.JoinRpgDatePicker
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.JoinRpgDatePicker() -> void
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.Max.get -> System.DateOnly?
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.Max.set -> void
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.Min.get -> System.DateOnly?
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.Min.set -> void
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.Name.get -> string!
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.Name.set -> void
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.Value.get -> System.DateOnly?
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.Value.set -> void
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.DateOnly?>
+JoinRpg.Common.WebComponents.JoinRpgDatePicker.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.JoinRpgTimePicker
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.JoinRpgTimePicker() -> void
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.Name.get -> string!
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.Name.set -> void
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.Value.get -> System.TimeOnly?
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.Value.set -> void
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.TimeOnly?>
+JoinRpg.Common.WebComponents.JoinRpgTimePicker.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.JoinTableSimple
+JoinRpg.Common.WebComponents.JoinTableSimple.JoinTableSimple() -> void
+JoinRpg.Common.WebComponents.JoinTableSimple.Responsive.get -> bool
+JoinRpg.Common.WebComponents.JoinTableSimple.Responsive.set -> void
+JoinRpg.Common.WebComponents.JoinTableSimple.TableBody.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinTableSimple.TableBody.set -> void
+JoinRpg.Common.WebComponents.JoinTableSimple.TableHeader.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinTableSimple.TableHeader.set -> void
+JoinRpg.Common.WebComponents.JoinTestComponent
+JoinRpg.Common.WebComponents.JoinTestComponent.JoinTestComponent() -> void
+JoinRpg.Common.WebComponents.JoinTextArea
+JoinRpg.Common.WebComponents.JoinTextArea.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinTextArea.AdditionalAttributes.set -> void
+JoinRpg.Common.WebComponents.JoinTextArea.HasCopyButton.get -> bool
+JoinRpg.Common.WebComponents.JoinTextArea.HasCopyButton.set -> void
+JoinRpg.Common.WebComponents.JoinTextArea.JoinTextArea() -> void
+JoinRpg.Common.WebComponents.JoinTextArea.Placeholder.get -> string?
+JoinRpg.Common.WebComponents.JoinTextArea.Placeholder.set -> void
+JoinRpg.Common.WebComponents.JoinTextArea.ReadOnly.get -> bool
+JoinRpg.Common.WebComponents.JoinTextArea.ReadOnly.set -> void
+JoinRpg.Common.WebComponents.JoinTextArea.Rows.get -> int
+JoinRpg.Common.WebComponents.JoinTextArea.Rows.set -> void
+JoinRpg.Common.WebComponents.JoinTextArea.Value.get -> string!
+JoinRpg.Common.WebComponents.JoinTextArea.Value.set -> void
+JoinRpg.Common.WebComponents.JoinTextArea.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+JoinRpg.Common.WebComponents.JoinTextArea.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.JoinTextArea.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<string!>!>?
+JoinRpg.Common.WebComponents.JoinTextArea.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput
+JoinRpg.Common.WebComponents.JoinTextInput.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+JoinRpg.Common.WebComponents.JoinTextInput.AdditionalAttributes.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Immediate.get -> bool
+JoinRpg.Common.WebComponents.JoinTextInput.Immediate.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.JoinTextInput() -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Placeholder.get -> string?
+JoinRpg.Common.WebComponents.JoinTextInput.Placeholder.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Trim.get -> bool
+JoinRpg.Common.WebComponents.JoinTextInput.Trim.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.Value.get -> string!
+JoinRpg.Common.WebComponents.JoinTextInput.Value.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+JoinRpg.Common.WebComponents.JoinTextInput.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.JoinTextInput.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<string!>!>?
+JoinRpg.Common.WebComponents.JoinTextInput.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.JoinUserLinkEditor
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.InitialUsers.get -> System.Collections.Generic.IReadOnlyList<JoinRpg.Common.WebComponents.UserLinkViewModel!>!
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.InitialUsers.set -> void
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.JoinUserLinkEditor() -> void
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.Multiple.get -> bool
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.Multiple.set -> void
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.Name.get -> string?
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.Name.set -> void
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.Values.get -> System.Collections.Generic.List<string!>!
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.Values.set -> void
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.ValuesChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.List<string!>!>
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.ValuesChanged.set -> void
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.ValuesExpression.get -> System.Linq.Expressions.Expression<System.Func<System.Collections.Generic.List<string!>!>!>?
+JoinRpg.Common.WebComponents.JoinUserLinkEditor.ValuesExpression.set -> void
+JoinRpg.Common.WebComponents.LiveJournalLink
+JoinRpg.Common.WebComponents.LiveJournalLink.Contact.get -> JoinRpg.Common.PrimitiveTypes.LiveJournalId?
+JoinRpg.Common.WebComponents.LiveJournalLink.Contact.set -> void
+JoinRpg.Common.WebComponents.LiveJournalLink.LiveJournalLink() -> void
+JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.MessageDialogType.Alert = 4 -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.MessageDialogType.Confirmation = 1 -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.MessageDialogType.Fail = 5 -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.MessageDialogType.Information = 2 -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.MessageDialogType.None = 0 -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.MessageDialogType.Success = 3 -> JoinRpg.Common.WebComponents.MessageDialogType
+JoinRpg.Common.WebComponents.NumberInput
+JoinRpg.Common.WebComponents.NumberInput.Max.get -> int?
+JoinRpg.Common.WebComponents.NumberInput.Max.set -> void
+JoinRpg.Common.WebComponents.NumberInput.Min.get -> int?
+JoinRpg.Common.WebComponents.NumberInput.Min.set -> void
+JoinRpg.Common.WebComponents.NumberInput.Name.get -> string!
+JoinRpg.Common.WebComponents.NumberInput.Name.set -> void
+JoinRpg.Common.WebComponents.NumberInput.NumberInput() -> void
+JoinRpg.Common.WebComponents.NumberInput.Value.get -> int?
+JoinRpg.Common.WebComponents.NumberInput.Value.set -> void
+JoinRpg.Common.WebComponents.NumberInput.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int?>
+JoinRpg.Common.WebComponents.NumberInput.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.PhoneLink
+JoinRpg.Common.WebComponents.PhoneLink.Contact.get -> JoinRpg.Common.PrimitiveTypes.PhoneNumber?
+JoinRpg.Common.WebComponents.PhoneLink.Contact.set -> void
+JoinRpg.Common.WebComponents.PhoneLink.PhoneLink() -> void
+JoinRpg.Common.WebComponents.PriceElement
+JoinRpg.Common.WebComponents.PriceElement.Price.get -> int
+JoinRpg.Common.WebComponents.PriceElement.Price.set -> void
+JoinRpg.Common.WebComponents.PriceElement.PriceElement() -> void
+JoinRpg.Common.WebComponents.SelectorListCache
+JoinRpg.Common.WebComponents.SelectorListCache.Clear() -> void
+JoinRpg.Common.WebComponents.SelectorListCache.Dispose() -> void
+JoinRpg.Common.WebComponents.SelectorListCache.GetOrLoad<TItem>(string! key, System.Func<System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TItem>!>!>! load) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<TItem>!>!
+JoinRpg.Common.WebComponents.SelectorListCache.SelectorListCache(Microsoft.AspNetCore.Components.NavigationManager! navigationManager, Microsoft.AspNetCore.Components.PersistentComponentState! persistentState, Microsoft.Extensions.Logging.ILogger<JoinRpg.Common.WebComponents.SelectorListCache!>! logger) -> void
+JoinRpg.Common.WebComponents.ServerProblemException
+JoinRpg.Common.WebComponents.ServerProblemException.ServerProblemException(string! message) -> void
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.Dispose() -> void
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.HandleSubmit() -> System.Threading.Tasks.Task!
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.Model.get -> TModel!
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.Model.set -> void
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.SettingsPanelBase() -> void
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.editContext -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.formInvalid -> bool
+JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.success -> bool
+JoinRpg.Common.WebComponents.SiteBanner
+JoinRpg.Common.WebComponents.SiteBanner.SiteBanner() -> void
+JoinRpg.Common.WebComponents.SiteBanner.Text.get -> string?
+JoinRpg.Common.WebComponents.SiteBanner.Text.set -> void
+JoinRpg.Common.WebComponents.SizeStyleEnum
+JoinRpg.Common.WebComponents.SizeStyleEnum.ExtraSmall = 3 -> JoinRpg.Common.WebComponents.SizeStyleEnum
+JoinRpg.Common.WebComponents.SizeStyleEnum.Large = 0 -> JoinRpg.Common.WebComponents.SizeStyleEnum
+JoinRpg.Common.WebComponents.SizeStyleEnum.Medium = 1 -> JoinRpg.Common.WebComponents.SizeStyleEnum
+JoinRpg.Common.WebComponents.SizeStyleEnum.Small = 2 -> JoinRpg.Common.WebComponents.SizeStyleEnum
+JoinRpg.Common.WebComponents.StringInput
+JoinRpg.Common.WebComponents.StringInput.Name.get -> string?
+JoinRpg.Common.WebComponents.StringInput.Name.set -> void
+JoinRpg.Common.WebComponents.StringInput.Required.get -> bool
+JoinRpg.Common.WebComponents.StringInput.Required.set -> void
+JoinRpg.Common.WebComponents.StringInput.RequiredMessage.get -> string?
+JoinRpg.Common.WebComponents.StringInput.RequiredMessage.set -> void
+JoinRpg.Common.WebComponents.StringInput.RequiredMessageValue.get -> string?
+JoinRpg.Common.WebComponents.StringInput.StringInput() -> void
+JoinRpg.Common.WebComponents.StringInput.ValidationEnabled.get -> string?
+JoinRpg.Common.WebComponents.StringInput.Value.get -> string?
+JoinRpg.Common.WebComponents.StringInput.Value.set -> void
+JoinRpg.Common.WebComponents.StringInput.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+JoinRpg.Common.WebComponents.StringInput.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.SupportInfoPanel
+JoinRpg.Common.WebComponents.SupportInfoPanel.ActivityId.get -> string?
+JoinRpg.Common.WebComponents.SupportInfoPanel.ActivityId.set -> void
+JoinRpg.Common.WebComponents.SupportInfoPanel.CommitSha.get -> string?
+JoinRpg.Common.WebComponents.SupportInfoPanel.CommitSha.set -> void
+JoinRpg.Common.WebComponents.SupportInfoPanel.Path.get -> string?
+JoinRpg.Common.WebComponents.SupportInfoPanel.Path.set -> void
+JoinRpg.Common.WebComponents.SupportInfoPanel.PodName.get -> string!
+JoinRpg.Common.WebComponents.SupportInfoPanel.PodName.set -> void
+JoinRpg.Common.WebComponents.SupportInfoPanel.Referer.get -> System.Uri?
+JoinRpg.Common.WebComponents.SupportInfoPanel.Referer.set -> void
+JoinRpg.Common.WebComponents.SupportInfoPanel.RequestId.get -> string!
+JoinRpg.Common.WebComponents.SupportInfoPanel.RequestId.set -> void
+JoinRpg.Common.WebComponents.SupportInfoPanel.SupportInfoPanel() -> void
+JoinRpg.Common.WebComponents.SupportInfoPanel.Version.get -> string!
+JoinRpg.Common.WebComponents.SupportInfoPanel.Version.set -> void
+JoinRpg.Common.WebComponents.TelegramLink
+JoinRpg.Common.WebComponents.TelegramLink.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.TelegramLink.ChildContent.set -> void
+JoinRpg.Common.WebComponents.TelegramLink.Collapse.get -> bool
+JoinRpg.Common.WebComponents.TelegramLink.Collapse.set -> void
+JoinRpg.Common.WebComponents.TelegramLink.Contact.get -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+JoinRpg.Common.WebComponents.TelegramLink.Contact.set -> void
+JoinRpg.Common.WebComponents.TelegramLink.Link.get -> string?
+JoinRpg.Common.WebComponents.TelegramLink.Link.set -> void
+JoinRpg.Common.WebComponents.TelegramLink.TelegramLink() -> void
+JoinRpg.Common.WebComponents.TimeZoneList
+JoinRpg.Common.WebComponents.TimeZoneListItem
+JoinRpg.Common.WebComponents.TimeZoneListItem.BaseUtcOffset.get -> System.TimeSpan
+JoinRpg.Common.WebComponents.TimeZoneListItem.BaseUtcOffset.init -> void
+JoinRpg.Common.WebComponents.TimeZoneListItem.Deconstruct(out string! Id, out System.TimeSpan BaseUtcOffset) -> void
+JoinRpg.Common.WebComponents.TimeZoneListItem.DisplayName.get -> string!
+JoinRpg.Common.WebComponents.TimeZoneListItem.Id.get -> string!
+JoinRpg.Common.WebComponents.TimeZoneListItem.Id.init -> void
+JoinRpg.Common.WebComponents.TimeZoneListItem.TimeZoneListItem(JoinRpg.Common.WebComponents.TimeZoneListItem! original) -> void
+JoinRpg.Common.WebComponents.TimeZoneListItem.TimeZoneListItem(string! Id, System.TimeSpan BaseUtcOffset) -> void
+JoinRpg.Common.WebComponents.TimeZoneSelector
+JoinRpg.Common.WebComponents.TimeZoneSelector.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+JoinRpg.Common.WebComponents.TimeZoneSelector.EditContext.set -> void
+JoinRpg.Common.WebComponents.TimeZoneSelector.Name.get -> string?
+JoinRpg.Common.WebComponents.TimeZoneSelector.Name.set -> void
+JoinRpg.Common.WebComponents.TimeZoneSelector.TimeZoneSelector() -> void
+JoinRpg.Common.WebComponents.TimeZoneSelector.Value.get -> string?
+JoinRpg.Common.WebComponents.TimeZoneSelector.Value.set -> void
+JoinRpg.Common.WebComponents.TimeZoneSelector.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+JoinRpg.Common.WebComponents.TimeZoneSelector.ValueChanged.set -> void
+JoinRpg.Common.WebComponents.TimeZoneSelector.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<string?>!>?
+JoinRpg.Common.WebComponents.TimeZoneSelector.ValueExpression.set -> void
+JoinRpg.Common.WebComponents.Tooltip
+JoinRpg.Common.WebComponents.Tooltip.Block.get -> bool
+JoinRpg.Common.WebComponents.Tooltip.Block.set -> void
+JoinRpg.Common.WebComponents.Tooltip.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.Tooltip.ChildContent.set -> void
+JoinRpg.Common.WebComponents.Tooltip.Placement.get -> JoinRpg.Common.WebComponents.TooltipPlacement
+JoinRpg.Common.WebComponents.Tooltip.Placement.set -> void
+JoinRpg.Common.WebComponents.Tooltip.Title.get -> string?
+JoinRpg.Common.WebComponents.Tooltip.Title.set -> void
+JoinRpg.Common.WebComponents.Tooltip.Tooltip() -> void
+JoinRpg.Common.WebComponents.Tooltip.TooltipContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.Tooltip.TooltipContent.set -> void
+JoinRpg.Common.WebComponents.TooltipPlacement
+JoinRpg.Common.WebComponents.TooltipPlacement.Bottom = 0 -> JoinRpg.Common.WebComponents.TooltipPlacement
+JoinRpg.Common.WebComponents.TooltipPlacement.Left = 2 -> JoinRpg.Common.WebComponents.TooltipPlacement
+JoinRpg.Common.WebComponents.TooltipPlacement.Right = 3 -> JoinRpg.Common.WebComponents.TooltipPlacement
+JoinRpg.Common.WebComponents.TooltipPlacement.Top = 1 -> JoinRpg.Common.WebComponents.TooltipPlacement
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.AutoConfirm.get -> bool
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.AutoConfirm.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.AutoConfirmMessage.get -> string?
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.AutoConfirmMessage.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.Items.get -> TItem[]?
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.Items.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.Label.get -> string!
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.Label.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<TItem>
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.OnClick.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.Size.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.Style.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.Style.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.ToLink.get -> System.Func<TItem, string!>?
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.ToLink.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.ToListItem.get -> System.Func<TItem, JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>!>!
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.ToListItem.set -> void
+JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.TypedDropdownButton() -> void
+JoinRpg.Common.WebComponents.TypedSelectList
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Deconstruct(out TKey Value, out string! Text, out string! Subtext, out string! ExtraSearch, out bool Disabled) -> void
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Disabled.get -> bool
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Disabled.init -> void
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.ExtraSearch.get -> string!
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.ExtraSearch.init -> void
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Subtext.get -> string!
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Subtext.init -> void
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Text.get -> string!
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Text.init -> void
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.TypedSelectListItem(JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>! original) -> void
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.TypedSelectListItem(TKey Value, string! Text, string! Subtext = "", string! ExtraSearch = "", bool Disabled = false) -> void
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Value.get -> TKey
+JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Value.init -> void
+JoinRpg.Common.WebComponents.TypedSelectSearch
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.AllowEmpty.get -> bool
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.AllowEmpty.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.EmptyText.get -> string!
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.EmptyText.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.Items.get -> TItem[]?
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.Items.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.KeySelector.get -> System.Func<TItem, TKey>!
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.KeySelector.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.Multiple.get -> bool
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.Multiple.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.Name.get -> string?
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.Name.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.SelectedItemsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TItem[]!>
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.SelectedItemsChanged.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.SelectedValues.get -> TKey[]!
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.SelectedValues.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.SelectedValuesChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TKey[]!>
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.SelectedValuesChanged.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.ToListItem.get -> System.Func<TItem, JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>!>!
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.ToListItem.set -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.TypedSelector() -> void
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.Width.get -> string?
+JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.Width.set -> void
+JoinRpg.Common.WebComponents.UserLink
+JoinRpg.Common.WebComponents.UserLink.Model.get -> JoinRpg.Common.WebComponents.UserLinkViewModel!
+JoinRpg.Common.WebComponents.UserLink.Model.set -> void
+JoinRpg.Common.WebComponents.UserLink.ProfileUri.get -> System.Uri!
+JoinRpg.Common.WebComponents.UserLink.UserLink() -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel
+JoinRpg.Common.WebComponents.UserLinkViewModel.Deconstruct(out JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, out string! DisplayName, out JoinRpg.Common.WebComponents.ViewMode ViewMode) -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.DisplayName.get -> string!
+JoinRpg.Common.WebComponents.UserLinkViewModel.DisplayName.init -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.UserId.get -> JoinRpg.Common.PrimitiveTypes.UserIdentification?
+JoinRpg.Common.WebComponents.UserLinkViewModel.UserId.init -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, string! DisplayName, JoinRpg.Common.WebComponents.ViewMode ViewMode) -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader! user, JoinRpg.Common.WebComponents.ViewMode viewMode = JoinRpg.Common.WebComponents.ViewMode.Show) -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.UserLinkViewModel(JoinRpg.Common.WebComponents.UserLinkViewModel! original) -> void
+JoinRpg.Common.WebComponents.UserLinkViewModel.ViewMode.get -> JoinRpg.Common.WebComponents.ViewMode
+JoinRpg.Common.WebComponents.UserLinkViewModel.ViewMode.init -> void
+JoinRpg.Common.WebComponents.VariationStyleEnum
+JoinRpg.Common.WebComponents.VariationStyleEnum.Danger = 3 -> JoinRpg.Common.WebComponents.VariationStyleEnum
+JoinRpg.Common.WebComponents.VariationStyleEnum.Info = 4 -> JoinRpg.Common.WebComponents.VariationStyleEnum
+JoinRpg.Common.WebComponents.VariationStyleEnum.None = 0 -> JoinRpg.Common.WebComponents.VariationStyleEnum
+JoinRpg.Common.WebComponents.VariationStyleEnum.Primary = 5 -> JoinRpg.Common.WebComponents.VariationStyleEnum
+JoinRpg.Common.WebComponents.VariationStyleEnum.Success = 1 -> JoinRpg.Common.WebComponents.VariationStyleEnum
+JoinRpg.Common.WebComponents.VariationStyleEnum.Warning = 2 -> JoinRpg.Common.WebComponents.VariationStyleEnum
+JoinRpg.Common.WebComponents.VersionPanel
+JoinRpg.Common.WebComponents.VersionPanel.CommitSha.get -> string?
+JoinRpg.Common.WebComponents.VersionPanel.CommitSha.set -> void
+JoinRpg.Common.WebComponents.VersionPanel.CommitUrl.get -> System.Uri?
+JoinRpg.Common.WebComponents.VersionPanel.CommitUrl.set -> void
+JoinRpg.Common.WebComponents.VersionPanel.Version.get -> string!
+JoinRpg.Common.WebComponents.VersionPanel.Version.set -> void
+JoinRpg.Common.WebComponents.VersionPanel.VersionPanel() -> void
+JoinRpg.Common.WebComponents.ViewMode
+JoinRpg.Common.WebComponents.ViewMode.Deleted = 3 -> JoinRpg.Common.WebComponents.ViewMode
+JoinRpg.Common.WebComponents.ViewMode.Hide = 2 -> JoinRpg.Common.WebComponents.ViewMode
+JoinRpg.Common.WebComponents.ViewMode.Show = 0 -> JoinRpg.Common.WebComponents.ViewMode
+JoinRpg.Common.WebComponents.ViewMode.ShowAsPrivate = 1 -> JoinRpg.Common.WebComponents.ViewMode
+JoinRpg.Common.WebComponents.ViewModeSelector
+JoinRpg.Common.WebComponents.VkLink
+JoinRpg.Common.WebComponents.VkLink.Contact.get -> JoinRpg.Common.PrimitiveTypes.VkSocialLink?
+JoinRpg.Common.WebComponents.VkLink.Contact.set -> void
+JoinRpg.Common.WebComponents.VkLink.Link.get -> JoinRpg.Common.PrimitiveTypes.VkId?
+JoinRpg.Common.WebComponents.VkLink.Link.set -> void
+JoinRpg.Common.WebComponents.VkLink.VkLink() -> void
+JoinRpg.Common.WebComponents.WebComponentsRegistration
+JoinRpg.Common.WebComponents._Imports
+JoinRpg.Common.WebComponents._Imports.Execute() -> void
+JoinRpg.Common.WebComponents._Imports._Imports() -> void
+abstract JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.LoadModel() -> System.Threading.Tasks.Task<TModel!>!
+abstract JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.SaveModel(TModel! model) -> System.Threading.Tasks.Task!
+const JoinRpg.Common.WebComponents.JoinButton.DefaultProgressIcon = JoinRpg.Common.WebComponents.JoinIconType.Progress -> JoinRpg.Common.WebComponents.JoinIconType
+override JoinRpg.Common.WebComponents.Badges.PrintableBadge.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.Equals(object? obj) -> bool
+override JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.GetHashCode() -> int
+override JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.ToString() -> string!
+override JoinRpg.Common.WebComponents.BooleanRequiredAttribute.IsValid(object? value) -> bool
+override JoinRpg.Common.WebComponents.CheckboxInput.OnInitialized() -> void
+override JoinRpg.Common.WebComponents.CheckboxInput.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.Dialog.JoinDialog.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override JoinRpg.Common.WebComponents.Dialog.JoinDialog.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.Dialog.JoinMessageIcon.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.Equals(object? obj) -> bool
+override JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.GetHashCode() -> int
+override JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ToString() -> string!
+override JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.OnInitialized() -> void
+override JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.EnumSelector<TValue>.OnInitialized() -> void
+override JoinRpg.Common.WebComponents.EnumSelector<TValue>.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.FormRow.OnInitialized() -> void
+override JoinRpg.Common.WebComponents.FormRowFor<T>.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinAdminAuthorizeView.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinButton.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+override JoinRpg.Common.WebComponents.JoinIconHtml.GetHashCode() -> int
+override JoinRpg.Common.WebComponents.JoinInputNumber<TValue>.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.OnAfterRender(bool firstRender) -> void
+override JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinRpgDatePicker.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinRpgTimePicker.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinTextArea.OnInitialized() -> void
+override JoinRpg.Common.WebComponents.JoinTextArea.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinTextInput.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.JoinUserLinkEditor.OnInitializedAsync() -> System.Threading.Tasks.Task!
+override JoinRpg.Common.WebComponents.JoinUserLinkEditor.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.NumberInput.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.SettingsPanelBase<TModel>.OnInitializedAsync() -> System.Threading.Tasks.Task!
+override JoinRpg.Common.WebComponents.StringInput.OnInitialized() -> void
+override JoinRpg.Common.WebComponents.StringInput.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.TimeZoneListItem.Equals(object? obj) -> bool
+override JoinRpg.Common.WebComponents.TimeZoneListItem.GetHashCode() -> int
+override JoinRpg.Common.WebComponents.TimeZoneListItem.ToString() -> string!
+override JoinRpg.Common.WebComponents.TimeZoneSelector.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Equals(object? obj) -> bool
+override JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.GetHashCode() -> int
+override JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.ToString() -> string!
+override JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.OnParametersSet() -> void
+override JoinRpg.Common.WebComponents.UserLinkViewModel.Equals(object? obj) -> bool
+override JoinRpg.Common.WebComponents.UserLinkViewModel.GetHashCode() -> int
+override JoinRpg.Common.WebComponents.UserLinkViewModel.ToString() -> string!
+static JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.operator !=(JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine? left, JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine? right) -> bool
+static JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.operator ==(JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine? left, JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine? right) -> bool
+static JoinRpg.Common.WebComponents.DialogButton.FromJoinButton(JoinRpg.Common.WebComponents.JoinButton! self) -> JoinRpg.Common.WebComponents.DialogButton!
+static JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.operator !=(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? left, JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? right) -> bool
+static JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.operator ==(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? left, JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? right) -> bool
+static JoinRpg.Common.WebComponents.FormRowLabelTarget.ExplicitId(System.Collections.Generic.IReadOnlyDictionary<string!, object!>? attributes) -> string?
+static JoinRpg.Common.WebComponents.HttpResponseProblemExtensions.EnsureSuccessOrThrowProblem(this System.Net.Http.HttpResponseMessage! response) -> System.Threading.Tasks.Task!
+static JoinRpg.Common.WebComponents.HttpResponseProblemExtensions.ReadFromJsonOrThrowProblem<T>(this System.Net.Http.HttpResponseMessage! response) -> System.Threading.Tasks.Task<T>!
+static JoinRpg.Common.WebComponents.JoinIconHtml.operator !=(JoinRpg.Common.WebComponents.JoinIconHtml left, JoinRpg.Common.WebComponents.JoinIconHtml right) -> bool
+static JoinRpg.Common.WebComponents.JoinIconHtml.operator ==(JoinRpg.Common.WebComponents.JoinIconHtml left, JoinRpg.Common.WebComponents.JoinIconHtml right) -> bool
+static JoinRpg.Common.WebComponents.JoinIconMarkup.BuildAccessibilityAttributes(string? title) -> string!
+static JoinRpg.Common.WebComponents.JoinIconMarkup.BuildContent(JoinRpg.Common.WebComponents.JoinIconHtml html, string? title) -> string!
+static JoinRpg.Common.WebComponents.JoinIconMarkup.BuildHtml(JoinRpg.Common.WebComponents.JoinIconType icon, JoinRpg.Common.WebComponents.SizeStyleEnum? size = null, string? title = null) -> string!
+static JoinRpg.Common.WebComponents.JoinIconMarkup.Describe(JoinRpg.Common.WebComponents.JoinIconType icon, JoinRpg.Common.WebComponents.SizeStyleEnum? size = null) -> JoinRpg.Common.WebComponents.JoinIconHtml
+static JoinRpg.Common.WebComponents.TimeZoneList.All.get -> System.Collections.Generic.IReadOnlyList<JoinRpg.Common.WebComponents.TimeZoneListItem!>!
+static JoinRpg.Common.WebComponents.TimeZoneList.WithSelected(string? selectedId) -> JoinRpg.Common.WebComponents.TimeZoneListItem![]!
+static JoinRpg.Common.WebComponents.TimeZoneListItem.operator !=(JoinRpg.Common.WebComponents.TimeZoneListItem? left, JoinRpg.Common.WebComponents.TimeZoneListItem? right) -> bool
+static JoinRpg.Common.WebComponents.TimeZoneListItem.operator ==(JoinRpg.Common.WebComponents.TimeZoneListItem? left, JoinRpg.Common.WebComponents.TimeZoneListItem? right) -> bool
+static JoinRpg.Common.WebComponents.TypedSelectList.CreateItem<TKey>(TKey Value, string! Text, string! Subtext = "", string! ExtraSearch = "", bool Disabled = false) -> JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>!
+static JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.operator !=(JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>? left, JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>? right) -> bool
+static JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.operator ==(JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>? left, JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>? right) -> bool
+static JoinRpg.Common.WebComponents.TypedSelectSearch.ForItem<TKey>(JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>! item) -> string!
+static JoinRpg.Common.WebComponents.TypedSelectSearch.Matches(string! itemSearch, string? query) -> bool
+static JoinRpg.Common.WebComponents.TypedSelectSearch.Normalize(string? text) -> string!
+static JoinRpg.Common.WebComponents.UserLinkViewModel.Deleted -> JoinRpg.Common.WebComponents.UserLinkViewModel!
+static JoinRpg.Common.WebComponents.UserLinkViewModel.Hidden -> JoinRpg.Common.WebComponents.UserLinkViewModel!
+static JoinRpg.Common.WebComponents.UserLinkViewModel.operator !=(JoinRpg.Common.WebComponents.UserLinkViewModel? left, JoinRpg.Common.WebComponents.UserLinkViewModel? right) -> bool
+static JoinRpg.Common.WebComponents.UserLinkViewModel.operator ==(JoinRpg.Common.WebComponents.UserLinkViewModel? left, JoinRpg.Common.WebComponents.UserLinkViewModel? right) -> bool
+static JoinRpg.Common.WebComponents.ViewModeSelector.Create(bool isPublic, bool canViewPrivate) -> JoinRpg.Common.WebComponents.ViewMode
+static JoinRpg.Common.WebComponents.WebComponentsRegistration.AddJoinRpgWebComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static readonly JoinRpg.Common.WebComponents.DialogButtons.SaveCancel -> System.Collections.Generic.IReadOnlyCollection<JoinRpg.Common.WebComponents.DialogButton!>!
+static readonly JoinRpg.Common.WebComponents.DialogButtons.Understand -> System.Collections.Generic.IReadOnlyCollection<JoinRpg.Common.WebComponents.DialogButton!>!
+static readonly JoinRpg.Common.WebComponents.DialogButtons.YesNo -> System.Collections.Generic.IReadOnlyCollection<JoinRpg.Common.WebComponents.DialogButton!>!
+static readonly JoinRpg.Common.WebComponents.DialogButtons.YesNoCancel -> System.Collections.Generic.IReadOnlyCollection<JoinRpg.Common.WebComponents.DialogButton!>!
+static readonly JoinRpg.Common.WebComponents.JoinIconMarkup.SpriteUrl -> string!
+virtual JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.<Clone>$() -> JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine!
+virtual JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.Equals(JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine? other) -> bool
+virtual JoinRpg.Common.WebComponents.Badges.PrintableBadgeLine.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.WebComponents.Dialog.JoinDialog.CloseButtonClickHandler() -> void
+virtual JoinRpg.Common.WebComponents.Dialog.JoinDialog.DialogButtonClickHandler(JoinRpg.Common.WebComponents.DialogButton! db) -> void
+virtual JoinRpg.Common.WebComponents.Dialog.JoinDialog.DoClose() -> void
+virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.<Clone>$() -> JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel!
+virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.Equals(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? other) -> bool
+virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.WebComponents.TimeZoneListItem.<Clone>$() -> JoinRpg.Common.WebComponents.TimeZoneListItem!
+virtual JoinRpg.Common.WebComponents.TimeZoneListItem.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.WebComponents.TimeZoneListItem.Equals(JoinRpg.Common.WebComponents.TimeZoneListItem? other) -> bool
+virtual JoinRpg.Common.WebComponents.TimeZoneListItem.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.<Clone>$() -> JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>!
+virtual JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.Equals(JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>? other) -> bool
+virtual JoinRpg.Common.WebComponents.TypedSelectListItem<TKey>.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.WebComponents.UserLinkViewModel.<Clone>$() -> JoinRpg.Common.WebComponents.UserLinkViewModel!
+virtual JoinRpg.Common.WebComponents.UserLinkViewModel.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.WebComponents.UserLinkViewModel.Equals(JoinRpg.Common.WebComponents.UserLinkViewModel? other) -> bool
+virtual JoinRpg.Common.WebComponents.UserLinkViewModel.PrintMembers(System.Text.StringBuilder! builder) -> bool
+~override JoinRpg.Common.WebComponents.Badges.PrintableBadge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.CheckboxInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.ContactLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.DateRangeDisplay.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.Dialog.JoinDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.Dialog.JoinMessageDialog.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.Dialog.JoinMessageIcon.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.ElementMoving.JoinMoveControlNonInteractive.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.EmailLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.EnumSelector<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.EventTime.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.FormHorizontal.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.FormRow.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.FormRowFor<T>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.HelpLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinAdminAuthorizeView.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinAlert.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinAvatar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinBadge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinBorderedTable<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinButtonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinCollapsePanel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinCollapsePanelGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinDotsMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinDropdownButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinErrorMessage.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinFormDialog<TViewModel>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinIcon.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinIconButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinIconHtml.Equals(object obj) -> bool
+~override JoinRpg.Common.WebComponents.JoinIconHtml.ToString() -> string
+~override JoinRpg.Common.WebComponents.JoinLoadingMessage.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinMarkdownTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinMenuHeader.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinMenuItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinMoveControl<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinPanel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinPanelWithList<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinRpgDatePicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinRpgTimePicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinTableSimple.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinTestComponent.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinTextInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.JoinUserLinkEditor.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.LiveJournalLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.NumberInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.PhoneLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.PriceElement.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.SiteBanner.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.StringInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.SupportInfoPanel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.TelegramLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.TimeZoneSelector.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.Tooltip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.TypedDropdownButton<TKey, TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.TypedSelector<TKey, TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.UserLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.VersionPanel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override JoinRpg.Common.WebComponents.VkLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

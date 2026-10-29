@@ -1,0 +1,4 @@
+#nullable enable
+JoinRpg.Common.EntityFrameworkCore.EntityIdConversionExtensions
+static JoinRpg.Common.EntityFrameworkCore.EntityIdConversionExtensions.EntityIdsSetValueGeneratedOnAdd(this Microsoft.EntityFrameworkCore.ModelBuilder! modelBuilder) -> void
+static JoinRpg.Common.EntityFrameworkCore.EntityIdConversionExtensions.HaveEntityIdValueConversion<TId, TValue>(this Microsoft.EntityFrameworkCore.Metadata.Builders.PropertiesConfigurationBuilder<TId!>! builder) -> void
