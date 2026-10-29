@@ -12,11 +12,8 @@
 
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>JoinRpg.Common.PrimitiveTypes.SourceGenerator</PackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <Description>Source generator for typed entity IDs</Description>
-    <PackageProjectUrl>https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
     <!--
       Анализатор грузится в компилятор потребителя как есть, версии не совместимы вперёд: если
       Microsoft.CodeAnalysis.CSharp здесь новее, чем компилятор потребителя, хост тихо отказывается

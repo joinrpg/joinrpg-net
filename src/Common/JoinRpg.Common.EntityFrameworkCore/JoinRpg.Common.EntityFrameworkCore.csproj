@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>JoinRpg.Common.EntityFrameworkCore</PackageId>
     <Description>EF Core mapping helpers for JoinRpg.Common.PrimitiveTypes typed entity ids.</Description>
-    <PackageProjectUrl>https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

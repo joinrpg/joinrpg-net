@@ -1,11 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>JoinRpg.Common.WebComponents</PackageId>
-    <Description>Библиотека переиспользуемых Blazor-компонентов Joinrpg.ru (кнопки, диалоги, поля ввода, иконки).</Description>
-    <PackageProjectUrl>https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/joinrpg/joinrpg-net</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
+    <Description>Reusable Blazor components of Joinrpg.ru: buttons, dialogs, inputs, icons.</Description>
   </PropertyGroup>
   <ItemGroup>
     <SupportedPlatform Include="browser" />
