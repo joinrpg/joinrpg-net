@@ -80,7 +80,7 @@ public class PscbPaymentsControllerTest
     }
 
     /// <summary>
-    /// Восстановление отдаёт итог сервиса как есть и отправляет сервису тот же запрос, что прислал остров (ADR026).
+    /// Восстановление отдаёт итог сервиса как есть и отправляет сервису тот же запрос, что прислал остров (ADR027).
     /// </summary>
     [Fact]
     public async Task RestoreReturnsTheServiceResult()

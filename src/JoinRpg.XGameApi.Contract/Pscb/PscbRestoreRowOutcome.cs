@@ -1,7 +1,7 @@
 namespace JoinRpg.XGameApi.Contract.Pscb;
 
 /// <summary>
-/// Outcome of restoring one candidate row (ADR026).
+/// Outcome of restoring one candidate row (ADR027).
 /// </summary>
 public enum PscbRestoreRowOutcome
 {

@@ -21,7 +21,7 @@ using JoinRpg.Services.Interfaces.Projects;
 namespace JoinRpg.IntegrationTest.Scenarios;
 
 /// <summary>
-/// Восстановление потерянных онлайн-платежей PSCB (ADR026) на настоящем SQL Server: платёж
+/// Восстановление потерянных онлайн-платежей PSCB (ADR027) на настоящем SQL Server: платёж
 /// вставляется с прежним номером (<c>orderId</c> банка — это <c>CommentId</c>) строго ниже счётчика
 /// комментариев вместе со строкой <c>FinanceOperationBankDetails</c>, занятый номер даёт отказ, а не
 /// вставку с новым, номер не ниже счётчика — не потерянный, повторный прогон узнаётся, а возврат

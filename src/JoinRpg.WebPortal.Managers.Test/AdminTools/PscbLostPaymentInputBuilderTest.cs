@@ -7,7 +7,7 @@ namespace JoinRpg.WebPortal.Managers.Test.AdminTools;
 
 /// <summary>
 /// Преобразование обогащённой строки списка ПСКБ и её плана во вход доменного сервиса
-/// восстановления (ADR026). Чистая функция: ни банка, ни репозиториев.
+/// восстановления (ADR027). Чистая функция: ни банка, ни репозиториев.
 /// </summary>
 public class PscbLostPaymentInputBuilderTest
 {

@@ -26,7 +26,7 @@ namespace JoinRpg.XGameApi.Contract.Pscb;
 /// </para>
 /// <para>
 /// <see cref="MatchState"/>, <see cref="OperationUrl"/> and <see cref="ClaimUrl"/> are the
-/// reconciliation with our own database (ADR026): the bank's <c>orderId</c> is the
+/// reconciliation with our own database (ADR027): the bank's <c>orderId</c> is the
 /// <c>CommentId</c> of a finance operation, so a row either finds one or the payment is lost.
 /// </para>
 /// </remarks>
@@ -174,7 +174,7 @@ public class PscbPaymentListRow
     public string? ErrorDescription { get; set; }
 
     /// <summary>
-    /// What the reconciliation with the JoinRpg database made of this row — «Сверка» (ADR026).
+    /// What the reconciliation with the JoinRpg database made of this row — «Сверка» (ADR027).
     /// Null when the reconciliation was not performed: enriching the list with our data is
     /// best-effort, and an absent result must not read as one of the outcomes.
     /// </summary>

@@ -5,7 +5,7 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 
 /// <summary>
 /// План восстановления одной строки списка ПСКБ: на что писать потерянный платёж или пропущенный
-/// возврат (ADR026).
+/// возврат (ADR027).
 /// </summary>
 /// <remarks>
 /// План заполняет <c>PscbPaymentsViewService</c> вместе с вердиктом восстановления — для строк,
@@ -27,7 +27,7 @@ internal sealed record RowRestorePlan(
     DateTime? RefundedOperationDate);
 
 /// <summary>
-/// Список платежей банка вместе с планами восстановления строк (ADR026). Планы пусты, если
+/// Список платежей банка вместе с планами восстановления строк (ADR027). Планы пусты, если
 /// запрос к банку не прошёл или дополнение списка нашими данными не удалось.
 /// </summary>
 internal sealed record PscbPaymentsListWithRestorePlan(

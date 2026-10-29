@@ -1,7 +1,7 @@
 namespace JoinRpg.XGameApi.Contract.Pscb;
 
 /// <summary>
-/// Outcome of one restoration run over a downloaded period (ADR026).
+/// Outcome of one restoration run over a downloaded period (ADR027).
 /// </summary>
 /// <remarks>
 /// <para>

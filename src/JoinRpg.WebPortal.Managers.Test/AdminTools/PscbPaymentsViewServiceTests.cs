@@ -405,7 +405,7 @@ public class PscbPaymentsViewServiceTests
 
     /// <summary>
     /// <c>orderId</c> банка это <c>CommentId</c> нашей операции, поэтому найденная операция даёт
-    /// и исход сверки, и ссылку на себя, и ссылку на свою заявку (ADR026).
+    /// и исход сверки, и ссылку на себя, и ссылку на свою заявку (ADR027).
     /// </summary>
     [Fact]
     public async Task MarksTheRowWhoseOperationIsFoundAsSettled()
@@ -441,7 +441,7 @@ public class PscbPaymentsViewServiceTests
 
     /// <summary>
     /// Существующая операция не правится, но и молча не пропускается: <c>Declined</c> при
-    /// оплаченном платеже банка — расхождение, которое админ должен видеть (ADR026).
+    /// оплаченном платеже банка — расхождение, которое админ должен видеть (ADR027).
     /// </summary>
     [Fact]
     public async Task MarksAnExistingButUnsettledOperationAsNotSettled()

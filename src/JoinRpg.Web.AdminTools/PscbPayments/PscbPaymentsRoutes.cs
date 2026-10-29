@@ -19,7 +19,7 @@ public static class PscbPaymentsRoutes
     /// <summary>Параметры одного платежа.</summary>
     public const string GetPaymentInfo = "/webapi/PscbPayments/GetPaymentInfo";
 
-    /// <summary>Восстановление потерянных платежей (ADR026). POST, тело — параметры периода.</summary>
+    /// <summary>Восстановление потерянных платежей (ADR027). POST, тело — параметры периода.</summary>
     public const string Restore = "/webapi/PscbPayments/Restore";
 
     /// <summary>Значение <c>format</c> для выгрузки списка платежей файлом.</summary>

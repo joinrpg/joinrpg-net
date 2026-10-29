@@ -283,7 +283,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     }
 
     /// <summary>
-    /// Номера заявок игроков проекта — во всех статусах и без агрегатов (ADR026)
+    /// Номера заявок игроков проекта — во всех статусах и без агрегатов (ADR027)
     /// </summary>
     public async Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
     {

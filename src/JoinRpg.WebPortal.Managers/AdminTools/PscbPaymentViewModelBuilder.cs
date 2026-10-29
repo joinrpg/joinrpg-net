@@ -26,7 +26,7 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 /// статус платежа остаётся банковским идентификатором.
 /// </para>
 /// <para>
-/// Здесь же считается исход сверки строки с нашей базой (ADR026). Правило чистое — строка плюс
+/// Здесь же считается исход сверки строки с нашей базой (ADR027). Правило чистое — строка плюс
 /// состояние и вид найденной операции, — поэтому оно живёт рядом с остальным преобразованием
 /// и проверяется тестами без репозиториев.
 /// </para>
@@ -88,7 +88,7 @@ internal static class PscbPaymentViewModelBuilder
     };
 
     /// <summary>
-    /// Исход сверки по-русски (ADR026). Перечисление наше, а не банковское, поэтому переведены
+    /// Исход сверки по-русски (ADR027). Перечисление наше, а не банковское, поэтому переведены
     /// все значения: тест обходит их и требует непустое имя для каждого.
     /// </summary>
     private static readonly Dictionary<PscbPaymentMatchState, string> MatchStateNames = new()
@@ -172,7 +172,7 @@ internal static class PscbPaymentViewModelBuilder
             : value;
 
     /// <summary>
-    /// Исход сверки строки банка с нашей базой (ADR026).
+    /// Исход сверки строки банка с нашей базой (ADR027).
     /// </summary>
     /// <remarks>
     /// <para>
@@ -228,7 +228,7 @@ internal static class PscbPaymentViewModelBuilder
         => matchState is { } state ? MatchStateNames.GetValueOrDefault(state, state.ToString()) : null;
 
     /// <summary>
-    /// Почему строку нельзя восстановить — по самим данным банка, без базы (ADR026).
+    /// Почему строку нельзя восстановить — по самим данным банка, без базы (ADR027).
     /// </summary>
     /// <remarks>
     /// <para>
@@ -269,7 +269,7 @@ internal static class PscbPaymentViewModelBuilder
 
     /// <summary>
     /// Тип оплаты, на который ляжет восстановленный платёж, и причина отказа, если выбрать
-    /// однозначно нельзя (ADR026).
+    /// однозначно нельзя (ADR027).
     /// </summary>
     /// <remarks>
     /// Боевой путь берёт единственный **активный** онлайн-тип через <c>SingleOrDefault</c>. Для

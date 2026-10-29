@@ -1,7 +1,7 @@
 namespace JoinRpg.XGameApi.Contract.Pscb;
 
 /// <summary>
-/// Outcome of matching one row of the bank's payments list against the JoinRpg database (ADR026).
+/// Outcome of matching one row of the bank's payments list against the JoinRpg database (ADR027).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -40,7 +40,7 @@ public enum PscbPaymentMatchState
     /// <summary>
     /// The operation exists but is not settled — declined, invalid, expired or still proposed —
     /// while the bank says the money arrived. Shown as a discrepancy and left as it is: the tool
-    /// never changes an operation that already exists (ADR026).
+    /// never changes an operation that already exists (ADR027).
     /// </summary>
     NotSettled = 3,
 

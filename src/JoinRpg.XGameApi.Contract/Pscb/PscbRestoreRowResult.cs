@@ -1,7 +1,7 @@
 namespace JoinRpg.XGameApi.Contract.Pscb;
 
 /// <summary>
-/// What one restoration run made of one candidate row of the bank's list (ADR026).
+/// What one restoration run made of one candidate row of the bank's list (ADR027).
 /// </summary>
 public class PscbRestoreRowResult
 {

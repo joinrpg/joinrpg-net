@@ -3,7 +3,7 @@ using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 namespace JoinRpg.Services.Interfaces;
 
 /// <summary>
-/// Восстановление платежа, который банк получил, а JoinRpg не записал (ADR026).
+/// Восстановление платежа, который банк получил, а JoinRpg не записал (ADR027).
 /// </summary>
 /// <remarks>
 /// <para>

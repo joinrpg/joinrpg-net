@@ -1,4 +1,4 @@
-# ADR026: Автоматическое восстановление потерянных платежей ПСКБ
+# ADR027: Автоматическое восстановление потерянных платежей ПСКБ
 
 Проблема:
 ==
@@ -16,7 +16,7 @@
   (`PaymentsService.cs:45`), а первичный ключ `FinanceOperation` — `CommentId`
   (`MyDbContext.cs:365`). То есть `orderId` из списка банка однозначно указывает на нашу операцию;
 - вебхука от банка нет. Проводят платёж два механизма: редирект плательщика
-  (`PaymentsController.HandleClaimPaymentRedirect` → `UpdateClaimPaymentAsync`) и ночная сверка
+  (`PaymentsController.ClaimPaymentSuccess → HandleClaimPaymentRedirect` → `UpdateClaimPaymentAsync`) и ночная сверка
   `UpdatePaymentStatusJob` → `GetUnfinishedOperations` → `checkPayment` по каждой операции;
 - ночная сверка берёт операции с состоянием не `Approved` и не `Declined`, типом `Online`
   и незаблокированным проектом (`FinanceOperationsRepository.cs:12`), но
