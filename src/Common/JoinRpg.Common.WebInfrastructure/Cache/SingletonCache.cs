@@ -12,4 +12,9 @@ public class SingletonCache<TKey, TValue>
     public void Set(TKey key, TValue value) => _ = cache.AddOrUpdate(key, _ => value, (_, _) => value);
 
     public TValue GetOrAdd(TKey key, Func<TKey, TValue> fabric) => cache.GetOrAdd(key, fabric);
+
+    /// <summary>
+    /// Заменяет значение, только если сейчас там лежит именно <paramref name="comparisonValue"/>.
+    /// </summary>
+    public bool TryUpdate(TKey key, TValue newValue, TValue comparisonValue) => cache.TryUpdate(key, newValue, comparisonValue);
 }
