@@ -55,6 +55,19 @@ public class BlockedProjectScenario(JoinApplicationFactory factory) : IClassFixt
     }
 
     [Fact]
+    public async Task GetBlockedProjects_ReturnsBlockedProjectRegardlessOfActivity()
+    {
+        var (_, projectId) = await CreateMasterAndProject();
+
+        (await GetBlockedProjectIds()).ShouldNotContain(projectId.Value);
+
+        await BlockProject(projectId);
+
+        // Свежий проект не заброшен, но в списке заблокированных он должен быть.
+        (await GetBlockedProjectIds()).ShouldContain(projectId.Value);
+    }
+
+    [Fact]
     public async Task EnsureRolesListsJob_AddsRolesListToBlockedProject()
     {
         var (masterId, projectId) = await CreateMasterAndProject();
@@ -275,6 +288,14 @@ public class BlockedProjectScenario(JoinApplicationFactory factory) : IClassFixt
         var stale = await scope.ServiceProvider.GetRequiredService<IProjectRepository>()
             .GetStaleProjects(DateTime.UtcNow.AddDays(1));
         return [.. stale.Select(p => p.ProjectId)];
+    }
+
+    private async Task<int[]> GetBlockedProjectIds()
+    {
+        using var scope = factory.Services.CreateScope();
+        var blocked = await scope.ServiceProvider.GetRequiredService<IProjectRepository>()
+            .GetBlockedProjects();
+        return [.. blocked.Select(p => p.ProjectId)];
     }
 
     /// <summary>

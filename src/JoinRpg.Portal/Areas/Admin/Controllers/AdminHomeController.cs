@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Portal.Areas.Admin.Models;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,7 @@ public class AdminHomeController(IProjectRepository projectRepository) : Control
     public async Task<IActionResult> StaleGames()
     {
         var stale = await projectRepository.GetStaleProjects(DateTime.Now.AddMonths(-4));
-        return View(stale);
+        var blocked = await projectRepository.GetBlockedProjects();
+        return View(new StaleGamesViewModel(stale, blocked));
     }
 }
