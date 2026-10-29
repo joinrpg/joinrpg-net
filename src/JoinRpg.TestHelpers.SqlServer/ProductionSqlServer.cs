@@ -1,4 +1,4 @@
-namespace JoinRpg.TestHelpers;
+namespace JoinRpg.TestHelpers.SqlServer;
 
 /// <summary>
 /// SQL Server, на котором работает прод: тесты на Testcontainers поднимают ту же сборку.
@@ -27,11 +27,7 @@ public static class ProductionSqlServer
     /// <summary>
     /// Collation базы <c>joinrpg-prod</c>. У самого сервера прода collation другой —
     /// <c>SQL_Latin1_General_CP1_CI_AS</c>, он же дефолт образа, поэтому в тестах сервер не настраивается,
-    /// а базу создают с этим collation явно.
-    /// <para>
-    /// Пока так делает только IntegrationTest. IdPortal.Test накатывает миграции в <c>master</c>
-    /// контейнера, и там остаются дефолты сервера.
-    /// </para>
+    /// а базу создают с этим collation явно — см. <see cref="ProductionDatabaseParity.CreateDatabaseAsync"/>.
     /// </summary>
     public const string DatabaseCollation = "Cyrillic_General_CI_AS";
 }

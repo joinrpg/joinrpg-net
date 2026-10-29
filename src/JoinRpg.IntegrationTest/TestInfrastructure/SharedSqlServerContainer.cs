@@ -1,4 +1,3 @@
-using System.Data.SqlClient;
 using Testcontainers.MsSql;
 
 namespace JoinRpg.IntegrationTest.TestInfrastructure;
@@ -32,36 +31,7 @@ internal static class SharedSqlServerContainer
         var sqlServer = await GetContainerAsync();
 
         var databaseName = $"joinrpg_test_{Interlocked.Increment(ref databaseCounter)}";
-        await ExecuteAsync(
-            sqlServer,
-            $"CREATE DATABASE [{databaseName}] COLLATE {ProductionSqlServer.DatabaseCollation}",
-            $"Не удалось создать тестовую базу {databaseName}");
-
-        // Выравниваем по проду до наката миграций, чтобы их DDL выполнялся на том же
-        // уровне совместимости, что на боевой базе.
-        await ExecuteAsync(
-            sqlServer,
-            ProductionDatabaseParity.BuildAlignScript(databaseName),
-            $"Не удалось выровнять тестовую базу {databaseName} по проду");
-
-        return new SqlConnectionStringBuilder(sqlServer.GetConnectionString())
-        {
-            InitialCatalog = databaseName,
-        }.ConnectionString;
-    }
-
-    /// <summary>
-    /// Выполняет скрипт в контексте <c>master</c> (<c>ExecScriptAsync</c> запускает sqlcmd без
-    /// <c>-d</c>), поэтому годится и для <c>ALTER DATABASE</c>, который нельзя выполнять внутри
-    /// изменяемой базы.
-    /// </summary>
-    private static async Task ExecuteAsync(MsSqlContainer sqlServer, string script, string errorMessage)
-    {
-        var result = await sqlServer.ExecScriptAsync(script);
-        if (result.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"{errorMessage}: {result.Stderr}{result.Stdout}");
-        }
+        return await ProductionDatabaseParity.CreateDatabaseAsync(sqlServer, databaseName);
     }
 
     private static async Task<MsSqlContainer> GetContainerAsync()

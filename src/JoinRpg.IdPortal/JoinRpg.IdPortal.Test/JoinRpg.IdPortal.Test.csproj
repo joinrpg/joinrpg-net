@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
     <ProjectReference Include="..\..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj" />
     <ProjectReference Include="..\..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
+    <ProjectReference Include="..\..\JoinRpg.TestHelpers.SqlServer\JoinRpg.TestHelpers.SqlServer.csproj" />
     <ProjectReference Include="..\JoinRpg.IdPortal\JoinRpg.IdPortal.csproj" />
   </ItemGroup>
 
