@@ -19,6 +19,7 @@ public class ProgramItem
         Id = character.Id;
         Name = character.CharacterName;
         Description = character.Description;
+        LastModifiedAt = GetLastModifiedAt(character);
 
         if (character.ProjectInfo.ScheduleAuthorField is { } authorField
             && GetAuthorFieldIds(character) is { Count: > 0 } authorIds)
@@ -45,6 +46,27 @@ public class ProgramItem
     public UserInfoHeader[] Authors { get; }
 
     public bool ShowAuthors { get; }
+
+    /// <summary>
+    /// Последнее изменение пункта (UTC): правка самого персонажа или полей расписания — время
+    /// и зал хранятся в вариантах полей, ведущий — в своём поле. Не учитывает смену часового
+    /// пояса проекта и смену имени ведущего в его профиле.
+    /// </summary>
+    public DateTime LastModifiedAt { get; }
+
+    /// <summary>Последнее изменение полей, из которых строится сетка (время, зал, ведущий).</summary>
+    public static DateTime GetScheduleFieldsLastModifiedAt(ProjectInfo projectInfo)
+        => new[] { projectInfo.TimeSlotField, projectInfo.RoomField, projectInfo.ScheduleAuthorField }
+            .WhereNotNull()
+            .Select(field => field.Marks.UpdatedAt)
+            .DefaultIfEmpty(DateTime.MinValue)
+            .Max();
+
+    private static DateTime GetLastModifiedAt(CharacterInfo character)
+    {
+        var fieldsModifiedAt = GetScheduleFieldsLastModifiedAt(character.ProjectInfo);
+        return character.UpdatedAt > fieldsModifiedAt ? character.UpdatedAt : fieldsModifiedAt;
+    }
 
     /// <summary>
     /// Идентификаторы всех пользователей, указанных полем-ведущим у переданных персонажей.
@@ -164,5 +186,8 @@ public record ScheduleResult(
     List<List<ProgramItem?>> Slots,
 
     List<ProgramItemPlaced> AllItems,
-    ProjectScheduleSettings ProjectScheduleSettings)
+    ProjectScheduleSettings ProjectScheduleSettings,
+    // Последнее изменение (UTC) полей расписания и всех переданных пунктов, включая не размещённые.
+    // Удалённых персонажей сборщик не видит — их учитывает вызывающий.
+    DateTime LastModifiedAt)
 { }

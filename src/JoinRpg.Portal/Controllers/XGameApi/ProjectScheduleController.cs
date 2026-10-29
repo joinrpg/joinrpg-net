@@ -12,6 +12,10 @@ namespace JoinRpg.Portal.Controllers.XGameApi;
 [Route("x-game-api/{projectId}/schedule")]
 public class ProjectScheduleController(IProjectRepository projectRepository, SchedulePageManager manager) : XGameApiController
 {
+    /// <summary>
+    /// All scheduled program items
+    /// </summary>
+    /// <remarks>Same as <c>schedule</c>, but without schedule-wide modification time.</remarks>
     [HttpGet]
     [Route("all")]
     [ProducesResponseType(410)]
@@ -19,6 +23,43 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
     [ProducesResponseType(200)]
     public async Task<ActionResult<List<ProgramItemInfoApi>>> GetSchedule([FromRoute]
         int projectId)
+    {
+        if (await CheckSchedule(projectId) is { } problem)
+        {
+            return problem;
+        }
+
+        var (schedule, _) = await manager.GetScheduleWithLastModified();
+
+        return schedule.AllItems.Select(ToProgramItemInfoApi).ToList();
+    }
+
+    /// <summary>
+    /// All scheduled program items with modification time of schedule as a whole
+    /// </summary>
+    [HttpGet]
+    [Route("")]
+    [ProducesResponseType(410)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(200)]
+    public async Task<ActionResult<ScheduleInfoApi>> GetScheduleWithLastModified([FromRoute]
+        int projectId)
+    {
+        if (await CheckSchedule(projectId) is { } problem)
+        {
+            return problem;
+        }
+
+        var (schedule, lastModifiedAt) = await manager.GetScheduleWithLastModified();
+
+        return new ScheduleInfoApi
+        {
+            LastModifiedAt = ToUtcOffset(lastModifiedAt),
+            Items = [.. schedule.AllItems.Select(ToProgramItemInfoApi)],
+        };
+    }
+
+    private async Task<ActionResult?> CheckSchedule(int projectId)
     {
         var project = await projectRepository.GetProjectWithFieldsAsync(projectId);
 
@@ -37,10 +78,11 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
             return Problem(detail: check.Select(x => x.ToString()).JoinStrings(" ,"), statusCode: 400);
         }
 
-        var scheduleBuilder = await manager.GetBuilder();
-
-        return scheduleBuilder.Build().AllItems.Select(ToProgramItemInfoApi).ToList();
+        return null;
     }
+
+    // Отметки аудита в БД — UTC без признака Kind
+    private static DateTimeOffset ToUtcOffset(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
 
     private ProgramItemInfoApi ToProgramItemInfoApi(ProgramItemPlaced slot)
     {
@@ -66,6 +108,7 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
             DescriptionMarkdown = slot.ProgramItem.Description.Value,
             ProgramItemDetailsUri = new Uri(GetProgramItemLink(slot)),
             ProjectId = slot.ProgramItem.Id.ProjectId,
+            LastModifiedAt = ToUtcOffset(slot.ProgramItem.LastModifiedAt),
         };
 
         string GetProgramItemLink(ProgramItemPlaced slot)

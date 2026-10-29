@@ -76,10 +76,16 @@ public class ScheduleBuilder
         Slots = InitializeSlots(TimeSlots, Rooms);
 
         var allItems = new List<ProgramItemPlaced>();
+        var lastModifiedAt = ProgramItem.GetScheduleFieldsLastModifiedAt(projectInfo);
 
         foreach (var character in characters.Where(ch => ch.CharacterType != CharacterType.Slot))
         {
             var programItem = new ProgramItem(character, authorUsers);
+            // Не размещённые пункты тоже считаем: уход пункта из сетки — тоже изменение расписания
+            if (programItem.LastModifiedAt > lastModifiedAt)
+            {
+                lastModifiedAt = programItem.LastModifiedAt;
+            }
             var fields = character.GetAllFieldsDict();
             ProjectFieldVariant[] selectedTimeSlots = [.. fields[TimeSlotField.Id].GetDropdownValues()];
             ProjectFieldVariant[] selectedRooms = [.. fields[RoomField.Id].GetDropdownValues()];
@@ -105,7 +111,8 @@ public class ScheduleBuilder
             Conflicted.ToList(),
             Slots.Select(row => row.Select(r => r.ProgramItem).ToList()).ToList(),
             allItems,
-            projectInfo.ProjectScheduleSettings
+            projectInfo.ProjectScheduleSettings,
+            lastModifiedAt
             );
     }
 

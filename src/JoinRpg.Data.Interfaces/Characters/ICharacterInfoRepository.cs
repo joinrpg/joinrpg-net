@@ -98,4 +98,11 @@ public interface ICharacterInfoRepository
     Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(
         ProjectIdentification projectId,
         CharacterStatusSpec spec = CharacterStatusSpec.Any);
+
+    /// <summary>
+    /// Последнее изменение (UTC) среди персонажей проекта, <c>null</c> — если таких нет. Одно
+    /// значение из БД, без загрузки агрегатов: например, чтобы учесть удалённых персонажей
+    /// в отметке изменения расписания — удаление тоже ставит отметку.
+    /// </summary>
+    Task<DateTime?> GetLastUpdatedAt(ProjectIdentification projectId, CharacterStatusSpec spec);
 }

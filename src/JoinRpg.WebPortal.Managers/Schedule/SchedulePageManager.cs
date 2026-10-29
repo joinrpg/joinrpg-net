@@ -92,6 +92,23 @@ public class SchedulePageManager(
 
     private async Task<ScheduleResult> GetCompiledSchedule() => (await GetBuilder()).Build();
 
+    /// <summary>
+    /// Сетка и время последнего изменения расписания в целом (UTC). Кроме того, что видит сборщик
+    /// сетки, учитывает персонажей, которых он не получает, — удалённых и шаблоны: пункт, который
+    /// удалили или перевели в шаблон, пропадает из расписания, и клиенту надо об этом узнать.
+    /// Поэтому максимум — по всем персонажам проекта: лишнее срабатывание безопасно, клиент лишь
+    /// перекачает расписание.
+    /// </summary>
+    public async Task<(ScheduleResult Schedule, DateTime LastModifiedAt)> GetScheduleWithLastModified()
+    {
+        var schedule = await GetCompiledSchedule();
+        var charactersLastUpdatedAt = await characterInfoRepository.GetLastUpdatedAt(
+            currentProject.ProjectId,
+            CharacterStatusSpec.Any);
+
+        return (schedule, charactersLastUpdatedAt > schedule.LastModifiedAt ? charactersLastUpdatedAt.Value : schedule.LastModifiedAt);
+    }
+
     private static List<AppointmentViewModel> BuildAppointments(
         List<List<ProgramItemViewModel>> slots,
         IReadOnlyCollection<TableHeaderViewModel> columns,

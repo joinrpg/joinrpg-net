@@ -31,6 +31,7 @@ internal static class SmokeExpectations
         // JWT тут не нужен — расписание отдаётся анонимно, доступ решает видимость полей
         // времени и локации. Смоук всё равно не ходит: в его сиде расписание не настроено.
         ["x-game-api/{projectId}/schedule/all"] = "нужно настроенное расписание, покрыт XApiScheduleTests",
+        ["x-game-api/{projectId}/schedule"] = "нужно настроенное расписание, покрыт XApiScheduleTests",
         ["{projectId}/rooms/report"] = "не HTML-страница: без параметра export отдаёт 404, покрыто AccommodationPagesLazyLoadsScenario",
         ["{projectId}/plot/{**path}"] = "catch-all легаси-редиректа: осмысленного значения для path нет",
 

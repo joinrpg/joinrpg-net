@@ -1,7 +1,10 @@
 using System.Text.Json;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.IntegrationTest.TestInfrastructure;
+using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.XGameApi.Contract;
 
@@ -139,6 +142,95 @@ public class XApiScheduleTests(XApiMasterFixture fixture)
         var schedule = await fixture.AnonymousXApiClient.GetScheduleAsync(project.ProjectId);
 
         schedule.ShouldHaveSingleItem().ProgramItemId.ShouldBe(characterId);
+    }
+
+    [Fact]
+    public async Task ScheduleWithLastModified_ReturnsItemsAndTime()
+    {
+        // Отметки в БД — UTC без признака Kind: окно «до/после» ловит отдачу местного времени
+        var before = DateTimeOffset.UtcNow.AddSeconds(-2);
+        var project = await SeedScheduleProjectAsync();
+        var characterId = await AddProgramItemAsync(project, "Лекция", timeSlots: [0], rooms: [0]);
+        var after = DateTimeOffset.UtcNow.AddSeconds(2);
+
+        var schedule = await fixture.MasterClient.GetScheduleWithLastModifiedAsync(project.ProjectId);
+
+        var item = schedule.Items.ShouldHaveSingleItem();
+        item.ProgramItemId.ShouldBe(characterId);
+        item.LastModifiedAt.ShouldBeInRange(before, after);
+        // Единственный пункт: общее время — тот же максимум по нему и полям расписания
+        schedule.LastModifiedAt.ShouldBe(item.LastModifiedAt);
+    }
+
+    /// <summary>
+    /// Зал — вариант поля, у самого персонажа ничего не меняется. Но клиент должен узнать, что
+    /// у пункта теперь другой набор залов, иначе он не перекачает расписание.
+    /// </summary>
+    [Fact]
+    public async Task EditingRooms_MovesLastModifiedOfItems()
+    {
+        var project = await SeedScheduleProjectAsync();
+        _ = await AddProgramItemAsync(project, "Лекция", timeSlots: [0], rooms: [0]);
+        var before = (await fixture.MasterClient.GetScheduleWithLastModifiedAsync(project.ProjectId))
+            .Items.ShouldHaveSingleItem().LastModifiedAt;
+
+        _ = await fixture.CreateFieldVariant(fixture.MasterUserId, project.Fields.RoomFieldId, "Новый шатёр");
+
+        var after = await fixture.MasterClient.GetScheduleWithLastModifiedAsync(project.ProjectId);
+        after.Items.ShouldHaveSingleItem().LastModifiedAt.ShouldBeGreaterThan(before);
+        after.LastModifiedAt.ShouldBeGreaterThan(before);
+    }
+
+    /// <summary>
+    /// Удалённый пункт пропадает из ответа — а время изменения расписания должно сдвинуться,
+    /// хотя остальные пункты не менялись.
+    /// </summary>
+    [Fact]
+    public async Task DeletingItem_MovesScheduleLastModified()
+    {
+        var project = await SeedScheduleProjectAsync();
+        var kept = await AddProgramItemAsync(project, "Остаётся", timeSlots: [0], rooms: [0]);
+        var deleted = await AddProgramItemAsync(project, "Удаляется", timeSlots: [1], rooms: [1]);
+        var before = await fixture.MasterClient.GetScheduleWithLastModifiedAsync(project.ProjectId);
+
+        await fixture.Factory.Services.RunAsAsync(
+            fixture.MasterUserId,
+            sp => sp.GetRequiredService<ICharacterService>().DeleteCharacter(
+                new DeleteCharacterRequest(new CharacterIdentification(project.ProjectId, deleted))));
+
+        var after = await fixture.MasterClient.GetScheduleWithLastModifiedAsync(project.ProjectId);
+        after.Items.ShouldHaveSingleItem().ProgramItemId.ShouldBe(kept);
+        after.LastModifiedAt.ShouldBeGreaterThan(before.LastModifiedAt);
+    }
+
+    /// <summary>
+    /// Шаблоны сборщик сетки не получает вовсе — но пункт, переведённый в шаблон, из расписания
+    /// пропал, и клиент должен об этом узнать.
+    /// </summary>
+    [Fact]
+    public async Task TurningItemIntoTemplate_MovesScheduleLastModified()
+    {
+        var project = await SeedScheduleProjectAsync();
+        var kept = await AddProgramItemAsync(project, "Остаётся", timeSlots: [0], rooms: [0]);
+        var templated = await AddProgramItemAsync(project, "Станет шаблоном", timeSlots: [1], rooms: [1]);
+        var before = await fixture.MasterClient.GetScheduleWithLastModifiedAsync(project.ProjectId);
+
+        await fixture.Factory.Services.RunAsAsync(
+            fixture.MasterUserId,
+            async sp =>
+            {
+                var character = await sp.GetRequiredService<ICharacterInfoRepository>()
+                    .GetCharacterInfo(new CharacterIdentification(project.ProjectId, templated));
+                await sp.GetRequiredService<ICharacterService>().EditCharacter(new EditCharacterRequest(
+                    character.Id,
+                    character.DirectGroupIds,
+                    CharacterTypeInfo.DefaultSlot("Станет шаблоном"),
+                    character.CharacterFields));
+            });
+
+        var after = await fixture.MasterClient.GetScheduleWithLastModifiedAsync(project.ProjectId);
+        after.Items.ShouldHaveSingleItem().ProgramItemId.ShouldBe(kept);
+        after.LastModifiedAt.ShouldBeGreaterThan(before.LastModifiedAt);
     }
 
     #region Сид
