@@ -10,5 +10,6 @@
   "POST /webapi/project-field-operations/Delete": 6,
   "POST /webapi/project-field-operations/DeleteUnusedVariants": 4,
   "POST /webapi/project-field-operations/DeleteVariant": 2,
-  "POST /{ProjectId}/claim/{ClaimId}/TransferClaimPayment": 4
+  "POST /{ProjectId}/claim/{ClaimId}/TransferClaimPayment": 4,
+  "POST /{projectId}/roles/{charactergroupid}/create-thread": 2
 }

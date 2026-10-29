@@ -113,6 +113,25 @@ public class CheckInOverrideScenario(JoinApplicationFactory factory) : IClassFix
         (await LoadClaimAsync(seed)).Claim.Status.ShouldBe(ClaimStatus.CheckedIn);
     }
 
+    /// <summary>
+    /// Вторую роль предлагают только после регистрации, до неё страница уводит на заявку. Раньше в маршрут
+    /// уходил <see cref="ProjectIdentification"/> целиком, и адрес получался <c>/project(…)/claim/…/edit</c>.
+    /// </summary>
+    [Fact]
+    public async Task SecondRole_BeforeCheckIn_RedirectsToClaim()
+    {
+        var seed = await SeedAsync();
+        var client = await LoginAsync(seed.ClaimsAdminEmail);
+        var project = seed.ClaimId.ProjectId.Value;
+        var claim = seed.ClaimId.ClaimId;
+
+        var response = await client.GetAsync($"{project}/claim/{claim}/secondrole");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Found);
+        response.Headers.Location.ShouldNotBeNull().OriginalString
+            .ShouldBe($"/{project}/claim/{claim}/edit", StringCompareShould.IgnoreCase);
+    }
+
     [Fact]
     public async Task MasterWithoutManageClaims_DoesNotSeeOverridePanel()
     {

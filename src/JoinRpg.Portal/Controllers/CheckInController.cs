@@ -161,7 +161,7 @@ public class CheckInController(
         }
         if (claimInfo.Claim.Status != ClaimStatus.CheckedIn)
         {
-            return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+            return RedirectToAction("Edit", "Claim", new { projectId = projectId.Value, claimId });
         }
 
         var model = new SecondRoleViewModel(claimInfo, currentUserAccessor, cardBuilder);

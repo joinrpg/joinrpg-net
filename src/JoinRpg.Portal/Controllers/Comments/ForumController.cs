@@ -66,7 +66,7 @@ public class ForumController(
               viewModel.CommentText,
               viewModel.HideFromUser,
               viewModel.EmailEverybody);
-            return RedirectToAction("ViewThread", new { viewModel.ProjectId, forumThreadId });
+            return RedirectToAction("ViewThread", new { ProjectId = forumThreadId.ProjectId.Value, ForumThreadId = forumThreadId.ThreadId });
         }
         catch (Exception exception)
         {

@@ -160,6 +160,63 @@ public class ForumCommentMutationScenario(JoinApplicationFactory factory) : ICla
         GetCommentId(discussionId, "Комментарий в заявку через ручку").ShouldNotBeNull();
     }
 
+    /// <summary>
+    /// После создания темы ручка уводит на неё. Раньше в маршрут уходил <see cref="ForumThreadIdentification"/>
+    /// целиком, его ToString давал адрес <c>forums/forumthreadid(…)/viewthread</c>, и мастер
+    /// видел 404, хотя тема создавалась.
+    /// </summary>
+    [Fact]
+    public async Task CreateThread_RedirectsToCreatedThread()
+    {
+        UserIdentification masterId;
+        string email;
+        ProjectIdentification projectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            (masterId, email) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Проект для создания темы");
+        }
+
+        var rootGroupId = await factory.Services.RunAsAsync(masterId, async sp =>
+            (await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId)).GroupTree.RootGroupId);
+
+        var client = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(
+            factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false }),
+            email,
+            followsRedirects: false);
+
+        var project = projectId.Value;
+        var createUrl = $"{project}/roles/{rootGroupId.CharacterGroupId}/create-thread";
+        var token = await client.GetAntiforgeryTokenAsync(createUrl);
+        var created = await client.PostFormAsync(
+            createUrl,
+            token,
+            ("ProjectId", project.ToString()),
+            ("CharacterGroupId", rootGroupId.CharacterGroupId.ToString()),
+            ("Header", "Тема через ручку"),
+            ("CommentText", "Первый комментарий через ручку"),
+            ("HideFromUser", "false"),
+            ("EmailEverybody", "false"));
+        created.StatusCode.ShouldBe(HttpStatusCode.Found);
+
+        var threadId = GetThreadId(projectId, "Тема через ручку");
+        var location = created.Headers.Location.ShouldNotBeNull().OriginalString;
+        location.ShouldBe($"/{project}/forums/{threadId}/ViewThread", StringCompareShould.IgnoreCase);
+
+        var thread = await client.GetAsync(location);
+        thread.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    private int GetThreadId(ProjectIdentification projectId, string header)
+    {
+        using var scope = factory.Services.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<MyDbContext>().Set<ForumThread>()
+            .Where(t => t.ProjectId == projectId.Value && t.Header == header)
+            .Select(t => t.ForumThreadId)
+            .Single();
+    }
+
     private int GetClaimDiscussionId(ClaimIdentification claimId)
     {
         using var scope = factory.Services.CreateScope();
