@@ -107,7 +107,8 @@ internal static class ProjectInfoFixture
             visibility,
             null,
             WasEverUsed: false,
-            ProjectTimeZone);
+            ProjectTimeZone,
+            new CreateUpdateMarksInfo(DateTime.UnixEpoch, null, DateTime.UnixEpoch, null));
 
     public static CharacterGroupIdentification GroupId(int id) => new(ProjectId, id);
 

@@ -50,6 +50,9 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             project.RootGroup.GetId(),
             CharacterGroupDictionaryBuilder.Build(project, projectId));
 
+        var masters = CreateMasterList(project);
+        var masterUsers = masters.ToDictionary(m => m.UserId, m => m.UserInfo);
+
         return new ProjectInfo(
             projectId,
             new(project.ProjectName),
@@ -59,7 +62,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             financeSettings,
             CreateAccommodationSettings(project),
             groupTree: groupTree,
-            masters: CreateMasterList(project),
+            masters: masters,
             mastersOrdering: project.Details.MastersOrdering,
             publishPlot: project.Details.PublishPlot,
             projectCheckInSettings: new ProjectCheckInSettings(project.Details.CheckInProgress, project.Details.AllowSecondRoles, project.Details.EnableCheckInModule),
@@ -143,7 +146,12 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                         CreateProjectFieldVisibility(field),
                     CharacterGroupIdentification.FromOptional(projectId, field.CharacterGroupId),
                     WasEverUsed: field.WasEverUsed,
-                    ProjectTimeZone: timeZone);
+                    ProjectTimeZone: timeZone,
+                    Marks: new CreateUpdateMarksInfo(
+                        field.CreatedAt,
+                        masterUsers.GetValueOrDefault(new UserIdentification(field.CreatedById)),
+                        field.UpdatedAt,
+                        masterUsers.GetValueOrDefault(new UserIdentification(field.UpdatedById))));
             }
 
             static ProjectFieldVisibility CreateProjectFieldVisibility(ProjectField field)

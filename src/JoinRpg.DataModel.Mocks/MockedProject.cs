@@ -198,7 +198,8 @@ public class MockedProject
             ProjectFieldVisibility: projectFieldVisibility,
             SpecialGroupId: null,
             WasEverUsed: false,
-            ProjectTimeZone: ProjectInfo.TimeZone
+            ProjectTimeZone: ProjectInfo.TimeZone,
+            Marks: new CreateUpdateMarksInfo(DateTime.UnixEpoch, null, DateTime.UnixEpoch, null)
             );
 
         ProjectInfo = ProjectInfo.WithAddedField(field);
