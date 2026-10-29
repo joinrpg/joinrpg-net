@@ -143,6 +143,15 @@ internal class CharacterInfoRepository(MyDbContext ctx, IProjectMetadataReposito
             PredicateBuilder.New(CharacterPredicates.ByGroup(groupIds)).And(CharacterPredicates.ByStatus(spec)));
     }
 
+    public async Task<DateTime?> GetLastUpdatedAt(ProjectIdentification projectId, CharacterStatusSpec spec)
+    {
+        var statusPredicate = CharacterPredicates.ByStatus(spec);
+        return await ctx.Set<Character>().AsNoTracking().AsExpandable()
+            .Where(character => character.ProjectId == projectId.Value)
+            .Where(character => statusPredicate.Invoke(character))
+            .MaxAsync(character => (DateTime?)character.UpdatedAt);
+    }
+
     public async Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(
         ProjectIdentification projectId,
         CharacterStatusSpec spec = CharacterStatusSpec.Any)

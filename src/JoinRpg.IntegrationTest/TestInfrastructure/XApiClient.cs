@@ -135,6 +135,14 @@ public class XApiClient(HttpClient httpClient)
         return (await response.Content.ReadFromJsonAsync<List<ProgramItemInfoApi>>())!;
     }
 
+    /// <summary>GET /x-game-api/{projectId}/schedule — program items with schedule-wide modification time</summary>
+    public async Task<ScheduleInfoApi> GetScheduleWithLastModifiedAsync(int projectId)
+    {
+        var response = await httpClient.GetAsync($"/x-game-api/{projectId}/schedule");
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<ScheduleInfoApi>())!;
+    }
+
     /// <summary>Like GetScheduleAsync but returns the HTTP status code instead of throwing</summary>
     public async Task<System.Net.HttpStatusCode> GetScheduleRawAsync(int projectId)
     {

@@ -84,7 +84,8 @@ internal static class ProjectInfoFixture
         string ordering = "",
         IReadOnlyCollection<ProjectFieldVariant>? variants = null,
         string? name = null,
-        bool isActive = true)
+        bool isActive = true,
+        DateTime? updatedAt = null)
         => new(
             new ProjectFieldIdentification(ProjectId, fieldId),
             name ?? $"Field{fieldId}",
@@ -108,7 +109,7 @@ internal static class ProjectInfoFixture
             null,
             WasEverUsed: false,
             ProjectTimeZone,
-            new CreateUpdateMarksInfo(DateTime.UnixEpoch, null, DateTime.UnixEpoch, null));
+            new CreateUpdateMarksInfo(DateTime.UnixEpoch, null, updatedAt ?? DateTime.UnixEpoch, null));
 
     public static CharacterGroupIdentification GroupId(int id) => new(ProjectId, id);
 

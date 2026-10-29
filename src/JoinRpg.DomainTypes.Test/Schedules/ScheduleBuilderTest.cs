@@ -317,6 +317,60 @@ public class ScheduleBuilderTest
         _ = Should.Throw<Exception>(() => new ScheduleBuilder([], projectInfo, NoAuthors));
     }
 
+    [Fact]
+    public void ItemLastModified_IsCharacterChange_WhenFieldsAreOlder()
+    {
+        var projectInfo = MakeScheduleProject(roomFieldUpdatedAt: new DateTime(2026, 2, 1));
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1], updatedAt: new DateTime(2026, 3, 1));
+
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
+
+        result.AllItems.ShouldHaveSingleItem().ProgramItem.LastModifiedAt.ShouldBe(new DateTime(2026, 3, 1));
+        result.LastModifiedAt.ShouldBe(new DateTime(2026, 3, 1));
+    }
+
+    /// <summary>
+    /// Зал и время — варианты полей: переименование зала у персонажа ничего не меняет, но пункт
+    /// для клиента изменился.
+    /// </summary>
+    [Fact]
+    public void ItemLastModified_IsScheduleFieldChange_WhenFieldIsNewer()
+    {
+        var projectInfo = MakeScheduleProject(roomFieldUpdatedAt: new DateTime(2026, 4, 1));
+        var character = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1], updatedAt: new DateTime(2026, 3, 1));
+
+        var result = new ScheduleBuilder([character], projectInfo, NoAuthors).Build();
+
+        result.AllItems.ShouldHaveSingleItem().ProgramItem.LastModifiedAt.ShouldBe(new DateTime(2026, 4, 1));
+        result.LastModifiedAt.ShouldBe(new DateTime(2026, 4, 1));
+    }
+
+    /// <summary>
+    /// Пункт, ушедший из сетки, в ответе API не виден, но расписание от этого изменилось.
+    /// </summary>
+    [Fact]
+    public void ScheduleLastModified_CountsNotScheduledItems()
+    {
+        var projectInfo = MakeScheduleProject();
+        var placed = MakeProgramItemCharacter(projectInfo, 1, timeSlots: [1], rooms: [1], updatedAt: new DateTime(2026, 3, 1));
+        var notPlaced = MakeProgramItemCharacter(projectInfo, 2, timeSlots: [], rooms: [], updatedAt: new DateTime(2026, 5, 1));
+
+        var result = new ScheduleBuilder([placed, notPlaced], projectInfo, NoAuthors).Build();
+
+        result.AllItems.ShouldHaveSingleItem().ProgramItem.LastModifiedAt.ShouldBe(new DateTime(2026, 3, 1));
+        result.LastModifiedAt.ShouldBe(new DateTime(2026, 5, 1));
+    }
+
+    [Fact]
+    public void ScheduleLastModified_IsFieldsChange_WhenNoItems()
+    {
+        var projectInfo = MakeScheduleProject(roomFieldUpdatedAt: new DateTime(2026, 4, 1));
+
+        var result = new ScheduleBuilder([], projectInfo, NoAuthors).Build();
+
+        result.LastModifiedAt.ShouldBe(new DateTime(2026, 4, 1));
+    }
+
     #region Фикстуры
 
     /// <summary>
@@ -328,7 +382,8 @@ public class ScheduleBuilderTest
     /// </param>
     private static ProjectInfo MakeScheduleProject(
         int? deletedRoomId = null,
-        ProjectFieldVisibility? authorFieldVisibility = null)
+        ProjectFieldVisibility? authorFieldVisibility = null,
+        DateTime? roomFieldUpdatedAt = null)
         => Build(
             fields:
             [
@@ -350,7 +405,8 @@ public class ScheduleBuilderTest
                     [
                         MakeRoomVariant(1, isActive: deletedRoomId != 1),
                         MakeRoomVariant(2, isActive: deletedRoomId != 2),
-                    ]),
+                    ],
+                    updatedAt: roomFieldUpdatedAt),
             ],
             scheduleEnabled: true);
 
@@ -391,7 +447,8 @@ public class ScheduleBuilderTest
         CharacterTypeInfo? characterTypeInfo = null,
         CharacterClaimInfo? approvedClaim = null,
         bool hidePlayerForCharacter = false,
-        string? authorFieldValue = null)
+        string? authorFieldValue = null,
+        DateTime? updatedAt = null)
         => new(
             new CharacterIdentification(projectInfo.ProjectId, characterId),
             projectInfo,
@@ -410,7 +467,7 @@ public class ScheduleBuilderTest
             approvedClaim?.ClaimId,
             new DateTime(2026, 1, 1),
             DefaultMasterId,
-            new DateTime(2026, 1, 1),
+            updatedAt ?? new DateTime(2026, 1, 1),
             DefaultMasterId);
 
     /// <remarks>

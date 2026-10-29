@@ -59,4 +59,12 @@ public class ProgramItemInfoApi
     /// Uri to the details of program item. Points to joinrpg.ru UI
     /// </summary>
     public required Uri ProgramItemDetailsUri { get; set; }
+
+    /// <summary>
+    /// Time of last change of program item (UTC): edit of program item itself or of rooms,
+    /// time slots or authors setup of project. Editing any room or time slot changes this time
+    /// for all program items. Does not track change of project time zone and change of author's
+    /// display name in profile.
+    /// </summary>
+    public DateTimeOffset LastModifiedAt { get; set; }
 }

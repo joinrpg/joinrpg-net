@@ -87,6 +87,12 @@ public sealed class FakeCharacterInfoRepository(MockedProject mock) : ICharacter
                 [.. character.Claims.Where(claim => claim.ClaimStatus.IsActive()).Select(claim => claim.GetPlayerId())]))]);
     }
 
+    public Task<DateTime?> GetLastUpdatedAt(ProjectIdentification projectId, CharacterStatusSpec spec)
+        => Task.FromResult(mock.Project.Characters
+            .Where(character => spec.Matches(character.IsActive))
+            .Select(character => (DateTime?)character.UpdatedAt)
+            .Max());
+
     private IEnumerable<CharacterInfo> All(CharacterStatusSpec spec = CharacterStatusSpec.Any)
         => mock.Project.Characters.Select(mock.GetCharacterInfo).Where(character => spec.Matches(character.IsActive));
 

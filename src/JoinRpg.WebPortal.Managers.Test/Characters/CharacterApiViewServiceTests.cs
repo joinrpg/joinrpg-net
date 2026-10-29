@@ -115,6 +115,7 @@ public class CharacterApiViewServiceTests
         public Task<IReadOnlyCollection<CharacterInfo>> GetCharacterInfosByGroups(ProjectIdentification projectId, IReadOnlyCollection<CharacterGroupIdentification> groupIds, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterInfo>> GetAllCharacterInfos(ProjectIdentification projectId, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<CharacterListEntry>> GetCharactersForList(ProjectIdentification projectId, CharacterStatusSpec spec = CharacterStatusSpec.Any) => throw new NotImplementedException();
+        public Task<DateTime?> GetLastUpdatedAt(ProjectIdentification projectId, CharacterStatusSpec spec) => throw new NotImplementedException();
     }
 
     /// <summary>Проверяемые сценарии до заявок и игроков не доходят.</summary>
