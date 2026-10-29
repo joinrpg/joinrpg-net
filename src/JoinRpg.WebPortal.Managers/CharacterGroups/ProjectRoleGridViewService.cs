@@ -134,6 +134,9 @@ internal class ProjectRoleGridViewService(
                     CharacterBusyStatusView.Discussed)
                 .ToList(),
             ShowRolesFilter.HotOnly => characters.Where(c => c.CharacterTypeInfo.IsHot).ToList(),
+            ShowRolesFilter.TakenOnly => characters
+                .Where(c => c.GetBusyStatus() == CharacterBusyStatusView.HasPlayer)
+                .ToList(),
             _ => characters,
         };
 }
