@@ -25,9 +25,9 @@ public class ClaimViewModel
     public ClaimIdentification ClaimIdentification { get; }
 
     [DisplayName("Игрок")]
-    public User Player { get; set; }
+    public UserLinkViewModel Player { get; }
 
-    public UserLinkViewModel? PlayerLink { get; set; }
+    public UserIdentification PlayerId { get; }
 
     [Display(Name = "Статус заявки")]
     public ClaimFullStatusView Status { get; set; }
@@ -137,8 +137,8 @@ public class ClaimViewModel
             ExtraAccessReason.ResponsibleMaster);
         CanChangeRooms = claim.CanChangeAccommodation(currentUser.UserIdentificationOrDefault);
         IsMyClaim = claimData.PlayerId == currentUser.UserIdentificationOrDefault;
-        Player = claim.Player;
-        PlayerLink = new UserLinkViewModel(playerInfo.ToUserInfoHeader());
+        Player = new UserLinkViewModel(playerInfo.ToUserInfoHeader());
+        PlayerId = claimData.PlayerId;
         ProjectName = projectInfo.ProjectName.Value;
         Status = ClaimStatusBuilders.CreateFullStatus(
             claimData,
