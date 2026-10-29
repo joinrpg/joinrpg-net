@@ -50,6 +50,46 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         Result.UnsortedFields.ShouldContain(f => f.Name == "Поле мастера");
     }
 
+    [Fact]
+    public async Task AddField_SetsCreatedAndUpdatedMarks()
+    {
+        var before = DateTime.UtcNow;
+        var service = CreateService(mock.Master.UserId);
+
+        var fieldId = await service.AddField(CreateFieldRequest(name: "Поле с отметками"));
+
+        var field = mock.Project.ProjectFields.Single(f => f.FieldName == "Поле с отметками");
+        field.CreatedAt.ShouldBeGreaterThanOrEqualTo(before);
+        field.UpdatedAt.ShouldBe(field.CreatedAt);
+        field.CreatedById.ShouldBe(mock.Master.UserId);
+        field.UpdatedById.ShouldBe(mock.Master.UserId);
+    }
+
+    /// <summary>
+    /// У вариантов своих отметок нет: их правка обновляет отметку поля, иначе внешние клиенты
+    /// (расписание в x-game-api) не узнают, что слот сдвинули или зал переименовали.
+    /// </summary>
+    [Fact]
+    public async Task CreateTimeSlotVariants_MarksFieldChanged()
+    {
+        var created = new DateTime(2020, 1, 1);
+        var fieldInfo = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.ScheduleTimeSlotField;
+            f.CreatedAt = f.UpdatedAt = created;
+            f.CreatedById = f.UpdatedById = mock.Player.UserId;
+        });
+        var service = CreateService(mock.Master.UserId);
+
+        await service.CreateTimeSlotVariants(CreateTimeSlotsRequest(fieldInfo.Id, new TimeOnly(12, 0)));
+
+        var field = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == fieldInfo.Id.ProjectFieldId);
+        field.UpdatedAt.ShouldBeGreaterThan(created);
+        field.UpdatedById.ShouldBe(mock.Master.UserId);
+        field.CreatedAt.ShouldBe(created);
+        field.CreatedById.ShouldBe(mock.Player.UserId);
+    }
+
     /// <summary>
     /// Значения PIN-кода и ведущего генерирует само сохранение, мимо
     /// <see cref="FieldSetupServiceImpl.MarkFieldsUsedIfNotUsedYet"/>: такое поле обязано быть
@@ -627,6 +667,8 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == 101).WasEverUsed.ShouldBeFalse();
         // Кэш обновлён — следующая страница в том же запросе увидит поле использованным.
         Result.GetFieldById(fieldInfo.Id).WasEverUsed.ShouldBeTrue();
+        // Служебная отметка — не правка поля: автором правки игрок не становится.
+        field.UpdatedById.ShouldNotBe(mock.Player.UserId);
     }
 
     /// <summary>Поле использовано раньше, а выбранное значение — впервые: отмечать всё равно надо.</summary>

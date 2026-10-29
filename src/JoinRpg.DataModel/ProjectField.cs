@@ -6,7 +6,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel;
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (used by LINQ)
-public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObject
+public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObject, ICreatedUpdatedTrackedForEntity
 {
     public int ProjectFieldId { get; set; }
 
@@ -68,6 +68,20 @@ public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObj
     /// External value for external IT systems
     /// </summary>
     public string? ProgrammaticValue { get; set; }
+
+    /// <summary>
+    /// Отметки аудита. Правка вариантов поля тоже считается правкой поля — у вариантов своих отметок нет.
+    /// У полей, созданных до появления отметок, время создания — время создания проекта, автор — владелец проекта.
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
+    public int CreatedById { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+    [ForeignKey(nameof(UpdatedById))]
+    public virtual User UpdatedBy { get; set; }
+    public int UpdatedById { get; set; }
 
     [NotMapped]
     public int[] AvailableForCharacterGroupIds

@@ -285,6 +285,10 @@ erDiagram
         int CharacterGroupId FK "спецгруппа: заполнил поле — попал в группу"
         string ProgrammaticValue "внешний код для интеграций"
         string AviableForImpl_ListIds "группы, для которых поле доступно"
+        datetime CreatedAt
+        int CreatedById FK
+        datetime UpdatedAt "правка вариантов тоже обновляет"
+        int UpdatedById FK
     }
 
     ProjectFieldDropdownValues {
