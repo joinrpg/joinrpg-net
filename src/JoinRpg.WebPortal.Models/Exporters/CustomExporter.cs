@@ -3,13 +3,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models.Exporters;
 
@@ -116,31 +114,8 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
         return new TableColumn<DateOnly?>(member, r => func.Compile()(r));
     }
 
-    [Pure]
-    protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User?>> func, ProjectInfo projectInfo)
-    {
-        if (projectInfo.ProjectStatus == ProjectLifecycleStatus.Archived)
-        {
-            return [ShortUserColumn(func)];
-        }
-        return ComplexColumn(
-                func,
-                u => u.GetDisplayName(),
-                u => u.SurName,
-                u => u.FatherName,
-                u => u.BornName,
-                u => u.Email)
-            .Union(
-            [
-            VkColumn(func),
-            TelegramColumn(func),
-            ComplexElementMemberColumn(func, u => u.Extra, e => e.Livejournal),
-            ComplexElementMemberColumn(func, u => u.Extra, e => e.PhoneNumber),
-            ]);
-    }
-
     /// <summary>
-    /// Те же колонки, что и версия для EF-сущности, но поверх доменного <see cref="UserInfo"/>.
+    /// Колонки с именем и контактами пользователя; в архивном проекте — только имя.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -149,8 +124,8 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     /// допускает в себе <c>?.</c>.
     /// </para>
     /// <para>
-    /// Заголовки заданы явно и по-русски. У версии для EF-сущности они выводились из пути по
-    /// навигациям, поэтому мастер видел в выгрузке имена свойств C# и сегмент <c>.Extra.</c> —
+    /// Заголовки заданы явно и по-русски. Раньше они выводились из пути по навигациям
+    /// EF-сущности, поэтому мастер видел в выгрузке имена свойств C# и сегмент <c>.Extra.</c> —
     /// имя таблицы, в которой у нас лежат контакты. Заголовок выгрузки — строка, видимая
     /// пользователю, и по правилам проекта она должна быть русской.
     /// </para>
@@ -180,19 +155,15 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
         ];
     }
 
-    [Pure]
-    protected ITableColumn ShortUserColumn(Expression<Func<TRow, User?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
-
     /// <summary>
-    /// Та же колонка, что и версия для EF-сущности, но поверх <see cref="ProjectMasterInfo"/>.
+    /// Колонка с отображаемым именем мастера.
     /// </summary>
     /// <remarks>
-    /// Собирается руками, а не через <c>ComplexElementMemberColumn</c>, именно из-за заголовка.
-    /// У версии для сущности вложенное выражение — вызов метода (<c>u => u.GetDisplayName()</c>),
-    /// который <c>AsPropertyAccess</c> не распознаёт, поэтому заголовок остаётся одним префиксом
-    /// («Ответственный»). Здесь отображаемое имя достаётся обращением к свойству, и тот же путь
-    /// дописал бы к заголовку «.DisplayName» — а заголовки выгрузок менять нельзя, мастера
-    /// разбирают таблицы по именам колонок.
+    /// Собирается руками, а не через <c>ComplexElementMemberColumn</c>, именно из-за заголовка:
+    /// он должен остаться одним префиксом («Ответственный мастер»), как было, когда колонка строилась
+    /// поверх EF-сущности. Здесь отображаемое имя достаётся обращением к свойству, и
+    /// <c>ComplexElementMemberColumn</c> дописал бы к заголовку «.DisplayName» — а заголовки
+    /// выгрузок менять нельзя, мастера разбирают таблицы по именам колонок.
     /// </remarks>
     [Pure]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, ProjectMasterInfo?>> func, string? name = null)
@@ -206,14 +177,12 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserLinkViewModel?>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.DisplayName, name);
 
     /// <summary>
-    /// Та же колонка, что и версия для EF-сущности, но поверх <see cref="UserInfo"/>.
+    /// Та же колонка, что и версия для <see cref="ProjectMasterInfo"/>, но поверх <see cref="UserInfo"/>.
     /// </summary>
     /// <remarks>
     /// Собирается руками по той же причине, что и версия для <see cref="ProjectMasterInfo"/>:
     /// через <c>ComplexElementMemberColumn</c> заголовок по умолчанию получал бы хвост
-    /// «.DisplayName», которого не было у версии для сущности — там имя достаётся вызовом метода,
-    /// а <c>AsPropertyAccess</c> вызовы не распознаёт. Видно это на архивном проекте: от игрока
-    /// там остаётся ровно эта колонка.
+    /// «.DisplayName». Видно это на архивном проекте: от игрока там остаётся ровно эта колонка.
     /// </remarks>
     [Pure]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, UserInfo?>> func, string? name = null)
@@ -234,15 +203,6 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
         var getter = func.Compile();
         return new TableColumn<string>(name, row => getter(row)?.DisplayName.DisplayName);
     }
-
-    [Pure]
-    protected ITableColumn VkColumn(Expression<Func<TRow, User?>> func) => new TableColumn<Uri>("ВК", user => UserSocialLink.GetVKUri(func.Compile()(user)?.Extra?.Vk)?.Uri);
-
-    [Pure]
-    protected ITableColumn TelegramColumn(Expression<Func<TRow, User?>> func) => new TableColumn<Uri>("Телеграм", user => UserSocialLink.GetTelegramUri(func.Compile()(user)?.Extra?.Telegram)?.Uri);
-
-    [Pure]
-    private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User?>> func, params Expression<Func<User, string?>>[] expressions) => expressions.Select(expression => ComplexElementMemberColumn(func, expression));
 
     [Pure]
     protected static ITableColumn ComplexElementMemberColumn<T, TOut>(Expression<Func<TRow, T?>> complexGetter, Expression<Func<T, TOut>> expr, string? name = null)
