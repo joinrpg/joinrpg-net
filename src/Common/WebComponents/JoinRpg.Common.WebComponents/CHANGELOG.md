@@ -11,6 +11,7 @@
 - `SelectorListCache` и `AddJoinRpgWebComponents()`: общий на scope кэш списков для обёрток над `TypedSelector`, списки с пререндера переезжают в WebAssembly. ([#5880](https://github.com/joinrpg/joinrpg-net/pull/5880), [#5895](https://github.com/joinrpg/joinrpg-net/pull/5895))
 - `FormRowLabelTarget.LabelId` — id подписи `FormRow`. ([#5866](https://github.com/joinrpg/joinrpg-net/pull/5866))
 - `JoinCollapsePanel`: кнопка с `data-join-collapse-close` в статической форме сворачивает панель. ([#5940](https://github.com/joinrpg/joinrpg-net/pull/5940))
+- `UserLink.ShowIcon` — `false` убирает иконку-человечка, когда рядом уже аватарка. ([#5957](https://github.com/joinrpg/joinrpg-net/pull/5957))
 - Пакет: README.md и CHANGELOG.md, лицензия MIT. ([#5948](https://github.com/joinrpg/joinrpg-net/pull/5948), [#5953](https://github.com/joinrpg/joinrpg-net/pull/5953))
 
 ### Изменено
