@@ -1,6 +1,6 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Models.CharacterGroups;
 
@@ -72,27 +72,28 @@ public class ForumThreadListForGroupViewModel(ProjectInfo projectInfo, Character
 
 public class ForumThreadListItemViewModel
 {
-    public ForumThreadListItemViewModel(IForumThreadListItem thread, int currentUserId, ProjectInfo projectInfo)
+    public ForumThreadListItemViewModel(IForumThreadListItem thread, UserIdentification currentUserId, ProjectInfo projectInfo)
     {
         // Права — по ProjectInfo, а не по thread.Project.ProjectAcls: навигация стоила ленивой догрузки ACL (#4989).
-        var masterAccess = projectInfo.HasMasterAccess(new UserIdentification(currentUserId));
-        ProjectId = thread.Project.ProjectId;
+        var masterAccess = projectInfo.HasMasterAccess(currentUserId);
+        ProjectId = thread.Id.ProjectId;
         Header = thread.Header;
         Topicstarter = thread.Topicstarter;
 
         LastMessageText = ((MarkdownString?)(masterAccess ? thread.LastMessageText : thread.LastMessageTextForPlayer)).ToHtmlString();
         LastMessageAuthor = masterAccess ? thread.LastMessageAuthor : thread.LastMessageAuthorForPlayer;
         UpdatedAt = thread.UpdatedAt;
-        UnreadCount = thread.GetUnreadCount(currentUserId, projectInfo);
-        TotalCount = thread.Comments.Count(c => c.IsVisibleTo(currentUserId, projectInfo));
-        ForumThreadId = thread.Id;
+        // Оба счётчика посчитаны в запросе для текущего пользователя (ADR026, §2).
+        UnreadCount = thread.UnreadCount;
+        TotalCount = thread.TotalCount;
+        ForumThreadId = thread.Id.ThreadId;
     }
 
     public int ProjectId { get; }
     public string Header { get; }
-    public User Topicstarter { get; set; }
+    public UserInfoHeader Topicstarter { get; }
     public JoinHtmlString LastMessageText { get; }
-    public User LastMessageAuthor { get; }
+    public UserInfoHeader? LastMessageAuthor { get; }
     public DateTime UpdatedAt { get; }
     public int UnreadCount { get; }
     public int TotalCount { get; }

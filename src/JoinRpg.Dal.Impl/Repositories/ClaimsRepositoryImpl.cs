@@ -202,26 +202,26 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             )];
     }
 
-    public Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess)
+    public async Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess)
     {
         var claims = Ctx.Set<Claim>()
+            .AsExpandable()
             .Where(claim => claim.ProjectId == projectId)
           .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec));
 
+        var unreadCount = CommentDiscussionPredicates.UnreadCount;
+
         var query =
             from claim in claims
-            let lastMyCommentId = claim.CommentDiscussion.Comments.Where(comment => comment.AuthorUserId == userId).Max(comment => (int?)comment.CommentId) ?? 0
-            let lastWatermark = claim.CommentDiscussion.Watermarks.Where(watermark => watermark.UserId == userId).Max(watermark => (int?)watermark.CommentId) ?? 0
-            let comments = claim.CommentDiscussion.Comments.Where(comment => comment.IsVisibleToPlayer || hasMasterAccess)
-            let unreadComments = comments.Where(comment => comment.CommentId > lastMyCommentId && comment.CommentId > lastWatermark)
             select
             new
             {
                 claim.CommentDiscussionId,
-                UnreadCommentsCount = unreadComments.Count()
+                UnreadCommentsCount = unreadCount.Invoke(claim.CommentDiscussion, userId, hasMasterAccess),
             };
 
-        return query.ToDictionaryAsync(x => x.CommentDiscussionId, x => x.UnreadCommentsCount);
+        var rows = await query.ToListAsync();
+        return rows.ToDictionary(x => new CommentDiscussionId(x.CommentDiscussionId), x => x.UnreadCommentsCount);
     }
 
     public async Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status)

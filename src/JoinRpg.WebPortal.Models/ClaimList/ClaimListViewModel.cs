@@ -29,7 +29,7 @@ public class ClaimListViewModel : IOperationsAwareView
     public ClaimListViewModel(
        ICurrentUserAccessor currentUserId,
        IReadOnlyCollection<Claim> claims,
-       Dictionary<int, int> unreadComments,
+       Dictionary<CommentDiscussionId, int> unreadComments,
        string title,
        ProjectInfo projectInfo,
        IClaimProblemValidator claimValidator,

@@ -130,23 +130,4 @@ public static class ProjectEntityExtensions
     [Obsolete("Передавай сюда ProjectInfo")]
     public static T EnsureProjectActive<T>(this T entity)
   where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivatedException(entity.ProjectIdentification) : entity;
-
-    [Pure]
-    public static bool HasPlayerAccess(this IForumThread forumThread, int? currentUserId, ProjectInfo projectInfo)
-    {
-        ArgumentNullException.ThrowIfNull(forumThread);
-
-        return currentUserId != null && forumThread.IsVisibleToPlayer &&
-               forumThread.Project.Claims.OfUserApproved((int)currentUserId)
-                 .Any(c => c.Character.IsPartOfGroup(forumThread.CharacterGroupId, projectInfo));
-    }
-
-    [Pure]
-    [Obsolete]
-    public static bool HasAnyAccess(this IForumThread forumThread, int? currentUserId, ProjectInfo projectInfo)
-    {
-        ArgumentNullException.ThrowIfNull(forumThread);
-
-        return projectInfo.HasMasterAccess(UserIdentification.FromOptional(currentUserId)) || forumThread.HasPlayerAccess(currentUserId, projectInfo);
-    }
 }
