@@ -221,6 +221,8 @@ EF-предикаты и проекции пишутся через `Expression<
 [docs/nuget-packages.md](docs/nuget-packages.md). Изменение видно потребителю — запись в
 «Не выпущено» `CHANGELOG.md` пакета (что писать — [там же](docs/nuget-packages.md#changelog)).
 Ошибки RS0016/RS0017 — изменился публичный API: `pwsh scripts/Update-PublicApi.ps1`.
+Ошибки CP* при упаковке — ломающее изменение API: см.
+[Ломающее изменение](docs/nuget-packages.md#ломающее-изменение).
 Поменялся способ подключения, настройки или основные типы — обновить `README.md` пакета.
 Новый пакет — добавить в матрицу `nuget-publish.yml`.
 
