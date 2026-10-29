@@ -118,6 +118,8 @@ public record ProjectRoleGridGroupHeaderRowViewModel(
     public bool IsSpecial => GroupType is CharacterGroupType.SpecialToField or CharacterGroupType.SpecialToValue;
 }
 
+// Contacts — null, если показывать нечего; пустыми (без единого контакта) не бывают:
+// ячейка рисует скобки вокруг контактов по одному факту их наличия.
 public record PlayerCellViewModel(
     CharacterApplyViewModel ApplyStatus,
     UserContacts? Contacts,
