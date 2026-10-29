@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Markdown;
@@ -17,7 +18,7 @@ public class CommentViewModel
         CanModerateFinance = comment.Finance is not null
             && projectInfo.CanModerateFinanceOperation(comment.Finance.GetPaymentTypeId(), currentUserId);
         IsCommentByPlayer = comment.IsCommentByPlayer;
-        Author = comment.Author;
+        Author = new UserLinkViewModel(comment.Author.ToUserInfoHeader());
         AuthorAvatar = AvatarIdentification.FromOptional(comment.Author.SelectedAvatarId);
         AuthorEmail = comment.Author.Email;
         CreatedTime = comment.CreatedAt;
@@ -50,7 +51,7 @@ public class CommentViewModel
 
     public AvatarIdentification? AuthorAvatar { get; }
     public string AuthorEmail { get; }
-    public User Author { get; }
+    public UserLinkViewModel Author { get; }
     public DateTime CreatedTime { get; }
     public FinanceOperation? Finance { get; }
     public JoinHtmlString CommentText { get; }

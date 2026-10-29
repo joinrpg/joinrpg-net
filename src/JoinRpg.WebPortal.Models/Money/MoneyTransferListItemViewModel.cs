@@ -1,4 +1,4 @@
-using JoinRpg.DataModel;
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
@@ -11,16 +11,16 @@ namespace JoinRpg.Web.Models;
 public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
 {
     [Display(Name = "Внес"), Required]
-    public User MarkingMaster { get; }
+    public UserLinkViewModel MarkingMaster { get; }
 
     [Display(Name = "Статус")]
     public MoneyTransferStateViewModel State { get; }
 
     [Display(Name = "От")]
-    public User Sender { get; }
+    public UserLinkViewModel Sender { get; }
 
     [Display(Name = "Кому")]
-    public User Receiver { get; }
+    public UserLinkViewModel Receiver { get; }
 
     public bool HasApproveAccess { get; }
 
@@ -32,14 +32,13 @@ public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
     {
         Id = fo.Id;
         ProjectId = fo.ProjectId;
-        Sender = fo.Sender;
-        Receiver = fo.Receiver;
-        MarkingMaster = fo.CreatedBy;
+        Sender = new(fo.Sender.ToUserInfoHeader());
+        Receiver = new(fo.Receiver.ToUserInfoHeader());
+        MarkingMaster = new(fo.CreatedBy.ToUserInfoHeader());
         OperationDate = DateOnly.FromDateTime(fo.OperationDate.UtcDateTime);
         State = (MoneyTransferStateViewModel)fo.ResultState;
 
         Money = fo.Amount;
-        MarkingMaster = fo.CreatedBy;
 
         var isPendingSender = State == MoneyTransferStateViewModel.PendingForSender ||
                     State == MoneyTransferStateViewModel.PendingForBoth;
@@ -51,8 +50,8 @@ public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
         HasApproveAccess =
             (fo.Project.HasMasterAccess(currentUserId, Permission.CanManageMoney) &&
              isPendingAny)
-            || (currentUserId.UserIdOrDefault == Sender.UserId && isPendingSender)
-            || (currentUserId.UserIdOrDefault == Receiver.UserId && isPendingReceiver);
+            || (currentUserId.UserIdOrDefault == fo.SenderId && isPendingSender)
+            || (currentUserId.UserIdOrDefault == fo.ReceiverId && isPendingReceiver);
 
         Comment = ((MarkdownString?)fo.TransferText.Text).ToHtmlString();
     }
