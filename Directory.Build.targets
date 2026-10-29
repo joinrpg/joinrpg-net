@@ -18,6 +18,19 @@
         <NoWarn>$(NoWarn);CS1573</NoWarn>
     </PropertyGroup>
 
+    <!--
+    CS1591 («нет XML-комментария у публичного члена») в Directory.Build.props выключен для всех.
+    В пакетах он предупреждение: документацию читают снаружи, из IntelliSense по пакету.
+    Ошибкой не делаем — число предупреждений показывает, сколько осталось описать. У генератора
+    (IsRoslynComponent) публичных типов для потребителя нет — правило не включаем.
+    Microsoft.Common.CurrentVersion.targets ещё до этого файла дописывает NoWarn в
+    MSBuildWarningsAsMessages, поэтому CS1591 убираем и оттуда, иначе MSBuild понизит его до сообщения.
+    -->
+    <PropertyGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true'">
+        <NoWarn>$(NoWarn.Replace('CS1591', ''))</NoWarn>
+        <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages.Replace('CS1591', ''))</MSBuildWarningsAsMessages>
+    </PropertyGroup>
+
     <!-- Общие метаданные NuGet-пакетов. Порядок публикации и документации — docs/nuget-packages.md. -->
     <PropertyGroup Condition="'$(IsPackable)' == 'true'">
         <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
