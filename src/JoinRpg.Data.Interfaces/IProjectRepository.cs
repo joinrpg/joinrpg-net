@@ -45,6 +45,11 @@ public interface IProjectRepository : IDisposable
     Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
 
     /// <summary>
+    /// Все заблокированные проекты (ADR023), независимо от даты последнего обновления.
+    /// </summary>
+    Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetBlockedProjects();
+
+    /// <summary>
     /// Пользователи, оставившие следы мастерства в проекте — комментарии в заявках «как мастер»
     /// (<c>IsCommentByPlayer = false</c>), своя касса (тип оплаты), переводы между мастерами, —
     /// у которых в этом проекте нет записи <c>ProjectAcl</c> ни в каком статусе (ADR019, §6).

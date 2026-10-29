@@ -107,6 +107,23 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         return await allQuery.ToListAsync();
     }
 
+    public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetBlockedProjects()
+    {
+        var allQuery =
+            from project in AllProjects
+            join update in GetProjectWithLastUpdateQuery() on project.ProjectId equals update.ProjectId
+            where project.IsBlocked
+            orderby project.ProjectName ascending
+            select new ProjectWithUpdateDateDto
+            {
+                ProjectName = project.ProjectName,
+                LastUpdated = update.LastUpdated,
+                ProjectId = project.ProjectId,
+            };
+
+        return await allQuery.ToListAsync();
+    }
+
     public async Task<IReadOnlyCollection<FormerMasterCandidate>> GetFormerMasterCandidates()
     {
         // Следы мастерства, которые пережили физическое удаление ACL:

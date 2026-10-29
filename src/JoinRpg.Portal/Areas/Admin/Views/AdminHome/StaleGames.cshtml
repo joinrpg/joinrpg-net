@@ -1,4 +1,4 @@
-﻿@model System.Collections.Generic.IReadOnlyCollection<JoinRpg.Data.Interfaces.ProjectWithUpdateDateDto>
+﻿@model JoinRpg.Portal.Areas.Admin.Models.StaleGamesViewModel
 
 @{
     ViewBag.Title = "Список проблемных проектов";
@@ -6,15 +6,37 @@
 
 <h2>Список проблемных проектов</h2>
 
-<table class="table">
-    <tr><th>Проект</th><th>Последний раз обновлен</th><th>&nbsp;</th></tr>
-    @foreach (var project in Model)
+<h3>Заблокированные</h3>
+@{ await ProjectTable(Model.Blocked, showUnblock: true); }
+
+<h3>Заброшенные</h3>
+@{ await ProjectTable(Model.Stale, showUnblock: false); }
+
+@functions {
+    private async Task ProjectTable(IReadOnlyCollection<JoinRpg.Data.Interfaces.ProjectWithUpdateDateDto> projects, bool showUnblock)
     {
-        <tr>
-            <td>@Html.ActionLink(project.ProjectName, "Details", "Game", new {project.ProjectId, area =""}, null)</td>
-            <td>@project.LastUpdated</td>
-            <td><a asp-controller="Game" asp-action="Close" asp-area="" asp-route-projectId="@project.ProjectId">закрыть</a></td>
-        </tr>
+        if (projects.Count == 0)
+        {
+            <p>Нет таких проектов.</p>
+            return;
+        }
+        <table class="table">
+            <tr><th>Проект</th><th>Последний раз обновлен</th><th>&nbsp;</th></tr>
+            @foreach (var project in projects)
+            {
+                <tr>
+                    <td>@Html.ActionLink(project.ProjectName, "Details", "Game", new {project.ProjectId, area =""}, null)</td>
+                    <td>@project.LastUpdated</td>
+                    <td>
+                        @if (showUnblock)
+                        {
+                            <a asp-controller="Game" asp-action="Unblock" asp-area="" asp-route-projectId="@project.ProjectId">снять блокировку</a>
+                        }
+                        <a asp-controller="Game" asp-action="Close" asp-area="" asp-route-projectId="@project.ProjectId">закрыть</a>
+                    </td>
+                </tr>
+            }
+        </table>
     }
-</table>
+}
 
