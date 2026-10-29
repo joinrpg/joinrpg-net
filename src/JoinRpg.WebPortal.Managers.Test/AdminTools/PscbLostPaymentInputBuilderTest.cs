@@ -39,10 +39,20 @@ public class PscbLostPaymentInputBuilderTest
     /// вторым записыванием, со ссылкой на сам платёж и его же датой денег — другой даты у строки
     /// потерянного платежа нет.
     /// </summary>
+    /// <remarks>
+    /// Ограничение источника данных (ADR027): у строки state=ref список банка даёт лишь один
+    /// момент — <c>stateDate</c> возврата, настоящей даты платежа в списке нет. Обе записи
+    /// намеренно восстанавливаются этой датой, поэтому <c>OperationDate</c> платёжа равна дате
+    /// возврата — проектное решение, а не пропуск: поведение зафиксировано утверждением ниже.
+    /// </remarks>
     [Fact]
-    public void AddsTheRefundOfTheLostPayment()
+    public void AddsTheRefundOfTheLostPaymentWithTheRefundMomentAsThePaymentDate()
     {
         var input = PscbLostPaymentInputBuilder.BuildPayment(LostRow(refunded: true), Plan());
+
+        // Дата денег платежа — stateDate возврата: для пары «потерянный платёж + возврат» это
+        // единственная дата, которую знает список банка (ADR027).
+        input.OperationDate.ShouldBe(StatusDateUtc);
 
         var refund = input.Refund.ShouldNotBeNull();
         refund.ClaimId.ShouldBe(new ClaimIdentification(7, 55));

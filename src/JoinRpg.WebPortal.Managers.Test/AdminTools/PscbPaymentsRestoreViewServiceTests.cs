@@ -54,6 +54,12 @@ public class PscbPaymentsRestoreViewServiceTests
     /// Банк зафиксировал возврат потерянного платежа (state=ref): возврат восстанавливается
     /// тем же запросом, вторым записыванием — строка отчитывается обеими записями.
     /// </summary>
+    /// <remarks>
+    /// Ограничение источника данных (ADR027): у строки state=ref список банка даёт лишь один
+    /// момент — <c>stateDate</c> возврата, настоящей даты платежа в списке нет. Платёж и возврат
+    /// намеренно восстанавливаются этой одной датой, поэтому <c>OperationDate</c> платежа равна
+    /// дате возврата — проектное решение, а не пропуск: оно зафиксировано утверждением ниже.
+    /// </remarks>
     [Fact]
     public async Task RestoresTheLostPaymentTogetherWithItsRefund()
     {
@@ -63,7 +69,12 @@ public class PscbPaymentsRestoreViewServiceTests
 
         var result = await service.RestoreRow(Query(), LostPaymentOrderId);
 
-        var refund = domain.Payments.ShouldHaveSingleItem().Refund.ShouldNotBeNull();
+        var payment = domain.Payments.ShouldHaveSingleItem();
+        // Дата денег платежа — stateDate возврата: для пары «потерянный платёж + возврат» это
+        // единственная дата, которую знает список банка (ADR027).
+        payment.OperationDate.ShouldBe(StatusDateUtc);
+
+        var refund = payment.Refund.ShouldNotBeNull();
         refund.RefundedOperationId.ShouldBe(63617);
         refund.MoneyAmount.ShouldBe(1500);
         refund.BankRefundId.ShouldBe("1115846166");

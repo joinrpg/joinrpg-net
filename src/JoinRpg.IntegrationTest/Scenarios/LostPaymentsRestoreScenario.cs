@@ -6,8 +6,10 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
+using JoinRpg.Data.Write.Interfaces.Notifications;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DataModel.Mocks.Fakes;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
@@ -29,7 +31,9 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// (случай DRP) получает дописанную операцию (Attached) без нового комментария и без правки текста,
 /// номер не ниже счётчика — не потерянный, повторный прогон узнаётся, наличный тип оплаты
 /// отсекается батчем до записи, а возврат вставляется с новым номером и ссылкой на исходную
-/// операцию. Отдельно —
+/// операцию. Сквозной прогон доменного сервиса <see cref="ILostPaymentsRestoreService"/> —
+/// единственное место, где вставка сырым SQL и пересчёт взноса тем же контекстом EF проверяются
+/// на настоящей базе вместе. Отдельно —
 /// <see cref="IClaimsRepository.GetClaimIdsForPlayers"/> отдаёт заявки в любом статусе, включая
 /// отклонённые: фильтра по статусу в запросе нет, и это единственное место, где факт проверяется
 /// по-настоящему.
@@ -47,6 +51,13 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
     private const string BankPaymentKey = "pscb-payment-000123";
     private const string BankRefundKey = "pscb-refund-000456";
     private const int Money = 1500;
+
+    // Ключ платежа сквозного прогона сервиса — свой, чтобы записи двух тестов не пересекались.
+    private const string ServiceBankPaymentKey = "pscb-payment-000777";
+
+    // Дата, с которой действует расписание взносов сквозного прогона: CreateFeeSetting переносит
+    // самую раннюю строку на Project.CreatedDate, поэтому проект «старят» до этой даты (см. тест).
+    private static readonly DateTime FeeEffectiveFrom = new(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc);
 
     [Fact]
     public async Task LostPayment_InsertsWithBankOrderId_RepeatConflictsAndRefund_BehaveAsDocumented()
@@ -325,6 +336,161 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(3);
             (await GetCommentsIdentityAsync(db)).ShouldBe(identityAfterOtherClaim + 1);
         }
+    }
+
+    /// <summary>
+    /// Восстановление платежа доменным сервисом <see cref="ILostPaymentsRestoreService"/> на
+    /// настоящей базе — единственное место, где связка «сырой SQL + EF» проверяется целиком:
+    /// заявка загружается до вставки, операция вставляется батчем репозитория мимо контекста,
+    /// а затем тот же контекст делает <c>SaveChangesAsync</c> с пересчётом взноса по настоящему
+    /// снимку (<c>IClaimInfoRepository</c>) — трекер изменений не должен спутаться со строкой,
+    /// которую он никогда не видел, а взнос обязан действительно зафиксироваться в базе.
+    /// Юнит-тестовый фейк <c>FakeCharacterAggregateWriteRepository.InsertLostPayment</c> добавляет
+    /// операцию прямо в <c>claim.FinanceOperations</c> той же сущности, то есть ведёт себя иначе,
+    /// чем бой, и эту связку смоделировать не может. Уведомление наблюдается по очереди тестового
+    /// хоста (<see cref="FakeNotificationRepository"/>).
+    /// </summary>
+    [Fact]
+    public async Task RestoreByService_InsertsByRawSqlAndFixesFee_ThroughTheSameDbContext()
+    {
+        // 1. Проект с онлайн-типом оплаты, игрок с заявкой и расписание взносов, действующее на
+        // историческую дату денег: без ненулевого взноса «взнос зафиксирован» не проверить.
+        var (masterId, projectId, onlineTypeId) = await CreateProjectWithOnlinePaymentType();
+        UserIdentification playerId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            playerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+        }
+        var claimId = await AddClaim(playerId, await AddCharacter(masterId, projectId));
+
+        // Расписание заводится боевым сервисом, но CreateFeeSetting не принимает даты старше
+        // вчера, а самую раннюю строку переносит на Project.CreatedDate. Поэтому проект сначала
+        // «старят» прямо в БД (тот же приём, что BlockProject в FinanceRestoreViewScenario) —
+        // тогда боевой сервис сам раздвинет расписание на историческую дату платежа.
+        using (var scope = factory.Services.CreateScope())
+        {
+            _ = await scope.ServiceProvider.GetRequiredService<MyDbContext>().Database.ExecuteSqlCommandAsync(
+                "UPDATE dbo.Projects SET CreatedDate = @p0 WHERE ProjectId = @p1",
+                FeeEffectiveFrom, projectId.Value);
+        }
+        await factory.Services.RunAsAsync(masterId, sp =>
+            sp.GetRequiredService<IProjectFinanceSettingsService>().CreateFeeSetting(new CreateFeeSettingRequest
+            {
+                ProjectId = projectId,
+                Fee = Money,
+                PreferentialFee = null,
+                StartDate = DateTime.UtcNow.Date,
+            }));
+
+        var paymentsUserId = await factory.Services.RunAsAsync(masterId, sp =>
+            Task.FromResult(sp.GetRequiredService<IVirtualUsersService>().PaymentsUser.GetId()));
+
+        // 2. Дырка в счётчике комментариев: потерянный orderId строго ниже счётчика. Заодно
+        // состояние заявки до восстановления: взнос не зафиксирован, отметки времени свои.
+        int discussionId, lostOrderId, identityBefore;
+        DateTimeOffset lastPlayerCommentAtBefore;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            discussionId = await GetDiscussionIdAsync(db, claimId);
+            lostOrderId = await BurnTwoCommentIdsAsync(db, projectId, discussionId, masterId);
+            identityBefore = await GetCommentsIdentityAsync(db);
+            identityBefore.ShouldBeGreaterThan(lostOrderId);
+
+            var claimBefore = await db.Set<Claim>().AsNoTracking().SingleAsync(c => c.ClaimId == claimId.ClaimId);
+            claimBefore.CurrentFee.ShouldBeNull();
+            // Заявка подана сейчас, а деньги «были» в прошлом — иначе правило «отметка о
+            // комментарии игрока не уезжает в прошлое» не отличить от простой перезаписи.
+            claimBefore.LastPlayerCommentAt.ShouldNotBeNull();
+            claimBefore.LastPlayerCommentAt.Value.UtcDateTime.ShouldBeGreaterThan(PaymentAt);
+            lastPlayerCommentAtBefore = claimBefore.LastPlayerCommentAt.Value;
+        }
+
+        // 3. Восстановление сервисом от имени сайт-админа: LoadClaimAsync требует
+        // ICurrentUserAccessor.IsAdmin, а мастер проекта сам по себе не сайт-админ — поэтому
+        // RunAsAsync с isAdmin: true (приём из UserMergeScenario).
+        const string payerComment = "За Василия — комментарий плательщика из банка";
+        var beforeCall = DateTime.UtcNow;
+        var result = await factory.Services.RunAsAsync(masterId, sp =>
+            sp.GetRequiredService<ILostPaymentsRestoreService>().RestorePaymentAsync(new LostPaymentToRestore(
+                claimId,
+                lostOrderId,
+                onlineTypeId,
+                Money,
+                PaymentAt,
+                ServiceBankPaymentKey,
+                payerComment,
+                Refund: null)),
+            isAdmin: true);
+
+        result.Status.ShouldBe(LostOperationRestoreStatus.Restored);
+        result.OperationId.ShouldBe(lostOrderId);
+        result.Refund.ShouldBeNull();
+        result.FeeRecalculated.ShouldBeTrue();
+
+        // 4. Всё действительно в базе — свежий скоуп и AsNoTracking: строки прочитаны из базы,
+        // а не из чужого трекера изменений.
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+            var operation = await db.Set<FinanceOperation>().AsNoTracking().SingleAsync(f => f.CommentId == lostOrderId);
+            operation.ProjectId.ShouldBe(projectId.Value);
+            operation.ClaimId.ShouldBe(claimId.ClaimId);
+            operation.OperationType.ShouldBe(FinanceOperationType.Online);
+            operation.State.ShouldBe(FinanceOperationState.Approved);
+            operation.MoneyAmount.ShouldBe(Money);
+            operation.PaymentTypeId.ShouldBe(onlineTypeId.PaymentTypeId);
+            operation.RefundedOperationId.ShouldBeNull();
+            operation.OperationDate.ShouldBe(PaymentAt);
+            // Разделение времени ADR027 сквозным прогоном: Created/Changed — момент восстановления
+            // (поставлен сервисом после beforeCall), а не момент денег.
+            operation.Created.ShouldBeGreaterThanOrEqualTo(beforeCall);
+            operation.Created.ShouldNotBe(operation.OperationDate);
+            operation.Changed.ShouldBe(operation.Created);
+
+            var bankDetails = await db.Set<FinanceOperationBankDetails>().AsNoTracking()
+                .SingleAsync(b => b.CommentId == lostOrderId);
+            bankDetails.BankOperationKey.ShouldBe(ServiceBankPaymentKey);
+            bankDetails.BankRefundKey.ShouldBeNull();
+
+            var comment = await db.Set<Comment>().AsNoTracking().SingleAsync(c => c.CommentId == lostOrderId);
+            comment.CommentDiscussionId.ShouldBe(discussionId);
+            comment.AuthorUserId.ShouldBe(paymentsUserId.Value);
+            comment.IsCommentByPlayer.ShouldBeTrue();
+            comment.IsVisibleToPlayer.ShouldBeTrue();
+            comment.ExtraAction.ShouldBeNull();
+            // Время комментария — момент денег: запись встаёт в историю обсуждения на своё место.
+            comment.CreatedAt.ShouldBe(PaymentAt);
+            comment.LastEditTime.ShouldBe(PaymentAt);
+            var commentText = await db.Set<Comment>().AsNoTracking()
+                .Where(c => c.CommentId == lostOrderId)
+                .Select(c => c.CommentText.Text.Contents).SingleAsync();
+            commentText.ShouldStartWith("[восстановлено]");
+            commentText.ShouldContain(payerComment);
+
+            // Пересчёт взноса тем же контекстом, который не видел вставки сырым SQL: сохранение
+            // прошло, взнос зафиксирован в базе по расписанию на дату денег (GetFeeToFix).
+            var claim = await db.Set<Claim>().AsNoTracking().SingleAsync(c => c.ClaimId == claimId.ClaimId);
+            claim.CurrentFee.ShouldBe(Money);
+            claim.LastUpdateDateTime.ShouldBeGreaterThanOrEqualTo(beforeCall);
+            // Отметка о последнем комментарии игрока назад не уехала: деньги исторические, а
+            // заявка изменилась сейчас — SettleAsync двигает отметку только вперёд.
+            claim.LastPlayerCommentAt.ShouldBe(lastPlayerCommentAtBefore);
+
+            // Вставка с прежним номером не двигала счётчик.
+            (await GetCommentsIdentityAsync(db)).ShouldBe(identityBefore);
+        }
+
+        // 5. Уведомление об оплате поставлено в очередь после коммита: очередь тестового хоста —
+        // FakeNotificationRepository-синглтон, он записывает принятые InsertNotifications сообщения.
+        var expectedReference = new FinanceOperationIdentification(claimId, lostOrderId);
+        factory.Services.GetRequiredService<INotificationRepository>().ShouldBeOfType<FakeNotificationRepository>()
+            .InsertedNotifications.ShouldContain(n =>
+                Equals(n.Message.EntityReference, expectedReference)
+                && n.Message.Recipient == playerId
+                && n.Message.Initiator == paymentsUserId
+                && n.Message.Body.Value.Contains("вновь отражена в вашей заявке"));
     }
 
     [Fact]
