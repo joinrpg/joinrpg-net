@@ -24,8 +24,9 @@
 `Directory.Build.props`). Остальное добавляет `Directory.Build.targets`:
 
 - адрес репозитория, лицензия MIT;
-- `README.md` и `CHANGELOG.md` из каталога проекта, если они есть, кладутся в пакет. README
-  показывается на nuget.org, а после восстановления лежит в `~/.nuget/packages/<id в нижнем регистре>/<версия>/`.
+- `README.md` и `CHANGELOG.md` из каталога проекта кладутся в пакет, без README
+  `dotnet pack` падает. README показывается на nuget.org, а после восстановления лежит в
+  `~/.nuget/packages/<id в нижнем регистре>/<версия>/`.
 
 В `.csproj` пакета остаются `IsPackable`, `Description` (по-английски — для поиска на nuget.org)
 и то, что отличает именно его. Значения из `Directory.Build.targets` пакет может переопределить.

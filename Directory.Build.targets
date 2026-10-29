@@ -32,4 +32,10 @@
         <None Include="README.md" Condition="Exists('$(MSBuildProjectDirectory)/README.md')" Pack="true" PackagePath="\" />
         <None Include="CHANGELOG.md" Condition="Exists('$(MSBuildProjectDirectory)/CHANGELOG.md')" Pack="true" PackagePath="\" />
     </ItemGroup>
+
+    <!-- README пакета читают на nuget.org и агенты потребителя, пакет без него не собираем. -->
+    <Target Name="JoinRequirePackageReadme" BeforeTargets="GenerateNuspec"
+            Condition="'$(IsPackable)' == 'true' And !Exists('$(MSBuildProjectDirectory)/README.md')">
+        <Error Text="У NuGet-пакета $(PackageId) нет README.md в каталоге проекта, см. docs/nuget-packages.md." />
+    </Target>
 </Project>
