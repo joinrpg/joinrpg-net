@@ -38,6 +38,7 @@ internal class FieldSetupServiceImpl(
                     // поле использовано с момента создания. Тип поля после создания не меняется.
                     WasEverUsed = HasGeneratedValues(ctx.Request.FieldType),
                 };
+                ctx.MarkCreatedNow(field);
 
                 SetFieldPropertiesFromRequest(ctx, ctx.Request, field);
 
@@ -80,6 +81,7 @@ internal class FieldSetupServiceImpl(
                 }
 
                 SetFieldPropertiesFromRequest(ctx, ctx.Request, field);
+                ctx.MarkChanged(field);
             });
     }
 
@@ -108,6 +110,9 @@ internal class FieldSetupServiceImpl(
                 {
                     DeleteFieldVariantValueImpl(ctx, fieldValueVariant);
                 }
+
+                // Использованное поле не удаляется, а выключается — отметка показывает когда и кем
+                ctx.MarkChanged(field);
 
                 var characterGroup = field.CharacterGroup; // SmartDelete will nullify all depend properties
                 if (ctx.SmartDelete(field))
@@ -162,8 +167,10 @@ internal class FieldSetupServiceImpl(
             (projectFieldId, valueId),
             ctx =>
             {
-                var value = GetFieldValue(ctx.Project, ctx.Request.projectFieldId, ctx.Request.valueId);
+                var field = GetField(ctx.Project, ctx.Request.projectFieldId);
+                var value = field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == ctx.Request.valueId);
                 DeleteFieldVariantValueImpl(ctx, value);
+                ctx.MarkChanged(field);
                 return value;
             });
     }
@@ -178,12 +185,17 @@ internal class FieldSetupServiceImpl(
             ctx =>
             {
                 // Копия обязательна: EF при удалении сразу вычищает сущность из DropdownValues.
-                var unused = GetField(ctx.Project, ctx.Request).DropdownValues
+                var field = GetField(ctx.Project, ctx.Request);
+                var unused = field.DropdownValues
                     .Where(v => v.IsActive && !v.WasEverUsed)
                     .ToList();
                 foreach (var value in unused)
                 {
                     DeleteFieldVariantValueImpl(ctx, value);
+                }
+                if (unused.Count > 0)
+                {
+                    ctx.MarkChanged(field);
                 }
                 return unused.Count;
             });
@@ -270,6 +282,7 @@ internal class FieldSetupServiceImpl(
 
                 var container = field.GetFieldValuesContainer().MoveAfter(variant, afterVariant);
                 field.ValuesOrdering = container.GetStoredOrder();
+                ctx.MarkChanged(field);
 
                 if (field.CharacterGroup != null && variant.CharacterGroup != null)
                 {
@@ -414,7 +427,12 @@ internal class FieldSetupServiceImpl(
             Permission.CanChangeFields,
             ProjectActiveRequirement.AllowBlocked, // поля заводят заново при восстановлении (ADR023)
             projectFieldId,
-            ctx => SortVariants(GetField(ctx.Project, ctx.Request), x => x.Label));
+            ctx =>
+            {
+                var field = GetField(ctx.Project, ctx.Request);
+                SortVariants(field, x => x.Label);
+                ctx.MarkChanged(field);
+            });
     }
 
     public async Task SortTimeSlotVariantsByStartTime(ProjectFieldIdentification projectFieldId)
@@ -437,6 +455,7 @@ internal class FieldSetupServiceImpl(
                 SortVariants(field, x => TimeSlotOptions.TryFromJson(x.ProgrammaticValue) is { } options
                     ? (false, options.LocalStartTime, x.Label)
                     : (true, DateTime.MinValue, x.Label));
+                ctx.MarkChanged(field);
             });
     }
 
@@ -535,6 +554,9 @@ internal class FieldSetupServiceImpl(
 
 
         CreateOrUpdateSpecialGroup(ctx, variant);
+
+        // Своих отметок у вариантов нет: правка варианта — правка поля
+        ctx.MarkChanged(variant.ProjectField);
     }
 
     private static void SetTimeSlotOptions(ProjectFieldDropdownValue self, TimeSlotOptions? timeSlotOptions)
