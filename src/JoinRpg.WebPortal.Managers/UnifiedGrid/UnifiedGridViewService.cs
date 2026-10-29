@@ -36,12 +36,13 @@ internal class UnifiedGridViewService(
     }
 
     /// <summary>
-    /// Что просить у репозитория: архив — это удалённые персонажи, все остальные виды — живые.
+    /// Что просить у репозитория: архиву нужны и удалённые персонажи, и живые (с отклонёнными
+    /// заявками), всем остальным видам — только живые.
     /// Отбор внутри этого набора всё равно делается в памяти (см. <see cref="MatchesFilter"/>),
     /// но тащить агрегат на заведомо ненужных персонажей незачем.
     /// </summary>
     private static CharacterStatusSpec StatusSpecFor(UgStatusFilterView filter)
-        => filter == UgStatusFilterView.Archive ? CharacterStatusSpec.Deleted : CharacterStatusSpec.Active;
+        => filter == UgStatusFilterView.Archive ? CharacterStatusSpec.Any : CharacterStatusSpec.Active;
 
     /// <summary>
     /// Отбор персонажей под выбранный фильтр.
@@ -61,16 +62,27 @@ internal class UnifiedGridViewService(
             UgStatusFilterView.Discussion => character.IsActive
                 && character.ApprovedClaimId is null
                 && character.HasActiveClaims,
-            UgStatusFilterView.Archive => !character.IsActive && character.Claims.Any(claim => !claim.IsActive),
+            UgStatusFilterView.Archive => !character.IsActive || character.Claims.Any(IsDeclined),
             _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
         };
 
     /// <summary>
-    /// Какие заявки персонажа показывать: в архиве — неактивные, во всех остальных видах — активные.
-    /// Зеркало бывшего <c>ClaimPredicates.ByUgStatus</c>.
+    /// Какие заявки персонажа показывать: в архиве — все заявки удалённого персонажа и
+    /// отклонённые/отозванные у живого, во всех остальных видах — активные.
     /// </summary>
+    /// <remarks>
+    /// Лист ожидания у живого персонажа — не архив, хотя заявка там и неактивна
+    /// (<see cref="ClaimStatusExtensions.IsActive"/>). У удалённого персонажа активных заявок не бывает
+    /// (удаление их не допускает), а оставшиеся — в том числе из листа ожидания — показываем все.
+    /// </remarks>
     private static IReadOnlyCollection<CharacterClaimInfo> SelectClaims(CharacterInfo character, UgStatusFilterView filter)
-        => [.. filter == UgStatusFilterView.Archive
-            ? character.Claims.Where(claim => !claim.IsActive)
-            : character.Claims.Where(claim => claim.IsActive)];
+        => [.. filter switch
+        {
+            UgStatusFilterView.Archive when !character.IsActive => character.Claims,
+            UgStatusFilterView.Archive => character.Claims.Where(IsDeclined),
+            _ => character.Claims.Where(claim => claim.IsActive),
+        }];
+
+    private static bool IsDeclined(CharacterClaimInfo claim)
+        => claim.Status is ClaimStatus.DeclinedByMaster or ClaimStatus.DeclinedByUser;
 }

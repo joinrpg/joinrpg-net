@@ -33,14 +33,14 @@ public class UnifiedGridViewServiceTest
     }
 
     /// <summary>
-    /// Архив — единственный вид, которому нужны удалённые персонажи; остальным их не надо даже
-    /// загружать.
+    /// Архив — единственный вид, которому нужны удалённые персонажи (а заодно и живые — ради их
+    /// отклонённых заявок); остальным удалённых не надо даже загружать.
     /// </summary>
     [Theory]
     [InlineData(UgStatusFilterView.Active, CharacterStatusSpec.Active)]
     [InlineData(UgStatusFilterView.Vacant, CharacterStatusSpec.Active)]
     [InlineData(UgStatusFilterView.Discussion, CharacterStatusSpec.Active)]
-    [InlineData(UgStatusFilterView.Archive, CharacterStatusSpec.Deleted)]
+    [InlineData(UgStatusFilterView.Archive, CharacterStatusSpec.Any)]
     public async Task RepositoryIsAskedForRightCharacters(UgStatusFilterView filter, CharacterStatusSpec expected)
     {
         _ = await GetItems(filter);
@@ -110,9 +110,46 @@ public class UnifiedGridViewServiceTest
         (await GetNames(UgStatusFilterView.Archive)).ShouldBe([deleted.CharacterName]);
     }
 
+    [Fact]
+    public async Task ArchiveShowsDeletedCharacterWithoutClaims()
+    {
+        var deleted = Mock.CreateCharacter("deleted");
+        deleted.IsActive = false;
+
+        (await GetNames(UgStatusFilterView.Archive)).ShouldBe([deleted.CharacterName]);
+    }
+
+    /// <summary>
+    /// Отклонённая заявка на живого персонажа — тоже архив: раньше архив грузил только удалённых
+    /// персонажей, и такие заявки капитан не видел нигде.
+    /// </summary>
+    [Fact]
+    public async Task ArchiveShowsDeclinedClaimOfActiveCharacter()
+    {
+        var character = Mock.CreateCharacter("active with declined");
+        _ = Mock.CreateClaim(character, Mock.Player);
+        var declined = Mock.CreateClaim(character, Mock.Master);
+        declined.ClaimStatus = ClaimStatus.DeclinedByMaster;
+
+        var item = (await GetItems(UgStatusFilterView.Archive)).ShouldHaveSingleItem();
+
+        item.Character.Name.Name.ShouldBe(character.CharacterName);
+        item.Claims.Select(c => c.ClaimId).ShouldBe([declined.GetId()]);
+    }
+
+    [Fact]
+    public async Task ArchiveHidesActiveCharacterWithoutInactiveClaims()
+    {
+        var character = Mock.CreateCharacter("active");
+        _ = Mock.CreateClaim(character, Mock.Player);
+
+        (await GetNames(UgStatusFilterView.Archive)).ShouldBeEmpty();
+    }
+
     /// <summary>
     /// Агрегат несёт все заявки персонажа, поэтому в грид попадают только отобранные фильтром:
-    /// в обычных видах — активные, в архиве — отклонённые и отозванные.
+    /// в обычных видах — активные, в архиве — отклонённые и отозванные (а у удалённого персонажа
+    /// — все).
     /// </summary>
     [Fact]
     public async Task OnlyActiveClaimsAreShown()
@@ -129,18 +166,33 @@ public class UnifiedGridViewServiceTest
     }
 
     [Fact]
-    public async Task ArchiveShowsInactiveClaimsOnly()
+    public async Task ArchiveShowsAllClaimsOfDeletedCharacter()
     {
         var character = Mock.CreateCharacter("archived");
         character.IsActive = false;
-        _ = Mock.CreateClaim(character, Mock.Player);
+        var onHold = Mock.CreateClaim(character, Mock.Player);
+        onHold.ClaimStatus = ClaimStatus.OnHold;
         var declined = Mock.CreateClaim(character, Mock.Master);
         declined.ClaimStatus = ClaimStatus.DeclinedByUser;
 
         var item = (await GetItems(UgStatusFilterView.Archive))
             .Single(x => x.Character.Name.Name == character.CharacterName);
 
-        item.Claims.Select(c => c.ClaimId).ShouldBe([declined.GetId()]);
+        item.Claims.Select(c => c.ClaimId).ShouldBe([onHold.GetId(), declined.GetId()], ignoreOrder: true);
+    }
+
+    /// <summary>
+    /// Лист ожидания живого персонажа — не архив, хотя заявка там и неактивна.
+    /// </summary>
+    [Fact]
+    public async Task ArchiveHidesOnHoldClaimOfActiveCharacter()
+    {
+        var character = Mock.CreateCharacter("active with waiting list");
+        _ = Mock.CreateApprovedClaim(character, Mock.Player);
+        var onHold = Mock.CreateClaim(character, Mock.Master);
+        onHold.ClaimStatus = ClaimStatus.OnHold;
+
+        (await GetNames(UgStatusFilterView.Archive)).ShouldBeEmpty();
     }
 
     [Fact]
