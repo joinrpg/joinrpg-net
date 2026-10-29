@@ -3,7 +3,7 @@
 Проблема:
 ==
 
-`ProjectRolesList` (`JoinRpg.DomainTypes/ProjectMetadata/ProjectRolesList.cs`) — это **настройка** страницы «сетка ролей»: от какой группы строить (`CharacterGroupId`, `null` = от верха), какие поля показывать колонками (`Fields`), показывать ли колонку контактов / интересных групп (`ContactsColumn`, `GroupsColumn` с режимами `None / PublicOnly / All`).
+`ProjectRolesList` (`JoinRpg.DomainTypes/ProjectMetadata/ProjectRolesList.cs`) — это **настройка** страницы «сетка ролей»: от какой группы строить (`CharacterGroupId`, `null` = от верха), какие поля показывать колонками (`Fields`), показывать ли колонку контактов / интересных групп (`ContactsColumn`, `GroupsColumn` с режимами `None / PublicOnly / All`). Позже добавлены `GroupsViewMode`, `ShowRolesFilter` и `PlayerAvatar` — аватарка игрока в колонке «Игрок» (`None / Small / Large`). Аватарка без колонки «Игрок» (`PlayerAvatar != None` при `ContactsColumn == None`) — ошибка валидации в форме и в DataModel.
 
 Управление списком этих настроек — мастерская функция, уже реализована в `JoinRpg.Web.ProjectMasterTools` (страница `/{projectId}/tools/roleslist`, компонент `ProjectRolesListGrid`). А вот сама страница **отображения** конкретной сетки — `src/JoinRpg.Portal/Pages/GamePages/ProjectRoleListView.cshtml` (роут `/{projectId:int}/roleslist/{id:int}`) — сейчас заглушка `TODO`. Code-behind уже готов: содержит `RolesListId` (`ProjectRolesListIdentification`).
 

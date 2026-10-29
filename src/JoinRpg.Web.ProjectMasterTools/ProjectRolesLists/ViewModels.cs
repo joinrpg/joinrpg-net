@@ -22,6 +22,9 @@ public class AddProjectRolesListViewModel : IValidatableObject
     [Display(Name = "Колонка «Игрок»")]
     public PlayerColumnModeView ContactsColumn { get; set; } = PlayerColumnModeView.NameOnly;
 
+    [Display(Name = "Аватарка игрока")]
+    public PlayerAvatarModeView PlayerAvatar { get; set; } = PlayerAvatarModeView.None;
+
     [Display(Name = "Колонка групп")]
     public ProjectRolesListVisibilityModeView GroupsColumn { get; set; } = ProjectRolesListVisibilityModeView.None;
 
@@ -42,6 +45,13 @@ public class AddProjectRolesListViewModel : IValidatableObject
                 "В публичной сетке ролей нельзя показывать все контакты",
                 [nameof(ContactsColumn)]);
         }
+
+        if (PlayerAvatar != PlayerAvatarModeView.None && ContactsColumn == PlayerColumnModeView.None)
+        {
+            yield return new ValidationResult(
+                "Аватарка показывается в колонке «Игрок» — без колонки её негде показать",
+                [nameof(PlayerAvatar)]);
+        }
     }
 
     public ProjectRolesList ToDomain(ProjectIdentification projectId, int temporaryId = -1)
@@ -55,7 +65,8 @@ public class AddProjectRolesListViewModel : IValidatableObject
             ContactsColumn: ToDomainPlayerColumn(ContactsColumn),
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
             GroupsViewMode: (RolesGridGroupsViewMode)GroupsViewMode,
-            ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter);
+            ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter,
+            PlayerAvatar: (PlayerAvatarMode)PlayerAvatar);
     }
 
     // Порядок вариантов в форме не совпадает с числами в БД (NameOnly добавлен последним),
@@ -103,6 +114,7 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             Fields = domain.Fields,
             GroupsViewMode = (RolesGridGroupsViewModeView)domain.GroupsViewMode,
             ShowRolesFilter = (ShowRolesFilterView)domain.ShowRolesFilter,
+            PlayerAvatar = (PlayerAvatarModeView)domain.PlayerAvatar,
         };
     }
 
@@ -117,7 +129,8 @@ public class EditProjectRolesListViewModel : AddProjectRolesListViewModel
             ContactsColumn: ToDomainPlayerColumn(ContactsColumn),
             GroupsColumn: ToDomainVisibilityMode(GroupsColumn),
             GroupsViewMode: (RolesGridGroupsViewMode)GroupsViewMode,
-            ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter);
+            ShowRolesFilter: (ShowRolesFilter)ShowRolesFilter,
+            PlayerAvatar: (PlayerAvatarMode)PlayerAvatar);
     }
 }
 
@@ -146,6 +159,19 @@ public enum PlayerColumnModeView
 
     [Display(Name = "Все контакты", Description = "Показывать имя игрока и все контакты (просмотр от имени мастера)")]
     All
+}
+
+// Числа совпадают с PlayerAvatarMode — форма переводит значения приведением типа.
+public enum PlayerAvatarModeView
+{
+    [Display(Name = "Не показывать", Description = "Только имя игрока")]
+    None = 0,
+
+    [Display(Name = "Маленькая", Description = "Маленькая аватарка рядом с именем игрока. Где игрока не видно (скрыт, вакансия, шаблон, NPC) — знак вопроса")]
+    Small = 1,
+
+    [Display(Name = "Большая", Description = "Большая аватарка рядом с именем игрока. Где игрока не видно (скрыт, вакансия, шаблон, NPC) — знак вопроса")]
+    Large = 2,
 }
 
 public enum RolesGridGroupsViewModeView
