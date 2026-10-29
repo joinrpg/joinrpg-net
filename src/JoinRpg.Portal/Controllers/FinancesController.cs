@@ -150,25 +150,24 @@ public class FinancesController(
     }
 
     [HttpGet, AllowAnonymous]
-    public async Task<ActionResult> SummaryByMaster(string token, int projectId)
+    public async Task<ActionResult> SummaryByMaster(string token, ProjectIdentification projectId)
     {
-        var project = await projectRepository.GetProjectWithFinances(projectId);
-
         var guid = new Guid(Convert.FromHexString(token));
 
         // Токен снятого мастера больше не открывает сводку (ADR019, §1).
-        var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid && a.IsActive);
-
-        if (acl == null)
+        // Проверяем запросом, а не по project.ProjectAcls: GetProjectWithFinances их не включает — была ленивая загрузка.
+        if (!await projectRepository.IsActiveMasterExportToken(projectId, guid))
         {
             return Content("Unauthorized");
         }
 
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectId));
+        var project = await projectRepository.GetProjectWithFinances(projectId.Value);
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
 
         var masterOperations = project.FinanceOperations.ToArray();
 
-        var masterTransfers = await financeReportRepository.GetAllMoneyTransfers(projectId);
+        var masterTransfers = await financeReportRepository.GetAllMoneyTransfers(projectId.Value);
 
         var masterIds = MasterBalanceBuilder.GetMasterIds(masterOperations, masterTransfers, projectInfo);
         var masters = await UserRepository.GetRequiredUserInfos(masterIds);
