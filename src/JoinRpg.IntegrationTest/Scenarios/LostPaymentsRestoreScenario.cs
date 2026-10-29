@@ -24,9 +24,11 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// <summary>
 /// Восстановление потерянных онлайн-платежей PSCB (ADR027) на настоящем SQL Server: платёж
 /// вставляется с прежним номером (<c>orderId</c> банка — это <c>CommentId</c>) строго ниже счётчика
-/// комментариев вместе со строкой <c>FinanceOperationBankDetails</c>, занятый номер даёт отказ, а не
-/// вставку с новым, номер не ниже счётчика — не потерянный, повторный прогон узнаётся, наличный тип
-/// оплаты отсекается батчем до записи, а возврат вставляется с новым номером и ссылкой на исходную
+/// комментариев вместе со строкой <c>FinanceOperationBankDetails</c>, номер, занятый комментарием
+/// чужого обсуждения, даёт отказ, а не вставку с новым, комментарий своего обсуждения без операции
+/// (случай DRP) получает дописанную операцию (Attached) без нового комментария и без правки текста,
+/// номер не ниже счётчика — не потерянный, повторный прогон узнаётся, наличный тип оплаты
+/// отсекается батчем до записи, а возврат вставляется с новым номером и ссылкой на исходную
 /// операцию. Отдельно —
 /// <see cref="IClaimsRepository.GetClaimIdsForPlayers"/> отдаёт заявки в любом статусе, включая
 /// отклонённые: фильтра по статусу в запросе нет, и это единственное место, где факт проверяется
@@ -144,23 +146,83 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
         (await InsertLostPayment(masterId, PaymentRow(lostOrderId)))
             .ShouldBe(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.AlreadyExists, lostOrderId));
 
-        // 6. Конфликты номера: занятый комментарий без операции — TakenElsewhere, значение счётчика
-        // и выше — NotLostId. Ничего не вставлено, счётчик не сдвинут.
+        // 6. Случай DRP: номер занят комментарием этого же обсуждения без операции — Attached,
+        // операция и банковские реквизиты дописаны к существующему комментарию, его текст не
+        // тронут и новый комментарий не создан. Значение счётчика и выше — NotLostId: ничего
+        // не вставлено, счётчик не сдвинут.
+        string? plainTextBefore;
+        int commentsInDiscussionBefore;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            plainTextBefore = await db.Set<Comment>().AsNoTracking()
+                .Where(c => c.CommentId == plainCommentId)
+                .Select(c => c.CommentText.Text.Contents).SingleAsync();
+            commentsInDiscussionBefore = await db.Set<Comment>().CountAsync(c => c.CommentDiscussionId == discussionId);
+        }
+
         (await InsertLostPayment(masterId, PaymentRow(plainCommentId)))
-            .ShouldBe(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.TakenElsewhere, plainCommentId));
+            .ShouldBe(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.Attached, plainCommentId));
         (await InsertLostPayment(masterId, PaymentRow(identityBefore)))
             .ShouldBe(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.NotLostId, identityBefore));
         (await InsertLostPayment(masterId, PaymentRow(identityBefore + 1000)))
             .ShouldBe(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.NotLostId, identityBefore + 1000));
+
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+            // Ни нового комментария, ни правки текста: комментарий DRP остался как был.
+            (await db.Set<Comment>().CountAsync(c => c.CommentDiscussionId == discussionId)).ShouldBe(commentsInDiscussionBefore);
+            (await db.Set<Comment>().AsNoTracking()
+                .Where(c => c.CommentId == plainCommentId)
+                .Select(c => c.CommentText.Text.Contents).SingleAsync()).ShouldBe(plainTextBefore);
+
+            var attachedOperation = await db.Set<FinanceOperation>().AsNoTracking().SingleAsync(f => f.CommentId == plainCommentId);
+            attachedOperation.ProjectId.ShouldBe(projectId.Value);
+            attachedOperation.ClaimId.ShouldBe(claimId.ClaimId);
+            attachedOperation.OperationType.ShouldBe(FinanceOperationType.Online);
+            attachedOperation.State.ShouldBe(FinanceOperationState.Approved);
+            attachedOperation.MoneyAmount.ShouldBe(Money);
+            attachedOperation.PaymentTypeId.ShouldBe(onlineTypeId.PaymentTypeId);
+            attachedOperation.RefundedOperationId.ShouldBeNull();
+            attachedOperation.OperationDate.ShouldBe(PaymentAt);
+
+            var attachedBankDetails = await db.Set<FinanceOperationBankDetails>().AsNoTracking()
+                .SingleAsync(b => b.CommentId == plainCommentId);
+            attachedBankDetails.BankOperationKey.ShouldBe(BankPaymentKey);
+            attachedBankDetails.BankRefundKey.ShouldBeNull();
+
+            // Дописка не трогает IDENTITY, а NotLostId ничего не вставил.
             (await GetCommentsIdentityAsync(db)).ShouldBe(identityBefore);
-            (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(1);
-            (await db.Set<FinanceOperationBankDetails>().CountAsync(b => b.CommentId != lostOrderId)).ShouldBe(0);
+            (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(2);
+            (await db.Set<FinanceOperationBankDetails>().CountAsync(b => b.CommentId != lostOrderId && b.CommentId != plainCommentId)).ShouldBe(0);
         }
 
-        // 7. Последний рубеж обороны перед записью денег: наличный тип мастера не пройдёт в
+        // 7. Настоящий конфликт номера: комментарий в обсуждении другой заявки того же проекта —
+        // TakenElsewhere, ничего не записано (деньги не должны лечь на непредвиденную заявку).
+        var otherClaimId = await AddClaim(playerId, await AddCharacter(masterId, projectId));
+        int otherDiscussionId, otherCommentId, identityAfterOtherClaim;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            otherDiscussionId = await GetDiscussionIdAsync(db, otherClaimId);
+            otherCommentId = await db.Set<Comment>()
+                .Where(c => c.CommentDiscussionId == otherDiscussionId).MinAsync(c => c.CommentId);
+            identityAfterOtherClaim = await GetCommentsIdentityAsync(db);
+        }
+
+        (await InsertLostPayment(masterId, PaymentRow(otherCommentId)))
+            .ShouldBe(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.TakenElsewhere, otherCommentId));
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            (await db.Set<FinanceOperation>().AnyAsync(f => f.CommentId == otherCommentId)).ShouldBeFalse();
+            (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(2);
+            (await GetCommentsIdentityAsync(db)).ShouldBe(identityAfterOtherClaim);
+        }
+
+        // 8. Последний рубеж обороны перед записью денег: наличный тип мастера не пройдёт в
         // онлайн-операцию — батч отказывает до вставки, иначе сверка мастера рассинхронизировалась бы.
         var cashTypeId = await factory.Services.RunAsAsync(masterId, async sp =>
         {
@@ -195,11 +257,11 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
         {
             var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
             // Отказ до вставки: ни операции, ни комментария с запрошенным номером.
-            (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(1);
+            (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(2);
             (await db.Set<Comment>().AnyAsync(c => c.CommentId == lostOrderId + 1)).ShouldBeFalse();
         }
 
-        // 8. Возврат: своего номера в банке нет — вставляется с новым номером и ссылкой на исходный
+        // 9. Возврат: своего номера в банке нет — вставляется с новым номером и ссылкой на исходный
         // платёж, сумма отрицательная, в реквизитах оба ключа.
         LostPaymentRow refundRow = new(
             claimId,
@@ -220,7 +282,7 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
         var refundInsert = await InsertLostPayment(masterId, refundRow);
         refundInsert.Result.ShouldBe(RestoredCommentInsertResult.Inserted);
         var refundId = refundInsert.OperationId;
-        refundId.ShouldBe(identityBefore + 1);
+        refundId.ShouldBe(identityAfterOtherClaim + 1);
 
         using (var scope = factory.Services.CreateScope())
         {
@@ -251,17 +313,17 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             refundBankDetails.BankOperationKey.ShouldBe(BankPaymentKey);
             refundBankDetails.BankRefundKey.ShouldBe(BankRefundKey);
 
-            (await GetCommentsIdentityAsync(db)).ShouldBe(identityBefore + 1);
+            (await GetCommentsIdentityAsync(db)).ShouldBe(identityAfterOtherClaim + 1);
         }
 
-        // 9. Повторный прогон возврата узнаётся по уже проведённому возврату той же операции.
+        // 10. Повторный прогон возврата узнаётся по уже проведённому возврату той же операции.
         (await InsertLostPayment(masterId, refundRow))
             .ShouldBe(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.AlreadyExists, refundId));
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-            (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(2);
-            (await GetCommentsIdentityAsync(db)).ShouldBe(identityBefore + 1);
+            (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(3);
+            (await GetCommentsIdentityAsync(db)).ShouldBe(identityAfterOtherClaim + 1);
         }
     }
 

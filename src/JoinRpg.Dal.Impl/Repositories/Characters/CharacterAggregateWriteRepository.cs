@@ -455,6 +455,14 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
         // не годится тоже — подписки восстановлением не проводятся), а исходная операция возврата —
         // на онлайн-операцию той же заявки: возврат на чужую заявку или на не-онлайн операцию
         // пройти не должен.
+        //
+        // Номер платежа может быть занят комментарием этого же обсуждения без операции: так бывает,
+        // когда инструменты DRP вернули комментарий, но не вернули операцию под ним. Тогда операция
+        // и банковские реквизиты дописываются к существующему комментарию (Attached), а его текст
+        // не трогается: комментарий и так на своём месте в истории обсуждения. Заявка плана уже
+        // названа этим комментарием, поэтому обсуждение совпадает. Комментарий чужого обсуждения
+        // (другой заявки или форумной темы) по-прежнему даёт отказ TakenElsewhere — писать деньги
+        // в непредвиденную заявку нельзя.
         var sql = $"""
             SET XACT_ABORT ON;
             BEGIN TRY
@@ -475,13 +483,26 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                     SELECT @existingDiscussionId = CommentDiscussionId FROM dbo.Comments WITH (UPDLOCK, HOLDLOCK) WHERE CommentId = @commentId;
                     IF @existingDiscussionId IS NOT NULL
                     BEGIN
+                        IF EXISTS (SELECT 1 FROM dbo.FinanceOperations WHERE CommentId = @commentId)
+                        BEGIN
+                            COMMIT TRANSACTION;
+                            SELECT {(int)RestoredCommentInsertResult.AlreadyExists} AS Result, @commentId AS OperationId;
+                            RETURN;
+                        END;
+                        IF @existingDiscussionId <> @discussionId
+                        BEGIN
+                            COMMIT TRANSACTION;
+                            SELECT {(int)RestoredCommentInsertResult.TakenElsewhere} AS Result, @commentId AS OperationId;
+                            RETURN;
+                        END;
+                        INSERT INTO dbo.FinanceOperations (CommentId, ProjectId, ClaimId, MoneyAmount, PaymentTypeId, Created,
+                            Changed, OperationDate, State, OperationType, RefundedOperationId)
+                        VALUES (@commentId, @p1, @p0, @p9, @p10, @createdAt, @p7, @p8,
+                            {(int)FinanceOperationState.Approved}, @p11, @p3);
+                        INSERT INTO dbo.FinanceOperationBankDetails (CommentId, BankOperationKey, BankRefundKey)
+                        VALUES (@commentId, @p13, @p14);
                         COMMIT TRANSACTION;
-                        SELECT CASE
-                                WHEN @existingDiscussionId = @discussionId AND EXISTS (SELECT 1 FROM dbo.FinanceOperations WHERE CommentId = @commentId)
-                                THEN {(int)RestoredCommentInsertResult.AlreadyExists}
-                                ELSE {(int)RestoredCommentInsertResult.TakenElsewhere}
-                            END AS Result,
-                            @commentId AS OperationId;
+                        SELECT {(int)RestoredCommentInsertResult.Attached} AS Result, @commentId AS OperationId;
                         RETURN;
                     END;
                     IF @commentId <= 0 OR @commentId >= ISNULL(IDENT_CURRENT('dbo.Comments'), 0)

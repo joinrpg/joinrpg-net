@@ -307,4 +307,26 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             new UserIdentification(claim.PlayerUserId),
             new ClaimIdentification(projectId, claim.ClaimId)))];
     }
+
+    /// <summary>
+    /// Заявки, в чьём обсуждении лежат перечисленные комментарии, — одним запросом (ADR027)
+    /// </summary>
+    public async Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds)
+    {
+        if (commentIds.Count == 0)
+        {
+            return [];
+        }
+
+        var ids = commentIds.ToList();
+        var result = await (
+            from comment in Ctx.Set<Comment>()
+            join claim in Ctx.Set<Claim>() on comment.CommentDiscussionId equals claim.CommentDiscussionId
+            where ids.Contains(comment.CommentId)
+            select new { comment.CommentId, claim.ProjectId, claim.ClaimId }).ToListAsync();
+
+        return [.. result.Select(found => new CommentClaimId(
+            found.CommentId,
+            new ClaimIdentification(found.ProjectId, found.ClaimId)))];
+    }
 }

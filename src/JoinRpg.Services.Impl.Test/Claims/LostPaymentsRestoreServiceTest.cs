@@ -298,15 +298,17 @@ public class LostPaymentsRestoreServiceTest : ClaimServiceTestBase
     }
 
     /// <summary>
-    /// Номер занят комментарием без операции — это чужой номер, восстанавливать с ним нельзя.
+    /// Номер занят комментарием чужого обсуждения — это чужой номер, восстанавливать с ним нельзя:
+    /// деньги встали бы на непредвиденную заявку.
     /// </summary>
     [Fact]
     public async Task RefusesANumberTakenByAnotherComment()
     {
         var claim = CreateClaim();
+        var otherClaim = CreateClaim();
         var paymentType = CreateOnlinePaymentType();
         _ = await WriteRepository.InsertRestoredClaimComment(new RestoredClaimCommentRow(
-            claim.GetId(),
+            otherClaim.GetId(),
             LostOperationId,
             new UserIdentification(mock.Master.UserId),
             IsCommentByPlayer: false,
@@ -319,6 +321,50 @@ public class LostPaymentsRestoreServiceTest : ClaimServiceTestBase
 
         result.Status.ShouldBe(LostOperationRestoreStatus.NumberTaken);
         claim.FinanceOperations.ShouldBeEmpty();
+        otherClaim.FinanceOperations.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// DRP вернул комментарий без операции: восстановление дописывает операцию и банковские
+    /// реквизиты к существующему комментарию (Attached), его текст не трогает, а взнос
+    /// пересчитывается и уведомление уходит, как после обычной вставки.
+    /// </summary>
+    [Fact]
+    public async Task AttachesThePaymentToTheCommentRestoredWithoutIt()
+    {
+        var claim = CreateClaimWithFee(Money);
+        var paymentType = CreateOnlinePaymentType();
+        _ = await WriteRepository.InsertRestoredClaimComment(new RestoredClaimCommentRow(
+            claim.GetId(),
+            LostOperationId,
+            new UserIdentification(mock.Master.UserId),
+            IsCommentByPlayer: false,
+            IsVisibleToPlayer: true,
+            ExtraAction: null,
+            OperationDate,
+            "комментарий, возвращённый DRP"));
+
+        var result = await CreateService().RestorePaymentAsync(Payment(claim.GetId(), paymentType));
+
+        result.Status.ShouldBe(LostOperationRestoreStatus.Attached);
+        result.OperationId.ShouldBe(LostOperationId);
+        result.Refund.ShouldBeNull();
+        result.FeeRecalculated.ShouldBeTrue();
+        claim.CurrentFee.ShouldBe(Money);
+
+        var operation = claim.FinanceOperations.ShouldHaveSingleItem();
+        operation.CommentId.ShouldBe(LostOperationId);
+        operation.OperationType.ShouldBe(FinanceOperationType.Online);
+        operation.State.ShouldBe(FinanceOperationState.Approved);
+        operation.MoneyAmount.ShouldBe(Money);
+        operation.BankDetails.ShouldNotBeNull();
+        operation.BankDetails!.BankOperationKey.ShouldBe(BankPaymentId);
+        // Текст комментария, возвращённого DRP, не тронут — нового комментария нет.
+        operation.Comment.CommentText.Text.Contents.ShouldBe("комментарий, возвращённый DRP");
+
+        var notification = claimNotifications.OnlinePayments.ShouldHaveSingleItem();
+        notification.Text.TemplateContents.ShouldBe($"Онлайн-оплата на сумму {Money:F2}₽ вновь отражена в вашей заявке.");
+        notification.FinanceOperationId.FinanceOperationId.ShouldBe(LostOperationId);
     }
 
     /// <summary>

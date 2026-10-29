@@ -58,7 +58,9 @@ internal class LostPaymentsRestoreService(
             bankRefundKey: null);
 
         var status = ToStatus(insert.Result);
-        if (status != LostOperationRestoreStatus.Restored)
+        // Запись в базе есть и при Attached: операция дописана к существующему комментарию,
+        // поэтому взнос пересчитывается и уведомление отправляется, как после обычной вставки.
+        if (status is not (LostOperationRestoreStatus.Restored or LostOperationRestoreStatus.Attached))
         {
             logger.LogWarning(
                 "Потерянный платёж {OrderId} заявки {ClaimId} не восстановлен: {Status}. Админ {AdminUserId}",
@@ -297,6 +299,7 @@ internal class LostPaymentsRestoreService(
     private static LostOperationRestoreStatus ToStatus(RestoredCommentInsertResult result) => result switch
     {
         RestoredCommentInsertResult.Inserted => LostOperationRestoreStatus.Restored,
+        RestoredCommentInsertResult.Attached => LostOperationRestoreStatus.Attached,
         RestoredCommentInsertResult.AlreadyExists => LostOperationRestoreStatus.AlreadyRestored,
         RestoredCommentInsertResult.TakenElsewhere => LostOperationRestoreStatus.NumberTaken,
         RestoredCommentInsertResult.NotLostId => LostOperationRestoreStatus.NumberNotLost,

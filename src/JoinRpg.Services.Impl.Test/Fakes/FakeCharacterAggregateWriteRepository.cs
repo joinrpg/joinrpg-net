@@ -250,7 +250,9 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
     /// <summary>
     /// Потерянный платёж так же, как в бою (ADR027): платёж — с прежним номером, возврат — с новым
     /// и со ссылкой на исходную операцию. Повтор платежа узнаётся по занятому номеру, повтор
-    /// возврата — по уже проведённому возврату той же операции.
+    /// возврата — по уже проведённому возврату той же операции. Комментарий этого же обсуждения
+    /// без операции — случай DRP: операция с банковскими реквизитами дописывается к нему (Attached),
+    /// а его текст не трогается.
     /// </summary>
     public Task<RestoredFinanceOperationInsert> InsertLostPayment(LostPaymentRow payment)
     {
@@ -273,11 +275,22 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
         {
             if (allComments.FirstOrDefault(c => c.CommentId == id) is { } existing)
             {
-                return Task.FromResult(new RestoredFinanceOperationInsert(
-                    discussion.Comments.Contains(existing) && existing.Finance is not null
-                        ? RestoredCommentInsertResult.AlreadyExists
-                        : RestoredCommentInsertResult.TakenElsewhere,
-                    id));
+                if (existing.Finance is not null)
+                {
+                    return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.AlreadyExists, id));
+                }
+                if (!discussion.Comments.Contains(existing))
+                {
+                    return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.TakenElsewhere, id));
+                }
+
+                // DRP вернул комментарий без операции: дописываем операцию и банковские
+                // реквизиты к существующему комментарию, его текст не трогаем.
+                var attached = NewFinance(existing);
+                existing.Finance = attached;
+                claim.FinanceOperations ??= [];
+                claim.FinanceOperations.Add(attached);
+                return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.Attached, id));
             }
             if (id <= 0 || id >= CommentIdentityCurrent)
             {
@@ -308,10 +321,16 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             // Служебный пользователь онлайн-платежей в моке проекта не живёт, а в реальной базе
             // есть (его создаёт сид миграций), поэтому автор здесь — вне мока.
             authorOverride: mock.TryGetUser(payment.AuthorId.Value) ?? new User { UserId = payment.AuthorId.Value });
-        var finance = new FinanceOperation
+        var finance = NewFinance(comment);
+        comment.Finance = finance;
+        claim.FinanceOperations ??= [];
+        claim.FinanceOperations.Add(finance);
+        return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.Inserted, commentId));
+
+        FinanceOperation NewFinance(Comment target) => new()
         {
-            CommentId = commentId,
-            Comment = comment,
+            CommentId = target.CommentId,
+            Comment = target,
             ProjectId = claim.ProjectId,
             Project = mock.Project,
             ClaimId = claim.ClaimId,
@@ -327,15 +346,11 @@ internal sealed class FakeCharacterAggregateWriteRepository(MockedProject mock) 
             RefundedOperationId = payment.RefundedOperationId,
             BankDetails = new FinanceOperationBankDetails
             {
-                CommentId = commentId,
+                CommentId = target.CommentId,
                 BankOperationKey = payment.BankOperationKey,
                 BankRefundKey = payment.BankRefundKey,
             },
         };
-        comment.Finance = finance;
-        claim.FinanceOperations ??= [];
-        claim.FinanceOperations.Add(finance);
-        return Task.FromResult(new RestoredFinanceOperationInsert(RestoredCommentInsertResult.Inserted, commentId));
     }
 
     private List<Comment> AllClaimComments() => [.. mock.Project.Claims.SelectMany(c => c.CommentDiscussion.Comments)];

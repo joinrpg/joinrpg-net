@@ -396,25 +396,36 @@ internal sealed class FakeFinanceOperationUri : IUriLocator<FinanceOperationIden
 }
 
 /// <summary>
-/// Заявки игроков в проекте — то, на что встанет потерянный платёж.
+/// Заявки игроков в проекте — то, на что встанет потерянный платёж, — и заявки, в чьих
+/// обсуждениях лежат комментарии.
 /// </summary>
 /// <remarks>
-/// Остальные члены интерфейса бросают намеренно: сверке нужен один запрос, и поход
+/// Остальные члены интерфейса бросают намеренно: сверке нужны два запроса, и поход
 /// за незапланированными данными должен быть виден сразу.
 /// </remarks>
 internal sealed class PscbFakeClaimsRepository : IClaimsRepository
 {
     private readonly List<(int ProjectId, PlayerClaimId Claim)> claims = [];
+    private readonly List<CommentClaimId> commentClaims = [];
 
     /// <summary>
     /// Запросы к заявкам: проект и номера плательщиков, которых спрашивали одним вызовом.
     /// </summary>
     public List<(int ProjectId, int[] UserIds)> Requests { get; } = [];
 
+    /// <summary>
+    /// Номера комментариев, которых спрашивали одним вызовом, — чтобы тест видел пачкование.
+    /// </summary>
+    public List<int[]> CommentIdRequests { get; } = [];
+
     public void AddClaim(int projectId, int userId, int claimId)
         => claims.Add((projectId, new PlayerClaimId(
             new UserIdentification(userId),
             new ClaimIdentification(projectId, claimId))));
+
+    /// <summary>Комментарий в обсуждении заявки — так его нашёл бы настоящий запрос.</summary>
+    public void AddClaimComment(int commentId, int projectId, int claimId)
+        => commentClaims.Add(new CommentClaimId(commentId, new ClaimIdentification(projectId, claimId)));
 
     public Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
     {
@@ -425,6 +436,17 @@ internal sealed class PscbFakeClaimsRepository : IClaimsRepository
             .. claims
                 .Where(entry => entry.ProjectId == projectId.Value && userIds.Contains(entry.Claim.UserId))
                 .Select(entry => entry.Claim),
+        ];
+        return Task.FromResult(found);
+    }
+
+    public Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds)
+    {
+        CommentIdRequests.Add([.. commentIds]);
+
+        IReadOnlyCollection<CommentClaimId> found =
+        [
+            .. commentClaims.Where(entry => commentIds.Contains(entry.CommentId)),
         ];
         return Task.FromResult(found);
     }

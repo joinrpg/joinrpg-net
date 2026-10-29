@@ -73,6 +73,22 @@ public interface IClaimsRepository : IDisposable
     /// </remarks>
     Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds);
 
+    /// <summary>
+    /// Заявки, в чьём обсуждении лежат перечисленные комментарии, — одним запросом на весь набор.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Отдаются только комментарии, принадлежащие обсуждению заявки: комментарии форумных тем
+    /// отсутствуют по построению — ни одна заявка не ссылается на их обсуждение.
+    /// </para>
+    /// <para>
+    /// Назначение (ADR027): комментарий, возвращённый инструментами DRP без своей финансовой
+    /// операции, называет заявку достовернее, чем эвристика «наименьший номер среди заявок
+    /// плательщика в проекте».
+    /// </para>
+    /// </remarks>
+    Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds);
+
 }
 
 /// <summary>
@@ -81,3 +97,10 @@ public interface IClaimsRepository : IDisposable
 /// <param name="UserId">Игрок (<c>Claim.PlayerUserId</c>).</param>
 /// <param name="ClaimId">Идентификатор заявки.</param>
 public record PlayerClaimId(UserIdentification UserId, ClaimIdentification ClaimId);
+
+/// <summary>
+/// Комментарий и заявка, в чьём обсуждении он лежит.
+/// </summary>
+/// <param name="CommentId">Идентификатор комментария.</param>
+/// <param name="ClaimId">Идентификатор заявки — владельца обсуждения комментария.</param>
+public record CommentClaimId(int CommentId, ClaimIdentification ClaimId);

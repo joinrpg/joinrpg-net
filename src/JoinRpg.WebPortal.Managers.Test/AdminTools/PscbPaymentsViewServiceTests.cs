@@ -586,6 +586,58 @@ public class PscbPaymentsViewServiceTests
     }
 
     /// <summary>
+    /// Комментарий с номером платежа уже лежит в обсуждении заявки (например, его вернули
+    /// инструменты DRP без операции): обсуждение называет заявку достовернее эвристики
+    /// наименьшего номера, поэтому план и ссылка выбирают именно её — даже когда у плательщика
+    /// есть заявка с меньшим номером.
+    /// </summary>
+    [Fact]
+    public async Task PlansTheLostPaymentIntoTheClaimOfTheExistingComment()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        claims.AddClaim(7, 42, claimId: 101);
+        claims.AddClaimComment(commentId: 1, projectId: 7, claimId: 101);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.RestoreBlockReason.ShouldBeNull();
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/7/claim/101/edit");
+        // Запрос о комментариях один и пачкой — по distinct-номерам потерянных строк.
+        claims.CommentIdRequests.ShouldHaveSingleItem().ShouldBe([1]);
+    }
+
+    /// <summary>
+    /// Комментарий найден в обсуждении заявки другого проекта: платёж туда вставать не должен
+    /// (тип оплаты выбран для определённого проекта), поэтому план откатывается к заявке
+    /// с наименьшим номером у плательщика.
+    /// </summary>
+    [Fact]
+    public async Task IgnoresTheCommentClaimOfAnotherProject()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        claims.AddClaimComment(commentId: 1, projectId: 9, claimId: 101);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.RestoreBlockReason.ShouldBeNull();
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/7/claim/55/edit");
+    }
+
+    /// <summary>
     /// Возврат пишется туда же, откуда пришёл платёж: заявка берётся у найденной операции,
     /// поэтому ни плательщик, ни название проекта для такой строки не нужны.
     /// </summary>
@@ -840,6 +892,7 @@ public class PscbPaymentsViewServiceTests
 
         row.MatchState.ShouldBe(PscbPaymentMatchState.Settled);
         claims.Requests.ShouldBeEmpty();
+        claims.CommentIdRequests.ShouldBeEmpty();
         projects.Requests.ShouldBeEmpty();
     }
 

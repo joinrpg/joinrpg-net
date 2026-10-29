@@ -146,7 +146,7 @@ internal class PscbPaymentsRestoreViewService(
 
         return (
             new PscbRestoreRowResult { OrderId = row.OrderId, Outcome = ToOutcome(result.Status), Message = message.ToString() },
-            result.Status == LostOperationRestoreStatus.Restored ? 1 : 0,
+            result.Status is LostOperationRestoreStatus.Restored or LostOperationRestoreStatus.Attached ? 1 : 0,
             result.Refund?.Status == LostOperationRestoreStatus.Restored ? 1 : 0);
     }
 
@@ -169,6 +169,8 @@ internal class PscbPaymentsRestoreViewService(
     private static PscbRestoreRowOutcome ToOutcome(LostOperationRestoreStatus status) => status switch
     {
         LostOperationRestoreStatus.Restored => PscbRestoreRowOutcome.Restored,
+        // Операция дописана к существующему комментарию заявки — запись в базе есть, исход успешный.
+        LostOperationRestoreStatus.Attached => PscbRestoreRowOutcome.Restored,
         LostOperationRestoreStatus.AlreadyRestored => PscbRestoreRowOutcome.AlreadySettled,
         LostOperationRestoreStatus.Failed => PscbRestoreRowOutcome.Failed,
         _ => PscbRestoreRowOutcome.Failed,
@@ -177,6 +179,7 @@ internal class PscbPaymentsRestoreViewService(
     private static string PaymentOutcomeText(LostOperationRestoreStatus status) => status switch
     {
         LostOperationRestoreStatus.Restored => "платёж восстановлен",
+        LostOperationRestoreStatus.Attached => "платёж записан в уже существующий комментарий заявки",
         LostOperationRestoreStatus.AlreadyRestored => "операция уже в базе — повторный прогон ничего не записал",
         LostOperationRestoreStatus.NumberTaken => "номер операции занят другой записью — восстанавливать вручную",
         LostOperationRestoreStatus.NumberNotLost => "номер операции не ниже текущего счётчика — восстанавливать вручную",
@@ -189,6 +192,9 @@ internal class PscbPaymentsRestoreViewService(
     private static string RefundOutcomeText(LostOperationRestoreStatus status) => status switch
     {
         LostOperationRestoreStatus.Restored => "возврат восстановлен",
+        // Возврат всегда вставляется новой записью, поэтому Attached у него не случается;
+        // ветка — ради полноты перебора.
+        LostOperationRestoreStatus.Attached => "возврат дописан к существующему комментарию",
         LostOperationRestoreStatus.AlreadyRestored => "возврат уже в базе — повторный прогон ничего не записал",
         LostOperationRestoreStatus.NumberTaken => "возврат не восстановлен: номер операции занят",
         LostOperationRestoreStatus.NumberNotLost => "возврат не восстановлен: номер операции не ниже счётчика",

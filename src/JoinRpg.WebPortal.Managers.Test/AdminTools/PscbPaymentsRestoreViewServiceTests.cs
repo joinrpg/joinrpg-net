@@ -218,6 +218,25 @@ public class PscbPaymentsRestoreViewServiceTests
         row.Message.ShouldBe("операция уже в базе — повторный прогон ничего не записал");
     }
 
+    /// <summary>
+    /// Операция дописана к комментарию заявки, возвращённому DRP без операции: запись в базе
+    /// есть, поэтому строка считается восстановленной, а сообщение объясняет, куда лёг платёж.
+    /// </summary>
+    [Fact]
+    public async Task CountsTheAttachedPaymentAsRestored()
+    {
+        var (service, domain) = CreateService(LostPaymentScenario());
+        domain.PaymentStatus = LostOperationRestoreStatus.Attached;
+
+        var result = await service.Restore(Query());
+
+        result.RestoredPaymentsCount.ShouldBe(1);
+        result.RestoredRefundsCount.ShouldBe(0);
+        var row = result.Rows.ShouldHaveSingleItem();
+        row.Outcome.ShouldBe(PscbRestoreRowOutcome.Restored);
+        row.Message.ShouldBe("платёж записан в уже существующий комментарий заявки");
+    }
+
     /// <summary>Номер занят чужим комментарием: строка уходит человеку, а не пишется с новым номером.</summary>
     [Fact]
     public async Task ReportsTheTakenNumberAsAFailure()

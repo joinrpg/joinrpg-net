@@ -433,11 +433,14 @@ internal class PscbPaymentsViewService(
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Правило заказчика: восстанавливать можно только то, что определилось однозначно. Платёж
-    /// пишется на заявку с наименьшим номером среди всех заявок плательщика в проекте — закрытые
-    /// и отклонённые подходят тоже, потому что потерянный платёж бывает и на них. Тип оплаты —
-    /// единственный активный <c>Online</c> в проекте; если их ноль или несколько, восстанавливать
-    /// некуда.
+    /// Правило заказчика: восстанавливать можно только то, что определилось однозначно. Заявка
+    /// потерянного платежа определяется по приоритету: если комментарий с номером платежа уже
+    /// лежит в обсуждении какой-то заявки определённого проекта (например, его вернули инструменты
+    /// DRP без операции), платёж встанет на эту заявку — обсуждение называет её достовернее любой
+    /// эвристики. Иначе платёж пишется на заявку с наименьшим номером среди всех заявок плательщика
+    /// в проекте — закрытые и отклонённые подходят тоже, потому что потерянный платёж бывает
+    /// и на них. Тип оплаты — единственный активный <c>Online</c> в проекте; если их ноль
+    /// или несколько, восстанавливать некуда.
     /// </para>
     /// <para>
     /// Строка с пропущенным возвратом заявку и тип оплаты берёт у найденной операции платежа,
@@ -460,19 +463,20 @@ internal class PscbPaymentsViewService(
         }
 
         var claims = await LoadFirstClaimIdsAsync(candidates, resolution);
+        var commentClaims = await LoadCommentClaimIdsAsync(candidates);
         var projects = await LoadProjectInfosAsync(candidates, resolution, operations);
 
         Dictionary<PscbPaymentListRow, RowRestorePlan> plans = [];
         foreach (var row in candidates)
         {
             var matched = MatchedOperationOf(row, operations);
-            row.RestoreBlockReason = BlockReason(row, matched, resolution, claims, projects);
+            row.RestoreBlockReason = BlockReason(row, matched, resolution, claims, commentClaims, projects);
 
             // Заявка строки с пропущенным возвратом уже проставлена сверкой — она у операции платежа.
             if (row.MatchState == PscbPaymentMatchState.Lost
                 && resolution.ProjectIds.TryGetValue(row, out var projectId)
                 && resolution.UserIds.TryGetValue(row, out var userId)
-                && claims.TryGetValue((projectId, userId), out var lostClaimId))
+                && ChooseLostClaim(row, projectId, userId, claims, commentClaims) is { } lostClaimId)
             {
                 row.ClaimUrl = claimUri.GetUri(lostClaimId).AbsoluteUri;
 
@@ -495,6 +499,59 @@ internal class PscbPaymentsViewService(
         }
 
         return plans;
+    }
+
+    /// <summary>
+    /// Заявка, на которую встанет потерянный платёж: заявка существующего комментария, если он
+    /// найден и принадлежит тому же проекту, иначе заявка с наименьшим номером у плательщика.
+    /// </summary>
+    private static ClaimIdentification? ChooseLostClaim(
+        PscbPaymentListRow row,
+        ProjectIdentification projectId,
+        UserIdentification userId,
+        IReadOnlyDictionary<(ProjectIdentification ProjectId, UserIdentification UserId), ClaimIdentification> firstClaims,
+        IReadOnlyDictionary<int, ClaimIdentification> commentClaims)
+    {
+        // Существующий комментарий (например, возвращённый инструментами DRP без своей операции)
+        // называет заявку достоверно, поэтому побеждает эвристику наименьшего номера. Комментарий
+        // чужого проекта игнорируется: тип оплаты выбран для определённого проекта, и писать
+        // платёж в заявку другого проекта нельзя.
+        if (PscbPaymentViewModelBuilder.OperationIdFromOrderId(row.OrderId) is { } commentId
+            && commentClaims.TryGetValue(commentId, out var commentClaim)
+            && commentClaim.ProjectId == projectId)
+        {
+            return commentClaim;
+        }
+
+        return firstClaims.TryGetValue((projectId, userId), out var firstClaim) ? firstClaim : null;
+    }
+
+    /// <summary>
+    /// Заявки, в чьих обсуждениях лежат комментарии потерянных строк, — одним запросом и только
+    /// когда потерянные строки есть: полностью проведённому списку лишний поход в базу не нужен.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<int, ClaimIdentification>> LoadCommentClaimIdsAsync(
+        IReadOnlyCollection<PscbPaymentListRow> candidates)
+    {
+        var commentIds = candidates
+            .Where(row => row.MatchState == PscbPaymentMatchState.Lost)
+            .Select(row => PscbPaymentViewModelBuilder.OperationIdFromOrderId(row.OrderId))
+            .OfType<int>()
+            .Distinct()
+            .ToList();
+
+        if (commentIds.Count == 0)
+        {
+            return new Dictionary<int, ClaimIdentification>();
+        }
+
+        Dictionary<int, ClaimIdentification> found = [];
+        foreach (var commentClaim in await claimsRepository.GetClaimIdsByCommentIds(commentIds))
+        {
+            found[commentClaim.CommentId] = commentClaim.ClaimId;
+        }
+
+        return found;
     }
 
     /// <summary>
@@ -572,6 +629,7 @@ internal class PscbPaymentsViewService(
         MatchedOperation? matched,
         RowResolution resolution,
         IReadOnlyDictionary<(ProjectIdentification ProjectId, UserIdentification UserId), ClaimIdentification> firstClaims,
+        IReadOnlyDictionary<int, ClaimIdentification> commentClaims,
         IReadOnlyDictionary<ProjectIdentification, ProjectInfo> projects)
     {
         if (PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row) is { } bankReason)
@@ -611,7 +669,9 @@ internal class PscbPaymentsViewService(
             return typeReason;
         }
 
-        return firstClaims.ContainsKey((projectId, userId)) ? null : "у плательщика нет заявки в проекте";
+        return ChooseLostClaim(row, projectId, userId, firstClaims, commentClaims) is not null
+            ? null
+            : "у плательщика нет заявки в проекте";
     }
 
     /// <remarks>
