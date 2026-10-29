@@ -113,7 +113,7 @@
 
     @code {
 
-    IReadOnlyList<UgItemForCaptainViewModel>? claimListItems;
+    IReadOnlyList<UgItemViewModel>? claimListItems;
 
     private UgStatusFilterView StatusFilter { get; set; }
 
@@ -123,7 +123,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.ApplyStatus.BusyStatus).ToList();
+        claimListItems = await LoadItems();
         await base.OnInitializedAsync();
     }
 
@@ -134,7 +134,11 @@
             StatusFilter = args;
             claimListItems = null;
             StateHasChanged();
-            claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.ApplyStatus.BusyStatus).ToList();
+            claimListItems = await LoadItems();
         }
     }
+
+    private async Task<IReadOnlyList<UgItemViewModel>> LoadItems()
+        => [.. (await claimListClient.GetGrid(ProjectId, UgScopeView.Captain, new UgFilterView(StatusFilter)))
+            .OrderBy(c => c.Character.ApplyStatus.BusyStatus)];
 }
