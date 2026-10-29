@@ -30,7 +30,7 @@ internal class TelegramSenderJobService(
         }
         else
         {
-            var sender = await userRepository.GetRequiredUserInfo(message.Message.Initiator);
+            var sender = await userRepository.GetRequiredUserInfoHeader(message.Message.Initiator);
             html = FormatMessage(message.Message.Header, message.Message.Body, entityLink, sender.DisplayName);
         }
 

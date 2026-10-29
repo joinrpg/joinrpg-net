@@ -55,7 +55,7 @@ internal class ClaimRestoreService(
         {
             _ = EnsureMaster(projectInfo, targetMaster);
         }
-        _ = await unitOfWork.GetUsersRepository().GetRequiredUserInfo(request.Player);
+        _ = await unitOfWork.GetUsersRepository().GetRequiredUserInfoHeader(request.Player);
 
         var now = DateTime.UtcNow;
         EnsureRestoredDate(request.CreatedAt, now);
