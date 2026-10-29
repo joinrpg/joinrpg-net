@@ -52,7 +52,7 @@ public static class ItemBuilder
                character.CharacterTypeInfo.SlotLimit,
                character.CharacterTypeInfo.IsHot,
                ClaimValidator.IsAvailableForPlayer(character)),
-           [] // TODO
+           BuildGroups(character, accessArguments)
            );
 
         return new UgItemViewModel(
@@ -60,6 +60,15 @@ public static class ItemBuilder
             [.. claims.Select(claim => BuildClaimItem(new ClaimInCharacter(character, claim), accessArguments, problems?[claim.ClaimId]))]
             );
     }
+
+    /// <summary>
+    /// Группы персонажа — те же, что в сетке ролей (<see cref="CharacterInfo.IntrestingGroupsForDisplay"/>:
+    /// активные обычные и группы вариантов поля, вверх до корня). Скрытые — только мастеру.
+    /// </summary>
+    private static IReadOnlyList<CharacterGroupLinkSlimViewModel> BuildGroups(CharacterInfo character, AccessArguments accessArguments)
+        => [.. character.IntrestingGroupsForDisplay
+            .Where(group => group.IsPublic || accessArguments.MasterAccess)
+            .Select(group => new CharacterGroupLinkSlimViewModel(group))];
 
     private static UgClaimViewModel BuildClaimItem(
         ClaimInCharacter claimInCharacter,

@@ -44,7 +44,7 @@ public record class UgItemViewModel(
 public record class UgCharacterViewModel(
     [property: Display(Name = "Персонаж")] CharacterLinkSlimViewModel Name,
     CharacterApplyViewModel ApplyStatus,
-    IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups);
+    IReadOnlyList<CharacterGroupLinkSlimViewModel> Groups);
 
 public record class UgClaimViewModel(
      [property: Display(Name = "Игрок")] UserLinkViewModel? Player,

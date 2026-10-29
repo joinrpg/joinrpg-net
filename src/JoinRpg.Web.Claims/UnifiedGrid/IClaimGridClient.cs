@@ -33,7 +33,19 @@ public enum UgScopeView
 /// Только заявки с проблемами от <see cref="ProblemSeverity.Warning"/> и выше. Действует только в
 /// мастерском скоупе: капитан проблем не видит (ADR027 §1).
 /// </param>
-public record class UgFilterView(UgStatusFilterView Status, bool OnlyWithProblems = false);
+/// <param name="Group">
+/// Только персонажи этой группы и её подгрупп. Действует только в мастерском скоупе: селектор групп
+/// капитану недоступен, а его группы задают правила капитана (ADR027 §1).
+/// </param>
+/// <param name="Responsible">
+/// Только заявки, где этот мастер ответственный; персонажи без таких заявок пропадают. Действует
+/// только в мастерском скоупе.
+/// </param>
+public record class UgFilterView(
+    UgStatusFilterView Status,
+    bool OnlyWithProblems = false,
+    CharacterGroupIdentification? Group = null,
+    UserIdentification? Responsible = null);
 
 /// <summary>
 /// Страница грида. Страница считается по персонажам, чтобы заявки персонажа не рвались на её границе.

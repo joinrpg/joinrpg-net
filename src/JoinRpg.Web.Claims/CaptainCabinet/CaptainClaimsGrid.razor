@@ -37,6 +37,10 @@
             <tr>
                 <td>
                   <CharacterLink Model="item.Character.Name" />
+                  @if (item.Character.Groups.Count > 0)
+                  {
+                      <div class="small"><CharacterGroupsLine Groups="item.Character.Groups" /></div>
+                  }
                 </td>
 
                 <td>
@@ -70,6 +74,10 @@
                             var rowspan = item.Claims.Length + (item.Character.ApplyStatus.IsSlot ? 1 : 0);
                             <td rowspan="@rowspan">
                                 <CharacterLink Model="item.Character.Name" />
+                                @if (item.Character.Groups.Count > 0)
+                                {
+                                    <div class="small"><CharacterGroupsLine Groups="item.Character.Groups" /></div>
+                                }
                         </td>
                     }
                     

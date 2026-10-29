@@ -29,7 +29,16 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
             .ReadFromJsonOrThrowProblem<IReadOnlyCollection<ClaimLinkViewModel>>();
 
     async Task<UgPageViewModel> IUnifiedGridClient.GetGrid(ProjectIdentification projectId, UgScopeView scope, UgFilterView filter, int page)
-        => await (await httpClient.GetAsync(
-            $"webapi/claim-list/GetGrid?projectId={projectId.Value}&scope={scope}&status={filter.Status}&onlyWithProblems={filter.OnlyWithProblems}&page={page}"))
-            .ReadFromJsonOrThrowProblem<UgPageViewModel>();
+    {
+        var url = $"webapi/claim-list/GetGrid?projectId={projectId.Value}&scope={scope}&status={filter.Status}&onlyWithProblems={filter.OnlyWithProblems}&page={page}";
+        if (filter.Group is not null)
+        {
+            url += $"&characterGroupId={Uri.EscapeDataString(filter.Group.ToString())}";
+        }
+        if (filter.Responsible is not null)
+        {
+            url += $"&responsibleMasterId={filter.Responsible.Value}";
+        }
+        return await (await httpClient.GetAsync(url)).ReadFromJsonOrThrowProblem<UgPageViewModel>();
+    }
 }

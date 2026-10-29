@@ -19,13 +19,25 @@ public class ClaimListController(IClaimListClient claimClient, IUnifiedGridClien
 
     [HttpGet]
     [Authorize]
-    public async Task<UgPageViewModel> GetGrid(
+    public async Task<ActionResult<UgPageViewModel>> GetGrid(
         [FromQuery] ProjectIdentification projectId,
         [FromQuery] UgScopeView scope,
         [FromQuery] UgStatusFilterView status,
         [FromQuery] bool onlyWithProblems = false,
+        [FromQuery] CharacterGroupIdentification? characterGroupId = null,
+        [FromQuery] UserIdentification? responsibleMasterId = null,
         [FromQuery] int page = 1)
     {
-        return await claimGridClient.GetGrid(projectId, scope, new UgFilterView(status, onlyWithProblems), page);
+        // Мусорная строка в query иначе молча превратилась бы в «без фильтра». Id группы чужого
+        // проекта разбирается нормально и даёт пустой грид в сервисе.
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+        return await claimGridClient.GetGrid(
+            projectId,
+            scope,
+            new UgFilterView(status, onlyWithProblems, characterGroupId, responsibleMasterId),
+            page);
     }
 }

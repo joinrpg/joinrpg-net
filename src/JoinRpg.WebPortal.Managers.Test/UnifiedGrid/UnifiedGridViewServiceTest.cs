@@ -39,7 +39,9 @@ public class UnifiedGridViewServiceTest
         int? userId = null,
         FakeCaptainRulesRepository? captainRules = null,
         int page = 1,
-        bool onlyWithProblems = false)
+        bool onlyWithProblems = false,
+        CharacterGroupIdentification? group = null,
+        UserIdentification? responsible = null)
     {
         characterInfoRepository = new FakeCharacterInfoRepository(Mock);
         IUnifiedGridClient service = new UnifiedGridViewService(
@@ -55,7 +57,7 @@ public class UnifiedGridViewServiceTest
                 ? problemsOf(context)
                 : throw new InvalidOperationException("капитан проблем не видит")));
 
-        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter, onlyWithProblems), page);
+        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter, onlyWithProblems, group, responsible), page);
     }
 
     /// <summary>
@@ -561,6 +563,153 @@ public class UnifiedGridViewServiceTest
         (await service.GetGrid(Mock.ProjectInfo.ProjectId, UgScopeView.Master, new UgFilterView(UgStatusFilterView.Active, OnlyWithProblems: true), 1))
             .Items.ShouldBeEmpty();
     }
+
+    #endregion
+
+    #region Группа и ответственный (ADR027 §2, шаг 4)
+
+    private CharacterGroupIdentification GroupId => new(Mock.ProjectInfo.ProjectId, Mock.Group.CharacterGroupId);
+
+    private DataModel.Character CreateCharacterInGroup(string name)
+    {
+        var character = Mock.CreateCharacter(name);
+        character.ParentCharacterGroupIds = [Mock.Group.CharacterGroupId];
+        return character;
+    }
+
+    /// <summary>Фильтр по группе берёт её вместе с подгруппами.</summary>
+    [Fact]
+    public async Task GroupFilterLimitsMasterToGroupWithSubgroups()
+    {
+        var inGroup = CreateCharacterInGroup("in group");
+        var subgroup = Mock.CreateCharacterGroup();
+        subgroup.ParentCharacterGroupIds = [Mock.Group.CharacterGroupId];
+        Mock.ReInitProjectInfo();
+        var inSubgroup = Mock.CreateCharacter("in subgroup");
+        inSubgroup.ParentCharacterGroupIds = [subgroup.CharacterGroupId];
+
+        (await GetPage(UgStatusFilterView.Active, UgScopeView.Master, group: GroupId)).Items
+            .Select(item => item.Character.Name.Name)
+            .ShouldBe([inGroup.CharacterName, inSubgroup.CharacterName], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task UnknownGroupGivesEmptyGrid()
+        => (await GetPage(
+            UgStatusFilterView.Active,
+            UgScopeView.Master,
+            group: new CharacterGroupIdentification(Mock.ProjectInfo.ProjectId, 99999)))
+            .Items.ShouldBeEmpty();
+
+    /// <summary>Фильтры объединяются через «И»: ответственный и проблемы вместе.</summary>
+    [Fact]
+    public async Task ResponsibleAndProblemsCombine()
+    {
+        var character = Mock.CreateCharacter("three claims");
+        var mineWithProblem = Mock.CreateClaim(character, Mock.Player);
+        _ = Mock.CreateClaim(character, Mock.Master);
+        var otherWithProblem = Mock.CreateClaim(character, Mock.Master);
+        otherWithProblem.ResponsibleMasterUserId = Mock.Player.UserId;
+        ProblemsFor((mineWithProblem, Warning), (otherWithProblem, Warning));
+
+        var item = (await GetPage(
+            UgStatusFilterView.Active,
+            UgScopeView.Master,
+            onlyWithProblems: true,
+            responsible: new UserIdentification(Mock.Master.UserId)))
+            .Items.ShouldHaveSingleItem();
+
+        item.Claims.Select(c => c.ClaimId).ShouldBe([mineWithProblem.GetId()]);
+    }
+
+    /// <summary>Группа чужого проекта не открывает чужих персонажей и не роняет грид.</summary>
+    [Fact]
+    public async Task GroupFromAnotherProjectGivesEmptyGrid()
+        => (await GetPage(
+            UgStatusFilterView.Active,
+            UgScopeView.Master,
+            group: new CharacterGroupIdentification(new ProjectIdentification(Mock.ProjectInfo.ProjectId.Value + 1), Mock.Group.CharacterGroupId)))
+            .Items.ShouldBeEmpty();
+
+    /// <summary>У капитана группы задают его правила; фильтр по группе ему недоступен.</summary>
+    [Fact]
+    public async Task GroupFilterIgnoredForCaptain()
+        => (await GetPage(UgStatusFilterView.Active, group: GroupId)).Items
+            .Select(item => item.Character.Name.Name)
+            .ShouldContain(Mock.Character.CharacterName);
+
+    /// <summary>
+    /// Фильтр по ответственному оставляет его заявки, а персонажи без них — в том числе вакансии —
+    /// пропадают.
+    /// </summary>
+    [Fact]
+    public async Task ResponsibleFilterKeepsClaimsOfThatMaster()
+    {
+        var character = Mock.CreateCharacter("two claims");
+        var mine = Mock.CreateClaim(character, Mock.Player);
+        var other = Mock.CreateClaim(character, Mock.Master);
+        other.ResponsibleMasterUserId = Mock.Player.UserId;
+
+        var item = (await GetPage(UgStatusFilterView.Active, UgScopeView.Master, responsible: new UserIdentification(Mock.Master.UserId)))
+            .Items.ShouldHaveSingleItem();
+
+        item.Claims.Select(c => c.ClaimId).ShouldBe([mine.GetId()]);
+    }
+
+    [Fact]
+    public async Task ResponsibleFilterIgnoredForCaptain()
+        => (await GetPage(UgStatusFilterView.Active, responsible: new UserIdentification(Mock.Player.UserId))).Items
+            .Select(item => item.Character.Name.Name)
+            .ShouldContain(Mock.Character.CharacterName);
+
+    /// <summary>
+    /// Строка показывает те же группы, что сетка ролей: без корня и без удалённых.
+    /// </summary>
+    [Fact]
+    public async Task RowShowsActiveGroupsWithoutRoot()
+    {
+        var character = Mock.CreateCharacter("two groups");
+        character.ParentCharacterGroupIds = [Mock.Group.CharacterGroupId, Mock.Project.CharacterGroups.Single(g => g.IsRoot).CharacterGroupId];
+
+        var item = (await GetItems(UgStatusFilterView.Active, UgScopeView.Master))
+            .Single(x => x.Character.Name.Name == character.CharacterName);
+
+        item.Character.Groups.Select(g => g.CharacterGroupId).ShouldBe([GroupId]);
+    }
+
+    [Fact]
+    public async Task RowHidesDeletedGroup()
+    {
+        Mock.Group.IsActive = false;
+        Mock.ReInitProjectInfo();
+        var character = CreateCharacterInGroup("in deleted group");
+
+        (await GetItems(UgStatusFilterView.Active, UgScopeView.Master))
+            .Single(x => x.Character.Name.Name == character.CharacterName)
+            .Character.Groups.ShouldBeEmpty();
+    }
+
+    /// <summary>Скрытую группу видит мастер, но не капитан.</summary>
+    [Theory]
+    [InlineData(UgScopeView.Master, true)]
+    [InlineData(UgScopeView.Captain, false)]
+    public async Task HiddenGroupOnlyForMaster(UgScopeView scope, bool visible)
+    {
+        Mock.Group.IsPublic = false;
+        Mock.ReInitProjectInfo();
+        var character = CreateCharacterInGroup("in hidden group");
+        character.IsPublic = true;
+
+        var item = (await GetItems(UgStatusFilterView.Active, scope, userId: scope == UgScopeView.Master ? null : Mock.Player.UserId,
+            captainRules: new FakeCaptainRulesRepository(Mock, groupId: Mock.Group.CharacterGroupId)))
+            .Single(x => x.Character.Name.Name == character.CharacterName);
+
+        item.Character.Groups.Any().ShouldBe(visible);
+    }
+
+    #endregion
+
+    #region Фейки
 
     private sealed class FuncProblemValidator(Func<ClaimInfo, IEnumerable<ClaimProblem>> problems) : IClaimProblemValidator
     {
