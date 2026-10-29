@@ -73,6 +73,34 @@ public class GameDataParserTest
         gameInfo.TelegramChannel.ShouldBe("metro2013ufa");
     }
 
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("\"0\"", false)]
+    [InlineData("1", true)]
+    [InlineData("\"1\"", true)]
+    public void TestParseDeletedFlag(string deletedFlag, bool isDeleted)
+    {
+        var str = $$"""
+            {"id":12666,"name":"Метро 2033","uri":"","mg":"МГ Негатив","sub_region_disp_name":"Бшк","sub_region_name":"Башкортостан","status":1,"deleted_flag":{{deletedFlag}},"begin":"2026-09-27","time":1,"update_date":"2026-09-28T11:04:58+00:00"}
+            """;
+
+        var gameInfo = ResultParser.TryParseGameInfo(str);
+        gameInfo.ShouldNotBeNull();
+        gameInfo.IsDeleted.ShouldBe(isDeleted);
+    }
+
+    [Fact]
+    public void TestParseWithoutDeletedFlag()
+    {
+        var str = """
+            {"id":12666,"name":"Метро 2033","uri":"","mg":"МГ Негатив","sub_region_disp_name":"Бшк","sub_region_name":"Башкортостан","begin":"2026-09-27","time":1,"update_date":"2026-09-28T11:04:58+00:00"}
+            """;
+
+        var gameInfo = ResultParser.TryParseGameInfo(str);
+        gameInfo.ShouldNotBeNull();
+        gameInfo.IsDeleted.ShouldBeFalse();
+    }
+
     [Fact]
     public void TestParseWithIncorrectUri()
     {

@@ -25,7 +25,8 @@ services.Configure<KogdaIgraOptions>(configuration.GetSection("KogdaIgra"));
 
 - `GetGameInfo(int gameId)` — карточка игры (`KogdaIgraGameInfo`: название, даты, регион,
   мастерская группа, ссылки на сайт и соцсети). `null` — игры нет, у неё нет продолжительности
-  или ссылка на сайт не http(s).
+  или ссылка на сайт не http(s). Удалённая на КогдаИгре игра приходит с данными
+  и `IsDeleted = true`.
 - `GetChangedGamesSince(DateTimeOffset since)` — Id и время правки игр, изменённых после `since`;
   переадресации и записи без даты пропускаются. Перевод в московское время, которого ждёт API,
   клиент делает сам.
