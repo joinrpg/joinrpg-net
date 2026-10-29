@@ -70,7 +70,8 @@ jobs:
       - name: NuGet push
         run: dotnet nuget push artifacts/package/release/${{ matrix.project }}.${{ env.CALCULATED_VERSION }}.nupkg --api-key ${{steps.nuget-login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
 
-  # После публикации — PR со штампом версии в CHANGELOG пакетов (docs/nuget-packages.md#после-публикации).
+  # После публикации — PR со штампом версии в CHANGELOG и переносом PublicAPI.Unshipped → Shipped
+  # (docs/nuget-packages.md#после-публикации).
   # Только с master и только если опубликовались все пакеты: версия одна на всех.
   changelog-pr:
     name: CHANGELOG PR
@@ -93,7 +94,7 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           REF_TYPE: ${{ github.ref_type }}
 
-      - name: Stamp CHANGELOG and open PR
+      - name: Stamp CHANGELOG, ship PublicAPI and open PR
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -104,6 +105,7 @@ jobs:
           # Пока публиковали, master мог уйти вперёд: штамп кладём поверх свежего master.
           git checkout --quiet origin/master
           ./scripts/Stamp-Changelog.ps1 -Version $env:VERSION -PublishedRef $env:PUBLISHED_SHA
+          ./scripts/Ship-PublicApi.ps1 -PublishedRef $env:PUBLISHED_SHA
           if (-not (git status --porcelain)) { Write-Host 'Менять нечего'; exit 0 }
 
           # Ветка принадлежит боту и названа по версии: при повторном запуске её можно перезаписать.
@@ -111,7 +113,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git switch --create $branch
-          git commit --all --quiet --message "docs(NuGet): CHANGELOG — версия $env:VERSION опубликована"
+          git commit --all --quiet --message "build(NuGet): версия $env:VERSION опубликована — CHANGELOG и PublicAPI"
           git push --quiet --force origin $branch
 
           $PSNativeCommandUseErrorActionPreference = $false
@@ -121,10 +123,10 @@ jobs:
 
           $run = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
           $body = @"
-          Пакеты $env:VERSION опубликованы на nuget.org с коммита $env:PUBLISHED_SHA ([прогон]($run)). Записи «Не выпущено» из CHANGELOG этого коммита перенесены в раздел версии. Записи, исправленные или удалённые в master после публикации, — в предупреждениях прогона, их надо поправить руками.
+          Пакеты $env:VERSION опубликованы на nuget.org с коммита $env:PUBLISHED_SHA ([прогон]($run)). Перенесено то, что было на этом коммите: записи «Не выпущено» из CHANGELOG — в раздел версии, строки ``PublicAPI.Unshipped.txt`` — в ``PublicAPI.Shipped.txt``; ``CompatibilitySuppressions.xml`` удалены. Записи CHANGELOG и подавления, изменённые в master после публикации, — в предупреждениях прогона, их надо поправить руками.
 
           **CI на этом PR сам не запустится**: PR открыт встроенным токеном GitHub Actions, а на его события workflow не запускаются. Закрой PR и открой заново — проверки запустятся, после этого PR можно вливать.
 
           🤖 Создан workflow «Publish NuGet packages»
           "@
-          gh pr create --base master --head $branch --title "docs(NuGet): CHANGELOG — версия $env:VERSION опубликована" --body $body
+          gh pr create --base master --head $branch --title "build(NuGet): версия $env:VERSION опубликована — CHANGELOG и PublicAPI" --body $body

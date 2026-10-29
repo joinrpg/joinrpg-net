@@ -8,7 +8,8 @@ Razor-компоненты и типы с [TypedEntityId]/[TypedStringValue]. С
 из текста предупреждений и правит файлы сам:
 - RS0016 (публичный символ не объявлен) — строка добавляется в PublicAPI.Unshipped.txt;
 - RS0017 (объявленного символа нет) — строка убирается из Unshipped, а если она была в Shipped,
-  в Unshipped добавляется `*REMOVED*<символ>`.
+  в Unshipped добавляется `*REMOVED*<символ>`;
+- RS0050 (символ помечен удалённым, но есть в коде — его вернули) — `*REMOVED*<символ>` убирается.
 
 Без параметров обрабатывает все проекты с <IsPackable>true</IsPackable>. Порядок работы с
 файлами — docs/nuget-packages.md.
@@ -22,6 +23,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'PublicApiFile.ps1')
 
 if (-not $Project) {
     $Project = Get-ChildItem -Path (Join-Path $repoRoot 'src') -Filter *.csproj -Recurse |
@@ -48,23 +50,6 @@ function Get-QuotedSymbol([string] $line, [string] $prefix, [string] $suffix) {
     return $line.Substring($start, $end - $start)
 }
 
-function Read-ApiFile([string] $path) {
-    $list = [System.Collections.Generic.List[string]]::new()
-    foreach ($line in [System.IO.File]::ReadAllLines($path)) {
-        if ($line -ne '' -and $line -ne '#nullable enable') { $list.Add($line) }
-    }
-    # Запятая не даёт PowerShell развернуть пустой список в $null.
-    return , $list
-}
-
-function Write-ApiFile([string] $path, [System.Collections.Generic.List[string]] $lines) {
-    # Порядок ordinal: от культуры машины он не зависит, и дифф не шумит.
-    $sorted = [System.Linq.Enumerable]::ToArray([System.Linq.Enumerable]::Distinct([string[]] $lines))
-    [Array]::Sort($sorted, [StringComparer]::Ordinal)
-    $content = (@('#nullable enable') + @($sorted)) -join "`r`n"
-    [System.IO.File]::WriteAllText($path, $content + "`r`n", [System.Text.UTF8Encoding]::new($false))
-}
-
 foreach ($csproj in $Project) {
     $csprojPath = (Resolve-Path $csproj).Path
     $dir = Split-Path -Parent $csprojPath
@@ -88,6 +73,7 @@ foreach ($csproj in $Project) {
 
     $added = [System.Collections.Generic.HashSet[string]]::new()
     $removed = [System.Collections.Generic.HashSet[string]]::new()
+    $restored = [System.Collections.Generic.HashSet[string]]::new()
     foreach ($item in $output) {
         $line = "$item"
         # Предупреждения одного проекта; ссылки на другие проекты обрабатываются их собственным запуском.
@@ -100,6 +86,10 @@ foreach ($csproj in $Project) {
             $symbol = Get-QuotedSymbol $line "Symbol '" "' is part of the declared API"
             if ($symbol) { [void] $removed.Add($symbol) }
         }
+        elseif ($line.Contains('RS0050')) {
+            $symbol = Get-QuotedSymbol $line "Symbol '" "' is marked as removed but it isn't deleted"
+            if ($symbol) { [void] $restored.Add($symbol) }
+        }
     }
 
     $shippedLines = Read-ApiFile $shippedPath
@@ -109,6 +99,7 @@ foreach ($csproj in $Project) {
         if ($unshippedLines.Remove($symbol)) { continue }
         if ($shippedLines.Contains($symbol)) { $unshippedLines.Add("*REMOVED*$symbol") }
     }
+    foreach ($symbol in $restored) { [void] $unshippedLines.Remove("*REMOVED*$symbol") }
     foreach ($symbol in $added) {
         # Символ вернули после удаления — снимаем отметку об удалении.
         if ($unshippedLines.Remove("*REMOVED*$symbol")) { continue }
@@ -117,7 +108,7 @@ foreach ($csproj in $Project) {
 
     Write-ApiFile $shippedPath $shippedLines
     Write-ApiFile $unshippedPath $unshippedLines
-    Write-Host "   добавлено $($added.Count), убрано $($removed.Count)"
+    Write-Host "   добавлено $($added.Count), убрано $($removed.Count), возвращено $($restored.Count)"
 }
 
 Write-Host 'Проверить: dotnet build --no-incremental — инкрементальная сборка после скрипта может не показать RS0016.'
