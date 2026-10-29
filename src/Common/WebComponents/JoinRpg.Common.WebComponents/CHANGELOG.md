@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.533 — 2026-10-29
+
 ### Ломающие изменения
 - Из пакета убрана статика `_content/JoinRpg.Common.WebComponents/lib/bootstrap-select/`, `TypedSelector` она не нужна. Переход: если хост подключал её отсюда — подключить свою копию. ([#5867](https://github.com/joinrpg/joinrpg-net/pull/5867))
 

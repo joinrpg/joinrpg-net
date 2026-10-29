@@ -1,3 +1,1 @@
 #nullable enable
-JoinRpg.Common.WebComponents.UserLink.ShowIcon.get -> bool
-JoinRpg.Common.WebComponents.UserLink.ShowIcon.set -> void

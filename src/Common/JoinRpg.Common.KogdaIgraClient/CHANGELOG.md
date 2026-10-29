@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.533 — 2026-10-29
+
 ### Ломающие изменения
 - `KogdaIgraGameInfo`: новый последний позиционный параметр `IsDeleted` — игра удалена на КогдаИгре. Переход: в вызовы конструктора и позиционную деконструкцию добавить `IsDeleted`. ([#5966](https://github.com/joinrpg/joinrpg-net/pull/5966))
 - `GetGameInfo`: на пустом и битом ответе — `KogdaIgraEmptyResponseException` и `KogdaIgraParseException` вместо `JsonException` и `Exception`. Переход: вместо `JsonException` ловить исключения клиента. ([#5977](https://github.com/joinrpg/joinrpg-net/pull/5977))
