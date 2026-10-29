@@ -75,7 +75,7 @@ public sealed class FakeUserRepository(
     {
         CallCount++;
         return Task.FromResult<IReadOnlyCollection<UserInfoHeader>>(
-            [.. userIds.Select(Resolve).OfType<UserInfo>().Select(user => new UserInfoHeader(user.UserId, user.DisplayName))]);
+            [.. userIds.Select(Resolve).OfType<UserInfo>().Select(user => user.ToUserInfoHeader())]);
     }
 
     public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(

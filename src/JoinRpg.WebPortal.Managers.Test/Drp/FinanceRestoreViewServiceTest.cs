@@ -84,7 +84,7 @@ public class FinanceRestoreViewServiceTest
         {
             ClaimId = Claim(claimId),
             CharacterName = CharacterName,
-            Player = new UserInfoHeader(new UserIdentification(mock.Player.UserId), new UserDisplayName(mock.Player.PrefferedName!, null)),
+            Player = new UserInfoHeader(new UserIdentification(mock.Player.UserId), new UserDisplayName(mock.Player.PrefferedName!, null), Avatar: null),
             ExtraNicknames = null,
             ResponsibleMasterUserId = Master,
             CharacterId = new CharacterIdentification(ProjectId, 1),

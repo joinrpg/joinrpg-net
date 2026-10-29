@@ -5,9 +5,9 @@ namespace JoinRpg.Services.Impl.Test;
 
 public class UserMergeNotifierTest
 {
-    private static readonly UserInfoHeader Primary = new(new UserIdentification(1), new UserDisplayName("Основной", null));
-    private static readonly UserInfoHeader Secondary = new(new UserIdentification(2), new UserDisplayName("Поглощаемый", null));
-    private static readonly UserInfoHeader Admin = new(new UserIdentification(3), new UserDisplayName("Админ", null));
+    private static readonly UserInfoHeader Primary = new(new UserIdentification(1), new UserDisplayName("Основной", null), Avatar: null);
+    private static readonly UserInfoHeader Secondary = new(new UserIdentification(2), new UserDisplayName("Поглощаемый", null), Avatar: null);
+    private static readonly UserInfoHeader Admin = new(new UserIdentification(3), new UserDisplayName("Админ", null), Avatar: null);
 
     [Fact]
     public async Task Secondary_GetsLetterAboutNewAccount()

@@ -58,7 +58,7 @@ public class AccommodationNotificationServiceTest
         {
             ClaimId = claim.GetId(),
             CharacterName = characterName,
-            Player = new UserInfoHeader(new UserIdentification(playerId), new UserDisplayName($"Игрок{playerId}", null)),
+            Player = new UserInfoHeader(new UserIdentification(playerId), new UserDisplayName($"Игрок{playerId}", null), Avatar: null),
             ExtraNicknames = null,
             ResponsibleMasterUserId = new UserIdentification((responsibleMaster ?? mock.Master).UserId),
             CharacterId = character.GetId(),

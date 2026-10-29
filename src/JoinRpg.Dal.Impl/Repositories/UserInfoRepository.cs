@@ -347,6 +347,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
             SurName1 = user.SurName,
             BornName1 = user.BornName,
             Email = user.Email,
+            SelectedAvatarId = user.SelectedAvatarId,
         };
     }
 
@@ -358,6 +359,7 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
         public required string? SurName1 { get; internal set; }
         public required string? BornName1 { get; internal set; }
         public required string Email { get; internal set; }
+        public required int? SelectedAvatarId { get; internal set; }
 
         internal UserInfoHeader ToUserInfoHeader()
         {
@@ -369,7 +371,8 @@ internal class UserInfoRepository(MyDbContext ctx) : IUserRepository, IUserSubsc
                             BornName.FromOptional(BornName1),
                             SurName.FromOptional(SurName1),
                             FatherName.FromOptional(FatherName1)),
-                                new Email(Email))
+                                new Email(Email)),
+                            AvatarIdentification.FromOptional(SelectedAvatarId)
                             );
         }
     }

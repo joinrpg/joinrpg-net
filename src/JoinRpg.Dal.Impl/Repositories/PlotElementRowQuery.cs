@@ -60,7 +60,7 @@ internal static class PlotElementRowQuery
                 .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)) + 1)
                 .Select(t => (DateTime?)t.ModifiedDateTime).FirstOrDefault(),
 
-            // Автор проецируется сущностью: имя из неё собирает UserTransformationExtensions,
+            // Автор проецируется сущностью: имя из неё собирает ToUserInfoHeader (JoinRpg.DataModel.Extensions),
             // заводить для этого ещё один тип-строку незачем.
             Author = e.Texts
                 .Where(t => t.Version == (version ?? e.Texts.Max(m => m.Version)))

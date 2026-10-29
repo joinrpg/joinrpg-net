@@ -11,8 +11,8 @@ public class VerifyNotificationTest
 {
     private readonly ClaimNotificationTextBuilder claimNotificationTextBuilder = new();
 
-    private static readonly UserInfoHeader player = new(new UserIdentification(1), new UserDisplayName("PlayerName", null));
-    private static readonly UserInfoHeader master = new(new UserIdentification(2), new UserDisplayName("Master", null));
+    private static readonly UserInfoHeader player = new(new UserIdentification(1), new UserDisplayName("PlayerName", null), Avatar: null);
+    private static readonly UserInfoHeader master = new(new UserIdentification(2), new UserDisplayName("Master", null), Avatar: null);
     private readonly ClaimWithPlayer claimWithPlayer = new()
     {
         CharacterId = new CharacterIdentification(1, 1),

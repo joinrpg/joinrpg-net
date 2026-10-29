@@ -12,7 +12,7 @@ public class UserInfoHeaderJsonTest
     [Fact]
     public void ShouldRoundtrip()
     {
-        var instance = new UserInfoHeader(new UserIdentification(42), new UserDisplayName("Вася", "Василий Пупкин"));
+        var instance = new UserInfoHeader(new UserIdentification(42), new UserDisplayName("Вася", "Василий Пупкин"), Avatar: null);
 
         var deserialized = JsonSerializer.Deserialize<UserInfoHeader>(JsonSerializer.Serialize(instance));
 
@@ -20,9 +20,20 @@ public class UserInfoHeaderJsonTest
     }
 
     [Fact]
+    public void ShouldRoundtripWithAvatar()
+    {
+        var instance = new UserInfoHeader(new UserIdentification(42), new UserDisplayName("Вася", "Василий Пупкин"), new AvatarIdentification(17));
+
+        var deserialized = JsonSerializer.Deserialize<UserInfoHeader>(JsonSerializer.Serialize(instance));
+
+        deserialized.ShouldBe(instance);
+        deserialized!.Avatar.ShouldBe(new AvatarIdentification(17));
+    }
+
+    [Fact]
     public void ShouldRoundtripWithoutFullName()
     {
-        var instance = new UserInfoHeader(new UserIdentification(42), new UserDisplayName("Вася", null));
+        var instance = new UserInfoHeader(new UserIdentification(42), new UserDisplayName("Вася", null), Avatar: null);
 
         var deserialized = JsonSerializer.Deserialize<UserInfoHeader>(JsonSerializer.Serialize(instance));
 

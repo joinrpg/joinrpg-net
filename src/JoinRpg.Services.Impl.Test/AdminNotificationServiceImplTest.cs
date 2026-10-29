@@ -10,7 +10,7 @@ namespace JoinRpg.Services.Impl.Test;
 
 public class AdminNotificationServiceImplTest
 {
-    private static readonly UserInfoHeader admin = new(new UserIdentification(1), new UserDisplayName("Admin", null));
+    private static readonly UserInfoHeader admin = new(new UserIdentification(1), new UserDisplayName("Admin", null), Avatar: null);
     private readonly FakeNotificationService fakeNotificationService = new();
     private readonly FakeUserRepository fakeUserRepository = FakeUserRepository.WithAdmins(admin);
     private readonly FakeKogdaIgraRepository fakeKogdaIgraRepository = new();

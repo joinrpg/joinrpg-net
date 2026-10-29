@@ -564,7 +564,7 @@ public class PscbPaymentsViewServiceTests
 
             IReadOnlyCollection<UserInfoHeader> found = [.. userIds
                 .Where(id => existingIds.Contains(id.Value))
-                .Select(id => new UserInfoHeader(id, new UserDisplayName($"Пользователь {id.Value}", null)))];
+                .Select(id => new UserInfoHeader(id, new UserDisplayName($"Пользователь {id.Value}", null), Avatar: null))];
 
             return Task.FromResult(found);
         }

@@ -35,7 +35,7 @@ public class SelectorListPrerenderTransferTest
 
     [Fact]
     public Task UserInfoHeader() => ShouldSurviveTransfer(
-        new UserInfoHeader(new UserIdentification(40), new UserDisplayName("Мастер", null)));
+        new UserInfoHeader(new UserIdentification(40), new UserDisplayName("Мастер", null), new AvatarIdentification(5)));
 
     [Fact]
     public Task ProjectLinkViewModel() => ShouldSurviveTransfer(new ProjectLinkViewModel(ProjectId, "Проект"));

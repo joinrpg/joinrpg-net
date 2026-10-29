@@ -50,6 +50,7 @@ internal sealed class CharacterInfoClaimRow
     public required string? PlayerSurName { get; init; }
     public required string? PlayerFatherName { get; init; }
     public required string PlayerEmail { get; init; }
+    public required int? PlayerSelectedAvatarId { get; init; }
 
     public required ClaimStatus ClaimStatus { get; init; }
     public required ClaimDenialReason? ClaimDenialStatus { get; init; }

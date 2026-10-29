@@ -86,6 +86,7 @@ public class CharacterInfoMapperTest
         string? playerSurName = null,
         string? playerFatherName = null,
         string playerEmail = "player@example.com",
+        int? playerSelectedAvatarId = null,
         ClaimStatus claimStatus = ClaimStatus.AddedByUser,
         ClaimDenialReason? claimDenialStatus = null,
         int responsibleMasterUserId = 2,
@@ -115,6 +116,7 @@ public class CharacterInfoMapperTest
             PlayerSurName = playerSurName,
             PlayerFatherName = playerFatherName,
             PlayerEmail = playerEmail,
+            PlayerSelectedAvatarId = playerSelectedAvatarId,
             ClaimStatus = claimStatus,
             ClaimDenialStatus = claimDenialStatus,
             ResponsibleMasterUserId = responsibleMasterUserId,
@@ -670,5 +672,23 @@ public class CharacterInfoMapperTest
 
         CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single()
             .Player.DisplayName.ShouldBe(user.ExtractDisplayName());
+    }
+
+    [Fact]
+    public void Map_ClaimPlayerWithAvatar_ShouldPassAvatarId()
+    {
+        var row = MakeRow(claims: [MakeClaimRow(playerSelectedAvatarId: 17)]);
+
+        CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single()
+            .Player.Avatar.ShouldBe(new AvatarIdentification(17));
+    }
+
+    [Fact]
+    public void Map_ClaimPlayerWithoutAvatar_ShouldHaveNoAvatar()
+    {
+        var row = MakeRow(claims: [MakeClaimRow()]);
+
+        CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single()
+            .Player.Avatar.ShouldBeNull();
     }
 }

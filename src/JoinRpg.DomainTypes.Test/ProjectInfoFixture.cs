@@ -68,6 +68,7 @@ internal static class ProjectInfoFixture
         => new(
             userId,
             new UserDisplayName($"Master{userId.Value}", null),
+            Avatar: null,
             new Email($"master{userId.Value}@example.com"),
             [Permission.None],
             isOwner,

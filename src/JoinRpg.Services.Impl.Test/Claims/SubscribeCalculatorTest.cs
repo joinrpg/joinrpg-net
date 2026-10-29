@@ -109,7 +109,7 @@ public class SubscribeCalculatorTest
     public async Task ForumReplyToAuthorOutsideGroup_IsSkipped()
     {
         // Принятой заявки в группе больше нет — тема игроку недоступна, ответ тоже.
-        var leftPlayer = new UserInfoHeader(new UserIdentification(100), new UserDisplayName("Ушедший", null));
+        var leftPlayer = new UserInfoHeader(new UserIdentification(100), new UserDisplayName("Ушедший", null), Avatar: null);
 
         (await GetForumRecepients(isVisibleToPlayer: true, respondingTo: leftPlayer)).ShouldNotContain(r => r.UserId == leftPlayer.UserId);
     }

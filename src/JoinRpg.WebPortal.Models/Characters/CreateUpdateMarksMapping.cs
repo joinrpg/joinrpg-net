@@ -1,7 +1,5 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models.Characters;
@@ -17,5 +15,5 @@ internal static class CreateUpdateMarksMapping
 
     // Автора может не оказаться, как и в отметках групп: компонент такой случай рисует без ссылки.
     private static UserLinkViewModel? ToUserLink(User? user)
-        => user is null ? null : new UserInfoHeader(new UserIdentification(user.UserId), user.ExtractDisplayName()).ToUserLinkViewModel();
+        => user?.ToUserInfoHeader().ToUserLinkViewModel();
 }

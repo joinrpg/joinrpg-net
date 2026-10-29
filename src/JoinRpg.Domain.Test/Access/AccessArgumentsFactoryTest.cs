@@ -154,7 +154,7 @@ public class AccessArgumentsFactoryTest
             // Положительный, но заведомо не из мока: отрицательное значение ссылка на группу
             // проживающих прочла бы как группу, а не как заявку-одиночку (ADR022).
             new ClaimIdentification(Mock.ProjectInfo.ProjectId, 999_999),
-            new UserInfoHeader(playerId, new UserDisplayName("Игрок", null)),
+            new UserInfoHeader(playerId, new UserDisplayName("Игрок", null), Avatar: null),
             status,
             DenialStatus: null,
             ResponsibleMasterId: new UserIdentification(Mock.Master.UserId),

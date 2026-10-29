@@ -173,6 +173,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
               claim.Player.FatherName,
               claim.ClaimId,
               claim.Player.Email,
+              claim.Player.SelectedAvatarId,
               claim.ResponsibleMasterUserId,
               claim.CharacterId
           })
@@ -194,7 +195,8 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
                                         FatherName.FromOptional(c.FatherName)
                                         ),
                                     new Email(c.Email)
-                                    )),
+                                    ),
+                                AvatarIdentification.FromOptional(c.SelectedAvatarId)),
                 CharacterId = new CharacterIdentification(c.ProjectId, c.CharacterId),
             }
             )];

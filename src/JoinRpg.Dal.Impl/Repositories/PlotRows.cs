@@ -1,4 +1,3 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces.Plots;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Helpers;
@@ -75,7 +74,7 @@ internal sealed class PlotElementRow : IOrderableEntity
                 CurrentContent is null ? null : new MarkdownString(CurrentContent),
                 CurrentTodoField ?? "",
                 CurrentModifiedAt,
-                Author is null ? null : new UserInfoHeader(new UserIdentification(Author.UserId), Author.ExtractDisplayName())),
+                Author?.ToUserInfoHeader()),
             LastVersionNumber,
             LastVersionTodoField ?? "",
             PrevVersionModifiedAt,

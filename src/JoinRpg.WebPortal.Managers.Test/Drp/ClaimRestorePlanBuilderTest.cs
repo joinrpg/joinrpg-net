@@ -117,7 +117,7 @@ public class ClaimRestorePlanBuilderTest
             LastActivity: statusChangedAt,
             Warnings: [ClaimRestoreWarning.ResponsibleNotFound]);
 
-        var model = ClaimRestorePlanBuilder.Build(mock.ProjectInfo, source, [row], [new UserInfoHeader(PlayerId, mock.PlayerInfo.DisplayName)], Options);
+        var model = ClaimRestorePlanBuilder.Build(mock.ProjectInfo, source, [row], [new UserInfoHeader(PlayerId, mock.PlayerInfo.DisplayName, Avatar: null)], Options);
 
         model.UnavailableReason.ShouldBeNull();
         model.BackupTakenAt.ShouldBe(BackupTakenAt);
@@ -162,7 +162,7 @@ public class ClaimRestorePlanBuilderTest
         var plan = new[] { row };
         ClaimRestorePlanBuilder.UsersToShow(plan).ShouldBe([PlayerId, unknown], ignoreOrder: true);
 
-        var model = ClaimRestorePlanBuilder.Build(mock.ProjectInfo, source, plan, [new UserInfoHeader(PlayerId, mock.PlayerInfo.DisplayName)], Options);
+        var model = ClaimRestorePlanBuilder.Build(mock.ProjectInfo, source, plan, [new UserInfoHeader(PlayerId, mock.PlayerInfo.DisplayName, Avatar: null)], Options);
 
         var result = model.Rows.ShouldHaveSingleItem();
         result.Action.ShouldBe(ClaimRestoreActionView.Create);

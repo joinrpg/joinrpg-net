@@ -21,7 +21,7 @@ public interface ICurrentUserAccessor
 
     int UserId => UserIdOrDefault ?? throw new Exception("Authorization required here");
 
-    UserInfoHeader ToUserInfoHeader() => new UserInfoHeader(UserIdentification, DisplayName);
+    UserInfoHeader ToUserInfoHeader() => new UserInfoHeader(UserIdentification, DisplayName, Avatar);
 }
 
 public interface IImpersonateAccessor

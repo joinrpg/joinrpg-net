@@ -26,7 +26,7 @@ public record class UserInfo(
 
     public AvatarIdentification? SelectedAvatarId => SelectedAvatar?.Id;
 
-    public UserInfoHeader ToUserInfoHeader() => new(UserId, DisplayName);
+    public UserInfoHeader ToUserInfoHeader() => new(UserId, DisplayName, SelectedAvatarId);
 
     // Не реализовано
     public bool PhoneNumberConfirmed { get; } = false;
