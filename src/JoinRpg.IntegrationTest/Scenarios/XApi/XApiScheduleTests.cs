@@ -113,6 +113,17 @@ public class XApiScheduleTests(XApiMasterFixture fixture)
     }
 
     /// <summary>
+    /// Внешним клиентам API обещан 410 на несуществующий проект, а не общий 404 портала.
+    /// </summary>
+    [Fact]
+    public async Task ReturnsGoneWhenProjectDoesNotExist()
+    {
+        var status = await fixture.MasterClient.GetScheduleRawAsync(int.MaxValue);
+
+        status.ShouldBe(System.Net.HttpStatusCode.Gone);
+    }
+
+    /// <summary>
     /// Ведущий берётся из поля «Ведущий» — его заводит сам шаблон проекта (#4512). Утверждённой
     /// заявки у персонажа тут нет, так что до поля список ведущих был бы пуст.
     /// </summary>

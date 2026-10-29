@@ -13,6 +13,4 @@ public enum ScheduleConfigProblemsViewModel
     NoRooms,
     [Description("Не настроено ни одного тайм-слота")]
     NoTimeSlots,
-    [Description("Проект не найден")]
-    ProjectNotFound,
 }
