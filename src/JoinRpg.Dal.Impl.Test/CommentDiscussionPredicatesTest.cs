@@ -2,15 +2,14 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.Domain;
 using Shouldly;
 using Xunit;
 
 namespace JoinRpg.Dal.Impl.Test;
 
 /// <summary>
-/// Выражение «непрочитано» для SQL и правило в памяти (<see cref="CommentExtensions.GetUnreadCount"/>)
-/// должны давать одни числа (ADR026, §2). На живой базе то же проверяет <c>UnreadCommentsCountScenario</c>.
+/// Выражение «непрочитано» для SQL и правило в памяти (<see cref="ExpectedUnread"/>) должны давать одни
+/// числа (ADR026, §2). На живой базе то же проверяет <c>UnreadCommentsCountScenario</c>.
 /// </summary>
 public class CommentDiscussionPredicatesTest
 {
@@ -25,6 +24,20 @@ public class CommentDiscussionPredicatesTest
 
     private static int Unread(CommentDiscussion discussion, int userId)
         => UnreadCount(discussion, userId, Mock.ProjectInfo.HasMasterAccess(new UserIdentification(userId)));
+
+    /// <summary>
+    /// Эталон в памяти, записанный прямо по правилу: видимый пользователю комментарий непрочитан, если
+    /// его id выше отметки — максимума из своих комментариев и своих отметок (0, если нет ни тех, ни других).
+    /// </summary>
+    private static int ExpectedUnread(CommentDiscussion discussion, int userId)
+    {
+        var isMaster = Mock.ProjectInfo.HasMasterAccess(new UserIdentification(userId));
+        var watermark = discussion.Comments.Where(c => c.AuthorUserId == userId).Select(c => c.CommentId)
+            .Concat(discussion.Watermarks.Where(w => w.UserId == userId).Select(w => w.CommentId))
+            .DefaultIfEmpty(0)
+            .Max();
+        return discussion.Comments.Count(c => (c.IsVisibleToPlayer || isMaster) && c.CommentId > watermark);
+    }
 
     private static CommentDiscussion CreateDiscussion(
         IEnumerable<(int Author, bool Visible)> comments,
@@ -106,7 +119,7 @@ public class CommentDiscussionPredicatesTest
 
             foreach (var userId in (int[])[.. users, ReaderId])
             {
-                Unread(discussion, userId).ShouldBe(discussion.GetUnreadCount(userId, Mock.ProjectInfo), $"обсуждение {i}, пользователь {userId}");
+                Unread(discussion, userId).ShouldBe(ExpectedUnread(discussion, userId), $"обсуждение {i}, пользователь {userId}");
             }
         }
     }

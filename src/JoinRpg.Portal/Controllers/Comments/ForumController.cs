@@ -129,9 +129,12 @@ public class ForumController(
     [HttpPost("~/{projectId}/forums/createcomment")]
     public async Task<ActionResult> CreateComment(AddCommentViewModel viewModel)
     {
-        var access = await ownerLoader.GetOwnerOrDefault(
-            new ProjectIdentification(viewModel.ProjectId),
-            new CommentDiscussionId(viewModel.CommentDiscussionId));
+        if (viewModel.CommentDiscussionId is not { } discussionId)
+        {
+            return NotFound();
+        }
+
+        var access = await ownerLoader.GetOwnerOrDefault(new ProjectIdentification(viewModel.ProjectId), discussionId);
         if (access is null)
         {
             return NotFound();
@@ -147,8 +150,8 @@ public class ForumController(
             // Подтверждение и отклонение финопераций — в диалоге модерации (FinanceModerationButton), не здесь.
             // Скрыть от игрока может только мастер — это, как и остальные правила, проверяет сервис.
             await commentDiscussionService.AddComment(
-                new CommentDiscussionId(viewModel.CommentDiscussionId),
-                viewModel.ParentCommentId is int parentId ? new CommentId(parentId) : null,
+                discussionId,
+                viewModel.ParentCommentId,
                 !viewModel.HideFromUser,
                 viewModel.CommentText);
 

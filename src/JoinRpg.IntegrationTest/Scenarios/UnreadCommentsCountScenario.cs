@@ -4,7 +4,6 @@ using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -18,7 +17,7 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 
 /// <summary>
 /// Счётчик непрочитанного в SQL (<c>CommentDiscussionPredicates.UnreadCount</c>) совпадает с правилом
-/// в памяти — <see cref="CommentExtensions.GetUnreadCount"/> — на живой базе (ADR026, §2).
+/// в памяти — <see cref="ExpectedUnread"/> — на живой базе (ADR026, §2).
 /// </summary>
 /// <remarks>
 /// В обсуждение кладутся свои комментарии, чужие скрытые от игроков, отметки прочтения с дублями и
@@ -93,13 +92,14 @@ public class UnreadCommentsCountScenario(JoinApplicationFactory factory) : IClas
 
             var thread = threads.ShouldHaveSingleItem();
             var threadDiscussion = LoadDiscussion(threadDiscussionId);
-            thread.UnreadCount.ShouldBe(threadDiscussion.GetUnreadCount(userId.Value, projectInfo), $"тема, пользователь {userId}");
+            var isMaster = projectInfo.HasMasterAccess(userId);
+            thread.UnreadCount.ShouldBe(ExpectedUnread(threadDiscussion, userId, isMaster), $"тема, пользователь {userId}");
             thread.TotalCount.ShouldBe(
-                threadDiscussion.Comments.Count(c => c.IsVisibleTo(userId.Value, projectInfo)), $"тема, всего, пользователь {userId}");
+                threadDiscussion.Comments.Count(c => c.IsVisibleToPlayer || isMaster), $"тема, всего, пользователь {userId}");
 
             var claimDiscussion = LoadDiscussion(claimDiscussionId);
             unreadClaims[new CommentDiscussionId(claimDiscussionId)]
-                .ShouldBe(claimDiscussion.GetUnreadCount(userId.Value, projectInfo), $"заявка, пользователь {userId}");
+                .ShouldBe(ExpectedUnread(claimDiscussion, userId, isMaster), $"заявка, пользователь {userId}");
         }
 
         // Числа руками по теме: первый комментарий мастера (c0), затем SeedDiscussion (c1–c8).
@@ -262,6 +262,19 @@ public class UnreadCommentsCountScenario(JoinApplicationFactory factory) : IClas
         Mark(masterId, c1);
         Mark(masterId, c1);
         _ = ctx.SaveChanges();
+    }
+
+    /// <summary>
+    /// Эталон в памяти: видимый комментарий непрочитан, если его id выше максимума из своих комментариев
+    /// и своих отметок пользователя в этом обсуждении (0, если нет ни тех, ни других).
+    /// </summary>
+    private static int ExpectedUnread(CommentDiscussion discussion, UserIdentification userId, bool isMaster)
+    {
+        var watermark = discussion.Comments.Where(c => c.AuthorUserId == userId.Value).Select(c => c.CommentId)
+            .Concat(discussion.Watermarks.Where(w => w.UserId == userId.Value).Select(w => w.CommentId))
+            .DefaultIfEmpty(0)
+            .Max();
+        return discussion.Comments.Count(c => (c.IsVisibleToPlayer || isMaster) && c.CommentId > watermark);
     }
 
     private CommentDiscussion LoadDiscussion(int discussionId)

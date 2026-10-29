@@ -5,16 +5,8 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel;
 
-public interface ICommentDiscussionHeader : IProjectEntity
-{
-
-    IEnumerable<ReadCommentWatermark> Watermarks { get; }
-
-    IEnumerable<ICommentHeader> Comments { get; }
-}
-
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
-public class CommentDiscussion : IProjectEntity, ILinkable, ICommentDiscussionHeader
+public class CommentDiscussion : IProjectEntity, ILinkable
 {
     [Key]
     public int CommentDiscussionId { get; set; }
@@ -33,7 +25,4 @@ public class CommentDiscussion : IProjectEntity, ILinkable, ICommentDiscussionHe
 
     public string Identification => Comments.Any() ? Comments.Last().Identification : CommentDiscussionId.ToString();
     int? ILinkable.ProjectId => ProjectId;
-
-    IEnumerable<ReadCommentWatermark> ICommentDiscussionHeader.Watermarks => Watermarks;
-    IEnumerable<ICommentHeader> ICommentDiscussionHeader.Comments => Comments;
 }
