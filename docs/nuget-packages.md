@@ -16,7 +16,7 @@
 Снаружи пакеты подключают [bastilia-rating](https://github.com/leotsarev/bastilia-rating) и
 [TwilightRandom](https://github.com/leotsarev/TwilightRandom). Внутри решения те же проекты
 подключаются ссылкой на проект, кроме генератора — его берут из NuGet (см.
-[README генератора](../src/Common/JoinRpg.Common.PrimitiveTypes.SourceGenerator/README.md)).
+[правку генератора](source-generator.md)).
 
 ## Как проект становится пакетом
 
