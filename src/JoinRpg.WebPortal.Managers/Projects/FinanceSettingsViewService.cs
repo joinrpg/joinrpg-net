@@ -37,4 +37,38 @@ internal class FinanceSettingsViewService(
             PreferentialFeeEnabled = model.PreferentialFeeEnabled,
             PreferentialFeeConditions = model.PreferentialFeeConditions,
         });
+
+    async Task<FinanceFeeSettingsViewModel> IFinanceSettingsClient.GetFeeSettings(ProjectIdentification projectId)
+    {
+        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var now = DateTime.UtcNow;
+        return new FinanceFeeSettingsViewModel()
+        {
+            ProjectId = projectId,
+            ProjectStatus = project.ProjectStatus,
+            HasEditAccess = HasEditAccess(project),
+            PreferentialFeeEnabled = project.ProjectFinanceSettings.PreferentialFeeEnabled,
+            Fees = [.. project.ProjectFinanceSettings.FeeScheduleOrdered
+                .Select(fee => new FinanceFeeSettingItemViewModel(
+                    fee.ProjectFeeSettingId,
+                    fee.Fee,
+                    fee.PreferentialFee,
+                    DateOnly.FromDateTime(fee.StartDate),
+                    // Сервис удаляет только ещё не вступивший в силу взнос
+                    CanDelete: fee.StartDate > now))],
+        };
+    }
+
+    async Task IFinanceSettingsClient.CreateFeeSetting(ProjectIdentification projectId, CreateFeeSettingViewModel model)
+        => await financeSettingsService.CreateFeeSetting(new CreateFeeSettingRequest()
+        {
+            ProjectId = projectId,
+            Fee = model.Fee,
+            PreferentialFee = model.PreferentialFee,
+            StartDate = (model.StartDate ?? throw new ArgumentException("Не указана дата начала взноса", nameof(model)))
+                .ToDateTime(TimeOnly.MinValue),
+        });
+
+    async Task IFinanceSettingsClient.DeleteFeeSetting(ProjectIdentification projectId, int projectFeeSettingId)
+        => await financeSettingsService.DeleteFeeSetting(projectId, projectFeeSettingId);
 }
