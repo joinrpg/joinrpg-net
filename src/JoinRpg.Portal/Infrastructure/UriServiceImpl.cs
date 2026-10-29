@@ -9,6 +9,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Accommodation;
+using JoinRpg.Web.Comments;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -57,6 +58,7 @@ internal class UriServiceImpl(
     IUriLocator<AccommodationInviteIdentification>,
     IUriLocator<AccommodationGroupIdentification>,
     IUriLocator<MyClaimInProjectIdentification>,
+    ICommentUriLocator,
     INotificationEntityLinkRenderer
 {
     public Uri GetUri(ILinkable linkable)
@@ -204,6 +206,15 @@ internal class UriServiceImpl(
 
     Uri IPlotUriLocator.GetReorderElementsUri(ProjectIdentification projectId) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ReorderElements", "Plot", new { ProjectId = projectId.Value }));
+
+    Uri ICommentUriLocator.GetCreateCommentUri(ProjectIdentification projectId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("CreateComment", "Forum", new { ProjectId = projectId.Value }));
+
+    Uri ICommentUriLocator.GetConcealCommentUri(ProjectIdentification projectId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("ConcealComment", "Forum", new { ProjectId = projectId.Value }));
+
+    Uri ICommentUriLocator.GetCommentUri(ProjectIdentification projectId, CommentId commentId) =>
+        GetUri(new Linkable(LinkType.Comment, projectId.Value, commentId.Value.ToString()));
 
     public Uri GetUri(ProjectFieldIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "GameField", new { ProjectId = target.ProjectId.Value, target.ProjectFieldId }));

@@ -222,6 +222,18 @@ function decodeHash(hash) {
 openPanelFromHash();
 window.addEventListener('hashchange', openPanelFromHash);
 
+// Кнопка «Отмена» внутри статической формы в теле панели (data-join-collapse-close) сворачивает
+// панель: у статического рендеринга нет обработчиков Blazor, а @onclick на JoinButton там не сработает.
+document.addEventListener('click', event => {
+    const button = event.target instanceof Element ? event.target.closest('[data-join-collapse-close]') : null;
+    const toggle = button?.closest('.join-collapse-panel')?.querySelector(':scope > .panel-heading > .join-collapse-panel__toggle');
+    if (toggle) {
+        toggle.open = false;
+        // Кнопка ушла в свёрнутое тело — возвращаем фокус на заголовок панели, а не на body.
+        toggle.querySelector(':scope > summary')?.focus();
+    }
+});
+
 // Меню JoinDropdownButton.razor и выпадающие списки TypedSelector.razor: открывает и закрывает их браузер
 // (<details>), а здесь — только закрытие по клику мимо и по Esc, как привыкли у выпадающих меню.
 // Открытое меню одно: клик по другому закрывает прежнее. Атрибут open Blazor не рендерит,

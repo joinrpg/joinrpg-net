@@ -1,0 +1,39 @@
+/* Аватарка слева, текст справа — вместо прежней таблицы. */
+.join-comment {
+  clear: both;
+}
+
+.join-comment__row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.join-comment__avatar {
+  flex: none;
+  padding-right: 5px;
+}
+
+.join-comment__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* Длинная ссылка без пробелов не должна выталкивать текст за край. */
+  overflow-wrap: anywhere;
+  margin-bottom: 1em;
+}
+
+.join-comment__conceal {
+  display: inline;
+}
+
+/* Ответ сдвигается вправо, пока не уходит слишком глубоко (CommentViewModel.IsIndented). */
+.join-comment__reply--indented {
+  margin-left: 2em;
+}
+
+/* На телефоне аватарка и кнопка «скрыть» не помещаются — как прежний hidden-xs. */
+@media (max-width: 767px) {
+  .join-comment__avatar,
+  .join-comment__conceal {
+    display: none;
+  }
+}

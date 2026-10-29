@@ -240,13 +240,19 @@ render-mode="Static" />`. Формы добавления и ответа — о
 **Финблок — только у заявки.** У комментариев форума финопераций нет, а остров
 `FinanceModerationButton` и его модель (`FinanceModerationOperationView`) живут в `Web.Claims`.
 Поэтому `Web.Comments` от `Web.Claims` не зависит: `Discussion` принимает необязательный
-`RenderFragment<CommentViewModel>` для финблока, а `Web.Claims` даёт обёртку
-`ClaimDiscussion.razor`, которая подставляет финблок с островом. Данные финблока построитель
-отдаёт обёртке отдельно — словарём `CommentId` → `ClaimCommentFinanceViewModel`: текст операции по
-типу и знаку суммы, дата, название способа оплаты, «Мастер не подтверждает оплату», и
-`FinanceModerationOperationView?`, если текущий пользователь может её подтвердить
-(`RequireModeration` + право по `ProjectInfo`). Снимка для этого хватает: `ToModerationView`
-нужны `ClaimIdentification` + `CommentId`, тип, сумма, дата и способ оплаты.
+`RenderFragment<CommentViewModel>? ExtraContent` (доп. содержимое каждого комментария), а
+`Web.Claims` даёт обёртку `ClaimDiscussion.razor`, которая подставляет туда финблок с островом.
+Данные финблока построитель кладёт в сам комментарий — `CommentViewModel.Finance`
+(`CommentFinanceViewModel` из `Web.Comments`, у форума `null`): текст операции по типу и знаку суммы
+(`null` при нулевой сумме — тогда, как и сейчас, ни текста, ни суммы), название типа операции, сумма,
+дата, название способа оплаты, флаги «отклонена» / «ждёт подтверждения» и может ли текущий
+пользователь её подтвердить (`RequireModeration` + право по `ProjectInfo`). Надписи бейджей
+(«Мастер не подтверждает оплату», «Ждет одобрения мастером») рисует обёртка.
+`FinanceModerationOperationView` обёртка собирает из этих полей сама: id операции — из
+`ClaimIdentification` и `CommentId`. Владельца в модели обсуждения нет, поэтому `ClaimIdentification`
+обёртка получает параметром от страницы заявки (шаг 8). Отдельный словарь `CommentId` → модель
+финблока отклонён при реализации шага 5: данные и так приходят в слот вместе с комментарием, а
+зависимости от `Web.Claims` у модели нет.
 
 Почему не всё обсуждение островом WASM: на длинных заявках JSON модели огромен (тот же эффект, что
 у сетки ролей, [ADR011](adr011-roles-grid-payload.md)). Ещё для этого понадобился бы клиент
@@ -386,7 +392,8 @@ render-mode="Static" />`. Формы добавления и ответа — о
    (EF6 дублирует каждый из-за `?? 0`), — та же форма, что была у `GetUnreadDiscussionsForClaims`
    на проде до шага 7. SQL и план сверить на большом проекте. Независимо.
 8. **Страница заявки** на новом дереве: обёртка `ClaimDiscussion` с финблоком и островом,
-   `ClaimController.ShowClaim` грузит снимок и отметку прочтения; из `GetClaimWithDetails` уходит
+   `ClaimController.ShowClaim` грузит снимок и отметку прочтения и передаёт обёртке
+   `ClaimIdentification` (для id финоперации в диалоге модерации); из `GetClaimWithDetails` уходит
    `Include` комментариев. Технически зависит только от шага 5; после шага 6 — чтобы пилот на
    форуме обкатал компоненты.
 9. **Снос легаси:** `CommentViewModel`, `CommentViewModelExtensions`, `IEntityWithCommentsViewModel`

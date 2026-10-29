@@ -76,6 +76,7 @@
 - `JoinRpg.Web.ProjectCommon` — общий UI для всех страниц, относящимся к проектам
 - `JoinRpg.Web.Games` — UI страниц описания проекта, настроек проекта, etc
 - `JoinRpg.Web.Claims` — UI для заявок игроков
+- `JoinRpg.Web.Comments` — UI обсуждения (комментарии заявки и темы форума): модель, статические компоненты дерева и формы ответа ([ADR026](adr026-comment-discussion.md)); построитель модели — в `JoinRpg.WebPortal.Managers`
 - `JoinRpg.Web.Accommodation` — UI размещения игроков и приглашений к совместному проживанию
 - `JoinRpg.Web.Plots` — UI для вводных (сюжетные элементы/квесты для игроков)
 - `JoinRpg.Web.CharacterGroups` — UI для групп персонажей
