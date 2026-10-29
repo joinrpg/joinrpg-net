@@ -67,7 +67,9 @@ else
     }
     else
     {
-    <table class="table">
+    @* С аватарками строки выше обычного — выравниваем всё по центру, иначе имя персонажа
+       остаётся прижатым к верху, а игрок съезжает вниз. *@
+    <table class="table @(Model.PlayerAvatar != PlayerAvatarMode.None ? "role-grid-with-avatars" : null)">
         <thead>
             <tr>
                 <th>Персонаж</th>
@@ -126,7 +128,7 @@ else
                             @if (charRow.Player is { } player)
                             {
                                 <td>
-                                    <ProjectRoleGridPlayerCell Row="charRow" Player="player" />
+                                    <ProjectRoleGridPlayerCell Row="charRow" Player="player" AvatarMode="Model.PlayerAvatar" />
                                 </td>
                             }
                             @if (charRow.Groups is { } groups)

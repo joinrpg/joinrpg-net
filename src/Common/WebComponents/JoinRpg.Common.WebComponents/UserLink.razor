@@ -2,16 +2,16 @@
     @switch (Model.ViewMode)
     {
         case JoinRpg.Common.WebComponents.ViewMode.Show:
-            <a class="join-user" href="@ProfileUri"><JoinIcon Icon="JoinIconType.User" />@Model.DisplayName</a>
+            <a class="join-user" href="@ProfileUri">@Icon@Model.DisplayName</a>
             break;
         case JoinRpg.Common.WebComponents.ViewMode.ShowAsPrivate:
-            <a class="join-user world-object-hidden" href="@ProfileUri"><JoinIcon Icon="JoinIconType.User" />@Model.DisplayName</a>
+            <a class="join-user world-object-hidden" href="@ProfileUri">@Icon@Model.DisplayName</a>
             break;
         case JoinRpg.Common.WebComponents.ViewMode.Hide:
-            <JoinIcon Icon="JoinIconType.User" /><i>занято</i>
+            @Icon<i>занято</i>
             break;
         case JoinRpg.Common.WebComponents.ViewMode.Deleted:
-            <JoinIcon Icon="JoinIconType.User" /><i>@Model.DisplayName</i>
+            @Icon<i>@Model.DisplayName</i>
             break;
     }
 
@@ -20,5 +20,11 @@
     [EditorRequired]
     public UserLinkViewModel Model { get; set; } = null!;
 
+    /// <summary>false — без иконки-человечка: рядом уже стоит аватарка</summary>
+    [Parameter]
+    public bool ShowIcon { get; set; } = true;
+
     public Uri ProfileUri => userLinkLocator.GetUri(Model);
+
+    private RenderFragment? Icon => ShowIcon ? @<JoinIcon Icon="JoinIconType.User" /> : null;
 }

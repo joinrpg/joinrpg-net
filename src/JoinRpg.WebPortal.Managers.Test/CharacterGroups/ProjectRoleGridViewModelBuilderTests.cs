@@ -3,6 +3,7 @@ using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.DataModel.Users;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
@@ -23,7 +24,8 @@ public class ProjectRoleGridViewModelBuilderTests
         PlayerColumnMode contacts = PlayerColumnMode.NameOnly,
         ProjectRolesListVisibilityMode groups = ProjectRolesListVisibilityMode.None,
         IReadOnlyList<ProjectFieldIdentification>? fields = null,
-        RolesGridGroupsViewMode groupsViewMode = RolesGridGroupsViewMode.None)
+        RolesGridGroupsViewMode groupsViewMode = RolesGridGroupsViewMode.None,
+        PlayerAvatarMode avatar = PlayerAvatarMode.None)
         => new(
             new ProjectRolesListIdentification(_mock.ProjectInfo.ProjectId, 1),
             "Сетка",
@@ -33,7 +35,8 @@ public class ProjectRoleGridViewModelBuilderTests
             contacts,
             groups,
             GroupsViewMode: groupsViewMode,
-            ShowRolesFilter: ShowRolesFilter.All);
+            ShowRolesFilter: ShowRolesFilter.All,
+            PlayerAvatar: avatar);
 
     private ProjectRoleGridViewModel BuildGrid(
         ProjectRolesList config,
@@ -76,7 +79,8 @@ public class ProjectRoleGridViewModelBuilderTests
             new Dictionary<CharacterGroupIdentification, CharacterGroupFullInfo>(),
             approvedClaims,
             fieldUsers ?? new Dictionary<UserIdentification, UserInfoHeader>(),
-            _mock.ProjectInfo);
+            _mock.ProjectInfo,
+            new FakeAvatarUriResolver());
 
         // Сетка едет в остров по JSON, поэтому все тесты ниже проверяют утверждения на модели,
         // вернувшейся с «того конца провода», а не на результате билдера. Именно этой проверки
@@ -510,6 +514,78 @@ public class ProjectRoleGridViewModelBuilderTests
         // Sentinel «скрыто»: роль занята, но кто её играет — не показываем.
         row.Player!.Link.ShouldBe(UserLinkViewModel.Hidden);
         row.Player.Contacts.ShouldBeNull();
+    }
+
+    private const string PlayerAvatarUri = "https://www.gravatar.com/avatar/player";
+
+    private Character CreateCharacterWithPlayerAvatar(bool hidePlayer = false)
+    {
+        var character = _mock.CreateCharacter("Вася");
+        character.IsPublic = true;
+        character.HidePlayerForCharacter = hidePlayer;
+        _mock.Player.SelectedAvatar = new UserAvatar { UserAvatarId = 5, OriginalUri = PlayerAvatarUri, IsActive = true };
+        _mock.CreateApprovedClaim(character, _mock.Player);
+        return character;
+    }
+
+    [Theory]
+    [InlineData(PlayerAvatarMode.Small)]
+    [InlineData(PlayerAvatarMode.Large)]
+    public void Build_AvatarsOn_PlayerAvatarShown(PlayerAvatarMode mode)
+    {
+        var character = CreateCharacterWithPlayerAvatar();
+
+        var result = BuildGrid(Config(avatar: mode), [character], canViewPrivate: false);
+
+        result.PlayerAvatar.ShouldBe(mode);
+        result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player.ShouldNotBeNull().AvatarUri.ShouldBe(new Uri(PlayerAvatarUri));
+    }
+
+    [Fact]
+    public void Build_AvatarsOff_NoAvatarUri()
+    {
+        var character = CreateCharacterWithPlayerAvatar();
+
+        var result = BuildGrid(Config(), [character]);
+
+        result.PlayerAvatar.ShouldBe(PlayerAvatarMode.None);
+        result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player.ShouldNotBeNull().AvatarUri.ShouldBeNull();
+    }
+
+    // Скрытый игрок не должен выдавать себя аватаркой — по ней его можно узнать.
+    [Fact]
+    public void Build_AvatarsOn_HiddenPlayer_NonMaster_NoAvatarUri()
+    {
+        var character = CreateCharacterWithPlayerAvatar(hidePlayer: true);
+
+        var result = BuildGrid(Config(avatar: PlayerAvatarMode.Large), [character], canViewPrivate: false);
+
+        result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player.ShouldNotBeNull().AvatarUri.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Build_AvatarsOn_HiddenPlayer_Master_AvatarShown()
+    {
+        var character = CreateCharacterWithPlayerAvatar(hidePlayer: true);
+
+        var result = BuildGrid(Config(avatar: PlayerAvatarMode.Small), [character]);
+
+        result.Rows.ShouldHaveSingleItem().ShouldBeOfType<ProjectRoleGridCharacterRowViewModel>()
+            .Player.ShouldNotBeNull().AvatarUri.ShouldBe(new Uri(PlayerAvatarUri));
+    }
+
+    // Без колонки «Игрок» аватаркам негде стоять — и заглушки тоже не нужны.
+    [Fact]
+    public void Build_AvatarsOn_NoPlayerColumn_AvatarsOff()
+    {
+        var character = CreateCharacterWithPlayerAvatar();
+
+        var result = BuildGrid(Config(contacts: PlayerColumnMode.None, avatar: PlayerAvatarMode.Small), [character]);
+
+        result.PlayerAvatar.ShouldBe(PlayerAvatarMode.None);
     }
 
     [Fact]

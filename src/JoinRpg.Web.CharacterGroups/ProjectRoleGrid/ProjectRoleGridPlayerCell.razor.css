@@ -1,0 +1,14 @@
+.role-grid-avatar {
+    display: inline-block;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.role-grid-avatar-unknown {
+    text-align: center;
+    font-weight: bold;
+    color: #777;
+    background-color: #eee;
+}

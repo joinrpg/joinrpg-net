@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.Models;
@@ -16,7 +17,8 @@ internal class ProjectRoleGridViewService(
     IClaimInfoRepository claimInfoRepository,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository characterGroupRepository,
-    ICurrentUserAccessor currentUserAccessor)
+    ICurrentUserAccessor currentUserAccessor,
+    IAvatarUriResolver avatarUriResolver)
     : IProjectRoleGridClient
 {
     public async Task<ProjectRoleGridViewResult> GetRoleGrid(ProjectRolesListIdentification id)
@@ -118,7 +120,7 @@ internal class ProjectRoleGridViewService(
             HasAccess: true,
             Grid: ProjectRoleGridViewModelBuilder.Build(
                 config, canEditGroups, canEditRoles, canViewPrivate, excludeSpecialGroups,
-                orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, projectInfo),
+                orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, projectInfo, avatarUriResolver),
             NoAccess: null);
     }
 
