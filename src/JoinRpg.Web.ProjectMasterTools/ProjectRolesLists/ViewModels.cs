@@ -186,6 +186,7 @@ public enum RolesGridGroupsViewModeView
     Tree,
 }
 
+// Числа совпадают с ShowRolesFilter — форма переводит значения приведением типа.
 public enum ShowRolesFilterView
 {
     [Display(Name = "Все роли", Description = "Показывать все роли")]
@@ -196,4 +197,7 @@ public enum ShowRolesFilterView
 
     [Display(Name = "Только горячие", Description = "Роли, помеченные мастером как горячие")]
     HotOnly,
+
+    [Display(Name = "Только занятые", Description = "Роли с одобренным игроком")]
+    TakenOnly,
 }
