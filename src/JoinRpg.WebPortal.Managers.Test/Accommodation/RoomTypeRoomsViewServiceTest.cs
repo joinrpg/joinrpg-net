@@ -1,6 +1,5 @@
 using JoinRpg.Data.Interfaces.Accommodation;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;

@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 
 namespace JoinRpg.Services.Impl;
 

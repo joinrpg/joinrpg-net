@@ -20,6 +20,16 @@ public class JoinValidationException(string message) : JoinRpgBaseException(mess
     }
 }
 
+public class FieldRequiredException(string fieldName, string message) : JoinRpgBaseException(message)
+{
+    public FieldRequiredException(string fieldName) : this(fieldName, $"Field {fieldName} is required")
+    {
+
+    }
+
+    public string FieldName { get; } = fieldName;
+}
+
 public class JoinRpgEntityNotFoundException : JoinRpgBaseException
 {
     public JoinRpgEntityNotFoundException(IEnumerable<int> ids, string typeName) : base($"Can't found entities of type {typeName} by ids {string.Join(", ", ids)}")
