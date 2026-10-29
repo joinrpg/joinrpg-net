@@ -176,7 +176,7 @@ internal sealed class PscbFakeUserRepository : IUserRepository
 
         IReadOnlyCollection<UserInfoHeader> found = [.. userIds
             .Where(id => existingIds.Contains(id.Value))
-            .Select(id => new UserInfoHeader(id, new UserDisplayName($"Пользователь {id.Value}", null)))];
+            .Select(id => new UserInfoHeader(id, new UserDisplayName($"Пользователь {id.Value}", null), Avatar: null))];
 
         return Task.FromResult(found);
     }
@@ -194,6 +194,7 @@ internal sealed class PscbFakeUserRepository : IUserRepository
     public Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination) => throw new NotImplementedException();
     public Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
     public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotImplementedException();
+    public Task<IReadOnlyCollection<UserAvatar>> LoadAvatars(IReadOnlyCollection<AvatarIdentification> avatarIds) => throw new NotImplementedException();
     public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotImplementedException();
     public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
     public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
@@ -363,7 +364,7 @@ internal sealed class PscbFakeClaimsRepository : IClaimsRepository
     public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec status, int? roomTypeId) => throw new NotImplementedException();
     public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
     public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
-    public Task<Dictionary<int, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotImplementedException();
+    public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotImplementedException();
 }
 
 internal sealed class FakeClaimUri : IUriLocator<ClaimIdentification>
