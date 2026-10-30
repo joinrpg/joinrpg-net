@@ -494,9 +494,9 @@
                 && p.RestoreBlockReason is null)]
             : [];
 
-    // Сколько записей напишет строка — то же правило, что на сервере: потерянный платёж,
-    // который банк ещё и вернул, пишет две записи. Должно оставаться в синхроне с серверным
-    // подсчётом в PscbPaymentsRestoreViewService.
+    // Сколько записей может восстановить строка: потерянный платёж с возвратом — две,
+    // только платёж или пропущенный возврат — одна. Это оценка для клиентского ограничения
+    // MaxRecordsPerRun; фактические итоги приходят в ответах на построчные запросы.
     private static int RecordsIn(PscbPaymentListRow row)
         => row.MatchState == PscbPaymentMatchState.RefundMissing || !row.RefundedByBank ? 1 : 2;
 

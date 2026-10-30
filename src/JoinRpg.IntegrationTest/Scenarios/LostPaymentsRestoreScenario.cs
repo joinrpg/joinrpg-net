@@ -73,15 +73,27 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
         var paymentsUserId = await factory.Services.RunAsAsync(masterId, sp =>
             Task.FromResult(sp.GetRequiredService<IVirtualUsersService>().PaymentsUser.GetId()));
 
-        // 2. Дырка в счётчике комментариев: потерянный orderId строго ниже счётчика; номер
-        // комментария подачи заявки занят комментарием без операции.
+        // 2. Комментарий оплаты, возвращённый без операции: видим игроку и без действия.
+        // Комментарий подачи заявки не подходит для дописки: у него ExtraAction.NewClaim.
+        _ = await factory.Services.RunAsAsync(masterId, sp =>
+            sp.GetRequiredService<IUnitOfWork>().GetCharacterAggregateWriteRepository().InsertRestoredClaimComment(new RestoredClaimCommentRow(
+                claimId,
+                CommentId: null,
+                paymentsUserId,
+                IsCommentByPlayer: true,
+                IsVisibleToPlayer: true,
+                ExtraAction: null,
+                PaymentAt,
+                PaymentText)));
+        // Дырка в счётчике комментариев: потерянный orderId строго ниже счётчика.
         int discussionId, plainCommentId, lostOrderId, identityBefore;
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
             discussionId = await GetDiscussionIdAsync(db, claimId);
             plainCommentId = await db.Set<Comment>()
-                .Where(c => c.CommentDiscussionId == discussionId).MinAsync(c => c.CommentId);
+                .Where(c => c.CommentDiscussionId == discussionId && c.AuthorUserId == paymentsUserId.Value)
+                .Select(c => c.CommentId).SingleAsync();
             (await db.Set<FinanceOperation>().AnyAsync(f => f.CommentId == plainCommentId)).ShouldBeFalse();
             lostOrderId = await BurnTwoCommentIdsAsync(db, projectId, discussionId, masterId);
             identityBefore = await GetCommentsIdentityAsync(db);
@@ -335,6 +347,75 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
             (await db.Set<FinanceOperation>().CountAsync(f => f.ClaimId == claimId.ClaimId)).ShouldBe(3);
             (await GetCommentsIdentityAsync(db)).ShouldBe(identityAfterOtherClaim + 1);
+        }
+    }
+
+    [Theory]
+    [InlineData(false, null)]
+    [InlineData(true, CommentExtraAction.NewClaim)]
+    [InlineData(false, CommentExtraAction.NewClaim)]
+    public async Task LostPayment_RefusesToAttachToAHiddenCommentOrAnAction(bool isVisibleToPlayer, CommentExtraAction? extraAction)
+    {
+        var (masterId, projectId, onlineTypeId) = await CreateProjectWithOnlinePaymentType();
+        UserIdentification playerId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            playerId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+        }
+        var claimId = await AddClaim(playerId, await AddCharacter(masterId, projectId));
+        var paymentsUserId = await factory.Services.RunAsAsync(masterId, sp =>
+            Task.FromResult(sp.GetRequiredService<IVirtualUsersService>().PaymentsUser.GetId()));
+        const string existingText = "Комментарий до восстановления";
+        _ = await factory.Services.RunAsAsync(masterId, sp =>
+            sp.GetRequiredService<IUnitOfWork>().GetCharacterAggregateWriteRepository().InsertRestoredClaimComment(new RestoredClaimCommentRow(
+                claimId,
+                CommentId: null,
+                paymentsUserId,
+                IsCommentByPlayer: true,
+                isVisibleToPlayer,
+                extraAction,
+                PaymentAt,
+                existingText)));
+
+        int commentId, identityBefore;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            var discussionId = await GetDiscussionIdAsync(db, claimId);
+            commentId = await db.Set<Comment>()
+                .Where(c => c.CommentDiscussionId == discussionId && c.AuthorUserId == paymentsUserId.Value)
+                .Select(c => c.CommentId).SingleAsync();
+            identityBefore = await GetCommentsIdentityAsync(db);
+        }
+
+        var exception = await Should.ThrowAsync<SqlException>(() => InsertLostPayment(masterId, new LostPaymentRow(
+            claimId,
+            FinanceOperationType.Online,
+            commentId,
+            RefundedOperationId: null,
+            paymentsUserId,
+            IsCommentByPlayer: true,
+            Money,
+            onlineTypeId,
+            CreatedAt: RestoredAt,
+            ChangedAt: RestoredAt,
+            OperationDate: PaymentAt,
+            PaymentText,
+            BankPaymentKey,
+            BankRefundKey: null)));
+        exception.Message.ShouldContain("Existing comment must be player-visible and have no extra action");
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            (await db.Set<FinanceOperation>().AnyAsync(f => f.CommentId == commentId)).ShouldBeFalse();
+            (await db.Set<FinanceOperationBankDetails>().AnyAsync(b => b.CommentId == commentId)).ShouldBeFalse();
+            var comment = await db.Set<Comment>().AsNoTracking().SingleAsync(c => c.CommentId == commentId);
+            comment.IsVisibleToPlayer.ShouldBe(isVisibleToPlayer);
+            comment.ExtraAction.ShouldBe(extraAction);
+            (await db.Set<Comment>().Where(c => c.CommentId == commentId)
+                .Select(c => c.CommentText.Text.Contents).SingleAsync()).ShouldBe(existingText);
+            (await GetCommentsIdentityAsync(db)).ShouldBe(identityBefore);
         }
     }
 

@@ -495,6 +495,8 @@ internal class CharacterAggregateWriteRepository(MyDbContext ctx) : ICharacterAg
                             SELECT {(int)RestoredCommentInsertResult.TakenElsewhere} AS Result, @commentId AS OperationId;
                             RETURN;
                         END;
+                        IF EXISTS (SELECT 1 FROM dbo.Comments WHERE CommentId = @commentId AND (IsVisibleToPlayer = 0 OR ExtraAction IS NOT NULL))
+                            THROW 50000, N'Existing comment must be player-visible and have no extra action', 1;
                         INSERT INTO dbo.FinanceOperations (CommentId, ProjectId, ClaimId, MoneyAmount, PaymentTypeId, Created,
                             Changed, OperationDate, State, OperationType, RefundedOperationId)
                         VALUES (@commentId, @p1, @p0, @p9, @p10, @createdAt, @p7, @p8,
