@@ -62,6 +62,16 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     }
 
     [Fact]
+    public async Task SetAccommodationSettings_DisablesPlayerInvites_WithoutTouchingEnabled()
+    {
+        await CreateService().SetAccommodationSettings(ProjectId, enableAccommodation: true, playerInvitesEnabled: false);
+
+        Result.AccommodationSettings.Enabled.ShouldBeTrue();
+        Result.AccommodationSettings.PlayerInvitesEnabled.ShouldBeFalse();
+        mock.Project.Details.AccommodationInvitesEnabled.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task SetTimeZone_ChangesTimeZone()
     {
         await CreateService().SetTimeZone(ProjectId, TimeZoneInfo.FindSystemTimeZoneById("Asia/Yekaterinburg"));

@@ -113,6 +113,7 @@ erDiagram
         bool EnableCheckInModule
         bool CheckInProgress
         bool EnableAccommodation
+        bool AccommodationInvitesEnabled
         bool FinanceWarnOnOverPayment
         bool PreferentialFeeEnabled
         string PreferentialFeeConditions_Contents "markdown"

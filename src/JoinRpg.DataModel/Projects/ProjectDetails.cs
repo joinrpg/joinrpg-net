@@ -28,6 +28,14 @@ public class ProjectDetails : IValidatableObject
     public bool EnableAccommodation { get; set; } = false;
 
     /// <summary>
+    /// Могут ли игроки сами приглашать друг друга к совместному проживанию (в домене —
+    /// <c>ProjectAccommodationSettings.PlayerInvitesEnabled</c>). Выключение запрещает игрокам
+    /// создавать новые приглашения, уже отправленные принимаются и отзываются как раньше;
+    /// мастерское «поселить вместе» (#5656) не затрагивается.
+    /// </summary>
+    public bool AccommodationInvitesEnabled { get; set; } = true;
+
+    /// <summary>
     ///   Null = bound to player name
     ///   Other value = bound to that field
     /// </summary>

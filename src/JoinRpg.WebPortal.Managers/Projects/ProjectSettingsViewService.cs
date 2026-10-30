@@ -28,6 +28,7 @@ internal class ProjectSettingsViewService(
             ProjectName = project.ProjectName.Value,
             ProjectAnnounce = details.ProjectDescription.Value,
             EnableAccommodation = project.AccommodationSettings.Enabled,
+            PlayerInvitesEnabled = project.AccommodationSettings.PlayerInvitesEnabled,
         };
     }
 
@@ -40,7 +41,7 @@ internal class ProjectSettingsViewService(
             ProjectName = (ProjectName)model.ProjectName,
             ProjectAnnounce = model.ProjectAnnounce,
         });
-        await projectService.SetAccommodationSettings(model.ProjectId, model.EnableAccommodation);
+        await projectService.SetAccommodationSettings(model.ProjectId, model.EnableAccommodation, model.PlayerInvitesEnabled);
     }
 
     async Task<ProjectClaimSettingsViewModel> IProjectSettingsClient.GetClaimSettings(ProjectIdentification projectId)

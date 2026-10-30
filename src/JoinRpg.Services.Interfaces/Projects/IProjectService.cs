@@ -29,7 +29,8 @@ public interface IProjectService
     Task SetContactSettings(ProjectIdentification projectId, ProjectProfileRequirementSettings settings);
     /// <param name="claimApplyRules">Правила подачи заявок (Markdown); <c>null</c> — не менять.</param>
     Task SetClaimSettings(ProjectIdentification projectId, ProjectClaimSettings settings, string? claimApplyRules = null);
-    Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation);
+    /// <param name="playerInvitesEnabled">Могут ли игроки сами приглашать друг друга к совместному проживанию</param>
+    Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation, bool playerInvitesEnabled = true);
 
     /// <summary>Сменить часовой пояс проекта. Пояс должен иметь IANA-идентификатор.</summary>
     Task SetTimeZone(ProjectIdentification projectId, TimeZoneInfo timeZone);

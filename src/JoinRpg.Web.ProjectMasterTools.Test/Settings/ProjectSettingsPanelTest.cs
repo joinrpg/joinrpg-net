@@ -103,6 +103,31 @@ public class ProjectSettingsPanelTest : BunitContext
         client.SavedClaimSettings.ShouldNotBeNull().ClaimApplyRules.ShouldBe(ClaimApplyRules);
     }
 
+    // #952: «Разрешить игрокам приглашать соседей» имеет смысл только при включённом поселении.
+    // Скрытая настройка не должна стираться при сохранении остальных полей панели.
+    [Fact]
+    public void HiddenPlayerInvitesEnabledIsSavedUnchanged()
+    {
+        var cut = Render<ProjectMainSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+        cut.FindAll("input[type=checkbox][name=PlayerInvitesEnabled]").ShouldBeEmpty();
+
+        cut.Find("form").Submit();
+
+        client.SavedMainSettings.ShouldNotBeNull().PlayerInvitesEnabled.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void PlayerInvitesEnabledIsSaved()
+    {
+        client.EnableAccommodation = true;
+        var cut = Render<ProjectMainSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
+        cut.Find("input[type=checkbox][name=PlayerInvitesEnabled]").Change(false);
+
+        cut.Find("form").Submit();
+
+        client.SavedMainSettings.ShouldNotBeNull().PlayerInvitesEnabled.ShouldBeFalse();
+    }
+
     // Название проекта короче 5 букв сервер не примет — сохранить его нельзя уже в форме.
     // Пробелы по краям сервер обрежет, поэтому и в форме они в длину не идут (#5855).
     [Theory]
@@ -175,6 +200,8 @@ public class ProjectSettingsPanelTest : BunitContext
     {
         public bool HasEditAccess { get; set; } = true;
 
+        public bool EnableAccommodation { get; set; } = false;
+
         public ProjectMainSettingsViewModel? SavedMainSettings { get; private set; }
 
         public Task<ProjectMainSettingsViewModel> GetMainSettings(ProjectIdentification projectId)
@@ -185,7 +212,8 @@ public class ProjectSettingsPanelTest : BunitContext
                 HasEditAccess = HasEditAccess,
                 ProjectName = "Тестовый проект",
                 ProjectAnnounce = "",
-                EnableAccommodation = false,
+                EnableAccommodation = EnableAccommodation,
+                PlayerInvitesEnabled = true,
             });
 
         public Task SaveMainSettings(ProjectMainSettingsViewModel model)

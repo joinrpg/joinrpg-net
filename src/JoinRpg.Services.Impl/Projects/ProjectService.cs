@@ -143,12 +143,16 @@ internal class ProjectService(
             });
     }
 
-    public async Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation)
+    public async Task SetAccommodationSettings(ProjectIdentification projectId, bool enableAccommodation, bool playerInvitesEnabled = true)
     {
         await projectPropsService.ChangeProjectProperties(projectId,
             Permission.CanChangeProjectProperties, ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
-            enableAccommodation,
-            ctx => ctx.Project.Details.EnableAccommodation = ctx.Request);
+            (enableAccommodation, playerInvitesEnabled),
+            ctx =>
+            {
+                ctx.Project.Details.EnableAccommodation = ctx.Request.enableAccommodation;
+                ctx.Project.Details.AccommodationInvitesEnabled = ctx.Request.playerInvitesEnabled;
+            });
     }
 
     async Task IProjectService.SetPublishSettings(ProjectIdentification projectId, ProjectCloneSettings cloneSettings, bool publishEnabled)
