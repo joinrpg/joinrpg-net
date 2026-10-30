@@ -60,7 +60,7 @@ public class ClaimFinanceRestoreLookupScenario(JoinApplicationFactory factory)
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
             var claimService = sp.GetRequiredService<IClaimService>();
-            await claimService.ModerateFinanceOperation(claimId, playerOperationId, "Пришло", FinanceOperationAction.Approve);
+            await claimService.ModerateFinanceOperation(new FinanceOperationIdentification(claimId, playerOperationId), "Пришло", FinanceOperationAction.Approve);
             await sp.AddClaimComment(claimId, parentCommentId: null, isVisibleToPlayer: true, "Обычный");
             await sp.AddClaimComment(foreignClaimId, parentCommentId: null, isVisibleToPlayer: true, "Другой проект");
         });

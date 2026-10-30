@@ -474,5 +474,6 @@ render-mode="Static" />`. Формы добавления и ответа — о
 - **Пустые `label` у `FormRow` без подписи** (строка с кнопками в `AddCommentForm`).
 - **`claim/Edit` — 5 ленивых загрузок**, все в финблоке (`ClaimFeeViewModel`, #4960, #5420), не в
   обсуждении.
-- `IClaimService.ModerateFinanceOperation` всё ещё принимает голый `int parentCommentId`; естественный
-  тип — `FinanceOperationIdentification`, правка затрагивает сервис и десяток тестов.
+
+Закрыто после завершения плана: `IClaimService.ModerateFinanceOperation` принимает
+`FinanceOperationIdentification` вместо пары `ClaimIdentification` + голый `int parentCommentId`.
