@@ -145,13 +145,125 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
     [Fact]
     public async Task SetFieldSettings_NameField_MarksFieldUsed()
     {
-        var field = mock.AddField(f => f.FieldType = ProjectFieldType.String);
+        var field = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.String;
+            f.IsPublic = true;
+        });
         var service = CreateService(mock.Master.UserId);
 
         await service.SetFieldSettingsAsync(new FieldSettingsRequest { ProjectId = ProjectId, NameField = field.Id });
 
         Result.GetFieldById(field.Id).WasEverUsed.ShouldBeTrue();
     }
+
+    /// <summary>
+    /// Поле-имя обязано быть публичным (#965): имя показывается всем посетителям сайта.
+    /// </summary>
+    [Fact]
+    public async Task SetFieldSettings_NotPublicNameField_Throws()
+    {
+        var field = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.String;
+            f.IsPublic = false;
+        });
+        var service = CreateService(mock.Master.UserId);
+
+        await Should.ThrowAsync<JoinRpgNameFieldShouldBePublicException>(
+            () => service.SetFieldSettingsAsync(new FieldSettingsRequest { ProjectId = ProjectId, NameField = field.Id }));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(0);
+        mock.Project.Details.CharacterNameField.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Сохранение настроек в старом проекте с непубличным полем-именем не падает, пока мастер
+    /// привязку не меняет: форма постит текущее значение обратно при любом сохранении настроек.
+    /// </summary>
+    [Fact]
+    public async Task SetFieldSettings_KeepsLegacyNotPublicNameField_Allowed()
+    {
+        var field = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.String;
+            f.IsPublic = false;
+        });
+        mock.Project.Details.CharacterNameField = mock.Project.ProjectFields
+            .Single(f => f.ProjectFieldId == field.Id.ProjectFieldId);
+        mock.ReInitProjectInfo();
+        var service = CreateService(mock.Master.UserId);
+
+        await service.SetFieldSettingsAsync(new FieldSettingsRequest { ProjectId = ProjectId, NameField = field.Id });
+
+        mock.Project.Details.CharacterNameField.ShouldBeSameAs(
+            mock.Project.ProjectFields.Single(f => f.ProjectFieldId == field.Id.ProjectFieldId));
+    }
+
+    /// <summary>
+    /// Снять публичность с привязанного к имени поля нельзя (#965).
+    /// </summary>
+    [Fact]
+    public async Task UpdateFieldParams_UnpublishNameField_Throws()
+    {
+        var field = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.String;
+            f.IsPublic = true;
+        });
+        var service = CreateService(mock.Master.UserId);
+        await service.SetFieldSettingsAsync(new FieldSettingsRequest { ProjectId = ProjectId, NameField = field.Id });
+
+        await Should.ThrowAsync<JoinRpgNameFieldShouldBePublicException>(
+            () => service.UpdateFieldParams(CreateUpdateFieldRequest(field.Id, isPublic: false)));
+
+        unitOfWork.SaveChangesCallCount.ShouldBe(1); // только привязка имени, обновление не сохранилось
+        mock.Project.ProjectFields.Single(f => f.ProjectFieldId == field.Id.ProjectFieldId).IsPublic.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Непубличные поля-имена остались в старых проектах: править их, не трогая публичность,
+    /// можно — запрет только на снятие публичности.
+    /// </summary>
+    [Fact]
+    public async Task UpdateFieldParams_LegacyNotPublicNameField_KeepsNotPublic()
+    {
+        var field = mock.AddField(f =>
+        {
+            f.FieldType = ProjectFieldType.String;
+            f.IsPublic = false;
+        });
+        mock.Project.Details.CharacterNameField = mock.Project.ProjectFields
+            .Single(f => f.ProjectFieldId == field.Id.ProjectFieldId);
+        mock.ReInitProjectInfo();
+        var service = CreateService(mock.Master.UserId);
+
+        await service.UpdateFieldParams(CreateUpdateFieldRequest(field.Id, name: "Переименованное поле", isPublic: false));
+
+        var updated = mock.Project.ProjectFields.Single(f => f.ProjectFieldId == field.Id.ProjectFieldId);
+        updated.FieldName.ShouldBe("Переименованное поле");
+        updated.IsPublic.ShouldBeFalse();
+    }
+
+    private static UpdateFieldRequest CreateUpdateFieldRequest(
+        ProjectFieldIdentification fieldId,
+        string name = "Новое поле",
+        bool isPublic = true)
+        => new(
+            fieldId,
+            name,
+            fieldHint: "",
+            canPlayerEdit: true,
+            canPlayerView: true,
+            isPublic: isPublic,
+            MandatoryStatus.Optional,
+            showForGroups: [],
+            validForNpc: true,
+            includeInPrint: true,
+            showForUnapprovedClaims: true,
+            price: 0,
+            masterFieldHint: "",
+            programmaticValue: "");
 
     [Fact]
     public async Task AddField_ByPlayerWithoutAccess_Throws_AndDoesNotSave()

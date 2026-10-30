@@ -71,6 +71,13 @@ internal class FieldSetupServiceImpl(
             {
                 var field = GetField(ctx.Project, ctx.Request.ProjectFieldId.ProjectFieldId);
 
+                if (field.IsName() && field.IsPublic && !ctx.Request.IsPublic)
+                {
+                    // Снять публичность с поля-имени нельзя (#965). Проверка только на снятие:
+                    // непубличные поля-имена из старых проектов должны остаться редактируемыми.
+                    throw new JoinRpgNameFieldShouldBePublicException(field);
+                }
+
                 // If we are changing field.CanPlayerEdit, we should update variants to match
                 if (field.CanPlayerEdit != ctx.Request.CanPlayerEdit)
                 {
@@ -409,6 +416,17 @@ internal class FieldSetupServiceImpl(
             ctx =>
             {
                 var nameField = ctx.Project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == ctx.Request.NameField?.ProjectFieldId);
+                if (nameField is not null
+                    && !nameField.IsPublic
+                    && !ReferenceEquals(ctx.Project.Details.CharacterNameField, nameField))
+                {
+                    // Имя персонажа показывается всем посетителям (поиск, сетки ролей, расписание),
+                    // поэтому поле-имя обязано быть публичным (#965). Отказ только при смене привязки:
+                    // сохранение настроек в старом проекте с непубличным полем-именем не должно
+                    // падать, пока мастер его не трогает.
+                    throw new JoinRpgNameFieldShouldBePublicException(nameField);
+                }
+
                 ctx.Project.Details.CharacterNameField = nameField;
                 if (nameField is not null)
                 {
