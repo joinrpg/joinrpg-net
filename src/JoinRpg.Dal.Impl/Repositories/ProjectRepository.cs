@@ -93,6 +93,10 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         .Select(acl => (Guid?)acl.Token)
         .SingleOrDefaultAsync();
 
+    public Task<bool> IsActiveMasterExportToken(ProjectIdentification projectId, Guid token)
+      => Ctx.Set<ProjectAcl>()
+        .AnyAsync(acl => acl.ProjectId == projectId.Value && acl.Token == token && acl.Status == ProjectAclStatus.Active);
+
     public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(
         DateTime inActiveSince)
     {

@@ -27,7 +27,7 @@ internal static class SmokeExpectations
         // Нужны данные, которых сид не создаёт.
         ["{projectId}/plots/ByTag"] = "нужен сюжетный тег, сид его не создаёт",
         ["{projectId}/reports/2d/{gameReport2DTemplateId}"] = "нужен сохранённый шаблон 2D-отчёта, сид его не создаёт",
-        ["{projectId}/money/SummaryByMaster"] = "нужен токен выгрузки, выдаётся отдельной страницей",
+        ["{projectId}/money/SummaryByMaster"] = "нужен токен выгрузки мастера, покрыто FinanceGoogleDocsExportScenario",
         // JWT тут не нужен — расписание отдаётся анонимно, доступ решает видимость полей
         // времени и локации. Смоук всё равно не ходит: в его сиде расписание не настроено.
         ["x-game-api/{projectId}/schedule/all"] = "нужно настроенное расписание, покрыт XApiScheduleTests",

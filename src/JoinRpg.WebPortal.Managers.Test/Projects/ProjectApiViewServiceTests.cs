@@ -68,6 +68,7 @@ public class ProjectApiViewServiceTests
         public Task<Project> GetProjectWithFinances(int projectid) => throw new NotImplementedException();
         public Task<Project> GetProjectForFinanceSetup(int projectid) => throw new NotImplementedException();
         public Task<Guid?> GetMasterExportToken(ProjectIdentification projectId, UserIdentification userId) => throw new NotImplementedException();
+        public Task<bool> IsActiveMasterExportToken(ProjectIdentification projectId, Guid token) => throw new NotImplementedException();
         public Task<ICollection<Character>> GetCharacterByGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince) => throw new NotImplementedException();
         public Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetBlockedProjects() => throw new NotImplementedException();
