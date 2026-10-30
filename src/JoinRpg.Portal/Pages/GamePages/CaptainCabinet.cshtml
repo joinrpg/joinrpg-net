@@ -1,8 +1,14 @@
 @page "/{projectId:int}/captain"
 @using JoinRpg.Web.Claims.CaptainCabinet
+@using JoinRpg.Web.Claims.UnifiedGrid
 @model JoinRpg.Portal.Pages.GamePages.CaptainCabinetModel
 @{
     ViewData["Title"] = "Кабинет капитана";
 }
 
-@(await Html.RenderComponentAsync<CaptainClaimsGrid>(RenderMode.WebAssembly, new { Model.ProjectId }))
+@(await Html.RenderComponentAsync<CaptainClaimsGrid>(RenderMode.WebAssembly, new
+{
+    Model.ProjectId,
+    InitialStatus = Model.Status ?? UgStatusFilterView.Active,
+    InitialPage = Model.Page ?? 1,
+}))

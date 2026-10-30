@@ -180,7 +180,10 @@ internal class UnifiedGridViewService(
             UgStatusFilterView.Active => UnifiedGridStatus.Active,
             UgStatusFilterView.Vacant => UnifiedGridStatus.Vacant,
             UgStatusFilterView.Discussion => UnifiedGridStatus.Discussion,
+            UgStatusFilterView.Approved => UnifiedGridStatus.Approved,
+            UgStatusFilterView.OnHold => UnifiedGridStatus.OnHold,
             UgStatusFilterView.Archive => UnifiedGridStatus.Archive,
+            UgStatusFilterView.All => UnifiedGridStatus.All,
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
         };
 }

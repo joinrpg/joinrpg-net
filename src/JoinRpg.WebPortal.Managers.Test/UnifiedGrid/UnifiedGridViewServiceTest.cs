@@ -61,18 +61,24 @@ public class UnifiedGridViewServiceTest
     }
 
     /// <summary>
-    /// Архив — единственный вид, которому нужны удалённые персонажи (а заодно и живые — ради их
+    /// Архив и «Все» — виды, которым нужны удалённые персонажи (архиву заодно и живые — ради их
     /// отклонённых заявок); остальным удалённых не надо даже загружать.
     /// </summary>
     [Theory]
     [InlineData(UgScopeView.Captain, UgStatusFilterView.Active, CharacterStatusSpec.Active)]
     [InlineData(UgScopeView.Captain, UgStatusFilterView.Vacant, CharacterStatusSpec.Active)]
     [InlineData(UgScopeView.Captain, UgStatusFilterView.Discussion, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Captain, UgStatusFilterView.Approved, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Captain, UgStatusFilterView.OnHold, CharacterStatusSpec.Active)]
     [InlineData(UgScopeView.Captain, UgStatusFilterView.Archive, CharacterStatusSpec.Any)]
+    [InlineData(UgScopeView.Captain, UgStatusFilterView.All, CharacterStatusSpec.Any)]
     [InlineData(UgScopeView.Master, UgStatusFilterView.Active, CharacterStatusSpec.Active)]
     [InlineData(UgScopeView.Master, UgStatusFilterView.Vacant, CharacterStatusSpec.Active)]
     [InlineData(UgScopeView.Master, UgStatusFilterView.Discussion, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Master, UgStatusFilterView.Approved, CharacterStatusSpec.Active)]
+    [InlineData(UgScopeView.Master, UgStatusFilterView.OnHold, CharacterStatusSpec.Active)]
     [InlineData(UgScopeView.Master, UgStatusFilterView.Archive, CharacterStatusSpec.Any)]
+    [InlineData(UgScopeView.Master, UgStatusFilterView.All, CharacterStatusSpec.Any)]
     public async Task RepositoryIsAskedForRightCharacters(UgScopeView scope, UgStatusFilterView filter, CharacterStatusSpec expected)
     {
         _ = await GetItems(filter, scope);
@@ -226,6 +232,71 @@ public class UnifiedGridViewServiceTest
 
         (await GetNames(UgStatusFilterView.Archive)).ShouldBeEmpty();
     }
+
+    #region Статусы «Приняты», «Лист ожидания», «Все» (ADR027 §2, шаг 5)
+
+    /// <summary>
+    /// «Приняты» показывают занятых персонажей и только принятую заявку: соседняя обсуждаемая
+    /// сюда не попадает, а вакансии (в том числе Mock.Character без заявок) не попадают вовсе.
+    /// </summary>
+    [Fact]
+    public async Task ApprovedShowsOnlyApprovedClaimOfBusyCharacter()
+    {
+        var busy = Mock.CreateCharacter("busy");
+        var approved = Mock.CreateApprovedClaim(busy, Mock.Player);
+        _ = Mock.CreateClaim(busy, Mock.Master);
+
+        var item = (await GetItems(UgStatusFilterView.Approved)).ShouldHaveSingleItem();
+
+        item.Character.Name.Name.ShouldBe(busy.CharacterName);
+        item.Claims.Select(c => c.ClaimId).ShouldBe([approved.GetId()]);
+    }
+
+    /// <summary>
+    /// «Лист ожидания» показывают живых персонажей с OnHold-заявками и только эти заявки:
+    /// принятая соседка не видна, персонаж без OnHold-заявок (занятый или вакансия) — тоже.
+    /// </summary>
+    [Fact]
+    public async Task OnHoldShowsOnlyOnHoldClaims()
+    {
+        var withWaitingList = Mock.CreateCharacter("with waiting list");
+        _ = Mock.CreateApprovedClaim(withWaitingList, Mock.Player);
+        var onHold = Mock.CreateClaim(withWaitingList, Mock.Master);
+        onHold.ClaimStatus = ClaimStatus.OnHold;
+        var busy = Mock.CreateCharacter("busy without waiting list");
+        _ = Mock.CreateApprovedClaim(busy, Mock.Player);
+
+        var item = (await GetItems(UgStatusFilterView.OnHold)).ShouldHaveSingleItem();
+
+        item.Character.Name.Name.ShouldBe(withWaitingList.CharacterName);
+        item.Claims.Select(c => c.ClaimId).ShouldBe([onHold.GetId()]);
+    }
+
+    /// <summary>
+    /// «Все» показывают и удалённых персонажей, и все заявки — активные и неактивные, у живых
+    /// и у удалённых.
+    /// </summary>
+    [Fact]
+    public async Task AllShowsDeletedCharactersAndAllTheirClaims()
+    {
+        var deleted = Mock.CreateCharacter("deleted");
+        deleted.IsActive = false;
+        var declined = Mock.CreateClaim(deleted, Mock.Player);
+        declined.ClaimStatus = ClaimStatus.DeclinedByMaster;
+        var live = Mock.CreateCharacter("live");
+        var active = Mock.CreateClaim(live, Mock.Player);
+
+        var items = await GetItems(UgStatusFilterView.All);
+
+        items.Select(item => item.Character.Name.Name)
+            .ShouldBe([deleted.CharacterName, live.CharacterName, Mock.Character.CharacterName], ignoreOrder: true);
+        items.Single(item => item.Character.Name.Name == deleted.CharacterName)
+            .Claims.Select(c => c.ClaimId).ShouldBe([declined.GetId()]);
+        items.Single(item => item.Character.Name.Name == live.CharacterName)
+            .Claims.Select(c => c.ClaimId).ShouldBe([active.GetId()]);
+    }
+
+    #endregion
 
     [Fact]
     public async Task ClaimCarriesPlayerAndResponsibleMaster()

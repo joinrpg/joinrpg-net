@@ -17,6 +17,7 @@ using JoinRpg.Services.Interfaces.ProjectAccess;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
 using JoinRpg.Services.Interfaces.Subscribe;
+using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -145,6 +146,11 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             .Add("userId", ownerId.Value, ownerId)
             .Add("masterId", secondMasterId.Value, secondMasterId)
             .Add("responsibleMasterId", secondMasterId.Value, secondMasterId)
+            // Фильтр и номер страницы грида заявок (ADR027 §5): одни и те же имена — в query string
+            // страницы кабинета капитана и в webapi GetGrid. OnHold — не значение по умолчанию:
+            // иначе параметр не отличался бы от его отсутствия.
+            .Add("status", UgStatusFilterView.OnHold.ToString())
+            .Add("page", 2)
             .Add("projectFieldId", seeded.DropdownFieldId.ProjectFieldId, seeded.DropdownFieldId)
             .Add("valueId", seeded.DropdownVariantId)
             .Add("plotFolderId", seeded.Plot.PlotFolderId.PlotFolderId, seeded.Plot.PlotFolderId)

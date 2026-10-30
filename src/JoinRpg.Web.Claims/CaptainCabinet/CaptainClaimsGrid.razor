@@ -3,6 +3,7 @@
 @using JoinRpg.Web.Claims.UnifiedGrid
 @using JoinRpg.Web.ProjectCommon.Claims
 @inject IUnifiedGridClient claimListClient
+@inject NavigationManager NavigationManager
 
 <div style="margin:0.5em">
   <span class="h3">Моя команда</span> <EnumSelector TValue="UgStatusFilterView" SelectedValue="StatusFilter" SelectedValueChanged="UpdateFilter" />
@@ -160,9 +161,21 @@
     [EditorRequired]
     public ProjectIdentification ProjectId { get; set; }
 
+    /// <summary>
+    /// Стартовый фильтр из query string страницы (ADR027 §5): страница отдаёт его острову
+    /// параметром, и первый рендер клиента сразу показывает запрошенный список.
+    /// </summary>
+    [Parameter]
+    public UgStatusFilterView InitialStatus { get; set; } = UgStatusFilterView.Active;
+
+    /// <summary>Стартовый номер страницы из query string; вне диапазона сервер прижмёт к существующему.</summary>
+    [Parameter]
+    public int InitialPage { get; set; } = 1;
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadPage(1);
+        StatusFilter = InitialStatus;
+        await LoadPage(InitialPage);
         await base.OnInitializedAsync();
     }
 
@@ -175,10 +188,44 @@
             // строки на экране вводили бы в заблуждение.
             gridPage = null;
             await LoadPage(1);
+            RewriteUrl();
         }
     }
 
-    private Task ChangePage(int page) => LoadPage(page);
+    private async Task ChangePage(int page)
+    {
+        await LoadPage(page);
+        RewriteUrl();
+    }
+
+    /// <summary>
+    /// Фильтр и номер страницы лежат в URL (ADR027 §5): ссылками делятся, а редиректы шага 7
+    /// ведут на готовый адрес. Значения по умолчанию не пишем — адрес короче, а «Активные,
+    /// первая страница» и есть адрес без query. Посторонние параметры текущего адреса не
+    /// сохраняем: у страницы их нет, а мастерские фильтры (шаг 6) попадут сюда явно.
+    /// </summary>
+    /// <remarks>
+    /// Остров отрисован без Blazor Router, но NavigateTo без <c>forceLoad</c> страницу не
+    /// перезагружает: blazor.webassembly.js при переходе внутри base URI делает
+    /// history.replaceState и оповещает рантайм — Router для этого не нужен (проверено по
+    /// исходнику blazor.webassembly.js, функции navigateTo). Вызывается только из обработчиков
+    /// событий — на предрендере их не бывает, а там NavigateTo запрещён.
+    /// </remarks>
+    private void RewriteUrl()
+    {
+        var query = new List<string>();
+        if (StatusFilter != UgStatusFilterView.Active)
+        {
+            query.Add($"status={StatusFilter}");
+        }
+        var actualPage = gridPage?.Page;
+        if (actualPage > 1)
+        {
+            query.Add($"page={actualPage}");
+        }
+        var path = new Uri(NavigationManager.Uri).AbsolutePath;
+        NavigationManager.NavigateTo(query.Count == 0 ? path : $"{path}?{string.Join("&", query)}", replace: true);
+    }
 
     /// <remarks>
     /// При смене страницы прежняя остаётся на экране до ответа: высота не проваливается, и пейджер

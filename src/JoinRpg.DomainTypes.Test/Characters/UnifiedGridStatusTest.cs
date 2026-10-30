@@ -28,13 +28,16 @@ public class UnifiedGridStatusTest
     private static readonly CharacterTypeInfo Npc = new(CharacterType.NonPlayer, false, null, null, CharacterVisibility.Public);
 
     /// <summary>
-    /// Удалённые персонажи нужны только архиву; остальным их не надо даже загружать.
+    /// Удалённые персонажи нужны только архиву и «всем»; остальным их не надо даже загружать.
     /// </summary>
     [Theory]
     [InlineData(UnifiedGridStatus.Active, CharacterStatusSpec.Active)]
     [InlineData(UnifiedGridStatus.Vacant, CharacterStatusSpec.Active)]
     [InlineData(UnifiedGridStatus.Discussion, CharacterStatusSpec.Active)]
+    [InlineData(UnifiedGridStatus.Approved, CharacterStatusSpec.Active)]
+    [InlineData(UnifiedGridStatus.OnHold, CharacterStatusSpec.Active)]
     [InlineData(UnifiedGridStatus.Archive, CharacterStatusSpec.Any)]
+    [InlineData(UnifiedGridStatus.All, CharacterStatusSpec.Any)]
     public void RepositorySpec(UnifiedGridStatus status, CharacterStatusSpec expected)
         => status.GetCharacterStatusSpec().ShouldBe(expected);
 
@@ -80,6 +83,79 @@ public class UnifiedGridStatusTest
         => UnifiedGridStatus.Discussion.Matches(
             Character(claims: [Claim(1, ClaimStatus.Approved), Claim(2, ClaimStatus.Discussed)]))
             .ShouldBeFalse();
+
+    [Fact]
+    public void ApprovedShowsCharacterWithApprovedClaim()
+        => UnifiedGridStatus.Approved.Matches(
+            Character(claims: [Claim(1, ClaimStatus.Approved), Claim(2, ClaimStatus.Discussed)]))
+            .ShouldBeTrue();
+
+    /// <summary>Принятая заявка одна — обсуждаемая соседка в «Принятых» не видна.</summary>
+    [Fact]
+    public void ApprovedShowsOnlyApprovedClaim()
+    {
+        var approved = Claim(1, ClaimStatus.Approved);
+        var character = Character(claims: [approved, Claim(2, ClaimStatus.Discussed)]);
+
+        UnifiedGridStatus.Approved.SelectClaims(character).ShouldBe([approved]);
+    }
+
+    [Fact]
+    public void ApprovedHidesVacantCharacter()
+        => UnifiedGridStatus.Approved.Matches(Character()).ShouldBeFalse();
+
+    [Fact]
+    public void ApprovedHidesDeletedCharacter()
+        => UnifiedGridStatus.Approved.Matches(
+            Character(isActive: false, claims: [Claim(1, ClaimStatus.Approved)]))
+            .ShouldBeFalse();
+
+    [Fact]
+    public void OnHoldShowsCharacterWithOnHoldClaim()
+        => UnifiedGridStatus.OnHold.Matches(
+            Character(claims: [Claim(1, ClaimStatus.Approved), Claim(2, ClaimStatus.OnHold)]))
+            .ShouldBeTrue();
+
+    [Fact]
+    public void OnHoldHidesCharacterWithoutOnHoldClaims()
+        => UnifiedGridStatus.OnHold.Matches(
+            Character(claims: [Claim(1, ClaimStatus.Approved), Claim(2, ClaimStatus.DeclinedByMaster)]))
+            .ShouldBeFalse();
+
+    [Fact]
+    public void OnHoldHidesDeletedCharacter()
+        => UnifiedGridStatus.OnHold.Matches(
+            Character(isActive: false, claims: [Claim(1, ClaimStatus.OnHold)]))
+            .ShouldBeFalse();
+
+    /// <summary>В строке «Листа ожидания» только OnHold-заявки, принятая соседка не видна.</summary>
+    [Fact]
+    public void OnHoldShowsOnlyOnHoldClaims()
+    {
+        var onHold = Claim(2, ClaimStatus.OnHold);
+        var character = Character(claims: [Claim(1, ClaimStatus.Approved), onHold]);
+
+        UnifiedGridStatus.OnHold.SelectClaims(character).ShouldBe([onHold]);
+    }
+
+    [Fact]
+    public void AllMatchesDeletedCharacterWithoutClaims()
+        => UnifiedGridStatus.All.Matches(Character(isActive: false)).ShouldBeTrue();
+
+    /// <summary>«Все» показывают все заявки — и у живых персонажей, и у удалённых.</summary>
+    [Fact]
+    public void AllShowsEveryClaimOfLiveAndDeletedCharacter()
+    {
+        var onHold = Claim(3, ClaimStatus.OnHold);
+        var declined = Claim(2, ClaimStatus.DeclinedByMaster);
+        var deleted = Character(isActive: false, claims: [onHold, declined]);
+        var active = Claim(1, ClaimStatus.AddedByUser);
+        var declinedByUser = Claim(4, ClaimStatus.DeclinedByUser);
+        var live = Character(claims: [active, declinedByUser]);
+
+        UnifiedGridStatus.All.SelectClaims(deleted).ShouldBe([onHold, declined], ignoreOrder: true);
+        UnifiedGridStatus.All.SelectClaims(live).ShouldBe([active, declinedByUser], ignoreOrder: true);
+    }
 
     [Fact]
     public void ArchiveShowsDeletedCharacterWithoutClaims()
