@@ -143,14 +143,19 @@ internal class AccommodationInviteViewService(
         ClaimIdentification claimId,
         InviteDirection direction)
     {
-        // Панель приглашений — это кнопки ответа на них, поэтому доступ как у ответа (#5261)
-        var claim = (await claimsRepository.GetClaim(claimId))
-            .RequestAccommodationChangeAccess(currentUserAccessor.UserIdentificationOrDefault);
+        var userId = currentUserAccessor.UserIdentificationOrDefault;
+
+        // Панель приглашений — это кнопки ответа на них, поэтому доступ как у ответа (#5261).
+        // Проверка — по доменному снимку заявки, EF-сущность тут не нужна (#6032).
+        var claimInfo = (await claimInfoRepository.GetClaimInCharacterOrDefault(claimId)
+            ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(ClaimIdentification)))
+            .RequestAccommodationChangeAccess(userId)
+            .Claim;
 
         var invites = direction switch
         {
-            InviteDirection.Incoming => await accommodationInviteRepository.GetIncomingInviteForClaim(claim),
-            InviteDirection.Outgoing => await accommodationInviteRepository.GetOutgoingInviteForClaim(claim),
+            InviteDirection.Incoming => await accommodationInviteRepository.GetIncomingInviteForClaim(claimId.ClaimId),
+            InviteDirection.Outgoing => await accommodationInviteRepository.GetOutgoingInviteForClaim(claimId.ClaimId),
             _ => throw new ArgumentOutOfRangeException(nameof(direction)),
         };
 
@@ -158,16 +163,17 @@ internal class AccommodationInviteViewService(
         var visible = invites.Where(invite => invite.IsAccepted != InviteState.Accepted).ToArray();
 
         // Отвечать на приглашения может только сам игрок; мастер их только видит (#5656).
-        var canRespond = claim.PlayerUserId == currentUserAccessor.UserIdOrDefault;
+        var canRespond = claimInfo.PlayerId == userId;
         if (visible.Length == 0)
         {
             return [];
         }
 
-        // Приглашения от/к тем, кто уже в нашей группе, тоже не показываем. Сравниваем внешние
-        // ключи — скалярные колонки заявок, без навигации на саму группу.
+        // Приглашения от/к тем, кто уже в нашей группе, тоже не показываем. Своя группа — из
+        // снимка заявки (ADR022), группа контрагента — внешний ключ его EF-заявки, без навигации.
         bool IsSameGroup(Claim other)
-            => claim.AccommodationRequest_Id is { } ownGroupId && other.AccommodationRequest_Id == ownGroupId;
+            => claimInfo.AccommodationGroupId.AsAccommodationRequestId() is { } ownGroupId
+                && other.AccommodationRequest_Id == ownGroupId.AccommodationRequestId;
 
         return
         [

@@ -27,13 +27,7 @@ internal sealed class FakeAccommodationInviteRepository(MockedProject mock) : IA
             new ClaimIdentification(inviteId.ProjectId, invite.ToClaimId)));
     }
 
-    public Task<IEnumerable<AccommodationInvite>> GetIncomingInviteForClaim(Claim claim)
-        => throw new NotSupportedException();
-
     public Task<IEnumerable<AccommodationInvite>> GetIncomingInviteForClaim(int claimId)
-        => throw new NotSupportedException();
-
-    public Task<IEnumerable<AccommodationInvite>> GetOutgoingInviteForClaim(Claim claim)
         => throw new NotSupportedException();
 
     public Task<IEnumerable<AccommodationInvite>> GetOutgoingInviteForClaim(int claimId)
