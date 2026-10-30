@@ -187,7 +187,7 @@ EF-предикаты и проекции пишутся через `Expression<
 
 ### Фоновые задачи (ADR002)
 
-Паттерн `MidnightJobBackgroundService<TJob>`. Выполнение at-most-once в сутки (tracking в `JoinRpg.Dal.JobService`). Задачи должны быть идемпотентны.
+Паттерн: джоба реализует `IJob`, регистрируется `services.AddJob<T>()` (контракты — `JoinRpg.Common.WebInfrastructure.Interfaces`), планировщик `AddMidnightJobs()` в `JoinRpg.Common.WebInfrastructure` запускает каждую at-most-once в сутки (tracking в `JoinRpg.Dal.JobService`). Задачи должны быть идемпотентны.
 
 ### Уведомления (ADR003)
 
