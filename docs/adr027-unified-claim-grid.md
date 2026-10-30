@@ -101,10 +101,11 @@ Task<UgPageViewModel> GetGrid(ProjectIdentification projectId, UgScopeView scope
 `OnHold` неактивна (`ClaimStatusExtensions.IsActive`), но в «Архив» живого персонажа не попадает: она
 в своём статусе.
 
-Отбор по статусу и ответственному — чистые функции над `CharacterInfo`, их место в
-`JoinRpg.DomainTypes`: туда переехали правила над агрегатом по ADR013, а `JoinRpg.Domain` устаревший
-(`docs/structure.md`). Сейчас это private-методы `MatchesFilter`/`SelectClaims` в сервисе. Доменная
-пара фильтра тоже лежит в DomainTypes, а `UgFilterView` в `Web.Claims` только отображается на неё.
+Отбор по статусу — чистые функции над `CharacterInfo`, их место в `JoinRpg.DomainTypes`
+(`UnifiedGridStatus`): туда переехали правила над агрегатом по ADR013, а `JoinRpg.Domain` устаревший
+(`docs/structure.md`). `UgStatusFilterView` в `Web.Claims` только отображается на него. Отбор по
+ответственному — одно сравнение `ResponsibleMasterId`, доменного правила за ним нет, и он живёт в
+сервисе рядом с остальной сборкой.
 
 Проблемы считает `IClaimProblemValidator` (`JoinRpg.Domain`), и вызывает его сервис. Валидатору нужен
 `ClaimInfo`, то есть профиль игрока (`UserInfo`, на нём стоят `ClaimContactsMissingFilter` и проблемы

@@ -1,0 +1,14 @@
+@* Группы строкой через запятую. Обёртку и подпись («Группы:», мелкий шрифт) задаёт вызывающий. *@
+@for (var i = 0; i < Groups.Count; i++)
+{
+    @if (i > 0)
+    {
+        <text>, </text>
+    }
+    <CharacterGroupLink Model="Groups[i]" />
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<CharacterGroupLinkSlimViewModel> Groups { get; set; } = null!;
+}
