@@ -250,6 +250,9 @@ internal class UriServiceImpl(
 
     Uri IFinanceSettingsUriLocator.GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) => GetUri(paymentTypeId);
 
+    Uri IFinanceSettingsUriLocator.GetMasterSummaryExportUri(ProjectIdentification projectId, string token) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("SummaryByMaster", "Finances", new { ProjectId = projectId.Value, token }));
+
     Uri IBadgeTemplateUriLocator.GetListUri(ProjectIdentification projectId) =>
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/BadgeTemplates", values: new { ProjectId = projectId.Value }));
 

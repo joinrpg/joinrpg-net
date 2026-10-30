@@ -36,11 +36,8 @@ public class FinancesController(
 
     [HttpGet]
     [MasterAuthorize]
-    public async Task<ActionResult> Setup(int projectid)
-    {
-        var project = await projectRepository.GetProjectForFinanceSetup(projectid);
-        return View("Setup", new FinanceSetupViewModel(project, currentUserAccessor.UserId));
-    }
+    // Панели страницы — острова и данные берут сами
+    public ActionResult Setup(ProjectIdentification projectid) => View("Setup", projectid);
 
     [HttpGet]
     [RequireMaster]

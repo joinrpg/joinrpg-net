@@ -15,7 +15,9 @@ internal class FinanceSettingsViewService(
     IProjectMetadataRepository projectMetadataRepository,
     IProjectFinanceSettingsService financeSettingsService,
     ICurrentUserAccessor currentUserAccessor,
-    IVirtualUsersService virtualUsersService) : IFinanceSettingsClient
+    IVirtualUsersService virtualUsersService,
+    IProjectRepository projectRepository,
+    IFinanceSettingsUriLocator uriLocator) : IFinanceSettingsClient
 {
     private bool HasEditAccess(ProjectInfo project) => project.HasMasterAccess(currentUserAccessor, Permission.CanManageMoney);
 
@@ -133,4 +135,12 @@ internal class FinanceSettingsViewService(
 
     async Task IFinanceSettingsClient.TogglePaymentType(PaymentTypeIdentification paymentTypeId)
         => await financeSettingsService.TogglePaymentActiveness(paymentTypeId);
+
+    async Task<FinanceGoogleDocsExportViewModel> IFinanceSettingsClient.GetGoogleDocsExport(ProjectIdentification projectId)
+    {
+        // Токен личный: ссылка выгружает деньги проекта без входа на сайт, поэтому отдаём только свой
+        var token = await projectRepository.GetMasterExportToken(projectId, currentUserAccessor.UserIdentification)
+            ?? throw new NoAccessToProjectException(await projectMetadataRepository.GetProjectMetadata(projectId), currentUserAccessor.UserId);
+        return new FinanceGoogleDocsExportViewModel(uriLocator.GetMasterSummaryExportUri(projectId, token.ToHexString()));
+    }
 }

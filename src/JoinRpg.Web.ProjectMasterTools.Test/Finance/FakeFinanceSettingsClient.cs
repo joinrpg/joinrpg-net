@@ -107,6 +107,9 @@ internal class FakeFinanceSettingsClient : IFinanceSettingsClient
         return Task.CompletedTask;
     }
 
+    public Task<FinanceGoogleDocsExportViewModel> GetGoogleDocsExport(ProjectIdentification projectId)
+        => Task.FromResult(new FinanceGoogleDocsExportViewModel(new Uri($"https://joinrpg.ru/{projectId.Value}/money/SummaryByMaster?token=0123")));
+
     private void ThrowIfRefused()
     {
         if (SaveError is { } error)

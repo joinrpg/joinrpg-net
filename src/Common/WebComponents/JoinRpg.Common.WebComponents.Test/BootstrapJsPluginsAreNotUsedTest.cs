@@ -45,7 +45,6 @@ public class BootstrapJsPluginsAreNotUsedTest
             ThisTest),
         new("data-toggle=\"collapse\"", Collapse,
             "src/JoinRpg.Portal/Views/Claim/Edit.cshtml",
-            "src/JoinRpg.Portal/Views/Finances/Setup.cshtml",
             "src/JoinRpg.Portal/Views/Shared/Components/MainMenu/MainMenu.cshtml",
             "src/JoinRpg.Portal/Views/Shared/Components/ProjectMenu/MasterMenu.cshtml",
             "src/JoinRpg.Portal/Views/Shared/Components/ProjectMenu/PlayerMenu.cshtml"),

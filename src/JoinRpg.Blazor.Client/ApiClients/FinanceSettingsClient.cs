@@ -46,6 +46,10 @@ internal class FinanceSettingsClient(HttpClient httpClient, CsrfTokenProvider cs
         await response.EnsureSuccessOrThrowProblem();
     }
 
+    async Task<FinanceGoogleDocsExportViewModel> IFinanceSettingsClient.GetGoogleDocsExport(ProjectIdentification projectId)
+        => await (await httpClient.GetAsync($"webapi/{projectId.Value}/finance-settings/GetGoogleDocsExport"))
+            .ReadFromJsonOrThrowProblem<FinanceGoogleDocsExportViewModel>();
+
     async Task IFinanceSettingsClient.TogglePaymentType(PaymentTypeIdentification paymentTypeId)
     {
         await csrfTokenProvider.SetCsrfToken(httpClient);

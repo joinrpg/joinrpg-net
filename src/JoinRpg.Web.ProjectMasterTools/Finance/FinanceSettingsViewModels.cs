@@ -87,6 +87,9 @@ public class AddPaymentTypeViewModel
 /// <param name="Name">Название; нужно только произвольному методу.</param>
 public record NewPaymentTypeViewModel(PaymentTypeKind Kind, UserIdentification? MasterId, string? Name);
 
+/// <param name="ExportUri">Полная ссылка с личным токеном текущего мастера.</param>
+public record FinanceGoogleDocsExportViewModel(Uri ExportUri);
+
 public class CreateFeeSettingViewModel
 {
     [Display(Name = "Размер взноса")]
