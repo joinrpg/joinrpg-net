@@ -1,5 +1,6 @@
+using JoinRpg.Common.WebInfrastructure.Job;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Portal.Infrastructure.DailyJobs;
+using JoinRpg.Portal.Infrastructure.Jobs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace JoinRpg.Portal.Pages.Admin;
 
 [AdminAuthorize]
-public class JobsModel(IEnumerable<IJobRunner> dailyJobs, IOptionsMonitor<DailyJobsOptions> options) : PageModel
+public class JobsModel(IEnumerable<IJobRunner> dailyJobs, IOptionsMonitor<JobsOptions> options) : PageModel
 {
     public void OnGet()
     {
@@ -20,7 +21,7 @@ public class JobsModel(IEnumerable<IJobRunner> dailyJobs, IOptionsMonitor<DailyJ
         var jobRunner = dailyJobs.Single(j => j.Name == name);
         if (options.CurrentValue.IsDisabled(jobRunner.JobType))
         {
-            ErrorMessage = $"Джоба {jobRunner.Name} выключена в конфигурации ({DailyJobsOptions.SectionName}:Disabled) и не может быть запущена.";
+            ErrorMessage = $"Джоба {jobRunner.Name} выключена в конфигурации ({JobsOptions.SectionName}:Disabled) и не может быть запущена.";
             OnGet();
             return Page();
         }

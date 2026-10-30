@@ -1,27 +1,26 @@
-using JoinRpg.Interfaces;
-using JoinRpg.Portal.Infrastructure.DailyJobs;
+using JoinRpg.Common.WebInfrastructure.Job;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Portal.Test.Infrastructure.DailyJobs;
+namespace JoinRpg.Portal.Test.Infrastructure.Jobs;
 
-public class DailyJobsOptionsTest
+public class JobsOptionsTest
 {
-    private class SampleJob : IDailyJob
+    private class SampleJob : IJob
     {
         public Task RunOnce(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
-    private class OtherJob : IDailyJob
+    private class OtherJob : IJob
     {
         public Task RunOnce(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
-    private static DailyJobsOptions Disabled(params string[] names) => new() { Disabled = names };
+    private static JobsOptions Disabled(params string[] names) => new() { Disabled = names };
 
     [Fact]
-    public void EmptyByDefault() => new DailyJobsOptions().IsDisabled(typeof(SampleJob)).ShouldBeFalse();
+    public void EmptyByDefault() => new JobsOptions().IsDisabled(typeof(SampleJob)).ShouldBeFalse();
 
     [Fact]
     public void MatchesShortName() => Disabled("SampleJob").IsDisabled(typeof(SampleJob)).ShouldBeTrue();
@@ -51,7 +50,7 @@ public class DailyJobsOptionsTest
             .ShouldBe(["NoSuchJob"]);
 
     [Fact]
-    public void NoUnknownNamesWhenEmpty() => new DailyJobsOptions().GetUnknownNames([typeof(SampleJob)]).ShouldBeEmpty();
+    public void NoUnknownNamesWhenEmpty() => new JobsOptions().GetUnknownNames([typeof(SampleJob)]).ShouldBeEmpty();
 
     [Fact]
     public void BindsFromIndexedKeys()
@@ -67,9 +66,9 @@ public class DailyJobsOptionsTest
 
         var options = new ServiceCollection()
             .AddSingleton<IConfiguration>(configuration)
-            .AddOptions<DailyJobsOptions>().BindConfiguration(DailyJobsOptions.SectionName).Services
+            .AddOptions<JobsOptions>().BindConfiguration(JobsOptions.SectionName).Services
             .BuildServiceProvider()
-            .GetRequiredService<IOptions<DailyJobsOptions>>()
+            .GetRequiredService<IOptions<JobsOptions>>()
             .Value;
 
         options.Disabled.ShouldBe(["SampleJob", "OtherJob"]);

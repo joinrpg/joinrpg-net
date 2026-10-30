@@ -1,3 +1,4 @@
+using JoinRpg.Common.WebInfrastructure.Job;
 using JoinRpg.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,7 +12,7 @@ public static class AdvertisementRegistration
             .AddScoped<IAdvertisementChannelRepository, HardcodedAdvertisementChannelRepository>()
             .AddScoped<IAdvertisementScheduleRepository, HardcodedAdvertisementScheduleRepository>()
             .AddScoped<IAdvSenderFactory, AdvSenderFactory>();
-        services.AddDailyJob<AdvertisementJob>();
+        services.AddJob<AdvertisementJob>();
         return services;
     }
 }

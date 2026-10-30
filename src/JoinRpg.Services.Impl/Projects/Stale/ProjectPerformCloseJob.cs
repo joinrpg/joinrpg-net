@@ -8,7 +8,7 @@ internal class ProjectPerformCloseJob(
     ILogger<ProjectPerformCloseJob> logger,
     IProjectService projectService,
     MasterEmailService masterEmailService
-    ) : IDailyJob
+    ) : IJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {

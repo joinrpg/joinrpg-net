@@ -1,11 +1,11 @@
 using System.Data.Entity;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Common.WebInfrastructure.Job;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.Portal.Infrastructure.DailyJobs;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 

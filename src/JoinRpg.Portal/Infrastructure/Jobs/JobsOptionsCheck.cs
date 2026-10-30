@@ -1,15 +1,16 @@
+using JoinRpg.Common.WebInfrastructure.Job;
 using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Portal.Infrastructure.DailyJobs;
+namespace JoinRpg.Portal.Infrastructure.Jobs;
 
 /// <summary>
-/// При старте предупреждает об именах в <see cref="DailyJobsOptions.Disabled"/>, которым не соответствует ни одна джоба.
+/// При старте предупреждает об именах в <see cref="JobsOptions.Disabled"/>, которым не соответствует ни одна джоба.
 /// Не падает: опечатка в конфиге не должна валить сайт.
 /// </summary>
-internal class DailyJobsOptionsCheck(
-    IEnumerable<RegisteredDailyJob> registeredJobs,
-    IOptionsMonitor<DailyJobsOptions> options,
-    ILogger<DailyJobsOptionsCheck> logger) : IHostedService
+internal class JobsOptionsCheck(
+    IEnumerable<RegisteredJob> registeredJobs,
+    IOptionsMonitor<JobsOptions> options,
+    ILogger<JobsOptionsCheck> logger) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -21,7 +22,7 @@ internal class DailyJobsOptionsCheck(
         {
             logger.LogWarning(
                 "В настройке {section}:Disabled указаны неизвестные джобы {unknownJobs}. Известные джобы: {knownJobs}",
-                DailyJobsOptions.SectionName,
+                JobsOptions.SectionName,
                 unknown,
                 jobTypes.Select(t => t.Name).Order().ToList());
         }

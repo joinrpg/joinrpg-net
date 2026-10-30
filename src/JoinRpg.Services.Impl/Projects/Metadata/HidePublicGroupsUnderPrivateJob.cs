@@ -15,7 +15,7 @@ namespace JoinRpg.Services.Impl.Projects.Metadata;
 internal class HidePublicGroupsUnderPrivateJob(
     ICharacterGroupRepository characterGroupRepository,
     IPublicGroupVisibilityFixer fixer,
-    ILogger<HidePublicGroupsUnderPrivateJob> logger) : IDailyJob
+    ILogger<HidePublicGroupsUnderPrivateJob> logger) : IJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {

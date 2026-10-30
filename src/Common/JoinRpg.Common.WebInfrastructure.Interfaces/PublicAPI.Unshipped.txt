@@ -1,0 +1,59 @@
+#nullable enable
+JoinRpg.Common.WebInfrastructure.Job.IJob
+JoinRpg.Common.WebInfrastructure.Job.IJob.RunOnce(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+JoinRpg.Common.WebInfrastructure.Job.IJobImpersonator
+JoinRpg.Common.WebInfrastructure.Job.IJobImpersonator.StartAsRobot() -> void
+JoinRpg.Common.WebInfrastructure.Job.IJobImpersonator.Stop() -> void
+JoinRpg.Common.WebInfrastructure.Job.IJobRepository
+JoinRpg.Common.WebInfrastructure.Job.IJobRepository.TryInsertJobRecord(JoinRpg.Common.WebInfrastructure.Job.JobId! jobId) -> System.Threading.Tasks.Task<bool>!
+JoinRpg.Common.WebInfrastructure.Job.IJobRepository.TrySetJobCompleted(JoinRpg.Common.WebInfrastructure.Job.JobId! jobId) -> System.Threading.Tasks.Task<bool>!
+JoinRpg.Common.WebInfrastructure.Job.IJobRepository.TrySetJobFailed(JoinRpg.Common.WebInfrastructure.Job.JobId! jobId) -> System.Threading.Tasks.Task<bool>!
+JoinRpg.Common.WebInfrastructure.Job.IJobRunner
+JoinRpg.Common.WebInfrastructure.Job.IJobRunner.FullName.get -> string!
+JoinRpg.Common.WebInfrastructure.Job.IJobRunner.JobType.get -> System.Type!
+JoinRpg.Common.WebInfrastructure.Job.IJobRunner.Name.get -> string!
+JoinRpg.Common.WebInfrastructure.Job.IJobRunner.RunJob(Microsoft.Extensions.DependencyInjection.IServiceScope! serviceScope, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+JoinRpg.Common.WebInfrastructure.Job.JobDelayAttribute
+JoinRpg.Common.WebInfrastructure.Job.JobDelayAttribute.Delay.get -> System.TimeSpan
+JoinRpg.Common.WebInfrastructure.Job.JobDelayAttribute.JobDelayAttribute(int hoursDelay) -> void
+JoinRpg.Common.WebInfrastructure.Job.JobId
+JoinRpg.Common.WebInfrastructure.Job.JobId.DayOfRun.get -> System.DateOnly
+JoinRpg.Common.WebInfrastructure.Job.JobId.DayOfRun.init -> void
+JoinRpg.Common.WebInfrastructure.Job.JobId.Deconstruct(out string! JobName, out System.DateOnly DayOfRun) -> void
+JoinRpg.Common.WebInfrastructure.Job.JobId.JobId(JoinRpg.Common.WebInfrastructure.Job.JobId! original) -> void
+JoinRpg.Common.WebInfrastructure.Job.JobId.JobId(string! JobName, System.DateOnly DayOfRun) -> void
+JoinRpg.Common.WebInfrastructure.Job.JobId.JobName.get -> string!
+JoinRpg.Common.WebInfrastructure.Job.JobId.JobName.init -> void
+JoinRpg.Common.WebInfrastructure.Job.JobRegistration
+JoinRpg.Common.WebInfrastructure.Job.JobsOptions
+JoinRpg.Common.WebInfrastructure.Job.JobsOptions.Disabled.get -> string![]!
+JoinRpg.Common.WebInfrastructure.Job.JobsOptions.Disabled.set -> void
+JoinRpg.Common.WebInfrastructure.Job.JobsOptions.GetUnknownNames(System.Collections.Generic.IEnumerable<System.Type!>! knownJobTypes) -> System.Collections.Generic.IReadOnlyCollection<string!>!
+JoinRpg.Common.WebInfrastructure.Job.JobsOptions.IsDisabled(System.Type! jobType) -> bool
+JoinRpg.Common.WebInfrastructure.Job.JobsOptions.JobsOptions() -> void
+JoinRpg.Common.WebInfrastructure.Job.RegisteredJob
+JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.Deconstruct(out System.Type! JobType) -> void
+JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.JobType.get -> System.Type!
+JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.JobType.init -> void
+JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.RegisteredJob(JoinRpg.Common.WebInfrastructure.Job.RegisteredJob! original) -> void
+JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.RegisteredJob(System.Type! JobType) -> void
+const JoinRpg.Common.WebInfrastructure.Job.JobsOptions.SectionName = "DailyJobs" -> string!
+override JoinRpg.Common.WebInfrastructure.Job.JobId.Equals(object? obj) -> bool
+override JoinRpg.Common.WebInfrastructure.Job.JobId.GetHashCode() -> int
+override JoinRpg.Common.WebInfrastructure.Job.JobId.ToString() -> string!
+override JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.Equals(object? obj) -> bool
+override JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.GetHashCode() -> int
+override JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.ToString() -> string!
+static JoinRpg.Common.WebInfrastructure.Job.JobId.operator !=(JoinRpg.Common.WebInfrastructure.Job.JobId? left, JoinRpg.Common.WebInfrastructure.Job.JobId? right) -> bool
+static JoinRpg.Common.WebInfrastructure.Job.JobId.operator ==(JoinRpg.Common.WebInfrastructure.Job.JobId? left, JoinRpg.Common.WebInfrastructure.Job.JobId? right) -> bool
+static JoinRpg.Common.WebInfrastructure.Job.JobRegistration.AddJob<TJob>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.operator !=(JoinRpg.Common.WebInfrastructure.Job.RegisteredJob? left, JoinRpg.Common.WebInfrastructure.Job.RegisteredJob? right) -> bool
+static JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.operator ==(JoinRpg.Common.WebInfrastructure.Job.RegisteredJob? left, JoinRpg.Common.WebInfrastructure.Job.RegisteredJob? right) -> bool
+virtual JoinRpg.Common.WebInfrastructure.Job.JobId.<Clone>$() -> JoinRpg.Common.WebInfrastructure.Job.JobId!
+virtual JoinRpg.Common.WebInfrastructure.Job.JobId.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.WebInfrastructure.Job.JobId.Equals(JoinRpg.Common.WebInfrastructure.Job.JobId? other) -> bool
+virtual JoinRpg.Common.WebInfrastructure.Job.JobId.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.<Clone>$() -> JoinRpg.Common.WebInfrastructure.Job.RegisteredJob!
+virtual JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.Equals(JoinRpg.Common.WebInfrastructure.Job.RegisteredJob? other) -> bool
+virtual JoinRpg.Common.WebInfrastructure.Job.RegisteredJob.PrintMembers(System.Text.StringBuilder! builder) -> bool

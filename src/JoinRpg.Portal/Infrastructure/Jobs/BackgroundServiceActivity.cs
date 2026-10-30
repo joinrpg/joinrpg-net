@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace JoinRpg.Portal.Infrastructure.DailyJobs;
+namespace JoinRpg.Portal.Infrastructure.Jobs;
 
 public static class BackgroundServiceActivity
 {
