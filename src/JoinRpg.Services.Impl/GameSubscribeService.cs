@@ -60,13 +60,9 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
 
     public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
     {
-        await EnsureProjectNotBlocked(request.CharacterGroupId.ProjectId);
+        var projectInfo = await EnsureProjectNotBlocked(request.CharacterGroupId.ProjectId);
         var characterGroup = await ProjectRepository.GetGroupAsync(request.CharacterGroupId)
             ?? throw new JoinRpgEntityNotFoundException(request.CharacterGroupId.CharacterGroupId, nameof(CharacterGroup));
-
-        _ = characterGroup
-            .RequestMasterAccess(CurrentUserId)
-            .EnsureActive();
 
         if (CurrentUserId != request.MasterId)
         {
@@ -120,6 +116,6 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
     }
 
     /// <summary>Подписки в заблокированном проекте не меняются (ADR023). Архив здесь не проверялся и раньше.</summary>
-    private async Task EnsureProjectNotBlocked(ProjectIdentification projectId)
-        => _ = (await projectMetadataRepository.GetProjectMetadata(projectId)).EnsureNotBlocked();
+    private async Task<ProjectInfo> EnsureProjectNotBlocked(ProjectIdentification projectId)
+        => (await projectMetadataRepository.GetProjectMetadata(projectId)).EnsureNotBlocked();
 }

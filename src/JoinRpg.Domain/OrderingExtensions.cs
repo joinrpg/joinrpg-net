@@ -9,14 +9,8 @@ public static class OrderingExtensions
     public static VirtualOrderContainer<Character> GetCharactersContainer(this CharacterGroup characterGroup)
       => VirtualOrderContainerFacade.Create(characterGroup.Characters, characterGroup.ChildCharactersOrdering);
 
-    public static IReadOnlyList<CharacterGroup> GetOrderedChildGroups(this CharacterGroup characterGroup)
-      => characterGroup.GetCharacterGroupsContainer().OrderedItems;
-
     public static VirtualOrderContainer<CharacterGroup> GetCharacterGroupsContainer(this CharacterGroup characterGroup)
       => VirtualOrderContainerFacade.Create(characterGroup.ChildGroups, characterGroup.ChildGroupsOrdering);
-
-    public static VirtualOrderContainer<PlotElement> GetCharacterPlotContainer(this Character character,
-      IReadOnlyCollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots.OrderBy(pe => pe.PlotFolderId), character.PlotElementOrderData, preserveOrder: true);
 
     public static VirtualOrderContainer<ProjectFieldDropdownValue> GetFieldValuesContainer(
       this ProjectField field)

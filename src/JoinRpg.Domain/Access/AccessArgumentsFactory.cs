@@ -142,8 +142,6 @@ public static class AccessArgumentsFactory
         return left != null && right != null && left.Equals(right);
     }
 
-    private static bool SamePlayerId(ICurrentUserAccessor left, UserIdentification? right) => SamePlayerId(left.UserIdentificationOrDefault, right);
-
     /// <summary>
     /// Для добавления заявки нужен особый режим, где у пользователя нет доступа к персонажу (точно), а вот доступ к заявке есть, несмотря на то что заявки нет
     /// </summary>
@@ -173,13 +171,10 @@ public static class AccessArgumentsFactory
             CharacterPublic: claim.Character.IsPublic, IsCapitan: false);
     }
 
-    public static AccessArguments Create(Claim claim, ICurrentUserAccessor userId, ProjectInfo projectInfo) => Create(claim, userId.UserIdOrDefault, projectInfo);
-
     public static PlotAccessArguments CreatePlot(ProjectInfo projectInfo, ICurrentUserAccessor currentUserAccessor)
     {
         var permissions = currentUserAccessor.UserIdOrDefault == null ? [] : projectInfo.GetMasterAccess(currentUserAccessor.UserIdentification);
         return new PlotAccessArguments(permissions, projectInfo.PublishPlot, projectInfo.ProjectStatus);
     }
-
 
 }

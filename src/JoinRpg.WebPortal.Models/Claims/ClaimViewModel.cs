@@ -135,7 +135,7 @@ public class ClaimViewModel
         CanManageThisClaim = claim.HasAccess(currentUser.UserId,
             Permission.CanManageClaims,
             ExtraAccessReason.ResponsibleMaster);
-        CanChangeRooms = claim.CanChangeAccommodation(currentUser.UserIdentificationOrDefault);
+        CanChangeRooms = claimInfo.ClaimInCharacter.CanChangeAccommodation(currentUser.UserIdentificationOrDefault);
         IsMyClaim = claimData.PlayerId == currentUser.UserIdentificationOrDefault;
         Player = new UserLinkViewModel(playerInfo.ToUserInfoHeader());
         PlayerId = claimData.PlayerId;

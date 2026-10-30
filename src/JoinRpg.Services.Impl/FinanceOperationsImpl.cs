@@ -216,13 +216,13 @@ internal class FinanceOperationsImpl(
     public async Task CreateTransfer(CreateTransferRequest request)
     {
         // ADR023; архив здесь не проверялся и раньше.
-        _ = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(request.ProjectId))).EnsureNotBlocked();
+        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(request.ProjectId))).EnsureNotBlocked();
 
         var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
 
-        _ = project.RequestMasterAccess(CurrentUserId);
-        _ = project.RequestMasterAccess(request.Sender);
-        _ = project.RequestMasterAccess(request.Receiver);
+        projectInfo.RequestMasterAccess(currentUserAccessor);
+        projectInfo.RequestMasterAccess(request.Sender);
+        projectInfo.RequestMasterAccess(request.Receiver);
 
         if (request.Sender == request.Receiver)
         {
@@ -231,7 +231,7 @@ internal class FinanceOperationsImpl(
 
         if (request.Sender != CurrentUserId && request.Receiver != CurrentUserId)
         {
-            _ = project.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
+            projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
         }
 
         OperationDateValidation.CheckOperationDate(request.OperationDate, Now);
@@ -280,7 +280,7 @@ internal class FinanceOperationsImpl(
 
     public async Task MarkTransfer(ApproveRejectTransferRequest request)
     {
-        _ = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(request.ProjectId))).EnsureNotBlocked();
+        var projectInfo = (await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(request.ProjectId))).EnsureNotBlocked();
 
         var moneyTransfer = await UnitOfWork.GetDbSet<MoneyTransfer>()
             .Include(transfer => transfer.Project)
@@ -288,7 +288,7 @@ internal class FinanceOperationsImpl(
             .Include(transfer => transfer.Receiver)
             .SingleAsync(transfer => transfer.Id == request.MoneyTranferId &&
                                 transfer.ProjectId == request.ProjectId);
-        _ = moneyTransfer.RequestMasterAccess(CurrentUserId);
+        projectInfo.RequestMasterAccess(currentUserAccessor);
 
         switch (moneyTransfer.ResultState)
         {
@@ -315,7 +315,7 @@ internal class FinanceOperationsImpl(
                 break;
 
             default: //admin tries to approve with superpowers
-                _ = moneyTransfer.RequestMasterAccess(CurrentUserId, Permission.CanManageMoney);
+                _ = projectInfo.RequestMasterAccess(currentUserAccessor, Permission.CanManageMoney);
                 moneyTransfer.ResultState = request.Approved
                     ? MoneyTransferState.Approved
                     : MoneyTransferState.Declined;
