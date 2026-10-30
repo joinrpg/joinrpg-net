@@ -9,7 +9,8 @@
  * :nth-child(1 of :not(dialog)). Пробелы между потомками flex тоже игнорирует.
  *
  * Кнопкой считаются и JoinButton (.join-btn), и ручные кнопки Bootstrap (.btn): в группах
- * встречаются и те и другие (ссылки a.btn, выпадающие меню JoinDotsMenu/TypedDropdownButton).
+ * встречаются и те и другие (ссылки a.btn, меню JoinDotsMenu/TypedDropdownButton — через
+ * join-btn на кнопке JoinDropdownButton).
  */
 /* position: relative — от группы выпадает меню JoinDropdownButton в режиме Split */
 .join-btn-group {

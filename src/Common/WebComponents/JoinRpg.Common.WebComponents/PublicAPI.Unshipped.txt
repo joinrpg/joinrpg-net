@@ -1,6 +1,14 @@
 #nullable enable
 *REMOVED*JoinRpg.Common.WebComponents.FormRow.Label.get -> string!
 JoinRpg.Common.WebComponents.FormRow.Label.get -> string?
+JoinRpg.Common.WebComponents.JoinDropdownButton.GroupSize.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.JoinDropdownButton.GroupSize.set -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton.Size.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
+JoinRpg.Common.WebComponents.JoinDropdownButton.Size.set -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton.Style.get -> JoinRpg.Common.WebComponents.VariationStyleEnum?
+JoinRpg.Common.WebComponents.JoinDropdownButton.Style.set -> void
+JoinRpg.Common.WebComponents.JoinDropdownButton.ToggleContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+JoinRpg.Common.WebComponents.JoinDropdownButton.ToggleContent.set -> void
 JoinRpg.Common.WebComponents.JoinPager
 JoinRpg.Common.WebComponents.JoinPager.JoinPager() -> void
 JoinRpg.Common.WebComponents.JoinPager.Page.get -> int

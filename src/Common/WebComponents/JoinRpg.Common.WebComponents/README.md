@@ -26,8 +26,9 @@ dotnet add package JoinRpg.Common.WebComponents
    `css/roboto.css` — для `PrintableBadge` (бейджи печатаются Roboto) или если сайту нужен этот
    шрифт.
 
-3. Скрипт (подсказки `Tooltip`, меню `JoinDropdownButton`, `TypedSelector`, раскрытие
-   `JoinCollapsePanel`). Blazor загружает его сам при старте интерактивного рантайма; на
+3. Скрипт (подсказки `Tooltip`, меню `JoinDropdownButton` и его обёртки `JoinDotsMenu`,
+   `TypedDropdownButton`, `TypedSelector`, раскрытие `JoinCollapsePanel`). Blazor загружает его
+   сам при старте интерактивного рантайма; на
    странице из одних статических компонентов добавьте тег. Адрес — тот же, что у Blazor: с
    MapStaticAssets `~/` в `.cshtml` и `@Assets[...]` в `App.razor`, иначе на странице с островом
    модуль выполнится дважды.
@@ -43,10 +44,9 @@ dotnet add package JoinRpg.Common.WebComponents
 
 Bootstrap 3 пакет не приносит. На его CSS рассчитаны `JoinPanel`, `JoinCollapsePanel`,
 `JoinPanelWithList`, `JoinAlert`, таблицы, `FormRow` и поля ввода (`panel`, `list-group`, `alert`,
-`table`, `form-group`, `col-md-*`, `form-control`, `help-block`, `control-label`). `JoinDotsMenu`
-и `TypedDropdownButton` раскрываются только с JS Bootstrap 3 (`data-toggle`). Без Bootstrap
-обходятся `JoinButton`, `JoinBadge`, `Tooltip`, `TypedSelector`, `JoinDropdownButton`,
-`JoinDialog`.
+`table`, `form-group`, `col-md-*`, `form-control`, `help-block`, `control-label`). Без Bootstrap
+(и его JS) обходятся `JoinButton`, `JoinBadge`, `Tooltip`, `TypedSelector`, `JoinDropdownButton`
+и его обёртки `JoinDotsMenu` и `TypedDropdownButton`, `JoinDialog`.
 
 ## Что зарегистрировать у себя
 
