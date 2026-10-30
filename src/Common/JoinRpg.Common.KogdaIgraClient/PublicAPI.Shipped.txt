@@ -9,15 +9,17 @@ JoinRpg.Common.KogdaIgraClient.KogdaIgraEmptyResponseException.KogdaIgraEmptyRes
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Begin.get -> System.DateOnly
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Begin.init -> void
-JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Deconstruct(out int Id, out string! Name, out string! GameData, out System.DateTimeOffset UpdateDate, out System.DateOnly Begin, out System.DateOnly End, out string! RegionName, out string! RegionShortName, out string! MasterGroupName, out System.Uri? SiteUri, out string? VkClub, out string? LiveJournalCommunity, out string? TelegramChannel) -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Deconstruct(out int Id, out string! Name, out string! GameData, out System.DateTimeOffset UpdateDate, out System.DateOnly Begin, out System.DateOnly End, out string! RegionName, out string! RegionShortName, out string! MasterGroupName, out System.Uri? SiteUri, out string? VkClub, out string? LiveJournalCommunity, out string? TelegramChannel, out bool IsDeleted) -> void
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.End.get -> System.DateOnly
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.End.init -> void
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.GameData.get -> string!
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.GameData.init -> void
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Id.get -> int
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Id.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.IsDeleted.get -> bool
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.IsDeleted.init -> void
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.KogdaIgraGameInfo(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo! original) -> void
-JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.KogdaIgraGameInfo(int Id, string! Name, string! GameData, System.DateTimeOffset UpdateDate, System.DateOnly Begin, System.DateOnly End, string! RegionName, string! RegionShortName, string! MasterGroupName, System.Uri? SiteUri, string? VkClub, string? LiveJournalCommunity, string? TelegramChannel) -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.KogdaIgraGameInfo(int Id, string! Name, string! GameData, System.DateTimeOffset UpdateDate, System.DateOnly Begin, System.DateOnly End, string! RegionName, string! RegionShortName, string! MasterGroupName, System.Uri? SiteUri, string? VkClub, string? LiveJournalCommunity, string? TelegramChannel, bool IsDeleted) -> void
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.LiveJournalCommunity.get -> string?
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.LiveJournalCommunity.init -> void
 JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.MasterGroupName.get -> string!

@@ -9,6 +9,4 @@ JoinRpg.Common.WebComponents.JoinPager.PageChanged.get -> Microsoft.AspNetCore.C
 JoinRpg.Common.WebComponents.JoinPager.PageChanged.set -> void
 JoinRpg.Common.WebComponents.JoinPager.TotalPages.get -> int
 JoinRpg.Common.WebComponents.JoinPager.TotalPages.set -> void
-JoinRpg.Common.WebComponents.UserLink.ShowIcon.get -> bool
-JoinRpg.Common.WebComponents.UserLink.ShowIcon.set -> void
 ~override JoinRpg.Common.WebComponents.JoinPager.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

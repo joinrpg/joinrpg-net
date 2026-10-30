@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.533 — 2026-10-29
+
 ### Ломающие изменения
 - `UserInfoHeader`: обязательный параметр `AvatarIdentification? Avatar`. Переход: передавать id аватарки или `null`. ([#5905](https://github.com/joinrpg/joinrpg-net/pull/5905))
 

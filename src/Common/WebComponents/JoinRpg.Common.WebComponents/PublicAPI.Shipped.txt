@@ -913,6 +913,8 @@ JoinRpg.Common.WebComponents.UserLink
 JoinRpg.Common.WebComponents.UserLink.Model.get -> JoinRpg.Common.WebComponents.UserLinkViewModel!
 JoinRpg.Common.WebComponents.UserLink.Model.set -> void
 JoinRpg.Common.WebComponents.UserLink.ProfileUri.get -> System.Uri!
+JoinRpg.Common.WebComponents.UserLink.ShowIcon.get -> bool
+JoinRpg.Common.WebComponents.UserLink.ShowIcon.set -> void
 JoinRpg.Common.WebComponents.UserLink.UserLink() -> void
 JoinRpg.Common.WebComponents.UserLinkViewModel
 JoinRpg.Common.WebComponents.UserLinkViewModel.Deconstruct(out JoinRpg.Common.PrimitiveTypes.UserIdentification? UserId, out string! DisplayName, out JoinRpg.Common.WebComponents.ViewMode ViewMode) -> void

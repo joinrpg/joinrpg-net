@@ -4,11 +4,18 @@
 
 ## Не выпущено
 
+### Добавлено
+- `JoinPager` — переключатель страниц: номера вокруг текущей, первая и последняя, «назад»/«вперёд». ([#5997](https://github.com/joinrpg/joinrpg-net/pull/5997))
+
+### Исправлено
+- `FormRow` без `Label`: вместо пустого `<label>` — пустая колонка, `Label` теперь `string?`. ([#6010](https://github.com/joinrpg/joinrpg-net/pull/6010))
+
+## 2026.9.533 — 2026-10-29
+
 ### Ломающие изменения
 - Из пакета убрана статика `_content/JoinRpg.Common.WebComponents/lib/bootstrap-select/`, `TypedSelector` она не нужна. Переход: если хост подключал её отсюда — подключить свою копию. ([#5867](https://github.com/joinrpg/joinrpg-net/pull/5867))
 
 ### Добавлено
-- `JoinPager` — переключатель страниц: номера вокруг текущей, первая и последняя, «назад»/«вперёд». ([#5997](https://github.com/joinrpg/joinrpg-net/pull/5997))
 - `SelectorListCache` и `AddJoinRpgWebComponents()`: общий на scope кэш списков для обёрток над `TypedSelector`, списки с пререндера переезжают в WebAssembly. ([#5880](https://github.com/joinrpg/joinrpg-net/pull/5880), [#5895](https://github.com/joinrpg/joinrpg-net/pull/5895))
 - `FormRowLabelTarget.LabelId` — id подписи `FormRow`. ([#5866](https://github.com/joinrpg/joinrpg-net/pull/5866))
 - `JoinCollapsePanel`: кнопка с `data-join-collapse-close` в статической форме сворачивает панель. ([#5940](https://github.com/joinrpg/joinrpg-net/pull/5940))
@@ -23,7 +30,6 @@
 - `FormRow`: id поля уникален и при статической строке рядом с островом. ([#5900](https://github.com/joinrpg/joinrpg-net/pull/5900))
 - `CheckboxInput`: галочка постится формой и до загрузки WASM, отключённая постит текущее значение. ([#5923](https://github.com/joinrpg/joinrpg-net/pull/5923))
 - `TypedSelector` в модальном `<dialog>`: клик по тексту пункта выбирает его — раньше список закрывался на нажатии, и срабатывал только клик точно по галочке. ([#5967](https://github.com/joinrpg/joinrpg-net/pull/5967))
-- `FormRow` без `Label`: вместо пустого `<label>` — пустая колонка, `Label` теперь `string?`. ([#6010](https://github.com/joinrpg/joinrpg-net/pull/6010))
 
 ## 2026.9.438
 
