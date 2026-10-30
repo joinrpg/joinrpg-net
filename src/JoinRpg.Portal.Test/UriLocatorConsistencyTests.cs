@@ -121,7 +121,6 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
     public static IEnumerable<object[]> FinanceSettingsCases() =>
     [
         ["GetEditPaymentTypeUri", (Func<IFinanceSettingsUriLocator, Uri>)(l => l.GetEditPaymentTypeUri(new PaymentTypeIdentification(ProjectId, 12)))],
-        ["GetOnlinePaymentsInfoUri", (Func<IFinanceSettingsUriLocator, Uri>)(l => l.GetOnlinePaymentsInfoUri())],
     ];
 
     [Theory]

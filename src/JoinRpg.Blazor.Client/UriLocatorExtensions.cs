@@ -25,8 +25,6 @@ public static class UriLocatorExtensions
         Uri IFinanceSettingsUriLocator.GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) =>
             new($"/{paymentTypeId.ProjectId.Value}/money/EditPaymentType?PaymentTypeId={paymentTypeId.PaymentTypeId}", UriKind.Relative);
 
-        Uri IFinanceSettingsUriLocator.GetOnlinePaymentsInfoUri() => new("/OnlinePayments", UriKind.Relative);
-
         Uri IBadgeTemplateUriLocator.GetListUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/tools/badges", UriKind.Relative);
 

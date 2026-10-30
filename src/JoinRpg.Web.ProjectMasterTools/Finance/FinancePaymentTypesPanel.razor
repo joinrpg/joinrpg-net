@@ -66,11 +66,6 @@
                                                 AutoConfirmMessage="@($"{action} метод оплаты «{item.Name}»?")"
                                                 OnClick="args => Toggle(args, item)" />
                                 }
-                                else if (!item.IsActive && item.IsOnline)
-                                {
-                                    <JoinButton Label="Узнать, как включить" Size="SizeStyleEnum.Small" Style="VariationStyleEnum.Info"
-                                                Link="@uriLocator.GetOnlinePaymentsInfoUri().ToString()" target="_blank" />
-                                }
                             </td>
                         }
                     </tr>

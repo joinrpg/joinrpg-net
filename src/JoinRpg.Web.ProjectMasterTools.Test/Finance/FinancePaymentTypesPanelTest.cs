@@ -106,16 +106,6 @@ public class FinancePaymentTypesPanelTest : BunitContext
     }
 
     [Fact]
-    public void MasterSeesHowToEnableOnlinePaymentsInsteadOfButton()
-    {
-        client.PaymentTypes.Add(Online(canToggle: false));
-        var cut = RenderPanel();
-
-        RowButtons(cut).ShouldBe(["Узнать, как включить"]);
-        cut.Find("a[href='/OnlinePayments']").ShouldNotBeNull();
-    }
-
-    [Fact]
     public void ActiveCustomTypeCanBeEdited()
     {
         client.PaymentTypes.Add(Custom(7));
@@ -190,8 +180,6 @@ public class FinancePaymentTypesPanelTest : BunitContext
     {
         public Uri GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId)
             => new($"/{paymentTypeId.ProjectId.Value}/money/EditPaymentType?PaymentTypeId={paymentTypeId.PaymentTypeId}", UriKind.Relative);
-
-        public Uri GetOnlinePaymentsInfoUri() => new("/OnlinePayments", UriKind.Relative);
     }
 
     private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
