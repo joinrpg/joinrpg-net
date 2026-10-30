@@ -1,18 +1,15 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.DataModel.Mocks;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 
-namespace JoinRpg.Services.Impl.Test.Fakes;
+namespace JoinRpg.DataModel.Mocks.Fakes;
 
 /// <summary>
-/// Читающий репозиторий приглашений поверх <see cref="MockedProject"/>.
+/// Читающий репозиторий приглашений к совместному проживанию поверх <see cref="MockedProject"/> —
+/// общий для тестов сервиса и вью-слоя: стороны операции над приглашением и входящие/исходящие
+/// приглашения заявки, как их отдал бы EF вместе с заявками сторон.
 /// </summary>
-/// <remarks>
-/// Методы, которые обслуживают только вью-слой, не реализованы намеренно: если сервис полезет в
-/// них, тест обязан упасть, а не получить пустой список.
-/// </remarks>
-internal sealed class FakeAccommodationInviteRepository(MockedProject mock) : IAccommodationInviteRepository
+public sealed class FakeAccommodationInviteRepository(MockedProject mock) : IAccommodationInviteRepository
 {
     public Task<AccommodationInviteParticipants> GetInviteParticipants(AccommodationInviteIdentification inviteId)
     {
@@ -28,8 +25,10 @@ internal sealed class FakeAccommodationInviteRepository(MockedProject mock) : IA
     }
 
     public Task<IEnumerable<AccommodationInvite>> GetIncomingInviteForClaim(int claimId)
-        => throw new NotSupportedException();
+        => Task.FromResult<IEnumerable<AccommodationInvite>>(
+            [.. mock.AccommodationInvites.Where(invite => invite.ToClaimId == claimId)]);
 
     public Task<IEnumerable<AccommodationInvite>> GetOutgoingInviteForClaim(int claimId)
-        => throw new NotSupportedException();
+        => Task.FromResult<IEnumerable<AccommodationInvite>>(
+            [.. mock.AccommodationInvites.Where(invite => invite.FromClaimId == claimId)]);
 }
