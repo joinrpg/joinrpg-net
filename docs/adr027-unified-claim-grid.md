@@ -169,7 +169,8 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 ### 5. Страница, URL, экспорт и массовые операции
 
 Мастерский грид — новая Razor Page `/{projectId}/claims` (`Pages/GamePages`, как кабинет капитана
-`/{projectId}/captain`). Маршрут свободен: старый `ClaimListController` живёт на
+`/{projectId}/captain`). Компонент грида один — `ClaimsGrid` (`JoinRpg.Web.Claims/UnifiedGrid`,
+бывший `CaptainClaimsGrid`): обе страницы передают ему скоуп параметром. Маршрут свободен: старый `ClaimListController` живёт на
 `{ProjectId}/claims/[action]`, где экшен обязателен, так что его страницы становятся «подстраницами»
 грида и редиректят в корень с параметрами (§6). На странице остров WASM,
 тот же, что у капитана. Фильтр и номер страницы лежат в query string: страница передаёт их острову
@@ -186,11 +187,15 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 
 **Excel — старым пайплайном.** Колонки не меняются: по их заголовкам разбирает выгрузку мастера DRP
 (`JoinRpg.Services.Drp/MasterExports/MasterExportColumns.cs`). На той же странице `?export=xlsx`:
-сервер пересчитывает фильтр без пейджинга и передаёт id заявок в существующий
-`ClaimListItemViewModelExporter` через `ClaimListBuilder.BuildItemForExport`. Для этого нужны:
+сервер гонит тот же конвейер, что и страница (`UnifiedGridViewService`), но без пейджинга, и передаёт
+`ClaimInfo` всего результата фильтра в существующий `ClaimListItemViewModelExporter` через
+`ClaimListBuilder.BuildItemForExport`. Для этого нужны:
 
-- `IClaimsRepository.GetClaims(IReadOnlyCollection<ClaimIdentification>)` с теми же `Include`, что в
-  `GetClaimsImpl` (иначе ленивые загрузки);
+- ~~`IClaimsRepository.GetClaims(IReadOnlyCollection<ClaimIdentification>)` с теми же `Include`, что в
+  `GetClaimsImpl`~~ — вычёркнуто после ADR021 PR 2/2 (#6031): `BuildItemForExport` принимает `ClaimInfo`;
+  ~~выгрузка читает агрегаты напрямую через `IClaimInfoRepository.GetClaimInfos` по id результата фильтра~~ —
+  вычёркнуто после ревью #6025: `ClaimInfo` собираются конвейером из уже загруженных агрегатов персонажей
+  и профилей игроков, отдельного запроса по id больше нет;
 - сборка выгрузки в сервисе `WebPortal.Managers`, а не в контроллере: `LoadClaimInfos`, `LoadRoomNames` и
   `ExportWithCustomFrontend` сейчас private в `ClaimListController`, и старые экшены переходят на тот же
   сервис. Заголовок файла строится из фильтра.
@@ -248,7 +253,7 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 4. **Группа и ответственный** — фильтры в мастерском скоупе, заполненные `Groups` в строке.
 5. **Статусы** «Приняты», «Лист ожидания», «Все»; фильтр в query string.
 6. **Мастерская страница.** `/{projectId}/claims`, бейдж непрочитанных (перегрузка по id), Excel
-   (`GetClaims` по id, сервис выгрузки) и `ListOperationsButtons` по всему результату фильтра.
+   (ClaimInfo всего результата фильтра через общий конвейер, сервис выгрузки) и `ListOperationsButtons` по всему результату фильтра.
 7. **Ссылки и редиректы** из §6 — по PR на группу маршрутов.
 8. **Снос легаси**, когда не останется вызывающих.
 

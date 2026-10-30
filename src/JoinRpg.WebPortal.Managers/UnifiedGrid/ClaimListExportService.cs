@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,8 @@ public class ClaimListExportService(
     IProjectMetadataRepository projectMetadataRepository,
     IExportDataService exportDataService,
     IUriService uriService,
-    ICurrentUserAccessor currentUserAccessor)
+    ICurrentUserAccessor currentUserAccessor,
+    IUnifiedGridExportSource gridViewService)
 {
     /// <summary>
     /// <see cref="ClaimInfo"/> на весь список — заявки вместе с персонажами и профилями игроков,
@@ -49,6 +51,47 @@ public class ClaimListExportService(
 
         return ExportWithCustomFrontend(
             view.Items, title, exportType, new ClaimListItemViewModelExporter(uriService, projectInfo), projectInfo.ProjectName);
+    }
+
+    /// <summary>
+    /// Выгрузка грида заявок (ADR027 §5): фильтр пересчитывается тем же конвейером, что и страница,
+    /// но без пейджинга — ClaimInfo собираются из уже загруженных агрегатов и профилей, вторым
+    /// походом в репозиторий за ними не ходим. По всему результату строится тот же файл, что у
+    /// старых списков.
+    /// </summary>
+    public async Task<FileContentResult> ExportGrid(ProjectIdentification projectId, UgFilterView filter, ExportType exportType)
+    {
+        return await ExportClaimList(
+            projectId,
+            await gridViewService.GetClaimInfosForExport(projectId, filter),
+            BuildTitle(filter, await projectMetadataRepository.GetProjectMetadata(projectId)),
+            exportType);
+    }
+
+    /// <summary>
+    /// Заголовок файла выгрузки грида — из фильтра: по файлу видно, какой список в нём лежит.
+    /// </summary>
+    internal static string BuildTitle(UgFilterView filter, ProjectInfo projectInfo)
+    {
+        // Короткое имя статуса, а не описание: в имени файла место дорого, а список статусов
+        // виден и на самой странице.
+        var parts = new List<string> { filter.Status.GetDisplayName() };
+        if (filter.Group is { } group && projectInfo.GroupTree.GetGroupByIdOrDefault(group) is { } groupInfo)
+        {
+            parts.Add($"группа «{groupInfo.Name}»");
+        }
+        // Мастера может не быть в метаданных (снят, закладка со старым id) — как с группой,
+        // часть заголовка просто пропускаем, а не роняем выгрузку.
+        if (filter.Responsible is { } responsible
+            && projectInfo.Masters.FirstOrDefault(master => master.UserId == responsible) is { } masterInfo)
+        {
+            parts.Add($"ответственный — {masterInfo.Name.DisplayName}");
+        }
+        if (filter.OnlyWithProblems)
+        {
+            parts.Add("только с проблемами");
+        }
+        return "Заявки: " + string.Join(", ", parts);
     }
 
     /// <summary>
