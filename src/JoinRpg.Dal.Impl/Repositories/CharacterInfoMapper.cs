@@ -47,9 +47,7 @@ internal static class CharacterInfoMapper
 
     private static CharacterClaimInfo MapClaim(CharacterInfoClaimRow row, ProjectInfo projectInfo)
     {
-        var accommodationTypeId = row.AccommodationTypeId is { } typeId
-            ? new AccommodationTypeIdentification(projectInfo.ProjectId, typeId)
-            : (AccommodationTypeIdentification?)null;
+        var accommodationTypeId = AccommodationTypeIdentification.FromOptional(projectInfo.ProjectId, row.AccommodationTypeId);
 
         // Стоимость проживания — настройка проекта, в метаданных она уже есть (ADR015), поэтому
         // в проекции её не читаем. Тип, выбранный в заявке, обязан быть в метаданных: в БД на
@@ -91,7 +89,9 @@ internal static class CharacterInfoMapper
             row.CheckInDate,
             row.LastPlayerCommentAt,
             row.LastMasterCommentAt,
+            UserIdentification.FromOptional(row.LastMasterCommentByUserId),
             row.LastVisibleMasterCommentAt,
+            UserIdentification.FromOptional(row.LastVisibleMasterCommentByUserId),
             new CommentDiscussionId(row.CommentDiscussionId),
             new ClaimFinanceInfo(
                 row.CurrentFee,

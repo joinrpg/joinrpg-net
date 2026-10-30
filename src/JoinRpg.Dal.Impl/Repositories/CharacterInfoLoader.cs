@@ -85,7 +85,11 @@ internal sealed class CharacterInfoLoader(MyDbContext ctx)
                     CheckInDate = claim.CheckInDate,
                     LastPlayerCommentAt = claim.LastPlayerCommentAt,
                     LastMasterCommentAt = claim.LastMasterCommentAt,
+                    // Внешние ключи самой заявки — колонки Claims, без JOIN: имя автора
+                    // не хранится, список заявок смотрит его в мастерах ProjectInfo.
+                    LastMasterCommentByUserId = claim.LastMasterCommentBy_Id,
                     LastVisibleMasterCommentAt = claim.LastVisibleMasterCommentAt,
+                    LastVisibleMasterCommentByUserId = claim.LastVisibleMasterCommentBy_Id,
                     CommentDiscussionId = claim.CommentDiscussionId,
                     CurrentFee = claim.CurrentFee,
                     PreferentialFeeUser = claim.PreferentialFeeUser,

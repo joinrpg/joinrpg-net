@@ -512,7 +512,9 @@ public class ScheduleBuilderTest
             CheckInDate: null,
             LastPlayerCommentAt: null,
             LastMasterCommentAt: null,
+            LastMasterCommentBy: null,
             LastVisibleMasterCommentAt: null,
+            LastVisibleMasterCommentBy: null,
             CommentDiscussionId: new CommentDiscussionId(1),
             Finance: new ClaimFinanceInfo(
                 FixedFee: null,

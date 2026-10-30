@@ -207,7 +207,9 @@ public class ClaimBalanceOverCharacterInfoTest
             CheckInDate: null,
             LastPlayerCommentAt: null,
             LastMasterCommentAt: null,
+            LastMasterCommentBy: null,
             LastVisibleMasterCommentAt: null,
+            LastVisibleMasterCommentBy: null,
             CommentDiscussionId: new CommentDiscussionId(300),
             Finance: new ClaimFinanceInfo(
                 FixedFee: currentFee,
