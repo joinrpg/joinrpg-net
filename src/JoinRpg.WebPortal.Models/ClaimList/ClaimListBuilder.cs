@@ -121,14 +121,9 @@ public static class ClaimListBuilder
     }
 
     /// <summary>
-    /// То же, что для EF-сущности, но поверх доменного агрегата (ADR013).
+    /// Время последней активности по заявке поверх доменного агрегата (ADR013).
     /// </summary>
     public static DateTime GetLastCommentTime(CharacterClaimInfo claim, AccessArguments accessArguments)
-        => GetLastCommentCore(
-            claim.CreateDate, claim.LastPlayerCommentAt, claim.LastVisibleMasterCommentAt,
-            claim.LastMasterCommentAt, accessArguments).At.UtcDateTime;
-
-    public static DateTime GetLastCommentTime(Claim claim, AccessArguments accessArguments)
         => GetLastCommentCore(
             claim.CreateDate, claim.LastPlayerCommentAt, claim.LastVisibleMasterCommentAt,
             claim.LastMasterCommentAt, accessArguments).At.UtcDateTime;
