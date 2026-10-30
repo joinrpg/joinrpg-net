@@ -28,8 +28,8 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
             $"webapi/claim-list/GetClaims?projectId={projectId.Value}&claimStatusSpec={claimStatusSpec}"))
             .ReadFromJsonOrThrowProblem<IReadOnlyCollection<ClaimLinkViewModel>>();
 
-    async Task<IReadOnlyCollection<UgItemViewModel>> IUnifiedGridClient.GetGrid(ProjectIdentification projectId, UgScopeView scope, UgFilterView filter)
+    async Task<UgPageViewModel> IUnifiedGridClient.GetGrid(ProjectIdentification projectId, UgScopeView scope, UgFilterView filter, int page)
         => await (await httpClient.GetAsync(
-            $"webapi/claim-list/GetGrid?projectId={projectId.Value}&scope={scope}&status={filter.Status}"))
-            .ReadFromJsonOrThrowProblem<IReadOnlyCollection<UgItemViewModel>>();
+            $"webapi/claim-list/GetGrid?projectId={projectId.Value}&scope={scope}&status={filter.Status}&page={page}"))
+            .ReadFromJsonOrThrowProblem<UgPageViewModel>();
 }

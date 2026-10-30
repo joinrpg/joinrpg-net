@@ -1,3 +1,4 @@
+using System.Globalization;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Characters;
@@ -13,23 +14,50 @@ internal class UnifiedGridViewService(
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterInfoRepository characterInfoRepository) : IUnifiedGridClient
 {
-    async Task<IReadOnlyCollection<UgItemViewModel>> IUnifiedGridClient.GetGrid(
+    /// <summary>Сколько персонажей на странице.</summary>
+    internal const int PageSize = 100;
+
+    async Task<UgPageViewModel> IUnifiedGridClient.GetGrid(
         ProjectIdentification projectId,
         UgScopeView scope,
-        UgFilterView filter)
+        UgFilterView filter,
+        int page)
     {
         var status = ToDomain(filter.Status);
 
         var characters = await LoadScope(projectId, scope, status.GetCharacterStatusSpec());
 
-        return
-        [
-            .. characters
+        // Отбор в памяти, поэтому скоуп загружен целиком, и страница режется уже от готового списка
+        // (ADR027 §3: пагинация сокращает ответ, а не нагрузку на БД).
+        var items = Sort(
+            characters
                 .Where(character => status.Matches(character))
                 .Select(character => ItemBuilder.BuildItem(character, status.SelectClaims(character), currentUserAccessor, scope))
-                .WhereNotNull()
-        ];
+                .WhereNotNull());
+
+        var totalPages = (items.Count + PageSize - 1) / PageSize;
+        var actualPage = Math.Clamp(page, 1, Math.Max(totalPages, 1));
+
+        return new UgPageViewModel(
+            [.. items.Skip((actualPage - 1) * PageSize).Take(PageSize)],
+            actualPage,
+            totalPages,
+            items.Count);
     }
+
+    /// <summary>
+    /// Сначала персонажи с самыми свежими заявками (по дате обновления, как в старом гриде мастера),
+    /// потом без показанных заявок — по имени. Последний ключ — id, чтобы порядок был однозначным и
+    /// страницы не теряли и не дублировали строки.
+    /// </summary>
+    // Явно, а не по текущей культуре: порядок страниц не должен зависеть от настроек потока.
+    private static readonly StringComparer NameComparer = StringComparer.Create(CultureInfo.GetCultureInfo("ru-RU"), ignoreCase: true);
+
+    private static IReadOnlyList<UgItemViewModel> Sort(IEnumerable<UgItemViewModel> items)
+        => [.. items
+            .OrderByDescending(item => item.Claims.Max(claim => claim.UpdateDate))
+            .ThenBy(item => item.Character.Name.Name, NameComparer)
+            .ThenBy(item => item.Character.Name.CharacterId.CharacterId)];
 
     /// <summary>
     /// Персонажи скоупа: мастеру — весь проект, капитану — поддеревья групп из его правил.
