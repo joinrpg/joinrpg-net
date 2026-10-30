@@ -76,5 +76,6 @@ public record class UgPageViewModel(
     int Page,
     int TotalPages,
     int TotalCharacters,
+    int TotalClaims,
     IReadOnlyCollection<ClaimIdentification> OperationClaimIds,
     IReadOnlyCollection<CharacterIdentification> OperationCharacterIds);

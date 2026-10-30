@@ -1,0 +1,168 @@
+@using JoinRpg.Helpers
+@using JoinRpg.Web.Claims.UnifiedGrid
+@using JoinRpg.Web.ProjectCommon
+@using JoinRpg.Web.ProjectCommon.Claims
+@* Шапка грида заявок: заголовок со счётчиком, операции, форма фильтров и сводная строка.
+   Грид передаёт значения фильтров параметрами и получает изменения одним событием с полным
+   набором значений. Владеет именами выбранных группы/мастера для сводной строки. *@
+<div style="margin:0.5em">
+  <div style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;">
+    @* Заголовок и счётчик — одна группа: flex не растягивает их по строке, счётчик прижат к тексту. *@
+    <span>
+        <span class="h3">@Title</span>
+        @if (Counter is { } counter)
+        {
+            // Tooltip компонентом, не title-атрибутом: подсказка в top layer, единый вид с остальным UI.
+            <Tooltip Title="@CounterTooltip">
+                <JoinBadge Variation="VariationStyleEnum.None" Size="SizeStyleEnum.Large">@counter</JoinBadge>
+            </Tooltip>
+        }
+    </span>
+    @ChildContent
+  </div>
+  @* Вариант 2 «классическая форма» из мокапов фильтров (2026-11-02): подписанные поля всегда
+     на виду, активный фильтр дублируется сводной строкой. Задел на «таблетки-чипы» — #6058. *@
+  <div style="display:flex; flex-wrap:wrap; gap:0.5em 2em; align-items:flex-end; margin-bottom:0.5em;">
+    <div>
+      <label style="display:block;">Статус</label>
+      @* Описание статуса — подстрочником в самой выпадашке: подпись видна до выбора, иконка
+         с tooltip не нужна. *@
+      <TypedSelector TKey="UgStatusFilterView" TItem="UgStatusFilterView"
+                     Items="statusItems"
+                     KeySelector="@(v => v)"
+                     ToListItem="@(v => TypedSelectList.CreateItem(
+                         Value: v,
+                         Text: v.GetDisplayName(),
+                         Subtext: v.GetDescription() ?? ""))"
+                     SelectedValues="@([StatusFilter])"
+                     SelectedItemsChanged="@OnStatusPicked"
+                     Multiple="false" />
+    </div>
+    @if (IsMaster)
+    {
+      <div>
+        <label style="display:block;">Группа персонажей</label>
+        <SingleCharacterGroupSelector ProjectId="@ProjectId"
+                                      SelectedGroupId="@GroupFilter"
+                                      SelectedGroupIdChanged="@OnGroupPicked"
+                                      SelectedGroupChanged="@(dto => GroupFilterName = dto?.Name)"
+                                      Mode="CharacterGroupSelectorMode.RootMeansEmpty" />
+      </div>
+      <div>
+        <label style="display:block;">Ответственный мастер</label>
+        <MasterSelector ProjectId="@ProjectId"
+                        MasterId="@ResponsibleFilter"
+                        MasterIdChanged="@OnResponsiblePicked"
+                        MasterChanged="@(m => MasterFilterName = m?.DisplayName.DisplayName)"
+                        AllowEmpty="true" />
+      </div>
+      <div>
+        <label>
+          <CheckboxInput Value="OnlyWithProblems"
+                         ValueExpression="() => OnlyWithProblems"
+                         ValueChanged="@OnOnlyWithProblemsPicked" />
+          Только с проблемами
+        </label>
+      </div>
+    }
+  </div>
+  <p style="font-size:0.9em; margin:0 0 0.5em;">Показаны: <b>@SummaryLine</b></p>
+</div>
+
+@code {
+    /// <summary>Пункты статусов для выпадашки: имя + описание подстрочником.</summary>
+    private static readonly UgStatusFilterView[] statusItems = Enum.GetValues<UgStatusFilterView>();
+
+    /// <summary>Имя выбранной группы для сводной строки: селектор отдаёт Dto при выборе пользователем.</summary>
+    private string? GroupFilterName;
+
+    /// <summary>Имя выбранного мастера для сводной строки.</summary>
+    private string? MasterFilterName;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = null!;
+
+    /// <summary>Текст счётчика (null — не показывать): «5» или «5/3» персонажей/заявок.</summary>
+    [Parameter]
+    public string? Counter { get; set; }
+
+    /// <summary>Расшифровка дроби счётчика; null — счётчик без подсказки.</summary>
+    [Parameter]
+    public string? CounterTooltip { get; set; }
+
+    [Parameter]
+    public bool IsMaster { get; set; }
+
+    [Parameter]
+    public int ProjectId { get; set; }
+
+    [Parameter]
+    public UgStatusFilterView StatusFilter { get; set; }
+
+    [Parameter]
+    public CharacterGroupIdentification? GroupFilter { get; set; }
+
+    [Parameter]
+    public UserIdentification? ResponsibleFilter { get; set; }
+
+    [Parameter]
+    public bool OnlyWithProblems { get; set; }
+
+    /// <summary>Смена фильтров: значения приезжают готовым набором, грид решает, что перезагрузить.</summary>
+    [Parameter]
+    public EventCallback<UgFilterView> FilterChanged { get; set; }
+
+    /// <summary>Правая часть шапки: операции над списком (только мастерский скоуп).</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Набор фильтров из текущих параметров: каждое событие отправляет его целиком.</summary>
+    private UgFilterView CurrentFilter => new(StatusFilter, OnlyWithProblems, GroupFilter, ResponsibleFilter);
+
+    private Task OnStatusPicked(UgStatusFilterView[] picked)
+        => picked.Length == 1 ? Notify(CurrentFilter with { Status = picked[0] }) : Task.CompletedTask;
+
+    private Task OnGroupPicked(CharacterGroupIdentification? group)
+        => Notify(CurrentFilter with { Group = group });
+
+    private Task OnResponsiblePicked(UserIdentification? responsible)
+        => Notify(CurrentFilter with { Responsible = responsible });
+
+    private Task OnOnlyWithProblemsPicked(bool onlyWithProblems)
+        => Notify(CurrentFilter with { OnlyWithProblems = onlyWithProblems });
+
+    /// <summary>
+    /// Набор собирается из текущих значений с заменой ровно одного: «параметр не менялся» и
+    /// «очистить nullable-фильтр» больше не рифмуются одним null — смена статуса не сбрасывает
+    /// группу и ответственного и наоборот.
+    /// </summary>
+    private Task Notify(UgFilterView filter) => FilterChanged.InvokeAsync(filter);
+
+    /// <summary>
+    /// Сводная строка фильтра (вариант 2 мокапов): конфигурация читается одним взглядом, без
+    /// обхода селекторов. Фильтр, пришедший из URL, имён не знает — показываем «задана».
+    /// </summary>
+    private string SummaryLine
+    {
+        get
+        {
+            var parts = new List<string> { StatusFilter.GetDisplayName() };
+            if (IsMaster)
+            {
+                if (GroupFilter is not null)
+                {
+                    parts.Add($"группа «{GroupFilterName ?? "задана"}»");
+                }
+                if (ResponsibleFilter is not null)
+                {
+                    parts.Add($"ответственный — {MasterFilterName ?? "задан"}");
+                }
+                if (OnlyWithProblems)
+                {
+                    parts.Add("только с проблемами");
+                }
+            }
+            return string.Join(" · ", parts);
+        }
+    }
+}
