@@ -67,10 +67,12 @@ public record RoomCategoryInfo(RoomCategoryIdentification Id, string Name);
 /// Настройки проживания проекта: включён ли модуль, какие типы проживания и категории комнат заведены.
 /// </summary>
 /// <param name="Enabled">Включён ли модуль проживания в проекте</param>
+/// <param name="PlayerInvitesEnabled">Могут ли игроки сами создавать приглашения к совместному проживанию. Выключение запрещает только создание новых приглашений: уже отправленные принимаются и отзываются, мастерское «поселить вместе» работает как раньше</param>
 /// <param name="Types">Все типы проживания проекта</param>
 /// <param name="RoomCategories">Все категории комнат проекта</param>
 public record ProjectAccommodationSettings(
     bool Enabled,
+    bool PlayerInvitesEnabled,
     IReadOnlyCollection<AccommodationTypeInfo> Types,
     IReadOnlyCollection<RoomCategoryInfo> RoomCategories)
 {

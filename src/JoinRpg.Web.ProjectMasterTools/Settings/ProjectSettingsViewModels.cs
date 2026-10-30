@@ -20,6 +20,10 @@ public class ProjectMainSettingsViewModel
 
     [Display(Name = "Включить систему поселения")]
     public required bool EnableAccommodation { get; set; }
+
+    [Display(Name = "Разрешить игрокам приглашать соседей",
+        Description = "Если эту настройку выключить, игроки не смогут приглашать друг друга, поселение будет полностью управляться мастерами. Подходит при использовании поселения на играх (а не конвентах)")]
+    public required bool PlayerInvitesEnabled { get; set; }
 }
 
 public class ProjectPublishSettingsViewModel

@@ -47,7 +47,7 @@ internal static class ProjectInfoFixture
                 WarnOnOverPayment: true,
                 PaymentTypes: [],
                 FeeSchedule: feeSchedule ?? []),
-            accommodationSettings ?? new ProjectAccommodationSettings(false, [], []),
+            accommodationSettings ?? new ProjectAccommodationSettings(false, true, [], []),
             groupTree ?? new ProjectGroupTree(RootGroupId, new Dictionary<CharacterGroupIdentification, CharacterGroupInfo>()),
             masters ?? [MakeMaster(DefaultMasterId, isOwner: true)],
             mastersOrdering,
@@ -118,6 +118,7 @@ internal static class ProjectInfoFixture
     /// </summary>
     public static ProjectAccommodationSettings MakeAccommodationSettings(params AccommodationTypeInfo[] types)
         => new(
+            true,
             true,
             types,
             [.. types.Select(type => type.RoomCategoryId).Distinct()

@@ -82,7 +82,7 @@ internal class CloneProjectHelper(
         await projectService.SetContactSettings(projectId, original.ProfileRequirementSettings);
         await projectService.SetCheckInSettings(projectId, original.ProjectCheckInSettings with { InProgress = false });
 
-        await projectService.SetAccommodationSettings(projectId, original.AccommodationSettings.Enabled);
+        await projectService.SetAccommodationSettings(projectId, original.AccommodationSettings.Enabled, original.AccommodationSettings.PlayerInvitesEnabled);
 
         await projectService.SetTimeZone(projectId, original.TimeZone);
 

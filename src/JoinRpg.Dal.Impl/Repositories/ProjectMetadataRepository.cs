@@ -104,6 +104,7 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
         {
             return new ProjectAccommodationSettings(
                 project.Details.EnableAccommodation,
+                project.Details.AccommodationInvitesEnabled,
                 [.. project.ProjectAccommodationTypes.Select(type => new AccommodationTypeInfo(
                     new AccommodationTypeIdentification(projectId, type.Id),
                     new RoomCategoryIdentification(projectId, type.RoomCategoryId),
