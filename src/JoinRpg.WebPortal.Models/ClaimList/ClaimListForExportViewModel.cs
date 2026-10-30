@@ -8,7 +8,7 @@ using JoinRpg.Web.Claims;
 namespace JoinRpg.Web.Models.ClaimList;
 
 /// <param name="currentUserId"></param>
-/// <param name="claims">EF-заявки — только ради того, чего нет в агрегате (последний комментарий).</param>
+/// <param name="claims">EF-заявки — задают состав и порядок строк; данные — в агрегатах.</param>
 /// <param name="claimInfos">
 /// Те же заявки как <see cref="ClaimInfo"/>, загруженные пачкой на весь список
 /// (<c>IClaimInfoRepository.GetClaimInfos</c>), — вместе с персонажами и профилями игроков.
@@ -26,7 +26,6 @@ public class ClaimListForExportViewModel(
 {
     public IEnumerable<ClaimListItemForExportViewModel> Items { get; } = claims
           .Select(c => ClaimListBuilder.BuildItemForExport(
-              c,
               currentUserId,
               claimInfos[c.GetId()],
               roomNames.GetValueOrDefault(c.GetId())))
