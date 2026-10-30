@@ -1,6 +1,7 @@
 @using JoinRpg.Web.ProjectMasterTools.Settings
 @inherits SettingsPanelBase<FinanceGeneralSettingsViewModel>
 @inject IFinanceSettingsClient settingsClient
+@inject ILogger<FinanceGeneralSettingsPanel> logger
 
 @* В архиве сохранить нельзя — панель не показываем, как и панели настроек проекта. *@
 @if (Model is { ProjectStatus: ProjectLifecycleStatus.Archived })
@@ -8,9 +9,14 @@
     return;
 }
 
-<JoinCollapsePanel Group="@FinanceSettingsPanels.Group" Id="@AnchorId">
+<JoinCollapsePanel Id="@AnchorId">
     <Header>Общие настройки</Header>
     <ChildContent>
+        @if (loadError is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@loadError</JoinAlert>
+            return;
+        }
         @if (Model is null)
         {
             <JoinLoadingMessage />
@@ -47,6 +53,23 @@
 
     [Parameter]
     public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private string? loadError;
+
+    // Настройки грузятся в базе SettingsPanelBase, но её исключение уронило бы весь остров
+    // страницы — ловим здесь, чтобы остальные панели работали.
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await base.OnInitializedAsync();
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка при загрузке общих настроек финансов проекта {ProjectId}", ProjectId);
+            loadError = "Не удалось загрузить общие настройки. Обновите страницу и попробуйте ещё раз.";
+        }
+    }
 
     protected override Task<FinanceGeneralSettingsViewModel> LoadModel() => settingsClient.GetGeneralSettings(ProjectId);
 

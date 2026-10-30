@@ -1,0 +1,14 @@
+@* Остров на всю страницу «Настройка финансов»: панели собираются в один аккордеон
+   JoinCollapsePanelGroup — имя группы уходит панелям каскадом, без атрибута у каждой.
+   Панели независимы в загрузке: сбой у одной не роняет остальные (try/catch в каждой). *@
+<JoinCollapsePanelGroup Name="@FinanceSettingsPanels.Group">
+    <FinanceFeeSettingsPanel ProjectId="ProjectId" />
+    <FinancePaymentTypesPanel ProjectId="ProjectId" />
+    <FinanceGeneralSettingsPanel ProjectId="ProjectId" />
+    <FinanceGoogleDocsPanel ProjectId="ProjectId" />
+</JoinCollapsePanelGroup>
+
+@code {
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+}

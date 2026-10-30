@@ -2,7 +2,7 @@
 @inject IFinanceSettingsClient settingsClient
 @inject ILogger<FinanceFeeSettingsPanel> logger
 
-<JoinCollapsePanel Group="@FinanceSettingsPanels.Group" Id="@AnchorId">
+<JoinCollapsePanel Id="@AnchorId">
     <Header>Взнос и сроки</Header>
     <HeaderExtra>
         @* Виден и в свёрнутой панели: без взноса принимать оплату нельзя. *@
@@ -12,6 +12,11 @@
         }
     </HeaderExtra>
     <ChildContent>
+        @if (loadError is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@loadError</JoinAlert>
+            return;
+        }
         @if (model is null)
         {
             <JoinLoadingMessage />
@@ -116,7 +121,21 @@
     // В архиве сервис изменения запрещает — кнопки не показываем, расписание остаётся для справки.
     private bool CanEdit => model is { HasEditAccess: true } && model.ProjectStatus != ProjectLifecycleStatus.Archived;
 
-    protected override async Task OnInitializedAsync() => model = await settingsClient.GetFeeSettings(ProjectId);
+    private string? loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            model = await settingsClient.GetFeeSettings(ProjectId);
+        }
+        catch (Exception exception)
+        {
+            // Одна панель — не вся страница: показываем ошибку в панели, остальные работают
+            logger.LogError(exception, "Ошибка при загрузке расписания взносов проекта {ProjectId}", ProjectId);
+            loadError = "Не удалось загрузить расписание взносов. Обновите страницу и попробуйте ещё раз.";
+        }
+    }
 
     private async Task Add(ButtonClickEventArgs args)
     {
