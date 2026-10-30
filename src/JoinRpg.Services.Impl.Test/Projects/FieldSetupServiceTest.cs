@@ -149,6 +149,7 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         {
             f.FieldType = ProjectFieldType.String;
             f.IsPublic = true;
+            f.CanPlayerView = true;
         });
         var service = CreateService(mock.Master.UserId);
 
@@ -210,6 +211,7 @@ public class FieldSetupServiceTest : ProjectMetadataServiceTestBase
         {
             f.FieldType = ProjectFieldType.String;
             f.IsPublic = true;
+            f.CanPlayerView = true;
         });
         var service = CreateService(mock.Master.UserId);
         await service.SetFieldSettingsAsync(new FieldSettingsRequest { ProjectId = ProjectId, NameField = field.Id });
