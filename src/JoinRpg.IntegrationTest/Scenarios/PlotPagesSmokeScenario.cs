@@ -102,11 +102,13 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
     }
 
     /// <summary>
-    /// Вводные рисуются статическим компонентом PlotElementPanelList: свёрнутыми панелями одного
-    /// аккордеона, а остров с кнопками вводной внутри панели доезжает до страницы.
+    /// Вводные на странице папки — интерактивный остров <c>PlotElementPanelList</c> (#238):
+    /// свёрнутые панели одного аккордеона со стрелками перемещения (<c>JoinMoveControl</c>) у каждой.
+    /// Кнопки вводной (<c>PlotElementControls</c>) рендерятся внутри острова инлайном, отдельных
+    /// маркеров-островов у панелей нет.
     /// </summary>
     [Fact]
-    public async Task Edit_RendersElementsAsAccordionPanelsWithIslands()
+    public async Task Edit_RendersElementsAsAccordionPanelsInsideMoveIsland()
     {
         var context = await GetSeedAsync();
         var seed = context.Seed;
@@ -116,6 +118,11 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var document = await response.AsHtmlDocument();
+
+        // Весь список вводных — один Blazor-остров, перестановка идёт без перезагрузки страницы.
+        document.DocumentNode.SelectNodes("//comment()")
+            .ShouldNotBeNull($"На странице {url} нет Blazor-маркеров")
+            .ShouldContain(c => c.InnerHtml.Contains("\"typeName\":\"JoinRpg.Web.Plots.Elements.PlotElementPanelList\""));
 
         var panels = seed.ElementIds
             .Select(elementId => document.DocumentNode.SelectSingleNode($"//details[@id='panelPlotElement{elementId.PlotElementId}']")
@@ -134,9 +141,11 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
             panel.SelectNodes("summary//a | summary//button").ShouldBeNull();
             var panelBody = panel.SelectSingleNode("ancestor::div[contains(@class, 'join-collapse-panel')][1]/div[contains(@class, 'panel-body')]")
                 ?? throw new InvalidOperationException($"У панели вводной {elementId} нет тела");
-            panelBody.SelectNodes(".//comment()")
-                .ShouldNotBeNull($"В панели вводной {elementId} нет острова")
-                .ShouldContain(c => c.InnerHtml.Contains("PlotElementControls"));
+            panelBody.ShouldNotBeNull();
+            // Стрелки перемещения (JoinMoveControl) — в обёртке панели, вне сворачиваемого details.
+            panel.SelectSingleNode("ancestor::div[contains(@class, 'join-collapse-panel')][1]")
+                .SelectNodes(".//use[contains(@href, 'arrow-down')]")
+                .ShouldNotBeNull($"У панели вводной {elementId} нет стрелок перемещения");
         }
     }
 

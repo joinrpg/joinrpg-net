@@ -206,9 +206,6 @@ internal class UriServiceImpl(
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ShowElementVersion", "Plot",
             new { ProjectId = versionId.ProjectId.Value, versionId.PlotFolderId.PlotFolderId, versionId.PlotElementId.PlotElementId, versionId.Version, PrintMode = true }));
 
-    Uri IPlotUriLocator.GetReorderElementsUri(ProjectIdentification projectId) =>
-        new(GetBaseDomain(), linkGenerator.GetPathByAction("ReorderElements", "Plot", new { ProjectId = projectId.Value }));
-
     Uri ICommentUriLocator.GetCreateCommentUri(ProjectIdentification projectId) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("CreateComment", "Forum", new { ProjectId = projectId.Value }));
 

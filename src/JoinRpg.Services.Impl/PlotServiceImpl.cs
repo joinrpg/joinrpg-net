@@ -349,7 +349,7 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task ReorderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId)
+    public async Task<IReadOnlyList<PlotFolderIdentification>> ReorderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId)
     {
         await RequestMasterAccessAsync(plotFolderId.ProjectId);
 
@@ -357,25 +357,31 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
         var afterFolder = afterPlotFolderId is not null ? await LoadProjectSubEntityAsync<PlotFolder>(afterPlotFolderId) : null;
 
-        targetFolder.Project.Details.PlotFoldersOrdering
-            = targetFolder.Project.GetPlotFoldersContainer().MoveAfter(targetFolder, afterFolder).GetStoredOrder();
+        var container = targetFolder.Project.GetPlotFoldersContainer().MoveAfter(targetFolder, afterFolder);
+        targetFolder.Project.Details.PlotFoldersOrdering = container.GetStoredOrder();
 
         await UnitOfWork.SaveChangesAsync();
+
+        return [.. container.OrderedItems.Select(f => new PlotFolderIdentification(f.ProjectId, f.PlotFolderId))];
     }
 
-    public async Task ReorderPlotElements(PlotElementIdentification plotElementId, PlotElementIdentification? afterPlotElementId)
+    public async Task<IReadOnlyList<PlotElementIdentification>> ReorderPlotElements(PlotElementIdentification plotElementId, PlotElementIdentification? afterPlotElementId)
     {
         await RequestMasterAccessAsync(plotElementId.ProjectId);
 
         var targetFolder = await LoadProjectSubEntityAsync<PlotFolder>(plotElementId.PlotFolderId);
 
+        var elementIds = targetFolder.Elements.Select(x => new PlotElementIdentification(x.ProjectId, x.PlotFolderId, x.PlotElementId)).ToList();
+
         targetFolder.ElementsOrdering = DomainMoveHelper.MoveAfter(plotElementId,
             afterPlotElementId,
             targetFolder.ElementsOrdering,
-            targetFolder.Elements.Select(x => new PlotElementIdentification(x.ProjectId, x.PlotFolderId, x.PlotElementId)),
+            elementIds,
             preserveOrder: false);
 
         await UnitOfWork.SaveChangesAsync();
+
+        return [.. elementIds.OrderByStoredOrder(id => id.PlotElementId, targetFolder.ElementsOrdering, preserveOrder: false)];
     }
 
     public async Task<IReadOnlyList<PlotElementIdentification>> ReorderPlotByChar(CharacterIdentification characterId, PlotElementIdentification targetId, PlotElementIdentification? afterId)

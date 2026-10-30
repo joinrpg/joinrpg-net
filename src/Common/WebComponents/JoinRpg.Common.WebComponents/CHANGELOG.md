@@ -4,9 +4,15 @@
 
 ## Не выпущено
 
+### Ломающие изменения
+- Удалён `ElementMoveCommandViewModel` — модель POST-команды для `JoinMoveControlNonInteractive`, вне joinrpg не использовалась. Переход: не требуется. ([#6042](https://github.com/joinrpg/joinrpg-net/pull/6042))
+
 ### Добавлено
 - `JoinPager` — переключатель страниц: номера вокруг текущей, первая и последняя, «назад»/«вперёд». ([#5997](https://github.com/joinrpg/joinrpg-net/pull/5997))
 - `JoinDropdownButton`: параметры `Style`, `Size` (шкала `JoinButton`, размер приходит и из `JoinButtonGroup`) и `ToggleContent` — своё содержимое кнопки вместо подписи и стрелки. ([#6018](https://github.com/joinrpg/joinrpg-net/pull/6018))
+
+### Устарело
+- `JoinMoveControlNonInteractive`: перестановка с перезагрузкой страницы ушла на `JoinMoveControl` + `IMoveClient` (`webapi/move/moveafter`). Удалится в следующей мажорной версии. ([#6042](https://github.com/joinrpg/joinrpg-net/pull/6042))
 
 ### Изменено
 - `JoinDotsMenu` и `TypedDropdownButton`: меню открывается нативным `<details>` (как `JoinDropdownButton`), а не JS Bootstrap 3 (`data-toggle="dropdown"`). Без JS Bootstrap меню больше не «молча не открывается». Переход: разметка внутри — `details/summary`, а не `span.dropdown`/`button` — поправьте селекторы, если стилизовали меню снаружи. ([#6018](https://github.com/joinrpg/joinrpg-net/pull/6018))

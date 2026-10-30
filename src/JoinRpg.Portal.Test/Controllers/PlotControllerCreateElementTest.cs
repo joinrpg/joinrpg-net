@@ -71,8 +71,8 @@ public class PlotControllerCreateElementTest
         public Task PublishElementVersion(PlotVersionIdentification version, bool sendNotification, string? commentText) => throw new NotSupportedException();
         public Task UnPublishElement(PlotElementIdentification element) => throw new NotSupportedException();
         public Task EditPlotElementText(PlotElementIdentification plotelementid, string content, string todoField) => throw new NotSupportedException();
-        public Task ReorderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId) => throw new NotSupportedException();
+        public Task<IReadOnlyList<PlotFolderIdentification>> ReorderPlots(PlotFolderIdentification plotFolderId, PlotFolderIdentification? afterPlotFolderId) => throw new NotSupportedException();
         public Task<IReadOnlyList<PlotElementIdentification>> ReorderPlotByChar(CharacterIdentification characterIdentification, PlotElementIdentification targetId, PlotElementIdentification? afterId) => throw new NotSupportedException();
-        public Task ReorderPlotElements(PlotElementIdentification plotElementId, PlotElementIdentification? afterPlotElementId) => throw new NotSupportedException();
+        public Task<IReadOnlyList<PlotElementIdentification>> ReorderPlotElements(PlotElementIdentification plotElementId, PlotElementIdentification? afterPlotElementId) => throw new NotSupportedException();
     }
 }

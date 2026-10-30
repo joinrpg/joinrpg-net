@@ -42,6 +42,14 @@ internal class MoveViewService(
                 when elementId.ProjectId == characterId.ProjectId
                     && (request.MoveAfterId is null or PlotElementIdentification)
                 => await MovePlotElementAsync(characterId, elementId, request.MoveAfterId as PlotElementIdentification),
+            { SelfId: PlotElementIdentification elementId, ParentId: PlotFolderIdentification folderId }
+                when elementId.PlotFolderId == folderId
+                    && (request.MoveAfterId is null or PlotElementIdentification)
+                => await MovePlotElementInFolderAsync(elementId, request.MoveAfterId as PlotElementIdentification),
+            { SelfId: PlotFolderIdentification folderId, ParentId: ProjectIdentification projectId }
+                when folderId.ProjectId == projectId
+                    && (request.MoveAfterId is null or PlotFolderIdentification)
+                => await MovePlotFolderAsync(folderId, request.MoveAfterId as PlotFolderIdentification),
             { SelfId: ProjectMasterIdentification masterId, ParentId: ProjectIdentification projectId }
                 when masterId.ProjectId == projectId
                     && (request.MoveAfterId is null or ProjectMasterIdentification)
@@ -104,6 +112,22 @@ internal class MoveViewService(
         PlotElementIdentification? afterId)
     {
         var sortedIds = await plotService.ReorderPlotByChar(characterId, elementId, afterId);
+        return [.. sortedIds.Select(id => id.ToString())];
+    }
+
+    private async Task<string[]> MovePlotElementInFolderAsync(
+        PlotElementIdentification elementId,
+        PlotElementIdentification? afterId)
+    {
+        var sortedIds = await plotService.ReorderPlotElements(elementId, afterId);
+        return [.. sortedIds.Select(id => id.ToString())];
+    }
+
+    private async Task<string[]> MovePlotFolderAsync(
+        PlotFolderIdentification folderId,
+        PlotFolderIdentification? afterId)
+    {
+        var sortedIds = await plotService.ReorderPlots(folderId, afterId);
         return [.. sortedIds.Select(id => id.ToString())];
     }
 }

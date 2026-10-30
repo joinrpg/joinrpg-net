@@ -1,16 +1,28 @@
-@* Вводные сюжета аккордеоном: раскрыта не больше одной. *@
+@* Вводные сюжета аккордеоном: раскрыта не больше одной.
+
+   Список — интерактивный остров: перестановка вводных (JoinMoveControl в панелях) меняет
+   порядок без перезагрузки страницы (#238). *@
 @if (Elements.Count == 0)
 {
     return;
 }
 
 <JoinCollapsePanelGroup>
-    @foreach (var element in Elements)
+    @foreach (var panel in panels)
     {
-        <PlotElementPanel Model="element" />
+        <PlotElementPanel Model="panel" MoveItems="panels" OnMoveCompleted="StateHasChanged" @key="panel" />
     }
 </JoinCollapsePanelGroup>
 
 @code {
+    /// <summary>Все вводные сюжета в текущем порядке; JoinMoveControl переставляет на месте.</summary>
+    private List<PlotElementPanelViewModel> panels = [];
+
     [Parameter, EditorRequired] public IReadOnlyList<PlotElementPanelViewModel> Elements { get; set; } = null!;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        panels = [.. Elements];
+    }
 }
