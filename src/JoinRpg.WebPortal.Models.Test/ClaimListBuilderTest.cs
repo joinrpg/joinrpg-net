@@ -1,7 +1,8 @@
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DataModel.Mocks.Fakes;
-using JoinRpg.Domain;using JoinRpg.Domain.Problems;
+using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -205,6 +206,56 @@ public class ClaimListBuilderTest
             []);
 
         result.PlayerFullName.ShouldBe("");
+    }
+
+    // Регрессия для #6015: CreateDate лежит в datetime без пояса, отметки комментариев —
+    // DateTimeOffset. Неявное приведение DateTime к DateTimeOffset приклеивало локальное
+    // смещение сервера, а результат брался как .DateTime — со сдвигом Offset комментария.
+    // Здесь смещение +3: 12:00 по Москве = 09:00 UTC, и «обновлено» обязано показывать UTC-время.
+    [Fact]
+    public void GetLastCommentNormalizesCommentOffsetToUtc()
+    {
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.CreateDate = new DateTime(2026, 1, 1, 20, 0, 0, DateTimeKind.Unspecified);
+        claim.LastPlayerCommentAt = new DateTimeOffset(2026, 1, 2, 12, 0, 0, TimeSpan.FromHours(3));
+
+        var result = ClaimListBuilder.GetLastComment(claim, AccessArguments.None);
+
+        result.At.ShouldBe(new DateTime(2026, 1, 2, 9, 0, 0, DateTimeKind.Unspecified));
+    }
+
+    // Тоже #6015: комментарий игрока на 2 часа РАНЬШЕ подачи (по UTC). На сервере со смещением
+    // +3 старое сравнение считало дату подачи на 3 часа позже, чем она есть, и комментарий
+    // ошибочно побеждал — «кто обновил» показывал игрока вместо подачи.
+    [Fact]
+    public void GetLastCommentDoesNotLetEarlierCommentBeatSubmission()
+    {
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.CreateDate = new DateTime(2026, 1, 2, 3, 0, 0, DateTimeKind.Unspecified);
+        claim.LastVisibleMasterCommentAt = new DateTimeOffset(2026, 1, 2, 1, 0, 0, TimeSpan.Zero);
+        claim.LastVisibleMasterCommentBy = Mock.Master;
+
+        var result = ClaimListBuilder.GetLastComment(claim, AccessArguments.None);
+
+        result.At.ShouldBe(claim.CreateDate);
+        // «Кто обновил» при этом — игрок (подача), а не рано прокомментировавший мастер.
+        result.By.UserId.Value.ShouldBe(Mock.Player.UserId);
+    }
+
+    // #6015 для агрегата (ADR013): та же нормализация в перегрузке, на которой считает
+    // колонку «обновлено» UnifiedGrid (ADR027).
+    [Fact]
+    public void GetLastCommentTimeOnAggregateNormalizesCommentOffsetToUtc()
+    {
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.CreateDate = new DateTime(2026, 1, 1, 20, 0, 0, DateTimeKind.Unspecified);
+        claim.LastPlayerCommentAt = new DateTimeOffset(2026, 1, 2, 12, 0, 0, TimeSpan.FromHours(3));
+
+        var aggregateClaim = Mock.GetCharacterInfo(Mock.Character).Claims
+            .ShouldHaveSingleItem();
+
+        ClaimListBuilder.GetLastCommentTime(aggregateClaim, AccessArguments.None)
+            .ShouldBe(new DateTime(2026, 1, 2, 9, 0, 0, DateTimeKind.Unspecified));
     }
 
     private sealed class NoProblemsValidator : IClaimProblemValidator
