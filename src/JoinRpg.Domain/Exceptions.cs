@@ -44,6 +44,19 @@ public class JoinRpgNameFieldDeleteException : JoinRpgProjectEntityException
     }
 }
 
+/// <summary>
+/// Поле, привязанное к имени персонажа, обязано быть публичным (#965): имя показывается
+/// всем посетителям (поиск, сетки ролей, расписание), непубличное поле-имя — противоречие.
+/// </summary>
+public class JoinRpgNameFieldShouldBePublicException : JoinRpgProjectEntityException
+{
+    public JoinRpgNameFieldShouldBePublicException(ProjectField field)
+    : base(field, "Поле, привязанное к имени персонажа, должно быть публичным (видно всем)") // TODO[Localize]
+    {
+
+    }
+}
+
 public class JoinFieldScheduleShouldBeUniqueException : JoinRpgProjectEntityException
 {
     public JoinFieldScheduleShouldBeUniqueException(Project project)
