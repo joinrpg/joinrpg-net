@@ -61,8 +61,14 @@ internal class GameSubscribeService : DbServiceImplBase, IGameSubscribeService
     public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
     {
         var projectInfo = await EnsureProjectNotBlocked(request.CharacterGroupId.ProjectId);
+        _ = projectInfo.RequestMasterAccess(currentUserAccessor);
+        _ = projectInfo.EnsureNotArchived();
         var characterGroup = await ProjectRepository.GetGroupAsync(request.CharacterGroupId)
             ?? throw new JoinRpgEntityNotFoundException(request.CharacterGroupId.CharacterGroupId, nameof(CharacterGroup));
+        if (!characterGroup.IsActive)
+        {
+            throw new ProjectEntityDeactivatedException(characterGroup);
+        }
 
         if (CurrentUserId != request.MasterId)
         {
