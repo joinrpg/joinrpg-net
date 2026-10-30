@@ -81,18 +81,15 @@ public class PlotElementListItemViewModel : IProjectIdAware
 {
     public static IReadOnlyList<PlotElementListItemViewModel> FromFolder(PlotFolderDetailsDto folder, ICurrentUserAccessor currentUserAccessor, ProjectInfo projectInfo, ILinkRenderer linkRenderer)
     {
-        // Порядок задаёт репозиторий; здесь он только превращается в список id для контрола перетаскивания.
-        var itemIds = folder.Elements.Select(x => x.Id.ToString()).ToArray();
         var accessArguments = AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor);
 
         return [.. folder.Elements.Select(e => new PlotElementListItemViewModel(
-            e, accessArguments, itemIds, linkRenderer))];
+            e, accessArguments, linkRenderer))];
     }
 
     public PlotElementListItemViewModel(
         PlotElementDetailsDto element,
         PlotAccessArguments accessArguments,
-        string[]? itemIdsToParticipateInSort,
         ILinkRenderer renderer,
         bool printMode = false)
     {
@@ -128,7 +125,6 @@ public class PlotElementListItemViewModel : IProjectIdAware
             ? null
             : new PlotVersionIdentification(element.Id, element.PublishedVersion.Value);
         PrintMode = printMode;
-        ItemsIds = itemIdsToParticipateInSort;
     }
 
     [ReadOnly(true)]
@@ -179,9 +175,6 @@ public class PlotElementListItemViewModel : IProjectIdAware
 
     public bool PrintMode { get; }
 
-    // Используется для упорядочивания
-    public string[]? ItemsIds { get; }
-
     public PlotElementPanelViewModel ToPanel() => new(
         PlotElementIdentification,
         Status,
@@ -198,8 +191,7 @@ public class PlotElementListItemViewModel : IProjectIdAware
         CurrentVersion2,
         PubishedVersion2,
         HasMasterAccess,
-        HasEditAccess,
-        ItemsIds);
+        HasEditAccess);
 
     // Даты версий хранятся в UTC; шаблон EventTime сравнивал их с DateTime.UtcNow.
     private static DateTimeOffset AsUtc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));

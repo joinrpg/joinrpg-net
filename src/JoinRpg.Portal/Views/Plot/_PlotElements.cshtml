@@ -2,5 +2,5 @@
 @using JoinRpg.Web.Plots.Elements
 @model  IEnumerable<PlotElementListItemViewModel>
 <component type="typeof(PlotElementPanelList)"
-           render-mode="Static"
+           render-mode="WebAssemblyPrerendered"
            param-Elements="@Model.Select(e => e.ToPanel()).ToList()" />

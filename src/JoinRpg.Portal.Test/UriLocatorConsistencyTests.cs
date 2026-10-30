@@ -162,6 +162,20 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
     }
 
     /// <summary>
+    /// Ссылка на сюжет из списка сюжетов: список — интерактивный остров, ссылку строит
+    /// клиентская реализация локатора, сверяем её с серверной.
+    /// </summary>
+    [Fact]
+    public void PlotFolderLinkShouldAgreeBetweenServerAndClient()
+    {
+        var folderId = new PlotFolderIdentification(ProjectId, 2);
+        var server = factory.Services.GetRequiredService<IUriLocator<PlotFolderIdentification>>().GetUri(folderId);
+        var client = _clientServices.GetRequiredService<IUriLocator<PlotFolderIdentification>>().GetUri(folderId);
+
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    /// <summary>
     /// Сверх обычной сверки серверной реализации с клиентской здесь закреплён и сам путь:
     /// иначе переименование action'а в <c>ShowScheduleController</c> сломало бы единственный
     /// выход из полноэкранного режима расписания молча — обе реализации независимы, но
@@ -204,7 +218,6 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         ["GetCopyElementUri", (Func<IPlotUriLocator, Uri>)(l => l.GetCopyElementUri(PlotElementId))],
         ["GetVersionUri", (Func<IPlotUriLocator, Uri>)(l => l.GetVersionUri(PlotVersionId))],
         ["GetPrintVersionUri", (Func<IPlotUriLocator, Uri>)(l => l.GetPrintVersionUri(PlotVersionId))],
-        ["GetReorderElementsUri", (Func<IPlotUriLocator, Uri>)(l => l.GetReorderElementsUri(ProjectId))],
     ];
 
     [Theory]
