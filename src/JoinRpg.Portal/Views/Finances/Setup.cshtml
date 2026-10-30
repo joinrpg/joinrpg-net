@@ -7,11 +7,4 @@
 
 <h2>@ViewBag.Title</h2>
 
-@* Каждая панель — свой остров; аккордеон из них собирает общее имя группы у JoinCollapsePanel,
-   а panel-group лишь сближает свёрнутые панели. *@
-<div class="panel-group">
-    <component type="typeof(FinanceFeeSettingsPanel)" render-mode="WebAssembly" param-ProjectId="Model" />
-    <component type="typeof(FinancePaymentTypesPanel)" render-mode="WebAssembly" param-ProjectId="Model" />
-    <component type="typeof(FinanceGeneralSettingsPanel)" render-mode="WebAssembly" param-ProjectId="Model" />
-    <component type="typeof(FinanceGoogleDocsPanel)" render-mode="WebAssembly" param-ProjectId="Model" />
-</div>
+<component type="typeof(FinanceSettingsPage)" render-mode="WebAssembly" param-ProjectId="Model" />

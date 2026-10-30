@@ -1,8 +1,14 @@
 @inject IFinanceSettingsClient settingsClient
+@inject ILogger<FinanceGoogleDocsPanel> logger
 
-<JoinCollapsePanel Group="@FinanceSettingsPanels.Group" Id="@AnchorId">
+<JoinCollapsePanel Id="@AnchorId">
     <Header>Синхронизация с GoogleDocs</Header>
     <ChildContent>
+        @if (loadError is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@loadError</JoinAlert>
+            return;
+        }
         @if (model is null)
         {
             <JoinLoadingMessage />
@@ -31,5 +37,19 @@
 
     private FinanceGoogleDocsExportViewModel? model;
 
-    protected override async Task OnInitializedAsync() => model = await settingsClient.GetGoogleDocsExport(ProjectId);
+    private string? loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            model = await settingsClient.GetGoogleDocsExport(ProjectId);
+        }
+        catch (Exception exception)
+        {
+            // Одна панель — не вся страница: показываем ошибку в панели, остальные работают
+            logger.LogError(exception, "Ошибка при загрузке ссылки для выгрузки проекта {ProjectId}", ProjectId);
+            loadError = "Не удалось получить ссылку для выгрузки. Обновите страницу и попробуйте ещё раз.";
+        }
+    }
 }
