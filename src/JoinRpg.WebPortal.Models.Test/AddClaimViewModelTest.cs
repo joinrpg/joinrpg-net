@@ -21,7 +21,7 @@ public class AddClaimViewModelTest
         => AddClaimViewModel.Create(
             Mock.GetCharacterInfo(character),
             userInfo ?? Mock.PlayerInfo,
-            new ProjectDetails(Mock.ProjectInfo, new MarkdownString(""), new MarkdownString("правила подачи"), [], false),
+            new ProjectDetails(Mock.ProjectInfo, new MarkdownString(""), new MarkdownString("правила подачи"), [], false, new MarkdownString("")),
             FieldUserLinksLoader.None);
 
     [Fact]

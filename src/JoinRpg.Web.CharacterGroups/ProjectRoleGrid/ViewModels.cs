@@ -37,6 +37,7 @@ public record ProjectRoleGridViewResult(
 /// (выбрано единственное поле и это «Описание персонажа»)</param>
 /// <param name="DefaultClaimProjectStatus">Статус проекта для большой кнопки «Заявиться» у заголовка
 /// (заявка на шаблон по умолчанию). null — кнопки нет: шаблона у проекта нет или проект в архиве.</param>
+/// <param name="PlayerAvatar">Аватарки в колонке «Игрок»: у строк без открытого игрока — заглушка того же размера</param>
 public record ProjectRoleGridViewModel(
     ProjectRolesListIdentification? RolesListId,
     string Name,
@@ -51,7 +52,8 @@ public record ProjectRoleGridViewModel(
     CharacterGroupIdentification RootGroupId,
     CharacterGroupType RootGroupType,
     bool SuppressFieldLabels,
-    ProjectLifecycleStatus? DefaultClaimProjectStatus);
+    ProjectLifecycleStatus? DefaultClaimProjectStatus,
+    PlayerAvatarMode PlayerAvatar = PlayerAvatarMode.None);
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(ProjectRoleGridCharacterRowViewModel), "character")]
@@ -120,9 +122,11 @@ public record ProjectRoleGridGroupHeaderRowViewModel(
 
 // Contacts — null, если показывать нечего; пустыми (без единого контакта) не бывают:
 // ячейка рисует скобки вокруг контактов по одному факту их наличия.
+// AvatarUri — только если сетка настроена показывать аватарки и игрок не скрыт.
 public record PlayerCellViewModel(
     CharacterApplyViewModel ApplyStatus,
     UserContacts? Contacts,
-    UserLinkViewModel? Link = null);
+    UserLinkViewModel? Link = null,
+    Uri? AvatarUri = null);
 
 public record GroupsCellViewModel(IReadOnlyList<CharacterGroupLinkSlimViewModel> Groups);

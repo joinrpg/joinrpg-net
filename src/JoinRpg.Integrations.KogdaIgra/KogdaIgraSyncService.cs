@@ -122,7 +122,7 @@ internal class KogdaIgraSyncService(
         dbRecord.VkClub = kiData.VkClub;
         dbRecord.LjComm = kiData.LiveJournalCommunity;
         dbRecord.TelegramChannel = kiData.TelegramChannel;
-        dbRecord.Active = true;
+        dbRecord.Active = !kiData.IsDeleted;
 
         await unitOfWork.SaveChangesAsync();
         logger.LogInformation("Saved kogda-igra data for id={kogdaIgraId}", dbRecord.KogdaIgraGameId);

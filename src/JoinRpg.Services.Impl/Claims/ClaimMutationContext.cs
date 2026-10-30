@@ -1,5 +1,6 @@
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.DomainTypes.Accommodation;
 using JoinRpg.DomainTypes.Characters;
@@ -286,19 +287,10 @@ internal abstract record ClaimMutationContext(
     public void AddGroupMergedNotification(AccommodationGroupMergedNotification notification)
         => GroupMergedNotifications.Add(notification);
 
-    /// <summary>
-    /// Помечает персонажа изменённым, если заявка утверждена. Перенос
-    /// <c>ClaimServiceImpl.MarkCharacterChangedIfApproved</c>.
-    /// </summary>
+    /// <inheritdoc cref="ClaimExtensions.MarkCharacterChangedIfApproved" path="/summary"/>
+    /// <remarks>Время и пользователь — операции (ADR014, §7).</remarks>
     public void MarkCharacterChangedIfApproved()
-    {
-        if (Claim.ClaimStatus == ClaimStatus.Approved)
-        {
-            // Персонаж берётся из заявки, а не из хэндла: при утверждении заявки на слот заявка
-            // к этому моменту уже переехала на только что созданного персонажа.
-            this.MarkChanged(Claim.Character ?? Character);
-        }
-    }
+        => Claim.MarkCharacterChangedIfApproved(Character, Now, CurrentUser.UserId);
 }
 
 /// <summary>

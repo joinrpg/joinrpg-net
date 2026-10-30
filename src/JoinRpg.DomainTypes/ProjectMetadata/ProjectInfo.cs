@@ -4,6 +4,13 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DomainTypes.ProjectMetadata;
 
+/// <summary>
+/// Метаданные проекта: настройки, поля, мастера, дерево групп. Собираются на каждый запрос и кешируются на его время.
+/// </summary>
+/// <remarks>
+/// Большие тексты и редко нужные данные (анонс, правила подачи, условия льготного взноса, карточки КогдаИгры)
+/// сюда не кладём — они в <see cref="ProjectDetails"/> (docs/project-entities.md).
+/// </remarks>
 public record class ProjectInfo
 {
     private readonly Lazy<VirtualOrderContainer<ProjectFieldInfo>> sortedFieldsContainer;

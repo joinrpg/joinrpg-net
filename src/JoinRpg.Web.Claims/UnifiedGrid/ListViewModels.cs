@@ -33,20 +33,20 @@ public record class ClaimListItemViewModel(
     #endregion
 }
 
-public record class UgItemForCaptainViewModel(
-    UgCharacterForCaptainViewModel Character,
-    UgClaimForCaptainViewModel[] Claims
+public record class UgItemViewModel(
+    UgCharacterViewModel Character,
+    UgClaimViewModel[] Claims
     )
 {
 
 }
 
-public record class UgCharacterForCaptainViewModel(
+public record class UgCharacterViewModel(
     [property: Display(Name = "Персонаж")] CharacterLinkSlimViewModel Name,
     CharacterApplyViewModel ApplyStatus,
     IReadOnlyCollection<CharacterGroupLinkSlimViewModel> Groups);
 
-public record class UgClaimForCaptainViewModel(
+public record class UgClaimViewModel(
      [property: Display(Name = "Игрок")] UserLinkViewModel? Player,
     [property: Display(Name = "Статус заявки")] ClaimFullStatusView ClaimStatus,
     [property: Display(Name = "Обновлена"), UIHint("EventTime")] DateTimeOffset? UpdateDate,

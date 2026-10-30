@@ -1,0 +1,73 @@
+#nullable enable
+JoinRpg.Common.KogdaIgraClient.IKogdaIgraApiClient
+JoinRpg.Common.KogdaIgraClient.IKogdaIgraApiClient.GetChangedGamesSince(System.DateTimeOffset since) -> System.Threading.Tasks.Task<JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker![]!>!
+JoinRpg.Common.KogdaIgraClient.IKogdaIgraApiClient.GetGameInfo(int gameId) -> System.Threading.Tasks.Task<JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo?>!
+JoinRpg.Common.KogdaIgraClient.KogdaIgraConnectException
+JoinRpg.Common.KogdaIgraClient.KogdaIgraConnectException.KogdaIgraConnectException(System.Exception! inner, string! message = "Ошибка при соединении с КогдаИгрой") -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraEmptyResponseException
+JoinRpg.Common.KogdaIgraClient.KogdaIgraEmptyResponseException.KogdaIgraEmptyResponseException(string! message = "КогдаИгра вернула пустой ответ вместо JSON") -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Begin.get -> System.DateOnly
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Begin.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Deconstruct(out int Id, out string! Name, out string! GameData, out System.DateTimeOffset UpdateDate, out System.DateOnly Begin, out System.DateOnly End, out string! RegionName, out string! RegionShortName, out string! MasterGroupName, out System.Uri? SiteUri, out string? VkClub, out string? LiveJournalCommunity, out string? TelegramChannel) -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.End.get -> System.DateOnly
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.End.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.GameData.get -> string!
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.GameData.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Id.get -> int
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Id.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.KogdaIgraGameInfo(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo! original) -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.KogdaIgraGameInfo(int Id, string! Name, string! GameData, System.DateTimeOffset UpdateDate, System.DateOnly Begin, System.DateOnly End, string! RegionName, string! RegionShortName, string! MasterGroupName, System.Uri? SiteUri, string? VkClub, string? LiveJournalCommunity, string? TelegramChannel) -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.LiveJournalCommunity.get -> string?
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.LiveJournalCommunity.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.MasterGroupName.get -> string!
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.MasterGroupName.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Name.get -> string!
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Name.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.RegionName.get -> string!
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.RegionName.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.RegionShortName.get -> string!
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.RegionShortName.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.SiteUri.get -> System.Uri?
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.SiteUri.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.TelegramChannel.get -> string?
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.TelegramChannel.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.UpdateDate.get -> System.DateTimeOffset
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.UpdateDate.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.VkClub.get -> string?
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.VkClub.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.Deconstruct(out int Id, out System.DateTimeOffset UpdateDate) -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.Id.get -> int
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.Id.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.KogdaIgraGameUpdateMarker(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker! original) -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.KogdaIgraGameUpdateMarker(int Id, System.DateTimeOffset UpdateDate) -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.UpdateDate.get -> System.DateTimeOffset
+JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.UpdateDate.init -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraOptions
+JoinRpg.Common.KogdaIgraClient.KogdaIgraOptions.HostName.get -> System.Uri!
+JoinRpg.Common.KogdaIgraClient.KogdaIgraOptions.HostName.set -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraOptions.KogdaIgraOptions() -> void
+JoinRpg.Common.KogdaIgraClient.KogdaIgraParseException
+JoinRpg.Common.KogdaIgraClient.KogdaIgraParseException.Id.get -> int
+JoinRpg.Common.KogdaIgraClient.KogdaIgraParseException.KogdaIgraParseException(int Id, string! message = "Ошибка при разборе ответа от КогдаИгры") -> void
+JoinRpg.Common.KogdaIgraClient.Registration
+override JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Equals(object? obj) -> bool
+override JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.GetHashCode() -> int
+override JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.ToString() -> string!
+override JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.Equals(object? obj) -> bool
+override JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.GetHashCode() -> int
+override JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.ToString() -> string!
+static JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.operator !=(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo? left, JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo? right) -> bool
+static JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.operator ==(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo? left, JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo? right) -> bool
+static JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.operator !=(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker? left, JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker? right) -> bool
+static JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.operator ==(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker? left, JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker? right) -> bool
+static JoinRpg.Common.KogdaIgraClient.Registration.AddKogdaIgraClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
+virtual JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.<Clone>$() -> JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo!
+virtual JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.Equals(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo? other) -> bool
+virtual JoinRpg.Common.KogdaIgraClient.KogdaIgraGameInfo.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.<Clone>$() -> JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker!
+virtual JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.Equals(JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker? other) -> bool
+virtual JoinRpg.Common.KogdaIgraClient.KogdaIgraGameUpdateMarker.PrintMembers(System.Text.StringBuilder! builder) -> bool

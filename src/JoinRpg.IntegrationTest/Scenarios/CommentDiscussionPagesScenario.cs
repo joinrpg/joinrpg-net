@@ -27,8 +27,8 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 /// игрока, скрытых от игрока комментариев, неподтверждённой финоперации и вида со стороны игрока.
 /// Поэтому нули в снапшоте на этих страницах ничего не доказывают. Здесь у заявки и темы есть всё
 /// это сразу, а <c>LazyLoadAssertingHandler</c> на клиентах фабрики сверяет число ленивых загрузок
-/// с <c>lazy-loads-baseline.json</c> (см. docs/lazy-loads-baseline.md) — до перевода обсуждений
-/// на доменный снимок.
+/// с <c>lazy-loads-baseline.json</c> (см. docs/lazy-loads-baseline.md). С шага 8 заявка рисуется по
+/// доменному снимку, и ленивых загрузок по обсуждению на ней нет.
 /// </para>
 /// <para>
 /// Каждый тест сеет свой проект: страницы заявки и темы сдвигают отметку прочтения, и порядок тестов
@@ -38,6 +38,8 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
     private const string NewCommentBadgeTitle = "Новый комментарий";
+    private const string ModerationButtonLabel = "Подтвердить / отклонить";
+    private const string ModerationIslandTypeName = "JoinRpg.Web.Claims.Finance.FinanceModerationButton";
 
     [Fact]
     public async Task ClaimAndForumPages_ShowWholeDiscussion_ToMaster()
@@ -53,6 +55,19 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
         claimText.ShouldContain(ClaimTexts.HiddenFromPlayer);
         claimText.ShouldContain(ClaimTexts.Payment);
         claimText.ShouldContain("Способ оплаты");
+        // Остров модерации вложен в статическое дерево (ADR026, шаг 8): кнопка пререндерена сервером,
+        // а маркер WASM-компонента позволяет клиенту её оживить. Такой же остров есть и в таблице
+        // финопераций, поэтому смотрим только в комментарий с платежом.
+        var paymentComment = OwnContentOfCommentWith(claimPage, ClaimTexts.Payment);
+        paymentComment.Text.ShouldContain(ModerationButtonLabel);
+        paymentComment.Markers.ShouldContain(ModerationIslandTypeName);
+        // Формы статического дерева сами ставят токен антифорджери — без него POST отклонят.
+        var commentForms = claimPage.DocumentNode.SelectNodes("//form[contains(@action, 'createcomment')]");
+        commentForms.ShouldNotBeNull();
+        var tokens = commentForms
+            .Select(form => form.SelectSingleNode(".//input[@name='__RequestVerificationToken']")?.GetAttributeValue("value", "") ?? "")
+            .ToList();
+        tokens.ShouldAllBe(token => token != "");
 
         var threadPage = await GetPageAsync(master, seed.ThreadPageUrl);
         var threadText = TextOf(threadPage);
@@ -80,6 +95,9 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
         myClaimText.ShouldNotContain(ClaimTexts.HiddenFromPlayer);
         // Свой неподтверждённый платёж игрок видит ждущим модерации — модерировать его он не может.
         myClaimText.ShouldContain("Ждет одобрения мастером");
+        var paymentComment = OwnContentOfCommentWith(myClaimPage, ClaimTexts.Payment);
+        paymentComment.Text.ShouldNotContain(ModerationButtonLabel);
+        paymentComment.Markers.ShouldNotContain(ModerationIslandTypeName);
 
         var threadPage = await GetPageAsync(player, seed.ThreadPageUrl);
         var threadText = TextOf(threadPage);
@@ -102,8 +120,9 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
     /// ответ помечен новым. Коллекция отметок <c>Discussion.Watermarks</c> загружается ещё до
     /// обновления (проверкой «есть ли непрочитанное»), а отметку сервис (сейчас <c>ICommentDiscussionService</c>) пишет в другом
     /// транзиентном <c>MyDbContext</c> — граф заявки её не видит. С шага 3 ответы строятся сразу,
-    /// вместе с корнями, и от раздельных контекстов это больше не зависит. Тест фиксирует поведение, которое
-    /// должен сохранить перевод страницы на доменный снимок, где «новое» считается до обновления отметки.
+    /// вместе с корнями, и от раздельных контекстов это больше не зависит. С шага 8 заявка рисуется по
+    /// доменному снимку: <c>DiscussionViewModelBuilder</c> читает отметку сам, и <c>DiscussionViewService</c>
+    /// сдвигает её только после построения модели.
     /// </remarks>
     [Fact]
     public async Task ClaimPage_MarksRootAndReplyAsNew_ForMasterWhoOpensItFirstTime()
@@ -129,7 +148,7 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
     /// <remarks>
     /// До шага 3 <c>ForumController.ViewThread</c> отметку прочтения не сдвигал, и «новое» на форуме
     /// не гасло никогда. С шага 6 тема рисуется по доменному снимку: <c>DiscussionViewModelBuilder</c>
-    /// читает отметку прочтения сам, и <c>ViewThread</c> сдвигает её только после построения модели —
+    /// читает отметку прочтения сам, и <c>DiscussionViewService</c> сдвигает её только после построения модели —
     /// иначе и корень, и ответ здесь потеряли бы пометку «новое» уже при первом открытии.
     /// </remarks>
     [Fact]
@@ -209,6 +228,28 @@ public class CommentDiscussionPagesScenario(JoinApplicationFactory factory) : IC
             $"//*[@id='{id}']//text()[ancestor::*[starts-with(@id, 'comment')][1][@id='{id}']]");
         return ownText is not null
             && ownText.Any(node => WebUtility.HtmlDecode(node.InnerText).Contains(NewCommentBadgeTitle));
+    }
+
+    /// <summary>
+    /// Собственное содержимое (без ответов, как в <see cref="IsMarkedNew"/>) комментария с текстом
+    /// <paramref name="text"/>: видимый текст и HTML-комментарии — в них Blazor пишет маркеры островов.
+    /// </summary>
+    private static (string Text, string Markers) OwnContentOfCommentWith(HtmlDocument page, string text)
+    {
+        foreach (var block in page.DocumentNode.SelectNodes("//*[starts-with(@id, 'comment')]") ?? Enumerable.Empty<HtmlNode>())
+        {
+            var id = block.Id;
+            string Own(string nodeTest)
+                => string.Concat(
+                    block.SelectNodes($".//{nodeTest}[ancestor::*[starts-with(@id, 'comment')][1][@id='{id}']]")?
+                        .Select(node => node is HtmlCommentNode ? node.OuterHtml : WebUtility.HtmlDecode(node.InnerText)) ?? []);
+            var ownText = Own("text()");
+            if (ownText.Contains(text))
+            {
+                return (ownText, Own("comment()"));
+            }
+        }
+        throw new ShouldAssertException($"Комментарий «{text}» не найден на странице");
     }
 
     private static async Task<HtmlDocument> GetPageAsync(HttpClient client, string url)

@@ -6,7 +6,6 @@
         <div class="modal-content">
           <form asp-action="RequestPreferentialFee" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
                 @Html.HiddenFor(model => model.OperationDate)
-                @Html.HiddenFor(model => model.CommentDiscussionId)
 
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть"><join-icon icon="Close" /></button>

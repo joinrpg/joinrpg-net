@@ -16,7 +16,6 @@ using JoinRpg.WebPortal.Managers.Interfaces;
 namespace JoinRpg.WebPortal.Managers.Schedule;
 
 public class SchedulePageManager(
-    IProjectRepository project,
     ICurrentProjectAccessor currentProject,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository,
@@ -255,77 +254,58 @@ public class SchedulePageManager(
     /// <summary>
     /// Контролирует настройку конфигурации расписания
     /// </summary>
-    /// <returns></returns>
+    /// <exception cref="ProjectNotFoundException">Проекта нет.</exception>
     public async Task<IReadOnlyCollection<ScheduleConfigProblemsViewModel>> CheckScheduleConfiguration()
     {
-        var project = await Project.GetProjectWithFieldsAsync(currentProject.ProjectId);
-        ProjectInfo projectInfo;
-        try
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
+
+        var roomField = projectInfo.RoomField;
+        var timeSlotField = projectInfo.TimeSlotField;
+        if (roomField is null || timeSlotField is null)
         {
-            projectInfo = await projectMetadataRepository.GetProjectMetadata(currentProject.ProjectId);
-        }
-        catch (InvalidOperationException)
-        {
-            return new[] { ScheduleConfigProblemsViewModel.ProjectNotFound };
+            return [ScheduleConfigProblemsViewModel.FieldsNotSet];
         }
 
-        if (project is null)
+        var problems = new List<ScheduleConfigProblemsViewModel>();
+
+        if (roomField.IsPublic != timeSlotField.IsPublic || roomField.CanPlayerView != timeSlotField.CanPlayerView)
         {
-            return new[] { ScheduleConfigProblemsViewModel.ProjectNotFound };
+            problems.Add(ScheduleConfigProblemsViewModel.InconsistentVisibility);
         }
 
-        bool HasAccess(ProjectFieldInfo roomField)
+        if (!await HasAccess(projectInfo, roomField))
         {
-            if (roomField.IsPublic)
-            {
-                return true;
-            }
-            if (projectInfo.HasMasterAccess(currentUserAccessor))
-            {
-                return true;
-            }
-            if (currentUserAccessor.UserIdOrDefault is int userId && project.Claims.OfUserApproved(userId).Any())
-            {
-                return roomField.CanPlayerView;
-            }
+            problems.Add(ScheduleConfigProblemsViewModel.NoAccess);
+        }
+
+        // Сетку строят только из активных вариантов (см. ScheduleBuilder): если все
+        // помещения или слоты удалены, показывать нечего, как и без вариантов вовсе.
+        if (!timeSlotField.Variants.Any(v => v.IsActive))
+        {
+            problems.Add(ScheduleConfigProblemsViewModel.NoTimeSlots);
+        }
+
+        if (!roomField.Variants.Any(v => v.IsActive))
+        {
+            problems.Add(ScheduleConfigProblemsViewModel.NoRooms);
+        }
+
+        return problems;
+    }
+
+    private async Task<bool> HasAccess(ProjectInfo projectInfo, ProjectFieldInfo roomField)
+    {
+        if (roomField.IsPublic || projectInfo.HasMasterAccess(currentUserAccessor))
+        {
+            return true;
+        }
+        if (currentUserAccessor.UserIdentificationOrDefault is not { } userId || !roomField.CanPlayerView)
+        {
             return false;
         }
-
-        IEnumerable<ScheduleConfigProblemsViewModel> Impl()
-        {
-            var roomField = projectInfo.RoomField;
-            var timeSlotField = projectInfo.TimeSlotField;
-            if (roomField is null || timeSlotField is null)
-            {
-                yield return ScheduleConfigProblemsViewModel.FieldsNotSet;
-            }
-            else
-            {
-                if (roomField.IsPublic != timeSlotField.IsPublic || roomField.CanPlayerView != timeSlotField.CanPlayerView)
-                {
-                    yield return ScheduleConfigProblemsViewModel.InconsistentVisibility;
-                }
-
-                if (!HasAccess(roomField))
-                {
-                    yield return ScheduleConfigProblemsViewModel.NoAccess;
-                }
-
-                // Сетку строят только из активных вариантов (см. ScheduleBuilder): если все
-                // помещения или слоты удалены, показывать нечего, как и без вариантов вовсе.
-                if (!timeSlotField.Variants.Any(v => v.IsActive))
-                {
-                    yield return ScheduleConfigProblemsViewModel.NoTimeSlots;
-                }
-
-                if (!roomField.Variants.Any(v => v.IsActive))
-                {
-                    yield return ScheduleConfigProblemsViewModel.NoRooms;
-                }
-            }
-        }
-
-        return Impl().ToList();
+        // Пользователя грузим только здесь: публичному расписанию и мастерам его заявки не нужны
+        var user = await userRepository.GetUserInfo(userId);
+        return user?.ActiveClaims.Any(c => c.ProjectId == projectInfo.ProjectId && c.IsApproved) == true;
     }
 
     public async Task<ScheduleBuilder> GetBuilder()
@@ -341,6 +321,4 @@ public class SchedulePageManager(
 
         return new ScheduleBuilder(characters, projectInfo, authorUsers);
     }
-
-    private IProjectRepository Project { get; } = project;
 }

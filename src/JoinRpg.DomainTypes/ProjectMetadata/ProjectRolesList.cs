@@ -9,7 +9,8 @@ public partial record ProjectRolesListIdentification(ProjectIdentification Proje
 
 public enum ProjectRolesListVisibilityMode { None, PublicOnly, All }
 
-public enum ShowRolesFilter { All, VacantOnly, HotOnly }
+/// <remarks>Значения хранятся в БД числами — не перенумеровывать.</remarks>
+public enum ShowRolesFilter { All, VacantOnly, HotOnly, TakenOnly }
 
 /// <summary>Режим колонки «Игрок» в сетке ролей</summary>
 /// <remarks>Значения хранятся в БД числами — не перенумеровывать.</remarks>
@@ -61,7 +62,7 @@ public enum RolesGridGroupsViewMode
 /// <param name="ContactsColumn">Колонка «Игрок»: не показывать, только имя, имя с публичными контактами, имя со всеми контактами</param>
 /// <param name="GroupsColumn">Показывать ли специальную колонку «интересные группы» (нет, только публичные группы, все группы)</param>
 /// <param name="GroupsViewMode">Как показывать группы: не показывать, секциями в таблице, деревом</param>
-/// <param name="ShowRolesFilter">Какие роли показывать: все, только вакантные, только горячие</param>
+/// <param name="ShowRolesFilter">Какие роли показывать: все, только вакантные, только горячие, только занятые</param>
 /// <param name="PlayerAvatar">Показывать ли аватарку игрока в колонке «Игрок»</param>
 [method: JsonConstructor]
 public record class ProjectRolesList(

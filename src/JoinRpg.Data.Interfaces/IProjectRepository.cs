@@ -6,7 +6,6 @@ public interface IProjectRepository : IDisposable
 {
     [Obsolete("Используйте IProjectMetadataRepository.GetProjectMetadata")]
     Task<Project> GetProjectAsync(int project);
-    Task<Project?> GetProjectWithFieldsAsync(int project);
 
     /// <summary>
     /// Отдаёт EF-граф проекта, который нужен <c>JoinrpgMarkdownLinkRenderer</c> для директив

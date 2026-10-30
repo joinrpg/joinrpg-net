@@ -235,18 +235,30 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
         }
     }
 
-    public async Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
+    public async Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectInfo projectInfo)
     {
-        var project = await ProjectLoaderCommon.GetProjectWithFieldsAsync(ctx, projectId.Value, skipCache: false) ?? throw new ProjectNotFoundException(projectId);
+        // Метаданные уже собраны — догружаем только то, чего в них нет, без графа проекта.
+        var projectId = projectInfo.ProjectId;
+        var row = await ctx.ProjectsSet
+            .Where(p => p.ProjectId == projectId.Value)
+            .Select(p => new
+            {
+                Announce = p.Details.ProjectAnnounce.Contents,
+                ClaimApplyRules = p.Details.ClaimApplyRules.Contents,
+                p.Details.DisableKogdaIgraMapping,
+                PreferentialFeeConditions = p.Details.PreferentialFeeConditions.Contents,
+                p.KogdaIgraGames,
+            })
+            .SingleOrDefaultAsync() ?? throw new ProjectNotFoundException(projectId);
 
         return new DomainTypes.ProjectMetadata.ProjectDetails(
-            CreateInfoFromProject(project, projectId),
-            // Анонса и правил подачи в БД может не быть. Неявная конверсия MarkdownDbValue
-            // в MarkdownString в этом случае даёт null, а домен ждёт значение — отдаём
+            projectInfo,
+            // Анонса и правил подачи в БД может не быть, а домен ждёт значение — отдаём
             // пустой markdown, как CharacterInfoMapper делает для описания персонажа.
-            new MarkdownString(project.Details.ProjectAnnounce?.Contents ?? ""),
-            new MarkdownString(project.Details.ClaimApplyRules?.Contents ?? ""),
-            [.. project.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
-            project.Details.DisableKogdaIgraMapping);
+            new MarkdownString(row.Announce ?? ""),
+            new MarkdownString(row.ClaimApplyRules ?? ""),
+            [.. row.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
+            row.DisableKogdaIgraMapping,
+            new MarkdownString(row.PreferentialFeeConditions ?? ""));
     }
 }

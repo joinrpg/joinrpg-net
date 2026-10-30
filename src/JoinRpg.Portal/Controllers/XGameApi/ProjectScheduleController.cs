@@ -1,4 +1,3 @@
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes.Schedules;
 using JoinRpg.Helpers;
 using JoinRpg.Markdown;
@@ -10,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers.XGameApi;
 
 [Route("x-game-api/{projectId}/schedule")]
-public class ProjectScheduleController(IProjectRepository projectRepository, SchedulePageManager manager) : XGameApiController
+public class ProjectScheduleController(SchedulePageManager manager) : XGameApiController
 {
     /// <summary>
     /// All scheduled program items
@@ -24,7 +23,7 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
     public async Task<ActionResult<List<ProgramItemInfoApi>>> GetSchedule([FromRoute]
         int projectId)
     {
-        if (await CheckSchedule(projectId) is { } problem)
+        if (await CheckSchedule() is { } problem)
         {
             return problem;
         }
@@ -45,7 +44,7 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
     public async Task<ActionResult<ScheduleInfoApi>> GetScheduleWithLastModified([FromRoute]
         int projectId)
     {
-        if (await CheckSchedule(projectId) is { } problem)
+        if (await CheckSchedule() is { } problem)
         {
             return problem;
         }
@@ -59,16 +58,19 @@ public class ProjectScheduleController(IProjectRepository projectRepository, Sch
         };
     }
 
-    private async Task<ActionResult?> CheckSchedule(int projectId)
+    private async Task<ActionResult?> CheckSchedule()
     {
-        var project = await projectRepository.GetProjectWithFieldsAsync(projectId);
-
-        if (project is null)
+        IReadOnlyCollection<ScheduleConfigProblemsViewModel> check;
+        try
         {
+            check = await manager.CheckScheduleConfiguration();
+        }
+        catch (ProjectNotFoundException)
+        {
+            // Контракт API обещает внешним клиентам 410, а не общий 404 портала
             return Problem(statusCode: 410);
         }
 
-        var check = await manager.CheckScheduleConfiguration();
         if (check.Contains(ScheduleConfigProblemsViewModel.NoAccess))
         {
             return Forbid();

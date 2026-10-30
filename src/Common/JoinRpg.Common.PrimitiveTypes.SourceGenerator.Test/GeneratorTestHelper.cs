@@ -46,7 +46,7 @@ internal static class GeneratorTestHelper
         return Assembly.Load(stream.ToArray());
     }
 
-    private static List<MetadataReference> GetMetadataReferences()
+    public static List<MetadataReference> GetMetadataReferences()
     {
         var trustedPlatformAssemblies = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
         var references = trustedPlatformAssemblies

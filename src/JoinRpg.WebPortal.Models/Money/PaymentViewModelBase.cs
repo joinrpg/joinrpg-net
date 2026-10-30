@@ -17,17 +17,13 @@ public class PaymentViewModelBase : FinanceViewModelBase
     {
         CommentText = "";
         ProjectId = claim.ProjectId;
-        CommentDiscussionId = claim.ClaimId;
         ClaimId = claim.ClaimId;
-        ParentCommentId = null;
         EnableHideFromUser = false;
         HideFromUser = false;
         OperationDate = DateOnly.FromDateTime(DateTime.Today);
         Money = Math.Max(claim.ClaimFee.CurrentFee - claim.ClaimFee.CurrentBalance, 0);
         ClaimApproved = claim.Status.IsAlreadyApproved();
 
-        // TODO: Probably must get this info from the list of finance operations?
-        HasUnApprovedPayments = claim.HasMasterAccess &&
-            claim.RootComments.Any(c => c.ShowFinanceModeration);
+        HasUnApprovedPayments = claim.HasMasterAccess && claim.ClaimFee.HasModeratableFinanceOperations;
     }
 }

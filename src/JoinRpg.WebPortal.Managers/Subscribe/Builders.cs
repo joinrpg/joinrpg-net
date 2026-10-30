@@ -21,7 +21,7 @@ public static class Builders
             Items = data.UserSubscriptions.Select(x => x.ToViewModel(uriService)).ToList(),
             ProjectId = projectId,
             MasterId = data.User.UserId,
-            PaymentTypeNames = paymentTypes.Select(pt => ((PaymentTypeKindViewModel)pt.TypeKind).GetDisplayName(data.User)).ToArray(),
+            PaymentTypeNames = paymentTypes.Select(pt => ((PaymentTypeKindViewModel)pt.TypeKind).GetDisplayName(data.User.ToUserInfoHeader())).ToArray(),
         };
     }
 

@@ -272,6 +272,83 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
     }
 
     /// <summary>
+    /// Фильтр «Только занятые»: в сетке только роль с одобренной заявкой,
+    /// роль в обсуждении и вакантная роль в неё не попадают.
+    /// </summary>
+    [Fact]
+    public async Task RolesList_TakenOnly_ShowsOnlyCharactersWithApprovedClaim()
+    {
+        UserIdentification masterId;
+        ProjectIdentification projectId;
+        UserIdentification approvedPlayerId;
+        UserIdentification discussedPlayerId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            (masterId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+            projectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Проект с занятыми ролями");
+            (approvedPlayerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+            (discussedPlayerId, _) = await TestUserProjectHelpers.CreateTestUserWithEmailAsync(scope.ServiceProvider);
+        }
+
+        const string takenName = "Занятая роль";
+        const string discussedName = "Роль в обсуждении";
+        const string vacantName = "Вакантная роль";
+        var (takenId, discussedId, rolesListId) = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+            await sp.GetRequiredService<IProjectService>().SetClaimSettings(
+                projectId,
+                projectInfo.ClaimSettings with { AutoAcceptClaims = false, IsAcceptingClaims = true });
+
+            var characterService = sp.GetRequiredService<ICharacterService>();
+            var nameFieldId = (projectInfo.CharacterNameField
+                ?? throw new InvalidOperationException("В проекте нет поля имени персонажа"))
+                .Id.ProjectFieldId;
+
+            Task<CharacterIdentification> AddCharacter(string name) => characterService.AddCharacter(new AddCharacterRequest(
+                projectId,
+                ParentCharacterGroupIds: [projectInfo.GroupTree.RootGroupId],
+                new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                FieldValues: new FieldLayerContainer(projectInfo, new Dictionary<int, string?> { [nameFieldId] = name })));
+
+            var taken = await AddCharacter(takenName);
+            var discussed = await AddCharacter(discussedName);
+            await AddCharacter(vacantName);
+
+            var created = await sp.GetRequiredService<IProjectRolesListService>().CreateAsync(new ProjectRolesList(
+                new ProjectRolesListIdentification(projectId, -1),
+                "Занятые роли",
+                CharacterGroupId: null,
+                PublicMode: true,
+                Fields: [],
+                ContactsColumn: PlayerColumnMode.NameOnly,
+                GroupsColumn: ProjectRolesListVisibilityMode.None,
+                GroupsViewMode: RolesGridGroupsViewMode.None,
+                ShowRolesFilter: ShowRolesFilter.TakenOnly));
+
+            return (taken, discussed, created.ProjectRolesListId!);
+        });
+
+        Task<ClaimIdentification> AddClaim(UserIdentification playerId, CharacterIdentification characterId)
+            => factory.Services.RunAsAsync(playerId, async sp =>
+            {
+                var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+                return await sp.GetRequiredService<IClaimService>().AddClaimFromUser(
+                    characterId, "Заявка", FieldLayerContainer.Empty(projectInfo), sensitiveDataAllowed: false);
+            });
+
+        var approvedClaimId = await AddClaim(approvedPlayerId, takenId);
+        await AddClaim(discussedPlayerId, discussedId);
+        await factory.Services.RunAsAsync(masterId, sp => sp.GetRequiredService<IClaimService>().ApproveByMaster(approvedClaimId, "Принято"));
+
+        var result = await factory.CreateClient().GetFromJsonAsync<ProjectRoleGridViewResult>(
+            $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={rolesListId.ProjectRolesListId}");
+        result!.HasAccess.ShouldBeTrue();
+        CharacterNames(result.Grid!).ShouldBe([takenName]);
+    }
+
+    /// <summary>
     /// Битая ссылка (id группы или сетки, которых в проекте нет) — не 500, а осмысленное
     /// «не найдено», иначе остров навсегда зависает в «Идет загрузка...» (issue #5113).
     /// </summary>

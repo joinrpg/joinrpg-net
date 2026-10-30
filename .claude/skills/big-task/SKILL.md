@@ -301,7 +301,7 @@ BODY
   ответах в тредах, заодно прячет **его ревью** — то есть ровно то, ради чего монитор и нужен. В
   сессии ADR014 так пропущены два inline-замечания: пришлось узнать о них от человека словами «в
   5238 есть комментарии». Отсекать свои сообщения по **подписи** (`select(.body |
-  contains("Generated with [Claude Code]") | not)`), а не по автору.
+  contains("Generated with [") | not)`), а не по автору.
 - **На Windows истечение монитора и `TaskStop` не убивают сам скрипт.** Убивается обёртка, а
   `bash.exe` с `while true` остаётся сиротой. Монитор перевооружают каждые 30 минут, так что за ночь
   сирот набиралось по 13–15 в каждой сессии. Вместе они исчерпали лимит GitHub API аккаунта, и
@@ -362,13 +362,13 @@ gh api repos/joinrpg/joinrpg-net/pulls/<N>/reviews     # тела ревью; в
 ```
 
 Без `since` каждый проход будет докладывать уже разобранное. Ответ в тред — только через API, по
-`id` родительского комментария, и с подписью (CLAUDE.md):
+`id` родительского комментария, и с подписью фактическим инструментом (CLAUDE.md):
 
 ```bash
 gh api -X POST repos/joinrpg/joinrpg-net/pulls/<N>/comments/<id>/replies \
   -f body="...
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+🤖 Generated with [opencode](https://opencode.ai)"
 ```
 
 ### Ребейз: где ломаются руки

@@ -1,9 +1,25 @@
 @using JoinRpg.Web.ProjectCommon
 @using JoinRpg.Web.ProjectCommon.Characters
+@using JoinRpg.Common.WebComponents
+@using JoinRpg.DomainTypes.ProjectMetadata
 
 @* Содержимое ячейки «Игрок»: статус/ссылка на игрока, счётчик активных заявок,
    контакты и кнопка «Заявиться». Общее для табличного и древовидного режимов. *@
 
+@if (AvatarSize is int size)
+{
+    @* Заглушка того же размера у строк без открытого игрока (вакансия, шаблон, NPC, «занято»),
+       чтобы имена в колонке стояли ровно. *@
+    @* Адрес приходит только у открытого игрока — скрытому сервер его не отдаёт. *@
+    @if (Player.AvatarUri is { } avatarUri)
+    {
+        <img class="role-grid-avatar" src="@avatarUri.AbsoluteUri" width="@size" height="@size" loading="lazy" alt="" />
+    }
+    else
+    {
+        <span class="role-grid-avatar role-grid-avatar-unknown" style="width: @(size)px; height: @(size)px; line-height: @(size)px; font-size: @(size / 2)px;" aria-hidden="true">?</span>
+    }
+}
 @if (Player.ApplyStatus.BusyStatus == CharacterBusyStatusView.Npc)
 {
     <text>NPC</text>
@@ -18,7 +34,7 @@ else if (Player.ApplyStatus.IsSlot)
 }
 else if (Player.Link is { } link)
 {
-    <UserLink Model="link" />
+    <UserLink Model="link" ShowIcon="AvatarSize is null" />
 }
 else if (Row.ActiveClaimsCount > 0)
 {
@@ -42,9 +58,18 @@ else if (Player.ApplyStatus.BusyStatus is not (CharacterBusyStatusView.Vacancy o
 @code {
     [Parameter, EditorRequired] public ProjectRoleGridCharacterRowViewModel Row { get; set; } = null!;
     [Parameter, EditorRequired] public PlayerCellViewModel Player { get; set; } = null!;
+    [Parameter, EditorRequired] public PlayerAvatarMode AvatarMode { get; set; }
 
     // Статическую разметку из одних пробелов (включая <text> </text>) Blazor вырезает.
     private const string Space = " ";
+
+    // null — аватарки в этой сетке не показываются
+    private int? AvatarSize => AvatarMode switch
+    {
+        PlayerAvatarMode.Small => 24,
+        PlayerAvatarMode.Large => 48,
+        _ => null,
+    };
 
     private string ClaimsCountText => CountHelper.DisplayCount(Row.ActiveClaimsCount, "заявка", "заявки", "заявок");
 }

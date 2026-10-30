@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.DomainTypes.Test.Characters;
 
@@ -77,4 +78,41 @@ public class CharacterTypeInfoTest
         typeInfo.IsPublic.ShouldBeFalse();
         typeInfo.IsNamePublic.ShouldBeFalse();
     }
+
+    private static readonly ProjectInfo ProjectWithoutNameField = ProjectInfoFixture.Build();
+
+    private static CharacterTypeInfo Slot(string? slotName)
+        => new(CharacterType.Slot, IsHot: false, SlotLimit: null, slotName, CharacterVisibility.Public);
+
+    [Fact]
+    public void SlotWithoutNameFieldGetsTrimmedSlotName()
+        => Slot("  Стражник ").GetSlotCharacterName(ProjectWithoutNameField).ShouldBe("Стражник");
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void SlotWithoutNameFieldRequiresSlotName(string? slotName)
+        => Should.Throw<FieldRequiredException>(() => Slot(slotName).GetSlotCharacterName(ProjectWithoutNameField))
+            .FieldName.ShouldBe("characterTypeInfo.SlotName");
+
+    /// <summary>
+    /// С полем-именем имя персонажа пишется через поле, а не из настроек типа — даже пустое имя
+    /// слота тогда не ошибка.
+    /// </summary>
+    [Fact]
+    public void SlotWithNameFieldDoesNotSetName()
+    {
+        var nameField = ProjectInfoFixture.MakeField(1);
+        var project = ProjectInfoFixture.Build(fields: [nameField], nameField: nameField.Id);
+
+        Slot(slotName: null).GetSlotCharacterName(project).ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(CharacterType.Player)]
+    [InlineData(CharacterType.NonPlayer)]
+    public void NotSlotDoesNotSetName(CharacterType characterType)
+        => new CharacterTypeInfo(characterType, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public)
+            .GetSlotCharacterName(ProjectWithoutNameField).ShouldBeNull();
 }

@@ -73,11 +73,50 @@ jobs:
       run: dotnet build --no-restore -c Release  --property:Version=${{ env.CALCULATED_VERSION }}
 
     # NuGet-пакеты публикуются вручную (nuget-publish.yml), поэтому ошибку упаковки ловим здесь, а не при публикации.
+    # Сравнение с последней версией на nuget.org — docs/nuget-packages.md#ломающее-изменение.
     - name: Pack NuGet packages
+      shell: pwsh
       run: |
-        for project in $(grep -rlF --include=*.csproj '<IsPackable>true</IsPackable>' src); do
-          dotnet pack "$project" --no-build -c Release -p:Version=${{ env.CALCULATED_VERSION }}
-        done
+        # CDN nuget.org изредка отвечает ошибкой — повторяем.
+        # 404 повтором не лечится: пакет ещё не публиковался.
+        function Invoke-NuGet([string] $uri, [string] $outFile) {
+          for ($attempt = 1; ; $attempt++) {
+            try {
+              if ($outFile) { return Invoke-WebRequest $uri -OutFile $outFile }
+              return Invoke-RestMethod $uri
+            }
+            catch {
+              if ($_.Exception.Response.StatusCode -eq 404 -or $attempt -ge 3) { throw }
+              Write-Host "::warning::$uri — $($_.Exception.Message), попытка $attempt"
+              Start-Sleep -Seconds (5 * $attempt)
+            }
+          }
+        }
+
+        $projects = Get-ChildItem src -Recurse -Filter *.csproj |
+          Where-Object { (Get-Content $_.FullName -Raw).Contains('<IsPackable>true</IsPackable>') }
+        foreach ($project in $projects) {
+          $baseline = @()
+          $id = $project.BaseName.ToLowerInvariant()
+          try {
+            $version = (Invoke-NuGet "https://api.nuget.org/v3-flatcontainer/$id/index.json").versions |
+              Where-Object { -not $_.Contains('-') } |
+              Sort-Object { [version] $_ } |
+              Select-Object -Last 1
+            if ($version) {
+              # Свойство с версией не годится: SDK качает базовый пакет при restore, а --no-build пропускает restore.
+              $nupkg = Join-Path $env:RUNNER_TEMP "$id.$version.nupkg"
+              Invoke-NuGet "https://api.nuget.org/v3-flatcontainer/$id/$version/$id.$version.nupkg" $nupkg
+              $baseline = @("-p:PackageValidationBaselinePath=$nupkg")
+            }
+          }
+          catch {
+            # 404 — пакет ещё не публиковался, сравнивать не с чем.
+            if ($_.Exception.Response.StatusCode -ne 404) { throw }
+          }
+          dotnet pack $project.FullName --no-build -c Release -p:Version=${{ env.CALCULATED_VERSION }} @baseline
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+        }
 
     - name: Test
       run: dotnet test -c Release --no-build --logger trx --results-directory ./TestResults
@@ -90,6 +129,29 @@ jobs:
         # только упавших джоб report подхватил бы trx от предыдущей попытки (issue #5188).
         name: test-results-${{ github.run_attempt }}
         path: TestResults
+
+  # Изменился публичный API пакета (PublicAPI.*.txt) — в том же PR должен измениться его CHANGELOG.md.
+  nuget-changelog:
+    name: NuGet changelog
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+    - *checkout-full
+
+    - name: Check CHANGELOG for public API changes
+      shell: pwsh
+      run: |
+        $changed = git diff --name-only "origin/${{ github.base_ref }}...HEAD"
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+        $missing = $changed |
+          Where-Object { $_.EndsWith('/PublicAPI.Shipped.txt') -or $_.EndsWith('/PublicAPI.Unshipped.txt') } |
+          ForEach-Object { Split-Path -Parent $_ } |
+          Sort-Object -Unique |
+          Where-Object { $changed -notcontains "$_/CHANGELOG.md" }
+        foreach ($dir in $missing) {
+          Write-Host "::error file=$dir/CHANGELOG.md::Публичный API пакета изменился, а CHANGELOG.md — нет (docs/nuget-packages.md#changelog)"
+        }
+        if ($missing) { exit 1 }
 
   verify-publish:
     name: Verify publish

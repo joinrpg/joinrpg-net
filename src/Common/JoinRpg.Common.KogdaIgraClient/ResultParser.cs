@@ -29,9 +29,26 @@ internal static class ResultParser
         return [.. deserializeResult.Select(x => x.ToMarker()).WhereNotNull()];
     }
 
-    internal static KogdaIgraGameInfo? TryParseGameInfo(string strResult)
+    internal static KogdaIgraGameInfo? TryParseGameInfo(string strResult, int gameId)
     {
-        var parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult, serializerOptions) ?? throw new Exception("Failed to parse result");
+        if (string.IsNullOrWhiteSpace(strResult))
+        {
+            throw new KogdaIgraEmptyResponseException();
+        }
+
+        kogda_igra_game_data? parsedResult;
+        try
+        {
+            parsedResult = JsonSerializer.Deserialize<kogda_igra_game_data>(strResult, serializerOptions);
+        }
+        catch (JsonException e)
+        {
+            throw new KogdaIgraParseException(gameId, $"Не удалось разобрать JSON от КогдаИгры: {e.Message}");
+        }
+        if (parsedResult is null)
+        {
+            throw new KogdaIgraParseException(gameId, "КогдаИгра вернула JSON-литерал null вместо игры");
+        }
         if (parsedResult.id is 0 || parsedResult.time is 0)
         {
             return null;
@@ -62,14 +79,15 @@ internal static class ResultParser
             siteUri,
             parsedResult.vk_club,
             parsedResult.lj_comm,
-            parsedResult.telegram_channel);
+            parsedResult.telegram_channel,
+            IsDeleted: parsedResult.deleted_flag == 1);
         return ret;
     }
 
 #pragma warning disable IDE1006 // Naming Styles
     private record class kogda_igra_game_data(int id, string name, DateTimeOffset? update_date,
         DateOnly begin, int time, string mg, string sub_region_disp_name, string uri, string sub_region_name,
-        string? vk_club, string? lj_comm, string? telegram_channel)
+        string? vk_club, string? lj_comm, string? telegram_channel, int? deleted_flag)
     {
 
     }

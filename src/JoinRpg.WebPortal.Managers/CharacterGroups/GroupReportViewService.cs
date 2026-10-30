@@ -3,7 +3,9 @@ using JoinRpg.Web.CharacterGroups.GroupReport;
 
 namespace JoinRpg.WebPortal.Managers.CharacterGroups;
 
-internal class GroupReportViewService(IProjectRepository projectRepository) : IGroupReportClient
+internal class GroupReportViewService(
+    IProjectRepository projectRepository,
+    IProjectMetadataRepository projectMetadataRepository) : IGroupReportClient
 {
     public async Task<GroupReportViewModel?> GetReport(CharacterGroupIdentification groupId)
     {
@@ -13,6 +15,7 @@ internal class GroupReportViewService(IProjectRepository projectRepository) : IG
             return null;
         }
 
-        return GroupReportViewModelBuilder.Build(field);
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(groupId.ProjectId);
+        return GroupReportViewModelBuilder.Build(field, projectInfo);
     }
 }

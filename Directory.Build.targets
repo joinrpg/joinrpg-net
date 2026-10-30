@@ -18,6 +18,19 @@
         <NoWarn>$(NoWarn);CS1573</NoWarn>
     </PropertyGroup>
 
+    <!--
+    CS1591 («нет XML-комментария у публичного члена») в Directory.Build.props выключен для всех.
+    В пакетах он предупреждение: документацию читают снаружи, из IntelliSense по пакету.
+    Ошибкой не делаем — число предупреждений показывает, сколько осталось описать. У генератора
+    (IsRoslynComponent) публичных типов для потребителя нет — правило не включаем.
+    Microsoft.Common.CurrentVersion.targets ещё до этого файла дописывает NoWarn в
+    MSBuildWarningsAsMessages, поэтому CS1591 убираем и оттуда, иначе MSBuild понизит его до сообщения.
+    -->
+    <PropertyGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true'">
+        <NoWarn>$(NoWarn.Replace('CS1591', ''))</NoWarn>
+        <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages.Replace('CS1591', ''))</MSBuildWarningsAsMessages>
+    </PropertyGroup>
+
     <!-- Общие метаданные NuGet-пакетов. Порядок публикации и документации — docs/nuget-packages.md. -->
     <PropertyGroup Condition="'$(IsPackable)' == 'true'">
         <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://github.com/joinrpg/joinrpg-net</PackageProjectUrl>
@@ -32,6 +45,34 @@
         <None Include="README.md" Condition="Exists('$(MSBuildProjectDirectory)/README.md')" Pack="true" PackagePath="\" />
         <None Include="CHANGELOG.md" Condition="Exists('$(MSBuildProjectDirectory)/CHANGELOG.md')" Pack="true" PackagePath="\" />
     </ItemGroup>
+
+    <!--
+    Учёт публичного API пакетов — docs/nuget-packages.md#публичный-api. RS0036/RS0037 — символ
+    записан без nullable-аннотаций, RS0050 — помечен удалённым, но есть в коде. RS0026/RS0027 (перегрузки с необязательными параметрами) —
+    правила дизайна API, а не учёта; RS0041 даёт код без nullable-контекста: Razor-компоненты,
+    миграции EF (`~` в Shipped). Генератор исключён: его типы никто не вызывает, компилятор только загружает.
+    -->
+    <!-- JoinPublicApiAsWarnings выставляет scripts/Update-PublicApi.ps1: иначе ошибка в одном пакете не даст собрать зависящие от него. -->
+    <PropertyGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true' And '$(JoinPublicApiAsWarnings)' != 'true'">
+        <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017;RS0036;RS0037;RS0050</WarningsAsErrors>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true'">
+        <NoWarn>$(NoWarn);RS0026;RS0027;RS0041</NoWarn>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(IsPackable)' == 'true' And '$(IsRoslynComponent)' != 'true'">
+        <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+        <AdditionalFiles Include="PublicAPI.Shipped.txt;PublicAPI.Unshipped.txt" />
+    </ItemGroup>
+
+    <!--
+    Package validation: базовый пакет с nuget.org передаёт CI (build_and_publish.yml). Ненужные
+    подавления не ошибка: после публикации CompatibilitySuppressions.xml устаревает, и иначе CI
+    падал бы на всех PR, пока файл не удалят.
+    -->
+    <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <ApiCompatPermitUnnecessarySuppressions>true</ApiCompatPermitUnnecessarySuppressions>
+    </PropertyGroup>
 
     <!-- README пакета читают на nuget.org и агенты потребителя, пакет без него не собираем. -->
     <Target Name="JoinRequirePackageReadme" BeforeTargets="GenerateNuspec"

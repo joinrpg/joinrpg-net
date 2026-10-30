@@ -1,4 +1,3 @@
-using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Web.Accommodation.Rooms;
 using Microsoft.AspNetCore.Mvc;

@@ -26,7 +26,8 @@ internal static class ProjectRoleGridViewModelBuilder
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
         IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
-        ProjectInfo projectInfo)
+        ProjectInfo projectInfo,
+        IAvatarUriResolver avatarUriResolver)
     {
         var hasGroupsColumn = config.GroupsColumn != ProjectRolesListVisibilityMode.None;
         var hasPlayerColumn = config.ContactsColumn != PlayerColumnMode.None;
@@ -37,8 +38,8 @@ internal static class ProjectRoleGridViewModelBuilder
         var rootGroup = orderedGroups[0];
 
         var rows = config.GroupsViewMode == RolesGridGroupsViewMode.Tree
-            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditRoles, excludeSpecialGroups, fields, projectInfo)
-            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditRoles, fields, projectInfo);
+            ? BuildTreeRows(config, rootGroup.Id, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, avatarUriResolver, hasGroupsColumn, canViewPrivate, canEditRoles, excludeSpecialGroups, fields, projectInfo)
+            : BuildRows(config, orderedGroups, charactersByGroup, groupFullInfos, approvedClaims, fieldUsers, avatarUriResolver, hasGroupsColumn, canViewPrivate, canEditRoles, fields, projectInfo);
 
         return new ProjectRoleGridViewModel(
             RolesListId: config.ProjectRolesListId,
@@ -56,7 +57,8 @@ internal static class ProjectRoleGridViewModelBuilder
             SuppressFieldLabels: fields.Count == 1 && fields[0].IsDescription,
             DefaultClaimProjectStatus: projectInfo.ClaimSettings.DefaultTemplate is not null && projectInfo.IsActive
                 ? projectInfo.ProjectStatus
-                : null);
+                : null,
+            PlayerAvatar: hasPlayerColumn ? config.PlayerAvatar : PlayerAvatarMode.None);
     }
 
     private static List<ProjectRoleGridRowViewModel> BuildRows(
@@ -66,6 +68,7 @@ internal static class ProjectRoleGridViewModelBuilder
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
         IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
+        IAvatarUriResolver? avatarUriResolver,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditRoles,
@@ -93,7 +96,7 @@ internal static class ProjectRoleGridViewModelBuilder
             {
                 if (config.GroupsViewMode != RolesGridGroupsViewMode.None || seen.Add(character.Id.CharacterId))
                 {
-                    result.Add(BuildCharacterRow(character, config, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditRoles, fields, group.Id));
+                    result.Add(BuildCharacterRow(character, config, approvedClaims, fieldUsers, avatarUriResolver, hasGroupsColumn, canViewPrivate, canEditRoles, fields, group.Id));
                 }
             }
         }
@@ -113,6 +116,7 @@ internal static class ProjectRoleGridViewModelBuilder
         IReadOnlyDictionary<CharacterGroupIdentification, CharacterGroupFullInfo> groupFullInfos,
         IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
+        IAvatarUriResolver? avatarUriResolver,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditRoles,
@@ -158,7 +162,7 @@ internal static class ProjectRoleGridViewModelBuilder
             foreach (var character in ordered)
             {
                 result.Add(BuildCharacterRow(
-                    character, config, approvedClaims, fieldUsers, hasGroupsColumn, canViewPrivate, canEditRoles,
+                    character, config, approvedClaims, fieldUsers, avatarUriResolver, hasGroupsColumn, canViewPrivate, canEditRoles,
                     fields, group.Id, firstCopy: seenCharacters.Add(character.Id.CharacterId)));
             }
 
@@ -181,6 +185,7 @@ internal static class ProjectRoleGridViewModelBuilder
         ProjectRolesList config,
         IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
+        IAvatarUriResolver? avatarUriResolver,
         bool hasGroupsColumn,
         bool canViewPrivate,
         bool canEditRoles,
@@ -203,7 +208,8 @@ internal static class ProjectRoleGridViewModelBuilder
         // данные игрока на клиент не отдаём вовсе, вместе с ними пропадает и кнопка «Заявиться».
         var player = config.ContactsColumn == PlayerColumnMode.None
             ? null
-            : BuildPlayerCell(character, approvedClaims, config.ContactsColumn, canViewPrivate);
+            : BuildPlayerCell(character, approvedClaims, config.ContactsColumn, canViewPrivate,
+                config.PlayerAvatar != PlayerAvatarMode.None ? avatarUriResolver : null);
 
         GroupsCellViewModel? groups = hasGroupsColumn
             ? BuildGroupsCell(character, config.GroupsColumn)
@@ -242,7 +248,8 @@ internal static class ProjectRoleGridViewModelBuilder
         CharacterInfo character,
         IReadOnlyDictionary<CharacterIdentification, ClaimInfo> approvedClaims,
         PlayerColumnMode contactsColumn,
-        bool canViewPrivate)
+        bool canViewPrivate,
+        IAvatarUriResolver? avatarUriResolver)
     {
         var applyStatus = new CharacterApplyViewModel(
             character.Id,
@@ -271,7 +278,10 @@ internal static class ProjectRoleGridViewModelBuilder
 
         var contacts = BuildContacts(player, contactsColumn, character.ProjectInfo);
         var link = new UserLinkViewModel(player.ToUserInfoHeader(), playerViewMode);
-        return new PlayerCellViewModel(applyStatus, contacts, link);
+        var avatarUri = avatarUriResolver is not null && player.SelectedAvatar is { } avatar
+            ? avatarUriResolver.GetAvatarUri(avatar.CachedUri, avatar.OriginalUri)
+            : null;
+        return new PlayerCellViewModel(applyStatus, contacts, link, avatarUri);
     }
 
     private static UserContacts? BuildContacts(

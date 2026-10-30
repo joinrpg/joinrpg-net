@@ -24,5 +24,7 @@ public record class KogdaIgraGameInfo(
     Uri? SiteUri,
     string? VkClub,
     string? LiveJournalCommunity,
-    string? TelegramChannel
+    string? TelegramChannel,
+    // На КогдаИгре игра помечена удалённой (deleted_flag = 1), но API по-прежнему отдаёт её данные
+    bool IsDeleted
     );

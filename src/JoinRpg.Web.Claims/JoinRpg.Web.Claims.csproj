@@ -12,6 +12,7 @@
     <ProjectReference Include="..\JoinRpg.Web.ProjectCommon\JoinRpg.Web.ProjectCommon.csproj" />
     <ProjectReference Include="..\Common\WebComponents\JoinRpg.Common.WebComponents\JoinRpg.Common.WebComponents.csproj" />
     <ProjectReference Include="..\JoinRpg.DomainTypes\JoinRpg.DomainTypes.csproj" />
+    <ProjectReference Include="..\JoinRpg.Web.Comments\JoinRpg.Web.Comments.csproj" />
   </ItemGroup>
 
 </Project>

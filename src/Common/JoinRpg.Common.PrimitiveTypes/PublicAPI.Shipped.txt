@@ -1,0 +1,567 @@
+#nullable enable
+JoinRpg.Common.PrimitiveTypes.AvatarIdentification
+JoinRpg.Common.PrimitiveTypes.AvatarIdentification.AvatarIdentification(JoinRpg.Common.PrimitiveTypes.AvatarIdentification! original) -> void
+JoinRpg.Common.PrimitiveTypes.AvatarIdentification.AvatarIdentification(int Value) -> void
+JoinRpg.Common.PrimitiveTypes.AvatarIdentification.CompareTo(JoinRpg.Common.PrimitiveTypes.AvatarIdentification? other) -> int
+JoinRpg.Common.PrimitiveTypes.AvatarIdentification.Deconstruct(out int Value) -> void
+JoinRpg.Common.PrimitiveTypes.AvatarIdentification.Id.get -> int
+JoinRpg.Common.PrimitiveTypes.AvatarIdentification.Value.get -> int
+JoinRpg.Common.PrimitiveTypes.AvatarIdentification.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.AvatarInfo
+JoinRpg.Common.PrimitiveTypes.AvatarInfo.AvatarInfo(JoinRpg.Common.PrimitiveTypes.AvatarInfo! original) -> void
+JoinRpg.Common.PrimitiveTypes.AvatarInfo.AvatarInfo(System.Uri! Uri, int Size = 64) -> void
+JoinRpg.Common.PrimitiveTypes.AvatarInfo.Deconstruct(out System.Uri! Uri, out int Size) -> void
+JoinRpg.Common.PrimitiveTypes.AvatarInfo.Size.get -> int
+JoinRpg.Common.PrimitiveTypes.AvatarInfo.Size.init -> void
+JoinRpg.Common.PrimitiveTypes.AvatarInfo.Uri.get -> System.Uri!
+JoinRpg.Common.PrimitiveTypes.AvatarInfo.Uri.init -> void
+JoinRpg.Common.PrimitiveTypes.BornName
+JoinRpg.Common.PrimitiveTypes.BornName.BornName(JoinRpg.Common.PrimitiveTypes.BornName! original) -> void
+JoinRpg.Common.PrimitiveTypes.BornName.BornName(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.BornName.CompareTo(JoinRpg.Common.PrimitiveTypes.BornName? other) -> int
+JoinRpg.Common.PrimitiveTypes.BornName.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.BornName.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.BornName.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.BornName.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.CountHelper
+JoinRpg.Common.PrimitiveTypes.DateRange
+JoinRpg.Common.PrimitiveTypes.DateRange.Begin.get -> System.DateOnly
+JoinRpg.Common.PrimitiveTypes.DateRange.DateRange() -> void
+JoinRpg.Common.PrimitiveTypes.DateRange.DateRange(System.DateOnly Begin, System.DateOnly End) -> void
+JoinRpg.Common.PrimitiveTypes.DateRange.Deconstruct(out System.DateOnly Begin, out System.DateOnly End) -> void
+JoinRpg.Common.PrimitiveTypes.DateRange.End.get -> System.DateOnly
+JoinRpg.Common.PrimitiveTypes.DateRange.Equals(JoinRpg.Common.PrimitiveTypes.DateRange other) -> bool
+JoinRpg.Common.PrimitiveTypes.DateRangeFormatter
+JoinRpg.Common.PrimitiveTypes.Email
+JoinRpg.Common.PrimitiveTypes.Email.CompareTo(JoinRpg.Common.PrimitiveTypes.Email? other) -> int
+JoinRpg.Common.PrimitiveTypes.Email.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.Email.Email(JoinRpg.Common.PrimitiveTypes.Email! original) -> void
+JoinRpg.Common.PrimitiveTypes.Email.Email(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.Email.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.Email.UserPart.get -> string!
+JoinRpg.Common.PrimitiveTypes.Email.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.Email.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.FatherName
+JoinRpg.Common.PrimitiveTypes.FatherName.CompareTo(JoinRpg.Common.PrimitiveTypes.FatherName? other) -> int
+JoinRpg.Common.PrimitiveTypes.FatherName.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.FatherName.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.FatherName.FatherName(JoinRpg.Common.PrimitiveTypes.FatherName! original) -> void
+JoinRpg.Common.PrimitiveTypes.FatherName.FatherName(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.FatherName.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.FatherName.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.IEntityId<TSelf, TValue>
+JoinRpg.Common.PrimitiveTypes.IEntityId<TSelf, TValue>.FromOptional(TValue? value) -> TSelf?
+JoinRpg.Common.PrimitiveTypes.IEntityId<TSelf, TValue>.Id.get -> TValue
+JoinRpg.Common.PrimitiveTypes.IUriLocator<T>
+JoinRpg.Common.PrimitiveTypes.IUriLocator<T>.GetUri(T target) -> System.Uri!
+JoinRpg.Common.PrimitiveTypes.IdentificationParseHelper
+JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification
+JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.CompareTo(JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification? other) -> int
+JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.Deconstruct(out int Value) -> void
+JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.Id.get -> int
+JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.KogdaIgraIdentification(JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification! original) -> void
+JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.KogdaIgraIdentification(int Value) -> void
+JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.Value.get -> int
+JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.LiveJournalId
+JoinRpg.Common.PrimitiveTypes.LiveJournalId.CompareTo(JoinRpg.Common.PrimitiveTypes.LiveJournalId? other) -> int
+JoinRpg.Common.PrimitiveTypes.LiveJournalId.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.LiveJournalId.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.LiveJournalId.LiveJournalId(JoinRpg.Common.PrimitiveTypes.LiveJournalId! original) -> void
+JoinRpg.Common.PrimitiveTypes.LiveJournalId.LiveJournalId(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.LiveJournalId.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.LiveJournalId.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.MarkdownString
+JoinRpg.Common.PrimitiveTypes.MarkdownString.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.MarkdownString!
+JoinRpg.Common.PrimitiveTypes.MarkdownString.CompareTo(JoinRpg.Common.PrimitiveTypes.MarkdownString? other) -> int
+JoinRpg.Common.PrimitiveTypes.MarkdownString.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.MarkdownString.Equals(JoinRpg.Common.PrimitiveTypes.MarkdownString? other) -> bool
+JoinRpg.Common.PrimitiveTypes.MarkdownString.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.MarkdownString.MarkdownString(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.MarkdownString.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.MarkdownString.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.PhoneNumber
+JoinRpg.Common.PrimitiveTypes.PhoneNumber.CompareTo(JoinRpg.Common.PrimitiveTypes.PhoneNumber? other) -> int
+JoinRpg.Common.PrimitiveTypes.PhoneNumber.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.PhoneNumber.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.PhoneNumber.PhoneNumber(JoinRpg.Common.PrimitiveTypes.PhoneNumber! original) -> void
+JoinRpg.Common.PrimitiveTypes.PhoneNumber.PhoneNumber(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.PhoneNumber.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.PhoneNumber.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.PrefferedName
+JoinRpg.Common.PrimitiveTypes.PrefferedName.CompareTo(JoinRpg.Common.PrimitiveTypes.PrefferedName? other) -> int
+JoinRpg.Common.PrimitiveTypes.PrefferedName.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.PrefferedName.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.PrefferedName.PrefferedName(JoinRpg.Common.PrimitiveTypes.PrefferedName! original) -> void
+JoinRpg.Common.PrimitiveTypes.PrefferedName.PrefferedName(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.PrefferedName.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.PrefferedName.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.SendingResult
+JoinRpg.Common.PrimitiveTypes.SendingResult.Common.get -> bool
+JoinRpg.Common.PrimitiveTypes.SendingResult.Common.set -> void
+JoinRpg.Common.PrimitiveTypes.SendingResult.Deconstruct(out bool Succeeded, out bool Repeatable, out bool Common) -> void
+JoinRpg.Common.PrimitiveTypes.SendingResult.Equals(JoinRpg.Common.PrimitiveTypes.SendingResult other) -> bool
+JoinRpg.Common.PrimitiveTypes.SendingResult.Repeatable.get -> bool
+JoinRpg.Common.PrimitiveTypes.SendingResult.Repeatable.set -> void
+JoinRpg.Common.PrimitiveTypes.SendingResult.SendingResult() -> void
+JoinRpg.Common.PrimitiveTypes.SendingResult.SendingResult(bool Succeeded, bool Repeatable, bool Common) -> void
+JoinRpg.Common.PrimitiveTypes.SendingResult.Succeeded.get -> bool
+JoinRpg.Common.PrimitiveTypes.SendingResult.Succeeded.set -> void
+JoinRpg.Common.PrimitiveTypes.SocialLink
+JoinRpg.Common.PrimitiveTypes.SocialLink.Deconstruct(out JoinRpg.Common.PrimitiveTypes.PrefferedName? PrettyName, out bool IsVerified) -> void
+JoinRpg.Common.PrimitiveTypes.SocialLink.IsVerified.get -> bool
+JoinRpg.Common.PrimitiveTypes.SocialLink.IsVerified.init -> void
+JoinRpg.Common.PrimitiveTypes.SocialLink.PrettyName.get -> JoinRpg.Common.PrimitiveTypes.PrefferedName?
+JoinRpg.Common.PrimitiveTypes.SocialLink.PrettyName.init -> void
+JoinRpg.Common.PrimitiveTypes.SocialLink.SocialLink(JoinRpg.Common.PrimitiveTypes.PrefferedName? PrettyName, bool IsVerified) -> void
+JoinRpg.Common.PrimitiveTypes.SocialLink.SocialLink(JoinRpg.Common.PrimitiveTypes.SocialLink! original) -> void
+JoinRpg.Common.PrimitiveTypes.SurName
+JoinRpg.Common.PrimitiveTypes.SurName.CompareTo(JoinRpg.Common.PrimitiveTypes.SurName? other) -> int
+JoinRpg.Common.PrimitiveTypes.SurName.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.SurName.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.SurName.SurName(JoinRpg.Common.PrimitiveTypes.SurName! original) -> void
+JoinRpg.Common.PrimitiveTypes.SurName.SurName(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.SurName.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.SurName.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.TelegramChatId
+JoinRpg.Common.PrimitiveTypes.TelegramChatId.CompareTo(JoinRpg.Common.PrimitiveTypes.TelegramChatId? other) -> int
+JoinRpg.Common.PrimitiveTypes.TelegramChatId.Deconstruct(out long Value) -> void
+JoinRpg.Common.PrimitiveTypes.TelegramChatId.Id.get -> long
+JoinRpg.Common.PrimitiveTypes.TelegramChatId.TelegramChatId(JoinRpg.Common.PrimitiveTypes.TelegramChatId! original) -> void
+JoinRpg.Common.PrimitiveTypes.TelegramChatId.TelegramChatId(long Value) -> void
+JoinRpg.Common.PrimitiveTypes.TelegramChatId.Value.get -> long
+JoinRpg.Common.PrimitiveTypes.TelegramChatId.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.TelegramHtmlString
+JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.Contents.get -> string!
+JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.Contents.init -> void
+JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.Deconstruct(out string! Contents) -> void
+JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.TelegramHtmlString(JoinRpg.Common.PrimitiveTypes.TelegramHtmlString! original) -> void
+JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.TelegramHtmlString(string! Contents) -> void
+JoinRpg.Common.PrimitiveTypes.TelegramSocialLink
+JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.ChatId.get -> JoinRpg.Common.PrimitiveTypes.TelegramChatId?
+JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Equals(JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? other) -> bool
+JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.TelegramSocialLink(JoinRpg.Common.PrimitiveTypes.TelegramChatId? chatId, JoinRpg.Common.PrimitiveTypes.PrefferedName? prettyName = null, bool isVerified = false) -> void
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.AdditionalPrefixes.get -> string![]?
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.AdditionalPrefixes.set -> void
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.AllowNonPositive.get -> bool
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.AllowNonPositive.set -> void
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.ShortName.get -> string?
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.ShortName.set -> void
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdAttribute.TypedEntityIdAttribute() -> void
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<T>
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<T>.TypedEntityIdJsonConverter() -> void
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdTypeConverter<T>
+JoinRpg.Common.PrimitiveTypes.TypedEntityIdTypeConverter<T>.TypedEntityIdTypeConverter() -> void
+JoinRpg.Common.PrimitiveTypes.TypedStringValueAttribute
+JoinRpg.Common.PrimitiveTypes.TypedStringValueAttribute.MaxLength.get -> int
+JoinRpg.Common.PrimitiveTypes.TypedStringValueAttribute.MaxLength.set -> void
+JoinRpg.Common.PrimitiveTypes.TypedStringValueAttribute.MinLength.get -> int
+JoinRpg.Common.PrimitiveTypes.TypedStringValueAttribute.MinLength.set -> void
+JoinRpg.Common.PrimitiveTypes.TypedStringValueAttribute.Trim.get -> bool
+JoinRpg.Common.PrimitiveTypes.TypedStringValueAttribute.Trim.set -> void
+JoinRpg.Common.PrimitiveTypes.TypedStringValueAttribute.TypedStringValueAttribute() -> void
+JoinRpg.Common.PrimitiveTypes.UserContacts
+JoinRpg.Common.PrimitiveTypes.UserContacts.Deconstruct(out JoinRpg.Common.PrimitiveTypes.Email? Email, out JoinRpg.Common.PrimitiveTypes.VkSocialLink? Vk, out JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? Telegram, out JoinRpg.Common.PrimitiveTypes.LiveJournalId? LiveJournal) -> void
+JoinRpg.Common.PrimitiveTypes.UserContacts.Email.get -> JoinRpg.Common.PrimitiveTypes.Email?
+JoinRpg.Common.PrimitiveTypes.UserContacts.Email.init -> void
+JoinRpg.Common.PrimitiveTypes.UserContacts.LiveJournal.get -> JoinRpg.Common.PrimitiveTypes.LiveJournalId?
+JoinRpg.Common.PrimitiveTypes.UserContacts.LiveJournal.init -> void
+JoinRpg.Common.PrimitiveTypes.UserContacts.Telegram.get -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+JoinRpg.Common.PrimitiveTypes.UserContacts.Telegram.init -> void
+JoinRpg.Common.PrimitiveTypes.UserContacts.UserContacts(JoinRpg.Common.PrimitiveTypes.Email? Email, JoinRpg.Common.PrimitiveTypes.VkSocialLink? Vk, JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? Telegram, JoinRpg.Common.PrimitiveTypes.LiveJournalId? LiveJournal) -> void
+JoinRpg.Common.PrimitiveTypes.UserContacts.UserContacts(JoinRpg.Common.PrimitiveTypes.UserContacts! original) -> void
+JoinRpg.Common.PrimitiveTypes.UserContacts.Vk.get -> JoinRpg.Common.PrimitiveTypes.VkSocialLink?
+JoinRpg.Common.PrimitiveTypes.UserContacts.Vk.init -> void
+JoinRpg.Common.PrimitiveTypes.UserDisplayName
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.Deconstruct(out string! DisplayName, out string? FullName) -> void
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.DisplayName.get -> string!
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.DisplayName.init -> void
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.FullName.get -> string?
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.FullName.init -> void
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.ToLongString() -> string!
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.UserDisplayName(JoinRpg.Common.PrimitiveTypes.UserDisplayName! original) -> void
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.UserDisplayName(JoinRpg.Common.PrimitiveTypes.UserFullName! fullName, JoinRpg.Common.PrimitiveTypes.Email! email) -> void
+JoinRpg.Common.PrimitiveTypes.UserDisplayName.UserDisplayName(string! DisplayName, string? FullName) -> void
+JoinRpg.Common.PrimitiveTypes.UserFullName
+JoinRpg.Common.PrimitiveTypes.UserFullName.BornName.get -> JoinRpg.Common.PrimitiveTypes.BornName?
+JoinRpg.Common.PrimitiveTypes.UserFullName.BornName.init -> void
+JoinRpg.Common.PrimitiveTypes.UserFullName.Deconstruct(out JoinRpg.Common.PrimitiveTypes.PrefferedName? PrefferedName, out JoinRpg.Common.PrimitiveTypes.BornName? BornName, out JoinRpg.Common.PrimitiveTypes.SurName? SurName, out JoinRpg.Common.PrimitiveTypes.FatherName? FatherName) -> void
+JoinRpg.Common.PrimitiveTypes.UserFullName.FatherName.get -> JoinRpg.Common.PrimitiveTypes.FatherName?
+JoinRpg.Common.PrimitiveTypes.UserFullName.FatherName.init -> void
+JoinRpg.Common.PrimitiveTypes.UserFullName.FullName.get -> string?
+JoinRpg.Common.PrimitiveTypes.UserFullName.PrefferedName.get -> JoinRpg.Common.PrimitiveTypes.PrefferedName?
+JoinRpg.Common.PrimitiveTypes.UserFullName.PrefferedName.init -> void
+JoinRpg.Common.PrimitiveTypes.UserFullName.SurName.get -> JoinRpg.Common.PrimitiveTypes.SurName?
+JoinRpg.Common.PrimitiveTypes.UserFullName.SurName.init -> void
+JoinRpg.Common.PrimitiveTypes.UserFullName.UserFullName(JoinRpg.Common.PrimitiveTypes.PrefferedName? PrefferedName, JoinRpg.Common.PrimitiveTypes.BornName? BornName, JoinRpg.Common.PrimitiveTypes.SurName? SurName, JoinRpg.Common.PrimitiveTypes.FatherName? FatherName) -> void
+JoinRpg.Common.PrimitiveTypes.UserFullName.UserFullName(JoinRpg.Common.PrimitiveTypes.UserFullName! original) -> void
+JoinRpg.Common.PrimitiveTypes.UserIdentification
+JoinRpg.Common.PrimitiveTypes.UserIdentification.CompareTo(JoinRpg.Common.PrimitiveTypes.UserIdentification? other) -> int
+JoinRpg.Common.PrimitiveTypes.UserIdentification.Deconstruct(out int Value) -> void
+JoinRpg.Common.PrimitiveTypes.UserIdentification.Id.get -> int
+JoinRpg.Common.PrimitiveTypes.UserIdentification.UserIdentification(JoinRpg.Common.PrimitiveTypes.UserIdentification! original) -> void
+JoinRpg.Common.PrimitiveTypes.UserIdentification.UserIdentification(int Value) -> void
+JoinRpg.Common.PrimitiveTypes.UserIdentification.Value.get -> int
+JoinRpg.Common.PrimitiveTypes.UserIdentification.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.Avatar.get -> JoinRpg.Common.PrimitiveTypes.AvatarIdentification?
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.Avatar.init -> void
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.Deconstruct(out JoinRpg.Common.PrimitiveTypes.UserIdentification! UserId, out JoinRpg.Common.PrimitiveTypes.UserDisplayName! DisplayName, out JoinRpg.Common.PrimitiveTypes.AvatarIdentification? Avatar) -> void
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.DisplayName.get -> JoinRpg.Common.PrimitiveTypes.UserDisplayName!
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.DisplayName.init -> void
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.UserId.get -> JoinRpg.Common.PrimitiveTypes.UserIdentification!
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.UserId.init -> void
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.UserInfoHeader(JoinRpg.Common.PrimitiveTypes.UserIdentification! UserId, JoinRpg.Common.PrimitiveTypes.UserDisplayName! DisplayName, JoinRpg.Common.PrimitiveTypes.AvatarIdentification? Avatar) -> void
+JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.UserInfoHeader(JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader! original) -> void
+JoinRpg.Common.PrimitiveTypes.VkId
+JoinRpg.Common.PrimitiveTypes.VkId.CompareTo(JoinRpg.Common.PrimitiveTypes.VkId? other) -> int
+JoinRpg.Common.PrimitiveTypes.VkId.Deconstruct(out string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.VkId.Equals(string? other) -> bool
+JoinRpg.Common.PrimitiveTypes.VkId.Value.get -> string!
+JoinRpg.Common.PrimitiveTypes.VkId.Value.init -> void
+JoinRpg.Common.PrimitiveTypes.VkId.VkId(JoinRpg.Common.PrimitiveTypes.VkId! original) -> void
+JoinRpg.Common.PrimitiveTypes.VkId.VkId(string! Value) -> void
+JoinRpg.Common.PrimitiveTypes.VkSocialLink
+JoinRpg.Common.PrimitiveTypes.VkSocialLink.Equals(JoinRpg.Common.PrimitiveTypes.VkSocialLink? other) -> bool
+JoinRpg.Common.PrimitiveTypes.VkSocialLink.VkSocialLink(long? id, JoinRpg.Common.PrimitiveTypes.PrefferedName? prettyName = null, bool isVerified = false) -> void
+abstract JoinRpg.Common.PrimitiveTypes.SocialLink.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.SocialLink!
+abstract JoinRpg.Common.PrimitiveTypes.SocialLink.CanLogin.get -> bool
+abstract JoinRpg.Common.PrimitiveTypes.SocialLink.Id.get -> long?
+abstract JoinRpg.Common.PrimitiveTypes.SocialLink.Link.get -> System.Uri?
+const JoinRpg.Common.PrimitiveTypes.BornName.MaxLength = 999 -> int
+const JoinRpg.Common.PrimitiveTypes.BornName.MinLength = 1 -> int
+const JoinRpg.Common.PrimitiveTypes.Email.MaxLength = 999 -> int
+const JoinRpg.Common.PrimitiveTypes.Email.MinLength = 1 -> int
+const JoinRpg.Common.PrimitiveTypes.FatherName.MaxLength = 999 -> int
+const JoinRpg.Common.PrimitiveTypes.FatherName.MinLength = 1 -> int
+const JoinRpg.Common.PrimitiveTypes.LiveJournalId.MaxLength = 999 -> int
+const JoinRpg.Common.PrimitiveTypes.LiveJournalId.MinLength = 1 -> int
+const JoinRpg.Common.PrimitiveTypes.MarkdownString.MaxLength = 2147483647 -> int
+const JoinRpg.Common.PrimitiveTypes.MarkdownString.MinLength = 0 -> int
+const JoinRpg.Common.PrimitiveTypes.PhoneNumber.MaxLength = 999 -> int
+const JoinRpg.Common.PrimitiveTypes.PhoneNumber.MinLength = 1 -> int
+const JoinRpg.Common.PrimitiveTypes.PrefferedName.MaxLength = 999 -> int
+const JoinRpg.Common.PrimitiveTypes.PrefferedName.MinLength = 1 -> int
+const JoinRpg.Common.PrimitiveTypes.SurName.MaxLength = 999 -> int
+const JoinRpg.Common.PrimitiveTypes.SurName.MinLength = 1 -> int
+const JoinRpg.Common.PrimitiveTypes.VkId.MaxLength = 999 -> int
+const JoinRpg.Common.PrimitiveTypes.VkId.MinLength = 1 -> int
+override JoinRpg.Common.PrimitiveTypes.AvatarIdentification.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.AvatarIdentification.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.AvatarIdentification.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.AvatarInfo.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.AvatarInfo.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.AvatarInfo.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.BornName.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.BornName.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.BornName.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.DateRange.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.Email.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.Email.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.Email.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.FatherName.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.FatherName.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.FatherName.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.LiveJournalId.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.LiveJournalId.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.LiveJournalId.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.MarkdownString.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.MarkdownString.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.MarkdownString.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.PhoneNumber.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.PhoneNumber.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.PhoneNumber.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.PrefferedName.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.PrefferedName.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.PrefferedName.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.SendingResult.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.SocialLink.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.SocialLink.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.SocialLink.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.SurName.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.SurName.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.SurName.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.TelegramChatId.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.TelegramChatId.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.TelegramChatId.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink!
+override JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.CanLogin.get -> bool
+override JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Id.get -> long?
+override JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Link.get -> System.Uri?
+override JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<T>.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> T!
+override JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<T>.ReadAsPropertyName(ref System.Text.Json.Utf8JsonReader reader, System.Type! typeToConvert, System.Text.Json.JsonSerializerOptions! options) -> T!
+override JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<T>.Write(System.Text.Json.Utf8JsonWriter! writer, T! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override JoinRpg.Common.PrimitiveTypes.TypedEntityIdJsonConverter<T>.WriteAsPropertyName(System.Text.Json.Utf8JsonWriter! writer, T! value, System.Text.Json.JsonSerializerOptions! options) -> void
+override JoinRpg.Common.PrimitiveTypes.TypedEntityIdTypeConverter<T>.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override JoinRpg.Common.PrimitiveTypes.TypedEntityIdTypeConverter<T>.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override JoinRpg.Common.PrimitiveTypes.UserContacts.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.UserContacts.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.UserContacts.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.UserDisplayName.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.UserDisplayName.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.UserDisplayName.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.UserFullName.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.UserFullName.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.UserFullName.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.UserIdentification.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.UserIdentification.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.UserIdentification.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.VkId.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.VkId.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.VkId.ToString() -> string!
+override JoinRpg.Common.PrimitiveTypes.VkSocialLink.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.VkSocialLink!
+override JoinRpg.Common.PrimitiveTypes.VkSocialLink.CanLogin.get -> bool
+override JoinRpg.Common.PrimitiveTypes.VkSocialLink.Equals(object? obj) -> bool
+override JoinRpg.Common.PrimitiveTypes.VkSocialLink.GetHashCode() -> int
+override JoinRpg.Common.PrimitiveTypes.VkSocialLink.Id.get -> long?
+override JoinRpg.Common.PrimitiveTypes.VkSocialLink.Link.get -> System.Uri?
+override JoinRpg.Common.PrimitiveTypes.VkSocialLink.ToString() -> string!
+override sealed JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Equals(JoinRpg.Common.PrimitiveTypes.SocialLink? other) -> bool
+override sealed JoinRpg.Common.PrimitiveTypes.VkSocialLink.Equals(JoinRpg.Common.PrimitiveTypes.SocialLink? other) -> bool
+static JoinRpg.Common.PrimitiveTypes.AvatarIdentification.FromOptional(int? value) -> JoinRpg.Common.PrimitiveTypes.AvatarIdentification?
+static JoinRpg.Common.PrimitiveTypes.AvatarIdentification.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.AvatarIdentification!
+static JoinRpg.Common.PrimitiveTypes.AvatarIdentification.Parse(string! value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.AvatarIdentification!
+static JoinRpg.Common.PrimitiveTypes.AvatarIdentification.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.AvatarIdentification! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.AvatarIdentification.implicit operator int(JoinRpg.Common.PrimitiveTypes.AvatarIdentification! self) -> int
+static JoinRpg.Common.PrimitiveTypes.AvatarIdentification.operator !=(JoinRpg.Common.PrimitiveTypes.AvatarIdentification? left, JoinRpg.Common.PrimitiveTypes.AvatarIdentification? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.AvatarIdentification.operator ==(JoinRpg.Common.PrimitiveTypes.AvatarIdentification? left, JoinRpg.Common.PrimitiveTypes.AvatarIdentification? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.AvatarInfo.FromOptional(string? uri, int size = 64) -> JoinRpg.Common.PrimitiveTypes.AvatarInfo?
+static JoinRpg.Common.PrimitiveTypes.AvatarInfo.operator !=(JoinRpg.Common.PrimitiveTypes.AvatarInfo? left, JoinRpg.Common.PrimitiveTypes.AvatarInfo? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.AvatarInfo.operator ==(JoinRpg.Common.PrimitiveTypes.AvatarInfo? left, JoinRpg.Common.PrimitiveTypes.AvatarInfo? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.BornName.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.BornName?
+static JoinRpg.Common.PrimitiveTypes.BornName.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.BornName!
+static JoinRpg.Common.PrimitiveTypes.BornName.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.BornName!
+static JoinRpg.Common.PrimitiveTypes.BornName.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.BornName! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.BornName.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.BornName! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.BornName.implicit operator JoinRpg.Common.PrimitiveTypes.BornName!(string! value) -> JoinRpg.Common.PrimitiveTypes.BornName!
+static JoinRpg.Common.PrimitiveTypes.BornName.implicit operator string!(JoinRpg.Common.PrimitiveTypes.BornName! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.BornName.operator !=(JoinRpg.Common.PrimitiveTypes.BornName? left, JoinRpg.Common.PrimitiveTypes.BornName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.BornName.operator ==(JoinRpg.Common.PrimitiveTypes.BornName? left, JoinRpg.Common.PrimitiveTypes.BornName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.CountHelper.DisplayCount(int count, string! single, string! multi1, string! multi2) -> string!
+static JoinRpg.Common.PrimitiveTypes.DateRange.operator !=(JoinRpg.Common.PrimitiveTypes.DateRange left, JoinRpg.Common.PrimitiveTypes.DateRange right) -> bool
+static JoinRpg.Common.PrimitiveTypes.DateRange.operator ==(JoinRpg.Common.PrimitiveTypes.DateRange left, JoinRpg.Common.PrimitiveTypes.DateRange right) -> bool
+static JoinRpg.Common.PrimitiveTypes.DateRangeFormatter.FormatDisplay(JoinRpg.Common.PrimitiveTypes.DateRange range, System.Globalization.CultureInfo? culture = null, bool hideCurrentYear = false) -> string!
+static JoinRpg.Common.PrimitiveTypes.DateRangeFormatter.FormatTooltip(JoinRpg.Common.PrimitiveTypes.DateRange range, System.Globalization.CultureInfo? culture = null) -> string!
+static JoinRpg.Common.PrimitiveTypes.Email.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.Email?
+static JoinRpg.Common.PrimitiveTypes.Email.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.Email!
+static JoinRpg.Common.PrimitiveTypes.Email.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.Email!
+static JoinRpg.Common.PrimitiveTypes.Email.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.Email! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.Email.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.Email! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.Email.implicit operator JoinRpg.Common.PrimitiveTypes.Email!(string! value) -> JoinRpg.Common.PrimitiveTypes.Email!
+static JoinRpg.Common.PrimitiveTypes.Email.implicit operator string!(JoinRpg.Common.PrimitiveTypes.Email! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.Email.operator !=(JoinRpg.Common.PrimitiveTypes.Email? left, JoinRpg.Common.PrimitiveTypes.Email? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.Email.operator ==(JoinRpg.Common.PrimitiveTypes.Email? left, JoinRpg.Common.PrimitiveTypes.Email? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.FatherName.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.FatherName?
+static JoinRpg.Common.PrimitiveTypes.FatherName.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.FatherName!
+static JoinRpg.Common.PrimitiveTypes.FatherName.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.FatherName!
+static JoinRpg.Common.PrimitiveTypes.FatherName.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.FatherName! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.FatherName.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.FatherName! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.FatherName.implicit operator JoinRpg.Common.PrimitiveTypes.FatherName!(string! value) -> JoinRpg.Common.PrimitiveTypes.FatherName!
+static JoinRpg.Common.PrimitiveTypes.FatherName.implicit operator string!(JoinRpg.Common.PrimitiveTypes.FatherName! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.FatherName.operator !=(JoinRpg.Common.PrimitiveTypes.FatherName? left, JoinRpg.Common.PrimitiveTypes.FatherName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.FatherName.operator ==(JoinRpg.Common.PrimitiveTypes.FatherName? left, JoinRpg.Common.PrimitiveTypes.FatherName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.IdentificationParseHelper.RemovePrefixes(System.ReadOnlySpan<char> value, System.ReadOnlySpan<string!> prefixes) -> System.ReadOnlySpan<char>
+static JoinRpg.Common.PrimitiveTypes.IdentificationParseHelper.SplitIdentifier(System.ReadOnlySpan<char> val, System.Span<System.Range> ranges) -> int
+static JoinRpg.Common.PrimitiveTypes.IdentificationParseHelper.TryParse1(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, params System.ReadOnlySpan<string!> prefixes) -> int?
+static JoinRpg.Common.PrimitiveTypes.IdentificationParseHelper.TryParse1Long(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, bool allowNonPositive, params System.ReadOnlySpan<string!> prefixes) -> long?
+static JoinRpg.Common.PrimitiveTypes.IdentificationParseHelper.TryParse2(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, params System.ReadOnlySpan<string!> prefixes) -> (int i1, int i2)?
+static JoinRpg.Common.PrimitiveTypes.IdentificationParseHelper.TryParse3(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, params System.ReadOnlySpan<string!> prefixes) -> (int i1, int i2, int i3)?
+static JoinRpg.Common.PrimitiveTypes.IdentificationParseHelper.TryParse4(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, params System.ReadOnlySpan<string!> prefixes) -> (int i1, int i2, int i3, int i4)?
+static JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.FromOptional(int? value) -> JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification?
+static JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification!
+static JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.Parse(string! value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification!
+static JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.implicit operator int(JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification! self) -> int
+static JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.operator !=(JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification? left, JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.operator ==(JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification? left, JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.LiveJournalId?
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.LiveJournalId!
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.LiveJournalId!
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.LiveJournalId! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.LiveJournalId! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.implicit operator JoinRpg.Common.PrimitiveTypes.LiveJournalId!(string! value) -> JoinRpg.Common.PrimitiveTypes.LiveJournalId!
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.implicit operator string!(JoinRpg.Common.PrimitiveTypes.LiveJournalId! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.operator !=(JoinRpg.Common.PrimitiveTypes.LiveJournalId? left, JoinRpg.Common.PrimitiveTypes.LiveJournalId? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.LiveJournalId.operator ==(JoinRpg.Common.PrimitiveTypes.LiveJournalId? left, JoinRpg.Common.PrimitiveTypes.LiveJournalId? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.MarkdownString?
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.MarkdownString!
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.MarkdownString!
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.MarkdownString! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.MarkdownString! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.implicit operator JoinRpg.Common.PrimitiveTypes.MarkdownString!(string! value) -> JoinRpg.Common.PrimitiveTypes.MarkdownString!
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.implicit operator string!(JoinRpg.Common.PrimitiveTypes.MarkdownString! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.operator !=(JoinRpg.Common.PrimitiveTypes.MarkdownString? left, JoinRpg.Common.PrimitiveTypes.MarkdownString? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.MarkdownString.operator ==(JoinRpg.Common.PrimitiveTypes.MarkdownString? left, JoinRpg.Common.PrimitiveTypes.MarkdownString? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.PhoneNumber?
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.PhoneNumber!
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.PhoneNumber!
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.PhoneNumber! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.PhoneNumber! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.implicit operator JoinRpg.Common.PrimitiveTypes.PhoneNumber!(string! value) -> JoinRpg.Common.PrimitiveTypes.PhoneNumber!
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.implicit operator string!(JoinRpg.Common.PrimitiveTypes.PhoneNumber! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.operator !=(JoinRpg.Common.PrimitiveTypes.PhoneNumber? left, JoinRpg.Common.PrimitiveTypes.PhoneNumber? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.PhoneNumber.operator ==(JoinRpg.Common.PrimitiveTypes.PhoneNumber? left, JoinRpg.Common.PrimitiveTypes.PhoneNumber? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.PrefferedName?
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.PrefferedName!
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.PrefferedName!
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.PrefferedName! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.PrefferedName! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.implicit operator JoinRpg.Common.PrimitiveTypes.PrefferedName!(string! value) -> JoinRpg.Common.PrimitiveTypes.PrefferedName!
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.implicit operator string!(JoinRpg.Common.PrimitiveTypes.PrefferedName! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.operator !=(JoinRpg.Common.PrimitiveTypes.PrefferedName? left, JoinRpg.Common.PrimitiveTypes.PrefferedName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.PrefferedName.operator ==(JoinRpg.Common.PrimitiveTypes.PrefferedName? left, JoinRpg.Common.PrimitiveTypes.PrefferedName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.SendingResult.CommonFailure() -> JoinRpg.Common.PrimitiveTypes.SendingResult
+static JoinRpg.Common.PrimitiveTypes.SendingResult.PermanentUserFailure() -> JoinRpg.Common.PrimitiveTypes.SendingResult
+static JoinRpg.Common.PrimitiveTypes.SendingResult.RepeatableFailure() -> JoinRpg.Common.PrimitiveTypes.SendingResult
+static JoinRpg.Common.PrimitiveTypes.SendingResult.Success() -> JoinRpg.Common.PrimitiveTypes.SendingResult
+static JoinRpg.Common.PrimitiveTypes.SendingResult.operator !=(JoinRpg.Common.PrimitiveTypes.SendingResult left, JoinRpg.Common.PrimitiveTypes.SendingResult right) -> bool
+static JoinRpg.Common.PrimitiveTypes.SendingResult.operator ==(JoinRpg.Common.PrimitiveTypes.SendingResult left, JoinRpg.Common.PrimitiveTypes.SendingResult right) -> bool
+static JoinRpg.Common.PrimitiveTypes.SocialLink.operator !=(JoinRpg.Common.PrimitiveTypes.SocialLink? left, JoinRpg.Common.PrimitiveTypes.SocialLink? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.SocialLink.operator ==(JoinRpg.Common.PrimitiveTypes.SocialLink? left, JoinRpg.Common.PrimitiveTypes.SocialLink? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.SurName.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.SurName?
+static JoinRpg.Common.PrimitiveTypes.SurName.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.SurName!
+static JoinRpg.Common.PrimitiveTypes.SurName.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.SurName!
+static JoinRpg.Common.PrimitiveTypes.SurName.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.SurName! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.SurName.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.SurName! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.SurName.implicit operator JoinRpg.Common.PrimitiveTypes.SurName!(string! value) -> JoinRpg.Common.PrimitiveTypes.SurName!
+static JoinRpg.Common.PrimitiveTypes.SurName.implicit operator string!(JoinRpg.Common.PrimitiveTypes.SurName! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.SurName.operator !=(JoinRpg.Common.PrimitiveTypes.SurName? left, JoinRpg.Common.PrimitiveTypes.SurName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.SurName.operator ==(JoinRpg.Common.PrimitiveTypes.SurName? left, JoinRpg.Common.PrimitiveTypes.SurName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramChatId.FromOptional(long? value) -> JoinRpg.Common.PrimitiveTypes.TelegramChatId?
+static JoinRpg.Common.PrimitiveTypes.TelegramChatId.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.TelegramChatId!
+static JoinRpg.Common.PrimitiveTypes.TelegramChatId.Parse(string! value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.TelegramChatId!
+static JoinRpg.Common.PrimitiveTypes.TelegramChatId.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.TelegramChatId! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramChatId.implicit operator long(JoinRpg.Common.PrimitiveTypes.TelegramChatId! self) -> long
+static JoinRpg.Common.PrimitiveTypes.TelegramChatId.operator !=(JoinRpg.Common.PrimitiveTypes.TelegramChatId? left, JoinRpg.Common.PrimitiveTypes.TelegramChatId? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramChatId.operator ==(JoinRpg.Common.PrimitiveTypes.TelegramChatId? left, JoinRpg.Common.PrimitiveTypes.TelegramChatId? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.operator !=(JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? left, JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.operator ==(JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? left, JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(long? id, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromOptional(string? key, JoinRpg.Common.PrimitiveTypes.PrefferedName? userName, bool isVerified = false) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.FromUserData(string? externalLoginKey, JoinRpg.Common.PrimitiveTypes.PrefferedName? prettyName) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink?
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink!
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.TelegramSocialLink!
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.TelegramSocialLink! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.TelegramSocialLink! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.operator !=(JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? left, JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.TelegramSocialLink.operator ==(JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? left, JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserContacts.CreateIfAny(JoinRpg.Common.PrimitiveTypes.Email? email, JoinRpg.Common.PrimitiveTypes.VkSocialLink? vk, JoinRpg.Common.PrimitiveTypes.TelegramSocialLink? telegram, JoinRpg.Common.PrimitiveTypes.LiveJournalId? liveJournal) -> JoinRpg.Common.PrimitiveTypes.UserContacts?
+static JoinRpg.Common.PrimitiveTypes.UserContacts.operator !=(JoinRpg.Common.PrimitiveTypes.UserContacts? left, JoinRpg.Common.PrimitiveTypes.UserContacts? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserContacts.operator ==(JoinRpg.Common.PrimitiveTypes.UserContacts? left, JoinRpg.Common.PrimitiveTypes.UserContacts? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserDisplayName.operator !=(JoinRpg.Common.PrimitiveTypes.UserDisplayName? left, JoinRpg.Common.PrimitiveTypes.UserDisplayName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserDisplayName.operator ==(JoinRpg.Common.PrimitiveTypes.UserDisplayName? left, JoinRpg.Common.PrimitiveTypes.UserDisplayName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserFullName.operator !=(JoinRpg.Common.PrimitiveTypes.UserFullName? left, JoinRpg.Common.PrimitiveTypes.UserFullName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserFullName.operator ==(JoinRpg.Common.PrimitiveTypes.UserFullName? left, JoinRpg.Common.PrimitiveTypes.UserFullName? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserIdentification.FromOptional(int? value) -> JoinRpg.Common.PrimitiveTypes.UserIdentification?
+static JoinRpg.Common.PrimitiveTypes.UserIdentification.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.UserIdentification!
+static JoinRpg.Common.PrimitiveTypes.UserIdentification.Parse(string! value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.UserIdentification!
+static JoinRpg.Common.PrimitiveTypes.UserIdentification.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.UserIdentification! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserIdentification.implicit operator int(JoinRpg.Common.PrimitiveTypes.UserIdentification! self) -> int
+static JoinRpg.Common.PrimitiveTypes.UserIdentification.operator !=(JoinRpg.Common.PrimitiveTypes.UserIdentification? left, JoinRpg.Common.PrimitiveTypes.UserIdentification? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.UserIdentification.operator ==(JoinRpg.Common.PrimitiveTypes.UserIdentification? left, JoinRpg.Common.PrimitiveTypes.UserIdentification? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.operator !=(JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader? left, JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.operator ==(JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader? left, JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.VkId.FromOptional(string? value) -> JoinRpg.Common.PrimitiveTypes.VkId?
+static JoinRpg.Common.PrimitiveTypes.VkId.Parse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider) -> JoinRpg.Common.PrimitiveTypes.VkId!
+static JoinRpg.Common.PrimitiveTypes.VkId.Parse(string! value, System.IFormatProvider? provider = null) -> JoinRpg.Common.PrimitiveTypes.VkId!
+static JoinRpg.Common.PrimitiveTypes.VkId.TryParse(System.ReadOnlySpan<char> value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.VkId! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.VkId.TryParse(string? value, System.IFormatProvider? provider, out JoinRpg.Common.PrimitiveTypes.VkId! result) -> bool
+static JoinRpg.Common.PrimitiveTypes.VkId.implicit operator JoinRpg.Common.PrimitiveTypes.VkId!(string! value) -> JoinRpg.Common.PrimitiveTypes.VkId!
+static JoinRpg.Common.PrimitiveTypes.VkId.implicit operator string!(JoinRpg.Common.PrimitiveTypes.VkId! self) -> string!
+static JoinRpg.Common.PrimitiveTypes.VkId.operator !=(JoinRpg.Common.PrimitiveTypes.VkId? left, JoinRpg.Common.PrimitiveTypes.VkId? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.VkId.operator ==(JoinRpg.Common.PrimitiveTypes.VkId? left, JoinRpg.Common.PrimitiveTypes.VkId? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.VkSocialLink.FromUserData(string? externalLoginKey, string? legacyVk, bool vkVerified) -> JoinRpg.Common.PrimitiveTypes.VkSocialLink?
+static JoinRpg.Common.PrimitiveTypes.VkSocialLink.operator !=(JoinRpg.Common.PrimitiveTypes.VkSocialLink? left, JoinRpg.Common.PrimitiveTypes.VkSocialLink? right) -> bool
+static JoinRpg.Common.PrimitiveTypes.VkSocialLink.operator ==(JoinRpg.Common.PrimitiveTypes.VkSocialLink? left, JoinRpg.Common.PrimitiveTypes.VkSocialLink? right) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.AvatarIdentification.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.AvatarIdentification!
+virtual JoinRpg.Common.PrimitiveTypes.AvatarIdentification.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.AvatarIdentification.Equals(JoinRpg.Common.PrimitiveTypes.AvatarIdentification? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.AvatarIdentification.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.AvatarInfo.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.AvatarInfo!
+virtual JoinRpg.Common.PrimitiveTypes.AvatarInfo.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.AvatarInfo.Equals(JoinRpg.Common.PrimitiveTypes.AvatarInfo? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.AvatarInfo.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.BornName.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.BornName!
+virtual JoinRpg.Common.PrimitiveTypes.BornName.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.BornName.Equals(JoinRpg.Common.PrimitiveTypes.BornName? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.BornName.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.Email.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.Email!
+virtual JoinRpg.Common.PrimitiveTypes.Email.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.Email.Equals(JoinRpg.Common.PrimitiveTypes.Email? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.Email.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.FatherName.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.FatherName!
+virtual JoinRpg.Common.PrimitiveTypes.FatherName.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.FatherName.Equals(JoinRpg.Common.PrimitiveTypes.FatherName? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.FatherName.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification!
+virtual JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.Equals(JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.KogdaIgraIdentification.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.LiveJournalId.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.LiveJournalId!
+virtual JoinRpg.Common.PrimitiveTypes.LiveJournalId.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.LiveJournalId.Equals(JoinRpg.Common.PrimitiveTypes.LiveJournalId? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.LiveJournalId.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.PhoneNumber.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.PhoneNumber!
+virtual JoinRpg.Common.PrimitiveTypes.PhoneNumber.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.PhoneNumber.Equals(JoinRpg.Common.PrimitiveTypes.PhoneNumber? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.PhoneNumber.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.PrefferedName.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.PrefferedName!
+virtual JoinRpg.Common.PrimitiveTypes.PrefferedName.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.PrefferedName.Equals(JoinRpg.Common.PrimitiveTypes.PrefferedName? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.PrefferedName.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.SocialLink.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.SocialLink.Equals(JoinRpg.Common.PrimitiveTypes.SocialLink? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.SocialLink.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.SurName.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.SurName!
+virtual JoinRpg.Common.PrimitiveTypes.SurName.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.SurName.Equals(JoinRpg.Common.PrimitiveTypes.SurName? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.SurName.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.TelegramChatId.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.TelegramChatId!
+virtual JoinRpg.Common.PrimitiveTypes.TelegramChatId.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.TelegramChatId.Equals(JoinRpg.Common.PrimitiveTypes.TelegramChatId? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.TelegramChatId.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.TelegramHtmlString!
+virtual JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.Equals(JoinRpg.Common.PrimitiveTypes.TelegramHtmlString? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.TelegramHtmlString.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.UserContacts.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.UserContacts!
+virtual JoinRpg.Common.PrimitiveTypes.UserContacts.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.UserContacts.Equals(JoinRpg.Common.PrimitiveTypes.UserContacts? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.UserContacts.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.UserDisplayName.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.UserDisplayName!
+virtual JoinRpg.Common.PrimitiveTypes.UserDisplayName.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.UserDisplayName.Equals(JoinRpg.Common.PrimitiveTypes.UserDisplayName? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.UserDisplayName.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.UserFullName.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.UserFullName!
+virtual JoinRpg.Common.PrimitiveTypes.UserFullName.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.UserFullName.Equals(JoinRpg.Common.PrimitiveTypes.UserFullName? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.UserFullName.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.UserIdentification.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.UserIdentification!
+virtual JoinRpg.Common.PrimitiveTypes.UserIdentification.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.UserIdentification.Equals(JoinRpg.Common.PrimitiveTypes.UserIdentification? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.UserIdentification.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader!
+virtual JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.Equals(JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.Users.UserInfoHeader.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.VkId.<Clone>$() -> JoinRpg.Common.PrimitiveTypes.VkId!
+virtual JoinRpg.Common.PrimitiveTypes.VkId.EqualityContract.get -> System.Type!
+virtual JoinRpg.Common.PrimitiveTypes.VkId.Equals(JoinRpg.Common.PrimitiveTypes.VkId? other) -> bool
+virtual JoinRpg.Common.PrimitiveTypes.VkId.PrintMembers(System.Text.StringBuilder! builder) -> bool
+~override JoinRpg.Common.PrimitiveTypes.DateRange.Equals(object obj) -> bool
+~override JoinRpg.Common.PrimitiveTypes.DateRange.ToString() -> string
+~override JoinRpg.Common.PrimitiveTypes.SendingResult.Equals(object obj) -> bool
+~override JoinRpg.Common.PrimitiveTypes.SendingResult.ToString() -> string
