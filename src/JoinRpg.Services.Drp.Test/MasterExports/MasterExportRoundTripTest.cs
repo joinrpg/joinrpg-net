@@ -117,11 +117,9 @@ public class MasterExportRoundTripTest
 
     private IEnumerable<ClaimListItemForExportViewModel> ClaimItems(IReadOnlyDictionary<ClaimIdentification, string>? roomNames = null)
     {
-        Claim[] claims = [approvedClaim, pendingClaim];
         return new ClaimListForExportViewModel(
             new FakeCurrentUserAccessor(new UserIdentification(mock.Master.UserId)),
-            claims,
-            claims.ToDictionary(c => c.GetId(), ClaimInfoOf),
+            [ClaimInfoOf(approvedClaim), ClaimInfoOf(pendingClaim)],
             roomNames ?? new Dictionary<ClaimIdentification, string>()).Items;
     }
 

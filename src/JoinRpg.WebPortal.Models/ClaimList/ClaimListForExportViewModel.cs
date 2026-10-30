@@ -1,5 +1,5 @@
 using JoinRpg.Common.WebComponents;
-using JoinRpg.DataModel;
+using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.Interfaces;
@@ -8,28 +8,20 @@ using JoinRpg.Web.Claims;
 namespace JoinRpg.Web.Models.ClaimList;
 
 /// <param name="currentUserId"></param>
-/// <param name="claims">EF-заявки — только ради того, чего нет в агрегате (последний комментарий).</param>
-/// <param name="claimInfos">
-/// Те же заявки как <see cref="ClaimInfo"/>, загруженные пачкой на весь список
-/// (<c>IClaimInfoRepository.GetClaimInfos</c>), — вместе с персонажами и профилями игроков.
-/// Выгрузка показывает контакты игрока, а читать их по ленивым навигациям EF на каждую строку —
-/// это N+1.
-/// </param>
+/// <param name="claims">заявки.</param>
 /// <param name="roomNames">
 /// Комнаты заявок по планам поселения (ADR022): заявки, которых здесь нет, не расселены.
 /// </param>
 public class ClaimListForExportViewModel(
     ICurrentUserAccessor currentUserId,
-    IReadOnlyCollection<Claim> claims,
-    IReadOnlyDictionary<ClaimIdentification, ClaimInfo> claimInfos,
+    IReadOnlyList<ClaimInfo> claims,
     IReadOnlyDictionary<ClaimIdentification, string> roomNames)
 {
-    public IEnumerable<ClaimListItemForExportViewModel> Items { get; } = claims
+    public IReadOnlyList<ClaimListItemForExportViewModel> Items { get; } = claims
           .Select(c => ClaimListBuilder.BuildItemForExport(
-              c,
               currentUserId,
-              claimInfos[c.GetId()],
-              roomNames.GetValueOrDefault(c.GetId())))
+              c,
+              roomNames.GetValueOrDefault(c.ClaimId)))
           .ToList();
 }
 public record class ClaimListItemForExportViewModel(
@@ -55,7 +47,7 @@ public record class ClaimListItemForExportViewModel(
     // Парсер выгрузки DRP эту колонку не узнаёт: она попадает в кандидаты в поля проекта (см. MasterExportColumns).
     // «игрока» — чтобы не дублировать заголовок частого поля проекта «Дата рождения».
     [property: Display(Name = "Дата рождения игрока")] DateOnly? BirthDate,
-    IReadOnlyDictionary<ProjectFieldIdentification, string> FieldValues,
+    IReadOnlyCollection<FieldWithValue> FieldValues,
     // Доменный UserInfo вместо EF-сущности User: выгрузке нужны имя, почта и контакты, и все они
     // приезжают загруженными пачкой, без ленивых навигаций на каждую строку.
     // Display нужен затем, что имя свойства становится префиксом заголовков колонок игрока

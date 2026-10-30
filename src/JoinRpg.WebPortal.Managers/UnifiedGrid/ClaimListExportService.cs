@@ -37,7 +37,7 @@ public class ClaimListExportService(
     /// </summary>
     public async Task<FileContentResult> ExportClaimList(
         ProjectIdentification projectId,
-        IReadOnlyCollection<Claim> claims,
+        IReadOnlyList<ClaimInfo> claims,
         string title,
         ExportType exportType)
     {
@@ -45,7 +45,6 @@ public class ClaimListExportService(
         var view = new ClaimListForExportViewModel(
             currentUserAccessor,
             claims,
-            await LoadClaimInfos(claims),
             await LoadRoomNames(projectInfo, claims));
 
         return ExportWithCustomFrontend(
@@ -58,9 +57,9 @@ public class ClaimListExportService(
     /// </summary>
     private async Task<IReadOnlyDictionary<ClaimIdentification, string>> LoadRoomNames(
         ProjectInfo projectInfo,
-        IReadOnlyCollection<Claim> claims)
+        IReadOnlyCollection<ClaimInfo> claims)
     {
-        if (!projectInfo.AccommodationSettings.Enabled || !claims.Any(c => c.AccommodationRequest_Id != null))
+        if (!projectInfo.AccommodationSettings.Enabled || !claims.Any(c => c.Claim.AccommodationTypeId != null))
         {
             return new Dictionary<ClaimIdentification, string>();
         }
@@ -69,7 +68,7 @@ public class ClaimListExportService(
         // конвертов (PrintViewService).
         var plans = await roomCategoryPlanRepository.GetAllPlans(projectInfo.ProjectId);
         return claims
-            .Select(claim => claim.GetId())
+            .Select(claim => claim.ClaimId)
             .Select(claimId => (ClaimId: claimId, Room: plans
                 .Select(plan => plan.FindRoomByClaim(claimId))
                 .FirstOrDefault(room => room is not null)))

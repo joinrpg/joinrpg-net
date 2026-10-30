@@ -15,18 +15,73 @@ public class ClaimListBuilderTest
 {
     private MockedProject Mock { get; } = new MockedProject();
 
-    // Регрессия для #4670: GetLastComment раньше вызывал User.GetUserInfo(), который
-    // обращается к user.Auth без null-conditional. В реальном приложении это оборачивалось
-    // в лишний lazy load почти на каждую заявку в списке; в этом тесте (без EF-контекста)
-    // непрогруженный Auth равен null и вызов падает с NullReferenceException.
+    // Автор мастерского комментария — из мастеров ProjectInfo (ADR021): EF-сущность заявки
+    // список больше не читает, и ленивых загрузок пользователя на каждую строку (#4670) нет.
     [Fact]
-    public void GetLastCommentDoesNotTouchUnloadedNavigationProperties()
+    public void GetLastCommentTakesMasterAuthorFromProjectInfo()
     {
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.CreateDate = new DateTime(2026, 1, 1);
+        claim.LastVisibleMasterCommentAt = new DateTimeOffset(2026, 1, 2, 1, 0, 0, TimeSpan.Zero);
+        claim.LastVisibleMasterCommentBy_Id = Mock.Master.UserId;
 
-        var result = ClaimListBuilder.GetLastComment(claim, AccessArguments.None);
+        var aggregateClaim = Mock.GetCharacterInfo(Mock.Character).Claims.ShouldHaveSingleItem();
 
-        result.By.UserId.Value.ShouldBe(Mock.Player.UserId);
+        var result = ClaimListBuilder.GetLastComment(aggregateClaim, Mock.ProjectInfo, AccessArguments.None);
+
+        result.By!.UserId.Value.ShouldBe(Mock.Master.UserId);
+    }
+
+    // Автора, которого нет в списках мастеров ProjectInfo (записи ACL не существует — мастер
+    // снят с удалением записи, или id вовсе не из этого проекта), показывать некем: колонка
+    // «кто обновил» nullable.
+    [Fact]
+    public void GetLastCommentReturnsNullAuthorWhenMasterIsGone()
+    {
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.CreateDate = new DateTime(2026, 1, 1);
+        claim.LastVisibleMasterCommentAt = new DateTimeOffset(2026, 1, 2, 1, 0, 0, TimeSpan.Zero);
+        claim.LastVisibleMasterCommentBy_Id = 424_242;
+
+        var aggregateClaim = Mock.GetCharacterInfo(Mock.Character).Claims.ShouldHaveSingleItem();
+
+        var result = ClaimListBuilder.GetLastComment(aggregateClaim, Mock.ProjectInfo, AccessArguments.None);
+
+        result.By.ShouldBeNull();
+    }
+
+    // Мастерская ветка «любой комментарий мастера» (невидимый игроку, учитывается только под
+    // мастером) и проводка автора в колонку: null-автор доходит до LastModifiedBy как null.
+    // Мастер мока имеет UserId 2.
+    [Theory]
+    [InlineData(2, 2)]
+    [InlineData(424_242, null)]
+    public void BuildItemResolvesAnyMasterCommentAuthor(int authorUserId, int? expectedUserId)
+    {
+        var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+        claim.CreateDate = new DateTime(2026, 1, 1);
+        claim.LastVisibleMasterCommentAt = new DateTimeOffset(2026, 1, 2, 1, 0, 0, TimeSpan.Zero);
+        claim.LastVisibleMasterCommentBy_Id = Mock.Master.UserId;
+        claim.LastMasterCommentAt = new DateTimeOffset(2026, 1, 3, 1, 0, 0, TimeSpan.Zero);
+        claim.LastMasterCommentBy_Id = authorUserId;
+        var claimInfo = new ClaimInfo(
+            new ClaimInCharacter(Mock.GetCharacterInfo(Mock.Character), claim.GetId()),
+            Mock.PlayerInfo);
+
+        var result = ClaimListBuilder.BuildItem(
+            new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
+            new NoProblemsValidator(),
+            claimInfo,
+            []);
+
+        if (expectedUserId is null)
+        {
+            result.LastModifiedBy.ShouldBeNull();
+        }
+        else
+        {
+            result.LastModifiedBy!.UserId!.Value.ShouldBe(expectedUserId.Value);
+        }
     }
 
     // Регрессия для #5166: BuildItemForExport читал имя типа поселения через навигацию
@@ -49,7 +104,6 @@ public class ClaimListBuilderTest
             Mock.PlayerInfo);
 
         var result = ClaimListBuilder.BuildItemForExport(
-            claim,
             new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
             claimInfo,
             roomName: null);
@@ -71,7 +125,6 @@ public class ClaimListBuilderTest
             Mock.PlayerInfo);
 
         var result = ClaimListBuilder.BuildItemForExport(
-            claim,
             new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
             claimInfo,
             roomName: "из плана");
@@ -98,14 +151,15 @@ public class ClaimListBuilderTest
             Mock.PlayerInfo);
 
         var result = ClaimListBuilder.BuildItemForExport(
-            claim,
             new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
             claimInfo,
             roomName: null);
 
+        // FieldWithValue — ссылочный тип без значимого равенства, поэтому сравниваем контракт
+        // выгрузки: поле → его экспортная строка.
         var legacy = claim.GetFields(Mock.ProjectInfo).ToDictionary(x => x.Field.Id, x => x.ExportString);
-        result.FieldValues.ShouldBe(legacy);
-        result.FieldValues[Mock.CharacterFieldInfo.Id].ShouldBe(approved ? "секрет персонажа" : "");
+        result.FieldValues.ToDictionary(x => x.Field.Id, x => x.ExportString).ShouldBe(legacy);
+        result.FieldValues.Single(x => x.Field.Id == Mock.CharacterFieldInfo.Id).ExportString.ShouldBe(approved ? "секрет персонажа" : "");
 
         var balance = claimInfo.ClaimInCharacter.CalculateBalance();
         result.TotalFee.ShouldBe(balance.TotalFee);
@@ -132,7 +186,6 @@ public class ClaimListBuilderTest
             player);
 
         var result = ClaimListBuilder.BuildItemForExport(
-            claim,
             new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
             claimInfo,
             roomName: null);
@@ -158,7 +211,6 @@ public class ClaimListBuilderTest
             player);
 
         var result = ClaimListBuilder.BuildItemForExport(
-            claim,
             new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
             claimInfo,
             roomName: null);
@@ -199,7 +251,6 @@ public class ClaimListBuilderTest
             player);
 
         var result = ClaimListBuilder.BuildItem(
-            claim,
             new FakeCurrentUserAccessor(new UserIdentification(Mock.Master.UserId)),
             new NoProblemsValidator(),
             claimInfo,
@@ -218,8 +269,9 @@ public class ClaimListBuilderTest
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
         claim.CreateDate = new DateTime(2026, 1, 1, 20, 0, 0, DateTimeKind.Unspecified);
         claim.LastPlayerCommentAt = new DateTimeOffset(2026, 1, 2, 12, 0, 0, TimeSpan.FromHours(3));
+        var aggregateClaim = Mock.GetCharacterInfo(Mock.Character).Claims.ShouldHaveSingleItem();
 
-        var result = ClaimListBuilder.GetLastComment(claim, AccessArguments.None);
+        var result = ClaimListBuilder.GetLastComment(aggregateClaim, Mock.ProjectInfo, AccessArguments.None);
 
         result.At.ShouldBe(new DateTime(2026, 1, 2, 9, 0, 0, DateTimeKind.Unspecified));
     }
@@ -233,13 +285,14 @@ public class ClaimListBuilderTest
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
         claim.CreateDate = new DateTime(2026, 1, 2, 3, 0, 0, DateTimeKind.Unspecified);
         claim.LastVisibleMasterCommentAt = new DateTimeOffset(2026, 1, 2, 1, 0, 0, TimeSpan.Zero);
-        claim.LastVisibleMasterCommentBy = Mock.Master;
+        claim.LastVisibleMasterCommentBy_Id = Mock.Master.UserId;
+        var aggregateClaim = Mock.GetCharacterInfo(Mock.Character).Claims.ShouldHaveSingleItem();
 
-        var result = ClaimListBuilder.GetLastComment(claim, AccessArguments.None);
+        var result = ClaimListBuilder.GetLastComment(aggregateClaim, Mock.ProjectInfo, AccessArguments.None);
 
         result.At.ShouldBe(claim.CreateDate);
         // «Кто обновил» при этом — игрок (подача), а не рано прокомментировавший мастер.
-        result.By.UserId.Value.ShouldBe(Mock.Player.UserId);
+        result.By!.UserId.Value.ShouldBe(Mock.Player.UserId);
     }
 
     // #6015 для агрегата (ADR013): та же нормализация в перегрузке, на которой считает

@@ -1,6 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
-using JoinRpg.DataModel;
 using JoinRpg.Domain.Access;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
@@ -14,17 +13,13 @@ namespace JoinRpg.Web.Models.ClaimList;
 
 public static class ClaimListBuilder
 {
-    /// <param name="claim">
-    /// EF-заявка. Из неё читается только то, чего нет в агрегате (ADR021): последний комментарий
-    /// вместе с автором и обсуждение — для счётчика непрочитанного.
-    /// </param>
-    /// <param name="claimInfo">Та же заявка как доменный тип — всё остальное берётся отсюда.</param>
-    internal static ClaimListItemViewModel BuildItem(Claim claim, ICurrentUserAccessor currentUserId,
+    /// <param name="claimInfo">Заявка как доменный агрегат (ADR021) — источник всех данных строки.</param>
+    internal static ClaimListItemViewModel BuildItem(ICurrentUserAccessor currentUserId,
        IClaimProblemValidator claimValidator, ClaimInfo claimInfo, Dictionary<CommentDiscussionId, int> unreadComments)
     {
         var accessArguments = AccessArgumentsFactory.Create(claimInfo, currentUserId.UserIdentificationOrDefault);
         var balance = claimInfo.ClaimInCharacter.CalculateBalance();
-        (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claim, accessArguments);
+        (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claimInfo.Claim, claimInfo.ProjectInfo, accessArguments);
         var characterClaim = claimInfo.Claim;
 
         return new ClaimListItemViewModel(
@@ -39,7 +34,7 @@ public static class ClaimListBuilder
             FeePaid: balance.FeePaid,
             FeeDue: balance.FeeDue,
             TotalFee: balance.TotalFee,
-            new UserLinkViewModel(lastModifiedBy),
+            lastModifiedBy is { } by ? new UserLinkViewModel(by) : null,
             claimInfo.ClaimId,
             claimValidator.Validate(claimInfo).Select(p => new ProblemViewModel(p)).ToList(),
             unreadComments.GetValueOrDefault(claimInfo.Claim.CommentDiscussionId),
@@ -47,24 +42,20 @@ public static class ClaimListBuilder
             );
     }
 
-    /// <param name="claim">
-    /// EF-заявка. Из неё читается только то, чего нет в агрегате (ADR021): последний комментарий
-    /// вместе с автором.
-    /// </param>
     /// <param name="claimInfo">
-    /// Та же заявка как доменный тип, загруженная пачкой на весь список. Профиль игрока тоже отсюда:
-    /// раньше выгрузка читала паспорт и адрес прямо из <c>claim.Player.Extra</c>, то есть по ленивой
-    /// навигации EF-сущности на каждую строку.
+    /// Заявка как доменный агрегат (ADR021), загруженный пачкой на весь список. Профиль игрока
+    /// тоже отсюда: раньше выгрузка читала паспорт и адрес прямо из <c>claim.Player.Extra</c>,
+    /// то есть по ленивой навигации EF-сущности на каждую строку.
     /// </param>
     /// <param name="roomName">
     /// Комната группы заявки из плана поселения (ADR022), или <c>null</c>, если не расселена. Цепочка
     /// навигаций <c>AccommodationRequest.Accommodation</c> догружала бы комнату на каждую строку.
     /// </param>
     internal static ClaimListItemForExportViewModel BuildItemForExport(
-        Claim claim, ICurrentUserAccessor currentUserId, ClaimInfo claimInfo, string? roomName)
+        ICurrentUserAccessor currentUserId, ClaimInfo claimInfo, string? roomName)
     {
         var accessArguments = AccessArgumentsFactory.Create(claimInfo, currentUserId.UserIdentificationOrDefault);
-        (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claim, accessArguments);
+        (DateTime lastModifiedAt, var lastModifiedBy) = GetLastComment(claimInfo.Claim, claimInfo.ProjectInfo, accessArguments);
         var balance = claimInfo.ClaimInCharacter.CalculateBalance();
         var projectInfo = claimInfo.ProjectInfo;
         var characterClaim = claimInfo.Claim;
@@ -83,7 +74,7 @@ public static class ClaimListBuilder
             FeePaid: balance.FeePaid,
             FeeDue: balance.FeeDue,
             TotalFee: balance.TotalFee,
-            new UserLinkViewModel(lastModifiedBy),
+            lastModifiedBy is { } by ? new UserLinkViewModel(by) : null,
             claimInfo.ClaimId,
             characterClaim.AccommodationTypeId is { } accommodationTypeId
                 ? projectInfo.AccommodationSettings.GetTypeById(accommodationTypeId).Name
@@ -93,7 +84,7 @@ public static class ClaimListBuilder
             sensitiveData.PassportData,
             sensitiveData.RegistrationAddress,
             sensitiveData.BirthDate,
-            claimInfo.ClaimInCharacter.GetAllFields().ToDictionary(x => x.Field.Id, x => x.ExportString),
+            claimInfo.ClaimInCharacter.GetAllFields(),
             playerInfo
             );
     }
@@ -105,20 +96,30 @@ public static class ClaimListBuilder
     /// </remarks>
     private static string GetPlayerFullName(ClaimInfo claimInfo) => claimInfo.Player.UserFullName.FullName ?? "";
 
-    public static (DateTime At, UserInfoHeader By) GetLastComment(Claim claim, AccessArguments accessArguments)
+    /// <summary>
+    /// Время и автор последней активности по заявке из агрегата (ADR021): подача, последний
+    /// комментарий игрока, последний видимый игроку комментарий мастера, а мастеру — ещё и
+    /// любой мастерский. Имя автора-мастера — из мастеров <paramref name="projectInfo"/>
+    /// (включая бывших): автора, чья запись ACL удалена, показывать некем — <c>null</c>.
+    /// </summary>
+    public static (DateTime At, UserInfoHeader? By) GetLastComment(
+        CharacterClaimInfo claim, ProjectInfo projectInfo, AccessArguments accessArguments)
     {
         var (at, by) = GetLastCommentCore(
             claim.CreateDate, claim.LastPlayerCommentAt, claim.LastVisibleMasterCommentAt,
             claim.LastMasterCommentAt, accessArguments);
 
-        var user = by switch
+        UserInfoHeader? user = by switch
         {
             LastCommentBy.Player => claim.Player,
-            LastCommentBy.VisibleMaster => claim.LastVisibleMasterCommentBy!,
-            _ => claim.LastMasterCommentBy!,
+            LastCommentBy.VisibleMaster => MasterById(projectInfo, claim.LastVisibleMasterCommentBy),
+            LastCommentBy.AnyMaster => MasterById(projectInfo, claim.LastMasterCommentBy),
         };
-        return (at.UtcDateTime, user.ToUserInfoHeader());
+        return (at.UtcDateTime, user);
     }
+
+    private static UserInfoHeader? MasterById(ProjectInfo projectInfo, UserIdentification? masterId)
+        => masterId is { } id ? projectInfo.GetMasterByIdOrDefault(id)?.UserInfo : null;
 
     /// <summary>
     /// Время последней активности по заявке поверх доменного агрегата (ADR013).
@@ -140,7 +141,7 @@ public static class ClaimListBuilder
     /// видимый игроку комментарий мастера, а мастеру — ещё и любой мастерский.
     /// </summary>
     /// <remarks>
-    /// <see cref="Claim.CreateDate"/> лежит в колонке <c>datetime</c> и приезжает с
+    /// Дата создания заявки лежит в колонке <c>datetime</c> и приезжает с
     /// <see cref="DateTimeKind.Unspecified"/>, а отметки комментариев — <see cref="DateTimeOffset"/>.
     /// Считаем дату создания UTC (она так и записывается) и сравниваем всё в одном типе: неявное
     /// приведение <see cref="DateTime"/> к <see cref="DateTimeOffset"/> приклеило бы к дате
