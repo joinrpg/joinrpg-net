@@ -337,7 +337,7 @@ internal sealed class PscbFakeProjectMetadataRepository : IProjectMetadataReposi
             : CreateProjectInfo(projectId, isBlocked: false, []));
     }
 
-    public Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectIdentification projectId)
+    public Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectInfo projectInfo)
         => throw new NotImplementedException();
 
     public void PrimeCache(ProjectInfo projectInfo) => throw new NotImplementedException();
@@ -485,6 +485,7 @@ internal sealed class PscbFakeClaimsRepository : IClaimsRepository
     public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
     public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
     public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotImplementedException();
+    public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId) => throw new NotImplementedException();
 }
 
 internal sealed class FakeClaimUri : IUriLocator<ClaimIdentification>
