@@ -1,9 +1,7 @@
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Notifications;
 using JoinRpg.Services.Email;
 
@@ -26,7 +24,7 @@ public class MassProjectEmailServiceTest
 
     private MassProjectEmailService CreateService()
         => new(
-            new FakeMassMailClaimsRepository(Claim),
+            new FakeClaimsRepository(mock) { Headers = { Claim } },
             new FakeProjectMetadataRepository(mock),
             notificationService,
             new FakeCurrentUserAccessor(mock.Master.UserId),
@@ -72,34 +70,6 @@ public class MassProjectEmailServiceTest
             .EntityReference.ShouldBe(new MyClaimInProjectIdentification(projectId));
         notificationService.Queued.Single(n => n.NotificationClass == NotificationClass.MasterProject)
             .EntityReference.ShouldBe(projectId);
-    }
-
-    /// <summary>Отдаёт заранее заготовленные заявки — рассылке больше ничего от репозитория не нужно.</summary>
-    private sealed class FakeMassMailClaimsRepository(params ClaimWithPlayer[] claims) : IClaimsRepository
-    {
-        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds)
-            => Task.FromResult<IReadOnlyCollection<ClaimWithPlayer>>([.. claims.Where(c => claimIds.Contains(c.ClaimId))]);
-
-        public void Dispose() { }
-
-        public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => throw new NotSupportedException();
-        public Task<Claim?> GetClaim(ClaimIdentification claimId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<MyClaimShortInfo>> GetMyActiveClaimsInActiveProjects(UserIdentification userId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(ProjectIdentification projectId, UserIdentification userId, ClaimStatusSpec status) => throw new NotSupportedException();
-        public Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec, UserIdentification userId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(ProjectIdentification projectId, ClaimStatusSpec approved) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
-        public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
-        public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotSupportedException();
-        public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId) => throw new NotSupportedException();
     }
 
     private sealed class FakeClaimUriLocator : IUriLocator<ClaimIdentification>
