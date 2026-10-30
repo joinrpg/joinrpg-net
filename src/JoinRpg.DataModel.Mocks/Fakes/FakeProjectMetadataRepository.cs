@@ -30,7 +30,7 @@ public sealed class FakeProjectMetadataRepository : IProjectMetadataRepository
 
     public Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectInfo projectInfo)
         // Именно с уточнением namespace: в JoinRpg.DataModel есть своя ProjectDetails (EF-сущность).
-        => Task.FromResult(new DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), new MarkdownString(""), [], false, new MarkdownString("")));
+        => Task.FromResult(new DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), new MarkdownString(""), [], false, new MarkdownString(""), []));
 
     public void PrimeCache(ProjectInfo projectInfo) => LastPrimed = projectInfo;
 }

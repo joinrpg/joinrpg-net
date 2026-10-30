@@ -597,6 +597,9 @@ erDiagram
         int UserId FK "ответственный мастер"
         bool IsActive "только soft-delete, физически не удаляется"
         bool IsDefault
+        string PaymentLink "ссылка на внешнюю страницу оплаты, nullable"
+        enum LinkKind "PaymentLinkKind: Redirect"
+        string Description "описание способа оплаты для игрока, nullable"
     }
 
     ProjectFeeSettings {

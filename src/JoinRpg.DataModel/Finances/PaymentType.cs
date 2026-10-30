@@ -33,6 +33,21 @@ public class PaymentType : IProjectEntity, IValidatableObject, IDeletableSubEnti
 
     public bool IsDefault { get; set; }
 
+    /// <summary>
+    /// Ссылка на внешнюю страницу оплаты (http/https). null — ссылки нет.
+    /// </summary>
+    public string? PaymentLink { get; set; }
+
+    /// <summary>
+    /// Как игрок использует <see cref="PaymentLink"/>.
+    /// </summary>
+    public PaymentLinkKind LinkKind { get; set; }
+
+    /// <summary>
+    /// Описание способа оплаты для игрока, простой текст с переносами строк. null — описания нет.
+    /// </summary>
+    public string? Description { get; set; }
+
     public virtual ICollection<FinanceOperation> Operations { get; set; }
 
     #region interface implementations
