@@ -25,6 +25,24 @@ public class AccommodationGroupMergeTest : AccommodationInviteTestBase
         SaveChangesCallCount.ShouldBe(1);
     }
 
+    /// <summary>
+    /// #952: выключение приглашений игрокам — не запрет поселения: это основной способ работы
+    /// игр «расселяет МГ», и мастерское объединение групп работает как раньше.
+    /// </summary>
+    [Fact]
+    public async Task Merge_WhenPlayerInvitesDisabled_StillWorks()
+    {
+        mock.Project.Details.AccommodationInvitesEnabled = false;
+        mock.ReInitProjectInfo();
+        var host = CreateClaimWithAccommodation("Хозяин");
+        var target = CreateClaimWithAccommodation("Гость");
+
+        await CreateMasterService().MergeAccommodationGroups(host.GetId(), AccommodationGroupIdentification.From(target.GetId()));
+
+        target.AccommodationRequest.ShouldBe(host.AccommodationRequest);
+        SaveChangesCallCount.ShouldBe(1);
+    }
+
     [Fact]
     public async Task MergeWithGroup_MovesWholeGroup()
     {

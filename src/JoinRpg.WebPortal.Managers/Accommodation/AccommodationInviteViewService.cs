@@ -126,7 +126,12 @@ internal class AccommodationInviteViewService(
 
         var mode = claimInCharacter.Character.ProjectInfo.HasMasterAccess(userId, Permission.CanSetPlayersAccommodations)
             ? AccommodationInviteMode.Merge
-            : claimInfo.PlayerId == userId ? AccommodationInviteMode.Invite : AccommodationInviteMode.None;
+            // #952: приглашения игрокам могут быть выключены настройкой проекта — тогда селектор
+            // целей не показывается, мастера селят вместе как раньше.
+            : claimInfo.PlayerId == userId
+                && claimInCharacter.Character.ProjectInfo.AccommodationSettings.PlayerInvitesEnabled
+                ? AccommodationInviteMode.Invite
+                : AccommodationInviteMode.None;
 
         if (claimInfo.AccommodationTypeId is not { } typeId)
         {

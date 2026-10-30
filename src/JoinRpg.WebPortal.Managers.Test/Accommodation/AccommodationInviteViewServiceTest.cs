@@ -93,6 +93,40 @@ public class AccommodationInviteViewServiceTest
     }
 
     /// <summary>
+    /// #952: приглашения игрокам могут быть выключены настройкой проекта — тогда селектор целей
+    /// не показывается вовсе, а не отказывает при нажатии.
+    /// </summary>
+    [Fact]
+    public async Task Mode_Player_WhenPlayerInvitesDisabled_IsNone()
+    {
+        Mock.Project.Details.EnableAccommodation = true;
+        Mock.Project.Details.AccommodationInvitesEnabled = false;
+        Mock.ReInitProjectInfo();
+        _ = Group(Lux, Sender);
+        _ = Approved("Одиночка");
+
+        var result = await CreateService(Mock.Player.UserId).GetInviteTargets(SenderId);
+
+        result.Mode.ShouldBe(AccommodationInviteMode.None);
+    }
+
+    /// <summary>#952: запрет касается только приглашений игроков — мастер селят вместе как раньше.</summary>
+    [Fact]
+    public async Task Mode_MasterWithPermission_WhenPlayerInvitesDisabled_IsMerge()
+    {
+        Mock.Project.Details.EnableAccommodation = true;
+        Mock.Project.Details.AccommodationInvitesEnabled = false;
+        Mock.ReInitProjectInfo();
+        _ = Group(Lux, Sender);
+        _ = Approved("Одиночка");
+
+        var result = await CreateService().GetInviteTargets(SenderId);
+
+        result.Mode.ShouldBe(AccommodationInviteMode.Merge);
+        result.Targets.ShouldNotBeEmpty();
+    }
+
+    /// <summary>
     /// Режим решается по праву, а не по тому, чья заявка: мастер с правом расселять, играющий в своём
     /// проекте, на своей заявке тоже поселяет вместе (решение по #5656).
     /// </summary>

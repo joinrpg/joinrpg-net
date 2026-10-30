@@ -40,6 +40,15 @@ internal class AccommodationInviteServiceImpl(
             {
                 EnsureActsAsPlayer(ctx);
 
+                // Настройка проекта (#952): на играх, где расселяет МГ, приглашения игрокам
+                // выключаются целиком. Проверка до загрузок — отказу группы не нужны.
+                if (!ctx.ProjectInfo.AccommodationSettings.PlayerInvitesEnabled)
+                {
+                    //TODO[Localize]
+                    throw new AccommodationInviteNotAllowedException(senderClaimId.ProjectId,
+                        "В этом проекте игроки не могут приглашать друг друга к совместному проживанию.");
+                }
+
                 // Группа приглашающего берётся из его же заявки, а не по senderRequestId из
                 // запроса: идентификатор приходит из формы и раньше проверялся только на
                 // принадлежность проекту, то есть мастер мог пригласить соседа в чужую комнату.
