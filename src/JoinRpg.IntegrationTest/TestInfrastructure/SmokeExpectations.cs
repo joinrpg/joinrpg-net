@@ -98,6 +98,19 @@ internal static class SmokeExpectations
             ["my/claims"] = HttpStatusCode.MovedPermanently,
             ["{ProjectId}/roles/{CharacterGroupId}/discussing"] = HttpStatusCode.MovedPermanently,
 
+            // Списки заявок переехали на грид /{projectId}/claims (ADR027 §6): старые адреса —
+            // 301-редиректы с фильтром, выгрузки и постраничность пробрасываются.
+            ["{ProjectId}/claims/ActiveList"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/claims/Discussing"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/claims/OnHoldList"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/claims/Problems"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/claims/DiscussingForGroup"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/claims/ResponsibleDiscussing"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/claims/ResponsibleOnHold"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/claims/for-master/{ResponsibleMasterId}"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/claims/problems-for-master/{ResponsibleMasterId}"] = HttpStatusCode.MovedPermanently,
+            ["{ProjectId}/roles/{CharacterGroupId}/claims"] = HttpStatusCode.MovedPermanently,
+
             // Короткие ссылки: ведут на страницу, а сами её не показывают.
             [".well-known/change-password"] = HttpStatusCode.Redirect,
             ["user/me"] = HttpStatusCode.Redirect,
