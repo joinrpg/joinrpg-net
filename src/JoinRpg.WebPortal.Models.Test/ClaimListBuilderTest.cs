@@ -155,9 +155,11 @@ public class ClaimListBuilderTest
             claimInfo,
             roomName: null);
 
-        var legacy = claim.GetFields(Mock.ProjectInfo);
-        result.FieldValues.ShouldBe(legacy);
-        result.FieldValues.Single(x => x.Field.Id == Mock.CharacterFieldInfo.Id).Value.ShouldBe(approved ? "секрет персонажа" : "");
+        // FieldWithValue — ссылочный тип без значимого равенства, поэтому сравниваем контракт
+        // выгрузки: поле → его экспортная строка.
+        var legacy = claim.GetFields(Mock.ProjectInfo).ToDictionary(x => x.Field.Id, x => x.ExportString);
+        result.FieldValues.ToDictionary(x => x.Field.Id, x => x.ExportString).ShouldBe(legacy);
+        result.FieldValues.Single(x => x.Field.Id == Mock.CharacterFieldInfo.Id).ExportString.ShouldBe(approved ? "секрет персонажа" : "");
 
         var balance = claimInfo.ClaimInCharacter.CalculateBalance();
         result.TotalFee.ShouldBe(balance.TotalFee);
