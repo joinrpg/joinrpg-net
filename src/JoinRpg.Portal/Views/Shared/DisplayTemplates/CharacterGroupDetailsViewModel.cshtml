@@ -1,9 +1,12 @@
 ﻿@using JoinRpg.Web.Models.CharacterGroups
+@using JoinRpg.Web.ProjectCommon
+@inject ICharacterGroupUriLocator GroupUriLocator
 @model CharacterGroupDetailsViewModel
 
 @{
-  
+
       string strikeStyleOfName = Model.IsActive ? "" : "text-decoration: line-through";
+      var claimsGridGroupId = new CharacterGroupIdentification(new ProjectIdentification(Model.ProjectId), Model.CharacterGroupId);
 }
 <div style="margin-bottom: 1em">
     <ul class="nav nav-pills">
@@ -22,22 +25,12 @@
         }
         @if (Model.HasMasterAccess)
         {
-            <nav-link
-                asp-controller="ClaimList"
-                asp-action="ListForGroup"
-                asp-route-projectid="@Model.ProjectId"
-                asp-route-charactergroupid="@Model.CharacterGroupId">
-                Заявки
-            </nav-link>
+            // Списки заявок группы живут на гриде /{projectId}/claims (ADR027 §6), поэтому ссылка
+            // строится локатором, а подсветки активной вкладки, как у MVC-экшенов, у неё нет.
+            <li><a href="@GroupUriLocator.GetClaimListUri(claimsGridGroupId)">Заявки</a></li>
             if (!Model.IsSpecial)
             {
-                <nav-link
-                    asp-controller="ClaimList"
-                    asp-action="DiscussingForGroup"
-                    asp-route-projectid="@Model.ProjectId"
-                    asp-route-charactergroupid="@Model.CharacterGroupId">
-                    Обсуждаемые
-                </nav-link>
+                <li><a href="@GroupUriLocator.GetDiscussingClaimListUri(claimsGridGroupId)">Обсуждаемые</a></li>
             }
             <nav-link
                 asp-controller="CharacterList"

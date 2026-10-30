@@ -1,6 +1,15 @@
 @using JoinRpg.Portal.Infrastructure.Authentication
 @using JoinRpg.Web.ProjectCommon;
+@using JoinRpg.Web.Claims.UnifiedGrid
+@inject IClaimsGridUriLocator ClaimsGrid
 @model JoinRpg.Web.Models.MasterMenuViewModel
+
+@{
+    // Списки заявок живут на гриде /{projectId}/claims (ADR027 §6): меню ведёт туда сразу, минуя
+    // редиректы со старых адресов.
+    var gridProjectId = new ProjectIdentification(Model.ProjectId);
+    UserIdentification? currentMasterId = User.GetUserIdOrDefault() is { } userId ? new UserIdentification(userId) : null;
+}
 
 <div class="navbar navbar-default">
     <div class="container">
@@ -18,16 +27,16 @@
 
                     <ul class="dropdown-menu">
                         <li>
-                            @Html.ActionLink("Мои игроки", "Responsible", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.GetUserIdOrDefault() }, null)
+                            <a href="@ClaimsGrid.GetGridUri(gridProjectId, responsibleMasterId: currentMasterId)">Мои игроки</a>
                         </li>
                         <li>
-                            @Html.ActionLink("Мои проблемные заявки", "ResponsibleProblems", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.GetUserIdOrDefault() }, null)
+                            <a href="@ClaimsGrid.GetGridUri(gridProjectId, UgStatusFilterView.All, responsibleMasterId: currentMasterId, onlyWithProblems: true)">Мои проблемные заявки</a>
                         </li>
                         <li>
-                            @Html.ActionLink("Мои обсуждаемые заявки", "ResponsibleDiscussing", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.GetUserIdOrDefault() }, null)
+                            <a href="@ClaimsGrid.GetGridUri(gridProjectId, UgStatusFilterView.Discussion, responsibleMasterId: currentMasterId)">Мои обсуждаемые заявки</a>
                         </li>
                         <li>
-                            @Html.ActionLink("Мой лист ожидания", "ResponsibleOnHold", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.GetUserIdOrDefault() }, null)
+                            <a href="@ClaimsGrid.GetGridUri(gridProjectId, UgStatusFilterView.OnHold, responsibleMasterId: currentMasterId)">Мой лист ожидания</a>
                         </li>
                         <li>@Html.ActionLink("Мои деньги", "ByMaster", "Finances", new { Model.ProjectId, MasterId = User.GetUserIdOrDefault() }, null)</li>
                         <li>
@@ -109,12 +118,12 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Заявки <span class="caret"></span></a>
 
                     <ul class="dropdown-menu">
-                        <li>@Html.ActionLink("Все активные", "ActiveList", "ClaimList", new { Model.ProjectId }, null)</li>
-                        <li>@Html.ActionLink("Проблемные", "Problems", "ClaimList", new { Model.ProjectId }, null)</li>
-                        <li>@Html.ActionLink("На обсуждении", "Discussing", "ClaimList", new { Model.ProjectId }, null)</li>
+                        <li><a href="@ClaimsGrid.GetGridUri(gridProjectId)">Все активные</a></li>
+                        <li><a href="@ClaimsGrid.GetGridUri(gridProjectId, UgStatusFilterView.All, onlyWithProblems: true)">Проблемные</a></li>
+                        <li><a href="@ClaimsGrid.GetGridUri(gridProjectId, UgStatusFilterView.Discussion)">На обсуждении</a></li>
                         <li>@Html.ActionLink("Игрокам нужно заполнить", "SomeFieldsToFill", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "ClaimList", new { Model.ProjectId }, null)</li>
-                        <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "ClaimList", new { Model.ProjectId }, null)</li>
+                        <li><a href="@ClaimsGrid.GetGridUri(gridProjectId, UgStatusFilterView.OnHold)">Лист ожидания</a></li>
                         <li><a asp-page="/GamePages/GroupReportAllView" asp-route-projectid="@Model.ProjectId">Сводный отчет</a></li>
                         @if (Model.ProjectStatus.AllowsChanges())
                         {
@@ -138,7 +147,7 @@
                         }
                         @foreach (var cg in Model.BigGroups)
                         {
-                            <li>@Html.ActionLink(cg.Name, "ListForGroup", "ClaimList", new { Model.ProjectId, cg.CharacterGroupId.CharacterGroupId }, null)</li>
+                            <li><a href="@ClaimsGrid.GetGridUri(gridProjectId, characterGroupId: cg.CharacterGroupId)">@cg.Name</a></li>
                         }
                     </ul>
                 </li>

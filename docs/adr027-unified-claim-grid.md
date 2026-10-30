@@ -208,9 +208,11 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 `MasterMenu.cshtml`, `Acl/Manage.cshtml`, шапка группы (`DisplayTemplates/CharacterGroupDetailsViewModel.cshtml`),
 `GroupEditMenu.razor`, `GroupReport.razor`, `ICharacterGroupUriLocator.GetClaimListUri`/`GetDiscussingClaimListUri`
 в обеих реализациях (`UriServiceImpl`, `Blazor.Client/UriLocatorExtensions`), а с ними
-`UriLocatorConsistencyTests` и фейки локаторов в тестах. Старый экшен становится 301-редиректом на грид
-с параметрами и пробрасывает `export`, потому что на выгрузки бывают закладки. Каждый такой маршрут
-добавляется в `SmokeExpectations.ExpectedStatus` как `MovedPermanently`.
+`UriLocatorConsistencyTests` и фейки локаторов в тестах. Проектные и «мастерские» ссылки меню строят
+`IClaimsGridUriLocator.GetGridUri`, а адрес грида собирает один построитель `ClaimGridUrls` — им пользуются
+обе реализации локатора и редиректы, чтобы адреса не разошлись. Старый экшен становится 301-редиректом на грид
+с параметрами и пробрасывает `export` и `page`, если они пришли, потому что на выгрузки бывают закладки.
+Каждый такой маршрут добавляется в `SmokeExpectations.ExpectedStatus` как `MovedPermanently`.
 
 | Старый маршрут | Грид |
 |---|---|
@@ -232,6 +234,9 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 - «Кто обновил» показывает «игроком / мастером», без «мной» и имени (§4).
 - Над списком группы (`~/roles/{G}/claims`) больше нет шапки группы с навигацией
   (`GroupNavigationPage.ClaimsActive`). Ссылка из меню группы ведёт в грид с фильтром.
+- Старый список группы отвечал 404 на несуществующую группу; редирект отвечает 301 всегда, а грид
+  на неизвестную группу показывает пустой список — сам адрес стал постоянным, и проверять за ним
+  нечего.
 
 План миграции:
 ==

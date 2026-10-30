@@ -9,6 +9,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Accommodation;
+using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Comments;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
@@ -33,6 +34,7 @@ internal class UriServiceImpl(
     IPlotUriLocator,
     IAccommodationUriLocator,
     ICharacterGroupUriLocator,
+    IClaimsGridUriLocator,
     IProjectFieldUriLocator,
     IUriLocator<PlotFolderIdentification>,
     IUriLocator<ClaimIdentification>,
@@ -307,13 +309,22 @@ internal class UriServiceImpl(
             : null;
     }
 
+    // Списки заявок переехали на грид /{projectId}/claims (ADR027 §6): адрес собирает один
+    // построитель, чтобы ссылки и 301-редиректы со старых адресов не разошлись.
     Uri ICharacterGroupUriLocator.GetClaimListUri(CharacterGroupIdentification id) =>
-        new(GetBaseDomain(), linkGenerator.GetPathByAction("ListForGroup", "ClaimList",
-            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+        new(GetBaseDomain(), ClaimGridUrls.Build(id.ProjectId, characterGroupId: id));
 
     Uri ICharacterGroupUriLocator.GetDiscussingClaimListUri(CharacterGroupIdentification id) =>
-        new(GetBaseDomain(), linkGenerator.GetPathByAction("DiscussingForGroup", "ClaimList",
-            new { ProjectId = id.ProjectId.Value, id.CharacterGroupId }));
+        new(GetBaseDomain(), ClaimGridUrls.Build(id.ProjectId, status: UgStatusFilterView.Discussion, characterGroupId: id));
+
+    Uri IClaimsGridUriLocator.GetGridUri(
+        ProjectIdentification projectId,
+        UgStatusFilterView? status,
+        UserIdentification? responsibleMasterId,
+        CharacterGroupIdentification? characterGroupId,
+        bool onlyWithProblems,
+        int? page)
+        => new(GetBaseDomain(), ClaimGridUrls.Build(projectId, status, responsibleMasterId, characterGroupId, onlyWithProblems, page));
 
     Uri ICharacterGroupUriLocator.GetCharacterListUri(CharacterGroupIdentification id) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ByGroup", "CharacterList",

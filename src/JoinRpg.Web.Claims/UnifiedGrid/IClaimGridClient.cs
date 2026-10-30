@@ -58,6 +58,12 @@ public static class UgQueryParameterNames
     public const string OnlyWithProblems = "onlyWithProblems";
     public const string CharacterGroupId = "characterGroupId";
     public const string ResponsibleMasterId = "responsibleMasterId";
+
+    /// <summary>
+    /// Выгрузка того же фильтра в Excel (ADR027 §5). Это параметр страницы, а не webapi
+    /// <c>GetGrid</c>, но он тоже часть кешируемого 301-формата адресов (§6).
+    /// </summary>
+    public const string Export = "export";
 }
 
 /// <summary>

@@ -6,6 +6,7 @@ using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Web.Accommodation;
+using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -47,6 +48,41 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         ["GetCreateCharacterUri", (Func<ICharacterGroupUriLocator, Uri>)(l => l.GetCreateCharacterUri(GroupId))],
         ["GetAddGroupUri", (Func<ICharacterGroupUriLocator, Uri>)(l => l.GetAddGroupUri(GroupId))],
     ];
+
+    public static IEnumerable<object[]> ClaimsGridCases() =>
+    [
+        ["Active (defaults)", (Func<IClaimsGridUriLocator, Uri>)(l => l.GetGridUri(ProjectId))],
+        ["Problems", (Func<IClaimsGridUriLocator, Uri>)(l => l.GetGridUri(ProjectId, UgStatusFilterView.All, onlyWithProblems: true))],
+        ["Discussing for master", (Func<IClaimsGridUriLocator, Uri>)(l => l.GetGridUri(ProjectId, UgStatusFilterView.Discussion, responsibleMasterId: new(51)))],
+        ["OnHold for group", (Func<IClaimsGridUriLocator, Uri>)(l => l.GetGridUri(ProjectId, UgStatusFilterView.OnHold, characterGroupId: GroupId))],
+        ["Page", (Func<IClaimsGridUriLocator, Uri>)(l => l.GetGridUri(ProjectId, page: 4))],
+    ];
+
+    [Theory]
+    [MemberData(nameof(ClaimsGridCases))]
+    public void ClaimsGridLocatorsShouldAgree(string caseName, Func<IClaimsGridUriLocator, Uri> call)
+    {
+        _ = caseName;
+        var server = call(factory.Services.GetRequiredService<IClaimsGridUriLocator>());
+        var client = call(_clientServices.GetRequiredService<IClaimsGridUriLocator>());
+
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    /// <summary>
+    /// Сверх сверки реализаций закреплён и сам адрес: на него ведут 301-редиректы со старых списков
+    /// (ADR027 §6), а 301 браузер кеширует — разойтись реализации могут только синхронно, но
+    /// вот изменить формат уже нельзя.
+    /// </summary>
+    [Fact]
+    public void ClaimsGridUri_ShouldPointToGridWithFilter()
+    {
+        var server = factory.Services.GetRequiredService<IClaimsGridUriLocator>()
+            .GetGridUri(ProjectId, UgStatusFilterView.All, responsibleMasterId: new(51), onlyWithProblems: true, page: 2);
+
+        NormalizePathAndQuery(server).ShouldBe(
+            "/1620/claims?status=All&page=2&onlyWithProblems=true&responsibleMasterId=UserId%2851%29");
+    }
 
     [Theory]
     [MemberData(nameof(GroupCases))]
