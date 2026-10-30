@@ -181,11 +181,15 @@ public class PscbPaymentsPanelTest : BunitContext
         };
         restoreClient.ResultsByOrderId["0000000002"] = new PscbRestoreRowResult
         {
-            OrderId = "0000000002", Outcome = PscbRestoreRowOutcome.Failed, Message = "номер занят другой операцией",
+            OrderId = "0000000002",
+            Outcome = PscbRestoreRowOutcome.Failed,
+            Message = "номер занят другой операцией",
         };
         restoreClient.ResultsByOrderId["0000000003"] = new PscbRestoreRowResult
         {
-            OrderId = "0000000003", Outcome = PscbRestoreRowOutcome.AlreadySettled, Message = "уже проведён",
+            OrderId = "0000000003",
+            Outcome = PscbRestoreRowOutcome.AlreadySettled,
+            Message = "уже проведён",
         };
 
         var cut = RenderPanel();

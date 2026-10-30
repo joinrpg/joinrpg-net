@@ -1,6 +1,5 @@
 using System.Globalization;
 using JoinRpg.Common.PrimitiveTypes.Users;
-using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces;
@@ -709,7 +708,9 @@ public class PscbPaymentViewModelBuilderTests
     {
         var row = new PscbPaymentListRow
         {
-            Amount = 100, RefundedByBank = true, Refunds = [new PscbRefundInfo { Amount = 100, Status = status }],
+            Amount = 100,
+            RefundedByBank = true,
+            Refunds = [new PscbRefundInfo { Amount = 100, Status = status }],
         };
 
         PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row)

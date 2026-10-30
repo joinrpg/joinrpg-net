@@ -88,7 +88,7 @@ public interface IClaimsRepository : IDisposable
     /// </para>
     /// </remarks>
     Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds);
-    
+
     /// <summary>
     /// Число непрочитанных смотрящим комментариев в обсуждении каждой заявки игрока в любом статусе
     /// во всех проектах («Мои заявки» на профиле).
