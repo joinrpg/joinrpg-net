@@ -29,7 +29,11 @@ public enum UgScopeView
 /// <summary>
 /// Фильтр грида. Условия объединяются через «И».
 /// </summary>
-public record class UgFilterView(UgStatusFilterView Status);
+/// <param name="OnlyWithProblems">
+/// Только заявки с проблемами от <see cref="ProblemSeverity.Warning"/> и выше. Действует только в
+/// мастерском скоупе: капитан проблем не видит (ADR027 §1).
+/// </param>
+public record class UgFilterView(UgStatusFilterView Status, bool OnlyWithProblems = false);
 
 /// <summary>
 /// Страница грида. Страница считается по персонажам, чтобы заявки персонажа не рвались на её границе.

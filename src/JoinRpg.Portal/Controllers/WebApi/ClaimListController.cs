@@ -23,8 +23,9 @@ public class ClaimListController(IClaimListClient claimClient, IUnifiedGridClien
         [FromQuery] ProjectIdentification projectId,
         [FromQuery] UgScopeView scope,
         [FromQuery] UgStatusFilterView status,
+        [FromQuery] bool onlyWithProblems = false,
         [FromQuery] int page = 1)
     {
-        return await claimGridClient.GetGrid(projectId, scope, new UgFilterView(status), page);
+        return await claimGridClient.GetGrid(projectId, scope, new UgFilterView(status, onlyWithProblems), page);
     }
 }
