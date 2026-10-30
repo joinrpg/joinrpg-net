@@ -1,4 +1,6 @@
 #nullable enable
+*REMOVED*JoinRpg.Common.WebComponents.FormRow.Label.get -> string!
+JoinRpg.Common.WebComponents.FormRow.Label.get -> string?
 JoinRpg.Common.WebComponents.JoinPager
 JoinRpg.Common.WebComponents.JoinPager.JoinPager() -> void
 JoinRpg.Common.WebComponents.JoinPager.Page.get -> int

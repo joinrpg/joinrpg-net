@@ -110,7 +110,7 @@ else
                     <JoinMarkdownTextArea @bind-Value="model.Description" cols="100" />
                 </FormRowFor>
 
-                <FormRow Label="">
+                <FormRow>
                     <button type="submit" class="btn btn-success" disabled="@saving">@(RoomTypeId is null ? "Добавить" : "Сохранить")</button>
                     <a href="@ListUri" class="btn btn-default">Назад к списку типов поселения</a>
                 </FormRow>
