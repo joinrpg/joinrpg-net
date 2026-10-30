@@ -35,6 +35,12 @@ public interface IProjectRepository : IDisposable
     Task<Project> GetProjectWithFinances(int projectid);
     Task<Project> GetProjectForFinanceSetup(int projectid);
 
+    /// <summary>Токен мастера для выгрузки сводки по деньгам без входа на сайт; <c>null</c>, если он не мастер проекта.</summary>
+    Task<Guid?> GetMasterExportToken(ProjectIdentification projectId, UserIdentification userId);
+
+    /// <summary>Выдан ли токен выгрузки активному мастеру проекта.</summary>
+    Task<bool> IsActiveMasterExportToken(ProjectIdentification projectId, Guid token);
+
     Task<ICollection<Character>> GetCharacterByGroups(IReadOnlyCollection<CharacterGroupIdentification> characterGroupIds);
 
     /// <summary>

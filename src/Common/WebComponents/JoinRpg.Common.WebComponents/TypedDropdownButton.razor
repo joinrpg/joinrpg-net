@@ -8,30 +8,25 @@
 }
 else if (Items.Length > 0)
 {
-    <span class="dropdown">
-        <button class="@ButtonClass dropdown-toggle" type="button" id="@_menuId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            @Label
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="@_menuId">
-            @foreach (var item in Items)
+    @* JoinDropdownButton: нативный <details>, без JS Bootstrap; клик по пункту закрывает меню *@
+    <JoinDropdownButton Label="@Label" Style="@Style" Size="@Size">
+        @foreach (var item in Items)
+        {
+            var val = ToListItem(item);
+            if (val.Disabled)
             {
-                var val = ToListItem(item);
-                if (val.Disabled)
-                {
-                    <li class="disabled"><a href="#">@val.Text</a></li>
-                }
-                else if (ToLink is not null)
-                {
-                    <li><a href="@ToLink(item)">@val.Text</a></li>
-                }
-                else
-                {
-                    <li><a href="#" @onclick="() => ItemClicked(item)" @onclick:preventDefault>@val.Text</a></li>
-                }
+                <li class="disabled"><a href="#">@val.Text</a></li>
             }
-        </ul>
-    </span>
+            else if (ToLink is not null)
+            {
+                <li><a href="@ToLink(item)">@val.Text</a></li>
+            }
+            else
+            {
+                <li><a href="#" @onclick="() => ItemClicked(item)" @onclick:preventDefault>@val.Text</a></li>
+            }
+        }
+    </JoinDropdownButton>
 }
 
 @if (AutoConfirm)
@@ -74,10 +69,6 @@ else if (Items.Length > 0)
     /// Supports the <c>{name}</c> placeholder, which is replaced with the label of the clicked item.
     /// </summary>
     [Parameter] public string? AutoConfirmMessage { get; set; }
-
-    private readonly string _menuId = $"typed-dropdown-button-{Guid.NewGuid():N}";
-
-    private string ButtonClass => BootstrapStyle.Build("btn", Style, Size);
 
     private JoinMessageDialog? _confirmDialogRef;
     private TItem? _pendingItem;

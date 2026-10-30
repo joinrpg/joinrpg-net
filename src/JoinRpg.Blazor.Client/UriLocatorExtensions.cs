@@ -25,6 +25,9 @@ public static class UriLocatorExtensions
         Uri IFinanceSettingsUriLocator.GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) =>
             new($"/{paymentTypeId.ProjectId.Value}/money/EditPaymentType?PaymentTypeId={paymentTypeId.PaymentTypeId}", UriKind.Relative);
 
+        Uri IFinanceSettingsUriLocator.GetMasterSummaryExportUri(ProjectIdentification projectId, string token) =>
+            new($"/{projectId.Value}/money/SummaryByMaster?token={token}", UriKind.Relative);
+
         Uri IBadgeTemplateUriLocator.GetListUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/tools/badges", UriKind.Relative);
 

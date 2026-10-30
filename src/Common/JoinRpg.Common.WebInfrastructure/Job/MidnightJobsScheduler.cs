@@ -1,78 +1,86 @@
 using System.Reflection;
-using JoinRpg.Common.WebInfrastructure;
-using JoinRpg.Common.WebInfrastructure.DailyJob;
-using JoinRpg.Interfaces;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Portal.Infrastructure.DailyJobs;
+namespace JoinRpg.Common.WebInfrastructure.Job;
 
-public class MidnightJobBackgroundService<TJob>(
+/// <summary>
+/// Единый планировщик ежедневных джоб: на старте находит все зарегистрированные джобы
+/// (маркеры <see cref="RegisteredJob"/> из <c>AddJob</c>) и для каждой ждёт свою полночь UTC.
+/// Порядок вызовов <c>AddJob</c> при конфигурации сервисов не важен.
+/// </summary>
+internal class MidnightJobsScheduler(
     IServiceProvider serviceProvider,
-    ILogger<MidnightJobBackgroundService<TJob>> logger,
+    ILogger<MidnightJobsScheduler> logger,
     IHostApplicationLifetime hostApplicationLifetime,
-    IOptionsMonitor<DailyJobsOptions> options,
-    TimeProvider timeProvider
-    ) : BackgroundService
-    where TJob : class, IDailyJob
+    IOptionsMonitor<JobsOptions> options,
+    TimeProvider timeProvider,
+    IEnumerable<RegisteredJob> registeredJobs) : BackgroundService
 {
-    private static readonly string JobName = typeof(TJob).FullName!;
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await hostApplicationLifetime.WaitForAppStartup(stoppingToken);
+        await Task.WhenAll(registeredJobs.Select(job => RunJobLoop(job.JobType, stoppingToken)));
+    }
+
+    private async Task RunJobLoop(Type jobType, CancellationToken stoppingToken)
+    {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var delay = typeof(TJob).GetCustomAttribute<JobDelayAttribute>()?.Delay;
+            var delay = jobType.GetCustomAttribute<JobDelayAttribute>()?.Delay;
 
             var dayOfRun = await WaitUntilMidnight(delay, stoppingToken);
 
             logger.LogInformation("Время запуска джобы... ");
             stoppingToken.ThrowIfCancellationRequested();
 
-            await RunScheduledOnce(dayOfRun, stoppingToken);
+            await RunScheduledOnce(jobType, dayOfRun, stoppingToken);
         }
     }
 
     /// <summary>
     /// Один плановый запуск: проверка выключения конфигом, запись в журнал DailyJobRuns, запуск джобы.
     /// </summary>
-    internal async Task RunScheduledOnce(DateOnly dayOfRun, CancellationToken stoppingToken)
+    internal async Task RunScheduledOnce(Type jobType, DateOnly dayOfRun, CancellationToken stoppingToken)
     {
+        var jobName = jobType.FullName!;
+
         // Настройка читается на каждом запуске: изменение перезагружаемого конфига подхватывается без рестарта.
-        if (options.CurrentValue.IsDisabled(typeof(TJob)))
+        if (options.CurrentValue.IsDisabled(jobType))
         {
             // Строку в DailyJobRuns не пишем: после включения джоба отработает на ближайшем плановом запуске.
-            logger.LogWarning("Skipping running {jobName}: disabled by configuration {section}:Disabled", JobName, DailyJobsOptions.SectionName);
+            logger.LogWarning("Skipping running {jobName}: disabled by configuration {section}:Disabled", jobName, JobsOptions.SectionName);
             return;
         }
 
         using var scope = serviceProvider.CreateScope();
-        using var activity = BackgroundServiceActivity.ActivitySource.StartActivity($"Run of {JobName}");
-        activity?.AddTag("jobName", JobName);
-        var dailyJobRepository = scope.ServiceProvider.GetRequiredService<IDailyJobRepository>();
+        using var activity = BackgroundServiceActivity.ActivitySource.StartActivity($"Run of {jobName}");
+        activity?.AddTag("jobName", jobName);
+        var jobRepository = scope.ServiceProvider.GetRequiredService<IJobRepository>();
 
-        var jobId = new JobId(JobName, dayOfRun);
-        if (await dailyJobRepository.TryInsertJobRecord(jobId))
+        var jobId = new JobId(jobName, dayOfRun);
+        if (await jobRepository.TryInsertJobRecord(jobId))
         {
-            logger.LogInformation("Will start {jobName} on this instance", JobName);
+            logger.LogInformation("Will start {jobName} on this instance", jobName);
             try
             {
-                var job = scope.ServiceProvider.GetRequiredService<JobRunner<TJob>>();
-                await job.RunJob(scope, stoppingToken);
-                _ = await dailyJobRepository.TrySetJobCompleted(jobId);
-                logger.LogInformation("Successfully complete {jobName} on this instance", JobName);
+                var jobRunner = scope.ServiceProvider.GetRequiredService<IEnumerable<IJobRunner>>().Single(r => r.JobType == jobType);
+                await jobRunner.RunJob(scope, stoppingToken);
+                _ = await jobRepository.TrySetJobCompleted(jobId);
+                logger.LogInformation("Successfully complete {jobName} on this instance", jobName);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error running {jobName}", JobName);
-                _ = await dailyJobRepository.TrySetJobFailed(jobId);
+                logger.LogError(ex, "Error running {jobName}", jobName);
+                _ = await jobRepository.TrySetJobFailed(jobId);
             }
         }
         else
         {
-            logger.LogInformation("Skipping running {jobName} as it already running at another instance", JobName);
+            logger.LogInformation("Skipping running {jobName} as it already running at another instance", jobName);
         }
     }
+
     private async Task<DateOnly> WaitUntilMidnight(TimeSpan? delay, CancellationToken stoppingToken)
     {
         var now = timeProvider.GetUtcNow();

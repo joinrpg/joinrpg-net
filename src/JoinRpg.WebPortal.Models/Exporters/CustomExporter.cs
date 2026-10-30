@@ -66,13 +66,6 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     }
 
     [Pure]
-    protected ITableColumn IntColumn(Expression<Func<TRow, int>> func, string name)
-    {
-        var compiledFunc = func.Compile();
-        return new TableColumn<int>(name, r => compiledFunc(r));
-    }
-
-    [Pure]
     protected ITableColumn BoolColumn(Expression<Func<TRow, bool>> func)
     {
         var memberName = func.AsPropertyAccess()?.GetDisplayName() ?? "1";
@@ -234,18 +227,8 @@ public abstract class CustomExporter<TRow>(IUriService uriService) : IGeneratorF
     }
 
     [Pure]
-    protected ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc) => FieldColumn(projectField, fieldsFunc, projectField.Name);
-
-    [Pure]
-    protected ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyDictionary<ProjectFieldIdentification, string>> fieldsFunc)
+    protected ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc)
     {
-        return new TableColumn<string>(projectField.Name, x => fieldsFunc(x)[projectField.Id]);
-    }
-
-    [Pure]
-    protected static ITableColumn FieldColumn(ProjectFieldInfo projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc, string name)
-    {
-        return new TableColumn<string>(name,
-          x => fieldsFunc(x).SingleOrDefault(f => f.Field == projectField)?.ExportString);
+        return new TableColumn<string>(projectField.Name, x => fieldsFunc(x).SingleOrDefault(f => f.Field == projectField)?.ExportString);
     }
 }

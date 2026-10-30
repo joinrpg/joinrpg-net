@@ -52,13 +52,13 @@ public static class Services
     {
         return
             services
-            .AddDailyJob<ProjectPerformCloseJob>()
-            .AddDailyJob<BastiliaGamesSyncDailyJob>()
-            .AddDailyJob<DefaultAvatarsBackfillJob>()
+            .AddJob<ProjectPerformCloseJob>()
+            .AddJob<BastiliaGamesSyncDailyJob>()
+            .AddJob<DefaultAvatarsBackfillJob>()
 #pragma warning disable CS0618 // Разовые починки данных, возвращены для восстановления майского бекапа
-            .AddDailyJob<UnhotNpcJob>()
-            .AddDailyJob<HidePublicGroupsUnderPrivateJob>()
-            .AddDailyJob<FormerMastersBackfillJob>()
+            .AddJob<UnhotNpcJob>()
+            .AddJob<HidePublicGroupsUnderPrivateJob>()
+            .AddJob<FormerMastersBackfillJob>()
             .AddTransient<IPublicGroupVisibilityFixer, PublicGroupVisibilityFixer>()
 #pragma warning restore CS0618
             .AddTransient<ICharacterGroupService, CharacterGroupService>()
@@ -92,6 +92,7 @@ public static class Services
             .AddTransient<UserFieldValidator>()
             .AddTransient<IUserMergeService, UserMergeService>()
             .AddTransient<UserMergeNotifier>()
+            .AddScoped<IJobImpersonator, RobotJobImpersonator>()
             ;
     }
 

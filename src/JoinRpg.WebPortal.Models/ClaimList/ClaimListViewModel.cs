@@ -1,5 +1,4 @@
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -10,40 +9,27 @@ using JoinRpg.Web.Models.Claims;
 
 namespace JoinRpg.Web.Models.ClaimList;
 
-public class ClaimListViewModel : IOperationsAwareView
+public class ClaimListViewModel(
+   ICurrentUserAccessor currentUserId,
+   IReadOnlyList<ClaimInfo> claimsList,
+   Dictionary<CommentDiscussionId, int> unreadComments,
+   string title,
+   ProjectInfo projectInfo,
+   IClaimProblemValidator claimValidator) : IOperationsAwareView
 {
-    public string InlineTitle { get; private set; }
+    public string InlineTitle { get; private set; } = title;
 
     bool IOperationsAwareView.ShowCharacterCreateButton => false;
 
-    public IReadOnlyCollection<ClaimListItemViewModel> Items { get; }
+    public IReadOnlyCollection<ClaimListItemViewModel> Items { get; } = [.. claimsList.Select(c => ClaimListBuilder.BuildItem(currentUserId, claimValidator, c, unreadComments))];
 
-    public ProjectIdentification ProjectId { get; }
-    public IReadOnlyCollection<ClaimIdentification> ClaimIds { get; }
-    public IReadOnlyCollection<CharacterIdentification> CharacterIds { get; }
+    public ProjectIdentification ProjectId { get; } = projectInfo.ProjectId;
+    public IReadOnlyCollection<ClaimIdentification> ClaimIds { get; } = [.. claimsList.Select(c => c.ClaimId)];
+    public IReadOnlyCollection<CharacterIdentification> CharacterIds { get; } = [.. claimsList.Select(c => c.Character.Id)];
 
     public string? CountString => CountHelper.DisplayCount(Items.Count, "заявка", "заявки", "заявок");
 
     int? IOperationsAwareView.ProjectId => ProjectId;
-
-    public ClaimListViewModel(
-       ICurrentUserAccessor currentUserId,
-       IReadOnlyCollection<Claim> claims,
-       Dictionary<CommentDiscussionId, int> unreadComments,
-       string title,
-       ProjectInfo projectInfo,
-       IClaimProblemValidator claimValidator,
-       IReadOnlyDictionary<ClaimIdentification, ClaimInfo> claimInfos)
-    {
-        Items = claims
-          .Select(c => ClaimListBuilder.BuildItem(c, currentUserId, claimValidator, claimInfos[c.GetId()], unreadComments))
-          .ToList();
-        ClaimIds = claims.Select(c => c.GetId()).ToArray();
-        CharacterIds = claims.Select(c => c.GetCharacterId()).ToArray();
-        ProjectId = projectInfo.ProjectId;
-        InlineTitle = title;
-    }
-
 }
 
 public class MyClaimListViewModel(IReadOnlyCollection<Claim> claims, IReadOnlyDictionary<CommentDiscussionId, int> unreadComments)

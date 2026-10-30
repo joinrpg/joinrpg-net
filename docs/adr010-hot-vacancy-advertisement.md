@@ -28,7 +28,7 @@ MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) �
 - ⚠️ **§3 Слои и проекты** — частично. Проект `JoinRpg.Services.Advertisement` создан и
   зарегистрирован через `AddJoinAdvertisement(this IJoinServiceCollection)` (не Autofac), но без
   выделенных `IAdvertisementChannelService`/`IAdvertisementDispatchService` — вся оркестрация в
-  `SingleHotRoleAdvertisementJob`. Доставка — через `ISingleHotRoleSender`/`IAdvSenderFactory`
+  `SingleHotRoleAdvertisementJob` (ныне `AdvertisementJob`). Доставка — через `ISingleHotRoleSender`/`IAdvSenderFactory`
   (аналог `IAdvertisementSender` из ADR, но заточен под один способ) вместо
   `TelegramAdvertisementSender`.
 - ⚠️ **§4 Выборка контента** — реализованы шаги 1, 2 (кулдаун проекта), 3, 4, 5 (частично) для
@@ -45,7 +45,7 @@ MVP (`JoinRpg.Services.Advertisement` + `JoinRpg.Services.Advertisement.Test`) �
 - ❌ **§5 Секрет бота и безопасность** — не реализовано. Канал использует общего бота из
   конфигурации приложения (`TelegramLoginOptions`/`TelegramBotClient`, тот же, что и для личных
   уведомлений), захардкоженный `chatId`; отдельного хранения/шифрования секрета в БД нет. Джоба
-  зарегистрирована как обычная ежедневная (`AddDailyJob<SingleHotRoleAdvertisementJob>`,
+  зарегистрирована как обычная ежедневная (`AddJob<AdvertisementJob>` из `JoinRpg.Common.WebInfrastructure.Interfaces`,
   `[JobDelay(9)]` = 09:00 UTC / 12:00 МСК), выполняется под роботом-админом — этот пункт §5
   реализован.
 - ✅ **§6 Формирование сообщений** — реализовано для `SingleHotRole`
@@ -297,11 +297,11 @@ DAL проекта — **EF6**, не EF Core (см. память проекта)
   этой итерации **откладываем**: DP-ключи и шифртекст лежат в одной БД — принимаем как осознанный
   компромисс MVP.
 
-Джоба выполняется под роботом-админом (`JobRunner` подставляет `RobotUser`, см. ADR009 и память
-«джобы работают под роботом-админом») — админ-проверки в сервисах проходят сами собой.
+Джоба выполняется под роботом-админом (имперсонацию включает раннер через
+`IJobImpersonator`/`RobotJobImpersonator`, см. ADR009) — админ-проверки в сервисах проходят сами собой.
 
-**Тип джобы.** Одна **ежедневная** джоба (`DailyJob`/`MidnightJobBackgroundService`, ADR002),
-запускаемая **каждый день в 12:00 по МСК** (время в конфиге джобы). Она перебирает активные расписания,
+**Тип джобы.** Одна **ежедневная** джоба (`IJob`, планировщик `MidnightJobsScheduler`, ADR002),
+запускаемая **каждый день в 12:00 по МСК** (`[JobDelay(9)]` = 09:00 UTC). Она перебирает активные расписания,
 чей `DaysOfWeekMask` включает сегодняшний день недели и у которых `LastRunDate` не сегодня,
 выполняет по одной отправке на каждое и проставляет `LastRunDate` (at-most-once в сутки,
 идемпотентность по ADR002). Отдельное время суток на расписание не нужно.

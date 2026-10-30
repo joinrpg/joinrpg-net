@@ -98,7 +98,9 @@ public class CharacterInfoMapperTest
         DateTime? checkInDate = null,
         DateTimeOffset? lastPlayerCommentAt = null,
         DateTimeOffset? lastMasterCommentAt = null,
+        int? lastMasterCommentByUserId = null,
         DateTimeOffset? lastVisibleMasterCommentAt = null,
+        int? lastVisibleMasterCommentByUserId = null,
         int? currentFee = null,
         bool preferentialFeeUser = false,
         string? jsonData = null,
@@ -128,7 +130,9 @@ public class CharacterInfoMapperTest
             CheckInDate = checkInDate,
             LastPlayerCommentAt = lastPlayerCommentAt,
             LastMasterCommentAt = lastMasterCommentAt,
+            LastMasterCommentByUserId = lastMasterCommentByUserId,
             LastVisibleMasterCommentAt = lastVisibleMasterCommentAt,
+            LastVisibleMasterCommentByUserId = lastVisibleMasterCommentByUserId,
             CommentDiscussionId = 0,
             CurrentFee = currentFee,
             PreferentialFeeUser = preferentialFeeUser,
@@ -690,5 +694,29 @@ public class CharacterInfoMapperTest
 
         CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single()
             .Player.Avatar.ShouldBeNull();
+    }
+
+    // Авторы последних комментариев — FK-колонки Claims без JOIN (ADR021): null без комментария,
+    // идентификатор — с комментарием. Имя список заявок смотрит в мастерах ProjectInfo.
+    [Fact]
+    public void Map_ClaimWithoutMasterComments_ShouldHaveNoCommentAuthors()
+    {
+        var row = MakeRow(claims: [MakeClaimRow()]);
+
+        var claim = CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single();
+        claim.LastMasterCommentBy.ShouldBeNull();
+        claim.LastVisibleMasterCommentBy.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Map_ClaimWithMasterComments_ShouldMapAuthorIds()
+    {
+        var row = MakeRow(claims: [MakeClaimRow(
+            lastMasterCommentByUserId: 7,
+            lastVisibleMasterCommentByUserId: 9)]);
+
+        var claim = CharacterInfoMapper.Map(row, ProjectInfo).Claims.Single();
+        claim.LastMasterCommentBy.ShouldBe(new UserIdentification(7));
+        claim.LastVisibleMasterCommentBy.ShouldBe(new UserIdentification(9));
     }
 }

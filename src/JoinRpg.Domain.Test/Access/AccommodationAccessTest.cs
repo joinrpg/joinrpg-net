@@ -76,7 +76,6 @@ public class AccommodationAccessTest
         var claim = CreateClaim(ClaimStatus.CheckedIn);
         var player = new UserIdentification(mock.Player.UserId);
 
-        _ = Should.Throw<NoAccessToProjectException>(() => claim.RequestAccommodationChangeAccess(player));
         _ = Should.Throw<NoAccessToProjectException>(() => Snapshot(claim).RequestAccommodationChangeAccess(player));
     }
 
@@ -97,15 +96,11 @@ public class AccommodationAccessTest
     }
 
     /// <summary>
-    /// Решение по снимку (ADR022) — и сверка с перегрузкой над EF-заявкой: правило одно, и
-    /// кнопки на странице заявки обязаны совпадать с тем, что разрешит операция.
+    /// Решение по снимку (ADR022): по нему и страница заявки решает, показывать ли кнопки, и
+    /// операция решает, отказать ли — правило одно.
     /// </summary>
     private bool CanChange(Claim claim, UserIdentification? user)
-    {
-        var viaSnapshot = Snapshot(claim).CanChangeAccommodation(user);
-        claim.CanChangeAccommodation(user).ShouldBe(viaSnapshot);
-        return viaSnapshot;
-    }
+        => Snapshot(claim).CanChangeAccommodation(user);
 
     private User CreateMasterWithoutAccommodationPermission()
     {

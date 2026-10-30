@@ -29,7 +29,7 @@ internal class UnifiedGridViewService(
     {
         var status = ToDomain(filter.Status);
 
-        var characters = await LoadScope(projectId, scope, status.GetCharacterStatusSpec());
+        var characters = await LoadScope(projectId, scope, status.GetCharacterStatusSpec(), filter.Group);
 
         // Отбор в памяти, поэтому скоуп загружен целиком, и страница режется уже от готового списка
         // (ADR027 §3: пагинация сокращает ответ, а не нагрузку на БД).
@@ -38,15 +38,18 @@ internal class UnifiedGridViewService(
                 .Where(character => status.Matches(character))
                 .Select(character => new GridRow(character, status.SelectClaims(character)))];
 
+        if (scope == UgScopeView.Master && filter.Responsible is { } responsible)
+        {
+            rows = KeepClaims(rows, claim => claim.ResponsibleMasterId == responsible);
+        }
+
         // Проблемы скоупа целиком нужны только фильтру. Без него их считаем для одной страницы:
         // сортировка от проблем не зависит, а профили игроков и валидация — самое дорогое в запросе.
         IReadOnlyDictionary<ClaimIdentification, IReadOnlyCollection<ClaimProblem>>? problems = null;
         if (scope == UgScopeView.Master && filter.OnlyWithProblems)
         {
             problems = await Validate(rows);
-            rows = [.. rows
-                .Select(row => row with { Claims = [.. row.Claims.Where(claim => HasWarnings(problems[claim.ClaimId]))] })
-                .Where(row => row.Claims.Count > 0)];
+            rows = KeepClaims(rows, claim => HasWarnings(problems[claim.ClaimId]));
         }
 
         var sorted = Sort(
@@ -88,13 +91,14 @@ internal class UnifiedGridViewService(
             .ThenBy(row => item(row).Character.Name.CharacterId.CharacterId)];
 
     /// <summary>
-    /// Персонажи скоупа: мастеру — весь проект, капитану — поддеревья групп из его правил.
-    /// Без прав на запрошенный скоуп грид пуст.
+    /// Персонажи скоупа: мастеру — весь проект (или выбранная группа с подгруппами), капитану —
+    /// поддеревья групп из его правил. Без прав на запрошенный скоуп грид пуст.
     /// </summary>
     private async Task<IReadOnlyCollection<CharacterInfo>> LoadScope(
         ProjectIdentification projectId,
         UgScopeView scope,
-        CharacterStatusSpec spec)
+        CharacterStatusSpec spec,
+        CharacterGroupIdentification? group)
     {
         switch (scope)
         {
@@ -104,7 +108,18 @@ internal class UnifiedGridViewService(
                 {
                     return [];
                 }
-                return await characterInfoRepository.GetAllCharacterInfos(projectId, spec);
+                if (group is null)
+                {
+                    return await characterInfoRepository.GetAllCharacterInfos(projectId, spec);
+                }
+                // Группы нет в проекте — пустой грид, а не чужие персонажи. Удалённая группа остаётся в
+                // дереве и показывает своих бывших персонажей, как старый список заявок группы.
+                if (group.ProjectId != projectId || projectInfo.GroupTree.GetGroupByIdOrDefault(group) is null)
+                {
+                    return [];
+                }
+                return await characterInfoRepository.GetCharacterInfosByGroups(
+                    projectId, [.. projectInfo.GroupTree.GetChildGroupIdsIncludingThis(group)], spec);
 
             case UgScopeView.Captain:
                 var access = await captainRulesRepository.GetCaptainRules(projectId, currentUserAccessor.UserIdentification);
@@ -123,6 +138,15 @@ internal class UnifiedGridViewService(
 
     /// <summary>Персонаж грида и его показанные заявки.</summary>
     private sealed record GridRow(CharacterInfo Character, IReadOnlyCollection<CharacterClaimInfo> Claims);
+
+    /// <summary>
+    /// Отбор по заявкам: остаются подходящие заявки, а персонажи без них (в том числе вакансии)
+    /// пропадают.
+    /// </summary>
+    private static IReadOnlyList<GridRow> KeepClaims(IEnumerable<GridRow> rows, Func<CharacterClaimInfo, bool> predicate)
+        => [.. rows
+            .Select(row => row with { Claims = [.. row.Claims.Where(predicate)] })
+            .Where(row => row.Claims.Count > 0)];
 
     /// <summary>
     /// Проблемы показанных заявок — один раз на заявку, с порогом <see cref="ProblemSeverity.Hint"/>, как
@@ -156,7 +180,10 @@ internal class UnifiedGridViewService(
             UgStatusFilterView.Active => UnifiedGridStatus.Active,
             UgStatusFilterView.Vacant => UnifiedGridStatus.Vacant,
             UgStatusFilterView.Discussion => UnifiedGridStatus.Discussion,
+            UgStatusFilterView.Approved => UnifiedGridStatus.Approved,
+            UgStatusFilterView.OnHold => UnifiedGridStatus.OnHold,
             UgStatusFilterView.Archive => UnifiedGridStatus.Archive,
+            UgStatusFilterView.All => UnifiedGridStatus.All,
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
         };
 }

@@ -9,7 +9,7 @@ public class ProjectFieldSettingsViewModel
     /// <summary>Есть право менять поля; без него панель только для просмотра.</summary>
     public required bool HasEditAccess { get; init; }
 
-    [Display(Name = "Имя персонажа привязано к", Description = "Привязывать можно только к полям персонажа типа строка.")]
+    [Display(Name = "Имя персонажа привязано к", Description = "Привязывать можно только к публичным полям персонажа типа строка: имена персонажей показываются всем посетителям сайта.")]
     public required ProjectFieldIdentification? NameField { get; set; }
 
     [Display(Name = "Описание персонажа привязано к", Description = "Привязывать можно только к полям персонажа типа текст.")]

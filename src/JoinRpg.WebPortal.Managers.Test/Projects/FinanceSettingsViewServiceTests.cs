@@ -25,7 +25,10 @@ public class FinanceSettingsViewServiceTests
             new FakeProjectMetadataRepository(Mock),
             financeSettingsService,
             new FakeCurrentUserAccessor(new UserIdentification(userId), isAdmin),
-            new FakeVirtualUsersService());
+            new FakeVirtualUsersService(),
+            // Репозиторий проекта нужен только выгрузке в Google Таблицы, её проверяет интеграционный смоук
+            projectRepository: null!,
+            new FakeUriLocator());
 
     private const int PaymentsUserId = 9000;
 
@@ -145,6 +148,13 @@ public class FinanceSettingsViewServiceTests
 
         (await service.GetGeneralSettings(Mock.ProjectInfo.ProjectId)).HasEditAccess.ShouldBeTrue();
         (await service.GetFeeSettings(Mock.ProjectInfo.ProjectId)).HasEditAccess.ShouldBeTrue();
+    }
+
+    private sealed class FakeUriLocator : IFinanceSettingsUriLocator
+    {
+        public Uri GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) => throw new NotSupportedException();
+        public Uri GetOnlinePaymentsInfoUri() => throw new NotSupportedException();
+        public Uri GetMasterSummaryExportUri(ProjectIdentification projectId, string token) => throw new NotSupportedException();
     }
 
     private sealed class FakeVirtualUsersService : IVirtualUsersService

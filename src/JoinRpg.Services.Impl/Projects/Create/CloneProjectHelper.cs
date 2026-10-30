@@ -82,7 +82,7 @@ internal class CloneProjectHelper(
         await projectService.SetContactSettings(projectId, original.ProfileRequirementSettings);
         await projectService.SetCheckInSettings(projectId, original.ProjectCheckInSettings with { InProgress = false });
 
-        await projectService.SetAccommodationSettings(projectId, original.AccommodationSettings.Enabled);
+        await projectService.SetAccommodationSettings(projectId, original.AccommodationSettings.Enabled, original.AccommodationSettings.PlayerInvitesEnabled);
 
         await projectService.SetTimeZone(projectId, original.TimeZone);
 
@@ -157,8 +157,10 @@ internal class CloneProjectHelper(
                             field.Name,
                             field.Description?.Value ?? "",
                             field.CanPlayerEdit,
-                            field.CanPlayerView,
-                            field.IsPublic,
+                            // Поле-имя обязано быть публичным (#965): старые проекты с
+                            // непубличным полем-именем клонируем уже исправленными.
+                            field.CanPlayerView || field.IsName,
+                            field.IsPublic || field.IsName,
                             field.BoundTo,
                             field.MandatoryStatus,
                             [], // Будут скопированы позже, если группы копируются

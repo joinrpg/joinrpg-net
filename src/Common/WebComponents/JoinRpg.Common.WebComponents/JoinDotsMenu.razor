@@ -1,16 +1,14 @@
-<span class="dropdown">
-    <button class="@ButtonClass dropdown-toggle"
-            type="button"
-            id="@_menuId"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="true">
-        <JoinIcon Icon="JoinIconType.MenuVertical" Title="действия" />
-    </button>
-    <ul class="dropdown-menu" aria-labelledby="@_menuId">
-        @ChildContent
-    </ul>
-</span>
+@*
+    Кнопка-«три точки» с меню действий: JoinDropdownButton с иконкой вместо подписи. Открывается
+    браузером (нативный <details>), JS Bootstrap не нужен. Пункты меню — JoinMenuItem, заголовок —
+    JoinMenuHeader. Имя и подсказка кнопки — «действия», потому что на ней одна иконка.
+*@
+<JoinDropdownButton Size="Size" AriaLabel="действия">
+    <ToggleContent>
+        <JoinIcon Icon="JoinIconType.MenuVertical" />
+    </ToggleContent>
+    <ChildContent>@ChildContent</ChildContent>
+</JoinDropdownButton>
 
 @code {
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = null!;
@@ -20,8 +18,4 @@
     /// совпадало по высоте с кнопками рядом.
     /// </summary>
     [Parameter] public SizeStyleEnum Size { get; set; } = SizeStyleEnum.Small;
-
-    private string ButtonClass => BootstrapStyle.Build("btn", VariationStyleEnum.None, Size);
-
-    private readonly string _menuId = $"dots-menu-{Guid.NewGuid():N}";
 }

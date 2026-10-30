@@ -33,6 +33,7 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
         MasterDescriptionDisplay = field.MasterDescription.ToHtmlString();
         ProjectFieldId = field.Id.ProjectFieldId;
         IsPublic = field.IsPublic;
+        IsNameField = field.IsName;
         Name = field.Name;
         ProjectId = field.Id.ProjectId;
         MandatoryStatus = (MandatoryStatusViewType)field.MandatoryStatus;
@@ -101,11 +102,26 @@ public class GameFieldEditViewModel : GameFieldViewModelBase
     [ReadOnly(true)]
     public bool IsActive { get; private set; }
 
+    /// <summary>
+    /// Поле привязано к имени персонажа. Постится скрытым полем: нужно правилу валидации
+    /// на POST, окончательную проверку всё равно делает сервис (#965).
+    /// </summary>
+    [ReadOnly(true)]
+    public bool IsNameField { get; set; }
+
     [Display(Name = "Включать в распечатки")]
     public bool IncludeInPrint { get; set; } = true;
 
     protected override IEnumerable<ValidationResult> ValidateCore()
     {
+        // Сервер разрешает править старое непубличное поле-имя, если публичность не меняется,
+        // но из интерфейса намеренно требуем сразу сделать его публичным — так данные лечатся,
+        // а мастер видит требование, а не молчаливое расхождение настроек (#965).
+        if (IsNameField && !IsPublic)
+        {
+            yield return
+                new ValidationResult("Поле, привязанное к имени персонажа, должно быть публичным (видно всем): имена персонажей показываются всем посетителям сайта.");
+        }
         if (!CanPlayerView && IncludeInPrint)
         {
             yield return

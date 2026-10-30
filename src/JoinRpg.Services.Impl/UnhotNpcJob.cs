@@ -6,7 +6,7 @@ using JoinRpg.DomainTypes.Characters;
 namespace JoinRpg.Services.Impl;
 
 [Obsolete("Временный хак")]
-internal class UnhotNpcJob(IUnitOfWork unitOfWork, ILogger<UnhotNpcJob> logger) : IDailyJob
+internal class UnhotNpcJob(IUnitOfWork unitOfWork, ILogger<UnhotNpcJob> logger) : IJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {

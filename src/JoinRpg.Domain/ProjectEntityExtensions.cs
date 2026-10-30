@@ -57,77 +57,10 @@ public static class ProjectEntityExtensions
         return projectInfo;
     }
 
-    [Obsolete("Передавай сюда ProjectInfo")]
-    public static T RequestMasterAccess<T>(this T field,
-        [NotNull]
-        int? currentUserId,
-        Permission permission = Permission.None)
-    where T : IProjectEntity
-    {
-        ArgumentNullException.ThrowIfNull(field);
-        ArgumentNullException.ThrowIfNull(field.Project);
-
-        if (currentUserId is null)
-        {
-            throw new NoAccessToProjectException(field.Project, currentUserId);
-        }
-
-        if (!field.HasMasterAccess(UserIdentification.FromOptional(currentUserId), permission))
-        {
-            throw new NoAccessToProjectException(field.Project, currentUserId, permission);
-        }
-
-        return field;
-    }
-
-    [Obsolete]
-    public static T EnsureActive<T>([NotNull] this T? entity) where T : IDeletableSubEntity, IProjectEntity
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-        if (!entity.IsActive)
-        {
-            throw new ProjectEntityDeactivatedException(entity);
-        }
-
-        if (!entity.Project.Active)
-        {
-            throw new ProjectEntityDeactivatedException(entity);
-        }
-
-        return entity;
-    }
-
-    [Obsolete("Используйте AccessArguments")]
-
-    public static bool HasAnyAccess(this Character character, int? currentUserIdOrDefault)
-    {
-        ArgumentNullException.ThrowIfNull(character);
-
-        var playerAccess = currentUserIdOrDefault != null && character.ApprovedClaim?.PlayerUserId == currentUserIdOrDefault;
-
-        return playerAccess || character.HasMasterAccess(UserIdentification.FromOptional(currentUserIdOrDefault));
-    }
-
-    // Отдельный оверлоад для UserIdentification? обязателен: implicit operator int(UserIdentification self)
-    // разыменовывает self при конвертации в int?, и вызов HasAnyAccess(int?) с null-значением падал с NullReferenceException.
-    [Obsolete("Используйте AccessArguments")]
-    public static bool HasAnyAccess(this Character character, UserIdentification? currentUserIdOrDefault)
-    {
-        ArgumentNullException.ThrowIfNull(character);
-
-        var playerAccess = currentUserIdOrDefault is not null && character.ApprovedClaim?.PlayerUserId == currentUserIdOrDefault.Value;
-
-        return playerAccess || character.HasMasterAccess(currentUserIdOrDefault);
-    }
-
     public static bool HasPlayerAccesToClaim(this Claim claim, int? currentUserIdOrDefault)
     {
         ArgumentNullException.ThrowIfNull(claim);
 
         return claim.PlayerUserId == currentUserIdOrDefault;
     }
-
-    [Obsolete("Передавай сюда ProjectInfo")]
-    public static T EnsureProjectActive<T>(this T entity)
-  where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivatedException(entity.ProjectIdentification) : entity;
 }

@@ -1,18 +1,18 @@
 using System.Collections.Frozen;
 using System.Data.Common;
-using JoinRpg.Interfaces;
+using JoinRpg.Common.WebInfrastructure.Job;
 using JoinRpg.Services.Interfaces;
 
-namespace JoinRpg.Portal.Infrastructure.DailyJobs;
+namespace JoinRpg.Portal.Infrastructure.Jobs;
 
 [Obsolete("Выключена (DRP #5459): никогда не работала и после восстановления из старого бэкапа может повторно списать деньги. Не регистрировать без отдельного решения.")]
-public class PerformRecurrentPaymentMidnightJob(IPaymentsService paymentsService, ILogger<PerformRecurrentPaymentMidnightJob> logger) : IDailyJob
+public class PerformRecurrentPaymentMidnightJob(IPaymentsService paymentsService, ILogger<PerformRecurrentPaymentMidnightJob> logger) : IJob
 {
     private const int MaxTransientErrors = 5;
     private const int RetryDelayMilliseconds = 2000;
     private static readonly FrozenSet<FinanceOperationState> FinanceOperationStates = [FinanceOperationState.Proposed, FinanceOperationState.Approved];
 
-    async Task IDailyJob.RunOnce(CancellationToken cancellationToken)
+    async Task IJob.RunOnce(CancellationToken cancellationToken)
     {
         const int maxSubsequentFailedPayments = 10; // We believe that many subsequently failed payments is a sign of bank problem (fraud protection, service down, etc)
 

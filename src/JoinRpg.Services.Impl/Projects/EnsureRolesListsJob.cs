@@ -17,7 +17,7 @@ public class EnsureRolesListsJob(
     IUnitOfWork unitOfWork,
     IProjectMetadataRepository projectMetadataRepository,
     IProjectRolesListService projectRolesListService,
-    ILogger<EnsureRolesListsJob> logger) : IDailyJob
+    ILogger<EnsureRolesListsJob> logger) : IJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {

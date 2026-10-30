@@ -63,7 +63,9 @@ internal sealed class CharacterInfoClaimRow
     public required DateTime? CheckInDate { get; init; }
     public required DateTimeOffset? LastPlayerCommentAt { get; init; }
     public required DateTimeOffset? LastMasterCommentAt { get; init; }
+    public required int? LastMasterCommentByUserId { get; init; }
     public required DateTimeOffset? LastVisibleMasterCommentAt { get; init; }
+    public required int? LastVisibleMasterCommentByUserId { get; init; }
     public required int CommentDiscussionId { get; init; }
     public required int? CurrentFee { get; init; }
     public required bool PreferentialFeeUser { get; init; }

@@ -88,6 +88,10 @@ public abstract class JoinMvcControllerBase : Controller
                 ModelState.AddModelError("",
                     "Невозможно удалить поле, потому что оно привязано к имени персонажа");
                 return;
+            case JoinRpgNameFieldShouldBePublicException _:
+                ModelState.AddModelError("",
+                    "Поле, привязанное к имени персонажа, должно быть публичным (видно всем): имена персонажей показываются всем посетителям сайта");
+                return;
             case JoinFieldScheduleShouldBeUniqueException _:
                 ModelState.AddModelError("", "Невозможно добавить второе поле с настройками расписания");
                 return;

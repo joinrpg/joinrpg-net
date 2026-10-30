@@ -15,7 +15,7 @@ internal class DefaultAvatarsBackfillJob(
     IServiceScopeFactory scopeFactory,
     ICurrentUserAccessor currentUserAccessor,
     ILogger<DefaultAvatarsBackfillJob> logger
-    ) : IDailyJob
+    ) : IJob
 {
     private const int BatchSize = 500;
 

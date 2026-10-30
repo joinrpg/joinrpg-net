@@ -57,6 +57,7 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
         // Текст отказа собирается в админском сервисе и уже на русском
         UserAdminActionRefusedException refused => (StatusCodes.Status400BadRequest, refused.Message),
         VisibleReplyToHiddenCommentException => (StatusCodes.Status409Conflict, "Ответ на комментарий, скрытый от игрока, тоже должен быть скрыт от игрока"),
+        JoinRpgNameFieldShouldBePublicException => (StatusCodes.Status409Conflict, "Поле, привязанное к имени персонажа, должно быть публичным (видно всем): имена персонажей показываются всем посетителям сайта"),
         _ => null,
     };
 }

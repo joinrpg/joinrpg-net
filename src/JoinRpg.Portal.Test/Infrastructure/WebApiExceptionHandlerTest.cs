@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
@@ -111,6 +112,21 @@ public class WebApiExceptionHandlerTest
         handled.ShouldBeTrue();
         httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status409Conflict);
         problem.GetProperty("title").GetString().ShouldStartWith("Ответ на комментарий, скрытый от игрока");
+    }
+
+    // Остров настроек полей показывает причину, если выбрать непубличное поле имени персонажа (#965)
+    [Fact]
+    public async Task NameFieldShouldBePublic_InWebApi_ReturnsConflictWithReason()
+    {
+        var httpContext = CreateHttpContext("/webapi/1611/project/SaveFieldSettings");
+        var exception = new JoinRpgNameFieldShouldBePublicException(new ProjectField { ProjectId = ProjectId.Value, FieldName = "Имя персонажа" });
+
+        var (handled, problem) = await Handle(httpContext, exception);
+
+        handled.ShouldBeTrue();
+        WebApiExceptionHandler.IsExpectedRefusal(exception).ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status409Conflict);
+        problem.GetProperty("title").GetString().ShouldStartWith("Поле, привязанное к имени персонажа, должно быть публичным");
     }
 
     [Fact]

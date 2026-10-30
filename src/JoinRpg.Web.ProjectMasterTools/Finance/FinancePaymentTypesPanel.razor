@@ -4,7 +4,7 @@
 @inject IFinanceSettingsUriLocator uriLocator
 @inject ILogger<FinancePaymentTypesPanel> logger
 
-<JoinCollapsePanel Group="@FinanceSettingsPanels.Group" Id="@AnchorId">
+<JoinCollapsePanel Id="@AnchorId">
     <Header>Методы оплаты</Header>
     <HeaderExtra>
         @* Виден и в свёрнутой панели: взнос есть, а сдать его нечем. *@
@@ -14,6 +14,11 @@
         }
     </HeaderExtra>
     <ChildContent>
+        @if (loadError is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@loadError</JoinAlert>
+            return;
+        }
         @if (model is null)
         {
             <JoinLoadingMessage />
@@ -113,7 +118,21 @@
     private static object RowKey(FinancePaymentTypeItemViewModel item)
         => item.PaymentTypeId as object ?? (item.Kind, item.Master.UserId);
 
-    protected override async Task OnInitializedAsync() => model = await settingsClient.GetPaymentTypes(ProjectId);
+    private string? loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            model = await settingsClient.GetPaymentTypes(ProjectId);
+        }
+        catch (Exception exception)
+        {
+            // Одна панель — не вся страница: показываем ошибку в панели, остальные работают
+            logger.LogError(exception, "Ошибка при загрузке методов оплаты проекта {ProjectId}", ProjectId);
+            loadError = "Не удалось загрузить методы оплаты. Обновите страницу и попробуйте ещё раз.";
+        }
+    }
 
     private async Task Add(ButtonClickEventArgs args)
     {

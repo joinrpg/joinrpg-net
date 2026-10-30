@@ -244,6 +244,31 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     }
 
     /// <summary>
+    /// #952: на играх, где расселяет МГ, приглашения игрокам выключаются настройкой проекта.
+    /// Запрет касается только создания: уже отправленные приглашения принимаются, а мастера
+    /// селят вместе без приглашения (#5656).
+    /// </summary>
+    [Fact]
+    public async Task CreateInvite_WhenPlayerInvitesDisabled_Throws()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        mock.Project.Details.AccommodationInvitesEnabled = false;
+        mock.ReInitProjectInfo();
+
+        var exception = await Should.ThrowAsync<AccommodationInviteNotAllowedException>(
+            () => CreateService().CreateAccommodationInvite(
+                sender.GetId(),
+                RequestId(sender),
+                AccommodationGroupIdentification.From(receiver.GetId())));
+
+        exception.Message.ShouldContain("не могут приглашать друг друга");
+        mock.AccommodationInvites.ShouldBeEmpty();
+        SaveChangesCallCount.ShouldBe(0);
+        journal.ShouldBeEmpty();
+    }
+
+    /// <summary>
     /// Заявка на проживание приглашающего приходит из формы отдельным идентификатором, и раньше
     /// он проверялся только на принадлежность проекту: мастер мог пригласить соседа в чужую
     /// комнату. Теперь группа берётся из самой заявки, а подсунутый чужой идентификатор — отказ.
@@ -360,6 +385,24 @@ public class AccommodationInviteBehaviorTest : AccommodationInviteTestBase
     #endregion
 
     #region AcceptAccommodationInvite
+
+    /// <summary>
+    /// #952: запрет приглашений блокирует только создание. Приглашение, отправленное до
+    /// выключения настройки, принимается как обычно.
+    /// </summary>
+    [Fact]
+    public async Task AcceptInvite_WhenPlayerInvitesDisabled_StillWorks()
+    {
+        var sender = CreateClaimWithAccommodation("Приглашающий");
+        var receiver = CreateClaim("Приглашаемый");
+        var invite = mock.CreateAccommodationInvite(sender, receiver);
+        mock.Project.Details.AccommodationInvitesEnabled = false;
+        mock.ReInitProjectInfo();
+
+        await CreateService().AcceptAccommodationInvite(InviteId(invite));
+
+        receiver.AccommodationRequest.ShouldBe(sender.AccommodationRequest);
+    }
 
     /// <summary>
     /// Пункт 5: приняв приглашение, вся принимающая сторона переезжает в заявку на проживание

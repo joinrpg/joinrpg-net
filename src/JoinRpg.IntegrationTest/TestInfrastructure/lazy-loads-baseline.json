@@ -1,6 +1,5 @@
 {
   "GET /{ProjectId}/claim/{ClaimId}/Edit": 4,
-  "GET /{projectId}/character/{characterid}/Edit": 1,
   "POST /webapi/accommodation-rooms/OccupyRoom": 1,
   "POST /webapi/accommodation-rooms/UnOccupyAll": 1,
   "POST /webapi/accommodation-rooms/UnOccupyGroup": 1,

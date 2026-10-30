@@ -18,6 +18,7 @@ jobs:
       matrix:
         project:
           - JoinRpg.Common.WebInfrastructure
+          - JoinRpg.Common.WebInfrastructure.Interfaces
           - JoinRpg.Common.PrimitiveTypes
           - JoinRpg.Common.PrimitiveTypes.SourceGenerator
           - JoinRpg.Common.KogdaIgraClient

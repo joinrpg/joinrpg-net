@@ -1,10 +1,13 @@
-namespace JoinRpg.Portal.Infrastructure.DailyJobs;
+namespace JoinRpg.Common.WebInfrastructure.Job;
 
 /// <summary>
-/// Настройки ежедневных джоб (секция <c>DailyJobs</c>).
+/// Настройки фоновых джоб (секция <c>DailyJobs</c>).
 /// </summary>
-public class DailyJobsOptions
+public class JobsOptions
 {
+    /// <summary>
+    /// Имя секции конфигурации (исторически <c>DailyJobs</c>).
+    /// </summary>
     public const string SectionName = "DailyJobs";
 
     /// <summary>
@@ -14,6 +17,9 @@ public class DailyJobsOptions
     /// </summary>
     public string[] Disabled { get; set; } = [];
 
+    /// <summary>
+    /// Выключена ли джоба с этим типом (совпадение по короткому или полному имени класса, без учёта регистра).
+    /// </summary>
     public bool IsDisabled(Type jobType) => Disabled.Any(name => Matches(name, jobType));
 
     /// <summary>
@@ -32,8 +38,3 @@ public class DailyJobsOptions
             || string.Equals(trimmed, jobType.FullName, StringComparison.OrdinalIgnoreCase);
     }
 }
-
-/// <summary>
-/// Маркер зарегистрированной джобы — чтобы знать полный список джоб без создания их зависимостей.
-/// </summary>
-public record class RegisteredDailyJob(Type JobType);

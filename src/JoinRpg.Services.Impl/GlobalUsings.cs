@@ -1,5 +1,6 @@
 global using JoinRpg.Common.PrimitiveTypes;
 global using JoinRpg.Common.PrimitiveTypes.Users;
+global using JoinRpg.Common.WebInfrastructure.Job;
 global using JoinRpg.Data.Interfaces;
 global using JoinRpg.DataModel.Extensions;
 global using JoinRpg.DomainTypes;

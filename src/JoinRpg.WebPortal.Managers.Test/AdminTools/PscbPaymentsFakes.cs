@@ -385,7 +385,7 @@ internal sealed class PscbFakeProjectMetadataRepository : IProjectMetadataReposi
             unsortedFields: [],
             new ProjectFieldSettings(NameField: null, DescriptionField: null),
             new ProjectFinanceSettings(PreferentialFeeEnabled: false, WarnOnOverPayment: false, paymentTypes, FeeSchedule: []),
-            new ProjectAccommodationSettings(Enabled: false, Types: [], RoomCategories: []),
+            new ProjectAccommodationSettings(Enabled: false, PlayerInvitesEnabled: true, Types: [], RoomCategories: []),
             new ProjectGroupTree(rootGroupId, new Dictionary<CharacterGroupIdentification, CharacterGroupInfo> { [rootGroupId] = rootGroup }),
             masters: [],
             mastersOrdering: null,

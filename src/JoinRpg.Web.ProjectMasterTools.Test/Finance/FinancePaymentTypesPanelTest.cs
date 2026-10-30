@@ -180,6 +180,8 @@ public class FinancePaymentTypesPanelTest : BunitContext
     {
         public Uri GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId)
             => new($"/{paymentTypeId.ProjectId.Value}/money/EditPaymentType?PaymentTypeId={paymentTypeId.PaymentTypeId}", UriKind.Relative);
+
+        public Uri GetMasterSummaryExportUri(ProjectIdentification projectId, string token) => throw new NotSupportedException();
     }
 
     private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>

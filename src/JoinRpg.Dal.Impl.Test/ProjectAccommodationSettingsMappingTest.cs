@@ -21,6 +21,21 @@ public class ProjectAccommodationSettingsMappingTest
         mock.ProjectInfo.AccommodationSettings.Types.ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// Приглашения игроков разрешены по умолчанию — как и в миграции, добавившей колонку
+    /// (существующие проекты сохраняют поведение). Выключение переносится в снимок.
+    /// </summary>
+    [Fact]
+    public void PlayerInvitesEnabled_MappedFromDetails()
+    {
+        mock.ProjectInfo.AccommodationSettings.PlayerInvitesEnabled.ShouldBeTrue();
+
+        mock.Project.Details.AccommodationInvitesEnabled = false;
+        mock.ReInitProjectInfo();
+
+        mock.ProjectInfo.AccommodationSettings.PlayerInvitesEnabled.ShouldBeFalse();
+    }
+
     [Fact]
     public void AccommodationTypes_AreMappedToProjectInfo()
     {

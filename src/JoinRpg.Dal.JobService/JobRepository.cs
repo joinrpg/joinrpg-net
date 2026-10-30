@@ -2,9 +2,9 @@ using EntityFramework.Exceptions.Common;
 
 namespace JoinRpg.Dal.JobService;
 
-public class DailyJobRepository(JobScheduleDataDbContext dbContext) : IDailyJobRepository
+public class JobRepository(JobScheduleDataDbContext dbContext) : IJobRepository
 {
-    async Task<bool> IDailyJobRepository.TryInsertJobRecord(JobId jobId)
+    async Task<bool> IJobRepository.TryInsertJobRecord(JobId jobId)
     {
         if (await dbContext.DailyJobRuns.ByJobId(jobId).AnyAsync())
         {
@@ -29,8 +29,8 @@ public class DailyJobRepository(JobScheduleDataDbContext dbContext) : IDailyJobR
         return true; // Выиграли, запускайте джоб
     }
 
-    async Task<bool> IDailyJobRepository.TrySetJobCompleted(JobId jobId) => await TrySetJobStatus(dbContext, jobId, DailyJobStatus.Completed);
-    async Task<bool> IDailyJobRepository.TrySetJobFailed(JobId jobId) => await TrySetJobStatus(dbContext, jobId, DailyJobStatus.Error);
+    async Task<bool> IJobRepository.TrySetJobCompleted(JobId jobId) => await TrySetJobStatus(dbContext, jobId, DailyJobStatus.Completed);
+    async Task<bool> IJobRepository.TrySetJobFailed(JobId jobId) => await TrySetJobStatus(dbContext, jobId, DailyJobStatus.Error);
 
     private static async Task<bool> TrySetJobStatus(JobScheduleDataDbContext dbContext, JobId jobId, DailyJobStatus targetStatus)
     {

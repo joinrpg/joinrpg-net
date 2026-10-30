@@ -28,6 +28,12 @@
                     <FormRowFor For="@(() => Model.EnableAccommodation)">
                         <CheckboxInput @bind-Value="Model.EnableAccommodation" />
                     </FormRowFor>
+                    @if (Model.EnableAccommodation)
+                    {
+                        <FormRowFor For="@(() => Model.PlayerInvitesEnabled)">
+                            <CheckboxInput @bind-Value="Model.PlayerInvitesEnabled" />
+                        </FormRowFor>
+                    }
                 </fieldset>
                 <SettingsSaveRow HasEditAccess="Model.HasEditAccess" Disabled="@formInvalid" />
             </FormHorizontal>

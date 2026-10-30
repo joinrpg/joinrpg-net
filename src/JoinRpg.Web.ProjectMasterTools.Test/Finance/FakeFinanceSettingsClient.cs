@@ -38,15 +38,20 @@ internal class FakeFinanceSettingsClient : IFinanceSettingsClient
         return Task.CompletedTask;
     }
 
+    /// <summary>Если задано — GetFeeSettings бросает (тест падения одной панели страницы).</summary>
+    public Exception? GetFeeSettingsError { get; set; }
+
     public Task<FinanceFeeSettingsViewModel> GetFeeSettings(ProjectIdentification projectId)
-        => Task.FromResult(new FinanceFeeSettingsViewModel
-        {
-            ProjectId = projectId,
-            ProjectStatus = ProjectStatus,
-            HasEditAccess = HasEditAccess,
-            PreferentialFeeEnabled = PreferentialFeeEnabled,
-            Fees = [.. Fees],
-        });
+        => GetFeeSettingsError is not null
+            ? Task.FromException<FinanceFeeSettingsViewModel>(GetFeeSettingsError)
+            : Task.FromResult(new FinanceFeeSettingsViewModel
+            {
+                ProjectId = projectId,
+                ProjectStatus = ProjectStatus,
+                HasEditAccess = HasEditAccess,
+                PreferentialFeeEnabled = PreferentialFeeEnabled,
+                Fees = [.. Fees],
+            });
 
     public Task CreateFeeSetting(ProjectIdentification projectId, CreateFeeSettingViewModel model)
     {
@@ -106,6 +111,9 @@ internal class FakeFinanceSettingsClient : IFinanceSettingsClient
         PaymentTypes[index] = PaymentTypes[index] with { IsActive = !PaymentTypes[index].IsActive };
         return Task.CompletedTask;
     }
+
+    public Task<FinanceGoogleDocsExportViewModel> GetGoogleDocsExport(ProjectIdentification projectId)
+        => Task.FromResult(new FinanceGoogleDocsExportViewModel(new Uri($"https://joinrpg.ru/{projectId.Value}/money/SummaryByMaster?token=0123")));
 
     private void ThrowIfRefused()
     {

@@ -1,5 +1,5 @@
-@using JoinRpg.Web.Models
-@model FinanceSetupViewModel
+@using JoinRpg.Web.ProjectMasterTools.Finance
+@model ProjectIdentification
 
 @{
   ViewBag.Title = "Настройка финансов";
@@ -7,37 +7,4 @@
 
 <h2>@ViewBag.Title</h2>
 
-<div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
-    @* Панели по одной переезжают на острова; пока переезд не закончен, старые панели на data-toggle
-       и новые на JoinCollapsePanel стоят в одном аккордеоне. *@
-    <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinanceFeeSettingsPanel)" render-mode="WebAssembly"
-               param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
-    <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinancePaymentTypesPanel)" render-mode="WebAssembly"
-               param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
-    <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinanceGeneralSettingsPanel)" render-mode="WebAssembly"
-               param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h4>
-                <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#gooleDocs">
-                    Синхронизация с GoogleDocs
-                </a>
-            </h4>
-
-        </div>
-        <div class="panel-collapse collapse" role="tabpanel" id="gooleDocs">
-            <div class="panel-body">
-                Для тех мастерских групп, которые ведут свой бюджет в <a href="https://docs.google.com/spreadsheets/">Google Таблицах</a>.<br/>
-                Создайте в вашем бюджете отдельную вкладку (например, взносы из Joinrpg).
-                В любой ячейке (например, А1), введите
-                <br/>
-                <code>
-                    =IMPORTDATA("@(Html.GetFullHostName(Context.Request) + Url.Action("SummaryByMaster", new { token = Model.CurrentUserToken, Model.ProjectId }))")
-                </code>.
-                <br/>
-                Учтите, что обновление происходит с некоторой задержкой (раз в несколько часов). Подробности можно узнать в <a href="https://support.google.com/docs/answer/3093335?hl=ru">справке Google Таблиц</a>.
-            </div>
-        </div>
-    </div>
-
-</div>
+<component type="typeof(FinanceSettingsPage)" render-mode="WebAssembly" param-ProjectId="Model" />

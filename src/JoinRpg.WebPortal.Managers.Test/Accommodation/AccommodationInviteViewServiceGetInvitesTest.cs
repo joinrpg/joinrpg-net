@@ -33,8 +33,9 @@ public class AccommodationInviteViewServiceGetInvitesTest
 
     private AccommodationInviteViewService CreateService(int? currentUserId = null)
         => new(
-            new FakeClaimsRepository(Mock),
-            claimInfoRepository: null!,
+            // Панель приглашений заголовки заявок не читает — если обратится, тест упадёт.
+            claimsRepository: null!,
+            new FakeClaimInfoRepository(Mock),
             roomCategoryPlanRepository: null!,
             new FakeAccommodationInviteRepository(Mock),
             accommodationInviteService: null!,
@@ -226,12 +227,18 @@ public class AccommodationInviteViewServiceGetInvitesTest
     }
 
     [Fact]
+    public async Task ClaimNotFound_Throws()
+        => await Should.ThrowAsync<JoinRpgEntityNotFoundException>(
+            () => CreateService().GetInvites(
+                new ClaimIdentification(OwnId.ProjectId, int.MaxValue), InviteDirection.Incoming));
+
+    [Fact]
     public async Task PlayerOfOtherClaim_HasNoAccess()
     {
         var stranger = Other("Посторонний");
         var service = new AccommodationInviteViewService(
-            new FakeClaimsRepository(Mock),
-            claimInfoRepository: null!,
+            claimsRepository: null!,
+            new FakeClaimInfoRepository(Mock),
             roomCategoryPlanRepository: null!,
             new FakeAccommodationInviteRepository(Mock),
             accommodationInviteService: null!,

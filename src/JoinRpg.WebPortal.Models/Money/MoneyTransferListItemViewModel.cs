@@ -28,7 +28,7 @@ public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
     [Display(Name = "Комментарий")]
     public JoinHtmlString Comment { get; }
 
-    public MoneyTransferListItemViewModel(MoneyTransfer fo, ICurrentUserAccessor currentUserId)
+    public MoneyTransferListItemViewModel(MoneyTransfer fo, ICurrentUserAccessor currentUserId, ProjectInfo projectInfo)
     {
         Id = fo.Id;
         ProjectId = fo.ProjectId;
@@ -48,7 +48,7 @@ public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
         var isPendingAny = isPendingReceiver || isPendingSender;
 
         HasApproveAccess =
-            (fo.Project.HasMasterAccess(currentUserId, Permission.CanManageMoney) &&
+            (projectInfo.HasMasterAccess(currentUserId, Permission.CanManageMoney) &&
              isPendingAny)
             || (currentUserId.UserIdOrDefault == fo.SenderId && isPendingSender)
             || (currentUserId.UserIdOrDefault == fo.ReceiverId && isPendingReceiver);
