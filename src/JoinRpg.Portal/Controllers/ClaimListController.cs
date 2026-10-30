@@ -1,6 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Accommodation;
-using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -8,27 +6,23 @@ using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
-using JoinRpg.Portal.Helpers;
 using JoinRpg.Portal.Infrastructure.Authorization;
-using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.ClaimList;
 using JoinRpg.Web.Models.Exporters;
+using JoinRpg.WebPortal.Managers.UnifiedGrid;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers;
 
 [Route("{ProjectId}/claims/[action]")]
 public class ClaimListController(
-    IExportDataService exportDataService,
     IClaimsRepository claimsRepository,
-    IUriService uriService,
     IClaimProblemValidator claimValidator,
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository charGroupRepository,
-    IClaimInfoRepository claimInfoRepository,
     ICurrentUserAccessor currentUserAccessor,
-    IRoomCategoryPlanRepository roomCategoryPlanRepository
+    ClaimListExportService claimListExportService
         ) : Common.JoinControllerGameBase
 {
 
@@ -49,7 +43,7 @@ public class ClaimListController(
     {
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
-        claimInfos ??= await LoadClaimInfos(claims);
+        claimInfos ??= await claimListExportService.LoadClaimInfos(claims);
 
         if (exportType == null)
         {
@@ -59,46 +53,8 @@ public class ClaimListController(
         }
         else
         {
-            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, claimInfos,
-                await LoadRoomNames(projectInfo, claims));
-
-            return
-                    ExportWithCustomFrontend(view.Items, title, exportType.Value,
-                        new ClaimListItemViewModelExporter(uriService, projectInfo), projectInfo.ProjectName);
+            return await claimListExportService.ExportClaimList(projectId, claims, title, exportType.Value);
         }
-    }
-
-    /// <summary>
-    /// <see cref="ClaimInfo"/> на весь список — заявки вместе с персонажами и профилями игроков,
-    /// две выборки, а не по заявке.
-    /// </summary>
-    private Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> LoadClaimInfos(
-        IReadOnlyCollection<Claim> claims)
-        => claimInfoRepository.GetClaimInfos([.. claims.Select(c => c.GetId())]);
-
-    /// <summary>
-    /// Комнаты расселённых заявок для выгрузки — из планов поселения одним запросом (ADR022). Если
-    /// ни одна заявка списка в группе проживающих не состоит, планы не грузятся вовсе.
-    /// </summary>
-    private async Task<IReadOnlyDictionary<ClaimIdentification, string>> LoadRoomNames(
-        ProjectInfo projectInfo,
-        IReadOnlyCollection<Claim> claims)
-    {
-        if (!projectInfo.AccommodationSettings.Enabled || !claims.Any(c => c.AccommodationRequest_Id != null))
-        {
-            return new Dictionary<ClaimIdentification, string>();
-        }
-
-        // Индекс «заявка → группа» уже есть внутри плана — спрашиваем FindRoomByClaim, как печать
-        // конвертов (PrintViewService).
-        var plans = await roomCategoryPlanRepository.GetAllPlans(projectInfo.ProjectId);
-        return claims
-            .Select(claim => claim.GetId())
-            .Select(claimId => (ClaimId: claimId, Room: plans
-                .Select(plan => plan.FindRoomByClaim(claimId))
-                .FirstOrDefault(room => room is not null)))
-            .Where(pair => pair.Room is not null)
-            .ToDictionary(pair => pair.ClaimId, pair => pair.Room!.Name);
     }
 
     private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, IReadOnlyCollection<Claim> claims, ClaimStatusSpec claimStatusSpec,
@@ -131,7 +87,7 @@ public class ClaimListController(
     private async Task<ActionResult> ShowMasterClaimList(ProjectIdentification projectId, string export, string title, ClaimStatusSpec claimStatusSpec, int masterUserId, Func<ClaimInfo, bool> predicate)
     {
         var claims = await claimsRepository.GetClaimsForMaster(projectId, masterUserId, claimStatusSpec);
-        var claimInfos = await LoadClaimInfos(claims);
+        var claimInfos = await claimListExportService.LoadClaimInfos(claims);
 
         return await ___ShowMasterClaimList(projectId, export, title,
             [.. claims.Where(c => predicate(claimInfos[c.GetId()]))], claimStatusSpec, claimInfos);
@@ -149,7 +105,7 @@ public class ClaimListController(
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(characterGroup.Id.ProjectId);
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
-        var claimInfos = await LoadClaimInfos(claims);
+        var claimInfos = await claimListExportService.LoadClaimInfos(claims);
 
         if (exportType == null)
         {
@@ -160,12 +116,7 @@ public class ClaimListController(
         }
         else
         {
-            var view = new ClaimListForExportViewModel(currentUserAccessor, claims, claimInfos,
-                await LoadRoomNames(projectInfo, claims));
-            return
-                    ExportWithCustomFrontend(view.Items, title, exportType.Value,
-                        new ClaimListItemViewModelExporter(uriService, projectInfo),
-                        projectInfo.ProjectName);
+            return await claimListExportService.ExportClaimList(characterGroup.Id.ProjectId, claims, title, exportType.Value);
         }
     }
 
@@ -303,7 +254,7 @@ public class ClaimListController(
         var loadedClaims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved);
         // Отбор и строка списка считают баланс одним расчётом (ADR021): иначе при расхождении правил
         // в «неоплаченных» оказалась бы строка с нулевым остатком.
-        var claimInfos = await LoadClaimInfos(loadedClaims);
+        var claimInfos = await claimListExportService.LoadClaimInfos(loadedClaims);
         var claims =
             loadedClaims
             .Where(claim => claimInfos[claim.GetId()].ClaimInCharacter.CalculateBalance().FeeDue > 0)
@@ -316,7 +267,7 @@ public class ClaimListController(
     public async Task<ActionResult> SomeFieldsToFill(ProjectIdentification projectid, string export)
     {
         var loadedClaims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved);
-        var claimInfos = await LoadClaimInfos(loadedClaims);
+        var claimInfos = await claimListExportService.LoadClaimInfos(loadedClaims);
         var claims =
             loadedClaims
             .Where(claim => claimValidator.ValidatePlayerToFill(claimInfos[claim.GetId()]).Any())
@@ -329,7 +280,7 @@ public class ClaimListController(
     public async Task<ActionResult> Problems(ProjectIdentification projectId, string export)
     {
         var loadedClaims = await claimsRepository.GetClaims(projectId, ClaimStatusSpec.Any);
-        var claimInfos = await LoadClaimInfos(loadedClaims);
+        var claimInfos = await claimListExportService.LoadClaimInfos(loadedClaims);
         var claims =
             loadedClaims
             .Where(c => claimValidator.Validate(claimInfos[c.GetId()], ProblemSeverity.Warning).Any()).ToList();
@@ -343,7 +294,7 @@ public class ClaimListController(
     public async Task<ActionResult> PaidDeclined(ProjectIdentification projectid, string export)
     {
         var loadedClaims = await claimsRepository.GetClaims(projectid, ClaimStatusSpec.InActive);
-        var claimInfos = await LoadClaimInfos(loadedClaims);
+        var claimInfos = await claimListExportService.LoadClaimInfos(loadedClaims);
         var claims =
             loadedClaims
             .Where(claim => claimInfos[claim.GetId()].ClaimInCharacter.Claim.Finance.FeePaid > 0)
@@ -378,14 +329,5 @@ public class ClaimListController(
                 .ToList(),
                 ClaimStatusSpec.Active
         );
-    }
-    private FileContentResult ExportWithCustomFrontend(
-        IEnumerable<ClaimListItemForExportViewModel> viewModel, string title,
-        ExportType exportType, IGeneratorFrontend<ClaimListItemForExportViewModel> frontend, string projectName)
-    {
-        var generator = exportDataService.GetGenerator(exportType, viewModel,
-          frontend);
-
-        return GeneratorResultHelper.Result(projectName + ": " + title, generator);
     }
 }
