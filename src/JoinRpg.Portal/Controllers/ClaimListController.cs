@@ -45,15 +45,18 @@ public class ClaimListController(
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
         claimInfos ??= await claimListExportService.LoadClaimInfos(claims);
 
+        IReadOnlyList<ClaimInfo> claimsList = [.. claims.Select(c => claimInfos[c.GetId()])];
+
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(projectId, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
-            var view = new ClaimListViewModel(currentUserAccessor, claims, unreadComments, title, projectInfo, claimValidator, claimInfos);
+
+            var view = new ClaimListViewModel(currentUserAccessor, claimsList, unreadComments, title, projectInfo, claimValidator);
             return View("Index", view);
         }
         else
         {
-            return await claimListExportService.ExportClaimList(projectId, claims, title, exportType.Value);
+            return await claimListExportService.ExportClaimList(projectId, claimsList, title, exportType.Value);
         }
     }
 
@@ -106,17 +109,19 @@ public class ClaimListController(
 
         var exportType = ExportTypeNameParserHelper.ToExportType(export);
         var claimInfos = await claimListExportService.LoadClaimInfos(claims);
+        IReadOnlyList<ClaimInfo> claimsList = [.. claims.Select(c => claimInfos[c.GetId()])];
 
         if (exportType == null)
         {
             var unreadComments = await claimsRepository.GetUnreadDiscussionsForClaims(characterGroup.Id.ProjectId.Value, claimStatusSpec, currentUserAccessor.UserId, hasMasterAccess: true);
-            var view = new ClaimListForGroupViewModel(currentUserAccessor, claims, characterGroup, page, unreadComments, claimValidator,
-                claimInfos, projectInfo, title);
+
+            var view = new ClaimListForGroupViewModel(currentUserAccessor, claimsList, characterGroup, page, unreadComments, claimValidator,
+                projectInfo, title);
             return View("ByGroup", view);
         }
         else
         {
-            return await claimListExportService.ExportClaimList(characterGroup.Id.ProjectId, claims, title, exportType.Value);
+            return await claimListExportService.ExportClaimList(characterGroup.Id.ProjectId, claimsList, title, exportType.Value);
         }
     }
 

@@ -1,4 +1,3 @@
-using JoinRpg.DataModel;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
@@ -7,14 +6,13 @@ using JoinRpg.Web.Models.CharacterGroups;
 namespace JoinRpg.Web.Models.ClaimList;
 
 public class ClaimListForGroupViewModel(ICurrentUserAccessor currentUserId,
-    IReadOnlyCollection<Claim> claims,
+    IReadOnlyList<ClaimInfo> claims,
     CharacterGroupFullInfo @group,
     GroupNavigationPage page,
     Dictionary<CommentDiscussionId, int> unreadComments,
     IClaimProblemValidator claimValidator,
-    IReadOnlyDictionary<ClaimIdentification, ClaimInfo> claimInfos,
     ProjectInfo projectInfo,
-    string title) : ClaimListViewModel(currentUserId, claims, unreadComments, title, projectInfo, claimValidator, claimInfos), IOperationsAwareView
+    string title) : ClaimListViewModel(currentUserId, claims, unreadComments, title, projectInfo, claimValidator), IOperationsAwareView
 {
     public CharacterGroupDetailsViewModel GroupModel { get; } = new CharacterGroupDetailsViewModel(group, projectInfo, currentUserId.UserIdentificationOrDefault, page);
 

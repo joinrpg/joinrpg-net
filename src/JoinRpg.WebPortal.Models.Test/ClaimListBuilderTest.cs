@@ -155,9 +155,9 @@ public class ClaimListBuilderTest
             claimInfo,
             roomName: null);
 
-        var legacy = claim.GetFields(Mock.ProjectInfo).ToDictionary(x => x.Field.Id, x => x.ExportString);
+        var legacy = claim.GetFields(Mock.ProjectInfo);
         result.FieldValues.ShouldBe(legacy);
-        result.FieldValues[Mock.CharacterFieldInfo.Id].ShouldBe(approved ? "секрет персонажа" : "");
+        result.FieldValues.Single(x => x.Field.Id == Mock.CharacterFieldInfo.Id).Value.ShouldBe(approved ? "секрет персонажа" : "");
 
         var balance = claimInfo.ClaimInCharacter.CalculateBalance();
         result.TotalFee.ShouldBe(balance.TotalFee);

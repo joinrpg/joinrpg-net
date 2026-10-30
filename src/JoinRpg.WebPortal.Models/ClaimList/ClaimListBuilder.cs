@@ -84,7 +84,7 @@ public static class ClaimListBuilder
             sensitiveData.PassportData,
             sensitiveData.RegistrationAddress,
             sensitiveData.BirthDate,
-            claimInfo.ClaimInCharacter.GetAllFields().ToDictionary(x => x.Field.Id, x => x.ExportString),
+            claimInfo.ClaimInCharacter.GetAllFields(),
             playerInfo
             );
     }
