@@ -107,70 +107,69 @@ public static class ClaimListBuilder
 
     public static (DateTime At, UserInfoHeader By) GetLastComment(Claim claim, AccessArguments accessArguments)
     {
-        var lastComment = (At: claim.CreateDate, By: claim.Player);
+        var (at, by) = GetLastCommentCore(
+            claim.CreateDate, claim.LastPlayerCommentAt, claim.LastVisibleMasterCommentAt,
+            claim.LastMasterCommentAt, accessArguments);
 
-        if (claim.LastPlayerCommentAt is not null && claim.LastPlayerCommentAt > lastComment.At)
+        var user = by switch
         {
-            lastComment = (At: claim.LastPlayerCommentAt.Value.DateTime, By: claim.Player);
-        }
-
-        if (claim.LastVisibleMasterCommentAt is not null && claim.LastVisibleMasterCommentAt > lastComment.At)
-        {
-            lastComment = (At: claim.LastVisibleMasterCommentAt.Value.DateTime, By: claim.LastVisibleMasterCommentBy!);
-        }
-
-        if (accessArguments.MasterAccess && claim.LastMasterCommentAt is not null && claim.LastMasterCommentAt > lastComment.At)
-        {
-            lastComment = (At: claim.LastMasterCommentAt.Value.DateTime, By: claim.LastMasterCommentBy!);
-        }
-
-        return (lastComment.At, lastComment.By.ToUserInfoHeader());
+            LastCommentBy.Player => claim.Player,
+            LastCommentBy.VisibleMaster => claim.LastVisibleMasterCommentBy!,
+            _ => claim.LastMasterCommentBy!,
+        };
+        return (at.UtcDateTime, user.ToUserInfoHeader());
     }
 
     /// <summary>
-    /// То же, что для EF-сущности, но поверх доменного агрегата (ADR013).
+    /// Время последней активности по заявке поверх доменного агрегата (ADR013).
     /// </summary>
     public static DateTime GetLastCommentTime(CharacterClaimInfo claim, AccessArguments accessArguments)
+        => GetLastCommentCore(
+            claim.CreateDate, claim.LastPlayerCommentAt, claim.LastVisibleMasterCommentAt,
+            claim.LastMasterCommentAt, accessArguments).At.UtcDateTime;
+
+    private enum LastCommentBy
     {
-        var lastCommentDate = claim.CreateDate;
-
-        if (claim.LastPlayerCommentAt is not null && claim.LastPlayerCommentAt > lastCommentDate)
-        {
-            lastCommentDate = claim.LastPlayerCommentAt.Value.DateTime;
-        }
-
-        if (claim.LastVisibleMasterCommentAt is not null && claim.LastVisibleMasterCommentAt > lastCommentDate)
-        {
-            lastCommentDate = claim.LastVisibleMasterCommentAt.Value.DateTime;
-        }
-
-        if (accessArguments.MasterAccess && claim.LastMasterCommentAt is not null && claim.LastMasterCommentAt > lastCommentDate)
-        {
-            lastCommentDate = claim.LastMasterCommentAt.Value.DateTime;
-        }
-
-        return lastCommentDate;
+        Player,
+        VisibleMaster,
+        AnyMaster,
     }
 
-    public static DateTime GetLastCommentTime(Claim claim, AccessArguments accessArguments)
+    /// <summary>
+    /// Время последней активности по заявке: подача, последний комментарий игрока, последний
+    /// видимый игроку комментарий мастера, а мастеру — ещё и любой мастерский.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Claim.CreateDate"/> лежит в колонке <c>datetime</c> и приезжает с
+    /// <see cref="DateTimeKind.Unspecified"/>, а отметки комментариев — <see cref="DateTimeOffset"/>.
+    /// Считаем дату создания UTC (она так и записывается) и сравниваем всё в одном типе: неявное
+    /// приведение <see cref="DateTime"/> к <see cref="DateTimeOffset"/> приклеило бы к дате
+    /// локальное смещение сервера и сдвинуло выбор победителя.
+    /// </remarks>
+    private static (DateTimeOffset At, LastCommentBy By) GetLastCommentCore(
+        DateTime createDate,
+        DateTimeOffset? lastPlayerCommentAt,
+        DateTimeOffset? lastVisibleMasterCommentAt,
+        DateTimeOffset? lastMasterCommentAt,
+        AccessArguments accessArguments)
     {
-        var lastCommentDate = claim.CreateDate;
+        var lastComment = (At: new DateTimeOffset(DateTime.SpecifyKind(createDate, DateTimeKind.Utc)), By: LastCommentBy.Player);
 
-        if (claim.LastPlayerCommentAt is not null && claim.LastPlayerCommentAt > lastCommentDate)
+        if (lastPlayerCommentAt is not null && lastPlayerCommentAt > lastComment.At)
         {
-            lastCommentDate = claim.LastPlayerCommentAt.Value.DateTime;
+            lastComment = (At: lastPlayerCommentAt.Value, By: LastCommentBy.Player);
         }
 
-        if (claim.LastVisibleMasterCommentAt is not null && claim.LastVisibleMasterCommentAt > lastCommentDate)
+        if (lastVisibleMasterCommentAt is not null && lastVisibleMasterCommentAt > lastComment.At)
         {
-            lastCommentDate = claim.LastVisibleMasterCommentAt.Value.DateTime;
+            lastComment = (At: lastVisibleMasterCommentAt.Value, By: LastCommentBy.VisibleMaster);
         }
 
-        if (accessArguments.MasterAccess && claim.LastMasterCommentAt is not null && claim.LastMasterCommentAt > lastCommentDate)
+        if (accessArguments.MasterAccess && lastMasterCommentAt is not null && lastMasterCommentAt > lastComment.At)
         {
-            lastCommentDate = claim.LastMasterCommentAt.Value.DateTime;
+            lastComment = (At: lastMasterCommentAt.Value, By: LastCommentBy.AnyMaster);
         }
 
-        return lastCommentDate;
+        return lastComment;
     }
 }
