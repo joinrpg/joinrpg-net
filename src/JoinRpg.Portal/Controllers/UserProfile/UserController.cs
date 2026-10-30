@@ -67,9 +67,12 @@ public class UserController(IUserRepository userRepository, ICurrentUserAccessor
             userProfileViewModel.CanInviteProjects = canInviteProjects.ToLinkViewModels().ToList();
 
             var claims = await claimsRepository.GetClaimsForPlayer(userId, ClaimStatusSpec.Any);
+            // Непрочитанное — для смотрящего: его отметки прочтения и его мастерство в проекте заявки.
+            var unreadComments = await claimsRepository.GetUnreadDiscussionsForPlayerClaims(userId, currentUserAccessor.UserIdentification);
 
             userProfileViewModel.Claims = new MyClaimListViewModel(
-                [.. claims.Where(claim => currentUserAccessor.IsAdmin || claim.PlayerUserId == currentUser.UserId || currentUser.AllProjects.Contains(new(claim.ProjectId)))]);
+                [.. claims.Where(claim => currentUserAccessor.IsAdmin || claim.PlayerUserId == currentUser.UserId || currentUser.AllProjects.Contains(new(claim.ProjectId)))],
+                unreadComments);
         }
 
         return View(userProfileViewModel);

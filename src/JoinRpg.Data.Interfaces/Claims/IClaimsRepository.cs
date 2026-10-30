@@ -58,4 +58,13 @@ public interface IClaimsRepository : IDisposable
     /// </summary>
     Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
 
+    /// <summary>
+    /// Число непрочитанных смотрящим комментариев в обсуждении каждой заявки игрока в любом статусе
+    /// во всех проектах («Мои заявки» на профиле).
+    /// </summary>
+    /// <remarks>
+    /// Скрытые от игроков комментарии считаются в тех проектах, где смотрящий — действующий мастер.
+    /// </remarks>
+    Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId);
+
 }
