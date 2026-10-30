@@ -1,5 +1,4 @@
 using Bunit;
-using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectMasterTools.Finance;
@@ -30,7 +29,7 @@ public class FinanceGeneralSettingsPanelTest : BunitContext
         cut.Find("textarea").Change("Студентам");
         cut.Find("form").Submit();
 
-        var saved = client.Saved.ShouldNotBeNull();
+        var saved = client.SavedGeneralSettings.ShouldNotBeNull();
         saved.ProjectId.ShouldBe(new ProjectIdentification(1));
         saved.WarnOnOverPayment.ShouldBeTrue();
         saved.PreferentialFeeEnabled.ShouldBeTrue();
@@ -72,33 +71,4 @@ public class FinanceGeneralSettingsPanelTest : BunitContext
 
     private IRenderedComponent<FinanceGeneralSettingsPanel> RenderPanel()
         => Render<FinanceGeneralSettingsPanel>(p => p.Add(x => x.ProjectId, new ProjectIdentification(1)));
-
-    private class FakeFinanceSettingsClient : IFinanceSettingsClient
-    {
-        public bool HasEditAccess { get; set; } = true;
-        public ProjectLifecycleStatus ProjectStatus { get; set; } = ProjectLifecycleStatus.ActiveClaimsOpen;
-        public string? SaveError { get; set; }
-        public FinanceGeneralSettingsViewModel? Saved { get; private set; }
-
-        public Task<FinanceGeneralSettingsViewModel> GetGeneralSettings(ProjectIdentification projectId)
-            => Task.FromResult(new FinanceGeneralSettingsViewModel
-            {
-                ProjectId = projectId,
-                ProjectStatus = ProjectStatus,
-                HasEditAccess = HasEditAccess,
-                WarnOnOverPayment = true,
-                PreferentialFeeEnabled = false,
-                PreferentialFeeConditions = "",
-            });
-
-        public Task SaveGeneralSettings(FinanceGeneralSettingsViewModel model)
-        {
-            if (SaveError is not null)
-            {
-                throw new ServerProblemException(SaveError);
-            }
-            Saved = model;
-            return Task.CompletedTask;
-        }
-    }
 }

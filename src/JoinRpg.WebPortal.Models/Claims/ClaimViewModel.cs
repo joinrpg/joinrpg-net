@@ -101,13 +101,14 @@ public class ClaimViewModel
     /// </param>
     /// <param name="claimInfo">Заявка вместе с персонажем и профилем игрока (ADR021).</param>
     /// <param name="discussion">Обсуждение заявки, уже собранное для текущего пользователя (ADR026).</param>
+    /// <param name="claimFee">Блок взноса, уже собранный для текущего пользователя.</param>
     public ClaimViewModel(ICurrentUserAccessor currentUser,
         Claim claim,
       ClaimInfo claimInfo,
       DiscussionViewModel discussion,
       IReadOnlyCollection<PlotTextDto> plotElements,
       IClaimProblemValidator problemValidator,
-      Func<string?, string?> externalPaymentUrlFactory,
+      ClaimFeeViewModel claimFee,
       ClaimAccommodationViewModel? accommodationModel,
       ILinkRenderer linkRenderer,
       IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
@@ -129,7 +130,6 @@ public class ClaimViewModel
 
         ClaimIdentification = claimInfo.ClaimId;
         AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
-        CommentDiscussionId = claim.CommentDiscussionId;
         Discussion = discussion;
         HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
         CanManageThisClaim = claim.HasAccess(currentUser.UserId,
@@ -177,10 +177,7 @@ public class ClaimViewModel
 
         AccommodationEnabled = projectInfo.AccommodationSettings.Enabled;
 
-        // Разбивка взноса — по снимку заявки; тип и комната — из модели панели «Проживание»,
-        // построенной по снимку заявки и плану (ADR022).
-        ClaimFee = new ClaimFeeViewModel(claim, claimInfo.ClaimInCharacter, currentUser.UserIdentification, externalPaymentUrlFactory,
-            accommodationModel);
+        ClaimFee = claimFee;
 
         ParentGroups = new CharacterParentGroupsViewModel(characterInfo, HasMasterAccess);
 
@@ -195,7 +192,6 @@ public class ClaimViewModel
         SensitiveData = claimInfo.SensitiveData;
     }
 
-    public int CommentDiscussionId { get; }
     public bool CheckInStarted { get; }
     public ClaimCheckInValidator Validator { get; }
     public bool AccommodationEnabled { get; }

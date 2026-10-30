@@ -1,5 +1,13 @@
-﻿<div class="form-group" @attributes="@InputAttributes">
-  <label id="@labelTarget.LabelId" class="control-label col-md-2" for="@labelTarget.InputId">@Label</label>
+<div class="form-group" @attributes="@InputAttributes">
+  @if (string.IsNullOrEmpty(Label))
+  {
+    @* Пустой label — мусор для скринридера; колонка остаётся, чтобы поле стояло вровень со строками с подписью. *@
+    <div class="col-md-2"></div>
+  }
+  else
+  {
+    <label id="@labelTarget.LabelId" class="control-label col-md-2" for="@labelTarget.InputId">@Label</label>
+  }
   <div class="col-md-10">
     <CascadingValue Value="labelTarget" IsFixed="true">
       @ChildContent
@@ -17,7 +25,8 @@
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public string Label { get; set; } = null!;
+    /// <summary>Подпись поля. Без неё строка выводит пустую колонку вместо <c>&lt;label&gt;</c> — так ставят кнопки под полями.</summary>
+    [Parameter] public string? Label { get; set; }
     [Parameter] public RenderFragment? DescriptionFragment { get; set; } = null;
     [Parameter] public string? Description { get; set; } = null;
 

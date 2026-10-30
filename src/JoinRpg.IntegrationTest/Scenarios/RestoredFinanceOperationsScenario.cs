@@ -59,7 +59,7 @@ public class RestoredFinanceOperationsScenario(JoinApplicationFactory factory)
         await AcceptFee(playerId, claimId, cashId, 500, PlayerText);
         var (approvedReferenceId, playerReferenceId) = await GetTwoOperationIds(claimId);
         await factory.Services.RunAsAsync(masterId, sp => sp.GetRequiredService<IClaimService>()
-            .ModerateFinanceOperation(claimId, playerReferenceId, ApproveText, FinanceOperationAction.Approve));
+            .ModerateFinanceOperation(new FinanceOperationIdentification(claimId, playerReferenceId), ApproveText, FinanceOperationAction.Approve));
         await AcceptFee(playerId, claimId, cashId, 300, PlayerText);
         int waitingId;
         using (var scope = factory.Services.CreateScope())

@@ -94,6 +94,27 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           REF_TYPE: ${{ github.ref_type }}
 
+      # CI сверяет пакет с последней версией из индекса nuget.org (package validation). Пока новой
+      # версии там нет, базой оказывается предыдущая, и PR падает на подавлениях, которые он удалил.
+      - name: Wait for nuget.org index
+        shell: pwsh
+        env:
+          VERSION: ${{ env.CALCULATED_VERSION }}
+        run: |
+          $ids = git grep -l '<IsPackable>true' -- '*.csproj' |
+            ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_).ToLowerInvariant() }
+          $deadline = (Get-Date).AddMinutes(30)
+          while ($true) {
+            $missing = @($ids | Where-Object {
+              try { (Invoke-RestMethod "https://api.nuget.org/v3-flatcontainer/$_/index.json").versions -notcontains $env:VERSION }
+              catch { $true }
+            })
+            if (-not $missing) { break }
+            if ((Get-Date) -gt $deadline) { throw "За 30 минут в индексе nuget.org не появились: $($missing -join ', ')" }
+            Write-Host "Ждём индекс nuget.org: $($missing -join ', ')"
+            Start-Sleep -Seconds 30
+          }
+
       - name: Stamp CHANGELOG, ship PublicAPI and open PR
         shell: pwsh
         env:

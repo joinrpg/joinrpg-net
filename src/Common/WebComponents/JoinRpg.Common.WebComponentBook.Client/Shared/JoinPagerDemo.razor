@@ -1,0 +1,20 @@
+<h3>JoinPager</h3>
+
+<p>
+    Переключатель страниц: номера вокруг текущей, первая и последняя, пропуски «…». Номер вне
+    диапазона рисуется как ближайшая страница; при одной странице переключателя нет.
+</p>
+
+<label>
+    Всего страниц:
+    <input type="number" min="0" @bind="totalPages" @bind:after="() => current = Math.Clamp(current, 1, Math.Max(totalPages, 1))" />
+</label>
+
+<JoinPager Page="current" TotalPages="totalPages" PageChanged="p => current = p" />
+
+<p>Выбрана страница @current.</p>
+
+@code {
+    private int current = 5;
+    private int totalPages = 12;
+}

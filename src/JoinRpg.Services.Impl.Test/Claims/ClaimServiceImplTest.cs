@@ -1348,7 +1348,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         _ = await Should.ThrowAsync<ParentCommentNotFoundException>(
             () => CreateService().ModerateFinanceOperation(
-                claim.GetId(), parentCommentId: 12345, "принято", FinanceOperationAction.Approve));
+                new FinanceOperationIdentification(claim.GetId(), 12345), "принято", FinanceOperationAction.Approve));
 
         claim.CommentDiscussion.Comments.ShouldBeEmpty();
         SaveChangesCallCount.ShouldBe(0);
@@ -1409,6 +1409,12 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         return comment;
     }
 
+    /// <summary>
+    /// Финансовая операция заведена в комментарии с тем же id.
+    /// </summary>
+    private static FinanceOperationIdentification OperationId(Claim claim, Comment comment)
+        => new(claim.GetId(), comment.CommentId);
+
     [Fact]
     public async Task ModerateFinanceOperation_Approving_ApprovesOperation_AndMarksComment()
     {
@@ -1416,7 +1422,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var parent = CreateCommentWithProposedPayment(claim);
 
         await CreateService().ModerateFinanceOperation(
-            claim.GetId(), parent.CommentId, "ок", FinanceOperationAction.Approve);
+            OperationId(claim, parent), "ок", FinanceOperationAction.Approve);
 
         parent.Finance.State.ShouldBe(FinanceOperationState.Approved);
         var comment = claim.CommentDiscussion.Comments.Last();
@@ -1439,7 +1445,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var parent = CreateCommentWithProposedPayment(claim);
 
         await CreateService().ModerateFinanceOperation(
-            claim.GetId(), parent.CommentId, "нет", FinanceOperationAction.Decline);
+            OperationId(claim, parent), "нет", FinanceOperationAction.Decline);
 
         parent.Finance.State.ShouldBe(FinanceOperationState.Declined);
         claim.CommentDiscussion.Comments.Last().ExtraAction.ShouldBe(CommentExtraAction.RejectFinance);
@@ -1457,7 +1463,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         var parent = CreateCommentWithProposedPayment(claim, paymentType: mock.CreateCashPaymentType(cashier));
 
         await CreateService(cashier.UserId).ModerateFinanceOperation(
-            claim.GetId(), parent.CommentId, "получил", FinanceOperationAction.Approve);
+            OperationId(claim, parent), "получил", FinanceOperationAction.Approve);
 
         parent.Finance.State.ShouldBe(FinanceOperationState.Approved);
         SaveChangesCallCount.ShouldBe(1);
@@ -1472,7 +1478,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
             () => CreateService(cashier.UserId).ModerateFinanceOperation(
-                claim.GetId(), parent.CommentId, "получил", FinanceOperationAction.Approve));
+                OperationId(claim, parent), "получил", FinanceOperationAction.Approve));
 
         parent.Finance.State.ShouldBe(FinanceOperationState.Proposed);
         SaveChangesCallCount.ShouldBe(0);
@@ -1495,7 +1501,7 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
 
         _ = await Should.ThrowAsync<ValueAlreadySetException>(
             () => CreateService().ModerateFinanceOperation(
-                claim.GetId(), parent.CommentId, "ещё раз", FinanceOperationAction.Approve));
+                OperationId(claim, parent), "ещё раз", FinanceOperationAction.Approve));
 
         SaveChangesCallCount.ShouldBe(0);
         SentNotifications.ShouldBeEmpty();

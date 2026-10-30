@@ -35,7 +35,7 @@
   у которых есть хотя бы одна неактивная заявка. Удалённые без заявок не видны, а отклонённые заявки
   живых персонажей капитан не видит нигде. Так было и до перевода на `CharacterInfo` (#4823): старый
   `CharacterPredicates.ByUgStatus` отбирал так же. Чинится шагом 0 (#5984).
-- `UgCharacterForCaptainViewModel.Groups` всегда пустой (`// TODO` в `ItemBuilder`), а
+- `UgCharacterForCaptainViewModel.Groups` (после шага 1 — `UgCharacterViewModel.Groups`) всегда пустой (`// TODO` в `ItemBuilder`), а
   `CreateDate`/`CheckInDate` заявки уходят на клиент и не рисуются.
 - `ItemBuilder` ставит `IsCapitan = true` в `AccessArguments`. Из-за этого `CanViewCharacterName` там
   всегда истинно, и ветка «имя скрыто» недостижима.
@@ -46,8 +46,8 @@
 
 ### 1. Один грид, два скоупа
 
-Грид один — UnifiedGrid. Мастерский и капитанский отличаются **скоупом**, и определяет его сервер,
-а не клиент:
+Грид один — UnifiedGrid. Мастерский и капитанский отличаются **скоупом**. Какой скоуп нужен, решает
+страница (`UgScopeView`: мастерский грид или кабинет капитана), а права на него проверяет сервер:
 
 | Кто | Скоуп | Что видно сверх общего |
 |---|---|---|
@@ -59,12 +59,16 @@
 капитану они ни к чему. Фильтры по группе и ответственному пока тоже только мастерские:
 `CharacterGroupSelector` и `MasterSelector` ходят в webapi под `[RequireMaster]`, а для капитана группы
 пришлось бы ещё и ограничивать его поддеревьями. Капитанский источник групп — отдельная задача, если
-понадобится. Если человек и мастер, и капитан, работает мастерский скоуп.
+понадобится.
+
+Скоуп задаёт страница, а не права пользователя, потому что человек бывает и мастером, и капитаном. В
+кабинете капитана он видит свою команду, а не весь проект. Мастерский скоуп без доступа мастера и
+капитанский без правил капитана дают пустой грид.
 
 Контракт `IUnifiedGridClient` (`JoinRpg.Web.Claims/UnifiedGrid`) — один метод вместо `GetForCaptain`:
 
 ```csharp
-Task<UgPageViewModel> GetGrid(ProjectIdentification projectId, UgFilterView filter, int page);
+Task<UgPageViewModel> GetGrid(ProjectIdentification projectId, UgScopeView scope, UgFilterView filter, int page);
 ```
 
 Компонент тоже один. Мастерские части рисуются по nullable-полям в ответе сервера
@@ -129,10 +133,13 @@ Task<UgPageViewModel> GetGrid(ProjectIdentification projectId, UgFilterView filt
 
 ```csharp
 record UgPageViewModel(
-    IReadOnlyCollection<UgItemViewModel> Items,   // текущая страница
+    IReadOnlyList<UgItemViewModel> Items,   // текущая страница
+    int Page,                               // отданная страница: запрошенная, прижатая к диапазону
+    int TotalPages,
     int TotalCharacters,
     IReadOnlyCollection<ClaimIdentification> OperationClaimIds,         // весь результат фильтра,
-    IReadOnlyCollection<CharacterIdentification> OperationCharacterIds); // см. §5; у капитана пусто
+    IReadOnlyCollection<CharacterIdentification> OperationCharacterIds); // см. §5; у капитана пусто.
+                                                                         // Оба — с шага 6
 ```
 
 Пейджинг сокращает ответ и время рендера на клиенте, **но не нагрузку на БД**. Отбор по проблемам и по

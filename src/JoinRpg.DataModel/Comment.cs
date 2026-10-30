@@ -7,13 +7,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel;
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
-public interface ICommentHeader : IProjectEntity
-{
-    int AuthorUserId { get; set; }
-    bool IsVisibleToPlayer { get; }
-}
-
-public class Comment : IValidatableObject, ILinkable, ICommentHeader
+public class Comment : IValidatableObject, ILinkable, IProjectEntity
 {
     public int CommentId { get; set; }
 

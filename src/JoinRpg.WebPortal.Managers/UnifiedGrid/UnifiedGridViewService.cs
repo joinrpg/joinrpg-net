@@ -1,7 +1,8 @@
+using System.Globalization;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Characters;
-using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Characters.UnifiedGrid;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.Claims.UnifiedGrid;
 
@@ -13,76 +14,92 @@ internal class UnifiedGridViewService(
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterInfoRepository characterInfoRepository) : IUnifiedGridClient
 {
-    async Task<IReadOnlyCollection<UgItemForCaptainViewModel>> IUnifiedGridClient.GetForCaptain(ProjectIdentification projectId, UgStatusFilterView filter)
+    /// <summary>Сколько персонажей на странице.</summary>
+    internal const int PageSize = 100;
+
+    async Task<UgPageViewModel> IUnifiedGridClient.GetGrid(
+        ProjectIdentification projectId,
+        UgScopeView scope,
+        UgFilterView filter,
+        int page)
     {
-        var access = await captainRulesRepository.GetCaptainRules(projectId, currentUserAccessor.UserIdentification);
-        if (access.Count == 0)
-        {
-            return [];
-        }
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
-        var allGroups = projectInfo.GroupTree.GetChildGroupIdsIncludingThis([.. access.Select(x => x.CharacterGroup)]);
+        var status = ToDomain(filter.Status);
 
-        var characters = await characterInfoRepository.GetCharacterInfosByGroups(
-            projectId, [.. allGroups], StatusSpecFor(filter));
+        var characters = await LoadScope(projectId, scope, status.GetCharacterStatusSpec());
 
-        return
-        [
-            .. characters
-                .Where(character => MatchesFilter(character, filter))
-                .Select(character => ItemBuilder.BuildItemForCaptain(character, SelectClaims(character, filter), currentUserAccessor))
-                .WhereNotNull()
-        ];
+        // Отбор в памяти, поэтому скоуп загружен целиком, и страница режется уже от готового списка
+        // (ADR027 §3: пагинация сокращает ответ, а не нагрузку на БД).
+        var items = Sort(
+            characters
+                .Where(character => status.Matches(character))
+                .Select(character => ItemBuilder.BuildItem(character, status.SelectClaims(character), currentUserAccessor, scope))
+                .WhereNotNull());
+
+        var totalPages = (items.Count + PageSize - 1) / PageSize;
+        var actualPage = Math.Clamp(page, 1, Math.Max(totalPages, 1));
+
+        return new UgPageViewModel(
+            [.. items.Skip((actualPage - 1) * PageSize).Take(PageSize)],
+            actualPage,
+            totalPages,
+            items.Count);
     }
 
     /// <summary>
-    /// Что просить у репозитория: архиву нужны и удалённые персонажи, и живые (с отклонёнными
-    /// заявками), всем остальным видам — только живые.
-    /// Отбор внутри этого набора всё равно делается в памяти (см. <see cref="MatchesFilter"/>),
-    /// но тащить агрегат на заведомо ненужных персонажей незачем.
+    /// Сначала персонажи с самыми свежими заявками (по дате обновления, как в старом гриде мастера),
+    /// потом без показанных заявок — по имени. Последний ключ — id, чтобы порядок был однозначным и
+    /// страницы не теряли и не дублировали строки.
     /// </summary>
-    private static CharacterStatusSpec StatusSpecFor(UgStatusFilterView filter)
-        => filter == UgStatusFilterView.Archive ? CharacterStatusSpec.Any : CharacterStatusSpec.Active;
+    // Явно, а не по текущей культуре: порядок страниц не должен зависеть от настроек потока.
+    private static readonly StringComparer NameComparer = StringComparer.Create(CultureInfo.GetCultureInfo("ru-RU"), ignoreCase: true);
+
+    private static IReadOnlyList<UgItemViewModel> Sort(IEnumerable<UgItemViewModel> items)
+        => [.. items
+            .OrderByDescending(item => item.Claims.Max(claim => claim.UpdateDate))
+            .ThenBy(item => item.Character.Name.Name, NameComparer)
+            .ThenBy(item => item.Character.Name.CharacterId.CharacterId)];
 
     /// <summary>
-    /// Отбор персонажей под выбранный фильтр.
+    /// Персонажи скоупа: мастеру — весь проект, капитану — поддеревья групп из его правил.
+    /// Без прав на запрошенный скоуп грид пуст.
     /// </summary>
-    /// <remarks>
-    /// Раньше это был SQL-предикат (<c>CharacterPredicates.ByUgStatus</c>), но агрегат
-    /// <see cref="CharacterInfo"/> по построению несёт все заявки персонажа, поэтому отбор считается
-    /// в памяти — правила ровно те же.
-    /// </remarks>
-    private static bool MatchesFilter(CharacterInfo character, UgStatusFilterView filter)
-        => filter switch
+    private async Task<IReadOnlyCollection<CharacterInfo>> LoadScope(
+        ProjectIdentification projectId,
+        UgScopeView scope,
+        CharacterStatusSpec spec)
+    {
+        switch (scope)
         {
-            UgStatusFilterView.Active => character.IsActive,
-            UgStatusFilterView.Vacant => character.IsActive
-                && character.ApprovedClaimId is null
-                && character.CharacterType != CharacterType.NonPlayer,
-            UgStatusFilterView.Discussion => character.IsActive
-                && character.ApprovedClaimId is null
-                && character.HasActiveClaims,
-            UgStatusFilterView.Archive => !character.IsActive || character.Claims.Any(IsDeclined),
-            _ => throw new ArgumentOutOfRangeException(nameof(filter), filter, null),
+            case UgScopeView.Master:
+                var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+                if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))
+                {
+                    return [];
+                }
+                return await characterInfoRepository.GetAllCharacterInfos(projectId, spec);
+
+            case UgScopeView.Captain:
+                var access = await captainRulesRepository.GetCaptainRules(projectId, currentUserAccessor.UserIdentification);
+                if (access.Count == 0)
+                {
+                    return [];
+                }
+                var groups = (await projectMetadataRepository.GetProjectMetadata(projectId))
+                    .GroupTree.GetChildGroupIdsIncludingThis([.. access.Select(x => x.CharacterGroup)]);
+                return await characterInfoRepository.GetCharacterInfosByGroups(projectId, [.. groups], spec);
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
+        }
+    }
+
+    private static UnifiedGridStatus ToDomain(UgStatusFilterView status)
+        => status switch
+        {
+            UgStatusFilterView.Active => UnifiedGridStatus.Active,
+            UgStatusFilterView.Vacant => UnifiedGridStatus.Vacant,
+            UgStatusFilterView.Discussion => UnifiedGridStatus.Discussion,
+            UgStatusFilterView.Archive => UnifiedGridStatus.Archive,
+            _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
         };
-
-    /// <summary>
-    /// Какие заявки персонажа показывать: в архиве — все заявки удалённого персонажа и
-    /// отклонённые/отозванные у живого, во всех остальных видах — активные.
-    /// </summary>
-    /// <remarks>
-    /// Лист ожидания у живого персонажа — не архив, хотя заявка там и неактивна
-    /// (<see cref="ClaimStatusExtensions.IsActive"/>). У удалённого персонажа активных заявок не бывает
-    /// (удаление их не допускает), а оставшиеся — в том числе из листа ожидания — показываем все.
-    /// </remarks>
-    private static IReadOnlyCollection<CharacterClaimInfo> SelectClaims(CharacterInfo character, UgStatusFilterView filter)
-        => [.. filter switch
-        {
-            UgStatusFilterView.Archive when !character.IsActive => character.Claims,
-            UgStatusFilterView.Archive => character.Claims.Where(IsDeclined),
-            _ => character.Claims.Where(claim => claim.IsActive),
-        }];
-
-    private static bool IsDeclined(CharacterClaimInfo claim)
-        => claim.Status is ClaimStatus.DeclinedByMaster or ClaimStatus.DeclinedByUser;
 }

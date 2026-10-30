@@ -83,7 +83,7 @@ public class DiscussionRedirectControllerTest
     [Fact]
     public async Task ToComment_MissingComment_ReturnsNotFound()
     {
-        var result = await CreateMasterController().ToComment(ProjectId, commentid: 637699);
+        var result = await CreateMasterController().ToComment(ProjectId, new CommentId(637699));
 
         result.ShouldBeOfType<NotFoundResult>();
     }
@@ -91,9 +91,20 @@ public class DiscussionRedirectControllerTest
     [Fact]
     public async Task ToDiscussion_MissingDiscussion_ReturnsNotFound()
     {
-        var result = await CreateMasterController().ToDiscussion(ProjectId, commentDiscussionId: 637699);
+        var result = await CreateMasterController().ToDiscussion(ProjectId, new CommentDiscussionId(637699));
 
         result.ShouldBeOfType<NotFoundResult>();
+    }
+
+    /// <summary>
+    /// Ноль и мусор в адресе typed id не биндят (см. <c>CommentIdModelBindingTest</c>,
+    /// <c>AddCommentViewModelBindingTest</c>) — тогда параметр <c>null</c>, и переход отдаёт 404.
+    /// </summary>
+    [Fact]
+    public async Task NotBoundId_ReturnsNotFound()
+    {
+        (await CreateMasterController().ToDiscussion(ProjectId, commentDiscussionId: null)).ShouldBeOfType<NotFoundResult>();
+        (await CreateMasterController().ToComment(ProjectId, commentId: null)).ShouldBeOfType<NotFoundResult>();
     }
 
     [Fact]
@@ -101,15 +112,15 @@ public class DiscussionRedirectControllerTest
     {
         var otherProject = new ProjectIdentification(ProjectId.Value + 1);
 
-        (await CreateMasterController().ToDiscussion(otherProject, ClaimDiscussionId.Value)).ShouldBeOfType<NotFoundResult>();
-        (await CreateMasterController().ToComment(otherProject, ClaimCommentId.Value)).ShouldBeOfType<NotFoundResult>();
+        (await CreateMasterController().ToDiscussion(otherProject, ClaimDiscussionId)).ShouldBeOfType<NotFoundResult>();
+        (await CreateMasterController().ToComment(otherProject, ClaimCommentId)).ShouldBeOfType<NotFoundResult>();
         (await CreateMasterController().ToFinanceOperation(otherProject, ClaimCommentId.Value)).ShouldBeOfType<NotFoundResult>();
     }
 
     [Fact]
     public async Task ToDiscussion_Claim_RedirectsToClaim()
     {
-        var result = await CreateMasterController().ToDiscussion(ProjectId, ClaimDiscussionId.Value);
+        var result = await CreateMasterController().ToDiscussion(ProjectId, ClaimDiscussionId);
 
         result.ShouldBeOfType<RedirectResult>().Url.ShouldBe($"Claim/Edit?ClaimId={claim.ClaimId}&ProjectId={ProjectId.Value}");
     }
@@ -117,7 +128,7 @@ public class DiscussionRedirectControllerTest
     [Fact]
     public async Task ToComment_Thread_RedirectsToThreadWithAnchor()
     {
-        var result = await CreateMasterController().ToComment(ProjectId, ThreadCommentId.Value);
+        var result = await CreateMasterController().ToComment(ProjectId, ThreadCommentId);
 
         result.ShouldBeOfType<RedirectResult>().Url
             .ShouldBe($"Forum/ViewThread?ProjectId={ProjectId.Value}&ForumThreadId={ThreadId}#comment{ThreadCommentId.Value}");
@@ -136,14 +147,14 @@ public class DiscussionRedirectControllerTest
     public async Task ToDiscussion_Stranger_NoAccess()
     {
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateController(userId: 999).ToDiscussion(ProjectId, ClaimDiscussionId.Value));
+            () => CreateController(userId: 999).ToDiscussion(ProjectId, ClaimDiscussionId));
     }
 
     [Fact]
     public async Task ToDiscussion_PlayerOutsideThreadGroup_NoAccess()
     {
         _ = await Should.ThrowAsync<NoAccessToProjectException>(
-            () => CreateController(mock.Player.UserId).ToDiscussion(ProjectId, ThreadDiscussionId.Value));
+            () => CreateController(mock.Player.UserId).ToDiscussion(ProjectId, ThreadDiscussionId));
     }
 
     /// <summary>Строит адрес из контроллера, действия и значений маршрута — чтобы проверить, куда ведёт переход.</summary>

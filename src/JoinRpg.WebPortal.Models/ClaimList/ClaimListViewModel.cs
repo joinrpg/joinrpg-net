@@ -46,9 +46,10 @@ public class ClaimListViewModel : IOperationsAwareView
 
 }
 
-public class MyClaimListViewModel(IReadOnlyCollection<Claim> claims)
+public class MyClaimListViewModel(IReadOnlyCollection<Claim> claims, IReadOnlyDictionary<CommentDiscussionId, int> unreadComments)
 {
-    public IReadOnlyCollection<ItemViewModel> Items { get; } = claims.Select(c => new ItemViewModel(c, 0)).ToList();
+    public IReadOnlyCollection<ItemViewModel> Items { get; } =
+        [.. claims.Select(c => new ItemViewModel(c, unreadComments.GetValueOrDefault(new CommentDiscussionId(c.CommentDiscussionId))))];
 
     public class ItemViewModel
     {

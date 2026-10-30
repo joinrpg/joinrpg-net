@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "cwm-roslyn-navigator": {
+      "type": "local",
+      "command": ["dotnet", "tool", "run", "cwm-roslyn-navigator"],
+      "enabled": true
+    }
+  }
+}

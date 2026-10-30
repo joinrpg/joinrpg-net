@@ -1,6 +1,7 @@
 # ADR026: Обсуждение (комментарии) — доменный снимок и Razor-компоненты
 
-Статус: предложен.
+Статус: принят, реализован — весь «План миграции» влит (PR 0–9, последний — снос легаси). Что
+осталось открытым — в разделе «Статус» в конце.
 
 Проблема:
 ==
@@ -45,7 +46,9 @@
 - в «Моих заявках» на профиле (`User/Details` → `_MyClaimsList`) счётчик непрочитанных
   комментариев всегда 0: `MyClaimListViewModel` передаёт в `ItemViewModel` константу. Бейдж в
   разметке есть, данных нет. В этом ADR не чиним (список кросспроектный, общему выражению (§2)
-  там нужен признак мастера по каждому проекту, а не один `bool`).
+  там нужен признак мастера по каждому проекту, а не один `bool`). Починено после ADR:
+  `IClaimsRepository.GetUnreadDiscussionsForPlayerClaims` подставляет в общее выражение признак
+  мастера смотрящего по проекту каждой заявки.
 
 Решение:
 ==
@@ -101,8 +104,9 @@ id (`ClaimCommentIdentification`, `ForumCommentIdentification`), которым�
 Правила — те же, что в ADR013/ADR021:
 
 - **Снимок не зависит от пользователя.** Видимость (`IsVisibleToPlayer` против мастерского доступа
-  по `ProjectInfo`) и «прочитано» считаются снаружи. `CommentExtensions.IsVisibleTo` и
-  `GetUnreadCount` переезжают на доменные типы.
+  по `ProjectInfo`) и «прочитано» считаются снаружи. Правила `CommentExtensions.IsVisibleTo` и
+  `GetUnreadCount` переезжают в SQL-предикат (`CommentDiscussionPredicates`, шаг 7) и в построитель
+  модели (`DiscussionViewModelBuilder`, шаг 5); сам `CommentExtensions` удалён в шаге 9.
 - **Авторы — только `UserIdentification`.** Полный `UserInfo` (контакты, соцсети, признак
   админа) обсуждению не нужен — нужны имя и аватарка. Поэтому аватарка становится частью
   `UserInfoHeader`: `UserInfoHeader(UserIdentification, UserDisplayName, AvatarIdentification?
@@ -427,6 +431,17 @@ render-mode="Static" />`. Формы добавления и ответа — о
    нет — оно закрывается крестиком в заголовке. Новых `data-dismiss` не
    заводим (#5304), а сам диалог на Bootstrap-модалке переводится отдельно. Ветка с
    `toggleCommentEditor` уходит вместе с `CommentsListPartial`.
+   Сделано так: кроме перечисленного удалён `CommentExtensions` целиком (`GetUnreadCount` и
+   `IsVisibleTo` в проде уже не вызывались, только как эталоны в тестах; правило «видимый и выше
+   максимума из своих комментариев и своих отметок» переписано эталоном прямо в
+   `CommentDiscussionPredicatesTest` и `UnreadCommentsCountScenario`), EF-интерфейсы `ICommentHeader`, `ICommentDiscussionHeader`,
+   `IForumThread`, `AddCommentViewModel.HideCancelButton`/`AddButtonId`/`FormId` с шаблонами id,
+   `ClaimViewModel.CommentDiscussionId`. `AvatarViewComponent` остаётся: он рисует аватарку в шапке
+   (`_LoginPartial`) и в выборе аватарки (`_AvatarSelector`). `AddCommentViewModel.CommentDiscussionId`
+   и `ParentCommentId` стали typed id (`CommentDiscussionId?`, `CommentId?`; форма постит числа,
+   собирает их `TypeConverter`), как и параметры `DiscussionRedirectController.ToDiscussion`/`ToComment`.
+   Финансовые формы, унаследованные от `AddCommentViewModel`, id обсуждения больше не постят: его
+   никто не читал, а диалог оплаты клал туда id заявки.
 
 Не делаем:
 ==
@@ -443,3 +458,22 @@ render-mode="Static" />`. Формы добавления и ответа — о
 - **Переписывание счётчиков непрочитанного в списках заявок** сверх общего выражения и типизации
   ключа (шаг 7): `GetUnreadDiscussionsForClaims` и так один SQL-запрос без EF-сущностей.
 - **Новые поля в DataModel** не нужны: снимок строится из существующих таблиц.
+
+Статус
+==
+
+Принят и реализован: план выполнен — PR 0 (#5903), 1 (#5916), 2 (#5917), 2a–2e (#5905, #5904, #5908,
+#5919, #5918), 3 (#5920), 4 (#5921), 4a (#5932), 5 (#5940), 5a (#5944), 6 (#5941), 7 (#5929),
+8 (#5963) и 9 — снос легаси (PR «снос legacy-дерева комментариев (ADR026, PR 9)»).
+
+Осталось открытым:
+
+- **Сброс кеша аватарок** после `RecacheAvatar` (#5774): вечный кеш `IAvatarLoader` не узнаёт о
+  перекешировании.
+- **Облегчённый `JoinCollapsePanel` для «Ответить»** — у каждого комментария сейчас полноценная панель.
+- **Пустые `label` у `FormRow` без подписи** (строка с кнопками в `AddCommentForm`).
+- **`claim/Edit` — 5 ленивых загрузок**, все в финблоке (`ClaimFeeViewModel`, #4960, #5420), не в
+  обсуждении.
+
+Закрыто после завершения плана: `IClaimService.ModerateFinanceOperation` принимает
+`FinanceOperationIdentification` вместо пары `ClaimIdentification` + голый `int parentCommentId`.

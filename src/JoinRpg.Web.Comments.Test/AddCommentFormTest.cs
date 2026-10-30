@@ -4,8 +4,8 @@ using static JoinRpg.Web.Comments.Test.CommentTestData;
 namespace JoinRpg.Web.Comments.Test;
 
 /// <summary>
-/// Форма комментария: контракт с <c>ForumController.CreateComment</c> (поля как у
-/// <c>_AddCommentPartial.cshtml</c>) и правило «ответ на скрытый — тоже скрыт» (ADR026 §3).
+/// Форма комментария: контракт с <c>ForumController.CreateComment</c> (поля
+/// <c>AddCommentViewModel</c>; их биндинг — <c>AddCommentViewModelBindingTest</c> в Portal.Test) и правило «ответ на скрытый — тоже скрыт» (ADR026 §3).
 /// </summary>
 public class AddCommentFormTest : BunitContext
 {

@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
+
 namespace JoinRpg.Web.ProjectMasterTools.Finance;
 
 /// <summary>
@@ -8,4 +10,12 @@ public interface IFinanceSettingsClient
 {
     Task<FinanceGeneralSettingsViewModel> GetGeneralSettings(ProjectIdentification projectId);
     Task SaveGeneralSettings(FinanceGeneralSettingsViewModel model);
+
+    Task<FinanceFeeSettingsViewModel> GetFeeSettings(ProjectIdentification projectId);
+    Task CreateFeeSetting(ProjectIdentification projectId, CreateFeeSettingViewModel model);
+    Task DeleteFeeSetting(ProjectIdentification projectId, int projectFeeSettingId);
+
+    Task<FinancePaymentTypesViewModel> GetPaymentTypes(ProjectIdentification projectId);
+    Task CreatePaymentType(ProjectIdentification projectId, NewPaymentTypeViewModel model);
+    Task TogglePaymentType(PaymentTypeIdentification paymentTypeId);
 }

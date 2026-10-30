@@ -4,11 +4,13 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.Badges;
+using JoinRpg.Web.ProjectMasterTools.Finance;
 using JoinRpg.Web.Schedule;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -113,6 +115,21 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         _ = caseName;
         var server = call(factory.Services.GetRequiredService<IProjectUriLocator>());
         var client = call(_clientServices.GetRequiredService<IProjectUriLocator>());
+        NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
+    }
+
+    public static IEnumerable<object[]> FinanceSettingsCases() =>
+    [
+        ["GetEditPaymentTypeUri", (Func<IFinanceSettingsUriLocator, Uri>)(l => l.GetEditPaymentTypeUri(new PaymentTypeIdentification(ProjectId, 12)))],
+    ];
+
+    [Theory]
+    [MemberData(nameof(FinanceSettingsCases))]
+    public void FinanceSettingsLocatorsShouldAgree(string caseName, Func<IFinanceSettingsUriLocator, Uri> call)
+    {
+        _ = caseName;
+        var server = call(factory.Services.GetRequiredService<IFinanceSettingsUriLocator>());
+        var client = call(_clientServices.GetRequiredService<IFinanceSettingsUriLocator>());
         NormalizePathAndQuery(client).ShouldBe(NormalizePathAndQuery(server), StringCompareShould.IgnoreCase);
     }
 

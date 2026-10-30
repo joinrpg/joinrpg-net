@@ -3,134 +3,17 @@
 
 @{
   ViewBag.Title = "Настройка финансов";
-  var firstFee = Model.FeeSettings.FirstOrDefault();
 }
 
 <h2>@ViewBag.Title</h2>
 
-@Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-@if (Model.PaymentTypes.Any() && !Model.FeeSettings.Any())
-{
-    <div class="join alert alert-danger"><join-icon icon="Alert" />
-        Необходимо настроить размеры взносов, прежде чем принимать их.
-    </div>
-}
-else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
-{
-    <div class="join alert alert-warning"><join-icon icon="Alert" />
-        Игроки не могут сдавать взносы, пока не настроен ни один метод оплаты.
-    </div>
-}
-
 <div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h4>
-                <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#setupFee">
-                    Взнос и сроки
-                </a>
-            </h4>
-        </div>
-        <div class="panel-collapse collapse" id="setupFee" role="tabpanel">
-            <div class="panel-body">
-                
-                @if (!Model.FeeSettings.Any())
-                {
-                    <div class="join alert alert-info">
-                        <join-icon icon="Info" />
-                        <div>
-                            Коллеги! Если вы оказались в этом разделе, то, скорее всего, хотите настроить размер взноса для вашей игры для того, чтобы
-                            покрыть расходы на ее проведение. Мы просим вас на секунду задуматься о том, как покрываются расходы на работу Joinrpg.ru.
-                            Это бесплатный для игроков и мастеров сайт, рекламы на нем нет и не будет. Мы существуем за счет пожертвований и были бы
-                            очень благодарны, если бы вы сочли возможным повысить ваш взнос всего на 50 рублей, и
-                            <a href="@Url.Action("HowToHelp", "Home")">пожертвовать эти деньги</a> на наш сайт. Так мы сможем покрыть
-                            расходы на хостинг, не залезая в личные деньги, а при удаче — и отложить что-то на развитие.
-                        </div>
-                    </div>
-                }
-                else
-                {
-                <p>Изменение взноса не влияет на уже оплаченные заявки. Возможно удалить только взнос, который еще не вступил в силу.</p>
-                    <table class="table">
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => firstFee!.Fee)
-                            </th>
-                            @if (Model.PreferentialFeeEnabled)
-                            {
-                                <th>
-                                    @Html.DisplayNameFor(model => firstFee!.PreferentialFee)
-                                </th>
-                            }
-                            <th>
-                                @Html.DisplayNameFor(model => firstFee!.StartDate)
-                            </th>
-                            <th></th>
-                        </tr>
-
-                        @foreach (var item in Model.FeeSettings)
-                        {
-                            <tr>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.Fee)
-                                </td>
-                                @if (Model.PreferentialFeeEnabled)
-                                {
-                                    <td>
-                                        @(item.PreferentialFee ?? item.Fee)
-                                    </td>
-                                }
-                                <td>
-                                    @item.StartDate.ToShortDateString()
-                                </td>
-                                <td>
-                                    @if (item.IsActual && Model.HasEditAccess)
-                                    {
-                                        <button type="button" class="btn btn-danger btn-sm"
-                                                data-toggle="modal"
-                                                data-target="#deleteFeeSetting"
-                                                data-element="@item.ProjectFeeSettingId">
-                                            <join-icon icon="Delete" />Удалить..
-                                        </button>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </table>
-                }
-                
-                @if (Model.HasEditAccess)
-                {
-
-                    <button type="button" class="btn btn-success"
-                            data-toggle="modal"
-                            data-target="#addFeeSettingModal">
-                        <join-icon icon="Add" />Добавить новый размер взноса ...
-                    </button>
-
-                }
- 
-            </div>
-        </div>
-    </div>
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h4>
-                <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#setupPayment">
-                    Методы оплаты
-                </a>
-            </h4>
-
-        </div>
-        <div class="panel-collapse collapse" role="tabpanel" id="setupPayment">
-            <div class="panel-body">
-                @await Html.PartialAsync("..\\Finances\\_PaymentTypesPartial", Model)
-            </div>
-        </div>
-    </div>
     @* Панели по одной переезжают на острова; пока переезд не закончен, старые панели на data-toggle
        и новые на JoinCollapsePanel стоят в одном аккордеоне. *@
+    <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinanceFeeSettingsPanel)" render-mode="WebAssembly"
+               param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
+    <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinancePaymentTypesPanel)" render-mode="WebAssembly"
+               param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
     <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinanceGeneralSettingsPanel)" render-mode="WebAssembly"
                param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
     <div class="panel panel-default">
@@ -158,72 +41,3 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
     </div>
 
 </div>
-
-<div class="modal fade" id="addFeeSettingModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-          <form asp-action="CreateFeeSetting"  asp-controller="Finances" asp-route-projectId="@Model.ProjectId" method="post">
-          @{
-            var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId, PreferentialFeeEnabled = Model.PreferentialFeeEnabled, StartDate = DateOnly.FromDateTime(DateTime.UtcNow) };
-
-
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть"><join-icon icon="Close" /></button>
-              <h4 class="modal-title" id="deleteTitle">Добавление нового размера взноса оплаты</h4>
-            </div>
-            <div class="modal-body">
-              <p>
-                Выберите размер взноса и с какого числа он вступает в силу.
-              </p>
-
-              @await Html.PartialAsync("CreateFeeSettingPartial", localModel)
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-              <button type="submit" class="btn btn-success" id="submit-button">Добавить</button>
-            </div>
-          }
-            </form>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div>
-
-@await Html.PartialAsync("..\\Finances\\_AddPaymentTypeDialog", new CreatePaymentTypeViewModel { ProjectId = Model.ProjectId})
-
-@await Html.PartialAsync("..\\Finances\\_TogglePaymentTypeDialog", new TogglePaymentTypeViewModel { ProjectId = Model.ProjectId })
-
-<div class="modal fade" id="deleteFeeSetting" tabindex="-1" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            @using (Html.BeginForm("DeleteFeeSetting", "Finances", new { Model.ProjectId }, FormMethod.Post))
-            {
-            <input type="hidden" name="projectFeeSettingId" id="elementId" value="0" />
-            @Html.AntiForgeryToken()
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть"><join-icon icon="Close" /></button>
-                <h4 class="modal-title" id="deleteTitle">Удаление размера взноса</h4>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                <button type="submit" class="btn btn-danger" id="submit-button">Удалить</button>
-            </div>
-            }
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div>
-
-@section scripts {
-    <script type="text/javascript" defer>
-
-        $('#deleteFeeSetting')
-           .on('show.bs.modal',
-               function (event) {
-                   var button = $(event.relatedTarget);
-                   var plotElementId = button.data('element');
-                   var modal = $(this);
-                   modal.find('#elementId').val(plotElementId);
-               });
-    </script>
-}

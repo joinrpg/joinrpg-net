@@ -20,7 +20,8 @@ public class ClaimFeeViewModelTest
             claimInCharacter,
             new UserIdentification((currentUser ?? mock.Master).UserId),
             _ => null,
-            accommodation: null);
+            accommodation: null,
+            preferentialFeeConditions: null);
     }
 
     [Fact]

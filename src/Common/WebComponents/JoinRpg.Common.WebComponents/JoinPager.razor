@@ -1,0 +1,96 @@
+@* Переключатель страниц: «назад», номера вокруг текущей с первой и последней, «вперёд». *@
+@if (TotalPages > 1)
+{
+    <nav aria-label="Страницы">
+        <ul class="pagination">
+            @PageItem(Current - 1, "«", "Предыдущая страница", disabled: Current <= 1)
+            @foreach (var page in VisiblePages())
+            {
+                if (page is null)
+                {
+                    <li class="disabled"><span>…</span></li>
+                }
+                else
+                {
+                    @PageItem(page.Value, page.Value.ToString(), $"Страница {page}", active: page == Current)
+                }
+            }
+            @PageItem(Current + 1, "»", "Следующая страница", disabled: Current >= TotalPages)
+        </ul>
+    </nav>
+}
+
+@code {
+    /// <summary>
+    /// Текущая страница, с единицы. Номер вне диапазона (например, из старой ссылки) рисуется как
+    /// ближайшая существующая страница.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public int Page { get; set; }
+
+    /// <summary>Сколько всего страниц. Если одна или ни одной — переключатель не рисуется.</summary>
+    [Parameter, EditorRequired]
+    public int TotalPages { get; set; }
+
+    /// <summary>Выбрана другая страница; аргумент — её номер с единицы.</summary>
+    [Parameter, EditorRequired]
+    public EventCallback<int> PageChanged { get; set; }
+
+    /// <summary>Сколько номеров показывать по обе стороны от текущей страницы.</summary>
+    private const int Neighbours = 2;
+
+    private int Current => Math.Clamp(Page, 1, Math.Max(TotalPages, 1));
+
+    // У стрелок имя для скринридера — из aria-label: сам символ «« читается как кавычка.
+    private RenderFragment PageItem(int page, string text, string title, bool disabled = false, bool active = false)
+        => @<li class="@(active ? "active" : disabled ? "disabled" : null)">
+            @if (disabled || active)
+            {
+                <span aria-label="@title" aria-current="@(active ? "page" : null)">@text</span>
+            }
+            else
+            {
+                <a href="" aria-label="@title" title="@title" @onclick="() => PageChanged.InvokeAsync(page)" @onclick:preventDefault>@text</a>
+            }
+        </li>;
+
+    /// <summary>
+    /// Номера для показа; <c>null</c> — пропуск («…»). Пропуск ставится, только если он прячет больше
+    /// одной страницы: иначе сама страница занимает столько же места.
+    /// </summary>
+    private IEnumerable<int?> VisiblePages()
+    {
+        var from = Math.Max(1, Current - Neighbours);
+        var to = Math.Min(TotalPages, Current + Neighbours);
+
+        if (from == 3)
+        {
+            from = 2;
+        }
+        if (to == TotalPages - 2)
+        {
+            to = TotalPages - 1;
+        }
+
+        if (from > 1)
+        {
+            yield return 1;
+        }
+        if (from > 2)
+        {
+            yield return null;
+        }
+        for (var page = from; page <= to; page++)
+        {
+            yield return page;
+        }
+        if (to < TotalPages - 1)
+        {
+            yield return null;
+        }
+        if (to < TotalPages)
+        {
+            yield return TotalPages;
+        }
+    }
+}
