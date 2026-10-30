@@ -60,6 +60,7 @@ public static class ClaimAcccessExtensions
         return claim.HasMasterAccess(UserIdentification.FromOptional(userId), permission);
     }
 
+    [Obsolete]
     public static bool HasAccess(this Claim claim,
         UserIdentification? userId,
         Permission permission = Permission.None,

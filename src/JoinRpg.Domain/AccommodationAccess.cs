@@ -27,7 +27,8 @@ public static class AccommodationAccess
     /// <summary>
     /// Может ли <paramref name="userId"/> менять проживание по заявке <paramref name="claim"/>.
     /// </summary>
-    public static bool CanChangeAccommodation(this Claim claim, UserIdentification? userId)
+    [Obsolete]
+    internal static bool CanChangeAccommodation(this Claim claim, UserIdentification? userId)
         => claim.HasAccess(userId,
             Permission.CanSetPlayersAccommodations,
             GetExtraAccessReason(claim.ClaimStatus));
@@ -79,6 +80,7 @@ public static class AccommodationAccess
     /// Проверить, что <paramref name="userId"/> может менять проживание по заявке, иначе бросить отказ.
     /// </summary>
     /// <exception cref="NoAccessToProjectException">Менять проживание по этой заявке нельзя</exception>
+    [Obsolete]
     public static Claim RequestAccommodationChangeAccess(
         [NotNull] this Claim? claim,
         UserIdentification? userId)

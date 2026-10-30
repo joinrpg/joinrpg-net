@@ -58,10 +58,6 @@ public static class ClaimExtensions
         }
     }
 
-    public static IEnumerable<Claim> OfUserActive(this IEnumerable<Claim> enumerable, int? currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.ClaimStatus.IsActive());
-
-    public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
-
     [Pure]
     public static Claim? TrySelectSingleClaim(this IReadOnlyCollection<Claim> claims)
     {

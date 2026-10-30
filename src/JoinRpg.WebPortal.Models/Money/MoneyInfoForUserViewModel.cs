@@ -20,7 +20,7 @@ public class MoneyInfoForUserViewModel(IReadOnlyCollection<MoneyTransfer> transf
     public int ProjectId { get; } = projectInfo.ProjectId;
     public IReadOnlyCollection<MoneyTransferListItemViewModel> Transfers { get; } = transfers
             .OrderBy(f => f.Id)
-            .Select(f => new MoneyTransferListItemViewModel(f, currentUserId)).ToArray();
+            .Select(f => new MoneyTransferListItemViewModel(f, currentUserId, projectInfo)).ToArray();
 
     public FinOperationListViewModel Operations { get; } = new FinOperationListViewModel(projectInfo, urlHelper, operations, operationsData, currentUserId.UserIdentificationOrDefault);
 

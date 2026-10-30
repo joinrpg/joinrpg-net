@@ -4,10 +4,6 @@ namespace JoinRpg.Domain;
 
 public static class FieldExtensions
 {
-    public static bool IsAvailableForTarget(this ProjectFieldInfo field, Character? target, ProjectInfo projectInfo)
-        => field.IsAvailableForTarget(
-            target is null ? null : new CharacterItem(target, [.. target.GetParentGroupIdsToTop(projectInfo)]));
-
     /// <summary>
     /// Доступно ли поле персонажу. <paramref name="target"/> == <c>null</c> означает «персонажа нет»:
     /// тогда доступны только поля без ограничения по группам.
