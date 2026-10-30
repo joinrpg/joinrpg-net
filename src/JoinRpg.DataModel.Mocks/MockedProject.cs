@@ -451,7 +451,9 @@ public class MockedProject
             claim.CheckInDate,
             claim.LastPlayerCommentAt,
             claim.LastMasterCommentAt,
+            ToUserIdentification(claim.LastMasterCommentBy_Id),
             claim.LastVisibleMasterCommentAt,
+            ToUserIdentification(claim.LastVisibleMasterCommentBy_Id),
             new CommentDiscussionId(claim.CommentDiscussionId),
             new ClaimFinanceInfo(
                 FixedFee: claim.CurrentFee,
@@ -472,6 +474,10 @@ public class MockedProject
                 : AccommodationGroupIdentification.From(claim.GetId()),
             PlayerAllowedSensitiveData: claim.PlayerAllowedSenstiveData,
             FieldLayerContainer.DeserializeFieldLayer(projectInfo, claim.JsonData));
+
+    // Как в боевом CharacterInfoMapper: FK-колонка заявки — в UserIdentification или null.
+    private static UserIdentification? ToUserIdentification(int? userId)
+        => userId is { } id ? new UserIdentification(id) : null;
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)
     {

@@ -225,8 +225,15 @@ public record class ProjectInfo
     /// <see cref="GetActiveMasterOrDefault"/>.
     /// </summary>
     public ProjectMasterInfo GetMasterById(UserIdentification userId)
-        => allMasters.FirstOrDefault(m => m.UserId == userId)
+        => GetMasterByIdOrDefault(userId)
             ?? throw new KeyNotFoundException($"Мастер {userId} не найден в проекте {ProjectId}");
+
+    /// <summary>
+    /// Мастер для показа или <c>null</c>, если пользователя среди мастеров нет (включая бывших) —
+    /// например, для автора старого комментария, чья запись ACL удалена вместе с ним.
+    /// </summary>
+    public ProjectMasterInfo? GetMasterByIdOrDefault(UserIdentification userId)
+        => allMasters.FirstOrDefault(m => m.UserId == userId);
 
     /// <summary>
     /// Действующий мастер проекта или <c>null</c>, если такого нет или он снят (ADR019, §2).

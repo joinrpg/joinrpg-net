@@ -24,7 +24,16 @@ namespace JoinRpg.DomainTypes.Characters.Claims;
 /// <param name="PlayerDeclinedDate">Когда игрок отозвал заявку; <c>null</c>, если не отзывал.</param>
 /// <param name="CheckInDate">Когда игрока зарегистрировали на игре; <c>null</c>, если не регистрировали.</param>
 /// <param name="LastMasterCommentAt">Последний мастерский комментарий, включая невидимые игроку.</param>
+/// <param name="LastMasterCommentBy">
+/// Автор последнего мастерского комментария, включая невидимые игроку; <c>null</c>, если
+/// мастерских комментариев не было. Только идентификатор: имя смотрится в
+/// <c>ProjectInfo</c> (поиск включая бывших мастеров), как у <paramref name="ResponsibleMasterId"/>.
+/// </param>
 /// <param name="LastVisibleMasterCommentAt">Последний мастерский комментарий, видимый игроку.</param>
+/// <param name="LastVisibleMasterCommentBy">
+/// Автор последнего мастерского комментария, видимого игроку; <c>null</c>, если таких не было.
+/// Как и <paramref name="LastMasterCommentBy"/> — только идентификатор.
+/// </param>
 /// <param name="CommentDiscussionId">
 /// Обсуждение заявки. Нужно, например, счётчику непрочитанных комментариев в списке заявок: сами
 /// комментарии агрегат не несёт (ADR013), но связать заявку с её обсуждением должен уметь.
@@ -71,7 +80,9 @@ public record class CharacterClaimInfo(
     DateTime? CheckInDate,
     DateTimeOffset? LastPlayerCommentAt,
     DateTimeOffset? LastMasterCommentAt,
+    UserIdentification? LastMasterCommentBy,
     DateTimeOffset? LastVisibleMasterCommentAt,
+    UserIdentification? LastVisibleMasterCommentBy,
     CommentDiscussionId CommentDiscussionId,
     ClaimFinanceInfo Finance,
     AccommodationTypeIdentification? AccommodationTypeId,
