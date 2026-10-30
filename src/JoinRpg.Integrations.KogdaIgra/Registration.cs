@@ -1,4 +1,5 @@
 using JoinRpg.Common.KogdaIgraClient;
+using JoinRpg.Common.WebInfrastructure.Job;
 using JoinRpg.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,7 +15,7 @@ public static class Registration
             .AddTransient<IKogdaIgraSyncService, KogdaIgraSyncService>()
             .AddTransient<IKogdaIgraBindService, KogdaIgraSyncService>()
             ;
-        services.AddDailyJob<SyncKogdaIgraJob>();
+        services.AddJob<SyncKogdaIgraJob>();
         return services;
     }
 }

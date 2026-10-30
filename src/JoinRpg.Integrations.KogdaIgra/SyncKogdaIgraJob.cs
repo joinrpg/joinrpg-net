@@ -1,11 +1,11 @@
-using JoinRpg.Interfaces;
+using JoinRpg.Common.WebInfrastructure.Job;
 using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Integrations.KogdaIgra;
 
 internal class SyncKogdaIgraJob(
     IKogdaIgraSyncService kogdaIgraSyncService,
-    ILogger<SyncKogdaIgraJob> logger) : IDailyJob
+    ILogger<SyncKogdaIgraJob> logger) : IJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {

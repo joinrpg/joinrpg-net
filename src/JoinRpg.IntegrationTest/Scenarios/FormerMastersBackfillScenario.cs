@@ -1,4 +1,5 @@
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Common.WebInfrastructure.Job;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -8,7 +9,6 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.IntegrationTest.TestInfrastructure;
-using JoinRpg.Portal.Infrastructure.DailyJobs;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectAccess;

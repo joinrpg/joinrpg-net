@@ -5,7 +5,7 @@ namespace JoinRpg.Services.Impl;
 /// <summary>
 /// Каждую ночь пытается протолкнуть зависшие операции
 /// </summary>
-public class UpdatePaymentStatusJob(IPaymentsService paymentsService, ILogger<UpdatePaymentStatusJob> logger, IFinanceOperationsRepository financeOperationsRepository) : IDailyJob
+public class UpdatePaymentStatusJob(IPaymentsService paymentsService, ILogger<UpdatePaymentStatusJob> logger, IFinanceOperationsRepository financeOperationsRepository) : IJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {

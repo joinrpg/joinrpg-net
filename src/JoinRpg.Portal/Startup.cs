@@ -16,9 +16,9 @@ using JoinRpg.Interfaces.Notifications;
 using JoinRpg.Mcp;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
-using JoinRpg.Portal.Infrastructure.DailyJobs;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
+using JoinRpg.Portal.Infrastructure.Jobs;
 using JoinRpg.Portal.Infrastructure.Logging;
 using JoinRpg.Portal.Infrastructure.Logging.Filters;
 using JoinRpg.Portal.Infrastructure.ModelBinding;
@@ -122,7 +122,7 @@ public class Startup(WebApplicationBuilder builder)
                 KogdaIgraSyncServiceActivity.ActivitySourceName,
             ]);
 
-        services.AddJoinDailyJob(Configuration, environment);
+        services.AddJoinJobs(Configuration, environment);
         services.AddNotificationsDal(Configuration, environment);
 
         services.AddJoinDomainServices();

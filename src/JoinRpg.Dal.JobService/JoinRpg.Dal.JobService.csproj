@@ -9,5 +9,6 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure\JoinRpg.Common.WebInfrastructure.csproj" />
+    <ProjectReference Include="..\Common\JoinRpg.Common.WebInfrastructure.Interfaces\JoinRpg.Common.WebInfrastructure.Interfaces.csproj" />
   </ItemGroup>
 </Project>

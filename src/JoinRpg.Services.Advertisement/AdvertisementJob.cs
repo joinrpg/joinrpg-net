@@ -1,4 +1,4 @@
-using JoinRpg.Interfaces;
+using JoinRpg.Common.WebInfrastructure.Job;
 using JoinRpg.Web.ProjectCommon;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +13,7 @@ internal class AdvertisementJob(
     ICharacterRepository characterRepository,
     IAdvSenderFactory advSenderFactory,
     ICharacterUriLocator characterUriLocator,
-    ILogger<AdvertisementJob> logger) : IDailyJob
+    ILogger<AdvertisementJob> logger) : IJob
 {
     private const int MinOtherAdvertisementsBetweenRepeats = 3;
     private const int MaxProjectsInDigest = 10;

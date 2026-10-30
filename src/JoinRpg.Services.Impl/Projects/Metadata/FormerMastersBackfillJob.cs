@@ -13,7 +13,7 @@ internal class FormerMastersBackfillJob(
     IServiceScopeFactory scopeFactory,
     ICurrentUserAccessor currentUserAccessor,
     ILogger<FormerMastersBackfillJob> logger
-    ) : IDailyJob
+    ) : IJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {

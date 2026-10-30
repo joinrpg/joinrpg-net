@@ -7,7 +7,7 @@ internal class BastiliaGamesSyncDailyJob(
     ILogger<BastiliaGamesSyncDailyJob> logger,
     IUserRepository userRepository,
     IProjectMetadataRepository projectMetadataRepository
-    ) : IDailyJob
+    ) : IJob
 {
     public async Task RunOnce(CancellationToken cancellationToken)
     {
