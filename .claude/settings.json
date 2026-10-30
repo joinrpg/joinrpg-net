@@ -10,6 +10,7 @@
       "Bash(dotnet ef*)",
       "Bash(gh pr:*)",
       "Bash(gh run view:*)",
+      "mcp__cwm-roslyn-navigator__*",
       "WebFetch",
       "WebSearch"
     ]
