@@ -13,7 +13,7 @@ using Xunit;
 namespace JoinRpg.Web.AdminTools.Test.PscbPayments;
 
 /// <summary>
-/// Остров списка платежей ПСКБ: кнопка восстановления потерянных строк (ADR027).
+/// Остров списка платежей ПСКБ: кнопка восстановления потерянных строк (ADR028).
 /// </summary>
 public class PscbPaymentsPanelTest : BunitContext
 {

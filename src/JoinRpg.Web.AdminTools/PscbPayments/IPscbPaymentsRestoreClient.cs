@@ -3,7 +3,7 @@ using JoinRpg.XGameApi.Contract.Pscb;
 namespace JoinRpg.Web.AdminTools.PscbPayments;
 
 /// <summary>
-/// Восстановление потерянных платежей ПСКБ (ADR027).
+/// Восстановление потерянных платежей ПСКБ (ADR028).
 /// </summary>
 /// <remarks>
 /// Отдельный клиент рядом с <see cref="IPscbPaymentsClient"/> — по соглашению островов на каждую

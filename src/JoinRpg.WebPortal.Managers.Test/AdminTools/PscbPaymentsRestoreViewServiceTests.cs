@@ -12,7 +12,7 @@ using static JoinRpg.WebPortal.Managers.Test.AdminTools.Pscb.PscbPaymentsTestDat
 namespace JoinRpg.WebPortal.Managers.Test.AdminTools;
 
 /// <summary>
-/// Оркестрация восстановления потерянных платежей ПСКБ (ADR027): один запрос — одна строка
+/// Оркестрация восстановления потерянных платежей ПСКБ (ADR028): один запрос — одна строка
 /// заново скачанного списка, найденная по <c>orderId</c>. Отказ всего прогона (банк не вернул
 /// список, сверка с базой не удалась) приходит исключением, исход строки — результатом.
 /// Продолжение прогона после сбоя строки живёт в острове (<c>PscbPaymentsPanelTest</c>).
@@ -55,7 +55,7 @@ public class PscbPaymentsRestoreViewServiceTests
     /// тем же запросом, вторым записыванием — строка отчитывается обеими записями.
     /// </summary>
     /// <remarks>
-    /// Ограничение источника данных (ADR027): у строки state=ref список банка даёт лишь один
+    /// Ограничение источника данных (ADR028): у строки state=ref список банка даёт лишь один
     /// момент — <c>stateDate</c> возврата, настоящей даты платежа в списке нет. Платёж и возврат
     /// намеренно восстанавливаются этой одной датой, поэтому <c>OperationDate</c> платежа равна
     /// дате возврата — проектное решение, а не пропуск: оно зафиксировано утверждением ниже.
@@ -71,7 +71,7 @@ public class PscbPaymentsRestoreViewServiceTests
 
         var payment = domain.Payments.ShouldHaveSingleItem();
         // Дата денег платежа — stateDate возврата: для пары «потерянный платёж + возврат» это
-        // единственная дата, которую знает список банка (ADR027).
+        // единственная дата, которую знает список банка (ADR028).
         payment.OperationDate.ShouldBe(StatusDateUtc);
 
         var refund = payment.Refund.ShouldNotBeNull();

@@ -283,7 +283,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     }
 
     /// <summary>
-    /// Номера заявок игроков проекта — во всех статусах и без агрегатов (ADR027)
+    /// Номера заявок игроков проекта — во всех статусах и без агрегатов (ADR028)
     /// </summary>
     public async Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
     {
@@ -309,7 +309,7 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
     }
 
     /// <summary>
-    /// Заявки, в чьём обсуждении лежат перечисленные комментарии, — одним запросом (ADR027)
+    /// Заявки, в чьём обсуждении лежат перечисленные комментарии, — одним запросом (ADR028)
     /// </summary>
     public async Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds)
     {

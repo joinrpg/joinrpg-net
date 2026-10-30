@@ -7,7 +7,7 @@ using JoinRpg.XGameApi.Contract.Pscb;
 namespace JoinRpg.WebPortal.Managers.AdminTools;
 
 /// <summary>
-/// Восстановление потерянных платежей ПСКБ из списка банка (ADR027): заново скачивает период,
+/// Восстановление потерянных платежей ПСКБ из списка банка (ADR028): заново скачивает период,
 /// находит в нём одну строку по <c>orderId</c> и, если сверка вынесла ей вердикт «можно
 /// восстановить автоматически», пишет её доменным сервисом <see cref="ILostPaymentsRestoreService"/>.
 /// </summary>

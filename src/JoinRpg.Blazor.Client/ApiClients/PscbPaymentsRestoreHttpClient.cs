@@ -4,7 +4,7 @@ using JoinRpg.XGameApi.Contract.Pscb;
 namespace JoinRpg.Blazor.Client.ApiClients;
 
 /// <summary>
-/// WASM-клиент восстановления потерянных платежей ПСКБ (ADR027).
+/// WASM-клиент восстановления потерянных платежей ПСКБ (ADR028).
 /// </summary>
 /// <remarks>
 /// Запрос — POST, а он закрыт глобальным <c>AutoValidateAntiforgeryTokenAttribute</c>, поэтому

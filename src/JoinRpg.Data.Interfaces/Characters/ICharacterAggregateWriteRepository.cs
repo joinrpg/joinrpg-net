@@ -124,7 +124,7 @@ public interface ICharacterAggregateWriteRepository
 
     /// <summary>
     /// Вставляет потерянный онлайн-платёж или его возврат — комментарий, текст, финансовую операцию
-    /// и банковские реквизиты (ADR027).
+    /// и банковские реквизиты (ADR028).
     /// </summary>
     /// <remarks>
     /// <para>
@@ -218,7 +218,7 @@ public record RestoredFinanceOperationRow(
 public record RestoredFinanceOperationInsert(RestoredCommentInsertResult Result, int OperationId);
 
 /// <summary>
-/// Строка потерянного онлайн-платежа или его возврата (ADR027). Комментарий операции видим игроку
+/// Строка потерянного онлайн-платежа или его возврата (ADR028). Комментарий операции видим игроку
 /// и без действия: у боевого онлайн-платежа <c>ExtraAction</c> нет, а <c>PaidFee</c> означало бы
 /// взнос, принятый мастером руками.
 /// </summary>

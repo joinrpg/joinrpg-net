@@ -24,7 +24,7 @@ using JoinRpg.Services.Interfaces.Projects;
 namespace JoinRpg.IntegrationTest.Scenarios;
 
 /// <summary>
-/// Восстановление потерянных онлайн-платежей PSCB (ADR027) на настоящем SQL Server: платёж
+/// Восстановление потерянных онлайн-платежей PSCB (ADR028) на настоящем SQL Server: платёж
 /// вставляется с прежним номером (<c>orderId</c> банка — это <c>CommentId</c>) строго ниже счётчика
 /// комментариев вместе со строкой <c>FinanceOperationBankDetails</c>, номер, занятый комментарием
 /// чужого обсуждения, даёт отказ, а не вставку с новым, комментарий своего обсуждения без операции
@@ -137,7 +137,7 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             operation.MoneyAmount.ShouldBe(Money);
             operation.PaymentTypeId.ShouldBe(onlineTypeId.PaymentTypeId);
             operation.RefundedOperationId.ShouldBeNull();
-            // Время разделено (ADR027): запись операции помнит момент восстановления, а её
+            // Время разделено (ADR028): запись операции помнит момент восстановления, а её
             // OperationDate и время комментария — момент денег.
             operation.Created.ShouldBe(RestoredAt);
             operation.Changed.ShouldBe(RestoredAt);
@@ -443,7 +443,7 @@ public class LostPaymentsRestoreScenario(JoinApplicationFactory factory)
             operation.PaymentTypeId.ShouldBe(onlineTypeId.PaymentTypeId);
             operation.RefundedOperationId.ShouldBeNull();
             operation.OperationDate.ShouldBe(PaymentAt);
-            // Разделение времени ADR027 сквозным прогоном: Created/Changed — момент восстановления
+            // Разделение времени ADR028 сквозным прогоном: Created/Changed — момент восстановления
             // (поставлен сервисом после beforeCall), а не момент денег.
             operation.Created.ShouldBeGreaterThanOrEqualTo(beforeCall);
             operation.Created.ShouldNotBe(operation.OperationDate);

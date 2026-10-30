@@ -81,7 +81,7 @@ public class PscbPaymentsControllerTest
 
     /// <summary>
     /// Восстановление строки отдаёт итог сервиса как есть и отправляет сервису тот же запрос,
-    /// что прислал остров (ADR027).
+    /// что прислал остров (ADR028).
     /// </summary>
     [Fact]
     public async Task RestoreRowReturnsTheServiceResult()

@@ -7,7 +7,7 @@ namespace JoinRpg.WebPortal.Managers.Test.AdminTools;
 
 /// <summary>
 /// Преобразование обогащённой строки списка ПСКБ и её плана во вход доменного сервиса
-/// восстановления (ADR027). Чистая функция: ни банка, ни репозиториев.
+/// восстановления (ADR028). Чистая функция: ни банка, ни репозиториев.
 /// </summary>
 public class PscbLostPaymentInputBuilderTest
 {
@@ -40,7 +40,7 @@ public class PscbLostPaymentInputBuilderTest
     /// потерянного платежа нет.
     /// </summary>
     /// <remarks>
-    /// Ограничение источника данных (ADR027): у строки state=ref список банка даёт лишь один
+    /// Ограничение источника данных (ADR028): у строки state=ref список банка даёт лишь один
     /// момент — <c>stateDate</c> возврата, настоящей даты платежа в списке нет. Обе записи
     /// намеренно восстанавливаются этой датой, поэтому <c>OperationDate</c> платёжа равна дате
     /// возврата — проектное решение, а не пропуск: поведение зафиксировано утверждением ниже.
@@ -51,7 +51,7 @@ public class PscbLostPaymentInputBuilderTest
         var input = PscbLostPaymentInputBuilder.BuildPayment(LostRow(refunded: true), Plan());
 
         // Дата денег платежа — stateDate возврата: для пары «потерянный платёж + возврат» это
-        // единственная дата, которую знает список банка (ADR027).
+        // единственная дата, которую знает список банка (ADR028).
         input.OperationDate.ShouldBe(StatusDateUtc);
 
         var refund = input.Refund.ShouldNotBeNull();

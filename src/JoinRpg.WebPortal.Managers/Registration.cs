@@ -94,7 +94,7 @@ public static class Registration
         .AddScoped<INotificationLogClient, AdminTools.NotificationLogManager>()
         .AddScoped<JoinRpg.Web.AdminTools.UserMerge.IUserMergeClient, AdminTools.UserMergeViewService>()
         .AddScoped<AdminTools.PscbPaymentsViewService>()
-        // Шлюз списка и восстановление (ADR027) делят один экземпляр: восстановление переиспользует
+        // Шлюз списка и восстановление (ADR028) делят один экземпляр: восстановление переиспользует
         // скачивание и обогащение списка, а не ходит в банк второй раз.
         .AddScoped<JoinRpg.Web.AdminTools.PscbPayments.IPscbPaymentsClient>(sp => sp.GetRequiredService<AdminTools.PscbPaymentsViewService>())
         .AddScoped<JoinRpg.Web.AdminTools.PscbPayments.IPscbPaymentsRestoreClient, AdminTools.PscbPaymentsRestoreViewService>()

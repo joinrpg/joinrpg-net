@@ -5,7 +5,7 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 
 /// <summary>
 /// Преобразование строки списка ПСКБ и её плана восстановления во вход доменного сервиса
-/// <c>ILostPaymentsRestoreService</c> (ADR027).
+/// <c>ILostPaymentsRestoreService</c> (ADR028).
 /// </summary>
 /// <remarks>
 /// <para>
