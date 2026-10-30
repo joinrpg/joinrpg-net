@@ -1,4 +1,6 @@
+using System.Data.Entity;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.ProjectMetadata;
 using JoinRpg.DomainTypes;
@@ -9,6 +11,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Characters;
 using JoinRpg.Services.Interfaces.ProjectMetadata;
 using JoinRpg.Services.Interfaces.Projects;
+using ProjectField = JoinRpg.DataModel.ProjectField;
 
 namespace JoinRpg.IntegrationTest.Scenarios;
 
@@ -239,6 +242,70 @@ public class CloneProjectScenario(JoinApplicationFactory factory) : IClassFixtur
             clonedField.Name.ShouldBe("Позывной");
 
             template.Layout.Lines[1].StaticText.ShouldBe("Каэр Морхен");
+        });
+    }
+
+    /// <summary>
+    /// Legacy-проекты с непубличным полем-именем (#965) клонируются: поле-имя в клоне
+    /// становится публичным, а не ломает клонирование невалидной комбинацией флагов
+    /// (публичное, но невидимое игроку).
+    /// </summary>
+    [Fact]
+    public async Task CloneProject_MakesLegacyNotPublicNameFieldPublic()
+    {
+        UserIdentification masterId;
+        ProjectIdentification originalProjectId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
+            originalProjectId = await TestUserProjectHelpers.CreateProjectAsync(
+                scope.ServiceProvider, masterId, "Исходный проект с непубличным полем-именем");
+        }
+
+        int nameFieldId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var info = await scope.ServiceProvider.GetRequiredService<IProjectMetadataRepository>()
+                .GetProjectMetadata(originalProjectId);
+            nameFieldId = info.CharacterNameField.ShouldNotBeNull().Id.ProjectFieldId;
+
+            // Состояние, недостижимое через сервисы после #965: поле-имя непубличное
+            // и невидимое игроку. Воссоздаём legacy-данные напрямую в БД.
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            var field = await db.Set<ProjectField>()
+                .SingleAsync(f => f.ProjectId == originalProjectId && f.ProjectFieldId == nameFieldId);
+            field.IsPublic = false;
+            field.CanPlayerView = false;
+            field.CanPlayerEdit = false;
+            field.IncludeInPrint = false;
+            await db.SaveChangesAsync();
+        }
+
+        var cloneProjectId = await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var result = await sp.GetRequiredService<ICreateProjectService>().CreateProject(
+                new CloneProjectRequest(
+                    new ProjectName("Клон проекта с legacy полем-именем"),
+                    originalProjectId,
+                    ProjectCopySettingsDto.SettingsAndFields,
+                    KogdaIgraLinkChoiceDto.ShouldNotBeOnKogdaIgra,
+                    null,
+                    null));
+
+            return result switch
+            {
+                SuccessCreateProjectResult r => r.ProjectId,
+                PartiallySuccessCreateProjectResult r => r.ProjectId,
+                _ => throw new InvalidOperationException($"Не удалось склонировать проект: {result}")
+            };
+        });
+
+        await factory.Services.RunAsAsync(masterId, async sp =>
+        {
+            var cloneInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(cloneProjectId);
+            var nameField = cloneInfo.CharacterNameField.ShouldNotBeNull();
+            nameField.IsPublic.ShouldBeTrue();
+            nameField.CanPlayerView.ShouldBeTrue();
         });
     }
 

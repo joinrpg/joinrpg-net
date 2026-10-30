@@ -157,9 +157,9 @@ internal class CloneProjectHelper(
                             field.Name,
                             field.Description?.Value ?? "",
                             field.CanPlayerEdit,
-                            field.CanPlayerView,
                             // Поле-имя обязано быть публичным (#965): старые проекты с
                             // непубличным полем-именем клонируем уже исправленными.
+                            field.CanPlayerView || field.IsName,
                             field.IsPublic || field.IsName,
                             field.BoundTo,
                             field.MandatoryStatus,
