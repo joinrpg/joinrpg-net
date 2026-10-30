@@ -6,9 +6,34 @@
 @inject NavigationManager NavigationManager
 
 <div style="margin:0.5em">
-  <span class="h3">Моя команда</span> <EnumSelector TValue="UgStatusFilterView" SelectedValue="StatusFilter" SelectedValueChanged="UpdateFilter" />
+  <span class="h3">@(Scope == UgScopeView.Master ? "Заявки" : "Моя команда")</span>
+  <EnumSelector TValue="UgStatusFilterView" SelectedValue="StatusFilter" SelectedValueChanged="UpdateFilter" />
   <JoinIcon Icon="JoinIconType.Info" Title="@StatusFilter.GetDescription()" />
+  @if (IsMaster)
+  {
+      <SingleCharacterGroupSelector ProjectId="@ProjectId.Value"
+                                    SelectedGroupId="@GroupFilter"
+                                    SelectedGroupIdChanged="@(g => UpdateMasterFilter(() => GroupFilter = g))" />
+      <MasterSelector ProjectId="@ProjectId.Value"
+                      MasterId="@ResponsibleFilter"
+                      MasterIdChanged="@(m => UpdateMasterFilter(() => ResponsibleFilter = m))" />
+      <label style="margin-left:1em">
+          <CheckboxInput Value="OnlyWithProblemsFilter"
+                         ValueExpression="() => OnlyWithProblemsFilter"
+                         ValueChanged="@(v => UpdateMasterFilter(() => OnlyWithProblemsFilter = v))" />
+          Только с проблемами
+      </label>
+  }
 </div>
+
+@if (IsMaster)
+{
+    <ListOperationsButtons ProjectId="@ProjectId"
+                           ClaimIds="gridPage?.OperationClaimIds ?? []"
+                           CharacterIds="gridPage?.OperationCharacterIds ?? []"
+                           CountString="@CountString"
+                           ExportUri="@ExportUri" />
+}
 
 @if (gridPage is null)
 {
@@ -17,19 +42,19 @@
 }
 
 <JoinBorderedTable Items="gridPage.Items" Context="item">
-  <HeadContent>
-    <tr>
-        <th>Персонаж</th>
-        <th>Игрок</th>
-        <th>Статус</th>
-        <th>Заявка обновлена</th>
-        <th>Ответственный мастер</th>
-        <th>Взнос</th>
-        @if (ShowProblems)
-        {
-            <th>Проблемы</th>
-        }
-    </tr>
+    <HeadContent>
+        <tr>
+            <th>Персонаж</th>
+            <th>Игрок</th>
+            <th>Статус</th>
+            <th>Заявка обновлена</th>
+            <th>Ответственный мастер</th>
+            <th>Взнос</th>
+            @if (IsMaster)
+            {
+                <th>Проблемы</th>
+            }
+        </tr>
     </HeadContent>
     <ItemTemplate>
 
@@ -57,7 +82,7 @@
                 <td>
                     &nbsp;
                 </td>
-                @if (ShowProblems)
+                @if (IsMaster)
                 {
                     <td>&nbsp;</td>
                 }
@@ -81,7 +106,7 @@
                                 }
                         </td>
                     }
-                    
+
 
 
                     <td>
@@ -93,6 +118,10 @@
                     </td>
                     <td>
                         <ClaimStatusBadge Status="claim.ClaimStatus" IsMaster="true" />
+                        @if (claim.UnreadCommentsCount is > 0)
+                        {
+                            <span class="badge" title="Непрочитанные комментарии">@claim.UnreadCommentsCount</span>
+                        }
                     </td>
                     <td>
                         <EventTime Model="claim.UpdateDate" />
@@ -102,7 +131,7 @@
                     <td>
                         <ClaimBalanceView Model="claim.Fee" />
                     </td>
-                    @if (ShowProblems)
+                    @if (IsMaster)
                     {
                         <td>
                             @foreach (var problem in claim.Problems ?? [])
@@ -130,7 +159,7 @@
                       <td>
                           &nbsp;
                       </td>
-                      @if (ShowProblems)
+                      @if (IsMaster)
                       {
                           <td>&nbsp;</td>
                       }
@@ -148,14 +177,26 @@
     UgPageViewModel? gridPage;
 
     /// <summary>
-    /// Проблемы сервер отдаёт только в мастерском скоупе (ADR027 §1): у капитана их нет, и колонки тоже.
+    /// Скоуп грида задаёт страница (ADR027 §1): кабинет капитана и мастерская страница отличаются
+    /// только им, а права на скоуп проверяет сервер. Мастерские части — колонка и фильтр проблем,
+    /// фильтры группы и ответственного, кнопки массовых операций — рисуются по скоупу.
     /// </summary>
-    private bool ShowProblems => gridPage?.Items.Any(item => item.Claims.Any(claim => claim.Problems is not null)) == true;
+    [Parameter]
+    public UgScopeView Scope { get; set; } = UgScopeView.Captain;
+
+    private bool IsMaster => Scope == UgScopeView.Master;
 
     /// <summary>Номер последнего запроса: ответ на более ранний, пришедший позже, не нужен.</summary>
     private int lastRequest;
 
     private UgStatusFilterView StatusFilter { get; set; }
+
+    /// <summary>Мастерские фильтры (ADR027 §1): у капитана их нет, поэтому и в URL их не бывает.</summary>
+    private bool OnlyWithProblemsFilter { get; set; }
+
+    private CharacterGroupIdentification? GroupFilter { get; set; }
+
+    private UserIdentification? ResponsibleFilter { get; set; }
 
     [Parameter]
     [EditorRequired]
@@ -172,9 +213,22 @@
     [Parameter]
     public int InitialPage { get; set; } = 1;
 
+    /// <summary>Стартовые значения мастерских фильтров из query string страницы.</summary>
+    [Parameter]
+    public bool InitialOnlyWithProblems { get; set; }
+
+    [Parameter]
+    public CharacterGroupIdentification? InitialCharacterGroupId { get; set; }
+
+    [Parameter]
+    public UserIdentification? InitialResponsibleMasterId { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         StatusFilter = InitialStatus;
+        OnlyWithProblemsFilter = InitialOnlyWithProblems;
+        GroupFilter = InitialCharacterGroupId;
+        ResponsibleFilter = InitialResponsibleMasterId;
         await LoadPage(InitialPage);
         await base.OnInitializedAsync();
     }
@@ -184,12 +238,25 @@
         if (StatusFilter != args)
         {
             StatusFilter = args;
-            // Новый фильтр — новый список, прежний номер страницы к нему не относится, а прежние
-            // строки на экране вводили бы в заблуждение.
-            gridPage = null;
-            await LoadPage(1);
-            RewriteUrl();
+            await ResetList();
         }
+    }
+
+    /// <summary>
+    /// Смена любого мастерского фильтра перезагружает список с первой страницы — прежний номер к
+    /// новому фильтру не относится, а прежние строки на экране вводили бы в заблуждение.
+    /// </summary>
+    private async Task UpdateMasterFilter(Action setFilter)
+    {
+        setFilter();
+        await ResetList();
+    }
+
+    private async Task ResetList()
+    {
+        gridPage = null;
+        await LoadPage(1);
+        RewriteUrl();
     }
 
     private async Task ChangePage(int page)
@@ -201,8 +268,9 @@
     /// <summary>
     /// Фильтр и номер страницы лежат в URL (ADR027 §5): ссылками делятся, а редиректы шага 7
     /// ведут на готовый адрес. Значения по умолчанию не пишем — адрес короче, а «Активные,
-    /// первая страница» и есть адрес без query. Посторонние параметры текущего адреса не
-    /// сохраняем: у страницы их нет, а мастерские фильтры (шаг 6) попадут сюда явно.
+    /// первая страница, без фильтров» и есть адрес без query. Посторонние параметры текущего
+    /// адреса не сохраняем: у страницы их нет (scope определяется самой страницей и в URL не
+    /// пишется), а параметр выгрузки в ссылку экспорта попадает явно.
     /// </summary>
     /// <remarks>
     /// Остров отрисован без Blazor Router, но NavigateTo без <c>forceLoad</c> страницу не
@@ -212,20 +280,50 @@
     /// событий — на предрендере их не бывает, а там NavigateTo запрещён.
     /// </remarks>
     private void RewriteUrl()
+        => NavigationManager.NavigateTo(BuildUrl(export: false), replace: true);
+
+    /// <summary>Ссылка выгрузки: тот же фильтр, что на экране, плюс <c>export=xlsx</c> (ADR027 §5).</summary>
+    private string ExportUri => BuildUrl(export: true);
+
+    private string BuildUrl(bool export)
     {
         var query = new List<string>();
         if (StatusFilter != UgStatusFilterView.Active)
         {
-            query.Add($"status={StatusFilter}");
+            query.Add($"{UgQueryParameterNames.Status}={StatusFilter}");
         }
         var actualPage = gridPage?.Page;
         if (actualPage > 1)
         {
-            query.Add($"page={actualPage}");
+            query.Add($"{UgQueryParameterNames.Page}={actualPage}");
+        }
+        if (IsMaster)
+        {
+            if (OnlyWithProblemsFilter)
+            {
+                query.Add($"{UgQueryParameterNames.OnlyWithProblems}=true");
+            }
+            if (GroupFilter is not null)
+            {
+                query.Add($"{UgQueryParameterNames.CharacterGroupId}={Uri.EscapeDataString(GroupFilter.ToString())}");
+            }
+            if (ResponsibleFilter is not null)
+            {
+                query.Add($"{UgQueryParameterNames.ResponsibleMasterId}={Uri.EscapeDataString(ResponsibleFilter.Value.ToString())}");
+            }
+        }
+        if (export)
+        {
+            query.Add("export=xlsx");
         }
         var path = new Uri(NavigationManager.Uri).AbsolutePath;
-        NavigationManager.NavigateTo(query.Count == 0 ? path : $"{path}?{string.Join("&", query)}", replace: true);
+        return query.Count == 0 ? path : $"{path}?{string.Join("&", query)}";
     }
+
+    /// <summary>Счётчик над списком считает заявки — весь результат фильтра, не текущую страницу.</summary>
+    private string? CountString => gridPage is null
+        ? null
+        : CountHelper.DisplayCount(gridPage.OperationClaimIds.Count, "заявка", "заявки", "заявок");
 
     /// <remarks>
     /// При смене страницы прежняя остаётся на экране до ответа: высота не проваливается, и пейджер
@@ -234,7 +332,11 @@
     private async Task LoadPage(int page)
     {
         var request = ++lastRequest;
-        var result = await claimListClient.GetGrid(ProjectId, UgScopeView.Captain, new UgFilterView(StatusFilter), page);
+        var result = await claimListClient.GetGrid(
+            ProjectId,
+            Scope,
+            new UgFilterView(StatusFilter, IsMaster && OnlyWithProblemsFilter, IsMaster ? GroupFilter : null, IsMaster ? ResponsibleFilter : null),
+            page);
         if (request == lastRequest)
         {
             gridPage = result;

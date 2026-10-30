@@ -1,0 +1,17 @@
+@page "/{projectId:int}/claims"
+@using JoinRpg.Web.Claims.UnifiedGrid
+@model JoinRpg.Portal.Pages.GamePages.ClaimsModel
+@{
+    ViewData["Title"] = "Заявки";
+}
+
+@(await Html.RenderComponentAsync<ClaimsGrid>(RenderMode.WebAssembly, new
+{
+    Model.ProjectId,
+    Scope = UgScopeView.Master,
+    InitialStatus = Model.Status ?? UgStatusFilterView.Active,
+    InitialPage = Model.Page ?? 1,
+    InitialOnlyWithProblems = Model.OnlyWithProblems,
+    InitialCharacterGroupId = Model.CharacterGroupId,
+    InitialResponsibleMasterId = Model.ResponsibleMasterId,
+}))

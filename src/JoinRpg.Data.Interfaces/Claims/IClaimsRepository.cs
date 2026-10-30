@@ -7,6 +7,11 @@ public interface IClaimsRepository : IDisposable
 {
     Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status);
 
+    /// <summary>
+    /// Заявки по списку id — с той же догрузкой, что у списка по статусу: выгрузке грида заявок
+    /// (ADR027 §5) нужны те же Include, иначе ленивые загрузки на каждую строку.
+    /// </summary>
+
     Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status);
 
     /// <summary>
@@ -57,6 +62,13 @@ public interface IClaimsRepository : IDisposable
     /// Число непрочитанных пользователем комментариев в обсуждении каждой заявки проекта.
     /// </summary>
     Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
+
+    /// <summary>
+    /// Число непрочитанных комментариев в обсуждении каждой из перечисленных заявок — бейдж в строке
+    /// грида мастера (ADR027 §4). Считается тем же выражением непрочитанного (ADR026 §2), что и по
+    /// статусу всего проекта.
+    /// </summary>
+    Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(IReadOnlyCollection<ClaimIdentification> claimIds, UserIdentification userId, bool hasMasterAccess);
 
     /// <summary>
     /// Число непрочитанных смотрящим комментариев в обсуждении каждой заявки игрока в любом статусе
