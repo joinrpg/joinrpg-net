@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.533 — 2026-10-29
+
 ### Добавлено
 - Пакет: README.md и CHANGELOG.md, лицензия MIT. ([#5948](https://github.com/joinrpg/joinrpg-net/pull/5948), [#5950](https://github.com/joinrpg/joinrpg-net/pull/5950))
 - `[TypedEntityId]`, `[TypedStringValue]`: у сгенерированных членов есть XML-комментарии — видны в IntelliSense, CS1591 на них нет. ([#5982](https://github.com/joinrpg/joinrpg-net/pull/5982))

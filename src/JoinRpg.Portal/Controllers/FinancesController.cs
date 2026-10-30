@@ -26,9 +26,7 @@ public class FinancesController(
     IUriService uriService,
     IFinanceReportRepository financeReportRepository,
     IUserRepository userRepository,
-    IVirtualUsersService vpu,
     ICurrentUserAccessor currentUserAccessor,
-    ILogger<FinancesController> logger,
     IProjectMetadataRepository projectMetadataRepository,
     IClaimsRepository claimsRepository,
     UserProfileDetailsBuilder cardBuilder
@@ -38,13 +36,10 @@ public class FinancesController(
 
     [HttpGet]
     [MasterAuthorize]
-    public async Task<ActionResult> Setup(int projectid) => await ShowSetup(projectid);
-
-    private async Task<ActionResult> ShowSetup(int projectid)
+    public async Task<ActionResult> Setup(int projectid)
     {
         var project = await projectRepository.GetProjectForFinanceSetup(projectid);
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-        return View("Setup", new FinanceSetupViewModel(project, projectInfo, currentUserAccessor.UserId, currentUserAccessor.IsAdmin, vpu.PaymentsUser.ToUserInfoHeader()));
+        return View("Setup", new FinanceSetupViewModel(project, currentUserAccessor.UserId));
     }
 
     [HttpGet]
@@ -113,68 +108,6 @@ public class FinancesController(
             masters);
 
         return View(viewModel);
-    }
-
-    [HttpPost]
-    [RequireMasterOrAdmin(Permission.CanManageMoney)]
-    public async Task<ActionResult> TogglePaymentType(TogglePaymentTypeViewModel data)
-    {
-        try
-        {
-            if (data.PaymentTypeId > 0)
-            {
-                await financeSettingsService.TogglePaymentActiveness(new PaymentTypeIdentification(data.ProjectId, data.PaymentTypeId.Value));
-            }
-            else
-            {
-                await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest
-                {
-                    ProjectId = new(data.ProjectId),
-                    TargetMasterId = data.MasterId,
-                    Name = null, // У них специальное имя
-                    TypeKind = (PaymentTypeKind)data.TypeKind.GetValueOrDefault(PaymentTypeKindViewModel.Custom),
-                });
-            }
-
-            return RedirectToAction("Setup", new { projectid = data.ProjectId });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Проблема при включении платежа");
-            //TODO: Message that payment type was not created
-            return RedirectToAction("Setup", new { projectid = data.ProjectId });
-        }
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [RequireMasterOrAdmin(Permission.CanManageMoney)]
-    public async Task<ActionResult> CreatePaymentType(CreatePaymentTypeViewModel viewModel)
-    {
-        // Форма — модальный диалог на странице настроек: ошибку показываем сводкой над страницей.
-        if (viewModel.UserId is null)
-        {
-            ModelState.AddModelError("", "Не удалось добавить способ оплаты: выберите мастера");
-            return await ShowSetup(viewModel.ProjectId);
-        }
-
-        try
-        {
-            await financeSettingsService.CreatePaymentType(new CreatePaymentTypeRequest
-            {
-                ProjectId = new(viewModel.ProjectId),
-                TargetMasterId = viewModel.UserId,
-                TypeKind = PaymentTypeKind.Custom,
-                Name = viewModel.Name,
-            });
-            return RedirectToAction("Setup", new { viewModel.ProjectId });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Проблема при создании платежа");
-            //TODO: Message that comment is not added
-            return RedirectToAction("Setup", new { viewModel.ProjectId });
-        }
     }
 
     [HttpGet]

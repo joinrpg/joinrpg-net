@@ -14,6 +14,7 @@ using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.Badges;
+using JoinRpg.Web.ProjectMasterTools.Finance;
 using JoinRpg.Web.Schedule;
 using Microsoft.Extensions.Options;
 
@@ -51,6 +52,7 @@ internal class UriServiceImpl(
     IUriLocator<ProjectRolesListIdentification>,
     IUriLocator<ProjectBadgeTemplateIdentification>,
     IBadgeTemplateUriLocator,
+    IFinanceSettingsUriLocator,
     IUriLocator<AccommodationTypeIdentification>,
     IUriLocator<AccommodationRequestIdentification>,
     IUriLocator<AccommodationRoomIdentification>,
@@ -245,6 +247,8 @@ internal class UriServiceImpl(
             values: new { ProjectId = target.ProjectId.Value, Id = target.ProjectRolesListId }));
 
     public Uri GetUri(ProjectBadgeTemplateIdentification target) => ((IBadgeTemplateUriLocator)this).GetEditUri(target);
+
+    Uri IFinanceSettingsUriLocator.GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) => GetUri(paymentTypeId);
 
     Uri IBadgeTemplateUriLocator.GetListUri(ProjectIdentification projectId) =>
         new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/BadgeTemplates", values: new { ProjectId = projectId.Value }));

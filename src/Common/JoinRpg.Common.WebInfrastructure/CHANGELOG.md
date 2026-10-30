@@ -4,6 +4,8 @@
 
 ## Не выпущено
 
+## 2026.9.533 — 2026-10-29
+
 ### Ломающие изменения
 - Миграция `JoinRpg.Dal.DataProtection.Migrations.Initial` стала `internal`. Переход: не ссылаться на неё — EF находит миграцию сам. ([#5960](https://github.com/joinrpg/joinrpg-net/pull/5960))
 

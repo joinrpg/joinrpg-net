@@ -4,6 +4,7 @@ using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Interfaces;
+using JoinRpg.Web.Claims;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.ClaimList;
@@ -21,11 +22,15 @@ public static class ItemBuilder
     /// В капитанском скоупе текущий пользователь — капитан этих персонажей (это проверил сервис),
     /// в мастерском права дают обычные правила доступа.
     /// </param>
+    /// <param name="problems">
+    /// Проблемы заявок, если их надо показать (мастерский скоуп), иначе <c>null</c>.
+    /// </param>
     public static UgItemViewModel? BuildItem(
         CharacterInfo character,
         IReadOnlyCollection<CharacterClaimInfo> claims,
         ICurrentUserAccessor currentUserId,
-        UgScopeView scope)
+        UgScopeView scope,
+        IReadOnlyDictionary<ClaimIdentification, IReadOnlyCollection<ClaimProblem>>? problems = null)
     {
         var accessArguments = AccessArgumentsFactory.Create(character, currentUserId);
         if (scope == UgScopeView.Captain)
@@ -52,11 +57,14 @@ public static class ItemBuilder
 
         return new UgItemViewModel(
             characterViewModel,
-            [.. claims.Select(claim => BuildClaimItem(new ClaimInCharacter(character, claim), accessArguments))]
+            [.. claims.Select(claim => BuildClaimItem(new ClaimInCharacter(character, claim), accessArguments, problems?[claim.ClaimId]))]
             );
     }
 
-    private static UgClaimViewModel BuildClaimItem(ClaimInCharacter claimInCharacter, AccessArguments accessArguments)
+    private static UgClaimViewModel BuildClaimItem(
+        ClaimInCharacter claimInCharacter,
+        AccessArguments accessArguments,
+        IReadOnlyCollection<ClaimProblem>? problems)
     {
         var claim = claimInCharacter.Claim;
         var lastModifiedAt = ClaimListBuilder.GetLastCommentTime(claim, accessArguments);
@@ -72,7 +80,8 @@ public static class ItemBuilder
             new UserLinkViewModel(respMaster),
             claimInCharacter.CalculateBalance(),
             claim.ClaimId,
-            claim.Player.DisplayName.FullName
+            claim.Player.DisplayName.FullName,
+            problems?.Select(problem => new ProblemViewModel(problem)).ToList()
             );
     }
 }

@@ -1,6 +1,7 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -21,28 +22,40 @@ public class UnifiedGridViewServiceTest
     /// <summary>Последний фейк репозитория — по нему видно, о чём сервис его попросил.</summary>
     private FakeCharacterInfoRepository characterInfoRepository = null!;
 
+    /// <summary>Какие проблемы у заявки; по умолчанию — никаких.</summary>
+    private Func<ClaimInfo, IEnumerable<ClaimProblem>> problemsOf = _ => [];
+
     private async Task<IReadOnlyCollection<UgItemViewModel>> GetItems(
         UgStatusFilterView filter,
         UgScopeView scope = UgScopeView.Captain,
         int? userId = null,
-        FakeCaptainRulesRepository? captainRules = null)
-        => (await GetPage(filter, scope, userId, captainRules)).Items;
+        FakeCaptainRulesRepository? captainRules = null,
+        bool onlyWithProblems = false)
+        => (await GetPage(filter, scope, userId, captainRules, onlyWithProblems: onlyWithProblems)).Items;
 
     private async Task<UgPageViewModel> GetPage(
         UgStatusFilterView filter,
         UgScopeView scope = UgScopeView.Captain,
         int? userId = null,
         FakeCaptainRulesRepository? captainRules = null,
-        int page = 1)
+        int page = 1,
+        bool onlyWithProblems = false)
     {
         characterInfoRepository = new FakeCharacterInfoRepository(Mock);
         IUnifiedGridClient service = new UnifiedGridViewService(
             new FakeCurrentUserAccessor(userId ?? Mock.Master.UserId),
             captainRules ?? new FakeCaptainRulesRepository(Mock),
             new FakeProjectMetadataRepository(Mock),
-            characterInfoRepository);
+            characterInfoRepository,
+            // Капитан проблем не видит — значит, ни профили игроков, ни валидатор ему не нужны.
+            scope == UgScopeView.Master
+                ? new FakeUserRepository(Mock)
+                : FakeUserRepository.MustNotBeCalled("капитан проблем не видит"),
+            new FuncProblemValidator(context => scope == UgScopeView.Master
+                ? problemsOf(context)
+                : throw new InvalidOperationException("капитан проблем не видит")));
 
-        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter), page);
+        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter, onlyWithProblems), page);
     }
 
     /// <summary>
@@ -65,8 +78,8 @@ public class UnifiedGridViewServiceTest
         characterInfoRepository.RequestedSpec.ShouldBe(expected);
     }
 
-    private async Task<IReadOnlyCollection<string>> GetNames(UgStatusFilterView filter)
-        => [.. (await GetItems(filter)).Select(item => item.Character.Name.Name)];
+    private async Task<IReadOnlyCollection<string>> GetNames(UgStatusFilterView filter, bool onlyWithProblems = false)
+        => [.. (await GetPage(filter, onlyWithProblems: onlyWithProblems)).Items.Select(item => item.Character.Name.Name)];
 
     [Fact]
     public async Task ActiveShowsActiveCharacter()
@@ -409,6 +422,158 @@ public class UnifiedGridViewServiceTest
         page.TotalPages.ShouldBe(0);
         page.TotalCharacters.ShouldBe(0);
     }
+
+    #region Проблемы (ADR027 §1, §2)
+
+    private static readonly ClaimProblem Warning = new(ClaimProblemType.ClaimNeverAnswered, ProblemSeverity.Warning, "warning");
+    private static readonly ClaimProblem Hint = new(ClaimProblemType.FeePaidPartially, ProblemSeverity.Hint, "hint");
+
+    private void ProblemsFor(params (DataModel.Claim Claim, ClaimProblem Problem)[] problems)
+        => problemsOf = context => problems.Where(p => p.Claim.GetId() == context.ClaimId).Select(p => p.Problem);
+
+    private UgClaimViewModel ClaimRow(IEnumerable<UgItemViewModel> items, DataModel.Claim claim)
+        => items.SelectMany(item => item.Claims).Single(c => c.ClaimId == claim.GetId());
+
+    /// <summary>
+    /// В колонку попадают все проблемы, включая подсказки, — как в старом гриде мастера.
+    /// </summary>
+    [Fact]
+    public async Task MasterSeesAllProblemsOfClaim()
+    {
+        var character = Mock.CreateCharacter("with claim");
+        var claim = Mock.CreateClaim(character, Mock.Player);
+        ProblemsFor((claim, Warning), (claim, Hint));
+
+        var row = ClaimRow(await GetItems(UgStatusFilterView.Active, UgScopeView.Master), claim);
+
+        row.Problems.ShouldNotBeNull().Select(p => p.ProblemType)
+            .ShouldBe([ClaimProblemType.ClaimNeverAnswered, ClaimProblemType.FeePaidPartially], ignoreOrder: true);
+    }
+
+    /// <summary>Капитан проблем не видит: финансовые и мастерские ему ни к чему.</summary>
+    [Fact]
+    public async Task CaptainDoesNotGetProblems()
+    {
+        var character = Mock.CreateCharacter("with claim");
+        var claim = Mock.CreateClaim(character, Mock.Player);
+        ProblemsFor((claim, Warning));
+
+        ClaimRow(await GetItems(UgStatusFilterView.Active), claim).Problems.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// «Есть проблемы» оставляет заявки с проблемами от предупреждения; персонаж, у которого таких
+    /// заявок нет, из грида пропадает, даже если у него есть подсказки.
+    /// </summary>
+    [Fact]
+    public async Task OnlyWithProblemsKeepsClaimsWithWarnings()
+    {
+        var mixed = Mock.CreateCharacter("mixed");
+        var withWarning = Mock.CreateClaim(mixed, Mock.Player);
+        _ = Mock.CreateClaim(mixed, Mock.Master);
+        var hintOnly = Mock.CreateCharacter("hint only");
+        var withHint = Mock.CreateClaim(hintOnly, Mock.Player);
+        ProblemsFor((withWarning, Warning), (withHint, Hint));
+
+        var items = await GetItems(UgStatusFilterView.Active, UgScopeView.Master, onlyWithProblems: true);
+
+        var item = items.ShouldHaveSingleItem();
+        item.Character.Name.Name.ShouldBe(mixed.CharacterName);
+        item.Claims.Select(c => c.ClaimId).ShouldBe([withWarning.GetId()]);
+    }
+
+    /// <summary>Капитанский грид фильтр по проблемам не применяет: проблем в нём нет.</summary>
+    [Fact]
+    public async Task OnlyWithProblemsIgnoredForCaptain()
+    {
+        var character = Mock.CreateCharacter("no problems");
+        _ = Mock.CreateClaim(character, Mock.Player);
+
+        (await GetNames(UgStatusFilterView.Discussion, onlyWithProblems: true)).ShouldBe([character.CharacterName]);
+    }
+
+    /// <summary>
+    /// Валидируются только показанные заявки и по одному разу: отклонённая заявка в «Активных» не
+    /// видна, и считать её проблемы незачем.
+    /// </summary>
+    [Fact]
+    public async Task OnlyShownClaimsAreValidatedOnce()
+    {
+        var character = Mock.CreateCharacter("with claims");
+        var active = Mock.CreateClaim(character, Mock.Player);
+        var declined = Mock.CreateClaim(character, Mock.Master);
+        declined.ClaimStatus = ClaimStatus.DeclinedByMaster;
+        var validated = new List<ClaimIdentification>();
+        problemsOf = context =>
+        {
+            validated.Add(context.ClaimId);
+            return [];
+        };
+
+        _ = await GetItems(UgStatusFilterView.Active, UgScopeView.Master);
+
+        validated.ShouldBe([active.GetId()]);
+    }
+
+    /// <summary>
+    /// Без фильтра по проблемам проблемы считаются только для текущей страницы: это самая дорогая
+    /// часть запроса (профили игроков, проверки полей), а сортировке они не нужны.
+    /// </summary>
+    [Fact]
+    public async Task WithoutFilterOnlyPageIsValidated()
+    {
+        for (var i = 0; i < UnifiedGridViewService.PageSize + 5; i++)
+        {
+            _ = Mock.CreateClaim(Mock.CreateCharacter($"character {i:D3}"), Mock.Player);
+        }
+        var validated = 0;
+        problemsOf = _ =>
+        {
+            validated++;
+            return [];
+        };
+
+        _ = await GetItems(UgStatusFilterView.Discussion, UgScopeView.Master);
+
+        validated.ShouldBe(UnifiedGridViewService.PageSize);
+    }
+
+    /// <summary>
+    /// С фильтром по проблемам персонаж без заявок (вакансия) пропадает: проблем у него нет.
+    /// </summary>
+    [Fact]
+    public async Task OnlyWithProblemsHidesVacancies()
+        => (await GetItems(UgStatusFilterView.Vacant, UgScopeView.Master, onlyWithProblems: true)).ShouldBeEmpty();
+
+    /// <summary>Мастерский скоуп без доступа мастера пуст и в профили игроков не ходит.</summary>
+    [Fact]
+    public async Task MasterScopeWithoutAccessDoesNotLoadProfiles()
+    {
+        _ = Mock.CreateClaim(Mock.CreateCharacter("with claim"), Mock.Player);
+        IUnifiedGridClient service = new UnifiedGridViewService(
+            new FakeCurrentUserAccessor(Mock.Player.UserId),
+            new FakeCaptainRulesRepository(Mock),
+            new FakeProjectMetadataRepository(Mock),
+            new FakeCharacterInfoRepository(Mock),
+            FakeUserRepository.MustNotBeCalled("без доступа мастера грид пуст"),
+            new FuncProblemValidator(_ => throw new InvalidOperationException("без доступа мастера грид пуст")));
+
+        (await service.GetGrid(Mock.ProjectInfo.ProjectId, UgScopeView.Master, new UgFilterView(UgStatusFilterView.Active, OnlyWithProblems: true), 1))
+            .Items.ShouldBeEmpty();
+    }
+
+    private sealed class FuncProblemValidator(Func<ClaimInfo, IEnumerable<ClaimProblem>> problems) : IClaimProblemValidator
+    {
+        public IEnumerable<ClaimProblem> Validate(ClaimInfo context, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
+            => problems(context).Where(problem => problem.Severity >= minimalSeverity);
+
+        public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context) => throw new NotSupportedException();
+
+        public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context, IEnumerable<ProjectFieldIdentification> fields)
+            => throw new NotSupportedException();
+    }
+
+    #endregion
 
     private sealed class FakeCaptainRulesRepository(MockedProject mock, bool hasRules = true, int? groupId = null) : ICaptainRulesRepository
     {

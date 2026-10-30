@@ -55,4 +55,5 @@ public record class UgClaimViewModel(
     [property: Display(Name = "Ответственный")] UserLinkViewModel? Responsible,
     [property: Display(Name = "Взнос")] ClaimBalance Fee,
     ClaimIdentification? ClaimId,
-    string? PlayerFullName);
+    string? PlayerFullName,
+    [property: Display(Name = "Проблема")] IReadOnlyCollection<ProblemViewModel>? Problems);

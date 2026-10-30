@@ -24,6 +24,10 @@
         <th>Заявка обновлена</th>
         <th>Ответственный мастер</th>
         <th>Взнос</th>
+        @if (ShowProblems)
+        {
+            <th>Проблемы</th>
+        }
     </tr>
     </HeadContent>
     <ItemTemplate>
@@ -48,6 +52,10 @@
                 <td>
                     &nbsp;
                 </td>
+                @if (ShowProblems)
+                {
+                    <td>&nbsp;</td>
+                }
             </tr>
         }
         else
@@ -85,6 +93,15 @@
                     <td>
                         <ClaimBalanceView Model="claim.Fee" />
                     </td>
+                    @if (ShowProblems)
+                    {
+                        <td>
+                            @foreach (var problem in claim.Problems ?? [])
+                            {
+                                <ProblemBadge Model="problem" /><text> </text>
+                            }
+                        </td>
+                    }
                 </tr>
             }
             @if (item.Character.ApplyStatus.IsSlot)
@@ -104,6 +121,10 @@
                       <td>
                           &nbsp;
                       </td>
+                      @if (ShowProblems)
+                      {
+                          <td>&nbsp;</td>
+                      }
                   </tr>
                 }
             }
@@ -116,6 +137,11 @@
     @code {
 
     UgPageViewModel? gridPage;
+
+    /// <summary>
+    /// Проблемы сервер отдаёт только в мастерском скоупе (ADR027 §1): у капитана их нет, и колонки тоже.
+    /// </summary>
+    private bool ShowProblems => gridPage?.Items.Any(item => item.Claims.Any(claim => claim.Problems is not null)) == true;
 
     /// <summary>Номер последнего запроса: ответ на более ранний, пришедший позже, не нужен.</summary>
     private int lastRequest;
