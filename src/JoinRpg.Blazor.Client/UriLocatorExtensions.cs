@@ -1,11 +1,13 @@
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
 using JoinRpg.Web.ProjectMasterTools.Badges;
+using JoinRpg.Web.ProjectMasterTools.Finance;
 using JoinRpg.Web.Schedule;
 
 namespace JoinRpg.Blazor.Client;
@@ -17,8 +19,12 @@ public static class UriLocatorExtensions
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
         IUriLocator<CharacterGroupIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
-        IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator, IBadgeTemplateUriLocator
+        IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator, IBadgeTemplateUriLocator,
+        IFinanceSettingsUriLocator
     {
+        Uri IFinanceSettingsUriLocator.GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) =>
+            new($"/{paymentTypeId.ProjectId.Value}/money/EditPaymentType?PaymentTypeId={paymentTypeId.PaymentTypeId}", UriKind.Relative);
+
         Uri IBadgeTemplateUriLocator.GetListUri(ProjectIdentification projectId) =>
             new($"/{projectId.Value}/tools/badges", UriKind.Relative);
 
@@ -185,6 +191,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IPlotUriLocator>(locator)
             .AddSingleton<IAccommodationUriLocator>(locator)
             .AddSingleton<IBadgeTemplateUriLocator>(locator)
+            .AddSingleton<IFinanceSettingsUriLocator>(locator)
             ;
     }
 }

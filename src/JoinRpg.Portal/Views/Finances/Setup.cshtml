@@ -7,35 +7,13 @@
 
 <h2>@ViewBag.Title</h2>
 
-@Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-@if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.HasFeeSettings)
-{
-    <div class="join alert alert-warning"><join-icon icon="Alert" />
-        Игроки не могут сдавать взносы, пока не настроен ни один метод оплаты.
-    </div>
-}
-
 <div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
     @* Панели по одной переезжают на острова; пока переезд не закончен, старые панели на data-toggle
        и новые на JoinCollapsePanel стоят в одном аккордеоне. *@
     <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinanceFeeSettingsPanel)" render-mode="WebAssembly"
                param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h4>
-                <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#setupPayment">
-                    Методы оплаты
-                </a>
-            </h4>
-
-        </div>
-        <div class="panel-collapse collapse" role="tabpanel" id="setupPayment">
-            <div class="panel-body">
-                @await Html.PartialAsync("..\\Finances\\_PaymentTypesPartial", Model)
-            </div>
-        </div>
-    </div>
+    <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinancePaymentTypesPanel)" render-mode="WebAssembly"
+               param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
     <component type="typeof(JoinRpg.Web.ProjectMasterTools.Finance.FinanceGeneralSettingsPanel)" render-mode="WebAssembly"
                param-ProjectId="new ProjectIdentification(Model.ProjectId)" />
     <div class="panel panel-default">
@@ -63,8 +41,3 @@
     </div>
 
 </div>
-
-
-@await Html.PartialAsync("..\\Finances\\_AddPaymentTypeDialog", new CreatePaymentTypeViewModel { ProjectId = Model.ProjectId})
-
-@await Html.PartialAsync("..\\Finances\\_TogglePaymentTypeDialog", new TogglePaymentTypeViewModel { ProjectId = Model.ProjectId })

@@ -1,77 +1,20 @@
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models;
 
 /// <summary>
-/// Used for project finance configuration
+/// Страница «Настройка финансов». Панели — острова и данные берут сами; здесь только то, что нужно выгрузке в Google Таблицы.
 /// </summary>
 public class FinanceSetupViewModel
 {
-    public string ProjectName { get; }
-
-    public IReadOnlyList<PaymentTypeListItemViewModel> PaymentTypes { get; }
-
-    public bool HasFeeSettings { get; }
-
-    public bool HasEditAccess { get; }
-
     public int ProjectId { get; }
 
     public string CurrentUserToken { get; }
 
-    [ReadOnly(true)]
-    public bool IsAdmin { get; }
-
-    public FinanceSetupViewModel(Project project, ProjectInfo projectInfo, int currentUserId, bool isAdmin, UserInfoHeader virtualPaymentsUser)
+    public FinanceSetupViewModel(Project project, int currentUserId)
     {
-        IsAdmin = isAdmin;
-        ProjectName = project.ProjectName;
         ProjectId = project.ProjectId;
-        HasEditAccess = project.HasMasterAccess(new UserIdentification(currentUserId), Permission.CanManageMoney);
-
-        // Типы оплаты и мастера берём из метаданных проекта: там уже есть данные пользователей
-        // (UserInfoHeader), поэтому не приходится ходить по EF-навигациям PaymentType.User
-        // и ProjectAcl.User — каждая из них тянула отдельный запрос к Users (#4998).
-        var financeSettings = projectInfo.ProjectFinanceSettings;
-
-        var potentialCashPaymentTypes =
-            projectInfo.Masters
-                .Where(
-                    master => financeSettings.PaymentTypes
-                        .Where(pt => pt.TypeKind == PaymentTypeKind.Cash)
-                        .All(pt => pt.User.UserId != master.UserId))
-                .Select(master => new PaymentTypeListItemViewModel(master, projectInfo.ProjectId));
-
-        var existedPaymentTypes =
-            financeSettings.PaymentTypes
-                .Where(pt => !pt.TypeKind.IsOnline())
-                .Select(pt => new PaymentTypeListItemViewModel(pt));
-
-        var onlinePaymentTypes = new[]
-        {
-            financeSettings.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.Online)
-                .Select(pt => new PaymentTypeListItemViewModel(pt))
-                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.Online, virtualPaymentsUser, projectInfo.ProjectId),
-            financeSettings.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.OnlineSubscription)
-                .Select(pt => new PaymentTypeListItemViewModel(pt))
-                .SingleOrDefault() ?? new PaymentTypeListItemViewModel(PaymentTypeKind.OnlineSubscription, virtualPaymentsUser, projectInfo.ProjectId),
-        };
-
-        PaymentTypes =
-            onlinePaymentTypes.Union(
-                existedPaymentTypes.Union(potentialCashPaymentTypes)
-                    .OrderBy(li => !li.IsActive)
-                    .ThenBy(li => !li.IsDefault)
-                    .ThenBy(li => li.TypeKind != PaymentTypeKindViewModel.Custom)
-                    .ThenBy(li => li.Name))
-                .ToList();
-
-        HasFeeSettings = financeSettings.FeeSchedule.Any();
-
         CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId)
             .Token.ToHexString();
     }
