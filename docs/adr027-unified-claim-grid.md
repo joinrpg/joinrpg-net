@@ -173,9 +173,14 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 `{ProjectId}/claims/[action]`, где экшен обязателен, так что его страницы становятся «подстраницами»
 грида и редиректят в корень с параметрами (§6). На странице остров WASM,
 тот же, что у капитана. Фильтр и номер страницы лежат в query string: страница передаёт их острову
-параметрами, а остров при смене фильтра переписывает URL. Остров отрисован без Blazor `Router`, поэтому
-надо проверить, что `NavigationManager.NavigateTo(…, replace: true)` не вызывает полную перезагрузку.
-Если вызывает — переписывать URL через `history.replaceState` (JS interop). URL строятся через локатор
+параметрами, а остров при смене фильтра переписывает URL. Остров отрисован без Blazor `Router`, но
+`NavigationManager.NavigateTo(…, replace: true)` без `forceLoad` страницу не перезагружает: в WASM
+`blazor.webassembly.js` при переходе внутри base URI делает `history.replaceState` и оповещает
+рантайм, Router для этого не нужен (проверено по исходнику `blazor.webassembly.js`); JS interop
+не нужен. Имена параметров query — те же, что у webapi `GetGrid` (`status`, `page`, дальше
+`onlyWithProblems`, `characterGroupId`, `responsibleMasterId`): страница и API понимают один адрес,
+а редиректы §6 строят его без таблицы соответствия. Значения по умолчанию (статус «Активные»,
+первая страница) в URL не пишутся. URL строятся через локатор
 (`IProjectUriLocator`/`ICharacterGroupUriLocator`), реализованный и на сервере, и на клиенте. Имена
 параметров и значения enum фиксируются до первого редиректа (§6), потому что 301 браузер кеширует.
 
