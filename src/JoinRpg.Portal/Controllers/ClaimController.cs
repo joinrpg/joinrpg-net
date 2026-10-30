@@ -150,13 +150,24 @@ public class ClaimController(
         var discussionModel = await discussionViewService.ShowDiscussion(claimInfo.Claim.CommentDiscussionId, projectInfo)
             ?? throw new InvalidOperationException($"Discussion {claimInfo.Claim.CommentDiscussionId} of claim {claimInfo.ClaimId} is not found");
 
+        // Условия льготы — большой текст, в ProjectInfo их нет (#5112). Нужны только диалогам льготы,
+        // а те без включённой льготы недостижимы.
+        var preferentialFeeConditions = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled
+            ? (await projectMetadataRepository.GetProjectDetails(projectInfo)).PreferentialFeeConditions
+            : null;
+
+        // Разбивка взноса — по снимку заявки; тип и комната — из модели панели «Проживание»,
+        // построенной по снимку заявки и плану (ADR022).
+        var claimFee = new ClaimFeeViewModel(claim, claimInfo.ClaimInCharacter, currentUserAccessor.UserIdentification,
+            paymentsService.GetExternalPaymentUrl, accommodationModel, preferentialFeeConditions);
+
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
             claimInfo,
             discussionModel,
             plots,
             claimValidator,
-            paymentsService.GetExternalPaymentUrl,
+            claimFee,
             accommodationModel,
             plots.Count > 0
                 ? await linkRendererFactory.Load(new ProjectIdentification(claim.ProjectId))

@@ -75,8 +75,8 @@ public class CharacterDetailsViewModel
         ProjectInfo projectInfo,
         IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers)
     {
-        // Ссылка на игрока строится поверх агрегата (ADR013): у варианта поверх EF-сущности внутри
-        // лежит character.Project.Details.PublishPlot — ленивая загрузка на каждый заход (#4992).
+        // Ссылка на игрока строится поверх агрегата (ADR013): PublishPlot берётся из ProjectInfo,
+        // без ленивой загрузки ProjectDetails (#4992).
         PlayerLink = characterInfo.GetCharacterPlayerLinkViewModel(currentUserId.UserIdentificationOrDefault);
 
         var accessArguments = AccessArgumentsFactory.Create(character, currentUserId, projectInfo) with { EditAllowed = false };

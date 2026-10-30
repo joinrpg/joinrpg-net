@@ -9,12 +9,12 @@ namespace JoinRpg.WebPortal.Managers.CharacterGroups;
 
 internal static class GroupReportViewModelBuilder
 {
-    public static GroupReportViewModel Build(CharacterGroup rootGroup)
+    public static GroupReportViewModel Build(CharacterGroup rootGroup, ProjectInfo projectInfo)
     {
         var rows = new List<GroupReportRowViewModel> { BuildRow(rootGroup) };
         rows.AddRange(rootGroup.ChildGroups.Where(cg => cg.IsActive).Select(BuildRow));
 
-        return new GroupReportViewModel(rootGroup.GetId(), rootGroup.Project.Details.CheckInProgress, rows);
+        return new GroupReportViewModel(rootGroup.GetId(), projectInfo.ProjectCheckInSettings.InProgress, rows);
     }
 
     private static GroupReportRowViewModel BuildRow(CharacterGroup characterGroup)
