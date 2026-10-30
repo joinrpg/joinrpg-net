@@ -9,13 +9,13 @@
   <JoinIcon Icon="JoinIconType.Info" Title="@StatusFilter.GetDescription()" />
 </div>
 
-@if (claimListItems is null)
+@if (gridPage is null)
 {
     <JoinLoadingMessage />
     return;
 }
 
-<JoinBorderedTable Items="claimListItems" Context="item">
+<JoinBorderedTable Items="gridPage.Items" Context="item">
   <HeadContent>
     <tr>
         <th>Персонаж</th>
@@ -110,10 +110,15 @@
     </ItemTemplate>
 </JoinBorderedTable>
 
+<JoinPager Page="gridPage.Page" TotalPages="gridPage.TotalPages" PageChanged="ChangePage" />
+
 
     @code {
 
-    IReadOnlyList<UgItemForCaptainViewModel>? claimListItems;
+    UgPageViewModel? gridPage;
+
+    /// <summary>Номер последнего запроса: ответ на более ранний, пришедший позже, не нужен.</summary>
+    private int lastRequest;
 
     private UgStatusFilterView StatusFilter { get; set; }
 
@@ -123,7 +128,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.ApplyStatus.BusyStatus).ToList();
+        await LoadPage(1);
         await base.OnInitializedAsync();
     }
 
@@ -132,9 +137,26 @@
         if (StatusFilter != args)
         {
             StatusFilter = args;
-            claimListItems = null;
-            StateHasChanged();
-            claimListItems = (await claimListClient.GetForCaptain(ProjectId, StatusFilter)).OrderBy(c => c.Character.ApplyStatus.BusyStatus).ToList();
+            // Новый фильтр — новый список, прежний номер страницы к нему не относится, а прежние
+            // строки на экране вводили бы в заблуждение.
+            gridPage = null;
+            await LoadPage(1);
+        }
+    }
+
+    private Task ChangePage(int page) => LoadPage(page);
+
+    /// <remarks>
+    /// При смене страницы прежняя остаётся на экране до ответа: высота не проваливается, и пейджер
+    /// не уезжает из-под курсора. Порядок строк задаёт сервер — он же режет страницы.
+    /// </remarks>
+    private async Task LoadPage(int page)
+    {
+        var request = ++lastRequest;
+        var result = await claimListClient.GetGrid(ProjectId, UgScopeView.Captain, new UgFilterView(StatusFilter), page);
+        if (request == lastRequest)
+        {
+            gridPage = result;
         }
     }
 }

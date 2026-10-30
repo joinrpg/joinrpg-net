@@ -9,8 +9,8 @@ namespace JoinRpg.Web.Models;
 public class ClaimFeeViewModel
 {
     /// <param name="claim">
-    /// EF-сущность той же заявки — пока нужна списку финансовых операций, подпискам и условиям
-    /// льготного взноса: их в снимке заявки нет (ADR013).
+    /// EF-сущность той же заявки — пока нужна списку финансовых операций и подпискам: их в снимке
+    /// заявки нет (ADR013).
     /// </param>
     /// <param name="claimInCharacter">
     /// Снимок заявки: по нему считается разбивка взноса, из него же берутся метаданные проекта,
@@ -20,12 +20,17 @@ public class ClaimFeeViewModel
     /// Проживание заявки — тип и комната из снимка заявки и плана поселения (ADR022); <c>null</c>,
     /// если поселение в проекте выключено.
     /// </param>
+    /// <param name="preferentialFeeConditions">
+    /// Условия льготного взноса из доменного <c>ProjectDetails</c>. В <c>ProjectInfo</c> их нет — текст
+    /// бывает большим (#5112), поэтому их читают только при включённой льготе; иначе <c>null</c>.
+    /// </param>
     public ClaimFeeViewModel(
         Claim claim,
         ClaimInCharacter claimInCharacter,
         UserIdentification currentUser,
         Func<string?, string?> externalPaymentUrlFactory,
-        ClaimAccommodationViewModel? accommodation)
+        ClaimAccommodationViewModel? accommodation,
+        MarkdownString? preferentialFeeConditions)
     {
         ArgumentNullException.ThrowIfNull(claimInCharacter);
 
@@ -78,8 +83,7 @@ public class ClaimFeeViewModel
 
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
         PreferentialFeeUser = claimData.Finance.PreferentialFeeUser;
-        PreferentialFeeConditions =
-            ((MarkdownString?)claim.Project.Details.PreferentialFeeConditions).ToHtmlString();
+        PreferentialFeeConditions = preferentialFeeConditions.ToHtmlString();
         PreferentialFeeRequestEnabled = PreferentialFeeEnabled && !PreferentialFeeUser && claimData.IsActive;
 
         ClaimId = claimInCharacter.ClaimId.ClaimId;
@@ -221,6 +225,12 @@ public class ClaimFeeViewModel
     /// List of associated payment operations
     /// </summary>
     public IEnumerable<FinanceOperationViewModel> FinanceOperations { get; }
+
+    /// <summary>
+    /// Есть операция, которая ждёт модерации и которую текущий пользователь вправе подтвердить или
+    /// отклонить, — по ней диалог оплаты предупреждает о неразобранном платеже игрока.
+    /// </summary>
+    public bool HasModeratableFinanceOperations => FinanceOperations.Any(fo => fo.FinanceModeration is not null);
 
     /// <summary>
     /// List of finance operations to be displayed in payments list

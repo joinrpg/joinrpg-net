@@ -41,6 +41,7 @@ public static class Registration
     {
         return services.AddScoped<ProjectListManager>()
         .AddScoped<IProjectSettingsClient, ProjectSettingsViewService>()
+        .AddScoped<Web.ProjectMasterTools.Finance.IFinanceSettingsClient, FinanceSettingsViewService>()
         .AddScoped<IMasterProfileClient, ProjectMasterTools.MasterProfileViewService>()
         .AddScoped<IMasterAccessClient, ProjectMasterTools.MasterAccessViewService>()
         .AddScoped<IProjectInfoClient, ProjectInfoViewService>()
@@ -85,7 +86,7 @@ public static class Registration
         .AddScoped<IFinanceModerationClient, FinanceModerationViewService>()
         .AddScoped<JoinRpg.Web.Claims.Comments.IClaimCommentClient, ClaimCommentViewService>()
         .AddScoped<Comments.CommentDiscussionOwnerLoader>()
-        .AddScoped<Comments.DiscussionViewModelBuilder>()
+        .AddScoped<Comments.DiscussionViewService>()
         .AddScoped<IUserLinkResolver, UserLinkResolver>()
         .AddScoped<IUserLinkResolveClient, UserLinkResolveViewService>()
         .AddScoped<IMoveClient, MoveViewService>()

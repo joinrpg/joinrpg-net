@@ -15,14 +15,24 @@ public class DiscussionRedirectController(
 {
     [HttpGet("discussion/{CommentDiscussionId}")]
     [Authorize]
-    public async Task<ActionResult> ToDiscussion(ProjectIdentification projectId, int commentDiscussionId)
-        => RedirectToOwner(await ownerLoader.GetOwnerOrDefault(projectId, new CommentDiscussionId(commentDiscussionId)), commentId: null);
+    public async Task<ActionResult> ToDiscussion(ProjectIdentification projectId, CommentDiscussionId? commentDiscussionId)
+    {
+        // Typed id не биндится из нуля и мусора — такого обсуждения нет.
+        if (commentDiscussionId is null)
+        {
+            return NotFound();
+        }
+        return RedirectToOwner(await ownerLoader.GetOwnerOrDefault(projectId, commentDiscussionId), commentId: null);
+    }
 
     [HttpGet("comment/{CommentId:int}")]
     [Authorize]
-    public async Task<ActionResult> ToComment(ProjectIdentification projectId, int commentid)
+    public async Task<ActionResult> ToComment(ProjectIdentification projectId, CommentId? commentId)
     {
-        var commentId = new CommentId(commentid);
+        if (commentId is null)
+        {
+            return NotFound();
+        }
         return RedirectToOwner(await ownerLoader.GetOwnerByCommentOrDefault(projectId, commentId), commentId);
     }
 

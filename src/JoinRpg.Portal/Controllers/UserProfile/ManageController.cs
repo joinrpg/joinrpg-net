@@ -234,7 +234,7 @@ public class ManageController(
             SocialLoginStatus = userInfo.GetSocialLogins().ToList(),
             Email = user.Email,
             HasPassword = user.PasswordHash != null,
-            Avatars = new UserAvatarListViewModel(user, avatarUriResolver),
+            Avatars = new UserAvatarListViewModel(user.Avatars, AvatarIdentification.FromOptional(user.SelectedAvatarId), user.Email, avatarUriResolver),
             Message = message,
             ConflictingAccountUrl = conflictUserId is null ? null : Url.Action("Details", "User", new { userId = conflictUserId }),
             TelegramBotName = options.Value.BotName,

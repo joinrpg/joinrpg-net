@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.AddCommentViewModel
+@model JoinRpg.Web.Models.AddCommentViewModel
   @{
       Model.ActionName = Model.ActionName ?? "Отправить";
   }
@@ -8,8 +8,6 @@
 <div class="form-horizontal">
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     @Html.HiddenFor(model => model.ProjectId)
-    @Html.HiddenFor(model => model.CommentDiscussionId)
-    @Html.HiddenFor(model => model.ParentCommentId)
 
     <div class="form-group">
         @Html.LabelFor(model => model.CommentText, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -43,7 +41,8 @@
 
 <div class="form-group">
   <div class="col-md-12">
-   <button type="button" class="btn btn-default" onclick="toggleCommentEditor(@(Model.FormIndex), false)">Отмена</button>
+   @* Партиал остался только у диалога оплаты (_SubmitPaymentDialog): своей «Отмены» нет —
+      окно закрывается крестиком в заголовке (ADR026, шаги 8–9). *@
     <button type="submit" class="btn btn-success">@Model.ActionName</button>
   </div>
 </div>

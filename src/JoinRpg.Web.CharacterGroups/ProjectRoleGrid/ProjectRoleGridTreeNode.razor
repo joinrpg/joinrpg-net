@@ -65,7 +65,7 @@
                     @if (charRow.Player is { } player)
                     {
                         @Space
-                        <ProjectRoleGridPlayerCell Row="charRow" Player="player" />
+                        <ProjectRoleGridPlayerCell Row="charRow" Player="player" AvatarMode="Model.PlayerAvatar" />
                     }
                     @if (charRow.Groups is { } groups && groups.Groups.Count > 0)
                     {

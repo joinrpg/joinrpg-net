@@ -54,6 +54,12 @@ public class EditProjectRolesListViewModelTest
         EditProjectRolesListViewModel.FromDomain(domain).ToDomain().PlayerAvatar.ShouldBe(mode);
     }
 
+    // Форма переводит фильтр приведением типа — расхождение чисел молча сменило бы фильтр сохранённой сетки.
+    [Fact]
+    public void ShowRolesFilterView_MatchesDomainValues()
+        => Enum.GetValues<ShowRolesFilterView>().Select(v => (v.ToString(), (int)v))
+            .ShouldBe(Enum.GetValues<ShowRolesFilter>().Select(v => (v.ToString(), (int)v)));
+
     [Fact]
     public void NewRolesList_NoAvatarsByDefault()
         => new AddProjectRolesListViewModel().ToDomain(new ProjectIdentification(123))

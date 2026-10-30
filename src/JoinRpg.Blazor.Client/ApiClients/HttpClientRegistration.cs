@@ -47,6 +47,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IProjectListForAdminClient, ProjectListClient>()
                 .AddHttpClient<IProjectCreateClient, ProjectCreateClient>()
                 .AddHttpClient<IProjectSettingsClient, ProjectSettingsClient>()
+                .AddHttpClient<JoinRpg.Web.ProjectMasterTools.Finance.IFinanceSettingsClient, FinanceSettingsClient>()
                 .AddHttpClient<IMasterProfileClient, MasterProfileClient>()
                 .AddHttpClient<IMasterAccessClient, MasterAccessClient>()
                 .AddHttpClient<IPlotClient, PlotClient>()

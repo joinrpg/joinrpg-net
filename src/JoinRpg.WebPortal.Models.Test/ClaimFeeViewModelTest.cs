@@ -20,7 +20,8 @@ public class ClaimFeeViewModelTest
             claimInCharacter,
             new UserIdentification((currentUser ?? mock.Master).UserId),
             _ => null,
-            accommodation: null);
+            accommodation: null,
+            preferentialFeeConditions: null);
     }
 
     [Fact]
@@ -115,5 +116,19 @@ public class ClaimFeeViewModelTest
 
         Row(Build(claim, mock.Player), operation).FinanceModeration.ShouldBeNull();
         Row(Build(claim, cashier), operation).FinanceModeration.ShouldBeNull();
+    }
+
+    [Fact]
+    public void HasModeratableFinanceOperations_OnlyForProposedPaymentThatUserCanModerate()
+    {
+        var claim = mock.CreateApprovedClaim(mock.CreateCharacter("Платящий"), mock.Player);
+        _ = AddPayment(claim, mock.Master, FinanceOperationState.Approved);
+
+        Build(claim).HasModeratableFinanceOperations.ShouldBeFalse();
+
+        _ = AddPayment(claim, mock.Master, FinanceOperationState.Proposed);
+
+        Build(claim).HasModeratableFinanceOperations.ShouldBeTrue();
+        Build(claim, mock.Player).HasModeratableFinanceOperations.ShouldBeFalse();
     }
 }

@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.ProjectMetadata;
+
 namespace JoinRpg.DomainTypes.Characters;
 
 public record CharacterTypeInfo
@@ -121,6 +123,28 @@ public record CharacterTypeInfo
             CharacterVisibility.Private => (false, true),
             _ => throw new ArgumentOutOfRangeException(nameof(visibility), visibility, "Unknown character visibility"),
         };
+
+    /// <summary>
+    /// Имя, которое персонаж получает из настроек типа: у слота это <see cref="SlotName"/>, но только
+    /// пока в проекте нет поля-имени — иначе имя пишется через поле.
+    /// </summary>
+    /// <returns>Обрезанное имя слота; <c>null</c>, если тип имя персонажа не задаёт.</returns>
+    /// <exception cref="FieldRequiredException">Имя слота нужно, но не заполнено.</exception>
+    public string? GetSlotCharacterName(ProjectInfo projectInfo)
+    {
+        if (CharacterType != CharacterType.Slot || projectInfo.CharacterNameField is not null)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(SlotName))
+        {
+            // Имя поля — как его раньше подставлял CallerArgumentExpression в ServiceValidation.Required.
+            throw new FieldRequiredException("characterTypeInfo.SlotName");
+        }
+
+        return SlotName.Trim();
+    }
 
     public static CharacterTypeInfo Default() => new(CharacterType.Player, false, null, null, CharacterVisibility.Public);
 

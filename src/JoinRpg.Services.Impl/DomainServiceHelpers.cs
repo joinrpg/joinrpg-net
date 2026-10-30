@@ -1,28 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 
 namespace JoinRpg.Services.Impl;
-
-/// <summary>
-/// Чистое ядро проставления аудита (created/updated). Единый источник истины для
-/// <see cref="DbServiceImplBase"/> и extension-методов контекстов операций над проектом.
-/// </summary>
-internal static class EntityAudit
-{
-    public static void MarkCreated(ICreatedUpdatedTrackedForEntity entity, DateTime now, int userId)
-    {
-        entity.UpdatedAt = entity.CreatedAt = now;
-        entity.UpdatedById = entity.CreatedById = userId;
-    }
-
-    public static void MarkChanged(ICreatedUpdatedTrackedForEntity entity, DateTime now, int userId)
-    {
-        entity.UpdatedAt = now;
-        entity.UpdatedById = userId;
-    }
-}
 
 /// <summary>
 /// Чистые валидаторы входных данных доменных операций.

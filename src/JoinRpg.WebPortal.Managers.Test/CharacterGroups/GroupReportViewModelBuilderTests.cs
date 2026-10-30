@@ -21,7 +21,7 @@ public class GroupReportViewModelBuilderTests
     [Fact]
     public void Build_NoChildGroups_OnlyTotalRow()
     {
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
 
         result.GroupId.ShouldBe(RootGroup.GetId());
         var row = result.Rows.ShouldHaveSingleItem();
@@ -34,7 +34,7 @@ public class GroupReportViewModelBuilderTests
         var child = MakeChildOfRoot();
         child.IsPublic = true;
 
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
 
         result.Rows.Count.ShouldBe(2);
         var childRow = result.Rows.Single(r => r.Group.CharacterGroupId != result.GroupId);
@@ -49,7 +49,7 @@ public class GroupReportViewModelBuilderTests
         var child = MakeChildOfRoot();
         child.IsPublic = false;
 
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
 
         result.Rows.Single(r => r.Group.CharacterGroupId != result.GroupId).Group.IsPublic.ShouldBeFalse();
     }
@@ -60,7 +60,7 @@ public class GroupReportViewModelBuilderTests
         var child = MakeChildOfRoot();
         child.IsActive = false;
 
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
 
         result.Rows.ShouldHaveSingleItem().Group.CharacterGroupId.ShouldBe(result.GroupId);
     }
@@ -69,12 +69,12 @@ public class GroupReportViewModelBuilderTests
     public void Build_CharactersInChildGroup_CountedInBothChildAndTotalRow()
     {
         var child = MakeChildOfRoot();
-        var totalBefore = GroupReportViewModelBuilder.Build(RootGroup)
+        var totalBefore = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo)
             .Rows.Single(r => r.Group.CharacterGroupId == RootGroup.GetId()).TotalCharacters;
         var character = _mock.CreateCharacter("Вася");
         character.ParentCharacterGroupIds = [child.CharacterGroupId];
 
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
 
         result.Rows.Single(r => r.Group.CharacterGroupId == result.GroupId).TotalCharacters.ShouldBe(totalBefore + 1);
         result.Rows.Single(r => r.Group.CharacterGroupId != result.GroupId).TotalCharacters.ShouldBe(1);
@@ -88,7 +88,7 @@ public class GroupReportViewModelBuilderTests
         character.ParentCharacterGroupIds = [child.CharacterGroupId];
         _mock.CreateApprovedClaim(character, _mock.Player);
 
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
         var row = result.Rows.Single(r => r.Group.CharacterGroupId != result.GroupId);
 
         row.TotalCharactersWithPlayers.ShouldBe(1);
@@ -104,7 +104,7 @@ public class GroupReportViewModelBuilderTests
         character.ParentCharacterGroupIds = [child.CharacterGroupId];
         character.CharacterType = CharacterType.NonPlayer;
 
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
         var row = result.Rows.Single(r => r.Group.CharacterGroupId != result.GroupId);
 
         row.TotalNpcCharacters.ShouldBe(1);
@@ -121,7 +121,7 @@ public class GroupReportViewModelBuilderTests
         character.CharacterType = CharacterType.Slot;
         character.CharacterSlotLimit = null;
 
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
         var row = result.Rows.Single(r => r.Group.CharacterGroupId != result.GroupId);
 
         row.Unlimited.ShouldBeTrue();
@@ -134,8 +134,9 @@ public class GroupReportViewModelBuilderTests
     public void Build_CheckedInCountersShownOnlyWhileCheckInInProgress(bool checkInProgress, bool expected)
     {
         _mock.Project.Details.CheckInProgress = checkInProgress;
+        _mock.ReInitProjectInfo();
 
-        var result = GroupReportViewModelBuilder.Build(RootGroup);
+        var result = GroupReportViewModelBuilder.Build(RootGroup, _mock.ProjectInfo);
 
         result.CheckInInProgress.ShouldBe(expected);
     }

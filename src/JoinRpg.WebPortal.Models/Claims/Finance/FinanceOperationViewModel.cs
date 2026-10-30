@@ -1,7 +1,9 @@
+using JoinRpg.Common.WebComponents;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Claims.Finance;
+using JoinRpg.Web.ProjectCommon;
 
 namespace JoinRpg.Web.Models;
 
@@ -34,7 +36,7 @@ public class FinanceOperationViewModel
 
     public int? RecurrentPaymentId { get; }
 
-    public User LinkedClaimUser { get; }
+    public UserLinkViewModel? LinkedClaimUser { get; }
 
     public bool ShowLinkedClaimLinkIfTransfer { get; }
 
@@ -64,7 +66,7 @@ public class FinanceOperationViewModel
         Money = source.MoneyAmount;
         LinkedClaimId = source.LinkedClaimId;
         LinkedClaimName = source.LinkedClaim?.Character.CharacterName ?? "";
-        LinkedClaimUser = source.LinkedClaim?.Player!;
+        LinkedClaimUser = source.LinkedClaim?.Player.ToUserInfoHeader().ToUserLinkViewModel();
         OperationType = (FinanceOperationTypeViewModel)source.OperationType;
         OperationState = (FinanceOperationStateViewModel)source.State;
         RowCssClass = source.State.ToRowClass();

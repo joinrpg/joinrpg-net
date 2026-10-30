@@ -35,6 +35,21 @@ public class FormRowTest
         cut.Find("label").HasAttribute("for").ShouldBeFalse();
     }
 
+    /// <summary>Строка без подписи (кнопки под полями) не оставляет скринридеру пустой &lt;label&gt;, поле на месте.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void WithoutLabel_NoLabelElement_FieldRendered(string? label)
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<FormRow>(p => p
+            .Add(x => x.Label, label)
+            .AddChildContent<JoinTextInput>(f => f.Add(x => x.Value, "текст")));
+
+        cut.FindAll("label").ShouldBeEmpty();
+        cut.Find("input").GetAttribute("value").ShouldBe("текст");
+    }
+
     /// <summary>
     /// Каждое поле из Common, положенное в <see cref="FormRowFor{T}"/> без явного id, само связывается с подписью:
     /// клик по подписи ставит фокус в поле.

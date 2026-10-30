@@ -1,0 +1,72 @@
+@*
+    Обсуждение заявки: общее дерево Web.Comments и финблок в каждом комментарии с финоперацией (ADR026 §3, шаг 8).
+    Рендеринг только статический, как у Discussion: страница заявки вставляет <component render-mode="Static" />.
+    Клиентской реализации ICommentUriLocator нет, поэтому интерактивно (в WASM) этот компонент не рисуется.
+    Интерактивен только остров модерации — для операции, которую текущий пользователь вправе подтвердить.
+*@
+@using JoinRpg.Web.Comments
+@using JoinRpg.Web.Claims.Finance
+@using JoinRpg.DomainTypes.Characters.Claims.Finances
+@* Иначе Blazor склеит подпись, двоеточие и сумму. *@
+@preservewhitespace true
+
+<Discussion Model="Model">
+    <ExtraContent Context="comment">
+        @if (comment.Finance is { } finance)
+        {
+            <div>
+                @if (finance.OperationText is not null)
+                {
+                    <div><b>@finance.OperationText</b>: <PriceElement Price="finance.MoneyAmount" /></div>
+                }
+                <div><b>Дата операции</b>: @finance.OperationDate.ToString("dd.MM.yyyy")</div>
+                @if (finance.PaymentTypeName is not null)
+                {
+                    <div><b>Способ оплаты</b>: @finance.PaymentTypeName</div>
+                }
+
+                @if (finance.IsDeclined)
+                {
+                    <div><JoinBadge Variation="VariationStyleEnum.Warning" Title="Мастер не подтверждает оплату" Text="Мастер не подтверждает оплату" /></div>
+                }
+                else if (finance.IsProposed)
+                {
+                    <div>
+                        @if (finance.CanModerate)
+                        {
+                            <FinanceModerationButton Operation="ToModerationView(comment, finance)" @rendermode="ModerationRenderMode" />
+                        }
+                        else
+                        {
+                            <JoinBadge Title="Ждет одобрения мастером" Text="Ждет одобрения мастером" />
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </ExtraContent>
+</Discussion>
+
+@code {
+    /// <summary>Обсуждение заявки, уже собранное для текущего пользователя.</summary>
+    [Parameter, EditorRequired]
+    public DiscussionViewModel Model { get; set; } = null!;
+
+    /// <summary>
+    /// Заявка обсуждения: ключ финоперации — заявка и id комментария, в котором операция заведена.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public ClaimIdentification ClaimId { get; set; } = null!;
+
+    // Остров внутри статического дерева, как UnOccupyAllButton в RoomTypeListPage. С пререндером:
+    // кнопка видна сразу, а не после загрузки WASM, — как и раньше, когда остров стоял на cshtml.
+    private static readonly IComponentRenderMode ModerationRenderMode = new InteractiveWebAssemblyRenderMode(prerender: true);
+
+    private FinanceModerationOperationView ToModerationView(CommentViewModel comment, CommentFinanceViewModel finance)
+        => new(
+            new FinanceOperationIdentification(ClaimId, comment.CommentId.Value),
+            finance.OperationTypeName,
+            finance.MoneyAmount,
+            finance.OperationDate,
+            finance.PaymentTypeName);
+}

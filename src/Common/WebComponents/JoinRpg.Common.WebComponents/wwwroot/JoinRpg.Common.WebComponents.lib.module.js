@@ -269,9 +269,13 @@ document.addEventListener('keydown', event => {
     focused?.querySelector(':scope > summary')?.focus();
 });
 // Ушли Tab'ом из меню — закрываем, иначе оно висит поверх страницы.
+// Фокус, ушедший на предка меню, — не уход: в модальном <dialog> нажатие на текст пункта (не на саму галочку)
+// отдаёт фокус самому диалогу. Закрой мы меню на этом mousedown, клик попал бы уже мимо пункта, и выбрать
+// можно было бы только точным попаданием в галочку (JoinMoveControl в JoinDialog).
 document.addEventListener('focusout', event => {
     const popup = event.target instanceof Element ? event.target.closest(OPEN_POPUP_SELECTOR) : null;
-    if (popup && event.relatedTarget instanceof Node && !popup.contains(event.relatedTarget)) {
+    const next = event.relatedTarget;
+    if (popup && next instanceof Node && !popup.contains(next) && !next.contains(popup)) {
         popup.open = false;
     }
 });

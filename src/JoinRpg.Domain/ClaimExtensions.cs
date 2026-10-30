@@ -40,49 +40,21 @@ public static class ClaimExtensions
         }
     }
 
-    [Pure]
-    public static bool CanChangeTo(this ClaimStatus fromStatus, ClaimStatus targetStatus)
+    /// <summary>
+    /// Помечает персонажа изменённым, если заявка утверждена: правка утверждённой заявки — это правка
+    /// персонажа.
+    /// </summary>
+    /// <param name="claim">Заявка, которую меняет операция.</param>
+    /// <param name="fallbackCharacter">Персонаж операции — на случай, если у заявки персонаж не загружен.</param>
+    /// <param name="now">Время операции.</param>
+    /// <param name="userId">Кто меняет.</param>
+    public static void MarkCharacterChangedIfApproved(this Claim claim, Character fallbackCharacter, DateTime now, int userId)
     {
-        switch (targetStatus)
+        if (claim.ClaimStatus == ClaimStatus.Approved)
         {
-            case ClaimStatus.Approved:
-                return new[] { ClaimStatus.AddedByUser, ClaimStatus.Discussed, ClaimStatus.CheckedIn }.Contains(fromStatus);
-            case ClaimStatus.OnHold:
-                return
-                  new[] { ClaimStatus.AddedByUser, ClaimStatus.Discussed, ClaimStatus.AddedByMaster }
-                    .Contains(fromStatus);
-            case ClaimStatus.AddedByUser:
-                return new[]
-                    {ClaimStatus.DeclinedByUser, ClaimStatus.DeclinedByMaster, ClaimStatus.OnHold}
-                  .Contains(fromStatus);
-            case ClaimStatus.AddedByMaster:
-                return new[]
-                    {ClaimStatus.DeclinedByUser, ClaimStatus.DeclinedByMaster, ClaimStatus.OnHold}
-                  .Contains(fromStatus);
-            case ClaimStatus.DeclinedByUser:
-            case ClaimStatus.DeclinedByMaster:
-                return
-                  new[]
-                  {
-          ClaimStatus.AddedByUser, ClaimStatus.Discussed, ClaimStatus.AddedByMaster,
-          ClaimStatus.Approved, ClaimStatus.OnHold,
-                  }.Contains(fromStatus);
-            case ClaimStatus.Discussed:
-                return
-                  new[] { ClaimStatus.AddedByUser, ClaimStatus.Discussed, ClaimStatus.AddedByMaster }
-                    .Contains(fromStatus);
-            case ClaimStatus.CheckedIn:
-                return fromStatus == ClaimStatus.Approved;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(targetStatus), targetStatus, null);
-        }
-    }
-
-    public static void EnsureCanChangeStatus(this Claim claim, ClaimStatus targetStatus)
-    {
-        if (!claim.ClaimStatus.CanChangeTo(targetStatus))
-        {
-            throw new ClaimWrongStatusException(claim.GetId(), claim.ClaimStatus);
+            // Персонаж берётся из заявки, а не из хэндла: при утверждении заявки на слот заявка
+            // к этому моменту уже переехала на только что созданного персонажа.
+            EntityAudit.MarkChanged(claim.Character ?? fallbackCharacter, now, userId);
         }
     }
 

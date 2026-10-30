@@ -2,34 +2,19 @@ namespace JoinRpg.Web.Models;
 
 public class AddCommentViewModel : CommentTextViewModel, IValidatableObject
 {
-
-    public static readonly string AddButtonIdTemplate = @"addCommentBtn";
-
-    public static readonly string FormIdTemplate = @"addCommentForm";
-
-    public AddCommentViewModel()
-    {
-        AddButtonId = AddButtonIdTemplate + FormIndex;
-        FormId = FormIdTemplate + FormIndex;
-    }
-
-    public AddCommentViewModel(IEntityWithCommentsViewModel source) : this()
-    {
-        ProjectId = source.ProjectId;
-        CommentDiscussionId = source.CommentDiscussionId;
-        EnableHideFromUser = source.HasMasterAccess;
-        ParentCommentId = null;
-        HideFromUser = false;
-    }
-
-
     public int ProjectId { get; set; }
 
-    public int CommentDiscussionId { get; set; }
     /// <summary>
-    /// Parent comment id
+    /// Обсуждение, в которое пишем. Постит только форма комментария (<c>AddCommentForm</c> в
+    /// <c>JoinRpg.Web.Comments</c>) в <c>ForumController.CreateComment</c>; финансовые формы,
+    /// унаследованные от этой модели, его не передают — у них <c>null</c>.
     /// </summary>
-    public int? ParentCommentId { get; set; }
+    public CommentDiscussionId? CommentDiscussionId { get; set; }
+
+    /// <summary>
+    /// Комментарий, на который отвечаем; <c>null</c> — комментарий верхнего уровня.
+    /// </summary>
+    public CommentId? ParentCommentId { get; set; }
 
     [DisplayName("Только другим мастерам")]
     public bool HideFromUser { get; set; }
@@ -37,10 +22,6 @@ public class AddCommentViewModel : CommentTextViewModel, IValidatableObject
     public bool EnableHideFromUser { get; set; }
 
     public string ActionName { get; set; }
-
-    public string AddButtonId { get; }
-
-    public string FormId { get; }
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

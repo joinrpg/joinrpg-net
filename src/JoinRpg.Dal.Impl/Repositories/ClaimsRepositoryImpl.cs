@@ -123,13 +123,14 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
         await LoadProjectFields(claimId.ProjectId);
         await LoadMasters(claimId.ProjectId);
         await LoadProjectGroups(claimId.ProjectId);
-        await LoadProjectClaims(claimId.ProjectId);
 
         return
           await
-            Ctx.ClaimSet.Include(c => c.CommentDiscussion.Comments.Select(com => com.Finance))
-              .Include(c => c.CommentDiscussion.Comments.Select(com => com.Author))
-              .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
+            // Комментарии сюда не входят: обсуждение страница заявки грузит доменным снимком (ADR026, шаг 8).
+            // Все заявки проекта (LoadProjectClaims) тоже не грузим: из них странице был нужен только
+            // игрок этой заявки.
+            Ctx.ClaimSet
+              .Include(c => c.Player)
               .Include(c => c.Character)
               .SingleOrDefaultAsync(e => e.ClaimId == claimId.ClaimId && e.ProjectId == claimId.ProjectId.Value);
     }
@@ -218,6 +219,29 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             {
                 claim.CommentDiscussionId,
                 UnreadCommentsCount = unreadCount.Invoke(claim.CommentDiscussion, userId, hasMasterAccess),
+            };
+
+        var rows = await query.ToListAsync();
+        return rows.ToDictionary(x => new CommentDiscussionId(x.CommentDiscussionId), x => x.UnreadCommentsCount);
+    }
+
+    public async Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId)
+    {
+        var claims = Ctx.Set<Claim>()
+            .AsExpandable()
+            .Where(ClaimPredicates.GetForUser(playerId));
+
+        var unreadCount = CommentDiscussionPredicates.UnreadCount;
+        var masterAccess = ProjectPredicates.MasterAccess(viewerId);
+
+        // Список кросспроектный: признак мастера смотрящего — свой у каждого проекта.
+        var query =
+            from claim in claims
+            select
+            new
+            {
+                claim.CommentDiscussionId,
+                UnreadCommentsCount = unreadCount.Invoke(claim.CommentDiscussion, viewerId.Value, masterAccess.Invoke(claim.Project)),
             };
 
         var rows = await query.ToListAsync();

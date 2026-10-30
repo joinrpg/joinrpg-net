@@ -28,7 +28,7 @@ namespace JoinRpg.WebPortal.Managers.Comments;
 /// запросом к БД, #5774).
 /// </para>
 /// </remarks>
-public sealed class DiscussionViewModelBuilder(
+internal sealed class DiscussionViewModelBuilder(
     IUserRepository userRepository,
     ICommentDiscussionRepository discussionRepository,
     IAvatarLoader avatarLoader,
@@ -109,8 +109,9 @@ public sealed class DiscussionViewModelBuilder(
     }
 
     /// <summary>
-    /// Прочитано всё до максимума из явной отметки и собственных комментариев пользователя — как
-    /// <c>CommentExtensions.GetWatermark</c>. Свои комментарии считаются по всему снимку.
+    /// Прочитано всё до максимума из явной отметки и собственных комментариев пользователя — то же
+    /// правило, что у счётчика в SQL (<c>CommentDiscussionPredicates.UnreadCount</c>). Свои комментарии
+    /// считаются по всему снимку.
     /// </summary>
     private static int GetWatermark(CommentId? readWatermark, IEnumerable<CommentInfo> comments, UserIdentification userId)
         => comments

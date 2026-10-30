@@ -9,6 +9,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Claims;
+using JoinRpg.Web.Comments;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Claims;
@@ -16,7 +17,7 @@ using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models;
 
-public class ClaimViewModel : IEntityWithCommentsViewModel
+public class ClaimViewModel
 {
     public int ClaimId => ClaimIdentification.ClaimId;
     public int ProjectId => ClaimIdentification.ProjectId;
@@ -24,9 +25,9 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     public ClaimIdentification ClaimIdentification { get; }
 
     [DisplayName("Игрок")]
-    public User Player { get; set; }
+    public UserLinkViewModel Player { get; }
 
-    public UserLinkViewModel? PlayerLink { get; set; }
+    public UserIdentification PlayerId { get; }
 
     [Display(Name = "Статус заявки")]
     public ClaimFullStatusView Status { get; set; }
@@ -40,7 +41,10 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     /// </summary>
     public bool CanChangeRooms { get; }
     public bool ProjectActive { get; }
-    public IReadOnlyCollection<CommentViewModel> RootComments { get; }
+    /// <summary>
+    /// Обсуждение заявки на доменном снимке (ADR026, шаг 8) — его рисует <c>ClaimDiscussion</c>.
+    /// </summary>
+    public DiscussionViewModel Discussion { get; }
 
     public int CharacterId { get; }
     public bool HasBlockingOtherClaimsForThisCharacter { get; }
@@ -96,12 +100,15 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     /// проживанию.
     /// </param>
     /// <param name="claimInfo">Заявка вместе с персонажем и профилем игрока (ADR021).</param>
+    /// <param name="discussion">Обсуждение заявки, уже собранное для текущего пользователя (ADR026).</param>
+    /// <param name="claimFee">Блок взноса, уже собранный для текущего пользователя.</param>
     public ClaimViewModel(ICurrentUserAccessor currentUser,
         Claim claim,
       ClaimInfo claimInfo,
+      DiscussionViewModel discussion,
       IReadOnlyCollection<PlotTextDto> plotElements,
       IClaimProblemValidator problemValidator,
-      Func<string?, string?> externalPaymentUrlFactory,
+      ClaimFeeViewModel claimFee,
       ClaimAccommodationViewModel? accommodationModel,
       ILinkRenderer linkRenderer,
       IReadOnlyDictionary<UserIdentification, UserInfoHeader> fieldUsers,
@@ -109,6 +116,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
     {
         ArgumentNullException.ThrowIfNull(claim);
         ArgumentNullException.ThrowIfNull(claimInfo);
+        ArgumentNullException.ThrowIfNull(discussion);
         if (claim.GetId() != claimInfo.ClaimId)
         {
             throw new ArgumentException(
@@ -122,16 +130,15 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         ClaimIdentification = claimInfo.ClaimId;
         AllowToSetGroups = projectInfo.GroupTree.AllowToSetGroups;
-        CommentDiscussionId = claim.CommentDiscussionId;
-        RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserIdentification, projectInfo);
+        Discussion = discussion;
         HasMasterAccess = projectInfo.HasMasterAccess(currentUser);
         CanManageThisClaim = claim.HasAccess(currentUser.UserId,
             Permission.CanManageClaims,
             ExtraAccessReason.ResponsibleMaster);
         CanChangeRooms = claim.CanChangeAccommodation(currentUser.UserIdentificationOrDefault);
         IsMyClaim = claimData.PlayerId == currentUser.UserIdentificationOrDefault;
-        Player = claim.Player;
-        PlayerLink = new UserLinkViewModel(playerInfo.ToUserInfoHeader());
+        Player = new UserLinkViewModel(playerInfo.ToUserInfoHeader());
+        PlayerId = claimData.PlayerId;
         ProjectName = projectInfo.ProjectName.Value;
         Status = ClaimStatusBuilders.CreateFullStatus(
             claimData,
@@ -170,10 +177,7 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
 
         AccommodationEnabled = projectInfo.AccommodationSettings.Enabled;
 
-        // Разбивка взноса — по снимку заявки; тип и комната — из модели панели «Проживание»,
-        // построенной по снимку заявки и плану (ADR022).
-        ClaimFee = new ClaimFeeViewModel(claim, claimInfo.ClaimInCharacter, currentUser.UserIdentification, externalPaymentUrlFactory,
-            accommodationModel);
+        ClaimFee = claimFee;
 
         ParentGroups = new CharacterParentGroupsViewModel(characterInfo, HasMasterAccess);
 
@@ -188,7 +192,6 @@ public class ClaimViewModel : IEntityWithCommentsViewModel
         SensitiveData = claimInfo.SensitiveData;
     }
 
-    public int CommentDiscussionId { get; }
     public bool CheckInStarted { get; }
     public ClaimCheckInValidator Validator { get; }
     public bool AccommodationEnabled { get; }

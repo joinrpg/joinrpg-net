@@ -25,7 +25,8 @@ services.Configure<KogdaIgraOptions>(configuration.GetSection("KogdaIgra"));
 
 - `GetGameInfo(int gameId)` — карточка игры (`KogdaIgraGameInfo`: название, даты, регион,
   мастерская группа, ссылки на сайт и соцсети). `null` — игры нет, у неё нет продолжительности
-  или ссылка на сайт не http(s).
+  или ссылка на сайт не http(s). Удалённая на КогдаИгре игра приходит с данными
+  и `IsDeleted = true`.
 - `GetChangedGamesSince(DateTimeOffset since)` — Id и время правки игр, изменённых после `since`;
   переадресации и записи без даты пропускаются. Перевод в московское время, которого ждёт API,
   клиент делает сам.
@@ -33,7 +34,6 @@ services.Configure<KogdaIgraOptions>(configuration.GetSection("KogdaIgra"));
 ## Ошибки
 
 - `KogdaIgraConnectException` — сеть, таймаут или код ответа не 2xx.
-- `KogdaIgraParseException` — не разобрался список изменений (`Id` = 0) или вместо карточки
-  пришла чужая запись (`Id` — запрошенная игра).
-- `KogdaIgraEmptyResponseException` — пустой ответ вместо JSON, только у `GetChangedGamesSince`.
-  `GetGameInfo` на битом или пустом JSON кидает `JsonException`, на `null` — `Exception`.
+- `KogdaIgraParseException` — ответ не разобрался или вместо карточки пришла чужая запись;
+  в `Id` — запрошенная игра (0 для списка изменений).
+- `KogdaIgraEmptyResponseException` — пустой ответ вместо JSON.

@@ -1,0 +1,178 @@
+@using JoinRpg.Common.WebComponents.Dialog
+@inject IFinanceSettingsClient settingsClient
+@inject ILogger<FinanceFeeSettingsPanel> logger
+
+<JoinCollapsePanel Group="@FinanceSettingsPanels.Group" Id="@AnchorId">
+    <Header>Взнос и сроки</Header>
+    <HeaderExtra>
+        @* Виден и в свёрнутой панели: без взноса принимать оплату нельзя. *@
+        @if (model is { Fees.Count: 0 })
+        {
+            <JoinBadge Variation="VariationStyleEnum.Danger" Text="Взнос не настроен" />
+        }
+    </HeaderExtra>
+    <ChildContent>
+        @if (model is null)
+        {
+            <JoinLoadingMessage />
+            return;
+        }
+        @if (model.Fees.Count == 0)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger" Icon="JoinIconType.Alert">
+                Необходимо настроить размеры взносов, прежде чем принимать их.
+            </JoinAlert>
+            <JoinAlert Variation="VariationStyleEnum.Info" Icon="JoinIconType.Info">
+                Коллеги! Если вы оказались в этом разделе, то, скорее всего, хотите настроить размер взноса для вашей игры для того, чтобы
+                покрыть расходы на ее проведение. Мы просим вас на секунду задуматься о том, как покрываются расходы на работу Joinrpg.ru.
+                Это бесплатный для игроков и мастеров сайт, рекламы на нем нет и не будет. Мы существуем за счет пожертвований и были бы
+                очень благодарны, если бы вы сочли возможным повысить ваш взнос всего на 50 рублей, и
+                <a href="/home/howtohelp">пожертвовать эти деньги</a> на наш сайт. Так мы сможем покрыть
+                расходы на хостинг, не залезая в личные деньги, а при удаче — и отложить что-то на развитие.
+            </JoinAlert>
+        }
+        else
+        {
+            <p>Изменение взноса не влияет на уже оплаченные заявки. Возможно удалить только взнос, который еще не вступил в силу.</p>
+            <JoinTableSimple>
+                <TableHeader>
+                    <th>Размер взноса</th>
+                    @if (model.PreferentialFeeEnabled)
+                    {
+                        <th>Размер льготного взноса</th>
+                    }
+                    <th>Действует с</th>
+                    <th></th>
+                </TableHeader>
+                <TableBody>
+                    @foreach (var fee in model.Fees)
+                    {
+                        <tr @key="fee.ProjectFeeSettingId">
+                            <td><PriceElement Price="fee.Fee" /></td>
+                            @if (model.PreferentialFeeEnabled)
+                            {
+                                <td><PriceElement Price="@(fee.PreferentialFee ?? fee.Fee)" /></td>
+                            }
+                            <td>@fee.StartDate.ToShortDateString()</td>
+                            <td>
+                                @if (fee.CanDelete && CanEdit)
+                                {
+                                    <JoinButton Preset="ButtonPreset.Delete" Size="SizeStyleEnum.Small"
+                                                AutoConfirm="true"
+                                                AutoConfirmMessage="@($"Удалить взнос {fee.Fee} ₽, действующий с {fee.StartDate.ToShortDateString()}?")"
+                                                OnClick="args => Delete(args, fee.ProjectFeeSettingId)" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                </TableBody>
+            </JoinTableSimple>
+        }
+
+        @if (CanEdit)
+        {
+            <JoinButton Preset="ButtonPreset.Add" Label="Добавить новый размер взноса…" OnClick="Add" />
+        }
+
+        <JoinFormDialog @ref="addDialog"
+                        TViewModel="CreateFeeSettingViewModel"
+                        Caption="Добавление нового размера взноса"
+                        FormName="CreateFeeSetting"
+                        SubmitButtonPreset="ButtonPreset.Add"
+                        Model="newFee">
+            <p>Выберите размер взноса и с какого числа он вступает в силу.</p>
+            <FormRowFor For="@(() => newFee.Fee)">
+                <JoinInputNumber @bind-Value="newFee.Fee" min="0" ParsingErrorMessage="Укажите размер взноса целым числом рублей" />
+            </FormRowFor>
+            @if (model.PreferentialFeeEnabled)
+            {
+                <FormRowFor For="@(() => newFee.PreferentialFee)">
+                    <JoinInputNumber @bind-Value="newFee.PreferentialFee" min="0" ParsingErrorMessage="Укажите размер льготного взноса целым числом рублей" />
+                </FormRowFor>
+            }
+            <FormRowFor For="@(() => newFee.StartDate)">
+                <JoinRpgDatePicker Name="@nameof(newFee.StartDate)" @bind-Value="newFee.StartDate" Min="@Today" />
+            </FormRowFor>
+        </JoinFormDialog>
+        <JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
+    </ChildContent>
+</JoinCollapsePanel>
+
+@code {
+    /// <summary>Якорь панели на странице настройки финансов.</summary>
+    public const string AnchorId = "finance-fee";
+
+    [Parameter]
+    public ProjectIdentification ProjectId { get; set; } = null!;
+
+    private FinanceFeeSettingsViewModel? model;
+    private CreateFeeSettingViewModel newFee = new();
+    private JoinFormDialog<CreateFeeSettingViewModel> addDialog = null!;
+    private JoinMessageDialog errorDialog = null!;
+    private string error = "";
+
+    private static DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
+
+    // В архиве сервис изменения запрещает — кнопки не показываем, расписание остаётся для справки.
+    private bool CanEdit => model is { HasEditAccess: true } && model.ProjectStatus != ProjectLifecycleStatus.Archived;
+
+    protected override async Task OnInitializedAsync() => model = await settingsClient.GetFeeSettings(ProjectId);
+
+    private async Task Add(ButtonClickEventArgs args)
+    {
+        // Страница не перезагружается — кнопку надо вывести из состояния «в процессе» при любом исходе,
+        // в том числе когда диалог отменили.
+        try
+        {
+            // Новый экземпляр модели — новый EditContext у формы: сообщения прошлого показа не остаются.
+            newFee = new CreateFeeSettingViewModel { StartDate = Today };
+            StateHasChanged();
+            if (await addDialog.ShowModalAsync() is { } result)
+            {
+                await Mutate(() => settingsClient.CreateFeeSetting(ProjectId, result), "Не удалось добавить взнос");
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task Delete(ButtonClickEventArgs args, int projectFeeSettingId)
+    {
+        try
+        {
+            await Mutate(() => settingsClient.DeleteFeeSetting(ProjectId, projectFeeSettingId), "Не удалось удалить взнос");
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task Mutate(Func<Task> action, string failMessage)
+    {
+        try
+        {
+            await action();
+            // Страницу не перезагружаем — панель свернулась бы. Перечитываем только расписание.
+            model = await settingsClient.GetFeeSettings(ProjectId);
+        }
+        catch (ServerProblemException exception)
+        {
+            ShowError(exception.Message);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Ошибка при изменении расписания взносов проекта {ProjectId}", ProjectId);
+            ShowError(failMessage);
+        }
+    }
+
+    private void ShowError(string text)
+    {
+        error = text;
+        StateHasChanged();
+        _ = errorDialog.ShowModalAsync();
+    }
+}

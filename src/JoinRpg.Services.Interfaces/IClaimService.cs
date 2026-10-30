@@ -15,11 +15,12 @@ public interface IClaimService
     Task<ClaimIdentification> AddClaimFromMaster(CharacterIdentification characterId, UserIdentification userId, string commentText, FieldLayerContainer fields);
 
     /// <summary>
-    /// Модерация финансовой операции, предложенной в комментарии <paramref name="parentCommentId"/>:
-    /// одобрение или отклонение. Сопровождается комментарием мастера — всегда видимым игроку и
-    /// не переводящим заявку в «обсуждается».
+    /// Модерация финансовой операции <paramref name="operationId"/>: одобрение или отклонение.
+    /// Операция заведена в комментарии с тем же id, решение — ответ на этот комментарий.
+    /// Сопровождается комментарием мастера — всегда видимым игроку и не переводящим заявку
+    /// в «обсуждается».
     /// </summary>
-    Task ModerateFinanceOperation(ClaimIdentification claimId, int parentCommentId, string commentText, FinanceOperationAction financeAction);
+    Task ModerateFinanceOperation(FinanceOperationIdentification operationId, string commentText, FinanceOperationAction financeAction);
 
     Task ApproveByMaster(ClaimIdentification claimId, string commentText);
     Task DeclineByMaster(ClaimIdentification claimId, ClaimDenialReason claimDenialStatus, string commentText, bool deleteCharacter);

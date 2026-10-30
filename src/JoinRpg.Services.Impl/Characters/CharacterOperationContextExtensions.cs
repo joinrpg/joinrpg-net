@@ -1,4 +1,5 @@
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.Services.Impl.Claims;
 
@@ -29,7 +30,7 @@ internal static class CharacterOperationContextExtensions
     {
         ctx.CharacterInfo.EnsureCanChangeTypeTo(characterTypeInfo);
 
-        ApplySettings(ctx.Character, characterTypeInfo, ctx.ProjectInfo);
+        ctx.Character.ApplyTypeSettings(characterTypeInfo, ctx.ProjectInfo);
     }
 
     /// <summary>
@@ -39,7 +40,7 @@ internal static class CharacterOperationContextExtensions
         this CharacterCreationContext ctx,
         Character character,
         CharacterTypeInfo characterTypeInfo)
-        => ApplySettings(character, characterTypeInfo, ctx.ProjectInfo);
+        => character.ApplyTypeSettings(characterTypeInfo, ctx.ProjectInfo);
 
     /// <summary>
     /// То же для персонажа заявки при восстановлении после потери данных: оно повторяет уже случившееся,
@@ -49,23 +50,5 @@ internal static class CharacterOperationContextExtensions
         this ClaimMutationContext ctx,
         Character character,
         CharacterTypeInfo characterTypeInfo)
-        => ApplySettings(character, characterTypeInfo, ctx.ProjectInfo);
-
-    private static void ApplySettings(Character character, CharacterTypeInfo characterTypeInfo, ProjectInfo projectInfo)
-    {
-        (character.CharacterType,
-            character.IsHot,
-            character.CharacterSlotLimit,
-            character.IsAcceptingClaims,
-            _,
-            character.IsPublic,
-            character.HidePlayerForCharacter) = characterTypeInfo;
-
-        if (characterTypeInfo.CharacterType == CharacterType.Slot && projectInfo.CharacterNameField is null)
-        {
-            character.CharacterName = ServiceValidation.Required(characterTypeInfo.SlotName);
-        }
-
-        character.IsActive = true;
-    }
+        => character.ApplyTypeSettings(characterTypeInfo, ctx.ProjectInfo);
 }

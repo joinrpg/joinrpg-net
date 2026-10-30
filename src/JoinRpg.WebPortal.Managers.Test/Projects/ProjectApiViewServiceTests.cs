@@ -61,7 +61,6 @@ public class ProjectApiViewServiceTests
 
         [Obsolete]
         public Task<Project> GetProjectAsync(int project) => throw new NotImplementedException();
-        public Task<Project?> GetProjectWithFieldsAsync(int project) => throw new NotImplementedException();
         public Task<Project> GetProjectForMarkdownRendering(ProjectIdentification projectId) => throw new NotImplementedException();
         public Task<CharacterGroup?> GetGroupAsync(CharacterGroupIdentification characterGroupId) => throw new NotImplementedException();
         public Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null) => throw new NotImplementedException();

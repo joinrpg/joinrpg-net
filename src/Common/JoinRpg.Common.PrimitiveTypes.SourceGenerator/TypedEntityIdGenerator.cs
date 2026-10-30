@@ -465,12 +465,14 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         sb.AppendLine("{");
 
         // Свойство Id — генерируется безусловно для всех TypedEntityId
+        sb.AppendLine($"    /// <summary>Номер сущности, то же, что <see cref=\"{info.LastIntParamName}\"/>.</summary>");
         sb.AppendLine($"    public {info.NumericTypeKeyword} Id => {info.LastIntParamName};");
         sb.AppendLine();
 
         // Неявное преобразование к числовому типу — только для не составных id (ровно одно свойство)
         if (info.PrimaryParams.Count == 1)
         {
+            sb.AppendLine("    /// <summary>Неявно приводит идентификатор к его номеру <see cref=\"Id\"/>.</summary>");
             sb.AppendLine($"    public static implicit operator {info.NumericTypeKeyword}({info.TypeName} self) => self.{info.LastIntParamName};");
             sb.AppendLine();
         }
@@ -478,18 +480,21 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         // Вложенные свойства, полученные раскручиванием цепочки первых параметров NestedEntityId
         foreach (var nestedProp in info.NestedProperties)
         {
+            sb.AppendLine($"    /// <summary>Идентификатор внешней сущности, то же, что <c>{nestedProp.Accessor}</c>.</summary>");
             sb.AppendLine($"    public {nestedProp.PropTypeName} {nestedProp.PropName} => {nestedProp.Accessor};");
             sb.AppendLine();
         }
 
         // ToString
         var toStringBody = string.Join("-", info.FlatLeafExpressions.Select(e => $"{{{e}}}"));
+        sb.AppendLine($"    /// <summary>Строка вида <c>{info.ShortName}(…)</c>; её разбирает <see cref=\"Parse(string, System.IFormatProvider)\"/>.</summary>");
         sb.AppendLine($"    public override string ToString() => $\"{info.ShortName}({toStringBody})\";");
         sb.AppendLine();
 
         // IComparable<T>
         if (!info.SkipComparable)
         {
+            sb.AppendLine("    /// <inheritdoc/>");
             sb.AppendLine($"    public int CompareTo({info.TypeName}? other)");
             sb.AppendLine($"        => Comparer<{info.NumericTypeKeyword}>.Default.Compare({info.LastIntParamName}, other?.{info.LastIntParamName} ?? -1);");
             sb.AppendLine();
@@ -504,6 +509,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         {
             var intParams = string.Join(", ", leafParamNames.Select(n => $"int {n}"));
             var ctorArgs = BuildConstructorArgs(info.PrimaryParams, leafParamNames);
+            sb.AppendLine("    /// <summary>Создаёт идентификатор из номеров всех уровней вложенности, от внешнего к своему.</summary>");
             sb.AppendLine($"    public {info.TypeName}({intParams})");
             sb.AppendLine($"        : this({ctorArgs}) {{ }}");
             sb.AppendLine();
@@ -521,6 +527,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             var entityParam = info.PrimaryParams[1].Name;
             var entityParamLower = char.ToLower(entityParam[0]) + entityParam.Substring(1);
             var firstLeafParamName = leafParamNames[0];
+            sb.AppendLine($"    /// <summary>Создаёт идентификатор; если <paramref name=\"{entityParamLower}\"/> равен null или -1, возвращает null.</summary>");
             sb.AppendLine($"    public static {info.TypeName}? FromOptional(int {firstLeafParamName}, int? {entityParamLower})");
             sb.AppendLine($"        => {entityParamLower} is not null && {entityParamLower} != -1 ? new {info.TypeName}({firstLeafParamName}, {entityParamLower}.Value) : null;");
             sb.AppendLine();
@@ -532,6 +539,7 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         {
             var firstParamTypeName = info.PrimaryParams[0].TypeName;
             var firstParamVarName = char.ToLower(info.PrimaryParams[0].Name[0]) + info.PrimaryParams[0].Name.Substring(1);
+            sb.AppendLine($"    /// <summary>Создаёт идентификаторы с номерами из <paramref name=\"list\"/> внутри <paramref name=\"{firstParamVarName}\"/>.</summary>");
             sb.AppendLine($"    public static IEnumerable<{info.TypeName}> FromList(IEnumerable<int> list, {firstParamTypeName} {firstParamVarName})");
             sb.AppendLine($"        => list.Select(id => new {info.TypeName}({firstParamVarName}, id));");
             sb.AppendLine();
@@ -599,7 +607,12 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
         if (info.PrimaryParams.Count == 1)
         {
             var soleParamName = char.ToLower(info.PrimaryParams[0].Name[0]) + info.PrimaryParams[0].Name.Substring(1);
+            sb.AppendLine($"    /// <summary>Создаёт идентификатор; если <paramref name=\"{soleParamName}\"/> равен null, возвращает null.</summary>");
             sb.AppendLine($"    [return: NotNullIfNotNull(nameof({soleParamName}))]");
+        }
+        else
+        {
+            sb.AppendLine("    /// <summary>Создаёт идентификатор; если хотя бы один параметр null, возвращает null.</summary>");
         }
         sb.AppendLine($"    public static {info.TypeName}? FromOptional({paramsStr})");
         sb.AppendLine($"        => {checksStr} ? new {info.TypeName}({argsStr}) : null;");
@@ -656,15 +669,18 @@ public class TypedEntityIdGenerator : IIncrementalGenerator
             return;
         }
 
+        sb.AppendLine("    /// <inheritdoc/>");
         sb.AppendLine($"    public static {info.TypeName} Parse(ReadOnlySpan<char> value, IFormatProvider? provider)");
         sb.AppendLine($"        => TryParse(value, provider, out var result) ? result : throw new ArgumentException(\"Could not parse supplied value.\", nameof(value));");
         sb.AppendLine();
+        sb.AppendLine("    /// <inheritdoc/>");
         sb.AppendLine($"    public static {info.TypeName} Parse(string value, IFormatProvider? provider)");
         sb.AppendLine($"        => TryParse(value.AsSpan(), provider, out var result) ? result : throw new ArgumentException(\"Could not parse supplied value.\", nameof(value));");
         sb.AppendLine();
         sb.AppendLine($"    static bool IParsable<{info.TypeName}>.TryParse([NotNullWhen(true)] string? value, IFormatProvider? provider, [MaybeNullWhen(false)] out {info.TypeName} result)");
         sb.AppendLine($"        => TryParse(value.AsSpan(), provider, out result);");
         sb.AppendLine();
+        sb.AppendLine("    /// <inheritdoc/>");
         sb.AppendLine($"    public static bool TryParse(ReadOnlySpan<char> value, IFormatProvider? provider, [MaybeNullWhen(false)] out {info.TypeName} result)");
         sb.AppendLine("    {");
         sb.AppendLine($"        var parsed = {tryParseCall};");

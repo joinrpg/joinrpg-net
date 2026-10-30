@@ -16,9 +16,5 @@ internal class FinanceModerationViewService(IClaimService claimService) : IFinan
         => Moderate(operationId, request, FinanceOperationAction.Decline);
 
     private Task Moderate(FinanceOperationIdentification operationId, FinanceModerationDecisionRequest request, FinanceOperationAction action)
-        => claimService.ModerateFinanceOperation(
-            operationId.ClaimId,
-            operationId.FinanceOperationId,
-            request.CommentText ?? "",
-            action);
+        => claimService.ModerateFinanceOperation(operationId, request.CommentText ?? "", action);
 }
