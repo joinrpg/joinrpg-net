@@ -1,3 +1,4 @@
+using JoinRpg.Common.EntityFrameworkCore;
 using JoinRpg.Common.WebInfrastructure.DataProtection;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;

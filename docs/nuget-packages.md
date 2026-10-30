@@ -8,8 +8,8 @@
 |---|---|---|
 | `JoinRpg.Common.PrimitiveTypes` | типы-значения: типизированные Id, `Email`, `UserInfoHeader` и т. п. | генератора: он восстанавливается у потребителя, но не запускается (`exclude="Build,Analyzers"` в nuspec) |
 | `JoinRpg.Common.PrimitiveTypes.SourceGenerator` | генератор `[TypedEntityId]` и `[TypedStringValue]` | — |
-| `JoinRpg.Common.EntityFrameworkCore` | EF Core-конвертеры для типизированных Id | PrimitiveTypes |
-| `JoinRpg.Common.WebInfrastructure` | Serilog, OpenTelemetry, health checks, Data Protection, PostgreSQL, планировщик ежедневных джоб, логин через id.joinrpg.ru | PrimitiveTypes, WebInfrastructure.Interfaces |
+| `JoinRpg.Common.EntityFrameworkCore` | EF Core-конвертеры для типизированных Id, регистрация DbContext (`AddJoinEfCoreDbContext`: PostgreSQL, health check) | PrimitiveTypes |
+| `JoinRpg.Common.WebInfrastructure` | Serilog, OpenTelemetry, health checks, Data Protection, планировщик ежедневных джоб, логин через id.joinrpg.ru | PrimitiveTypes, WebInfrastructure.Interfaces, EntityFrameworkCore |
 | `JoinRpg.Common.WebInfrastructure.Interfaces` | контракты фоновых джоб (`IJob`, `AddJob<T>()`, `IJobRepository`, `JobsOptions`) | — |
 | `JoinRpg.Common.WebComponents` | Blazor-компоненты, каталог — components.joinrpg.ru | PrimitiveTypes |
 | `JoinRpg.Common.KogdaIgraClient` | HTTP-клиент к kogda-igra.ru | — |

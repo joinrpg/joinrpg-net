@@ -1,7 +1,8 @@
 # JoinRpg.Common.EntityFrameworkCore
 
 Хранит типизированные Id из `JoinRpg.Common.PrimitiveTypes` (и свои, сгенерированные
-`[TypedEntityId]`) в колонках EF Core как обычные числа.
+`[TypedEntityId]`) в колонках EF Core как обычные числа, и регистрирует DbContext
+для PostgreSQL (`AddJoinEfCoreDbContext`).
 
 ```
 dotnet add package JoinRpg.Common.EntityFrameworkCore
@@ -44,3 +45,21 @@ public class MyDbContext(DbContextOptions options) : DbContext(options)
 
 Составные Id (`GamePlayerId(5-12)`) конвертера не получают: храните их части отдельными
 колонками.
+
+## Регистрация DbContext
+
+`AddJoinEfCoreDbContext` регистрирует DbContext для PostgreSQL: провайдер Npgsql,
+EntityFramework.Exceptions (бизнес-исключения вместо `DbUpdateException`), лог SQL в Debug
+в dev-режиме и health check `{имя строки подключения}-db` (Degraded при недоступности базы).
+Если строки подключения с таким именем нет, ничего не регистрирует и возвращает `false` —
+вызывающий решает, критично ли это.
+
+```csharp
+using JoinRpg.Common.EntityFrameworkCore;
+
+services.AddJoinEfCoreDbContext<MyDbContext>(
+    configuration, environment,
+    connectionStringName: "MyDatabase",
+    options => options.UseOpenIddict() // опционально
+);
+```
