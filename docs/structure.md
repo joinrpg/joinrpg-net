@@ -15,7 +15,7 @@
 
 ### Кросс-слойные интерфейсы (`JoinRpg.Interfaces`)
 
-`ICurrentUserAccessor` — текущий пользователь, `INotificationService` — очередь уведомлений, `IDailyJob` — фоновые задачи, `IAvatarLoader` — адрес аватарки по её id.
+`ICurrentUserAccessor` — текущий пользователь, `INotificationService` — очередь уведомлений, `IAvatarLoader` — адрес аватарки по её id. Контракты фоновых задач — в `JoinRpg.Common.WebInfrastructure.Interfaces`.
 
 ## Правила локализации
 
@@ -29,7 +29,8 @@
 - `JoinRpg.Markdown` — обработка Markdown (Markdig)
 - `JoinRpg.PrimitiveTypes` — доменные типы-значения: идентификаторы и Value Objects
 - `JoinRpg.Common.EntityFrameworkCore` — generic EF Core ValueConverter для `[TypedEntityId]`-типов, реализующих `IEntityId<TSelf,TValue>` (не составные id)
-- `JoinRpg.Common.WebInfrastructure` — веб-инфраструктура: логирование (Serilog), кеш, DataProtection, фоновые задачи, общий OIDC-логин через id.joinrpg.ru для сателлитных сайтов (`AddJoinRpgAuthentication`, приложение-специфичная часть — через `IJoinUserLoginHandler`)
+- `JoinRpg.Common.WebInfrastructure` — веб-инфраструктура: логирование (Serilog), кеш, DataProtection, планировщик ежедневных джоб (`AddMidnightJobs`, контракты — в `JoinRpg.Common.WebInfrastructure.Interfaces`), общий OIDC-логин через id.joinrpg.ru для сателлитных сайтов (`AddJoinRpgAuthentication`, приложение-специфичная часть — через `IJoinUserLoginHandler`)
+- `JoinRpg.Common.WebInfrastructure.Interfaces` — контракты фоновых джоб (`IJob`, `IJobRepository`, `IJobRunner`, `JobsOptions`, `AddJob<T>()`): лёгкая зависимость для проектов, объявляющих джобы, без тяжёлого WebInfrastructure
 - `JoinRpg.Common.Telegram` — интеграция с Telegram Bot
 - `JoinRpg.Common.BastiliaRatingClient` — HTTP-клиент к сайту клуба #Бастилия
 - `JoinRpg.Common.KogdaIgraClient` — HTTP-клиент к сервису KogdaIgra (сырые вызовы API)
@@ -41,11 +42,11 @@
 - `JoinRpg.Data.Write.Interfaces` — `IUnitOfWork` для записи. Использовать только из сервисного слоя
 - `JoinRpg.Dal.Impl` — реализация репозиториев (EF + MS SQL). Не ссылаться снаружи
 - `JoinRpg.Dal.Notifications` — DbContext и репозиторий для хранения уведомлений
-- `JoinRpg.Dal.JobService` — DbContext для отслеживания выполнения ежедневных задач
+- `JoinRpg.Dal.JobService` — DbContext для отслеживания выполнения ежедневных задач (`JobRepository : IJobRepository`, журнал `DailyJobRuns`)
 - `Joinrpg.Dal.Migrate` — инструмент миграций БД (точка входа)
 
 ### Core
-- `JoinRpg.Interfaces` — кросс-слойные интерфейсы (пользователь, уведомления, задачи)
+- `JoinRpg.Interfaces` — кросс-слойные интерфейсы (пользователь, уведомления)
 - `JoinRpg.Domain` — доменная логика (методы-расширения над DataModel). Устаревший проект. Вместо использования сущностей БД с методами расширения в доменной логике, надо использовать доменные объекты в `JoinRpg.PrimitiveTypes`
 - `Joinrpg.Web.Identity` — реализация ASP.NET Core Identity (`MyUserStore`, `CurrentUserAccessor`, `ExternalLoginProfileExtractor`)
 - `JoinRpg.Web.UserProfile` — ViewModel профиля/соцсетей и билдер над доменным `UserInfo` (`ProviderDescViewModel`, `UserLoginInfoViewModel`, `UserLoginInfoViewModelBuilder`), без зависимости на `JoinRpg.DataModel`; используется и Portal, и IdPortal
