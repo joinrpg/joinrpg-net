@@ -1,6 +1,8 @@
 @using JoinRpg.Web.ProjectMasterTools.Acl
 @using JoinRpg.Web.ProjectCommon
 @using JoinRpg.Web.ProjectCommon.Masters
+@using JoinRpg.Web.Claims.UnifiedGrid
+@inject IClaimsGridUriLocator ClaimsGrid
 @model JoinRpg.Web.Models.Masters.MastersListViewModel
 @{
     ViewBag.Title = "Мастера";
@@ -61,10 +63,10 @@
               @if (item.ClaimsCount > 0)
               {
                 <div>
-                  @Html.ActionLink(
-                           CountHelper.DisplayCount(item.ClaimsCount, "заявка", "заявки", "заявок"),
-                           "Responsible", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null)
-                  <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null))</span>
+                  <a href="@ClaimsGrid.GetGridUri(new ProjectIdentification(item.ProjectId), responsibleMasterId: new UserIdentification(item.UserId))">
+                      @CountHelper.DisplayCount(item.ClaimsCount, "заявка", "заявки", "заявок")
+                  </a>
+                  <span>(<a href="@ClaimsGrid.GetGridUri(new ProjectIdentification(item.ProjectId), UgStatusFilterView.All, responsibleMasterId: new UserIdentification(item.UserId), onlyWithProblems: true)">проблемные</a>)</span>
                 </div>
               }
               @if (item.ResponsibleFor.Any())

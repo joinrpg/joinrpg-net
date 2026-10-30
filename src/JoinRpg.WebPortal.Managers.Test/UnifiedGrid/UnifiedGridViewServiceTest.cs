@@ -1,4 +1,6 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Claims;
+using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Problems;
@@ -25,6 +27,9 @@ public class UnifiedGridViewServiceTest
     /// <summary>Какие проблемы у заявки; по умолчанию — никаких.</summary>
     private Func<ClaimInfo, IEnumerable<ClaimProblem>> problemsOf = _ => [];
 
+    /// <summary>Непрочитанные комментарии по обсуждению; по умолчанию — никаких.</summary>
+    private Dictionary<CommentDiscussionId, int> unread = [];
+
     private async Task<IReadOnlyCollection<UgItemViewModel>> GetItems(
         UgStatusFilterView filter,
         UgScopeView scope = UgScopeView.Captain,
@@ -44,7 +49,16 @@ public class UnifiedGridViewServiceTest
         UserIdentification? responsible = null)
     {
         characterInfoRepository = new FakeCharacterInfoRepository(Mock);
-        IUnifiedGridClient service = new UnifiedGridViewService(
+        IUnifiedGridClient service = CreateService(scope, userId, captainRules);
+
+        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter, onlyWithProblems, group, responsible), page);
+    }
+
+    private UnifiedGridViewService CreateService(
+        UgScopeView scope = UgScopeView.Captain,
+        int? userId = null,
+        FakeCaptainRulesRepository? captainRules = null)
+        => new UnifiedGridViewService(
             new FakeCurrentUserAccessor(userId ?? Mock.Master.UserId),
             captainRules ?? new FakeCaptainRulesRepository(Mock),
             new FakeProjectMetadataRepository(Mock),
@@ -55,10 +69,8 @@ public class UnifiedGridViewServiceTest
                 : FakeUserRepository.MustNotBeCalled("капитан проблем не видит"),
             new FuncProblemValidator(context => scope == UgScopeView.Master
                 ? problemsOf(context)
-                : throw new InvalidOperationException("капитан проблем не видит")));
-
-        return await service.GetGrid(Mock.ProjectInfo.ProjectId, scope, new UgFilterView(filter, onlyWithProblems, group, responsible), page);
-    }
+                : throw new InvalidOperationException("капитан проблем не видит")),
+            new FakeUnreadRepository(unread, scope == UgScopeView.Master));
 
     /// <summary>
     /// Архив и «Все» — виды, которым нужны удалённые персонажи (архиву заодно и живые — ради их
@@ -623,13 +635,8 @@ public class UnifiedGridViewServiceTest
     public async Task MasterScopeWithoutAccessDoesNotLoadProfiles()
     {
         _ = Mock.CreateClaim(Mock.CreateCharacter("with claim"), Mock.Player);
-        IUnifiedGridClient service = new UnifiedGridViewService(
-            new FakeCurrentUserAccessor(Mock.Player.UserId),
-            new FakeCaptainRulesRepository(Mock),
-            new FakeProjectMetadataRepository(Mock),
-            new FakeCharacterInfoRepository(Mock),
-            FakeUserRepository.MustNotBeCalled("без доступа мастера грид пуст"),
-            new FuncProblemValidator(_ => throw new InvalidOperationException("без доступа мастера грид пуст")));
+        characterInfoRepository = new FakeCharacterInfoRepository(Mock);
+        IUnifiedGridClient service = CreateService(UgScopeView.Master, Mock.Player.UserId);
 
         (await service.GetGrid(Mock.ProjectInfo.ProjectId, UgScopeView.Master, new UgFilterView(UgStatusFilterView.Active, OnlyWithProblems: true), 1))
             .Items.ShouldBeEmpty();
@@ -780,7 +787,106 @@ public class UnifiedGridViewServiceTest
 
     #endregion
 
+    #region Массовые операции и непрочитанные комментарии (ADR027 §4, §5, шаг 6)
+
+    /// <summary>
+    /// Идентификаторы для массовых операций — весь результат фильтра без пейджинга: заявки всех
+    /// строк, а из персонажей — только те, у кого показанные заявки есть (вакансии — нет).
+    /// </summary>
+    [Fact]
+    public async Task MasterPageCarriesOperationIdsOfWholeFilter()
+    {
+        var withClaims = Mock.CreateCharacter("with claims");
+        var first = Mock.CreateClaim(withClaims, Mock.Player);
+        var second = Mock.CreateClaim(withClaims, Mock.Master);
+        _ = Mock.CreateCharacter("vacancy");
+
+        var page = await GetPage(UgStatusFilterView.Active, UgScopeView.Master);
+
+        page.OperationClaimIds.ShouldBe([first.GetId(), second.GetId()], ignoreOrder: true);
+        page.OperationCharacterIds.ShouldBe([withClaims.GetId()]);
+    }
+
+    /// <summary>Идентификаторы следуют фильтру: отфильтрованные заявки в операции не попадают.</summary>
+    [Fact]
+    public async Task OperationIdsFollowResponsibleFilter()
+    {
+        var character = Mock.CreateCharacter("two claims");
+        var mine = Mock.CreateClaim(character, Mock.Player);
+        var other = Mock.CreateClaim(character, Mock.Master);
+        other.ResponsibleMasterUserId = Mock.Player.UserId;
+
+        var page = await GetPage(
+            UgStatusFilterView.Active, UgScopeView.Master, responsible: new UserIdentification(Mock.Master.UserId));
+
+        page.OperationClaimIds.ShouldBe([mine.GetId()]);
+    }
+
+    /// <summary>Капитану массовые операции недоступны — коллекции пустые (ADR027 §5).</summary>
+    [Fact]
+    public async Task CaptainGetsEmptyOperationIds()
+    {
+        _ = Mock.CreateClaim(Mock.CreateCharacter("with claim"), Mock.Player);
+
+        var page = await GetPage(UgStatusFilterView.Active);
+
+        page.OperationClaimIds.ShouldBeEmpty();
+        page.OperationCharacterIds.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Бейдж непрочитанных — по заявкам страницы и только в мастерском скоупе: у капитана его нет.
+    /// </summary>
+    [Fact]
+    public async Task MasterClaimCarriesUnreadCommentsCount()
+    {
+        var character = Mock.CreateCharacter("with claim");
+        var claim = Mock.CreateClaim(character, Mock.Player);
+        claim.CommentDiscussionId = 4242;
+        unread[new CommentDiscussionId(4242)] = 7;
+
+        ClaimRow(await GetItems(UgStatusFilterView.Active, UgScopeView.Master), claim).UnreadCommentsCount.ShouldBe(7);
+        ClaimRow(await GetItems(UgStatusFilterView.Active), claim).UnreadCommentsCount.ShouldBeNull();
+    }
+
+    #endregion
+
     #region Фейки
+
+    /// <summary>
+    /// Гриду из репозитория заявок нужен только счётчик непрочитанного (ADR027 §4); капитан его не
+    /// спрашивает вовсе. Остальное — не поддерживается, чтобы случайный вызов упал, а не прошёл молча.
+    /// </summary>
+    private sealed class FakeUnreadRepository(Dictionary<CommentDiscussionId, int> unread, bool mayBeAsked) : IClaimsRepository
+    {
+        public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(
+            IReadOnlyCollection<ClaimIdentification> claimIds, UserIdentification userId, bool hasMasterAccess)
+            => mayBeAsked
+                ? Task.FromResult(unread)
+                : throw new InvalidOperationException("капитан непрочитанные комментарии не видит");
+
+        public void Dispose() { }
+
+        public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<MyClaimShortInfo>> GetMyActiveClaimsInActiveProjects(UserIdentification userId) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(ProjectIdentification projectId, UserIdentification userId, ClaimStatusSpec status) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => throw new NotSupportedException();
+        public Task<Claim?> GetClaim(ClaimIdentification claimId) => throw new NotSupportedException();
+        public Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec, UserIdentification userId) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(ProjectIdentification projectId, ClaimStatusSpec approved) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
+        public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotSupportedException();
+        public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId) => throw new NotSupportedException();
+    }
 
     private sealed class FuncProblemValidator(Func<ClaimInfo, IEnumerable<ClaimProblem>> problems) : IClaimProblemValidator
     {

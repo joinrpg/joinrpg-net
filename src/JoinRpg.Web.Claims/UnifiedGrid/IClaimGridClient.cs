@@ -48,11 +48,39 @@ public record class UgFilterView(
     UserIdentification? Responsible = null);
 
 /// <summary>
+/// Имена параметров query string грида (ADR027 §5) — те же, что у webapi <c>GetGrid</c>: страница и
+/// API понимают один адрес, а редиректы строят его без таблицы соответствия.
+/// </summary>
+public static class UgQueryParameterNames
+{
+    public const string Status = "status";
+    public const string Page = "page";
+    public const string OnlyWithProblems = "onlyWithProblems";
+    public const string CharacterGroupId = "characterGroupId";
+    public const string ResponsibleMasterId = "responsibleMasterId";
+
+    /// <summary>
+    /// Выгрузка того же фильтра в Excel (ADR027 §5). Это параметр страницы, а не webapi
+    /// <c>GetGrid</c>, но он тоже часть кешируемого 301-формата адресов (§6).
+    /// </summary>
+    public const string Export = "export";
+}
+
+/// <summary>
 /// Страница грида. Страница считается по персонажам, чтобы заявки персонажа не рвались на её границе.
 /// </summary>
 /// <param name="Page">Номер отданной страницы с единицы — запрошенный, если он был в диапазоне.</param>
+/// <param name="OperationClaimIds">
+/// Все заявки результата фильтра, без пейджинга: по ним работают выгрузка и массовые операции
+/// (ADR027 §5). У капитана пусто — ему они недоступны.
+/// </param>
+/// <param name="OperationCharacterIds">
+/// Персонажи с показанными заявками (вакансий нет) — печать и бейджи. У капитана пусто.
+/// </param>
 public record class UgPageViewModel(
     IReadOnlyList<UgItemViewModel> Items,
     int Page,
     int TotalPages,
-    int TotalCharacters);
+    int TotalCharacters,
+    IReadOnlyCollection<ClaimIdentification> OperationClaimIds,
+    IReadOnlyCollection<CharacterIdentification> OperationCharacterIds);

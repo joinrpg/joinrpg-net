@@ -3,6 +3,7 @@ using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Web.Accommodation;
+using JoinRpg.Web.Claims.UnifiedGrid;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -18,7 +19,7 @@ public static class UriLocatorExtensions
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
         IUriLocator<CharacterGroupIdentification>,
-        ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
+        ICharacterUriLocator, ICharacterGroupUriLocator, IClaimsGridUriLocator, IProjectFieldUriLocator,
         IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator, IBadgeTemplateUriLocator,
         IFinanceSettingsUriLocator
     {
@@ -61,11 +62,22 @@ public static class UriLocatorExtensions
 
         Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => new($"/{target.Value}/home", UriKind.Relative);
 
+        // Списки заявок переехали на грид /{projectId}/claims (ADR027 §6): адрес собирает один
+        // построитель — так клиентская реализация не разойдётся с серверной.
         Uri ICharacterGroupUriLocator.GetClaimListUri(CharacterGroupIdentification id) =>
-            new($"/{id.ProjectId.Value}/roles/{id.CharacterGroupId}/claims", UriKind.Relative);
+            new(ClaimGridUrls.Build(id.ProjectId, characterGroupId: id), UriKind.Relative);
 
         Uri ICharacterGroupUriLocator.GetDiscussingClaimListUri(CharacterGroupIdentification id) =>
-            new($"/{id.ProjectId.Value}/claims/DiscussingForGroup?characterGroupId={id.CharacterGroupId}", UriKind.Relative);
+            new(ClaimGridUrls.Build(id.ProjectId, status: UgStatusFilterView.Discussion, characterGroupId: id), UriKind.Relative);
+
+        Uri IClaimsGridUriLocator.GetGridUri(
+            ProjectIdentification projectId,
+            UgStatusFilterView? status,
+            UserIdentification? responsibleMasterId,
+            CharacterGroupIdentification? characterGroupId,
+            bool onlyWithProblems,
+            int? page)
+            => new(ClaimGridUrls.Build(projectId, status, responsibleMasterId, characterGroupId, onlyWithProblems, page), UriKind.Relative);
 
         Uri ICharacterGroupUriLocator.GetCharacterListUri(CharacterGroupIdentification id) =>
             new($"/{id.ProjectId.Value}/characters/bygroup/{id.CharacterGroupId}", UriKind.Relative);
@@ -188,6 +200,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IUriLocator<CharacterGroupIdentification>>(locator)
             .AddSingleton<ICharacterUriLocator>(locator)
             .AddSingleton<ICharacterGroupUriLocator>(locator)
+            .AddSingleton<IClaimsGridUriLocator>(locator)
             .AddSingleton<IProjectFieldUriLocator>(locator)
             .AddSingleton<IScheduleUriLocator>(locator)
             .AddSingleton<IProjectUriLocator>(locator)
