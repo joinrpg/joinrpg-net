@@ -1,4 +1,5 @@
 using System.Reflection;
+using JoinRpg.Common.WebInfrastructure.Job;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -18,6 +19,8 @@ public static class OpenTelemetryRegistration
                 {
                     tracing.AddSource(sourceName);
                 }
+                // Активности фоновых джоб (AddMidnightJobs) — источник подключаем всегда, хосту передавать его не нужно.
+                tracing.AddSource(BackgroundServiceActivity.ActivitySourceName);
                 tracing
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation();

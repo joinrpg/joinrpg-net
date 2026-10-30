@@ -1,9 +1,8 @@
 using System.Reflection;
-using JoinRpg.Common.WebInfrastructure;
-using JoinRpg.Common.WebInfrastructure.Job;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Portal.Infrastructure.Jobs;
+namespace JoinRpg.Common.WebInfrastructure.Job;
 
 /// <summary>
 /// Единый планировщик ежедневных джоб: на старте находит все зарегистрированные джобы

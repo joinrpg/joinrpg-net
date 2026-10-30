@@ -21,8 +21,7 @@ public static class JobRegistration
 
         return services
             .AddScoped<TJob>()
-            .AddScoped<JobRunner<TJob>>()
-            .AddScoped<IJobRunner, JobRunner<TJob>>()
+            .AddScoped<IJobRunner>(sp => sp.GetRequiredService<IJobRunnerFactory>().Create(typeof(TJob)))
             .AddSingleton(new RegisteredJob(typeof(TJob)));
     }
 }

@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>
-        <Description>ASP.NET Core web infrastructure: Serilog logging, OpenTelemetry, EF Core PostgreSQL, health checks, data protection, background tasks, OIDC login against id.joinrpg.ru.</Description>
+        <Description>ASP.NET Core web infrastructure: Serilog logging, OpenTelemetry, EF Core PostgreSQL, health checks, data protection, midnight job scheduler (contracts in JoinRpg.Common.WebInfrastructure.Interfaces), OIDC login against id.joinrpg.ru.</Description>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,6 +31,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\JoinRpg.Common.PrimitiveTypes\JoinRpg.Common.PrimitiveTypes.csproj" />
+        <ProjectReference Include="..\JoinRpg.Common.WebInfrastructure.Interfaces\JoinRpg.Common.WebInfrastructure.Interfaces.csproj" />
     </ItemGroup>
 
 </Project>

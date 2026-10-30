@@ -2,8 +2,10 @@ using JoinRpg.Common.WebInfrastructure.Job;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Shouldly;
+using Xunit;
 
-namespace JoinRpg.Portal.Test.Infrastructure.Jobs;
+namespace JoinRpg.Common.WebInfrastructure.Test.Job;
 
 public class JobsOptionsTest
 {

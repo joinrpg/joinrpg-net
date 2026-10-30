@@ -1,11 +1,12 @@
 using JoinRpg.Common.WebInfrastructure.Job;
-using JoinRpg.Portal.Infrastructure.Jobs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Shouldly;
+using Xunit;
 
-namespace JoinRpg.Portal.Test.Infrastructure.Jobs;
+namespace JoinRpg.Common.WebInfrastructure.Test.Job;
 
 public class MidnightJobsSchedulerTest
 {

@@ -23,12 +23,11 @@ class AdvertisementJob : IJob
 services.AddJob<AdvertisementJob>();
 ```
 
-`AddJob` регистрирует сам класс, раннер `JobRunner<TJob>` (запуск под имперсонацией из
-`IJobImpersonator`) и маркер `RegisteredJob`. Планировщик (полночь UTC, at-most-once в сутки,
+`AddJob` регистрирует сам класс, раннер (создаётся фабрикой `IJobRunnerFactory`, реализация —
+в WebInfrastructure) и маркер `RegisteredJob`. Планировщик (полночь UTC, at-most-once в сутки,
 журнал через `IJobRepository`) — `AddMidnightJobs` из пакета `JoinRpg.Common.WebInfrastructure`:
 он сам находит все зарегистрированные джобы по маркерам при старте, порядок вызовов `AddJob`
-не важен. До появления `AddMidnightJobs` в ближайшем релизе WebInfrastructure планировщик живёт
-в Joinrpg Portal (`MidnightJobsScheduler`).
+не важен.
 
 Джоба обязана быть идемпотентной: если она вчера не отработала, сегодня должна доделать за вчера.
 Выключение конфигом — секция `DailyJobs:Disabled` (короткое или полное имя класса), см.
@@ -38,7 +37,8 @@ services.AddJob<AdvertisementJob>();
 
 - `IJob` + `JobDelayAttribute` — контракт джобы.
 - `AddJob<TJob>()` — регистрация.
-- `IJobRunner` — запуск джобы в переданном scope под имперсонацией (для админской страницы и тестов).
+- `IJobRunner` — запуск джобы в переданном scope под имперсонацией (для админской страницы и тестов); реализация раннера — в `JoinRpg.Common.WebInfrastructure`.
+- `IJobRunnerFactory` — фабрика раннеров; реализацию регистрирует `AddMidnightJobs`.
 - `IJobImpersonator` — под кем выполняются джобы; реализует хост-приложение (в Joinrpg Portal — робот-администратор).
 - `IJobRepository` + `JobId` — журнал «один запуск в сутки» (уникальный индекс JobName + DayOfRun).
 - `JobsOptions` + `RegisteredJob` — настройка `DailyJobs:Disabled` и маркер зарегистрированной джобы.
