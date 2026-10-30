@@ -288,6 +288,8 @@ internal sealed class PscbFakeProjectMetadataRepository : IProjectMetadataReposi
 {
     private readonly Dictionary<ProjectIdentification, ProjectInfo> projects = [];
 
+    public Exception? Throw { get; set; }
+
     /// <summary>
     /// Проекты, по которым сервис спрашивал метаданные.
     /// </summary>
@@ -326,6 +328,10 @@ internal sealed class PscbFakeProjectMetadataRepository : IProjectMetadataReposi
     public Task<ProjectInfo> GetProjectMetadata(ProjectIdentification projectId, bool ignoreCache = false)
     {
         Requests.Add(projectId.Value);
+        if (Throw is { } failure)
+        {
+            throw failure;
+        }
         return Task.FromResult(projects.TryGetValue(projectId, out var info)
             ? info
             : CreateProjectInfo(projectId, isBlocked: false, []));

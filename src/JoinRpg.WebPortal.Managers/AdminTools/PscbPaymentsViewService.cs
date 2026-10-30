@@ -156,6 +156,22 @@ internal class PscbPaymentsViewService(
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Failed to enrich the payments list with the JoinRpg data");
+            // Обогащение могло упасть после сверки или посреди построения планов. Частичные
+            // вердикты нельзя показывать как результат успешной сверки, в том числе в CSV.
+            foreach (var row in result.Payments)
+            {
+                row.UserUrl = null;
+                row.ProjectUrl = null;
+                row.RefundUrl = null;
+                row.OperationUrl = null;
+                row.ClaimUrl = null;
+                row.MatchState = null;
+                row.MatchStateText = null;
+                row.RestoreBlockReason = null;
+            }
+
+            result.UnresolvedUsers = [];
+            result.UnresolvedProjects = [];
             result.ReconciliationFailed = true;
             return NoPlans;
         }

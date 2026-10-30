@@ -921,6 +921,44 @@ public class PscbPaymentsViewServiceTests
         row.MatchStateText.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task ClearsPartialEnrichmentWhenBuildingTheRestorePlanFails()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(2);
+        finances.AddRefund(2, new DateTime(2026, 5, 12));
+        var projects = new PscbFakeProjectMetadataRepository { Throw = new InvalidOperationException("Метаданные недоступны") };
+        var service = CreateService(
+            search,
+            Users(42),
+            finances,
+            new PscbFakeClaimsRepository(),
+            projects,
+            Payment("1", account: "42", details: TicketPurpose("Проект")),
+            Payment("2", account: "42", details: TicketPurpose("Проект")));
+
+        var (result, plans) = await service.GetPaymentsWithRestorePlan(Query());
+
+        result.IsSuccess.ShouldBeTrue();
+        result.ReconciliationFailed.ShouldBeTrue();
+        result.Payments.Count.ShouldBe(2);
+        plans.ShouldBeEmpty();
+        foreach (var row in result.Payments)
+        {
+            row.Amount.ShouldBe(100);
+            row.UserUrl.ShouldBeNull();
+            row.ProjectUrl.ShouldBeNull();
+            row.RefundUrl.ShouldBeNull();
+            row.OperationUrl.ShouldBeNull();
+            row.ClaimUrl.ShouldBeNull();
+            row.MatchState.ShouldBeNull();
+            row.MatchStateText.ShouldBeNull();
+            row.RestoreBlockReason.ShouldBeNull();
+        }
+    }
+
     private static PscbPaymentsViewService CreateService(FakeSearchService search, PscbFakeUserRepository users, params string[] payments)
         => CreateService(search, users, new FakeFinanceOperationsRepository(), payments);
 

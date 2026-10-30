@@ -338,6 +338,36 @@ public class PscbPaymentsRestoreViewServiceTests
         domain.Refunds.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task RefusesAPartialRefundEvenWhenThePaymentStatusIsPaid()
+    {
+        var scenario = LostPaymentScenario();
+        scenario.Payments = [LostPaymentJson(refunds: """[{"refundId":"1","state":"END","amount":500}]""")];
+        var (service, domain) = CreateService(scenario);
+
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
+
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Failed);
+        result.Message.ShouldBe("частичный возврат");
+        domain.Payments.ShouldBeEmpty();
+        domain.Refunds.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task RefusesAnAmbiguousOrderIdWithoutWritingMoney()
+    {
+        var scenario = LostPaymentScenario();
+        scenario.Payments = [LostPaymentJson(), LostPaymentJson().Replace("\"paymentId\":\"11\"", "\"paymentId\":\"12\"")];
+        var (service, domain) = CreateService(scenario);
+
+        var result = await service.RestoreRow(Query(), LostPaymentOrderId);
+
+        result.Outcome.ShouldBe(PscbRestoreRowOutcome.Failed);
+        result.Message.ShouldContain("несколько раз");
+        domain.Payments.ShouldBeEmpty();
+        domain.Refunds.ShouldBeEmpty();
+    }
+
     /// <summary>Пустой orderId отклоняется до первого обращения к банку.</summary>
     [Fact]
     public async Task RefusesABlankOrderId()

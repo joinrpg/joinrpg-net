@@ -253,7 +253,12 @@ internal static class PscbPaymentViewModelBuilder
             return "сумма с копейками, а операция хранит целые рубли";
         }
 
-        if (!row.RefundedByBank)
+        if (row.Amount > int.MaxValue)
+        {
+            return "сумма превышает допустимую для операции";
+        }
+
+        if (!row.RefundedByBank && row.Refunds.Count == 0)
         {
             return null;
         }
@@ -263,6 +268,8 @@ internal static class PscbPaymentViewModelBuilder
             0 => "банк отметил возврат, но не прислал его данных",
             1 when row.Refunds.Single().Amount != row.Amount => "частичный возврат",
             > 1 => "несколько возвратов у одного платежа",
+            1 when !row.RefundedByBank => "банк не подтвердил полный возврат",
+            1 when row.Refunds.Single().Status != Identifier(RefundStatus.Completed) => "возврат не завершён",
             _ => null,
         };
     }

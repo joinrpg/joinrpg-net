@@ -65,6 +65,24 @@
             </div>
         </fieldset>
 
+        @if (restoreRows.Count > 0)
+        {
+            <p class="pscb-restore-summary">
+                Восстановлено платежей: <b>@restoreRows.Sum(row => row.RestoredPaymentsCount)</b>, возвратов: <b>@restoreRows.Sum(row => row.RestoredRefundsCount)</b>.
+                Не восстановлено: <b>@FailedRowCount</b> — причины ниже.
+            </p>
+            <ul class="pscb-restore-rows">
+                @foreach (var row in restoreRows)
+                {
+                    <li class="@RestoreRowClass(row.Outcome)">@row.OrderId: @row.Message</li>
+                }
+            </ul>
+        }
+        @if (restoreError is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@restoreError</JoinAlert>
+        }
+
         @if (list is not null)
         {
             if (!list.IsSuccess)
@@ -79,6 +97,12 @@
             }
             else
             {
+                @if (list.ReconciliationFailed)
+                {
+                    <JoinAlert Variation="VariationStyleEnum.Danger">
+                        Сверка списка с базой не удалась — восстановление невозможно. Обновите список и попробуйте ещё раз.
+                    </JoinAlert>
+                }
                 <p>
                     Найдено платежей: <b>@list.Payments.Count</b>, запросов к банку: <b>@list.RequestCount</b>.
                 </p>
@@ -191,24 +215,6 @@
                                     Disabled="listLoading" />
                     </p>
                 }
-                @if (restoreRows.Count > 0)
-                {
-                    <p class="pscb-restore-summary">
-                        Восстановлено платежей: <b>@restoreRows.Sum(row => row.RestoredPaymentsCount)</b>, возвратов: <b>@restoreRows.Sum(row => row.RestoredRefundsCount)</b>.
-                        Не восстановлено: <b>@FailedRowCount</b> — причины ниже.
-                    </p>
-                    <ul class="pscb-restore-rows">
-                        @foreach (var row in restoreRows)
-                        {
-                            <li class="@RestoreRowClass(row.Outcome)">@row.OrderId: @row.Message</li>
-                        }
-                    </ul>
-                }
-                @if (restoreError is not null)
-                {
-                    <JoinAlert Variation="VariationStyleEnum.Danger">@restoreError</JoinAlert>
-                }
-
                 @if (list.UnresolvedProjects.Count > 0)
                 {
                     <h4>Проекты, которые не удалось определить</h4>
@@ -432,9 +438,8 @@
 
     private async Task LoadPayments()
     {
-        list = null;
-        listError = null;
-        csvHref = null;
+        restoreRows = [];
+        restoreError = null;
         if (listDateFrom is not { } from || listDateTo is not { } to)
         {
             return;
@@ -448,6 +453,14 @@
             Parse<PscbPaymentKind>(listPaymentType),
             listRequestFiscalData);
 
+        await LoadPayments(query);
+    }
+
+    private async Task LoadPayments(PscbPaymentsQuery query)
+    {
+        list = null;
+        listError = null;
+        csvHref = null;
         listLoading = true;
         try
         {
@@ -469,14 +482,14 @@
     // Строки, которые восстановление считает кандидатами: видимость кнопки не зависит от
     // RestoreBlockReason — что восстанавливать, решает сервер по свежим данным банка.
     private int RestoreCandidateCount
-        => list is { IsSuccess: true } loaded
+        => list is { IsSuccess: true, ReconciliationFailed: false } loaded
             ? loaded.Payments.Count(p => p.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing)
             : 0;
 
     // Строки, по которым прогон действительно отправит запрос: заблокированные уже показали
     // причину в таблице, и запрос по ним лишь потратил бы ещё одно скачивание банка впустую.
     private IReadOnlyCollection<PscbPaymentListRow> RestoreRowsToRequest
-        => list is { IsSuccess: true } loaded
+        => list is { IsSuccess: true, ReconciliationFailed: false } loaded
             ? [.. loaded.Payments.Where(p => p.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing
                 && p.RestoreBlockReason is null)]
             : [];
@@ -492,7 +505,7 @@
 
     private async Task RestoreLost()
     {
-        if (lastQuery is not { } query || restoring)
+        if (lastQuery is not { } query || list is not { ReconciliationFailed: false } || restoring)
         {
             return;
         }
@@ -546,7 +559,7 @@
         if (restoreRows.Count > 0)
         {
             // Тем же запросом: восстановленные строки становятся ссылками на операции.
-            await LoadPayments();
+            await LoadPayments(query);
         }
     }
 

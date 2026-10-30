@@ -133,12 +133,22 @@ public class PscbPaymentsPanelTest : BunitContext
 
         var cut = RenderPanel();
         LoadList(cut);
-        Button(cut, "Восстановить потерянные").Click();
+        // Поля формы могли поменяться после загрузки: и восстановление, и перечитывание
+        // должны использовать запрос, по которому получен показанный список.
+        cut.FindAll("input[type=date]")[0]
+            .Change("2026-01-01");
+        cut.FindAll("input[type=date]")[1]
+            .Change("2026-01-31");
+        Button(cut, "Восстановить потерянные")
+            .Click();
         await AnswerConfirmationAsync(cut, "Восстановить потерянные");
 
         cut.WaitForAssertion(() => restoreClient.Requests.Count.ShouldBe(1));
         // Список к этому моменту перезагружен после восстановления — сравниваем с первым запросом.
         restoreClient.Requests.ShouldBe([new PscbRestoreRowRequest(listClient.Queries[0], "0000000001")]);
+        listClient.Queries.Count.ShouldBe(2);
+        listClient.Queries[1]
+            .ShouldBe(listClient.Queries[0]);
     }
 
     /// <summary>
@@ -148,17 +158,19 @@ public class PscbPaymentsPanelTest : BunitContext
     [Fact]
     public async Task RestoreSucceeded_SummaryShown_ListReloaded()
     {
-        listClient.Lists.Enqueue(List(
-            Row(PscbPaymentMatchState.Lost, "0000000001"),
-            Row(PscbPaymentMatchState.RefundMissing, "0000000002"),
-            Row(PscbPaymentMatchState.Lost, "0000000003"),
-            Row(PscbPaymentMatchState.Lost, "0000000004", blockReason: "Проект не определён")));
+        listClient.Lists.Enqueue(
+            List(
+                Row(PscbPaymentMatchState.Lost, "0000000001"),
+                Row(PscbPaymentMatchState.RefundMissing, "0000000002"),
+                Row(PscbPaymentMatchState.Lost, "0000000003"),
+                Row(PscbPaymentMatchState.Lost, "0000000004", blockReason: "Проект не определён")));
         // После восстановления список перезагружается тем же запросом.
-        listClient.Lists.Enqueue(List(
-            Row(PscbPaymentMatchState.Settled, "0000000001"),
-            Row(PscbPaymentMatchState.Settled, "0000000002"),
-            Row(PscbPaymentMatchState.Settled, "0000000003"),
-            Row(PscbPaymentMatchState.Lost, "0000000004", blockReason: "Проект не определён")));
+        listClient.Lists.Enqueue(
+            List(
+                Row(PscbPaymentMatchState.Settled, "0000000001"),
+                Row(PscbPaymentMatchState.Settled, "0000000002"),
+                Row(PscbPaymentMatchState.Settled, "0000000003"),
+                Row(PscbPaymentMatchState.Lost, "0000000004", blockReason: "Проект не определён")));
         restoreClient.ResultsByOrderId["0000000001"] = new PscbRestoreRowResult
         {
             OrderId = "0000000001",
@@ -169,20 +181,17 @@ public class PscbPaymentsPanelTest : BunitContext
         };
         restoreClient.ResultsByOrderId["0000000002"] = new PscbRestoreRowResult
         {
-            OrderId = "0000000002",
-            Outcome = PscbRestoreRowOutcome.Failed,
-            Message = "номер занят другой операцией",
+            OrderId = "0000000002", Outcome = PscbRestoreRowOutcome.Failed, Message = "номер занят другой операцией",
         };
         restoreClient.ResultsByOrderId["0000000003"] = new PscbRestoreRowResult
         {
-            OrderId = "0000000003",
-            Outcome = PscbRestoreRowOutcome.AlreadySettled,
-            Message = "уже проведён",
+            OrderId = "0000000003", Outcome = PscbRestoreRowOutcome.AlreadySettled, Message = "уже проведён",
         };
 
         var cut = RenderPanel();
         LoadList(cut);
-        Button(cut, "Восстановить потерянные").Click();
+        Button(cut, "Восстановить потерянные")
+            .Click();
         await AnswerConfirmationAsync(cut, "Восстановить потерянные");
 
         cut.WaitForAssertion(() => listClient.Requests.ShouldBe(2));
@@ -194,19 +203,26 @@ public class PscbPaymentsPanelTest : BunitContext
             new PscbRestoreRowRequest(query, "0000000003"),
         ]);
 
-        var summary = cut.Find(".pscb-restore-summary").TextContent;
+        var summary = string.Join(" ", cut.Find(".pscb-restore-summary").TextContent.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
         summary.ShouldContain("Восстановлено платежей: 1");
         summary.ShouldContain("возвратов: 1");
         summary.ShouldContain("Не восстановлено: 1");
 
-        var rows = cut.FindAll("ul.pscb-restore-rows li").ToList();
+        var rows = cut.FindAll("ul.pscb-restore-rows li")
+            .ToList();
         rows.Count.ShouldBe(3);
-        rows[0].ClassName.ShouldBe("text-success");
-        rows[0].TextContent.ShouldBe("0000000001: платёж восстановлен");
-        rows[1].ClassName.ShouldBe("text-danger");
-        rows[1].TextContent.ShouldBe("0000000002: номер занят другой операцией");
-        rows[2].ClassName.ShouldBe("text-muted");
-        rows[2].TextContent.ShouldBe("0000000003: уже проведён");
+        rows[0]
+            .ClassName.ShouldBe("text-success");
+        rows[0]
+            .TextContent.ShouldBe("0000000001: платёж восстановлен");
+        rows[1]
+            .ClassName.ShouldBe("text-danger");
+        rows[1]
+            .TextContent.ShouldBe("0000000002: номер занят другой операцией");
+        rows[2]
+            .ClassName.ShouldBe("text-muted");
+        rows[2]
+            .TextContent.ShouldBe("0000000003: уже проведён");
     }
 
     /// <summary>
@@ -264,8 +280,90 @@ public class PscbPaymentsPanelTest : BunitContext
         rows[1].TextContent.ShouldBe("0000000002: платёж восстановлен");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReconciliationFailed_ShowsTheFailureAndHidesRestore(bool partialVerdict)
+    {
+        var list = List(Row(partialVerdict ? PscbPaymentMatchState.Lost : null, "0000000001"));
+        list.ReconciliationFailed = true;
+        listClient.Lists.Enqueue(list);
+
+        var cut = RenderPanel();
+        LoadList(cut);
+
+        cut.Markup.ShouldContain("Сверка списка с базой не удалась");
+        cut.Markup.ShouldContain("0000000001");
+        cut.FindAll("button")
+            .ShouldNotContain(b => b.TextContent.Contains("Восстановить потерянные"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReloadFailure_PreservesTheRecoveryReport(bool transportFailure)
+    {
+        listClient.Lists.Enqueue(List(Row(PscbPaymentMatchState.Lost, "0000000001")));
+        listClient.Lists.Enqueue(new PscbPaymentsListResult { IsSuccess = false, ErrorDescription = "Банк недоступен" });
+        var cut = RenderPanel();
+        LoadList(cut);
+        if (transportFailure)
+        {
+            listClient.Failure = new InvalidOperationException("Банк недоступен");
+        }
+
+        Button(cut, "Восстановить потерянные").Click();
+        await AnswerConfirmationAsync(cut, "Восстановить потерянные");
+
+        listClient.Requests.ShouldBe(2);
+        cut.FindAll(".pscb-restore-summary b")[0].TextContent.ShouldBe("1");
+        cut.Find("ul.pscb-restore-rows li").TextContent.ShouldBe("0000000001: платёж восстановлен");
+        cut.Markup.ShouldContain("Банк недоступен");
+    }
+
+    [Fact]
+    public async Task LoadingANewList_ClearsThePreviousRecoveryReport()
+    {
+        listClient.Lists.Enqueue(List(Row(PscbPaymentMatchState.Lost, "0000000001")));
+        listClient.Lists.Enqueue(List(Row(PscbPaymentMatchState.Settled, "0000000001")));
+        listClient.Lists.Enqueue(List(Row(PscbPaymentMatchState.Settled, "0000000002")));
+        var cut = RenderPanel();
+        LoadList(cut);
+        Button(cut, "Восстановить потерянные").Click();
+        await AnswerConfirmationAsync(cut, "Восстановить потерянные");
+        cut.FindAll(".pscb-restore-summary").ShouldHaveSingleItem();
+
+        LoadList(cut, expectedRequests: 3);
+
+        cut.FindAll(".pscb-restore-summary").ShouldBeEmpty();
+        cut.FindAll("ul.pscb-restore-rows li").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task MoreThan100Records_RefusesTheRunBeforeSendingRequests()
+    {
+        var rows = Enumerable.Range(1, 51).Select(id =>
+        {
+            var row = Row(PscbPaymentMatchState.Lost, id.ToString("D10"));
+            row.RefundedByBank = true;
+            return row;
+        }).ToArray();
+        listClient.Lists.Enqueue(List(rows));
+        var cut = RenderPanel();
+        LoadList(cut);
+
+        Button(cut, "Восстановить потерянные").Click();
+        await AnswerConfirmationAsync(cut, "Восстановить потерянные");
+
+        restoreClient.Requests.ShouldBeEmpty();
+        listClient.Requests.ShouldBe(1);
+        cut.Markup.ShouldContain("За один прогон восстанавливается не больше 100 записей, а в списке их 102");
+    }
+
     private sealed class FakeListClient : IPscbPaymentsClient
     {
+        public Exception? Failure { get; set; }
+
         public Queue<PscbPaymentsListResult> Lists { get; } = new();
 
         public List<PscbPaymentsQuery> Queries { get; } = [];
@@ -276,6 +374,10 @@ public class PscbPaymentsPanelTest : BunitContext
         {
             Requests++;
             Queries.Add(query);
+            if (Failure is { } failure)
+            {
+                throw failure;
+            }
             return Task.FromResult(Lists.TryDequeue(out var list)
                 ? list
                 : new PscbPaymentsListResult { IsSuccess = true, RequestCount = 1 });

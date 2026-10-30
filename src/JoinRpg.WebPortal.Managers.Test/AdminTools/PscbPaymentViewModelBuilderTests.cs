@@ -285,10 +285,14 @@ public class PscbPaymentViewModelBuilderTests
     [InlineData("100.50", false, new double[0], "сумма с копейками, а операция хранит целые рубли")]
     [InlineData("0", false, new double[0], "сумма неположительная")]
     [InlineData("-100", false, new double[0], "сумма неположительная")]
+    [InlineData("2147483648", false, new double[0], "сумма превышает допустимую для операции")]
     [InlineData("100", true, new[] { 100.0 }, null)]
     [InlineData("100", true, new[] { 40.0 }, "частичный возврат")]
     [InlineData("100", true, new double[0], "банк отметил возврат, но не прислал его данных")]
     [InlineData("100", true, new[] { 50.0, 50.0 }, "несколько возвратов у одного платежа")]
+    [InlineData("100", false, new[] { 40.0 }, "частичный возврат")]
+    [InlineData("100", false, new[] { 50.0, 50.0 }, "несколько возвратов у одного платежа")]
+    [InlineData("100", false, new[] { 100.0 }, "банк не подтвердил полный возврат")]
     public void ReportsTheRestoreBlockersVisibleInTheBankData(string amount, bool refundedByBank, double[] refundAmounts, string? expected)
     {
         var row = new PscbPaymentListRow
@@ -296,10 +300,15 @@ public class PscbPaymentViewModelBuilderTests
             OrderId = "0000000001",
             Amount = decimal.Parse(amount, CultureInfo.InvariantCulture),
             RefundedByBank = refundedByBank,
-            Refunds = [.. refundAmounts.Select(refundAmount => new PscbRefundInfo { RefundId = "1", Status = "END", Amount = (decimal)refundAmount })],
+            Refunds =
+            [
+                .. refundAmounts.Select(refundAmount =>
+                    new PscbRefundInfo { RefundId = "1", Status = "END", Amount = (decimal)refundAmount })
+            ],
         };
 
-        PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row).ShouldBe(expected);
+        PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row)
+            .ShouldBe(expected);
     }
 
     /// <summary>
@@ -690,4 +699,20 @@ public class PscbPaymentViewModelBuilderTests
 
     private static ITableColumn ByName(IReadOnlyCollection<ITableColumn> columns, string name)
         => columns.Single(c => c.Name == name);
+
+    [Theory]
+    [InlineData("PROC")]
+    [InlineData("ERR")]
+    [InlineData("DELAY")]
+    [InlineData(null)]
+    public void RefusesARefundThatIsNotCompleted(string? status)
+    {
+        var row = new PscbPaymentListRow
+        {
+            Amount = 100, RefundedByBank = true, Refunds = [new PscbRefundInfo { Amount = 100, Status = status }],
+        };
+
+        PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row)
+            .ShouldBe("возврат не завершён");
+    }
 }

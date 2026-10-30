@@ -242,7 +242,7 @@ internal class LostPaymentsRestoreService(
         claim.LastUpdateDateTime = now;
         // Отметка о последнем комментарии игрока не должна уезжать в прошлое: комментарий
         // восстановлен задним числом, а заявка изменилась сейчас.
-        if (claim.LastPlayerCommentAt < operationDate)
+        if (claim.LastPlayerCommentAt is null || claim.LastPlayerCommentAt < operationDate)
         {
             claim.LastPlayerCommentAt = operationDate;
         }

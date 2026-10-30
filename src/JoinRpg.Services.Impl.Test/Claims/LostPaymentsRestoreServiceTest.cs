@@ -518,4 +518,19 @@ public class LostPaymentsRestoreServiceTest : ClaimServiceTestBase
         result.FeeRecalculated.ShouldBeTrue();
         claim.CurrentFee.ShouldBe(oldPrice);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(-1)]
+    [InlineData(1)]
+    public async Task UpdatesTheLastPlayerCommentOnlyForward(int? daysFromPayment)
+    {
+        var claim = CreateClaim();
+        var paymentType = CreateOnlinePaymentType();
+        claim.LastPlayerCommentAt = daysFromPayment is { } days ? OperationDate.AddDays(days) : null;
+
+        await CreateService().RestorePaymentAsync(Payment(claim.GetId(), paymentType));
+
+        claim.LastPlayerCommentAt.ShouldBe(daysFromPayment is > 0 ? OperationDate.AddDays(daysFromPayment.Value) : OperationDate);
+    }
 }

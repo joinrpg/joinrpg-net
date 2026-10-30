@@ -64,18 +64,24 @@ internal class PscbPaymentsRestoreViewService(
 
         if (list.ReconciliationFailed)
         {
-            throw new JoinValidationException("Сверка списка с базой не удалась — восстановление невозможно. Обновите список и попробуйте ещё раз.");
+            throw new JoinValidationException(
+                "Сверка списка с базой не удалась — восстановление невозможно. Обновите список и попробуйте ещё раз.");
         }
 
-        var row = list.Payments.FirstOrDefault(payment => string.Equals(payment.OrderId, orderId, StringComparison.Ordinal));
+        var matchingRows = list.Payments.Where(payment => string.Equals(payment.OrderId, orderId, StringComparison.Ordinal))
+            .ToList();
         PscbRestoreRowResult result;
-        if (row is null)
+        if (matchingRows.Count == 0)
         {
             result = Failed(orderId, "строка не найдена в списке банка — обновите список");
         }
+        else if (matchingRows.Count > 1)
+        {
+            result = Failed(orderId, "номер платежа встречается в списке банка несколько раз — восстанавливать вручную");
+        }
         else
         {
-            result = await RestoreRowAsync(row, plans);
+            result = await RestoreRowAsync(matchingRows[0], plans);
         }
 
         // Одна строка на запрос — аудит по строке: кто, за какой период и чем строка кончилась.
