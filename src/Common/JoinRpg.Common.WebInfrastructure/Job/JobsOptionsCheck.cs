@@ -1,7 +1,7 @@
-using JoinRpg.Common.WebInfrastructure.Job;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Portal.Infrastructure.Jobs;
+namespace JoinRpg.Common.WebInfrastructure.Job;
 
 /// <summary>
 /// При старте предупреждает об именах в <see cref="JobsOptions.Disabled"/>, которым не соответствует ни одна джоба.

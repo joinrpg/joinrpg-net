@@ -13,6 +13,8 @@ JoinRpg.Common.WebInfrastructure.Job.IJobRunner.FullName.get -> string!
 JoinRpg.Common.WebInfrastructure.Job.IJobRunner.JobType.get -> System.Type!
 JoinRpg.Common.WebInfrastructure.Job.IJobRunner.Name.get -> string!
 JoinRpg.Common.WebInfrastructure.Job.IJobRunner.RunJob(Microsoft.Extensions.DependencyInjection.IServiceScope! serviceScope, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+JoinRpg.Common.WebInfrastructure.Job.IJobRunnerFactory
+JoinRpg.Common.WebInfrastructure.Job.IJobRunnerFactory.Create(System.Type! jobType) -> JoinRpg.Common.WebInfrastructure.Job.IJobRunner!
 JoinRpg.Common.WebInfrastructure.Job.JobDelayAttribute
 JoinRpg.Common.WebInfrastructure.Job.JobDelayAttribute.Delay.get -> System.TimeSpan
 JoinRpg.Common.WebInfrastructure.Job.JobDelayAttribute.JobDelayAttribute(int hoursDelay) -> void

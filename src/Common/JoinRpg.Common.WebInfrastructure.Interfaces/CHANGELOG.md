@@ -5,4 +5,4 @@
 ## Не выпущено
 
 ### Добавлено
-- Первый выпуск: контракты фоновых джоб — `IJob`, `JobDelayAttribute`, `IJobRepository`, `JobId`, `IJobRunner`, `RegisteredJob`, `JobsOptions` (секция `DailyJobs`), `IJobImpersonator`; раннер `JobRunner<TJob>` и регистрация `AddJob<TJob>()`. Выделены из `JoinRpg.Interfaces` (`IDailyJob`) и `JoinRpg.Common.WebInfrastructure` (`IDailyJobRepository`).
+- Первый выпуск: контракты фоновых джоб — `IJob`, `JobDelayAttribute`, `IJobRepository`, `JobId`, `IJobRunner`, `IJobRunnerFactory`, `RegisteredJob`, `JobsOptions` (секция `DailyJobs`), `IJobImpersonator` и регистрация `AddJob<TJob>()`. Выделены из `JoinRpg.Interfaces` (`IDailyJob`) и `JoinRpg.Common.WebInfrastructure` (`IDailyJobRepository`); реализация раннера — в `JoinRpg.Common.WebInfrastructure`.

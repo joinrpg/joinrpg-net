@@ -113,7 +113,6 @@ public class Startup(WebApplicationBuilder builder)
         builder.AddJoinWebPlatform("JoinRpg.Portal",
             dataProtectionConnectionStringName: "DataProtection",
             telemetryServiceNames: [
-                BackgroundServiceActivity.ActivitySourceName,
                 SenderServiceActivityHolder.ActivitySourceName,
                 ProjectPropsServiceActivity.ActivitySourceName,
                 CharacterPropsServiceActivity.ActivitySourceName,
