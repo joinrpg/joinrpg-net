@@ -15,15 +15,9 @@ namespace JoinRpg.WebPortal.Managers.Test.Accommodation;
 /// </remarks>
 internal sealed class FakeAccommodationInviteRepository(MockedProject mock) : IAccommodationInviteRepository
 {
-    public Task<IEnumerable<AccommodationInvite>> GetIncomingInviteForClaim(Claim claim)
-        => GetIncomingInviteForClaim(claim.ClaimId);
-
     public Task<IEnumerable<AccommodationInvite>> GetIncomingInviteForClaim(int claimId)
         => Task.FromResult<IEnumerable<AccommodationInvite>>(
             [.. mock.AccommodationInvites.Where(invite => invite.ToClaimId == claimId)]);
-
-    public Task<IEnumerable<AccommodationInvite>> GetOutgoingInviteForClaim(Claim claim)
-        => GetOutgoingInviteForClaim(claim.ClaimId);
 
     public Task<IEnumerable<AccommodationInvite>> GetOutgoingInviteForClaim(int claimId)
         => Task.FromResult<IEnumerable<AccommodationInvite>>(
