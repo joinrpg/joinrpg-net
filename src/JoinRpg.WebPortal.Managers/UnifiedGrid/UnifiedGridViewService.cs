@@ -1,6 +1,7 @@
 using System.Globalization;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
+using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
@@ -16,7 +17,8 @@ internal class UnifiedGridViewService(
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterInfoRepository characterInfoRepository,
     IUserRepository userRepository,
-    IClaimProblemValidator problemValidator) : IUnifiedGridClient
+    IClaimProblemValidator problemValidator,
+    IClaimsRepository claimsRepository) : IUnifiedGridClient
 {
     /// <summary>Сколько персонажей на странице.</summary>
     internal const int PageSize = 100;
@@ -52,6 +54,16 @@ internal class UnifiedGridViewService(
             rows = KeepClaims(rows, claim => HasWarnings(problems[claim.ClaimId]));
         }
 
+        // Идентификаторы для выгрузки и массовых операций — весь результат фильтра, без пейджинга
+        // и ещё до сортировки (ADR027 §5). У капитана операции недоступны — коллекции пустые.
+        IReadOnlyCollection<ClaimIdentification> operationClaimIds = [];
+        IReadOnlyCollection<CharacterIdentification> operationCharacterIds = [];
+        if (scope == UgScopeView.Master)
+        {
+            operationClaimIds = [.. rows.SelectMany(row => row.Claims.Select(claim => claim.ClaimId))];
+            operationCharacterIds = [.. rows.Where(row => row.Claims.Count > 0).Select(row => row.Character.Id)];
+        }
+
         var sorted = Sort(
             rows
                 .Select(row => (Row: row, Item: ItemBuilder.BuildItem(row.Character, row.Claims, currentUserAccessor, scope)))
@@ -66,14 +78,20 @@ internal class UnifiedGridViewService(
         if (scope == UgScopeView.Master)
         {
             problems ??= await Validate([.. pageRows.Select(x => x.Row)]);
-            items = [.. pageRows.Select(x => ItemBuilder.BuildItem(x.Row.Character, x.Row.Claims, currentUserAccessor, scope, problems)!)];
+            // Бейдж непрочитанных — по заявкам страницы (ADR027 §4): дальше первой сотни читатель
+            // всё равно не уходит, а считать непрочитанное всего проекта дорого.
+            var unread = await claimsRepository.GetUnreadDiscussionsForClaims(
+                [.. pageRows.SelectMany(x => x.Row.Claims.Select(claim => claim.ClaimId))],
+                currentUserAccessor.UserIdentification,
+                hasMasterAccess: true);
+            items = [.. pageRows.Select(x => ItemBuilder.BuildItem(x.Row.Character, x.Row.Claims, currentUserAccessor, scope, problems, unread)!)];
         }
         else
         {
             items = [.. pageRows.Select(x => x.Item!)];
         }
 
-        return new UgPageViewModel(items, actualPage, totalPages, sorted.Count);
+        return new UgPageViewModel(items, actualPage, totalPages, sorted.Count, operationClaimIds, operationCharacterIds);
     }
 
     // Явно, а не по текущей культуре: порядок страниц не должен зависеть от настроек потока.

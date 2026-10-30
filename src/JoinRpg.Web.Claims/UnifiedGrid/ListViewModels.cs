@@ -56,4 +56,6 @@ public record class UgClaimViewModel(
     [property: Display(Name = "Взнос")] ClaimBalance Fee,
     ClaimIdentification? ClaimId,
     string? PlayerFullName,
-    [property: Display(Name = "Проблема")] IReadOnlyCollection<ProblemViewModel>? Problems);
+    [property: Display(Name = "Проблема")] IReadOnlyCollection<ProblemViewModel>? Problems,
+    // Непрочитанные комментарии заявки — бейдж, только в мастерском скоупе (ADR027 §4); у капитана null.
+    int? UnreadCommentsCount);
