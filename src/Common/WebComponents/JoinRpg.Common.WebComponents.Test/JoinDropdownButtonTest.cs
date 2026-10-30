@@ -23,4 +23,31 @@ public class JoinDropdownButtonTest
 
         cut.Find("details.join-dropdown > summary + ul a").GetAttribute("href").ShouldBe("/badges");
     }
+
+    [Fact]
+    public void StyleAndSize_AddJoinButtonModifierClasses()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<JoinDropdownButton>(p => p
+            .Add(x => x.Label, "Меню")
+            .Add(x => x.Style, VariationStyleEnum.Primary)
+            .Add(x => x.Size, SizeStyleEnum.Small));
+
+        cut.Find("summary").GetAttribute("class")
+            .ShouldBe("join-dropdown__toggle join-btn join-btn--primary join-btn--sm");
+    }
+
+    [Fact]
+    public void ToggleContent_ReplacesLabelAndCaret()
+    {
+        using var ctx = new BunitContext();
+        var cut = ctx.Render<JoinDropdownButton>(p => p
+            .Add(x => x.AriaLabel, "действия")
+            .Add(x => x.ToggleContent, b => b.AddContent(0, "≡"))
+            .AddChildContent("<li><a href=\"/go\">пункт</a></li>"));
+
+        var summary = cut.Find("summary");
+        summary.TextContent.ShouldContain("≡");
+        summary.QuerySelector(".join-dropdown__label, .join-dropdown__caret").ShouldBeNull();
+    }
 }

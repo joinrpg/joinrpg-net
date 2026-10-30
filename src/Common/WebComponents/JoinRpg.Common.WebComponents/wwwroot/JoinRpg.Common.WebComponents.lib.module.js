@@ -1,5 +1,6 @@
 // Подсказки компонента Tooltip.razor, раскрытие JoinCollapsePanel.razor по якорю, закрытие меню
-// JoinDropdownButton.razor и списков TypedSelector.razor по клику мимо и по Esc, поиск в статических TypedSelector.
+// (JoinDropdownButton.razor и его обёрток JoinDotsMenu.razor и TypedDropdownButton.razor) и списков
+// TypedSelector.razor по клику мимо и по Esc, поиск в статических TypedSelector.
 //
 // Это JS-инициализатор Blazor: имя файла обязано совпадать с PackageId библиотеки, а сам файл
 // лежать в её wwwroot. Blazor импортирует такой модуль сам — и в Blazor Web App (Portal, IdPortal),
@@ -234,8 +235,9 @@ document.addEventListener('click', event => {
     }
 });
 
-// Меню JoinDropdownButton.razor и выпадающие списки TypedSelector.razor: открывает и закрывает их браузер
-// (<details>), а здесь — только закрытие по клику мимо и по Esc, как привыкли у выпадающих меню.
+// Меню (JoinDropdownButton.razor и его обёртки JoinDotsMenu.razor и TypedDropdownButton.razor) и
+// выпадающие списки TypedSelector.razor: открывает и закрывает их браузер (<details>), а здесь —
+// только закрытие по клику мимо и по Esc, как привыкли у выпадающих меню.
 // Открытое меню одно: клик по другому закрывает прежнее. Атрибут open Blazor не рендерит,
 // поэтому трогать его можно и в интерактивных островах.
 
@@ -288,8 +290,10 @@ const SELECT_SELECTOR = 'details.join-select';
 
 // Внутри отключённого <fieldset> (панель настроек без права) пункты отключает сам браузер, а <summary> — нет,
 // и список раскрывался бы. Enter и пробел на <summary> тоже приходят сюда кликом.
+const POPUP_SUMMARY_SELECTOR = 'details.join-select > summary, details.join-dropdown > summary';
+
 document.addEventListener('click', event => {
-    const summary = event.target instanceof Element ? event.target.closest(`${SELECT_SELECTOR} > summary`) : null;
+    const summary = event.target instanceof Element ? event.target.closest(POPUP_SUMMARY_SELECTOR) : null;
     if (summary?.closest('fieldset:disabled')) {
         event.preventDefault();
     }

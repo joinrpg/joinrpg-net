@@ -7,12 +7,19 @@
     без него меню закрывается повторным кликом по кнопке.
 *@
 <details class="join-dropdown @(Split ? "join-dropdown--split" : "")">
-    <summary class="join-btn join-dropdown__toggle" aria-label="@AriaLabel" title="@AriaLabel">
-        @if (Label is not null)
+    <summary class="join-dropdown__toggle @JoinButtonStyle.Build(Style, Size ?? GroupSize)" aria-label="@AriaLabel" title="@AriaLabel">
+        @if (ToggleContent is not null)
         {
-            <span class="join-dropdown__label">@Label</span>
+            @ToggleContent
         }
-        <span class="join-dropdown__caret"></span>
+        else
+        {
+            @if (Label is not null)
+            {
+                <span class="join-dropdown__label">@Label</span>
+            }
+            <span class="join-dropdown__caret"></span>
+        }
     </summary>
     <ul class="join-dropdown__menu @(AlignRight ? "join-dropdown__menu--right" : "")">
         @ChildContent
@@ -25,6 +32,21 @@
 
     /// <summary>Текст на кнопке. Без него — только стрелка (тогда обязательно задайте <see cref="AriaLabel"/>).</summary>
     [Parameter] public string? Label { get; set; }
+
+    /// <summary>Содержимое кнопки вместо <see cref="Label"/> и стрелки — например, одна иконка.</summary>
+    [Parameter] public RenderFragment? ToggleContent { get; set; }
+
+    /// <summary>Вариант кнопки — та же шкала, что у <see cref="JoinButton"/>.</summary>
+    [Parameter] public VariationStyleEnum? Style { get; set; }
+
+    /// <summary>Размер кнопки — та же шкала, что у <see cref="JoinButton"/>.</summary>
+    [Parameter] public SizeStyleEnum? Size { get; set; }
+
+    /// <summary>
+    /// Размер, заданный окружающей <see cref="JoinButtonGroup"/>. Используется, если у кнопки нет своего <see cref="Size"/>.
+    /// </summary>
+    [CascadingParameter(Name = JoinButtonGroup.GroupSizeCascadeName)]
+    public SizeStyleEnum? GroupSize { get; set; }
 
     /// <summary>Что за меню — для скринридера и подсказки, когда на кнопке одна стрелка.</summary>
     [Parameter] public string? AriaLabel { get; set; }
