@@ -81,10 +81,15 @@ internal class AccommodationInviteViewService(
                 ExtraSearch: GetCharacterName(header),
                 Subtext: NoRequestSubtext));
 
+        // Один список по имени игрока (#792): группы и одиночки вперемешку, компаратор культурный —
+        // имена в основном русские.
+        var targets = groupedTargets.Concat(singleTargets)
+            .OrderBy(target => target.Text, StringComparer.CurrentCultureIgnoreCase);
+
         return new AccommodationInviteTargetsViewModel(
             senderGroup.Id,
             roomFreeSpace,
-            [.. groupedTargets, .. singleTargets],
+            [.. targets],
             mode);
     }
 
