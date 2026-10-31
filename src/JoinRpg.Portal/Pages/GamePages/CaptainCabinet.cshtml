@@ -6,7 +6,7 @@
     ViewData["Title"] = "Кабинет капитана";
 }
 
-@(await Html.RenderComponentAsync<CaptainClaimsGrid>(RenderMode.WebAssembly, new
+@(await Html.RenderComponentAsync<ClaimsGrid>(RenderMode.WebAssembly, new
 {
     Model.ProjectId,
     InitialStatus = Model.Status ?? UgStatusFilterView.Active,

@@ -1,6 +1,5 @@
 using Bunit.TestDoubles;
 using JoinRpg.DomainTypes;
-using JoinRpg.Web.Claims.CaptainCabinet;
 using JoinRpg.Web.Claims.UnifiedGrid;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,15 +11,15 @@ namespace JoinRpg.Web.Claims.Test;
 /// Грид кабинета капитана держит фильтр и номер страницы в query string страницы (ADR027 §5):
 /// страница передаёт их острову параметрами, а остров при смене переписывает URL. Переписывает,
 /// а не добавляет запись в историю: перезагрузки при этом не происходит (см. комментарий в
-/// <c>CaptainClaimsGrid.RewriteUrl</c>).
+/// <c>ClaimsGrid.RewriteUrl</c>).
 /// </summary>
-public class CaptainClaimsGridTest : BunitContext
+public class ClaimsGridTest : BunitContext
 {
     private static readonly ProjectIdentification ProjectId = new(123);
 
     private readonly FakeGridClient client = new() { TotalPages = 3 };
 
-    public CaptainClaimsGridTest()
+    public ClaimsGridTest()
     {
         Services.AddSingleton<IUnifiedGridClient>(client);
         Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
@@ -31,16 +30,16 @@ public class CaptainClaimsGridTest : BunitContext
 
     private BunitNavigationManager Navigation => Services.GetRequiredService<BunitNavigationManager>();
 
-    private IRenderedComponent<CaptainClaimsGrid> RenderGrid(
+    private IRenderedComponent<ClaimsGrid> RenderGrid(
         UgStatusFilterView initialStatus = UgStatusFilterView.Active,
         int initialPage = 1)
-        => Render<CaptainClaimsGrid>(parameters => parameters
+        => Render<ClaimsGrid>(parameters => parameters
             .Add(grid => grid.ProjectId, ProjectId)
             .Add(grid => grid.InitialStatus, initialStatus)
             .Add(grid => grid.InitialPage, initialPage));
 
     /// <summary>Ждёт именно этой последовательности запросов к webapi: обработчики асинхронные.</summary>
-    private void WaitCalls(IRenderedComponent<CaptainClaimsGrid> cut, params (UgStatusFilterView Status, int Page)[] expected)
+    private void WaitCalls(IRenderedComponent<ClaimsGrid> cut, params (UgStatusFilterView Status, int Page)[] expected)
         => cut.WaitForAssertion(() => client.Calls.ShouldBe(expected));
 
     /// <summary>Остров начинает с фильтра и страницы, которые страница прочитала из query string.</summary>
