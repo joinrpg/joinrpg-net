@@ -46,6 +46,20 @@ public class AccommodationInviteViewServiceTest
 
     private Claim Approved(string characterName) => Mock.CreateApprovedClaim(Mock.CreateCharacter(characterName), Mock.Player);
 
+    /// <summary>Заявка на отдельном игроке: для тестов, где важны разные имена игроков.</summary>
+    private int nextPlayerId = 1000;
+
+    private Claim Approved(string characterName, string playerName)
+        => Mock.CreateApprovedClaim(
+            Mock.CreateCharacter(characterName),
+            new User
+            {
+                UserId = nextPlayerId,
+                PrefferedName = playerName,
+                Email = $"player{nextPlayerId++}@example.com",
+                Claims = new HashSet<Claim>(),
+            });
+
     private AccommodationRequest Group(ProjectAccommodationType type, params Claim[] claims)
         => Mock.CreateAccommodationRequest(type, claims);
 
@@ -206,6 +220,25 @@ public class AccommodationInviteViewServiceTest
         result.Targets.Select(target => target.TargetId).ShouldBe(
             [Target(sameType), AccommodationGroupIdentification.From(single.GetId())],
             ignoreOrder: true);
+    }
+
+    /// <summary>
+    /// #792: список целей — единый, по имени игрока без учёта регистра: группы и одиночки вперемешку,
+    /// а не группами-потом-одиночками в порядке репозитория.
+    /// </summary>
+    [Fact]
+    public async Task Targets_AreSortedByPlayerName()
+    {
+        _ = Group(Lux, Sender);
+        // Порядок создания нарочно не алфавитный: фейк отдаёт одиночек в порядке мока, а имена
+        // членов группы идут в порядке создания — ни один источник сам по алфавиту не отдаёт.
+        _ = Approved("Персонаж Яны", "Яна");
+        _ = Group(Lux, Approved("Персонаж Бориса", "Борис"), Approved("Персонаж Василисы", "Василиса"));
+        _ = Approved("Персонаж Анны", "анна");
+
+        var result = await CreateService().GetInviteTargets(SenderId);
+
+        result.Targets.Select(target => target.Text).ShouldBe(["анна", "Борис, Василиса", "Яна"]);
     }
 
     [Fact]
