@@ -105,10 +105,14 @@ public class PscbPaymentsPanelTest : BunitContext
         cut.Markup.ShouldContain("Восстановить строк: 3");
     }
 
-    [Fact]
-    public async Task ConfirmationDeclined_RestoreNotCalled()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(101)]
+    public async Task ConfirmationDeclined_RestoreNotCalled(int rowCount)
     {
-        listClient.Lists.Enqueue(List(Row(PscbPaymentMatchState.Lost, "0000000001")));
+        var rows = Enumerable.Range(1, rowCount)
+            .Select(id => Row(PscbPaymentMatchState.Lost, id.ToString("D10"))).ToArray();
+        listClient.Lists.Enqueue(List(rows));
 
         var cut = RenderPanel();
         LoadList(cut);
@@ -343,13 +347,16 @@ public class PscbPaymentsPanelTest : BunitContext
         cut.FindAll("ul.pscb-restore-rows li").ShouldBeEmpty();
     }
 
-    [Fact]
-    public async Task MoreThan100Records_RefusesTheRunBeforeSendingRequests()
+    [Theory]
+    [InlineData(100, false)]
+    [InlineData(101, false)]
+    [InlineData(51, true)]
+    public async Task LargeRun_WarnsAndRestoresAllRowsAfterConfirmation(int rowCount, bool refundedByBank)
     {
-        var rows = Enumerable.Range(1, 51).Select(id =>
+        var rows = Enumerable.Range(1, rowCount).Select(id =>
         {
             var row = Row(PscbPaymentMatchState.Lost, id.ToString("D10"));
-            row.RefundedByBank = true;
+            row.RefundedByBank = refundedByBank;
             return row;
         }).ToArray();
         listClient.Lists.Enqueue(List(rows));
@@ -357,11 +364,22 @@ public class PscbPaymentsPanelTest : BunitContext
         LoadList(cut);
 
         Button(cut, "Восстановить потерянные").Click();
+        var confirmation = cut.Find("dialog").TextContent;
+        var recordCount = rowCount * (refundedByBank ? 2 : 1);
+        if (recordCount > 100)
+        {
+            confirmation.ShouldContain($"Будет восстановлено записей: {recordCount}");
+            confirmation.ShouldContain("может занять много времени");
+        }
+        else
+        {
+            confirmation.ShouldNotContain("может занять много времени");
+        }
+        restoreClient.Requests.ShouldBeEmpty();
         await AnswerConfirmationAsync(cut, "Восстановить потерянные");
 
-        restoreClient.Requests.ShouldBeEmpty();
-        listClient.Requests.ShouldBe(1);
-        cut.Markup.ShouldContain("За один прогон восстанавливается не больше 100 записей, а в списке их 102");
+        restoreClient.Requests.Select(request => request.OrderId).ShouldBe(rows.Select(row => row.OrderId));
+        listClient.Requests.ShouldBe(2);
     }
 
     private sealed class FakeListClient : IPscbPaymentsClient

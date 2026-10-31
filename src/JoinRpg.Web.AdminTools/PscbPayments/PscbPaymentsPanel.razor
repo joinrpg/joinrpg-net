@@ -424,9 +424,8 @@
     private List<PscbRestoreRowResult> restoreRows = [];
     private string? restoreError;
 
-    // Защита со стороны острова, чтобы админ не запустил огромный прогон: каждая строка
-    // атомарна и отчитывается сама, поэтому это ограничитель удобства, а не безопасности.
-    private const int MaxRecordsPerRun = 100;
+    // Большой прогон разрешён после подтверждения с предупреждением о длительности.
+    private const int SlowRunWarningThreshold = 100;
 
     private string? orderId;
     private bool detailsRequestCardData;
@@ -495,13 +494,22 @@
             : [];
 
     // Сколько записей может восстановить строка: потерянный платёж с возвратом — две,
-    // только платёж или пропущенный возврат — одна. Это оценка для клиентского ограничения
-    // MaxRecordsPerRun; фактические итоги приходят в ответах на построчные запросы.
+    // только платёж или пропущенный возврат — одна. Это оценка для предупреждения о длительности;
+    // фактические итоги приходят в ответах на построчные запросы.
     private static int RecordsIn(PscbPaymentListRow row)
         => row.MatchState == PscbPaymentMatchState.RefundMissing || !row.RefundedByBank ? 1 : 2;
 
     private string RestoreConfirmMessage
-        => $"Восстановить строк: {RestoreCandidateCount}? Каждая строка — отдельный запрос: сервер заново скачает период из банка и создаст недостающие операции и возвраты. Отменить результат нельзя.";
+    {
+        get
+        {
+            var message = $"Восстановить строк: {RestoreCandidateCount}? Каждая строка — отдельный запрос: сервер заново скачает период из банка и создаст недостающие операции и возвраты. Отменить результат нельзя.";
+            var recordCount = RestoreRowsToRequest.Sum(RecordsIn);
+            return recordCount > SlowRunWarningThreshold
+                ? $"{message} Будет восстановлено записей: {recordCount}. Это может занять много времени. Продолжить?"
+                : message;
+        }
+    }
 
     private async Task RestoreLost()
     {
@@ -515,12 +523,6 @@
         try
         {
             var rows = RestoreRowsToRequest;
-            var recordCount = rows.Sum(RecordsIn);
-            if (recordCount > MaxRecordsPerRun)
-            {
-                restoreError = $"За один прогон восстанавливается не больше {MaxRecordsPerRun} записей, а в списке их {recordCount}. Сузьте диапазон.";
-                return;
-            }
 
             // По одной строке на запрос, в порядке списка: после неудачной следующая начинается
             // с чистого контекста на сервере — как в FinanceRestorePanel.ApplySelected.
