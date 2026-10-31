@@ -116,7 +116,19 @@ public class ClaimProblemsForPlayerTest
             .Problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.NoResponsibleMaster);
 
     /// <summary>
-    /// Мастерская проблема и деньги игрока — без настоящих данных о мастерах и платежах.
+    /// Проблема автоприёма — объяснение игроку, почему его заявка ещё не принята автоматически:
+    /// она видна ему и без настройки, показывающей проблемы регистрации.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AutoAcceptProblemIsShownRegardlessOfFlag(bool showCheckInBlockersToPlayers)
+        => ValidateForPlayer(showCheckInBlockersToPlayers)
+            .Problems.ShouldContain(p => p.ProblemType == ClaimProblemType.AutoAcceptSlotExhausted);
+
+    /// <summary>
+    /// Мастерская проблема, деньги игрока и проблема автоприёма — без настоящих данных
+    /// о мастерах, платежах и лимитах шаблонов.
     /// </summary>
     private sealed class FixedProblemsFilter : IClaimProblemFilter
     {
@@ -124,6 +136,7 @@ public class ClaimProblemsForPlayerTest
             => [
                 new ClaimProblem(ClaimProblemType.NoResponsibleMaster, ProblemSeverity.Error),
                 new ClaimProblem(ClaimProblemType.FeePaidPartially, ProblemSeverity.Warning),
+                new AutoAcceptRelatedProblem(ClaimProblemType.AutoAcceptSlotExhausted, ProblemSeverity.Warning),
             ];
     }
 }

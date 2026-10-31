@@ -50,6 +50,15 @@ public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? Problem
         ClaimProblemType.UnApprovedClaimPayment => true,
         _ => false,
     };
+
+    /// <summary>
+    /// Показывается игроку, даже если проект не показывает игрокам проблемы регистрации
+    /// (<c>ProjectCheckInSettings.ShowCheckInBlockersToPlayers</c>): это не работа мастеров,
+    /// о которой игроку знать не положено, а то, что игрок может понять и сам — его профиль
+    /// или то, почему его заявка ещё не принята автоматически.
+    /// </summary>
+    [JsonIgnore]
+    public virtual bool AlwaysVisibleToPlayer => false;
 }
 
 public enum ClaimProblemType
@@ -91,6 +100,11 @@ public enum ClaimProblemType
     MissingRegistrationAddress,
     SensitiveDataNotAllowed,
     MissingBirthDate,
+    /// <summary>
+    /// Заявку нельзя принять автоматически: в шаблоне, на который она подана, не осталось
+    /// свободных мест (см. <see cref="Claims.ClaimAutoAccept"/>).
+    /// </summary>
+    AutoAcceptSlotExhausted,
 }
 
 public enum ProblemSeverity
@@ -137,4 +151,30 @@ public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemS
     /// Это профиль самого игрока — ему и показываем.
     /// </summary>
     public override bool VisibleToPlayer(ClaimStatus claimStatus) => true;
+
+    /// <summary>
+    /// Профиль игрока — не работа мастеров, прятать его от игрока не нужно.
+    /// </summary>
+    public override bool AlwaysVisibleToPlayer => true;
+}
+
+/// <summary>
+/// Что мешает принять заявку автоматически, когда проект включил автоприём: игроку объясняют,
+/// почему заявка ещё не принята, — см. <see cref="Claims.ClaimAutoAccept"/> и
+/// <c>AutoAcceptProblemFilter</c>.
+/// </summary>
+public record class AutoAcceptRelatedProblem(ClaimProblemType ProblemType, ProblemSeverity Severity)
+    : ClaimProblem(ProblemType, Severity)
+{
+    /// <summary>
+    /// Это объяснение игроку, почему автоприём его заявки не сработал, — показываем при любом
+    /// статусе заявки.
+    /// </summary>
+    public override bool VisibleToPlayer(ClaimStatus claimStatus) => true;
+
+    /// <summary>
+    /// И от самого игрока его прятать бессмысленно — в том числе за настройкой, показывающей
+    /// игрокам проблемы регистрации.
+    /// </summary>
+    public override bool AlwaysVisibleToPlayer => true;
 }
