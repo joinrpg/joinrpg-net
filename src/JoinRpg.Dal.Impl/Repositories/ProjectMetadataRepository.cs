@@ -249,6 +249,10 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 p.Details.DisableKogdaIgraMapping,
                 PreferentialFeeConditions = p.Details.PreferentialFeeConditions.Contents,
                 p.KogdaIgraGames,
+                // Ссылки и описания способов оплаты — большие поля, в ProjectInfo их нет (#5993)
+                PaymentTypes = p.PaymentTypes
+                    .Where(pt => pt.IsActive)
+                    .Select(pt => new { pt.PaymentTypeId, pt.Name, pt.PaymentLink, pt.LinkKind, pt.Description }),
             })
             .SingleOrDefaultAsync() ?? throw new ProjectNotFoundException(projectId);
 
@@ -260,6 +264,14 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
             new MarkdownString(row.ClaimApplyRules ?? ""),
             [.. row.KogdaIgraGames.Select(KogdaIgraRepository.TryConvert).WhereNotNull()],
             row.DisableKogdaIgraMapping,
-            new MarkdownString(row.PreferentialFeeConditions ?? ""));
+            new MarkdownString(row.PreferentialFeeConditions ?? ""),
+            [.. row.PaymentTypes.Select(pt => new PaymentTypePlayerInfo(
+                new PaymentTypeIdentification(projectId, pt.PaymentTypeId),
+                pt.Name,
+                // Пишет ссылку сервис настроек финансов (валидный абсолютный http/https),
+                // но правка базы руками не должна ронять страницу заявки
+                Uri.TryCreate(pt.PaymentLink, UriKind.Absolute, out var paymentLink) ? paymentLink : null,
+                pt.LinkKind,
+                pt.Description))]);
     }
 }

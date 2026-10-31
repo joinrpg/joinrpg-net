@@ -1,3 +1,5 @@
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
+
 namespace JoinRpg.DomainTypes.ProjectMetadata;
 /// <summary>
 /// Сюда добавляем те свойства проекта, которые большие и нет смысла грузить на каждой странице, например анонс, связи с КогдаИгрой etc
@@ -12,7 +14,8 @@ public record ProjectDetails(
     MarkdownString ClaimApplyRules,
     IReadOnlyCollection<KogdaIgraGameData> KogdaIgraCards,
     bool DisableKogdaIgraMapping,
-    MarkdownString PreferentialFeeConditions)
+    MarkdownString PreferentialFeeConditions,
+    IReadOnlyCollection<PaymentTypePlayerInfo> PlayerPaymentTypes)
 {
     public KogdaIgraGameData? NearestFutureKogdaIgraCard =>
         KogdaIgraCards
