@@ -203,6 +203,38 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
             )];
     }
 
+    /// <summary>
+    /// Непрочитанное по конкретным заявкам (ADR027 §4): тот же запрос, что по статусу проекта,
+    /// но выборка ограничена переданными id — тяжёлый подзапрос обсуждения идёт ровно по ним.
+    /// </summary>
+    public async Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(IReadOnlyCollection<ClaimIdentification> claimIds, UserIdentification userId, bool hasMasterAccess)
+    {
+        if (claimIds.Count == 0)
+        {
+            return [];
+        }
+        var projectId = claimIds.First().ProjectId;
+        var idList = claimIds.EnsureSameProject().Select(c => c.ClaimId).ToArray();
+
+        var claims = Ctx.Set<Claim>()
+            .AsExpandable()
+            .Where(claim => claim.ProjectId == projectId.Value)
+            .Where(claim => idList.Contains(claim.ClaimId));
+
+        var unreadCount = CommentDiscussionPredicates.UnreadCount;
+
+        var query =
+            from claim in claims
+            select
+            new
+            {
+                claim.CommentDiscussionId,
+                UnreadCommentsCount = unreadCount.Invoke(claim.CommentDiscussion, userId.Value, hasMasterAccess),
+            };
+
+        var rows = await query.ToListAsync();
+        return rows.ToDictionary(x => new CommentDiscussionId(x.CommentDiscussionId), x => x.UnreadCommentsCount);
+    }
     public async Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess)
     {
         var claims = Ctx.Set<Claim>()
