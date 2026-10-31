@@ -82,7 +82,7 @@
 уже на EF Core поверх **PostgreSQL** (`UseNpgsql`):
 `DataProtectionDbContext`, `JobScheduleDataDbContext`, `NotificationsDataDbContext`,
 `IdPortalDbContext`. Они используют общий хелпер
-`DbContextRegisterHelper.AddJoinEfCoreDbContext` и `LinqKit.Microsoft.EntityFrameworkCore`.
+`DbContextRegisterHelper.AddJoinEfCoreDbContext` (пакет `JoinRpg.Common.EntityFrameworkCore`) и `LinqKit.Microsoft.EntityFrameworkCore`.
 
 **Запуск миграций уже унифицирован.** `Joinrpg.Dal.Migrate` умеет прогонять
 и EF6-миграции (`MigrateMyDbContextService`), и EF Core-миграции

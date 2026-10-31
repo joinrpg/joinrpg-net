@@ -1,3 +1,4 @@
+using JoinRpg.Common.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace JoinRpg.Common.WebInfrastructure.EfCoreMigration;

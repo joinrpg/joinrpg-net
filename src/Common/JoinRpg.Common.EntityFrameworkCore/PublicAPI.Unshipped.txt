@@ -1,1 +1,3 @@
 #nullable enable
+JoinRpg.Common.EntityFrameworkCore.DbContextRegisterHelper
+static JoinRpg.Common.EntityFrameworkCore.DbContextRegisterHelper.AddJoinEfCoreDbContext<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, Microsoft.Extensions.Hosting.IHostEnvironment! environment, string! connectionStringName, System.Action<Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!>? optionsBuilder = null) -> bool

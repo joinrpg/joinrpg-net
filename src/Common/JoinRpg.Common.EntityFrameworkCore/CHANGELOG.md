@@ -4,6 +4,12 @@
 
 ## Не выпущено
 
+### Добавлено
+- `AddJoinEfCoreDbContext<TContext>()` — регистрация DbContext: PostgreSQL (Npgsql), EntityFramework.Exceptions (бизнес-исключения вместо `DbUpdateException`), лог SQL в Debug в dev-режиме, health check `{имя строки подключения}-db` (Degraded при недоступности). Без строки подключения ничего не регистрирует и возвращает `false`. Перенесён из `JoinRpg.Common.WebInfrastructure` (namespace `JoinRpg.Common.EntityFrameworkCore`). ([#6024](https://github.com/joinrpg/joinrpg-net/pull/6041))
+
+### Изменено
+- Новые зависимости: `Npgsql.EntityFrameworkCore.PostgreSQL`, `EntityFrameworkCore.Exceptions.PostgreSQL`, `AspNetCore.HealthChecks.NpgSql`, `Microsoft.Extensions.Diagnostics.HealthChecks`, `Microsoft.Extensions.Hosting.Abstractions`, `Microsoft.Extensions.Configuration.Abstractions`, `Microsoft.Extensions.Logging.Abstractions`. ([#6024](https://github.com/joinrpg/joinrpg-net/pull/6041))
+
 ## 2026.9.533 — 2026-10-29
 
 ### Добавлено

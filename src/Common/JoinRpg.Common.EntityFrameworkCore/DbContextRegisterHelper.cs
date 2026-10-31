@@ -1,14 +1,26 @@
 using EntityFramework.Exceptions.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
-namespace JoinRpg.Common.WebInfrastructure;
+namespace JoinRpg.Common.EntityFrameworkCore;
 
+/// <summary>
+/// Регистрация EF Core-контекстов JoinRpg в DI (PostgreSQL).
+/// </summary>
 public static class DbContextRegisterHelper
 {
+    /// <summary>
+    /// Регистрирует <see cref="DbContext"/> для PostgreSQL: Npgsql-провайдер, EntityFramework.Exceptions
+    /// (бизнес-исключения вместо DbUpdateException), лог SQL в Debug в dev-режиме и health check
+    /// с именем <c>{connectionStringName}-db</c>. Если строки подключения с таким именем нет,
+    /// ничего не регистрирует и возвращает <c>false</c> — вызывающий может решить, критично ли это.
+    /// </summary>
     public static bool AddJoinEfCoreDbContext<TContext>(
         this IServiceCollection services,
         IConfiguration configuration,

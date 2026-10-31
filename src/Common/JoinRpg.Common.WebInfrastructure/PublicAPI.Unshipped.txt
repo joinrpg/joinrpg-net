@@ -11,11 +11,13 @@
 *REMOVED*JoinRpg.Common.WebInfrastructure.DailyJob.JobId.JobId(string! JobName, System.DateOnly DayOfRun) -> void
 *REMOVED*JoinRpg.Common.WebInfrastructure.DailyJob.JobId.JobName.get -> string!
 *REMOVED*JoinRpg.Common.WebInfrastructure.DailyJob.JobId.JobName.init -> void
+*REMOVED*JoinRpg.Common.WebInfrastructure.DbContextRegisterHelper
 *REMOVED*override JoinRpg.Common.WebInfrastructure.DailyJob.JobId.Equals(object? obj) -> bool
 *REMOVED*override JoinRpg.Common.WebInfrastructure.DailyJob.JobId.GetHashCode() -> int
 *REMOVED*override JoinRpg.Common.WebInfrastructure.DailyJob.JobId.ToString() -> string!
 *REMOVED*static JoinRpg.Common.WebInfrastructure.DailyJob.JobId.operator !=(JoinRpg.Common.WebInfrastructure.DailyJob.JobId? left, JoinRpg.Common.WebInfrastructure.DailyJob.JobId? right) -> bool
 *REMOVED*static JoinRpg.Common.WebInfrastructure.DailyJob.JobId.operator ==(JoinRpg.Common.WebInfrastructure.DailyJob.JobId? left, JoinRpg.Common.WebInfrastructure.DailyJob.JobId? right) -> bool
+*REMOVED*static JoinRpg.Common.WebInfrastructure.DbContextRegisterHelper.AddJoinEfCoreDbContext<TContext>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! configuration, Microsoft.Extensions.Hosting.IHostEnvironment! environment, string! connectionStringName, System.Action<Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!>? optionsBuilder = null) -> bool
 *REMOVED*virtual JoinRpg.Common.WebInfrastructure.DailyJob.JobId.<Clone>$() -> JoinRpg.Common.WebInfrastructure.DailyJob.JobId!
 *REMOVED*virtual JoinRpg.Common.WebInfrastructure.DailyJob.JobId.EqualityContract.get -> System.Type!
 *REMOVED*virtual JoinRpg.Common.WebInfrastructure.DailyJob.JobId.Equals(JoinRpg.Common.WebInfrastructure.DailyJob.JobId? other) -> bool

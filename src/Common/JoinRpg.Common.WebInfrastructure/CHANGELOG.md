@@ -6,12 +6,14 @@
 
 ### Ломающие изменения
 - Удалены `IDailyJobRepository` и `JobId` из namespace `JoinRpg.Common.WebInfrastructure.DailyJob` (сам namespace исчез). Переход: подключить пакет `JoinRpg.Common.WebInfrastructure.Interfaces` и использовать `IJobRepository` и `JobId` из namespace `JoinRpg.Common.WebInfrastructure.Job`. ([#6020](https://github.com/joinrpg/joinrpg-net/pull/6021))
+- Удалён `DbContextRegisterHelper.AddJoinEfCoreDbContext` из namespace `JoinRpg.Common.WebInfrastructure`. Переход: подключить пакет `JoinRpg.Common.EntityFrameworkCore` и вызывать `AddJoinEfCoreDbContext` из namespace `JoinRpg.Common.EntityFrameworkCore` (сигнатура не менялась). ([#6024](https://github.com/joinrpg/joinrpg-net/pull/6041))
 
 ### Добавлено
 - `AddMidnightJobs()` — единый планировщик ежедневных джоб: находит все джобы, зарегистрированные через `AddJob<T>()` из пакета `JoinRpg.Common.WebInfrastructure.Interfaces`, и запускает каждую at-most-once в сутки (полночь UTC плюс `JobDelay`, настройка выключения — секция `DailyJobs`). Вместе с ним `BackgroundServiceActivity` (ActivitySource `BackgroundJobService`), источник активностей подключается `AddJoinOpenTelemetry` автоматически. ([#6020](https://github.com/joinrpg/joinrpg-net/pull/6021))
 
 ### Изменено
 - Пакет зависит от `JoinRpg.Common.WebInfrastructure.Interfaces` — контракты джоб (`IJob`, `IJobRepository`, `IJobRunner`, `JobsOptions`, `AddJob`) выделены туда. ([#6020](https://github.com/joinrpg/joinrpg-net/pull/6021))
+- Регистрация DbContext (`AddJoinEfCoreDbContext`) переехала в `JoinRpg.Common.EntityFrameworkCore`; зависимости `EntityFrameworkCore.Exceptions.PostgreSQL` и `AspNetCore.HealthChecks.NpgSql` больше не нужны. ([#6024](https://github.com/joinrpg/joinrpg-net/pull/6041))
 
 ## 2026.9.533 — 2026-10-29
 
