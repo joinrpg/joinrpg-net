@@ -1,3 +1,4 @@
+using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
@@ -29,16 +30,22 @@ public abstract class ClaimProblemFilterTestBase
     /// У персонажа есть утверждённая заявка, и это НЕ та, которую проверяем. Собирается как вторая
     /// заявка, потому что инварианты агрегата не дают сослаться на несуществующую.
     /// </param>
+    /// <param name="claimTarget">
+    /// Персонаж, на котором собрана заявка; по умолчанию — обычный персонаж мока. Нужен правилам,
+    /// различающим тип персонажа (например, автоприём действует только на шаблоны).
+    /// </param>
     protected ClaimInfo MakeContext(
         Func<CharacterClaimInfo, CharacterClaimInfo>? setupClaim = null,
         ProjectInfo? projectInfo = null,
         bool characterIsActive = true,
-        bool characterHasOtherApprovedClaim = false)
+        bool characterHasOtherApprovedClaim = false,
+        Character? claimTarget = null)
     {
         projectInfo ??= Mock.ProjectInfo;
+        claimTarget ??= Mock.Character;
 
-        _ = Mock.CreateClaim(Mock.Character, Mock.Player);
-        var template = Mock.GetCharacterInfo(Mock.Character, projectInfo).Claims.First();
+        _ = Mock.CreateClaim(claimTarget, Mock.Player);
+        var template = Mock.GetCharacterInfo(claimTarget, projectInfo).Claims.First();
 
         var claim = setupClaim is null ? template : setupClaim(template);
 
@@ -56,7 +63,7 @@ public abstract class ClaimProblemFilterTestBase
             approvedClaimId = otherApproved.ClaimId;
         }
 
-        var character = MakeCharacter(projectInfo, claims, approvedClaimId, characterIsActive);
+        var character = MakeCharacter(projectInfo, claims, approvedClaimId, characterIsActive, claimTarget);
 
         return new ClaimInfo(new ClaimInCharacter(character, claim), Mock.PlayerInfo);
     }
@@ -70,9 +77,10 @@ public abstract class ClaimProblemFilterTestBase
         ProjectInfo projectInfo,
         IReadOnlyCollection<CharacterClaimInfo> claims,
         ClaimIdentification? approvedClaimId,
-        bool isActive)
+        bool isActive,
+        Character character)
     {
-        var source = Mock.GetCharacterInfo(Mock.Character, projectInfo);
+        var source = Mock.GetCharacterInfo(character, projectInfo);
 
         return new CharacterInfo(
             source.Id,

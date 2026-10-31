@@ -23,6 +23,12 @@ public class ClaimProblemVisibleToPlayerTest
         Profile,
         /// <summary>Проблема поля — показываем, только если игрок видит поле.</summary>
         IfPlayerSeesField,
+        /// <summary>
+        /// Объяснение игроку про автоприём его заявки — показываем, но только как
+        /// <see cref="AutoAcceptRelatedProblem"/>: видимость зашита в него, а не в тип,
+        /// чтобы голый <see cref="ClaimProblem"/> не считался настроенным.
+        /// </summary>
+        AutoAccept,
     }
 
     /// <summary>
@@ -59,6 +65,8 @@ public class ClaimProblemVisibleToPlayerTest
         ClaimProblemType.MissingRegistrationAddress => PlayerVisibility.Profile,
         ClaimProblemType.SensitiveDataNotAllowed => PlayerVisibility.Profile,
         ClaimProblemType.MissingBirthDate => PlayerVisibility.Profile,
+        // Объяснение игроку, почему автоприём его заявки не сработал, — при любом статусе заявки.
+        ClaimProblemType.AutoAcceptSlotExhausted => PlayerVisibility.AutoAccept,
         _ => throw new ArgumentOutOfRangeException(nameof(problemType), problemType,
             "Не решено, видна ли проблема игроку: классифицируйте новый тип в ClaimProblemVisibleToPlayerTest.Decision"),
     };
@@ -90,6 +98,11 @@ public class ClaimProblemVisibleToPlayerTest
                 case PlayerVisibility.IfPlayerSeesField:
                     new FieldRelatedProblem(problemType, ProblemSeverity.Warning, Mock.CharacterFieldInfo).VisibleToPlayer(status).ShouldBeTrue();
                     new FieldRelatedProblem(problemType, ProblemSeverity.Warning, Mock.MasterOnlyFieldInfo).VisibleToPlayer(status).ShouldBeFalse();
+                    break;
+                case PlayerVisibility.AutoAccept:
+                    new AutoAcceptRelatedProblem(problemType, ProblemSeverity.Warning).VisibleToPlayer(status).ShouldBeTrue();
+                    // Голая проблема не настроена и игроку не показывается: зашито в AutoAcceptRelatedProblem.
+                    new ClaimProblem(problemType, ProblemSeverity.Error).VisibleToPlayer(status).ShouldBeFalse();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(problemType));
