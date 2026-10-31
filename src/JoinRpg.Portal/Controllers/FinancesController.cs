@@ -1,7 +1,6 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.DataModel;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Helpers;
@@ -105,48 +104,6 @@ public class FinancesController(
             masters);
 
         return View(viewModel);
-    }
-
-    [HttpGet]
-    [MasterAuthorize(Permission.CanManageMoney)]
-    public async Task<ActionResult> EditPaymentType(int projectid, int paymenttypeid)
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(projectid));
-        var paymentType = projectInfo.ProjectFinanceSettings.GetPaymentByIdOrDefault(new PaymentTypeIdentification(projectid, paymenttypeid));
-        if (paymentType == null)
-        {
-            return NotFound();
-        }
-        return
-          View(new EditPaymentTypeViewModel()
-          {
-              IsDefault = paymentType.IsDefault,
-              Name = paymentType.Name,
-              ProjectId = projectid,
-          });
-    }
-
-    [HttpPost, ValidateAntiForgeryToken]
-    [MasterAuthorize(Permission.CanManageMoney)]
-    public async Task<ActionResult> EditPaymentType(EditPaymentTypeViewModel viewModel)
-    {
-        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new(viewModel.ProjectId));
-        var paymentType = projectInfo.ProjectFinanceSettings.GetPaymentByIdOrDefault(new PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId));
-        if (paymentType == null)
-        {
-            return NotFound();
-        }
-
-        try
-        {
-            await financeSettingsService.EditCustomPaymentType(new PaymentTypeIdentification(viewModel.ProjectId, viewModel.PaymentTypeId), viewModel.Name, viewModel.IsDefault);
-            return RedirectToAction("Setup", new { viewModel.ProjectId });
-        }
-        catch (Exception exc)
-        {
-            AddModelException(exc);
-            return View(viewModel);
-        }
     }
 
     [HttpGet, AllowAnonymous]

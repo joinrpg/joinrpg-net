@@ -1,7 +1,6 @@
 @using JoinRpg.Common.WebComponents.Dialog
 @using JoinRpg.DomainTypes.ProjectMetadata.Payments
 @inject IFinanceSettingsClient settingsClient
-@inject IFinanceSettingsUriLocator uriLocator
 @inject ILogger<FinancePaymentTypesPanel> logger
 
 <JoinCollapsePanel Id="@AnchorId">
@@ -58,9 +57,10 @@
                         @if (CanEdit)
                         {
                             <td>
-                                @if (item.IsActive && item.Kind == PaymentTypeKind.Custom && item.PaymentTypeId is { } editId)
+                                @* Онлайн-оплату не редактирует никто: её настраивает платёжная система *@
+                                @if (item.IsActive && !item.IsOnline && item.PaymentTypeId is not null)
                                 {
-                                    <JoinButton Label="Изменить" Size="SizeStyleEnum.Small" Link="@uriLocator.GetEditPaymentTypeUri(editId).ToString()" />
+                                    <JoinButton Label="Изменить" Size="SizeStyleEnum.Small" OnClick="args => Edit(args, item)" />
                                 }
                                 @if (item.CanToggle)
                                 {
@@ -92,6 +92,31 @@
                 <MasterSelector ProjectId="ProjectId.Value" @bind-MasterId="newPaymentType.MasterId" />
             </FormRowFor>
         </JoinFormDialog>
+
+        <JoinFormDialog @ref="editDialog"
+                        TViewModel="EditPaymentTypeViewModel"
+                        Caption="Изменение метода оплаты"
+                        FormName="EditPaymentType"
+                        SubmitButtonPreset="ButtonPreset.Save"
+                        Model="editPaymentType">
+            <p>Ссылка и описание показываются игроку на странице заявки по кнопке «Как оплатить…».</p>
+            @* Название и умолчание — только у произвольного метода, у остальных они задаются видом. *@
+            @if (editingItem?.Kind == PaymentTypeKind.Custom)
+            {
+                <FormRowFor For="@(() => editPaymentType.Name)">
+                    <JoinTextInput @bind-Value="editPaymentType.Name" Immediate="true" />
+                </FormRowFor>
+                <FormRowFor For="@(() => editPaymentType.IsDefault)">
+                    <CheckboxInput @bind-Value="editPaymentType.IsDefault" />
+                </FormRowFor>
+            }
+            <FormRowFor For="@(() => editPaymentType.PaymentLink)">
+                <JoinTextInput @bind-Value="editPaymentType.PaymentLink" Immediate="true" />
+            </FormRowFor>
+            <FormRowFor For="@(() => editPaymentType.Description)">
+                <JoinTextArea @bind-Value="editPaymentType.Description" Rows="4" />
+            </FormRowFor>
+        </JoinFormDialog>
         <JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
     </ChildContent>
 </JoinCollapsePanel>
@@ -106,6 +131,9 @@
     private FinancePaymentTypesViewModel? model;
     private AddPaymentTypeViewModel newPaymentType = new();
     private JoinFormDialog<AddPaymentTypeViewModel> addDialog = null!;
+    private EditPaymentTypeViewModel editPaymentType = new();
+    private FinancePaymentTypeItemViewModel? editingItem;
+    private JoinFormDialog<EditPaymentTypeViewModel> editDialog = null!;
     private JoinMessageDialog errorDialog = null!;
     private string error = "";
 
@@ -148,6 +176,33 @@
                 await Mutate(
                     () => settingsClient.CreatePaymentType(ProjectId, new NewPaymentTypeViewModel(PaymentTypeKind.Custom, result.MasterId, result.Name.Trim())),
                     "Не удалось добавить метод оплаты");
+            }
+        }
+        finally
+        {
+            args.ExitProgressState = true;
+        }
+    }
+
+    private async Task Edit(ButtonClickEventArgs args, FinancePaymentTypeItemViewModel item)
+    {
+        try
+        {
+            // Новый экземпляр модели — новый EditContext у формы: сообщения прошлого показа не остаются.
+            editingItem = item;
+            editPaymentType = new EditPaymentTypeViewModel
+            {
+                Name = item.Name,
+                IsDefault = item.IsDefault,
+                PaymentLink = item.PaymentLink,
+                Description = item.Description,
+            };
+            StateHasChanged();
+            if (await editDialog.ShowModalAsync() is { } result && item.PaymentTypeId is { } paymentTypeId)
+            {
+                await Mutate(
+                    () => settingsClient.EditPaymentType(paymentTypeId, result),
+                    "Не удалось изменить метод оплаты");
             }
         }
         finally

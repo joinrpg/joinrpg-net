@@ -18,6 +18,7 @@ public interface IFinanceSettingsClient
     Task<FinancePaymentTypesViewModel> GetPaymentTypes(ProjectIdentification projectId);
     Task CreatePaymentType(ProjectIdentification projectId, NewPaymentTypeViewModel model);
     Task TogglePaymentType(PaymentTypeIdentification paymentTypeId);
+    Task EditPaymentType(PaymentTypeIdentification paymentTypeId, EditPaymentTypeViewModel model);
 
     Task<FinanceGoogleDocsExportViewModel> GetGoogleDocsExport(ProjectIdentification projectId);
 }

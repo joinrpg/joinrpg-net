@@ -57,4 +57,12 @@ internal class FinanceSettingsClient(HttpClient httpClient, CsrfTokenProvider cs
             $"webapi/{paymentTypeId.ProjectId.Value}/finance-settings/TogglePaymentType?paymentTypeId={paymentTypeId.PaymentTypeId}", content: null);
         await response.EnsureSuccessOrThrowProblem();
     }
+
+    async Task IFinanceSettingsClient.EditPaymentType(PaymentTypeIdentification paymentTypeId, EditPaymentTypeViewModel model)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = await httpClient.PostAsJsonAsync(
+            $"webapi/{paymentTypeId.ProjectId.Value}/finance-settings/EditPaymentType?paymentTypeId={paymentTypeId.PaymentTypeId}", model);
+        await response.EnsureSuccessOrThrowProblem();
+    }
 }

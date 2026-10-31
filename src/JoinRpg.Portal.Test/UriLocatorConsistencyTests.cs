@@ -4,7 +4,6 @@ using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
@@ -120,7 +119,6 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
 
     public static IEnumerable<object[]> FinanceSettingsCases() =>
     [
-        ["GetEditPaymentTypeUri", (Func<IFinanceSettingsUriLocator, Uri>)(l => l.GetEditPaymentTypeUri(new PaymentTypeIdentification(ProjectId, 12)))],
         ["GetMasterSummaryExportUri", (Func<IFinanceSettingsUriLocator, Uri>)(l => l.GetMasterSummaryExportUri(ProjectId, "0123456789abcdef0123456789abcdef"))],
     ];
 

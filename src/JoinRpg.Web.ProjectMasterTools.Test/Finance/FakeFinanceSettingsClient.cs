@@ -73,6 +73,7 @@ internal class FakeFinanceSettingsClient : IFinanceSettingsClient
     public List<FinancePaymentTypeItemViewModel> PaymentTypes { get; } = [];
     public NewPaymentTypeViewModel? CreatedPaymentType { get; private set; }
     public PaymentTypeIdentification? ToggledPaymentType { get; private set; }
+    public (PaymentTypeIdentification Id, EditPaymentTypeViewModel Model)? EditedPaymentType { get; private set; }
 
     public Task<FinancePaymentTypesViewModel> GetPaymentTypes(ProjectIdentification projectId)
         => Task.FromResult(new FinancePaymentTypesViewModel
@@ -109,6 +110,15 @@ internal class FakeFinanceSettingsClient : IFinanceSettingsClient
         ToggledPaymentType = paymentTypeId;
         var index = PaymentTypes.FindIndex(pt => pt.PaymentTypeId == paymentTypeId);
         PaymentTypes[index] = PaymentTypes[index] with { IsActive = !PaymentTypes[index].IsActive };
+        return Task.CompletedTask;
+    }
+
+    public Task EditPaymentType(PaymentTypeIdentification paymentTypeId, EditPaymentTypeViewModel model)
+    {
+        ThrowIfRefused();
+        EditedPaymentType = (paymentTypeId, model);
+        var index = PaymentTypes.FindIndex(pt => pt.PaymentTypeId == paymentTypeId);
+        PaymentTypes[index] = PaymentTypes[index] with { PaymentLink = model.PaymentLink, Description = model.Description };
         return Task.CompletedTask;
     }
 

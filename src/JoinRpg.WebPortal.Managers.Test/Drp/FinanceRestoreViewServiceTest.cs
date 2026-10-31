@@ -598,7 +598,7 @@ public class FinanceRestoreViewServiceTest
 
         public Task TogglePaymentActiveness(PaymentTypeIdentification paymentTypeId) => throw new NotSupportedException();
 
-        public Task EditCustomPaymentType(PaymentTypeIdentification paymentTypeId, string name, bool isDefault) => throw new NotSupportedException();
+        public Task EditPaymentType(EditPaymentTypeRequest request) => throw new NotSupportedException();
 
         public Task CreateFeeSetting(CreateFeeSettingRequest request) => throw new NotSupportedException();
 

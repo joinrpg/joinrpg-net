@@ -1,7 +1,6 @@
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
-using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
 using JoinRpg.Web.ProjectCommon;
@@ -22,9 +21,6 @@ public static class UriLocatorExtensions
         IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator, IBadgeTemplateUriLocator,
         IFinanceSettingsUriLocator
     {
-        Uri IFinanceSettingsUriLocator.GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) =>
-            new($"/{paymentTypeId.ProjectId.Value}/money/EditPaymentType?PaymentTypeId={paymentTypeId.PaymentTypeId}", UriKind.Relative);
-
         Uri IFinanceSettingsUriLocator.GetMasterSummaryExportUri(ProjectIdentification projectId, string token) =>
             new($"/{projectId.Value}/money/SummaryByMaster?token={token}", UriKind.Relative);
 

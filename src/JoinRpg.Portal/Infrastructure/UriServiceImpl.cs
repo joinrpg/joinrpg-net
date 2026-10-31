@@ -225,8 +225,9 @@ internal class UriServiceImpl(
     public Uri GetUri(ProjectMasterIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("Edit", "Acl", new { ProjectId = target.ProjectId.Value, userId = target.UserId }));
 
+    // Отдельной страницы у метода оплаты больше нет — ведём к панели методов на настройках финансов.
     public Uri GetUri(PaymentTypeIdentification target) =>
-        new(GetBaseDomain(), linkGenerator.GetPathByAction("EditPaymentType", "Finances", new { ProjectId = target.ProjectId.Value, target.PaymentTypeId }));
+        new(GetBaseDomain(), linkGenerator.GetPathByAction("Setup", "Finances", new { ProjectId = target.ProjectId.Value }) + $"#{FinancePaymentTypesPanel.AnchorId}");
 
     public Uri GetUri(FinanceOperationIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("ToFinanceOperation", "DiscussionRedirect",
@@ -244,8 +245,6 @@ internal class UriServiceImpl(
             values: new { ProjectId = target.ProjectId.Value, Id = target.ProjectRolesListId }));
 
     public Uri GetUri(ProjectBadgeTemplateIdentification target) => ((IBadgeTemplateUriLocator)this).GetEditUri(target);
-
-    Uri IFinanceSettingsUriLocator.GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) => GetUri(paymentTypeId);
 
     Uri IFinanceSettingsUriLocator.GetMasterSummaryExportUri(ProjectIdentification projectId, string token) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("SummaryByMaster", "Finances", new { ProjectId = projectId.Value, token }));

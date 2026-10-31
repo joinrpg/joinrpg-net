@@ -2,6 +2,7 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.ProjectMetadata;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 
 namespace JoinRpg.DataModel.Mocks.Fakes;
 
@@ -17,8 +18,30 @@ namespace JoinRpg.DataModel.Mocks.Fakes;
 public sealed class FakeProjectMetadataRepository : IProjectMetadataRepository
 {
     private readonly Func<ProjectInfo> projectInfo;
+    // Именно с уточнением namespace: в JoinRpg.DataModel есть своя ProjectDetails (EF-сущность).
+    private readonly Func<DomainTypes.ProjectMetadata.ProjectDetails>? details;
 
-    public FakeProjectMetadataRepository(MockedProject mock) => projectInfo = () => mock.ProjectInfo;
+    public FakeProjectMetadataRepository(MockedProject mock)
+    {
+        projectInfo = () => mock.ProjectInfo;
+        // Ссылки и описания методов — как в настоящем репозитории: по активным методам мока
+        details = () => new DomainTypes.ProjectMetadata.ProjectDetails(
+            mock.ProjectInfo,
+            new MarkdownString(""),
+            new MarkdownString(""),
+            [],
+            false,
+            new MarkdownString(""),
+            [.. mock.Project.PaymentTypes
+                .Where(pt => pt.IsActive)
+                .Select(pt => new PaymentTypePlayerInfo(
+                    new PaymentTypeIdentification(mock.Project.ProjectId, pt.PaymentTypeId),
+                    pt.Name,
+                    // Как в настоящем репозитории: строка сущности — в Uri, кривая — в null
+                    Uri.TryCreate(pt.PaymentLink, UriKind.Absolute, out var paymentLink) ? paymentLink : null,
+                    pt.LinkKind,
+                    pt.Description))]);
+    }
 
     public FakeProjectMetadataRepository(ProjectInfo projectInfo) => this.projectInfo = () => projectInfo;
 
@@ -29,8 +52,9 @@ public sealed class FakeProjectMetadataRepository : IProjectMetadataRepository
         => Task.FromResult(projectInfo());
 
     public Task<DomainTypes.ProjectMetadata.ProjectDetails> GetProjectDetails(ProjectInfo projectInfo)
-        // Именно с уточнением namespace: в JoinRpg.DataModel есть своя ProjectDetails (EF-сущность).
-        => Task.FromResult(new DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), new MarkdownString(""), [], false, new MarkdownString(""), []));
+        => Task.FromResult(details is not null
+            ? details()
+            : new DomainTypes.ProjectMetadata.ProjectDetails(projectInfo, new MarkdownString(""), new MarkdownString(""), [], false, new MarkdownString(""), []));
 
     public void PrimeCache(ProjectInfo projectInfo) => LastPrimed = projectInfo;
 }

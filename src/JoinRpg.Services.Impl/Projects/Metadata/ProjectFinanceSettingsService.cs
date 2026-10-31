@@ -163,31 +163,70 @@ internal class ProjectFinanceSettingsService(
             });
 
     /// <inheritdoc />
-    public Task EditCustomPaymentType(PaymentTypeIdentification paymentTypeId,
-        string name,
-        bool isDefault)
+    public Task EditPaymentType(EditPaymentTypeRequest request)
         => projectPropsService.ChangeProjectProperties(
-            paymentTypeId.ProjectId,
+            request.PaymentTypeId.ProjectId,
             Permission.CanManageMoney,
             ProjectActiveRequirement.AllowBlocked, // настройки проекта разрешены и на время восстановления (ADR023)
-            (paymentTypeId, name, isDefault),
+            request,
             ctx =>
             {
-                var paymentType = ctx.GetPaymentTypeForChange(ctx.Request.paymentTypeId);
+                var paymentType = ctx.GetPaymentTypeForChange(ctx.Request.PaymentTypeId);
 
-                paymentType.IsActive = true;
-                paymentType.Name = ServiceValidation.Required(ctx.Request.name);
-
-                if (ctx.Request.isDefault && !paymentType.IsDefault)
+                // Онлайн-оплату не редактирует никто: её настройки задаёт платёжная система
+                if (paymentType.TypeKind.IsOnline())
                 {
-                    foreach (var oldDefault in ctx.Project.PaymentTypes.Where(pt => pt.IsDefault))
-                    {
-                        oldDefault.IsDefault = false;
-                    }
+                    throw new OnlinePaymentTypeIsNotEditableException();
                 }
 
-                paymentType.IsDefault = ctx.Request.isDefault;
+                paymentType.IsActive = true;
+
+                // Название и «по умолчанию» — только у произвольного метода: у остальных
+                // название задаётся видом, а умолчание не имеет смысла.
+                if (paymentType.TypeKind == PaymentTypeKind.Custom)
+                {
+                    paymentType.Name = ServiceValidation.Required(ctx.Request.Name);
+
+                    if (ctx.Request.IsDefault && !paymentType.IsDefault)
+                    {
+                        foreach (var oldDefault in ctx.Project.PaymentTypes.Where(pt => pt.IsDefault))
+                        {
+                            oldDefault.IsDefault = false;
+                        }
+                    }
+
+                    paymentType.IsDefault = ctx.Request.IsDefault;
+                }
+
+                paymentType.PaymentLink = NormalizePaymentLink(ctx.Request.PaymentLink);
+                paymentType.Description = NormalizeOptionalText(ctx.Request.Description);
             });
+
+    /// <summary>
+    /// Ссылка оплаты: пустая — <c>null</c> (ссылки нет), иначе абсолютный http(s)-адрес.
+    /// Это же защита от <c>javascript:</c>-адресов, добравшихся бы до <c>href</c> в UI.
+    /// </summary>
+    private static string? NormalizePaymentLink(string? paymentLink)
+    {
+        var trimmed = paymentLink?.Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            return null;
+        }
+
+        if (Uri.TryCreate(trimmed, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
+        {
+            return trimmed;
+        }
+
+        throw new InvalidPaymentLinkException();
+    }
+
+    private static string? NormalizeOptionalText(string? text)
+    {
+        var trimmed = text?.Trim();
+        return string.IsNullOrEmpty(trimmed) ? null : trimmed;
+    }
 
     /// <inheritdoc />
     public Task CreateFeeSetting(CreateFeeSettingRequest request)
