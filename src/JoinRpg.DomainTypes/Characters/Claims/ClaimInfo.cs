@@ -47,6 +47,20 @@ public record class ClaimInfo
     public ClaimIdentification ClaimId => ClaimInCharacter.ClaimId;
 
     /// <summary>
+    /// Автоприём действует на заявку: включён в проекте, заявка подана на шаблон (слот, #5645)
+    /// и ещё ждёт решения. Для остальных заявок автоприём не сработает, что бы игрок ни делал.
+    /// </summary>
+    /// <remarks>
+    /// Заблокирована ли такая заявка для автоприёма, знают её проблемы
+    /// (<see cref="ClaimProblem.IsAutoAcceptBlocker"/>): кандидат без таких проблем будет
+    /// принят автоматически.
+    /// </remarks>
+    public bool IsAutoAcceptCandidate()
+        => ProjectInfo.ClaimSettings.AutoAcceptClaims
+           && Character.CharacterTypeInfo.IsSlot
+           && Claim.Status is ClaimStatus.AddedByUser or ClaimStatus.Discussed;
+
+    /// <summary>
     /// Защищённые данные игрока, которые мастер видит по этой заявке: их открывает согласие игрока
     /// на заявке, и только те, что проект запросил. Права текущего пользователя на заявку здесь не
     /// проверяются — это забота вызывающего.

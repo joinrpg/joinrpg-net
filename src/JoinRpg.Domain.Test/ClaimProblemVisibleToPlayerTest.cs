@@ -60,6 +60,8 @@ public class ClaimProblemVisibleToPlayerTest
         ClaimProblemType.MissingRegistrationAddress => PlayerVisibility.Profile,
         ClaimProblemType.SensitiveDataNotAllowed => PlayerVisibility.Profile,
         ClaimProblemType.MissingBirthDate => PlayerVisibility.Profile,
+        // Объяснение игроку, почему автоприём его заявки не сработал, — при любом статусе заявки.
+        ClaimProblemType.SlotExhausted => PlayerVisibility.Shown,
         _ => throw new ArgumentOutOfRangeException(nameof(problemType), problemType,
             "Не решено, видна ли проблема игроку: классифицируйте новый тип в ClaimProblemVisibleToPlayerTest.Decision"),
     };

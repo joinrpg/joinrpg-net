@@ -20,9 +20,13 @@ public class ClaimProblemsForPlayerTest
 
     public enum ClaimState { NotApproved, Approved, CheckedIn }
 
-    private PlayerClaimProblems ValidateForPlayer(bool showCheckInBlockersToPlayers, ClaimState state = ClaimState.Approved)
+    private PlayerClaimProblems ValidateForPlayer(
+        bool showCheckInBlockersToPlayers,
+        ClaimState state = ClaimState.Approved,
+        bool autoAcceptClaims = false)
     {
         Mock.Project.Details.EnableCheckInModule = showCheckInBlockersToPlayers;
+        Mock.Project.Details.AutoAcceptClaims = autoAcceptClaims;
 
         // Поля заявки, а не персонажа: их проверяют при любом статусе заявки, поля персонажа — только
         // у принятой. Именно AddField: он кладёт поле в Project и пересобирает метаданные, подхватывая флаг.
@@ -116,7 +120,31 @@ public class ClaimProblemsForPlayerTest
             .Problems.ShouldNotContain(p => p.ProblemType == ClaimProblemType.NoResponsibleMaster);
 
     /// <summary>
-    /// Мастерская проблема и деньги игрока — без настоящих данных о мастерах и платежах.
+    /// Блокер автоприёма «в шаблоне не осталось мест» в проекте с автоприёмом — объяснение
+    /// игроку, почему его заявка ещё не принята автоматически: виден ему и без настройки,
+    /// показывающей проблемы регистрации.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AutoAcceptBlockerIsShownToPlayerInAutoAcceptProject(bool showCheckInBlockersToPlayers)
+        => ValidateForPlayer(showCheckInBlockersToPlayers, autoAcceptClaims: true)
+            .Problems.ShouldContain(p => p.ProblemType == ClaimProblemType.SlotExhausted);
+
+    /// <summary>
+    /// Без автоприёма та же проблема — обычная мастерская: игроку её не показывают, разве что
+    /// проект сам показывает игрокам все проблемы.
+    /// </summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    public void SlotExhaustedWithoutAutoAcceptFollowsTheFlag(bool showCheckInBlockersToPlayers, bool expected)
+        => ValidateForPlayer(showCheckInBlockersToPlayers, autoAcceptClaims: false)
+            .Problems.ShouldContain(p => p.ProblemType == ClaimProblemType.SlotExhausted == expected);
+
+    /// <summary>
+    /// Мастерская проблема, деньги игрока и блокер автоприёма — без настоящих данных
+    /// о мастерах, платежах и лимитах шаблонов.
     /// </summary>
     private sealed class FixedProblemsFilter : IClaimProblemFilter
     {
@@ -124,6 +152,7 @@ public class ClaimProblemsForPlayerTest
             => [
                 new ClaimProblem(ClaimProblemType.NoResponsibleMaster, ProblemSeverity.Error),
                 new ClaimProblem(ClaimProblemType.FeePaidPartially, ProblemSeverity.Warning),
+                new ClaimProblem(ClaimProblemType.SlotExhausted, ProblemSeverity.Warning),
             ];
     }
 }

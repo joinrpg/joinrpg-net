@@ -41,7 +41,11 @@ public interface IClaimProblemValidator
     /// Берутся те, что видны игроку при текущем статусе заявки (<see cref="ClaimProblem.VisibleToPlayer"/>).
     /// Проблемы полей и взноса дополнительно ограничены настройкой проекта
     /// <see cref="ProjectCheckInSettings.ShowCheckInBlockersToPlayers"/>: без неё игрок их не видит вовсе,
-    /// а проблемы профиля показываются независимо от неё.
+    /// а проблемы профиля показываются независимо от неё
+    /// (<see cref="ClaimProblem.AlwaysVisibleToPlayer"/>). Отдельно —
+    /// <see cref="ClaimProblem.IsAutoAcceptBlocker"/>: в проекте с включённым автоприёмом
+    /// игроку объясняют, почему заявка не принята автоматически, и без настройки показа
+    /// проблем регистрации.
     /// </remarks>
     PlayerClaimProblems ValidateForPlayer(ClaimInfo context)
     {
@@ -49,12 +53,15 @@ public interface IClaimProblemValidator
 
         var claimStatus = context.Claim.Status;
         var showCheckInBlockers = context.ProjectInfo.ProjectCheckInSettings.ShowCheckInBlockersToPlayers;
+        var autoAcceptClaims = context.ProjectInfo.ClaimSettings.AutoAcceptClaims;
 
         var problems = Validate(context).ToList();
 
         var visible = problems
             .Where(problem => problem.VisibleToPlayer(claimStatus))
-            .Where(problem => showCheckInBlockers || problem is ProfileRelatedProblem)
+            .Where(problem => showCheckInBlockers
+                              || problem.AlwaysVisibleToPlayer
+                              || (autoAcceptClaims && problem.IsAutoAcceptBlocker))
             .ToList();
 
         var hasHiddenCheckInBlockers = showCheckInBlockers

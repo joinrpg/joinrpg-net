@@ -43,6 +43,7 @@ public record class ProblemViewModel(string ProblemTypeText, ClaimProblemType Pr
       {ClaimProblemType.MissingRegistrationAddress, "В профиле нет адреса регистрации" },
       {ClaimProblemType.MissingBirthDate, "В профиле нет даты рождения" },
       {ClaimProblemType.SensitiveDataNotAllowed, "Не разрешен доступ к защищённым данным" },
+      {ClaimProblemType.SlotExhausted, "В шаблоне не осталось свободных мест" },
     };
 
     public ProblemViewModel(ClaimProblem problem) : this(Types[problem.ProblemType], problem.ProblemType, problem.ProblemTime, problem.Severity, problem is ProfileRelatedProblem, problem.ExtraInfo, problem.BlocksCheckIn)
