@@ -152,7 +152,7 @@ public class PscbPaymentsRestoreViewServiceTests
     public async Task ReportsTheBlockReasonInsteadOfRestoring()
     {
         var scenario = LostPaymentScenario();
-        scenario.Claims = new PscbFakeClaimsRepository(); // заявок нет — вердикт отказывает
+        scenario.Claims = new FakeClaimsRepository(); // заявок нет — вердикт отказывает
         var (service, domain) = CreateService(scenario);
 
         var result = await service.RestoreRow(Query(), LostPaymentOrderId);
@@ -292,7 +292,7 @@ public class PscbPaymentsRestoreViewServiceTests
             new FakeSearchService(),
             Users(42),
             new FakeFinanceOperationsRepository(),
-            new PscbFakeClaimsRepository(),
+            new FakeClaimsRepository(),
             new PscbFakeProjectMetadataRepository(),
             NullLogger<PscbPaymentsViewService>.Instance);
         var domain = new FakeLostPaymentsRestoreService();
@@ -430,7 +430,7 @@ public class PscbPaymentsRestoreViewServiceTests
 
         public FakeFinanceOperationsRepository Finances { get; } = new();
 
-        public PscbFakeClaimsRepository Claims { get; set; } = new();
+        public FakeClaimsRepository Claims { get; set; } = new();
 
         public PscbFakeProjectMetadataRepository Projects { get; } = new();
 

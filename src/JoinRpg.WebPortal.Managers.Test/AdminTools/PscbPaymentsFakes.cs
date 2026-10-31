@@ -2,12 +2,10 @@ using System.Net;
 using System.Text;
 using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Interfaces.Finances;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.DomainTypes;
-using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.ProjectMetadata.Accommodation;
@@ -407,85 +405,6 @@ internal sealed class FakeFinanceOperationUri : IUriLocator<FinanceOperationIden
 {
     public Uri GetUri(FinanceOperationIdentification target)
         => new($"https://joinrpg.test/{target.ProjectId.Value}/finance/{target.FinanceOperationId}", UriKind.Absolute);
-}
-
-/// <summary>
-/// Заявки игроков в проекте — то, на что встанет потерянный платёж, — и заявки, в чьих
-/// обсуждениях лежат комментарии.
-/// </summary>
-/// <remarks>
-/// Остальные члены интерфейса бросают намеренно: сверке нужны два запроса, и поход
-/// за незапланированными данными должен быть виден сразу.
-/// </remarks>
-internal sealed class PscbFakeClaimsRepository : IClaimsRepository
-{
-    private readonly List<(int ProjectId, PlayerClaimId Claim)> claims = [];
-    private readonly List<CommentClaimId> commentClaims = [];
-
-    /// <summary>
-    /// Запросы к заявкам: проект и номера плательщиков, которых спрашивали одним вызовом.
-    /// </summary>
-    public List<(int ProjectId, int[] UserIds)> Requests { get; } = [];
-
-    /// <summary>
-    /// Номера комментариев, которых спрашивали одним вызовом, — чтобы тест видел пачкование.
-    /// </summary>
-    public List<int[]> CommentIdRequests { get; } = [];
-
-    public void AddClaim(int projectId, int userId, int claimId)
-        => claims.Add((projectId, new PlayerClaimId(
-            new UserIdentification(userId),
-            new ClaimIdentification(projectId, claimId))));
-
-    /// <summary>Комментарий в обсуждении заявки — так его нашёл бы настоящий запрос.</summary>
-    public void AddClaimComment(int commentId, int projectId, int claimId)
-        => commentClaims.Add(new CommentClaimId(commentId, new ClaimIdentification(projectId, claimId)));
-
-    public Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
-    {
-        Requests.Add((projectId.Value, [.. userIds.Select(userId => userId.Value)]));
-
-        IReadOnlyCollection<PlayerClaimId> found =
-        [
-            .. claims
-                .Where(entry => entry.ProjectId == projectId.Value && userIds.Contains(entry.Claim.UserId))
-                .Select(entry => entry.Claim),
-        ];
-        return Task.FromResult(found);
-    }
-
-    public Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds)
-    {
-        CommentIdRequests.Add([.. commentIds]);
-
-        IReadOnlyCollection<CommentClaimId> found =
-        [
-            .. commentClaims.Where(entry => commentIds.Contains(entry.CommentId)),
-        ];
-        return Task.FromResult(found);
-    }
-
-    public void Dispose() { }
-
-    public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => throw new NotImplementedException();
-    public Task<Claim?> GetClaim(ClaimIdentification claimId) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<MyClaimShortInfo>> GetMyActiveClaimsInActiveProjects(UserIdentification userId) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(ProjectIdentification projectId, UserIdentification userId, ClaimStatusSpec status) => throw new NotImplementedException();
-    public Task<Claim?> GetClaimWithDetails(ClaimIdentification claimId) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(ProjectIdentification projectId, ClaimStatusSpec active, CharacterGroupIdentification[] characterGroupsIds) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<ClaimIdentification> claimIds) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(IReadOnlyCollection<CharacterGroupIdentification> characterGroupsIds, ClaimStatusSpec spec) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(ProjectIdentification projectId, ClaimStatusSpec approved) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimsHeadersForPlayer(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec, UserIdentification userId) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec status, int? roomTypeId) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
-    public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
-    public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotImplementedException();
-    public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId) => throw new NotImplementedException();
 }
 
 internal sealed class FakeClaimUri : IUriLocator<ClaimIdentification>
