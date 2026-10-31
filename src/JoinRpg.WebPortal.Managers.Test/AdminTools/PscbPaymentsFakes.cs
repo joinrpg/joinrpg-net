@@ -485,6 +485,7 @@ internal sealed class PscbFakeClaimsRepository : IClaimsRepository
     public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
     public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotImplementedException();
     public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess) => throw new NotImplementedException();
+    public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(IReadOnlyCollection<ClaimIdentification> claimIds, UserIdentification userId, bool hasMasterAccess) => throw new NotSupportedException();
     public Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId) => throw new NotImplementedException();
 }
 
