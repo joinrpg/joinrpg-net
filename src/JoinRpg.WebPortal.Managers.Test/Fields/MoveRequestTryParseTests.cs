@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Web.ProjectCommon.ElementMoving;
 
 namespace JoinRpg.WebPortal.Managers.Test.Fields;
@@ -18,6 +19,50 @@ public class MoveRequestTryParseTests
         if (moveAfterId is not null)
         {
             result.MoveAfterId.ShouldBeOfType<ProjectFieldIdentification>();
+        }
+        else
+        {
+            result.MoveAfterId.ShouldBeNull();
+        }
+    }
+
+    /// <summary>
+    /// Перестановка сюжетов в списке сюжетов проекта (#238): parent — проект.
+    /// </summary>
+    [Theory]
+    [InlineData("PlotFolderId(1-2)", "Project(1)", null)]
+    [InlineData("PlotFolderId(1-2)", "Project(1)", "PlotFolderId(1-3)")]
+    public void TryParse_ValidPlotFolderMove_ReturnsTrue(string selfId, string parentId, string? moveAfterId)
+    {
+        MoveRequest.TryParse(selfId, parentId, moveAfterId, out var result).ShouldBeTrue();
+        result.ShouldNotBeNull();
+        result.SelfId.ShouldBeOfType<PlotFolderIdentification>();
+        result.ParentId.ShouldBeOfType<ProjectIdentification>();
+        if (moveAfterId is not null)
+        {
+            result.MoveAfterId.ShouldBeOfType<PlotFolderIdentification>();
+        }
+        else
+        {
+            result.MoveAfterId.ShouldBeNull();
+        }
+    }
+
+    /// <summary>
+    /// Перестановка вводных внутри своего сюжета (#238): parent — сюжет.
+    /// </summary>
+    [Theory]
+    [InlineData("PlotElementId(1-2-3)", "PlotFolderId(1-2)", null)]
+    [InlineData("PlotElementId(1-2-3)", "PlotFolderId(1-2)", "PlotElementId(1-2-4)")]
+    public void TryParse_ValidPlotElementInFolderMove_ReturnsTrue(string selfId, string parentId, string? moveAfterId)
+    {
+        MoveRequest.TryParse(selfId, parentId, moveAfterId, out var result).ShouldBeTrue();
+        result.ShouldNotBeNull();
+        result.SelfId.ShouldBeOfType<PlotElementIdentification>();
+        result.ParentId.ShouldBeOfType<PlotFolderIdentification>();
+        if (moveAfterId is not null)
+        {
+            result.MoveAfterId.ShouldBeOfType<PlotElementIdentification>();
         }
         else
         {

@@ -43,13 +43,18 @@
                                       Label="Удалить" />
 
                           @*Здесь нужна кнопка восстановить *@
-                          <JoinMoveControlNonInteractive SkipGroup="true"
-                                           Endpoint="@reorderPlotUri" ItemIds="@([..List.FolderIds.Select(i => i.ToString())])" SelfId="@Item.PlotFolderId.ToString()" />
+                          <JoinMoveControl TItem="PlotFolderListItemViewModel"
+                                           Items="MoveItems"
+                                           Self="Item"
+                                           SkipGroup="true"
+                                           Size="SizeStyleEnum.Small"
+                                           OnMoveCompleted="OnMoveCompleted" />
                       }
                   </JoinButtonGroup>
               }
             </td>
         </tr>
+
 
 
 
@@ -63,15 +68,22 @@
     [EditorRequired]
     public PlotFolderListViewModel List { get; set; } = null!;
 
+    /// <summary>Все сюжеты списка в текущем порядке — общий список всех строк острова.</summary>
+    [Parameter]
+    [EditorRequired]
+    public IList<PlotFolderListItemViewModel> MoveItems { get; set; } = null!;
+
+    /// <summary>Порядок изменился — список перерисовывает таблицу.</summary>
+    [Parameter]
+    public EventCallback OnMoveCompleted { get; set; }
+
     public string createElementUri = null!;
     public string deletePlotUri = null!;
-    public string reorderPlotUri = null!;
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
         createElementUri = $"/{Item.PlotFolderId.ProjectId.Value}/plots/createelement?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
         deletePlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plots/delete?PlotFolderId={Item.PlotFolderId.PlotFolderId}";
-        reorderPlotUri = $"/{Item.PlotFolderId.ProjectId.Value}/plots/reorderfolder";
     }
 }

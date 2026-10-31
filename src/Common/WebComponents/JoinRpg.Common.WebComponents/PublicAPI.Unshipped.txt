@@ -1,5 +1,22 @@
 #nullable enable
+*REMOVED*JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel
+*REMOVED*JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.Deconstruct(out string! ElementIdentification, out string? MoveAfterIdentification) -> void
+*REMOVED*JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ElementIdentification.get -> string!
+*REMOVED*JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ElementIdentification.init -> void
+*REMOVED*JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ElementMoveCommandViewModel(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel! original) -> void
+*REMOVED*JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ElementMoveCommandViewModel(string! ElementIdentification, string? MoveAfterIdentification) -> void
+*REMOVED*JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.MoveAfterIdentification.get -> string?
+*REMOVED*JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.MoveAfterIdentification.init -> void
 *REMOVED*JoinRpg.Common.WebComponents.FormRow.Label.get -> string!
+*REMOVED*override JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.Equals(object? obj) -> bool
+*REMOVED*override JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.GetHashCode() -> int
+*REMOVED*override JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.ToString() -> string!
+*REMOVED*static JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.operator !=(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? left, JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? right) -> bool
+*REMOVED*static JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.operator ==(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? left, JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? right) -> bool
+*REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.<Clone>$() -> JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel!
+*REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.EqualityContract.get -> System.Type!
+*REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.Equals(JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel? other) -> bool
+*REMOVED*virtual JoinRpg.Common.WebComponents.ElementMoving.ElementMoveCommandViewModel.PrintMembers(System.Text.StringBuilder! builder) -> bool
 JoinRpg.Common.WebComponents.FormRow.Label.get -> string?
 JoinRpg.Common.WebComponents.JoinDropdownButton.GroupSize.get -> JoinRpg.Common.WebComponents.SizeStyleEnum?
 JoinRpg.Common.WebComponents.JoinDropdownButton.GroupSize.set -> void

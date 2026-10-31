@@ -13,9 +13,6 @@ public interface IPlotUriLocator
     Uri GetVersionUri(PlotVersionIdentification versionId);
 
     Uri GetPrintVersionUri(PlotVersionIdentification versionId);
-
-    /// <summary>Куда отправлять перестановку вводных в сюжете.</summary>
-    Uri GetReorderElementsUri(ProjectIdentification projectId);
 }
 
 public static class PlotElementAnchor
