@@ -19,6 +19,13 @@ namespace JoinRpg.WebPortal.Managers.AdminTools;
 /// полного возврата нет: он и так виден в «Статусе» как <c>ref</c>.
 /// </para>
 /// <para>
+/// Ещё четыре колонки — наши, из сверки списка с базой (ADR028): «Ссылка на заявку» рядом со ссылкой
+/// на пользователя, а «Ссылка на операцию», «Сверка с JoinRpg» и «Восстановление» в конце. В «Сверке» —
+/// исход словами, а не значение перечисления: выгрузку читают глазами. В «Восстановлении» — причина,
+/// по которой строку нельзя восстановить автоматически; пустая ячейка при «потерян» означает,
+/// что можно.
+/// </para>
+/// <para>
 /// Заголовки — строки, видимые пользователю, поэтому они русские: так же сделано в
 /// <c>CustomExporter</c>. Заголовок «Назначение платежа» сохранён по таблице, хотя значение
 /// колонки — название проекта: JoinRpg формирует назначение как
@@ -63,11 +70,15 @@ public class PscbPaymentsCsvExporter : IGeneratorFrontend<PscbPaymentListRow>
         new Column("Способ", p => p.PaymentMethod),
         new Column("Пользователь", p => p.UserId),
         new Column("Ссылка на пользователя", p => p.UserUrl),
+        new Column("Ссылка на заявку", p => p.ClaimUrl),
         new Column("Email пользователя", p => p.UserEmail),
         new Column("Комментарий плательщика", p => p.PayerComment),
         new Column("Код ошибки", p => p.ErrorCode),
         new Column("Код процессинга", p => p.ErrorSubCode),
         new Column("Состояние", p => p.ErrorDescription),
+        new Column("Ссылка на операцию", p => p.OperationUrl),
+        new Column("Сверка с JoinRpg", p => p.MatchStateText),
+        new Column("Восстановление", p => p.RestoreBlockReason),
     ];
 
     private static string Money(decimal value) => value.ToString("0.##", CultureInfo.InvariantCulture);

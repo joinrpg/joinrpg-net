@@ -305,4 +305,52 @@ internal class ClaimsRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ct
 
         return await MapToClaimWithPlayer(query);
     }
+
+    /// <summary>
+    /// Номера заявок игроков проекта — во всех статусах и без агрегатов (ADR028)
+    /// </summary>
+    public async Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
+    {
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        var players = userIds.Select(userId => userId.Value).ToList();
+        var predicate = PredicateBuilder.New<Claim>()
+            .And(ClaimPredicates.GetForProject(projectId))
+            .And(claim => players.Contains(claim.PlayerUserId));
+
+        var result = await Ctx.ClaimSet
+            .AsExpandable()
+            .Where(predicate)
+            .Select(claim => new { claim.PlayerUserId, claim.ClaimId })
+            .ToListAsync();
+
+        return [.. result.Select(claim => new PlayerClaimId(
+            new UserIdentification(claim.PlayerUserId),
+            new ClaimIdentification(projectId, claim.ClaimId)))];
+    }
+
+    /// <summary>
+    /// Заявки, в чьём обсуждении лежат перечисленные комментарии, — одним запросом (ADR028)
+    /// </summary>
+    public async Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds)
+    {
+        if (commentIds.Count == 0)
+        {
+            return [];
+        }
+
+        var ids = commentIds.ToList();
+        var result = await (
+            from comment in Ctx.Set<Comment>()
+            join claim in Ctx.Set<Claim>() on comment.CommentDiscussionId equals claim.CommentDiscussionId
+            where ids.Contains(comment.CommentId)
+            select new { comment.CommentId, claim.ProjectId, claim.ClaimId }).ToListAsync();
+
+        return [.. result.Select(found => new CommentClaimId(
+            found.CommentId,
+            new ClaimIdentification(found.ProjectId, found.ClaimId)))];
+    }
 }

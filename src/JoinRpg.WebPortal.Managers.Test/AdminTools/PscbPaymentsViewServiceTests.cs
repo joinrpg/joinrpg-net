@@ -1,20 +1,12 @@
-using System.Net;
-using System.Text;
-using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Data.Interfaces.Finances;
-using JoinRpg.DataModel;
-using JoinRpg.DataModel.Users;
-using JoinRpg.DomainTypes;
-using JoinRpg.DomainTypes.Interfaces;
-using JoinRpg.DomainTypes.Users;
-using JoinRpg.Interfaces;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Search;
-using JoinRpg.Web.AdminTools.PscbPayments;
 using JoinRpg.WebPortal.Managers.AdminTools;
+using JoinRpg.WebPortal.Managers.Test.AdminTools.Pscb;
+using JoinRpg.XGameApi.Contract.Pscb;
 using Microsoft.Extensions.Logging.Abstractions;
 using PscbApi;
+using static JoinRpg.WebPortal.Managers.Test.AdminTools.Pscb.PscbPaymentsTestData;
 
 namespace JoinRpg.WebPortal.Managers.Test.AdminTools;
 
@@ -30,8 +22,6 @@ namespace JoinRpg.WebPortal.Managers.Test.AdminTools;
 /// </remarks>
 public class PscbPaymentsViewServiceTests
 {
-    private static readonly DateTimeOffset From = new(2026, 10, 1, 0, 0, 0, TimeSpan.FromHours(3));
-
     [Fact]
     public async Task FillsTheUserAndProjectLinks()
     {
@@ -52,7 +42,7 @@ public class PscbPaymentsViewServiceTests
     [Fact]
     public async Task LeavesTheUserLinkEmptyWhenTheAccountIsNotANumber()
     {
-        var service = CreateService(new FakeSearchService(), new FakeUserRepository(), Payment("1", account: "not-a-number", details: null));
+        var service = CreateService(new FakeSearchService(), new PscbFakeUserRepository(), Payment("1", account: "not-a-number", details: null));
 
         var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
 
@@ -68,7 +58,7 @@ public class PscbPaymentsViewServiceTests
     [Fact]
     public async Task FindsTheUserByEmailWhenTheIdFromThePaymentIsNotFound()
     {
-        var users = new FakeUserRepository();
+        var users = new PscbFakeUserRepository();
         users.AddByEmail("vasya@example.com", 7);
         var service = CreateService(
             new FakeSearchService(),
@@ -107,7 +97,7 @@ public class PscbPaymentsViewServiceTests
     [Fact]
     public async Task SearchesEachDistinctEmailOnce()
     {
-        var users = new FakeUserRepository();
+        var users = new PscbFakeUserRepository();
         users.AddByEmail("vasya@example.com", 7);
         var service = CreateService(
             new FakeSearchService(),
@@ -153,7 +143,7 @@ public class PscbPaymentsViewServiceTests
     {
         var service = CreateService(
             new FakeSearchService(),
-            new FakeUserRepository(),
+            new PscbFakeUserRepository(),
             Payment("1", account: "999", details: null, email: "vasya@example.com"),
             Payment("2", account: "999", details: null, email: "vasya@example.com"),
             Payment("3", account: "not-a-number", details: null));
@@ -182,7 +172,7 @@ public class PscbPaymentsViewServiceTests
     {
         var service = CreateService(
             new FakeSearchService(),
-            new FakeUserRepository(),
+            new PscbFakeUserRepository(),
             Payment("1", account: "1181", details: null),
             Payment("2", account: "126", details: null),
             Payment("3", account: "not-a-number", details: null),
@@ -413,217 +403,597 @@ public class PscbPaymentsViewServiceTests
         row.RefundUrl.ShouldBe("https://joinrpg.test/42/finance/9002");
     }
 
-    private static string TicketPurpose(string projectName)
-        => PscbPaymentViewModelBuilder.TicketPurposePrefix + projectName;
-
-    private static PscbPaymentsQuery Query() => new(From, From.AddDays(5), null, null, false);
-
-    private static string Payment(string orderId, string? account, string? details, string? email = null, string? refunds = null)
-        => $$"""{"orderId":"{{orderId}}","paymentId":"11","amount":100.0,"state":"end","account":{{Quote(account)}},"email":{{Quote(email)}},"details":{{Quote(details)}},"refunds":{{refunds ?? "null"}}}""";
-
-    private static string Quote(string? value) => value is null ? "null" : "\"" + value + "\"";
-
-    private static FakeUserRepository Users(params int[] existingIds)
+    /// <summary>
+    /// <c>orderId</c> банка это <c>CommentId</c> нашей операции, поэтому найденная операция даёт
+    /// и исход сверки, и ссылку на себя, и ссылку на свою заявку (ADR028).
+    /// </summary>
+    [Fact]
+    public async Task MarksTheRowWhoseOperationIsFoundAsSettled()
     {
-        var users = new FakeUserRepository();
-        foreach (var id in existingIds)
-        {
-            users.AddExisting(id);
-        }
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(643617);
+        var service = CreateService(new FakeSearchService(), Users(42), finances, Payment("0000643617", account: "42", details: null));
 
-        return users;
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Settled);
+        row.MatchStateText.ShouldBe("проведён");
+        row.OperationUrl.ShouldBe("https://joinrpg.test/42/finance/643617");
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/42/claim/7/edit");
     }
 
-    private static PscbPaymentsViewService CreateService(FakeSearchService search, FakeUserRepository users, params string[] payments)
+    /// <summary>
+    /// Потерянный платёж — деньги у банка есть, а операции у нас нет. Заявки у такой строки тоже
+    /// нет: сверка её не определяет, это делает восстановление.
+    /// </summary>
+    [Fact]
+    public async Task MarksTheRowWithoutAnOperationAsLost()
+    {
+        var service = CreateService(new FakeSearchService(), Users(42), Payment("0000643617", account: "42", details: null));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.MatchStateText.ShouldBe("потерян");
+        row.OperationUrl.ShouldBeNull();
+        row.ClaimUrl.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Существующая операция не правится, но и молча не пропускается: <c>Declined</c> при
+    /// оплаченном платеже банка — расхождение, которое админ должен видеть (ADR028).
+    /// </summary>
+    [Fact]
+    public async Task MarksAnExistingButUnsettledOperationAsNotSettled()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(1, FinanceOperationState.Declined);
+        var service = CreateService(new FakeSearchService(), Users(42), finances, Payment("0000000001", account: "42", details: null));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.NotSettled);
+        row.MatchStateText.ShouldBe("не проведён");
+        row.OperationUrl.ShouldBe("https://joinrpg.test/42/finance/1");
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/42/claim/7/edit");
+    }
+
+    /// <summary>
+    /// Возврат банк зафиксировал, а проведённой операции возврата у нас нет: восстанавливается
+    /// только возврат, поэтому исход отдельный.
+    /// </summary>
+    [Fact]
+    public async Task MarksTheRefundWeHaveNotRecordedAsRefundMissing()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(637705);
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(258),
+            finances,
+            Payment(
+                "0000637705",
+                account: "258",
+                details: null,
+                refunds: """[{"refundId":"1115846166","state":"END","amount":100.0}]""",
+                state: "ref"));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.RefundedByBank.ShouldBeTrue();
+        row.RefundUrl.ShouldBeNull();
+        row.MatchState.ShouldBe(PscbPaymentMatchState.RefundMissing);
+        row.MatchStateText.ShouldBe("нет возврата");
+    }
+
+    [Fact]
+    public async Task MarksTheRefundWeHaveRecordedAsSettled()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(637705);
+        finances.AddRefund(637705, new DateTime(2026, 9, 8));
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(258),
+            finances,
+            Payment(
+                "0000637705",
+                account: "258",
+                details: null,
+                refunds: """[{"refundId":"1115846166","state":"END","amount":100.0}]""",
+                state: "ref"));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.RefundUrl.ShouldNotBeNull();
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Settled);
+    }
+
+    /// <summary>
+    /// Просроченный платёж денег не принёс, поэтому потерянным не считается: восстанавливать
+    /// нечего, даже если операции у нас нет.
+    /// </summary>
+    [Fact]
+    public async Task MarksTheExpiredPaymentAsNoMoney()
+    {
+        var service = CreateService(new FakeSearchService(), Users(42), Payment("0000000001", account: "42", details: null, state: "exp"));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.NoMoney);
+        row.MatchStateText.ShouldBe("денег нет");
+    }
+
+    /// <summary>
+    /// Заброшенную попытку банк переименовывает, и её <c>orderId</c> числом не является: операции
+    /// с таким номером быть не может, и сверять нечего.
+    /// </summary>
+    [Fact]
+    public async Task MarksTheReplacedOrderIdAsNoRecord()
+    {
+        var service = CreateService(new FakeSearchService(), Users(42), Payment("__REPLACED_0000644272", account: "42", details: null));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.NoRecord);
+        row.MatchStateText.ShouldBe("не платёж JoinRpg");
+    }
+
+    /// <summary>
+    /// Сверка спрашивает операции одним запросом на весь список, а не по одному на платёж,
+    /// и не спрашивает про номера, которые числом не являются.
+    /// </summary>
+    [Fact]
+    public async Task AsksForTheOperationsOnceForTheWholeList()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(2);
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(42),
+            finances,
+            Payment("0000000001", account: "42", details: null),
+            Payment("0000000002", account: "42", details: null),
+            Payment("__REPLACED_0000000003", account: "42", details: null));
+
+        var result = await service.GetPayments(Query());
+
+        result.Payments.Count.ShouldBe(3);
+        finances.OperationRequests.ShouldBe([1, 2]);
+    }
+
+    /// <summary>
+    /// Потерянный платёж встанет на заявку с наименьшим номером среди всех заявок плательщика
+    /// в проекте — заказчик разрешил брать и закрытые, потому что потерянный платёж бывает и на них.
+    /// </summary>
+    [Fact]
+    public async Task PlansTheLostPaymentIntoTheFirstClaimOfThePayer()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 101);
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.RestoreBlockReason.ShouldBeNull();
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/7/claim/55/edit");
+    }
+
+    /// <summary>
+    /// Комментарий с номером платежа уже лежит в обсуждении заявки (например, его вернули
+    /// инструменты DRP без операции): обсуждение называет заявку достовернее эвристики
+    /// наименьшего номера, поэтому план и ссылка выбирают именно её — даже когда у плательщика
+    /// есть заявка с меньшим номером.
+    /// </summary>
+    [Fact]
+    public async Task PlansTheLostPaymentIntoTheClaimOfTheExistingComment()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        claims.AddClaim(7, 42, claimId: 101);
+        claims.AddClaimComment(commentId: 1, projectId: 7, claimId: 101);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.RestoreBlockReason.ShouldBeNull();
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/7/claim/101/edit");
+        // Запрос о комментариях один и пачкой — по distinct-номерам потерянных строк.
+        claims.CommentIdRequests.ShouldHaveSingleItem().ShouldBe([1]);
+    }
+
+    /// <summary>
+    /// Комментарий найден в обсуждении заявки другого проекта: платёж туда вставать не должен
+    /// (тип оплаты выбран для определённого проекта), поэтому план откатывается к заявке
+    /// с наименьшим номером у плательщика.
+    /// </summary>
+    [Fact]
+    public async Task IgnoresTheCommentClaimOfAnotherProject()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        claims.AddClaimComment(commentId: 1, projectId: 9, claimId: 101);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.RestoreBlockReason.ShouldBeNull();
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/7/claim/55/edit");
+    }
+
+    /// <summary>
+    /// Возврат пишется туда же, откуда пришёл платёж: заявка берётся у найденной операции,
+    /// поэтому ни плательщик, ни название проекта для такой строки не нужны.
+    /// </summary>
+    [Fact]
+    public async Task PlansTheMissingRefundOntoTheClaimOfTheFoundOperation()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(637705, claimId: 9);
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(42);
+        var service = CreateService(
+            new FakeSearchService(),
+            new PscbFakeUserRepository(),
+            finances,
+            new PscbFakeClaimsRepository(),
+            projects,
+            Payment(
+                "0000637705",
+                account: null,
+                details: null,
+                refunds: """[{"refundId":"1115846166","state":"END","amount":100.0}]""",
+                state: "ref"));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.RefundMissing);
+        row.RestoreBlockReason.ShouldBeNull();
+        row.ClaimUrl.ShouldBe("https://joinrpg.test/42/claim/9/edit");
+    }
+
+    [Fact]
+    public async Task RefusesToRestoreWhenThePayerIsNotResolved()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, new PscbFakeUserRepository(), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.RestoreBlockReason.ShouldBe("плательщик не определён");
+        row.ClaimUrl.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RefusesToRestoreWhenTheProjectIsNotResolved()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(new FakeSearchService(), Users(42), finances, claims, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
+            .RestoreBlockReason.ShouldBe("проект не определён");
+    }
+
+    /// <summary>
+    /// Заблокированный проект восстанавливают инструменты DRP, а не админская страница (ADR023).
+    /// </summary>
+    [Fact]
+    public async Task RefusesToRestoreIntoABlockedProject()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddBlockedProject(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
+            .RestoreBlockReason.ShouldBe("проект заблокирован, его восстанавливают инструментами DRP");
+    }
+
+    [Fact]
+    public async Task RefusesToRestoreWhenTheProjectIsNotReadyForOnlinePayments()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddProjectWithoutOnlinePaymentType(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
+            .RestoreBlockReason.ShouldBe("в проекте нет типа онлайн-оплаты");
+    }
+
+    /// <summary>
+    /// Онлайн-оплату в проекте могли с тех пор выключить: тип оплаты удаляется только мягко,
+    /// а платёж случился, когда он работал. Единственный выключенный тип восстановлению не мешает.
+    /// </summary>
+    [Fact]
+    public async Task RestoresIntoADisabledOnlinePaymentType()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddProjectWithDisabledOnlinePaymentType(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Lost);
+        row.RestoreBlockReason.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Два выключенных типа при ни одном активном — та же неоднозначность, что и два активных:
+    /// угадывать, на какой из них пришёл платёж, нельзя.
+    /// </summary>
+    [Fact]
+    public async Task RefusesToRestoreWhenTwoOnlinePaymentTypesAreDisabled()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddProjectWithTwoDisabledOnlinePaymentTypes(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
+            .RestoreBlockReason.ShouldBe("в проекте несколько типов онлайн-оплаты и ни один не активен");
+    }
+
+    /// <summary>
+    /// Боевой путь берёт единственный активный онлайн-тип через <c>SingleOrDefault</c>, поэтому
+    /// два типа — та же неопределённость, что и ни одного.
+    /// </summary>
+    [Fact]
+    public async Task RefusesToRestoreWhenTheProjectHasTwoOnlinePaymentTypes()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddProjectWithTwoOnlinePaymentTypes(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
+            .RestoreBlockReason.ShouldBe("в проекте несколько активных типов онлайн-оплаты");
+    }
+
+    [Fact]
+    public async Task RefusesToRestoreWhenThePayerHasNoClaimInTheProject()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(7);
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), new PscbFakeClaimsRepository(), projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.RestoreBlockReason.ShouldBe("у плательщика нет заявки в проекте");
+        row.ClaimUrl.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// <c>FinanceOperation.MoneyAmount</c> — целые рубли, а JoinRpg всегда отправляет банку целые:
+    /// копейки означают чужой платёж, и округление исказило бы деньги.
+    /// </summary>
+    [Fact]
+    public async Task RefusesToRestoreAnAmountWithKopecks()
+    {
+        var service = CreateService(new FakeSearchService(), Users(42), Payment("0000000001", account: "42", details: null, amount: "100.50"));
+
+        (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
+            .RestoreBlockReason.ShouldBe("сумма с копейками, а операция хранит целые рубли");
+    }
+
+    /// <summary>
+    /// Частичных возвратов <c>PaymentsService</c> не реализует, и операция возврата у нас
+    /// одна на платёж, поэтому возврат не на всю сумму уходит человеку.
+    /// </summary>
+    [Fact]
+    public async Task RefusesToRestoreAPartialRefund()
+    {
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(1);
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(42),
+            finances,
+            Payment(
+                "0000000001",
+                account: "42",
+                details: null,
+                refunds: """[{"refundId":"1115846166","state":"END","amount":40.0}]""",
+                state: "ref"));
+
+        (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem()
+            .RestoreBlockReason.ShouldBe("частичный возврат");
+    }
+
+    /// <summary>
+    /// Заявки и метаданные проектов спрашиваются пачками: один запрос на проект, а не на строку.
+    /// </summary>
+    [Fact]
+    public async Task AsksForTheClaimsOncePerProject()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var projects = new PscbFakeProjectMetadataRepository();
+        projects.AddReadyProject(7);
+        var claims = new PscbFakeClaimsRepository();
+        claims.AddClaim(7, 42, claimId: 55);
+        claims.AddClaim(7, 43, claimId: 56);
+        var service = CreateService(
+            search,
+            Users(42, 43),
+            new FakeFinanceOperationsRepository(),
+            claims,
+            projects,
+            Payment("0000000001", account: "42", details: TicketPurpose("Проект")),
+            Payment("0000000002", account: "43", details: TicketPurpose("Проект")));
+
+        var rows = (await service.GetPayments(Query())).Payments.ToList();
+
+        rows.Count.ShouldBe(2);
+        rows.ShouldAllBe(row => row.RestoreBlockReason == null);
+        var request = claims.Requests.ShouldHaveSingleItem();
+        request.ProjectId.ShouldBe(7);
+        request.UserIds.ShouldBe([42, 43], ignoreOrder: true);
+        projects.Requests.ShouldBe([7]);
+    }
+
+    /// <summary>
+    /// Когда терять нечего, за заявками и метаданными проектов сервис не ходит вовсе: у обычного
+    /// списка платежей, где всё проведено, эти запросы были бы лишними.
+    /// </summary>
+    [Fact]
+    public async Task DoesNotAskForTheClaimsWhenNothingIsLost()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(1);
+        var claims = new PscbFakeClaimsRepository();
+        var projects = new PscbFakeProjectMetadataRepository();
+        var service = CreateService(search, Users(42), finances, claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+
+        var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
+
+        row.MatchState.ShouldBe(PscbPaymentMatchState.Settled);
+        claims.Requests.ShouldBeEmpty();
+        claims.CommentIdRequests.ShouldBeEmpty();
+        projects.Requests.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Поломка обогащения не уносит список: строки банка остаются, исход сверки неизвестен,
+    /// а сбой виден по <c>ReconciliationFailed</c> — восстановление по такому списку отказывает,
+    /// иначе молчание прочиталось бы как «нечего восстанавливать».
+    /// </summary>
+    [Fact]
+    public async Task ReportsTheReconciliationFailureWithoutLosingTheList()
+    {
+        var finances = new FakeFinanceOperationsRepository { Throw = new InvalidOperationException("База недоступна") };
+        var service = CreateService(
+            new FakeSearchService(),
+            Users(42),
+            finances,
+            Payment("0000000001", account: "42", details: null));
+
+        var result = await service.GetPayments(Query());
+
+        result.IsSuccess.ShouldBeTrue();
+        result.ReconciliationFailed.ShouldBeTrue();
+        var row = result.Payments.ShouldHaveSingleItem();
+        row.OrderId.ShouldBe("0000000001");
+        row.MatchState.ShouldBeNull();
+        row.MatchStateText.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ClearsPartialEnrichmentWhenBuildingTheRestorePlanFails()
+    {
+        var search = new FakeSearchService();
+        search.AddProject(7, "Проект");
+        var finances = new FakeFinanceOperationsRepository();
+        finances.AddOperation(2);
+        finances.AddRefund(2, new DateTime(2026, 5, 12));
+        var projects = new PscbFakeProjectMetadataRepository { Throw = new InvalidOperationException("Метаданные недоступны") };
+        var service = CreateService(
+            search,
+            Users(42),
+            finances,
+            new PscbFakeClaimsRepository(),
+            projects,
+            Payment("1", account: "42", details: TicketPurpose("Проект")),
+            Payment("2", account: "42", details: TicketPurpose("Проект")));
+
+        var (result, plans) = await service.GetPaymentsWithRestorePlan(Query());
+
+        result.IsSuccess.ShouldBeTrue();
+        result.ReconciliationFailed.ShouldBeTrue();
+        result.Payments.Count.ShouldBe(2);
+        plans.ShouldBeEmpty();
+        foreach (var row in result.Payments)
+        {
+            row.Amount.ShouldBe(100);
+            row.UserUrl.ShouldBeNull();
+            row.ProjectUrl.ShouldBeNull();
+            row.RefundUrl.ShouldBeNull();
+            row.OperationUrl.ShouldBeNull();
+            row.ClaimUrl.ShouldBeNull();
+            row.MatchState.ShouldBeNull();
+            row.MatchStateText.ShouldBeNull();
+            row.RestoreBlockReason.ShouldBeNull();
+        }
+    }
+
+    private static PscbPaymentsViewService CreateService(FakeSearchService search, PscbFakeUserRepository users, params string[] payments)
         => CreateService(search, users, new FakeFinanceOperationsRepository(), payments);
 
     private static PscbPaymentsViewService CreateService(
         FakeSearchService search,
-        FakeUserRepository users,
+        PscbFakeUserRepository users,
         FakeFinanceOperationsRepository finances,
+        params string[] payments)
+        => CreateService(search, users, finances, new PscbFakeClaimsRepository(), payments);
+
+    private static PscbPaymentsViewService CreateService(
+        FakeSearchService search,
+        PscbFakeUserRepository users,
+        FakeFinanceOperationsRepository finances,
+        PscbFakeClaimsRepository claims,
+        params string[] payments)
+        => CreateService(search, users, finances, claims, new PscbFakeProjectMetadataRepository(), payments);
+
+    private static PscbPaymentsViewService CreateService(
+        FakeSearchService search,
+        PscbFakeUserRepository users,
+        FakeFinanceOperationsRepository finances,
+        PscbFakeClaimsRepository claims,
+        PscbFakeProjectMetadataRepository projects,
         params string[] payments)
         => new(
             new FakeBankSecrets(),
             new StubHttpClientFactory(payments),
             new FakeUriService(),
             new FakeFinanceOperationUri(),
+            new FakeClaimUri(),
             search,
             users,
             finances,
+            claims,
+            projects,
             NullLogger<PscbPaymentsViewService>.Instance);
-
-    private sealed class FakeBankSecrets : IBankSecretsProvider
-    {
-        public bool Debug => false;
-
-        public bool DebugOutput => false;
-
-        public string ApiEndpoint => "https://bank.example.invalid";
-
-        public string ApiDebugEndpoint => "https://demo.bank.example.invalid";
-
-        public string MerchantId => "47607";
-
-        public string ApiKey => "secret-key";
-
-        public string ApiDebugKey => "debug-secret-key";
-
-        public string BankSystemPaymentUrl => "https://bank.example.invalid/payment/{0}";
-
-        public string BankSystemDebugPaymentUrl => "https://demo.bank.example.invalid/payment/{0}";
-    }
-
-    private sealed class StubHttpClientFactory(string[] payments) : IHttpClientFactory
-    {
-        public HttpClient CreateClient(string name)
-            => new(new SingleResponseHandler($$"""{"payments":[{{string.Join(",", payments)}}]}"""));
-    }
-
-    private sealed class SingleResponseHandler(string body) : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(body, Encoding.UTF8, "application/json"),
-            });
-    }
-
-    private sealed class FakeUriService : IUriService
-    {
-        public string Get(ILinkable link) => GetUri(link).AbsoluteUri;
-
-        public Uri GetUri(ILinkable link) => link.LinkType switch
-        {
-            LinkType.ResultUser => new($"https://joinrpg.test/user/{link.Identification}", UriKind.Absolute),
-            LinkType.Project => new($"https://joinrpg.test/{link.ProjectId}/home", UriKind.Absolute),
-            _ => throw new ArgumentOutOfRangeException(nameof(link), link.LinkType, null),
-        };
-    }
-
-    private sealed class FakeSearchService : ISearchService
-    {
-        private readonly List<(int ProjectId, string Name)> projects = [];
-
-        public List<string> Requests { get; } = [];
-
-        public void AddProject(int projectId, string name) => projects.Add((projectId, name));
-
-        public Task<IReadOnlyCollection<SearchResult>> SearchAsync(
-            int? currentUserId,
-            string searchString,
-            IReadOnlyCollection<LinkType>? linkTypes = null,
-            ProjectIdentification? projectId = null)
-        {
-            Requests.Add(searchString);
-
-            // Как и настоящий провайдер, ищем вхождением подстроки — тест обязан показать,
-            // что сервис не полагается на точное совпадение со стороны поиска.
-            IReadOnlyCollection<SearchResult> found = [.. projects
-                .Where(p => p.Name.Contains(searchString, StringComparison.Ordinal))
-                .Select(p => new SearchResult
-                {
-                    LinkType = LinkType.Project,
-                    Name = p.Name,
-                    Description = new MarkdownDbValue(""),
-                    Identification = p.ProjectId.ToString(),
-                    ProjectId = p.ProjectId,
-                    IsPublic = true,
-                    IsActive = true,
-                })];
-
-            return Task.FromResult(found);
-        }
-    }
-
-    /// <summary>
-    /// Пользователи в базе: кто существует по id и кто находится по email. Остальные члены
-    /// интерфейса шлюзу не нужны.
-    /// </summary>
-    private sealed class FakeUserRepository : IUserRepository
-    {
-        private readonly HashSet<int> existingIds = [];
-        private readonly Dictionary<string, int> idsByEmail = new(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Запрошенные id — в том порядке, в котором их прислал сервис.
-        /// </summary>
-        public List<int> IdRequests { get; } = [];
-
-        /// <summary>
-        /// Email'ы, по которым сервис искал пользователя.
-        /// </summary>
-        public List<string> EmailRequests { get; } = [];
-
-        public void AddExisting(int userId) => existingIds.Add(userId);
-
-        public void AddByEmail(string email, int userId) => idsByEmail[email] = userId;
-
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetUserInfoHeaders(IReadOnlyCollection<UserIdentification> userIds)
-        {
-            IdRequests.AddRange(userIds.Select(id => id.Value));
-
-            IReadOnlyCollection<UserInfoHeader> found = [.. userIds
-                .Where(id => existingIds.Contains(id.Value))
-                .Select(id => new UserInfoHeader(id, new UserDisplayName($"Пользователь {id.Value}", null), Avatar: null))];
-
-            return Task.FromResult(found);
-        }
-
-        public Task<UserIdentification?> FindByEmail(string email)
-        {
-            EmailRequests.Add(email);
-            UserIdentification? found = idsByEmail.TryGetValue(email, out var userId) ? new UserIdentification(userId) : null;
-            return Task.FromResult(found);
-        }
-
-        public Task<User> GetById(int id) => throw new NotImplementedException();
-        public Task<User> WithProfile(int userId) => throw new NotImplementedException();
-        public Task<User> GetWithSubscribe(int currentUserId) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<UserIdentification>> GetUsersWithoutSelectedAvatar(KeySetPagination pagination) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<User>> GetUsersWithAvatars(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        public Task<UserAvatar> LoadAvatar(AvatarIdentification userAvatarId) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<UserAvatar>> LoadAvatars(IReadOnlyCollection<AvatarIdentification> avatarIds) => throw new NotImplementedException();
-        public Task<UserInfo?> GetUserInfo(UserIdentification userId) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<UserInfo>> GetUserInfos(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        public Task<IReadOnlyDictionary<UserIdentification, PhoneNumber>> GetPhoneNumbers(IReadOnlyCollection<UserIdentification> userIds) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<UserInfoHeader>> GetAdminUserInfoHeaders() => throw new NotImplementedException();
-        public Task<UserIdentification?> FindByVk(string vkId) => throw new NotImplementedException();
-        public Task<UserIdentification?> FindByTelegram(string telegramUsername) => throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Возвраты в базе: какие операции возвращены, на сколько и когда.
-    /// </summary>
-    private sealed class FakeFinanceOperationsRepository : IFinanceOperationsRepository
-    {
-        private readonly List<ApprovedRefund> refunds = [];
-
-        /// <summary>
-        /// Идентификаторы операций, по которым сервис спрашивал возвраты.
-        /// </summary>
-        public List<int> Requests { get; } = [];
-
-        public void AddRefund(int refundedOperationId, DateTime operationDate, int refundCommentId = 9001)
-            => refunds.Add(new ApprovedRefund(
-                refundedOperationId,
-                new FinanceOperationIdentification(42, 7, refundCommentId),
-                operationDate));
-
-        public Task<IReadOnlyCollection<ApprovedRefund>> GetApprovedRefunds(IReadOnlyCollection<int> refundedOperationIds)
-        {
-            Requests.AddRange(refundedOperationIds);
-
-            IReadOnlyCollection<ApprovedRefund> found = [.. refunds.Where(refund => refundedOperationIds.Contains(refund.RefundedOperationId))];
-            return Task.FromResult(found);
-        }
-
-        public Task<IReadOnlyCollection<FinanceOperationIdentification>> GetUnfinishedOperations(KeySetPagination? pagination = null)
-            => throw new NotImplementedException();
-    }
-
-    private sealed class FakeFinanceOperationUri : IUriLocator<FinanceOperationIdentification>
-    {
-        public Uri GetUri(FinanceOperationIdentification target)
-            => new($"https://joinrpg.test/{target.ProjectId.Value}/finance/{target.FinanceOperationId}", UriKind.Absolute);
-    }
 }

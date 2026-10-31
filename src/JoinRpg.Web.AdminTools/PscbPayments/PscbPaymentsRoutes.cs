@@ -19,6 +19,9 @@ public static class PscbPaymentsRoutes
     /// <summary>Параметры одного платежа.</summary>
     public const string GetPaymentInfo = "/webapi/PscbPayments/GetPaymentInfo";
 
+    /// <summary>Восстановление одной потерянной строки (ADR028). POST, тело — параметры периода и orderId строки.</summary>
+    public const string RestoreRow = "/webapi/PscbPayments/RestoreRow";
+
     /// <summary>Значение <c>format</c> для выгрузки списка платежей файлом.</summary>
     public const string CsvFormat = "csv";
 

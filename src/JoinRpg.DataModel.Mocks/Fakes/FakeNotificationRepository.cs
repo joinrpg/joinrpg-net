@@ -35,6 +35,8 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
     private readonly ConcurrentQueue<NotificationMessageForRecipient> claimNotifications = new();
     private readonly ConcurrentQueue<(ClaimIdentification ClaimId, DateTimeOffset CreatedBefore)> getClaimNotificationsForClaimCalls = new();
 
+    private readonly ConcurrentQueue<NotificationMessageCreateDto> insertedNotifications = new();
+
     private readonly ConcurrentQueue<NotificationLogItemDto> logItems = new();
     private readonly ConcurrentQueue<(UserIdentification? Recipient, NotificationChannel? Channel, int Limit)> getNotificationLogCalls = new();
 
@@ -85,8 +87,22 @@ public sealed class FakeNotificationRepository(IReadOnlyDictionary<NotificationC
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Сообщения, принятые <see cref="InsertNotifications"/>. Записываются и пустой очередью
+    /// (<see cref="CreateNullObject"/>): интеграционные тесты хоста без базы уведомлений проверяют
+    /// по ним, что уведомление действительно поставлено в очередь.
+    /// </summary>
+    public IReadOnlyCollection<NotificationMessageCreateDto> InsertedNotifications => insertedNotifications;
+
     public Task InsertNotifications(NotificationMessageCreateDto[] notifications)
-        => isNullObject ? Task.CompletedTask : throw new NotSupportedException();
+    {
+        foreach (var notification in notifications)
+        {
+            insertedNotifications.Enqueue(notification);
+        }
+
+        return isNullObject ? Task.CompletedTask : throw new NotSupportedException();
+    }
 
     public Task<IReadOnlyCollection<NotificationHistoryDto>> GetLastNotificationsForUser(
         UserIdentification userId,

@@ -1,5 +1,6 @@
 @using JoinRpg.XGameApi.Contract.Pscb
 @inject IPscbPaymentsClient Client
+@inject IPscbPaymentsRestoreClient RestoreClient
 
 <JoinPanel>
     <Header>Список платежей</Header>
@@ -15,7 +16,7 @@
             <JoinAlert Variation="VariationStyleEnum.Danger">@listError</JoinAlert>
         }
 
-        <fieldset class="form-horizontal" disabled="@listLoading">
+        <fieldset class="form-horizontal" disabled="@(listLoading || restoring)">
             <div class="form-group">
                 <label class="control-label col-md-3">Период с</label>
                 <div class="col-md-3">
@@ -64,6 +65,24 @@
             </div>
         </fieldset>
 
+        @if (restoreRows.Count > 0)
+        {
+            <p class="pscb-restore-summary">
+                Восстановлено платежей: <b>@restoreRows.Sum(row => row.RestoredPaymentsCount)</b>, возвратов: <b>@restoreRows.Sum(row => row.RestoredRefundsCount)</b>.
+                Не восстановлено: <b>@FailedRowCount</b> — причины ниже.
+            </p>
+            <ul class="pscb-restore-rows">
+                @foreach (var row in restoreRows)
+                {
+                    <li class="@RestoreRowClass(row.Outcome)">@row.OrderId: @row.Message</li>
+                }
+            </ul>
+        }
+        @if (restoreError is not null)
+        {
+            <JoinAlert Variation="VariationStyleEnum.Danger">@restoreError</JoinAlert>
+        }
+
         @if (list is not null)
         {
             if (!list.IsSuccess)
@@ -78,14 +97,30 @@
             }
             else
             {
+                @if (list.ReconciliationFailed)
+                {
+                    <JoinAlert Variation="VariationStyleEnum.Danger">
+                        Сверка списка с базой не удалась — восстановление невозможно. Обновите список и попробуйте ещё раз.
+                    </JoinAlert>
+                }
                 <p>
                     Найдено платежей: <b>@list.Payments.Count</b>, запросов к банку: <b>@list.RequestCount</b>.
+                </p>
+                <p class="text-muted">
+                    «Сверка» — чем строка банка кончилась у нас: <span class="text-danger">потерян</span> —
+                    денег банк получил, а операции в JoinRpg нет; <span class="text-danger">нет возврата</span> —
+                    платёж проведён, а возврата у нас нет; <span class="text-warning">не проведён</span> —
+                    операция есть, но не проведена, и инструмент её не трогает. Номер платежа — ссылка
+                    на операцию, «заявка» под пользователем — на заявку, к которой она относится.
+                    Строка под исходом — причина, по которой восстановить автоматически нельзя;
+                    у «потерян» без такой строки восстановление сработает.
                 </p>
                 <div style="overflow-x: auto;">
                     <table class="table table-striped table-condensed">
                         <thead>
                             <tr>
                                 <th>Номер платежа</th>
+                                <th>Сверка</th>
                                 <th>Номер в банке</th>
                                 <th>Назначение платежа</th>
                                 <th>Сумма</th>
@@ -101,7 +136,26 @@
                             @foreach (var payment in list.Payments)
                             {
                                 <tr>
-                                    <td>@payment.OrderId</td>
+                                    <td>
+                                        @if (payment.OperationUrl is { } operationUrl)
+                                        {
+                                            <a href="@operationUrl">@payment.OrderId</a>
+                                        }
+                                        else
+                                        {
+                                            @payment.OrderId
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (payment.MatchStateText is { } matchStateText)
+                                        {
+                                            <span class="@MatchStateClass(payment.MatchState)">@matchStateText</span>
+                                        }
+                                        @if (payment.RestoreBlockReason is { } blockReason)
+                                        {
+                                            <div class="text-muted">@blockReason</div>
+                                        }
+                                    </td>
                                     <td>@payment.BankPaymentId</td>
                                     <td>
                                         @if (payment.ProjectUrl is { } projectUrl)
@@ -139,6 +193,10 @@
                                         {
                                             @payment.UserId
                                         }
+                                        @if (payment.ClaimUrl is { } claimUrl)
+                                        {
+                                            <div><a href="@claimUrl">заявка</a></div>
+                                        }
                                     </td>
                                     <td>@payment.UserEmail</td>
                                     <td>@payment.ErrorDescription</td>
@@ -148,6 +206,15 @@
                     </table>
                 </div>
 
+                @if (RestoreCandidateCount > 0)
+                {
+                    <p>
+                        <JoinButton Label="Восстановить потерянные" ProgressLabel="Восстанавливаем..."
+                                    AutoConfirm="true" AutoConfirmMessage="@RestoreConfirmMessage"
+                                    OnClick="RestoreLost" InProgress="restoring" AutoProgress="false"
+                                    Disabled="listLoading" />
+                    </p>
+                }
                 @if (list.UnresolvedProjects.Count > 0)
                 {
                     <h4>Проекты, которые не удалось определить</h4>
@@ -350,6 +417,17 @@
     private string? listError;
     private string? csvHref;
 
+    // Запрос, которым список был загружен успешно в последний раз: восстановление отправляет
+    // серверу именно его — сервер заново скачивает период и работает от свежих данных банка.
+    private PscbPaymentsQuery? lastQuery;
+    private bool restoring;
+    private List<PscbRestoreRowResult> restoreRows = [];
+    private string? restoreError;
+
+    // Защита со стороны острова, чтобы админ не запустил огромный прогон: каждая строка
+    // атомарна и отчитывается сама, поэтому это ограничитель удобства, а не безопасности.
+    private const int MaxRecordsPerRun = 100;
+
     private string? orderId;
     private bool detailsRequestCardData;
     private bool detailsRequestFiscalData;
@@ -360,9 +438,8 @@
 
     private async Task LoadPayments()
     {
-        list = null;
-        listError = null;
-        csvHref = null;
+        restoreRows = [];
+        restoreError = null;
         if (listDateFrom is not { } from || listDateTo is not { } to)
         {
             return;
@@ -376,21 +453,124 @@
             Parse<PscbPaymentKind>(listPaymentType),
             listRequestFiscalData);
 
+        await LoadPayments(query);
+    }
+
+    private async Task LoadPayments(PscbPaymentsQuery query)
+    {
+        list = null;
+        listError = null;
+        csvHref = null;
         listLoading = true;
         try
         {
             list = await Client.GetPayments(query);
             csvHref = PscbPaymentsRoutes.GetPaymentsUri(query, PscbPaymentsRoutes.CsvFormat);
+            lastQuery = list.IsSuccess ? query : null;
         }
         catch (Exception ex)
         {
             listError = ex.Message;
+            lastQuery = null;
         }
         finally
         {
             listLoading = false;
         }
     }
+
+    // Строки, которые восстановление считает кандидатами: видимость кнопки не зависит от
+    // RestoreBlockReason — что восстанавливать, решает сервер по свежим данным банка.
+    private int RestoreCandidateCount
+        => list is { IsSuccess: true, ReconciliationFailed: false } loaded
+            ? loaded.Payments.Count(p => p.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing)
+            : 0;
+
+    // Строки, по которым прогон действительно отправит запрос: заблокированные уже показали
+    // причину в таблице, и запрос по ним лишь потратил бы ещё одно скачивание банка впустую.
+    private IReadOnlyCollection<PscbPaymentListRow> RestoreRowsToRequest
+        => list is { IsSuccess: true, ReconciliationFailed: false } loaded
+            ? [.. loaded.Payments.Where(p => p.MatchState is PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing
+                && p.RestoreBlockReason is null)]
+            : [];
+
+    // Сколько записей может восстановить строка: потерянный платёж с возвратом — две,
+    // только платёж или пропущенный возврат — одна. Это оценка для клиентского ограничения
+    // MaxRecordsPerRun; фактические итоги приходят в ответах на построчные запросы.
+    private static int RecordsIn(PscbPaymentListRow row)
+        => row.MatchState == PscbPaymentMatchState.RefundMissing || !row.RefundedByBank ? 1 : 2;
+
+    private string RestoreConfirmMessage
+        => $"Восстановить строк: {RestoreCandidateCount}? Каждая строка — отдельный запрос: сервер заново скачает период из банка и создаст недостающие операции и возвраты. Отменить результат нельзя.";
+
+    private async Task RestoreLost()
+    {
+        if (lastQuery is not { } query || list is not { ReconciliationFailed: false } || restoring)
+        {
+            return;
+        }
+        restoring = true;
+        restoreRows = [];
+        restoreError = null;
+        try
+        {
+            var rows = RestoreRowsToRequest;
+            var recordCount = rows.Sum(RecordsIn);
+            if (recordCount > MaxRecordsPerRun)
+            {
+                restoreError = $"За один прогон восстанавливается не больше {MaxRecordsPerRun} записей, а в списке их {recordCount}. Сузьте диапазон.";
+                return;
+            }
+
+            // По одной строке на запрос, в порядке списка: после неудачной следующая начинается
+            // с чистого контекста на сервере — как в FinanceRestorePanel.ApplySelected.
+            foreach (var row in rows)
+            {
+                try
+                {
+                    var rowResult = await RestoreClient.RestoreRow(new PscbRestoreRowRequest(query, row.OrderId!));
+                    restoreRows.Add(rowResult);
+                }
+                // BadRequest от контроллера — отказ всего прогона (банк не вернул список, сверка
+                // не удалась): строкам после него идти бессмысленно.
+                catch (ServerProblemException ex)
+                {
+                    restoreError = ex.Message;
+                    break;
+                }
+                // Сбой одной строки не уносит остальные: исход попадает в отчёт, прогон продолжается.
+                catch (Exception ex)
+                {
+                    restoreRows.Add(new PscbRestoreRowResult
+                    {
+                        OrderId = row.OrderId,
+                        Outcome = PscbRestoreRowOutcome.Failed,
+                        Message = ex.Message,
+                    });
+                }
+                // Прогресс виден по ходу прогона, а не только в конце.
+                StateHasChanged();
+            }
+        }
+        finally
+        {
+            restoring = false;
+        }
+        if (restoreRows.Count > 0)
+        {
+            // Тем же запросом: восстановленные строки становятся ссылками на операции.
+            await LoadPayments(query);
+        }
+    }
+
+    private int FailedRowCount => restoreRows.Count(row => row.Outcome == PscbRestoreRowOutcome.Failed);
+
+    private static string RestoreRowClass(PscbRestoreRowOutcome outcome) => outcome switch
+    {
+        PscbRestoreRowOutcome.Failed => "text-danger",
+        PscbRestoreRowOutcome.Restored => "text-success",
+        _ => "text-muted",
+    };
 
     private async Task LoadPaymentInfo()
     {
@@ -420,6 +600,15 @@
     // DateTimeOffset(DateTime) для DateTimeKind.Unspecified берёт локальное смещение — в браузере
     // это часовой пояс админа, что и нужно для выборки по дню.
     private static DateTimeOffset StartOfDay(DateTime date) => new(date.Date);
+
+    // «Потерян» и «нет возврата» — то, ради чего страница существует, поэтому они видны сразу;
+    // «не проведён» — расхождение, которое инструмент не правит; остальное приглушено.
+    private static string MatchStateClass(PscbPaymentMatchState? matchState) => matchState switch
+    {
+        PscbPaymentMatchState.Lost or PscbPaymentMatchState.RefundMissing => "text-danger",
+        PscbPaymentMatchState.NotSettled => "text-warning",
+        _ => "text-muted",
+    };
 
     private static TEnum? Parse<TEnum>(string value) where TEnum : struct, Enum
         => Enum.TryParse<TEnum>(value, ignoreCase: true, out var parsed) ? parsed : null;

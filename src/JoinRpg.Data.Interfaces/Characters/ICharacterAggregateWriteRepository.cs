@@ -121,6 +121,49 @@ public interface ICharacterAggregateWriteRepository
     /// </returns>
     /// <exception cref="JoinRpgEntityNotFoundException">Заявки нет в указанном проекте; ничего не вставлено.</exception>
     Task<RestoredFinanceOperationInsert> InsertRestoredFinanceOperation(RestoredFinanceOperationRow operation);
+
+    /// <summary>
+    /// Вставляет потерянный онлайн-платёж или его возврат — комментарий, текст, финансовую операцию
+    /// и банковские реквизиты (ADR028).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Платёж вставляется **с прежним номером**: <c>orderId</c> банка это <c>CommentId</c>, и
+    /// восстановленный платёж обязан остаться тем же платежом, чтобы повторная сверка нашла его
+    /// по номеру, а будущий возврат обратился в банк с номером, который банк знает. Прежний номер
+    /// вставляется только ниже текущего счётчика IDENTITY комментариев — такая вставка его не двигает;
+    /// занятый номер даёт отказ, а не вставку с новым.
+    /// </para>
+    /// <para>
+    /// Возврат вставляется с новым номером: у возврата нет собственного номера в банке, банк
+    /// возвращает деньги против <c>orderId</c> исходного платежа, — и со ссылкой на исходную
+    /// операцию, ровно как боевой <c>PaymentsService.RefundAsync</c>. Повторный прогон узнаётся
+    /// по уже существующему проведённому возврату той же операции.
+    /// </para>
+    /// <para>
+    /// Время разделено: комментарий встаёт в обсуждение заявки датой денег
+    /// (<see cref="LostPaymentRow.OperationDate"/>) — на своё место в истории, а запись операции
+    /// несёт момент восстановления (<see cref="LostPaymentRow.CreatedAt"/> и
+    /// <see cref="LostPaymentRow.ChangedAt"/>) — единственный след того, когда строка появилась
+    /// в базе.
+    /// </para>
+    /// <para>
+    /// Выполняется сразу, одной своей транзакцией, мимо <c>SaveChanges</c>, тем же каркасом батча,
+    /// что и <see cref="InsertRestoredFinanceOperation"/>. Отличается видом операции (<c>Online</c>
+    /// и <c>Refund</c> вместо <c>Submit</c>), пустым действием комментария (у боевого онлайн-платежа
+    /// его нет) и строкой <c>FinanceOperationBankDetails</c>.
+    /// </para>
+    /// <para>
+    /// Взнос заявки не пересчитывает: это делает вызывающий, у которого есть доменный снимок
+    /// заявки (ADR021).
+    /// </para>
+    /// </remarks>
+    /// <returns>
+    /// Исход и номер операции: вставленной, уже существующей (<c>AlreadyExists</c> — повторный прогон)
+    /// либо запрошенный при конфликте номера.
+    /// </returns>
+    /// <exception cref="JoinRpgEntityNotFoundException">Заявки нет в указанном проекте; ничего не вставлено.</exception>
+    Task<RestoredFinanceOperationInsert> InsertLostPayment(LostPaymentRow payment);
 }
 
 /// <summary>
@@ -173,6 +216,51 @@ public record RestoredFinanceOperationRow(
 /// Идентификатор вставленной или уже бывшей операции; при конфликте — запрошенный.
 /// </param>
 public record RestoredFinanceOperationInsert(RestoredCommentInsertResult Result, int OperationId);
+
+/// <summary>
+/// Строка потерянного онлайн-платежа или его возврата (ADR028). Комментарий операции видим игроку
+/// и без действия: у боевого онлайн-платежа <c>ExtraAction</c> нет, а <c>PaidFee</c> означало бы
+/// взнос, принятый мастером руками.
+/// </summary>
+/// <param name="OperationType"><c>Online</c> для платежа и <c>Refund</c> для возврата.</param>
+/// <param name="OperationId">
+/// Прежний номер операции — <c>orderId</c> банка как число, он же идентификатор комментария.
+/// Обязателен для платежа и всегда <c>null</c> для возврата: у возврата своего номера в банке нет.
+/// </param>
+/// <param name="RefundedOperationId">
+/// Номер операции, которую возвращают. Обязателен для возврата и всегда <c>null</c> для платежа.
+/// </param>
+/// <param name="AuthorId">Автор комментария — служебный пользователь онлайн-платежей.</param>
+/// <param name="IsCommentByPlayer">
+/// Комментарий со стороны игрока. У служебного пользователя нет мастерского доступа, поэтому
+/// <c>true</c>; при <c>false</c> его автор попал бы в кандидаты в бывшие мастера (ADR019, §6).
+/// </param>
+/// <param name="MoneyAmount">Со знаком: у платежа положительная, у возврата отрицательная.</param>
+/// <param name="CreatedAt">
+/// Момент восстановления (UTC) — время создания записи операции, а не денег; время создания и
+/// правки комментария берётся вместо него из <c>OperationDate</c>.
+/// </param>
+/// <param name="ChangedAt">Момент восстановления (UTC) — время правки записи операции.</param>
+/// <param name="OperationDate">
+/// Дата денег — <c>stateDate</c> банка в UTC; она же — время создания и правки комментария.
+/// </param>
+/// <param name="BankOperationKey">Номер платежа в банке (<c>paymentId</c>).</param>
+/// <param name="BankRefundKey">Номер возврата в банке (<c>refundId</c>); только для возврата.</param>
+public record LostPaymentRow(
+    ClaimIdentification ClaimId,
+    FinanceOperationType OperationType,
+    int? OperationId,
+    int? RefundedOperationId,
+    UserIdentification AuthorId,
+    bool IsCommentByPlayer,
+    int MoneyAmount,
+    PaymentTypeIdentification PaymentTypeId,
+    DateTime CreatedAt,
+    DateTime ChangedAt,
+    DateTime OperationDate,
+    string Text,
+    string BankOperationKey,
+    string? BankRefundKey);
 
 /// <summary>
 /// Минимум, без которого строки персонажа нет.

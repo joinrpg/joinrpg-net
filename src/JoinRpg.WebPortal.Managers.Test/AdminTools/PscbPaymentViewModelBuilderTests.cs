@@ -1,3 +1,7 @@
+using System.Globalization;
+using JoinRpg.Common.PrimitiveTypes.Users;
+using JoinRpg.DomainTypes.Characters.Claims.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.WebPortal.Managers.AdminTools;
 using JoinRpg.XGameApi.Contract.Pscb;
@@ -7,15 +11,16 @@ using PscbApi.Models;
 namespace JoinRpg.WebPortal.Managers.Test.AdminTools;
 
 /// <summary>
-/// Преобразование ответа банка в контракт шлюза и набор колонок CSV (ADR025).
+/// Преобразование ответа банка в контракт шлюза (ADR025), исход сверки строки с нашей базой
+/// и набор колонок CSV (ADR028).
 /// </summary>
 public class PscbPaymentViewModelBuilderTests
 {
     private static readonly DateTimeOffset StatusDate = new(2026, 1, 5, 10, 0, 0, TimeSpan.FromHours(3));
 
     /// <summary>
-    /// Ровно те заголовки и ровно в том порядке, что заданы таблицей в ADR025. Порядок важен:
-    /// выгрузку сверяют с ней глазами.
+    /// Ровно те заголовки и ровно в том порядке, что заданы таблицами в ADR025 и ADR028. Порядок
+    /// важен: выгрузку сверяют с ними глазами.
     /// </summary>
     private static readonly string[] ExpectedCsvHeaders =
     [
@@ -36,11 +41,15 @@ public class PscbPaymentViewModelBuilderTests
         "Способ",
         "Пользователь",
         "Ссылка на пользователя",
+        "Ссылка на заявку",
         "Email пользователя",
         "Комментарий плательщика",
         "Код ошибки",
         "Код процессинга",
         "Состояние",
+        "Ссылка на операцию",
+        "Сверка с JoinRpg",
+        "Восстановление",
     ];
 
     [Fact]
@@ -239,11 +248,11 @@ public class PscbPaymentViewModelBuilderTests
     }
 
     /// <summary>
-    /// Ссылки проставляет сервис, у которого есть IUriService и поиск по проектам, — Builder
-    /// обязан оставить их пустыми, иначе их не отличить от настоящих.
+    /// Ссылки и исход сверки проставляет сервис, у которого есть база, IUriService и поиск
+    /// по проектам, — Builder обязан оставить их пустыми, иначе их не отличить от настоящих.
     /// </summary>
     [Fact]
-    public void LeavesUrlsForTheServiceToFill()
+    public void LeavesUrlsAndMatchStateForTheServiceToFill()
     {
         var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem
         {
@@ -257,7 +266,207 @@ public class PscbPaymentViewModelBuilderTests
         row.ProjectUrl.ShouldBeNull();
         row.RefundUrl.ShouldBeNull();
         row.Refunds.ShouldBeEmpty();
+        row.OperationUrl.ShouldBeNull();
+        row.ClaimUrl.ShouldBeNull();
+        row.MatchState.ShouldBeNull();
+        row.MatchStateText.ShouldBeNull();
+        row.RestoreBlockReason.ShouldBeNull();
     }
+
+    /// <summary>
+    /// Отказы, которые видны по самим данным банка, до всякой базы (ADR028): сумма обязана быть
+    /// целым положительным числом рублей, потому что <c>FinanceOperation.MoneyAmount</c> — <c>int</c>,
+    /// а возврат — один и на всю сумму, потому что частичных возвратов у нас нет.
+    /// </summary>
+    [Theory]
+    [InlineData("100", false, new double[0], null)]
+    [InlineData("100.00", false, new double[0], null)]
+    [InlineData("100.50", false, new double[0], "сумма с копейками, а операция хранит целые рубли")]
+    [InlineData("0", false, new double[0], "сумма неположительная")]
+    [InlineData("-100", false, new double[0], "сумма неположительная")]
+    [InlineData("2147483648", false, new double[0], "сумма превышает допустимую для операции")]
+    [InlineData("100", true, new[] { 100.0 }, null)]
+    [InlineData("100", true, new[] { 40.0 }, "частичный возврат")]
+    [InlineData("100", true, new double[0], "банк отметил возврат, но не прислал его данных")]
+    [InlineData("100", true, new[] { 50.0, 50.0 }, "несколько возвратов у одного платежа")]
+    [InlineData("100", false, new[] { 40.0 }, "частичный возврат")]
+    [InlineData("100", false, new[] { 50.0, 50.0 }, "несколько возвратов у одного платежа")]
+    [InlineData("100", false, new[] { 100.0 }, "банк не подтвердил полный возврат")]
+    public void ReportsTheRestoreBlockersVisibleInTheBankData(string amount, bool refundedByBank, double[] refundAmounts, string? expected)
+    {
+        var row = new PscbPaymentListRow
+        {
+            OrderId = "0000000001",
+            Amount = decimal.Parse(amount, CultureInfo.InvariantCulture),
+            RefundedByBank = refundedByBank,
+            Refunds =
+            [
+                .. refundAmounts.Select(refundAmount =>
+                    new PscbRefundInfo { RefundId = "1", Status = "END", Amount = (decimal)refundAmount })
+            ],
+        };
+
+        PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row)
+            .ShouldBe(expected);
+    }
+
+    /// <summary>
+    /// Колонка «Восстановление» обязана донести причину до выгрузки: по ней админ понимает,
+    /// что разбирать руками.
+    /// </summary>
+    [Fact]
+    public void CsvRendersTheRestoreBlockReason()
+    {
+        var columns = new PscbPaymentsCsvExporter().ParseColumns().ToList();
+
+        ByName(columns, "Восстановление")
+            .ExtractValue(new PscbPaymentListRow { OrderId = "0000000001", RestoreBlockReason = "у плательщика нет заявки в проекте" })
+            .ShouldBe("у плательщика нет заявки в проекте");
+    }
+
+    /// <summary>
+    /// Тип оплаты для восстановленного платежа (ADR028): единственный активный подходит, активный
+    /// побеждает выключенный, а единственный выключенный подходит тоже — платёж случился, когда
+    /// онлайн-оплата работала, и тип оплаты удаляется только мягко.
+    /// </summary>
+    [Fact]
+    public void ChoosesTheSingleOnlinePaymentTypeEvenWhenItIsDisabled()
+    {
+        var active = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness(OnlinePaymentType(3, isActive: true)));
+        active.PaymentTypeId.ShouldBe(new PaymentTypeIdentification(7, 3));
+        active.Reason.ShouldBeNull();
+
+        var disabled = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness(OnlinePaymentType(3, isActive: false)));
+        disabled.PaymentTypeId.ShouldBe(new PaymentTypeIdentification(7, 3));
+        disabled.Reason.ShouldBeNull();
+
+        var mixed = PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
+            Readiness(OnlinePaymentType(3, isActive: true), OnlinePaymentType(4, isActive: false)));
+        mixed.PaymentTypeId.ShouldBe(new PaymentTypeIdentification(7, 3));
+        mixed.Reason.ShouldBeNull();
+    }
+
+    /// <summary>
+    /// Неоднозначность восстанавливать нельзя: угадывать тип оплаты за админа инструмент не будет.
+    /// </summary>
+    [Fact]
+    public void RefusesToChooseBetweenSeveralOnlinePaymentTypes()
+    {
+        PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
+                Readiness(OnlinePaymentType(3, isActive: true), OnlinePaymentType(4, isActive: true)))
+            .Reason.ShouldBe("в проекте несколько активных типов онлайн-оплаты");
+
+        PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(
+                Readiness(OnlinePaymentType(3, isActive: false), OnlinePaymentType(4, isActive: false)))
+            .Reason.ShouldBe("в проекте несколько типов онлайн-оплаты и ни один не активен");
+
+        PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(Readiness())
+            .Reason.ShouldBe("в проекте нет типа онлайн-оплаты");
+
+        // Метаданных проекта нет — восстанавливать некуда, как и при пустом наборе типов.
+        PscbPaymentViewModelBuilder.ChooseOnlinePaymentType(null)
+            .Reason.ShouldBe("в проекте нет типа онлайн-оплаты");
+    }
+
+    /// <summary>
+    /// Набор онлайн-типов проекта 7 — ровно то, что сервис передаёт выбору, отфильтровав
+    /// метаданные проекта по <see cref="PaymentTypeKind.Online"/>.
+    /// </summary>
+    private static PaymentTypeInfo[] Readiness(params PaymentTypeInfo[] paymentTypes)
+        => paymentTypes;
+
+    private static PaymentTypeInfo OnlinePaymentType(int paymentTypeId, bool isActive)
+        => new(
+            PaymentTypeKind.Online,
+            isActive,
+            new UserInfoHeader(new UserIdentification(1), new UserDisplayName("Мастер", null), Avatar: null),
+            new PaymentTypeIdentification(7, paymentTypeId),
+            "Онлайн",
+            IsDefault: false);
+
+    /// <summary>
+    /// Исход сверки (ADR028): строка банка плюс то, что нашлось у нас по <c>orderId</c>.
+    /// Проведённой считается онлайн-операция в состоянии <c>Approved</c> — тот же критерий,
+    /// по которому ночная сверка перестаёт спрашивать банк про платёж.
+    /// </summary>
+    [Theory]
+    // Операции нет, а деньги банк получил — это и есть потерянный платёж.
+    [InlineData("0000000001", PaymentStatus.Paid, null, null, PscbPaymentMatchState.Lost)]
+    // Операция есть и проведена.
+    [InlineData("0000000001", PaymentStatus.Paid, FinanceOperationState.Approved, FinanceOperationType.Online, PscbPaymentMatchState.Settled)]
+    // Операция есть, но не проведена: инструмент её не трогает, а расхождение показывает.
+    [InlineData("0000000001", PaymentStatus.Paid, FinanceOperationState.Proposed, FinanceOperationType.Online, PscbPaymentMatchState.NotSettled)]
+    [InlineData("0000000001", PaymentStatus.Paid, FinanceOperationState.Declined, FinanceOperationType.Online, PscbPaymentMatchState.NotSettled)]
+    [InlineData("0000000001", PaymentStatus.Paid, FinanceOperationState.Invalid, FinanceOperationType.Online, PscbPaymentMatchState.NotSettled)]
+    [InlineData("0000000001", PaymentStatus.Paid, FinanceOperationState.Expired, FinanceOperationType.Online, PscbPaymentMatchState.NotSettled)]
+    // Проведённая, но не онлайн-операция: взнос, принятый мастером руками, платежом банка не является.
+    [InlineData("0000000001", PaymentStatus.Paid, FinanceOperationState.Approved, FinanceOperationType.Submit, PscbPaymentMatchState.NotSettled)]
+    // Денег банк не получил: сверять нечего, даже если операции у нас нет.
+    [InlineData("0000000001", PaymentStatus.Expired, null, null, PscbPaymentMatchState.NoMoney)]
+    [InlineData("0000000001", PaymentStatus.Error, null, null, PscbPaymentMatchState.NoMoney)]
+    [InlineData("0000000001", PaymentStatus.New, null, null, PscbPaymentMatchState.NoMoney)]
+    [InlineData("0000000001", PaymentStatus.Hold, null, null, PscbPaymentMatchState.NoMoney)]
+    // orderId не число: операции с таким номером быть не может.
+    [InlineData("__REPLACED_0000000001", PaymentStatus.Paid, null, null, PscbPaymentMatchState.NoRecord)]
+    public void ClassifiesTheBankRowAgainstOurOperation(
+        string orderId,
+        PaymentStatus bankStatus,
+        FinanceOperationState? state,
+        FinanceOperationType? type,
+        PscbPaymentMatchState expected)
+        => PscbPaymentViewModelBuilder.Classify(
+                PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem { Id = "11", OrderId = orderId, Status = bankStatus }),
+                state,
+                type)
+            .ShouldBe(expected);
+
+    /// <summary>
+    /// Пропущенный возврат виден по отсутствию ссылки на нашу операцию возврата: её проставляет
+    /// сервис по проведённым возвратам из базы, поэтому сверка идёт после него.
+    /// </summary>
+    [Fact]
+    public void ClassifiesTheRefundTheBankHasButWeHaveNot()
+    {
+        var row = PscbPaymentViewModelBuilder.BuildListRow(new PaymentsListItem
+        {
+            Id = "11",
+            OrderId = "0000637705",
+            Status = PaymentStatus.Refunded,
+        });
+
+        PscbPaymentViewModelBuilder.Classify(row, FinanceOperationState.Approved, FinanceOperationType.Online)
+            .ShouldBe(PscbPaymentMatchState.RefundMissing);
+
+        row.RefundUrl = "https://joinrpg.test/42/finance/9001";
+
+        PscbPaymentViewModelBuilder.Classify(row, FinanceOperationState.Approved, FinanceOperationType.Online)
+            .ShouldBe(PscbPaymentMatchState.Settled);
+    }
+
+    /// <summary>
+    /// Имя есть у каждого исхода сверки: значение без перевода попало бы в таблицу и в выгрузку
+    /// значением перечисления. Приём тот же, что в <c>ProjectRestorePlanViewBuilderTest</c>.
+    /// </summary>
+    [Fact]
+    public void NamesEveryMatchState()
+    {
+        foreach (var state in Enum.GetValues<PscbPaymentMatchState>())
+        {
+            var name = PscbPaymentViewModelBuilder.MatchStateName(state);
+
+            name.ShouldNotBeNullOrWhiteSpace();
+            // Совпадение со значением перечисления означало бы, что перевода нет и сработал
+            // запасной путь.
+            name.ShouldNotBe(state.ToString());
+        }
+    }
+
+    /// <summary>
+    /// Строка, которую не сверяли, не выдаёт себя за какой-нибудь из исходов.
+    /// </summary>
+    [Fact]
+    public void LeavesTheMatchStateNameEmptyWhenTheRowWasNotReconciled()
+        => PscbPaymentViewModelBuilder.MatchStateName(null).ShouldBeNull();
 
     [Fact]
     public void SplitsTheBankLastErrorInThreeAndToleratesItsAbsence()
@@ -436,6 +645,10 @@ public class PscbPaymentViewModelBuilderTests
         ByName(columns, "Статус возврата").ExtractValue(row).ShouldBeNull();
         ByName(columns, "Номер возврата в банке").ExtractValue(row).ShouldBeNull();
         ByName(columns, "Ссылка на возврат").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Ссылка на заявку").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Ссылка на операцию").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Сверка с JoinRpg").ExtractValue(row).ShouldBeNull();
+        ByName(columns, "Восстановление").ExtractValue(row).ShouldBeNull();
     }
 
     [Fact]
@@ -457,6 +670,10 @@ public class PscbPaymentViewModelBuilderTests
             PaymentMethod = "Банковская карта",
             UserId = "2658",
             UserUrl = "https://joinrpg.ru/user/2658",
+            ClaimUrl = "https://joinrpg.ru/42/claim/7/edit",
+            OperationUrl = "https://joinrpg.ru/42/claim/7/finance/643617",
+            MatchState = PscbPaymentMatchState.Settled,
+            MatchStateText = "проведён",
             ErrorCode = 0,
             ErrorSubCode = 51,
             ErrorDescription = "Платеж завершен",
@@ -471,6 +688,9 @@ public class PscbPaymentViewModelBuilderTests
         ByName(columns, "Дата").ExtractValue(row).ShouldBe("2026-01-05 10:00:00 +03:00");
         ByName(columns, "Пользователь").ExtractValue(row).ShouldBe("2658");
         ByName(columns, "Ссылка на пользователя").ExtractValue(row).ShouldBe("https://joinrpg.ru/user/2658");
+        ByName(columns, "Ссылка на заявку").ExtractValue(row).ShouldBe("https://joinrpg.ru/42/claim/7/edit");
+        ByName(columns, "Ссылка на операцию").ExtractValue(row).ShouldBe("https://joinrpg.ru/42/claim/7/finance/643617");
+        ByName(columns, "Сверка с JoinRpg").ExtractValue(row).ShouldBe("проведён");
         ByName(columns, "Код ошибки").ExtractValue(row).ShouldBe(0);
         ByName(columns, "Код процессинга").ExtractValue(row).ShouldBe(51);
         ByName(columns, "Состояние").ExtractValue(row).ShouldBe("Платеж завершен");
@@ -478,4 +698,22 @@ public class PscbPaymentViewModelBuilderTests
 
     private static ITableColumn ByName(IReadOnlyCollection<ITableColumn> columns, string name)
         => columns.Single(c => c.Name == name);
+
+    [Theory]
+    [InlineData("PROC")]
+    [InlineData("ERR")]
+    [InlineData("DELAY")]
+    [InlineData(null)]
+    public void RefusesARefundThatIsNotCompleted(string? status)
+    {
+        var row = new PscbPaymentListRow
+        {
+            Amount = 100,
+            RefundedByBank = true,
+            Refunds = [new PscbRefundInfo { Amount = 100, Status = status }],
+        };
+
+        PscbPaymentViewModelBuilder.RestoreBlockReasonFromBankData(row)
+            .ShouldBe("возврат не завершён");
+    }
 }

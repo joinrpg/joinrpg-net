@@ -84,6 +84,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<IProjectFieldOperationsClient, ProjectFieldOperationsClientImpl>()
                 .AddHttpClient<IUserAdminClient, UserAdminHttpClient>()
                 .AddHttpClient<JoinRpg.Web.AdminTools.UserMerge.IUserMergeClient, UserMergeHttpClient>()
-                .AddHttpClient<JoinRpg.Web.AdminTools.PscbPayments.IPscbPaymentsClient, PscbPaymentsHttpClient>();
+                .AddHttpClient<JoinRpg.Web.AdminTools.PscbPayments.IPscbPaymentsClient, PscbPaymentsHttpClient>()
+                .AddHttpClient<JoinRpg.Web.AdminTools.PscbPayments.IPscbPaymentsRestoreClient, PscbPaymentsRestoreHttpClient>();
     }
 }

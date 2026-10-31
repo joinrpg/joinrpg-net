@@ -73,6 +73,7 @@ public static class Services
             .AddTransient<IProjectFinanceSettingsService, ProjectFinanceSettingsService>()
             .AddTransient<IAccommodationTypeService, AccommodationTypeService>()
             .AddTransient<IPaymentsService, PaymentsService>()
+            .AddTransient<ILostPaymentsRestoreService, LostPaymentsRestoreService>()
             .AddTransient<CommentHelper>()
             // Операции заявки и форума (IClaimCommentOperation, IForumCommentOperation) регистрируются
             // вместе с ClaimServiceImpl и ForumServiceImpl в GetTypes — как все их интерфейсы.

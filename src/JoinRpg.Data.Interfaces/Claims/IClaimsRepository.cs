@@ -59,6 +59,37 @@ public interface IClaimsRepository : IDisposable
     Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
 
     /// <summary>
+    /// Номера заявок перечисленных игроков в одном проекте — во всех статусах и без агрегатов.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Только номера: полный агрегат заявки догружает персонажа, операции и игрока, но не проект,
+    /// а сверке списка платежей с базой (ADR028) нужен один номер.
+    /// </para>
+    /// <para>
+    /// Отклонённые и снятые с обсуждения заявки отдаются тоже: потерянный платёж бывает и на
+    /// закрытой заявке. Выбирает из них вызывающий.
+    /// </para>
+    /// </remarks>
+    Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds);
+
+    /// <summary>
+    /// Заявки, в чьём обсуждении лежат перечисленные комментарии, — одним запросом на весь набор.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Отдаются только комментарии, принадлежащие обсуждению заявки: комментарии форумных тем
+    /// отсутствуют по построению — ни одна заявка не ссылается на их обсуждение.
+    /// </para>
+    /// <para>
+    /// Назначение (ADR028): комментарий, возвращённый инструментами DRP без своей финансовой
+    /// операции, называет заявку достовернее, чем эвристика «наименьший номер среди заявок
+    /// плательщика в проекте».
+    /// </para>
+    /// </remarks>
+    Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds);
+
+    /// <summary>
     /// Число непрочитанных смотрящим комментариев в обсуждении каждой заявки игрока в любом статусе
     /// во всех проектах («Мои заявки» на профиле).
     /// </summary>
@@ -68,3 +99,17 @@ public interface IClaimsRepository : IDisposable
     Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForPlayerClaims(UserIdentification playerId, UserIdentification viewerId);
 
 }
+
+/// <summary>
+/// Заявка игрока в проекте: кто и какая заявка.
+/// </summary>
+/// <param name="UserId">Игрок (<c>Claim.PlayerUserId</c>).</param>
+/// <param name="ClaimId">Идентификатор заявки.</param>
+public record PlayerClaimId(UserIdentification UserId, ClaimIdentification ClaimId);
+
+/// <summary>
+/// Комментарий и заявка, в чьём обсуждении он лежит.
+/// </summary>
+/// <param name="CommentId">Идентификатор комментария.</param>
+/// <param name="ClaimId">Идентификатор заявки — владельца обсуждения комментария.</param>
+public record CommentClaimId(int CommentId, ClaimIdentification ClaimId);

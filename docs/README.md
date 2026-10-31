@@ -50,6 +50,7 @@
 - [ADR025: Админский шлюз к API ПСКБ — список платежей и параметры платежа](adr025-pscb-payments-gateway.md)
 - [ADR026: Обсуждение — доменный снимок и Razor-компоненты](adr026-comment-discussion.md)
 - [ADR027: Грид заявок мастера на основе кабинета капитана (UnifiedGrid)](adr027-unified-claim-grid.md)
+- [ADR028: Автоматическое восстановление потерянных платежей ПСКБ](adr028-pscb-lost-payments-restore.md)
 
 ## Быстрые ссылки
 

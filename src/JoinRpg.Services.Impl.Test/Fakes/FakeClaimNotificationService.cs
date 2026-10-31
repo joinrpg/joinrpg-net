@@ -25,8 +25,19 @@ internal sealed class FakeClaimNotificationService(List<object>? journal = null)
 
     public List<ClaimOnlinePaymentNotification> OnlinePayments { get; } = [];
 
+    /// <summary>
+    /// Имитация падения канала рассылки: нужно проверять, что уже записанное не откатывается
+    /// из-за уведомления.
+    /// </summary>
+    public bool FailOnSend { get; set; }
+
     public Task SendNotification(ClaimSimpleChangedNotification model)
     {
+        if (FailOnSend)
+        {
+            throw new InvalidOperationException("Канал рассылки недоступен");
+        }
+
         SimpleChanged.Add(model);
         Sent.Add(model);
         journal?.Add(model);
@@ -35,6 +46,11 @@ internal sealed class FakeClaimNotificationService(List<object>? journal = null)
 
     public Task SendNotification(ClaimOnlinePaymentNotification model)
     {
+        if (FailOnSend)
+        {
+            throw new InvalidOperationException("Канал рассылки недоступен");
+        }
+
         OnlinePayments.Add(model);
         Sent.Add(model);
         journal?.Add(model);

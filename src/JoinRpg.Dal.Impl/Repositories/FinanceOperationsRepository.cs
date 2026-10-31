@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces.Finances;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Interfaces;
 using LinqKit;
 
@@ -49,6 +50,33 @@ internal class FinanceOperationsRepository(MyDbContext ctx) : IFinanceOperations
         return [.. result.Select(r => new ApprovedRefund(
             r.RefundedOperationId!.Value,
             new FinanceOperationIdentification(r.ProjectId, r.ClaimId, r.CommentId),
+            r.OperationDate))];
+    }
+
+    /// <summary>
+    /// Операции по их идентификаторам
+    /// </summary>
+    /// <remarks>
+    /// Идентификатор операции — это <c>CommentId</c>, он же её первичный ключ, поэтому соединение
+    /// со списком банка идёт по числу и одним запросом на весь список.
+    /// </remarks>
+    public async Task<IReadOnlyCollection<MatchedOperation>> GetOperationsByCommentIds(IReadOnlyCollection<int> commentIds)
+    {
+        if (commentIds.Count == 0)
+        {
+            return [];
+        }
+
+        var query = ctx.Set<FinanceOperation>()
+                .Where(fo => commentIds.Contains(fo.CommentId))
+                .Select(fo => new { fo.ProjectId, fo.ClaimId, fo.CommentId, fo.State, fo.OperationType, fo.PaymentTypeId, fo.OperationDate });
+
+        var result = await query.ToArrayAsync();
+        return [.. result.Select(r => new MatchedOperation(
+            new FinanceOperationIdentification(r.ProjectId, r.ClaimId, r.CommentId),
+            r.State,
+            r.OperationType,
+            r.PaymentTypeId is { } paymentTypeId ? new PaymentTypeIdentification(r.ProjectId, paymentTypeId) : null,
             r.OperationDate))];
     }
 }
