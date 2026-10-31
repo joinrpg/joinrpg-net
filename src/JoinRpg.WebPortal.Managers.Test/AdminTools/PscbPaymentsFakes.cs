@@ -407,6 +407,7 @@ internal sealed class FakeFinanceOperationUri : IUriLocator<FinanceOperationIden
         => new($"https://joinrpg.test/{target.ProjectId.Value}/finance/{target.FinanceOperationId}", UriKind.Absolute);
 }
 
+
 internal sealed class FakeClaimUri : IUriLocator<ClaimIdentification>
 {
     public Uri GetUri(ClaimIdentification target)
