@@ -9,16 +9,19 @@ using JoinRpg.DomainTypes.Characters.Claims;
 namespace JoinRpg.DataModel.Mocks.Fakes;
 
 /// <summary>
-/// Read-репозиторий заявок поверх <see cref="MockedProject"/> — общий для всех тестовых проектов.
-/// Нужен, например, автоприёму, который перечитывает заявку заново, а не смотрит в мутированный
-/// граф предыдущей операции (ADR014, §7).
+/// Read-репозиторий заявок — общий для всех тестовых проектов. Работает в двух режимах:
+/// поверх <see cref="MockedProject"/> (нужен, например, автоприёму, который перечитывает заявку
+/// заново, а не смотрит в мутированный граф предыдущей операции — ADR014, §7) и без мока —
+/// на идентификаторах, наполняемых тестом напрямую (сверке платежей ПСКБ хватает кортежей
+/// «проект-игрок-заявка», без графа сущностей).
 /// </summary>
 /// <remarks>
 /// Реализованы ровно те методы, которые нужны проверяемым операциям; остальные бросают
 /// <see cref="NotSupportedException"/> намеренно — чтобы поход за незапланированными данными был
-/// виден в тесте, а не подменялся пустышкой.
+/// виден в тесте, а не подменялся пустышкой. То же с методами над моком, когда фейк создан
+/// без него.
 /// </remarks>
-public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
+public sealed class FakeClaimsRepository(MockedProject? mock = null) : IClaimsRepository
 {
     /// <summary>Заранее заготовленные заявки по (ProjectId, UserId) ответственного мастера.</summary>
     public Dictionary<(int ProjectId, int UserId), List<Claim>> ClaimsByResponsibleMaster { get; } = [];
@@ -28,10 +31,13 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
             ClaimsByResponsibleMaster.TryGetValue((projectId, userId), out var claims) ? claims : []);
 
     public Task<Claim?> GetClaim(ClaimIdentification claimId)
-        => Task.FromResult(mock.Project.Claims.SingleOrDefault(
+        => Task.FromResult(Mock.Project.Claims.SingleOrDefault(
             claim => claim.ProjectId == claimId.ProjectId.Value && claim.ClaimId == claimId.ClaimId));
 
     public void Dispose() { }
+
+    /// <summary>Мок, если фейк создан с ним; обращение без мока — незапланированный поход за данными.</summary>
+    private MockedProject Mock => mock ?? throw new NotSupportedException("Фейк создан без MockedProject");
 
     public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status) => throw new NotSupportedException();
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(UserIdentification userId, ClaimStatusSpec status) => throw new NotSupportedException();
@@ -56,15 +62,59 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
     /// <remarks>В отличие от <see cref="Headers"/>, выводится из мока: здесь важен статус заявки.</remarks>
     public Task<IReadOnlyCollection<ClaimWithPlayer>> GetApprovedClaimHeadersWithoutAccommodation(ProjectIdentification projectId)
         => Task.FromResult<IReadOnlyCollection<ClaimWithPlayer>>(
-            [.. mock.Project.Claims
+            [.. Mock.Project.Claims
                 .Where(claim => claim.ClaimStatus == ClaimStatus.Approved && claim.AccommodationRequest_Id == null)
                 .Select(ToHeader)]);
 
     public Task<IReadOnlyCollection<ClaimIdentification>> GetActiveClaimIdsWithoutAccommodation(ProjectIdentification projectId) => throw new NotSupportedException();
 
-    public Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds) => throw new NotSupportedException();
+    /// <summary>Заявки игроков в проектах — то, на что встанет потерянный платёж.</summary>
+    private readonly List<PlayerClaimId> playerClaims = [];
 
-    public Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds) => throw new NotSupportedException();
+    /// <summary>Комментарии, добавленные тестом напрямую через <see cref="AddClaimComment"/>.</summary>
+    private readonly List<CommentClaimId> commentClaims = [];
+
+    public void AddClaim(int projectId, int userId, int claimId)
+        => playerClaims.Add(new PlayerClaimId(
+            new UserIdentification(userId),
+            new ClaimIdentification(projectId, claimId)));
+
+    /// <summary>Комментарий в обсуждении заявки — так его нашёл бы настоящий запрос.</summary>
+    public void AddClaimComment(int commentId, int projectId, int claimId)
+        => commentClaims.Add(new CommentClaimId(commentId, new ClaimIdentification(projectId, claimId)));
+
+    /// <summary>
+    /// Запросы к заявкам игроков: проект и номера игроков, которых спрашивали одним вызовом, —
+    /// чтобы тест видел пачкование.
+    /// </summary>
+    public List<(int ProjectId, int[] UserIds)> PlayerIdRequests { get; } = [];
+
+    /// <summary>
+    /// Номера комментариев, которых спрашивали одним вызовом, — чтобы тест видел пачкование.
+    /// </summary>
+    public List<int[]> CommentIdRequests { get; } = [];
+
+    public Task<IReadOnlyCollection<PlayerClaimId>> GetClaimIdsForPlayers(ProjectIdentification projectId, IReadOnlyCollection<UserIdentification> userIds)
+    {
+        PlayerIdRequests.Add((projectId.Value, [.. userIds.Select(userId => userId.Value)]));
+
+        IReadOnlyCollection<PlayerClaimId> found =
+        [
+            .. playerClaims.Where(claim => claim.ClaimId.ProjectId == projectId && userIds.Contains(claim.UserId)),
+        ];
+        return Task.FromResult(found);
+    }
+
+    public Task<IReadOnlyCollection<CommentClaimId>> GetClaimIdsByCommentIds(IReadOnlyCollection<int> commentIds)
+    {
+        CommentIdRequests.Add([.. commentIds]);
+
+        IReadOnlyCollection<CommentClaimId> found =
+        [
+            .. commentClaims.Where(entry => commentIds.Contains(entry.CommentId)),
+        ];
+        return Task.FromResult(found);
+    }
 
     /// <summary>Заголовок заявки из мока — так его собрал бы настоящий репозиторий.</summary>
     public static ClaimWithPlayer ToHeader(Claim claim)
@@ -92,7 +142,7 @@ public sealed class FakeClaimsRepository(MockedProject mock) : IClaimsRepository
         }
         var groupIds = characterGroupsIds.Select(g => g.CharacterGroupId).ToHashSet();
         return Task.FromResult<IReadOnlyCollection<ClaimWithPlayer>>(
-            [.. mock.Project.Claims
+            [.. Mock.Project.Claims
                 .Where(claim => claim.IsApproved && claim.Character.ParentCharacterGroupIds.Any(groupIds.Contains))
                 .Select(ToHeader)]);
     }

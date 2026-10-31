@@ -573,7 +573,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddReadyProject(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 101);
         claims.AddClaim(7, 42, claimId: 55);
         var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
@@ -598,7 +598,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddReadyProject(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         claims.AddClaim(7, 42, claimId: 101);
         claims.AddClaimComment(commentId: 1, projectId: 7, claimId: 101);
@@ -625,7 +625,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddReadyProject(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         claims.AddClaimComment(commentId: 1, projectId: 9, claimId: 101);
         var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
@@ -652,7 +652,7 @@ public class PscbPaymentsViewServiceTests
             new FakeSearchService(),
             new PscbFakeUserRepository(),
             finances,
-            new PscbFakeClaimsRepository(),
+            new FakeClaimsRepository(),
             projects,
             Payment(
                 "0000637705",
@@ -675,7 +675,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddReadyProject(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         var service = CreateService(search, new PscbFakeUserRepository(), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
@@ -689,7 +689,7 @@ public class PscbPaymentsViewServiceTests
     public async Task RefusesToRestoreWhenTheProjectIsNotResolved()
     {
         var finances = new FakeFinanceOperationsRepository();
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         var service = CreateService(new FakeSearchService(), Users(42), finances, claims, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
@@ -707,7 +707,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddBlockedProject(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
@@ -722,7 +722,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddProjectWithoutOnlinePaymentType(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
@@ -741,7 +741,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddProjectWithDisabledOnlinePaymentType(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
@@ -762,7 +762,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddProjectWithTwoDisabledOnlinePaymentTypes(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
@@ -781,7 +781,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddProjectWithTwoOnlinePaymentTypes(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
@@ -796,7 +796,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddReadyProject(7);
-        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), new PscbFakeClaimsRepository(), projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
+        var service = CreateService(search, Users(42), new FakeFinanceOperationsRepository(), new FakeClaimsRepository(), projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
         var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
 
@@ -851,7 +851,7 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var projects = new PscbFakeProjectMetadataRepository();
         projects.AddReadyProject(7);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         claims.AddClaim(7, 42, claimId: 55);
         claims.AddClaim(7, 43, claimId: 56);
         var service = CreateService(
@@ -867,7 +867,7 @@ public class PscbPaymentsViewServiceTests
 
         rows.Count.ShouldBe(2);
         rows.ShouldAllBe(row => row.RestoreBlockReason == null);
-        var request = claims.Requests.ShouldHaveSingleItem();
+        var request = claims.PlayerIdRequests.ShouldHaveSingleItem();
         request.ProjectId.ShouldBe(7);
         request.UserIds.ShouldBe([42, 43], ignoreOrder: true);
         projects.Requests.ShouldBe([7]);
@@ -884,14 +884,14 @@ public class PscbPaymentsViewServiceTests
         search.AddProject(7, "Проект");
         var finances = new FakeFinanceOperationsRepository();
         finances.AddOperation(1);
-        var claims = new PscbFakeClaimsRepository();
+        var claims = new FakeClaimsRepository();
         var projects = new PscbFakeProjectMetadataRepository();
         var service = CreateService(search, Users(42), finances, claims, projects, Payment("0000000001", account: "42", details: TicketPurpose("Проект")));
 
         var row = (await service.GetPayments(Query())).Payments.ShouldHaveSingleItem();
 
         row.MatchState.ShouldBe(PscbPaymentMatchState.Settled);
-        claims.Requests.ShouldBeEmpty();
+        claims.PlayerIdRequests.ShouldBeEmpty();
         claims.CommentIdRequests.ShouldBeEmpty();
         projects.Requests.ShouldBeEmpty();
     }
@@ -934,7 +934,7 @@ public class PscbPaymentsViewServiceTests
             search,
             Users(42),
             finances,
-            new PscbFakeClaimsRepository(),
+            new FakeClaimsRepository(),
             projects,
             Payment("1", account: "42", details: TicketPurpose("Проект")),
             Payment("2", account: "42", details: TicketPurpose("Проект")));
@@ -967,13 +967,13 @@ public class PscbPaymentsViewServiceTests
         PscbFakeUserRepository users,
         FakeFinanceOperationsRepository finances,
         params string[] payments)
-        => CreateService(search, users, finances, new PscbFakeClaimsRepository(), payments);
+        => CreateService(search, users, finances, new FakeClaimsRepository(), payments);
 
     private static PscbPaymentsViewService CreateService(
         FakeSearchService search,
         PscbFakeUserRepository users,
         FakeFinanceOperationsRepository finances,
-        PscbFakeClaimsRepository claims,
+        FakeClaimsRepository claims,
         params string[] payments)
         => CreateService(search, users, finances, claims, new PscbFakeProjectMetadataRepository(), payments);
 
@@ -981,7 +981,7 @@ public class PscbPaymentsViewServiceTests
         FakeSearchService search,
         PscbFakeUserRepository users,
         FakeFinanceOperationsRepository finances,
-        PscbFakeClaimsRepository claims,
+        FakeClaimsRepository claims,
         PscbFakeProjectMetadataRepository projects,
         params string[] payments)
         => new(
