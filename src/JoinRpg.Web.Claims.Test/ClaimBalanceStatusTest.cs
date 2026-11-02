@@ -13,10 +13,12 @@ public class ClaimBalanceStatusTest
     private static IRenderedComponent<ClaimBalanceStatus> Render(
         BunitContext ctx,
         ClaimBalance balance,
-        bool forClaimJs = false)
+        bool forClaimJs = false,
+        bool plainText = false)
         => ctx.Render<ClaimBalanceStatus>(p => p
             .Add(x => x.Model, balance)
-            .Add(x => x.ForClaimJs, forClaimJs));
+            .Add(x => x.ForClaimJs, forClaimJs)
+            .Add(x => x.PlainText, plainText));
 
     [Fact]
     public void Overpaid_ShowsOverpaidSum()
@@ -75,6 +77,49 @@ public class ClaimBalanceStatusTest
         var cut = Render(ctx, new ClaimBalance(FeePaid: 500, TotalFee: 100));
 
         cut.Markup.ShouldNotContain("id=");
+    }
+
+    /// <summary>
+    /// PlainText — тот же текст без оформления (цветные суммы, Money-разметка), для тёмного
+    /// tooltip грида заявок.
+    /// </summary>
+    [Fact]
+    public void PlainText_SameWordingWithoutStyling()
+    {
+        using var ctx = new BunitContext();
+
+        var cut = Render(ctx, new ClaimBalance(FeePaid: 300, TotalFee: 1000), plainText: true);
+
+        cut.Markup.ShouldBe("(оплачено 300, осталось оплатить 700)");
+        cut.Markup.ShouldNotContain("text-danger");
+        cut.Markup.ShouldNotContain("price-value");
+    }
+
+    [Fact]
+    public void PlainText_OverpaidAndNotPaid()
+    {
+        using var ctx = new BunitContext();
+
+        Render(ctx, new ClaimBalance(FeePaid: 500, TotalFee: 100), plainText: true)
+            .Markup.ShouldBe("(переплата 400)");
+        Render(ctx, new ClaimBalance(FeePaid: 0, TotalFee: 1000), plainText: true)
+            .Markup.ShouldBe("(не оплачен)");
+        Render(ctx, new ClaimBalance(FeePaid: 1000, TotalFee: 1000), plainText: true)
+            .Markup.ShouldBe("(оплачен полностью)");
+    }
+
+    /// <summary>Контракт claim.js сильнее: даже с PlainText рендерятся все варианты с id.</summary>
+    [Fact]
+    public void ForClaimJs_WinsOverPlainText()
+    {
+        using var ctx = new BunitContext();
+
+        var cut = Render(ctx, new ClaimBalance(FeePaid: 500, TotalFee: 100), forClaimJs: true, plainText: true);
+
+        cut.Markup.ShouldContain("id=\"feeInfo1\"");
+        cut.Markup.ShouldContain("id=\"feeInfo3\"");
+        Visible(cut, "feeInfo1").ShouldBeTrue();
+        Visible(cut, "feeInfo2").ShouldBeFalse();
     }
 
     /// <summary>В режиме ForClaimJs все четыре варианта с id должны быть в разметке, актуальный видим.</summary>

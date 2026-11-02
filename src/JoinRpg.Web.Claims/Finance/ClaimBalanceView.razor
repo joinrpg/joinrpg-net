@@ -1,7 +1,7 @@
 @using JoinRpg.DomainTypes.Characters.Claims.Finances
 <JoinBadge Variation="@variation">
     <ChildContent>@Model.FeePaid / @Model.TotalFee</ChildContent>
-    <TooltipContent><ClaimBalanceStatus Model="Model" /></TooltipContent>
+    <TooltipContent><ClaimBalanceStatus Model="Model" PlainText="true" /></TooltipContent>
 </JoinBadge>
 
 
@@ -15,8 +15,8 @@
 
     protected override void OnParametersSet()
     {
-        // Цвета согласованы со статусами в заявке и на странице перевода взноса
-        // (ClaimBalanceStatus): не оплачен — красный, недооплата — жёлтый, переплата — зелёный.
+        // Не оплачен — красный, недооплата — жёлтый, переплата — зелёный, как в заявке
+        // (ClaimBalanceStatus); полностью оплаченный — нейтральный, как здесь было раньше.
         variation = Model.PaymentStatus switch
         {
             ClaimPaymentStatus.NotPaid => VariationStyleEnum.Danger,

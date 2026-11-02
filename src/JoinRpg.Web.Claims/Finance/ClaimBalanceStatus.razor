@@ -1,8 +1,15 @@
 @using JoinRpg.DomainTypes.Characters.Claims.Finances
-@* Статус оплаты заявки теми же формулировками, что в блоке финансов заявки. Два режима:
+@* Статус оплаты заявки теми же формулировками, что в блоке финансов заявки. Режимы:
    - ForClaimJs (страница заявки): все четыре варианта с id (feeInfo0..3, feeOverpaidDisp2,
      feeMoreToPayDisp2) — контракт claim.js, скрипт переключает варианты при пересчёте взноса.
-   - без флага: только актуальный вариант, без id (форма перевода взноса, tooltip грида заявок). *@
+   - без флагов: только актуальный вариант, без id (форма перевода взноса).
+   - PlainText: актуальный вариант голым текстом без оформления — для тёмного tooltip грида
+     заявок, где цветные подсветки заявки нечитаемы. *@
+@if (PlainText && !ForClaimJs)
+{
+    @StatusText
+    return;
+}
 @if (ShouldRender(ClaimPaymentStatus.Paid))
 {
     <strong id="@(ForClaimJs ? "feeInfo0" : null)" style="@HiddenIfNot(ClaimPaymentStatus.Paid)">(оплачен полностью)</strong>
@@ -33,7 +40,23 @@
     [Parameter]
     public bool ForClaimJs { get; set; }
 
+    /// <summary>
+    /// Голый текст без цветных сумм и Money-разметки — для тёмного tooltip грида заявок.
+    /// В режиме <see cref="ForClaimJs"/> не применяется.
+    /// </summary>
+    [Parameter]
+    public bool PlainText { get; set; }
+
     private bool ShouldRender(ClaimPaymentStatus status) => ForClaimJs || Model.PaymentStatus == status;
+
+    /// <summary>Текст актуального варианта — формулировки те же, что в разметке выше.</summary>
+    private string StatusText => Model.PaymentStatus switch
+    {
+        ClaimPaymentStatus.Overpaid => $"(переплата {Model.FeePaid - Model.TotalFee})",
+        ClaimPaymentStatus.MoreToPay => $"(оплачено {Model.FeePaid}, осталось оплатить {Model.FeeDue})",
+        ClaimPaymentStatus.NotPaid => "(не оплачен)",
+        _ => "(оплачен полностью)",
+    };
 
     private string? HiddenIfNot(ClaimPaymentStatus status)
         => Model.PaymentStatus == status ? null : "display: none;";
