@@ -22,6 +22,8 @@ public class ClaimBalanceViewTest
         cut.Markup.ShouldContain("500 / 100");
         cut.Markup.ShouldContain("переплата");
         cut.Markup.ShouldContain("label-success");
+        // В подсказке бейджа — одиночный режим ClaimBalanceStatus, без id для claim.js
+        cut.Markup.ShouldNotContain("id=");
     }
 
     [Fact]
