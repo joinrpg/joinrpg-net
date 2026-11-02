@@ -78,6 +78,7 @@ public static class Registration
         .AddScoped<IClaimOperationClient, ClaimsViewService>()
         .AddScoped<IClaimListClient, ClaimsViewService>()
         .AddScoped<IUnifiedGridClient, UnifiedGridViewService>()
+        .AddScoped<UnifiedGrid.IUnifiedGridExportSource, UnifiedGridViewService>()
         .AddScoped<UnifiedGrid.ClaimListExportService>()
         .AddScoped<IInvitePlayerClient, InvitePlayerViewService>()
         .AddScoped<IClaimRestoreClient, Drp.ClaimRestoreViewService>()

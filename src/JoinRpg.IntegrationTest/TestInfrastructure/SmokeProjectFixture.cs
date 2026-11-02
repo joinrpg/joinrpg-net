@@ -151,6 +151,9 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             // иначе параметр не отличался бы от его отсутствия.
             .Add("status", UgStatusFilterView.OnHold.ToString())
             .Add("page", 2)
+            // Смоук сеет сразу все параметры GetGrid, включая мастерские фильтры, — скоуп обязан
+            // быть мастерским: капитанский с такими фильтрами падает по валидации конвейера.
+            .Add("scope", UgScopeView.Master.ToString(), UgScopeView.Master)
             .Add("projectFieldId", seeded.DropdownFieldId.ProjectFieldId, seeded.DropdownFieldId)
             .Add("valueId", seeded.DropdownVariantId)
             .Add("plotFolderId", seeded.Plot.PlotFolderId.PlotFolderId, seeded.Plot.PlotFolderId)
