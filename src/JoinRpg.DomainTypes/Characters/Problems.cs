@@ -38,7 +38,8 @@ public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? Problem
     /// <summary>
     /// Проблему можно показать игроку, подавшему заявку. По умолчанию — нельзя: работа мастеров
     /// с заявкой игрока не касается, и новый тип проблемы не должен утечь к нему, пока о нём не
-    /// решили явно. Исключение — деньги самого игрока.
+    /// решили явно. Исключение — деньги самого игрока и объяснение, почему его заявка не
+    /// принята автоматически.
     /// </summary>
     /// <param name="claimStatus">
     /// Статус заявки: от него зависит, какие поля игрок видит (см. <see cref="FieldRelatedProblem"/>).
@@ -49,8 +50,34 @@ public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? Problem
         ClaimProblemType.FeePaidPartially => true,
         ClaimProblemType.UnApprovedClaimPayment => true,
         ClaimProblemType.CheckedInNotPaid => true,
+        ClaimProblemType.SlotExhausted => true,
         _ => false,
     };
+
+    /// <summary>
+    /// Проблема мешает заявке быть принятой автоматически: заявка-кандидат
+    /// (<see cref="Claims.ClaimInfo.IsAutoAcceptCandidate"/>) с такой проблемой принята
+    /// автоматически не будет. В проекте с включённым автоприёмом эти проблемы показывают
+    /// игроку — они объясняют, почему его заявка не принята сама.
+    /// </summary>
+    [JsonIgnore]
+    public virtual bool IsAutoAcceptBlocker => ProblemType switch
+    {
+        ClaimProblemType.SlotExhausted => true,
+        // Не выданный игроком доступ к защищённым данным — тоже блокер автоприёма; игроку эта
+        // проблема и так видна всегда, см. ProfileRelatedProblem.
+        ClaimProblemType.SensitiveDataNotAllowed => true,
+        _ => false,
+    };
+
+    /// <summary>
+    /// Показывается игроку, даже если проект не показывает игрокам проблемы регистрации
+    /// (<c>ProjectCheckInSettings.ShowCheckInBlockersToPlayers</c>): это не работа мастеров,
+    /// о которой игроку знать не положено, а то, что игрок может понять и сам — например,
+    /// его профиль.
+    /// </summary>
+    [JsonIgnore]
+    public virtual bool AlwaysVisibleToPlayer => false;
 }
 
 public enum ClaimProblemType
@@ -96,6 +123,12 @@ public enum ClaimProblemType
     /// Заявка зарегистрирована на полигоне, а взнос уплачен не полностью.
     /// </summary>
     CheckedInNotPaid,
+    /// <summary>
+    /// Заявка висит на шаблоне, в котором не осталось свободных мест: принять её нельзя,
+    /// пока мастер не поднимет лимит (#4743). При включённом автоприёме — ещё и причина,
+    /// почему заявка не принята автоматически.
+    /// </summary>
+    SlotExhausted,
 }
 
 public enum ProblemSeverity
@@ -142,4 +175,9 @@ public record class ProfileRelatedProblem(ClaimProblemType ProblemType, ProblemS
     /// Это профиль самого игрока — ему и показываем.
     /// </summary>
     public override bool VisibleToPlayer(ClaimStatus claimStatus) => true;
+
+    /// <summary>
+    /// Профиль игрока — не работа мастеров, прятать его от игрока не нужно.
+    /// </summary>
+    public override bool AlwaysVisibleToPlayer => true;
 }
