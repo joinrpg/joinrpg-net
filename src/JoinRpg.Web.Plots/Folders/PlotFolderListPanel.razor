@@ -1,8 +1,10 @@
 @using JoinRpg.Web.ProjectCommon.Projects
 @inject IProjectUriLocator projectUriLocator
 
+@* Список — интерактивный остров: перестановка сюжетов (JoinMoveControl в строках) меняет
+   порядок таблицы без перезагрузки страницы (#238). *@
 <div>
-    <span  class="h2">@Model.Title</span> 
+    <span  class="h2">@Model.Title</span>
     @if (Model.PlotAccessArguments.HasPlotEditorAccess)
     {
        <span>&nbsp;</span>   <JoinButton Preset="ButtonPreset.Add" Label="Добавить сюжет" Link="@projectUriLocator.GetCreatePlotUri(Model.ProjectId).ToString()" />
@@ -26,18 +28,18 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model.Folders.Where(f => f.Status != PlotStatus.Deleted))
+    @foreach (var item in folders.Where(f => f.Status != PlotStatus.Deleted))
     {
         if (Model.HasMasterAccess || item.ElementsCount > 0)
         {
-            <PlotFolderListItemRow Item="@item" List="@Model" />
+            <PlotFolderListItemRow Item="@item" List="@Model" MoveItems="folders" OnMoveCompleted="StateHasChanged" @key="item" />
         }
     }
-    @foreach (var item in Model.Folders.Where(f => f.Status == PlotStatus.Deleted))
+    @foreach (var item in folders.Where(f => f.Status == PlotStatus.Deleted))
     {
        if (Model.HasMasterAccess || item.ElementsCount > 0)
         {
-            <PlotFolderListItemRow Item="@item" List="@Model" />
+            <PlotFolderListItemRow Item="@item" List="@Model" MoveItems="folders" OnMoveCompleted="StateHasChanged" @key="item" />
         }
     }
     </tbody>
@@ -45,7 +47,16 @@
 
 @code
 {
+    /// <summary>Все сюжеты в текущем порядке; JoinMoveControl переставляет на месте.</summary>
+    private List<PlotFolderListItemViewModel> folders = [];
+
     [Parameter]
     [EditorRequired]
     public PlotFolderListViewModel Model { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        folders = [.. Model.Folders];
+    }
 }

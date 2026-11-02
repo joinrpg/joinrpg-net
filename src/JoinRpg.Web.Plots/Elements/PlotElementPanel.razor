@@ -33,11 +33,13 @@
                 }
             </span>
 
-            @if (Model.SortItemIds is not null)
+            @if (MoveItems is not null)
             {
-                <JoinMoveControlNonInteractive Endpoint="@PlotUriLocator.GetReorderElementsUri(Model.ElementId.ProjectId).ToString()"
-                                               SelfId="@Model.ElementId.ToString()"
-                                               ItemIds="Model.SortItemIds" />
+                <JoinMoveControl TItem="PlotElementPanelViewModel"
+                                 Items="MoveItems"
+                                 Self="Model"
+                                 Size="SizeStyleEnum.Small"
+                                 OnMoveCompleted="OnMoveCompleted" />
             }
         }
         @if (!Model.IsMasterOnly)
@@ -77,7 +79,7 @@
                             Link="@PlotUriLocator.GetEditElementUri(Model.ElementId).ToString()" />
             }
 
-            <PlotElementControls Model="Controls" @rendermode="ControlsRenderMode" />
+            <PlotElementControls Model="Controls" @rendermode="@(RendererInfo.IsInteractive ? null : ControlsRenderMode)" />
 
             <JoinButton Preset="ButtonPreset.Copy" Size="SizeStyleEnum.Small"
                         Link="@PlotUriLocator.GetCopyElementUri(Model.ElementId).ToString()" />
@@ -113,7 +115,14 @@
     /// <summary>Раскрыта ли вводная сразу.</summary>
     [Parameter] public bool Open { get; set; }
 
-    // Кнопки публикации и удаления — остров на странице, которая сама рендерится статически.
+    /// <summary>Все вводные сюжета в текущем порядке; null — стрелок перемещения нет.</summary>
+    [Parameter] public IList<PlotElementPanelViewModel>? MoveItems { get; set; }
+
+    /// <summary>Порядок изменился — список перерисовывает панели.</summary>
+    [Parameter] public EventCallback OnMoveCompleted { get; set; }
+
+    // Кнопки публикации и удаления — остров на статической странице (ShowElementVersion и плоский
+    // список). Внутри интерактивного списка вводных рендерятся сами: null наследует режим родителя.
     private static readonly IComponentRenderMode ControlsRenderMode = new InteractiveWebAssemblyRenderMode(prerender: false);
 
     private PlotElementControlsViewModel Controls => new(

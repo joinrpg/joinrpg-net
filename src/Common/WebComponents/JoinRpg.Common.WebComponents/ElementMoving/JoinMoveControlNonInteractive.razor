@@ -1,3 +1,7 @@
+@* Устарел: перестановка с перезагрузкой страницы ушла на JoinMoveControl + IMoveClient
+   (webapi/move/moveafter). Компонент удалится в следующей мажорной версии. *@
+@attribute [Obsolete("Перестановка без перезагрузки — JoinMoveControl + IMoveClient. Компонент удалится в следующей мажорной версии.", error: false)]
+
 @if (RendererInfo.IsInteractive)
 {
     <JoinErrorMessage>Это компонент пока не поддерживает интерактивный рендеринг</JoinErrorMessage>

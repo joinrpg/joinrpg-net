@@ -17,7 +17,7 @@ public static class UriLocatorExtensions
     private class UriLocator :
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
-        IUriLocator<CharacterGroupIdentification>,
+        IUriLocator<CharacterGroupIdentification>, IUriLocator<PlotFolderIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
         IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator, IBadgeTemplateUriLocator,
         IFinanceSettingsUriLocator
@@ -58,6 +58,9 @@ public static class UriLocatorExtensions
 
         Uri IUriLocator<CharacterGroupIdentification>.GetUri(CharacterGroupIdentification target)
             => new($"/{target.ProjectId.Value}/roles/{target.CharacterGroupId}/details", UriKind.Relative);
+
+        Uri IUriLocator<PlotFolderIdentification>.GetUri(PlotFolderIdentification target)
+            => new($"/{target.ProjectId.Value}/plots/edit?PlotFolderId={target.PlotFolderId}", UriKind.Relative);
 
         Uri IUriLocator<ProjectIdentification>.GetUri(ProjectIdentification target) => new($"/{target.Value}/home", UriKind.Relative);
 
@@ -173,9 +176,6 @@ public static class UriLocatorExtensions
 
         Uri IPlotUriLocator.GetPrintVersionUri(PlotVersionIdentification versionId) =>
             new($"/{versionId.ProjectId.Value}/plots/ShowElementVersion?PlotFolderId={versionId.PlotFolderId.PlotFolderId}&PlotElementId={versionId.PlotElementId.PlotElementId}&Version={versionId.Version}&PrintMode=True", UriKind.Relative);
-
-        Uri IPlotUriLocator.GetReorderElementsUri(ProjectIdentification projectId) =>
-            new($"/{projectId.Value}/plots/ReorderElements", UriKind.Relative);
     }
     public static IServiceCollection AddUriLocator(this IServiceCollection serviceCollection)
     {
@@ -186,6 +186,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IUriLocator<ClaimIdentification>>(locator)
             .AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator)
             .AddSingleton<IUriLocator<CharacterGroupIdentification>>(locator)
+            .AddSingleton<IUriLocator<PlotFolderIdentification>>(locator)
             .AddSingleton<ICharacterUriLocator>(locator)
             .AddSingleton<ICharacterGroupUriLocator>(locator)
             .AddSingleton<IProjectFieldUriLocator>(locator)
