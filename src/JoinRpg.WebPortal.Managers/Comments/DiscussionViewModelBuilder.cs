@@ -27,9 +27,8 @@ namespace JoinRpg.WebPortal.Managers.Comments;
 /// <para>
 /// Запросов три, независимо от длины обсуждения: шапки авторов одной пачкой, отметка прочтения и
 /// аватарки — одним вызовом <see cref="IAvatarLoader.GetAvatars"/> (вечный кеш, промахи — одним
-/// запросом к БД, #5774). Переводы денег между заявками добавляют четвёртый — заявки-контрагенты
-/// одной пачкой через <see cref="IClaimInfoRepository.GetClaimInfos"/>, и только когда переводы
-/// в обсуждении есть.
+/// запросом к БД, #5774). Переводы денег между заявками добавляют по одному запросу на заявку-контрагента
+/// (<see cref="IClaimInfoRepository.GetClaimInfoOrDefault"/>), и только когда переводы в обсуждении есть.
 /// </para>
 /// </remarks>
 internal sealed class DiscussionViewModelBuilder(
@@ -154,22 +153,25 @@ internal sealed class DiscussionViewModelBuilder(
     }
 
     /// <summary>
-    /// Заявки-контрагенты переводов из видимых пользователю комментариев — одной пачкой. Контрагент
-    /// может не найтись (заявка или персонаж удалены) — тогда перевод останется без адресата,
-    /// а не уронит страницу.
+    /// Заявки-контрагенты переводов из видимых пользователю комментариев. Пачковый
+    /// <c>GetClaimInfos</c> бросается на заявке, которой нет в агрегате персонажа, а контрагент
+    /// может не найтись (рассогласованные данные после частичного восстановления) — поэтому грузим
+    /// каждую по отдельности через null-safe <c>GetClaimInfoOrDefault</c>, и перевод без контрагента
+    /// остаётся без адресата, а не роняет страницу. Переводов в обсуждении обычно ноль-два, так что
+    /// поштучно; это тот же полный агрегат, что и у страницы заявки.
     /// </summary>
     private async Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> LoadTransferCounterparties(
         IReadOnlyList<CommentInfo> comments)
     {
-        var linkedClaims = comments
-            .Select(comment => comment.Finance?.LinkedClaim)
-            .OfType<ClaimIdentification>()
-            .Distinct()
-            .ToArray();
-
-        return linkedClaims.Length > 0
-            ? await claimInfoRepository.GetClaimInfos(linkedClaims)
-            : new Dictionary<ClaimIdentification, ClaimInfo>();
+        var result = new Dictionary<ClaimIdentification, ClaimInfo>();
+        foreach (var linkedClaim in comments.Select(comment => comment.Finance?.LinkedClaim).OfType<ClaimIdentification>().Distinct())
+        {
+            if (await claimInfoRepository.GetClaimInfoOrDefault(linkedClaim) is { } counterparty)
+            {
+                result.Add(linkedClaim, counterparty);
+            }
+        }
+        return result;
     }
 
     private CommentFinanceViewModel ToFinanceViewModel(
@@ -198,7 +200,8 @@ internal sealed class DiscussionViewModelBuilder(
     /// <summary>
     /// Контрагент перевода: игроку — имя человека контрагента, мастеру — ещё и ссылку на заявку
     /// с именем персонажа. Игроку имя персонажа не показываем: у скрытого персонажа оно выдало бы
-    /// лишнее.
+    /// лишнее. Имя игрока контрагента не показываем, если персонаж его скрывает
+    /// (<c>HidePlayerForCharacter</c>).
     /// </summary>
     private CommentFinanceTransferViewModel? ToTransferViewModel(
         CommentFinanceInfo finance,
@@ -210,9 +213,10 @@ internal sealed class DiscussionViewModelBuilder(
             return null;
         }
 
+        var showPlayerName = hasMasterAccess || !counterparty.Character.HidePlayerForCharacter;
         return new CommentFinanceTransferViewModel(
             finance.OperationType == FinanceOperationType.TransferTo ? "Кому переведено" : "От кого переведено",
-            new UserLinkViewModel(counterparty.Player.ToUserInfoHeader()),
+            new UserLinkViewModel(counterparty.Player.ToUserInfoHeader(), showPlayerName ? ViewMode.Show : ViewMode.Hide),
             hasMasterAccess ? counterparty.Character.CharacterName : null,
             hasMasterAccess ? claimUriLocator.GetUri(linkedClaim) : null);
     }
