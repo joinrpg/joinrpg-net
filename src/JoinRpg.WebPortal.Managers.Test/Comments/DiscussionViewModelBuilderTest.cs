@@ -303,20 +303,6 @@ public class DiscussionViewModelBuilderTest
     }
 
     [Fact]
-    public async Task Transfer_MissingCounterparty_StaysWithoutCounterparty()
-    {
-        var deleted = new ClaimIdentification(mock.ProjectInfo.ProjectId, 9999);
-        _ = AddComment(1, Master, finance: new CommentFinanceInfo(
-            -200, FinanceOperationType.TransferTo, FinanceOperationState.Approved, Start, PaymentType: null, LinkedClaim: deleted));
-
-        var model = await Build(Master);
-
-        var finance = Find(model, 1).Finance.ShouldNotBeNull();
-        finance.OperationText.ShouldBe("Перевод денег другому игроку");
-        finance.Transfer.ShouldBeNull();
-    }
-
-    [Fact]
     public async Task Finance_PlayerCannotModerate()
     {
         var paymentType = mock.CreateCashPaymentType();

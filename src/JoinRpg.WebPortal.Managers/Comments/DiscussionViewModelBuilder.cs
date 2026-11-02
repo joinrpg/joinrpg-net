@@ -29,8 +29,8 @@ namespace JoinRpg.WebPortal.Managers.Comments;
 /// Запросов три, независимо от длины обсуждения: шапки авторов одной пачкой, отметка прочтения и
 /// аватарки — одним вызовом <see cref="IAvatarLoader.GetAvatars"/> (вечный кеш, промахи — одним
 /// запросом к БД, #5774). Переводы денег между заявками добавляют четвёртый — заявки-контрагенты
-/// одной пачкой (<see cref="IClaimInfoRepository.GetClaimInfosOrDefault"/>), и только когда
-/// переводы в обсуждении есть.
+/// одной пачкой (<see cref="IClaimInfoRepository.GetClaimInfos"/>), и только когда переводы
+/// в обсуждении есть.
 /// </para>
 /// </remarks>
 internal sealed class DiscussionViewModelBuilder(
@@ -154,9 +154,9 @@ internal sealed class DiscussionViewModelBuilder(
     }
 
     /// <summary>
-    /// Заявки-контрагенты переводов из видимых пользователю комментариев — одной пачкой. Контрагент
-    /// может не найтись (рассогласованные данные после частичного восстановления) — тогда перевод
-    /// останется без адресата, а не уронит страницу.
+    /// Заявки-контрагенты переводов из видимых пользователю комментариев — одной пачкой. На
+    /// заявку-контрагент ссылается FK, так что она существует, пока существует операция; заявки
+    /// без контрагента (не-переводы) сюда и не попадают.
     /// </summary>
     private async Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> LoadTransferCounterparties(
         IReadOnlyList<CommentInfo> comments)
@@ -167,7 +167,9 @@ internal sealed class DiscussionViewModelBuilder(
             .Distinct()
             .ToArray();
 
-        return await claimInfoRepository.GetClaimInfosOrDefault(linkedClaims);
+        return linkedClaims.Length > 0
+            ? await claimInfoRepository.GetClaimInfos(linkedClaims)
+            : new Dictionary<ClaimIdentification, ClaimInfo>();
     }
 
     private CommentFinanceViewModel ToFinanceViewModel(
@@ -204,10 +206,12 @@ internal sealed class DiscussionViewModelBuilder(
         IReadOnlyDictionary<ClaimIdentification, ClaimInfo> transferCounterparties,
         bool hasMasterAccess)
     {
-        if (finance.LinkedClaim is not { } linkedClaim || !transferCounterparties.TryGetValue(linkedClaim, out var counterparty))
+        if (finance.LinkedClaim is not { } linkedClaim)
         {
             return null;
         }
+
+        var counterparty = transferCounterparties[linkedClaim];
 
         var showPlayerName = hasMasterAccess || !counterparty.Character.HidePlayerForCharacter;
         return new CommentFinanceTransferViewModel(

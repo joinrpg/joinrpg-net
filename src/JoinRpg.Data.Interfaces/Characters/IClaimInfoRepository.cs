@@ -34,13 +34,6 @@ public interface IClaimInfoRepository
     Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds);
 
     /// <summary>
-    /// Как <see cref="GetClaimInfos"/>, но несуществующая заявка не падает, а просто не попадает
-    /// в словарь — для случая, когда пропавшая ссылка должна деградировать, а не ронять страницу
-    /// (например, заявка-контрагент перевода денег в обсуждении заявки).
-    /// </summary>
-    Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfosOrDefault(IReadOnlyCollection<ClaimIdentification> claimIds);
-
-    /// <summary>
     /// Утверждённые заявки уже загруженных персонажей вместе с игроками — одним запросом профилей
     /// на весь список.
     /// </summary>

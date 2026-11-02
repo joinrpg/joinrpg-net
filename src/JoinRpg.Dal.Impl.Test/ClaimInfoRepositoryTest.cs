@@ -10,9 +10,8 @@ using Xunit;
 namespace JoinRpg.Dal.Impl.Test;
 
 /// <summary>
-/// Батчевые загрузки <see cref="ClaimInfoRepository"/> поверх фейков персонажей и профилей:
-/// строгая <c>GetClaimInfos</c> требует все заявки, null-safe <c>GetClaimInfosOrDefault</c>
-/// пропускает отсутствующие.
+/// Батчевая загрузка <see cref="ClaimInfoRepository.GetClaimInfos"/> поверх фейков персонажей
+/// и профилей: заявки и игроки грузятся по одному запросу на весь список.
 /// </summary>
 public class ClaimInfoRepositoryTest
 {
@@ -20,8 +19,6 @@ public class ClaimInfoRepositoryTest
 
     private ClaimInfoRepository CreateRepository()
         => new(new FakeCharacterInfoRepository(mock), new FakeUserRepository(mock.TryGetUserInfo));
-
-    private ClaimIdentification MissingClaim => new(mock.ProjectInfo.ProjectId, 9999);
 
     [Fact]
     public async Task GetClaimInfos_LoadsAllRequestedClaims()
@@ -39,20 +36,5 @@ public class ClaimInfoRepositoryTest
     [Fact]
     public async Task GetClaimInfos_ThrowsOnMissingClaim()
         => _ = await Should.ThrowAsync<InvalidOperationException>(
-            () => CreateRepository().GetClaimInfos([MissingClaim]));
-
-    [Fact]
-    public async Task GetClaimInfosOrDefault_SkipsMissingClaims()
-    {
-        var claim = mock.CreateClaim(mock.Character, mock.Player);
-
-        var loaded = await CreateRepository().GetClaimInfosOrDefault([claim.GetId(), MissingClaim]);
-
-        loaded.Keys.ShouldBe([claim.GetId()]);
-        loaded[claim.GetId()].Character.CharacterName.ShouldBe(mock.Character.CharacterName);
-    }
-
-    [Fact]
-    public async Task GetClaimInfosOrDefault_EmptyInput_LoadsNothing()
-        => (await CreateRepository().GetClaimInfosOrDefault([])).ShouldBeEmpty();
+            () => CreateRepository().GetClaimInfos([new ClaimIdentification(mock.ProjectInfo.ProjectId, 9999)]));
 }

@@ -30,22 +30,6 @@ internal class ClaimInfoRepository(
     public async Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(
         IReadOnlyCollection<ClaimIdentification> claimIds)
     {
-        var loaded = await GetClaimInfosOrDefault(claimIds);
-
-        foreach (var claimId in claimIds.Distinct())
-        {
-            if (!loaded.ContainsKey(claimId))
-            {
-                throw new InvalidOperationException($"Character for claim {claimId} is not loaded");
-            }
-        }
-
-        return loaded;
-    }
-
-    public async Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfosOrDefault(
-        IReadOnlyCollection<ClaimIdentification> claimIds)
-    {
         ArgumentNullException.ThrowIfNull(claimIds);
 
         if (claimIds.Count == 0)
@@ -56,17 +40,17 @@ internal class ClaimInfoRepository(
         var characters = await characterInfoRepository.GetCharacterInfosByClaims(claimIds);
 
         // Заявка в агрегате лежит у своего персонажа, а вход у нас — идентификаторы заявок,
-        // поэтому разворачиваем связь один раз. Несуществующая заявка — не ошибка, её просто нет.
+        // поэтому разворачиваем связь один раз.
         var charactersByClaim = characters
             .SelectMany(character => character.Claims.Select(claim => (claim.ClaimId, character)))
             .ToDictionary(pair => pair.ClaimId, pair => pair.character);
 
         var requested = claimIds
             .Distinct()
-            .Select(claimId => charactersByClaim.TryGetValue(claimId, out var character)
-                ? new ClaimInCharacter(character, claimId)
-                : null)
-            .OfType<ClaimInCharacter>()
+            .Select(claimId => new ClaimInCharacter(
+                charactersByClaim.GetValueOrDefault(claimId)
+                    ?? throw new InvalidOperationException($"Character for claim {claimId} is not loaded"),
+                claimId))
             .ToArray();
 
         var players = await LoadPlayers(requested);
