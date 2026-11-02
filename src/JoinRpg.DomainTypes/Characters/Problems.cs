@@ -48,6 +48,7 @@ public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? Problem
     {
         ClaimProblemType.FeePaidPartially => true,
         ClaimProblemType.UnApprovedClaimPayment => true,
+        ClaimProblemType.CheckedInNotPaid => true,
         _ => false,
     };
 }
@@ -91,6 +92,10 @@ public enum ClaimProblemType
     MissingRegistrationAddress,
     SensitiveDataNotAllowed,
     MissingBirthDate,
+    /// <summary>
+    /// Заявка зарегистрирована на полигоне, а взнос уплачен не полностью.
+    /// </summary>
+    CheckedInNotPaid,
 }
 
 public enum ProblemSeverity

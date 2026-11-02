@@ -43,6 +43,7 @@ public class ClaimProblemVisibleToPlayerTest
         // Деньги самого игрока.
         ClaimProblemType.FeePaidPartially => PlayerVisibility.Shown,
         ClaimProblemType.UnApprovedClaimPayment => PlayerVisibility.Shown,
+        ClaimProblemType.CheckedInNotPaid => PlayerVisibility.Shown,
         ClaimProblemType.ClaimWorkStopped => PlayerVisibility.Hidden,
         ClaimProblemType.NoParentGroup => PlayerVisibility.Hidden,
         ClaimProblemType.GroupIsBroken => PlayerVisibility.Hidden,
