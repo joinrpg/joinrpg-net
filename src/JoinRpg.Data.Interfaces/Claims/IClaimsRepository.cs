@@ -58,6 +58,10 @@ public interface IClaimsRepository : IDisposable
     /// </summary>
     Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(int projectId, ClaimStatusSpec claimStatusSpec, int userId, bool hasMasterAccess);
 
+    /// <summary>Непрочитанное по конкретным заявкам — например, странице грида (ADR027 §4):
+    /// подзапрос обсуждения идёт ровно по переданным заявкам, а не по всем заявкам проекта со статусом.</summary>
+    Task<Dictionary<CommentDiscussionId, int>> GetUnreadDiscussionsForClaims(IReadOnlyCollection<ClaimIdentification> claimIds, UserIdentification userId, bool hasMasterAccess);
+
     /// <summary>
     /// Номера заявок перечисленных игроков в одном проекте — во всех статусах и без агрегатов.
     /// </summary>
