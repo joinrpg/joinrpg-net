@@ -237,8 +237,10 @@ id (`ClaimCommentIdentification`, `ForumCommentIdentification`), которым�
 
 **Рендеринг — статический.** Страница остаётся cshtml и вставляет `<component type="…"
 render-mode="Static" />`. Формы добавления и ответа — обычные POST в существующие экшены, как
-сейчас. Раскрытие формы ответа — нативный `<details>` (`JoinCollapsePanel`) вместо
-`data-toggle="collapse"` и встроенного `toggleCommentEditor`. Статическая форма сама ставит
+сейчас. Раскрытие формы ответа — нативный `<details>` вместо
+`data-toggle="collapse"` и встроенного `toggleCommentEditor` (сначала `JoinCollapsePanel`, потом —
+облегчённый `AddCommentToggle`: summary-ссылка без панели, т.к. тоггл по одному у каждого
+комментария). Статическая форма сама ставит
 `<AntiforgeryToken />` (образец — `JoinMoveControlNonInteractive`, `CheckInOverridePanel`) и
 сохраняет то, что сейчас даёт MVC-шаблон редактора: обязательность текста и кнопку «Отмена».
 Интерактивны только точечные острова внутри статического дерева, по образцу `RoomTypeListPage` →
@@ -470,7 +472,6 @@ render-mode="Static" />`. Формы добавления и ответа — о
 
 - **Сброс кеша аватарок** после `RecacheAvatar` (#5774): вечный кеш `IAvatarLoader` не узнаёт о
   перекешировании.
-- **Облегчённый `JoinCollapsePanel` для «Ответить»** — у каждого комментария сейчас полноценная панель.
 - **Пустые `label` у `FormRow` без подписи** (строка с кнопками в `AddCommentForm`).
 - **`claim/Edit` — 5 ленивых загрузок**, все в финблоке (`ClaimFeeViewModel`, #4960, #5420), не в
   обсуждении.

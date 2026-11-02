@@ -1,0 +1,18 @@
+/* Summary — вид ссылки Bootstrap 3 (@link-color), а не заголовка панели: тоггл по одному у каждого комментария. */
+.join-comment-toggle {
+  margin-bottom: 0.5em;
+}
+
+.join-comment-toggle > summary {
+  color: #337ab7;
+  cursor: pointer;
+  list-style: none;
+}
+
+.join-comment-toggle > summary:hover {
+  text-decoration: underline;
+}
+
+.join-comment-toggle > summary::-webkit-details-marker {
+  display: none;
+}

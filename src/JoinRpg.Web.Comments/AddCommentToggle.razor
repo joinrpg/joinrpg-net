@@ -1,0 +1,22 @@
+@*
+    Сворачиваемая форма комментария: «Добавить комментарий» или «Ответить» (при ReplyTo). Голый <details>
+    с summary-ссылкой, без панели — у каждого комментария своя, панель была бы тяжеловесной. Рендеринг
+    статический: «Отмена» сворачивает общий скрипт JoinRpg.Common.WebComponents.lib.module.js
+    (data-join-collapse-close ищет ближайший details).
+*@
+@preservewhitespace true
+
+<details class="join-comment-toggle">
+    <summary>@(ReplyTo is null ? "Добавить комментарий" : "Ответить")</summary>
+    <AddCommentForm Discussion="Discussion" ReplyTo="ReplyTo" />
+</details>
+
+@code {
+    /// <summary>Обсуждение, в которое пишем.</summary>
+    [Parameter, EditorRequired]
+    public DiscussionViewModel Discussion { get; set; } = null!;
+
+    /// <summary>Комментарий, на который отвечаем; <c>null</c> — новый комментарий верхнего уровня.</summary>
+    [Parameter]
+    public CommentViewModel? ReplyTo { get; set; }
+}

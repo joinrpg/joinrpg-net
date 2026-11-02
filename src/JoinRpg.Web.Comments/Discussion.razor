@@ -4,10 +4,7 @@
 *@
 
 <div class="join-discussion">
-    <JoinCollapsePanel>
-        <Header>Добавить комментарий</Header>
-        <ChildContent><AddCommentForm Discussion="Model" /></ChildContent>
-    </JoinCollapsePanel>
+    <AddCommentToggle Discussion="Model" />
 
     <div class="join-discussion__comments">
         @foreach (var comment in Model.RootComments)
@@ -18,10 +15,7 @@
 
     @if (Model.RootComments.Count > 0)
     {
-        <JoinCollapsePanel>
-            <Header>Добавить комментарий</Header>
-            <ChildContent><AddCommentForm Discussion="Model" /></ChildContent>
-        </JoinCollapsePanel>
+        <AddCommentToggle Discussion="Model" />
     }
 </div>
 
