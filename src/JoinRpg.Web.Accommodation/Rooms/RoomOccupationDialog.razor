@@ -24,7 +24,12 @@
                 <div class="list-group-item @(isSelected ? "active" : "") @(isDisabled ? "disabled" : "")"
                      data-group-id="@group.GroupId.AccommodationRequestId"
                      @onclick="() => Toggle(group, isDisabled)">
-                    <span class="join-ellipsis"><AccommodationPaymentBadge Group="group" />@group.PersonsList</span>
+                    <AccommodationPaymentBadge Group="group" />@(" ")
+                    @if (group.TypeName is { } typeName)
+                    {
+                        <span class="label label-default acc-type">@typeName</span>@(" ")
+                    }
+                    <span class="join-ellipsis">@group.PersonsList</span>
                     <span class="badge">@group.Persons</span>
                 </div>
             }
