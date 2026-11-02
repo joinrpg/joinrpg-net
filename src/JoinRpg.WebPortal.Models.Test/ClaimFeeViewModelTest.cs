@@ -1,7 +1,10 @@
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.ProjectMetadata.Payments;
+using JoinRpg.Web.Claims.Finance;
 
 namespace JoinRpg.WebPortal.Models.Test;
 
@@ -12,7 +15,8 @@ public class ClaimFeeViewModelTest
 {
     private readonly MockedProject mock = new();
 
-    private ClaimFeeViewModel Build(Claim claim, User? currentUser = null)
+    private ClaimFeeViewModel Build(Claim claim, User? currentUser = null,
+        IReadOnlyCollection<PaymentTypePlayerInfo>? playerPaymentTypes = null)
     {
         var claimInCharacter = new ClaimInCharacter(mock.GetCharacterInfo(claim.Character), claim.GetId());
         return new ClaimFeeViewModel(
@@ -21,7 +25,8 @@ public class ClaimFeeViewModelTest
             new UserIdentification((currentUser ?? mock.Master).UserId),
             _ => null,
             accommodation: null,
-            preferentialFeeConditions: null);
+            preferentialFeeConditions: null,
+            playerPaymentTypes);
     }
 
     [Fact]
@@ -130,5 +135,52 @@ public class ClaimFeeViewModelTest
 
         Build(claim).HasModeratableFinanceOperations.ShouldBeTrue();
         Build(claim, mock.Player).HasModeratableFinanceOperations.ShouldBeFalse();
+    }
+
+    private PaymentTypePlayerInfo Method(int id, string name, string? paymentLink = null, string? description = null)
+        => new(new PaymentTypeIdentification(new ProjectIdentification(mock.Project.ProjectId), id), name,
+            paymentLink is null ? null : new Uri(paymentLink), PaymentLinkKind.Redirect, description);
+
+    [Fact]
+    public void PaymentMethodsDialog_Shown_WhenSomeMethodHasLinkOrDescription()
+    {
+        var claim = mock.CreateApprovedClaim(mock.CreateCharacter("Платящий"), mock.Player);
+
+        // Порядок из БД не гарантирован — модель сортирует по названию
+        var model = Build(claim, playerPaymentTypes:
+        [
+            Method(1, "Наличными", description: "Отдайте мастеру"),
+            Method(2, "Карта", paymentLink: "https://pay.example.com/1"),
+            Method(3, "Пустой"),
+        ]);
+
+        model.ShowPaymentMethodsDialog.ShouldBeTrue();
+        // Пустой метод скрыт, остальные — по названию
+        model.PlayerPaymentMethods.Select(m => m.Name).ShouldBe(["Карта", "Наличными"]);
+    }
+
+    [Fact]
+    public void PaymentMethods_SerializedToWasmIsland_AsPlainArray()
+    {
+        // Коллекция уходит параметром в WebAssembly-остров ClaimPaymentMethodsButton: Blazor
+        // ищет параметр по имени конкретного типа, а компиляторный тип collection expression
+        // (<>z__ReadOnlyList) в WASM-клиенте не находится — остров падает целиком. Падение
+        // видно только в браузере (blazor-error-ui), этот тест фиксирует runtime-тип.
+        var claim = mock.CreateApprovedClaim(mock.CreateCharacter("Платящий"), mock.Player);
+
+        var model = Build(claim, playerPaymentTypes: [Method(1, "Карта", paymentLink: "https://pay.example.com/1")]);
+
+        model.PlayerPaymentMethods.ShouldBeOfType<ClaimPaymentMethodView[]>();
+    }
+
+    [Fact]
+    public void PaymentMethodsDialog_Hidden_WithoutMethods()
+    {
+        var claim = mock.CreateApprovedClaim(mock.CreateCharacter("Бесплатный"), mock.Player);
+
+        // Контроллер передаёт методы только игроку заявки: мастер и игрок проекта без ссылок
+        // получают одно и то же — пустой список
+        Build(claim).ShowPaymentMethodsDialog.ShouldBeFalse();
+        Build(claim, playerPaymentTypes: []).ShowPaymentMethodsDialog.ShouldBeFalse();
     }
 }

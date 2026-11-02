@@ -150,16 +150,24 @@ public class ClaimController(
         var discussionModel = await discussionViewService.ShowDiscussion(claimInfo.Claim.CommentDiscussionId, projectInfo)
             ?? throw new InvalidOperationException($"Discussion {claimInfo.Claim.CommentDiscussionId} of claim {claimInfo.ClaimId} is not found");
 
-        // Условия льготы — большой текст, в ProjectInfo их нет (#5112). Нужны только диалогам льготы,
-        // а те без включённой льготы недостижимы.
+        // Условия льготы — большой текст, в ProjectInfo их нет (#5112), а способы оплаты со
+        // ссылкой/описанием — тоже большие поля ProjectDetails (#5993). Грузим безусловно —
+        // довольно частый случай.
+        var projectDetails = await projectMetadataRepository.GetProjectDetails(projectInfo);
         var preferentialFeeConditions = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled
-            ? (await projectMetadataRepository.GetProjectDetails(projectInfo)).PreferentialFeeConditions
+            ? projectDetails.PreferentialFeeConditions
+            : null;
+
+        // Кнопка «Как оплатить…» есть только у игрока этой заявки, поэтому способы оплаты
+        // показываем только ему.
+        var playerPaymentTypes = claimInfo.Claim.PlayerId == currentUserAccessor.UserIdentification
+            ? projectDetails.PlayerPaymentTypes
             : null;
 
         // Разбивка взноса — по снимку заявки; тип и комната — из модели панели «Проживание»,
         // построенной по снимку заявки и плану (ADR022).
         var claimFee = new ClaimFeeViewModel(claim, claimInfo.ClaimInCharacter, currentUserAccessor.UserIdentification,
-            paymentsService.GetExternalPaymentUrl, accommodationModel, preferentialFeeConditions);
+            paymentsService.GetExternalPaymentUrl, accommodationModel, preferentialFeeConditions, playerPaymentTypes);
 
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
