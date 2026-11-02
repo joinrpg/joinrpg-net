@@ -13,10 +13,7 @@
 </script>
 <div id="feeInfo">
     @await Html.PartialAsync("Money", new Money(Model.CurrentFee, "feeTotalDisp2"))
-    <strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
-    <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@await Html.PartialAsync("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2"))</strong>)</span>
-    <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@await Html.PartialAsync("Money", new Money(Model.CurrentBalance))</strong>, осталось оплатить <strong class="text-danger">@await Html.PartialAsync("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2"))</strong>)</span>
-    <strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
+    <component type="typeof(ClaimBalanceStatus)" render-mode="Static" param-Model="Model.PaymentBalance" param-ForClaimJs="true" />
     <button type="button" class="btn btn-default btn-xs" style="margin-right: 1em;" onclick="toggleFeeBlock();">Подробнее&hellip;</button>
     @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
     {

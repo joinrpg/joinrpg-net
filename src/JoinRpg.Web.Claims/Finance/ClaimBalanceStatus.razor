@@ -1,0 +1,40 @@
+@using JoinRpg.DomainTypes.Characters.Claims.Finances
+@* Статус оплаты заявки теми же формулировками, что в блоке финансов заявки. Два режима:
+   - ForClaimJs (страница заявки): все четыре варианта с id (feeInfo0..3, feeOverpaidDisp2,
+     feeMoreToPayDisp2) — контракт claim.js, скрипт переключает варианты при пересчёте взноса.
+   - без флага: только актуальный вариант, без id (форма перевода взноса, tooltip грида заявок). *@
+@if (ShouldRender(ClaimPaymentStatus.Paid))
+{
+    <strong id="@(ForClaimJs ? "feeInfo0" : null)" style="@HiddenIfNot(ClaimPaymentStatus.Paid)">(оплачен полностью)</strong>
+}
+@if (ShouldRender(ClaimPaymentStatus.Overpaid))
+{
+    <span id="@(ForClaimJs ? "feeInfo1" : null)" style="@HiddenIfNot(ClaimPaymentStatus.Overpaid)">(переплата <strong class="text-success"><span id="@(ForClaimJs ? "feeOverpaidDisp2" : null)" class="price-value price-RUR">@(Model.FeePaid - Model.TotalFee)</span></strong>)</span>
+}
+@if (ShouldRender(ClaimPaymentStatus.MoreToPay))
+{
+    <span id="@(ForClaimJs ? "feeInfo2" : null)" style="@HiddenIfNot(ClaimPaymentStatus.MoreToPay)">(оплачено <strong class="text-success"><span class="price-value price-RUR">@Model.FeePaid</span></strong>, осталось оплатить <strong class="text-danger"><span id="@(ForClaimJs ? "feeMoreToPayDisp2" : null)" class="price-value price-RUR">@Model.FeeDue</span></strong>)</span>
+}
+@if (ShouldRender(ClaimPaymentStatus.NotPaid))
+{
+    <strong id="@(ForClaimJs ? "feeInfo3" : null)" style="@HiddenIfNot(ClaimPaymentStatus.NotPaid)" class="text-danger">(не оплачен)</strong>
+}
+
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public ClaimBalance Model { get; set; }
+
+    /// <summary>
+    /// Рендерить все четыре варианта с id для claim.js (страница заявки). Без флага — только
+    /// актуальный вариант без id.
+    /// </summary>
+    [Parameter]
+    public bool ForClaimJs { get; set; }
+
+    private bool ShouldRender(ClaimPaymentStatus status) => ForClaimJs || Model.PaymentStatus == status;
+
+    private string? HiddenIfNot(ClaimPaymentStatus status)
+        => Model.PaymentStatus == status ? null : "display: none;";
+}

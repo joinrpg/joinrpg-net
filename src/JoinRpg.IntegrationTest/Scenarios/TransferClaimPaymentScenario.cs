@@ -97,6 +97,9 @@ public class TransferClaimPaymentScenario(JoinApplicationFactory factory) : ICla
         page.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = await page.AsHtmlDocument();
 
+        // Оплачено 300 при взносе 0: у «Доступно средств» подсказка про переплату, как в заявке.
+        html.DocumentNode.InnerHtml.Contains("переплата").ShouldBeTrue();
+
         var options = html.DocumentNode
             .SelectNodes("//details[contains(@class, 'join-select')]//input[@name='RecipientClaimId']")
             .ShouldNotBeNull()
