@@ -91,8 +91,9 @@ internal class UnifiedGridViewService(
             .ThenBy(row => item(row).Character.Name.CharacterId.CharacterId)];
 
     /// <summary>
-    /// Персонажи скоупа: мастеру — весь проект (или выбранная группа с подгруппами), капитану —
-    /// поддеревья групп из его правил. Без прав на запрошенный скоуп грид пуст.
+    /// Персонажи скоупа: мастеру — весь проект, капитану — поддеревья групп из его правил.
+    /// Фильтр по группе действует в обоих скоупах и пересекается с группами скоупа: капитана он
+    /// ограничивает его же поддеревьями. Без прав на запрошенный скоуп грид пуст.
     /// </summary>
     private async Task<IReadOnlyCollection<CharacterInfo>> LoadScope(
         ProjectIdentification projectId,
@@ -100,36 +101,66 @@ internal class UnifiedGridViewService(
         CharacterStatusSpec spec,
         CharacterGroupIdentification? group)
     {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        var groupsWithAccess = await GetGroupsAccess(scope, projectInfo);
+
+        if (groupsWithAccess is not null && groupsWithAccess.Count == 0)
+        {
+            return [];
+        }
+
+        IReadOnlyList<CharacterGroupIdentification>? groupsFilter = null;
+        if (group is not null)
+        {
+            // Группы нет в проекте — пустой грид, а не чужие персонажи. Удалённая группа остаётся в
+            // дереве и показывает своих бывших персонажей, как старый список заявок группы.
+            if (group.ProjectId != projectId || projectInfo.GroupTree.GetGroupByIdOrDefault(group) is null)
+            {
+                return [];
+            }
+            groupsFilter = projectInfo.GroupTree.GetChildGroupIdsIncludingThis(group);
+        }
+
+        var groups = (groupsFilter, groupsWithAccess) switch
+        {
+            (null, null) => null,
+            (null, var val) => val,
+            (var val, null) => val,
+            (var x, var y) => [.. x.Intersect(y)],
+        };
+
+        if (groups is null)
+        {
+            return await characterInfoRepository.GetAllCharacterInfos(projectId, spec);
+        }
+
+        return await characterInfoRepository.GetCharacterInfosByGroups(projectId, [.. groups], spec);
+    }
+
+    /// <summary>
+    /// Группы, доступные скоупу: мастеру — весь проект, капитану — поддеревья групп из его правил.
+    /// Возвращает <c>null</c>, если ограничений нет, и пустой список, если прав нет — грид пуст.
+    /// </summary>
+    private async Task<IReadOnlyCollection<CharacterGroupIdentification>?> GetGroupsAccess(
+        UgScopeView scope,
+        ProjectInfo projectInfo)
+    {
         switch (scope)
         {
             case UgScopeView.Master:
-                var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
                 if (!projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))
                 {
                     return [];
                 }
-                if (group is null)
-                {
-                    return await characterInfoRepository.GetAllCharacterInfos(projectId, spec);
-                }
-                // Группы нет в проекте — пустой грид, а не чужие персонажи. Удалённая группа остаётся в
-                // дереве и показывает своих бывших персонажей, как старый список заявок группы.
-                if (group.ProjectId != projectId || projectInfo.GroupTree.GetGroupByIdOrDefault(group) is null)
-                {
-                    return [];
-                }
-                return await characterInfoRepository.GetCharacterInfosByGroups(
-                    projectId, [.. projectInfo.GroupTree.GetChildGroupIdsIncludingThis(group)], spec);
+                return null;
 
             case UgScopeView.Captain:
-                var access = await captainRulesRepository.GetCaptainRules(projectId, currentUserAccessor.UserIdentification);
+                var access = await captainRulesRepository.GetCaptainRules(projectInfo.ProjectId, currentUserAccessor.UserIdentification);
                 if (access.Count == 0)
                 {
                     return [];
                 }
-                var groups = (await projectMetadataRepository.GetProjectMetadata(projectId))
-                    .GroupTree.GetChildGroupIdsIncludingThis([.. access.Select(x => x.CharacterGroup)]);
-                return await characterInfoRepository.GetCharacterInfosByGroups(projectId, [.. groups], spec);
+                return projectInfo.GroupTree.GetChildGroupIdsIncludingThis([.. access.Select(x => x.CharacterGroup)]);
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(scope), scope, null);

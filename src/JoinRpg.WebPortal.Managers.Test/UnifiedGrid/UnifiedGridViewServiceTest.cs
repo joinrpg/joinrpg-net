@@ -702,12 +702,37 @@ public class UnifiedGridViewServiceTest
             group: new CharacterGroupIdentification(new ProjectIdentification(Mock.ProjectInfo.ProjectId.Value + 1), Mock.Group.CharacterGroupId)))
             .Items.ShouldBeEmpty();
 
-    /// <summary>У капитана группы задают его правила; фильтр по группе ему недоступен.</summary>
+    /// <summary>
+    /// Фильтр по группе действует и капитану: у капитана с правилами на корень выбранная группа
+    /// оставляет своих персонажей, а персонажей вне её прячет.
+    /// </summary>
     [Fact]
-    public async Task GroupFilterIgnoredForCaptain()
-        => (await GetPage(UgStatusFilterView.Active, group: GroupId)).Items
+    public async Task GroupFilterAppliesToCaptain()
+    {
+        Mock.Group.ParentCharacterGroupIds = [Mock.Project.CharacterGroups.Single(g => g.IsRoot).CharacterGroupId];
+        Mock.ReInitProjectInfo();
+        _ = CreateCharacterInGroup("in group");
+
+        (await GetPage(UgStatusFilterView.Active, group: GroupId)).Items
             .Select(item => item.Character.Name.Name)
-            .ShouldContain(Mock.Character.CharacterName);
+            .ShouldBe(["in group"], ignoreOrder: true);
+    }
+
+    /// <summary>Группа вне поддеревьев правил капитана пересечением пуста — грид пуст.</summary>
+    [Fact]
+    public async Task GroupFilterOutsideCaptainRulesGivesEmptyGrid()
+    {
+        // Персонаж есть и в группе правил капитана — без пересечения фильтр отдал бы его.
+        _ = CreateCharacterInGroup("in captain group");
+
+        (await GetPage(
+            UgStatusFilterView.Active,
+            captainRules: new FakeCaptainRulesRepository(Mock, groupId: Mock.Group.CharacterGroupId),
+            group: new CharacterGroupIdentification(
+                Mock.ProjectInfo.ProjectId,
+                Mock.Project.CharacterGroups.Single(g => g.IsRoot).CharacterGroupId)))
+            .Items.ShouldBeEmpty();
+    }
 
     /// <summary>
     /// Фильтр по ответственному оставляет его заявки, а персонажи без них — в том числе вакансии —
