@@ -65,12 +65,18 @@ public record CommentInfo(
 /// Способ оплаты; название разрешается через <c>ProjectInfo</c>. <c>null</c> у операций без способа
 /// оплаты (льготный взнос, перевод между заявками и т.п.).
 /// </param>
+/// <param name="LinkedClaim">
+/// Заявка-контрагент перевода денег между заявками: откуда пришли деньги у <c>TransferFrom</c> и
+/// куда ушли у <c>TransferTo</c>. <c>null</c> у остальных операций. Имя персонажа и игрока
+/// контрагента модель разрешает пачкой (<c>IClaimInfoRepository.GetClaimInfos</c>).
+/// </param>
 public record CommentFinanceInfo(
     int MoneyAmount,
     FinanceOperationType OperationType,
     FinanceOperationState State,
     DateTime OperationDate,
-    PaymentTypeIdentification? PaymentType)
+    PaymentTypeIdentification? PaymentType,
+    ClaimIdentification? LinkedClaim = null)
 {
     /// <summary>
     /// Операция ждёт ручного решения мастера: предложенная оплата наличными или своим способом и запрос

@@ -79,6 +79,7 @@ public record CommentViewModel(
 /// <param name="IsDeclined">Мастер не подтвердил операцию.</param>
 /// <param name="IsProposed">Операция ждёт подтверждения.</param>
 /// <param name="CanModerate">Операция требует ручной модерации, и текущий пользователь вправе её провести.</param>
+/// <param name="Transfer">Контрагент перевода денег между заявками; <c>null</c> у остальных операций.</param>
 public record CommentFinanceViewModel(
     string? OperationText,
     string OperationTypeName,
@@ -87,4 +88,22 @@ public record CommentFinanceViewModel(
     string? PaymentTypeName,
     bool IsDeclined,
     bool IsProposed,
-    bool CanModerate);
+    bool CanModerate,
+    CommentFinanceTransferViewModel? Transfer = null);
+
+/// <summary>
+/// Контрагент перевода денег между заявками. Игроку достаточно имени человека, мастеру вместо
+/// этого — ссылки на заявку контрагента (как в списке финопераций заявки).
+/// </summary>
+/// <param name="DirectionText">Направление контрагента: «Кому переведено» или «От кого переведено».</param>
+/// <param name="Player">Игрок заявки-контрагента — ссылка на профиль.</param>
+/// <param name="CharacterName">
+/// Имя персонажа заявки-контрагента — как текст ссылки на заявку. Только для мастера: игроку
+/// имя персонажа не показываем, скрытого персонажа оно выдало бы.
+/// </param>
+/// <param name="ClaimUri">Адрес заявки-контрагента. Только для мастера, игроку — <c>null</c>.</param>
+public record CommentFinanceTransferViewModel(
+    string DirectionText,
+    UserLinkViewModel Player,
+    string? CharacterName,
+    Uri? ClaimUri);

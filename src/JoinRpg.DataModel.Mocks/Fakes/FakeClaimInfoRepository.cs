@@ -46,8 +46,22 @@ public sealed class FakeClaimInfoRepository(MockedProject mock) : IClaimInfoRepo
             : throw new NotSupportedException();
     }
 
-    public Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds)
-        => throw new NotSupportedException();
+    /// <summary>
+    /// Пачкой — как настоящий репозиторий; отсутствующая заявка просто не попадает в ответ,
+    /// чтобы вызывающие могли проверять деградацию без ссылки-контрагента.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds)
+    {
+        var result = new Dictionary<ClaimIdentification, ClaimInfo>();
+        foreach (var claimId in claimIds)
+        {
+            if (await GetClaimInfoOrDefault(claimId) is { } claim)
+            {
+                result.Add(claimId, claim);
+            }
+        }
+        return result;
+    }
 
     public Task<IReadOnlyDictionary<CharacterIdentification, ClaimInfo>> GetApprovedClaimInfos(IReadOnlyCollection<CharacterInfo> characters)
         => throw new NotSupportedException();

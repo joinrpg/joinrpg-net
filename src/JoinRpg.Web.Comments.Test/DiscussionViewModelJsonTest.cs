@@ -16,7 +16,20 @@ public class DiscussionViewModelJsonTest
         var withFinance = Comment(2, isVisibleToPlayer: false, isRead: false, depth: 1) with
         {
             ExtraActionText = "Оплачен взнос",
-            Finance = new CommentFinanceViewModel("Оплата денег игроком", "Оплата", 500, new DateOnly(2026, 10, 2), "Наличными — Мастер", IsDeclined: false, IsProposed: true, CanModerate: true),
+            Finance = new CommentFinanceViewModel(
+                "Перевод денег другому игроку",
+                "Перевод",
+                -500,
+                new DateOnly(2026, 10, 2),
+                "Наличными — Мастер",
+                IsDeclined: false,
+                IsProposed: true,
+                CanModerate: true,
+                new CommentFinanceTransferViewModel(
+                    "Кому переведено",
+                    new UserLinkViewModel(new UserIdentification(8), "Игрок", ViewMode.Show),
+                    "Персонаж контрагента",
+                    new Uri("https://test/123/claim/8/edit"))),
         };
         var original = Discussion(
             hasMasterAccess: true,

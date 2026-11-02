@@ -62,6 +62,48 @@ public class ClaimDiscussionTest : BunitContext
     }
 
     [Fact]
+    public void TransferToMaster_ShowsCounterpartyClaimLinkWithPlayer()
+    {
+        var cut = RenderDiscussion(Comment(1, Finance(isProposed: false) with
+        {
+            OperationText = "Перевод денег другому игроку",
+            MoneyAmount = -500,
+            Transfer = new CommentFinanceTransferViewModel(
+                "Кому переведено",
+                new UserLinkViewModel(new UserIdentification(8), "Игрок", ViewMode.Show),
+                "Персонаж контрагента",
+                new Uri("https://test/123/claim/8/edit")),
+        }));
+
+        var text = OwnRowText(cut, 1);
+        text.ShouldContain("Кому переведено");
+        text.ShouldContain("(игрок");
+        text.ShouldContain("Игрок");
+        var claimLink = cut.Find("#comment1 a[href='https://test/123/claim/8/edit']");
+        claimLink.TextContent.ShouldContain("Персонаж контрагента");
+    }
+
+    [Fact]
+    public void TransferToPlayer_ShowsPlayerNameWithoutClaimLink()
+    {
+        var cut = RenderDiscussion(Comment(1, Finance(isProposed: false) with
+        {
+            OperationText = "Перевод денег от другого игрока",
+            MoneyAmount = 500,
+            Transfer = new CommentFinanceTransferViewModel(
+                "От кого переведено",
+                new UserLinkViewModel(new UserIdentification(8), "Игрок", ViewMode.Show),
+                CharacterName: null,
+                ClaimUri: null),
+        }));
+
+        var text = OwnRowText(cut, 1);
+        text.ShouldContain("От кого переведено");
+        text.ShouldContain("Игрок");
+        cut.FindAll("#comment1 a[href^='https://test/123/claim/']").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void CommentWithoutFinance_HasNoFinanceBlock()
     {
         var cut = RenderDiscussion(Comment(1, finance: null));

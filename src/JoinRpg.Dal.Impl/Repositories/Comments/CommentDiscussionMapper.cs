@@ -76,6 +76,7 @@ internal static class CommentDiscussionMapper
             operationType,
             row.FinanceState ?? throw new InvalidOperationException($"Finance operation {row.CommentId} has no state"),
             row.FinanceOperationDate ?? throw new InvalidOperationException($"Finance operation {row.CommentId} has no date"),
-            row.FinancePaymentTypeId is { } paymentTypeId ? new PaymentTypeIdentification(projectId, paymentTypeId) : null);
+            row.FinancePaymentTypeId is { } paymentTypeId ? new PaymentTypeIdentification(projectId, paymentTypeId) : null,
+            ClaimIdentification.FromOptional(projectId, row.FinanceLinkedClaimId));
     }
 }

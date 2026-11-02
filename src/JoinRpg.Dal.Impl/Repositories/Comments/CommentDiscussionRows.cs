@@ -81,4 +81,7 @@ internal sealed class CommentRow
     public required FinanceOperationState? FinanceState { get; init; }
     public required DateTime? FinanceOperationDate { get; init; }
     public required int? FinancePaymentTypeId { get; init; }
+
+    /// <summary>Заявка-контрагент перевода денег между заявками; <c>null</c> у остальных операций.</summary>
+    public required int? FinanceLinkedClaimId { get; init; }
 }

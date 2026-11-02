@@ -19,6 +19,25 @@
                 {
                     <div><b>@finance.OperationText</b>: <PriceElement Price="finance.MoneyAmount" /></div>
                 }
+                @if (finance.Transfer is { } transfer)
+                {
+                    <div>
+                        <b>@transfer.DirectionText</b>:
+                        @* Мастеру — ссылка на заявку контрагента с именем персонажа, игроку — только имя человека:
+                            имя скрытого персонажа игроку показывать нельзя. *@
+                        @if (transfer.CharacterName is { } characterName && transfer.ClaimUri is { } claimUri)
+                        {
+                            <a href="@claimUri">@characterName</a>
+                            @("(игрок ")
+                            <UserLink Model="transfer.Player" />
+                            @(")")
+                        }
+                        else
+                        {
+                            <UserLink Model="transfer.Player" />
+                        }
+                    </div>
+                }
                 <div><b>Дата операции</b>: @finance.OperationDate.ToString("dd.MM.yyyy")</div>
                 @if (finance.PaymentTypeName is not null)
                 {

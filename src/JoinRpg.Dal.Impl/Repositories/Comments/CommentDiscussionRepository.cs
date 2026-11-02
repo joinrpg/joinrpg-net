@@ -72,6 +72,7 @@ internal sealed class CommentDiscussionRepository(MyDbContext ctx) : ICommentDis
                         FinanceState = (FinanceOperationState?)finance.State,
                         FinanceOperationDate = (DateTime?)finance.OperationDate,
                         FinancePaymentTypeId = finance.PaymentTypeId,
+                        FinanceLinkedClaimId = finance.LinkedClaimId,
                     },
             };
 

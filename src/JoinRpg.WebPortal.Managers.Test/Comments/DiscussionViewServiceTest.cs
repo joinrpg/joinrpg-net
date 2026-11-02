@@ -51,6 +51,8 @@ public class DiscussionViewServiceTest
             new FakeUserRepository(mock.TryGetUserInfo),
             new FakeAvatarLoader(),
             new FakeCurrentUserAccessor(currentUser),
+            new FakeClaimInfoRepository(mock),
+            new FakeClaimUriLocator(),
             service);
         return (await viewService.ShowDiscussion(DiscussionId, mock.ProjectInfo), service);
     }
@@ -115,6 +117,11 @@ public class DiscussionViewServiceTest
 
         model.ShouldBeNull();
         service.Calls.ShouldBeEmpty();
+    }
+
+    private sealed class FakeClaimUriLocator : IUriLocator<ClaimIdentification>
+    {
+        public Uri GetUri(ClaimIdentification target) => new($"https://test/{target.ProjectId.Value}/claim/{target.ClaimId}/edit");
     }
 
     private sealed class FakeAvatarLoader : IAvatarLoader

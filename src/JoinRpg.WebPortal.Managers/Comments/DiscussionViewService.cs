@@ -1,4 +1,5 @@
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Comments;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -19,10 +20,12 @@ public sealed class DiscussionViewService(
     IUserRepository userRepository,
     IAvatarLoader avatarLoader,
     ICurrentUserAccessor currentUserAccessor,
+    IClaimInfoRepository claimInfoRepository,
+    IUriLocator<ClaimIdentification> claimUriLocator,
     ICommentDiscussionService commentDiscussionService)
 {
     private readonly DiscussionViewModelBuilder discussionViewModelBuilder =
-        new(userRepository, discussionRepository, avatarLoader, currentUserAccessor);
+        new(userRepository, discussionRepository, avatarLoader, currentUserAccessor, claimInfoRepository, claimUriLocator);
 
     /// <summary>
     /// Модель обсуждения для текущего пользователя; заодно отмечает всё обсуждение прочитанным.
