@@ -78,9 +78,9 @@ public class DiscussionTest : BunitContext
             Comment(1, isVisibleToPlayer: false),
             Comment(2)));
 
-        OwnHeader(cut, 1).QuerySelector(".join-collapse-panel form input[type=checkbox][name=HideFromUser]")
+        OwnHeader(cut, 1).QuerySelector("details.join-comment-toggle form input[type=checkbox][name=HideFromUser]")
             .ShouldNotBeNull().HasAttribute("disabled").ShouldBeTrue();
-        OwnHeader(cut, 2).QuerySelector(".join-collapse-panel form input[type=checkbox][name=HideFromUser]")
+        OwnHeader(cut, 2).QuerySelector("details.join-comment-toggle form input[type=checkbox][name=HideFromUser]")
             .ShouldNotBeNull().HasAttribute("disabled").ShouldBeFalse();
     }
 

@@ -1,6 +1,6 @@
 @*
     Комментарий с ответами (рекурсивно). Рендеринг статический: формы — обычные POST, раскрытие формы
-    ответа — JoinCollapsePanel (нативный <details>). Видимость и «новое» уже посчитаны построителем.
+    ответа — AddCommentToggle (нативный <details>). Видимость и «новое» уже посчитаны построителем.
 *@
 @inject ICommentUriLocator UriLocator
 @* Иначе Blazor склеит «Мастер», ссылку на автора, «написал(а)» и время в одно слово. *@
@@ -52,10 +52,7 @@
 
             <div>@((MarkupString)Comment.TextHtml)</div>
 
-            <JoinCollapsePanel>
-                <Header>Ответить</Header>
-                <ChildContent><AddCommentForm Discussion="Discussion" ReplyTo="Comment" /></ChildContent>
-            </JoinCollapsePanel>
+            <AddCommentToggle Discussion="Discussion" ReplyTo="Comment" />
         </div>
     </div>
 
