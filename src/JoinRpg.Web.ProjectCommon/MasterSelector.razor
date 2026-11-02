@@ -15,11 +15,18 @@
     SelectedValues="@Selected"
     SelectedItemsChanged="@HandleSelectedChanged"
     Multiple="false"
+    AllowEmpty="@AllowEmpty"
+    EmptyText="@EmptyItemText"
     />
 
 @code {
 
     [Parameter] public string? Name { get; set; } = null;
+    /// <summary>Пустой пункт «любой» — для фильтров, где отсутствие выбора тоже значение.</summary>
+    [Parameter] public bool AllowEmpty { get; set; } = false;
+    [Parameter] public string EmptyText { get; set; } = "Любой мастер";
+    /// <summary>TypedSelector показывает EmptyText и на кнопке «ничего не выбрано»: без AllowEmpty оставляем его родной «(нет)».</summary>
+    private string EmptyItemText => AllowEmpty ? EmptyText : "(нет)";
     [Parameter] [EditorRequired] public int ProjectId { get; set; }
     [Parameter] public UserIdentification? MasterId { get; set; }
     [Parameter] public EventCallback<UserIdentification?> MasterIdChanged { get; set; }

@@ -22,7 +22,13 @@ internal class CharacterGroupListGenerator(ProjectInfo projectInfo, UserIdentifi
         }
 
         var group = projectInfo.GroupTree.GetGroupById(groupId);
-        var vm = new CharacterGroupDto(groupId, group.Name, pathToTop.Skip(1).ToArray(), group.IsPublic, group.IsSpecial);
+        var vm = new CharacterGroupDto(
+            groupId,
+            group.Name,
+            pathToTop.Skip(1).ToArray(),
+            group.IsPublic,
+            group.IsSpecial,
+            IsRoot: groupId == projectInfo.GroupTree.RootGroupId);
 
         Results.Add(vm);
 

@@ -14,6 +14,8 @@
                SelectedValues="@SelectedGroupIds"
                SelectedItemsChanged="HandleSelectedItemsChanged"
                Multiple="@Multiple"
+               AllowEmpty="@(Mode != CharacterGroupSelectorMode.ShowRoot)"
+               EmptyText="@EmptyItemText"
                />
 @if (SelectedGroupNames.Length > 1)
 {
@@ -31,12 +33,26 @@
 
     [Parameter] public EventCallback<CharacterGroupDto[]> SelectedGroupsChanged { get; set; }
     [Parameter] public bool Multiple { get; set; } = true;
+    /// <summary>
+    /// Что делать с корневой группой и пустым пунктом «все» — см. <see cref="CharacterGroupSelectorMode"/>.
+    /// При <see cref="CharacterGroupSelectorMode.ShowRoot"/> пустого пункта нет: ничего не выбрано —
+    /// это «не отмечен ни один пункт» (контракт <c>TypedSelector</c>), а не отдельное значение.
+    /// </summary>
+    [Parameter] public CharacterGroupSelectorMode Mode { get; set; } = CharacterGroupSelectorMode.ShowRoot;
+    /// <summary>Текст пустого пункта при <see cref="Mode"/>, отличном от <see cref="CharacterGroupSelectorMode.ShowRoot"/>.</summary>
+    [Parameter] public string EmptyText { get; set; } = "Все группы";
     [Parameter] public bool IncludeSpecial { get; set; } = true;
     [Parameter] public CharacterGroupIdentification? ExcludeGroupId { get; set; }
 
     public string[] SelectedGroupNames { get; private set; } = [];
 
     private CharacterGroupDto[]? groups;
+    /// <summary>
+    /// <c>TypedSelector</c> использует EmptyText и как текст пустого пункта, и как подпись кнопки при
+    /// «ничего не выбрано». В ShowRoot пустого пункта нет, и «Все группы» там наврало бы — оставляем
+    /// его собственный текст по умолчанию.
+    /// </summary>
+    private string EmptyItemText => Mode == CharacterGroupSelectorMode.ShowRoot ? "(нет)" : EmptyText;
     /// <summary>Ключ загрузки: пока не изменился, в сеть не ходим.</summary>
     private (int ProjectId, bool IncludeSpecial, CharacterGroupIdentification? ExcludeGroupId)? loadedFor;
     private FieldIdentifier? fieldIdentifier = null;
@@ -80,6 +96,11 @@
                     : [.. await cache.GetOrLoad<CharacterGroupDto>($"character-groups:real:{ProjectId}",
                         async () => await groupsClient.GetRealCharacterGroups(ProjectId))];
             loadedFor = (ProjectId, IncludeSpecial, ExcludeGroupId);
+            // Корень узнаём по пустому пути: он предок всех, пути ниже начинаются с его имени.
+            if (Mode == CharacterGroupSelectorMode.RootMeansEmpty && groups is not null)
+            {
+                groups = [.. groups.Where(g => !g.IsRoot)];
+            }
         }
 
         var selectedItems = (groups ?? []).Where(item => SelectedGroupIds.Contains(item.CharacterGroupId)).ToArray();
