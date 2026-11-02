@@ -1,5 +1,5 @@
 @preservewhitespace true
-@if (Problems.Count > 0 || HasHiddenCheckInBlockers)
+@if (Problems.Count > 0 || HasHiddenCheckInBlockers || ShowAutoAcceptButton)
 {
 <JoinPanel Variation="VariationStyleEnum.Warning">
     <Header>Проблемы заявки</Header>
@@ -33,6 +33,13 @@
                 }
             </JoinButtonGroup>
         }
+        @if (ShowAutoAcceptButton)
+        {
+            <p class="auto-accept-ready">Всё, что мешало автоприёму, устранено — заявку можно принять сейчас.</p>
+            <JoinButtonGroup>
+                <AutoApproveMyClaimButton ClaimId="ClaimId" />
+            </JoinButtonGroup>
+        }
     </Body>
 </JoinPanel>
 }
@@ -62,4 +69,15 @@
     /// </summary>
     [Parameter]
     public RequestedSensitiveDataView? OwnerActions { get; set; }
+
+    /// <summary>Заявка — для кнопки «Автопринять мою заявку».</summary>
+    [Parameter]
+    [EditorRequired]
+    public ClaimIdentification ClaimId { get; set; } = null!;
+
+    /// <summary>
+    /// Владельцу — принять заявку сейчас: кандидат на автоприём, и все его блокеры сняты.
+    /// </summary>
+    [Parameter]
+    public bool ShowAutoAcceptButton { get; set; }
 }

@@ -1151,6 +1151,33 @@ internal class ClaimServiceImpl(
         await AutoApproveIfRequired(claimId);
     }
 
+    /// <summary>
+    /// Кнопка «Автопринять мою заявку»: игрок принял заявку к шаблону с включённым автоприёмом,
+    /// все блокеры снял (виджет «Проблемы заявки» показал, чего не хватало) и просит принять
+    /// заявку сейчас, не дожидаясь следующего повода.
+    /// </summary>
+    /// <remarks>
+    /// Своей мутации нет: доступ проверяется чтением, а принимает заявку тот же
+    /// <see cref="AutoApproveIfRequired"/> — с имперсонацией ответственного мастера и
+    /// повторной проверкой всех условий. Если с момента показа кнопки что-то изменилось,
+    /// автоприём молча не сработает, и игрок снова увидит, что ему мешает.
+    /// </remarks>
+    public async Task AutoApproveMyClaim(ClaimIdentification claimId)
+    {
+        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(claimId)
+            ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(Claim));
+
+        // Как ClaimAccessRequirement.PlayerOnly: неаутентифицированный и чужой игрок одинаково
+        // не имеют доступа (UserIdentification бросил бы голый Exception вместо отказа).
+        if (currentUserAccessor.UserIdentificationOrDefault is not { } userId
+            || claimInfo.Claim.PlayerId != userId)
+        {
+            throw new PlayerOnlyException(claimId, currentUserAccessor.UserIdOrDefault ?? 0);
+        }
+
+        await AutoApproveIfRequired(claimId);
+    }
+
     public async Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed)
     {
         await characterPropsService.ChangeClaim(

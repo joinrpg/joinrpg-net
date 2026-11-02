@@ -23,6 +23,14 @@ public class ClaimHttpClient(HttpClient httpClient, CsrfTokenProvider csrfTokenP
         await response.EnsureSuccessOrThrowProblem();
     }
 
+    public async Task AutoApproveMyClaim(ClaimIdentification claimId)
+    {
+        await csrfTokenProvider.SetCsrfToken(httpClient);
+        var response = await httpClient.PostAsync($"webapi/ClaimOperations/AutoApproveMyClaim?claimId={claimId}", content: null);
+
+        await response.EnsureSuccessOrThrowProblem();
+    }
+
     async Task<IReadOnlyCollection<ClaimLinkViewModel>> IClaimListClient.GetClaims(ProjectIdentification projectId, ClaimStatusSpec claimStatusSpec)
         => await (await httpClient.GetAsync(
             $"webapi/claim-list/GetClaims?projectId={projectId.Value}&claimStatusSpec={claimStatusSpec}"))

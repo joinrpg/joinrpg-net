@@ -67,6 +67,9 @@ public record class ClaimProblem(ClaimProblemType ProblemType, DateTime? Problem
         // Не выданный игроком доступ к защищённым данным — тоже блокер автоприёма; игроку эта
         // проблема и так видна всегда, см. ProfileRelatedProblem.
         ClaimProblemType.SensitiveDataNotAllowed => true,
+        // Утверждает ответственный мастер: если он не назначен или уже не мастер, принимать заявку
+        // некому — она остаётся мастерам. Игроку проблема не видна, но и кнопки автоприёма не будет.
+        ClaimProblemType.InvalidResponsibleMaster => true,
         _ => false,
     };
 

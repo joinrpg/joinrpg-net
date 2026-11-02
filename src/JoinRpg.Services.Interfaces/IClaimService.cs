@@ -66,6 +66,7 @@ public interface IClaimService
 
     Task AllowSensitiveData(ClaimIdentification projectId);
     Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed);
+    Task AutoApproveMyClaim(ClaimIdentification claimId);
     Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId);
 }
 
