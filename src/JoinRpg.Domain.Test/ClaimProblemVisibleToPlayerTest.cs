@@ -147,6 +147,18 @@ public class ClaimProblemVisibleToPlayerTest
     }
 
     /// <summary>
+    /// Блокеры автоприёма — исчерпанный лимит шаблона и не выданный доступ к защищённым данным.
+    /// Прочие проблемы игрока (например, деньги) автоприёму не мешают.
+    /// </summary>
+    [Fact]
+    public void AutoAcceptBlockersAreMarkedOnProblemTypes()
+    {
+        new ClaimProblem(ClaimProblemType.SlotExhausted, ProblemSeverity.Warning).IsAutoAcceptBlocker.ShouldBeTrue();
+        new ProfileRelatedProblem(ClaimProblemType.SensitiveDataNotAllowed, ProblemSeverity.Warning).IsAutoAcceptBlocker.ShouldBeTrue();
+        new ClaimProblem(ClaimProblemType.FeePaidPartially, ProblemSeverity.Hint).IsAutoAcceptBlocker.ShouldBeFalse();
+    }
+
+    /// <summary>
     /// Проблема незаполненного обязательного поля — от настоящего фильтра.
     /// </summary>
     private FieldRelatedProblem EmptyFieldProblem(ProjectFieldInfo field)
