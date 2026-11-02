@@ -36,6 +36,12 @@ public class PaymentTransferViewModel : AddCommentViewModel
     public int MaxMoney { get; }
 
     /// <summary>
+    /// Баланс заявки-источника: статус оплаты теми же формулировками, что в заявке
+    /// (<c>ClaimBalanceStatus</c>) — «(переплата …)» или «(осталось оплатить …)».
+    /// </summary>
+    public ClaimBalance Balance { get; }
+
+    /// <summary>
     /// Comment text
     /// </summary>
     [Required(ErrorMessage = "Заполните текст комментария")]
@@ -59,5 +65,6 @@ public class PaymentTransferViewModel : AddCommentViewModel
         ClaimName = claim.Character.CharacterName;
         ProjectId = claim.ClaimId.ProjectId.Value;
         MaxMoney = claim.Claim.Finance.FeePaid;
+        Balance = claim.CalculateBalance();
     }
 }

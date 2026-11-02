@@ -3,6 +3,7 @@
 @using JoinRpg.Web.Models.Money
 @using JoinRpg.DomainTypes.Characters.Claims
 @using JoinRpg.Web.ProjectCommon.Claims
+@using JoinRpg.Web.Claims.Finance
 @model PaymentTransferViewModel
 
 @{ ViewBag.Title = "Перевод взноса между заявками"; }
@@ -15,7 +16,10 @@
   </div>
   <div class="form-group">
     @Html.LabelFor(model => model.MaxMoney, new { @class = "col-md-3 control-label" })
-    <div class="col-md-6"><strong>@await Html.PartialAsync("Money", new Money(Model.MaxMoney))</strong></div>
+    <div class="col-md-6">
+      <strong>@await Html.PartialAsync("Money", new Money(Model.MaxMoney))</strong>
+      <component type="typeof(ClaimBalanceStatus)" render-mode="Static" param-Model="Model.Balance" />
+    </div>
   </div>
   <form asp-action="TransferClaimPayment" asp-controller="Claim" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
 

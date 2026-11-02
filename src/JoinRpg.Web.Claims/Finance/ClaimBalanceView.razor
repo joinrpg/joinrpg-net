@@ -1,5 +1,8 @@
 @using JoinRpg.DomainTypes.Characters.Claims.Finances
-<JoinBadge Variation="@variation">@Model.FeePaid / @Model.TotalFee</JoinBadge>
+<JoinBadge Variation="@variation">
+    <ChildContent>@Model.FeePaid / @Model.TotalFee</ChildContent>
+    <TooltipContent><ClaimBalanceStatus Model="Model" PlainText="true" /></TooltipContent>
+</JoinBadge>
 
 
 @code {
@@ -12,7 +15,15 @@
 
     protected override void OnParametersSet()
     {
-        variation = Model.FeeDue > 0 ? VariationStyleEnum.Warning : VariationStyleEnum.Primary;
+        // Не оплачен — красный, недооплата — жёлтый, переплата — зелёный, как в заявке
+        // (ClaimBalanceStatus); полностью оплаченный — нейтральный, как здесь было раньше.
+        variation = Model.PaymentStatus switch
+        {
+            ClaimPaymentStatus.NotPaid => VariationStyleEnum.Danger,
+            ClaimPaymentStatus.MoreToPay => VariationStyleEnum.Warning,
+            ClaimPaymentStatus.Overpaid => VariationStyleEnum.Success,
+            _ => VariationStyleEnum.Primary,
+        };
         base.OnParametersSet();
     }
 

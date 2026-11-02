@@ -111,7 +111,8 @@ public class ClaimFeeViewModel
         HasSubmittablePaymentTypes = PaymentTypes.Any(pt => pt.TypeKind is PaymentTypeKindViewModel.Custom or PaymentTypeKindViewModel.Cash);
 
         // Determining payment status
-        PaymentStatus = new ClaimBalance(FeePaid: CurrentBalance, TotalFee: CurrentTotalFee).PaymentStatus;
+        PaymentBalance = new ClaimBalance(FeePaid: CurrentBalance, TotalFee: CurrentTotalFee);
+        PaymentStatus = PaymentBalance.PaymentStatus;
 
         ShowRecurrentPaymentControls = PaymentTypes.RecurrentPaymentsEnabled() && isMyClaim;
         RecurrentPayments = claim.RecurrentPayments
@@ -218,6 +219,12 @@ public class ClaimFeeViewModel
     /// Sum of approved finance operations
     /// </summary>
     public int CurrentBalance => Balance[FinanceOperationState.Approved];
+
+    /// <summary>
+    /// Баланс оплаты заявки: уплачено против итогового взноса. Показывается блоком финансов
+    /// заявки (<c>ClaimBalanceStatus</c>).
+    /// </summary>
+    public ClaimBalance PaymentBalance { get; }
 
     public ClaimPaymentStatus PaymentStatus { get; }
 
