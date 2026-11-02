@@ -14,7 +14,11 @@
             <JoinTextInput @bind-Value="_model.Name" />
         </FormRowFor>
         <FormRowFor For="@(() => _model.CharacterGroupId)">
-            <SingleCharacterGroupSelector ProjectId="@ProjectId" @bind-SelectedGroupId="_model.CharacterGroupId" />
+            @* Пусто («все персонажи») и корень — разные вещи: корень включает спецгруппы в сетке, пусто — нет,
+               поэтому оба в списке (ShowEmptyAndRoot), а не сведены в один пункт. *@
+            <SingleCharacterGroupSelector ProjectId="@ProjectId" @bind-SelectedGroupId="_model.CharacterGroupId"
+                                          Mode="CharacterGroupSelectorMode.ShowEmptyAndRoot"
+                                          EmptyText="Все персонажи" />
         </FormRowFor>
         <FormRowFor For="@(() => _model.PublicMode)">
             <CheckboxInput @bind-Value="_model.PublicMode" />
