@@ -4,7 +4,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 namespace JoinRpg.Domain.Problems.ClaimProblemFilters;
 
 /// <remarks>
-/// Баланс считается один раз на все четыре правила — доменным
+/// Баланс считается один раз на все правила — доменным
 /// <see cref="ClaimBalanceExtensions.CalculateBalance(ClaimInCharacter, System.DateTime?)"/>,
 /// без обращения к EF. Раньше каждое правило дёргало <c>ClaimBalance()</c> / <c>ClaimTotalFee()</c>
 /// по отдельности, пересчитывая взнос за поля заново.
@@ -33,9 +33,17 @@ internal class FinanceProblemsFilter : IClaimProblemFilter
         }
 
         // Было: !ClaimPaidInFull && ClaimBalance > 0, то есть заплатили, но не до конца.
-        if (balance.FeeDue > 0 && balance.FeePaid > 0)
+        // Для зарегистрированной заявки вместо подсказки приходит более строгая проблема ниже,
+        // чтобы не показывать две за одну и ту же задолженность.
+        if (balance.FeeDue > 0 && balance.FeePaid > 0 && claim.Status != ClaimStatus.CheckedIn)
         {
             yield return new ClaimProblem(ClaimProblemType.FeePaidPartially, ProblemSeverity.Hint);
+        }
+
+        // Игрок уже на полигоне, а долг остался.
+        if (claim.Status == ClaimStatus.CheckedIn && balance.FeeDue > 0)
+        {
+            yield return new ClaimProblem(ClaimProblemType.CheckedInNotPaid, ProblemSeverity.Warning);
         }
 
         // Было: IsInDiscussion && ClaimBalance > 0 — деньги по заявке, решения по которой нет.

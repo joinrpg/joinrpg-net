@@ -5,7 +5,7 @@ using JoinRpg.DomainTypes.Characters.Claims;
 namespace JoinRpg.Domain.Test.Problems;
 
 /// <summary>
-/// Финансовые проблемы заявки — все четыре правила фильтра.
+/// Финансовые проблемы заявки — все правила фильтра.
 /// </summary>
 /// <remarks>
 /// Соответствие прежним выражениям поверх EF-сущности:
@@ -132,5 +132,47 @@ public class FinanceProblemsFilterTest : ClaimProblemFilterTestBase
     public void PaymentOnApprovedClaimIsNotUnApprovedPayment()
     {
         Has(Problems(totalFee: 1000, feePaid: 100), ClaimProblemType.UnApprovedClaimPayment).ShouldBeFalse();
+    }
+
+    /// <summary>Зарегистрировали, а взнос не доплачен даже частично.</summary>
+    [Fact]
+    public void CheckedInWithoutPaymentIsWarning()
+    {
+        var problems = Problems(totalFee: 1000, feePaid: 0, status: ClaimStatus.CheckedIn);
+
+        problems.ShouldContain(p =>
+            p.ProblemType == ClaimProblemType.CheckedInNotPaid && p.Severity == ProblemSeverity.Warning);
+    }
+
+    [Fact]
+    public void CheckedInWithPartialPaymentIsWarning()
+    {
+        var problems = Problems(totalFee: 1000, feePaid: 400, status: ClaimStatus.CheckedIn);
+
+        problems.ShouldContain(p =>
+            p.ProblemType == ClaimProblemType.CheckedInNotPaid && p.Severity == ProblemSeverity.Warning);
+        // Подсказку «уплачен частично» поглощает предупреждение: не две проблемы за один долг.
+        Has(problems, ClaimProblemType.FeePaidPartially).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void CheckedInFullyPaidIsNotAProblem()
+    {
+        Has(Problems(totalFee: 1000, feePaid: 1000, status: ClaimStatus.CheckedIn), ClaimProblemType.CheckedInNotPaid)
+            .ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ApprovedUnpaidClaimIsNotCheckedInProblem()
+    {
+        Has(Problems(totalFee: 1000, feePaid: 0), ClaimProblemType.CheckedInNotPaid).ShouldBeFalse();
+    }
+
+    /// <summary>Переплата — не задолженность, даже у зарегистрированной заявки.</summary>
+    [Fact]
+    public void CheckedInOverpaymentIsNotCheckedInProblem()
+    {
+        Has(Problems(totalFee: 1000, feePaid: 1500, status: ClaimStatus.CheckedIn), ClaimProblemType.CheckedInNotPaid)
+            .ShouldBeFalse();
     }
 }

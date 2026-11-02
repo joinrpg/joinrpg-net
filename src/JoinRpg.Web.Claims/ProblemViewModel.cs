@@ -24,6 +24,7 @@ public record class ProblemViewModel(string ProblemTypeText, ClaimProblemType Pr
       {ClaimProblemType.NoCharacterOnApprovedClaim, "Нет персонажа у заявки"},
       {ClaimProblemType.FeePaidPartially, "Взнос уплачен частично"},
       {ClaimProblemType.UnApprovedClaimPayment, "Оплата в непринятой заявке"},
+      {ClaimProblemType.CheckedInNotPaid, "Зарегистрирована неоплаченная заявка"},
       {ClaimProblemType.ClaimWorkStopped, "Работа по заявке остановлена"},
       // ClaimDontHaveTarget здесь больше нет: значение помечено Obsolete, потому что недостижимо
       // по построению агрегата персонажа (ADR013). Соглашение проекта — у Obsolete-значений
