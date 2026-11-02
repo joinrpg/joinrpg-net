@@ -116,7 +116,9 @@ public class ClaimsGridTest : BunitContext
                 [],
                 Math.Clamp(page, 1, Math.Max(TotalPages, 1)),
                 TotalPages,
-                TotalCharacters: 0));
+                TotalCharacters: 0,
+                OperationClaimIds: [],
+                OperationCharacterIds: []));
         }
     }
 }

@@ -25,12 +25,16 @@ public static class ItemBuilder
     /// <param name="problems">
     /// Проблемы заявок, если их надо показать (мастерский скоуп), иначе <c>null</c>.
     /// </param>
+    /// <param name="unreadComments">
+    /// Непрочитанные комментарии по обсуждениям заявок (мастерский скоуп, ADR027 §4), иначе <c>null</c>.
+    /// </param>
     public static UgItemViewModel? BuildItem(
         CharacterInfo character,
         IReadOnlyCollection<CharacterClaimInfo> claims,
         ICurrentUserAccessor currentUserId,
         UgScopeView scope,
-        IReadOnlyDictionary<ClaimIdentification, IReadOnlyCollection<ClaimProblem>>? problems = null)
+        IReadOnlyDictionary<ClaimIdentification, IReadOnlyCollection<ClaimProblem>>? problems = null,
+        IReadOnlyDictionary<CommentDiscussionId, int>? unreadComments = null)
     {
         var accessArguments = AccessArgumentsFactory.Create(character, currentUserId);
         if (scope == UgScopeView.Captain)
@@ -57,7 +61,7 @@ public static class ItemBuilder
 
         return new UgItemViewModel(
             characterViewModel,
-            [.. claims.Select(claim => BuildClaimItem(new ClaimInCharacter(character, claim), accessArguments, problems?[claim.ClaimId]))]
+            [.. claims.Select(claim => BuildClaimItem(new ClaimInCharacter(character, claim), accessArguments, problems?[claim.ClaimId], unreadComments?.GetValueOrDefault(claim.CommentDiscussionId)))]
             );
     }
 
@@ -73,7 +77,8 @@ public static class ItemBuilder
     private static UgClaimViewModel BuildClaimItem(
         ClaimInCharacter claimInCharacter,
         AccessArguments accessArguments,
-        IReadOnlyCollection<ClaimProblem>? problems)
+        IReadOnlyCollection<ClaimProblem>? problems,
+        int? unreadCommentsCount)
     {
         var claim = claimInCharacter.Claim;
         var lastModifiedAt = ClaimListBuilder.GetLastCommentTime(claim, accessArguments);
@@ -90,7 +95,8 @@ public static class ItemBuilder
             claimInCharacter.CalculateBalance(),
             claim.ClaimId,
             claim.Player.DisplayName.FullName,
-            problems?.Select(problem => new ProblemViewModel(problem)).ToList()
+            problems?.Select(problem => new ProblemViewModel(problem)).ToList(),
+            unreadCommentsCount
             );
     }
 }
