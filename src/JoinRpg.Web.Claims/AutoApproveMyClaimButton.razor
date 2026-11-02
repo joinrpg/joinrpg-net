@@ -1,0 +1,46 @@
+@using JoinRpg.Common.WebComponents.Dialog
+@inject IClaimOperationClient ClaimClient;
+@inject NavigationManager NavigationManager;
+@inject ILogger<AutoApproveMyClaimButton> Logger
+<JoinButton
+  Preset="ButtonPreset.Ok"
+  Label="Прими мою заявку"
+  OnClick="OnClick"
+  />
+<JoinMessageDialog @ref="errorDialog" Type="MessageDialogType.Fail">@error</JoinMessageDialog>
+@code {
+    [Parameter]
+    [EditorRequired]
+    public ClaimIdentification ClaimId { get; set; } = null!;
+
+    private JoinMessageDialog errorDialog = null!;
+    private string error = "";
+
+    private async Task OnClick(ButtonClickEventArgs args)
+    {
+        try
+        {
+            await ClaimClient.AutoApproveMyClaim(ClaimId);
+            NavigationManager.Refresh(forceReload: true);
+        }
+        catch (ServerProblemException exception)
+        {
+            // Например, между показом кнопки и кликом заявка изменилась — причину показываем как есть.
+            ShowError(args, $"Не удалось принять заявку автоматически: {exception.Message}");
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Ошибка при автоприёме своей заявки {ClaimId}", ClaimId);
+            ShowError(args, "Не удалось принять заявку автоматически");
+        }
+    }
+
+    private void ShowError(ButtonClickEventArgs args, string text)
+    {
+        error = text;
+        // Страница не перезагрузится — кнопку надо вывести из состояния «в процессе», иначе повторить нельзя.
+        args.ExitProgressState = true;
+        StateHasChanged();
+        _ = errorDialog.ShowModalAsync();
+    }
+}

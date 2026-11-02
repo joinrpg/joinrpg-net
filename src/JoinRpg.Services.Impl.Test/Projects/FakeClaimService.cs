@@ -33,5 +33,6 @@ internal sealed class FakeClaimService : IClaimService
     public Task LeaveAccommodationGroupAsync(int projectId, int claimId) => throw new NotSupportedException();
     public Task AllowSensitiveData(ClaimIdentification projectId) => throw new NotSupportedException();
     public Task AcceptInvitation(ClaimIdentification claimId, string commentText, bool sensitiveDataAllowed) => throw new NotSupportedException();
+    public Task AutoApproveMyClaim(ClaimIdentification claimId) => throw new NotSupportedException();
     public Task<ClaimIdentification> SystemEnsureClaim(ProjectIdentification donateProjectId) => throw new NotSupportedException();
 }

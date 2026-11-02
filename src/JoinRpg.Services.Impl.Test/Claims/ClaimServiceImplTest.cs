@@ -2312,4 +2312,71 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     #endregion
+
+    #region AutoApproveMyClaim
+
+    /// <summary>
+    /// Кнопка «Автопринять мою заявку»: кандидат без блокеров принимается сразу — как при подаче,
+    /// утверждает ответственный мастер под имперсонацией.
+    /// </summary>
+    [Fact]
+    public async Task AutoApproveMyClaim_ApprovesReadyClaim()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        var claim = CreateClaim(ClaimStatus.AddedByUser, toSlot: true);
+
+        await CreateService(mock.Player.UserId).AutoApproveMyClaim(claim.GetId());
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.Approved);
+        impersonateAccessor.Impersonated.ShouldBe([mock.Master.GetId()]);
+        impersonateAccessor.StopCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task AutoApproveMyClaim_ByAnotherUser_Throws_AndDoesNotSave()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        var claim = CreateClaim(ClaimStatus.AddedByUser, toSlot: true);
+
+        _ = await Should.ThrowAsync<PlayerOnlyException>(
+            () => CreateService().AutoApproveMyClaim(claim.GetId()));
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(0);
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
+    }
+
+    /// <summary>
+    /// Блокер остался (например, между показом кнопки и кликом лимит шаблона исчерпался) —
+    /// автоприём молча не срабатывает: игрок снова увидит в виджете, что ему мешает.
+    /// </summary>
+    [Fact]
+    public async Task AutoApproveMyClaim_WithBlocker_LeavesClaimAsIs()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        var claim = CreateClaim(ClaimStatus.AddedByUser, toSlot: true);
+        var validator = FixedValidator(
+            [new ClaimProblem(ClaimProblemType.SlotExhausted, ProblemSeverity.Warning)]);
+
+        await CreateService(mock.Player.UserId, validator).AutoApproveMyClaim(claim.GetId());
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(0);
+        impersonateAccessor.Impersonated.ShouldBeEmpty();
+    }
+
+    /// <summary>Не-кандидату (заявка на обычного персонажа) автоприём не положен.</summary>
+    [Fact]
+    public async Task AutoApproveMyClaim_WhenNotCandidate_DoesNothing()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        var claim = CreateClaim(ClaimStatus.AddedByUser);
+
+        await CreateService(mock.Player.UserId).AutoApproveMyClaim(claim.GetId());
+
+        claim.ClaimStatus.ShouldBe(ClaimStatus.AddedByUser);
+        SaveChangesCallCount.ShouldBe(0);
+    }
+
+    #endregion
 }

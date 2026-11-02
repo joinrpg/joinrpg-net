@@ -25,7 +25,9 @@
                    param-Problems="@Model.ProblemsPanel.Problems"
                    param-HasHiddenCheckInBlockers="@Model.ProblemsPanel.HasHiddenCheckInBlockers"
                    param-ProjectId="Model.ClaimIdentification.ProjectId"
-                   param-OwnerActions="Model.ProblemsPanel.OwnerActions" />
+                   param-OwnerActions="Model.ProblemsPanel.OwnerActions"
+                   param-ClaimId="Model.ClaimIdentification"
+                   param-ShowAutoAcceptButton="@Model.ProblemsPanel.ShowAutoAcceptButton" />
     }
 
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })

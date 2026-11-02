@@ -158,6 +158,75 @@ public class ClaimProblemsPanelModelTest
     public void StrangerSeesNothing()
         => Create(hasMasterAccess: false, isMyClaim: false).IsEmpty.ShouldBeTrue();
 
+    /// <summary>Заявка-кандидат на автоприём без блокеров — контекст тестов кнопки.</summary>
+    private ClaimInfo MakeAutoAcceptReadyClaim()
+    {
+        mock.Project.Details.AutoAcceptClaims = true;
+        mock.ReInitProjectInfo();
+        return ToClaimInfo(mock.CreateClaim(mock.CreateSlot("Шаблон"), mock.Player));
+    }
+
+    [Fact]
+    public void OwnerOfReadyAutoAcceptClaimGetsButton()
+        => Create(MakeAutoAcceptReadyClaim(), hasMasterAccess: false, isMyClaim: true)
+            .ShowAutoAcceptButton.ShouldBeTrue();
+
+    /// <summary>
+    /// Проблемы владельца без блокеров автоприёма: кнопка есть даже когда список проблем пуст —
+    /// панель и ради неё одной.
+    /// </summary>
+    [Fact]
+    public void ButtonAloneKeepsPanelNotEmpty()
+    {
+        IClaimProblemValidator noProblems = new FixedProblemsValidator([]);
+
+        var model = ClaimProblemsPanelModel.Create(MakeAutoAcceptReadyClaim(), noProblems,
+            new ClaimCheckInValidator(MakeAutoAcceptReadyClaim(), noProblems),
+            hasMasterAccess: false, isMyClaim: true);
+
+        model.Problems.ShouldBeEmpty();
+        model.IsEmpty.ShouldBeFalse();
+    }
+
+    /// <summary>Блокер автоприёма (пусть и видимый игроку) держит и кнопку.</summary>
+    [Fact]
+    public void AutoAcceptBlockerHidesButton()
+    {
+        IClaimProblemValidator blocked = new FixedProblemsValidator([
+            new ClaimProblem(ClaimProblemType.SlotExhausted, ProblemSeverity.Warning),
+        ]);
+        var info = MakeAutoAcceptReadyClaim();
+
+        ClaimProblemsPanelModel.Create(info, blocked, new ClaimCheckInValidator(info, blocked),
+                hasMasterAccess: false, isMyClaim: true)
+            .ShowAutoAcceptButton.ShouldBeFalse();
+    }
+
+    /// <summary>Мастеру кнопка не нужна (даже на своей заявке) — у него есть «Принять».</summary>
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void NotOwnerGetsNoButton(bool hasMasterAccess, bool isMyClaim)
+        => Create(MakeAutoAcceptReadyClaim(), hasMasterAccess, isMyClaim)
+            .ShowAutoAcceptButton.ShouldBeFalse();
+
+    /// <summary>Не-кандидат: заявка на обычном персонаже, автоприём ей не грозит.</summary>
+    [Fact]
+    public void NotCandidateGetsNoButton()
+        => Create(ToClaimInfo(mock.CreateClaim(mock.Character, mock.Player)), hasMasterAccess: false, isMyClaim: true)
+            .ShowAutoAcceptButton.ShouldBeFalse();
+
+    [Fact]
+    public void DisabledAutoAcceptGetsNoButton()
+    {
+        mock.Project.Details.AutoAcceptClaims = false;
+        mock.ReInitProjectInfo();
+
+        Create(ToClaimInfo(mock.CreateClaim(mock.CreateSlot("Шаблон"), mock.Player)), hasMasterAccess: false, isMyClaim: true)
+            .ShowAutoAcceptButton.ShouldBeFalse();
+    }
+
     /// <summary>
     /// Отдаёт заданные проблемы; выборку для игрока считает настоящий <see cref="IClaimProblemValidator.ValidateForPlayer"/>.
     /// </summary>

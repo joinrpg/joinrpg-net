@@ -61,6 +61,21 @@ public class WebApiExceptionHandlerTest
         problem.GetProperty("title").GetString().ShouldBe("Проект не найден");
     }
 
+    // «Автопринять мою заявку» доступна только владельцу: чужой стук в endpoint — отказ, не 500
+    [Fact]
+    public async Task PlayerOnly_InWebApi_ReturnsForbiddenWithReason()
+    {
+        var httpContext = CreateHttpContext("/webapi/ClaimOperations/AutoApproveMyClaim");
+        var exception = new PlayerOnlyException(new ClaimIdentification(ProjectId, 5), 42);
+
+        var (handled, problem) = await Handle(httpContext, exception);
+
+        handled.ShouldBeTrue();
+        WebApiExceptionHandler.IsExpectedRefusal(exception).ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status403Forbidden);
+        problem.GetProperty("title").GetString().ShouldBe("Недоступно: заявку подал другой игрок");
+    }
+
     // Остров настроек заявок показывает причину, если шаблоном по умолчанию выбран закрытый для игроков (#3303).
     [Fact]
     public async Task DefaultTemplateMustAcceptClaims_InWebApi_ReturnsConflictWithReason()

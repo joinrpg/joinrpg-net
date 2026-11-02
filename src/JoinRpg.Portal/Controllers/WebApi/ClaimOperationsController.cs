@@ -19,4 +19,11 @@ public class ClaimOperationsController(IClaimOperationClient claimClient) : Cont
         await claimClient.AcceptInvitation(claimId, request);
         return Ok();
     }
+
+    [HttpPost]
+    public async Task<ActionResult> AutoApproveMyClaim([FromQuery] ClaimIdentification claimId)
+    {
+        await claimClient.AutoApproveMyClaim(claimId);
+        return Ok();
+    }
 }
