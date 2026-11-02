@@ -5,7 +5,7 @@
 ## Не выпущено
 
 ### Добавлено
-- Кнопка с `data-join-collapse-close` сворачивает и ближайший голый `<details>`, не только `JoinCollapsePanel` — для лёгких тогглов вроде формы ответа в обсуждениях.
+- Кнопка с `data-join-collapse-close` сворачивает и ближайший голый `<details>`, не только `JoinCollapsePanel` — для лёгких тогглов вроде формы ответа в обсуждениях. ([#6053](https://github.com/joinrpg/joinrpg-net/pull/6053))
 - `JoinPager` — переключатель страниц: номера вокруг текущей, первая и последняя, «назад»/«вперёд». ([#5997](https://github.com/joinrpg/joinrpg-net/pull/5997))
 - `JoinDropdownButton`: параметры `Style`, `Size` (шкала `JoinButton`, размер приходит и из `JoinButtonGroup`) и `ToggleContent` — своё содержимое кнопки вместо подписи и стрелки. ([#6018](https://github.com/joinrpg/joinrpg-net/pull/6018))
 
