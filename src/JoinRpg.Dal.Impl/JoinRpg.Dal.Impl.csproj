@@ -25,8 +25,5 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>JoinRpg.DataModel.Mocks</_Parameter1>
     </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>JoinRpg.Dal.Impl.Test</_Parameter1>
-    </AssemblyAttribute>
   </ItemGroup>
 </Project>

@@ -198,8 +198,7 @@ internal sealed class DiscussionViewModelBuilder(
     /// <summary>
     /// Контрагент перевода: игроку — имя человека контрагента, мастеру — ещё и ссылку на заявку
     /// с именем персонажа. Игроку имя персонажа не показываем: у скрытого персонажа оно выдало бы
-    /// лишнее. Имя игрока контрагента не показываем, если персонаж его скрывает
-    /// (<c>HidePlayerForCharacter</c>).
+    /// лишнее. Имя игрока показываем всегда: кто перевёл деньги, мы знаем и без персонажа.
     /// </summary>
     private static CommentFinanceTransferViewModel? ToTransferViewModel(
         CommentFinanceInfo finance,
@@ -213,10 +212,9 @@ internal sealed class DiscussionViewModelBuilder(
 
         var counterparty = transferCounterparties[linkedClaim];
 
-        var showPlayerName = hasMasterAccess || !counterparty.Character.HidePlayerForCharacter;
         return new CommentFinanceTransferViewModel(
             finance.OperationType == FinanceOperationType.TransferTo ? "Кому переведено" : "От кого переведено",
-            new UserLinkViewModel(counterparty.Player.ToUserInfoHeader(), showPlayerName ? ViewMode.Show : ViewMode.Hide),
+            new UserLinkViewModel(counterparty.Player.ToUserInfoHeader()),
             hasMasterAccess
                 ? new ClaimLinkViewModel(
                     linkedClaim,
