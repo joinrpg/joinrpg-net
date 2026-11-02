@@ -4,7 +4,7 @@
 {
     return;
 }
-<Tooltip Title="@Title">
+<Tooltip Title="@Title" TooltipContent="@TooltipContent">
     <span @attributes="@InputAttributes" class="@BootstrapStyle.Build("label", Variation, Size)">
         @TryGetLabel()
         @Text
@@ -26,6 +26,9 @@
 
     [Parameter]
     public string Title { get; set; } = null!;
+
+    /// <summary>Содержимое подсказки бейджа разметкой, если простой строки <see cref="Title"/> мало.</summary>
+    [Parameter] public RenderFragment? TooltipContent { get; set; }
 
     [Parameter]
     public string? Text { get; set; }
