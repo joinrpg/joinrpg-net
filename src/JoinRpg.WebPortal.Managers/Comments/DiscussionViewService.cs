@@ -21,11 +21,10 @@ public sealed class DiscussionViewService(
     IAvatarLoader avatarLoader,
     ICurrentUserAccessor currentUserAccessor,
     IClaimInfoRepository claimInfoRepository,
-    IUriLocator<ClaimIdentification> claimUriLocator,
     ICommentDiscussionService commentDiscussionService)
 {
     private readonly DiscussionViewModelBuilder discussionViewModelBuilder =
-        new(userRepository, discussionRepository, avatarLoader, currentUserAccessor, claimInfoRepository, claimUriLocator);
+        new(userRepository, discussionRepository, avatarLoader, currentUserAccessor, claimInfoRepository);
 
     /// <summary>
     /// Модель обсуждения для текущего пользователя; заодно отмечает всё обсуждение прочитанным.

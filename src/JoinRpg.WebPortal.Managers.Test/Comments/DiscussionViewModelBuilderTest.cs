@@ -75,8 +75,7 @@ public class DiscussionViewModelBuilderTest
             discussions,
             avatarLoader,
             new FakeCurrentUserAccessor(currentUser),
-            new FakeClaimInfoRepository(mock),
-            new FakeClaimUriLocator());
+            new FakeClaimInfoRepository(mock));
         return await builder.Build(Snapshot(), mock.ProjectInfo);
     }
 
@@ -270,8 +269,9 @@ public class DiscussionViewModelBuilderTest
 
         var transfer = Find(model, 1).Finance.ShouldNotBeNull().Transfer.ShouldNotBeNull();
         transfer.DirectionText.ShouldBe("Кому переведено");
-        transfer.CharacterName.ShouldBe(mock.Character.CharacterName);
-        transfer.ClaimUri.ShouldBe(FakeClaimUriLocator.UriFor(counterparty.GetId()));
+        var claimLink = transfer.ClaimLink.ShouldNotBeNull();
+        claimLink.ClaimId.ShouldBe(counterparty.GetId());
+        claimLink.CharacterName.ShouldBe(mock.Character.CharacterName);
         transfer.Player.DisplayName.ShouldBe("Player");
     }
 
@@ -298,9 +298,8 @@ public class DiscussionViewModelBuilderTest
 
         var transfer = Find(model, 1).Finance.ShouldNotBeNull().Transfer.ShouldNotBeNull();
         transfer.Player.DisplayName.ShouldBe("Player");
-        // Имя персонажа и адрес заявки — только мастеру: игроку они выдали бы скрытого персонажа.
-        transfer.CharacterName.ShouldBeNull();
-        transfer.ClaimUri.ShouldBeNull();
+        // Ссылка на заявку — только мастеру: игроку она выдала бы скрытого персонажа.
+        transfer.ClaimLink.ShouldBeNull();
     }
 
     [Fact]
@@ -357,8 +356,7 @@ public class DiscussionViewModelBuilderTest
             discussions,
             new FakeAvatarLoader(),
             new FakeCurrentUserAccessor(Master),
-            new FakeClaimInfoRepository(mock),
-            new FakeClaimUriLocator());
+            new FakeClaimInfoRepository(mock));
         var otherProject = new ProjectIdentification(mock.ProjectInfo.ProjectId.Value + 1);
         var foreignDiscussion = new CommentDiscussionInfo(
             DiscussionId,
@@ -366,13 +364,6 @@ public class DiscussionViewModelBuilderTest
             comments);
 
         _ = await Should.ThrowAsync<ArgumentException>(() => builder.Build(foreignDiscussion, mock.ProjectInfo));
-    }
-
-    private sealed class FakeClaimUriLocator : IUriLocator<ClaimIdentification>
-    {
-        public static Uri UriFor(ClaimIdentification claimId) => new($"https://test/{claimId.ProjectId.Value}/claim/{claimId.ClaimId}/edit");
-
-        public Uri GetUri(ClaimIdentification target) => UriFor(target);
     }
 
     private sealed class FakeAvatarLoader : IAvatarLoader

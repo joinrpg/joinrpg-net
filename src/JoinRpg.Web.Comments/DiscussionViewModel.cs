@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using JoinRpg.Web.ProjectCommon.Claims;
 
 namespace JoinRpg.Web.Comments;
 
@@ -96,14 +97,12 @@ public record CommentFinanceViewModel(
 /// этого — ссылки на заявку контрагента (как в списке финопераций заявки).
 /// </summary>
 /// <param name="DirectionText">Направление контрагента: «Кому переведено» или «От кого переведено».</param>
-/// <param name="Player">Игрок заявки-контрагента — ссылка на профиль.</param>
-/// <param name="CharacterName">
-/// Имя персонажа заявки-контрагента — как текст ссылки на заявку. Только для мастера: игроку
-/// имя персонажа не показываем, скрытого персонажа оно выдало бы.
+/// <param name="Player">Игрок заявки-контрагента — ссылка на профиль; для игрока.</param>
+/// <param name="ClaimLink">
+/// Ссылка на заявку контрагента — только для мастера: игроку имя персонажа и адрес заявки не
+/// показываем, скрытого персонажа оно выдало бы. У игрока — <c>null</c>.
 /// </param>
-/// <param name="ClaimUri">Адрес заявки-контрагента. Только для мастера, игроку — <c>null</c>.</param>
 public record CommentFinanceTransferViewModel(
     string DirectionText,
     UserLinkViewModel Player,
-    string? CharacterName,
-    Uri? ClaimUri);
+    ClaimLinkViewModel? ClaimLink);

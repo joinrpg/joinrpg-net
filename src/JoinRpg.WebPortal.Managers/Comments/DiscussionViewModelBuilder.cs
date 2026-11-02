@@ -10,6 +10,7 @@ using JoinRpg.Interfaces;
 using JoinRpg.Markdown;
 using JoinRpg.Web.Comments;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.ProjectCommon.Claims;
 using CommentExtraActionView = JoinRpg.CommonUI.Models.CommentExtraAction;
 using CommentViewModel = JoinRpg.Web.Comments.CommentViewModel;
 
@@ -27,8 +28,9 @@ namespace JoinRpg.WebPortal.Managers.Comments;
 /// <para>
 /// Запросов три, независимо от длины обсуждения: шапки авторов одной пачкой, отметка прочтения и
 /// аватарки — одним вызовом <see cref="IAvatarLoader.GetAvatars"/> (вечный кеш, промахи — одним
-/// запросом к БД, #5774). Переводы денег между заявками добавляют по одному запросу на заявку-контрагента
-/// (<see cref="IClaimInfoRepository.GetClaimInfoOrDefault"/>), и только когда переводы в обсуждении есть.
+/// запросом к БД, #5774). Переводы денег между заявками добавляют четвёртый — заявки-контрагенты
+/// одной пачкой (<see cref="IClaimInfoRepository.GetClaimInfosOrDefault"/>), и только когда
+/// переводы в обсуждении есть.
 /// </para>
 /// </remarks>
 internal sealed class DiscussionViewModelBuilder(
@@ -36,8 +38,7 @@ internal sealed class DiscussionViewModelBuilder(
     ICommentDiscussionRepository discussionRepository,
     IAvatarLoader avatarLoader,
     ICurrentUserAccessor currentUserAccessor,
-    IClaimInfoRepository claimInfoRepository,
-    IUriLocator<ClaimIdentification> claimUriLocator)
+    IClaimInfoRepository claimInfoRepository)
 {
     /// <summary>Размер аватарки рядом с комментарием, как и раньше.</summary>
     private const int AvatarSize = 64;
@@ -153,25 +154,20 @@ internal sealed class DiscussionViewModelBuilder(
     }
 
     /// <summary>
-    /// Заявки-контрагенты переводов из видимых пользователю комментариев. Пачковый
-    /// <c>GetClaimInfos</c> бросается на заявке, которой нет в агрегате персонажа, а контрагент
-    /// может не найтись (рассогласованные данные после частичного восстановления) — поэтому грузим
-    /// каждую по отдельности через null-safe <c>GetClaimInfoOrDefault</c>, и перевод без контрагента
-    /// остаётся без адресата, а не роняет страницу. Переводов в обсуждении обычно ноль-два, так что
-    /// поштучно; это тот же полный агрегат, что и у страницы заявки.
+    /// Заявки-контрагенты переводов из видимых пользователю комментариев — одной пачкой. Контрагент
+    /// может не найтись (рассогласованные данные после частичного восстановления) — тогда перевод
+    /// останется без адресата, а не уронит страницу.
     /// </summary>
     private async Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> LoadTransferCounterparties(
         IReadOnlyList<CommentInfo> comments)
     {
-        var result = new Dictionary<ClaimIdentification, ClaimInfo>();
-        foreach (var linkedClaim in comments.Select(comment => comment.Finance?.LinkedClaim).OfType<ClaimIdentification>().Distinct())
-        {
-            if (await claimInfoRepository.GetClaimInfoOrDefault(linkedClaim) is { } counterparty)
-            {
-                result.Add(linkedClaim, counterparty);
-            }
-        }
-        return result;
+        var linkedClaims = comments
+            .Select(comment => comment.Finance?.LinkedClaim)
+            .OfType<ClaimIdentification>()
+            .Distinct()
+            .ToArray();
+
+        return await claimInfoRepository.GetClaimInfosOrDefault(linkedClaims);
     }
 
     private CommentFinanceViewModel ToFinanceViewModel(
@@ -203,7 +199,7 @@ internal sealed class DiscussionViewModelBuilder(
     /// лишнее. Имя игрока контрагента не показываем, если персонаж его скрывает
     /// (<c>HidePlayerForCharacter</c>).
     /// </summary>
-    private CommentFinanceTransferViewModel? ToTransferViewModel(
+    private static CommentFinanceTransferViewModel? ToTransferViewModel(
         CommentFinanceInfo finance,
         IReadOnlyDictionary<ClaimIdentification, ClaimInfo> transferCounterparties,
         bool hasMasterAccess)
@@ -217,8 +213,14 @@ internal sealed class DiscussionViewModelBuilder(
         return new CommentFinanceTransferViewModel(
             finance.OperationType == FinanceOperationType.TransferTo ? "Кому переведено" : "От кого переведено",
             new UserLinkViewModel(counterparty.Player.ToUserInfoHeader(), showPlayerName ? ViewMode.Show : ViewMode.Hide),
-            hasMasterAccess ? counterparty.Character.CharacterName : null,
-            hasMasterAccess ? claimUriLocator.GetUri(linkedClaim) : null);
+            hasMasterAccess
+                ? new ClaimLinkViewModel(
+                    linkedClaim,
+                    counterparty.Player.DisplayName,
+                    counterparty.Character.CharacterName,
+                    OtherPlayerNicks: "",
+                    counterparty.Player.UserId)
+                : null);
     }
 
     private static string? GetOperationText(CommentFinanceInfo finance)

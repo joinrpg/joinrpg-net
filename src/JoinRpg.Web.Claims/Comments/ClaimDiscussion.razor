@@ -7,6 +7,7 @@
 @using JoinRpg.Web.Comments
 @using JoinRpg.Web.Claims.Finance
 @using JoinRpg.DomainTypes.Characters.Claims.Finances
+@using JoinRpg.Web.ProjectCommon.Claims
 @* Иначе Blazor склеит подпись, двоеточие и сумму. *@
 @preservewhitespace true
 
@@ -25,12 +26,9 @@
                         <b>@transfer.DirectionText</b>:
                         @* Мастеру — ссылка на заявку контрагента с именем персонажа, игроку — только имя человека:
                             имя скрытого персонажа игроку показывать нельзя. *@
-                        @if (transfer.CharacterName is { } characterName && transfer.ClaimUri is { } claimUri)
+                        @if (transfer.ClaimLink is { } claimLink)
                         {
-                            <a href="@claimUri">@characterName</a>
-                            @("(игрок ")
-                            <UserLink Model="transfer.Player" />
-                            @(")")
+                            <ClaimLink Model="claimLink" ShowPlayer="true" />
                         }
                         else
                         {

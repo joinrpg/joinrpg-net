@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JoinRpg.Web.ProjectCommon.Claims;
 using static JoinRpg.Web.Comments.Test.CommentTestData;
 
 namespace JoinRpg.Web.Comments.Test;
@@ -28,8 +29,7 @@ public class DiscussionViewModelJsonTest
                 new CommentFinanceTransferViewModel(
                     "Кому переведено",
                     new UserLinkViewModel(new UserIdentification(8), "Игрок", ViewMode.Show),
-                    "Персонаж контрагента",
-                    new Uri("https://test/123/claim/8/edit"))),
+                    new ClaimLinkViewModel(new ClaimIdentification(ProjectId, 9), new UserDisplayName("Игрок", "Игрок Полный"), "Персонаж контрагента", "", new UserIdentification(8)))),
         };
         var original = Discussion(
             hasMasterAccess: true,

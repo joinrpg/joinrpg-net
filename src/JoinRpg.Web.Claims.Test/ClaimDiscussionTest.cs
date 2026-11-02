@@ -5,6 +5,7 @@ using JoinRpg.DomainTypes;
 using JoinRpg.Web.Claims.Comments;
 using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.Comments;
+using JoinRpg.Web.ProjectCommon.Claims;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,6 +24,7 @@ public class ClaimDiscussionTest : BunitContext
         _ = Services
             .AddSingleton<ICommentUriLocator, FakeCommentUriLocator>()
             .AddSingleton<IUriLocator<UserLinkViewModel>, FakeUserLinkLocator>()
+            .AddSingleton<IUriLocator<ClaimIdentification>, FakeClaimUriLocator>()
             .AddSingleton<AntiforgeryStateProvider, FakeAntiforgeryStateProvider>();
         // Сам остров проверяет FinanceModerationButtonTest; здесь важно, есть ли он и с какой операцией.
         ComponentFactories.AddStub<FinanceModerationButton>();
@@ -71,15 +73,14 @@ public class ClaimDiscussionTest : BunitContext
             Transfer = new CommentFinanceTransferViewModel(
                 "Кому переведено",
                 new UserLinkViewModel(new UserIdentification(8), "Игрок", ViewMode.Show),
-                "Персонаж контрагента",
-                new Uri("https://test/123/claim/8/edit")),
+                new ClaimLinkViewModel(ClaimId, new UserDisplayName("Игрок", "Игрок Фулл"), "Персонаж контрагента", "", new UserIdentification(8))),
         }));
 
         var text = OwnRowText(cut, 1);
         text.ShouldContain("Кому переведено");
         text.ShouldContain("(игрок");
         text.ShouldContain("Игрок");
-        var claimLink = cut.Find("#comment1 a[href='https://test/123/claim/8/edit']");
+        var claimLink = cut.Find("#comment1 a[href='https://test/123/claim/45/edit']");
         claimLink.TextContent.ShouldContain("Персонаж контрагента");
     }
 
@@ -93,8 +94,7 @@ public class ClaimDiscussionTest : BunitContext
             Transfer = new CommentFinanceTransferViewModel(
                 "От кого переведено",
                 new UserLinkViewModel(new UserIdentification(8), "Игрок", ViewMode.Show),
-                CharacterName: null,
-                ClaimUri: null),
+                ClaimLink: null),
         }));
 
         var text = OwnRowText(cut, 1);
@@ -204,5 +204,10 @@ public class ClaimDiscussionTest : BunitContext
     private sealed class FakeUserLinkLocator : IUriLocator<UserLinkViewModel>
     {
         public Uri GetUri(UserLinkViewModel target) => new($"https://test/user/{target.UserId?.Value}");
+    }
+
+    private sealed class FakeClaimUriLocator : IUriLocator<ClaimIdentification>
+    {
+        public Uri GetUri(ClaimIdentification target) => new($"https://test/{target.ProjectId.Value}/claim/{target.ClaimId}/edit");
     }
 }
