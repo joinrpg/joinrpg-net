@@ -19,7 +19,32 @@ public sealed class FakeClaimInfoRepository(MockedProject mock) : IClaimInfoRepo
             ? new ClaimInCharacter(character, claimId)
             : null;
 
-    public Task<ClaimInfo?> GetClaimInfoOrDefault(ClaimIdentification claimId) => throw new NotSupportedException();
+    /// <summary>
+    /// Профиль у мока один — <c>mock.Player</c>; заявки от других игроков «не загружаются»,
+    /// как и остальные незапланированные походы за данными.
+    /// </summary>
+    public async Task<ClaimInfo?> GetClaimInfoOrDefault(ClaimIdentification claimId)
+    {
+        // Имитация relationship fixup EF6: заявке, созданной сервисом в рамках теста, навигации
+        // ещё не проставлены — как ReInitProjectInfo делает это для ACL и типов оплат.
+        foreach (var claim in mock.Project.Claims)
+        {
+            claim.Player ??= claim.PlayerUserId == mock.Player.UserId
+                ? mock.Player
+                : throw new NotSupportedException();
+            claim.FinanceOperations ??= [];
+        }
+
+        var claimInCharacter = await GetClaimInCharacterOrDefault(claimId);
+        if (claimInCharacter is null)
+        {
+            return null;
+        }
+
+        return claimInCharacter.Claim.PlayerId == mock.Player.UserId
+            ? new ClaimInfo(claimInCharacter, mock.PlayerInfo)
+            : throw new NotSupportedException();
+    }
 
     public Task<IReadOnlyDictionary<ClaimIdentification, ClaimInfo>> GetClaimInfos(IReadOnlyCollection<ClaimIdentification> claimIds)
         => throw new NotSupportedException();

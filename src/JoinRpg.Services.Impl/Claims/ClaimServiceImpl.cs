@@ -1,3 +1,4 @@
+using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.Data.Interfaces.Claims;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -29,11 +30,14 @@ internal class ClaimServiceImpl(
     ICharacterPropsService characterPropsService,
     IImpersonateAccessor impersonateAccessor,
     UserFieldValidator userFieldValidator,
-    IFieldSetupService fieldSetupService
+    IFieldSetupService fieldSetupService,
+    IClaimInfoRepository claimInfoRepository
     ) : IClaimService, IClaimCommentOperation
 {
     // Репозитории берутся из UnitOfWork, а не из DI: MyDbContext транзиентен, и DI-экземпляр
-    // работал бы с другим контекстом, чем SaveChangesAsync этого сервиса.
+    // работал бы с другим контекстом, чем SaveChangesAsync этого сервиса. Исключение — read-only
+    // claimInfoRepository из ctor: автоприёму как раз нужен свежий контекст, чтобы перечитать
+    // заявку ПОСЛЕ сохранения основной операции (см. AutoApproveIfRequired).
     private readonly Lazy<IUserRepository> userRepository = new(unitOfWork.GetUsersRepository);
     private readonly Lazy<IClaimsRepository> claimsRepository = new(unitOfWork.GetClaimsRepository);
 
@@ -523,9 +527,16 @@ internal class ClaimServiceImpl(
     /// и до миграции автоприём шёл после рассылки уведомлений.
     /// </para>
     /// <para>
-    /// Условия перечитываются из базы, а не берутся из мутированного EF-графа предыдущей операции.
-    /// Читать их приходится до входа в мутацию: утверждает ответственный мастер, узнать его можно
-    /// только из заявки, а подмена пользователя обязана случиться раньше проверки прав.
+    /// Условия перечитываются из базы (<see cref="IClaimInfoRepository"/>), а не берутся из
+    /// мутированного EF-графа предыдущей операции. Читать их приходится до входа в мутацию:
+    /// утверждает ответственный мастер, узнать его можно только из заявки, а подмена пользователя
+    /// обязана случиться раньше проверки прав.
+    /// </para>
+    /// <para>
+    /// Действует ли автоприём на заявку, решает <see cref="ClaimInfo.IsAutoAcceptCandidate"/>;
+    /// заблокирована ли она — её проблемы с <see cref="ClaimProblem.IsAutoAcceptBlocker"/>
+    /// (исчерпанный лимит шаблона, не выданный доступ к защищённым данным). Тот же расчёт
+    /// показывается игроку в виджете «Проблемы заявки».
     /// </para>
     /// </remarks>
     private async Task AutoApproveIfRequired(ClaimIdentification claimId)
@@ -537,56 +548,37 @@ internal class ClaimServiceImpl(
             return;
         }
 
-        var claim = await ClaimsRepository.GetClaim(claimId)
+        var claimInfo = await claimInfoRepository.GetClaimInfoOrDefault(claimId)
             ?? throw new JoinRpgEntityNotFoundException(claimId.ClaimId, nameof(Claim));
 
-        // Автоприём — только для заявок на шаблон (#5645): из шаблона создаётся новый персонаж,
-        // а заявку на конкретного персонажа мастер должен принять сам. Персонаж загружен вместе
-        // с заявкой (ClaimsRepository.GetClaim), лишнего запроса здесь нет.
-        if (claim.Character.CharacterType != CharacterType.Slot)
+        // Подача и принятие приглашения всегда приводят сюда с заявкой «в обсуждении», а вот
+        // разрешение доступа к паспорту игрок может дать по заявке в любом статусе — уже
+        // принятой, отклонённой, зарегистрированной. Принимать там нечего, и без этой проверки
+        // ApproveCore просто бросил бы ClaimWrongStatusException.
+        if (!claimInfo.IsAutoAcceptCandidate())
         {
             logger.LogInformation(
-                "Claim ({claimId}) was not auto-approved: character type is {characterType}, only slot claims are auto-approved",
+                "Claim ({claimId}) was not auto-approved: not an auto-accept candidate (character type is {characterType}, claim status is {claimStatus})",
                 claimId,
-                claim.Character.CharacterType);
+                claimInfo.Character.CharacterType,
+                claimInfo.Claim.Status);
             return;
         }
 
-        // Мастер вправе пригласить игрока в шаблон сверх лимита (#4743), а принять такую заявку
-        // нельзя, пока лимит не поднимут. Приглашение к этому моменту уже сохранено, так что падать
-        // здесь — показать игроку ложную ошибку.
-        if (claim.Character.CharacterSlotLimit == 0)
+        var blockers = claimValidator.Validate(claimInfo).Where(problem => problem.IsAutoAcceptBlocker).ToList();
+        if (blockers.Count > 0)
         {
+            // Мастер вправе пригласить игрока в шаблон сверх лимита (#4743), а принять такую заявку
+            // нельзя, пока лимит не поднимут. Приглашение к этому моменту уже сохранено, так что
+            // падать здесь — показать игроку ложную ошибку.
             logger.LogInformation(
-                "Claim ({claimId}) was not auto-approved: slot limit is exhausted",
-                claimId);
-            return;
-        }
-
-        // Не принимаем автоматически заявки, если игрок не предоставил доступ к паспорту
-        if (!claim.PlayerAllowedSenstiveData && projectInfo.ProfileRequirementSettings.SensitiveDataRequired)
-        {
-            logger.LogInformation(
-                "Claim ({claimId}) was not auto-approved: sensitive data access is required but not granted by player",
-                claimId);
-            return;
-        }
-
-        // Автоприём применим не к любой заявке. Подача и принятие приглашения всегда приводят
-        // сюда с заявкой «в обсуждении», а вот разрешение доступа к паспорту игрок может дать
-        // по заявке в любом статусе — уже принятой, отклонённой, зарегистрированной. Принимать
-        // там нечего, и без этой проверки ApproveCore просто бросил бы ClaimWrongStatusException.
-        if (claim.ClaimStatus is not (ClaimStatus.AddedByUser or ClaimStatus.Discussed))
-        {
-            logger.LogInformation(
-                "Claim ({claimId}) was not auto-approved: claim status is {claimStatus}",
+                "Claim ({claimId}) was not auto-approved: blocked by problems {blockers}",
                 claimId,
-                claim.ClaimStatus);
+                string.Join(", ", blockers.Select(problem => problem.ProblemType)));
             return;
         }
 
-        var responsibleMaster = await UserRepository.GetRequiredUserInfo(
-            new UserIdentification(claim.ResponsibleMasterUserId));
+        var responsibleMaster = await UserRepository.GetRequiredUserInfo(claimInfo.Claim.ResponsibleMasterId);
 
         impersonateAccessor.StartImpersonate(responsibleMaster.UserId, responsibleMaster.DisplayName, responsibleMaster.SelectedAvatarId, responsibleMaster.IsAdmin);
         try

@@ -37,7 +37,8 @@ public class CommentDiscussionServiceImplTest : ClaimServiceTestBase
             CreatePropsService(currentUserId),
             impersonateAccessor,
             CreateUserFieldValidator(),
-            CreateFieldSetupService(currentUserId));
+            CreateFieldSetupService(currentUserId),
+            new FakeClaimInfoRepository(mock));
         return new CommentDiscussionServiceImpl(
             discussionRepository,
             metadataRepository,

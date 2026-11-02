@@ -1,5 +1,6 @@
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Problems;
 using JoinRpg.DomainTypes.Characters;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
@@ -18,19 +19,20 @@ namespace JoinRpg.Services.Impl.Test.Claims;
 /// </summary>
 public class ClaimServiceImplTest : ClaimServiceTestBase
 {
-    private ClaimServiceImpl CreateService(int? currentUserId = null)
+    private ClaimServiceImpl CreateService(int? currentUserId = null, IClaimProblemValidator? validator = null)
     {
         var currentUser = CreateCurrentUser(currentUserId);
         return new ClaimServiceImpl(
             unitOfWork,
             currentUser,
             metadataRepository,
-            new FakeProblemValidator(),
+            validator ?? new FakeProblemValidator(),
             NullLogger<CharacterServiceImpl>.Instance,
             CreatePropsService(currentUserId),
             impersonateAccessor,
             CreateUserFieldValidator(),
-            CreateFieldSetupService(currentUserId));
+            CreateFieldSetupService(currentUserId),
+            new FakeClaimInfoRepository(mock));
     }
 
     private Claim CreateClaim(ClaimStatus status, string characterName = "Вася", bool toSlot = false)
@@ -40,6 +42,25 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         claim.ClaimStatus = status;
         mock.ReInitProjectInfo();
         return claim;
+    }
+
+    /// <summary>
+    /// Валидатор с фиксированным набором проблем: сервисной логике важен сам список, а когда какая
+    /// проблема появляется — знают тесты правил в <c>JoinRpg.Domain.Test</c>.
+    /// </summary>
+    private static FixedProblemsValidator FixedValidator(IReadOnlyCollection<ClaimProblem> problems)
+        => new(problems);
+
+    private sealed class FixedProblemsValidator(IReadOnlyCollection<ClaimProblem> problems) : IClaimProblemValidator
+    {
+        public IEnumerable<ClaimProblem> Validate(
+            ClaimInfo context, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
+            => problems;
+
+        public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context) => [];
+
+        public IEnumerable<FieldRelatedProblem> ValidateFieldsOnly(ClaimInfo context, IEnumerable<ProjectFieldIdentification> fields)
+            => [];
     }
 
     #region OnHoldByMaster
@@ -895,7 +916,8 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     }
 
     /// <summary>
-    /// Если проект требует доступ к чувствительным данным, а игрок его не дал, автоприём молчит.
+    /// Если проект требует доступ к чувствительным данным, а игрок его не дал, автоприём молчит:
+    /// отсутствие доступа — блокирующая проблема (см. ClaimContactsMissingFilter в Domain.Test).
     /// </summary>
     [Theory]
     [InlineData(false, false)]
@@ -906,8 +928,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         mock.Project.Details.AutoAcceptClaims = true;
         mock.Project.Details.RequirePassport = MandatoryStatus.Required;
         var (slot, fields) = CreateSlotTarget();
+        var validator = FixedValidator(
+            sensitiveDataAllowed ? [] : [new ClaimProblem(ClaimProblemType.SensitiveDataNotAllowed, ProblemSeverity.Warning)]);
 
-        _ = await CreateService(mock.Player.UserId)
+        _ = await CreateService(mock.Player.UserId, validator)
             .AddClaimFromUser(slot.GetId(), "хочу играть", fields, sensitiveDataAllowed);
 
         impersonateAccessor.Impersonated.Count.ShouldBe(expectedAutoApprove ? 1 : 0);
@@ -1036,7 +1060,8 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
     /// <summary>
     /// Мастер вправе пригласить игрока в шаблон сверх лимита (#4743), а принять такую заявку нельзя.
     /// Автоприём не должен на этом падать: приглашение уже принято и сохранено, и ошибка игроку
-    /// была бы ложной. Заявка остаётся в обсуждении, пока мастер не поднимет лимит.
+    /// была бы ложной. Заявка остаётся в обсуждении, пока мастер не поднимет лимит. Исчерпанный
+    /// лимит — блокирующая проблема (см. ExhaustedSlotFilter в Domain.Test).
     /// </summary>
     [Fact]
     public async Task AcceptInvitation_ToExhaustedSlot_WithAutoAccept_LeavesClaimDiscussed()
@@ -1044,8 +1069,10 @@ public class ClaimServiceImplTest : ClaimServiceTestBase
         mock.Project.Details.AutoAcceptClaims = true;
         var claim = CreateClaim(ClaimStatus.AddedByMaster, toSlot: true);
         claim.Character.CharacterSlotLimit = 0;
+        var validator = FixedValidator(
+            [new ClaimProblem(ClaimProblemType.SlotExhausted, ProblemSeverity.Warning)]);
 
-        await CreateService(mock.Player.UserId)
+        await CreateService(mock.Player.UserId, validator)
             .AcceptInvitation(claim.GetId(), "согласен", sensitiveDataAllowed: false);
 
         claim.ClaimStatus.ShouldBe(ClaimStatus.Discussed);
