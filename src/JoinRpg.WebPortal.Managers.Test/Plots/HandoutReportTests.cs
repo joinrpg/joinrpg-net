@@ -52,6 +52,8 @@ public class HandoutReportTests
             HasPublished = true,
             Completed = true,
             IsActive = true,
+            ElementType = PlotElementType.Handout,
+            RolesListId = null,
             Target = new TargetsInfo([.. targets.Select(c => new CharacterTarget(c.GetId(), c.CharacterName))], []),
         };
 

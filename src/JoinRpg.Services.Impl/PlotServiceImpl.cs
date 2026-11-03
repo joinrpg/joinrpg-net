@@ -118,6 +118,14 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     {
         await RequestMasterAccessAsync(plotFolderId.ProjectId, Permission.None);
 
+        // Вводные-сетки создаются только со ссылкой на сетку ролей; их создание появится
+        // вместе с выбором сетки в форме (ADR029). Пока — запрещаем, в т.ч. крафтовый POST.
+        if (elementType == PlotElementType.RoleGrid)
+        {
+            //TODO[Localize]
+            throw new JoinValidationException("Создание вводных-сеток пока не поддерживается.");
+        }
+
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
 
         if (isMasterOnly)
@@ -394,7 +402,10 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
 
         var plotTarget = ToTarget(character, projectInfo);
 
-        var plots = await PlotRepository.GetPlotsBySpecification(new PlotSpecification(plotTarget, PlotVersionFilter.PublishedVersion, PlotElementType.RegularPlot));
+        // Персональный порядок вводных охватывает и вводные-сетки (ADR029), иначе move-контрол
+        // вводной-сетки на странице персонажа терял бы её из упорядочиваемого списка.
+        var plots = await PlotRepository.GetPlotsBySpecification(
+            new PlotSpecification(plotTarget, PlotVersionFilter.PublishedVersion, [PlotElementType.RegularPlot, PlotElementType.RoleGrid]));
 
         var elementIds = plots.Select(x => x.Id.PlotElementId).ToList();
         character.PlotElementOrderData = DomainMoveHelper.MoveAfter(targetId, afterId, character.PlotElementOrderData, elementIds, preserveOrder: true);

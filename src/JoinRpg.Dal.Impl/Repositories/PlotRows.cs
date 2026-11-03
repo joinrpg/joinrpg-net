@@ -29,6 +29,9 @@ internal sealed class PlotElementRow : IOrderableEntity
     public bool IsCompleted { get; set; }
     public int? PublishedVersion { get; set; }
 
+    /// <summary>Ссылка на сетку ролей, заполнена только у вводных-сеток (ADR029).</summary>
+    public int? ProjectRolesListId { get; set; }
+
     public int LastVersionNumber { get; set; }
     public string? LastVersionTodoField { get; set; }
 
@@ -78,7 +81,8 @@ internal sealed class PlotElementRow : IOrderableEntity
             LastVersionNumber,
             LastVersionTodoField ?? "",
             PrevVersionModifiedAt,
-            NextVersionModifiedAt);
+            NextVersionModifiedAt,
+            ProjectRolesListIdentification.FromOptional(ProjectId, ProjectRolesListId));
     }
 }
 

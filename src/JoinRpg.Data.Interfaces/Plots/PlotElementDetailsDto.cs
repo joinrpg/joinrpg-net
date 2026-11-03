@@ -31,6 +31,10 @@ namespace JoinRpg.Data.Interfaces.Plots;
 /// </param>
 /// <param name="PrevVersionModifiedAt">Дата правки предыдущей версии, <c>null</c> если отображается первая.</param>
 /// <param name="NextVersionModifiedAt">Дата правки следующей версии, <c>null</c> если отображается последняя.</param>
+/// <param name="RolesListId">
+/// Ссылка на сохранённую сетку ролей, <c>null</c> для всех типов, кроме <c>RoleGrid</c>.
+/// Сетка могла быть удалена — ссылка мягкая (ADR029), доступность проверяет потребитель.
+/// </param>
 public record PlotElementDetailsDto(
     PlotElementIdentification Id,
     PlotElementType ElementType,
@@ -44,7 +48,8 @@ public record PlotElementDetailsDto(
     int LastVersionNumber,
     string LastVersionTodoField,
     DateTime? PrevVersionModifiedAt,
-    DateTime? NextVersionModifiedAt)
+    DateTime? NextVersionModifiedAt,
+    ProjectRolesListIdentification? RolesListId)
 {
     /// <summary>Отображаемая версия — та же, что опубликована.</summary>
     public bool IsCurrentVersionPublished => PublishedVersion == CurrentVersion.Version;

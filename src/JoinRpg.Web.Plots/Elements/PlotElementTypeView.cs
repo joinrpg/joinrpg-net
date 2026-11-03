@@ -8,4 +8,6 @@ public enum PlotElementTypeView
     RegularPlot,
     [Display(Name = "Элемент раздатки", Description = "Инструкция службе регистрации выдать какой-то определенный предмет игроку. Одна строка — один предмет.")]
     Handout,
+    [Display(Name = "Сетка ролей", Description = "У персонажа вместо текста отображается выбранная сохранённая сетка ролей.")]
+    RoleGrid,
 }
