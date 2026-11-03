@@ -85,7 +85,7 @@ internal class UnifiedGridViewService(
             items = [.. pageRows.Select(x => x.Item!)];
         }
 
-        return new UgPageViewModel(items, actualPage, totalPages, sorted.Count, operationClaimIds, operationCharacterIds);
+        return new UgPageViewModel(items, actualPage, totalPages, sorted.Count, rows.SelectMany(row => row.Claims).Count(), operationClaimIds, operationCharacterIds);
     }
 
     /// <summary>

@@ -3,11 +3,31 @@
 @using JoinRpg.Web.Claims.UnifiedGrid
 @using JoinRpg.Web.ProjectCommon.Claims
 @inject IUnifiedGridClient claimListClient
+@using Microsoft.JSInterop
 @inject NavigationManager NavigationManager
+@inject IJSRuntime js
 
 <div style="margin:0.5em">
-  <span class="h3">Моя команда</span> <EnumSelector TValue="UgStatusFilterView" SelectedValue="StatusFilter" SelectedValueChanged="UpdateFilter" />
-  <JoinIcon Icon="JoinIconType.Info" Title="@StatusFilter.GetDescription()" />
+  <GridHeader Title="@(Scope == UgScopeView.Master ? "Персонажи и заявки" : "Моя команда")"
+              Counter="@CountString"
+              CounterTooltip="@CounterTooltip"
+              IsMaster="@IsMaster"
+              ProjectId="@ProjectId.Value"
+              StatusFilter="@StatusFilter"
+              GroupFilter="@GroupFilter"
+              ResponsibleFilter="@ResponsibleFilter"
+              OnlyWithProblems="@(IsMaster && OnlyWithProblemsFilter)"
+              FilterChanged="@OnFilterChanged">
+    @if (IsMaster)
+    {
+        <div style="margin-bottom:12px;">
+          <ListOperationsButtons ProjectId="@ProjectId"
+                                 ClaimIds="gridPage?.OperationClaimIds ?? []"
+                                 CharacterIds="gridPage?.OperationCharacterIds ?? []"
+                                 ExportUri="@ExportUri" />
+        </div>
+    }
+  </GridHeader>
 </div>
 
 @if (gridPage is null)
@@ -17,19 +37,19 @@
 }
 
 <JoinBorderedTable Items="gridPage.Items" Context="item">
-  <HeadContent>
-    <tr>
-        <th>Персонаж</th>
-        <th>Игрок</th>
-        <th>Статус</th>
-        <th>Заявка обновлена</th>
-        <th>Ответственный мастер</th>
-        <th>Взнос</th>
-        @if (ShowProblems)
-        {
-            <th>Проблемы</th>
-        }
-    </tr>
+    <HeadContent>
+        <tr>
+            <th>Персонаж</th>
+            <th>Игрок</th>
+            <th>Статус</th>
+            <th>Заявка обновлена</th>
+            <th>Ответственный мастер</th>
+            <th>Взнос</th>
+            @if (IsMaster)
+            {
+                <th>Проблемы</th>
+            }
+        </tr>
     </HeadContent>
     <ItemTemplate>
 
@@ -57,7 +77,7 @@
                 <td>
                     &nbsp;
                 </td>
-                @if (ShowProblems)
+                @if (IsMaster)
                 {
                     <td>&nbsp;</td>
                 }
@@ -81,7 +101,7 @@
                                 }
                         </td>
                     }
-                    
+
 
 
                     <td>
@@ -94,7 +114,15 @@
                     <td>
                         <ClaimStatusBadge Status="claim.ClaimStatus" IsMaster="true" />
                     </td>
-                    <td>
+                    @* Бейдж непрочитанных прижат к дате обновления: это одна мысль — «сколько
+                       нового с прошлого визита». Перенос между ними запрещён. *@
+                    <td style="white-space:nowrap">
+                        @* Бейдж — только в мастерском скоупе (ADR027 §4): сервер капитану счётчики
+                           не шлёт, но скоуп здесь проверяем явно, а не контрактом сервера. *@
+                        @if (IsMaster)
+                        {
+                            <UnreadCommentsCountBadge Count="claim.UnreadCommentsCount" /><text> </text>
+                        }
                         <EventTime Model="claim.UpdateDate" />
                     </td>
 
@@ -102,12 +130,12 @@
                     <td>
                         <ClaimBalanceView Model="claim.Fee" />
                     </td>
-                    @if (ShowProblems)
+                    @if (IsMaster)
                     {
                         <td>
                             @foreach (var problem in claim.Problems ?? [])
                             {
-                                <ProblemBadge Model="problem" /><text> </text>
+                                <ProblemBadge Model="problem" /><br />
                             }
                         </td>
                     }
@@ -130,7 +158,7 @@
                       <td>
                           &nbsp;
                       </td>
-                      @if (ShowProblems)
+                      @if (IsMaster)
                       {
                           <td>&nbsp;</td>
                       }
@@ -148,14 +176,26 @@
     UgPageViewModel? gridPage;
 
     /// <summary>
-    /// Проблемы сервер отдаёт только в мастерском скоупе (ADR027 §1): у капитана их нет, и колонки тоже.
+    /// Скоуп грида задаёт страница (ADR027 §1): кабинет капитана и мастерская страница отличаются
+    /// только им, а права на скоуп проверяет сервер. Мастерские части — колонка и фильтр проблем,
+    /// фильтры группы и ответственного, кнопки массовых операций — рисуются по скоупу.
     /// </summary>
-    private bool ShowProblems => gridPage?.Items.Any(item => item.Claims.Any(claim => claim.Problems is not null)) == true;
+    [Parameter]
+    public UgScopeView Scope { get; set; } = UgScopeView.Captain;
+
+    private bool IsMaster => Scope == UgScopeView.Master;
 
     /// <summary>Номер последнего запроса: ответ на более ранний, пришедший позже, не нужен.</summary>
     private int lastRequest;
 
     private UgStatusFilterView StatusFilter { get; set; }
+
+    /// <summary>Мастерские фильтры (ADR027 §1): у капитана их нет, поэтому и в URL их не бывает.</summary>
+    private bool OnlyWithProblemsFilter { get; set; }
+
+    private CharacterGroupIdentification? GroupFilter { get; set; }
+
+    private UserIdentification? ResponsibleFilter { get; set; }
 
     [Parameter]
     [EditorRequired]
@@ -172,60 +212,136 @@
     [Parameter]
     public int InitialPage { get; set; } = 1;
 
+    /// <summary>Стартовые значения мастерских фильтров из query string страницы.</summary>
+    [Parameter]
+    public bool InitialOnlyWithProblems { get; set; }
+
+    [Parameter]
+    public CharacterGroupIdentification? InitialCharacterGroupId { get; set; }
+
+    [Parameter]
+    public UserIdentification? InitialResponsibleMasterId { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         StatusFilter = InitialStatus;
+        OnlyWithProblemsFilter = InitialOnlyWithProblems;
+        GroupFilter = InitialCharacterGroupId;
+        ResponsibleFilter = InitialResponsibleMasterId;
         await LoadPage(InitialPage);
         await base.OnInitializedAsync();
     }
 
-    private async Task UpdateFilter(UgStatusFilterView args)
+    /// <summary>Текущий фильтр одной записью — сравнение с пришедшим набором обычным равенством record.</summary>
+    private UgFilterView CurrentFilter => new(StatusFilter, OnlyWithProblemsFilter, GroupFilter, ResponsibleFilter);
+
+    /// <summary>
+    /// Смена любого фильтра из шапки: применяется и перезагружает список с первой страницы —
+    /// прежний номер к новому фильтру не относится. Повторное событие с тем же набором
+    /// лишний запрос не гоняет.
+    /// </summary>
+    private async Task OnFilterChanged(UgFilterView changed)
     {
-        if (StatusFilter != args)
+        if (CurrentFilter == changed)
         {
-            StatusFilter = args;
-            // Новый фильтр — новый список, прежний номер страницы к нему не относится, а прежние
-            // строки на экране вводили бы в заблуждение.
-            gridPage = null;
-            await LoadPage(1);
-            RewriteUrl();
+            return;
         }
+        StatusFilter = changed.Status;
+        GroupFilter = IsMaster ? changed.Group : null;
+        ResponsibleFilter = IsMaster ? changed.Responsible : null;
+        OnlyWithProblemsFilter = changed.OnlyWithProblems;
+        await ResetList();
+    }
+
+    private async Task ResetList()
+    {
+        gridPage = null;
+        await LoadPage(1);
+        await RewriteUrl();
     }
 
     private async Task ChangePage(int page)
     {
         await LoadPage(page);
-        RewriteUrl();
+        await RewriteUrl();
     }
 
     /// <summary>
     /// Фильтр и номер страницы лежат в URL (ADR027 §5): ссылками делятся, а редиректы шага 7
     /// ведут на готовый адрес. Значения по умолчанию не пишем — адрес короче, а «Активные,
-    /// первая страница» и есть адрес без query. Посторонние параметры текущего адреса не
-    /// сохраняем: у страницы их нет, а мастерские фильтры (шаг 6) попадут сюда явно.
+    /// первая страница, без фильтров» и есть адрес без query. Посторонние параметры текущего
+    /// адреса не сохраняем: у страницы их нет (scope определяется самой страницей и в URL не
+    /// пишется), а параметр выгрузки в ссылку экспорта попадает явно.
     /// </summary>
     /// <remarks>
-    /// Остров отрисован без Blazor Router, но NavigateTo без <c>forceLoad</c> страницу не
-    /// перезагружает: blazor.webassembly.js при переходе внутри base URI делает
-    /// history.replaceState и оповещает рантайм — Router для этого не нужен (проверено по
-    /// исходнику blazor.webassembly.js, функции navigateTo). Вызывается только из обработчиков
-    /// событий — на предрендере их не бывает, а там NavigateTo запрещён.
+    /// Остров отрисован без Blazor Router, и <see cref="NavigationManager"/> тут не годится:
+    /// NavigateTo в таком приложении делает полную перезагрузку страницы (замерено в браузере —
+    /// смена фильтра перезагружала её целиком вместе с фильтрами). Поэтому пишем адрес напрямую
+    /// через <c>history.replaceState</c>: ни событий навигации, ни перезагрузки.
     /// </remarks>
-    private void RewriteUrl()
+    private Task RewriteUrl()
+        => js.InvokeVoidAsync("history.replaceState", null, "", BuildUrl(export: false)).AsTask();
+
+    /// <summary>Ссылка выгрузки: тот же фильтр, что на экране, плюс <c>export=xlsx</c> (ADR027 §5).</summary>
+    private string ExportUri => BuildUrl(export: true);
+
+    private string BuildUrl(bool export)
     {
         var query = new List<string>();
         if (StatusFilter != UgStatusFilterView.Active)
         {
-            query.Add($"status={StatusFilter}");
+            query.Add($"{UgQueryParameterNames.Status}={StatusFilter}");
         }
         var actualPage = gridPage?.Page;
         if (actualPage > 1)
         {
-            query.Add($"page={actualPage}");
+            query.Add($"{UgQueryParameterNames.Page}={actualPage}");
+        }
+        if (IsMaster)
+        {
+            if (OnlyWithProblemsFilter)
+            {
+                query.Add($"{UgQueryParameterNames.OnlyWithProblems}=true");
+            }
+            if (GroupFilter is not null)
+            {
+                query.Add($"{UgQueryParameterNames.CharacterGroupId}={Uri.EscapeDataString(GroupFilter.ToString())}");
+            }
+            if (ResponsibleFilter is not null)
+            {
+                query.Add($"{UgQueryParameterNames.ResponsibleMasterId}={Uri.EscapeDataString(ResponsibleFilter.Value.ToString())}");
+            }
+        }
+        if (export)
+        {
+            query.Add("export=xlsx");
         }
         var path = new Uri(NavigationManager.Uri).AbsolutePath;
-        NavigationManager.NavigateTo(query.Count == 0 ? path : $"{path}?{string.Join("&", query)}", replace: true);
+        return query.Count == 0 ? path : $"{path}?{string.Join("&", query)}";
     }
+
+    /// <summary>
+    /// Счётчик заголовка: персонажей и заявок поровну — одна цифра; разошлись — дробь
+    /// «персонажи/заявки», расшифровка в tooltip. Число заявок приходит с сервера для обоих
+    /// скоупов — у капитана OperationClaimIds пусты (операции недоступны), поэтому отдельное поле.
+    /// </summary>
+    private string? CountString
+    {
+        get
+        {
+            if (gridPage is null)
+            {
+                return null;
+            }
+            return gridPage.TotalClaims == gridPage.TotalCharacters
+                ? gridPage.TotalCharacters.ToString()
+                : $"{gridPage.TotalCharacters}/{gridPage.TotalClaims}";
+        }
+    }
+
+    private string? CounterTooltip => CountString is { } c && c.Contains('/')
+        ? "Персонажи/Заявки"
+        : null;
 
     /// <remarks>
     /// При смене страницы прежняя остаётся на экране до ответа: высота не проваливается, и пейджер
@@ -234,7 +350,11 @@
     private async Task LoadPage(int page)
     {
         var request = ++lastRequest;
-        var result = await claimListClient.GetGrid(ProjectId, UgScopeView.Captain, new UgFilterView(StatusFilter), page);
+        var result = await claimListClient.GetGrid(
+            ProjectId,
+            Scope,
+            new UgFilterView(StatusFilter, IsMaster && OnlyWithProblemsFilter, IsMaster ? GroupFilter : null, IsMaster ? ResponsibleFilter : null),
+            page);
         if (request == lastRequest)
         {
             gridPage = result;
