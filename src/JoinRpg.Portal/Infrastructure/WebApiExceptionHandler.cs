@@ -55,6 +55,8 @@ internal class WebApiExceptionHandler(IProblemDetailsService problemDetailsServi
         ProjectNotFoundException => (StatusCodes.Status404NotFound, "Проект не найден"),
         DefaultTemplateMustAcceptClaimsException => (StatusCodes.Status409Conflict, "Шаблон по умолчанию должен принимать заявки игроков — выберите другой шаблон или откройте этот для заявок"),
         ParentCommentNotFoundException => (StatusCodes.Status404NotFound, "Комментарий, на который вы отвечаете, не найден. Обновите страницу и попробуйте ещё раз."),
+        // Заголовок общий: текст исключения технический, на английском (#6072)
+        JoinRpgEntityNotFoundException => (StatusCodes.Status404NotFound, "Запрошенный объект не найден — возможно, он был удалён"),
         // Текст отказа собирается в админском сервисе и уже на русском
         UserAdminActionRefusedException refused => (StatusCodes.Status400BadRequest, refused.Message),
         VisibleReplyToHiddenCommentException => (StatusCodes.Status409Conflict, "Ответ на комментарий, скрытый от игрока, тоже должен быть скрыт от игрока"),

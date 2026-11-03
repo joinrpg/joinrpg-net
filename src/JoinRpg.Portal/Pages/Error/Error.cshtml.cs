@@ -28,6 +28,13 @@ public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
                     notFound.ProjectId.Value,
                     exceptionHandlerPathFeature.Path);
             }
+            else if (exceptionHandlerPathFeature.Error is JoinRpgEntityNotFoundException notFoundEntity)
+            {
+                IsEntityNotFound = true;
+                logger.LogInformation("Запрошен несуществующий объект ({notFoundEntityMessage}) в {errorPath}",
+                    notFoundEntity.Message,
+                    exceptionHandlerPathFeature.Path);
+            }
             else
             {
                 logger.LogError(exceptionHandlerPathFeature.Error,
@@ -47,6 +54,8 @@ public class ErrorPageModel(ILogger<ErrorPageModel> logger) : PageModel
     public int? HttpStatusCode { get; set; }
 
     public bool IsProjectNotFound { get; private set; }
+
+    public bool IsEntityNotFound { get; private set; }
 
     public ErrorSupportInfo SupportInfo { get; private set; } = null!;
 }

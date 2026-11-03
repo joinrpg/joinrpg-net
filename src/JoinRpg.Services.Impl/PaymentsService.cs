@@ -845,7 +845,7 @@ internal class PaymentsService(
 
         if (recurrentPayment is null)
         {
-            logger.LogError("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
+            logger.LogInformation("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
             throw new JoinRpgEntityNotFoundException(recurrentPaymentId, nameof(RecurrentPayment));
         }
 
@@ -931,7 +931,7 @@ internal class PaymentsService(
 
         if (recurrentPayment is null)
         {
-            logger.LogError("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
+            logger.LogInformation("There is no recurrent payment {recurrentPaymentId} for claim {claimId} to project {projectId}", recurrentPaymentId, claimId, projectId);
             throw new JoinRpgEntityNotFoundException(recurrentPaymentId, nameof(RecurrentPayment));
         }
 

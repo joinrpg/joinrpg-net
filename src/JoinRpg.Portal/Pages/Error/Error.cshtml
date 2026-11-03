@@ -2,6 +2,7 @@
 @model JoinRpg.Portal.Pages.Error.ErrorPageModel
 @{
     ViewBag.Title = Model.IsProjectNotFound ? "Проект не найден"
+        : Model.IsEntityNotFound ? "Объект не найден"
         : Model.HttpStatusCode == 404 ? "Страница не найдена"
         : "Ошибка";
     var info = Model.SupportInfo;
@@ -11,6 +12,10 @@
 @if (Model.IsProjectNotFound)
 {
     <h3>Проекта с таким номером нет — возможно, ошибка в ссылке.</h3>
+}
+else if (Model.IsEntityNotFound)
+{
+    <h3>Такого объекта нет — возможно, ошибка в ссылке или объект был удалён.</h3>
 }
 else if (Model.HttpStatusCode == 404)
 {

@@ -103,6 +103,21 @@ public class WebApiExceptionHandlerTest
         problem.GetProperty("title").GetString().ShouldStartWith("Комментарий, на который вы отвечаете, не найден");
     }
 
+    // Несуществующий персонаж/заявка/пользователь — «не найдено», а не 500 (#6072)
+    [Fact]
+    public async Task EntityNotFound_InWebApi_ReturnsNotFoundWithReason()
+    {
+        var httpContext = CreateHttpContext("/webapi/1611/character/LoadCharacters");
+        var exception = new JoinRpgEntityNotFoundException(35747, "character");
+
+        var (handled, problem) = await Handle(httpContext, exception);
+
+        handled.ShouldBeTrue();
+        WebApiExceptionHandler.IsExpectedRefusal(exception).ShouldBeTrue();
+        httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+        problem.GetProperty("title").GetString().ShouldBe("Запрошенный объект не найден — возможно, он был удалён");
+    }
+
     // Отказ Identity при смене email в админке — штатный, не 500 (#5891)
     [Fact]
     public async Task UserAdminActionRefused_InWebApi_ReturnsBadRequestWithMessage()

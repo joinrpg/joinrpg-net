@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace JoinRpg.Portal.Test.Infrastructure;
 
 /// <summary>
-/// Ссылка на несуществующий проект — штатный отказ: 404 и ни одной записи уровня Error (#5709).
+/// Ссылка на несуществующий объект — штатный отказ: 404 и ни одной записи уровня Error (#5709, #6072).
 /// Настоящий сбой по-прежнему даёт 500 и попадает в лог как ошибка.
 /// </summary>
 public class PortalExceptionHandlingTest
@@ -31,15 +31,16 @@ public class PortalExceptionHandlingTest
     }
 
     [Fact]
-    public async Task OtherEntityNotFound_StaysServerError()
+    public async Task OtherEntityNotFound_Returns404WithoutErrorLog()
     {
         var logs = new RecordingLoggerProvider();
         await using var app = await StartApp(logs);
 
         var response = await app.GetTestClient().GetAsync("/throw-claim-not-found");
 
-        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-        logs.Levels.ShouldContain(LogLevel.Error);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await response.Content.ReadAsStringAsync()).ShouldBe("error page: 404");
+        logs.Levels.ShouldNotContain(LogLevel.Error);
     }
 
     private static async Task<WebApplication> StartApp(RecordingLoggerProvider logs)
