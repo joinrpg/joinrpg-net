@@ -7,6 +7,7 @@
 @using JoinRpg.Web.Comments
 @using JoinRpg.Web.Claims.Finance
 @using JoinRpg.DomainTypes.Characters.Claims.Finances
+@using JoinRpg.Web.ProjectCommon.Claims
 @* Иначе Blazor склеит подпись, двоеточие и сумму. *@
 @preservewhitespace true
 
@@ -18,6 +19,22 @@
                 @if (finance.OperationText is not null)
                 {
                     <div><b>@finance.OperationText</b>: <PriceElement Price="finance.MoneyAmount" /></div>
+                }
+                @if (finance.Transfer is { } transfer)
+                {
+                    <div>
+                        <b>@transfer.DirectionText</b>:
+                        @* Мастеру — ссылка на заявку контрагента с именем персонажа, игроку — только имя человека:
+                            имя скрытого персонажа игроку показывать нельзя. *@
+                        @if (transfer.ClaimLink is { } claimLink)
+                        {
+                            <ClaimLink Model="claimLink" ShowPlayer="true" />
+                        }
+                        else
+                        {
+                            <UserLink Model="transfer.Player" />
+                        }
+                    </div>
                 }
                 <div><b>Дата операции</b>: @finance.OperationDate.ToString("dd.MM.yyyy")</div>
                 @if (finance.PaymentTypeName is not null)

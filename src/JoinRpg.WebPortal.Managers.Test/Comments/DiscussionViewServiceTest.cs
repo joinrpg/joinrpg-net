@@ -51,6 +51,7 @@ public class DiscussionViewServiceTest
             new FakeUserRepository(mock.TryGetUserInfo),
             new FakeAvatarLoader(),
             new FakeCurrentUserAccessor(currentUser),
+            new FakeClaimInfoRepository(mock),
             service);
         return (await viewService.ShowDiscussion(DiscussionId, mock.ProjectInfo), service);
     }

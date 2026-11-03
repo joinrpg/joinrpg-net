@@ -1,4 +1,5 @@
 using System.Text.Json;
+using JoinRpg.Web.ProjectCommon.Claims;
 using static JoinRpg.Web.Comments.Test.CommentTestData;
 
 namespace JoinRpg.Web.Comments.Test;
@@ -16,7 +17,19 @@ public class DiscussionViewModelJsonTest
         var withFinance = Comment(2, isVisibleToPlayer: false, isRead: false, depth: 1) with
         {
             ExtraActionText = "Оплачен взнос",
-            Finance = new CommentFinanceViewModel("Оплата денег игроком", "Оплата", 500, new DateOnly(2026, 10, 2), "Наличными — Мастер", IsDeclined: false, IsProposed: true, CanModerate: true),
+            Finance = new CommentFinanceViewModel(
+                "Перевод денег другому игроку",
+                "Перевод",
+                -500,
+                new DateOnly(2026, 10, 2),
+                "Наличными — Мастер",
+                IsDeclined: false,
+                IsProposed: true,
+                CanModerate: true,
+                new CommentFinanceTransferViewModel(
+                    "Кому переведено",
+                    new UserLinkViewModel(new UserIdentification(8), "Игрок", ViewMode.Show),
+                    new ClaimLinkViewModel(new ClaimIdentification(ProjectId, 9), new UserDisplayName("Игрок", "Игрок Полный"), "Персонаж контрагента", "", new UserIdentification(8)))),
         };
         var original = Discussion(
             hasMasterAccess: true,

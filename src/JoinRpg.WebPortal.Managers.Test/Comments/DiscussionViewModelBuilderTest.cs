@@ -70,7 +70,12 @@ public class DiscussionViewModelBuilderTest
                 : userId == Player && playerAvatar is { } avatar
                     ? mock.PlayerInfo with { SelectedAvatar = new UserAvatarSource(avatar, null, "https://example.com/player.png") }
                     : mock.TryGetUserInfo(userId));
-        var builder = new DiscussionViewModelBuilder(users, discussions, avatarLoader, new FakeCurrentUserAccessor(currentUser));
+        var builder = new DiscussionViewModelBuilder(
+            users,
+            discussions,
+            avatarLoader,
+            new FakeCurrentUserAccessor(currentUser),
+            new FakeClaimInfoRepository(mock));
         return await builder.Build(Snapshot(), mock.ProjectInfo);
     }
 
@@ -250,6 +255,51 @@ public class DiscussionViewModelBuilderTest
         transfer.PaymentTypeName.ShouldBeNull();
         transfer.OperationText.ShouldBe("Перевод денег другому игроку");
         transfer.CanModerate.ShouldBeFalse();
+        transfer.Transfer.ShouldBeNull(); // нет заявки-контрагента — не перевод
+    }
+
+    [Fact]
+    public async Task Transfer_MasterGetsCounterpartyClaimLink()
+    {
+        var counterparty = mock.CreateClaim(mock.Character, mock.Player);
+        _ = AddComment(1, Master, finance: new CommentFinanceInfo(
+            -200, FinanceOperationType.TransferTo, FinanceOperationState.Approved, Start, PaymentType: null, LinkedClaim: counterparty.GetId()));
+
+        var model = await Build(Master);
+
+        var transfer = Find(model, 1).Finance.ShouldNotBeNull().Transfer.ShouldNotBeNull();
+        transfer.DirectionText.ShouldBe("Кому переведено");
+        var claimLink = transfer.ClaimLink.ShouldNotBeNull();
+        claimLink.ClaimId.ShouldBe(counterparty.GetId());
+        claimLink.CharacterName.ShouldBe(mock.Character.CharacterName);
+        transfer.Player.DisplayName.ShouldBe("Player");
+    }
+
+    [Fact]
+    public async Task Transfer_MasterGetsIncomingTransferSource()
+    {
+        var counterparty = mock.CreateClaim(mock.Character, mock.Player);
+        _ = AddComment(1, Master, finance: new CommentFinanceInfo(
+            200, FinanceOperationType.TransferFrom, FinanceOperationState.Approved, Start, PaymentType: null, LinkedClaim: counterparty.GetId()));
+
+        var model = await Build(Master);
+
+        Find(model, 1).Finance.ShouldNotBeNull().Transfer.ShouldNotBeNull().DirectionText.ShouldBe("От кого переведено");
+    }
+
+    [Fact]
+    public async Task Transfer_PlayerGetsPlayerNameOnly_NoClaimLinkOrCharacter()
+    {
+        var counterparty = mock.CreateClaim(mock.Character, mock.Player);
+        _ = AddComment(1, Master, finance: new CommentFinanceInfo(
+            -200, FinanceOperationType.TransferTo, FinanceOperationState.Approved, Start, PaymentType: null, LinkedClaim: counterparty.GetId()));
+
+        var model = await Build(Player);
+
+        var transfer = Find(model, 1).Finance.ShouldNotBeNull().Transfer.ShouldNotBeNull();
+        transfer.Player.DisplayName.ShouldBe("Player");
+        // Ссылка на заявку — только мастеру: игроку она выдала бы скрытого персонажа.
+        transfer.ClaimLink.ShouldBeNull();
     }
 
     [Fact]
@@ -291,7 +341,8 @@ public class DiscussionViewModelBuilderTest
             FakeUserRepository.MustNotBeCalled("обсуждение чужого проекта"),
             discussions,
             new FakeAvatarLoader(),
-            new FakeCurrentUserAccessor(Master));
+            new FakeCurrentUserAccessor(Master),
+            new FakeClaimInfoRepository(mock));
         var otherProject = new ProjectIdentification(mock.ProjectInfo.ProjectId.Value + 1);
         var foreignDiscussion = new CommentDiscussionInfo(
             DiscussionId,

@@ -49,7 +49,8 @@ public class CommentDiscussionMapperTest
         FinanceOperationType? financeOperationType = null,
         FinanceOperationState? financeState = null,
         DateTime? financeOperationDate = null,
-        int? financePaymentTypeId = null)
+        int? financePaymentTypeId = null,
+        int? financeLinkedClaimId = null)
         => new()
         {
             CommentId = commentId,
@@ -65,6 +66,7 @@ public class CommentDiscussionMapperTest
             FinanceState = financeState,
             FinanceOperationDate = financeOperationDate,
             FinancePaymentTypeId = financePaymentTypeId,
+            FinanceLinkedClaimId = financeLinkedClaimId,
         };
 
     [Fact]
@@ -175,6 +177,18 @@ public class CommentDiscussionMapperTest
                 financeOperationDate: SomeDate,
                 financePaymentTypeId: null)]))
             .Comments.ShouldHaveSingleItem().Finance.ShouldNotBeNull().PaymentType.ShouldBeNull();
+
+    [Fact]
+    public void FinanceOfTransferCarriesCounterpartyClaim()
+        => CommentDiscussionMapper.Map(MakeRow(comments: [MakeCommentRow(
+                financeMoneyAmount: -300,
+                financeOperationType: FinanceOperationType.TransferTo,
+                financeState: FinanceOperationState.Approved,
+                financeOperationDate: SomeDate,
+                financePaymentTypeId: null,
+                financeLinkedClaimId: 77)]))
+            .Comments.ShouldHaveSingleItem().Finance.ShouldNotBeNull().LinkedClaim
+            .ShouldBe(new ClaimIdentification(ProjectId, 77));
 
     [Fact]
     public void AllCommentsAreMapped()
