@@ -62,6 +62,23 @@ public class ClaimNotificationParserTest
     }
 
     [Fact]
+    public void TransferCounterpartyLineIsSkippedInText()
+    {
+        // Перевод между заявками: у отправителя контрагент — получатель, у получателя — отправитель.
+        var outgoing = Parse(ClaimChange(
+            Day(1), CommentExtraAction.TransferFrom, Master, [Player],
+            text: "перечёт взноса", money: -700, transferCounterparty: OtherMaster)).ShouldHaveSingleItem();
+        var incoming = Parse(ClaimChange(
+            Day(2), CommentExtraAction.TransferTo, Master, [Player],
+            text: "перечёт взноса", money: 700, transferCounterparty: Player)).ShouldHaveSingleItem();
+
+        outgoing.Money.ShouldBe(-700);
+        outgoing.Text.ShouldBe("перечёт взноса");
+        incoming.Money.ShouldBe(700);
+        incoming.Text.ShouldBe("перечёт взноса");
+    }
+
+    [Fact]
     public void MergesRecipientsOfOneEvent()
     {
         var e = Parse(ClaimChange(Day(1), CommentExtraAction.ApproveByMaster, Master, [Player, OtherMaster])).ShouldHaveSingleItem();

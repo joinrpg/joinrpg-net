@@ -22,6 +22,14 @@ internal class ClaimNotificationTextBuilder
             extraText += $"Сумма операции: {model.Money}\n\n";
         }
 
+        if (model.TransferCounterparty is { } counterparty)
+        {
+            // «Отправлен перевод» (TransferFrom) — деньги ушли: контрагент — получатель.
+            // «Принят перевод» (TransferTo) — пришли: контрагент — отправитель.
+            var direction = model.CommentExtraAction == CommentExtraAction.TransferFrom ? "Кому переведено" : "От кого переведено";
+            extraText += $"{direction}: {counterparty.DisplayName.DisplayName}\n\n";
+        }
+
         if (model.CommentExtraAction == CommentExtraAction.MoveByMaster)
         {
             // TODO Раньше писалось на какую новую роль
