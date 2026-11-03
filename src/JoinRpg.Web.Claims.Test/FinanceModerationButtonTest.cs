@@ -225,6 +225,31 @@ public class FinanceModerationButtonTest : BunitContext
         cut.Markup.ShouldNotContain("Bad Gateway");
     }
 
+    /// <summary>По умолчанию кнопка XS — так она стоит в плотных финансовых таблицах рядом с btn-xs.</summary>
+    [Fact]
+    public void DefaultSizeIsExtraSmall()
+    {
+        var cut = Render<FinanceModerationButton>(parameters => parameters.Add(
+            c => c.Operation,
+            new FinanceModerationOperationView(OperationId, "Оплата", 500, new DateOnly(2026, 10, 25), null)));
+
+        cut.Find(".join-btn").ClassList.ShouldContain("join-btn--xs");
+    }
+
+    /// <summary>В обсуждении заявки кнопка покрупнее (Small), чтобы её было легче нажать.</summary>
+    [Fact]
+    public void SmallSizeInClaimDiscussion()
+    {
+        var cut = Render<FinanceModerationButton>(parameters => parameters
+            .Add(
+                c => c.Operation,
+                new FinanceModerationOperationView(OperationId, "Оплата", 500, new DateOnly(2026, 10, 25), null))
+            .Add(c => c.Size, SizeStyleEnum.Small));
+
+        cut.Find(".join-btn").ClassList.ShouldContain("join-btn--sm");
+        cut.Find(".join-btn").ClassList.ShouldNotContain("join-btn--xs");
+    }
+
     /// <summary>Оба клиента диалога: решение по операции и простой комментарий к ней.</summary>
     private class FakeFinanceModerationClient : IFinanceModerationClient, IClaimCommentClient
     {
