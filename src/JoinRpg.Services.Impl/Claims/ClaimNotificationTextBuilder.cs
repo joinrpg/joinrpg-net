@@ -22,6 +22,21 @@ internal class ClaimNotificationTextBuilder
             extraText += $"Сумма операции: {model.Money}\n\n";
         }
 
+        if (model.TransferCounterparty is { } counterparty)
+        {
+            // «Отправлен перевод» (TransferFrom) — деньги ушли: контрагент — получатель.
+            // «Принят перевод» (TransferTo) — пришли: контрагент — отправитель.
+            var direction = model.CommentExtraAction switch
+            {
+                CommentExtraAction.TransferFrom => "Кому переведено",
+                CommentExtraAction.TransferTo => "От кого переведено",
+                // Контрагент бывает только у перевода; нейтральная подпись — защита от повторного
+                // использования поля с другим действием.
+                _ => "Переведено",
+            };
+            extraText += $"{direction}: {counterparty.DisplayName.DisplayName}\n\n";
+        }
+
         if (model.CommentExtraAction == CommentExtraAction.MoveByMaster)
         {
             // TODO Раньше писалось на какую новую роль

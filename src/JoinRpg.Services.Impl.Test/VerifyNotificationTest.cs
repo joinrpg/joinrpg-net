@@ -70,6 +70,26 @@ public class VerifyNotificationTest
         return Verify(text);
     }
 
+    [Theory]
+    [InlineData(CommentExtraAction.TransferFrom)]
+    [InlineData(CommentExtraAction.TransferTo)]
+    public Task TransferWithCounterparty(CommentExtraAction commentExtraAction)
+    {
+        var model = new ClaimSimpleChangedNotification(
+            new ClaimIdentification(1, 1),
+            commentExtraAction,
+            Initiator: master,
+            new NotificationEventTemplate("оплата была за нескольких людей"),
+            ClaimOperationType.MasterVisibleChange,
+            Money: commentExtraAction == CommentExtraAction.TransferFrom ? -500 : 500,
+            TransferCounterparty: new UserInfoHeader(new UserIdentification(3), new UserDisplayName("Контрагент", null), Avatar: null)
+            );
+
+        var text = claimNotificationTextBuilder.GetText(model, claimWithPlayer);
+
+        return Verify(text).UseParameters(commentExtraAction);
+    }
+
     [Fact]
     public void WithCommentIdSetsClaimCommentIdentification()
     {

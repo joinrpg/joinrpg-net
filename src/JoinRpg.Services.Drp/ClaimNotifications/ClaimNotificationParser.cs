@@ -25,6 +25,8 @@ namespace JoinRpg.Services.Drp.ClaimNotifications;
 ///
 ///         ][Сумма операции: N
 ///
+///         ][Кому переведено: X / От кого переведено: X
+///
 ///         ]{текст}
 ///         [
 ///         Страница заявки: {url}]   — до 2026-06-07
@@ -42,6 +44,8 @@ public static class ClaimNotificationParser
     private const string ByMaster = "мастером ";
     private const string CommentShortName = "откомментирована";
     private const string MoneyPrefix = "Сумма операции: ";
+    /// <summary>Строки контрагента перевода денег между заявками (<c>ClaimNotificationTextBuilder</c>).</summary>
+    private static readonly string[] TransferCounterpartyPrefixes = ["Кому переведено: ", "От кого переведено: "];
     private const string LegacyClaimLinkPrefix = "Страница заявки: ";
     /// <summary>Заголовок приглашений к проживанию (<c>AccommodationNotificationTextBuilder</c>).</summary>
     private const string AccommodationInviteHeaderSuffix = ": приглашения к проживанию";
@@ -194,7 +198,8 @@ public static class ClaimNotificationParser
     }
 
     /// <summary>
-    /// «**{название действия}**», затем необязательная «Сумма операции: N», затем текст.
+    /// «**{название действия}**», затем необязательная «Сумма операции: N», затем необязательная строка
+    /// контрагента перевода («Кому переведено: X» / «От кого переведено: X»), затем текст.
     /// Неизвестное название — null: событие не распознано.
     /// </summary>
     private static (CommentExtraAction? Action, int? Money, string Text) ParseActionBlock(string block)
@@ -222,7 +227,27 @@ public static class ClaimNotificationParser
                 rest = moneyEnd < 0 ? "" : rest[(moneyEnd + 1)..];
             }
         }
+
+        // У перевода денег между заявками после суммы идёт строка контрагента — в текст комментария
+        // она не входит. Пропускаем её только у переводов: комментарий другого действия, текст
+        // которого начинается с тех же слов, — это законный текст, а не служебная строка.
+        if (action is CommentExtraAction.TransferFrom or CommentExtraAction.TransferTo)
+        {
+            rest = SkipTransferCounterparty(rest.TrimStart('\n'));
+        }
         return (action, money, rest);
+    }
+
+    /// <summary>Пропускает ведущую строку контрагента перевода, если она есть.</summary>
+    private static string SkipTransferCounterparty(string rest)
+    {
+        var prefix = TransferCounterpartyPrefixes.FirstOrDefault(prefix => rest.StartsWith(prefix, StringComparison.Ordinal));
+        if (prefix is null)
+        {
+            return rest;
+        }
+        var lineEnd = rest.IndexOf('\n');
+        return lineEnd < 0 ? "" : rest[(lineEnd + 1)..];
     }
 
     /// <summary>

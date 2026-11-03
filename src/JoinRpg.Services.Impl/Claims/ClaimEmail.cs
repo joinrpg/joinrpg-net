@@ -35,7 +35,8 @@ public record class ClaimSimpleChangedNotification(
     int? Money = null,
     UserInfoHeader? PaymentOwner = null,
     UserInfoHeader? ParentCommentAuthor = null,
-    IReadOnlyCollection<FieldWithPreviousAndNewValue>? UpdatedFields = null
+    IReadOnlyCollection<FieldWithPreviousAndNewValue>? UpdatedFields = null,
+    UserInfoHeader? TransferCounterparty = null                              // Контрагент перевода денег между заявками
     ) : IClaimNotification
 {
     /// <summary>

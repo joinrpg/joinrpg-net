@@ -182,8 +182,17 @@ internal class FinanceOperationsImpl(
         await UnitOfWork.SaveChangesAsync();
 
         // Сумма — со знаком, как у финоперации своей заявки: без неё перевод по уведомлению не восстановить (#5643).
-        await claimNotificationService.SendNotification(emailTo.WithCommentId(commentTo.CommentId) with { Money = request.Money });
-        await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId) with { Money = -request.Money });
+        // Контрагент — игрок второй заявки: у получателя «От кого переведено», у отправителя «Кому переведено».
+        await claimNotificationService.SendNotification(emailTo.WithCommentId(commentTo.CommentId) with
+        {
+            Money = request.Money,
+            TransferCounterparty = claimFrom.Player.ToUserInfoHeader(),
+        });
+        await claimNotificationService.SendNotification(emailFrom.WithCommentId(commentFrom.CommentId) with
+        {
+            Money = -request.Money,
+            TransferCounterparty = claimTo.Player.ToUserInfoHeader(),
+        });
     }
 
     /// <summary>

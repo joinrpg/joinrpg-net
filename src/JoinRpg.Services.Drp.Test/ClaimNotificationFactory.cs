@@ -38,7 +38,8 @@ internal static class ClaimNotificationFactory
         UserInfoHeader? player = null,
         int? money = null,
         ClaimIdentification? claimId = null,
-        IProjectEntityId? reference = null)
+        IProjectEntityId? reference = null,
+        UserInfoHeader? transferCounterparty = null)
     {
         var claim = new ClaimWithPlayer
         {
@@ -50,7 +51,9 @@ internal static class ClaimNotificationFactory
             CharacterId = new CharacterIdentification(Project, 1),
         };
         var operationType = initiator == (player ?? Player) ? ClaimOperationType.PlayerChange : ClaimOperationType.MasterVisibleChange;
-        var model = new ClaimSimpleChangedNotification(claim.ClaimId, action, initiator, new NotificationEventTemplate(text), operationType, Money: money);
+        var model = new ClaimSimpleChangedNotification(
+            claim.ClaimId, action, initiator, new NotificationEventTemplate(text), operationType,
+            Money: money, TransferCounterparty: transferCounterparty);
 
         var body = TextBuilder.GetText(model, claim);
         var header = TextBuilder.GetClaimEmailTitle(new DomainTypes.ProjectMetadata.ProjectName(ProjectTitle), claim);
