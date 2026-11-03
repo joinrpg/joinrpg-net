@@ -1,0 +1,12 @@
+@* Бейдж числа непрочитанных комментариев заявки: только у мастера, только когда есть что читать.
+   Серый (None), как в старом гриде. *@
+@if (Count is > 0)
+{
+    <JoinBadge Variation="VariationStyleEnum.None" Title="Непрочитанные комментарии">@Count</JoinBadge>
+}
+
+@code {
+    /// <summary>Число непрочитанных комментариев; null и 0 — бейджа нет.</summary>
+    [Parameter]
+    public int? Count { get; set; }
+}

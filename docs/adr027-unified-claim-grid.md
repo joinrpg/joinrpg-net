@@ -175,11 +175,11 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 `{ProjectId}/claims/[action]`, где экшен обязателен, так что его страницы становятся «подстраницами»
 грида и редиректят в корень с параметрами (§6). На странице остров WASM,
 тот же, что у капитана. Фильтр и номер страницы лежат в query string: страница передаёт их острову
-параметрами, а остров при смене фильтра переписывает URL. Остров отрисован без Blazor `Router`, но
-`NavigationManager.NavigateTo(…, replace: true)` без `forceLoad` страницу не перезагружает: в WASM
-`blazor.webassembly.js` при переходе внутри base URI делает `history.replaceState` и оповещает
-рантайм, Router для этого не нужен (проверено по исходнику `blazor.webassembly.js`); JS interop
-не нужен. Имена параметров query — те же, что у webapi `GetGrid` (`status`, `page`, дальше
+параметрами, а остров при смене фильтра переписывает URL. Остров отрисован без Blazor `Router`, и
+~~`NavigationManager.NavigateTo(…, replace: true)` без `forceLoad` страницу не перезагружает~~ —
+вычёркнуто после замера в браузере (ревью #6025): в острове без Router `NavigateTo` делает полную
+перезагрузку страницы (смена фильтра перезагружала её целиком вместе с фильтрами). Поэтому остров
+пишет адрес напрямую через `history.replaceState` (JS interop), без событий навигации. Имена параметров query — те же, что у webapi `GetGrid` (`status`, `page`, дальше
 `onlyWithProblems`, `characterGroupId`, `responsibleMasterId`): страница и API понимают один адрес,
 а редиректы §6 строят его без таблицы соответствия. Значения по умолчанию (статус «Активные»,
 первая страница) в URL не пишутся. URL строятся через локатор
@@ -203,7 +203,8 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 
 **Рассылка и печать** (`ListOperationsButtons`) работают по `OperationClaimIds`/`OperationCharacterIds`
 всего результата фильтра. В печать попадают только персонажи с показанными заявками, вакансии — нет, как
-и сейчас (`ClaimListViewModel.CharacterIds`). Счётчик над списком считает заявки. Капитану коллекции
+и сейчас (`ClaimListViewModel.CharacterIds`). Счётчик над списком показывает персонажи, а при расхождении
+с числом заявок — дробь «персонажи/заявки». Капитану коллекции
 отдаются пустыми.
 
 ### 6. Старые маршруты — редиректами, по одному
@@ -212,9 +213,11 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 `MasterMenu.cshtml`, `Acl/Manage.cshtml`, шапка группы (`DisplayTemplates/CharacterGroupDetailsViewModel.cshtml`),
 `GroupEditMenu.razor`, `GroupReport.razor`, `ICharacterGroupUriLocator.GetClaimListUri`/`GetDiscussingClaimListUri`
 в обеих реализациях (`UriServiceImpl`, `Blazor.Client/UriLocatorExtensions`), а с ними
-`UriLocatorConsistencyTests` и фейки локаторов в тестах. Старый экшен становится 301-редиректом на грид
-с параметрами и пробрасывает `export`, потому что на выгрузки бывают закладки. Каждый такой маршрут
-добавляется в `SmokeExpectations.ExpectedStatus` как `MovedPermanently`.
+`UriLocatorConsistencyTests` и фейки локаторов в тестах. Проектные и «мастерские» ссылки меню строят
+`IClaimsGridUriLocator.GetGridUri`, а адрес грида собирает один построитель `ClaimGridUrls` — им пользуются
+обе реализации локатора и редиректы, чтобы адреса не разошлись. Старый экшен становится 301-редиректом на грид
+с параметрами и пробрасывает `export` и `page`, если они пришли, потому что на выгрузки бывают закладки.
+Каждый такой маршрут добавляется в `SmokeExpectations.ExpectedStatus` как `MovedPermanently`.
 
 | Старый маршрут | Грид |
 |---|---|
@@ -236,6 +239,9 @@ SQL-предфильтр (например, по `ResponsibleMasterUserId`), н�
 - «Кто обновил» показывает «игроком / мастером», без «мной» и имени (§4).
 - Над списком группы (`~/roles/{G}/claims`) больше нет шапки группы с навигацией
   (`GroupNavigationPage.ClaimsActive`). Ссылка из меню группы ведёт в грид с фильтром.
+- Старый список группы отвечал 404 на несуществующую группу; редирект отвечает 301 всегда, а грид
+  на неизвестную группу показывает пустой список — сам адрес стал постоянным, и проверять за ним
+  нечего.
 
 План миграции:
 ==

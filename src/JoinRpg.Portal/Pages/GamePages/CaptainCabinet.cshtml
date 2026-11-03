@@ -1,5 +1,4 @@
 @page "/{projectId:int}/captain"
-@using JoinRpg.Web.Claims.CaptainCabinet
 @using JoinRpg.Web.Claims.UnifiedGrid
 @model JoinRpg.Portal.Pages.GamePages.CaptainCabinetModel
 @{
@@ -9,6 +8,7 @@
 @(await Html.RenderComponentAsync<ClaimsGrid>(RenderMode.WebAssembly, new
 {
     Model.ProjectId,
+    Scope = UgScopeView.Captain,
     InitialStatus = Model.Status ?? UgStatusFilterView.Active,
     InitialPage = Model.Page ?? 1,
 }))
