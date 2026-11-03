@@ -120,6 +120,22 @@ public class ProjectAccessServiceTest
     }
 
     [Fact]
+    public async Task GrantFullAccess_ArchivedProject_Succeeds()
+    {
+        mock.Project.Active = false;
+        mock.Project.IsAcceptingClaims = false;
+        var service = CreateService(99, isAdmin: true);
+
+        await service.GrantFullAccess(ProjectId);
+
+        var acl = mock.Project.ProjectAcls.Single(a => a.UserId == 99);
+        acl.Status.ShouldBe(ProjectAclStatus.Active);
+        acl.CanGrantRights.ShouldBeTrue();
+        acl.Role.ShouldBe("Техподдержка joinrpg.ru");
+        unitOfWork.SaveChangesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task GrantAccess_NewUser_PopulatesAclUser_AndProjectInfoRefreshesWithoutError()
     {
         // Регрессия: ProjectAcl для нового мастера создаётся через `new`, а не через прокси-фабрику
