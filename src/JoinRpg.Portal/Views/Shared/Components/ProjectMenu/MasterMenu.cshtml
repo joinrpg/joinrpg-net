@@ -109,6 +109,9 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Заявки <span class="caret"></span></a>
 
                     <ul class="dropdown-menu">
+                        @* Грид заявок (ADR027) — основной список; старые списки остаются ниже, пока
+                           грид в бете. *@
+                        <li><a asp-page="/GamePages/Claims" asp-route-projectId="@Model.ProjectId">Персонажи и заявки<sup>BETA</sup></a></li>
                         <li>@Html.ActionLink("Все активные", "ActiveList", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Проблемные", "Problems", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("На обсуждении", "Discussing", "ClaimList", new { Model.ProjectId }, null)</li>
