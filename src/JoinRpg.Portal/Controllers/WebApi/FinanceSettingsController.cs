@@ -64,6 +64,20 @@ public class FinanceSettingsController(IFinanceSettingsClient client) : Controll
     public async Task<ActionResult> TogglePaymentType(ProjectIdentification projectId, [FromQuery] int paymentTypeId)
         => await PaymentTypeRefusalToBadRequest(() => client.TogglePaymentType(new PaymentTypeIdentification(projectId, paymentTypeId)));
 
+    [HttpPost]
+    public async Task<ActionResult> EditPaymentType(
+        ProjectIdentification projectId,
+        [FromQuery] PaymentTypeIdentification paymentTypeId,
+        EditPaymentTypeViewModel model)
+    {
+        // Из UI имя всегда предзаполнено; пустое всё — рукотворный запрос мимо острова
+        if (string.IsNullOrWhiteSpace(model.Name) && string.IsNullOrWhiteSpace(model.PaymentLink) && string.IsNullOrWhiteSpace(model.Description))
+        {
+            return BadRequest("Заполните хотя бы одно поле");
+        }
+        return await PaymentTypeRefusalToBadRequest(() => client.EditPaymentType(paymentTypeId, model));
+    }
+
     [HttpGet]
     public async Task<ActionResult<FinanceGoogleDocsExportViewModel>> GetGoogleDocsExport(ProjectIdentification projectId)
         => Ok(await client.GetGoogleDocsExport(projectId));
@@ -91,6 +105,19 @@ public class FinanceSettingsController(IFinanceSettingsClient client) : Controll
         catch (JoinRpgEntityNotFoundException)
         {
             return BadRequest("Метод оплаты не найден. Обновите страницу и попробуйте ещё раз.");
+        }
+        catch (FieldRequiredException)
+        {
+            // Достижимо рукотворным запросом: у произвольного метода стёрли имя
+            return BadRequest("Укажите название метода оплаты");
+        }
+        catch (InvalidPaymentLinkException)
+        {
+            return BadRequest("Ссылка для оплаты должна быть полным адресом, начинающимся с http:// или https://");
+        }
+        catch (OnlinePaymentTypeIsNotEditableException)
+        {
+            return BadRequest("Онлайн-оплату нельзя редактировать — её настраивает платёжная система");
         }
     }
 

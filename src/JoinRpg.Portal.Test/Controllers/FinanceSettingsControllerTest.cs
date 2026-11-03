@@ -63,6 +63,9 @@ public class FinanceSettingsControllerTest
         { new JoinRpgInvalidUserException(), "уже есть метод оплаты «Наличными»" },
         { new DataException(), "уже есть" },
         { new JoinRpgEntityNotFoundException(7, "PaymentType"), "Метод оплаты не найден" },
+        { new FieldRequiredException("Name"), "Укажите название метода оплаты" },
+        { new InvalidPaymentLinkException(), "Ссылка для оплаты должна быть полным адресом" },
+        { new OnlinePaymentTypeIsNotEditableException(), "Онлайн-оплату нельзя редактировать" },
     };
 
     [Theory]
@@ -109,6 +112,30 @@ public class FinanceSettingsControllerTest
         _ = (await controller.CreatePaymentType(ProjectId, new NewPaymentTypeViewModel(PaymentTypeKind.Online, null, null))).ShouldBeOfType<OkResult>();
         client.Created.ShouldNotBeNull().Kind.ShouldBe(PaymentTypeKind.Online);
     }
+
+    [Theory]
+    [MemberData(nameof(PaymentTypeRefusals))]
+    public async Task EditRefusalIsBadRequestWithReason(Exception refusal, string reason)
+    {
+        var controller = new FinanceSettingsController(new FakeClient { Failure = refusal });
+
+        var result = await controller.EditPaymentType(ProjectId, new PaymentTypeIdentification(ProjectId, 7), EditModel());
+
+        result.ShouldBeOfType<BadRequestObjectResult>().Value.ShouldBeOfType<string>().ShouldContain(reason);
+    }
+
+    [Fact]
+    public async Task EditGoesToAuthorizedProject()
+    {
+        var client = new FakeClient();
+        var controller = new FinanceSettingsController(client);
+
+        _ = (await controller.EditPaymentType(ProjectId, new PaymentTypeIdentification(ProjectId, 7), EditModel())).ShouldBeOfType<OkResult>();
+        client.Edited.ShouldBe((new PaymentTypeIdentification(ProjectId, 7), "Карта"));
+    }
+
+    private static EditPaymentTypeViewModel EditModel()
+        => new() { Name = "Карта", PaymentLink = "https://pay.example.com/1" };
 
     private sealed class FakeClient : IFinanceSettingsClient
     {
@@ -157,5 +184,17 @@ public class FinanceSettingsControllerTest
         }
 
         public PaymentTypeIdentification? Toggled { get; private set; }
+
+        public (PaymentTypeIdentification, string)? Edited { get; private set; }
+
+        public Task EditPaymentType(PaymentTypeIdentification paymentTypeId, EditPaymentTypeViewModel model)
+        {
+            if (Failure is not null)
+            {
+                throw Failure;
+            }
+            Edited = (paymentTypeId, model.Name);
+            return Task.CompletedTask;
+        }
     }
 }

@@ -32,7 +32,8 @@ public class FinanceSettingsViewServiceTests
 
     private const int PaymentsUserId = 9000;
 
-    private PaymentType AddPaymentType(PaymentTypeKind kind, int userId, bool isActive = true, string? name = null, bool isDefault = false)
+    private PaymentType AddPaymentType(PaymentTypeKind kind, int userId, bool isActive = true, string? name = null, bool isDefault = false,
+        string? paymentLink = null, string? description = null)
     {
         var paymentType = new PaymentType(kind, Mock.Project.ProjectId, userId)
         {
@@ -40,6 +41,8 @@ public class FinanceSettingsViewServiceTests
             IsActive = isActive,
             IsDefault = isDefault,
             Name = name,
+            PaymentLink = paymentLink,
+            Description = description,
         };
         Mock.Project.PaymentTypes.Add(paymentType);
         Mock.ReInitProjectInfo();
@@ -84,6 +87,44 @@ public class FinanceSettingsViewServiceTests
         master.Where(i => i.IsOnline).ShouldAllBe(i => !i.CanToggle);
         master.Where(i => !i.IsOnline).ShouldAllBe(i => i.CanToggle);
         admin.ShouldAllBe(i => i.CanToggle);
+    }
+
+    [Fact]
+    public async Task LinkAndDescriptionOfActiveTypeAreListed()
+    {
+        AddPaymentType(PaymentTypeKind.Custom, Mock.Master.UserId, name: "Карта",
+            paymentLink: "https://pay.example.com/1", description: "Перевод на карту банка");
+        AddPaymentType(PaymentTypeKind.Custom, Mock.Master.UserId, name: "Без описания");
+
+        var items = (await CreateService(Mock.Master.UserId).GetPaymentTypes(Mock.ProjectInfo.ProjectId)).PaymentTypes;
+
+        var card = items.Single(i => i.Name == "Карта");
+        card.PaymentLink.ShouldBe("https://pay.example.com/1");
+        card.Description.ShouldBe("Перевод на карту банка");
+        items.Single(i => i.Name == "Без описания").PaymentLink.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task EditPaymentTypePassesAllFields()
+    {
+        var paymentType = AddPaymentType(PaymentTypeKind.Cash, Mock.Master.UserId);
+
+        await CreateService(Mock.Master.UserId).EditPaymentType(
+            new PaymentTypeIdentification(Mock.ProjectInfo.ProjectId, paymentType.PaymentTypeId),
+            new EditPaymentTypeViewModel
+            {
+                Name = "Наличными",
+                IsDefault = false,
+                PaymentLink = "https://pay.example.com/1",
+                Description = "Отдайте мастеру",
+            });
+
+        var request = financeSettingsService.EditedPaymentType.ShouldNotBeNull();
+        request.PaymentTypeId.ShouldBe(new PaymentTypeIdentification(Mock.ProjectInfo.ProjectId, paymentType.PaymentTypeId));
+        request.Name.ShouldBe("Наличными");
+        request.IsDefault.ShouldBeFalse();
+        request.PaymentLink.ShouldBe("https://pay.example.com/1");
+        request.Description.ShouldBe("Отдайте мастеру");
     }
 
     [Theory]
@@ -152,7 +193,6 @@ public class FinanceSettingsViewServiceTests
 
     private sealed class FakeUriLocator : IFinanceSettingsUriLocator
     {
-        public Uri GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId) => throw new NotSupportedException();
         public Uri GetOnlinePaymentsInfoUri() => throw new NotSupportedException();
         public Uri GetMasterSummaryExportUri(ProjectIdentification projectId, string token) => throw new NotSupportedException();
     }
@@ -164,10 +204,11 @@ public class FinanceSettingsViewServiceTests
         public UserIdentification RobotUserId => throw new NotSupportedException();
     }
 
-    /// <summary>Запоминает создание метода оплаты; остальное тестам не нужно.</summary>
+    /// <summary>Запоминает создание и редактирование метода оплаты; остальное тестам не нужно.</summary>
     private sealed class RecordingFinanceSettingsService : IProjectFinanceSettingsService
     {
         public CreatePaymentTypeRequest? CreatedPaymentType { get; private set; }
+        public EditPaymentTypeRequest? EditedPaymentType { get; private set; }
 
         public Task CreatePaymentType(CreatePaymentTypeRequest request)
         {
@@ -175,9 +216,14 @@ public class FinanceSettingsViewServiceTests
             return Task.CompletedTask;
         }
 
+        public Task EditPaymentType(EditPaymentTypeRequest request)
+        {
+            EditedPaymentType = request;
+            return Task.CompletedTask;
+        }
+
         public Task<PaymentTypeIdentification> CreateRestoredCashPaymentType(ProjectIdentification projectId, UserIdentification owner) => throw new NotSupportedException();
         public Task TogglePaymentActiveness(PaymentTypeIdentification paymentTypeId) => throw new NotSupportedException();
-        public Task EditCustomPaymentType(PaymentTypeIdentification paymentTypeId, string name, bool isDefault) => throw new NotSupportedException();
         public Task CreateFeeSetting(CreateFeeSettingRequest request) => throw new NotSupportedException();
         public Task DeleteFeeSetting(ProjectIdentification projectId, int projectFeeSettingId) => throw new NotSupportedException();
         public Task SaveGlobalSettings(SetFinanceSettingsRequest request) => throw new NotSupportedException();

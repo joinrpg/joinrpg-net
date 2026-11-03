@@ -29,6 +29,22 @@ public class CreatePaymentTypeRequest
     public required string? Name { get; init; }
 }
 
+public class EditPaymentTypeRequest
+{
+    public required PaymentTypeIdentification PaymentTypeId { get; init; }
+    /// <summary>
+    /// Новое название. Применяется только к <see cref="PaymentTypeKind.Custom"/>: у остальных
+    /// видов название задаётся видом.
+    /// </summary>
+    public required string Name { get; init; }
+    /// <summary>«Предлагать по умолчанию». Применяется только к <see cref="PaymentTypeKind.Custom"/>.</summary>
+    public required bool IsDefault { get; init; }
+    /// <summary>Ссылка на страницу оплаты (http/https) для игрока. <c>null</c> или пустая — убрать ссылку.</summary>
+    public required string? PaymentLink { get; init; }
+    /// <summary>Описание способа оплаты для игрока. <c>null</c> или пустая — убрать описание.</summary>
+    public required string? Description { get; init; }
+}
+
 /// <summary>
 /// Настройки финансов проекта: типы оплаты, расписание взносов, общие финансовые флаги. Всё, что
 /// меняет этот сервис, попадает в снапшот метаданных проекта
@@ -56,7 +72,11 @@ public interface IProjectFinanceSettingsService
     /// </summary>
     Task TogglePaymentActiveness(PaymentTypeIdentification paymentTypeId);
 
-    Task EditCustomPaymentType(PaymentTypeIdentification paymentTypeId, string name, bool isDefault);
+    /// <summary>
+    /// Меняет метод оплаты: ссылку и описание (у любого вида), название и «по умолчанию» — только
+    /// у произвольного (<see cref="PaymentTypeKind.Custom"/>). Выключенный метод включается обратно.
+    /// </summary>
+    Task EditPaymentType(EditPaymentTypeRequest request);
 
     Task CreateFeeSetting(CreateFeeSettingRequest request);
 

@@ -56,9 +56,6 @@ public class FinanceSettingsPageTest : BunitContext
 
     private sealed class FakeUriLocator : IFinanceSettingsUriLocator
     {
-        public Uri GetEditPaymentTypeUri(DomainTypes.ProjectMetadata.Payments.PaymentTypeIdentification paymentTypeId)
-            => new($"/{paymentTypeId.ProjectId.Value}/money/EditPaymentType?PaymentTypeId={paymentTypeId.PaymentTypeId}", UriKind.Relative);
-
         public Uri GetMasterSummaryExportUri(ProjectIdentification projectId, string token) => new($"https://joinrpg.ru/{projectId.Value}/money/SummaryByMaster?token={token}");
     }
 

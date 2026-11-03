@@ -244,7 +244,7 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
             TypeKind = PaymentTypeKind.Custom,
             Name = "Перевод на карту",
         });
-        await CreateService().EditCustomPaymentType(PaymentTypeId(existing), "Наличные казначею", isDefault: true);
+        await CreateService().EditPaymentType(EditRequest(existing, "Наличные казначею", isDefault: true));
         await CreateService().TogglePaymentActiveness(PaymentTypeId(existing));
 
         FinanceSettings.PaymentTypes.Select(pt => pt.Name).ShouldBe(["Перевод на карту", "Наличные казначею"], ignoreOrder: true);
@@ -356,15 +356,106 @@ public class ProjectFinanceSettingsServiceTest : ProjectMetadataServiceTestBase
     }
 
     [Fact]
-    public async Task EditCustomPaymentTypeShouldAppearInProjectInfo()
+    public async Task EditPaymentTypeShouldAppearInProjectInfo()
     {
         var paymentType = AddPaymentType(PaymentTypeKind.Custom);
 
-        await CreateService().EditCustomPaymentType(PaymentTypeId(paymentType), "Перевод на карту", isDefault: true);
+        await CreateService().EditPaymentType(EditRequest(paymentType, "Перевод на карту", isDefault: true));
 
         var result = FinanceSettings.PaymentTypes.ShouldHaveSingleItem();
         result.Name.ShouldBe("Перевод на карту");
         result.IsDefault.ShouldBeTrue();
+    }
+
+    private EditPaymentTypeRequest EditRequest(PaymentType paymentType, string name = "Название",
+        bool isDefault = false, string? paymentLink = null, string? description = null)
+        => new()
+        {
+            PaymentTypeId = PaymentTypeId(paymentType),
+            Name = name,
+            IsDefault = isDefault,
+            PaymentLink = paymentLink,
+            Description = description,
+        };
+
+    [Theory]
+    [InlineData("https://pay.example.com/1", "https://pay.example.com/1")]
+    [InlineData("http://pay.example.com/1", "http://pay.example.com/1")]
+    [InlineData("  https://pay.example.com/1  ", "https://pay.example.com/1")] // пробелы по краям обрезаются
+    public async Task EditPaymentTypeAcceptsAbsoluteHttpLink(string paymentLink, string expectedLink)
+    {
+        var paymentType = AddPaymentType(PaymentTypeKind.Custom);
+
+        await CreateService().EditPaymentType(EditRequest(paymentType, paymentLink: paymentLink));
+
+        mock.Project.PaymentTypes.ShouldHaveSingleItem().PaymentLink.ShouldBe(expectedLink);
+    }
+
+    [Theory]
+    [InlineData("ftp://pay.example.com/1")]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("pay.example.com/1")] // относительный адрес
+    [InlineData("не ссылка")]
+    public async Task EditPaymentTypeRefusesNotAbsoluteHttpLink(string paymentLink)
+    {
+        var paymentType = AddPaymentType(PaymentTypeKind.Custom);
+
+        _ = await Should.ThrowAsync<InvalidPaymentLinkException>(
+            () => CreateService().EditPaymentType(EditRequest(paymentType, paymentLink: paymentLink)));
+
+        mock.Project.PaymentTypes.ShouldHaveSingleItem().PaymentLink.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task EditPaymentTypeEmptyLinkClearsIt()
+    {
+        var paymentType = AddPaymentType(PaymentTypeKind.Custom);
+        paymentType.PaymentLink = "https://pay.example.com/old";
+
+        await CreateService().EditPaymentType(EditRequest(paymentType, paymentLink: "  "));
+
+        mock.Project.PaymentTypes.ShouldHaveSingleItem().PaymentLink.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData("  Перевод на карту банка  ", "Перевод на карту банка")]
+    [InlineData("", null)]
+    [InlineData("   ", null)]
+    public async Task EditPaymentTypeTrimsDescription(string description, string? expected)
+    {
+        var paymentType = AddPaymentType(PaymentTypeKind.Custom);
+
+        await CreateService().EditPaymentType(EditRequest(paymentType, description: description));
+
+        mock.Project.PaymentTypes.ShouldHaveSingleItem().Description.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task EditPaymentTypeOfNonCustomKeepsKindNameAndDefault()
+    {
+        var paymentType = AddPaymentType(PaymentTypeKind.Cash);
+
+        await CreateService().EditPaymentType(EditRequest(paymentType, name: "Взнос в руки", isDefault: true,
+            paymentLink: "https://pay.example.com/1", description: "Отдайте мастеру"));
+
+        // Название и умолчание остались видовыми, ссылка и описание применились
+        var edited = mock.Project.PaymentTypes.ShouldHaveSingleItem();
+        edited.Name.ShouldBe(paymentType.Name);
+        edited.IsDefault.ShouldBeFalse();
+        edited.PaymentLink.ShouldBe("https://pay.example.com/1");
+        edited.Description.ShouldBe("Отдайте мастеру");
+    }
+
+    [Fact]
+    public async Task EditPaymentTypeOfOnlineThrows()
+    {
+        // Онлайн-оплату не редактирует никто — её настраивает платёжная система
+        var online = AddPaymentType(PaymentTypeKind.Online);
+
+        _ = await Should.ThrowAsync<OnlinePaymentTypeIsNotEditableException>(
+            () => CreateService().EditPaymentType(EditRequest(online, name: "Онлайн", paymentLink: "https://pay.example.com/1")));
+
+        mock.Project.PaymentTypes.ShouldHaveSingleItem().PaymentLink.ShouldBeNull();
     }
 
     /// <summary>

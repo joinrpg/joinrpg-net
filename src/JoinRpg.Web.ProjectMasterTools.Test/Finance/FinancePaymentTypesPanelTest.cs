@@ -52,6 +52,16 @@ public class FinancePaymentTypesPanelTest : BunitContext
         => new(new PaymentTypeIdentification(ProjectId, id), PaymentTypeKind.Custom, "Карта", isActive, false, Master, CanToggle: true);
 
     [Fact]
+    public void OnlinePaymentTypeCannotBeEdited()
+    {
+        // Онлайн-оплату настраивает платёжная система — кнопки «Изменить» у неё нет
+        client.PaymentTypes.Add(Online(isActive: true));
+        var cut = RenderPanel();
+
+        RowButtons(cut).ShouldNotContain("Изменить");
+    }
+
+    [Fact]
     public async Task EnablingPotentialCashCreatesItForThatMaster()
     {
         client.PaymentTypes.Add(PotentialCash());
@@ -106,12 +116,49 @@ public class FinancePaymentTypesPanelTest : BunitContext
     }
 
     [Fact]
-    public void ActiveCustomTypeCanBeEdited()
+    public async Task EditDialogSavesLinkAndDescription()
     {
         client.PaymentTypes.Add(Custom(7));
         var cut = RenderPanel();
 
-        cut.Find("a[href='/1/money/EditPaymentType?PaymentTypeId=7']").TextContent.ShouldContain("Изменить");
+        // Клик не awaited: обработчик ждёт закрытия диалога, заполнение — до завершения (как ClickAndConfirm)
+        var click = RowActions(cut).Single(b => b.TextContent.Trim() == "Изменить").ClickAsync(new MouseEventArgs());
+        var dialog = cut.FindAll("dialog").Single(d => d.TextContent.Contains("Изменение метода оплаты"));
+        await dialog.QuerySelectorAll("input").Single(i => i.GetAttribute("name") == "PaymentLink")
+            .TriggerEventAsync("oninput", new ChangeEventArgs { Value = "https://pay.example.com/1" });
+        var description = dialog.QuerySelector("textarea").ShouldNotBeNull();
+        await description.ChangeAsync(new ChangeEventArgs { Value = "Перевод на карту банка" });
+        await dialog.QuerySelectorAll(".join-dialog-footer button")[0].ClickAsync(new MouseEventArgs());
+        await dialog.TriggerEventAsync("onclose", EventArgs.Empty);
+        await click;
+
+        var edited = client.EditedPaymentType.ShouldNotBeNull();
+        edited.Id.ShouldBe(new PaymentTypeIdentification(ProjectId, 7));
+        edited.Model.Name.ShouldBe("Карта");
+        edited.Model.PaymentLink.ShouldBe("https://pay.example.com/1");
+        edited.Model.Description.ShouldBe("Перевод на карту банка");
+    }
+
+    [Fact]
+    public async Task EditDialogOfNonCustomTypeHasOnlyLinkAndDescription()
+    {
+        client.PaymentTypes.Add(new FinancePaymentTypeItemViewModel(
+            new PaymentTypeIdentification(ProjectId, 8), PaymentTypeKind.Cash, "Наличными", true, false, Master, CanToggle: true));
+        var cut = RenderPanel();
+
+        var click = RowActions(cut).Single(b => b.TextContent.Trim() == "Изменить").ClickAsync(new MouseEventArgs());
+
+        // Название и «по умолчанию» — только у произвольного метода, у остальных они не редактируются
+        var dialog = cut.FindAll("dialog").Single(d => d.TextContent.Contains("Изменение метода оплаты"));
+        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldNotContain("Name");
+        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldNotContain("IsDefault");
+        dialog.QuerySelectorAll("input").Select(i => i.GetAttribute("name")).ShouldContain("PaymentLink");
+
+        // Диалог закрываем: кнопка «Отмена», затем onclose — обработчик клика завершается
+        await dialog.QuerySelectorAll(".join-dialog-footer button").Last(b => b.TextContent.Contains("Отмен")).ClickAsync(new MouseEventArgs());
+        await dialog.TriggerEventAsync("onclose", EventArgs.Empty);
+        await click;
+        client.EditedPaymentType.ShouldBeNull();
     }
 
     [Fact]
@@ -178,9 +225,6 @@ public class FinancePaymentTypesPanelTest : BunitContext
 
     private sealed class FakeUriLocator : IFinanceSettingsUriLocator
     {
-        public Uri GetEditPaymentTypeUri(PaymentTypeIdentification paymentTypeId)
-            => new($"/{paymentTypeId.ProjectId.Value}/money/EditPaymentType?PaymentTypeId={paymentTypeId.PaymentTypeId}", UriKind.Relative);
-
         public Uri GetMasterSummaryExportUri(ProjectIdentification projectId, string token) => throw new NotSupportedException();
     }
 

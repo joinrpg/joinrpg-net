@@ -82,17 +82,26 @@ internal class FinanceSettingsViewService(
 
     async Task<FinancePaymentTypesViewModel> IFinanceSettingsClient.GetPaymentTypes(ProjectIdentification projectId)
     {
-        var project = await projectMetadataRepository.GetProjectMetadata(projectId);
+        // Ссылки и описания методов — большие поля, в метаданных их нет (#5993).
+        var details = await projectMetadataRepository.GetProjectDetails(projectId);
+        var project = details.ProjectInfo;
         var paymentTypes = project.ProjectFinanceSettings.PaymentTypes;
+        var playerInfo = details.PlayerPaymentTypes.ToDictionary(pt => pt.PaymentTypeId);
 
         // Онлайн-оплату включает только админ сайта; выключить её сервис разрешает и мастеру,
         // но обратно он её уже не включит — поэтому кнопку мастеру не показываем вовсе.
         bool CanToggle(PaymentTypeKind kind) => !kind.IsOnline() || currentUserAccessor.IsAdmin;
 
         FinancePaymentTypeItemViewModel Existing(PaymentTypeInfo pt)
+        {
             // Мастер — в своём столбце, поэтому название без него: «Наличными», а не «Наличными — мастер»
-            => new(pt.PaymentTypeId, pt.TypeKind, ((PaymentTypeKindViewModel)pt.TypeKind).GetDisplayName(user: null, pt.Name),
-                pt.Enabled, pt.IsDefault, new UserLinkViewModel(pt.User), CanToggle(pt.TypeKind));
+            // Ссылка из снимка — Uri, диалог редактирования острова ждёт строку
+            var player = playerInfo.GetValueOrDefault(pt.PaymentTypeId);
+            return new(pt.PaymentTypeId, pt.TypeKind, ((PaymentTypeKindViewModel)pt.TypeKind).GetDisplayName(user: null, pt.Name),
+                pt.Enabled, pt.IsDefault, new UserLinkViewModel(pt.User), CanToggle(pt.TypeKind),
+                player?.PaymentLink?.ToString(),
+                player?.Description);
+        }
 
         // Онлайн-оплата есть у каждого проекта: пока её не включали, показываем строку без id.
         var paymentsUser = new UserLinkViewModel(virtualUsersService.PaymentsUser.ToUserInfoHeader());
@@ -135,6 +144,16 @@ internal class FinanceSettingsViewService(
 
     async Task IFinanceSettingsClient.TogglePaymentType(PaymentTypeIdentification paymentTypeId)
         => await financeSettingsService.TogglePaymentActiveness(paymentTypeId);
+
+    async Task IFinanceSettingsClient.EditPaymentType(PaymentTypeIdentification paymentTypeId, EditPaymentTypeViewModel model)
+        => await financeSettingsService.EditPaymentType(new EditPaymentTypeRequest
+        {
+            PaymentTypeId = paymentTypeId,
+            Name = model.Name,
+            IsDefault = model.IsDefault,
+            PaymentLink = model.PaymentLink,
+            Description = model.Description,
+        });
 
     async Task<FinanceGoogleDocsExportViewModel> IFinanceSettingsClient.GetGoogleDocsExport(ProjectIdentification projectId)
     {

@@ -59,6 +59,8 @@ public class FinancePaymentTypesViewModel
 /// <param name="PaymentTypeId"><c>null</c> — метода ещё нет в проекте (наличные мастера или онлайн-оплата): «Включить» создаёт его.</param>
 /// <param name="Master">Ответственный мастер; у онлайн-оплаты — служебный пользователь платёжной системы.</param>
 /// <param name="CanToggle">Текущий пользователь может включить или выключить метод: онлайн-оплату включает только админ сайта.</param>
+/// <param name="PaymentLink">Ссылка на страницу оплаты для игрока; <c>null</c> — ссылки нет.</param>
+/// <param name="Description">Описание способа оплаты для игрока; <c>null</c> — описания нет.</param>
 public record FinancePaymentTypeItemViewModel(
     PaymentTypeIdentification? PaymentTypeId,
     PaymentTypeKind Kind,
@@ -66,7 +68,9 @@ public record FinancePaymentTypeItemViewModel(
     bool IsActive,
     bool IsDefault,
     UserLinkViewModel Master,
-    bool CanToggle)
+    bool CanToggle,
+    string? PaymentLink = null,
+    string? Description = null)
 {
     public bool IsOnline => Kind is PaymentTypeKind.Online or PaymentTypeKind.OnlineSubscription;
 }
@@ -80,6 +84,25 @@ public class AddPaymentTypeViewModel
     [Display(Name = "Ответственный", Description = "Мастер, который принимает деньги этим методом")]
     [Required(ErrorMessage = "Выберите ответственного мастера")]
     public UserIdentification? MasterId { get; set; }
+}
+
+/// <summary>Редактирование метода оплаты: название и умолчание — только у произвольного.</summary>
+public class EditPaymentTypeViewModel
+{
+    [Display(Name = "Название")]
+    [Required(ErrorMessage = "Укажите название метода оплаты")]
+    public string Name { get; set; } = "";
+
+    [Display(Name = "Предлагать по умолчанию", Description = "Этот метод подставляется в формах оплаты по умолчанию")]
+    public bool IsDefault { get; set; }
+
+    [Display(Name = "Ссылка для оплаты",
+        Description = "Полный адрес страницы оплаты (начинается с http:// или https://). Оставьте пустым, если ссылки нет.")]
+    public string PaymentLink { get; set; } = "";
+
+    [Display(Name = "Описание для игроков",
+        Description = "Как перевести деньги этим способом. Показывается игроку в заявке вместе со ссылкой.")]
+    public string Description { get; set; } = "";
 }
 
 /// <summary>Включить метод, которого ещё нет в проекте: наличные мастера, онлайн-оплату или произвольный метод.</summary>

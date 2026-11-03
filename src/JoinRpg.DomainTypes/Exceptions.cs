@@ -30,6 +30,27 @@ public class FieldRequiredException(string fieldName, string message) : JoinRpgB
     public string FieldName { get; } = fieldName;
 }
 
+/// <summary>
+/// Ссылка оплаты метода — не абсолютный http(s)-адрес.
+/// </summary>
+public class InvalidPaymentLinkException : JoinValidationException
+{
+    public InvalidPaymentLinkException() : base("Payment link must be an absolute http(s) URL")
+    {
+    }
+}
+
+/// <summary>
+/// Попытка редактировать онлайн-оплату: её настройки задаёт платёжная система,
+/// мастеру ссылка и описание недоступны.
+/// </summary>
+public class OnlinePaymentTypeIsNotEditableException : JoinValidationException
+{
+    public OnlinePaymentTypeIsNotEditableException() : base("Online payment types are not editable")
+    {
+    }
+}
+
 public class JoinRpgEntityNotFoundException : JoinRpgBaseException
 {
     public JoinRpgEntityNotFoundException(IEnumerable<int> ids, string typeName) : base($"Can't found entities of type {typeName} by ids {string.Join(", ", ids)}")
