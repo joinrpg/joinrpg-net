@@ -1,0 +1,58 @@
+@* Кнопка «Как оплатить…» в блоке взноса заявки: список способов оплаты со ссылкой и описанием *@
+@using JoinRpg.Common.WebComponents.Dialog
+@using JoinRpg.DomainTypes.ProjectMetadata.Payments
+
+@if (Methods.Count > 0)
+{
+    <JoinButton Label="Как оплатить…"
+                Size="SizeStyleEnum.ExtraSmall"
+                AutoProgress="false"
+                OnClick="OpenDialog" />
+
+    <JoinDialog @ref="dialog" Caption="Как оплатить" Width="600px" MaxWidth="95%">
+        <ChildContent>
+            @foreach (var method in Methods)
+            {
+                <div style="margin-bottom: 1.2em;">
+                    <b>@method.Name</b>
+                    @if (method.Description is not null)
+                    {
+                        @* Переносы строк описания мастер писал руками — показываем как есть *@
+                        <p style="white-space: pre-line; margin: 0.3em 0 0.5em;">@method.Description</p>
+                    }
+                    @if (method.HasPaymentLink)
+                    {
+                        switch (method.LinkKind)
+                        {
+                            case PaymentLinkKind.Redirect:
+                                <JoinButton Label="Перейти к оплате"
+                                            Link="@method.PaymentLink!.AbsoluteUri"
+                                            Style="VariationStyleEnum.Primary"
+                                            Size="SizeStyleEnum.Small"
+                                            target="_blank"
+                                            rel="noopener" />
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(method.LinkKind), method.LinkKind, null);
+                        }
+                    }
+                </div>
+            }
+        </ChildContent>
+        <FooterContent>
+            <JoinButton Preset="ButtonPreset.Cancel" AutoProgress="false" OnClick="CloseDialog" />
+        </FooterContent>
+    </JoinDialog>
+}
+
+@code {
+    /// <summary>Способы оплаты со ссылкой или описанием; пустой список — кнопку не показываем вовсе.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyCollection<ClaimPaymentMethodView> Methods { get; set; } = [];
+
+    private JoinDialog dialog = default!;
+
+    private void OpenDialog() => dialog.ShowModal();
+
+    private void CloseDialog() => dialog.Close();
+}

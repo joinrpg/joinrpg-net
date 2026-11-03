@@ -2,6 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DomainTypes.Characters.Claims;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Markdown;
+using JoinRpg.Web.Claims.Finance;
 using JoinRpg.Web.Models.Accommodation;
 
 namespace JoinRpg.Web.Models;
@@ -24,13 +25,18 @@ public class ClaimFeeViewModel
     /// Условия льготного взноса из доменного <c>ProjectDetails</c>. В <c>ProjectInfo</c> их нет — текст
     /// бывает большим (#5112), поэтому их читают только при включённой льготе; иначе <c>null</c>.
     /// </param>
+    /// <param name="playerPaymentTypes">
+    /// Активные методы оплаты со ссылкой/описанием из <c>ProjectDetails</c> (#5993) — для кнопки
+    /// «Как оплатить…». Контроллер передаёт их только игроку этой заявки; остальным — <c>null</c>.
+    /// </param>
     public ClaimFeeViewModel(
         Claim claim,
         ClaimInCharacter claimInCharacter,
         UserIdentification currentUser,
         Func<string?, string?> externalPaymentUrlFactory,
         ClaimAccommodationViewModel? accommodation,
-        MarkdownString? preferentialFeeConditions)
+        MarkdownString? preferentialFeeConditions,
+        IReadOnlyCollection<PaymentTypePlayerInfo>? playerPaymentTypes = null)
     {
         ArgumentNullException.ThrowIfNull(claimInCharacter);
 
@@ -80,6 +86,15 @@ public class ClaimFeeViewModel
         PaymentTypes = [.. projectInfo
             .GetAvailablePaymentTypesForUser(currentUser, claimData.PlayerId)
             .Select(pt => new PaymentTypeViewModel(pt))];
+
+        // Модалка «Как оплатить…»: методы со ссылкой или описанием, по названию; порядок из БД не гарантирован.
+        // Материализуем в массив: коллекция уходит параметром в WebAssembly-остров, а collection
+        // expression дал бы компиляторный <>z__ReadOnlyList, который Blazor на клиенте не находит.
+        PlayerPaymentMethods = (playerPaymentTypes ?? [])
+            .Where(pt => pt.PaymentLink is not null || !string.IsNullOrWhiteSpace(pt.Description))
+            .OrderBy(pt => pt.Name, StringComparer.CurrentCultureIgnoreCase)
+            .Select(pt => new ClaimPaymentMethodView(pt.Name, pt.PaymentLink, pt.LinkKind, pt.Description))
+            .ToArray();
 
         PreferentialFeeEnabled = projectInfo.ProjectFinanceSettings.PreferentialFeeEnabled;
         PreferentialFeeUser = claimData.Finance.PreferentialFeeUser;
@@ -248,6 +263,17 @@ public class ClaimFeeViewModel
     /// Способы оплаты, которые текущий пользователь может выбрать в этой заявке.
     /// </summary>
     public IReadOnlyCollection<PaymentTypeViewModel> PaymentTypes { get; }
+
+    /// <summary>
+    /// Способы оплаты для модалки игрока «Как оплатить…»: активные, со ссылкой или описанием.
+    /// </summary>
+    public IReadOnlyCollection<ClaimPaymentMethodView> PlayerPaymentMethods { get; }
+
+    /// <summary>
+    /// Показывать кнопку «Как оплатить…»: есть хоть один метод со ссылкой или описанием.
+    /// Методы в модель передаёт только игроку заявки контроллер.
+    /// </summary>
+    public bool ShowPaymentMethodsDialog => PlayerPaymentMethods.Count > 0;
 
     /// <summary>
     /// true if online payment enabled

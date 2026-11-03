@@ -35,6 +35,11 @@
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#requestPreferentialFeeDialog">Запросить льготу&hellip;</button>
     }
+    @if (Model.ShowPaymentMethodsDialog)
+    {
+        <component type="typeof(ClaimPaymentMethodsButton)" render-mode="WebAssemblyPrerendered"
+                   param-Methods="Model.PlayerPaymentMethods" />
+    }
 </div>
 <div id="feeDetails" hidden>
     <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Свернуть в компактный вид&hellip;</button>
@@ -138,6 +143,11 @@
                     @if (Model.HasSubmittablePaymentTypes)
                     {
                       <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
+                    }
+                    @if (Model.ShowPaymentMethodsDialog)
+                    {
+                      <component type="typeof(ClaimPaymentMethodsButton)" render-mode="WebAssemblyPrerendered"
+                                 param-Methods="Model.PlayerPaymentMethods" />
                     }
                 </th>
                 <th></th>
