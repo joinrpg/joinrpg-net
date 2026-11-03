@@ -12,12 +12,25 @@ public static class PlotRenderer
     {
         var masterAccess = projectInfo.HasMasterAccess(currentUser);
         var masterOrPublishAccess = masterAccess || projectInfo.PublishPlot;
+        var elementType = (PlotElementTypeView)self.ElementType;
+        var rolesListName = self.RolesListId is { } rolesListId
+            ? projectInfo.GetRolesListByIdOrDefault(rolesListId)?.Name
+            : null;
+        // У вводной-сетки текста нет: в диалоге перестановки вместо одинакового «***»
+        // показываем имя сетки, чтобы несколько сеток можно было различить.
+        var shortContent = elementType == PlotElementTypeView.RoleGrid
+            ? PlotRenderedTextViewModel.FormatRoleGridCaption(rolesListName)
+            : ((MarkdownString?)self.Content).TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(linkRenderer);
+
         return new PlotRenderedTextViewModel(
             ((MarkdownString?)self.Content).ToHtmlString(linkRenderer).Value ?? "",
-            ((MarkdownString?)self.Content).TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(linkRenderer),
+            shortContent,
             masterAccess ? self.TodoField : null,
             self.Id,
             masterOrPublishAccess ? self.GetStatus() : null,
-            masterOrPublishAccess ? self.Target : null);
+            masterOrPublishAccess ? self.Target : null,
+            elementType,
+            self.RolesListId,
+            rolesListName);
     }
 }

@@ -81,7 +81,7 @@
 - `JoinRpg.Web.Claims` — UI для заявок игроков
 - `JoinRpg.Web.Comments` — UI обсуждения (комментарии заявки и темы форума): модель, статические компоненты дерева и формы ответа ([ADR026](adr026-comment-discussion.md)); построитель модели — в `JoinRpg.WebPortal.Managers`
 - `JoinRpg.Web.Accommodation` — UI размещения игроков и приглашений к совместному проживанию
-- `JoinRpg.Web.Plots` — UI для вводных (сюжетные элементы/квесты для игроков)
+- `JoinRpg.Web.Plots` — UI для вводных (сюжетные элементы/квесты для игроков); зависит от `JoinRpg.Web.CharacterGroups` (вводная-сетка ролей рендерит `ProjectRoleGrid`, ADR029)
 - `JoinRpg.Web.CharacterGroups` — UI для групп персонажей
 - `JoinRpg.Web.CheckIn` — UI для регистрации игроков на игре
 - `JoinRpg.Web.Schedule` — UI расписания мероприятий игры

@@ -1,3 +1,4 @@
+@using JoinRpg.Web.CharacterGroups.ProjectRoleGrid
 @using JoinRpg.Web.Plots
 @using JoinRpg.Common.WebComponents
 
@@ -24,7 +25,7 @@
             var hideClass = plotText.PlotStatus == PlotStatus.InWork ? "world-object-hidden" : "";
             string id = @"pe" + plotText.PlotVersionId.PlotElementId.PlotElementId;
 
-            <div id="@id">
+            <div id="@id" @key="plotText.PlotVersionId.PlotElementId">
                 <div>
                   @if (ShowEditControls)
                     {
@@ -46,7 +47,15 @@
                 }
 
                 <div class="@hideClass">
-                    @((MarkupString)plotText.Content)
+                    @if (plotText.ElementType == PlotElementTypeView.RoleGrid)
+                    {
+                        <b>@PlotRenderedTextViewModel.FormatRoleGridCaption(plotText.RolesListName)</b>
+                        <ProjectRoleGrid AccessViaPlotElement="plotText.PlotVersionId.PlotElementId" ShowHeader="false" />
+                    }
+                    else
+                    {
+                        @((MarkupString)plotText.Content)
+                    }
                 </div>
             </div>
         }
