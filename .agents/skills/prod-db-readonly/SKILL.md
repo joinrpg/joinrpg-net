@@ -20,7 +20,8 @@ SQL. Этот скилл — не замена и не прототип того
 
 ## Подключение
 
-Логин `claude_joinrpg_readonly` создан вручную на сервере (в роли `db_datareader` в базе `joinrpg-prod`,
+Логин `claude_joinrpg_readonly` (имя историческое, не привязано к конкретному инструменту)
+создан вручную на сервере (в роли `db_datareader` в базе `joinrpg-prod`,
 без доступа к другим базам) — см. `create-readonly-user.sql`, которым его заводили. Пароль
 **не хранится в репозитории и не передаётся модели напрямую** — только через переменные
 окружения на машине пользователя:
@@ -72,7 +73,7 @@ sqlcmd -S "$JOINRPG_PROD_DB_HOST" -U claude_joinrpg_readonly -P "$JOINRPG_PROD_D
 хотя Selectel трафик идёт напрямую. Текущий список адресов — скиллом **selectel-readonly**:
 
 ```bash
-pwsh -NoProfile -File .claude/skills/selectel-readonly/selectel-api.ps1 -Service load-balancer -Region ru-6 -Path v2/lbaas/listeners
+pwsh -NoProfile -File .agents/skills/selectel-readonly/selectel-api.ps1 -Service load-balancer -Region ru-6 -Path v2/lbaas/listeners
 ```
 
 Добавляет адрес пользователь (`openstack loadbalancer listener set --allowed-cidr …`), не этот скилл.

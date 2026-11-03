@@ -10,8 +10,8 @@ description: Читать настройки облака Selectel (проект
 Selectel (`*.selcloud.ru`, `*.selectel.ru`, `*.servercore.com`). Методов кроме GET в нём нет.
 
 **Не собирать токен вручную** (`POST .../identity/v3/auth/tokens` из своего PowerShell/curl):
-автофильтр Claude Code справедливо режет это как работу с учётными данными, и так пароль
-оказывается в командах сессии.
+встроенные защитные фильтры агента (Claude Code, kimi-code) справедливо режут это как работу
+с учётными данными, и так пароль оказывается в командах сессии.
 
 ## Учётная запись
 
@@ -36,21 +36,34 @@ Selectel (`*.selcloud.ru`, `*.selectel.ru`, `*.servercore.com`). Методов 
 
 ## Разрешение на запуск
 
-Чтобы скрипт запускался без подтверждений, в **личных** настройках `~/.claude/settings.json`
-(не в `.claude/settings.json` репозитория — учётные данные личные):
+Чтобы скрипт запускался без подтверждений, нужно **личное** правило (учётные данные личные,
+не репозиторные):
 
-```json
-"permissions": { "allow": [
-  "Bash(pwsh -NoProfile -File .claude/skills/selectel-readonly/selectel-api.ps1:*)"
-] }
-```
+- **kimi-code** — в `~/.kimi-code/config.toml`:
+
+  ```toml
+  [[permission.rules]]
+  decision = "allow"
+  pattern = "Bash(pwsh -NoProfile -File .agents/skills/selectel-readonly/selectel-api.ps1*)"
+  ```
+
+- **Claude Code** — в `~/.claude/settings.json`:
+
+  ```json
+  "permissions": { "allow": [
+    "Bash(pwsh -NoProfile -File .claude/skills/selectel-readonly/selectel-api.ps1:*)"
+  ] }
+  ```
 
 Путь относительный, поэтому вызывать скрипт надо из корня репозитория (любого worktree).
+Для Claude Code путь лежит через симлинк `.claude/skills/` (см. CLAUDE.md).
 
 ## Вызов
 
 ```bash
-S=".claude/skills/selectel-readonly/selectel-api.ps1"
+S=".agents/skills/selectel-readonly/selectel-api.ps1"   # kimi-code
+# Claude Code — вызывать через симлинк: S=".claude/skills/selectel-readonly/selectel-api.ps1"
+# (текст команды должен совпадать с путём в правиле разрешения, см. выше)
 pwsh -NoProfile -File $S -Catalog                                        # сервисы и URL по регионам
 pwsh -NoProfile -File $S -Service managed-kubernetes -Region ru-6 -Path clusters
 pwsh -NoProfile -File $S -Service container-registry -Path registries
