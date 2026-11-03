@@ -7,8 +7,10 @@
    набором значений. Владеет именами выбранных группы/мастера для сводной строки. *@
 <div style="margin:0.5em">
   <div style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;">
-    @* Заголовок и счётчик — одна группа: flex не растягивает их по строке, счётчик прижат к тексту. *@
-    <span>
+    @* Заголовок и счётчик — одна группа: flex не растягивает их по строке, счётчик прижат к тексту.
+       Центровка flex'ом, а не строчным baseline: у бейджа (14px) и заголовка (.h3, 24px) разные
+       кегли, и по baseline бейдж провисает ниже оптического центра текста. *@
+    <span style="display:inline-flex; align-items:center; gap:0.5em;">
         <span class="h3">@Title</span>
         @if (Counter is { } counter)
         {
