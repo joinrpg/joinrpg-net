@@ -17,11 +17,14 @@ internal class ProjectAccessService(
     ILogger<ProjectAccessService> logger) : IProjectAccessService
 {
     public Task GrantAccess(GrantAccessRequest request)
+        => GrantAccessCore(request, ProjectActiveRequirement.AllowBlocked, nameof(GrantAccess));
+
+    private Task GrantAccessCore(GrantAccessRequest request, ProjectActiveRequirement activeRequirement, string operationName)
         => projectPropsService.ChangeProjectProperties(
             request.ProjectId,
             Permission.CanGrantRights,
             // В заблокированном проекте мастеров добавляют, чтобы было кому восстанавливать (ADR023).
-            ProjectActiveRequirement.AllowBlocked,
+            activeRequirement,
             request,
             ctx =>
             {
@@ -53,7 +56,8 @@ internal class ProjectAccessService(
                 }
                 acl.SetPermissions(ctx.Request.Permissions);
                 KeepLastGranter(ctx.Project, acl);
-            });
+            },
+            operationName);
 
     public Task ChangeAccess(ChangeAccessRequest request)
         => projectPropsService.ChangeProjectProperties(
@@ -229,14 +233,18 @@ internal class ProjectAccessService(
     public Task GrantFullAccess(ProjectIdentification projectId)
     {
         logger.LogInformation("Администратор {UserId} запрашивает полный доступ к проекту {ProjectId}", currentUserAccessor.UserId, projectId);
-        return GrantAccess(new GrantAccessRequest
-        {
-            ProjectId = projectId,
-            UserId = currentUserAccessor.UserIdentification,
-            Permissions = [.. Enum.GetValues<Permission>().Where(p => p != Permission.None)],
-            // Админ сайта, зашедший помочь, — не член команды проекта (ADR019, §4). TODO[Localize]
-            Role = new("Техподдержка joinrpg.ru"),
-            IsPublic = false,
-        });
+        return GrantAccessCore(
+            new GrantAccessRequest
+            {
+                ProjectId = projectId,
+                UserId = currentUserAccessor.UserIdentification,
+                Permissions = [.. Enum.GetValues<Permission>().Where(p => p != Permission.None)],
+                // Админ сайта, зашедший помочь, — не член команды проекта (ADR019, §4). TODO[Localize]
+                Role = new("Техподдержка joinrpg.ru"),
+                IsPublic = false,
+            },
+            // Техподдержке доступ нужен и в архивных проектах (см. ADR023).
+            ProjectActiveRequirement.AllowArchivedOrBlocked,
+            nameof(GrantFullAccess));
     }
 }
