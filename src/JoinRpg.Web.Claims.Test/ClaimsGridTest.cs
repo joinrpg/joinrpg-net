@@ -112,13 +112,18 @@ public class ClaimsGridTest : BunitContext
         LastReplacedUrl.ShouldEndWith("/claims");
     }
 
-    /// <summary>Смена страницы дописывает её номер к URL, сохраняя фильтр.</summary>
-    [Fact]
-    public void PageChangeWritesPageToUrl()
+    /// <summary>Смена страницы дописывает её номер к URL, сохраняя фильтр. Пейджеров два — над
+    /// сеткой и под ней, оба переключают одну и ту же страницу.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void PageChangeWritesPageToUrl(int pagerIndex)
     {
         var cut = RenderGrid(initialStatus: UgStatusFilterView.Approved);
 
-        cut.FindAll("a").Single(link => link.TextContent == "2").Click();
+        var pageLinks = cut.FindAll("a").Where(link => link.TextContent == "2").ToArray();
+        pageLinks.Length.ShouldBe(2);
+        pageLinks[pagerIndex].Click();
 
         WaitCalls(cut, (UgScopeView.Captain, new UgFilterView(UgStatusFilterView.Approved), 1), (UgScopeView.Captain, new UgFilterView(UgStatusFilterView.Approved), 2));
         LastReplacedUrl.ShouldEndWith($"?{UgQueryParameterNames.Status}={UgStatusFilterView.Approved}&{UgQueryParameterNames.Page}=2");
