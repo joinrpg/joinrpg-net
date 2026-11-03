@@ -36,6 +36,10 @@
     return;
 }
 
+@* Пейджер в двух местах: после длинной сетки до нижнего ещё скроллить, а переключить страницу
+   хочется сразу после смены фильтра. Оба работают на одном событии. *@
+<JoinPager Page="gridPage.Page" TotalPages="gridPage.TotalPages" PageChanged="ChangePage" />
+
 <JoinBorderedTable Items="gridPage.Items" Context="item">
     <HeadContent>
         <tr>
