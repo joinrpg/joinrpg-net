@@ -212,7 +212,11 @@ public class ClaimsGridTest : BunitContext
         client.Calls[3].ShouldBe((UgScopeView.Master, new UgFilterView(UgStatusFilterView.OnHold, Group: group, Responsible: master), 1));
     }
 
-    /// <summary>Счётчик над списком считает заявки всего результата фильтра, а не текущей страницы.</summary>
+    /// <summary>
+    /// Счётчик над списком считает заявки всего результата фильтра, а не текущей страницы.
+    /// Заголовок и счётчик — в группе с центровкой по flex: при разных кеглях строчное
+    /// выравнивание по baseline оставляло бейдж ниже оптического центра заголовка.
+    /// </summary>
     [Fact]
     public void CounterShowsCharactersAndClaimsOfWholeFilter()
     {
@@ -227,6 +231,13 @@ public class ClaimsGridTest : BunitContext
             cut.FindAll("span.label").Single(label => label.TextContent.Trim() == "1/5");
             cut.Find(".join-tooltip").TextContent.ShouldContain("Персонажи/Заявки");
         });
+
+        // Группа «заголовок + счётчик» центрует бейдж flex'ом, а не baseline'ом: align-items
+        // без inline-flex не работает, поэтому проверяем и то, и другое.
+        var counter = cut.FindAll("span.label").Single(label => label.TextContent.Trim() == "1/5");
+        var group = counter.ParentElement!.ParentElement!.ParentElement!;
+        group.GetAttribute("style")!.ShouldContain("display:inline-flex");
+        group.GetAttribute("style")!.ShouldContain("align-items:center");
 
         // Поровну — одна цифра без tooltip.
         client.Calls.Clear();
