@@ -8,13 +8,15 @@ public interface IPlotService
     Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField);
 
     Task<PlotVersionIdentification> CreatePlotElement(PlotFolderIdentification plotFolderId, string content, string todoField,
-      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType, bool isMasterOnly);
+      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType, bool isMasterOnly,
+      ProjectRolesListIdentification? projectRolesListId = null);
 
     Task DeleteFolder(int projectId, int plotFolderId);
     Task DeleteElement(PlotElementIdentification plotElementId);
 
     Task EditPlotElement(PlotElementIdentification plotelementid, string contents, string todoField,
-      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly);
+      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly,
+      ProjectRolesListIdentification? projectRolesListId = null);
 
     Task PublishElementVersion(PlotVersionIdentification version, bool sendNotification, string? commentText);
 

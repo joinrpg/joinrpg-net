@@ -1,7 +1,11 @@
+using JoinRpg.DomainTypes.ProjectMetadata;
+
 namespace JoinRpg.Web.Plots.Elements;
 
 /// <summary>Вводная в списке сюжета: заголовок и текст версии, которую показываем.</summary>
 /// <param name="Content">Готовый HTML текста вводной.</param>
+/// <param name="RolesListId">Сетка ролей вводной-сетки (ADR029); null у остальных типов.</param>
+/// <param name="RolesListName">Имя сетки; null, если сетка удалена.</param>
 public record PlotElementPanelViewModel(
     PlotElementIdentification ElementId,
     PlotStatus Status,
@@ -18,7 +22,9 @@ public record PlotElementPanelViewModel(
     PlotVersionIdentification CurrentVersion,
     PlotVersionIdentification? PublishedVersion,
     bool HasMasterAccess,
-    bool HasEditAccess) : IMoveableListItem
+    bool HasEditAccess,
+    ProjectRolesListIdentification? RolesListId = null,
+    string? RolesListName = null) : IMoveableListItem
 {
     public bool ThisPublished => PublishedVersion?.Version == CurrentVersion.Version;
 

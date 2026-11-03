@@ -121,6 +121,7 @@ public class PlotController(
             ElementType = originalElement is null
                 ? PlotElementTypeView.RegularPlot
                 : (PlotElementTypeView)originalElement.ElementType,
+            ProjectRolesListId = originalElement?.RolesListId,
             HasPlotEditAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
             Content = originalElement?.CurrentVersion.Content?.Value ?? PlotElementCreateViewModel.GetDefaultContent(),
             TodoField = originalElement?.LastVersionTodoField ?? "",
@@ -131,7 +132,8 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateElement(ProjectIdentification projectId, PlotFolderIdentification? plotFolderId, string content,
-      string todoField, IReadOnlyCollection<CharacterIdentification> targetCharacters, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly)
+      string todoField, IReadOnlyCollection<CharacterIdentification> targetCharacters, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, PlotElementTypeView elementType, bool publishNow, bool isMasterOnly,
+      ProjectRolesListIdentification? projectRolesListId)
     {
         // Сюжет могли не выбрать: биндер на пустое значение молча даёт null, ошибки в ModelState нет.
         if (plotFolderId is null)
@@ -151,7 +153,7 @@ public class PlotController(
         try
         {
             var versionId =
-                await plotService.CreatePlotElement(plotFolderId, content, todoField, targetGroups, targetCharacters, (PlotElementType)elementType, isMasterOnly);
+                await plotService.CreatePlotElement(plotFolderId, content, todoField, targetGroups, targetCharacters, (PlotElementType)elementType, isMasterOnly, projectRolesListId);
 
             if (publishNow && string.IsNullOrWhiteSpace(todoField) && (isMasterOnly || targetGroups.Count != 0 || targetCharacters.Count != 0))
             {
@@ -180,6 +182,7 @@ public class PlotController(
                 PlotFolderId = plotFolderId,
                 ElementType = elementType,
                 IsMasterOnly = isMasterOnly,
+                ProjectRolesListId = projectRolesListId,
                 Content = content,
                 TodoField = todoField,
                 TargetCharacters = [.. targetCharacters],
@@ -242,6 +245,7 @@ public class PlotController(
             PlotElementId = elementId.PlotElementId,
             PlotFolderName = element.PlotFolderMasterTitle,
             ElementType = (PlotElementTypeView)element.ElementType,
+            ProjectRolesListId = element.RolesListId,
             IsMasterOnly = element.IsMasterOnly,
             Status = element.GetStatus(),
             HasManageAccess = projectInfo.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots),
@@ -258,7 +262,8 @@ public class PlotController(
 
     [HttpPost, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, ProjectIdentification projectId, string content, string todoField,
-      IReadOnlyCollection<CharacterIdentification> targetCharacters, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, bool isMasterOnly)
+      IReadOnlyCollection<CharacterIdentification> targetCharacters, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, bool isMasterOnly,
+      ProjectRolesListIdentification? projectRolesListId)
     {
         var id = new PlotElementIdentification(projectId, plotFolderId, plotelementid);
 
@@ -275,7 +280,7 @@ public class PlotController(
             var project = await projectMetadataRepository.GetProjectMetadata(projectId);
             if (project.HasMasterAccess(currentUserAccessor, Permission.CanManagePlots))
             {
-                await plotService.EditPlotElement(id, content, todoField, targetGroups, targetCharacters, isMasterOnly);
+                await plotService.EditPlotElement(id, content, todoField, targetGroups, targetCharacters, isMasterOnly, projectRolesListId);
             }
             else
             {
@@ -305,7 +310,8 @@ public class PlotController(
             element,
             AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor),
             renderer: await linkRendererFactory.Load(projectId),
-            printMode: printMode));
+            printMode: printMode,
+            projectInfo: projectInfo));
     }
 
 }
