@@ -37,3 +37,5 @@ JoinRpg.Common.WebComponents.JoinPager.PageChanged.set -> void
 JoinRpg.Common.WebComponents.JoinPager.TotalPages.get -> int
 JoinRpg.Common.WebComponents.JoinPager.TotalPages.set -> void
 ~override JoinRpg.Common.WebComponents.JoinPager.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.get -> System.Collections.Generic.IReadOnlyCollection<TValue>?
+JoinRpg.Common.WebComponents.EnumRadioButtonGroup<TValue>.Values.set -> void

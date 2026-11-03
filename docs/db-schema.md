@@ -433,11 +433,12 @@ erDiagram
         int PlotElementId PK
         int ProjectId FK
         int PlotFolderId FK
-        enum ElementType "PlotElementType: RegularPlot, Handout"
+        enum ElementType "PlotElementType: RegularPlot, Handout, RoleGrid"
         bool IsCompleted
         bool IsMasterOnly
         bool IsActive "soft-delete"
         int Published "опубликованная игрокам версия текста; null = не опубликовано"
+        int ProjectRolesListId "ссылка на сетку ролей для RoleGrid; мягкая, без FK (ADR029)"
         datetime CreatedDateTime
         datetime ModifiedDateTime
     }

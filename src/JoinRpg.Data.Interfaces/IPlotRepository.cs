@@ -51,7 +51,16 @@ public interface IPlotRepository : IDisposable
     Task<IReadOnlyCollection<PlotTextDto>> GetPlotsBySpecification(PlotSpecification plotSpecification);
 }
 
-public record PlotSpecification(TargetsInfo Targets, PlotVersionFilter VersionFilter, PlotElementType PlotElementType);
+/// <summary>
+/// Какие вводные и какие версии выбирает <see cref="IPlotRepository.GetPlotsBySpecification"/>.
+/// </summary>
+/// <param name="ElementTypes">Типы вводных; пустой набор не вернёт ничего.</param>
+public record PlotSpecification(TargetsInfo Targets, PlotVersionFilter VersionFilter, IReadOnlyCollection<PlotElementType> ElementTypes)
+{
+    /// <summary>Совместный конструктор для выборки одного типа вводных.</summary>
+    public PlotSpecification(TargetsInfo Targets, PlotVersionFilter VersionFilter, PlotElementType ElementType)
+        : this(Targets, VersionFilter, [ElementType]) { }
+}
 
 public enum PlotVersionFilter
 {
@@ -75,6 +84,12 @@ public class PlotTextDto : IOrderableEntity
     public required PlotVersionIdentification Id { get; set; }
 
     public required TargetsInfo Target { get; set; }
+
+    /// <summary>Тип вводной. RoleGrid рендерится не из текста, а по ссылке на сетку.</summary>
+    public required PlotElementType ElementType { get; set; }
+
+    /// <summary>Ссылка на сетку ролей; заполнена только при <see cref="ElementType"/> == RoleGrid.</summary>
+    public required ProjectRolesListIdentification? RolesListId { get; set; }
 
     int IOrderableEntity.Id => Id.PlotElementId.PlotElementId;
 }

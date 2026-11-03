@@ -1,6 +1,6 @@
 @typeparam TValue where TValue:struct, Enum
 @inject ILogger<EnumRadioButtonGroup<TValue>> logger
-@foreach (var enumValue in Enum.GetValues<TValue>())
+@foreach (var enumValue in Values ?? Enum.GetValues<TValue>())
 {
     <div>
         <label>
@@ -32,6 +32,12 @@
 
     [Parameter]
     public string Name { get; set; } = null!;
+
+    /// <summary>
+    /// Какие значения показывать; <c>null</c> — все значения enum. Порядок списка сохраняется.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyCollection<TValue>? Values { get; set; }
 
     protected override void OnInitialized()
     {

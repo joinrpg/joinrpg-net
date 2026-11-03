@@ -131,6 +131,10 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
     {
         Expression<Func<PlotElement, bool>> targetPredicate = GetTargetPredicate(plotSpecification.Targets);
 
+        // Массив примитивов, а не IEnumerable по enum: EF6 надёжно транслирует Contains такой
+        // коллекции в IN(...).
+        var elementTypes = plotSpecification.ElementTypes.ToArray();
+
         var dataset = Ctx.Set<PlotElementTexts>()
             .Include(e => e.PlotElement.TargetCharacters)
             .Include(e => e.PlotElement.TargetGroups)
@@ -138,7 +142,7 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
 
         var query = from text in dataset.AsExpandable()
                     let element = text.PlotElement
-                    where element.IsActive && element.ElementType == plotSpecification.PlotElementType && !element.IsMasterOnly
+                    where element.IsActive && elementTypes.Contains(element.ElementType) && !element.IsMasterOnly
                     where
                       targetPredicate.Invoke(element)
                     let maxVersion = element.Texts.Max(t => t.Version)
@@ -184,6 +188,8 @@ internal class PlotRepositoryImpl(MyDbContext ctx) : GameRepositoryImplBase(ctx)
                 Content = r.Text.Content,
                 TodoField = r.Text.TodoField,
                 IsActive = r.IsActive,
+                ElementType = r.PlotElement.ElementType,
+                RolesListId = ProjectRolesListIdentification.FromOptional(r.ProjectId, r.PlotElement.ProjectRolesListId),
                 Target = new TargetsInfo(
                     [.. r.TargetCharacters.Select(x => new CharacterTarget(x.GetId(), x.CharacterName))],
                     [.. r.TargetGroups.Select(x => new GroupTarget(x.GetId(), x.CharacterGroupName))])

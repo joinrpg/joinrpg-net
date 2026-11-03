@@ -67,7 +67,11 @@ public class CharacterPlotViewService(
         }
         var plotInfo = await LoadPlotInfoForCharacters(characterIdList, characterAccessMode);
 
-        var specification = new PlotSpecification(plotInfo.Values.Select(x => x.Targets).UnionAll(), PlotVersionFilter.PublishedVersion, PlotElementType.RegularPlot);
+        var specification = new PlotSpecification(
+            plotInfo.Values.Select(x => x.Targets).UnionAll(),
+            PlotVersionFilter.PublishedVersion,
+            // RoleGrid рендерится у персонажа как сетка ролей, а не текст (ADR029).
+            [PlotElementType.RegularPlot, PlotElementType.RoleGrid]);
 
         var plots = await plotRepository.GetPlotsBySpecification(specification);
 

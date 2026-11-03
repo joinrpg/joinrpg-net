@@ -37,6 +37,13 @@ public class PlotElement : IProjectEntity, IDeletableSubEntity
 
     public PlotElementType ElementType { get; set; }
 
+    /// <summary>
+    /// Ссылка на сохранённую сетку ролей (ProjectRolesList). Заполнен только при
+    /// <see cref="ElementType"/> == RoleGrid. Без FK — жёсткое удаление сетки не блокируется,
+    /// валидация принадлежности проекту — в сервисе (ADR029).
+    /// </summary>
+    public int? ProjectRolesListId { get; set; }
+
     public bool IsMasterOnly { get; set; }
 
     public int? Published { get; set; }

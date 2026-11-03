@@ -7,8 +7,10 @@
     @if (Model is PlotElementCreateViewModel createModel)
     {
         <FormRowFor For="@(() => createModel.ElementType)">
+            @* RoleGrid скрыт, пока создание вводных-сеток не поддержано сервисом (ADR029, PR 2). *@
             <EnumRadioButtonGroup @bind-SelectedValue="createModel.ElementType"
-                                  Name="ElementType" />
+                                  Name="ElementType"
+                                  Values="CreatableElementTypes" />
         </FormRowFor>
 
         <FormRowFor For="@(() => createModel.PlotFolderId)">
@@ -108,4 +110,7 @@
         PlotElementCreateViewModel c => c.ElementType,
         _ => Model.ElementType,
     };
+
+    private static readonly IReadOnlyCollection<PlotElementTypeView> CreatableElementTypes =
+        [PlotElementTypeView.RegularPlot, PlotElementTypeView.Handout];
 }

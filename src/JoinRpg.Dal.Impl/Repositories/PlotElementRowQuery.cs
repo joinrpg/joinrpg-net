@@ -35,6 +35,7 @@ internal static class PlotElementRowQuery
             IsActive = e.IsActive,
             IsCompleted = e.IsCompleted,
             PublishedVersion = e.Published,
+            ProjectRolesListId = e.ProjectRolesListId,
 
             LastVersionNumber = e.Texts.Max(t => t.Version),
             LastVersionTodoField = e.Texts
