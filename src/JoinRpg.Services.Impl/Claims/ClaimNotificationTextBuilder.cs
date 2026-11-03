@@ -26,7 +26,14 @@ internal class ClaimNotificationTextBuilder
         {
             // «Отправлен перевод» (TransferFrom) — деньги ушли: контрагент — получатель.
             // «Принят перевод» (TransferTo) — пришли: контрагент — отправитель.
-            var direction = model.CommentExtraAction == CommentExtraAction.TransferFrom ? "Кому переведено" : "От кого переведено";
+            var direction = model.CommentExtraAction switch
+            {
+                CommentExtraAction.TransferFrom => "Кому переведено",
+                CommentExtraAction.TransferTo => "От кого переведено",
+                // Контрагент бывает только у перевода; нейтральная подпись — защита от повторного
+                // использования поля с другим действием.
+                _ => "Переведено",
+            };
             extraText += $"{direction}: {counterparty.DisplayName.DisplayName}\n\n";
         }
 

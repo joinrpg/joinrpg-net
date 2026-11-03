@@ -67,15 +67,27 @@ public class ClaimNotificationParserTest
         // Перевод между заявками: у отправителя контрагент — получатель, у получателя — отправитель.
         var outgoing = Parse(ClaimChange(
             Day(1), CommentExtraAction.TransferFrom, Master, [Player],
-            text: "перечёт взноса", money: -700, transferCounterparty: OtherMaster)).ShouldHaveSingleItem();
+            text: "перерасчёт взноса", money: -700, transferCounterparty: OtherMaster)).ShouldHaveSingleItem();
         var incoming = Parse(ClaimChange(
             Day(2), CommentExtraAction.TransferTo, Master, [Player],
-            text: "перечёт взноса", money: 700, transferCounterparty: Player)).ShouldHaveSingleItem();
+            text: "перерасчёт взноса", money: 700, transferCounterparty: Player)).ShouldHaveSingleItem();
 
         outgoing.Money.ShouldBe(-700);
-        outgoing.Text.ShouldBe("перечёт взноса");
+        outgoing.Text.ShouldBe("перерасчёт взноса");
         incoming.Money.ShouldBe(700);
-        incoming.Text.ShouldBe("перечёт взноса");
+        incoming.Text.ShouldBe("перерасчёт взноса");
+    }
+
+    [Fact]
+    public void NonTransferTextStartingWithCounterpartyPrefixIsKept()
+    {
+        // Служебная строка контрагента бывает только у переводов: тот же текст в комментарии
+        // другого действия — законный текст, первую строку съедать нельзя.
+        var e = Parse(ClaimChange(
+            Day(1), CommentExtraAction.PaidFee, Master, [Player],
+            text: "Кому переведено: Иванов\nостальное текст", money: 1500)).ShouldHaveSingleItem();
+
+        e.Text.ShouldBe("Кому переведено: Иванов\nостальное текст");
     }
 
     [Fact]

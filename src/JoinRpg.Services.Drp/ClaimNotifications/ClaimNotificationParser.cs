@@ -229,8 +229,12 @@ public static class ClaimNotificationParser
         }
 
         // У перевода денег между заявками после суммы идёт строка контрагента — в текст комментария
-        // она не входит.
-        rest = SkipTransferCounterparty(rest.TrimStart('\n'));
+        // она не входит. Пропускаем её только у переводов: комментарий другого действия, текст
+        // которого начинается с тех же слов, — это законный текст, а не служебная строка.
+        if (action is CommentExtraAction.TransferFrom or CommentExtraAction.TransferTo)
+        {
+            rest = SkipTransferCounterparty(rest.TrimStart('\n'));
+        }
         return (action, money, rest);
     }
 
