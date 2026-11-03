@@ -96,6 +96,11 @@ gh pr view N --repo joinrpg/joinrpg-net --json autoMergeRequest,mergeStateStatus
 
 **ОБЯЗАТЕЛЬНО**: при работе в контексте GitHub (через GitHub-экшн, см. `claude.yml`) — после коммита кода сразу создавать PR через `gh pr create`. Не предоставлять ссылку «Create PR» — создавать PR самостоятельно. Не ждать отдельной просьбы.
 
+`--title` и `--body` передавать всегда, явно. Без них `gh` пытается спросить заголовок интерактивно
+и открыть редактор для тела — в сессии агента терминала нет, команда падает с ошибкой вида
+«could not prompt: no terminal detected», и PR не создаётся. То же касается `gh issue create`,
+`gh pr comment`, `gh issue comment` и `gh pr review`: любой `--body` только через флаг.
+
 ```bash
 gh pr create --title "feat: описание" --body "$(cat <<'EOF'
 ## Что сделано
