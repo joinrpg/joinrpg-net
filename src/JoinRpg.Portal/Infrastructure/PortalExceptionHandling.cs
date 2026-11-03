@@ -17,16 +17,17 @@ internal static class PortalExceptionHandling
     };
 
     /// <summary>
-    /// Ссылка на несуществующий проект (боты, старые ссылки) — это «не найдено», а не падение сервера (#5709).
+    /// Ссылка на несуществующий объект (проект, персонаж, заявка, пользователь; боты, старые ссылки) —
+    /// это «не найдено», а не падение сервера (#5709, #6072).
     /// </summary>
-    public static bool IsNotFound(Exception exception) => exception is ProjectNotFoundException;
+    public static bool IsNotFound(Exception exception) => exception is JoinRpgEntityNotFoundException;
 
     public static int GetStatusCode(Exception exception)
         => IsNotFound(exception) ? StatusCodes.Status404NotFound : StatusCodes.Status500InternalServerError;
 
     /// <summary>
     /// По умолчанию обработанное в IExceptionHandler не логируется вовсе — а сбои в /webapi/ должны попадать в логи.
-    /// Не найденный проект не логируем как ошибку ни на каком пути, но только если страница ошибки отрисовалась.
+    /// Не найденный объект не логируем как ошибку ни на каком пути, но только если страница ошибки отрисовалась.
     /// </summary>
     public static bool ShouldSuppressDiagnostics(ExceptionHandlerSuppressDiagnosticsContext context)
         => context.ExceptionHandledBy switch
