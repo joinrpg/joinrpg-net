@@ -75,7 +75,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
             return (created.ProjectRolesListId!, names);
         });
 
-        var apiUrl = $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={rolesListId.ProjectRolesListId}";
+        var apiUrl = $"webapi/project-role-grid/get?projectId={projectId.Value}&rolesListId={rolesListId}";
 
         var masterClient = factory.CreateClient();
         masterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(masterClient, email, password);
@@ -124,7 +124,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
             return created.ProjectRolesListId!;
         });
 
-        var privateApiUrl = $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={privateRolesListId.ProjectRolesListId}";
+        var privateApiUrl = $"webapi/project-role-grid/get?projectId={projectId.Value}&rolesListId={privateRolesListId}";
 
         var masterPrivateResult = await masterClient.GetFromJsonAsync<ProjectRoleGridViewResult>(privateApiUrl);
         masterPrivateResult!.HasAccess.ShouldBeTrue();
@@ -203,7 +203,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
         var masterClient = await TestUserProjectHelpers.CreateAuthenticatedClientAsync(factory.CreateClient(), email, password);
 
         var gridJson = await masterClient.GetStringAsync(
-            $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={rolesListId.ProjectRolesListId}");
+            $"webapi/project-role-grid/get?projectId={projectId.Value}&rolesListId={rolesListId}");
         gridJson.ShouldContain(playerName);
 
         var listResponse = await masterClient.GetAsync($"{projectId.Value}/characters/withplayers");
@@ -343,7 +343,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
         await factory.Services.RunAsAsync(masterId, sp => sp.GetRequiredService<IClaimService>().ApproveByMaster(approvedClaimId, "Принято"));
 
         var result = await factory.CreateClient().GetFromJsonAsync<ProjectRoleGridViewResult>(
-            $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={rolesListId.ProjectRolesListId}");
+            $"webapi/project-role-grid/get?projectId={projectId.Value}&rolesListId={rolesListId}");
         result!.HasAccess.ShouldBeTrue();
         CharacterNames(result.Grid!).ShouldBe([takenName]);
     }
@@ -374,7 +374,7 @@ public class ProjectRoleGridScenario(JoinApplicationFactory factory) : IClassFix
         {
             $"webapi/project-role-grid/getclassic?projectId={projectId.Value}&characterGroupId={missingGroupId}",
             $"webapi/project-role-grid/getclassic?projectId={projectId.Value}&characterGroupId={missingGroupId}&hotOnly=true",
-            $"webapi/project-role-grid/get?projectId={projectId.Value}&projectRolesListId={missingRolesListId}",
+            $"webapi/project-role-grid/get?projectId={projectId.Value}&rolesListId={new ProjectRolesListIdentification(projectId, missingRolesListId)}",
         })
         {
             var response = await anonClient.GetAsync(url);

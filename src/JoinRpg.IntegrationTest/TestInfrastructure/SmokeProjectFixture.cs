@@ -157,7 +157,7 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             .Add("projectFieldId", seeded.DropdownFieldId.ProjectFieldId, seeded.DropdownFieldId)
             .Add("valueId", seeded.DropdownVariantId)
             .Add("plotFolderId", seeded.Plot.PlotFolderId.PlotFolderId, seeded.Plot.PlotFolderId)
-            .Add("plotElementId", seeded.Plot.ElementIds[0].PlotElementId)
+            .Add("plotElementId", seeded.Plot.ElementIds[0].PlotElementId, seeded.Plot.ElementIds[0])
             .Add("elementId", seeded.Plot.ElementIds[0].PlotElementId, seeded.Plot.ElementIds[0])
             .Add("copyFrom", seeded.Plot.ElementIds[0].PlotElementId, seeded.Plot.ElementIds[0])
             .Add("version", 1)
@@ -168,10 +168,10 @@ public sealed class SmokeProjectFixture : IAsyncLifetime
             .Add("financeOperationId", players.FinanceOperationId)
             .Add("paymentTypeId", seeded.PaymentTypeId.PaymentTypeId, seeded.PaymentTypeId)
             .Add("subscriptionId", seeded.SubscriptionId)
-            // Списки ролей: id — в маршруте страницы, targetId/projectRolesListId — в query у webapi.
+            // Списки ролей: id — в маршруте страницы, rolesListId/targetId — в query у webapi.
             .Add("id", seeded.RolesListId.ProjectRolesListId, seeded.RolesListId)
             .Add("targetId", seeded.RolesListId.ProjectRolesListId, seeded.RolesListId)
-            .Add("projectRolesListId", seeded.RolesListId.ProjectRolesListId, seeded.RolesListId)
+            .Add("rolesListId", seeded.RolesListId.ProjectRolesListId, seeded.RolesListId)
             .Add("badgeTemplateId", seeded.BadgeTemplateId.ProjectBadgeTemplateId, seeded.BadgeTemplateId)
             // Печать и массовая рассылка принимают пачку id одним сжатым параметром.
             .Add(
