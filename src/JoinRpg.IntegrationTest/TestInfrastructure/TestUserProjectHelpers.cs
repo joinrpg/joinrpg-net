@@ -1,6 +1,7 @@
 using System.Net;
 using Joinrpg.Web.Identity;
 using JoinRpg.Common.PrimitiveTypes;
+using JoinRpg.Dal.Impl;
 using JoinRpg.DomainTypes;
 using JoinRpg.Services.Interfaces.Projects;
 
@@ -87,6 +88,19 @@ public static class TestUserProjectHelpers
                 };
             },
             new UserDisplayName("Тестовый Мастер", null));
+
+    /// <summary>
+    /// Блокирует проект прямым UPDATE в БД.
+    /// </summary>
+    /// <remarks>Сервиса, ставящего блокировку, пока нет (ADR023), поэтому флаг ставим прямо в БД.</remarks>
+    public static async Task BlockProjectAsync(IServiceProvider serviceProvider, ProjectIdentification projectId)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var myDb = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+        _ = await myDb.Database.ExecuteSqlCommandAsync(
+            "UPDATE dbo.Projects SET IsBlocked = 1 WHERE ProjectId = @p0",
+            projectId.Value);
+    }
 
     /// <summary>
     /// Аутентифицирует HTTP-клиент под указанным пользователем.
