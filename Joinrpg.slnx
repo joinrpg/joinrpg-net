@@ -58,6 +58,7 @@
     <File Path=".editorconfig" />
     <File Path=".github/dependabot.yml" />
     <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
     <File Path="CLAUDE.md" />
     <File Path="code_placement.txt" />
     <File Path="CONTRIBUTING.MD" />

@@ -8,7 +8,8 @@
   Токен и пароль никуда не выводит и не сохраняет. Ходит только на хосты Selectel.
 
   Запускать из корня репозитория:
-  pwsh -NoProfile -File .claude/skills/selectel-readonly/selectel-api.ps1 <параметры>
+  pwsh -NoProfile -File .agents/skills/selectel-readonly/selectel-api.ps1 <параметры>
+  # (для Claude Code тот же скрипт доступен через симлинк .claude/skills/...)
 
 .EXAMPLE
   selectel-api.ps1 -Catalog                         # сервисы и их URL по регионам

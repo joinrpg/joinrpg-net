@@ -13,6 +13,9 @@
 # Claude Code local settings (personal permissions)
 .claude/settings.local.json
 
+# Kimi Code local settings (personal workspace config)
+.kimi-code/local.toml
+
 # Build results
 artifacts/
 

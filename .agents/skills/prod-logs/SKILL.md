@@ -24,7 +24,9 @@ aws CLI с профилем `selectel-logs` (настраивает пользо
 `aws logs describe-log-groups --profile selectel-logs --query "logGroups[].logGroupName"`.
 
 Писать `--profile selectel-logs` в команде буквально, не через переменную или splat (`@P`): правило
-разрешения в личных настройках (`aws logs * --profile selectel-logs*`) сверяется с текстом команды.
+разрешения сверяется с текстом команды. Формат правила зависит от инструмента: в Claude Code это
+`aws logs * --profile selectel-logs*` в `~/.claude/settings.json`, в kimi-code —
+`Bash(aws logs * --profile selectel-logs*)` в `[[permission.rules]]` `~/.kimi-code/config.toml`.
 
 ## Группы и потоки
 
