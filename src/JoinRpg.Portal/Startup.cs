@@ -108,6 +108,7 @@ public class Startup(WebApplicationBuilder builder)
             options.Conventions.ConfigureFilter(new DiscoverProjectPageFilterAttribute());
             options.Conventions.ConfigureFilter(new SetIsProductionFilterAttribute());
             options.Conventions.ConfigureFilter(new RedirectAntiforgeryValidationFailedResultFilter());
+            options.Conventions.ConfigureFilter(new CaptureNoAccessExceptionFilter()); // ловит NoAccessToProject/ProjectDeactivated на Razor Pages (#5983)
         });
 
         builder.AddJoinWebPlatform("JoinRpg.Portal",
