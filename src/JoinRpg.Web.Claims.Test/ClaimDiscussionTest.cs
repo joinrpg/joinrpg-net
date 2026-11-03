@@ -124,6 +124,8 @@ public class ClaimDiscussionTest : BunitContext
             500,
             new DateOnly(2026, 10, 25),
             "Наличными — Мастер"));
+        // В обсуждении кнопка покрупнее, чем в плотных финансовых таблицах (там XS по умолчанию)
+        island.Instance.Parameters.Get(button => button.Size).ShouldBe(SizeStyleEnum.Small);
         OwnRowText(cut, 1).ShouldNotContain("Ждет одобрения мастером");
     }
 

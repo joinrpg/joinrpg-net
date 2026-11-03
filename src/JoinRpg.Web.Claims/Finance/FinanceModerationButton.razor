@@ -10,7 +10,7 @@
 
 <JoinButton Label="Подтвердить / отклонить…"
             Style="VariationStyleEnum.Warning"
-            Size="SizeStyleEnum.ExtraSmall"
+            Size="@Size"
             AutoProgress="false"
             OnClick="OpenDialog" />
 
@@ -69,6 +69,10 @@
 @code {
     [Parameter, EditorRequired]
     public FinanceModerationOperationView Operation { get; set; } = null!;
+
+    /// <summary>В обсуждении заявки кнопка покрупнее; в плотных финансовых таблицах — XS, как соседние.</summary>
+    [Parameter]
+    public SizeStyleEnum Size { get; set; } = SizeStyleEnum.ExtraSmall;
 
     private JoinDialog dialog = default!;
     private readonly FormModel form = new();
