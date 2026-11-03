@@ -1,3 +1,4 @@
+@using JoinRpg.Web.ProjectCommon
 @using JoinRpg.Web.ProjectCommon.Fields
 @using JoinRpg.WebPortal.Models.FieldSetup
 @model GameFieldEditViewModel
@@ -115,6 +116,7 @@
                 <component type="typeof(JoinRpg.Web.ProjectCommon.CharacterGroupSelector)"
                    param-ProjectId="Model.ProjectId"
                    param-Name="@nameof(Model.ShowForGroups)"
+                   param-Mode="CharacterGroupSelectorMode.RootMeansEmpty"
                    param-SelectedGroupIds="@(Model.ShowForGroups)"
                    param-IncludeSpecial="true"
                    render-mode="WebAssembly" />
