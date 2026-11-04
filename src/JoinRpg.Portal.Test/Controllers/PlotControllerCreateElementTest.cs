@@ -1,6 +1,7 @@
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Portal.Controllers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Plots.Elements;
@@ -42,7 +43,8 @@ public class PlotControllerCreateElementTest
             targetGroups: [],
             PlotElementTypeView.RegularPlot,
             publishNow: false,
-            isMasterOnly: false);
+            isMasterOnly: false,
+            projectRolesListId: null);
 
         var model = result.ShouldBeOfType<ViewResult>().Model.ShouldBeOfType<PlotElementCreateViewModel>();
         model.Content.ShouldBe("# Вводная");
@@ -56,7 +58,8 @@ public class PlotControllerCreateElementTest
         public int CreatePlotElementCalls { get; private set; }
 
         public Task<PlotVersionIdentification> CreatePlotElement(PlotFolderIdentification plotFolderId, string content, string todoField,
-            IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType, bool isMasterOnly)
+            IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType, bool isMasterOnly,
+            ProjectRolesListIdentification? projectRolesListId = null)
         {
             CreatePlotElementCalls++;
             throw new NotSupportedException();
@@ -67,7 +70,8 @@ public class PlotControllerCreateElementTest
         public Task DeleteFolder(int projectId, int plotFolderId) => throw new NotSupportedException();
         public Task DeleteElement(PlotElementIdentification plotElementId) => throw new NotSupportedException();
         public Task EditPlotElement(PlotElementIdentification plotelementid, string contents, string todoField,
-            IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly) => throw new NotSupportedException();
+            IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly,
+            ProjectRolesListIdentification? projectRolesListId = null) => throw new NotSupportedException();
         public Task PublishElementVersion(PlotVersionIdentification version, bool sendNotification, string? commentText) => throw new NotSupportedException();
         public Task UnPublishElement(PlotElementIdentification element) => throw new NotSupportedException();
         public Task EditPlotElementText(PlotElementIdentification plotelementid, string content, string todoField) => throw new NotSupportedException();

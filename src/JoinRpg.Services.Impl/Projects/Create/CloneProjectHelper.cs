@@ -40,6 +40,12 @@ internal class CloneProjectHelper(
 
     private readonly Dictionary<ProjectFieldVariantIdentification, ProjectFieldVariantIdentification> VariantMapping = [];
 
+    /// <summary>Маппинг id сеток ролей для вводных-сеток (ADR029). Сетки копируются раньше сюжетов.</summary>
+    private readonly Dictionary<ProjectRolesListIdentification, ProjectRolesListIdentification> RolesListMapping = [];
+
+    private ProjectRolesListIdentification? TryMapRolesList(ProjectRolesListIdentification? originalRolesListId)
+        => originalRolesListId is { } id ? RolesListMapping.GetValueOrDefault(id) : null;
+
     private bool everythingFine = true;
     public async Task<bool> Clone()
     {
@@ -390,6 +396,11 @@ internal class CloneProjectHelper(
 
                 var created = await projectRolesListService.CreateAsync(newModel);
 
+                if (originalList.ProjectRolesListId is { } originalId && created.ProjectRolesListId is { } createdId)
+                {
+                    RolesListMapping[originalId] = createdId;
+                }
+
                 // CreateAsync сам делает первую сохранённую сетку сеткой по умолчанию, но выбор
                 // мастера в исходном проекте мог быть не первой по порядку сеткой — переносим явно.
                 if (originalList.ProjectRolesListId == original.DefaultRolesListId)
@@ -450,6 +461,18 @@ internal class CloneProjectHelper(
 
                 foreach (var originalElement in originalFolder.Elements.Where(e => e.IsActive))
                 {
+                    // Вводная-сетка без перенесённой сетки (не скопировалась в CopyRolesLists)
+                    // создасться не может — пропускаем её с записью в лог, а не роняем весь сюжет.
+                    var mappedRolesList = TryMapRolesList(ProjectRolesListIdentification.FromOptional(original.ProjectId, originalElement.ProjectRolesListId));
+                    if (originalElement.ElementType == PlotElementType.RoleGrid && mappedRolesList is null)
+                    {
+                        logger.LogWarning(
+                            "Вводная-сетка {plotElementId} из сюжета {originalPlotId} не скопирована: сетка ролей не перенесена.",
+                            originalElement.PlotElementId, originalPlotId);
+                        everythingFine = false;
+                        continue;
+                    }
+
                     PlotElementTexts lastVersion = originalElement.LastVersion();
                     _ = await plotService.CreatePlotElement(
                         plotFolderId,
@@ -458,7 +481,8 @@ internal class CloneProjectHelper(
                         TryMapOriginalGroupIds(originalElement.TargetGroups.Select(g => g.CharacterGroupId)),
                         TryMapOriginalCharacterIds(originalElement.TargetCharacters.Select(c => c.CharacterId)),
                         originalElement.ElementType,
-                        originalElement.IsMasterOnly);
+                        originalElement.IsMasterOnly,
+                        mappedRolesList);
                 }
             }
             // Обработка исключения, которое EF6 бросает сам при SaveChanges; без неё сбой валидации

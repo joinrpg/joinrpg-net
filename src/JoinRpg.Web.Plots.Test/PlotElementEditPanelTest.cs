@@ -12,6 +12,7 @@ public class PlotElementEditPanelTest
         var ctx = new BunitContext();
         ctx.Services.AddLogging();
         ctx.ComponentFactories.AddStub<PlotFolderSelector>();
+        ctx.ComponentFactories.AddStub<RolesListSelector>();
         ctx.ComponentFactories.AddStub<CharacterSelector>();
         ctx.ComponentFactories.AddStub<CharacterGroupSelector>();
         return ctx;
@@ -140,6 +141,52 @@ public class PlotElementEditPanelTest
 
         cut.Markup.ShouldContain("Привязка к персонажам");
         cut.Markup.ShouldContain("Привязка к группам");
+    }
+
+    [Fact]
+    public void SwitchToRoleGrid_ShouldShowRolesListSelector_InsteadOfText()
+    {
+        using var ctx = CreateContext();
+        var model = new PlotElementCreateViewModel
+        {
+            ProjectId = 1,
+            ElementType = PlotElementTypeView.RegularPlot,
+            HasPlotEditAccess = true,
+            Content = PlotElementCreateViewModel.GetDefaultContent(),
+        };
+
+        var cut = ctx.Render<PlotElementEditPanel>(p =>
+            p.Add(x => x.Model, model));
+
+        // Радио создания снова показывает все три типа (фильтр PR 1 снят).
+        cut.Find($"input[type=radio][value='{PlotElementTypeView.RoleGrid}']")
+           .Change(PlotElementTypeView.RoleGrid.ToString());
+
+        cut.Markup.ShouldContain("Сетка ролей");
+        cut.Markup.ShouldNotContain("Текст вводной");
+        cut.Markup.ShouldNotContain("Что выдать");
+        // У вводной-сетки нет мастерского текста — как у раздатки.
+        cut.Markup.ShouldNotContain("Мастерский текст");
+        // Публиковать вводную-сетку можно сразу, как обычную.
+        cut.Markup.ShouldContain("Сразу опубликовать");
+    }
+
+    [Fact]
+    public void RoleGrid_ShouldShowRolesListSelector_WhenEditing()
+    {
+        using var ctx = CreateContext();
+        var model = new PlotElementEditViewModel
+        {
+            ProjectId = 1,
+            ElementType = PlotElementTypeView.RoleGrid,
+            Content = "",
+        };
+
+        var cut = ctx.Render<PlotElementEditPanel>(p =>
+            p.Add(x => x.Model, model));
+
+        cut.Markup.ShouldContain("Сетка ролей");
+        cut.Markup.ShouldNotContain("Текст вводной");
     }
 
 }

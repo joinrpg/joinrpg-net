@@ -114,17 +114,12 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
     }
 
     public async Task<PlotVersionIdentification> CreatePlotElement(PlotFolderIdentification plotFolderId, string content, string todoField,
-      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType, bool isMasterOnly)
+      IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, PlotElementType elementType, bool isMasterOnly,
+      ProjectRolesListIdentification? projectRolesListId = null)
     {
         await RequestMasterAccessAsync(plotFolderId.ProjectId, Permission.None);
 
-        // Вводные-сетки создаются только со ссылкой на сетку ролей; их создание появится
-        // вместе с выбором сетки в форме (ADR029). Пока — запрещаем, в т.ч. крафтовый POST.
-        if (elementType == PlotElementType.RoleGrid)
-        {
-            //TODO[Localize]
-            throw new JoinValidationException("Создание вводных-сеток пока не поддерживается.");
-        }
+        var rolesListId = await ValidateRolesListRef(plotFolderId.ProjectId, elementType, projectRolesListId);
 
         var folder = await LoadProjectSubEntityAsync<PlotFolder>(plotFolderId);
 
@@ -148,11 +143,13 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
             TargetCharacters = await ValidateCharactersList(targetChars),
             ElementType = elementType,
             IsMasterOnly = isMasterOnly,
+            ProjectRolesListId = rolesListId,
         };
 
         plotElement.Texts.Add(new PlotElementTexts()
         {
-            Content = new MarkdownDbValue(Required(content.Trim())),
+            // У вводной-сетки текста нет — содержимое играет сама сетка ролей (ADR029).
+            Content = new MarkdownDbValue(elementType == PlotElementType.RoleGrid ? "" : Required(content.Trim())),
             TodoField = todoField,
             Version = 0,
             ModifiedDateTime = now,
@@ -224,7 +221,8 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
             ?? throw new JoinRpgEntityNotFoundException(plotElementId.PlotElementId, nameof(PlotElement));
 
     public async Task EditPlotElement(PlotElementIdentification plotelementid, string contents,
-      string todoField, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly)
+      string todoField, IReadOnlyCollection<CharacterGroupIdentification> targetGroups, IReadOnlyCollection<CharacterIdentification> targetChars, bool isMasterOnly,
+      ProjectRolesListIdentification? projectRolesListId = null)
     {
         var plotElement = await LoadElement(plotelementid);
 
@@ -235,6 +233,10 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         }
 
         plotElement.IsMasterOnly = isMasterOnly;
+        // Ссылка на сетку не версифицируется: смена сетки у опубликованной вводной видна
+        // игроку сразу, без перепубликации (ADR029).
+        plotElement.ProjectRolesListId = await ValidateRolesListRef(
+            new ProjectIdentification(plotElement.ProjectId), plotElement.ElementType, projectRolesListId);
         UpdateElementText(contents, todoField, plotElement);
 
         await UpdateElementTarget(targetGroups, targetChars, plotElement);
@@ -273,8 +275,48 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
         plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(targetChars));
     }
 
+    /// <summary>
+    /// Проверяет ссылку на сетку ролей у вводной (ADR029): обязательна для RoleGrid,
+    /// запрещена для остальных типов, сетка должна существовать в этом же проекте.
+    /// Возвращает готовое к сохранению значение колонки.
+    /// </summary>
+    private async Task<int?> ValidateRolesListRef(ProjectIdentification projectId, PlotElementType elementType, ProjectRolesListIdentification? rolesListId)
+    {
+        if (elementType != PlotElementType.RoleGrid)
+        {
+            if (rolesListId is not null)
+            {
+                //TODO[Localize]
+                throw new JoinValidationException("Сетку ролей можно выбрать только у вводной-сетки.");
+            }
+            return null;
+        }
+
+        if (rolesListId is null)
+        {
+            //TODO[Localize]
+            throw new JoinValidationException("Для вводной-сетки выберите сетку ролей.");
+        }
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        if (rolesListId.ProjectId != projectId || projectInfo.GetRolesListByIdOrDefault(rolesListId) is null)
+        {
+            //TODO[Localize]
+            throw new JoinValidationException($"Сетка ролей не найдена (проект {projectId}, сетка {rolesListId.ProjectRolesListId}).");
+        }
+
+        return rolesListId.ProjectRolesListId;
+    }
+
     private void UpdateElementText(string contents, string todoField, PlotElement plotElement)
     {
+        // Форма вводной-сетки не постит Content: текст здесь всегда пустой, иначе первое же
+        // редактирование создало бы лишнюю версию и сбросило IsCompleted (ADR029).
+        if (plotElement.ElementType == PlotElementType.RoleGrid)
+        {
+            contents = "";
+        }
+
         if (plotElement.LastVersion().Content.Contents == contents &&
             plotElement.LastVersion().TodoField == todoField)
         {
@@ -342,9 +384,29 @@ public class PlotServiceImpl(IUnitOfWork unitOfWork,
                 .Select(c => c.ApprovedClaim)
                             .WhereNotNull());
 
+            //TODO[Localize]
+            var emailBody = plotElement.ElementType == PlotElementType.RoleGrid
+                ? await BuildRoleGridEmailBody(plotElement, commentText)
+                : commentText ?? "";
 
-            await massProjectEmailService.PlotEmail([.. claims.Select(c => c.GetId())], new MarkdownDbValue(commentText), plotElement.GetId());
+            await massProjectEmailService.PlotEmail([.. claims.Select(c => c.GetId())], new MarkdownDbValue(emailBody), plotElement.GetId());
         }
+    }
+
+    /// <summary>
+    /// Текст письма о публикации вводной-сетки: имя сетки, чтобы игрок понимал, что опубликовано
+    /// (ADR029). Ссылка в шаблоне письма уже ведёт на карточку заявки, где сетка и отрисуется.
+    /// </summary>
+    private async Task<string> BuildRoleGridEmailBody(PlotElement plotElement, string? commentText)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(new ProjectIdentification(plotElement.ProjectId));
+        var rolesListName = plotElement.ProjectRolesListId is { } rolesListId
+            ? projectInfo.GetRolesListByIdOrDefault(new ProjectRolesListIdentification(projectInfo.ProjectId, rolesListId))?.Name
+            : null;
+
+        return string.IsNullOrWhiteSpace(commentText)
+            ? $"Сетка ролей: {rolesListName ?? "сетка удалена"}"
+            : $"Сетка ролей: {rolesListName ?? "сетка удалена"}\n\n{commentText}";
     }
 
     public async Task UnPublishElement(PlotElementIdentification plotElementId)

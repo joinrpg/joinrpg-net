@@ -2,6 +2,7 @@
 @* Перенос из cshtml: пробелы между значками, датой, автором и кнопками — часть вёрстки. *@
 @preservewhitespace true
 @inject IPlotUriLocator PlotUriLocator
+@inject IUriLocator<ProjectRolesListIdentification> RolesListUriLocator
 
 @if (!Model.Visible)
 {
@@ -100,10 +101,23 @@
         }
 
         <div class="@(Model.ThisPublished ? "" : "world-object-hidden")">
-            @((MarkupString)Model.Content)
-            @if (string.IsNullOrWhiteSpace(Model.Content))
+            @if (Model.ElementType == PlotElementTypeView.RoleGrid)
             {
-                <i>Вводная пуста</i>
+                <b>Сетка ролей: @(Model.RolesListName ?? "сетка удалена")</b>
+                @if (Model.RolesListId is not null)
+                {
+                    <JoinButton Link="@RolesListUriLocator.GetUri(Model.RolesListId).ToString()" Size="SizeStyleEnum.Small" Title="Открыть страницу сетки">
+                        Открыть сетку
+                    </JoinButton>
+                }
+            }
+            else
+            {
+                @((MarkupString)Model.Content)
+                @if (string.IsNullOrWhiteSpace(Model.Content))
+                {
+                    <i>Вводная пуста</i>
+                }
             }
         </div>
     </ChildContent>

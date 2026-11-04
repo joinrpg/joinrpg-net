@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using JoinRpg.DomainTypes.ProjectMetadata;
 
 namespace JoinRpg.Web.Plots.Elements;
 
@@ -29,6 +30,10 @@ public abstract class PlotElementViewModelBase
 
     [Display(Name = "Тип")]
     public PlotElementTypeView ElementType { get; set; }
+
+    /// <summary>Сетка ролей для вводной-сетки (ADR029); для остальных типов не заполняется.</summary>
+    [Display(Name = "Сетка ролей", Description = "Сетка, которая отображается у персонажа вместо текста вводной.")]
+    public ProjectRolesListIdentification? ProjectRolesListId { get; set; }
 
     [Display(Name = "Мастерский текст", Description = "Ни к чему не привязывать.")]
     public bool IsMasterOnly { get; set; }

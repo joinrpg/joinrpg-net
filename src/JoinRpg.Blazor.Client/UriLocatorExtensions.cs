@@ -18,10 +18,14 @@ public static class UriLocatorExtensions
         IUriLocator<UserLinkViewModel>, IUriLocator<CharacterLinkSlimViewModel>,
         IUriLocator<ProjectIdentification>, IUriLocator<ClaimIdentification>, IUriLocator<CharacterIdentification>,
         IUriLocator<CharacterGroupIdentification>, IUriLocator<PlotFolderIdentification>,
+        IUriLocator<ProjectRolesListIdentification>,
         ICharacterUriLocator, ICharacterGroupUriLocator, IProjectFieldUriLocator,
         IScheduleUriLocator, IProjectUriLocator, IPlotUriLocator, IAccommodationUriLocator, IBadgeTemplateUriLocator,
         IFinanceSettingsUriLocator
     {
+        Uri IUriLocator<ProjectRolesListIdentification>.GetUri(ProjectRolesListIdentification target)
+            => new($"/{target.ProjectId.Value}/roleslist/{target.ProjectRolesListId}", UriKind.Relative);
+
         Uri IFinanceSettingsUriLocator.GetMasterSummaryExportUri(ProjectIdentification projectId, string token) =>
             new($"/{projectId.Value}/money/SummaryByMaster?token={token}", UriKind.Relative);
 
@@ -196,6 +200,7 @@ public static class UriLocatorExtensions
             .AddSingleton<IUriLocator<CharacterLinkSlimViewModel>>(locator)
             .AddSingleton<IUriLocator<CharacterGroupIdentification>>(locator)
             .AddSingleton<IUriLocator<PlotFolderIdentification>>(locator)
+            .AddSingleton<IUriLocator<ProjectRolesListIdentification>>(locator)
             .AddSingleton<ICharacterUriLocator>(locator)
             .AddSingleton<ICharacterGroupUriLocator>(locator)
             .AddSingleton<IProjectFieldUriLocator>(locator)

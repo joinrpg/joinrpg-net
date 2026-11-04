@@ -84,14 +84,15 @@ public class PlotElementListItemViewModel : IProjectIdAware
         var accessArguments = AccessArgumentsFactory.CreatePlot(projectInfo, currentUserAccessor);
 
         return [.. folder.Elements.Select(e => new PlotElementListItemViewModel(
-            e, accessArguments, linkRenderer))];
+            e, accessArguments, linkRenderer, projectInfo: projectInfo))];
     }
 
     public PlotElementListItemViewModel(
         PlotElementDetailsDto element,
         PlotAccessArguments accessArguments,
         ILinkRenderer renderer,
-        bool printMode = false)
+        bool printMode = false,
+        ProjectInfo? projectInfo = null)
     {
         var currentVersionText = element.CurrentVersion;
 
@@ -108,6 +109,11 @@ public class PlotElementListItemViewModel : IProjectIdAware
         Status = element.GetStatus();
         ElementType = (PlotElementTypeView)element.ElementType;
         IsMasterOnly = element.IsMasterOnly;
+        RolesListId = element.RolesListId;
+        // Сетка могла быть удалена — ссылка мягкая (ADR029), тогда имя не резолвится.
+        RolesListName = RolesListId is not null && projectInfo is not null
+            ? projectInfo.GetRolesListByIdOrDefault(RolesListId)?.Name
+            : null;
         ShortContent = currentVersionText.Content.TakeWords(10).WithDefaultStringValue("***").ToPlainTextWithoutHtmlEscape(renderer);
 
         HasMasterAccess = accessArguments.HasMasterAccess;
@@ -162,6 +168,12 @@ public class PlotElementListItemViewModel : IProjectIdAware
     public PlotElementTypeView ElementType { get; }
     public bool IsMasterOnly { get; }
 
+    /// <summary>Сетка ролей вводной-сетки (ADR029); null у остальных типов.</summary>
+    public ProjectRolesListIdentification? RolesListId { get; }
+
+    /// <summary>Имя сетки; null, если сетка удалена или проект не передан.</summary>
+    public string? RolesListName { get; }
+
     public bool HasMasterAccess { get; }
     public bool HasEditAccess { get; }
     public int CurrentVersion { get; }
@@ -191,7 +203,9 @@ public class PlotElementListItemViewModel : IProjectIdAware
         CurrentVersion2,
         PubishedVersion2,
         HasMasterAccess,
-        HasEditAccess);
+        HasEditAccess,
+        RolesListId,
+        RolesListName);
 
     // Даты версий хранятся в UTC; шаблон EventTime сравнивал их с DateTime.UtcNow.
     private static DateTimeOffset AsUtc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
