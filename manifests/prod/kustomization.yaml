@@ -6,7 +6,11 @@ resources:
 namespace: joinrpg-prod
 
 commonLabels:
-  managed-by-kustomize: "true" # Единая метка для kubectl apply --prune (все окружения и проекты)
+  managed-by-kustomize-prod: "true" # Зашита в spec.selector Deployment — убирать только вместе с их пересозданием
+labels:
+  - pairs:
+      managed-by-kustomize: "true" # Единая метка для kubectl apply --prune
+    includeSelectors: false
 
 configMapGenerator:
   - name: joinrpg-configmap
