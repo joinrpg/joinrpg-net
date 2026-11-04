@@ -51,7 +51,7 @@ else
             @* Заявка «просто на игру» — на шаблон по умолчанию (#5319). *@
             @if (Model.DefaultClaimProjectStatus is { } projectStatus)
             {
-                <SendClaimButton ProjectId="Model.RootGroupId.ProjectId" ProjectStatus="projectStatus" Size="SizeStyleEnum.Large" />
+                <SendClaimButton ProjectId="Model.RootGroupId.ProjectId" ProjectStatus="projectStatus" />
             }
             @* У транзиентной («классической») сетки нет id — кнопки настроек не показываем. *@
             @if (Model.CanEditGroups && Model.RolesListId is { } rolesListId)
