@@ -1,4 +1,5 @@
 using JoinRpg.DomainTypes;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon.Projects;
 
 namespace JoinRpg.Web.Claims.Test;
@@ -32,4 +33,10 @@ internal sealed class FakeProjectUriLocator : IProjectUriLocator
 
     public Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
         => UriFor(projectId, "print-badges");
+
+    public Uri GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId)
+        => UriFor(rolesListId.ProjectId, "print-grid");
+
+    public Uri GetClassicRoleGridPrintUri(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly)
+        => UriFor(projectId, "print-classic-grid");
 }

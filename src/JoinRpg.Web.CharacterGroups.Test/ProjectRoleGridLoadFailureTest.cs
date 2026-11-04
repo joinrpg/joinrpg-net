@@ -1,5 +1,6 @@
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
+using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,9 @@ public class ProjectRoleGridLoadFailureTest
     {
         var ctx = new BunitContext();
         ctx.Services.AddSingleton<IProjectRoleGridClient>(new ThrowingClient());
+        // Кнопка «Печать» в шапке резолвит URL через IProjectUriLocator (ADR029); сам тест
+        // URL не проверяет — достаточно заглушки, чтобы property-инъекция компонента не падала.
+        ctx.Services.AddSingleton<IProjectUriLocator>(new StubProjectUriLocator());
         // Остров инжектит PersistentComponentState; в тесте берём его у менеджера — состояние
         // пустое, то есть компонент пойдёт в клиент, как и на живой странице.
         ctx.Services.AddSingleton(new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance).State);
@@ -45,5 +49,23 @@ public class ProjectRoleGridLoadFailureTest
 
         cut.Markup.ShouldContain("Не удалось загрузить сетку ролей");
         cut.Markup.ShouldNotContain("Идет загрузка");
+    }
+
+    /// <summary>Минимальная заглушка IProjectUriLocator — тест проверяет не URL, а поведение при сбое загрузки.</summary>
+    private sealed class StubProjectUriLocator : IProjectUriLocator
+    {
+        private static Uri Stub(ProjectIdentification projectId, string suffix) => new($"https://example.org/{projectId.Value}/{suffix}");
+
+        public Uri GetMyClaimUri(ProjectIdentification projectId) => Stub(projectId, "my-claim");
+        public Uri GetAddClaimUri(ProjectIdentification projectId) => Stub(projectId, "add-claim");
+        public Uri GetCreatePlotUri(ProjectIdentification projectId) => Stub(projectId, "create-plot");
+        public Uri GetRolesListUri(ProjectIdentification projectId) => Stub(projectId, "roleslist");
+        public Uri GetCaptainCabinetUri(ProjectIdentification projectId) => Stub(projectId, "captain");
+        public Uri GetCreateCharacterUri(ProjectIdentification projectId) => Stub(projectId, "create-character");
+        public Uri GetMassMailUri(ProjectIdentification projectId, IReadOnlyCollection<ClaimIdentification> claimIds) => Stub(projectId, "mass-mail");
+        public Uri GetPrintCharactersUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) => Stub(projectId, "print");
+        public Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) => Stub(projectId, "badges");
+        public Uri GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId) => Stub(rolesListId.ProjectId, "roleslist-print");
+        public Uri GetClassicRoleGridPrintUri(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly) => Stub(projectId, "classic-print");
     }
 }

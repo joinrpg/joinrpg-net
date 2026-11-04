@@ -1,5 +1,6 @@
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.DomainTypes.ProjectMetadata.Payments;
 using JoinRpg.Web.Accommodation;
@@ -160,6 +161,18 @@ public static class UriLocatorExtensions
 
         Uri IProjectUriLocator.GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
             new($"/{projectId.Value}/print/Badges?CharacterIds={new CompressedIntList(characterIds)}", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId) =>
+            new($"/{rolesListId.ProjectId.Value}/roleslist/{rolesListId.ProjectRolesListId}/print", UriKind.Relative);
+
+        Uri IProjectUriLocator.GetClassicRoleGridPrintUri(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly) =>
+            new($"/{projectId.Value}/roles/print{(groupId, hotOnly) switch
+            {
+                ({ } group, true) => $"?characterGroupId={group.CharacterGroupId}&hotOnly=true",
+                ({ } group, false) => $"?characterGroupId={group.CharacterGroupId}",
+                (null, true) => "?hotOnly=true",
+                _ => "",
+            }}", UriKind.Relative);
 
         Uri IPlotUriLocator.GetElementInFolderUri(PlotElementIdentification elementId) =>
             new($"/{elementId.ProjectId.Value}/plots/edit?PlotFolderId={elementId.PlotFolderId.PlotFolderId}#{PlotElementAnchor.For(elementId)}", UriKind.Relative);

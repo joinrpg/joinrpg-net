@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.ProjectCommon.Projects;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +26,9 @@ public class ListOperationsButtonsTest
 
         public Uri GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds)
             => UriFor($"badges/{characterIds.Count}");
+
+        public Uri GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId) => UriFor("print-grid");
+        public Uri GetClassicRoleGridPrintUri(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly) => UriFor("print-classic-grid");
 
         public Uri GetClaimListUri(CharacterGroupIdentification groupId) => UriFor("claims");
         public Uri GetDiscussingClaimListUri(CharacterGroupIdentification groupId) => UriFor("discussing");

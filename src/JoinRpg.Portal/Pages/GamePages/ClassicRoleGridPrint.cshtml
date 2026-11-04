@@ -1,0 +1,16 @@
+@page "/{projectId:int}/roles/print"
+@using JoinRpg.Web.CharacterGroups.ProjectRoleGrid
+@model JoinRpg.Portal.Pages.GamePages.ClassicRoleGridPrintModel
+
+@{
+    Layout = "_RoleGridPrintLayout";
+    ViewData["Title"] = "Печать сетки ролей";
+}
+
+@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.Static, new
+{
+    Model.ProjectId,
+    Model.ClassicGroupId,
+    HotRolesOnly = Model.HotOnly,
+    PrintMode = true,
+}))

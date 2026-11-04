@@ -1,0 +1,11 @@
+@page "/{projectId:int}/roleslist/{id:int}/print"
+@using JoinRpg.Web.CharacterGroups.ProjectRoleGrid
+@model JoinRpg.Portal.Pages.GamePages.RoleGridPrintModel
+
+@{
+    Layout = "_RoleGridPrintLayout";
+    ViewData["Title"] = "Печать сетки ролей";
+}
+
+@* Статический рендер: печатной странице не нужны WASM и JS (ADR029). *@
+@(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.Static, new { Model.RolesListId, PrintMode = true }))

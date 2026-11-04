@@ -5,6 +5,7 @@
 @using JoinRpg.Web.ProjectCommon.Projects
 @using JoinRpg.Common.WebComponents
 @inject IProjectRoleGridClient Client
+@inject IProjectUriLocator ProjectUriLocator
 @inject NavigationManager NavigationManager
 @inject PersistentComponentState ApplicationState
 @inject ILogger<ProjectRoleGrid> logger
@@ -38,31 +39,35 @@ else
     @* Портал на Bootstrap 3 — flex-утилит (d-flex и т.п.) нет, поэтому inline-стили. *@
     <div style="display: flex; align-items: center; gap: 12px;">
         <h1 style="margin: 0;">@Model.Name</h1>
-        @* Medium = обычный размер, как у JoinButton «Настройки сетки» рядом. *@
-        <GroupEditMenu GroupId="Model.RootGroupId"
-                       GroupType="Model.RootGroupType"
-                       HasMasterAccess="Model.HasMasterAccess"
-                       ShowEditGroupControls="Model.CanEditGroups"
-                       ShowEditRoleControls="Model.CanEditRoles"
-                       Size="SizeStyleEnum.Medium" />
-        @* Заявка «просто на игру» — на шаблон по умолчанию (#5319). *@
-        @if (Model.DefaultClaimProjectStatus is { } projectStatus)
+        @if (!PrintMode)
         {
-            <SendClaimButton ProjectId="Model.RootGroupId.ProjectId" ProjectStatus="projectStatus" Size="SizeStyleEnum.Large" />
-        }
-        @* У транзиентной («классической») сетки нет id — кнопки настроек не показываем. *@
-        @if (Model.CanEditGroups && Model.RolesListId is { } rolesListId)
-        {
-            <JoinButton Preset="ButtonPreset.Edit"
-                        OnClick='() => NavigationManager.NavigateTo($"/{rolesListId.ProjectId.Value}/tools/roleslist/edit/{rolesListId.ProjectRolesListId}")'
-                        Label="Настройки сетки" />
+            @* Medium = обычный размер, как у JoinButton «Настройки сетки» рядом. *@
+            <GroupEditMenu GroupId="Model.RootGroupId"
+                           GroupType="Model.RootGroupType"
+                           HasMasterAccess="Model.HasMasterAccess"
+                           ShowEditGroupControls="Model.CanEditGroups"
+                           ShowEditRoleControls="Model.CanEditRoles"
+                           Size="SizeStyleEnum.Medium" />
+            @* Заявка «просто на игру» — на шаблон по умолчанию (#5319). *@
+            @if (Model.DefaultClaimProjectStatus is { } projectStatus)
+            {
+                <SendClaimButton ProjectId="Model.RootGroupId.ProjectId" ProjectStatus="projectStatus" Size="SizeStyleEnum.Large" />
+            }
+            @* У транзиентной («классической») сетки нет id — кнопки настроек не показываем. *@
+            @if (Model.CanEditGroups && Model.RolesListId is { } rolesListId)
+            {
+                <JoinButton Preset="ButtonPreset.Edit"
+                            OnClick='() => NavigationManager.NavigateTo($"/{rolesListId.ProjectId.Value}/tools/roleslist/edit/{rolesListId.ProjectRolesListId}")'
+                            Label="Настройки сетки" />
+            }
+            <JoinButton Preset="ButtonPreset.Print" Link="@PrintUri" Label="Печать" />
         }
     </div>
     @if (Model.GroupsViewMode == RolesGridGroupsViewMode.Tree)
     {
         @if (_treeRoot is not null)
         {
-            <ProjectRoleGridTreeNode Node="_treeRoot" Siblings="_treeRootSiblings" Model="Model" OnSiblingsChanged="StateHasChanged" />
+            <ProjectRoleGridTreeNode Node="_treeRoot" Siblings="_treeRootSiblings" Model="Model" PrintMode="PrintMode" OnSiblingsChanged="StateHasChanged" />
         }
     }
     else
@@ -96,11 +101,14 @@ else
                     <tr class="table-secondary">
                         <td colspan="@colspan">
                             <strong><CharacterGroupLink Model="groupHeader.Group" /></strong>
-                            <GroupEditMenu GroupId="groupHeader.Group.CharacterGroupId"
-                                          GroupType="groupHeader.GroupType"
-                                          HasMasterAccess="Model.HasMasterAccess"
-                                          ShowEditGroupControls="Model.CanEditGroups"
-                                          ShowEditRoleControls="Model.CanEditRoles" />
+                            @if (!PrintMode)
+                            {
+                                <GroupEditMenu GroupId="groupHeader.Group.CharacterGroupId"
+                                              GroupType="groupHeader.GroupType"
+                                              HasMasterAccess="Model.HasMasterAccess"
+                                              ShowEditGroupControls="Model.CanEditGroups"
+                                              ShowEditRoleControls="Model.CanEditRoles" />
+                            }
                             @if (groupHeader.Description is { } description)
                             {
                                 <br />@description
@@ -114,8 +122,15 @@ else
                     {
                         <tr>
                             <td>
-                                <CharacterLinkWithEdit Model="charRow.Character" />
-                                @if (Model.CanEditGroups && charBlock.Count > 1)
+                                @if (PrintMode)
+                                {
+                                    <CharacterLink Model="charRow.Character.Character" />
+                                }
+                                else
+                                {
+                                    <CharacterLinkWithEdit Model="charRow.Character" />
+                                }
+                                @if (!PrintMode && Model.CanEditGroups && charBlock.Count > 1)
                                 {
                                     <JoinMoveControl TItem="ProjectRoleGridCharacterRowViewModel"
                                                       Items="charBlock"
@@ -128,7 +143,7 @@ else
                             @if (charRow.Player is { } player)
                             {
                                 <td>
-                                    <ProjectRoleGridPlayerCell Row="charRow" Player="player" AvatarMode="Model.PlayerAvatar" />
+                                    <ProjectRoleGridPlayerCell Row="charRow" Player="player" AvatarMode="Model.PlayerAvatar" PrintMode="PrintMode" />
                                 </td>
                             }
                             @if (charRow.Groups is { } groups)
@@ -165,6 +180,13 @@ else
     [Parameter] public ProjectIdentification ProjectId { get; set; }
     [Parameter] public CharacterGroupIdentification? ClassicGroupId { get; set; }
     [Parameter] public bool HotRolesOnly { get; set; }
+
+    /// <summary>Печатная версия: скрывает кнопки редактирования, перемещения и подачи заявок.</summary>
+    [Parameter] public bool PrintMode { get; set; }
+
+    private string PrintUri => (RolesListId is { } rolesListId
+        ? ProjectUriLocator.GetRoleGridPrintUri(rolesListId)
+        : ProjectUriLocator.GetClassicRoleGridPrintUri(ProjectId, ClassicGroupId, HotRolesOnly)).ToString();
 
     private ProjectRoleGridViewResult? Result { get; set; }
     private bool loadFailed;
