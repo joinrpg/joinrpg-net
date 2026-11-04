@@ -128,12 +128,10 @@ public class ClaimListController(
     #endregion
 
     [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> ForPlayer(ProjectIdentification projectId, int userId, string export)
-    {
-        var claims = await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Active, userId);
-
-        return await ShowMasterClaimList(projectId, export, "Заявки на игроке", claims, ClaimStatusSpec.Active);
-    }
+    public ActionResult ForPlayer(ProjectIdentification projectId)
+        // Список заявок игрока удалён: заявки перечисляются прямо на странице заявки (#6089).
+        // Фильтра «по игроку» в гриде нет, поэтому редирект просто на общий список заявок.
+        => RedirectToPage("/GamePages/Claims", new { projectId = projectId.Value });
 
     [HttpGet("~/{ProjectId}/claims/without-roomtype")]
     [MasterAuthorize()]

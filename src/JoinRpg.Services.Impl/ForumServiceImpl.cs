@@ -128,7 +128,7 @@ internal class ForumServiceImpl(IUnitOfWork unitOfWork,
         var projectInfo = await projectMetadataRepository.GetProjectMetadata(forumThreadId.ProjectId);
         var isMaster = projectInfo.HasMasterAccess(currentUserAccessor);
         var isPlayer = forumThread.IsVisibleToPlayer &&
-                       (await ClaimsRepository.GetClaimsForPlayer(forumThreadId.ProjectId, ClaimStatusSpec.Approved, CurrentUserId)).Any(
+                       (await ClaimsRepository.GetClaimsForPlayer(forumThreadId.ProjectId, currentUserAccessor.UserIdentification, ClaimStatusSpec.Approved)).Any(
                          claim => claim.Character.IsPartOfGroup(forumThread.CharacterGroupId, projectInfo));
 
         if (!isMaster && !isPlayer)

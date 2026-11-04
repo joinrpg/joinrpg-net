@@ -1,0 +1,29 @@
+@inject IUriLocator<ClaimIdentification> UriLocator
+
+@for (var i = 0; i < DisplayedClaims.Count; i++)
+{
+    var claim = DisplayedClaims[i];
+    if (i > 0)
+    {
+        <text>, </text>
+    }
+    <a href="@UriLocator.GetUri(claim.ClaimId)">@DisplayName(claim)</a>
+}
+@if (HiddenClaimsCount > 0)
+{
+    <text>, и ещё @CountHelper.DisplayCount(HiddenClaimsCount, "заявка", "заявки", "заявок")</text>
+}
+
+@code {
+    /// <summary>Ссылки на заявки — не больше 10 (<see cref="HiddenClaimsCount"/> остальные — числом).</summary>
+    [Parameter]
+    [EditorRequired]
+    public IReadOnlyList<ClaimLinkViewModel> DisplayedClaims { get; set; } = null!;
+
+    /// <summary>Сколько заявок не вошло в <see cref="DisplayedClaims"/> — перечисляются числом.</summary>
+    [Parameter]
+    public int HiddenClaimsCount { get; set; }
+
+    private static string DisplayName(ClaimLinkViewModel claim)
+        => string.IsNullOrWhiteSpace(claim.CharacterName) ? "заявка без персонажа" : claim.CharacterName;
+}

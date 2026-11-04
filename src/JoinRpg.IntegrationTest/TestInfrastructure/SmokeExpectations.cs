@@ -98,6 +98,9 @@ internal static class SmokeExpectations
             ["my/claims"] = HttpStatusCode.MovedPermanently,
             ["{ProjectId}/roles/{CharacterGroupId}/discussing"] = HttpStatusCode.MovedPermanently,
 
+            // Список заявок игрока удалён (#6089) — старый адрес ведёт на общий список заявок.
+            ["{ProjectId}/claims/ForPlayer"] = HttpStatusCode.Redirect,
+
             // Короткие ссылки: ведут на страницу, а сами её не показывают.
             [".well-known/change-password"] = HttpStatusCode.Redirect,
             ["user/me"] = HttpStatusCode.Redirect,

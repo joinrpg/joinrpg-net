@@ -243,11 +243,13 @@
                     }
                     else
                     {
-                        if (Model.OtherClaimsFromThisPlayerCount > 0)
+                        if (Model.OtherClaimsFromThisPlayer.HasClaims)
                         {
                             <div class="alert alert-warning">
-                                Также этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-    new { Model.ProjectId, UserId = Model.PlayerId.Value }, null).
+                                Также этим же игроком подано на этот проект ещё:
+                                <component type="typeof(OtherClaimsWarningView)" render-mode="Static"
+                                           param-DisplayedClaims="Model.OtherClaimsFromThisPlayer.DisplayedClaims"
+                                           param-HiddenClaimsCount="Model.OtherClaimsFromThisPlayer.HiddenClaimsCount" />.
                                 Если принять эту заявку, другие автоматически будут отклонены.
                             </div>
                         }
@@ -319,9 +321,11 @@
                     @if (Model.RestoreBlockedByOtherApprovedClaim)
                     {
                         <div class="alert alert-danger">
-                            У этого игрока уже принята @Html.ActionLink("другая заявка", "ForPlayer", "ClaimList",
-                       new { Model.ProjectId, UserId = Model.PlayerId.Value }, null)
-                            на этот проект, а в нём можно играть только одного персонажа. Отклоните её, прежде чем восстанавливать эту.
+                            У этого игрока уже есть принятая заявка на этот проект:
+                            <component type="typeof(OtherClaimsWarningView)" render-mode="Static"
+                                       param-DisplayedClaims="Model.RestoreBlockingClaims.DisplayedClaims"
+                                       param-HiddenClaimsCount="Model.RestoreBlockingClaims.HiddenClaimsCount" />.
+                            В нём можно играть только одного персонажа. Отклоните её, прежде чем восстанавливать эту.
                         </div>
                     }
                     else

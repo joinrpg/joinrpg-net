@@ -48,11 +48,21 @@ public class ClaimViewModel
 
     public int CharacterId { get; }
     public bool HasBlockingOtherClaimsForThisCharacter { get; }
-    public int OtherClaimsFromThisPlayerCount { get; }
+    /// <summary>
+    /// Другие активные заявки этого игрока в проекте (кроме текущей) — предупреждение при принятии
+    /// заявки перечисляет их ссылками (#6089).
+    /// </summary>
+    public OtherClaimsWarning OtherClaimsFromThisPlayer { get; }
+    /// <summary>
+    /// Утверждённые заявки этого игрока, блокирующие восстановление отклонённой — те же, что считает
+    /// <see cref="ClaimValidator.CanRestoreClaim"/> для <see cref="RestoreBlockedByOtherApprovedClaim"/> (#6089).
+    /// </summary>
+    public OtherClaimsWarning RestoreBlockingClaims { get; }
 
     /// <summary>
     /// Восстановить заявку нельзя: у игрока уже принята другая, а проект разрешает только одного
-    /// персонажа. То же правило, что проверяет сервер (<see cref="ClaimValidator.EnsureCanRestoreClaim"/>).
+    /// персонажа. Выводится из <see cref="RestoreBlockingClaims"/> (критерий тот же, что проверяет
+    /// сервер — <see cref="ClaimValidator.EnsureCanRestoreClaim"/>).
     /// </summary>
     public bool RestoreBlockedByOtherApprovedClaim { get; }
 
@@ -102,9 +112,14 @@ public class ClaimViewModel
     /// <param name="claimInfo">Заявка вместе с персонажем и профилем игрока (ADR021).</param>
     /// <param name="discussion">Обсуждение заявки, уже собранное для текущего пользователя (ADR026).</param>
     /// <param name="claimFee">Блок взноса, уже собранный для текущего пользователя.</param>
+    /// <param name="otherClaimsHeaders">
+    /// Заголовки активных заявок игрока в этом проекте (включая текущую) — источник имён для
+    /// предупреждений, перечисляющих другие заявки игрока (#6089).
+    /// </param>
     public ClaimViewModel(ICurrentUserAccessor currentUser,
         Claim claim,
       ClaimInfo claimInfo,
+      IReadOnlyCollection<ClaimWithPlayer> otherClaimsHeaders,
       DiscussionViewModel discussion,
       IReadOnlyCollection<PlotTextDto> plotElements,
       IClaimProblemValidator problemValidator,
@@ -149,14 +164,21 @@ public class ClaimViewModel
 
         HasBlockingOtherClaimsForThisCharacter = claimInfo.ClaimInCharacter.HasOtherClaimsForThisCharacter();
         HasOtherApprovedClaim = characterInfo.ApprovedClaimId is not null && characterInfo.ApprovedClaimId != claimInfo.ClaimId;
-        // Заявки «на паузе» не считаются: конкурентом для StrictlyOneCharacter они не являются,
-        // вернуть такую заявку в работу при утверждённой другой не даст ClaimValidator.EnsureCanRestoreClaim.
-        OtherClaimsFromThisPlayerCount =
-                claimData.IsApproved || !projectInfo.ClaimSettings.StrictlyOneCharacter
-                    ? 0
-                    : playerInfo.ActiveClaims.Count(c => c.ProjectId == projectInfo.ProjectId && c.ClaimId != claimInfo.ClaimId);
-        RestoreBlockedByOtherApprovedClaim =
-            !ClaimValidator.CanRestoreClaim(new UserClaimInfo(claimInfo.ClaimId, claimData.Status), playerInfo, projectInfo);
+
+        // Предупреждения перечисляют другие заявки игрока ссылками (#6089). Показываем предупреждение
+        // при принятии, только пока принятие отклонит конкурентов: у утверждённой заявки они уже
+        // отклонены, а где разрешено несколько персонажей — не отклонятся. Заявки «на паузе» в списке
+        // нет: конкурентом для StrictlyOneCharacter они не являются, вернуть такую заявку в работу
+        // при утверждённой другой не даст ClaimValidator.EnsureCanRestoreClaim.
+        OtherClaimsFromThisPlayer = OtherClaimsWarning.ForApproveClaim(
+            otherClaimsHeaders, claimInfo.ClaimId, !claimData.IsApproved && projectInfo.ClaimSettings.StrictlyOneCharacter);
+        // Критерий блокировки — тот же, что у ClaimValidator.CanRestoreClaim (StrictlyOneCharacter +
+        // UserClaimInfo.IsApproved), но флаг выводим из того же перечня, что рисуется: иначе при
+        // рассинхроне снимков предупреждение отрисовалось бы с пустым списком. Сервер всё равно
+        // проверяет EnsureCanRestoreClaim при восстановлении.
+        RestoreBlockingClaims = OtherClaimsWarning.ForRestoreClaim(
+            otherClaimsHeaders, claimInfo.ClaimId, playerInfo.ActiveClaims, projectInfo.ClaimSettings.StrictlyOneCharacter);
+        RestoreBlockedByOtherApprovedClaim = RestoreBlockingClaims.HasClaims;
 
         ResponsibleMasterId = claimData.ResponsibleMasterId;
         ResponsibleMaster = new UserLinkViewModel(projectInfo.GetMasterById(claimData.ResponsibleMasterId).UserInfo);

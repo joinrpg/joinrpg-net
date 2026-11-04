@@ -169,9 +169,18 @@ public class ClaimController(
         var claimFee = new ClaimFeeViewModel(claim, claimInfo.ClaimInCharacter, currentUserAccessor.UserIdentification,
             paymentsService.GetExternalPaymentUrl, accommodationModel, preferentialFeeConditions, playerPaymentTypes);
 
+        // Предупреждения о других заявках игрока перечисляют их ссылками, а не ссылкой на список
+        // ForPlayer (#6089). Имена берём из заголовков. Запрос нужен только для неутверждённой
+        // заявки: оба предупреждения (при принятии и при восстановлении) рисуются только в ней.
+        IReadOnlyCollection<ClaimWithPlayer> otherClaimsHeaders = claimInfo.Claim.IsApproved
+            ? []
+            : await claimsRepository.GetClaimsHeadersForPlayer(
+                projectInfo.ProjectId, ClaimStatusSpec.Active, claimInfo.Claim.PlayerId);
+
         var claimViewModel = new ClaimViewModel(currentUserAccessor,
             claim,
             claimInfo,
+            otherClaimsHeaders,
             discussionModel,
             plots,
             claimValidator,
@@ -454,20 +463,20 @@ public class ClaimController(
 
     [HttpGet("/{projectId}/myclaim")]
     [Authorize, HttpGet]
-    public async Task<ActionResult> MyClaim(int projectId)
+    public async Task<ActionResult> MyClaim(ProjectIdentification projectId)
     {
-        var claims = await claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Any, currentUserAccessor.UserIdentification);
+        var claims = await claimsRepository.GetClaimsForPlayer(projectId, currentUserAccessor.UserIdentification, ClaimStatusSpec.Any);
 
         if (claims.Count == 0)
         {
-            return await RedirectToDefaultTemplate(projectId);
+            return await RedirectToDefaultTemplate(projectId.Value);
         }
 
         var claimId = claims.TrySelectSingleClaim()?.ClaimId;
 
         // Если однозначно выбрать заявку нельзя (например, их две), отправляем игрока в список своих заявок
         return claimId != null
-            ? ReturnToClaim(projectId, (int)claimId)
+            ? ReturnToClaim(projectId.Value, (int)claimId)
             : RedirectToAction(nameof(MyClaimListController.My), "MyClaimList");
     }
 
