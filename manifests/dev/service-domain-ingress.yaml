@@ -2,7 +2,7 @@
 # по образцу prod (#5474): Portal и IdPortal dev доступны здесь помимо основных хостов.
 # Боевые маршруты (joinrpg-portal, joinrpg-idportal) не трогаем.
 # Чтобы убрать — удалить этот файл из resources в kustomization.yaml: деплой удалит
-# HTTPRoute прунингом по метке managed-by-kustomize-dev.
+# HTTPRoute прунингом по метке managed-by-kustomize.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
