@@ -15,12 +15,15 @@
         <span class="@HeaderClass(Node.Header.Depth)" title="@Node.Header.Path">
             <CharacterGroupLink Model="Node.Header.Group" />
         </span>
-        <GroupEditMenu GroupId="Node.Header.Group.CharacterGroupId"
-                       GroupType="Node.Header.GroupType"
-                       HasMasterAccess="Model.HasMasterAccess"
-                       ShowEditGroupControls="Model.CanEditGroups"
-                       ShowEditRoleControls="Model.CanEditRoles" />
-        @if (Model.CanEditGroups &&!Node.Header.IsSpecial && GetGroupSiblings() is { Count: > 1 } groupSiblings)
+        @if (!PrintMode)
+        {
+            <GroupEditMenu GroupId="Node.Header.Group.CharacterGroupId"
+                           GroupType="Node.Header.GroupType"
+                           HasMasterAccess="Model.HasMasterAccess"
+                           ShowEditGroupControls="Model.CanEditGroups"
+                           ShowEditRoleControls="Model.CanEditRoles" />
+        }
+        @if (!PrintMode && Model.CanEditGroups &&!Node.Header.IsSpecial && GetGroupSiblings() is { Count: > 1 } groupSiblings)
         {
             <JoinMoveControl TItem="ProjectRoleGridGroupHeaderRowViewModel"
                              Items="groupSiblings"
@@ -52,8 +55,15 @@
             @foreach (var charRow in charBlock)
             {
                 <li>
-                    <CharacterLinkWithEdit Model="charRow.Character" />
-                    @if (Model.CanEditGroups && charBlock.Count > 1)
+                    @if (PrintMode)
+                    {
+                        <CharacterLink Model="charRow.Character.Character" />
+                    }
+                    else
+                    {
+                        <CharacterLinkWithEdit Model="charRow.Character" />
+                    }
+                    @if (!PrintMode && Model.CanEditGroups && charBlock.Count > 1)
                     {
                         <JoinMoveControl TItem="ProjectRoleGridCharacterRowViewModel"
                                          Items="charBlock"
@@ -65,7 +75,7 @@
                     @if (charRow.Player is { } player)
                     {
                         @Space
-                        <ProjectRoleGridPlayerCell Row="charRow" Player="player" AvatarMode="Model.PlayerAvatar" />
+                        <ProjectRoleGridPlayerCell Row="charRow" Player="player" AvatarMode="Model.PlayerAvatar" PrintMode="PrintMode" />
                     }
                     @if (charRow.Groups is { } groups && groups.Groups.Count > 0)
                     {
@@ -105,7 +115,7 @@
 }
 @foreach (var child in Node.Children.OfType<GroupNode>())
 {
-    <ProjectRoleGridTreeNode Node="child" Siblings="Node.Children" Model="Model" OnSiblingsChanged="StateHasChanged" />
+    <ProjectRoleGridTreeNode Node="child" Siblings="Node.Children" Model="Model" PrintMode="PrintMode" OnSiblingsChanged="StateHasChanged" />
 }
 
 @code {
@@ -115,6 +125,8 @@
     [Parameter, EditorRequired] public List<RenderNode> Siblings { get; set; } = null!;
 
     [Parameter, EditorRequired] public ProjectRoleGridViewModel Model { get; set; } = null!;
+
+    [Parameter] public bool PrintMode { get; set; }
 
     // Siblings принадлежит родительскому узлу (это его Node.Children) — после мутации
     // перерисовать нужно родителя (это его @foreach определяет видимый порядок), а не себя.

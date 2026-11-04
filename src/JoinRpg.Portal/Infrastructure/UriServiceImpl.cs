@@ -178,6 +178,14 @@ internal class UriServiceImpl(
     Uri IProjectUriLocator.GetPrintBadgesUri(ProjectIdentification projectId, IReadOnlyCollection<CharacterIdentification> characterIds) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("Badges", "Print", new { ProjectId = projectId.Value, CharacterIds = new CompressedIntList(characterIds).ToString() }));
 
+    Uri IProjectUriLocator.GetRoleGridPrintUri(ProjectRolesListIdentification rolesListId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/RoleGridPrint",
+            values: new { ProjectId = rolesListId.ProjectId.Value, Id = rolesListId.ProjectRolesListId }));
+
+    Uri IProjectUriLocator.GetClassicRoleGridPrintUri(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/ClassicRoleGridPrint",
+            values: new { ProjectId = projectId.Value, CharacterGroupId = groupId?.CharacterGroupId, HotOnly = hotOnly ? true : (bool?)null }));
+
     public Uri GetUri(CharacterIdentification target) => GetUri(new Linkable(target));
 
     public Uri GetUri(CharacterGroupIdentification target) => GetUri(new Linkable(target));

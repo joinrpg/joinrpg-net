@@ -3,6 +3,7 @@ using JoinRpg.Common.PrimitiveTypes;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Plots;
+using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.Web.Accommodation;
 using JoinRpg.Web.Plots;
@@ -30,6 +31,7 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
     private static readonly ProjectFieldVariantIdentification VariantId = new(FieldId, 3);
     private static readonly PlotElementIdentification PlotElementId = new(new PlotFolderIdentification(ProjectId, 17), 230);
     private static readonly PlotVersionIdentification PlotVersionId = new(PlotElementId, 4);
+    private static readonly ProjectRolesListIdentification RolesListId = new(ProjectId, 77);
     private static readonly AccommodationTypeIdentification RoomTypeId = new(ProjectId, 58);
 
     private readonly IServiceProvider _clientServices = new ServiceCollection().AddUriLocator().BuildServiceProvider();
@@ -103,6 +105,9 @@ public class UriLocatorConsistencyTests(IntegrationTestPortalFactory factory)
         ["GetMassMailUri", (Func<IProjectUriLocator, Uri>)(l => l.GetMassMailUri(ProjectId, [new(ProjectId, 13), new(ProjectId, 451), new(ProjectId, 452)]))],
         ["GetPrintCharactersUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintCharactersUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
         ["GetPrintBadgesUri", (Func<IProjectUriLocator, Uri>)(l => l.GetPrintBadgesUri(ProjectId, [CharId, new(ProjectId, 1000), new(ProjectId, 1358)]))],
+        ["GetRoleGridPrintUri", (Func<IProjectUriLocator, Uri>)(l => l.GetRoleGridPrintUri(RolesListId))],
+        ["GetClassicRoleGridPrintUri", (Func<IProjectUriLocator, Uri>)(l => l.GetClassicRoleGridPrintUri(ProjectId, GroupId, hotOnly: false))],
+        ["GetClassicRoleGridPrintUri hot", (Func<IProjectUriLocator, Uri>)(l => l.GetClassicRoleGridPrintUri(ProjectId, GroupId, hotOnly: true))],
         // Большие разрывы между id дают в CompressedIntList запятую — проверяем, что обе стороны экранируют её одинаково.
         ["GetMassMailUri with comma", (Func<IProjectUriLocator, Uri>)(l => l.GetMassMailUri(ProjectId, [new(ProjectId, 100), new(ProjectId, 200), new(ProjectId, 300)]))],
     ];
