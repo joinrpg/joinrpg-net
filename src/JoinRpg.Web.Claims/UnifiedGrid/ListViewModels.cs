@@ -50,6 +50,9 @@ public record class UgClaimViewModel(
      [property: Display(Name = "Игрок")] UserLinkViewModel? Player,
     [property: Display(Name = "Статус заявки")] ClaimFullStatusView ClaimStatus,
     [property: Display(Name = "Обновлена"), UIHint("EventTime")] DateTimeOffset? UpdateDate,
+    // Автор последнего обновления («мной»/«игроком»/ссылка) — только в мастерском скоупе
+    // (ADR027 §4); у капитана null.
+    UserLinkViewModel? LastModifiedBy,
     [property: Display(Name = "Создана"), UIHint("EventTime")] DateTimeOffset? CreateDate,
     [property: Display(Name = "Дата заезда")] DateTimeOffset? CheckInDate,
     [property: Display(Name = "Ответственный")] UserLinkViewModel? Responsible,

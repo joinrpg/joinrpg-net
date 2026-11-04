@@ -1,3 +1,4 @@
+using JoinRpg.Common.PrimitiveTypes.Users;
 using JoinRpg.Common.WebComponents;
 using JoinRpg.Domain.Access;
 using JoinRpg.DomainTypes.Characters;
@@ -61,7 +62,12 @@ public static class ItemBuilder
 
         return new UgItemViewModel(
             characterViewModel,
-            [.. claims.Select(claim => BuildClaimItem(new ClaimInCharacter(character, claim), accessArguments, problems?[claim.ClaimId], unreadComments?.GetValueOrDefault(claim.CommentDiscussionId)))]
+            [.. claims.Select(claim => BuildClaimItem(
+                new ClaimInCharacter(character, claim),
+                accessArguments,
+                scope == UgScopeView.Master ? currentUserId.UserIdentificationOrDefault : null,
+                problems?[claim.ClaimId],
+                unreadComments?.GetValueOrDefault(claim.CommentDiscussionId)))]
             );
     }
 
@@ -74,14 +80,19 @@ public static class ItemBuilder
             .Where(group => group.IsPublic || accessArguments.MasterAccess)
             .Select(group => new CharacterGroupLinkSlimViewModel(group))];
 
+    /// <param name="viewerId">
+    /// Текущий пользователь — для подписи «мной»; <c>null</c> в капитанском скоупе: автор
+    /// последнего обновления там не показывается (ADR027 §4).
+    /// </param>
     private static UgClaimViewModel BuildClaimItem(
         ClaimInCharacter claimInCharacter,
         AccessArguments accessArguments,
+        UserIdentification? viewerId,
         IReadOnlyCollection<ClaimProblem>? problems,
         int? unreadCommentsCount)
     {
         var claim = claimInCharacter.Claim;
-        var lastModifiedAt = ClaimListBuilder.GetLastCommentTime(claim, accessArguments);
+        var (lastModifiedAt, lastModifiedBy) = ClaimListBuilder.GetLastComment(claim, claimInCharacter.ProjectInfo, accessArguments);
 
         var respMaster = claimInCharacter.ProjectInfo.GetMasterById(claim.ResponsibleMasterId).UserInfo;
 
@@ -89,6 +100,7 @@ public static class ItemBuilder
             new UserLinkViewModel(claim.Player),
             ClaimStatusBuilders.CreateFullStatus(claim, accessArguments),
             lastModifiedAt,
+            lastModifiedBy is { } by && viewerId is not null ? BuildLastModifiedBy(by, claim, viewerId) : null,
             claim.CreateDate,
             claim.CheckInDate,
             new UserLinkViewModel(respMaster),
@@ -98,5 +110,23 @@ public static class ItemBuilder
             problems?.Select(problem => new ProblemViewModel(problem)).ToList(),
             unreadCommentsCount
             );
+    }
+
+    /// <summary>
+    /// Подпись автора последнего обновления, как в старом списке заявок: «мной» для текущего
+    /// пользователя, «игроком» для игрока заявки, иначе ссылка на автора. Остров не знает текущего
+    /// пользователя, поэтому выбирает сервер — по <paramref name="viewerId"/>.
+    /// </summary>
+    private static UserLinkViewModel BuildLastModifiedBy(UserInfoHeader author, CharacterClaimInfo claim, UserIdentification viewerId)
+    {
+        if (author.UserId == viewerId)
+        {
+            return new UserLinkViewModel(author.UserId, "мной", ViewMode.Show);
+        }
+        if (author.UserId == claim.Player.UserId)
+        {
+            return new UserLinkViewModel(author.UserId, "игроком", ViewMode.Show);
+        }
+        return new UserLinkViewModel(author);
     }
 }

@@ -262,7 +262,7 @@ public class ClaimsGridTest : BunitContext
                 new UgClaimViewModel(
                     new UserLinkViewModel(new(1), "Игрок", ViewMode.Show),
                     new ClaimFullStatusView(ClaimStatusView.AddedByUser, null),
-                    null, null, null,
+                    null, null, null, null,
                     new UserLinkViewModel(new(1), "Мастер", ViewMode.Show),
                     new ClaimBalance(0, 0),
                     new ClaimIdentification(ProjectId, 1),

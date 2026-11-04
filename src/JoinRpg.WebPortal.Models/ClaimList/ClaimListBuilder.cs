@@ -121,14 +121,6 @@ public static class ClaimListBuilder
     private static UserInfoHeader? MasterById(ProjectInfo projectInfo, UserIdentification? masterId)
         => masterId is { } id ? projectInfo.GetMasterByIdOrDefault(id)?.UserInfo : null;
 
-    /// <summary>
-    /// Время последней активности по заявке поверх доменного агрегата (ADR013).
-    /// </summary>
-    public static DateTime GetLastCommentTime(CharacterClaimInfo claim, AccessArguments accessArguments)
-        => GetLastCommentCore(
-            claim.CreateDate, claim.LastPlayerCommentAt, claim.LastVisibleMasterCommentAt,
-            claim.LastMasterCommentAt, accessArguments).At.UtcDateTime;
-
     private enum LastCommentBy
     {
         Player,

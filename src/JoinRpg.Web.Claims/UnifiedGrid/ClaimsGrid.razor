@@ -128,6 +128,12 @@
                             <UnreadCommentsCountBadge Count="claim.UnreadCommentsCount" /><text> </text>
                         }
                         <EventTime Model="claim.UpdateDate" />
+                        @* Автор последнего обновления («мной»/«игроком»/ссылка): сервер шлёт его
+                           только в мастерском скоупе (ADR027 §4), у капитана поле пустое. *@
+                        @if (claim.LastModifiedBy is { } lastModifiedBy)
+                        {
+                            <text> </text><UserLink Model="lastModifiedBy" ShowIcon="false" />
+                        }
                     </td>
 
                     <td><UserLink Model="claim.Responsible" /></td>

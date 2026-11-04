@@ -295,10 +295,10 @@ public class ClaimListBuilderTest
         result.By!.UserId.Value.ShouldBe(Mock.Player.UserId);
     }
 
-    // #6015 для агрегата (ADR013): та же нормализация в перегрузке, на которой считает
+    // #6015 для агрегата (ADR013): та же нормализация в методе, на котором считает
     // колонку «обновлено» UnifiedGrid (ADR027).
     [Fact]
-    public void GetLastCommentTimeOnAggregateNormalizesCommentOffsetToUtc()
+    public void GetLastCommentOnAggregateNormalizesCommentOffsetToUtc()
     {
         var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
         claim.CreateDate = new DateTime(2026, 1, 1, 20, 0, 0, DateTimeKind.Unspecified);
@@ -307,8 +307,8 @@ public class ClaimListBuilderTest
         var aggregateClaim = Mock.GetCharacterInfo(Mock.Character).Claims
             .ShouldHaveSingleItem();
 
-        ClaimListBuilder.GetLastCommentTime(aggregateClaim, AccessArguments.None)
-            .ShouldBe(new DateTime(2026, 1, 2, 9, 0, 0, DateTimeKind.Unspecified));
+        ClaimListBuilder.GetLastComment(aggregateClaim, Mock.ProjectInfo, AccessArguments.None)
+            .At.ShouldBe(new DateTime(2026, 1, 2, 9, 0, 0, DateTimeKind.Unspecified));
     }
 
     private sealed class NoProblemsValidator : IClaimProblemValidator

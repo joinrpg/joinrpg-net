@@ -874,6 +874,99 @@ public class UnifiedGridViewServiceTest
 
     #endregion
 
+    #region Кем обновлена (ADR027 §4, issue #6092)
+
+    /// <summary>Метка комментария: на день позже подачи (CreateDate ставится «сейчас»).</summary>
+    private static DateTimeOffset CommentAt() => DateTimeOffset.UtcNow.AddDays(1);
+
+    /// <summary>Подача заявки — последнее событие, автор — игрок: подпись «игроком».</summary>
+    [Fact]
+    public async Task SubmissionIsMarkedAsPlayer()
+    {
+        var claim = Mock.CreateClaim(Mock.CreateCharacter("submitted"), Mock.Player);
+
+        var row = ClaimRow(await GetItems(UgStatusFilterView.Active, UgScopeView.Master), claim);
+
+        row.LastModifiedBy.ShouldNotBeNull().DisplayName.ShouldBe("игроком");
+    }
+
+    /// <summary>
+    /// Комментарий игрока после подачи — автор всё ещё игрок: подпись «игроком», а не ссылка
+    /// на него (как в старом списке заявок).
+    /// </summary>
+    [Fact]
+    public async Task PlayerCommentIsMarkedAsPlayer()
+    {
+        var claim = Mock.CreateClaim(Mock.CreateCharacter("player comment"), Mock.Player);
+        claim.LastPlayerCommentAt = CommentAt();
+
+        var row = ClaimRow(await GetItems(UgStatusFilterView.Active, UgScopeView.Master), claim);
+
+        row.LastModifiedBy.ShouldNotBeNull().DisplayName.ShouldBe("игроком");
+    }
+
+    /// <summary>Мастерский комментарий другого мастера — подпись со ссылкой на него.</summary>
+    [Fact]
+    public async Task MasterCommentShowsMasterLink()
+    {
+        var anotherMaster = Mock.CreateMaster("Мастер Второй");
+        Mock.ReInitProjectInfo();
+        var claim = Mock.CreateClaim(Mock.CreateCharacter("master comment"), Mock.Player);
+        claim.LastMasterCommentAt = CommentAt();
+        claim.LastMasterCommentBy_Id = anotherMaster.UserId;
+
+        var row = ClaimRow(await GetItems(UgStatusFilterView.Active, UgScopeView.Master), claim);
+
+        var by = row.LastModifiedBy.ShouldNotBeNull();
+        by.UserId.ShouldBe(new UserIdentification(anotherMaster.UserId));
+        by.DisplayName.ShouldContain("Мастер Второй");
+    }
+
+    /// <summary>Комментарий текущего пользователя — подпись «мной».</summary>
+    [Fact]
+    public async Task OwnCommentIsMarkedAsMe()
+    {
+        var claim = Mock.CreateClaim(Mock.CreateCharacter("own comment"), Mock.Player);
+        claim.LastMasterCommentAt = CommentAt();
+        claim.LastMasterCommentBy_Id = Mock.Master.UserId;
+
+        var row = ClaimRow(await GetItems(UgStatusFilterView.Active, UgScopeView.Master), claim);
+
+        // Текущий пользователь теста — Mock.Master (FakeCurrentUserAccessor по умолчанию).
+        row.LastModifiedBy.ShouldNotBeNull().DisplayName.ShouldBe("мной");
+    }
+
+    /// <summary>
+    /// Автор-мастер, удалённый из ACL проекта, имени не получает: подписи нет совсем (null),
+    /// а грид не падает.
+    /// </summary>
+    [Fact]
+    public async Task MasterRemovedFromAclShowsNoAuthor()
+    {
+        var formerMaster = Mock.CreateMaster("Бывший мастер");
+        var claim = Mock.CreateClaim(Mock.CreateCharacter("former master comment"), Mock.Player);
+        claim.LastMasterCommentAt = CommentAt();
+        claim.LastMasterCommentBy_Id = formerMaster.UserId;
+        Mock.Project.ProjectAcls.Remove(Mock.Project.ProjectAcls.Single(acl => acl.UserId == formerMaster.UserId));
+        Mock.ReInitProjectInfo();
+
+        var row = ClaimRow(await GetItems(UgStatusFilterView.Active, UgScopeView.Master), claim);
+
+        row.LastModifiedBy.ShouldBeNull();
+    }
+
+    /// <summary>Капитану автора не шлют: подпись «кем обновлена» — мастерский скоуп (ADR027 §4).</summary>
+    [Fact]
+    public async Task CaptainDoesNotGetLastModifiedBy()
+    {
+        var claim = Mock.CreateClaim(Mock.CreateCharacter("captain view"), Mock.Player);
+        claim.LastPlayerCommentAt = CommentAt();
+
+        ClaimRow(await GetItems(UgStatusFilterView.Active), claim).LastModifiedBy.ShouldBeNull();
+    }
+
+    #endregion
+
     #region Выгрузка (ADR027 §5, ревью #6025)
 
     private async Task<IReadOnlyList<ClaimInfo>> GetExport(
