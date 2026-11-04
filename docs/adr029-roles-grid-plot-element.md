@@ -86,9 +86,10 @@
 - Данные вложенная сетка берёт отдельной ручкой `/webapi/project-role-grid/getforplot`
   (`GetRoleGridForPlot(PlotElementIdentification)`), которая и выполняет проверку доступа из п.2:
   `PublicMode` сетки, `PublishPlot` проекта, права мастера или пересечение таргетов вводной с
-  персонажами пользователя (новый метод `IClaimInfoRepository.GetApprovedClaimCharacterIds` —
-  персонажи approved/checked-in заявок; пересечение — `TargetsInfo.HasIntersections`, покрывает и
-  групповые таргеты). Неопубликованная или `IsMasterOnly` вводная игроку не отдаётся.
+  персонажами пользователя (персонажи approved/checked-in заявок — существующий
+  `ICharacterInfoRepository.GetCharacterInfosByPlayer` с `ClaimStatusSpec.Approved`; пересечение —
+  `TargetsInfo.HasIntersections`, покрывает и групповые таргеты). Неопубликованная или `IsMasterOnly`
+  вводная игроку не отдаётся.
 - Уведомление о публикации: шаблон письма уже содержит ссылку «Прочитать её: %recepient.claim%#pe{id}»
   (карточка заявки, где сетка и отрендерится) — прямую ссылку на `/roleslist/{id}` в письмо не давать:
   приватная сетка игроку по ней не откроется. Для RoleGrid в текст письма дописывается имя сетки.
@@ -147,8 +148,8 @@
    DTO-поля и проекции, бейджи/отображение типа. Поведения для пользователя не меняет.
 2. **Создание/редактирование** *(← 1)* — сервисы и валидация, селектор сетки, ветка формы,
    клонирование, мастерская панель (имя сетки + ссылка), имя сетки в письме о публикации.
-3. **Доступ через вводную** *(← 1; параллелен 2)* — `GetApprovedClaimCharacterIds`,
-   `GetRoleGridForPlot` + ручка + HTTP-клиент, параметр `AccessViaPlotElement`
+3. **Доступ через вводную** *(← 1; параллелен 2)* — `GetRoleGridForPlot` + ручка + HTTP-клиент,
+   параметр `AccessViaPlotElement`
    у `ProjectRoleGrid`.
 4. **Отображение у персонажа** *(← 3)* — ссылка csproj Plots → CharacterGroups,
    `PlotRenderer`/VM, ветка RoleGrid в `PlotElementsView`, `ReorderPlotByChar`.
