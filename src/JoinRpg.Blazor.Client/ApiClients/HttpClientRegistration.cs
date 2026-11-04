@@ -68,6 +68,7 @@ public static class HttpClientRegistration
                 .AddHttpClient<ICaptainRuleClient, CaptainRuleClientImpl>()
                 .AddHttpClient<IProjectFieldsClient, ProjectFieldsClient>()
                 .AddHttpClient<IProjectRolesListClient, ProjectRolesListClientImpl>()
+                .AddHttpClient<IRolesListSelectorClient, RolesListSelectorClientImpl>()
                 .AddHttpClient<JoinRpg.Web.ProjectMasterTools.Badges.IBadgeTemplateClient, BadgeTemplateClientImpl>()
                 .AddHttpClient<IProjectRoleGridClient, ProjectRoleGridClientImpl>()
                 .AddHttpClient<IGroupReportClient, GroupReportClientImpl>()

@@ -12,7 +12,7 @@ internal class ProjectRolesListViewService(
     IProjectRolesListService service,
     ICurrentUserAccessor currentUserAccessor,
     IProjectMetadataRepository projectMetadataRepository)
-    : IProjectRolesListClient
+    : IProjectRolesListClient, IRolesListSelectorClient
 {
     public async Task<ProjectRolesListViewModel> GetList(ProjectIdentification projectId)
     {
@@ -37,6 +37,15 @@ internal class ProjectRolesListViewService(
             projectInfo,
             currentUserAccessor,
             characterGroups);
+    }
+
+    public async Task<ProjectRolesListDto[]> GetRolesListsList(ProjectIdentification projectId)
+    {
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(projectId);
+        return [.. projectInfo.ProjectRolesLists
+            .Select(rolesList => new ProjectRolesListDto(rolesList.ProjectRolesListId!, rolesList.Name))
+            .OrderBy(rolesList => rolesList.Name)
+            ];
     }
 
     public async Task<ProjectRolesList> GetById(ProjectRolesListIdentification id)

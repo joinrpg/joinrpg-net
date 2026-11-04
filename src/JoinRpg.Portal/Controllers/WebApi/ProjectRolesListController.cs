@@ -1,4 +1,5 @@
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.Web.ProjectCommon;
 using JoinRpg.Web.ProjectMasterTools.ProjectRolesLists;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +8,15 @@ namespace JoinRpg.Portal.Controllers.WebApi;
 [Route("/webapi/project-roles-list/[action]")]
 [RequireMaster]
 [IgnoreAntiforgeryToken]
-public class ProjectRolesListController(IProjectRolesListClient client) : ControllerBase
+public class ProjectRolesListController(IProjectRolesListClient client, IRolesListSelectorClient selectorClient) : ControllerBase
 {
     [HttpGet]
     public async Task<ProjectRolesListViewModel> GetList(ProjectIdentification projectId)
         => await client.GetList(projectId);
+
+    [HttpGet]
+    public async Task<ProjectRolesListDto[]> GetRolesListsList(ProjectIdentification projectId)
+        => await selectorClient.GetRolesListsList(projectId);
 
     [HttpGet]
     public async Task<ProjectRolesList> GetById(ProjectRolesListIdentification targetId) => await client.GetById(targetId);

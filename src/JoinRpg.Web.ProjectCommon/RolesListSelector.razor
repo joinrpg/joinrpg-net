@@ -1,0 +1,38 @@
+@inject IRolesListSelectorClient client
+@inject SelectorListCache cache
+
+<TypedSelector TKey="ProjectRolesListIdentification" TItem="ProjectRolesListDto"
+               Name="@Name"
+               Items="rolesLists"
+               KeySelector="@(r => r.ProjectRolesListId)"
+               ToListItem="@(r => TypedSelectList.CreateItem(
+                   Value: r.ProjectRolesListId,
+                   Text: r.Name))"
+               SelectedValues="initial"
+               SelectedItemsChanged="HandleSelectedItemsChanged"
+               Multiple="false"
+               />
+
+@code {
+
+    [Parameter] public string? Name { get; set; } = null;
+    [Parameter][EditorRequired] public ProjectIdentification ProjectId { get; set; } = null!;
+    [Parameter] public ProjectRolesListIdentification? SelectedId { get; set; }
+    [Parameter] public EventCallback<ProjectRolesListIdentification[]> SelectedIdsChanged { get; set; }
+    [Parameter] public EventCallback<ProjectRolesListDto[]> SelectedChanged { get; set; }
+
+    private ProjectRolesListDto[]? rolesLists;
+    private ProjectRolesListIdentification[] initial => SelectedId is not null ? [SelectedId] : [];
+
+    private async Task HandleSelectedItemsChanged(ProjectRolesListDto[] selectedItems)
+    {
+        await SelectedIdsChanged.InvokeAsync(selectedItems.Select(x => x.ProjectRolesListId).ToArray());
+        await SelectedChanged.InvokeAsync(selectedItems);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        rolesLists = [.. await cache.GetOrLoad<ProjectRolesListDto>($"roles-lists:{ProjectId.Value}",
+            async () => await client.GetRolesListsList(ProjectId))];
+    }
+}

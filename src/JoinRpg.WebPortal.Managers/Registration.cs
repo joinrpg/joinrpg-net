@@ -56,6 +56,7 @@ public static class Registration
         .AddScoped<IResponsibleMasterRuleClient, ProjectMasterTools.ResponsibleMasterRules.ResponsibleMasterRuleViewService>()
         .AddScoped<ICaptainRuleClient, ProjectMasterTools.CaptainRules.CaptainRuleViewService>()
         .AddScoped<IProjectRolesListClient, ProjectRolesListViewService>()
+        .AddScoped<IRolesListSelectorClient, ProjectRolesListViewService>()
         .AddScoped<Web.ProjectMasterTools.Badges.IBadgeTemplateClient, ProjectMasterTools.Badges.BadgeTemplateViewService>()
         .AddScoped<IProjectRoleGridClient, CharacterGroups.ProjectRoleGridViewService>()
         .AddScoped<IGroupReportClient, CharacterGroups.GroupReportViewService>()
