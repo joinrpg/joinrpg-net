@@ -5,7 +5,7 @@ resources:
 namespace: joinrpg-dev
 
 commonLabels:
-  managed-by-kustomize-dev: "true" #Careful. Contains name of the environment, used for kubectl apply --prune
+  managed-by-kustomize: "true" # Единая метка для kubectl apply --prune (все окружения и проекты)
 
 configMapGenerator:
   - name: joinrpg-configmap

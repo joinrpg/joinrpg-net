@@ -2,7 +2,7 @@
 # пока joinrpg.ru и id.joinrpg.ru закрыты заглушкой, Portal и IdPortal доступны здесь.
 # Боевые маршруты (joinrpg-portal, joinrpg-idportal) не трогаем.
 # Чтобы убрать — удалить этот файл из resources в kustomization.yaml: деплой удалит
-# HTTPRoute прунингом по метке managed-by-kustomize-prod.
+# HTTPRoute прунингом по метке managed-by-kustomize.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
