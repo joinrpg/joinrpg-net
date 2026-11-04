@@ -22,6 +22,7 @@
 
 ### Исправлено
 - `FormRow` без `Label`: вместо пустого `<label>` — пустая колонка, `Label` теперь `string?`. ([#6010](https://github.com/joinrpg/joinrpg-net/pull/6010))
+- `JoinBadge`: параметр `Size` заработал — классы `label-xs/label-sm/label-lg` определены в пакете (Bootstrap 3 не имеет размеров у `.label`, раньше параметр молча игнорировался). Бейджи с заданным `Size` изменят размер. ([#6085](https://github.com/joinrpg/joinrpg-net/pull/6085))
 
 ## 2026.9.533 — 2026-10-29
 

@@ -1,6 +1,23 @@
-label {
-  font-size: 14px;
-  display: inline-block;
+/* Базовый кегль — 0.75em от контекста, как у .label в Bootstrap 3. Прежнее правило
+   label{...} никогда не действовало: это селектор элемента <label>, а бейдж рендерится
+   span'ом. Без Bootstrap этот класс — единственный источник кегля бейджа. */
+.label {
+  font-size: 0.75em;
+}
+
+/* Размеры: Bootstrap 3 не имеет вариантов размера у .label, классы — свои
+   (BootstrapStyle выдаёт label-xs/label-sm/label-lg). Абсолютные, чтобы бейдж
+   не менял размер от контекста. Без Size — базовые 0.75em выше. */
+.label-xs {
+  font-size: 10px;
+}
+
+.label-sm {
+  font-size: 12px;
+}
+
+.label-lg {
+  font-size: 18px;
 }
 
 span {
