@@ -76,7 +76,7 @@
 - `JoinRpg.WebPortal.Managers` — подготовка ViewModels для веб-портала
 
 ### WebPortalShared (разделяемые UI-компоненты)
-- `JoinRpg.Web.ProjectCommon` — общий UI для всех страниц, относящимся к проектам
+- `JoinRpg.Web.ProjectCommon` — общий UI для всех страниц, относящимся к проектам; здесь же живут общие селекторы (персонажи, группы, мастера, сетки ролей) с минимальными клиентскими интерфейсами (`ICharactersClient`, `IRolesListSelectorClient` и т.п.) — потребителю достаточно ссылаться на ProjectCommon, не тянут полные клиенты слоя мастерских инструментов
 - `JoinRpg.Web.Games` — UI страниц описания проекта, настроек проекта, etc
 - `JoinRpg.Web.Claims` — UI для заявок игроков
 - `JoinRpg.Web.Comments` — UI обсуждения (комментарии заявки и темы форума): модель, статические компоненты дерева и формы ответа ([ADR026](adr026-comment-discussion.md)); построитель модели — в `JoinRpg.WebPortal.Managers`

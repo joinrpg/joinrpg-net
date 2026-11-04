@@ -48,6 +48,10 @@ public class SelectorListPrerenderTransferTest
     public Task KogdaIgraShortViewModel() => ShouldSurviveTransfer(
         new KogdaIgraShortViewModel(new KogdaIgraIdentification(60), "Игра", new Uri("https://kogda-igra.ru/game/60"), Year: 2026));
 
+    [Fact]
+    public Task ProjectRolesListDto() => ShouldSurviveTransfer(
+        new ProjectRolesListDto(new ProjectRolesListIdentification(ProjectId, 70), "Сетка ролей"));
+
     /// <summary>
     /// Сервер грузит список при пререндере и сохраняет его, клиент получает сохранённое и не грузит сам.
     /// Посередине — те же байты, что едут в странице.
