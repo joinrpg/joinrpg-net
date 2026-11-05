@@ -38,6 +38,8 @@ else
 {
     var Model = Result.Grid!;
     @* Портал на Bootstrap 3 — flex-утилит (d-flex и т.п.) нет, поэтому inline-стили. *@
+    if (ShowHeader)
+    {
     <div style="display: flex; align-items: center; gap: 12px;">
         <h1 style="margin: 0;">@Model.Name</h1>
         @if (!PrintMode)
@@ -68,6 +70,7 @@ else
             }
         }
     </div>
+    }
     @if (Model.GroupsViewMode == RolesGridGroupsViewMode.Tree)
     {
         @if (_treeRoot is not null)
@@ -195,6 +198,10 @@ else
 
     /// <summary>Сетка вшита в вводную: доступ проверяется по её таргетам (ADR029).</summary>
     [Parameter] public PlotElementIdentification? AccessViaPlotElement { get; set; }
+
+    /// <summary>Показывать шапку с именем сетки и кнопками. Во встроенном показе (вводная)
+    /// имя уже есть в подписи вводной — шапка дублирует его.</summary>
+    [Parameter] public bool ShowHeader { get; set; } = true;
 
     private ProjectRoleGridViewResult? Result { get; set; }
     private bool loadFailed;
