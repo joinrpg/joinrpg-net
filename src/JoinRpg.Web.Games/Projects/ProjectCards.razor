@@ -1,9 +1,9 @@
-@if (Projects.Count > 0)
+@if (Projects.Count > 0 || MoreGamesUrl is not null)
 {
     <h2>@Header</h2>
     <div class="cards">
 
-        @foreach (var project in Projects.Take(MaxGames ?? int.MaxValue))
+        @foreach (var project in Projects)
         {
             <div class="card">
                 <h4 title="@project.ProjectName" class="project-name">
@@ -52,6 +52,15 @@
             </div>
 
         }
+
+        @if (MoreGamesUrl is not null)
+        {
+            <div class="card">
+                <h4 class="project-name">
+                    <a href="@MoreGamesUrl"><JoinIcon Icon="JoinIconType.Calendar" style="color:black;" /><text>&nbsp;</text>Еще больше игр на КогдаИгре</a>
+                </h4>
+            </div>
+        }
     </div>
 }
 @code {
@@ -63,6 +72,9 @@
     [EditorRequired]
     public string Header { get; set; } = null!;
 
+    /// <summary>
+    /// Ссылка «на все игры» на внешнем каталоге; показывается отдельной карточкой после списка проектов.
+    /// </summary>
     [Parameter]
-    public int? MaxGames { get; set; }
+    public string? MoreGamesUrl { get; set; }
 }

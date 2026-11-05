@@ -7,7 +7,7 @@ namespace JoinRpg.Portal.Controllers;
 [AllowAnonymous]
 public class HomeController(ProjectListManager projectListManager) : Common.JoinMvcControllerBase
 {
-    private const int ProjectsOnHomePage = 9;
+    private const int ProjectsOnHomePage = 8;
 
     public async Task<ActionResult> Index() => View(await projectListManager.LoadHomeModel(ProjectsOnHomePage));
 
