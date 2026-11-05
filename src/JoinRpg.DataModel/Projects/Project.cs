@@ -19,6 +19,12 @@ public class Project : IProjectEntity
     public bool IsAcceptingClaims { get; set; }
 
     /// <summary>
+    /// Дата, когда заявки в проект были открыты в первый раз. NULL — заявки ещё ни разу не открывались.
+    /// Заполняется один раз при первом включении приёма заявок; повторные открытия/закрытия не меняют.
+    /// </summary>
+    public DateTime? ClaimsOpenedDate { get; set; }
+
+    /// <summary>
     /// Проект заблокирован на время восстановления данных (ADR023). Ставится только у активного проекта,
     /// <see cref="Active"/> и <see cref="IsAcceptingClaims"/> при этом не меняются.
     /// </summary>
