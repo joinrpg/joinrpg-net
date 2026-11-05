@@ -289,6 +289,60 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
     }
 
     [Fact]
+    public async Task SetClaimSettings_ClaimsClosedToOpen_FillsClaimsOpenedDate()
+    {
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+
+        await CreateService().SetClaimSettings(ProjectId,
+            mock.ProjectInfo.ClaimSettings with { IsAcceptingClaims = true });
+
+        mock.Project.ClaimsOpenedDate.ShouldNotBeNull();
+        Result.ClaimSettings.ClaimsOpenedDate.ShouldBe(DateOnly.FromDateTime(mock.Project.ClaimsOpenedDate.Value));
+    }
+
+    [Fact]
+    public async Task SetClaimSettings_Reopen_KeepsClaimsOpenedDate()
+    {
+        var firstOpened = new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        mock.Project.ClaimsOpenedDate = firstOpened;
+        mock.ReInitProjectInfo();
+
+        await CreateService().SetClaimSettings(ProjectId,
+            mock.ProjectInfo.ClaimSettings with { IsAcceptingClaims = false });
+        await CreateService().SetClaimSettings(ProjectId,
+            mock.ProjectInfo.ClaimSettings with { IsAcceptingClaims = true });
+
+        mock.Project.ClaimsOpenedDate.ShouldBe(firstOpened);
+        Result.ClaimSettings.ClaimsOpenedDate.ShouldBe(DateOnly.FromDateTime(firstOpened));
+    }
+
+    [Fact]
+    public async Task SetClaimSettings_Closed_KeepsNull()
+    {
+        await CreateService().SetClaimSettings(ProjectId,
+            mock.ProjectInfo.ClaimSettings with { IsAcceptingClaims = false });
+
+        mock.Project.ClaimsOpenedDate.ShouldBeNull();
+        Result.ClaimSettings.ClaimsOpenedDate.ShouldBeNull();
+    }
+
+    // ADR023: настройки заявок доступны и в блокировке — включение приёма там тоже считается открытием заявок.
+    [Fact]
+    public async Task SetClaimSettings_Blocked_FillsClaimsOpenedDate()
+    {
+        mock.Project.IsBlocked = true;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+
+        await CreateService().SetClaimSettings(ProjectId,
+            mock.ProjectInfo.ClaimSettings with { IsAcceptingClaims = true });
+
+        mock.Project.ClaimsOpenedDate.ShouldNotBeNull();
+        Result.ClaimSettings.ClaimsOpenedDate.ShouldBe(DateOnly.FromDateTime(mock.Project.ClaimsOpenedDate.Value));
+    }
+
+    [Fact]
     public async Task CloseProject_DeactivatesProjectAndNotifiesMasters()
     {
         await CreateService().CloseProject(ProjectId, publishPlot: true);
