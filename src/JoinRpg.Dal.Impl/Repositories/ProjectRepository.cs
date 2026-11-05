@@ -318,16 +318,15 @@ internal class ProjectRepository(MyDbContext ctx) : GameRepositoryImplBase(ctx),
         // Ранжирование между собой — вне репозитория, той же формулой, что и для горячих ролей
         // (AdvertisementGameRanking), поэтому здесь порядок не важен.
         var query = PublicOpenProjects
+            .Where(p => p.ClaimsOpenedDate >= weekAgo)
             .Select(p => new
             {
                 p.ProjectId,
                 p.ProjectName,
-                EarliestClaimDate = p.Claims.Select(c => (DateTime?)c.CreateDate).Min(),
                 ActiveClaimsCount = p.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
                 AdvertisementCount = Ctx.AdvertisementLogEntriesSet.Count(e =>
                     e.ProjectId == p.ProjectId && e.Status == (int)AdvertisementLogStatus.Sent),
-            })
-            .Where(x => x.EarliestClaimDate == null || x.EarliestClaimDate >= weekAgo);
+            });
 
         var result = await query.ToListAsync();
 
