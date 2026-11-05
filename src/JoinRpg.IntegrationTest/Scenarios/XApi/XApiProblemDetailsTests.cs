@@ -56,6 +56,18 @@ public class XApiProblemDetailsTests(XApiMasterFixture fixture)
     }
 
     [Fact]
+    public async Task OrdinaryPageNotFound_StillReturnsHtmlErrorPage()
+    {
+        // Регрессия ветвления UseStatusCodePages: обычные страницы по-прежнему получают HTML-страницу /error/404
+        var response = await fixture.AnonymousXApiClient.GetRawAsync("/no-such-page-xapi-problemdetails-test");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound, await response.Content.ReadAsStringAsync());
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/html", await response.Content.ReadAsStringAsync());
+        var body = await response.Content.ReadAsStringAsync();
+        body.ShouldContain("Данные для техподдержки");
+    }
+
+    [Fact]
     public async Task UnknownEndpoint_Returns404ProblemDetails()
     {
         var response = await fixture.MasterClient.GetRawAsync($"/x-game-api/{fixture.ProjectId.Value}/no-such-endpoint");
