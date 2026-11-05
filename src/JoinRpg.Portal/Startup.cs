@@ -208,7 +208,25 @@ public class Startup(WebApplicationBuilder builder)
         _ = app.UseJoinRequestLogging();
 
         _ = app.UseExceptionHandler(PortalExceptionHandling.CreateOptions());
-        _ = app.UseStatusCodePagesWithReExecute(PortalExceptionHandling.ErrorPagePath + "/{0}");
+        // Внешнему API (x-api / x-game-api) пустые 4xx отдаём ProblemDetails; остальным — прежняя страница /error/{код}.
+        _ = app.UseStatusCodePages(async context =>
+        {
+            var httpContext = context.HttpContext;
+            if (httpContext.Request.Path.IsExternalApiPath())
+            {
+                var status = httpContext.Response.StatusCode;
+                await httpContext.RequestServices.GetRequiredService<IProblemDetailsService>()
+                    .TryWriteAsync(new ProblemDetailsContext
+                    {
+                        HttpContext = httpContext,
+                        ProblemDetails = new ProblemDetails { Status = status, Title = WebApiClientErrorTitles.GetTitle(status) },
+                    });
+                return;
+            }
+
+            httpContext.Request.Path = $"{PortalExceptionHandling.ErrorPagePath}/{httpContext.Response.StatusCode}";
+            await context.Next(httpContext);
+        });
 
         _ = app.MapOpenApi();
         _ = app.MapSwaggerUI("swagger", c =>

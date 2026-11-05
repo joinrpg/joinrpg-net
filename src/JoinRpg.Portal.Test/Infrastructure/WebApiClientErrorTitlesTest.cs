@@ -33,4 +33,12 @@ public class WebApiClientErrorTitlesTest
     [Fact]
     public void ClientError_KeepsLink()
         => CreateProblem(StatusCodes.Status404NotFound).Type.ShouldNotBeNullOrEmpty();
+
+    // Ветвь StatusCodePages для XApi берёт заголовок по коду напрямую из словаря
+    [Theory]
+    [InlineData(StatusCodes.Status404NotFound, "Не найдено")]
+    [InlineData(StatusCodes.Status405MethodNotAllowed, "Метод не поддерживается")]
+    [InlineData(StatusCodes.Status418ImATeapot, "Ошибка")]
+    public void GetTitle_ReturnsRussianTitleOrFallback(int status, string title)
+        => WebApiClientErrorTitles.GetTitle(status).ShouldBe(title);
 }
