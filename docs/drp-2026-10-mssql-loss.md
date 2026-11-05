@@ -323,8 +323,8 @@
 - [x] 🟢 (2026-10-19) «Не разобрались» не считает приглашения к проживанию — [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671), [#5672](https://github.com/joinrpg/joinrpg-net/issues/5672).
 - [x] 🟢 (2026-10-19) Видимость новых персонажей выбирается при каждом применении, группы открываются вслед за персонажем — [#5677](https://github.com/joinrpg/joinrpg-net/issues/5677) ([#5682](https://github.com/joinrpg/joinrpg-net/issues/5682), [#5684](https://github.com/joinrpg/joinrpg-net/issues/5684), [#5688](https://github.com/joinrpg/joinrpg-net/issues/5688), [docs#302](https://github.com/joinrpg/joinrpg-docs/pull/302)); ждёт выкатки.
 - [x] 🟢 (2026-10-19) Пустое поле-имя давало персонажу имя «CHAR-1» — [#5673](https://github.com/joinrpg/joinrpg-net/issues/5673), [#5685](https://github.com/joinrpg/joinrpg-net/issues/5685); ждёт выкатки.
-- [ ] В разделе «Новые персонажи» нет выбора «шаблон / не шаблон» — шаблоны 1696 восстановились обычными персонажами — [#5733](https://github.com/joinrpg/joinrpg-net/issues/5733).
-- [ ] Заявка восстанавливается на NPC, тип персонажа не меняется (пример: 1451-107716) — [#5907](https://github.com/joinrpg/joinrpg-net/issues/5907).
+- [x] 🟢 (2026-10-20) В разделе «Новые персонажи» нет выбора «шаблон / не шаблон» — [#5733](https://github.com/joinrpg/joinrpg-net/issues/5733) ([#5736](https://github.com/joinrpg/joinrpg-net/pull/5736) влит).
+- [x] 🟢 (2026-10-28) Заявка восстанавливается на NPC, тип персонажа не меняется (пример: 1451-107716) — [#5907](https://github.com/joinrpg/joinrpg-net/issues/5907) ([#5910](https://github.com/joinrpg/joinrpg-net/pull/5910) влит).
 - [x] ~~«Шаблон» с пустым названием в проекте без поля имени~~ — [#5678](https://github.com/joinrpg/joinrpg-net/issues/5678) закрыт без исправления ([#5681](https://github.com/joinrpg/joinrpg-net/issues/5681) закрыт): велик риск сделать обычного персонажа шаблоном. Обход — вписать название шаблона руками.
 - [ ] Поля, которых нет в выгрузке: публичные — попросить игроков заполнить заново, скрытые
       мастерские — мастер из своих материалов.
@@ -377,7 +377,7 @@
 - [ ] Прод лежал ~14 минут 2026-10-19 16:54–17:08Z: MSSQL не отвечал — [#5666](https://github.com/joinrpg/joinrpg-net/issues/5666).
 - [x] 🟢 (2026-10-19) Ошибки PersistentState приглашений на странице заявки — [#5670](https://github.com/joinrpg/joinrpg-net/issues/5670), [#5674](https://github.com/joinrpg/joinrpg-net/issues/5674).
 - [x] 🟢 (2026-10-19) Мастеру одно уведомление о приглашении к проживанию, а не по письму на заявку — [#5676](https://github.com/joinrpg/joinrpg-net/issues/5676), [#5689](https://github.com/joinrpg/joinrpg-net/issues/5689); ждёт выкатки.
-- [ ] IP клиента не доходит до приложения (traefik, `externalTrafficPolicy: Cluster`) — [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667).
+- [x] (2026-10-30) IP клиента не доходит до приложения (traefik, `externalTrafficPolicy: Cluster`) — [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667): исправлено в [joinrpg-helms#3](https://github.com/joinrpg/joinrpg-helms/pull/3) (traefik и Gateway в IaC, реальный IP).
 - [x] ~~Вернуть автодеплой dev~~ — [#5575](https://github.com/joinrpg/joinrpg-net/issues/5575) влит 2026-10-16.
 - [ ] Старый бакет аватарок в Yandex Cloud — выключить (можно сразу после выкатки [#5530](https://github.com/joinrpg/joinrpg-net/issues/5530) с
       `PublicBaseUrl`). Временную джобу `AvatarCachedUriToKeyJob` ([#5532](https://github.com/joinrpg/joinrpg-net/issues/5532)) — убрать после отработки.
@@ -867,7 +867,7 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5650](https://github.com/joinrpg/joinrpg-net/issues/5650) | Сумма в уведомлении о переводе между заявками (по [#5643](https://github.com/joinrpg/joinrpg-net/issues/5643)) | 9 | влит |
 | issue [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647) | «Ручные оплаты»: время в двух поясах, итог | 9 | закрыт ([#5690](https://github.com/joinrpg/joinrpg-net/issues/5690)) |
 | issue [#5666](https://github.com/joinrpg/joinrpg-net/issues/5666) | Прод лежал ~14 минут: MSSQL не отвечал | 10 | заведён |
-| issue [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667) | IP клиента не доходит до приложения | 10 | заведён |
+| issue [#5667](https://github.com/joinrpg/joinrpg-net/issues/5667) | IP клиента не доходит до приложения | 10 | закрыт ([joinrpg-helms#3](https://github.com/joinrpg/joinrpg-helms/pull/3)) |
 | issue [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671) | Приглашения к проживанию считаются «неразобранными» уведомлениями | 8 | закрыт ([#5672](https://github.com/joinrpg/joinrpg-net/issues/5672)) |
 | [#5672](https://github.com/joinrpg/joinrpg-net/issues/5672) | Приглашения к проживанию не «неразобранные» (Closes [#5671](https://github.com/joinrpg/joinrpg-net/issues/5671)) | 8 | влит |
 | [#5682](https://github.com/joinrpg/joinrpg-net/issues/5682) | [#5677](https://github.com/joinrpg/joinrpg-net/issues/5677), PR 1: видимость — параметром доменных операций | 7 | влит |
@@ -877,8 +877,8 @@ IdPortal открывается раньше Portal: вход, «забыл па
 | [#5685](https://github.com/joinrpg/joinrpg-net/issues/5685) | Пустое поле-имя не даёт «CHAR-1» (Closes [#5673](https://github.com/joinrpg/joinrpg-net/issues/5673)) | 7 | влит, ждёт выкатки |
 | [#5681](https://github.com/joinrpg/joinrpg-net/issues/5681) | Шаблон без поля имени получает имя персонажа ([#5678](https://github.com/joinrpg/joinrpg-net/issues/5678)) | 7 | закрыт без мерджа |
 | issue [#5678](https://github.com/joinrpg/joinrpg-net/issues/5678) | «Шаблон» с пустым названием в проекте без поля имени | 7 | закрыт: не делаем |
-| issue [#5733](https://github.com/joinrpg/joinrpg-net/issues/5733) | Выбор «шаблон / не шаблон» у новых персонажей | 7 | заведён |
-| issue [#5907](https://github.com/joinrpg/joinrpg-net/issues/5907) | Заявка на NPC: тип персонажа не меняется | 7 | заведён |
+| issue [#5733](https://github.com/joinrpg/joinrpg-net/issues/5733) | Выбор «шаблон / не шаблон» у новых персонажей | 7 | закрыт ([#5736](https://github.com/joinrpg/joinrpg-net/pull/5736)) |
+| issue [#5907](https://github.com/joinrpg/joinrpg-net/issues/5907) | Заявка на NPC: тип персонажа не меняется | 7 | закрыт ([#5910](https://github.com/joinrpg/joinrpg-net/pull/5910)) |
 | [#5690](https://github.com/joinrpg/joinrpg-net/issues/5690) | «Ручные оплаты»: пояс браузера, точный итог (Closes [#5647](https://github.com/joinrpg/joinrpg-net/issues/5647)) | 9 | влит, ждёт выкатки |
 | [#5674](https://github.com/joinrpg/joinrpg-net/issues/5674) | Один остров приглашений на заявке (Closes [#5670](https://github.com/joinrpg/joinrpg-net/issues/5670)) | 10 | влит |
 | [#5689](https://github.com/joinrpg/joinrpg-net/issues/5689) | Одно уведомление о приглашении мастеру (Closes [#5676](https://github.com/joinrpg/joinrpg-net/issues/5676)) | 10 | влит, ждёт выкатки |
