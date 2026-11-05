@@ -327,6 +327,21 @@ public class ProjectServiceTest : ProjectMetadataServiceTestBase
         Result.ClaimSettings.ClaimsOpenedDate.ShouldBeNull();
     }
 
+    // ADR023: настройки заявок доступны и в блокировке — включение приёма там тоже считается открытием заявок.
+    [Fact]
+    public async Task SetClaimSettings_Blocked_FillsClaimsOpenedDate()
+    {
+        mock.Project.IsBlocked = true;
+        mock.Project.IsAcceptingClaims = false;
+        mock.ReInitProjectInfo();
+
+        await CreateService().SetClaimSettings(ProjectId,
+            mock.ProjectInfo.ClaimSettings with { IsAcceptingClaims = true });
+
+        mock.Project.ClaimsOpenedDate.ShouldNotBeNull();
+        Result.ClaimSettings.ClaimsOpenedDate.ShouldBe(DateOnly.FromDateTime(mock.Project.ClaimsOpenedDate.Value));
+    }
+
     [Fact]
     public async Task CloseProject_DeactivatesProjectAndNotifiesMasters()
     {
