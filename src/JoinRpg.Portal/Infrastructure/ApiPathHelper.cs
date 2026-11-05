@@ -17,7 +17,7 @@ internal static class ApiPathHelper
         var value = path.Value;
         var secondSlash = value.IndexOf('/', 1);
         var segment = secondSlash < 0 ? value.AsSpan(1) : value.AsSpan(1, secondSlash - 1);
-        return IsApiPathSegment(segment);
+        return segment.SequenceEqual("x-api") || segment.SequenceEqual("x-game-api");
     }
 
     /// <summary>Любое API (островов Blazor и внешнее), для которого отказы отдаём ProblemDetails, а не HTML-страницей.</summary>

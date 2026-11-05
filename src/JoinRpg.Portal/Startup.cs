@@ -37,6 +37,7 @@ using JoinRpg.Services.Notifications.Senders;
 using JoinRpg.WebPortal.Managers;
 using JoinRpg.WebPortal.Managers.Drp;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -154,6 +155,7 @@ public class Startup(WebApplicationBuilder builder)
 
         _ = services.AddProblemDetails();
         _ = services.AddExceptionHandler<WebApiExceptionHandler>();
+        _ = services.AddSingleton<IAuthorizationMiddlewareResultHandler, XApiAuthorizationResultHandler>();
         _ = services.Configure<ApiBehaviorOptions>(WebApiClientErrorTitles.Configure);
 
         _ = services.AddUserServicesOnly();
