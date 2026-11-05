@@ -229,6 +229,11 @@ internal class ProjectService(
                 ctx.Project.Details.EnableManyCharacters = !ctx.Request.settings.StrictlyOneCharacter;
                 ctx.Project.Details.IsPublicProject = ctx.Request.settings.IsPublicProject;
                 ctx.Project.IsAcceptingClaims = ctx.Request.settings.IsAcceptingClaims && ctx.Project.Active;
+                // Дата первого открытия заявок фиксируется один раз: при повторных открытиях не меняется.
+                if (ctx.Project.IsAcceptingClaims && ctx.Project.ClaimsOpenedDate is null)
+                {
+                    ctx.Project.ClaimsOpenedDate = ctx.Now.UtcDateTime;
+                }
                 ctx.Project.Details.AutoAcceptClaims = ctx.Request.settings.AutoAcceptClaims;
                 ctx.Project.Details.DefaultTemplateCharacterId = ctx.Request.settings.DefaultTemplate?.CharacterId;
                 if (claimApplyRules is not null)
