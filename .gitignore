@@ -19,6 +19,9 @@
 # Build results
 artifacts/
 
+# Superpowers session working documents (plans are ephemeral; specs are committed)
+docs/superpowers/plans/
+
 # Roslyn cache directories
 *.ide/
 
