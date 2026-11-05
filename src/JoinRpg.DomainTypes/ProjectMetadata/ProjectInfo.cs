@@ -408,4 +408,5 @@ public record ProjectClaimSettings(
     bool StrictlyOneCharacter,
     bool AutoAcceptClaims,
     bool IsAcceptingClaims,
-    bool IsPublicProject);
+    bool IsPublicProject,
+    DateOnly? ClaimsOpenedDate = null);

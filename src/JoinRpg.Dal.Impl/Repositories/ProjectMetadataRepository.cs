@@ -78,7 +78,8 @@ internal class ProjectMetadataRepository(MyDbContext ctx) : IProjectMetadataRepo
                 StrictlyOneCharacter: !project.Details.EnableManyCharacters,
                 AutoAcceptClaims: project.Details.AutoAcceptClaims,
                 IsAcceptingClaims: project.IsAcceptingClaims,
-                IsPublicProject: project.Details.IsPublicProject
+                IsPublicProject: project.Details.IsPublicProject,
+                ClaimsOpenedDate: project.ClaimsOpenedDate is { } opened ? DateOnly.FromDateTime(opened) : null
                 ),
             projectRolesLists: CreateRolesLists(project),
             defaultRolesListId: ProjectRolesListIdentification.FromOptional(projectId.Value, project.Details.DefaultProjectRolesListId),
