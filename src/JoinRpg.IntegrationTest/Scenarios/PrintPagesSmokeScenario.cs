@@ -4,6 +4,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata.Badges;
 using JoinRpg.IntegrationTest.TestInfrastructure;
 using JoinRpg.Services.Interfaces;
@@ -65,6 +66,25 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         text.ShouldNotContain(PlotsHeader);
         text.ShouldNotContain(FieldsHeader);
         text.ShouldNotContain(PrintableFieldValue);
+    }
+
+    // Вводная-сетка (ADR029) печатается вложенной сеткой: имя сетки видно, сама сетка рендерится
+    // статически, интерактивных контролов нет. Имя персонажа, который есть только в сетке,
+    // доказывает, что сетка действительно отрендерилась, а не только её заголовок.
+    [Fact]
+    public async Task CharacterList_PrintsRoleGridPlot()
+    {
+        var context = await SeedAsync();
+
+        var text = await GetPrintPageText(context, "characterlist");
+
+        text.ShouldContain("Сетка ролей: Сетка из вводной");
+        text.ShouldContain(context.GridOnlyCharacterName);
+
+        // Печатный режим сетки: кнопок быть не должно (как в печати самой сетки).
+        text.ShouldNotContain("Настройки сетки");
+        text.ShouldNotContain("Редактировать персонажа");
+        text.ShouldNotContain("Заявиться");
     }
 
     [Fact]
@@ -235,7 +255,6 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
 
     // «Распечатать все» над списком персонажей шлёт весь список, а в нём бывают шаблоны — печать их отсекает сама.
     [Theory]
-    [InlineData("characterlist")]
     [InlineData("handoutonly")]
     [InlineData("stickers")]
     public async Task PrintByIds_SkipsSlots(string action)
@@ -249,6 +268,28 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
 
         text.ShouldContain(context.CharacterName);
         text.ShouldNotContain(DefaultSlotName);
+    }
+
+    // У characterlist своя проверка: конверт шаблона по-прежнему отсекается, но шаблон законно
+    // виден строкой во вложенной сетке вводной (сетки показывают слоты и на интерактивных
+    // страницах), поэтому здесь проверяем отсутствие его конверта, а не имени в тексте страницы.
+    [Fact]
+    public async Task PrintByIds_CharacterList_SkipsSlotEnvelope()
+    {
+        var context = await SeedAsync();
+
+        var response = await context.MasterClient.GetAsync(
+            $"{context.ProjectId.Value}/print/characterlist?characterIds={await CharacterAndSlotIds(context)}");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var document = await response.AsHtmlDocument();
+
+        document.DocumentNode.SelectNodes(
+            $"//div[contains(@class, 'print-character-header') and contains(., '{DefaultSlotName}')]")
+            .ShouldBeNull("у шаблона не должно быть своего конверта");
+
+        var text = WebUtility.HtmlDecode(document.DocumentNode.InnerText);
+        text.ShouldContain(context.CharacterName);
+        text.ShouldContain(DefaultSlotName); // …строкой во вложенной сетке вводной
     }
 
     [Fact]
@@ -305,6 +346,7 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
         string CharacterName,
         string PlotContent,
         string HandoutContent,
+        string GridOnlyCharacterName,
         HttpClient MasterClient);
 
     // Сид общий для всех тестов класса: JoinApplicationFactory всё равно одна на класс,
@@ -342,13 +384,50 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
                 scope.ServiceProvider, masterId, "Проект для печати конвертов");
         }
 
-        var (seed, handoutContent) = await factory.Services.RunAsAsync(
+        var (seed, handoutContent, rolesListId, gridOnlyCharacterName) = await factory.Services.RunAsAsync(
             masterId,
             async sp =>
             {
                 var seed = await TestPlotHelpers.SeedPlotFolderAsync(sp, projectId, elementCount: 1);
                 var handout = await TestPlotHelpers.SeedHandoutAsync(sp, seed.PlotFolderId, seed.TargetCharacterId);
-                return (seed, handout.Content);
+
+                var projectInfo = await sp.GetRequiredService<IProjectMetadataRepository>().GetProjectMetadata(projectId);
+
+                // Этот персонаж есть только в сетке вводной, но не является заголовком конверта:
+                // его имя в распечатке доказывает, что вложенный ProjectRoleGrid отрендерился.
+                var gridOnlyCharacterName = $"Только в сетке {Guid.NewGuid().ToString("N")[..8]}";
+                _ = await sp.GetRequiredService<ICharacterService>().AddCharacter(new AddCharacterRequest(
+                    projectId,
+                    ParentCharacterGroupIds: [projectInfo.GroupTree.RootGroupId],
+                    new CharacterTypeInfo(CharacterType.Player, IsHot: false, SlotLimit: null, SlotName: null, CharacterVisibility.Public),
+                    FieldValues: new FieldLayerContainer(
+                        projectInfo,
+                        new Dictionary<int, string?> { [projectInfo.CharacterNameField!.Id.ProjectFieldId] = gridOnlyCharacterName })));
+
+                var rolesListId = (await sp.GetRequiredService<IProjectRolesListService>().CreateAsync(new ProjectRolesList(
+                    new ProjectRolesListIdentification(projectId, -1),
+                    "Сетка из вводной",
+                    CharacterGroupId: null,
+                    PublicMode: false,
+                    Fields: [],
+                    ContactsColumn: PlayerColumnMode.NameOnly,
+                    GroupsColumn: ProjectRolesListVisibilityMode.None,
+                    GroupsViewMode: RolesGridGroupsViewMode.None,
+                    ShowRolesFilter: ShowRolesFilter.All))).ProjectRolesListId!;
+
+                var plotService = sp.GetRequiredService<IPlotService>();
+                var versionId = await plotService.CreatePlotElement(
+                    seed.PlotFolderId,
+                    content: "Текст у вводной-сетки игнорируется",
+                    todoField: "",
+                    targetGroups: [],
+                    targetChars: [seed.TargetCharacterId],
+                    elementType: PlotElementType.RoleGrid,
+                    isMasterOnly: false,
+                    projectRolesListId: rolesListId);
+                await plotService.PublishElementVersion(versionId, sendNotification: false, commentText: null);
+
+                return (seed, handout.Content, rolesListId, gridOnlyCharacterName);
             });
 
         var fieldId = await factory.Services.RunAsAsync(
@@ -398,6 +477,7 @@ public class PrintPagesSmokeScenario(JoinApplicationFactory factory) : IClassFix
             seed.TargetCharacterName,
             seed.ElementContents[0],
             handoutContent,
+            gridOnlyCharacterName,
             masterClient);
     }
 }

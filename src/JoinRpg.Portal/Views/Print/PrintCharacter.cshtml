@@ -1,4 +1,6 @@
 @model JoinRpg.Web.Models.Print.PrintCharacterViewModel
+@using JoinRpg.Web.CharacterGroups.ProjectRoleGrid
+@using JoinRpg.Web.Plots.Elements
 
 <div class="print-character-all">
   @await Html.PartialAsync("CharacterListHeader", Model)
@@ -26,7 +28,21 @@
             @foreach (var plot in Model.Plots.Elements)
             {
                 <div class="print-character-plot-element">
-                    @Html.Raw(plot.Content)
+                    @if (plot.ElementType == PlotElementTypeView.RoleGrid)
+                    {
+                        <b>@PlotRenderedTextViewModel.FormatRoleGridCaption(plot.RolesListName)</b>
+                        @* Статический рендер: печатной странице не нужны WASM и JS (как в печати сетки, ADR029). *@
+                        @(await Html.RenderComponentAsync<ProjectRoleGrid>(RenderMode.Static, new
+                        {
+                            AccessViaPlotElement = plot.PlotVersionId.PlotElementId,
+                            ShowHeader = false,
+                            PrintMode = true,
+                        }))
+                    }
+                    else
+                    {
+                        @Html.Raw(plot.Content)
+                    }
                 </div>
             }
         </div>
