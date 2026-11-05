@@ -32,6 +32,14 @@ public class XApiClient(HttpClient httpClient)
         return (await response.Content.ReadFromJsonAsync<IEnumerable<ProjectHeader>>())!;
     }
 
+    /// <summary>Like GetFieldsMetadataAsync but returns the raw response without throwing on error statuses.</summary>
+    public async Task<HttpResponseMessage> GetFieldsMetadataMessageAsync(int projectId)
+        => await httpClient.GetAsync($"/x-game-api/{projectId}/metadata/fields");
+
+    /// <summary>GET произвольного XApi-пути без EnsureSuccessStatusCode — для проверок тел ошибок.</summary>
+    public async Task<HttpResponseMessage> GetRawAsync(string path)
+        => await httpClient.GetAsync(path);
+
     /// <summary>GET /x-game-api/{projectId}/metadata/fields — project fields metadata</summary>
     public async Task<ProjectFieldsMetadata> GetFieldsMetadataAsync(int projectId)
     {
@@ -119,6 +127,10 @@ public class XApiClient(HttpClient httpClient)
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<PlayerInfo>())!;
     }
+
+    /// <summary>Like GetUserInfoAsync but returns the raw response without throwing on error statuses.</summary>
+    public async Task<HttpResponseMessage> GetUserInfoMessageAsync(int userId)
+        => await httpClient.GetAsync($"/x-api/users/{userId}/");
 
     /// <summary>Like GetUserInfoAsync but returns the HTTP status code instead of throwing</summary>
     public async Task<System.Net.HttpStatusCode> GetUserInfoRawAsync(int userId)
