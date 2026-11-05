@@ -1,3 +1,4 @@
+@using JoinRpg.DomainTypes.Plots
 @using JoinRpg.DomainTypes.ProjectMetadata
 @using JoinRpg.Web.CharacterGroups.GroupEditMenu
 @using JoinRpg.Web.ProjectCommon
@@ -60,7 +61,11 @@ else
                             OnClick='() => NavigationManager.NavigateTo($"/{rolesListId.ProjectId.Value}/tools/roleslist/edit/{rolesListId.ProjectRolesListId}")'
                             Label="Настройки сетки" />
             }
-            <JoinButton Preset="ButtonPreset.Print" Link="@PrintUri" Label="Печать" />
+            @* У сетки из вводной печать ещё не определена (ADR029, печать вводной — отдельный шаг). *@
+            @if (AccessViaPlotElement is null)
+            {
+                <JoinButton Preset="ButtonPreset.Print" Link="@PrintUri" Label="Печать" />
+            }
         }
     </div>
     @if (Model.GroupsViewMode == RolesGridGroupsViewMode.Tree)
@@ -188,6 +193,9 @@ else
         ? ProjectUriLocator.GetRoleGridPrintUri(rolesListId)
         : ProjectUriLocator.GetClassicRoleGridPrintUri(ProjectId, ClassicGroupId, HotRolesOnly)).ToString();
 
+    /// <summary>Сетка вшита в вводную: доступ проверяется по её таргетам (ADR029).</summary>
+    [Parameter] public PlotElementIdentification? AccessViaPlotElement { get; set; }
+
     private ProjectRoleGridViewResult? Result { get; set; }
     private bool loadFailed;
     private PersistingComponentStateSubscription _persistingSubscription;
@@ -208,9 +216,11 @@ else
         {
             if (!ApplicationState.TryTakeFromJson<ProjectRoleGridViewResult>(nameof(ProjectRoleGrid), out var result))
             {
-                result = RolesListId is { } rolesListId
-                    ? await Client.GetRoleGrid(rolesListId)
-                    : await Client.GetClassicRoleGrid(ProjectId, ClassicGroupId, HotRolesOnly);
+                result = AccessViaPlotElement is { } plotElementId
+                    ? await Client.GetRoleGridForPlot(plotElementId)
+                    : RolesListId is { } rolesListId
+                        ? await Client.GetRoleGrid(rolesListId)
+                        : await Client.GetClassicRoleGrid(ProjectId, ClassicGroupId, HotRolesOnly);
             }
             Result = result;
 

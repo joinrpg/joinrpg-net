@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 
@@ -7,7 +8,12 @@ internal class ProjectRoleGridClientImpl(HttpClient httpClient) : IProjectRoleGr
 {
     public async Task<ProjectRoleGridViewResult> GetRoleGrid(ProjectRolesListIdentification id)
         => await (await httpClient.GetAsync(
-            $"webapi/project-role-grid/get?projectId={id.ProjectId.Value}&projectRolesListId={id.ProjectRolesListId}"))
+            $"webapi/project-role-grid/get?projectId={id.ProjectId.Value}&rolesListId={id}"))
+            .ReadFromJsonOrThrowProblem<ProjectRoleGridViewResult>();
+
+    public async Task<ProjectRoleGridViewResult> GetRoleGridForPlot(PlotElementIdentification plotElementId)
+        => await (await httpClient.GetAsync(
+            $"webapi/project-role-grid/getforplot?projectId={plotElementId.ProjectId.Value}&plotElementId={plotElementId}"))
             .ReadFromJsonOrThrowProblem<ProjectRoleGridViewResult>();
 
     public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly = false)

@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,10 +14,25 @@ public class ProjectRoleGridController(IProjectRoleGridClient client) : Controll
 {
     [HttpGet]
     public async Task<ActionResult<ProjectRoleGridViewResult>> Get(
-        [FromQuery] ProjectIdentification projectId, [FromQuery] int projectRolesListId)
+        [FromQuery] ProjectIdentification projectId, [FromQuery] ProjectRolesListIdentification rolesListId)
     {
-        var id = new ProjectRolesListIdentification(projectId, projectRolesListId);
-        return Ok(await client.GetRoleGrid(id));
+        if (rolesListId is null || rolesListId.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+        return Ok(await client.GetRoleGrid(rolesListId));
+    }
+
+    /// <summary>Сетка, вшитая в вводную; доступ проверяет сервис по правилам ADR029.</summary>
+    [HttpGet]
+    public async Task<ActionResult<ProjectRoleGridViewResult>> GetForPlot(
+        [FromQuery] ProjectIdentification projectId, [FromQuery] PlotElementIdentification plotElementId)
+    {
+        if (plotElementId is null || plotElementId.ProjectId != projectId)
+        {
+            return BadRequest();
+        }
+        return Ok(await client.GetRoleGridForPlot(plotElementId));
     }
 
     /// <summary>

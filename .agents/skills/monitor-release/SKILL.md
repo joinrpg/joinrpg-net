@@ -60,7 +60,7 @@ Blazor-острова (ADR001) получают данные отдельным 
 **Проверять содержимое payload, а не только код ответа.** Для сетки ролей (два прецедента — проверять на каждом релизе, который её касается):
 
 ```bash
-curl -s "https://joinrpg.ru/webapi/project-role-grid/get?projectId=1657&projectRolesListId=2010" -o grid.json -w "%{http_code} size=%{size_download}\n"
+curl -s "https://joinrpg.ru/webapi/project-role-grid/get?projectId=1657&rolesListId=ProjectRolesListId%281657-2010%29" -o grid.json -w "%{http_code} size=%{size_download}\n"
 ```
 
 Проект 1657, сетка 2010 — рабочее репро со скрытыми игроками. Что смотреть в `grid.json`:

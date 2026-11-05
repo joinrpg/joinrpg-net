@@ -1,3 +1,4 @@
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.ProjectMetadata;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
 using JoinRpg.Web.ProjectCommon.Projects;
@@ -20,6 +21,9 @@ public class ProjectRoleGridLoadFailureTest
     private sealed class ThrowingClient : IProjectRoleGridClient
     {
         public Task<ProjectRoleGridViewResult> GetRoleGrid(ProjectRolesListIdentification id)
+            => throw new InvalidOperationException("Could not parse 'UserId(-1)' as UserIdentification");
+
+        public Task<ProjectRoleGridViewResult> GetRoleGridForPlot(PlotElementIdentification plotElementId)
             => throw new InvalidOperationException("Could not parse 'UserId(-1)' as UserIdentification");
 
         public Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly = false)

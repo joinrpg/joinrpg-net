@@ -1,6 +1,8 @@
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Interfaces.Characters;
 using JoinRpg.DomainTypes.Characters;
+using JoinRpg.DomainTypes.Characters.Claims;
+using JoinRpg.DomainTypes.Plots;
 using JoinRpg.DomainTypes.Users;
 using JoinRpg.Interfaces;
 using JoinRpg.Web.CharacterGroups.ProjectRoleGrid;
@@ -18,7 +20,8 @@ internal class ProjectRoleGridViewService(
     IProjectMetadataRepository projectMetadataRepository,
     ICharacterGroupRepository characterGroupRepository,
     ICurrentUserAccessor currentUserAccessor,
-    IAvatarUriResolver avatarUriResolver)
+    IAvatarUriResolver avatarUriResolver,
+    IPlotRepository plotRepository)
     : IProjectRoleGridClient
 {
     public async Task<ProjectRoleGridViewResult> GetRoleGrid(ProjectRolesListIdentification id)
@@ -29,6 +32,51 @@ internal class ProjectRoleGridViewService(
         return config is null
             ? ProjectRoleGridViewResult.CreateNotFound()
             : await BuildResult(projectInfo, config);
+    }
+
+    public async Task<ProjectRoleGridViewResult> GetRoleGridForPlot(PlotElementIdentification plotElementId)
+    {
+        var element = await plotRepository.GetPlotElementDetails(plotElementId);
+        if (element?.ElementType != PlotElementType.RoleGrid || element.RolesListId is not { } rolesListId)
+        {
+            return ProjectRoleGridViewResult.CreateNotFound();
+        }
+
+        var projectInfo = await projectMetadataRepository.GetProjectMetadata(plotElementId.ProjectId);
+        var config = projectInfo.GetRolesListByIdOrDefault(rolesListId);
+        if (config is null || !element.IsActive)
+        {
+            return ProjectRoleGridViewResult.CreateNotFound();
+        }
+
+        var isMaster = projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault);
+        if (!isMaster)
+        {
+            // Игроку доступна только опубликованная немастерская вводная — ровно та, которую он
+            // мог бы увидеть на странице персонажа. Дальше доступ повторяет CharacterPlotAccess:
+            // публичная сетка, PublishPlot проекта или approved/checked-in заявка на таргет (ADR029).
+            var plotPublished = !element.IsMasterOnly && element.PublishedVersion is not null;
+            var hasGeneralAccess = config.PublicMode || projectInfo.PublishPlot;
+            var hasCharacterAccess = false;
+
+            if (plotPublished && !hasGeneralAccess && currentUserAccessor.UserIdentificationOrDefault is { } userId)
+            {
+                var playerCharacters = await characterInfoRepository.GetCharacterInfosByPlayer(
+                    plotElementId.ProjectId, userId, ClaimStatusSpec.Approved);
+                hasCharacterAccess = playerCharacters.Any(character =>
+                    new TargetsInfo(character).HasIntersections(element.Target));
+            }
+
+            if (!plotPublished || (!hasGeneralAccess && !hasCharacterAccess))
+            {
+                return new ProjectRoleGridViewResult(
+                    HasAccess: false,
+                    Grid: null,
+                    NoAccess: NoAccessToProjectViewModelBuilder.Build(projectInfo, currentUserAccessor.UserIdentificationOrDefault));
+            }
+        }
+
+        return await BuildResult(projectInfo, config, bypassPublicModeCheck: true);
     }
 
     public async Task<ProjectRoleGridViewResult> GetClassicRoleGrid(ProjectIdentification projectId, CharacterGroupIdentification? groupId, bool hotOnly = false)
@@ -54,11 +102,12 @@ internal class ProjectRoleGridViewService(
         return await BuildResult(projectInfo, config);
     }
 
-    private async Task<ProjectRoleGridViewResult> BuildResult(ProjectInfo projectInfo, ProjectRolesList config)
+    private async Task<ProjectRoleGridViewResult> BuildResult(ProjectInfo projectInfo, ProjectRolesList config, bool bypassPublicModeCheck = false)
     {
         // Доступ зависит от данных (PublicMode), поэтому проверяется здесь, а не атрибутом.
         // Возвращаем результат «нет доступа» (а не исключение), чтобы остров показал панель.
-        if (!config.PublicMode && !projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))
+        // Для сетки в вводной доступ уже проверен по таргетам вводной (ADR029).
+        if (!bypassPublicModeCheck && !config.PublicMode && !projectInfo.HasMasterAccess(currentUserAccessor.UserIdentificationOrDefault))
         {
             return new ProjectRoleGridViewResult(HasAccess: false, Grid: null, NoAccess: NoAccessToProjectViewModelBuilder.Build(projectInfo, currentUserAccessor.UserIdentificationOrDefault));
         }
