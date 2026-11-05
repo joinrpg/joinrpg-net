@@ -86,9 +86,9 @@ public interface IProjectRepository : IDisposable
     Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenForHotRoleAdvertisement();
 
     /// <summary>
-    /// Публичные проекты, принимающие заявки, у которых самая ранняя заявка подана не позднее недели
-    /// назад, либо заявок ещё не было вовсе (эвристика для "недавно открывшихся" проектов —
-    /// настоящей даты открытия приёма заявок пока нигде не хранится).
+    /// Публичные проекты, принимающие заявки, у которых дата первого открытия приёма заявок
+    /// (<see cref="DataModel.Project.ClaimsOpenedDate"/>) не старше недели. Проекты, заявки в которых
+    /// ни разу не открывались (дата не задана), не считаются недавно открывшимися.
     /// </summary>
     Task<IReadOnlyCollection<ProjectAdvertisementCandidate>> GetPublicProjectsOpenedForClaimsInLastWeek();
 }

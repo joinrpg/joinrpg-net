@@ -15,21 +15,24 @@ namespace JoinRpg.IntegrationTest.Scenarios;
 public class NewlyOpenedProjectsDigestScenario(JoinApplicationFactory factory) : IClassFixture<JoinApplicationFactory>
 {
     [Fact]
-    public async Task GetPublicProjectsOpenedForClaimsInLastWeek_SelectsOnlyFreshOrClaimlessPublicOpenProjects()
+    public async Task GetPublicProjectsOpenedForClaimsInLastWeek_SelectsOnlyRecentlyOpenedPublicProjects()
     {
-        // 1. Мастер и четыре публичных открытых проекта: без заявок, со свежей заявкой,
-        // со старой заявкой, и (для контроля) непубличный/закрытый.
+        // 1. Мастер и четыре публичных проекта, открытых для заявок: недавно открытый (без заявок),
+        // недавно открытый со свежей заявкой, давно открытый (дата открытия отодвинута назад),
+        // открытый, но с незаполненной датой (заявки ни разу не открывались), и (для контроля) непубличный.
         UserIdentification masterId;
         ProjectIdentification withoutClaims;
         ProjectIdentification withFreshClaim;
-        ProjectIdentification withOldClaim;
+        ProjectIdentification openedLongAgo;
+        ProjectIdentification dateNeverSet;
         ProjectIdentification notPublic;
         using (var scope = factory.Services.CreateScope())
         {
             masterId = await TestUserProjectHelpers.CreateTestUserAsync(scope.ServiceProvider);
             withoutClaims = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Без заявок");
             withFreshClaim = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Со свежей заявкой");
-            withOldClaim = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Со старой заявкой");
+            openedLongAgo = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Давно открытый");
+            dateNeverSet = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Дата не задана");
             notPublic = await TestUserProjectHelpers.CreateProjectAsync(scope.ServiceProvider, masterId, "Непубличный");
         }
 
@@ -53,7 +56,8 @@ public class NewlyOpenedProjectsDigestScenario(JoinApplicationFactory factory) :
 
         await OpenClaimsAndAddCharacter(withoutClaims);
         var freshCharacter = await OpenClaimsAndAddCharacter(withFreshClaim);
-        var oldCharacter = await OpenClaimsAndAddCharacter(withOldClaim);
+        await OpenClaimsAndAddCharacter(openedLongAgo);
+        await OpenClaimsAndAddCharacter(dateNeverSet);
         await OpenClaimsAndAddCharacter(notPublic, isPublicProject: false);
 
         async Task AddClaim(CharacterIdentification characterId) =>
@@ -66,19 +70,23 @@ public class NewlyOpenedProjectsDigestScenario(JoinApplicationFactory factory) :
             });
 
         await AddClaim(freshCharacter);
-        await AddClaim(oldCharacter);
 
-        // 2. Заявку в "старом" проекте отодвигаем на 10 дней назад — за пределы недели.
+        // 2. Дату открытия заявок "давнего" проекта отодвигаем на 10 дней назад — за пределы недели,
+        // а у "дата не задана" её стираем вовсе — так выглядят данные, созданные до появления поля
+        // (#6109): проект открыт для заявок, но дата первого открытия не зафиксирована.
+        // Через сервисный слой такое состояние не воспроизвести — SetClaimSettings всегда заполняет дату.
         using (var scope = factory.Services.CreateScope())
         {
             var myDb = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-            var claim = await myDb.Set<Claim>().SingleAsync(c => c.ProjectId == withOldClaim.Value);
-            claim.CreateDate = DateTime.UtcNow.AddDays(-10);
+            var longAgoProject = await myDb.Set<Project>().SingleAsync(p => p.ProjectId == openedLongAgo.Value);
+            longAgoProject.ClaimsOpenedDate = DateTime.UtcNow.AddDays(-10);
+            var neverOpenedProject = await myDb.Set<Project>().SingleAsync(p => p.ProjectId == dateNeverSet.Value);
+            neverOpenedProject.ClaimsOpenedDate = null;
             await myDb.SaveChangesAsync();
         }
 
-        // 3. Выборка: проект без заявок и проект со свежей заявкой — кандидаты;
-        // проект со старой заявкой и непубличный проект — нет.
+        // 3. Выборка по дате первого открытия заявок: недавно открытые проекты (с заявками и без) —
+        // кандидаты; давно открытый, с незаполненной датой и непубличный проект — нет.
         await factory.Services.RunAsAsync(masterId, async sp =>
         {
             var projectRepository = sp.GetRequiredService<IProjectRepository>();
@@ -87,7 +95,8 @@ public class NewlyOpenedProjectsDigestScenario(JoinApplicationFactory factory) :
 
             candidateIds.ShouldContain(withoutClaims);
             candidateIds.ShouldContain(withFreshClaim);
-            candidateIds.ShouldNotContain(withOldClaim);
+            candidateIds.ShouldNotContain(openedLongAgo);
+            candidateIds.ShouldNotContain(dateNeverSet);
             candidateIds.ShouldNotContain(notPublic);
         });
     }
