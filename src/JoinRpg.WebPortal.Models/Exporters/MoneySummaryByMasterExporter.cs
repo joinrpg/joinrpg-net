@@ -19,6 +19,7 @@ public class MoneySummaryByMasterExporter(IUriService uriService) : CustomExport
         yield return IntColumn(x => x.FeeBalance);
         yield return IntColumn(x => x.ModerationBalance);
         yield return IntColumn(x => x.ExpensesBalance);
-        // выше должно быть 6 полей с цифирками ровно в таком порядке
+        yield return IntColumn(x => x.PlannedExpenses);
+        // выше должно быть 7 полей с цифирками ровно в таком порядке
     }
 }

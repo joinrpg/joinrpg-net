@@ -46,4 +46,26 @@ public record ExpenseInfo(
     public int PlannedCost => PlannedQuantity * PlannedPrice;
 
     public int? ActualCost => ActualQuantity is { } quantity && ActualPrice is { } price ? quantity * price : null;
+
+    /// <summary>
+    /// Влияние расхода на «Деньги на руках» мастера: фактическая сумма, если расход одобрен,
+    /// иначе 0 (в том числе одобренный без факта и отклонённый).
+    /// </summary>
+    public int ActualBalanceEffect => State switch
+    {
+        ExpenseState.Approved => ActualCost ?? 0,
+        _ => 0,
+    };
+
+    /// <summary>
+    /// Влияние расхода на колонку «Запланировано» баланса мастера: отклонённые — 0,
+    /// одобренные с фактом (уже учтены в <see cref="ActualBalanceEffect"/>) — 0,
+    /// остальные (одобренные без факта, на рассмотрении) — факт, если он есть, иначе план.
+    /// </summary>
+    public int PlannedBalanceEffect => State switch
+    {
+        ExpenseState.Rejected => 0,
+        ExpenseState.Approved when ActualCost is not null => 0,
+        _ => ActualCost ?? PlannedCost,
+    };
 }

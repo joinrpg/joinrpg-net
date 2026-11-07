@@ -70,4 +70,16 @@ public class MoneySummaryByMasterExporterTest
         values["Телефон"].ShouldBeNull();
         values["Telegram"].ShouldBeNull();
     }
+
+    [Fact]
+    public void ExtractsBalanceColumns_IncludingPlannedExpenses()
+    {
+        var master = BuildUserInfo(telegram: null, phoneNumber: null);
+
+        var values = ExtractRow(BuildBalance(master));
+
+        values["Денег на руках"].ShouldBe(0);
+        values["Расходы"].ShouldBe(0);
+        values["Запланировано"].ShouldBe(0);
+    }
 }

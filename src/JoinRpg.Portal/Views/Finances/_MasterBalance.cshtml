@@ -1,5 +1,4 @@
-﻿
-@model IEnumerable<JoinRpg.Web.Models.MasterBalanceViewModel>
+﻿@model IEnumerable<JoinRpg.Web.Models.MasterBalanceViewModel>
 
 <table class="table">
     <tr>
@@ -21,6 +20,9 @@
         </th>
         <th>
             @Html.DisplayNameFor(model => model.ExpensesBalance)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PlannedExpenses)
         </th>
     </tr>
 
@@ -47,6 +49,9 @@
         </td>
         <td>
             @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.ExpensesBalance }))
+        </td>
+        <td>
+            @(await Html.RenderComponentAsync<PriceElement>(RenderMode.Static, new { Price = item.PlannedExpenses }))
         </td>
     </tr>
 }
