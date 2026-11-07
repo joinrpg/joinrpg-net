@@ -19,10 +19,12 @@
 
 ### Изменено
 - `JoinDotsMenu` и `TypedDropdownButton`: меню открывается нативным `<details>` (как `JoinDropdownButton`), а не JS Bootstrap 3 (`data-toggle="dropdown"`). Без JS Bootstrap меню больше не «молча не открывается». Переход: разметка внутри — `details/summary`, а не `span.dropdown`/`button` — поправьте селекторы, если стилизовали меню снаружи. ([#6018](https://github.com/joinrpg/joinrpg-net/pull/6018))
+- Цвета вариаций (`default`, `primary`, `success`, `info`, `warning`, `danger`) вынесены в общий файл пакета `css/variations.css`: `JoinBadge`, `JoinButton`, `JoinDropdownButton` берут их через CSS-переменные. Хосту нужен один статический CSS пакета — `css/join-components.css` (палитра + иконки), см. README. ([#6150](https://github.com/joinrpg/joinrpg-net/pull/6150))
 
 ### Исправлено
 - `FormRow` без `Label`: вместо пустого `<label>` — пустая колонка, `Label` теперь `string?`. ([#6010](https://github.com/joinrpg/joinrpg-net/pull/6010))
 - `JoinBadge`: параметр `Size` заработал — классы `label-xs/label-sm/label-lg` определены в пакете (Bootstrap 3 не имеет размеров у `.label`, раньше параметр молча игнорировался). Бейджи с заданным `Size` изменят размер. ([#6085](https://github.com/joinrpg/joinrpg-net/pull/6085))
+- `JoinBadge`: базовое оформление и цвета всех `.label-*` теперь в пакете — без подключённого Bootstrap бейджи больше не бесцветные, внешнему потребителю не нужно определять `.label-*` у себя. ([#6150](https://github.com/joinrpg/joinrpg-net/pull/6150))
 
 ## 2026.9.533 — 2026-10-29
 

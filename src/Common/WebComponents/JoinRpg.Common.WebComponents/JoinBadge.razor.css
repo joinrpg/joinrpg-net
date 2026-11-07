@@ -1,8 +1,49 @@
-/* Базовый кегль — 0.75em от контекста, как у .label в Bootstrap 3. Прежнее правило
-   label{...} никогда не действовало: это селектор элемента <label>, а бейдж рендерится
-   span'ом. Без Bootstrap этот класс — единственный источник кегля бейджа. */
+/* Базовое оформление бейджа, как у .label в Bootstrap 3: фон (ниже, по вариациям),
+   белый текст, padding, радиус. Без Bootstrap этот класс — единственный источник
+   стилей бейджа. Прежнее правило label{...} никогда не действовало: это селектор
+   элемента <label>, а бейдж рендерится span'ом. */
 .label {
   font-size: 0.75em;
+  display: inline;
+  padding: 0.2em 0.6em 0.3em;
+  font-weight: bold;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25em;
+}
+
+/* Цвета вариантов — общая палитра пакета (css/variations.css). Раньше в пакете
+   цветов не было, и бейджи вне Bootstrap оставались бесцветными. */
+.label-default {
+  background-color: var(--join-variation-default-label-bg);
+}
+
+.label-primary {
+  background-color: var(--join-variation-primary-bg);
+}
+
+.label-success {
+  background-color: var(--join-variation-success-bg);
+}
+
+.label-info {
+  background-color: var(--join-variation-info-bg);
+}
+
+.label-warning {
+  background-color: var(--join-variation-warning-bg);
+}
+
+.label-danger {
+  background-color: var(--join-variation-danger-bg);
+}
+
+/* Как в Bootstrap 3: бейдж без содержимого не показывается. */
+.label:empty {
+  display: none;
 }
 
 /* Размеры: Bootstrap 3 не имеет вариантов размера у .label, классы — свои

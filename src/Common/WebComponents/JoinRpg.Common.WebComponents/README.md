@@ -17,14 +17,17 @@ dotnet add package JoinRpg.Common.WebComponents
    Razor Pages — в `_ViewImports.cshtml`, а компонент рендерится через
    `<component type="typeof(JoinIcon)" render-mode="Static" ... />`.
 
-2. Иконки — в layout:
+2. Статический CSS пакета — в layout, одной ссылкой (scoped-бандл подключается отдельно,
+   как обычно). Включает общую палитру вариаций (`--join-variation-*`, без неё `JoinBadge`,
+   `JoinButton`, `JoinDropdownButton` теряют фон) и иконки:
 
    ```html
-   <link rel="stylesheet" href="_content/JoinRpg.Common.WebComponents/css/join-icons.css" />
+   <link rel="stylesheet" href="_content/JoinRpg.Common.WebComponents/css/join-components.css" />
    ```
 
    `css/roboto.css` — для `PrintableBadge` (бейджи печатаются Roboto) или если сайту нужен этот
-   шрифт.
+   шрифт. `css/variations.css` и `css/join-icons.css` остаются отдельными файлами, если нужен
+   только один из них.
 
 3. Скрипт (подсказки `Tooltip`, меню `JoinDropdownButton` и его обёртки `JoinDotsMenu`,
    `TypedDropdownButton`, `TypedSelector`, раскрытие `JoinCollapsePanel`). Blazor загружает его

@@ -2,20 +2,22 @@
  * Собственные стили JoinButton. Значения перенесены 1:1 из Bootstrap 3.4.0 (.btn, .btn-*),
  * чтобы кнопки в островах выглядели так же, как ручные btn в cshtml, — но без опоры
  * на классы Bootstrap и его правила для родителей (.btn-group > .btn и т. п.).
+ * Цвета берутся из общей палитры пакета (css/variations.css) через
+ * var(--join-variation-*), hex'ы здесь не дублируются.
  *
  * Свойства, которые Bootstrap задаёт глобально (box-sizing, наследование шрифта кнопкой,
  * сброс margin), заданы здесь явно: кнопка должна выглядеть одинаково и без Bootstrap.
  */
 .join-btn {
-    --join-btn-color: #333;
-    --join-btn-bg: #fff;
-    --join-btn-border: #ccc;
-    --join-btn-focus-bg: #e6e6e6;
-    --join-btn-focus-border: #8c8c8c;
-    --join-btn-hover-bg: #e6e6e6;
-    --join-btn-hover-border: #adadad;
-    --join-btn-active-hover-bg: #d4d4d4;
-    --join-btn-active-hover-border: #8c8c8c;
+    --join-btn-color: var(--join-variation-default-color);
+    --join-btn-bg: var(--join-variation-default-bg);
+    --join-btn-border: var(--join-variation-default-border);
+    --join-btn-focus-bg: var(--join-variation-default-focus-bg);
+    --join-btn-focus-border: var(--join-variation-default-focus-border);
+    --join-btn-hover-bg: var(--join-variation-default-hover-bg);
+    --join-btn-hover-border: var(--join-variation-default-hover-border);
+    --join-btn-active-hover-bg: var(--join-variation-default-active-hover-bg);
+    --join-btn-active-hover-border: var(--join-variation-default-active-hover-border);
 
     box-sizing: border-box;
     display: inline-block;
@@ -91,63 +93,63 @@ a.join-btn[disabled] {
 }
 
 .join-btn--primary {
-    --join-btn-color: #fff;
-    --join-btn-bg: #337ab7;
-    --join-btn-border: #2e6da4;
-    --join-btn-focus-bg: #286090;
-    --join-btn-focus-border: #122b40;
-    --join-btn-hover-bg: #286090;
-    --join-btn-hover-border: #204d74;
-    --join-btn-active-hover-bg: #204d74;
-    --join-btn-active-hover-border: #122b40;
+    --join-btn-color: var(--join-variation-primary-color);
+    --join-btn-bg: var(--join-variation-primary-bg);
+    --join-btn-border: var(--join-variation-primary-border);
+    --join-btn-focus-bg: var(--join-variation-primary-focus-bg);
+    --join-btn-focus-border: var(--join-variation-primary-focus-border);
+    --join-btn-hover-bg: var(--join-variation-primary-hover-bg);
+    --join-btn-hover-border: var(--join-variation-primary-hover-border);
+    --join-btn-active-hover-bg: var(--join-variation-primary-active-hover-bg);
+    --join-btn-active-hover-border: var(--join-variation-primary-active-hover-border);
 }
 
 .join-btn--success {
-    --join-btn-color: #fff;
-    --join-btn-bg: #5cb85c;
-    --join-btn-border: #4cae4c;
-    --join-btn-focus-bg: #449d44;
-    --join-btn-focus-border: #255625;
-    --join-btn-hover-bg: #449d44;
-    --join-btn-hover-border: #398439;
-    --join-btn-active-hover-bg: #398439;
-    --join-btn-active-hover-border: #255625;
+    --join-btn-color: var(--join-variation-success-color);
+    --join-btn-bg: var(--join-variation-success-bg);
+    --join-btn-border: var(--join-variation-success-border);
+    --join-btn-focus-bg: var(--join-variation-success-focus-bg);
+    --join-btn-focus-border: var(--join-variation-success-focus-border);
+    --join-btn-hover-bg: var(--join-variation-success-hover-bg);
+    --join-btn-hover-border: var(--join-variation-success-hover-border);
+    --join-btn-active-hover-bg: var(--join-variation-success-active-hover-bg);
+    --join-btn-active-hover-border: var(--join-variation-success-active-hover-border);
 }
 
 .join-btn--info {
-    --join-btn-color: #fff;
-    --join-btn-bg: #5bc0de;
-    --join-btn-border: #46b8da;
-    --join-btn-focus-bg: #31b0d5;
-    --join-btn-focus-border: #1b6d85;
-    --join-btn-hover-bg: #31b0d5;
-    --join-btn-hover-border: #269abc;
-    --join-btn-active-hover-bg: #269abc;
-    --join-btn-active-hover-border: #1b6d85;
+    --join-btn-color: var(--join-variation-info-color);
+    --join-btn-bg: var(--join-variation-info-bg);
+    --join-btn-border: var(--join-variation-info-border);
+    --join-btn-focus-bg: var(--join-variation-info-focus-bg);
+    --join-btn-focus-border: var(--join-variation-info-focus-border);
+    --join-btn-hover-bg: var(--join-variation-info-hover-bg);
+    --join-btn-hover-border: var(--join-variation-info-hover-border);
+    --join-btn-active-hover-bg: var(--join-variation-info-active-hover-bg);
+    --join-btn-active-hover-border: var(--join-variation-info-active-hover-border);
 }
 
 .join-btn--warning {
-    --join-btn-color: #fff;
-    --join-btn-bg: #f0ad4e;
-    --join-btn-border: #eea236;
-    --join-btn-focus-bg: #ec971f;
-    --join-btn-focus-border: #985f0d;
-    --join-btn-hover-bg: #ec971f;
-    --join-btn-hover-border: #d58512;
-    --join-btn-active-hover-bg: #d58512;
-    --join-btn-active-hover-border: #985f0d;
+    --join-btn-color: var(--join-variation-warning-color);
+    --join-btn-bg: var(--join-variation-warning-bg);
+    --join-btn-border: var(--join-variation-warning-border);
+    --join-btn-focus-bg: var(--join-variation-warning-focus-bg);
+    --join-btn-focus-border: var(--join-variation-warning-focus-border);
+    --join-btn-hover-bg: var(--join-variation-warning-hover-bg);
+    --join-btn-hover-border: var(--join-variation-warning-hover-border);
+    --join-btn-active-hover-bg: var(--join-variation-warning-active-hover-bg);
+    --join-btn-active-hover-border: var(--join-variation-warning-active-hover-border);
 }
 
 .join-btn--danger {
-    --join-btn-color: #fff;
-    --join-btn-bg: #d9534f;
-    --join-btn-border: #d43f3a;
-    --join-btn-focus-bg: #c9302c;
-    --join-btn-focus-border: #761c19;
-    --join-btn-hover-bg: #c9302c;
-    --join-btn-hover-border: #ac2925;
-    --join-btn-active-hover-bg: #ac2925;
-    --join-btn-active-hover-border: #761c19;
+    --join-btn-color: var(--join-variation-danger-color);
+    --join-btn-bg: var(--join-variation-danger-bg);
+    --join-btn-border: var(--join-variation-danger-border);
+    --join-btn-focus-bg: var(--join-variation-danger-focus-bg);
+    --join-btn-focus-border: var(--join-variation-danger-focus-border);
+    --join-btn-hover-bg: var(--join-variation-danger-hover-bg);
+    --join-btn-hover-border: var(--join-variation-danger-hover-border);
+    --join-btn-active-hover-bg: var(--join-variation-danger-active-hover-bg);
+    --join-btn-active-hover-border: var(--join-variation-danger-active-hover-border);
 }
 
 .join-btn--lg {
