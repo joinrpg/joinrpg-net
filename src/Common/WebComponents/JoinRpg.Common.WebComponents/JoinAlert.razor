@@ -15,12 +15,10 @@
     [Parameter] public VariationStyleEnum? Variation { get; set; } = VariationStyleEnum.None;
 
     /// <summary>
-    /// Иконка слева от текста. С ней алерт получает раскладку <c>.join.alert</c>: иконка и текст
-    /// в строку, иконка крупнее текста.
+    /// Иконка слева от текста. С ней алерт получает раскладку «иконка и текст в строку»:
+    /// см. <c>.join-alert--with-icon</c> в JoinAlert.razor.css.
     /// </summary>
     [Parameter] public JoinIconType? Icon { get; set; }
 
-    private string style => Icon is null
-        ? BootstrapStyle.Build("alert", Variation, null)
-        : "join " + BootstrapStyle.Build("alert", Variation, null);
+    private string style => JoinAlertStyle.Build(Variation, Icon is not null);
 }

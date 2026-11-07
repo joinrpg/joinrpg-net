@@ -260,7 +260,7 @@ public class ClaimRestorePanelTest : BunitContext
 
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("Не удалось обновить план"));
         cut.Markup.ShouldContain("Применено строк: 1.");
-        cut.FindAll(".alert-success").ShouldBeEmpty();
+        cut.FindAll(".join-alert--success").ShouldBeEmpty();
     }
 
     private static readonly CharacterGroupIdentification LostGroup = new(ProjectId, 50);

@@ -32,7 +32,7 @@ public class ProjectRolesListComponentTest : BunitContext
             parameters => parameters.Add(p => p.ProjectId, _projectId));
 
         // Assert
-        cut.Find("div.alert").ShouldNotBeNull();
+        cut.Find("div.join-alert").ShouldNotBeNull();
     }
 
     [Fact]

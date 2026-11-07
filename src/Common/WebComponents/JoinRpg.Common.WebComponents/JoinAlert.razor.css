@@ -1,0 +1,77 @@
+/*
+ * Собственные стили JoinAlert. Отступы и рамки перенесены 1:1 из Bootstrap 3.4.0
+ * (.alert) и прежнего site.css портала (блок .join.alert — раскладка с иконкой),
+ * чтобы алерты в островах выглядели как раньше, — но без опоры на классы Bootstrap:
+ * без него у алерта не было ни рамок, ни фона.
+ * Цвета вариаций берутся из общей палитры пакета (css/variations.css) через
+ * var(--join-variation-*-alert-*), hex'ы здесь не дублируются.
+ */
+
+.join-alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+/* Bootstrap 3 не имел alert-default: такой алерт — просто отступы и прозрачная рамка
+   базового класса. Модификатор оставлен, чтобы все вариации отличались классом. */
+.join-alert--default {
+}
+
+.join-alert--success {
+    color: var(--join-variation-success-alert-color);
+    background-color: var(--join-variation-success-alert-bg);
+    border-color: var(--join-variation-success-alert-border);
+}
+
+.join-alert--info {
+    color: var(--join-variation-info-alert-color);
+    background-color: var(--join-variation-info-alert-bg);
+    border-color: var(--join-variation-info-alert-border);
+}
+
+.join-alert--warning {
+    color: var(--join-variation-warning-alert-color);
+    background-color: var(--join-variation-warning-alert-bg);
+    border-color: var(--join-variation-warning-alert-border);
+}
+
+.join-alert--danger {
+    color: var(--join-variation-danger-alert-color);
+    background-color: var(--join-variation-danger-alert-bg);
+    border-color: var(--join-variation-danger-alert-border);
+}
+
+/* alert-primary в Bootstrap 3 не было (класс выдавался, но ни одно правило на него
+   не действовало) — цвета из Bootstrap 5, в палитре пакета. */
+.join-alert--primary {
+    color: var(--join-variation-primary-alert-color);
+    background-color: var(--join-variation-primary-alert-bg);
+    border-color: var(--join-variation-primary-alert-border);
+}
+
+/* Раскладка с иконкой: иконка и текст в строку, иконка крупнее текста,
+   отступы — прежние из site.css (.join.alert), а не bootstrap-овские. */
+.join-alert--with-icon {
+    padding: 1em;
+    margin: 1em 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.join-alert--with-icon:first-child {
+    margin-top: 0;
+}
+
+.join-alert--with-icon:last-child {
+    margin-bottom: 0;
+}
+
+.join-alert--with-icon ::deep .join-icon {
+    display: block;
+    margin-right: 1em;
+    /* Размер svg задан в em, поэтому увеличиваем font-size. */
+    font-size: 1.5em;
+}

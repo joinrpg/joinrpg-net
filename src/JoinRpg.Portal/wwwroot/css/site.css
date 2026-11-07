@@ -270,6 +270,9 @@ tr.unapprovedPayment td:last-child {
     color: #333333;
 }
 
+/* Раскладка алертов с иконкой в MVC-вьюхах (class="join alert ..." с <join-icon>).
+   Blazor-компонент JoinAlert использует свои классы join-alert--* и несёт эту раскладку
+   в scoped CSS (JoinAlert.razor.css) — этот блок для него не нужен. */
 .join.alert {
     padding: 1em;
     margin: 1em 0 1em 0;

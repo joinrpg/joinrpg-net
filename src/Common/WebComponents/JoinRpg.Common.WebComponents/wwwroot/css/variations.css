@@ -1,11 +1,14 @@
 /*
  * Общая палитра вариаций (default, primary, success, info, warning, danger).
- * Единственное место с цветами компонентов: значения Bootstrap 3.4.0 (.label, .btn-*)
- * 1:1. Scoped CSS компонентов (JoinBadge, JoinButton, JoinDropdownButton) берут цвета
- * отсюда через var(--join-variation-*), дублировать hex'ы в *.razor.css не нужно.
+ * Единственное место с цветами компонентов: значения Bootstrap 3.4.0 (.label, .btn-*,
+ * .alert-*) 1:1. Scoped CSS компонентов (JoinBadge, JoinButton, JoinDropdownButton,
+ * JoinAlert) берут цвета отсюда через var(--join-variation-*), дублировать hex'ы
+ * в *.razor.css не нужно.
  *
  * Фасеты состояний, как в Bootstrap 3.4.0: bg/border, focus-*, hover-*,
- * active-hover-* (active:hover/active:focus).
+ * active-hover-* (active:hover/active:focus). У алертов свои фасеты alert-color/alert-bg/
+ * alert-border (.alert-* в Bootstrap 3: тёмный текст на светлом фоне, в отличие от
+ * белого текста кнопок и бейджей).
  */
 :root {
   --join-variation-default-color: #333;
@@ -32,6 +35,11 @@
   --join-variation-primary-active-hover-bg: #204d74;
   --join-variation-primary-active-hover-border: #122b40;
 
+  /* alert-primary в Bootstrap 3 не было — цвета из Bootstrap 5 (.alert-primary). */
+  --join-variation-primary-alert-color: #084298;
+  --join-variation-primary-alert-bg: #cfe2ff;
+  --join-variation-primary-alert-border: #b6d4fe;
+
   --join-variation-success-color: #fff;
   --join-variation-success-bg: #5cb85c;
   --join-variation-success-border: #4cae4c;
@@ -41,6 +49,9 @@
   --join-variation-success-hover-border: #398439;
   --join-variation-success-active-hover-bg: #398439;
   --join-variation-success-active-hover-border: #255625;
+  --join-variation-success-alert-color: #3c763d;
+  --join-variation-success-alert-bg: #dff0d8;
+  --join-variation-success-alert-border: #d6e9c6;
 
   --join-variation-info-color: #fff;
   --join-variation-info-bg: #5bc0de;
@@ -51,6 +62,9 @@
   --join-variation-info-hover-border: #269abc;
   --join-variation-info-active-hover-bg: #269abc;
   --join-variation-info-active-hover-border: #1b6d85;
+  --join-variation-info-alert-color: #31708f;
+  --join-variation-info-alert-bg: #d9edf7;
+  --join-variation-info-alert-border: #bce8f1;
 
   --join-variation-warning-color: #fff;
   --join-variation-warning-bg: #f0ad4e;
@@ -61,6 +75,9 @@
   --join-variation-warning-hover-border: #d58512;
   --join-variation-warning-active-hover-bg: #d58512;
   --join-variation-warning-active-hover-border: #985f0d;
+  --join-variation-warning-alert-color: #8a6d3b;
+  --join-variation-warning-alert-bg: #fcf8e3;
+  --join-variation-warning-alert-border: #faebcc;
 
   --join-variation-danger-color: #fff;
   --join-variation-danger-bg: #d9534f;
@@ -71,4 +88,7 @@
   --join-variation-danger-hover-border: #ac2925;
   --join-variation-danger-active-hover-bg: #ac2925;
   --join-variation-danger-active-hover-border: #761c19;
+  --join-variation-danger-alert-color: #a94442;
+  --join-variation-danger-alert-bg: #f2dede;
+  --join-variation-danger-alert-border: #ebccd1;
 }
