@@ -20,7 +20,6 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
     private delegate void RenderFunc(HtmlRenderer renderer, string match, int index, string extra);
     private delegate void CharRenderFunc(HtmlRenderer renderer, Character character, string extra);
     private delegate void CharGroupRenderFunc(HtmlRenderer renderer, CharacterGroupInfo characterGroup, IReadOnlyCollection<Character> characters, string extra);
-    private delegate void FieldColumnRenderFunc(HtmlRenderer renderer, Character character, ProjectInfo projectInfo, Dictionary<ProjectFieldIdentification, FieldWithValue> fields);
 
     /// <remarks>
     /// Создаётся только через <see cref="JoinrpgMarkdownLinkRendererFactory"/>: выбор способа
@@ -37,120 +36,11 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
           {"%контакты", CharWrapper(CharacterImpl) },
           {"%группа", GroupWrapper(GroupName)},
           {"%список", GroupWrapper(GroupListFunc)},
-          {"%сеткаролей", GroupWrapper(GroupListFullFunc)},
-          {"%экспериментальнаятаблица", GroupWrapper(ExperimentalTableFunc) }
+          {"%сеткаролей", NotSupported},
+          {"%экспериментальнаятаблица", NotSupported }
         };
 
         LinkTypesToMatch = [.. matches.Keys.Select(k => k[1..]).OrderByDescending(c => c.Length)];
-    }
-
-    private record class Column(string Name, FieldColumnRenderFunc RenderFunc)
-    {
-        public static Column Player = new Column("Игрок", (renderer, character, projectInfo, _) => renderer.Write(GetPlayerString(character, projectInfo, showContacts: false)));
-        public static Column Contacts = new Column("Игрок", (renderer, character, projectInfo, _) => renderer.Write(GetPlayerString(character, projectInfo, showContacts: true)));
-        public static Column FromField(ProjectFieldInfo f) => new Column(f.Name, (renderer, _, _, fieldDict) => renderer.Write(fieldDict[f.Id].DisplayString));
-
-
-
-        public static Column Groups = new("Группы", (renderer, character, projectInfo, _) => GroupListRenderer(renderer, character, g => true, projectInfo));
-        public static Column PublicGroups = new("Группы", (renderer, character, projectInfo, _) => GroupListRenderer(renderer, character, g => g.IsPublic, projectInfo));
-
-        private static void GroupListRenderer(HtmlRenderer renderer, Character character, Func<CharacterGroupInfo, bool> groupPredicate, ProjectInfo projectInfo)
-        {
-            var sep = "";
-            foreach (var group in character.GetIntrestingGroupsForDisplayToTop(projectInfo).Where(groupPredicate))
-            {
-                renderer.Write(sep);
-                sep = ", ";
-                GroupLinkImpl(renderer, group, "");
-            }
-        }
-
-        public static Column CharacterName = new Column("Персонаж", (renderer, character, _, _) => CharacterLinkImpl(renderer, character, ""));
-    }
-
-    private void ExperimentalTableFunc(HtmlRenderer renderer, CharacterGroupInfo group, IReadOnlyCollection<Character> characters, string extra)
-    {
-        if (!renderer.EnableHtmlForBlock)
-        {
-            GroupListFullFunc(renderer, group, characters, "");
-            return;
-        }
-        GroupHeader(renderer, group, "");
-
-        renderer.Write("<table class='table'>");
-        var columns = SetupColumnsFromExtra(extra);
-
-        renderer.Write("<tr>");
-
-        foreach (var column in columns)
-        {
-            renderer.Write($"<th>{column.Name}</th>");
-        }
-        renderer.Write("</tr>");
-
-        foreach (var character in characters)
-        {
-            var fieldsDict = character.GetFieldsDict(projectInfo);
-
-            renderer.Write("<tr>");
-
-            foreach (var column in columns)
-            {
-                renderer.Write("<td>");
-                column.RenderFunc(renderer, character, projectInfo, fieldsDict);
-                renderer.Write("</td>");
-            }
-            renderer.Write("</tr>");
-        }
-        renderer.Write("</table>");
-    }
-
-    private List<Column> SetupColumnsFromExtra(string extra)
-    {
-        List<Column> columns = [];
-
-        columns.Add(Column.CharacterName);
-
-        if (string.IsNullOrWhiteSpace(extra))
-        {
-            columns.Add(Column.Player);
-            columns.AddRange(projectInfo.SortedActiveFields.Select(Column.FromField));
-        }
-        else
-        {
-            foreach (var r in extra.AsSpan().Split(","))
-            {
-                var item = extra.AsSpan(r).Trim();
-                if (item.Length == 0)
-                {
-                    continue;
-                }
-                if (item.Equals("контакты", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    columns.Add(Column.Contacts);
-                }
-                else if (item.Equals("игрок", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    columns.Add(Column.Player);
-                }
-                else if (item.Equals("группы", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    columns.Add(Column.Groups);
-                }
-                else if (item.Equals("публичныегруппы", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    columns.Add(Column.PublicGroups);
-                }
-                else if (int.TryParse(item, out var fieldId))
-                {
-                    var field = projectInfo.GetFieldById(new ProjectFieldIdentification(projectInfo.ProjectId, fieldId));
-                    columns.Add(Column.FromField(field));
-                }
-            }
-        }
-
-        return columns;
     }
 
     private void GroupListFunc(HtmlRenderer renderer, CharacterGroupInfo group, IReadOnlyCollection<Character> ch, string extra)
@@ -176,41 +66,6 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         }
     }
 
-    private void GroupListFullFunc(HtmlRenderer renderer, CharacterGroupInfo group, IReadOnlyCollection<Character> characters, string extra)
-    {
-        GroupHeader(renderer, group, extra);
-        RenderInnerMarkdown(renderer, Project.CharacterGroups.Single(x => x.CharacterGroupId == group.Id.CharacterGroupId).Description);
-        foreach (var character in characters)
-        {
-            if (renderer.EnableHtmlForBlock)
-            {
-                renderer.Write("<p>&nbsp;");
-            }
-            else
-            {
-                renderer.Write(" ");
-            }
-            if (renderer.EnableHtmlForInline)
-            {
-                renderer.Write("<b>");
-            }
-            CharacterImpl(renderer, character, "");
-            if (renderer.EnableHtmlForInline)
-            {
-                renderer.Write("</b>");
-            }
-            if (renderer.EnableHtmlForBlock)
-            {
-                renderer.Write("<br>");
-            }
-            RenderInnerMarkdown(renderer, character.Description);
-            if (renderer.EnableHtmlForBlock)
-            {
-                renderer.Write("</p>");
-            }
-        }
-    }
-
     private void GroupHeader(HtmlRenderer renderer, CharacterGroupInfo group, string extra)
     {
         if (renderer.EnableHtmlForInline)
@@ -221,18 +76,6 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
         if (renderer.EnableHtmlForInline)
         {
             renderer.Write("</h4>");
-        }
-    }
-
-    private static void RenderInnerMarkdown(HtmlRenderer renderer, MarkdownString? markdownString)
-    {
-        if (renderer.EnableHtmlForBlock)
-        {
-            renderer.Write(markdownString.ToHtmlString().Value);
-        }
-        else
-        {
-            renderer.Write(markdownString.ToPlainTextAndEscapeHtml().Value);
         }
     }
 
@@ -362,6 +205,12 @@ public class JoinrpgMarkdownLinkRenderer : ILinkRenderer
             extra = $"({extra})";
         }
         renderer.Write($"{match}{index}{extra}");
+    }
+
+    private static void NotSupported(HtmlRenderer renderer, string match, int index, string extra)
+    {
+        Fail(renderer, match, index, extra);
+        renderer.Write(" больше не поддерживается. Создайте тип вводной «Сетка ролей» для аналогичной функциональности");
     }
 
     private RenderFunc GroupWrapper(CharGroupRenderFunc inner)

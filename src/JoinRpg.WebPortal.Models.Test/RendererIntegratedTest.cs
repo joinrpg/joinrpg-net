@@ -79,4 +79,47 @@ public class RendererIntegratedTest
         text.ToHtmlString(renderer).Value
             .ShouldBe("<p><a href=\"/0/roles/2/details\" target=\"_blank\" rel=\"nofollow\">test_2</a></p>");
     }
+
+    [Theory]
+    [InlineData("%сеткаролей")]
+    [InlineData("%экспериментальнаятаблица")]
+    public void RenderRoleGridDirectiveStubHtml(string directive)
+    {
+        var projectMock = new MockedProject();
+        var renderer =
+            new JoinrpgMarkdownLinkRenderer(projectMock.Project, projectMock.ProjectInfo);
+
+        var text = new MarkdownString($"{directive}2(контакты, 47032)");
+
+        text.ToHtmlString(renderer).Value
+            .ShouldBe($"<p>{directive}2(контакты, 47032) больше не поддерживается. Создайте тип вводной &#171;Сетка ролей&#187; для аналогичной функциональности</p>");
+    }
+
+    [Theory]
+    [InlineData("%сеткаролей")]
+    [InlineData("%экспериментальнаятаблица")]
+    public void RenderRoleGridDirectiveStubPlainText(string directive)
+    {
+        var projectMock = new MockedProject();
+        var renderer =
+            new JoinrpgMarkdownLinkRenderer(projectMock.Project, projectMock.ProjectInfo);
+
+        var text = new MarkdownString($"{directive}2");
+
+        text.ToPlainTextWithoutHtmlEscape(renderer)
+            .ShouldBe($"{directive}2 больше не поддерживается. Создайте тип вводной «Сетка ролей» для аналогичной функциональности");
+    }
+
+    [Fact]
+    public void RenderRoleGridDirectiveStubForNonExistingGroup()
+    {
+        var projectMock = new MockedProject();
+        var renderer =
+            new JoinrpgMarkdownLinkRenderer(projectMock.Project, projectMock.ProjectInfo);
+
+        var text = new MarkdownString("%сеткаролей999");
+
+        text.ToPlainTextWithoutHtmlEscape(renderer)
+            .ShouldBe("%сеткаролей999 больше не поддерживается. Создайте тип вводной «Сетка ролей» для аналогичной функциональности");
+    }
 }

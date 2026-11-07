@@ -236,3 +236,4 @@ Code-behind `ProjectRoleListView.cshtml.cs`: **снять атрибут `[Requi
 *Создано: 07.06.2026*
 *Обновлено: 18.06.2026 — синхронизировано с master: переименование `GetOrderedSubtreeGroups` → `GetChildGroupsIncludingThis`, добавлена зависимость `Managers → CharacterGroups`, отмечены завершённые предпосылки.*
 *Обновлено: 19.06.2026 — контакты переведены на канонический `TelegramId` и типизированные компоненты `EmailLink`/`VkLink`/`TelegramLink`/`LiveJournalLink` (#4349); собственный `TelegramLink`-value-тип удалён.*
+*Обновлено: 07.11.2026 — директивы `%сеткаролей` и `%экспериментальнаятаблица` удалены из `JoinrpgMarkdownLinkRenderer` (выводят заглушку с отсылкой к вводной «Сетка ролей», ADR029); упомянутые в тексте `ExperimentalTableFunc` и типы колонок `CharacterName / Player / Contacts / FromField / Groups / PublicGroups` в рендерере больше не существуют — их роль выполняет билдер `ProjectRoleGridViewModelBuilder`.*
