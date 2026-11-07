@@ -1,9 +1,8 @@
 /*
  * Общая палитра вариаций (default, primary, success, info, warning, danger).
  * Единственное место с цветами компонентов: значения Bootstrap 3.4.0 (.label, .btn-*,
- * .alert-*, .panel-*) 1:1. Scoped CSS компонентов (JoinBadge, JoinButton, JoinCollapsePanel,
- * JoinDropdownButton, JoinAlert) берут цвета отсюда через var(--join-variation-*), дублировать
- * hex'ы в *.razor.css не нужно.
+ * .alert-*, .panel-*) 1:1. Scoped CSS компонентов берут цвета отсюда через
+ * var(--join-variation-*), дублировать hex'ы в *.razor.css не нужно.
  *
  * Фасеты состояний, как в Bootstrap 3.4.0: bg/border, focus-*, hover-*,
  * active-hover-* (active:hover/active:focus). У алертов свои фасеты alert-color/alert-bg/

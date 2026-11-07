@@ -1,0 +1,70 @@
+/*
+  Оформление панели — собственные стили, значения перенесены 1:1 из Bootstrap 3.4.0
+  (.panel, .panel-heading, .panel-body, .panel-footer, .panel-*): панель выглядит так же,
+  как ручные .panel в cshtml, — но без опоры на классы Bootstrap. Цвета вариантов —
+  CSS-переменные из общей палитры пакета (css/variations.css), их подставляет
+  класс-модификатор join-panel--* на корне.
+*/
+.join-panel {
+  --join-panel-border: var(--join-variation-default-panel-border);
+  --join-panel-heading-bg: var(--join-variation-default-panel-heading-bg);
+  --join-panel-heading-color: var(--join-variation-default-panel-heading-color);
+
+  margin-bottom: 20px;
+  background-color: #fff;
+  border: 1px solid var(--join-panel-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.join-panel--primary {
+  --join-panel-border: var(--join-variation-primary-panel-border);
+  --join-panel-heading-bg: var(--join-variation-primary-panel-heading-bg);
+  --join-panel-heading-color: var(--join-variation-primary-panel-heading-color);
+}
+
+.join-panel--success {
+  --join-panel-border: var(--join-variation-success-panel-border);
+  --join-panel-heading-bg: var(--join-variation-success-panel-heading-bg);
+  --join-panel-heading-color: var(--join-variation-success-panel-heading-color);
+}
+
+.join-panel--info {
+  --join-panel-border: var(--join-variation-info-panel-border);
+  --join-panel-heading-bg: var(--join-variation-info-panel-heading-bg);
+  --join-panel-heading-color: var(--join-variation-info-panel-heading-color);
+}
+
+.join-panel--warning {
+  --join-panel-border: var(--join-variation-warning-panel-border);
+  --join-panel-heading-bg: var(--join-variation-warning-panel-heading-bg);
+  --join-panel-heading-color: var(--join-variation-warning-panel-heading-color);
+}
+
+.join-panel--danger {
+  --join-panel-border: var(--join-variation-danger-panel-border);
+  --join-panel-heading-bg: var(--join-variation-danger-panel-heading-bg);
+  --join-panel-heading-color: var(--join-variation-danger-panel-heading-color);
+}
+
+.join-panel__heading {
+  padding: 10px 15px;
+  color: var(--join-panel-heading-color);
+  background-color: var(--join-panel-heading-bg);
+  border-bottom: 1px solid var(--join-panel-border);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.join-panel__body {
+  padding: 15px;
+}
+
+/* Футер как в Bootstrap 3.4.0: фон и рамка не зависят от вариации. */
+.join-panel__footer {
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 3px;
+}

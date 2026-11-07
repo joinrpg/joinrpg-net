@@ -99,7 +99,7 @@ public class ClaimAccommodationInvitesTest : BunitContext
 
         var cut = RenderInvites();
 
-        var panels = cut.FindAll(".panel");
+        var panels = cut.FindAll(".join-panel");
         panels.Count.ShouldBe(2);
 
         panels[0].TextContent.ShouldContain("Полученные приглашения");
@@ -122,7 +122,7 @@ public class ClaimAccommodationInvitesTest : BunitContext
 
         var cut = RenderInvites();
 
-        cut.FindAll(".panel").Count.ShouldBe(1);
+        cut.FindAll(".join-panel").Count.ShouldBe(1);
         cut.Markup.ShouldNotContain("Полученные приглашения");
     }
 

@@ -40,7 +40,7 @@ public class UserProfilePanelTest : IDisposable
     {
         var cut = Render(new UserProfileDetailsViewModel(Player(), Player()));
 
-        var footer = cut.Find(".panel-footer");
+        var footer = cut.Find(".join-panel__footer");
         footer.TextContent.ShouldContain("Это мой профиль");
         footer.QuerySelector("a")!.GetAttribute("href").ShouldBe("/manage/setupprofile");
     }
@@ -52,7 +52,7 @@ public class UserProfilePanelTest : IDisposable
         var cut = Render(new UserProfileDetailsViewModel(Player(), Player()));
 
         // Браузер схлопывает любые пробельные символы в один пробел — сравниваем так же.
-        var text = string.Join(' ', cut.Find(".panel-footer").TextContent.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        var text = string.Join(' ', cut.Find(".join-panel__footer").TextContent.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
         text.ShouldBe("Это мой профиль [ Настроить ]");
     }
 
@@ -63,7 +63,7 @@ public class UserProfilePanelTest : IDisposable
 
         cut.Markup.ShouldNotContain("player@example.com");
         cut.Markup.ShouldNotContain("+79990000000");
-        cut.FindAll(".panel-footer").ShouldBeEmpty();
+        cut.FindAll(".join-panel__footer").ShouldBeEmpty();
         cut.Markup.ShouldContain("Пользователь предпочитает сохранять анонимность.");
     }
 
@@ -76,7 +76,7 @@ public class UserProfilePanelTest : IDisposable
 
         cut.Markup.ShouldContain("player@example.com");
         cut.Markup.ShouldContain("Нет пароля");
-        var footer = cut.Find(".panel-footer");
+        var footer = cut.Find(".join-panel__footer");
         footer.TextContent.ShouldContain("администратор");
         footer.QuerySelector("a").ShouldBeNull();
     }
