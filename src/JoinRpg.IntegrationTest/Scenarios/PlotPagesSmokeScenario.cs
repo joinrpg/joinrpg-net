@@ -139,11 +139,14 @@ public class PlotPagesSmokeScenario(JoinApplicationFactory factory) : IClassFixt
             // В summary — только название и значки: ссылки и кнопки там не дали бы свернуть панель
             // и слились бы для скринридера в одну кнопку.
             panel.SelectNodes("summary//a | summary//button").ShouldBeNull();
-            var panelBody = panel.SelectSingleNode("ancestor::div[contains(@class, 'join-collapse-panel')][1]/div[contains(@class, 'panel-body')]")
+            // Корень панели — предок с классом join-collapse-panel, но без BEM-элементов
+            // (__heading/__body тоже содержат эту подстроку и ближе к details).
+            const string panelRoot = "ancestor::div[contains(@class, 'join-collapse-panel') and not(contains(@class, 'join-collapse-panel__'))][1]";
+            var panelBody = panel.SelectSingleNode($"{panelRoot}/div[contains(@class, 'join-collapse-panel__body')]")
                 ?? throw new InvalidOperationException($"У панели вводной {elementId} нет тела");
             panelBody.ShouldNotBeNull();
             // Стрелки перемещения (JoinMoveControl) — в обёртке панели, вне сворачиваемого details.
-            panel.SelectSingleNode("ancestor::div[contains(@class, 'join-collapse-panel')][1]")
+            panel.SelectSingleNode(panelRoot)
                 .SelectNodes(".//use[contains(@href, 'arrow-down')]")
                 .ShouldNotBeNull($"У панели вводной {elementId} нет стрелок перемещения");
         }

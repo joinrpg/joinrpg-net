@@ -1,0 +1,20 @@
+/*
+  Оформление группы и панелей в ней — собственные стили, значения перенесены 1:1 из
+  Bootstrap 3.4.0 (.panel-group): у группы отступ снизу 20px, панели в аккордеоне стоят
+  вплотную, отступ между соседними — 5px.
+
+  Соседние селекторы — через ::deep: правила живут в scoped CSS группы, а разметку панелей
+  рендерит JoinCollapsePanel — без ::deep к панели добавился бы scope-атрибут группы, которого
+  на ней нет.
+*/
+.join-collapse-panel-group {
+  margin-bottom: 20px;
+}
+
+.join-collapse-panel-group ::deep .join-collapse-panel {
+  margin-bottom: 0;
+}
+
+.join-collapse-panel-group ::deep .join-collapse-panel + .join-collapse-panel {
+  margin-top: 5px;
+}

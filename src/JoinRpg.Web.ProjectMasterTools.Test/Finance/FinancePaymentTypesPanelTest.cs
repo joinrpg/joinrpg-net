@@ -168,7 +168,7 @@ public class FinancePaymentTypesPanelTest : BunitContext
         client.PaymentTypes.Add(PotentialCash());
         var cut = RenderPanel();
 
-        cut.Find(".panel-heading").TextContent.ShouldContain("Нет методов оплаты");
+        cut.Find(".join-collapse-panel__heading").TextContent.ShouldContain("Нет методов оплаты");
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class FinancePaymentTypesPanelTest : BunitContext
         client.PaymentTypes.Add(PotentialCash());
         var cut = RenderPanel();
 
-        cut.Find(".panel-heading").TextContent.ShouldNotContain("Нет методов оплаты");
+        cut.Find(".join-collapse-panel__heading").TextContent.ShouldNotContain("Нет методов оплаты");
     }
 
     [Fact]

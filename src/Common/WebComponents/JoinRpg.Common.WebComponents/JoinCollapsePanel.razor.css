@@ -1,4 +1,66 @@
 /*
+  Оформление панели — собственные стили, значения перенесены 1:1 из Bootstrap 3.4.0
+  (.panel, .panel-heading, .panel-body, .panel-*): панель выглядит так же, как ручные
+  .panel в cshtml, — но без опоры на классы Bootstrap. Цвета вариантов — CSS-переменные
+  из общей палитры пакета (css/variations.css), их подставляет класс-модификатор
+  join-collapse-panel--* на корне.
+*/
+.join-collapse-panel {
+  --join-collapse-panel-border: var(--join-variation-default-panel-border);
+  --join-collapse-panel-heading-bg: var(--join-variation-default-panel-heading-bg);
+  --join-collapse-panel-heading-color: var(--join-variation-default-panel-heading-color);
+
+  margin-bottom: 20px;
+  background-color: #fff;
+  border: 1px solid var(--join-collapse-panel-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.join-collapse-panel--primary {
+  --join-collapse-panel-border: var(--join-variation-primary-panel-border);
+  --join-collapse-panel-heading-bg: var(--join-variation-primary-panel-heading-bg);
+  --join-collapse-panel-heading-color: var(--join-variation-primary-panel-heading-color);
+}
+
+.join-collapse-panel--success {
+  --join-collapse-panel-border: var(--join-variation-success-panel-border);
+  --join-collapse-panel-heading-bg: var(--join-variation-success-panel-heading-bg);
+  --join-collapse-panel-heading-color: var(--join-variation-success-panel-heading-color);
+}
+
+.join-collapse-panel--info {
+  --join-collapse-panel-border: var(--join-variation-info-panel-border);
+  --join-collapse-panel-heading-bg: var(--join-variation-info-panel-heading-bg);
+  --join-collapse-panel-heading-color: var(--join-variation-info-panel-heading-color);
+}
+
+.join-collapse-panel--warning {
+  --join-collapse-panel-border: var(--join-variation-warning-panel-border);
+  --join-collapse-panel-heading-bg: var(--join-variation-warning-panel-heading-bg);
+  --join-collapse-panel-heading-color: var(--join-variation-warning-panel-heading-color);
+}
+
+.join-collapse-panel--danger {
+  --join-collapse-panel-border: var(--join-variation-danger-panel-border);
+  --join-collapse-panel-heading-bg: var(--join-variation-danger-panel-heading-bg);
+  --join-collapse-panel-heading-color: var(--join-variation-danger-panel-heading-color);
+}
+
+.join-collapse-panel__heading {
+  padding: 10px 15px;
+  color: var(--join-collapse-panel-heading-color);
+  background-color: var(--join-collapse-panel-heading-bg);
+  border-bottom: 1px solid var(--join-collapse-panel-border);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.join-collapse-panel__body {
+  padding: 15px;
+}
+
+/*
   <details> с одним <summary> стоит в строке заголовка рядом с HeaderExtra, поэтому оба —
   inline-block. Маркер ▶/▼ рисуем сами: браузерный маркер есть только у display: list-item,
   а он вынес бы HeaderExtra на следующую строку.
@@ -33,19 +95,18 @@
 
 /*
   Тело — сосед <details>, а не его содержимое: показываем его по атрибуту open.
-  Разделитель заголовка и тела — нижняя граница заголовка; её цвет задаёт Bootstrap для варианта
-  панели (.panel-default > .panel-heading и т. д.). У свёрнутой панели её нет: она слилась бы
-  с рамкой панели в двойную линию.
+  Разделитель заголовка и тела — нижняя граница заголовка, её цвет — цвет рамки варианта.
+  У свёрнутой панели её нет: она слилась бы с рамкой панели в двойную линию.
 */
-.join-collapse-panel:not(:has(> .panel-heading > .join-collapse-panel__toggle[open])) > .join-collapse-panel__body {
+.join-collapse-panel:not(:has(> .join-collapse-panel__heading > .join-collapse-panel__toggle[open])) > .join-collapse-panel__body {
   display: none;
 }
 
-.join-collapse-panel:has(> .panel-heading > .join-collapse-panel__toggle[open]) > .panel-heading {
+.join-collapse-panel:has(> .join-collapse-panel__heading > .join-collapse-panel__toggle[open]) > .join-collapse-panel__heading {
   border-bottom-width: 1px;
   border-bottom-style: solid;
 }
 
-.join-collapse-panel:not(:has(> .panel-heading > .join-collapse-panel__toggle[open])) > .panel-heading {
+.join-collapse-panel:not(:has(> .join-collapse-panel__heading > .join-collapse-panel__toggle[open])) > .join-collapse-panel__heading {
   border-bottom-width: 0;
 }
