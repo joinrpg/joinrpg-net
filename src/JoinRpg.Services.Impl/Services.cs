@@ -53,6 +53,7 @@ public static class Services
         return
             services
             .AddJob<ProjectPerformCloseJob>()
+            .AddJob<BlockedProjectsReminderJob>()
             .AddJob<BastiliaGamesSyncDailyJob>()
             .AddJob<DefaultAvatarsBackfillJob>()
 #pragma warning disable CS0618 // Разовые починки данных, возвращены для восстановления майского бекапа

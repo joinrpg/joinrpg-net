@@ -59,6 +59,20 @@ internal class MasterEmailService(
         await Send(metadata, body, subject, email.Initiator.UserId, [.. masters, .. otherAdmins]);
     }
 
+    /// <summary>
+    /// Еженедельное напоминание мастерам заблокированного проекта определиться с его судьбой (ADR023).
+    /// </summary>
+    // TODO[Localize]
+    public async Task EmailProjectBlockedReminder(ProjectBlockedMail email)
+    {
+        var metadata = await projectMetadataRepository.GetProjectMetadata(email.ProjectId);
+
+        var body = $@"Ваш проект {metadata.ProjectName.Value} все еще заблокирован после утери данных в октябре. Вам нужно определиться, что делать с вашим проектом. Если он вам больше не нужен, закройте его. Если нужен — воспользуйтесь инструкцией по восстановлению: https://docs.joinrpg.ru/recovery-2026.html. По любым вопросам пишите в https://joinrpg.ru/support";
+        var subject = $"{metadata.ProjectName.Value}: проект заблокирован на время восстановления данных";
+
+        await SendToAllMasters(metadata, body, subject, virtualUsersService.RobotUserId);
+    }
+
     private Task SendToAllMasters(ProjectInfo metadata, string body, string subject, UserIdentification initiator)
         => Send(metadata, body, subject, initiator, [.. metadata.Masters.Select(master => new NotificationRecepient(master))]);
 
