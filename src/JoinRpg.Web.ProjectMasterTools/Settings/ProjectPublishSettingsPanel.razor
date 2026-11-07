@@ -1,7 +1,7 @@
 @inherits SettingsPanelBase<ProjectPublishSettingsViewModel>
 @inject IProjectSettingsClient settingsClient
 
-<JoinCollapsePanel Group="project-settings" Id="settings-publish">
+<JoinCollapsePanel Id="settings-publish">
     <Header>Настройки публикации проекта</Header>
     <ChildContent>
         @if (Model is null)
