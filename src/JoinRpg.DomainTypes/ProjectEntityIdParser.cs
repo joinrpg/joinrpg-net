@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using JoinRpg.DomainTypes.Characters.Claims.Accommodation;
 using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Finances;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
@@ -168,6 +169,18 @@ public static class ProjectEntityIdParser
         if (ProjectFieldIdentification.TryParse(value, null, out var pfi))
         {
             id = pfi;
+            return true;
+        }
+
+        if (ExpenseIdentification.TryParse(value, null, out var expense))
+        {
+            id = expense;
+            return true;
+        }
+
+        if (ExpenseCategoryIdentification.TryParse(value, null, out var expenseCategory))
+        {
+            id = expenseCategory;
             return true;
         }
 

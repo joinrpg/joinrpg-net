@@ -1,5 +1,6 @@
 using JoinRpg.Common.WebComponents;
 using JoinRpg.DomainTypes.Claims;
+using JoinRpg.DomainTypes.Finances;
 using JoinRpg.DomainTypes.Forums;
 using JoinRpg.DomainTypes.Interfaces;
 using JoinRpg.DomainTypes.Plots;
@@ -48,6 +49,8 @@ internal class UriServiceImpl(
     IUriLocator<ProjectMasterIdentification>,
     IUriLocator<FinanceOperationIdentification>,
     IUriLocator<MoneyTransferIdentification>,
+    IUriLocator<ExpenseIdentification>,
+    IUriLocator<ExpenseCategoryIdentification>,
     IUriLocator<ForumCommentIdentification>,
     IUriLocator<ProjectRolesListIdentification>,
     IUriLocator<ProjectBadgeTemplateIdentification>,
@@ -244,6 +247,15 @@ internal class UriServiceImpl(
     // Отдельной страницы у перевода нет — ведём на сводку по деньгам, где список переводов.
     public Uri GetUri(MoneyTransferIdentification target) =>
         new(GetBaseDomain(), linkGenerator.GetPathByAction("MoneySummary", "Finances", new { ProjectId = target.ProjectId.Value }));
+
+    // Страница расходов проекта появляется в этом же стеке (PR5); пока ссылку на расход
+    // не строит ни один UI, так что битого пути в рантайме не возникнет.
+    public Uri GetUri(ExpenseIdentification target) => GetExpensesUri(target.ProjectId);
+
+    public Uri GetUri(ExpenseCategoryIdentification target) => GetExpensesUri(target.ProjectId);
+
+    private Uri GetExpensesUri(ProjectIdentification projectId) =>
+        new(GetBaseDomain(), linkGenerator.GetPathByPage("/GamePages/Expenses", values: new { ProjectId = projectId.Value }));
 
     public Uri GetUri(ForumCommentIdentification target) =>
         new(GetUri(target.ThreadId).AbsoluteUri + $"#comment{target.CommentId}");

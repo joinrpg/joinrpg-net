@@ -645,6 +645,44 @@ erDiagram
         string Text_Contents "markdown"
     }
 
+    Expenses {
+        int ExpenseId PK
+        int ProjectId FK
+        string Name
+        string Description_Contents "markdown, null = без описания"
+        int MasterId FK "мастер, понёсший расход"
+        int CategoryId FK
+        string CategoryPathImpl_ListIds "снапшот пути категорий (IntList), id от корня до листа"
+        int PlannedQuantity
+        int PlannedPrice "цена за единицу в рублях"
+        int ActualQuantity "null = расход только спланирован"
+        int ActualPrice
+        datetime SpentAt "null = факт не заполнен"
+        enum State "ExpenseState: Proposed / Approved / Rejected"
+        datetime CreatedAt
+        int CreatedById FK
+        datetime UpdatedAt
+        int UpdatedById FK
+    }
+
+    ExpenseCategories {
+        int ExpenseCategoryId PK
+        int ProjectId FK
+        string Name
+        int ParentCategoryId FK "null = корень"
+        string ParentCategoriesImpl_ListIds "путь от корня до родителя (IntList)"
+        bool IsActive
+    }
+
+    ExpenseApprovals {
+        int ExpenseApprovalId PK
+        int ExpenseId FK
+        enum State "ExpenseState, в которое перевели"
+        int ApprovedById FK "финансовый администратор"
+        datetime Timestamp
+        string Comment_Contents "markdown, null = без комментария"
+    }
+
     Comments ||--|| FinanceOperations : "CommentId"
     FinanceOperations ||--o| FinanceOperationBankDetails : ""
     Claims ||--o{ FinanceOperations : ""
@@ -655,6 +693,11 @@ erDiagram
     Claims ||--o{ RecurrentPayments : ""
     PaymentTypes ||--o{ RecurrentPayments : ""
     MoneyTransfers ||--|| TransferTexts : ""
+    Projects ||--o{ Expenses : ""
+    Projects ||--o{ ExpenseCategories : ""
+    Expenses ||--o{ ExpenseApprovals : ""
+    ExpenseCategories |o--o{ ExpenseCategories : "ParentCategory"
+    Expenses }o--|| ExpenseCategories : "CategoryId"
 ```
 
 Главная неочевидность: **у `FinanceOperations` первичный ключ — `CommentId`**.
@@ -669,6 +712,12 @@ erDiagram
 `MoneyTransfers` — перевод денег между мастерами, к заявкам не привязан: четыре ссылки
 на `Users` (`SenderId`, `ReceiverId`, `CreatedById`, `ChangedById`) видны в блоке таблицы,
 линиями не нарисованы. Там же ответственный мастер типа оплаты — `PaymentTypes.UserId`.
+
+`Expenses` — расходы проекта ([ADR030](adr030-expenses.md)): план (`PlannedQuantity × PlannedPrice`)
+и позже факт (`ActualQuantity × ActualPrice`, оба null, пока расход только спланирован). Согласование —
+состояние `State` плюс история в `ExpenseApprovals`. У расхода — снапшот пути категорий
+(`CategoryPathImpl_ListIds`), по нему грид фильтрует поддерево без рекурсивных запросов;
+`Expenses.MasterId` — мастер, понёсший расход (линией не нарисован, как у MoneyTransfers).
 
 ---
 

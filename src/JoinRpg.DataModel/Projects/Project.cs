@@ -75,6 +75,12 @@ public class Project : IProjectEntity
     /// <summary>Шаблоны бейджей. В <c>ProjectInfo</c> не загружаются — нужны редко, грузятся отдельно</summary>
     public virtual ICollection<ProjectBadgeTemplate> ProjectBadgeTemplates { get; set; }
 
+    /// <summary>Расходы проекта (ADR030). В <c>ProjectInfo</c> не загружаются — нужны редко, грузятся отдельно</summary>
+    public virtual ICollection<Expense> Expenses { get; set; }
+
+    /// <summary>Категории расходов (ADR030). В <c>ProjectInfo</c> не загружаются — нужны редко, грузятся отдельно</summary>
+    public virtual ICollection<ExpenseCategory> ExpenseCategories { get; set; }
+
     /// <summary>
     /// Типы проживания проекта (палатка, домик, номер…). Только навигация поверх уже существующего
     /// FK <c>ProjectAccommodationTypes.ProjectId</c> — новых колонок нет (ADR015).
